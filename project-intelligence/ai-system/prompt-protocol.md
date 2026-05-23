@@ -14,10 +14,10 @@ Before any implementation begins:
 
 - Read `mission-overview.md` — confirm agency identity and current project stage
 - Read `current-sprint.md` — confirm the task aligns with the active sprint goal
-- Read `decisions.md` — identify any Active decisions that constrain or govern the task
+- Read `decisions.md` — identify any APPROVED decisions that constrain or govern the task
 - Read domain-specific files relevant to the task (see Stage 2)
 
-If the task conflicts with an Active decision: **escalate before proceeding. Do not implement.**
+If the task conflicts with an APPROVED decision: **escalate before proceeding. Do not implement.**
 
 ---
 
@@ -151,15 +151,15 @@ Claude Code must stop and escalate before proceeding when any of the following a
 
 | Situation | Escalate To |
 |---|---|
-| Brief conflicts with an Active decision in `decisions.md` | ChatGPT |
+| Brief conflicts with an APPROVED decision in `decisions.md` | ChatGPT |
 | Task requires deviating from `design.md` with no supporting decision | ChatGPT |
 | UX direction is ambiguous and will have architectural consequences | ChatGPT |
 | New dependency not covered by existing stack decisions | ChatGPT |
 | Performance trade-off conflicts with design or animation goals | ChatGPT |
 | Task scope is unclear and could result in significant rework | ChatGPT |
 | Visual decision feels inconsistent with luxury or futuristic standards | ChatGPT |
-| An Active decision needs to be reversed | Human Founder only |
-| Two Active decisions conflict with each other | Human Founder only |
+| An APPROVED decision needs to be reversed | Human Founder only |
+| Two APPROVED decisions conflict with each other | Human Founder only |
 
 **Escalation format:** State the conflict precisely. Reference the file and field. Propose two options if possible. Do not implement either until directed.
 

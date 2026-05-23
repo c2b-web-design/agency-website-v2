@@ -25,7 +25,7 @@ The compression test: *would a new agent reading only this entry understand the 
 ChatGPT direction takes precedence over Claude Code implementation preferences. Human Founder direction takes precedence over all agents. A lower-layer agent cannot introduce a change that contradicts a higher-layer decision without explicit approval logged as a new decision entry.
 
 ### Rule 6 — QA cannot override architecture or design-system
-Browser Extension findings are observations. They become actionable only after ChatGPT review and approval. A finding, however accurate, does not supersede an Active decision.
+Browser Extension findings are observations. They become actionable only after ChatGPT review and approval. A finding, however accurate, does not supersede an APPROVED decision.
 
 ### Rule 7 — Every component requires documentation before it is considered complete
 A component is not done until:
@@ -47,7 +47,9 @@ All decisions, work items, and components carry an explicit status. Statuses are
 | IMPLEMENTED | Built and documented. Review may still be pending. | `current-sprint.md`, component docs |
 | REVIEW REQUIRED | Implementation complete. Awaiting QA or PM review. | `review-log.md`, `current-sprint.md` |
 | REJECTED | Considered and declined. Reason is recorded. | `decisions.md`, `review-log.md` |
-| DEPRECATED | Previously Active. Superseded or removed. Retained for record. | `decisions.md` |
+| DEPRECATED | Previously APPROVED. Superseded or removed. Retained for record. | `decisions.md` |
+| BLOCKED | Cannot proceed — named dependency or decision missing. Blocker must be explicit. | `current-sprint.md` |
+| ARCHIVED | Sprint or work item closed and preserved in archive. No further updates. | `active-sprints/archive/` |
 
 ### Status Transition Authority
 
@@ -59,7 +61,7 @@ All decisions, work items, and components carry an explicit status. Statuses are
 | IN PROGRESS → IMPLEMENTED | Claude Code |
 | IMPLEMENTED → REVIEW REQUIRED | Claude Code (automatic on component completion) |
 | REVIEW REQUIRED → APPROVED | ChatGPT (after QA review) |
-| ACTIVE → DEPRECATED | Human Founder only |
+| APPROVED → DEPRECATED | Human Founder only |
 | Any status → REJECTED | ChatGPT or Human Founder |
 
 Claude Code cannot move a PROPOSED item to APPROVED. Claude Code can move an APPROVED item to IN PROGRESS.
@@ -110,7 +112,7 @@ Use the established schema for every entry type. Do not add new fields. Do not o
 
 1. Read `mission-overview.md` — confirm project identity and stage
 2. Read `current-sprint.md` — understand what is IN PROGRESS and what is Up Next
-3. Read `decisions.md` — identify Active decisions relevant to the task
+3. Read `decisions.md` — identify APPROVED decisions relevant to the task
 4. Read domain-specific files for the task (architecture, design, component docs)
 5. Do not ask for context that should already exist in project-intelligence files
 6. Do not rely on chat history from previous sessions

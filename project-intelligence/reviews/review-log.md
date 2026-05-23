@@ -37,20 +37,20 @@ Status:           Open | Actioned | Dismissed
 
 **Flags:**
 
-| Severity | ID | Finding |
-|---|---|---|
-| High | F-001 | Geist font variables declared in `layout.tsx` but not applied to `<body>` className — Geist is not rendering |
-| High | F-002 | `--font-sans` in `globals.css` references `var(--font-sans)` — circular, no effect. Should reference `var(--font-geist-sans)` |
-| Medium | F-003 | Navbar has no mobile responsive state — links will overflow or collapse on small screens |
-| Low | F-004 | Nav and CTA use plain `<a>` tags — should use Next.js `<Link>` for client-side routing |
+| Severity | ID | Finding | Status |
+|---|---|---|---|
+| High | F-001 | Geist font variables declared in `layout.tsx` but not applied to `<html>` className — Geist not rendering | Actioned — Sprint 2. Variables applied to `<html>`. See D-011. |
+| High | F-002 | `--font-sans` in `globals.css` references `var(--font-sans)` — circular, no effect | Actioned — Sprint 2. Corrected to `var(--font-geist-sans)`. `--font-heading` also fixed. See D-011. |
+| Medium | F-003 | Navbar has no mobile responsive state — links will overflow or collapse on small screens | Open — Sprint 2 Up Next |
+| Low | F-004 | Nav and CTA use plain `<a>` tags — should use Next.js `<Link>` for client-side routing | Open — Sprint 2 Up Next |
 
 **Recommendations:**
-- Apply `${geistSans.variable} ${geistMono.variable}` to `<body>` className in `layout.tsx`
-- Correct `--font-sans` token in `globals.css` to `var(--font-geist-sans)`
+- Apply `${geistSans.variable} ${geistMono.variable}` to `<html>` className in `layout.tsx` (not `<body>` — see D-011 for rationale)
+- Correct `--font-sans` and `--font-heading` tokens in `globals.css` to `var(--font-geist-sans)`
 - Add mobile nav before launch — pattern TBD (hamburger menu, collapsed links, or slide drawer)
 - Replace `<a>` with `<Link>` from `next/link`
 
-**Status:** Open — routed to `current-sprint.md` Up Next
+**Status:** Partially actioned — F-001 and F-002 resolved in Sprint 2. F-003 and F-004 remain open.
 
 ---
 

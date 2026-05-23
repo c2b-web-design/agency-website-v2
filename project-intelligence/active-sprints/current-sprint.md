@@ -1,10 +1,10 @@
-# Current Sprint
+# Current Sprint — Sprint 2
 
 ---
 
 ## Sprint Goal
 
-Establish the foundational technical and operational infrastructure for the C2B Web Design agency site. Ship a clean homepage skeleton, install the project intelligence layer, and define the AI governance and workflow system.
+Validate the typography and visual foundation. Confirm Geist renders correctly across all breakpoints, verify all Tailwind font tokens resolve cleanly, and establish a stable premium visual baseline before major component production begins.
 
 ## Sprint Period
 
@@ -16,12 +16,12 @@ Establish the foundational technical and operational infrastructure for the C2B 
 
 | Task | Output | Notes |
 |---|---|---|
-| Reusable `Container` component | `components/layout/container.tsx` | Max-width wrapper used on every section |
-| Homepage skeleton | `app/page.tsx` | Navbar, Hero, Services, Work, Footer — forced dark |
-| shadcn/ui installed | `lib/utils.ts`, `components.json`, `globals.css` updated | v4.7.0, base-nova style, neutral base colour |
-| Project intelligence structure | `/project-intelligence/` | All foundational files created |
-| AI governance layer — Phase 1 | `ai-roles.md`, `context-rules.md` refined | Veto structure, status system, conflict resolution, file integrity rules added |
-| AI governance layer — Phase 2 | `prompt-protocol.md` created | Prompt lifecycle, standard prompt structure, escalation rules, QA routing, documentation update triggers |
+| Governance normalization | `context-rules.md`, `decisions.md`, `handoff-protocol.md` | Status vocabulary unified — `Active` replaced by `APPROVED` throughout |
+| D-004 authority corrected | `decisions.md` D-004 DEPRECATED, D-010 added | Human Founder re-attributed as authority; history preserved |
+| D-011 logged | `decisions.md` | Geist font loading pattern — `<html>` not `<body>` |
+| Sprint 1 archived | `active-sprints/archive/sprint-1.md` | Archive structure created |
+| Font variables applied to `<html>` | `app/layout.tsx` | Resolves R-001 F-001 — see D-011 |
+| `--font-sans` circular reference fixed | `app/globals.css` | Resolves R-001 F-002 — `--font-heading` also corrected to `var(--font-geist-sans)` |
 
 ---
 
@@ -35,17 +35,17 @@ Establish the foundational technical and operational infrastructure for the C2B 
 
 | Task | Priority | Notes |
 |---|---|---|
-| Fix font application in `layout.tsx` | High | Geist fonts declared but not applied to `<body>` — see R-001 |
-| Fix `--font-sans` circular reference in `globals.css` | High | Self-references itself — fonts not rendering correctly |
+| Validate typography rendering across breakpoints | High | Desktop, tablet, mobile — run dev server and inspect. Confirm Geist renders and hierarchy is correct |
 | Services section — real content and layout | Medium | Awaiting content brief from ChatGPT / Human Founder |
 | Work/portfolio section — grid layout | Medium | Awaiting case study content |
-| Mobile navbar (responsive collapse) | Medium | Current nav overflows on small screens — see R-001 |
-| Replace `<a>` tags with Next.js `<Link>` | Low | Performance optimisation |
-| Component documentation: `Container` | Low | `/project-intelligence/components/container.md` |
+| Mobile navbar (responsive collapse) | Medium | R-001 F-003 — pattern TBD (hamburger, collapsed links, slide drawer) |
+| Replace `<a>` tags with Next.js `<Link>` | Low | R-001 F-004 — performance optimisation |
 
 ---
 
 ## Open Questions
+
+*(Carried from Sprint 1)*
 
 - Deployment target? (Vercel, other)
 - Services offered — what are the three to five core agency services?
@@ -61,4 +61,15 @@ Establish the foundational technical and operational infrastructure for the C2B 
 
 ---
 
-*Last updated: 2026-05-23 — governance layer complete*
+## Sprint Success Criteria
+
+Sprint 2 is complete when:
+
+1. Geist Sans renders on `app/page.tsx` — confirmed by browser inspection at desktop, tablet, and mobile
+2. No circular CSS variable references remain in `globals.css`
+3. Typography hierarchy is visually correct at all breakpoints
+4. A stable premium visual baseline exists for the next component build sprint
+
+---
+
+*Last updated: 2026-05-23 — sprint opened; governance normalized; typography fixes applied*

@@ -51,7 +51,9 @@ agency-website-v2/
 │   │   ├── ai-roles.md
 │   │   └── context-rules.md
 │   ├── active-sprints/
-│   │   └── current-sprint.md
+│   │   ├── current-sprint.md
+│   │   └── archive/
+│   │       └── sprint-1.md
 │   ├── research/                   # Discovery, competitor analysis, references
 │   └── reviews/
 │       └── review-log.md
@@ -92,6 +94,9 @@ All components are React Server Components unless explicitly marked `"use client
 
 ### Component Variants via CVA
 shadcn/ui components use `class-variance-authority` (CVA) for variant management. New components should follow this pattern.
+
+### Font Loading Pattern
+Geist font CSS variables are applied to `<html>` in `app/layout.tsx` via `className={`${geistSans.variable} ${geistMono.variable}`}`. This makes `--font-geist-sans` and `--font-geist-mono` available at the CSS root, enabling correct resolution of `--font-sans` and `--font-heading` in the `@theme inline` block of `globals.css`. Variables are applied to `<html>`, not `<body>`, because `globals.css` sets `font-family` on the `html` element — see D-011.
 
 ---
 

@@ -8,7 +8,7 @@ Defines the responsibilities, authority boundaries, veto rights, and conflict re
 
 ```
 Human Founder
-      │         ← Final authority. Unrestricted veto. Only agent who can reverse Active decisions.
+      │         ← Final authority. Unrestricted veto. Only agent who can reverse APPROVED decisions.
       │
 ChatGPT (PM / Creative Director)
       │         ← Governance, architecture strategy, creative direction. Feeds and reviews Claude Code.
@@ -33,7 +33,7 @@ Authority flows **downward only**. Recommendations travel upward. Decisions trav
 - Sets project direction, priorities, and constraints
 - Approves all strategic and architectural decisions
 - Resolves all cross-agent conflicts
-- Is the only agent that can reverse an Active decision in `decisions.md`
+- Is the only agent that can reverse an APPROVED decision in `decisions.md`
 - Approves sprint goals before they begin
 
 **Veto rights:** Unrestricted. Any decision at any layer, at any time.
@@ -54,11 +54,11 @@ Authority flows **downward only**. Recommendations travel upward. Decisions trav
 
 **Cannot:**
 - Write or commit code
-- Reverse an Active decision without Human Founder approval
+- Reverse an APPROVED decision without Human Founder approval
 - Initiate work outside a defined sprint or approved brief
-- Approve a recommendation that contradicts an Active decision without Human Founder review
+- Approve a recommendation that contradicts an APPROVED decision without Human Founder review
 
-**Veto rights:** May halt or redirect any Claude Code implementation before it is shipped. Cannot override Active decisions unilaterally.
+**Veto rights:** May halt or redirect any Claude Code implementation before it is shipped. Cannot override APPROVED decisions unilaterally.
 
 ---
 
@@ -112,7 +112,7 @@ Authority flows **downward only**. Recommendations travel upward. Decisions trav
 | Agent | Can Veto | Cannot Veto |
 |---|---|---|
 | Human Founder | Any decision at any layer, at any time, without justification | — |
-| ChatGPT | Claude Code's implementation approach before it ships | Active decisions without Human Founder approval |
+| ChatGPT | Claude Code's implementation approach before it ships | APPROVED decisions without Human Founder approval |
 | Claude Code | Nothing — may flag and escalate, may not deviate | Design decisions, architectural decisions, sprint priorities |
 | Browser Extension | Nothing — may observe and recommend, may not act | All decisions and direction at every layer |
 
@@ -143,19 +143,19 @@ QA findings are recommendations, not corrections. Claude Code is not required to
 
 `design.md` takes precedence over the implementation brief. If the two conflict, Claude Code escalates to ChatGPT before deviating from either. Claude Code does not decide which takes precedence.
 
-### Brief conflicts with an Active decision
+### Brief conflicts with an APPROVED decision
 
-The Active decision takes precedence until explicitly revised. Claude Code states the conflict, cites the decision ID, and escalates to ChatGPT. ChatGPT resolves with Human Founder if the decision needs reversal.
+The APPROVED decision takes precedence until explicitly revised. Claude Code states the conflict, cites the decision ID, and escalates to ChatGPT. ChatGPT resolves with Human Founder if the decision needs reversal.
 
 ### Performance trade-off conflicts with visual goals
 
 No unilateral performance optimisation that alters visual output is permitted. Removing or simplifying a design element for performance reasons requires ChatGPT approval and a logged decision. Escalate with the trade-off stated clearly.
 
-### A recommendation conflicts with an Active decision
+### A recommendation conflicts with an APPROVED decision
 
-The Active decision holds. The recommendation cannot be actioned by ChatGPT alone — it routes to Human Founder for review. The review-log entry is marked Open until resolved.
+The APPROVED decision holds. The recommendation cannot be actioned by ChatGPT alone — it routes to Human Founder for review. The review-log entry is marked Open until resolved.
 
-### Two Active decisions conflict with each other
+### Two APPROVED decisions conflict with each other
 
 Stop. Do not implement. Note the conflict as a comment in `decisions.md` adjacent to the relevant entries. Escalate to Human Founder. Do not resolve it at any lower level.
 
