@@ -147,3 +147,14 @@ Status:     APPROVED | DEPRECATED | REJECTED
 **Authority:** Human Founder  
 **Status:** APPROVED  
 **Notes:** When client case studies are ready, evolve this section into a conventional portfolio. Until then the proof-piece framing is the honest, premium alternative.  
+
+---
+
+## D-014 — Conversion: Homepage Final CTA Section
+
+**Date:** 2026-05-25  
+**Decision:** The homepage closes with a calm, premium invitation to start a conversation. The CTA is positioned as discovery — understanding what the business needs — not a hard sell.  
+**Rationale:** Visitors at the bottom of the page have already processed the offer and credibility. The closing CTA must match the premium tone: consultative, human, and confident. A complex form at this stage would introduce friction before trust is established.  
+**Authority:** Human Founder  
+**Status:** APPROVED  
+**Notes:** The current CTA uses a placeholder `href="#"`. Connect to a real contact flow when the enquiry system is built. The intelligent enquiry system (D-012) can grow directly from this section when ready.  

@@ -262,6 +262,42 @@ export default function Home() {
         </Container>
       </section>
 
+      {/* ── CTA ──────────────────────────────────────────────────────────────
+          text-center: centering the closing CTA shifts the page from delivering
+          information to addressing the visitor directly — a premium closing
+          register distinct from the left-aligned content sections above.
+          max-w-2xl mx-auto: keeps the column intimate, not sprawling.
+          href="#": placeholder until a real contact flow is built.             */}
+      <section className="py-24 border-t border-neutral-800">
+        <Container>
+          <div className="text-center max-w-2xl mx-auto">
+
+            <h2 className="text-3xl font-semibold tracking-tight">
+              Start with a sharper digital presence.
+            </h2>
+
+            {/* max-w-xl mx-auto: center-aligned body copy needs a shorter line
+                measure than left-aligned copy — wide centered lines read as
+                unintentional, not editorial.                                   */}
+            <p className="mt-6 text-base text-neutral-400 leading-relaxed max-w-xl mx-auto">
+              Whether you need a premium website, a stronger first impression, or a smarter
+              way to handle enquiries, C2B begins with understanding what your business
+              needs to become.
+            </p>
+
+            <div className="mt-10">
+              <a
+                href="#"
+                className="inline-block bg-white text-black text-sm font-semibold px-7 py-3 rounded-full tracking-wide hover:bg-neutral-100 transition-colors duration-200"
+              >
+                Start a conversation
+              </a>
+            </div>
+
+          </div>
+        </Container>
+      </section>
+
       {/* ── Footer ────────────────────────────────────────────────────────────
           py-10: less space than sections — footer is a quiet ending             */}
       <footer className="border-t border-neutral-800 py-10">
