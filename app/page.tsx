@@ -206,11 +206,59 @@ export default function Home() {
         </Container>
       </section>
 
-      {/* ── Work ──────────────────────────────────────────────────────────── */}
+      {/* ── Work / Proof ──────────────────────────────────────────────────────
+          id="work" preserved: navbar "Work" link targets this anchor.
+          Until client case studies exist, this section positions the C2B
+          website itself as the first demonstration of the agency standard.
+          Heading and intro follow the same max-w-2xl / max-w-lg pattern as
+          the Services section.                                              */}
       <section id="work" className="py-24 border-t border-neutral-800">
         <Container>
-          <h2 className="text-3xl font-semibold tracking-tight">Work</h2>
-          <p className="mt-4 text-sm text-neutral-500">Coming soon.</p>
+
+          <div className="max-w-2xl">
+            <h2 className="text-3xl font-semibold tracking-tight">
+              Built to set the standard.
+            </h2>
+            {/* max-w-lg: mirrors the Services intro paragraph constraint —
+                heading stays wide (672px via wrapper), paragraph pulls in to
+                512px, consistent with the established hierarchy language.   */}
+            <p className="mt-4 text-base text-neutral-400 leading-relaxed max-w-lg">
+              Before we bring this level of thinking to client projects, we apply it to our own.
+              This site is the first expression of the C2B approach: clear positioning, premium design,
+              intelligent enquiry thinking, and careful ongoing refinement.
+            </p>
+          </div>
+
+          {/* 3-col on desktop: visually distinct from Services 2-col grid,
+              same border/padding/type vocabulary. At desktop card width (~384px)
+              the text area is ~320px — already tighter than max-w-sm, so no
+              per-paragraph width constraint is needed here.                 */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+
+            <div className="border border-neutral-800 p-6 md:p-8">
+              <h3 className="text-lg font-semibold tracking-tight">Design Standard</h3>
+              <p className="mt-3 text-sm text-neutral-400 leading-relaxed">
+                A restrained, premium visual system built to create trust before a conversation begins.
+              </p>
+            </div>
+
+            <div className="border border-neutral-800 p-6 md:p-8">
+              <h3 className="text-lg font-semibold tracking-tight">Business Thinking</h3>
+              <p className="mt-3 text-sm text-neutral-400 leading-relaxed">
+                A website structured around perception, enquiries, response, and long-term value —
+                not decoration for its own sake.
+              </p>
+            </div>
+
+            <div className="border border-neutral-800 p-6 md:p-8">
+              <h3 className="text-lg font-semibold tracking-tight">Modern Capability</h3>
+              <p className="mt-3 text-sm text-neutral-400 leading-relaxed">
+                A foundation for smarter enquiry journeys and digital systems that help reduce manual
+                work as the business grows.
+              </p>
+            </div>
+
+          </div>
         </Container>
       </section>
 

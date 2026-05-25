@@ -134,5 +134,16 @@ Status:     APPROVED | DEPRECATED | REJECTED
 **Decision:** C2B Web Design is positioned as a premium modern web agency — not a traditional brochure-site designer. The service model covers four areas: Premium Website Design, Website Transformation, Intelligent Enquiry Systems, and Ongoing Growth & Improvement.  
 **Rationale:** Technology has expanded what a website can do. Limiting the pitch to visual design undersells the value C2B can deliver. Client-facing language must always describe business outcomes (stronger perception, faster response, reduced admin, better-qualified enquiries, fewer missed opportunities) — never implementation details, tools, or technical frameworks.  
 **Authority:** Human Founder  
-**Status:** APPROVED (strategic positioning)  
-**Implementation note:** The Services section visual implementation is still being refined. Section heading, intro direction, and 2×2 card grid structure are approved in principle. Card paragraph reading width/measure is under active review to achieve the intended premium, editorial feel on desktop.  
+**Status:** APPROVED  
+**Implementation note:** Services section visual implementation approved and committed. Final card paragraph reading width: `max-w-sm` (384px). Section is complete.  
+
+---
+
+## D-013 — Content: Work Section as Strategic Proof Piece
+
+**Date:** 2026-05-25  
+**Decision:** Until client case studies exist, the Work section positions the C2B website itself as the first demonstration of the agency's design standard, business thinking, and modern capability. It does not show client work or imply portfolio depth that doesn't exist.  
+**Rationale:** Faking portfolio depth before client work exists would undermine the premium, honest positioning. The agency's own website — its positioning, design, enquiry thinking, and ongoing refinement — is the most credible proof available at this stage. Language stays honest, confident, and outcome-focused; no overclaiming.  
+**Authority:** Human Founder  
+**Status:** APPROVED  
+**Notes:** When client case studies are ready, evolve this section into a conventional portfolio. Until then the proof-piece framing is the honest, premium alternative.  
