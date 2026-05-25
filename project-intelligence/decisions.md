@@ -157,4 +157,37 @@ Status:     APPROVED | DEPRECATED | REJECTED
 **Rationale:** Visitors at the bottom of the page have already processed the offer and credibility. The closing CTA must match the premium tone: consultative, human, and confident. A complex form at this stage would introduce friction before trust is established.  
 **Authority:** Human Founder  
 **Status:** APPROVED  
-**Notes:** The current CTA uses a placeholder `href="#"`. Connect to a real contact flow when the enquiry system is built. The intelligent enquiry system (D-012) can grow directly from this section when ready.  
+**Notes:** The current CTA uses a placeholder `href="#"`. Connect to a real contact flow when the enquiry system is built. The intelligent enquiry system (D-012) can grow directly from this section when ready.
+
+---
+
+## D-015 — Enquiry Experience: Stage 1 Opening Direction
+
+**Date:** 2026-05-25  
+**Decision:** The `/start` route does not open with a contact form. It opens with a dark premium background, a staged mask-based text reveal, and a Begin button reveal. No form fields are shown until the user actively presses Begin.  
+**Rationale:** Dropping a user into an admin-style form immediately after the homepage destroys the premium, considered positioning the site establishes. The opening sequence captures attention through deliberate motion, then converts it into intention through the Begin button. The user should feel they are entering a considered process, not filling out a ticket. Motion is not decorative — it is part of the conversion architecture. Elements exist in layout from first render and are revealed by clip-path masks on a timed sequence; no layout jumps, no conditional rendering of content blocks.  
+**Authority:** Human Founder  
+**Status:** APPROVED  
+**Design principles:**
+- Premium, dark, cinematic, restrained.
+- Layout populated at first render; masks reveal content at scheduled times.
+- No chatbot feeling. No white admin-style form surface.
+- Motion style: composed and deliberate — more Gilmour than Malmsteen.
+- `prefers-reduced-motion: reduce` must show all content immediately with no staged reveal.
+- Text must remain real readable text. Begin button must be keyboard-accessible with visible focus styling once visually available.
+
+**Stage 1 behaviour (implemented):**
+1. User clicks "Start a conversation" on the homepage.
+2. User lands on `/start`.
+3. Background is visible immediately.
+4. Heading line 1 ("Let's understand what your") reveals left-to-right at 0.8s.
+5. Heading line 2 ("business needs to become.") reveals left-to-right at 1.5s.
+6. Supporting text reveals left-to-right at 3.2s.
+7. Begin button rises upward (bottom-to-top mask) at 4.5s.
+8. Full phrase settles at ~5.8s.
+
+**Planned future stages:**
+- Stage 2: First guided enquiry question (revealed after Begin is pressed).
+- Stage 3: Second guided enquiry question.
+- Stage 4: Full remaining enquiry panel.
+- Stage 5: Submit dissolve and completion state.  

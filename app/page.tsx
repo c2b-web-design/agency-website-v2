@@ -287,7 +287,7 @@ export default function Home() {
 
             <div className="mt-10">
               <a
-                href="#"
+                href="/start"
                 className="inline-block bg-white text-black text-sm font-semibold px-7 py-3 rounded-full tracking-wide hover:bg-neutral-100 transition-colors duration-200"
               >
                 Start a conversation

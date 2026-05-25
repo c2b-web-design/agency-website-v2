@@ -128,3 +128,50 @@
     @apply font-sans;
   }
 }
+
+@keyframes enquiry-mask-reveal-horizontal {
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0.85;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+@keyframes enquiry-mask-reveal-upward {
+  from {
+    clip-path: inset(100% 0 0 0);
+    opacity: 0.85;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+.enquiry-heading-line1-mask {
+  animation: enquiry-mask-reveal-horizontal 1900ms cubic-bezier(0.16, 1, 0.3, 1) 800ms both;
+}
+
+.enquiry-heading-line2-mask {
+  animation: enquiry-mask-reveal-horizontal 1900ms cubic-bezier(0.16, 1, 0.3, 1) 1500ms both;
+}
+
+.enquiry-subtext-mask {
+  animation: enquiry-mask-reveal-horizontal 1500ms cubic-bezier(0.16, 1, 0.3, 1) 3200ms both;
+}
+
+.enquiry-button-mask {
+  animation: enquiry-mask-reveal-upward 900ms cubic-bezier(0.16, 1, 0.3, 1) 4500ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-heading-line1-mask,
+  .enquiry-heading-line2-mask,
+  .enquiry-subtext-mask,
+  .enquiry-button-mask {
+    animation: none;
+  }
+}
