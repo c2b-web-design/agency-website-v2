@@ -131,8 +131,11 @@ export default function Home() {
 
             {/* Intro paragraph: same text-base / neutral-400 / leading-relaxed pattern as
                 the hero subtext — this creates a consistent hierarchy language across the
-                page so visitors learn the visual system without noticing it.              */}
-            <p className="mt-4 text-base text-neutral-400 leading-relaxed">
+                page so visitors learn the visual system without noticing it.
+                max-w-lg (512px): constrains the paragraph independently of the wrapper's
+                max-w-2xl (672px), keeping the heading wide while bringing the paragraph
+                measure into the card text rhythm (card paragraphs are max-w-sm = 384px). */}
+            <p className="mt-4 text-base text-neutral-400 leading-relaxed max-w-lg">
               A modern website should do more than look good online. We build premium websites
               and intelligent digital systems that help businesses make a stronger impression,
               respond to enquiries faster, and turn more interest into real opportunities.
