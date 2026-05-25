@@ -110,12 +110,96 @@ export default function Home() {
 
       {/* ── Services ──────────────────────────────────────────────────────────
           id="services": anchor target for the navbar link
-          border-t: visual rhythm — each section is separated by a hairline rule
-          py-24: consistent section spacing (slightly less than hero)              */}
+          border-t: hairline rule continues the visual rhythm established between all sections
+          py-24: consistent section spacing — slightly less than the hero's py-32 because
+          sections are supporting content, not the primary statement                */}
       <section id="services" className="py-24 border-t border-neutral-800">
         <Container>
-          <h2 className="text-3xl font-semibold tracking-tight">Services</h2>
-          <p className="mt-4 text-sm text-neutral-500">Coming soon.</p>
+
+          {/* Section intro block: max-w-2xl keeps the heading and paragraph from stretching
+              full-width on desktop. A constrained column reads as considered and editorial —
+              the same principle applied to the hero headline above.                         */}
+          <div className="max-w-2xl">
+
+            {/* Section heading: text-3xl is clearly secondary to the hero's md:text-6xl,
+                but large enough to anchor the section. The period makes the heading read
+                as a confident statement rather than a label. tracking-tight is consistent
+                with all headings on the page.                                              */}
+            <h2 className="text-3xl font-semibold tracking-tight">
+              Websites built for how business works today.
+            </h2>
+
+            {/* Intro paragraph: same text-base / neutral-400 / leading-relaxed pattern as
+                the hero subtext — this creates a consistent hierarchy language across the
+                page so visitors learn the visual system without noticing it.              */}
+            <p className="mt-4 text-base text-neutral-400 leading-relaxed">
+              A modern website should do more than look good online. We build premium websites
+              and intelligent digital systems that help businesses make a stronger impression,
+              respond to enquiries faster, and turn more interest into real opportunities.
+            </p>
+          </div>
+
+          {/* Service cards grid:
+              mt-16: generous gap between the intro text and the cards — they are distinct
+              elements and the separation reinforces that the cards are the substance being
+              described, not a continuation of the paragraph.
+              grid-cols-1: single column on mobile so each card has full width and room.
+              md:grid-cols-2: two columns at 768px+ — four cards in a 2×2 grid reads as
+              intentional and balanced. One column on desktop would feel stretched; four
+              columns would feel cramped and lose the card structure entirely.
+              gap-8: 32px between cards — consistent with the premium, spacious page feel. */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            {/* Card: border border-neutral-800 uses the same hairline-rule vocabulary as
+                section separators, unifying the visual system. p-8 gives the text generous
+                internal breathing room. No border-radius — sharp corners feel more
+                architectural and editorial on a dark background.                          */}
+
+            <div className="border border-neutral-800 p-8">
+              {/* Card heading: text-lg is one clear step above the card body text.
+                  font-semibold and tracking-tight match the heading style used elsewhere. */}
+              <h3 className="text-lg font-semibold tracking-tight">Premium Website Design</h3>
+              {/* Card body: text-sm keeps each card compact. leading-relaxed maintains
+                  readability. max-w-sm (384px) constrains the line length on wide desktop
+                  cards — the card stays architecturally wide but the text sits in a
+                  controlled column, leaving intentional whitespace to the right.          */}
+              <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
+                A high-quality website that makes your business look more trusted, credible,
+                and worth the investment. Built with the attention to detail that reflects
+                well on your brand.
+              </p>
+            </div>
+
+            <div className="border border-neutral-800 p-8">
+              <h3 className="text-lg font-semibold tracking-tight">Website Transformation</h3>
+              <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
+                Turning a dated or underperforming website into a sharper, more persuasive
+                digital presence. Same business, stronger first impression.
+              </p>
+            </div>
+
+            <div className="border border-neutral-800 p-8">
+              <h3 className="text-lg font-semibold tracking-tight">Intelligent Enquiry Systems</h3>
+              {/* "Intelligent Enquiry Systems" is the one service that ventures furthest from
+                  traditional web design. The copy describes business outcomes only — faster
+                  response, less admin, better opportunities — without naming any specific tool
+                  or technology. This is intentional: the mechanism is irrelevant to the client. */}
+              <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
+                Smarter forms, faster follow-up, and qualification journeys that help you
+                respond to interest sooner, reduce manual admin, and turn more enquiries
+                into real opportunities.
+              </p>
+            </div>
+
+            <div className="border border-neutral-800 p-8">
+              <h3 className="text-lg font-semibold tracking-tight">Ongoing Growth & Improvement</h3>
+              <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
+                Your website should improve over time, not sit still after launch. We continue
+                refining, optimising, and updating so your digital presence keeps working harder.
+              </p>
+            </div>
+
+          </div>
         </Container>
       </section>
 
