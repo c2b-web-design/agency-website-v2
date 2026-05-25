@@ -134,4 +134,5 @@ Status:     APPROVED | DEPRECATED | REJECTED
 **Decision:** C2B Web Design is positioned as a premium modern web agency — not a traditional brochure-site designer. The service model covers four areas: Premium Website Design, Website Transformation, Intelligent Enquiry Systems, and Ongoing Growth & Improvement.  
 **Rationale:** Technology has expanded what a website can do. Limiting the pitch to visual design undersells the value C2B can deliver. Client-facing language must always describe business outcomes (stronger perception, faster response, reduced admin, better-qualified enquiries, fewer missed opportunities) — never implementation details, tools, or technical frameworks.  
 **Authority:** Human Founder  
-**Status:** APPROVED  
+**Status:** APPROVED (strategic positioning)  
+**Implementation note:** The Services section visual implementation is still being refined. Section heading, intro direction, and 2×2 card grid structure are approved in principle. Card paragraph reading width/measure is under active review to achieve the intended premium, editorial feel on desktop.  
