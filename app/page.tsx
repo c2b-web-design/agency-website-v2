@@ -37,8 +37,12 @@ export default function Home() {
                 gap-6 tightens the group into a deliberate cluster without crowding.
                 duration-200 on hover: an explicit transition duration makes the hover feel smooth
                 rather than a hard snap. neutral-100 (not pure white) softens the arrival —
-                premium interfaces avoid binary on/off color states.                 */}
-            <div className="flex items-center gap-6">
+                premium interfaces avoid binary on/off color states.
+                hidden md:flex: on mobile the links are hidden entirely — four nav items in a
+                single row at 400px competes with the brand lockup and feels cramped. The brand
+                lockup alone is sufficient at small sizes. A hamburger menu will be added later
+                when the site has real navigation depth to justify the interaction cost.        */}
+            <div className="hidden md:flex items-center gap-6">
               <a href="#work"     className="text-sm text-neutral-400 hover:text-neutral-100 transition-colors duration-200">Work</a>
               <a href="#services" className="text-sm text-neutral-400 hover:text-neutral-100 transition-colors duration-200">Services</a>
               <a href="#"         className="text-sm text-neutral-400 hover:text-neutral-100 transition-colors duration-200">About</a>
@@ -53,16 +57,18 @@ export default function Home() {
       <section className="py-32">
         <Container>
 
-          {/* Headline:
-              text-5xl md:text-6xl: responsive sizing prevents the headline from being oversized
-              on mobile where long lines collapse into unreadable stacks. The md: breakpoint
-              lets it open up on wider screens where the space is available.
-              max-w-2xl (down from max-w-3xl): a narrower column feels curated and editorial.
-              Wide headlines read as startup marketing; tight columns read as considered craft.
-              leading-[1.1] (tighter than leading-tight = 1.25): at large display sizes, tight
-              line-height reads as confident and magazine-like. It only reads as cramped at
-              smaller body sizes — here it increases visual tension in a good way.             */}
-          <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] max-w-2xl">
+          {/* Headline — three-step responsive scale:
+              text-4xl (36px): mobile base — small enough at ~378px that the line breaks
+              fall naturally without orphaning a single word on its own line.
+              sm:text-5xl (48px): kicks in at 640px — large phones in landscape and small
+              tablets where the extra space makes the bigger size work.
+              md:text-6xl (60px): the full display size at 768px+ — strong and editorial on
+              desktop without imposing that scale on smaller viewports.
+              max-w-2xl: a narrower column feels curated. Wide headlines read as startup
+              marketing; tight columns read as considered craft.
+              leading-[1.1] (tighter than leading-tight = 1.25): at display sizes, tight
+              line-height reads as confident and magazine-like, not cramped.                  */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] max-w-2xl">
             We build brands that mean something.
           </h1>
 
