@@ -6,7 +6,7 @@ const HEADING_LINE1 = "Let’s understand what your";
 const HEADING_LINE2 = "business needs to become.";
 const SUBTEXT = "A few focused questions to help us see the right next step.";
 
-const BUTTON_READY_MS = 5400;
+const BUTTON_READY_MS = 11500;
 
 export default function EnquiryOpening() {
   const [buttonReady, setButtonReady] = useState(false);

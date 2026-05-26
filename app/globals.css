@@ -140,9 +140,9 @@
   }
 }
 
-@keyframes enquiry-mask-reveal-upward {
+@keyframes enquiry-mask-reveal-downward {
   from {
-    clip-path: inset(100% 0 0 0);
+    clip-path: inset(0 0 100% 0);
     opacity: 0.85;
   }
   to {
@@ -152,19 +152,19 @@
 }
 
 .enquiry-heading-line1-mask {
-  animation: enquiry-mask-reveal-horizontal 1900ms cubic-bezier(0.16, 1, 0.3, 1) 800ms both;
+  animation: enquiry-mask-reveal-horizontal 2500ms linear 600ms both;
 }
 
 .enquiry-heading-line2-mask {
-  animation: enquiry-mask-reveal-horizontal 1900ms cubic-bezier(0.16, 1, 0.3, 1) 1500ms both;
+  animation: enquiry-mask-reveal-horizontal 2500ms linear 2900ms both;
 }
 
 .enquiry-subtext-mask {
-  animation: enquiry-mask-reveal-horizontal 1500ms cubic-bezier(0.16, 1, 0.3, 1) 3200ms both;
+  animation: enquiry-mask-reveal-horizontal 4600ms linear 5100ms both;
 }
 
 .enquiry-button-mask {
-  animation: enquiry-mask-reveal-upward 900ms cubic-bezier(0.16, 1, 0.3, 1) 4500ms both;
+  animation: enquiry-mask-reveal-downward 2500ms linear 9000ms both;
 }
 
 @media (prefers-reduced-motion: reduce) {
