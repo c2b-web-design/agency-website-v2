@@ -209,7 +209,76 @@ Perceived motion depends on duration, delay, easing curve, reveal direction, and
 - All text is real DOM text — no canvas, SVG, or image-based rendering.
 
 **Planned future stages:**
-- Stage 2: First guided enquiry question (revealed after Begin is pressed).
+- Stage 2: First guided enquiry question (revealed after Begin is pressed). — **Approved, see D-016.**
 - Stage 3: Second guided enquiry question.
 - Stage 4: Full remaining enquiry panel.
 - Stage 5: Submit dissolve and completion state.
+
+---
+
+## D-016 — Enquiry Experience: Stage 2 — Q5 Guided Question
+
+**Date:** 2026-05-26  
+**Decision:** After the user presses Begin, the `/start` experience transitions into the first active enquiry step. This is visually presented as Q5, the fifth question in a five-question countdown sequence. Q4 is not shown yet; the user will understand the countdown structure when Q4 appears in a later stage.  
+**Rationale:** The enquiry should not behave like a standard form or mechanical stepper. Each stage should feel like a calm guided process where interaction flows into the next. Presenting the first built question as Q5 orientates the user in the sequence without front-loading the full structure. The Begin button's exit, the context settling, and the question entry should form one unbroken legato phrase — not a form appearing.  
+**Authority:** Human Founder  
+**Status:** APPROVED — Stage 2 Q5 is a working creative/interaction milestone.
+
+---
+
+**Transition from Stage 1 to Stage 2 (approved):**
+- Begin button fades over ~400ms then unmounts.
+- Opening heading and subtext remain visible as quiet contextual memory — they do not disappear.
+- The opening context dims (opacity 0.38, scale 0.93) and moves smoothly to its contextual position over ~1600–1800ms linear. No snap, no layout reflow jump.
+- The content wrapper moves via CSS `translateY` transition — not layout property changes — so no instant repositioning occurs when content height changes.
+- Q5 question text reveals left-to-right, linear, from mount.
+- Cards enter sequentially top-to-bottom with staggered delays (800ms base + 150ms per card).
+
+**Q5 question (approved):**  
+"What brought you here today?"
+
+**Q5 options (approved, multi-select):**
+- I need a premium website
+- My current site feels dated
+- I want better enquiries
+- I want to reduce admin
+- I'm not sure yet
+
+Multi-select is intentional — more than one answer may be true. The user is not forced to pick one.
+
+**Q5 orientation cue:**
+- A small, muted "Q5" label appears above the question text.
+- It is atmospheric and secondary — it orients without dominating.
+- It drifts into presence via opacity + subtle scale (no directional movement).
+- `aria-hidden="true"` — not announced to screen readers.
+- Its meaning as a countdown cue will become clear when Q4 appears in a later stage.
+
+**Next step trigger:**
+- "Next step" appears only after at least one Q5 option is selected.
+- It appears calmly (upward drift + opacity, 1200ms linear).
+- It is a ghost-pill button — visually secondary to the Begin button, reads as continuation not initiation.
+- It does not auto-progress. The user can select further answers before confirming.
+- This preserves user control and avoids any sense of pressure or countdown.
+
+**Card interaction (approved):**
+- Cards use a dark smoked/frosted glass aesthetic: top-to-bottom gradient, inset top-edge hairline simulating ambient light on glass.
+- Hover: gradient brightens, hairline strengthens.
+- Selected: top-edge hairline shifts white → amber, gradient warms to gold, faint outer halo. No ticks, checkboxes, radio circles, or coloured circles.
+- Selection is expressed through material activation — the glass warms and clarifies. Colour supports the feel but is not the sole indicator (border + glow + colour together).
+
+**Motion principles:**
+- The active question owns attention at all times.
+- Contextual/background elements (opening heading, Q5 cue) are slow, bounded, atmospheric, and supportive.
+- Motion must never create urgency or feel like a countdown timer.
+- Mechanical, incremental transitions are prohibited — they feel like admin.
+
+**Accessibility:**
+- Multi-select cards: `role="checkbox"`, `aria-checked`, `role="group"` + `aria-labelledby` on the group.
+- Next step button: in normal tab order, keyboard accessible, `focus-visible` ring.
+- `prefers-reduced-motion: reduce`: Q5 cue, card reveals, and Next step all appear immediately with no staged animation. Card selection transitions are instant. Opening context dims and repositions instantly.
+- All text is real DOM text.
+
+**Future work:**
+- The transition from Q5 completion to Q4 is not yet defined.
+- When Q4 is built, answered questions should become contextual memory without creating pressure or distraction.
+- Do not implement Q4 until that transition behaviour is designed and approved.
