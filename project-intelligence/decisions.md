@@ -279,6 +279,61 @@ Multi-select is intentional — more than one answer may be true. The user is no
 - All text is real DOM text.
 
 **Future work:**
-- The transition from Q5 completion to Q4 is not yet defined.
-- When Q4 is built, answered questions should become contextual memory without creating pressure or distraction.
-- Do not implement Q4 until that transition behaviour is designed and approved.
+- Q5 → Q4 transition model approved — see D-017.
+- Do not implement Q4 until a full implementation brief is issued.
+
+---
+
+## D-017 — Enquiry Experience: Q5 → Q4 Transition Model
+
+**Date:** 2026-05-31  
+**Decision:** When the user confirms Q5 via "Next step", Q5 does not disappear or behave like a completed form step. The selected Q5 answers compress into a compact muted memory summary positioned above the Q4 question. Q4 becomes the sole active interactive stage. No progress bar, checklist, percentage, or mechanical stepper is introduced at any point in the enquiry experience.  
+**Rationale:** Answered questions must not vanish (erasure creates doubt about what was retained) nor remain at full prominence (dominating attention steals it from the active question). A quiet memory surface — present but subordinate — communicates retention without pressure, judgement, or countdown feel. This preserves the calm, guided character established in D-015 and D-016.  
+**Authority:** Human Founder  
+**Status:** APPROVED — transition model defined. Q4 implementation pending a separate brief.
+
+---
+
+**Layered attention model:**
+
+| Layer | Element | Visual state |
+|---|---|---|
+| Faintest | Opening context (heading + subtext) | Dimmed per D-016 — persists unchanged |
+| Memory | Q5 cue + memory summary | Further subdued — muted, non-interactive |
+| Active | Q4 cue + question + cards | Full prominence — the only interactive stage |
+
+**Q5 memory surface:**  
+The selected Q5 answers compress into a small muted text summary directly above the Q4 block. It communicates that the system retained the user's answer without pressure, judgement, or countdown feel. The Q5 cue label remains visible above the summary at reduced opacity. Format (comma-separated selections or compact prose summary) is an implementation detail — to be resolved at brief time.
+
+**Q4 question (approved):**  
+"What would you most like your website to improve?"
+
+**Q4 options (approved):**
+- How people see the business
+- The quality of enquiries
+- Speed of response
+- Trust before a conversation
+- Clarity around what we offer
+- I'm still working that out
+
+Select behaviour (single-select or multi-select) is unresolved — to be determined at implementation brief.
+
+**Motion (legato):**
+- Q5 active cards and "Next step" de-emphasise via opacity/scale/position changes, not abrupt removal.
+- Q5 selections condense into the memory summary with a calm dissolve.
+- Q4 begins entering slightly before Q5 de-emphasis fully resolves — overlapping phrase, not a sequential handoff.
+- Q4 cue ("Q4") drifts in using the same presence animation as the Q5 cue.
+- Q4 question text reveals left-to-right via `enquiry-mask-reveal-horizontal` (matching Q5).
+- Q4 options enter top-to-bottom with staggered delays (matching Q5 card pattern).
+- `prefers-reduced-motion: reduce`: Q5 memory summary and Q4 appear immediately; no staged reveals.
+
+**Constraints:**
+- No full progress bar, checklist, percentage indicator, or mechanical stepper at any stage.
+- Q4/Q5 labels are atmospheric orientation cues only — not a numbered form header.
+- The active question always owns attention. Background layers are present but subordinate.
+- Motion must never create urgency or feel like a countdown timer.
+
+**Open at time of logging (resolve at implementation brief):**
+- Q4 select behaviour: single-select or multi-select?
+- Q5 memory format: comma-separated label text or condensed prose summary?
+- Exact duration/timing of Q5 de-emphasis relative to Q4 entry overlap.

@@ -26,13 +26,17 @@ The technical structure and conventions of the C2B Web Design project.
 agency-website-v2/
 │
 ├── app/                            # Next.js App Router
-│   ├── globals.css                 # Global styles + shadcn design tokens
+│   ├── globals.css                 # Global styles + shadcn design tokens + enquiry animations
 │   ├── layout.tsx                  # Root layout: fonts, metadata, body
-│   └── page.tsx                    # Homepage
+│   ├── page.tsx                    # Homepage
+│   └── start/
+│       └── page.tsx                # /start route — thin wrapper for EnquiryOpening
 │
 ├── components/
+│   ├── enquiry/
+│   │   └── enquiry-opening.tsx     # /start guided enquiry experience (client component)
 │   ├── layout/
-│   │   └── container.tsx           # Max-width wrapper — used on every section
+│   │   └── container.tsx           # Max-width wrapper — used on every homepage section
 │   └── ui/
 │       └── button.tsx              # shadcn Button (Base UI primitive)
 │
@@ -73,6 +77,7 @@ All internal imports use the `@/` alias, which resolves to the project root.
 
 ```ts
 import Container from "@/components/layout/container"
+import EnquiryOpening from "@/components/enquiry/enquiry-opening"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 ```
@@ -84,13 +89,17 @@ Configured in `tsconfig.json`: `"paths": { "@/*": ["./*"] }`
 ## Key Patterns
 
 ### Container Pattern
-Every page section wraps its content in `<Container>`. Width capping and horizontal padding are never defined inline on sections. This is enforced by D-004.
+Every homepage section wraps its content in `<Container>`. Width capping and horizontal padding are never defined inline on sections. This is enforced by D-004/D-010.
+
+The `/start` enquiry route does **not** use `Container` — `EnquiryOpening` is a full-viewport experience with its own layout. See D-015.
 
 ### CSS Variable Token System
 Design tokens (`--background`, `--foreground`, `--primary`, `--border`, `--radius`, etc.) are defined in `app/globals.css` using `oklch` colour values. They are consumed via Tailwind utility classes (`bg-background`, `text-foreground`, etc.). Changing a token updates all consumers.
 
 ### Server Components by Default
 All components are React Server Components unless explicitly marked `"use client"`. Interactive components must isolate their client boundary to the smallest possible scope.
+
+`EnquiryOpening` is a client component — it uses `useState`, `useEffect`, and `setTimeout` for animation state and the `matchMedia` API.
 
 ### Component Variants via CVA
 shadcn/ui components use `class-variance-authority` (CVA) for variant management. New components should follow this pattern.
@@ -106,9 +115,9 @@ Geist font CSS variables are applied to `<html>` in `app/layout.tsx` via `classN
 |---|---|
 | No `tailwind.config.js` | Tailwind v4 uses CSS-only config |
 | No Pages Router | App Router only — see D-001 |
-| No inline layout width | Container component is the sole layout authority |
-| No gradients at this stage | Design principle — see design.md |
-| No animations at this stage | Design principle — see design.md |
+| No inline layout width on homepage sections | Container component is the sole layout authority — D-010 |
+| No gradients on homepage | Design principle — see design.md. Exception: enquiry experience — see D-015, D-016. |
+| No animations on homepage | Design principle — see design.md. Exception: enquiry experience — see D-015, D-016. |
 
 ---
 
@@ -126,7 +135,22 @@ Geist font CSS variables are applied to `<html>` in `app/layout.tsx` via `classN
 :root { ... }                   /* Light mode token values (oklch) */
 .dark { ... }                   /* Dark mode token values (oklch) */
 @layer base { ... }             /* Global element resets */
+
+/* Enquiry animation keyframes and classes — approved by D-015, D-016 */
+@keyframes enquiry-mask-reveal-horizontal { ... }
+@keyframes enquiry-mask-reveal-downward   { ... }
+@keyframes enquiry-q5-presence            { ... }
+@keyframes enquiry-nextstep-appear        { ... }
+
+/* Enquiry classes: .enquiry-heading-line1-mask, .enquiry-heading-line2-mask,  */
+/* .enquiry-subtext-mask, .enquiry-button-mask, .enquiry-content-centered,     */
+/* .enquiry-content-settling, .enquiry-context-dimmed, .enquiry-q1-question,   */
+/* .enquiry-card-reveal, .enquiry-q5-cue, .enquiry-card, .enquiry-card-selected, */
+/* .enquiry-nextstep-reveal, .enquiry-nextstep-btn                             */
+/* All enquiry classes are scoped to the /start experience only.               */
 ```
+
+All enquiry animation classes carry `prefers-reduced-motion: reduce` overrides.
 
 ---
 
@@ -136,4 +160,4 @@ Geist font CSS variables are applied to `<html>` in `app/layout.tsx` via `classN
 
 ---
 
-*Last updated: 2026-05-23*
+*Last updated: 2026-05-31*

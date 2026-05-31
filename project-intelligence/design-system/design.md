@@ -26,11 +26,13 @@ The palette is near-black with neutral grey tones and white as the primary contr
 | Muted / placeholder | `text-neutral-500` | Coming soon, captions |
 | Section dividers | `border-neutral-800` | Hairline separators between sections |
 | CTA (primary) | `bg-white text-black` | White pill button |
-| CTA hover | `hover:bg-neutral-200` | Subtle pull-back on hover |
+| CTA hover | `hover:bg-neutral-100` | Subtle pull-back on hover |
 
 shadcn/ui design tokens (oklch-based) are available in `globals.css` for future component use. The forced-dark colour layer above takes precedence on the page level.
 
-No gradients. No colour accents at this stage.
+**Homepage:** No gradients. No colour accents.
+
+**Enquiry experience exception:** Amber/gold warmth and a faint teal countertone are approved for the `/start` guided enquiry card selected state — see D-016. These are scoped to `components/enquiry/enquiry-opening.tsx` and the enquiry CSS classes in `globals.css`. They do not apply to the homepage or any other surface.
 
 ---
 
@@ -74,7 +76,7 @@ Do not invent new spacing values. Work within Tailwind's scale.
 
 ## Layout
 
-All page content is wrapped in the `Container` component — see D-004.
+All homepage content is wrapped in the `Container` component — see D-010.
 
 ```tsx
 // components/layout/container.tsx
@@ -83,20 +85,33 @@ All page content is wrapped in the `Container` component — see D-004.
 
 - Max width: `1280px`  
 - Padding: `16px` mobile → `24px` tablet → `32px` desktop  
-- Never define layout width or horizontal padding inline on sections  
+- Never define layout width or horizontal padding inline on homepage sections  
+
+The `/start` enquiry experience (`components/enquiry/enquiry-opening.tsx`) is a full-viewport layout and does not use `Container`. It manages its own centring and padding. See D-015.
 
 ---
 
 ## Motion
 
-**No animations at this stage.**
+### Homepage
+No animations on the homepage. The homepage visual system is static and restrained. When motion is introduced to the homepage, it must be subtle (duration 150–300ms, ease-out), and requires a decision log entry.
 
-When introduced, the rules are:
-- Subtle only. No bounces, no spins, no parallax.
-- Duration: 150–300ms.
-- Easing: ease-out.
-- `tw-animate-css` is installed and available — use it conservatively.
-- All motion decisions require a decision log entry (D-###).
+`tw-animate-css` is installed and available — use it conservatively on the homepage.
+
+### `/start` Enquiry Experience
+Motion is approved and governs the entire `/start` route. It is not decorative — it is part of the conversion architecture. See D-015 and D-016.
+
+**Approved motion principles:**
+- Style: legato — phrasing, space, and intention over speed or spectacle. "Gilmour, not Malmsteen." No "Oppenheimer" energy: no grandiose theatrical motion, no dramatic overstatement.
+- All reveals use CSS `clip-path: inset()` masks. No JS animation libraries.
+- Easing: `linear` throughout — deliberate, constant sweep pace that matches reading speed.
+- Each element enters slightly before the previous fully resolves — pulled forward like a musical phrase.
+- Duration range: 1200ms–4600ms depending on element role and semantic weight.
+- Motion must never create urgency or feel like a countdown timer.
+- `prefers-reduced-motion: reduce` must disable all staged reveals — all content immediately visible.
+
+**Approved gradient/material effects:**
+Gradients and material surface effects (smoked glass, inset hairlines, ambient glow) are approved for the `/start` enquiry card surface only — see D-016. They are scoped to enquiry CSS classes in `globals.css` and must not be applied to homepage sections.
 
 ---
 
@@ -111,4 +126,4 @@ Components built on shadcn/ui must:
 
 ---
 
-*Last updated: 2026-05-23*
+*Last updated: 2026-05-31*

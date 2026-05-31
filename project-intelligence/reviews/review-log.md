@@ -21,11 +21,73 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-003 — `/start` Stage 2: Q5 Guided Question
+
+**Date:** 2026-05-31  
+**Reviewer:** Claude Code (implementation self-review)  
+**Subject:** `components/enquiry/enquiry-opening.tsx` — Stage 2 Q5 multi-select question, card surface, Q5 cue, Next step trigger
+
+**Findings:**
+- Q5 orientation cue ("Q5") renders above question text; `aria-hidden="true"` confirmed; scale+fade animation triggers on stage mount
+- Question text ("What brought you here today?") reveals left-to-right, linear, consistent with Stage 1 motion language
+- Five answer cards reveal sequentially top-to-bottom with staggered delays (800ms base + 150ms per card)
+- Cards use frosted/smoked glass gradient surface with inset top-edge hairline; visible gradient depth from top to bottom
+- Card selection activates amber/gold warmth: border shifts, top hairline shifts from white to amber, faint outer halo; no ticks, circles, or form-control indicators
+- Multi-select works correctly: multiple cards can be activated simultaneously
+- "Next step" ghost-pill button appears after first selection; unmounts if all cards deselected
+- `role="checkbox"` + `aria-checked` on cards; `role="group"` + `aria-labelledby` on wrapper — correct multi-select ARIA semantics
+- `prefers-reduced-motion: reduce`: Q5 cue, card reveals, and Next step all appear immediately; selection transitions instant
+- Card `focus-visible` ring is visible at keyboard; "Next step" button is keyboard accessible
+
+**Flags:**
+
+| Severity | ID | Finding | Status |
+|---|---|---|---|
+| Medium | F-005 | "Next step" button currently only `console.log`s selections — no navigation or Q4 reveal | Open — Q4 implementation pending |
+| Low | F-006 | Q4 transition behaviour is undefined — how answered questions become contextual memory is not yet designed or documented | Actioned — D-017 approved 2026-05-31 |
+
+**Recommendations:**
+- Design Q4 transition before implementing — see D-016 Future Work section
+- No other changes required at this stage
+
+**Status:** Partially open — Stage 2 interaction approved. F-005 open (Q4 implementation pending). F-006 actioned via D-017.
+
+---
+
+## R-002 — `/start` Stage 1: Opening Reveal
+
+**Date:** 2026-05-26  
+**Reviewer:** Claude Code (implementation self-review)  
+**Subject:** `components/enquiry/enquiry-opening.tsx` — Stage 1 mask-based reveal sequence and Begin button
+
+**Findings:**
+- Dark radial gradient background renders immediately on route arrival — no flash of white
+- Heading line 1 reveals left-to-right, linear, from ~0.6s
+- Heading line 2 reveals left-to-right, linear, beginning just before line 1 finishes (~2.9s)
+- Supporting text reveals left-to-right, linear, beginning just before line 2 finishes (~5.1s)
+- Begin button reveals top-to-bottom, linear, during the final words of supporting text (~9.0s)
+- Full phrase settles at ~11.5s — consistent with D-015 approved timing
+- Begin button has `tabIndex=-1` and `pointer-events: none` until animation completes; becomes keyboard-accessible on completion
+- `prefers-reduced-motion: reduce`: all staged reveals disabled, all content immediately visible, button immediately keyboard-accessible
+- All text is real DOM text — no canvas, SVG, or image rendering
+- Content wrapper uses `translateY(calc(38vh - 5rem))` in Stage 1 to approximate vertical centring without `justify-center` — prevents layout reflow jump on stage transition
+
+**Flags:**
+
+*None. Stage 1 behaviour matches D-015 approved spec.*
+
+**Recommendations:**
+- Minor microtiming adjustments remain possible during a future mastering phase — no action required now
+
+**Status:** Approved. Stage 1 creative milestone complete.
+
+---
+
 ## R-001 — Homepage Skeleton
 
 **Date:** 2026-05-23  
 **Reviewer:** Claude Code (implementation self-review)  
-**Subject:** `app/page.tsx` — initial homepage structure  
+**Subject:** `app/page.tsx` — initial homepage structure
 
 **Findings:**
 - Navbar, Hero, Services, Work, and Footer sections render in correct order
@@ -54,4 +116,4 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
-*Last updated: 2026-05-23*
+*Last updated: 2026-05-31*
