@@ -337,3 +337,13 @@ Select behaviour (single-select or multi-select) is unresolved — to be determi
 - Q4 select behaviour: single-select or multi-select?
 - Q5 memory format: comma-separated label text or condensed prose summary?
 - Exact duration/timing of Q5 de-emphasis relative to Q4 entry overlap.
+
+---
+
+## D-018 — Enquiry Experience: Q5 → Q4 Implementation Choices
+
+**Date:** 2026-06-01  
+**Decision:** Q4 is single-select (`role="radiogroup"` / `role="radio"`). Q5 memory uses a compact label summary format: "You mentioned: [comma-separated short labels]". Q5 → Q4 timing uses a calm overlap: Q5 begins settling at click, stage switches at 500ms so Q4 enters before Q5 fully de-emphasises.  
+**Rationale:** Resolves the three open items from D-017. Single-select reflects Q4 as a prioritisation question. Short labels keep the memory surface muted and non-judgemental. 500ms overlap produces the legato phrase handoff specified in D-017 without introducing a new motion model.  
+**Authority:** ChatGPT / PM, based on Human Founder direction  
+**Status:** APPROVED

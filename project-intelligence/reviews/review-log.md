@@ -21,6 +21,42 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-004 — `/start` Stage 3: Q4 Single-Select and Q5 → Q4 Transition
+
+**Date:** 2026-06-01  
+**Reviewer:** Claude Code (implementation self-review)  
+**Subject:** `components/enquiry/enquiry-opening.tsx`, `app/globals.css` — Q5 → Q4 transition, Q5 memory surface, Q4 single-select stage
+
+**Findings:**
+- Pressing "Next step" in Q5 saves selections to `q5Selections`, applies `.enquiry-q5-settling-wrapper` (opacity 0.2, scale 0.97 over 1100ms), then switches stage to `"question2"` at 500ms — producing the approved calm overlap
+- Q5 memory block renders with compact label summary: "You mentioned: [comma-separated short labels]" — labels mapped via `Q5_MEMORY_LABELS` constant
+- Q5 memory cue ("Q5") renders at `rgba(255,255,255,0.10)` — more muted than the active Q5 cue (`rgba(255,255,255,0.20)`)
+- Q5 memory block fades in via `enquiry-q5-memory-appear` (1400ms linear) — calm, non-urgent
+- Q4 cue ("Q4") uses the same `enquiry-q5-presence` animation as Q5 cue — consistent atmospheric orientation
+- Q4 question reveals left-to-right via `enquiry-mask-reveal-horizontal` — consistent with Q5 and Stage 1 motion language
+- Q4 cards enter top-to-bottom with staggered delays (800ms base + 150ms per card) — matching Q5 card pattern
+- Q4 is single-select: `role="radiogroup"` on the group, `role="radio"` + `aria-checked` on each card
+- Selecting a Q4 card deselects the previously selected card; clicking the active card deselects it
+- Card visual states (amber/gold selected, hover) reuse existing `.enquiry-card` and `.enquiry-card-selected` CSS — no new selectors needed
+- "Next step" appears after Q4 selection via `enquiry-nextstep-reveal` — same as Q5 Next step
+- `prefers-reduced-motion: reduce`: settling skipped, stage switches immediately, no animation classes applied, all content appears at once
+- Keyboard focus navigates Q4 cards; `focus-visible` ring present
+- Opening context remains at Stage 2 dimmed state — no further change on Q4 entry
+
+**Flags:**
+
+| Severity | ID | Finding | Status |
+|---|---|---|---|
+| Low | F-007 | Q4 "Next step" is a placeholder — `console.log` only; Q4 → Q3 transition not implemented | Open — Q3 model not yet designed |
+
+**Recommendations:**
+- Design Q4 → Q3 transition before implementing — new brief required
+- No other changes needed at this stage
+
+**Status:** Partially open — Q4 stage interaction approved. F-005 actioned. F-007 open (Q4 Next step placeholder pending Q3 brief).
+
+---
+
 ## R-003 — `/start` Stage 2: Q5 Guided Question
 
 **Date:** 2026-05-31  
@@ -43,14 +79,14 @@ Status:           Open | Actioned | Dismissed
 
 | Severity | ID | Finding | Status |
 |---|---|---|---|
-| Medium | F-005 | "Next step" button currently only `console.log`s selections — no navigation or Q4 reveal | Open — Q4 implementation pending |
+| Medium | F-005 | "Next step" button currently only `console.log`s selections — no navigation or Q4 reveal | Actioned — Q4 implemented 2026-06-01 |
 | Low | F-006 | Q4 transition behaviour is undefined — how answered questions become contextual memory is not yet designed or documented | Actioned — D-017 approved 2026-05-31 |
 
 **Recommendations:**
 - Design Q4 transition before implementing — see D-016 Future Work section
 - No other changes required at this stage
 
-**Status:** Partially open — Stage 2 interaction approved. F-005 open (Q4 implementation pending). F-006 actioned via D-017.
+**Status:** Closed — Stage 2 interaction approved. F-005 actioned (Q4 implemented 2026-06-01). F-006 actioned via D-017.
 
 ---
 
@@ -116,4 +152,4 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
-*Last updated: 2026-05-31*
+*Last updated: 2026-06-01*

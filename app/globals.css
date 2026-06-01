@@ -328,3 +328,71 @@
   .enquiry-nextstep-reveal { animation: none; }
   .enquiry-nextstep-btn    { transition: none; }
 }
+
+/* ─── Q5 → Q4 transition ────────────────────────────────────────────── */
+
+/* Q5 cards/next-step wrapper de-emphasises while stage is switching */
+.enquiry-q5-settling-wrapper {
+  transition: opacity 1100ms linear, transform 1100ms linear;
+  opacity: 0.2;
+  transform: scale(0.97);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-q5-settling-wrapper { transition: none; }
+}
+
+/* Q5 memory surface — fades into presence as Q4 enters */
+@keyframes enquiry-q5-memory-appear {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.enquiry-q5-memory-reveal {
+  animation: enquiry-q5-memory-appear 1400ms linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-q5-memory-reveal { animation: none; }
+}
+
+/* Q5 cue label in memory state — more muted than the active Q5 cue */
+.enquiry-q5-memory-cue {
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.10);
+}
+
+/* "You mentioned: ..." summary text */
+.enquiry-q5-memory-text {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.25);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* ─── Q4 stage ───────────────────────────────────────────────────────── */
+
+/* Q4 orientation cue — same style as Q5 cue, reuses enquiry-q5-presence keyframe */
+.enquiry-q4-cue {
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.20);
+  animation: enquiry-q5-presence 4000ms linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-q4-cue { animation: none; }
+}
+
+/* Q4 question reveal — same as Q1 question, reuses existing keyframe */
+.enquiry-q4-question {
+  animation: enquiry-mask-reveal-horizontal 2500ms linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-q4-question { animation: none; }
+}
