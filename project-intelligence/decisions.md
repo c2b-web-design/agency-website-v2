@@ -346,4 +346,44 @@ Select behaviour (single-select or multi-select) is unresolved — to be determi
 **Decision:** Q4 is single-select (`role="radiogroup"` / `role="radio"`). Q5 memory uses a compact label summary format: "You mentioned: [comma-separated short labels]". Q5 → Q4 timing uses a calm overlap: Q5 begins settling at click, stage switches at 500ms so Q4 enters before Q5 fully de-emphasises.  
 **Rationale:** Resolves the three open items from D-017. Single-select reflects Q4 as a prioritisation question. Short labels keep the memory surface muted and non-judgemental. 500ms overlap produces the legato phrase handoff specified in D-017 without introducing a new motion model.  
 **Authority:** ChatGPT / PM, based on Human Founder direction  
+**Status:** APPROVED — memory format superseded by D-019.
+
+---
+
+## D-019 — Enquiry Experience: Q5 Memory Field Correction
+
+**Date:** 2026-06-01  
+**Decision:** (1) Q5 memory renders as a bounded quiet memory field — Q5 cue label, Q5 question text at low opacity, and selected answer card echoes as non-interactive muted fragments. Replaces the "You mentioned: [compact labels]" summary text from D-018. (2) Q4 reduced to five options (symmetry with Q5): "Speed of response" removed. (3) Opening context recedes further in Stage 3 via `.enquiry-context-faintest` (opacity 0.10, scale 0.91) so the visual hierarchy is: opening context = faintest; Q5 memory = subdued; Q4 = active foreground.  
+**Rationale:** The compact text summary erased the visual presence of the user's selected answers. A quiet memory field communicates retention without pressure — the user can glance at what they answered without it competing with Q4. Five options for Q4 matches Q5 and avoids an asymmetric list length. Receding the opening context further in Stage 3 enforces the correct three-layer hierarchy once Q4 is active.  
+**Authority:** Human Founder (direct correction)  
+**Status:** APPROVED — handoff motion superseded by D-020.
+
+---
+
+## D-020 — Enquiry Experience: Q5 → Q4 Handoff Motion Correction
+
+**Date:** 2026-06-01  
+**Decision:** Replace wrapper-level settling dim (D-018/D-019) with per-element CSS transitions that morph Q5 toward its memory visual state in place, while the Q5 block spatially recedes (`translateY(-24px) scale(0.95)` over 1100ms). Stage switch delayed to 1200ms so settling is fully complete at the swap point. Stage 3 memory field mounts at the same final transform (static `.enquiry-q5-memory-block-settled`) with no fade-in — making the swap invisible. All five `Q1_OPTIONS` rendered in the memory field; unselected as `invisible` layout placeholders to prevent reflow. Q4 enters after Q5 has fully settled. Reduced-motion users see settled memory + Q4 immediately with no transforms.  
+**Rationale:** The previous transition felt like a cut/replacement — Q5 dimmed as a unit then was replaced by a new block. The intended behaviour is Q5 visibly becoming the memory layer. Per-element morphing preserves visual continuity of the selected answers; spatial receding communicates that the layer has settled back. Seamless swap requires the outgoing settling end state and incoming memory start state to be identical in both opacity/colour and transform.  
+**Authority:** Human Founder (direct correction)  
+**Status:** APPROVED — choreography superseded by D-021.
+
+---
+
+## D-021 — Enquiry Experience: Four-Point Choreography Correction
+
+**Date:** 2026-06-01  
+**Decision:** Four targeted corrections to the Q5 → Q4 choreography: (1) Scroll Q5 Next step into view when it appears — `scrollIntoView({ behavior: 'smooth'/'auto', block: 'nearest' })`, respecting `prefers-reduced-motion`. (2) Add `transform-origin: top center` to `.enquiry-q5-settling-block` and `.enquiry-q5-memory-block-settled` — anchors the scale transform to the top edge, eliminating a 5px visual jump at the DOM swap caused by height-dependent transform-origin mismatch. (3) Remove invisible placeholder slots from the Q5 memory field — render only selected answers via `q5Selections.map()`, making the memory field compact and proportional to the user's selections. (4) Q4 framing resolved structurally by (1) and (3): compact memory places Q4 higher, and the prior scroll positions the viewport appropriately.  
+**Rationale:** D-020's memory field used invisible placeholders to prevent layout reflow at the DOM swap, but this produced a tall, empty-feeling memory block that pushed Q4 too far down. The transform-origin root cause: `scale(0.95)` with default `50% 50%` origin shifts the top edge by `height × 0.025`, so a shorter memory block starts 5px higher than the settling block ended — a visible jump. Top-center origin anchors the top edge regardless of block height, making the swap seamless with compact content.  
+**Authority:** Human Founder (direct correction)  
+**Status:** APPROVED — choreography superseded by D-022
+
+---
+
+## D-022 — Enquiry Experience: Persistent Q5 Element + Compact Memory Rail
+
+**Date:** 2026-06-01  
+**Decision:** Three corrections to eliminate the remaining snap and establish the receding memory rail model. (1) Persistent Q5 DOM element: replaced `q5Settling: boolean` with `q5Phase: "active" | "settling" | "memory"`. Q5 block mounts when stage leaves "opening" and stays in the DOM through Stage 3 — no unmount/remount. Class changes drive visual state; no new DOM node is inserted at the 1200ms swap point, eliminating the repaint that caused the snap. (2) Compact memory rail — generic chip echoes: completed Q5 answers render as pill chips (`.enquiry-memory-chip`) in a flex-wrap row (`.enquiry-memory-chips`), not full-height card divs. Classes are generic (`enquiry-memory-*`) and designed for reuse as Q4, Q3, Q2, and Q1 complete in future stages. Opening context recedes further (`.enquiry-context-faintest`) when Q5 becomes memory — chain reaction is perceptible via the existing `opacity 0.38 → 0.10` transition. (3) Q4 framing via layout + gentle fallback: compact chips make Q4 naturally visible on 768px+ viewports without scroll. `scrollIntoView({ block: 'nearest' })` is a no-op safety net that fires on Q4 mount and Q4 Next step appearance, preserving the memory rail in view. `.enquiry-q5-settling-question` now also transitions `font-size` (0.875rem over 900ms) so no size jump occurs at the 1200ms class switch.  
+**Rationale:** D-021's DOM swap approach could not eliminate the repaint event that caused the snap, regardless of CSS value matching. Persistent element removes the event source. Chip echoes compress the memory rail enough for Q4 to fit naturally, making scroll an exception rather than the primary layout model. The memory rail model establishes a design pattern: each completed stage compresses into a compact depth slot above the active question, remaining visibly present without consuming the active stage's space.  
+**Authority:** Human Founder  
 **Status:** APPROVED

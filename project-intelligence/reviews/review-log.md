@@ -21,6 +21,120 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-008 — Persistent Q5 Element + Compact Memory Rail
+
+**Date:** 2026-06-01  
+**Reviewer:** Claude Code (implementation self-review)  
+**Subject:** `components/enquiry/enquiry-opening.tsx`, `app/globals.css` — D-022 persistent element, chip memory rail, Q4 framing
+
+**Findings:**
+- `q5Settling: boolean` replaced by `q5Phase: "active" | "settling" | "memory"` — single source of truth for Q5 visual state
+- Q5 DOM node persists from `stage = "question1"` through `stage = "question2"` via `{stage !== "opening" && ...}` conditional; no unmount/remount at the 1200ms transition point — eliminates the repaint event that caused the perceived snap
+- At 1200ms: class changes from `enquiry-q5-settling-block` to `enquiry-q5-memory-block-settled` — both specify `transform: translateY(-24px) scale(0.95)` with `transform-origin: top center`; computed transform is identical before and after the class change; block does not visually move
+- Q5 cue, question, and cards change class based on `q5Phase`; `aria-labelledby` / `role="group"` in active/settling, `role="note"` / `aria-label` in memory — semantics update atomically with visual state
+- Memory field now renders selected answers as `.enquiry-memory-chip` pills in `.enquiry-memory-chips` flex-wrap row — chip height ~26px vs ~53px for full cards; memory block is significantly shorter
+- Generic memory rail classes added to `globals.css` (no `q5` prefix): `.enquiry-memory-cue`, `.enquiry-memory-question`, `.enquiry-memory-chips`, `.enquiry-memory-chip` — reusable for Q4, Q3, Q2, Q1 memory states
+- `.enquiry-q5-settling-question` now transitions `font-size` (0.8125rem over 900ms) in addition to `color` — ensures no font-size jump at the 1200ms class switch; memory question (`enquiry-memory-question`) matches this size
+- Opening context chain reaction: stage switch to "question2" triggers `.enquiry-context-faintest` (opacity 0.10 from 0.38 over 1200ms, scale 0.91 from 0.93 over 1000ms) — chain reaction is perceptible
+- Q4 layout-first: with chip memory, Q4 cards end at ~745px from viewport top on a 768px viewport — fits without scroll on standard desktop heights
+- Q4 fallback scroll: `scrollIntoView({ block: 'nearest' })` fires on Q4 mount — no-ops if already in view; does not push memory rail off-screen
+- Q4 Next step scroll: `scrollIntoView({ block: 'nearest' })` fires when `q4Selected` becomes non-null — mirrors Q5 Next step behavior
+- All three `scrollIntoView` calls respect `prefers-reduced-motion`: `behavior: 'auto'` when reduced-motion, `behavior: 'smooth'` otherwise
+- `npm run lint` — 0 errors, 0 warnings
+
+**Flags:**
+
+*None.*
+
+**Recommendations:**
+- No changes required at this stage
+
+**Status:** Approved — D-022 complete.
+
+---
+
+## R-007 — Q5 → Q4 Four-Point Choreography Correction
+
+**Date:** 2026-06-01  
+**Reviewer:** Claude Code (implementation self-review)  
+**Subject:** `components/enquiry/enquiry-opening.tsx`, `app/globals.css` — D-021 four-point choreography correction
+
+**Findings:**
+- `transform-origin: top center` added to `.enquiry-q5-settling-block` and `.enquiry-q5-memory-block-settled` — scale now anchors to top edge; visual top positions match at DOM swap regardless of block height; eliminates ~5px jump caused by height-dependent transform-origin mismatch
+- Q5 memory field now renders only selected answers via `q5Selections.map()` — no invisible placeholder slots; field is compact and proportional to actual selections
+- `nextStepRef` added to Q5 Next step wrapper; `useEffect` calls `scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' })` when `selected.size > 0` and not settling — reduced-motion path uses instant scroll; normal path uses smooth scroll; no-ops if Next step already in view
+- `useRef` added to React import
+- Stage 2 settling block unchanged — still has 5 cards with per-element transitions; height collapse at 1200ms is invisible because unselected cards were already `opacity: 0` and Q4 hasn't appeared yet
+- Q4 natural layout position is higher after compact memory removes invisible placeholder height — Q4 question and cards comfortably visible at standard desktop viewport heights
+- `npm run lint` — 0 errors, 0 warnings
+
+**Flags:**
+
+*None.*
+
+**Recommendations:**
+- No changes required at this stage
+
+**Status:** Approved — D-021 complete.
+
+---
+
+## R-006 — Q5 → Q4 Handoff Motion Correction
+
+**Date:** 2026-06-01  
+**Reviewer:** Claude Code (implementation self-review)  
+**Subject:** `components/enquiry/enquiry-opening.tsx`, `app/globals.css` — Q5 → Q4 handoff motion corrected to per-element settle + spatial recede (D-020)
+
+**Findings:**
+- Q5 block now spatially recedes (`translateY(-24px) scale(0.95)` over 1100ms) while individual elements morph toward memory values in parallel — cue dims (800ms), question dims (900ms), selected cards morph (1000ms), unselected cards fade to invisible (600ms)
+- Next step button removed from DOM immediately when settling begins — no ghost button during transition
+- Stage switches at 1200ms (after settling is fully complete); memory field mounts at same static transform with no animation — swap is invisible
+- All five `Q1_OPTIONS` rendered in memory field: selected as card echoes, unselected as `invisible` layout placeholders — no layout reflow on stage switch
+- Visual continuity confirmed: outgoing settling end state and incoming memory field start state are identical on opacity, colour, and transform values
+- Q4 cards begin entering at 2000ms from click — memory is fully static before Q4 appears
+- Reduced-motion: stage switches immediately, no transforms, no transitions — settled memory + Q4 appear at once
+- `npm run lint` — 0 errors, 0 warnings
+- Settling Q5 cards have `tabIndex=-1` — not in tab order during transition
+
+**Flags:**
+
+*None.*
+
+**Recommendations:**
+- No changes required at this stage
+
+**Status:** Approved — Q5 → Q4 handoff motion correction complete (D-020).
+
+---
+
+## R-005 — Q5 Memory Field Correction and Q4 Option Count
+
+**Date:** 2026-06-01  
+**Reviewer:** Claude Code (implementation self-review)  
+**Subject:** `components/enquiry/enquiry-opening.tsx`, `app/globals.css` — Q5 memory field corrected to bounded quiet model; Q4 reduced to 5 options; three-layer visual hierarchy enforced
+
+**Findings:**
+- Q5 memory field renders Q5 cue label, Q5 question text (muted), and selected answer card echoes — only selected cards, not all Q5 options
+- Memory cards are non-interactive `div`s with transparent background, faint border (`rgba(255,255,255,0.06)`), and muted text (`rgba(255,255,255,0.22)`)
+- Visual hierarchy in Stage 3 confirmed: opening context at opacity 0.10 / scale 0.91 (`.enquiry-context-faintest`) is visibly fainter than Q5 memory (question at 0.14, cards at 0.22), which is visibly fainter than Q4 (full material surface)
+- Memory field does not animate after its 1400ms fade-in — fully static once settled
+- ARIA: `role="note"` on memory wrapper with `aria-label` summarising Q5 question and selections; visual children are `aria-hidden="true"` — no duplication for screen readers
+- Memory cards are not in tab order (div, not button)
+- Q4 reduced to 5 options (removed "Speed of response") — symmetric with Q5
+- Reduced-motion: memory field and Q4 appear immediately; no staged reveals
+- `npm run lint` — 0 errors, 0 warnings
+
+**Flags:**
+
+*None. No overflow observed with 1 or multiple Q5 selections in manual review.*
+
+**Recommendations:**
+- No changes required at this stage
+
+**Status:** Approved — Q5 memory field and Q4 correction complete (D-019).
+
+---
+
 ## R-004 — `/start` Stage 3: Q4 Single-Select and Q5 → Q4 Transition
 
 **Date:** 2026-06-01  
@@ -152,4 +266,4 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
-*Last updated: 2026-06-01*
+*Last updated: 2026-06-01 — R-008 added (D-022 persistent Q5 element, chip memory rail, Q4 layout-first framing)*

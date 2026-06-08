@@ -3,7 +3,7 @@
 **Status:** IMPLEMENTED  
 **Component file:** `components/enquiry/enquiry-opening.tsx`  
 **Review entries:** R-002 (Stage 1), R-003 (Stage 2), R-004 (Q4 stage)  
-**Related decisions:** D-015, D-016, D-017, D-018
+**Related decisions:** D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022
 
 ---
 
@@ -11,7 +11,7 @@
 
 The primary component for the `/start` route. Manages the full guided enquiry experience from the initial opening reveal (Stage 1) through the Q5 guided question (Stage 2) and Q4 active stage (Stage 3). Rendered by the thin server wrapper at `app/start/page.tsx`.
 
-A client component (`"use client"`) — uses `useState`, `useEffect`, `setTimeout`, and `window.matchMedia` for animation state, stage transitions, and reduced-motion detection.
+A client component (`"use client"`) — uses `useState`, `useEffect`, `useRef`, `setTimeout`, and `window.matchMedia` for animation state, stage transitions, scroll management, and reduced-motion detection.
 
 ---
 
@@ -59,7 +59,9 @@ When stage content exceeds viewport height, the browser scrolls naturally — no
 |---|---|
 | `"opening"` | Stage 1 — opening reveal sequence, Begin button |
 | `"question1"` | Stage 2 — Q5 multi-select ("What brought you here today?") |
-| `"question2"` | Stage 3 — Q5 settled into memory; Q4 single-select active |
+| `"question2"` | Stage 3 — Q5 in memory rail; Q4 single-select active; opening context recedes further |
+
+`q5Phase: "active" | "settling" | "memory"` tracks Q5's visual state independently of `stage`. The Q5 DOM node persists from `stage = "question1"` through `stage = "question2"` — it is never unmounted. Visual state is driven entirely by class changes.
 
 ---
 
@@ -109,23 +111,26 @@ Full phrase settles at ~11.5s. `animation-fill-mode: both` on all elements.
 
 | Event | Time |
 |---|---|
-| Q5 wrapper begins settling (opacity 0.2, scale 0.97) | 0ms |
-| Stage switches to `"question2"` | 500ms |
-| Q5 memory block fades in | 500ms (0ms delay on mount) |
-| Q4 cue drifts in | 500ms |
-| Q4 question reveals left-to-right | 500ms |
-| Q4 card 1 enters | 500ms + 800ms = 1300ms |
+| `q5Phase = "settling"`. Per-element transitions begin. Q5 block (persistent DOM node) starts receding (`translateY(-24px) scale(0.95)`, 1100ms). | 0ms |
+| Unselected cards reach `opacity: 0` | ~600ms |
+| Q5 cue reaches memory opacity | ~800ms |
+| Q5 question reaches memory opacity and size (font-size transitions to 0.8125rem) | ~900ms |
+| Selected cards reach memory card style | ~1000ms |
+| Block transform completes | ~1100ms |
+| `q5Phase = "memory"`, `stage = "question2"`. Q5 block stays in DOM — class changes from `enquiry-q5-settling-block` to `enquiry-q5-memory-block-settled` (same transform value). Cards swap from buttons to `.enquiry-memory-chip` divs. Opening context transitions to `.enquiry-context-faintest` (chain reaction: 0.38 → 0.10 opacity). Q4 mounts. scrollIntoView (block: nearest) fires — no-op if Q4 already in view. | 1200ms |
+| Q4 card 1 enters | 1200ms + 800ms = 2000ms |
+| Q4 card 5 enters | 1200ms + 1400ms = 2600ms |
 
-Q5 selections are saved to `q5Selections` state before the transition begins.
+No DOM swap occurs for Q5. The persistent element stays mounted; only its class and children change at 1200ms. Since the CSS transform does not change at the class switch, the Q5 block does not visually move. The browser produces no repaint from element insertion.
 
-### Stage 3 reveals (triggered on stage mount)
+### Stage 3 reveals (triggered on stage mount at 1200ms)
 
 | Element | Keyframe | Duration | Delay |
 |---|---|---|---|
-| Q5 memory block | `enquiry-q5-memory-appear` | 1400ms | 0ms |
+| Q5 memory field | none — mounts at settled state immediately | — | — |
 | Q4 cue | `enquiry-q5-presence` | 4000ms | 0ms |
 | Q4 question | `enquiry-mask-reveal-horizontal` | 2500ms | 0ms |
-| Q4 card 1–6 | `enquiry-mask-reveal-downward` | 1800ms | 800–1550ms (150ms stagger) |
+| Q4 card 1–5 | `enquiry-mask-reveal-downward` | 1800ms | 800–1400ms (150ms stagger) |
 
 **Reduced-motion:** All stage reveals disabled. All content appears immediately. Transitions are instant. Q5 settling skipped — stage switches directly to `"question2"`.
 
@@ -141,20 +146,22 @@ Card stagger delays are applied via inline `animationDelay` style in JSX (not CS
 - Pressing "Next step" triggers the Q5 → Q4 transition.
 - Selected Q5 options are preserved as `q5Selections: string[]`.
 
-**Q5 memory (Stage 3):**
-- Selected options compressed to compact labels via `Q5_MEMORY_LABELS` map.
-- Rendered as: "You mentioned: [comma-separated short labels]"
-- Example: "You mentioned: premium website, better enquiries"
-- Q5 cue label ("Q5") remains visible at further reduced opacity (`rgba(255,255,255,0.10)`).
-- Memory surface is non-interactive and purely informational.
-- See D-018 for memory format decision.
+**Q5 memory field (Stage 3) — receding memory rail:**
+- The same Q5 DOM node that was active in Stage 2 remains mounted. At 1200ms, its `q5Phase` changes from `"settling"` to `"memory"`, switching its class to `.enquiry-q5-memory-block-settled`.
+- Memory field shows: Q5 cue (`.enquiry-memory-cue`), Q5 question text (`.enquiry-memory-question`), and selected answer labels as compact pill chips (`.enquiry-memory-chips` / `.enquiry-memory-chip`).
+- Chip layout: 1 answer → single chip centred; 2 answers → side by side; 3+ answers → flex-wrap, centred. Chips are short in height (~26px) compared to full cards (~53px), keeping the memory rail compact.
+- ARIA: `role="note"` on the wrapper with `aria-label` summarising question and selections. Visual children are `aria-hidden="true"`.
+- Memory field is non-interactive: `.enquiry-memory-chip` has `pointer-events: none; user-select: none`.
+- Opening context recedes further in Stage 3 via `.enquiry-context-faintest` (opacity 0.10 → from 0.38, scale 0.91 → from 0.93, transitions over 1200ms/1000ms). This is the chain reaction: Q5 becomes memory → opening context moves one layer deeper. Three-layer depth hierarchy: opening = faintest, Q5 memory = subdued, Q4 = active foreground.
+- See D-018, D-019, D-020, D-021, D-022.
 
 **Q4 (Stage 3):**
 - Single-select. `role="radiogroup"` on the group, `role="radio"` + `aria-checked` on each card.
+- Five options (symmetry with Q5 — see D-019).
 - Selecting a card deselects any previously selected card.
 - Clicking the selected card deselects it (returns to null state).
 - "Next step" appears after selection — **placeholder only, logs to console** (Q4 → Q3 not yet implemented).
-- See D-017 for Q4 question and options. D-018 for single-select decision.
+- See D-017 for Q4 question. D-018 for single-select. D-019 for option count.
 
 ---
 
@@ -186,7 +193,7 @@ Card stagger delays are applied via inline `animationDelay` style in JSX (not CS
 
 | Dependency | Type | Purpose |
 |---|---|---|
-| React (`useState`, `useEffect`) | npm | Stage state, reduced-motion detection |
+| React (`useState`, `useEffect`, `useRef`) | npm | Stage state, reduced-motion detection, scroll management |
 | Tailwind CSS | npm | All layout and typography classes |
 | `app/globals.css` enquiry classes | Internal CSS | All animation keyframes and enquiry-specific styles |
 
@@ -202,6 +209,10 @@ No shadcn/ui primitives. No `cn()` utility — class composition uses template l
 | D-016 | Enquiry Experience: Stage 2 — Q5 Guided Question |
 | D-017 | Enquiry Experience: Q5 → Q4 Transition Model |
 | D-018 | Enquiry Experience: Q5 → Q4 Implementation Choices |
+| D-019 | Enquiry Experience: Q5 Memory Field Correction |
+| D-020 | Enquiry Experience: Q5 → Q4 Handoff Motion Correction |
+| D-021 | Enquiry Experience: Four-Point Choreography Correction |
+| D-022 | Enquiry Experience: Persistent Q5 Element + Compact Memory Rail |
 
 ---
 
@@ -222,6 +233,10 @@ No shadcn/ui primitives. No `cn()` utility — class composition uses template l
 | R-002 | 2026-05-26 | Claude Code | Approved — Stage 1 complete |
 | R-003 | 2026-05-31 | Claude Code | Partially open — Stage 2 approved; F-005 open; F-006 actioned via D-017 |
 | R-004 | 2026-06-01 | Claude Code | Partially open — Q4 stage approved; F-005 actioned; F-007 open (Q4 Next step placeholder) |
+| R-005 | 2026-06-01 | Claude Code | Approved — Q5 memory field corrected to bounded quiet model (D-019); Q4 reduced to 5 options |
+| R-006 | 2026-06-01 | Claude Code | Approved — Q5 → Q4 handoff motion corrected (D-020); per-element settle + spatial recede |
+| R-007 | 2026-06-01 | Claude Code | Approved — Four-point choreography correction (D-021); transform-origin fix, compact memory, Next step scroll |
+| R-008 | 2026-06-01 | Claude Code | Approved — Persistent Q5 element, chip memory rail, Q4 layout-first framing (D-022) |
 
 ---
 
@@ -233,4 +248,4 @@ No shadcn/ui primitives. No `cn()` utility — class composition uses template l
 
 ---
 
-*Last updated: 2026-06-01*
+*Last updated: 2026-06-01 — D-022 applied; persistent Q5 element, chip memory rail, Q4 layout-first framing*
