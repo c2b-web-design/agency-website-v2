@@ -202,7 +202,7 @@ export default function EnquiryOpening() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col gap-2" aria-hidden={q5Phase === "memory" ? true : undefined}>
+              <div className="flex flex-col gap-2">
                 {Q1_OPTIONS.map((option, i) => {
                   const isSelected = selected.has(option);
                   return (
