@@ -176,91 +176,89 @@
   }
 }
 
-/* ─── Stage 2 — Context dimming ──────────────────────────────────────── */
-
-.enquiry-context-dimmed {
-  transition: opacity 1600ms linear, transform 1400ms linear;
-  opacity: 0.38;
-  transform: scale(0.93);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .enquiry-context-dimmed {
-    transition: none;
-  }
-}
-
-/* Opening context in Stage 3 — further receded behind Q5 memory field */
-.enquiry-context-faintest {
-  transition: opacity 1200ms linear, transform 1000ms linear;
-  opacity: 0.10;
-  transform: scale(0.91);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .enquiry-context-faintest { transition: none; }
-}
-
-/* Stage 2 — Content wrapper: centered in Stage 1, settles to top in Stage 2 */
 .enquiry-content-centered {
   transform: translateY(calc(38vh - 5rem));
-}
-
-.enquiry-content-settling {
-  transform: translateY(0);
-  transition: transform 1800ms linear;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .enquiry-content-centered {
     transform: none;
   }
-  .enquiry-content-settling {
-    transform: none;
-    transition: none;
-  }
 }
 
-/* ─── Stage 2 — Q5 orientation cue ──────────────────────────────────── */
+/* Post-Begin subtext exit — animation overrides reveal fill-mode lock */
+@keyframes enquiry-subtext-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
 
-@keyframes enquiry-q5-presence {
-  0%   { opacity: 0; transform: scale(0.93); }
-  40%  { opacity: 1; }
-  100% { opacity: 1; transform: scale(1); }
+.enquiry-subtext-exit {
+  animation: enquiry-subtext-fade-out 600ms linear forwards;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-subtext-exit { animation: none; }
+}
+
+/* Q5 block reveal */
+@keyframes enquiry-q5-block-appear {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.enquiry-q5-block {
+  animation: enquiry-q5-block-appear 700ms linear both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-q5-block { animation: none; }
+}
+
+/* Q5 inline label and question row */
+.enquiry-q5-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
 }
 
 .enquiry-q5-cue {
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.20);
-  animation: enquiry-q5-presence 4000ms linear both;
+  color: rgba(255, 255, 255, 0.28);
+  flex-shrink: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .enquiry-q5-cue { animation: none; }
+.enquiry-q5-question {
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.90);
+  line-height: 1.4;
 }
 
-/* ─── Stage 2 — Question and card reveals ───────────────────────────── */
-
-.enquiry-q1-question {
-  animation: enquiry-mask-reveal-horizontal 2500ms linear both;
+/* Answer grid — 3 + 2 centred layout using 6-column base */
+.enquiry-answer-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
 }
 
-.enquiry-card-reveal {
-  animation: enquiry-mask-reveal-downward 1800ms linear both;
-}
+.enquiry-answer-grid > :nth-child(1) { grid-column: 1 / 3; }
+.enquiry-answer-grid > :nth-child(2) { grid-column: 3 / 5; }
+.enquiry-answer-grid > :nth-child(3) { grid-column: 5 / 7; }
+.enquiry-answer-grid > :nth-child(4) { grid-column: 2 / 4; }
+.enquiry-answer-grid > :nth-child(5) { grid-column: 4 / 6; }
 
-@media (prefers-reduced-motion: reduce) {
-  .enquiry-q1-question,
-  .enquiry-card-reveal {
-    animation: none;
-  }
-}
-
-/* ─── Stage 2 — Choice cards ─────────────────────────────────────────── */
-
+/* Choice cards */
 .enquiry-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  min-height: 3rem;
   background: linear-gradient(
     to bottom,
     rgba(255, 255, 255, 0.07) 0%,
@@ -301,22 +299,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .enquiry-card {
-    transition: none;
-  }
+  .enquiry-card { transition: none; }
 }
 
-/* ─── Stage 2 — Next step trigger ───────────────────────────────────── */
-
-@keyframes enquiry-nextstep-appear {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.enquiry-nextstep-reveal {
-  animation: enquiry-nextstep-appear 1200ms linear both;
-}
-
+/* Next step trigger */
 .enquiry-nextstep-btn {
   border: 1px solid rgba(255, 255, 255, 0.20);
   border-radius: 9999px;
@@ -336,161 +322,72 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .enquiry-nextstep-reveal { animation: none; }
-  .enquiry-nextstep-btn    { transition: none; }
+  .enquiry-nextstep-btn { transition: none; }
 }
 
-/* ─── Q5 → Q4 transition ────────────────────────────────────────────── */
+/* Geometry fit test */
 
-/* Q5 block during settling — recedes spatially to memory position */
-.enquiry-q5-settling-block {
-  transform-origin: top center;
-  transform: translateY(-24px) scale(0.95);
-  transition: transform 1100ms linear;
-  pointer-events: none;
+.geotest-memory-stack {
+  margin-bottom: 1rem;
 }
 
-/* Stage 3 memory field — static at same final position as settling end state */
-.enquiry-q5-memory-block-settled {
-  transform-origin: top center;
-  transform: translateY(-24px) scale(0.95);
+.geotest-heading {
+  font-size: 10px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
 }
 
-/* Q5 cue transitions toward memory opacity */
-.enquiry-q5-settling-cue {
-  color: rgba(255, 255, 255, 0.10);
-  transition: color 800ms linear;
-}
-
-/* Q5 question transitions toward memory opacity and size */
-.enquiry-q5-settling-question {
-  color: rgba(255, 255, 255, 0.14);
-  font-size: 0.8125rem;
-  transition: color 900ms linear, font-size 900ms linear;
-}
-
-/* Selected Q5 card morphs toward memory card appearance */
-/* !important overrides .enquiry-card[aria-checked="true"] which has higher specificity (0,0,2,0) */
-.enquiry-q5-settling-card-selected {
-  background: transparent !important;
-  border-color: rgba(255, 255, 255, 0.06) !important;
-  color: rgba(255, 255, 255, 0.22) !important;
-  box-shadow: none !important;
-  cursor: default;
-  transition: background 1000ms linear, border-color 1000ms linear,
-              color 1000ms linear, box-shadow 800ms linear;
-}
-
-/* Unselected Q5 card fades to invisible during settling */
-.enquiry-q5-settling-card-unselected {
-  opacity: 0;
-  transition: opacity 600ms linear;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .enquiry-q5-settling-block       { transition: none; transform: none; }
-  .enquiry-q5-memory-block-settled { transform: none; }
-  .enquiry-q5-settling-cue,
-  .enquiry-q5-settling-question,
-  .enquiry-q5-settling-card-selected,
-  .enquiry-q5-settling-card-unselected { transition: none; }
-}
-
-/* Q5 memory surface — fades into presence as Q4 enters */
-@keyframes enquiry-q5-memory-appear {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-.enquiry-q5-memory-reveal {
-  animation: enquiry-q5-memory-appear 1400ms linear both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .enquiry-q5-memory-reveal { animation: none; }
-}
-
-/* Q5 cue label in memory state — more muted than the active Q5 cue */
-.enquiry-q5-memory-cue {
-  font-size: 0.6875rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.10);
-}
-
-/* Q5 question text in memory state */
-.enquiry-q5-memory-question {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.14);
-  font-weight: 400;
-  line-height: 1.5;
-}
-
-/* Selected Q5 answer echoes — non-interactive, receded */
-.enquiry-q5-memory-card {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.22);
-  font-weight: 400;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* ─── Memory rail — generic chip echoes (reusable: Q5, Q4, Q3, Q2, Q1) ─ */
-
-.enquiry-memory-cue {
-  font-size: 0.6875rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.10);
-}
-
-.enquiry-memory-question {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.14);
-  font-weight: 400;
-  line-height: 1.5;
-}
-
-.enquiry-memory-chips {
+.geotest-memory-items {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.geotest-memory-item { text-align: center; }
+
+.geotest-memory-qrow {
+  display: flex;
+  align-items: baseline;
   justify-content: center;
+  gap: 0.35rem;
+  line-height: 1.3;
 }
 
-.enquiry-memory-chip {
-  padding: 0.1875rem 0.625rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.22);
-  background: transparent;
-  pointer-events: none;
-  user-select: none;
-  white-space: nowrap;
-}
-
-/* ─── Q4 stage ───────────────────────────────────────────────────────── */
-
-/* Q4 orientation cue — same style as Q5 cue, reuses enquiry-q5-presence keyframe */
-.enquiry-q4-cue {
-  font-size: 0.6875rem;
-  letter-spacing: 0.18em;
+.geotest-memory-cue {
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.20);
-  animation: enquiry-q5-presence 4000ms linear both;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.40);
+  flex-shrink: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .enquiry-q4-cue { animation: none; }
+.geotest-memory-question {
+  color: rgba(255, 255, 255, 0.65);
 }
 
-/* Q4 question reveal — same as Q1 question, reuses existing keyframe */
-.enquiry-q4-question {
-  animation: enquiry-mask-reveal-horizontal 2500ms linear both;
+.geotest-memory-answers {
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.80);
+  margin-top: 0.1rem;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .enquiry-q4-question { animation: none; }
-}
+/* Per-Q text sizes - Q5 oldest/smallest, Q2 newest/largest memory */
+.geotest-q5 .geotest-memory-question,
+.geotest-q5 .geotest-memory-cue { font-size: 12px; }
+.geotest-q5 .geotest-memory-answers { font-size: 10px; }
+
+.geotest-q4 .geotest-memory-question,
+.geotest-q4 .geotest-memory-cue { font-size: 14px; }
+.geotest-q4 .geotest-memory-answers { font-size: 11px; }
+
+.geotest-q3 .geotest-memory-question,
+.geotest-q3 .geotest-memory-cue { font-size: 17px; }
+.geotest-q3 .geotest-memory-answers { font-size: 13px; }
+
+.geotest-q2 .geotest-memory-question,
+.geotest-q2 .geotest-memory-cue { font-size: 20px; }
+.geotest-q2 .geotest-memory-answers { font-size: 16px; }
+
+.geotest-active-area { margin-top: 1.25rem; }
