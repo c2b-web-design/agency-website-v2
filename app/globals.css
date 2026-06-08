@@ -348,11 +348,11 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 10rem;
+  top: 11.5rem;
 }
 
 /* Memory band — a fixed region spanning from the shell top (heading area) down */
-/* to the active slot's top line (height = active-slot top = 10rem). Its bottom */
+/* to the active slot's top line (height = active-slot top = 11.5rem). Its bottom */
 /* edge IS the active slot line. Memory items are positioned individually by */
 /* slot within this band (see slot bottom offsets below); the band never grows */
 /* as one block, so it cannot push into the heading. */
@@ -361,7 +361,7 @@
   left: 0;
   right: 0;
   top: 0;
-  height: 10rem;
+  height: 11.5rem;
 }
 
 /* Slot opacity (slot 1 = most recent memory, slot 5 = oldest) */
@@ -378,8 +378,8 @@
 /* as one block into the heading. */
 .enquiry-slot-1 { bottom: 0; }
 .enquiry-slot-2 { bottom: 2.5rem; }
-.enquiry-slot-3 { bottom: 4.25rem; }
-.enquiry-slot-4 { bottom: 5.25rem; }
+.enquiry-slot-3 { bottom: 4.9rem; }
+.enquiry-slot-4 { bottom: 6.8rem; }
 
 /* Memory item layout — each item is absolutely positioned within the memory */
 /* band and anchored by slot (see slot bottom offsets above), so items occupy */
@@ -411,33 +411,36 @@
 }
 
 .enquiry-mem-answers {
-  line-height: 1.3;
+  line-height: 1.1;
   color: rgba(255, 255, 255, 0.80);
-  margin-top: 0.1rem;
+  margin-top: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Memory font sizes per slot */
 .enquiry-slot-1 .enquiry-mem-question,
 .enquiry-slot-1 .enquiry-mem-cue { font-size: 20px; }
-.enquiry-slot-1 .enquiry-mem-answers { font-size: 16px; }
+.enquiry-slot-1 .enquiry-mem-answers { font-size: 14px; }
 
 .enquiry-slot-2 .enquiry-mem-question,
 .enquiry-slot-2 .enquiry-mem-cue { font-size: 17px; }
-.enquiry-slot-2 .enquiry-mem-answers { font-size: 13px; }
+.enquiry-slot-2 .enquiry-mem-answers { font-size: 12px; }
 
 .enquiry-slot-3 .enquiry-mem-question,
 .enquiry-slot-3 .enquiry-mem-cue { font-size: 14px; }
-.enquiry-slot-3 .enquiry-mem-answers { font-size: 11px; }
+.enquiry-slot-3 .enquiry-mem-answers { font-size: 10px; }
 
 .enquiry-slot-4 .enquiry-mem-question,
 .enquiry-slot-4 .enquiry-mem-cue { font-size: 12px; }
-.enquiry-slot-4 .enquiry-mem-answers { font-size: 10px; }
+.enquiry-slot-4 .enquiry-mem-answers { font-size: 9px; }
 
 /* Heading depth — proportional size/opacity from full opening state toward final small state */
 /* heading depth = memory.length + 1 (d2 after first Q answered, d6 after all five) */
 /* font-size interpolated: full ~30px -> 10px over 5 answered questions (4px/step) */
-.enquiry-heading-d2 { font-size: 26px; line-height: 1.2; opacity: 0.50; }
-.enquiry-heading-d3 { font-size: 22px; line-height: 1.2; opacity: 0.34; }
-.enquiry-heading-d4 { font-size: 18px; line-height: 1.2; opacity: 0.22; }
-.enquiry-heading-d5 { font-size: 14px; line-height: 1.2; opacity: 0.14; }
+.enquiry-heading-d2 { font-size: 26px; line-height: 1.2; opacity: 0.34; }
+.enquiry-heading-d3 { font-size: 22px; line-height: 1.2; opacity: 0.22; }
+.enquiry-heading-d4 { font-size: 18px; line-height: 1.2; opacity: 0.14; }
+.enquiry-heading-d5 { font-size: 14px; line-height: 1.2; opacity: 0.08; }
 .enquiry-heading-d6 { font-size: 10px; line-height: 1.2; opacity: 0.14; }
