@@ -338,6 +338,7 @@
   letter-spacing: -0.015em;
   color: #ffffff;
   margin-bottom: 0.5rem;
+  opacity: 0.14;
 }
 
 .geotest-memory-items {
@@ -372,6 +373,12 @@
   color: rgba(255, 255, 255, 0.80);
   margin-top: 0.1rem;
 }
+
+/* Per-Q slot opacity ramp (heading=0.14 ... Q2=0.72, Q1 active=1.00 default) */
+.geotest-q5 { opacity: 0.22; }
+.geotest-q4 { opacity: 0.34; }
+.geotest-q3 { opacity: 0.50; }
+.geotest-q2 { opacity: 0.72; }
 
 /* Per-Q text sizes - Q5 oldest/smallest, Q2 newest/largest memory */
 .geotest-q5 .geotest-memory-question,
