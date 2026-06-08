@@ -387,3 +387,99 @@ Select behaviour (single-select or multi-select) is unresolved — to be determi
 **Rationale:** D-021's DOM swap approach could not eliminate the repaint event that caused the snap, regardless of CSS value matching. Persistent element removes the event source. Chip echoes compress the memory rail enough for Q4 to fit naturally, making scroll an exception rather than the primary layout model. The memory rail model establishes a design pattern: each completed stage compresses into a compact depth slot above the active question, remaining visibly present without consuming the active stage's space.  
 **Authority:** Human Founder  
 **Status:** APPROVED
+
+---
+
+## D-023 - Enquiry Experience: Shared Memory Corridor Architecture
+
+**Date:** 2026-06-08  
+**Decision:** The enquiry flow is treated as one ordered visual system, not a sequence of isolated screens. The opening heading and five enquiry questions form a single corridor:
+
+Opening heading -> Q5 -> Q4 -> Q3 -> Q2 -> Q1
+
+Each completed item recedes one shared depth slot deeper into the corridor. Depth is proportional and cumulative: after Q5 completes, the opening heading is at depth 2, Q5 memory at depth 1, Q4 active. After Q4 completes, the opening heading is at depth 3, Q5 memory at depth 2, Q4 memory at depth 1, Q3 active. Depth values are driven by shared global CSS variables, not per-question ad hoc transforms.  
+**Rationale:** D-018 through D-022 resolved specific snap and choreography defects but left the transition model as one-off per-question choreography. The result is that each question has its own settling mechanism, making the corridor effect accidental rather than architectural. D-023 establishes the corridor as a deliberate system: one depth model, one set of CSS variables, one memory capsule format - so Q3, Q2, and Q1 inherit the pattern without new choreography decisions. The visual effect the user experiences is that their conversation is building a coherent, visible history, not disappearing into a form.  
+**Authority:** Human Founder  
+**Status:** APPROVED - implementation brief required before code changes begin.
+
+---
+
+**Corridor depth model (approved):**
+
+Each completed item occupies one depth slot. The active question is always at depth 0 (full prominence). Completed items count upward from 1.
+
+| Stage | Opening heading | Q5 | Q4 | Q3 | Q2 | Q1 |
+|---|---|---|---|---|---|---|
+| After Begin | depth 1 | active | - | - | - | - |
+| After Q5 | depth 2 | depth 1 | active | - | - | - |
+| After Q4 | depth 3 | depth 2 | depth 1 | active | - | - |
+| After Q3 | depth 4 | depth 3 | depth 2 | depth 1 | active | - |
+| After Q2 | depth 5 | depth 4 | depth 3 | depth 2 | depth 1 | active |
+
+Depth values are applied via CSS data attributes or class variants (e.g. `data-depth="1"`, `data-depth="2"`) that resolve to shared CSS custom properties (`--corridor-scale-1`, `--corridor-opacity-1`, etc.). Corridor properties are defined once and cascade to all depth slots automatically.
+
+**Visual rules (approved):**
+
+- Completed items remain broadly face-on. Do not use `rotateX`, floor-tilted cards, or perspective-based 3D transforms.
+- Depth is communicated through vertical position offset, scale, opacity, and quieter material treatment - not rotation.
+- Blur is excluded from the first implementation. If corridor CSS variables are defined, blur defaults to 0px. Blur may be revisited after corridor spacing, scale, and opacity are reviewed.
+- Corridor angle and spacing are controlled globally - by CSS variables - not by per-question adjustments.
+- Corridor geometry must be calibrated from the eventual Q1 composition backwards, so the opening heading and completed Q5/Q4/Q3/Q2 memory items can remain visually present within the viewport when Q1 is active.
+- Older items may become faint translucent traces at greater depth, but must remain visibly present enough to communicate that the user's answers have been absorbed into a guided process. Memory items are not required to remain fully legible at older depths - their purpose is to show continuity, not to provide readable review content.
+- Items at high depth (3+) may approach near-invisible opacity floors. The floor value is a design decision to be resolved during review, not specified here.
+
+**Opening memory item (approved):**
+
+The opening context (heading + subtext + Begin button) behaves as follows after Begin is pressed:
+- Supporting subtext ("A few focused questions...") and the Begin button fade out permanently. They do not become memory items.
+- Only the main opening heading ("Let's understand what your business needs to become.") is retained as the first memory item at depth 1.
+- The heading does not compress into chip format - it has no selected answers. It renders as the full heading text, compressed/scaled/faded as a memory item, with centred layout at the scale and opacity of its depth slot. Do not replace it with the agency name or a shortened label.
+
+**Active question behaviour (approved):**
+
+- Active question renders at full prominence: full question text, full answer cards.
+- Cards remain fully interactive while the question is active.
+- Space for the Next Step button is reserved in layout from mount - the button appearing must not cause a layout shift. The current approach (`opacity: 0; pointer-events: none` until a selection is made) satisfies this requirement and should be retained.
+
+**Completed memory item format (approved):**
+
+Each completed question compresses into a compact memory capsule. The capsule format is consistent across all completed questions:
+
+- No full card stack.
+- Question text centred.
+- Selected answers centred beneath as inline chips.
+- Chips expand evenly left and right from centre - centred flex-wrap row. This supersedes D-022 left-aligned chips for Q5 and establishes centring as the pattern for all future questions.
+- Maximum two visual lines of chips where possible. 1 to 5 selected answers should remain side-by-side on desktop where space allows.
+- Capsule inherits subtle material/glass continuity from answer cards but appears significantly quieter - reduced opacity, reduced border weight, no interactive states.
+- The generic `.enquiry-memory-*` classes established in D-022 provide the foundation. Chip centring is achieved by adding `justify-content: center` to `.enquiry-memory-chips`.
+
+**Scope of first implementation (approved):**
+
+The first implementation proves the reusable corridor architecture across three slots only:
+
+Opening heading (depth 2) -> Q5 memory (depth 1) -> Q4 active
+
+Q3, Q2, and Q1 are not implemented until the three-slot corridor model is reviewed and approved as a stable pattern. No post-Q1 destination (submit, confirmation, routing) is approved yet.
+
+The implementation task is:
+1. Define shared corridor CSS variables (`--corridor-scale-N`, `--corridor-opacity-N`, `--corridor-offset-y-N`) for depth 1 through 5.
+2. Apply depth-1 variables to the Q5 memory capsule (currently driven by `.enquiry-q5-memory-block-settled`).
+3. Apply depth-2 variables to the opening heading memory item when the corridor reaches Q4 active.
+4. Apply chip centring to `.enquiry-memory-chips`.
+5. Validate visually that depth 1 and depth 2 slots feel proportionally receded and that Q4 active owns attention.
+6. Confirm no regressions against D-022 approved behaviour.
+
+**Relationship to D-022 (approved):**
+
+D-022 remains the committed, deployed, approved baseline. D-023 does not patch or revert D-022. D-023 is an architectural evolution that replaces the direction of one-off per-question choreography with a shared corridor model. The first implementation of D-023 should produce a revised state of `enquiry-opening.tsx` and `globals.css` that is complete and clean, not an incremental patch on top of D-022's one-off classes.
+
+**Constraints:**
+- No post-Q4 questions until corridor model is reviewed and approved.
+- No post-Q1 destination designed or implemented.
+- No mechanical stepper, progress bar, percentage indicator, or checklist at any stage.
+- Depth values must come from shared CSS variables - not hard-coded per question.
+- Motion must never create urgency or feel like a countdown timer.
+
+**Open at time of logging (resolve before implementation brief):**
+- Exact numeric values for corridor CSS variables (scale, opacity, offset-y per depth slot) - design decision, not locked here. Calibrate from the Q1-active composition backwards.
+- Blur: excluded from first implementation. Revisit after corridor geometry is reviewed.

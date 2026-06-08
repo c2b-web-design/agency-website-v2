@@ -46,7 +46,7 @@ Build the homepage to a complete, production-quality state and begin the `/start
 
 | Task | Priority | Notes |
 |---|---|---|
-| Q4 → Q3 transition | High | Q4 "Next step" is a placeholder (logs to console). Q3 model not yet designed — requires a new brief. |
+| D-023 first implementation: corridor architecture (Opening -> Q5 -> Q4) | High | D-023 approved 2026-06-08. Requires implementation brief from ChatGPT before code changes begin. Q4 -> Q3 follows after corridor model is reviewed and approved. |
 | Mobile navbar (responsive collapse) | Medium | R-001 F-003 — pattern TBD (hamburger, collapsed links, slide drawer) |
 | Real contact flow | Medium | `/start` CTA on homepage links to `/start`. Submit path not implemented. |
 | Metadata, SEO, Open Graph | Low | Page titles, descriptions, and social sharing not yet set. |
@@ -83,4 +83,4 @@ Sprint 2 is complete when:
 
 ---
 
-*Last updated: 2026-06-01 — D-022 applied: persistent Q5 element, chip memory rail, Q4 layout-first framing*
+*Last updated: 2026-06-08 - D-023 approved: shared memory corridor architecture. Up Next updated to corridor-first implementation scope.*
