@@ -380,6 +380,7 @@
 .enquiry-slot-2 { bottom: 2.5rem; }
 .enquiry-slot-3 { bottom: 4.9rem; }
 .enquiry-slot-4 { bottom: 6.8rem; }
+.enquiry-slot-5 { bottom: 8.3rem; }
 
 /* Memory item layout — each item is absolutely positioned within the memory */
 /* band and anchored by slot (see slot bottom offsets above), so items occupy */
@@ -439,6 +440,53 @@
 .enquiry-slot-4 .enquiry-mem-question,
 .enquiry-slot-4 .enquiry-mem-cue { font-size: 12px; }
 .enquiry-slot-4 .enquiry-mem-answers { font-size: 9px; }
+
+.enquiry-slot-5 .enquiry-mem-question,
+.enquiry-slot-5 .enquiry-mem-cue { font-size: 10px; }
+.enquiry-slot-5 .enquiry-mem-answers { font-size: 8px; }
+
+/* Completion state — corridor + heading dissolve across the full Understood+sentence reveal window */
+.enquiry-memory-complete {
+  opacity: 0;
+  transition: opacity 6400ms linear;
+}
+
+.enquiry-heading-d2.enquiry-heading-complete,
+.enquiry-heading-d3.enquiry-heading-complete,
+.enquiry-heading-d4.enquiry-heading-complete,
+.enquiry-heading-d5.enquiry-heading-complete,
+.enquiry-heading-d6.enquiry-heading-complete {
+  opacity: 0;
+  transition: opacity 6400ms linear;
+}
+
+/* Contact cards — absolute layer in the same 11.5rem corridor band, */
+/* separate from the fading memory layer so card fade-ins are unaffected. */
+.enquiry-contact-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 11.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-memory-complete {
+    opacity: 0;
+    transition: none;
+  }
+  .enquiry-heading-d2.enquiry-heading-complete,
+  .enquiry-heading-d3.enquiry-heading-complete,
+  .enquiry-heading-d4.enquiry-heading-complete,
+  .enquiry-heading-d5.enquiry-heading-complete,
+  .enquiry-heading-d6.enquiry-heading-complete {
+    opacity: 0;
+    transition: none;
+  }
+}
 
 /* Heading depth — heading is the deepest corridor layer, sitting just above/behind the nearest */
 /* visible memory slot. translateY shifts it from its natural top-of-shell position down into */
@@ -564,6 +612,12 @@
   to   { opacity: 0.72; }
 }
 
+/* Completion handoff — individual form element fade-in */
+@keyframes eq-completion-item-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .enquiry-normal-exiting .enquiry-q5-heading,
   .enquiry-normal-entering .enquiry-q5-heading,
@@ -571,6 +625,11 @@
     animation: none;
     opacity: 1;
   }
+}
+
+/* Q1 → completion: whole active slot fades out before completion panel mounts */
+.enquiry-q1-completing {
+  animation: eq-q5q4-content-out 700ms linear 0ms forwards;
 }
 
 /* Slot morph transitions — existing memory items deepening on next answer ── */

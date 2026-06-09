@@ -36,7 +36,7 @@ type MemoryItem = {
 };
 
 export default function EnquiryOpening() {
-  const [stage, setStage] = useState<"opening" | "active">("opening");
+  const [stage, setStage] = useState<"opening" | "active" | "complete">("opening");
   const [activeQ, setActiveQ] = useState(5);
   const [memory, setMemory] = useState<MemoryItem[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -45,6 +45,11 @@ export default function EnquiryOpening() {
   const [q5Transition, setQ5Transition] = useState(false);
   const [q5MemStarting, setQ5MemStarting] = useState(false);
   const [transitionQ, setTransitionQ] = useState<number | null>(null);
+  const [q1Completing, setQ1Completing] = useState(false);
+  const [contactName, setContactName] = useState("");
+  const [contactBusiness, setContactBusiness] = useState("");
+  const [contactWebsite, setContactWebsite] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -74,7 +79,27 @@ export default function EnquiryOpening() {
 
   function handleNextStep() {
     if (activeQ === 1) {
-      console.log("Q1 next (not yet implemented)", Array.from(selected));
+      const answersSnap = Array.from(selected).join(" • ");
+      setSelected(new Set());
+      if (reducedMotion) {
+        setMemory(prev => [...prev, {
+          label: "Q1",
+          question: QUESTIONS[1].question,
+          answers: answersSnap,
+        }]);
+        setStage("complete");
+        return;
+      }
+      setQ1Completing(true);
+      setTransitionQ(1);
+      setTimeout(() => {
+        setMemory(prev => [...prev, {
+          label: "Q1",
+          question: QUESTIONS[1].question,
+          answers: answersSnap,
+        }]);
+      }, 160);
+      setTimeout(() => { setStage("complete"); setTransitionQ(null); }, 900);
       return;
     }
 
@@ -157,7 +182,7 @@ export default function EnquiryOpening() {
         <h1
           className={`font-semibold tracking-tight text-white${
             headingDepth > 0
-              ? ` enquiry-heading-d${headingDepth}${q5Transition ? " enquiry-heading-hidden" : ""}${transitionQ !== null ? " enquiry-heading-deepening" : ""}`
+              ? ` enquiry-heading-d${headingDepth}${q5Transition ? " enquiry-heading-hidden" : ""}${transitionQ !== null ? " enquiry-heading-deepening" : ""}${stage === "complete" ? " enquiry-heading-complete" : ""}`
               : q5Transition
               ? " enquiry-heading-hidden"
               : " text-3xl sm:text-4xl leading-[1.15]"
@@ -178,7 +203,7 @@ export default function EnquiryOpening() {
         {/* Stack: oldest first (top), newest last (bottom, nearest the active slot). */}
         {/* slot = memory.length - i: newest item (last) gets slot 1, oldest (first) gets slot N */}
         {stage !== "opening" && memory.length > 0 && (
-          <div className="enquiry-memory-layer">
+          <div className={`enquiry-memory-layer${stage === "complete" ? " enquiry-memory-complete" : ""}`}>
             {memory.map((item, i) => {
               const slot = memory.length - i;
               return (
@@ -191,6 +216,29 @@ export default function EnquiryOpening() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {stage === "complete" && (
+          <div className="enquiry-contact-layer">
+            <div className="grid grid-cols-2 gap-2 w-full text-left">
+              <div style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 5600ms both" }}>
+                <label htmlFor="cname" className="block text-xs text-neutral-400 mb-1">Name</label>
+                <input id="cname" type="text" value={contactName} onChange={e => setContactName(e.target.value)} autoComplete="name" className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40" />
+              </div>
+              <div style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 6100ms both" }}>
+                <label htmlFor="cbusiness" className="block text-xs text-neutral-400 mb-1">Business name</label>
+                <input id="cbusiness" type="text" value={contactBusiness} onChange={e => setContactBusiness(e.target.value)} autoComplete="organization" className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40" />
+              </div>
+              <div style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 6600ms both" }}>
+                <label htmlFor="cwebsite" className="block text-xs text-neutral-400 mb-1">Website URL</label>
+                <input id="cwebsite" type="url" value={contactWebsite} onChange={e => setContactWebsite(e.target.value)} autoComplete="url" className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40" />
+              </div>
+              <div style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 7100ms both" }}>
+                <label htmlFor="cemail" className="block text-xs text-neutral-400 mb-1">Email</label>
+                <input id="cemail" type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} autoComplete="email" className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40" />
+              </div>
+            </div>
           </div>
         )}
 
@@ -213,11 +261,41 @@ export default function EnquiryOpening() {
               </button>
             </div>
           </>
+        ) : stage === "complete" ? (
+          <div className="enquiry-active-slot" style={{ paddingTop: "3rem" }}>
+            <div className="enquiry-q5-heading" style={{ marginBottom: "0.5rem" }}>
+              <span
+                className="enquiry-q5-question"
+                style={reducedMotion ? undefined : { animation: "enquiry-mask-reveal-horizontal 2500ms linear 0ms both" }}
+              >
+                Understood.
+              </span>
+            </div>
+            <p
+              className="text-sm text-neutral-400 leading-relaxed"
+              style={reducedMotion ? undefined : { animation: "enquiry-mask-reveal-horizontal 4600ms linear 1800ms both" }}
+            >
+              We&apos;re on it. Add your details and we&apos;ll turn this into a clearer direction for your site.
+            </p>
+            <div
+              className="mt-5"
+              style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 8000ms both" }}
+            >
+              <button
+                type="button"
+                disabled={!contactName.trim() || !contactBusiness.trim() || !contactWebsite.trim() || !contactEmail.trim()}
+                className="enquiry-nextstep-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Send
+              </button>
+            </div>
+          </div>
         ) : (
           // Active slot — stable position; Q5 then Q4 content swaps in place here.
           <div className={`enquiry-active-slot${
               q5Transition && activeQ === 5 ? " enquiry-q5-exiting"
               : q5Transition && activeQ === 4 ? " enquiry-active-entering"
+              : q1Completing ? " enquiry-q1-completing"
               : transitionQ !== null && activeQ === transitionQ ? " enquiry-normal-exiting"
               : transitionQ !== null && transitionQ === activeQ + 1 ? " enquiry-normal-entering"
               : ""
