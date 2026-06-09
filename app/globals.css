@@ -389,6 +389,7 @@
   left: 0;
   right: 0;
   text-align: center;
+  transition: bottom 840ms linear, opacity 840ms linear;
 }
 
 .enquiry-mem-qrow {
@@ -404,10 +405,12 @@
   letter-spacing: 0.12em;
   color: rgba(255, 255, 255, 0.40);
   flex-shrink: 0;
+  transition: font-size 840ms linear;
 }
 
 .enquiry-mem-question {
   color: rgba(255, 255, 255, 0.65);
+  transition: font-size 840ms linear;
 }
 
 .enquiry-mem-answers {
@@ -417,6 +420,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: font-size 840ms linear;
 }
 
 /* Memory font sizes per slot */
@@ -532,4 +536,76 @@
     opacity: 1;
   }
   /* .enquiry-heading-hidden intentionally excluded: must stay opacity 0 */
+}
+
+/* Normal transition (Q4->Q3, Q3->Q2, Q2->Q1) ───────────────────────────── */
+
+/* Active question label fades out, 0-360ms */
+.enquiry-normal-exiting .enquiry-q5-heading {
+  animation: eq-q5q4-content-out 360ms linear 0ms forwards;
+}
+
+/* New active question label fades in, 0-600ms */
+.enquiry-normal-entering .enquiry-q5-heading {
+  opacity: 0;
+  animation: eq-q5q4-content-in 600ms linear 0ms forwards;
+}
+
+/* New memory item fades in to slot-1 opacity (0.72), 0-600ms. */
+/* opacity: 0 wins over enquiry-slot-N (same specificity, defined earlier in file). */
+/* fill-mode: both holds at 0.72 until entering class removed; slot-1 CSS takes over at same value. */
+.enquiry-mem-item-entering {
+  opacity: 0;
+  animation: eq-normal-mem-in 600ms linear 0ms both;
+}
+
+@keyframes eq-normal-mem-in {
+  from { opacity: 0; }
+  to   { opacity: 0.72; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-normal-exiting .enquiry-q5-heading,
+  .enquiry-normal-entering .enquiry-q5-heading,
+  .enquiry-mem-item-entering {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Slot morph transitions — existing memory items deepening on next answer ── */
+
+/* Heading: only active during normal transitions (transitionQ !== null in TSX). */
+/* Gated so Q5->Q4 special transition does not trigger a second fade-in of the */
+/* heading when enquiry-heading-hidden is removed at t=1000ms. */
+.enquiry-heading-deepening.enquiry-heading-d2,
+.enquiry-heading-deepening.enquiry-heading-d3,
+.enquiry-heading-deepening.enquiry-heading-d4,
+.enquiry-heading-deepening.enquiry-heading-d5,
+.enquiry-heading-deepening.enquiry-heading-d6 {
+  transition: font-size 840ms linear, opacity 840ms linear, transform 840ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-mem-item,
+  .enquiry-mem-cue,
+  .enquiry-mem-question,
+  .enquiry-mem-answers,
+  .enquiry-heading-deepening.enquiry-heading-d2,
+  .enquiry-heading-deepening.enquiry-heading-d3,
+  .enquiry-heading-deepening.enquiry-heading-d4,
+  .enquiry-heading-deepening.enquiry-heading-d5,
+  .enquiry-heading-deepening.enquiry-heading-d6 {
+    transition: none;
+  }
+}
+
+/* Q5 memory item glide — applied for ~2 frames on mount, then removed to let */
+/* enquiry-mem-item's bottom/opacity transitions carry the item from its start */
+/* position (roughly at the active slot) up to slot-1. Source order wins over */
+/* enquiry-slot-1 (defined earlier in this file). */
+/* Only applied when !reducedMotion (gated in TSX), no reduced-motion CSS needed. */
+.enquiry-mem-q5-start {
+  bottom: -3.5rem;
+  opacity: 0.72;
 }

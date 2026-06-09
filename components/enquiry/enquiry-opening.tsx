@@ -22,6 +22,8 @@ export default function EnquiryOpening() {
   const [beginInteractive, setBeginInteractive] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [q5Transition, setQ5Transition] = useState(false);
+  const [q5MemStarting, setQ5MemStarting] = useState(false);
+  const [transitionQ, setTransitionQ] = useState<number | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -61,9 +63,32 @@ export default function EnquiryOpening() {
       setQ5Transition(true);
       setTimeout(() => {
         setMemory([{ label: "Q5", question: "Placeholder question", answers: answersSnap }]);
+        setQ5MemStarting(true);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setQ5MemStarting(false);
+          });
+        });
       }, 160);
       setTimeout(() => setActiveQ(4), 260);
       setTimeout(() => setQ5Transition(false), 1000);
+      return;
+    }
+
+    if (activeQ < 5 && !reducedMotion) {
+      const answersSnap = Array.from(selected).join("   ");
+      const fromQ = activeQ;
+      setSelected(new Set());
+      setTransitionQ(fromQ);
+      setTimeout(() => {
+        setMemory(prev => [...prev, {
+          label: `Q${fromQ}`,
+          question: "Placeholder question",
+          answers: answersSnap,
+        }]);
+      }, 160);
+      setTimeout(() => setActiveQ(prev => prev - 1), 260);
+      setTimeout(() => setTransitionQ(null), 1000);
       return;
     }
 
@@ -111,7 +136,7 @@ export default function EnquiryOpening() {
         <h1
           className={`font-semibold tracking-tight text-white${
             headingDepth > 0
-              ? ` enquiry-heading-d${headingDepth}${q5Transition ? " enquiry-heading-hidden" : ""}`
+              ? ` enquiry-heading-d${headingDepth}${q5Transition ? " enquiry-heading-hidden" : ""}${transitionQ !== null ? " enquiry-heading-deepening" : ""}`
               : q5Transition
               ? " enquiry-heading-hidden"
               : " text-3xl sm:text-4xl leading-[1.15]"
@@ -132,11 +157,11 @@ export default function EnquiryOpening() {
         {/* Stack: oldest first (top), newest last (bottom, nearest the active slot). */}
         {/* slot = memory.length - i: newest item (last) gets slot 1, oldest (first) gets slot N */}
         {stage !== "opening" && memory.length > 0 && (
-          <div className={`enquiry-memory-layer${q5Transition ? " enquiry-memory-layer-entering" : ""}`}>
+          <div className="enquiry-memory-layer">
             {memory.map((item, i) => {
               const slot = memory.length - i;
               return (
-                <div key={item.label} className={`enquiry-mem-item enquiry-slot-${slot}`}>
+                <div key={item.label} className={`enquiry-mem-item enquiry-slot-${slot}${transitionQ !== null && item.label === `Q${transitionQ}` ? " enquiry-mem-item-entering" : q5MemStarting && item.label === "Q5" ? " enquiry-mem-q5-start" : ""}`}>
                   <div className="enquiry-mem-qrow">
                     <span className="enquiry-mem-cue">{item.label}</span>
                     <span className="enquiry-mem-question">{item.question}</span>
@@ -172,6 +197,8 @@ export default function EnquiryOpening() {
           <div className={`enquiry-active-slot${
               q5Transition && activeQ === 5 ? " enquiry-q5-exiting"
               : q5Transition && activeQ === 4 ? " enquiry-active-entering"
+              : transitionQ !== null && activeQ === transitionQ ? " enquiry-normal-exiting"
+              : transitionQ !== null && transitionQ === activeQ + 1 ? " enquiry-normal-entering"
               : ""
             }`}>
               <div className="enquiry-q5-heading">
