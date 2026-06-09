@@ -6,7 +6,28 @@ const HEADING_LINE1 = "Let's understand what your";
 const HEADING_LINE2 = "business needs to become.";
 const SUBTEXT = "A few focused questions to help us see the right next step.";
 
-const PLACEHOLDER_OPTIONS = ["Answer 1", "Answer 2", "Answer 3", "Answer 4", "Answer 5"];
+const QUESTIONS: Record<number, { question: string; options: string[] }> = {
+  5: {
+    question: "What brought you here today?",
+    options: ["Premium new website", "Current site feels dated", "Better quality enquiries", "Less manual admin", "Not sure yet"],
+  },
+  4: {
+    question: "What needs to improve most?",
+    options: ["Stronger first impression", "Clearer service value", "More trust upfront", "Easier next step", "Better visitor flow"],
+  },
+  3: {
+    question: "What feels unclear right now?",
+    options: ["Message feels vague", "Services need clarity", "Brand feels inconsistent", "Offers feel hard to compare", "Next step feels hidden"],
+  },
+  2: {
+    question: "What should your visitors understand?",
+    options: ["What you offer", "Who you help", "Why trust you", "What happens next", "Why choose you"],
+  },
+  1: {
+    question: "What would success look like?",
+    options: ["More serious enquiries", "Better-fit clients", "Clearer online presence", "More confident brand", "Less friction to contact"],
+  },
+};
 
 type MemoryItem = {
   label: string;
@@ -58,11 +79,11 @@ export default function EnquiryOpening() {
     }
 
     if (activeQ === 5 && !reducedMotion) {
-      const answersSnap = Array.from(selected).join("   ");
+      const answersSnap = Array.from(selected).join(" • ");
       setSelected(new Set());
       setQ5Transition(true);
       setTimeout(() => {
-        setMemory([{ label: "Q5", question: "Placeholder question", answers: answersSnap }]);
+        setMemory([{ label: "Q5", question: QUESTIONS[5].question, answers: answersSnap }]);
         setQ5MemStarting(true);
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
@@ -76,14 +97,14 @@ export default function EnquiryOpening() {
     }
 
     if (activeQ < 5 && !reducedMotion) {
-      const answersSnap = Array.from(selected).join("   ");
+      const answersSnap = Array.from(selected).join(" • ");
       const fromQ = activeQ;
       setSelected(new Set());
       setTransitionQ(fromQ);
       setTimeout(() => {
         setMemory(prev => [...prev, {
           label: `Q${fromQ}`,
-          question: "Placeholder question",
+          question: QUESTIONS[fromQ].question,
           answers: answersSnap,
         }]);
       }, 160);
@@ -94,8 +115,8 @@ export default function EnquiryOpening() {
 
     setMemory(prev => [...prev, {
       label: `Q${activeQ}`,
-      question: "Placeholder question",
-      answers: Array.from(selected).join("   "),
+      question: QUESTIONS[activeQ].question,
+      answers: Array.from(selected).join(" • "),
     }]);
     setActiveQ(prev => prev - 1);
     setSelected(new Set());
@@ -204,12 +225,12 @@ export default function EnquiryOpening() {
               <div className="enquiry-q5-heading">
                 <span className="enquiry-q5-cue" aria-hidden="true">Q{activeQ}</span>
                 <span className="enquiry-q5-question" id="active-q-label">
-                  Placeholder question
+                  {QUESTIONS[activeQ].question}
                 </span>
               </div>
 
               <div className="enquiry-answer-grid" role="group" aria-labelledby="active-q-label">
-                {PLACEHOLDER_OPTIONS.map(option => {
+                {QUESTIONS[activeQ].options.map(option => {
                   const isSelected = selected.has(option);
                   return (
                     <button
