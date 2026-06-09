@@ -246,9 +246,9 @@
 }
 
 .enquiry-q5-question {
-  font-size: 1rem;
+  font-size: 1.375rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.90);
+  color: rgba(255, 255, 255, 1.0);
   line-height: 1.4;
 }
 
@@ -436,11 +436,15 @@
 .enquiry-slot-4 .enquiry-mem-cue { font-size: 12px; }
 .enquiry-slot-4 .enquiry-mem-answers { font-size: 9px; }
 
-/* Heading depth — proportional size/opacity from full opening state toward final small state */
-/* heading depth = memory.length + 1 (d2 after first Q answered, d6 after all five) */
-/* font-size interpolated: full ~30px -> 10px over 5 answered questions (4px/step) */
-.enquiry-heading-d2 { font-size: 26px; line-height: 1.2; opacity: 0.34; }
-.enquiry-heading-d3 { font-size: 22px; line-height: 1.2; opacity: 0.22; }
-.enquiry-heading-d4 { font-size: 18px; line-height: 1.2; opacity: 0.14; }
-.enquiry-heading-d5 { font-size: 14px; line-height: 1.2; opacity: 0.08; }
-.enquiry-heading-d6 { font-size: 10px; line-height: 1.2; opacity: 0.14; }
+/* Heading depth — heading is the deepest corridor layer, sitting just above/behind the nearest */
+/* visible memory slot. translateY shifts it from its natural top-of-shell position down into */
+/* the corridor band. Each offset is calibrated so heading bottom lands just above that slot top. */
+/* d2: behind slot-1 (top ~9rem from shell) → heading bottom ~7.5rem */
+/* d3: behind slot-2 (top ~6.9rem)          → heading bottom ~5.8rem */
+/* d4: behind slot-3 (top ~4.8rem)          → heading bottom ~4rem   */
+/* d5: behind slot-4 (top ~3.1rem)          → heading bottom ~2.2rem */
+.enquiry-heading-d2 { font-size: 14px; line-height: 1.2; opacity: 0.34; transform: translateY(5.5rem); }
+.enquiry-heading-d3 { font-size: 12px; line-height: 1.2; opacity: 0.22; transform: translateY(4rem); }
+.enquiry-heading-d4 { font-size: 10px; line-height: 1.2; opacity: 0.14; transform: translateY(2.5rem); }
+.enquiry-heading-d5 { font-size: 8px;  line-height: 1.2; opacity: 0.08; transform: translateY(1rem); }
+.enquiry-heading-d6 { font-size: 7px;  line-height: 1.2; opacity: 0.05; transform: translateY(0.5rem); }
