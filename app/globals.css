@@ -448,3 +448,88 @@
 .enquiry-heading-d4 { font-size: 10px; line-height: 1.2; opacity: 0.14; transform: translateY(2.5rem); }
 .enquiry-heading-d5 { font-size: 8px;  line-height: 1.2; opacity: 0.08; transform: translateY(1rem); }
 .enquiry-heading-d6 { font-size: 7px;  line-height: 1.2; opacity: 0.05; transform: translateY(0.5rem); }
+
+/* Q5 -> Q4 transition ─────────────────────────────────────────────────── */
+
+/* Ghost: absolutely overlays the opening heading, fades out 80-520ms */
+.enquiry-opening-ghost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  animation: eq-q5q4-ghost-out 680ms linear 80ms both;
+}
+
+/* Corridor ghost — absolutely positioned so it does not contribute layout height. */
+/* Real h1 keeps the layout space; this ghost handles the corridor fade-in visual. */
+.enquiry-corridor-ghost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Real h1 hidden throughout q5Transition (headingDepth 0 or >0) */
+.enquiry-heading-hidden { opacity: 0; }
+
+/* Corridor heading fades in at its final d2 position, 0-360ms. */
+/* opacity: 0 here wins over enquiry-heading-d2's 0.34 (higher specificity), */
+/* preventing a one-frame flash before the animation initializes on mount. */
+.enquiry-heading-d2.enquiry-heading-entering {
+  opacity: 0;
+  animation: eq-q5q4-heading-in 600ms linear 0ms both;
+}
+
+/* Q5 active question label fades out, 0-360ms */
+.enquiry-q5-exiting .enquiry-q5-heading {
+  animation: eq-q5q4-content-out 360ms linear 0ms forwards;
+}
+
+/* Q4 active question label fades in, 0-600ms (starts when Q4 mounts at t=260ms) */
+.enquiry-active-entering .enquiry-q5-heading {
+  opacity: 0;
+  animation: eq-q5q4-content-in 600ms linear 0ms forwards;
+}
+
+/* Memory layer fades in, 0-600ms (starts when memory mounts at t=160ms) */
+.enquiry-memory-layer-entering {
+  animation: eq-q5q4-layer-in 600ms linear 0ms both;
+}
+
+@keyframes eq-q5q4-ghost-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes eq-q5q4-heading-in {
+  from { opacity: 0; }
+  to   { opacity: 0.34; }
+}
+@keyframes eq-q5q4-content-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes eq-q5q4-content-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes eq-q5q4-layer-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-opening-ghost,
+  .enquiry-heading-d2.enquiry-heading-entering,
+  .enquiry-q5-exiting .enquiry-q5-heading,
+  .enquiry-active-entering .enquiry-q5-heading,
+  .enquiry-memory-layer-entering {
+    animation: none;
+    opacity: 1;
+  }
+  /* .enquiry-heading-hidden intentionally excluded: must stay opacity 0 */
+}

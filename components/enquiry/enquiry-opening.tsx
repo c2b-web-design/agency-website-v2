@@ -21,6 +21,7 @@ export default function EnquiryOpening() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [beginInteractive, setBeginInteractive] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [q5Transition, setQ5Transition] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -53,10 +54,21 @@ export default function EnquiryOpening() {
       console.log("Q1 next (not yet implemented)", Array.from(selected));
       return;
     }
-    // Push current Q to memory (append: oldest first), advance to next Q
+
+    if (activeQ === 5 && !reducedMotion) {
+      const answersSnap = Array.from(selected).join("   ");
+      setSelected(new Set());
+      setQ5Transition(true);
+      setTimeout(() => {
+        setMemory([{ label: "Q5", question: "Placeholder question", answers: answersSnap }]);
+      }, 160);
+      setTimeout(() => setActiveQ(4), 260);
+      setTimeout(() => setQ5Transition(false), 1000);
+      return;
+    }
+
     setMemory(prev => [...prev, {
       label: `Q${activeQ}`,
-      // Question text only — the label cue already renders "Q5" in the summary.
       question: "Placeholder question",
       answers: Array.from(selected).join("   "),
     }]);
@@ -78,10 +90,30 @@ export default function EnquiryOpening() {
         {/* Heading — normal flow at the top of the shell (anchored). In active */}
         {/* states its size changes via depth classes, but it never moves the */}
         {/* absolutely-positioned active slot below it. */}
+        {q5Transition && (
+          <h1
+            className="font-semibold tracking-tight text-white text-3xl sm:text-4xl leading-[1.15] enquiry-opening-ghost"
+            aria-hidden="true"
+          >
+            <div>{HEADING_LINE1}</div>
+            <div>{HEADING_LINE2}</div>
+          </h1>
+        )}
+        {q5Transition && headingDepth > 0 && (
+          <h1
+            className={`font-semibold tracking-tight text-white enquiry-heading-d${headingDepth} enquiry-heading-entering enquiry-corridor-ghost`}
+            aria-hidden="true"
+          >
+            <div>{HEADING_LINE1}</div>
+            <div>{HEADING_LINE2}</div>
+          </h1>
+        )}
         <h1
           className={`font-semibold tracking-tight text-white${
             headingDepth > 0
-              ? ` enquiry-heading-d${headingDepth}`
+              ? ` enquiry-heading-d${headingDepth}${q5Transition ? " enquiry-heading-hidden" : ""}`
+              : q5Transition
+              ? " enquiry-heading-hidden"
               : " text-3xl sm:text-4xl leading-[1.15]"
           }`}
         >
@@ -100,7 +132,7 @@ export default function EnquiryOpening() {
         {/* Stack: oldest first (top), newest last (bottom, nearest the active slot). */}
         {/* slot = memory.length - i: newest item (last) gets slot 1, oldest (first) gets slot N */}
         {stage !== "opening" && memory.length > 0 && (
-          <div className="enquiry-memory-layer">
+          <div className={`enquiry-memory-layer${q5Transition ? " enquiry-memory-layer-entering" : ""}`}>
             {memory.map((item, i) => {
               const slot = memory.length - i;
               return (
@@ -137,7 +169,11 @@ export default function EnquiryOpening() {
           </>
         ) : (
           // Active slot — stable position; Q5 then Q4 content swaps in place here.
-          <div className="enquiry-active-slot">
+          <div className={`enquiry-active-slot${
+              q5Transition && activeQ === 5 ? " enquiry-q5-exiting"
+              : q5Transition && activeQ === 4 ? " enquiry-active-entering"
+              : ""
+            }`}>
               <div className="enquiry-q5-heading">
                 <span className="enquiry-q5-cue" aria-hidden="true">Q{activeQ}</span>
                 <span className="enquiry-q5-question" id="active-q-label">
