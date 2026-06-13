@@ -302,12 +302,21 @@ export default function EnquiryOpening() {
             }`}>
               <div className="enquiry-q5-heading">
                 <span className="enquiry-q5-cue" aria-hidden="true">Q{activeQ}</span>
-                <span className="enquiry-q5-question" id="active-q-label">
+                <span
+                  key={activeQ}
+                  className={`enquiry-q5-question${reducedMotion ? "" : " enquiry-q-text-reveal"}`}
+                  id="active-q-label"
+                >
                   {QUESTIONS[activeQ].question}
                 </span>
               </div>
 
-              <div className="enquiry-answer-grid" role="group" aria-labelledby="active-q-label">
+              <div
+                key={activeQ}
+                className={`enquiry-answer-grid${reducedMotion ? "" : " enquiry-cards-reveal"}`}
+                role="group"
+                aria-labelledby="active-q-label"
+              >
                 {QUESTIONS[activeQ].options.map(option => {
                   const isSelected = selected.has(option);
                   return (

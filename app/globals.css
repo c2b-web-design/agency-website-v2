@@ -338,6 +338,35 @@
   .enquiry-nextstep-btn { transition: none; }
 }
 
+/* Active-question staged reveal — re-runs per question because the question */
+/* text and the card grid are keyed by activeQ (so they remount on each step, */
+/* including the first Q5 after Begin). Question text wipes left-to-right (same */
+/* mask language as Stage 1); cards fade/rise in with a calm stagger. */
+.enquiry-q-text-reveal {
+  animation: enquiry-mask-reveal-horizontal 1300ms linear both;
+}
+
+@keyframes enquiry-card-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.enquiry-cards-reveal .enquiry-card {
+  animation: enquiry-card-rise 700ms linear both;
+}
+.enquiry-cards-reveal .enquiry-card:nth-child(1) { animation-delay: 220ms; }
+.enquiry-cards-reveal .enquiry-card:nth-child(2) { animation-delay: 350ms; }
+.enquiry-cards-reveal .enquiry-card:nth-child(3) { animation-delay: 480ms; }
+.enquiry-cards-reveal .enquiry-card:nth-child(4) { animation-delay: 610ms; }
+.enquiry-cards-reveal .enquiry-card:nth-child(5) { animation-delay: 740ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-q-text-reveal,
+  .enquiry-cards-reveal .enquiry-card {
+    animation: none;
+  }
+}
+
 /* Enquiry active state — slot-based depth system */
 
 /* Active question slot — placed at a fixed vertical offset within the shell, */
