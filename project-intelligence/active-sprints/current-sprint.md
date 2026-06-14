@@ -33,25 +33,39 @@ Build the homepage to a complete, production-quality state and begin the `/start
 | Q5 → Q4 handoff motion correction | `components/enquiry/enquiry-opening.tsx`, `app/globals.css` | D-020: per-element settling transitions + spatial recede; seamless DOM swap at 1200ms; static transform on memory field |
 | Q5 → Q4 choreography correction | `components/enquiry/enquiry-opening.tsx`, `app/globals.css` | D-021: transform-origin: top center (eliminates DOM-swap jump); compact memory field (q5Selections only, no placeholders); Next step scrollIntoView with reduced-motion support |
 | Persistent Q5 element + compact memory rail | `components/enquiry/enquiry-opening.tsx`, `app/globals.css` | D-022: persistent Q5 DOM node (no unmount/remount — eliminates snap); q5Phase state model; chip-style memory echoes (.enquiry-memory-chip, reusable pattern); opening context chain reaction; Q4 layout-first + block:nearest safety scroll |
+| Shared corridor architecture | `components/enquiry/enquiry-opening.tsx`, `app/globals.css` | D-023: shared CSS variables for corridor depth; opening heading + Q5 + Q4 three-slot corridor proved and approved |
+| Full Q5→Q1 corridor + completion state | `components/enquiry/enquiry-opening.tsx`, `app/globals.css` | D-024: all five questions complete; Q labels match question size at all depths; "Understood" completion handoff; Send button position; Begin/Next step/Send visibility consistent |
+| Mobile nav | `components/layout/header.tsx` | Mobile header navigation and opening reveal refinements approved |
+| Homepage + start flow QA polish | `app/page.tsx`, `components/enquiry/enquiry-opening.tsx` | Milestone commit 2152e6e — all sections and flow mechanics approved |
 
 ---
 
-## In Progress
+## Sprint 2 Closed — Milestone 2152e6e
 
-*Nothing currently active.*
+Sprint 2 is complete. All success criteria met. Milestone commit: **2152e6e** (2026-06-14).
+
+**Closed criteria:**
+1. Homepage production-quality at all breakpoints — complete
+2. `/start` Stage 1 opening reveal approved — complete
+3. `/start` Stage 2 Q5 guided question approved — complete
+4. Q4 transition designed, approved, and implemented — complete
+5. Mobile navbar resolved — complete
+6. Full Q5→Q1 corridor + completion state — complete (exceeded original scope)
 
 ---
 
-## Up Next
+## Up Next (Sprint 3 — not yet started)
 
 | Task | Priority | Notes |
 |---|---|---|
-| D-023 first implementation: corridor architecture (Opening -> Q5 -> Q4) | High | D-023 approved 2026-06-08. Requires implementation brief from ChatGPT before code changes begin. Q4 -> Q3 follows after corridor model is reviewed and approved. |
-| Mobile navbar (responsive collapse) | Medium | R-001 F-003 — pattern TBD (hamburger, collapsed links, slide drawer) |
-| Real contact flow | Medium | `/start` CTA on homepage links to `/start`. Submit path not implemented. |
+| Start flow colour/material pass | High | D-024 future direction. Requires a new brief. See D-024 and D-025 for direction. |
+| Real submit/send backend | High | Send button is present but not wired. Route, email, or storage target not decided. |
+| Cinematic hero | Medium | D-026 direction. Requires production assets and a new brief. Do not fill hero space without one. |
+| About section | Medium | Planned between Work and Contact. Not yet designed. |
+| Footer refinement | Low | Subtle C2B signature direction noted. |
 | Metadata, SEO, Open Graph | Low | Page titles, descriptions, and social sharing not yet set. |
-| Replace `<a>` tags with `<Link>` | Low | R-001 F-004 — nav and CTA use plain `<a>`. Next.js `<Link>` for client-side routing. |
 | Deployment target decision | Low | Vercel or other — not yet decided. |
+| Future tools (client intelligence etc.) | Future | D-027 direction only. No brief or timeline. |
 
 ---
 
@@ -60,7 +74,7 @@ Build the homepage to a complete, production-quality state and begin the `/start
 - Deployment target? (Vercel, other)
 - Portfolio case studies — any existing client work to reference?
 - Agency tagline / positioning statement?
-- Mobile nav pattern — hamburger, collapsed links, or slide drawer?
+- Send backend: email service, database, or other?
 
 ---
 
@@ -70,17 +84,4 @@ Build the homepage to a complete, production-quality state and begin the `/start
 
 ---
 
-## Sprint Success Criteria
-
-Sprint 2 is complete when:
-
-1. Homepage is production-quality at all breakpoints (complete)
-2. `/start` Stage 1 opening reveal is approved (complete)
-3. `/start` Stage 2 Q5 guided question is approved (complete)
-4. Q4 transition is designed, approved, and implemented (complete)
-5. Mobile navbar resolved
-6. Real contact flow wired through `/start`
-
----
-
-*Last updated: 2026-06-08 - D-023 approved: shared memory corridor architecture. Up Next updated to corridor-first implementation scope.*
+*Last updated: 2026-06-14 — Sprint 2 closed at milestone commit 2152e6e. Sprint 3 up next items seeded.*

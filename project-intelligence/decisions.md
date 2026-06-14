@@ -483,3 +483,66 @@ D-022 remains the committed, deployed, approved baseline. D-023 does not patch o
 **Open at time of logging (resolve before implementation brief):**
 - Exact numeric values for corridor CSS variables (scale, opacity, offset-y per depth slot) - design decision, not locked here. Calibrate from the Q1-active composition backwards.
 - Blur: excluded from first implementation. Revisit after corridor geometry is reviewed.
+
+---
+
+## D-024 — Enquiry Experience: Full Q5→Q1 Corridor + Completion State
+
+**Date:** 2026-06-14  
+**Decision:** The full corridor from Q5 through Q1 is built and approved, including completion state. All five questions follow the shared corridor architecture established in D-023. The Send button is positioned at the completion stage. Begin / Next step / Send button visibility is consistent across all stages.  
+**Rationale:** Milestone commit 2152e6e closes the structural and mechanical phase of the enquiry flow. The corridor model proved stable across all five questions without per-question choreography decisions. Completion state ("Understood" handoff) is approved as the close of the guided process.  
+**Authority:** Human Founder  
+**Status:** APPROVED — commit 2152e6e. No further structural changes without a new brief.
+
+---
+
+**Approved state at milestone (2026-06-14):**
+- Opening heading → Q5 → Q4 → Q3 → Q2 → Q1 corridor: complete and approved.
+- Q labels match question text size at all corridor depths.
+- Completion state ("Understood" handoff): approved.
+- Send button position: approved.
+- Begin / Next step / Send visibility: consistent and approved.
+- Mobile opening reveal and corridor refinements: complete and approved.
+
+**Future colour/material pass (not yet designed — future direction only):**
+- Active question: white/off-white (unchanged).
+- Memory question text: may use one teal/duck-egg family colour.
+- Q labels: may use muted gold/amber.
+- Depth expressed through lightness/opacity — not multiple competing hues.
+- Answer selected state: move away from current brown/amber fill toward restrained glass/smoked material.
+- This pass requires a new brief. Do not implement without one.
+
+---
+
+## D-025 — Visual Direction: Brand Colour Direction
+
+**Date:** 2026-06-14  
+**Decision:** The site's emerging brand colour direction is: near-black base, gold/amber as premium accent light, teal/duck-egg/deep blue as modern intelligence accent. These are directional only — not yet applied to the homepage or any live surface. Application requires a design pass with a new brief.  
+**Rationale:** Colour direction was resolved informally across the enquiry experience iterations and is recorded here as a shared reference so future agents do not treat the current neutral-only palette as the permanent final state.  
+**Authority:** Human Founder  
+**Status:** APPROVED as direction. Not yet implemented on homepage. Do not apply without a brief.
+
+---
+
+## D-026 — Hero: Future Cinematic Direction
+
+**Date:** 2026-06-14  
+**Decision:** The current hero is a structural scaffold only. The right-side visual space is intentionally empty. The planned future hero is a cinematic dark studio world featuring the C2B logo as the central object. The logo begins in a video/film world and transitions seamlessly into a code-driven interactive object. Text and button elements may later catch subtle reflected gold/teal light only after the code-world logo becomes active.  
+**Rationale:** The hero as-built holds the layout and tone. The cinematic direction is a future creative milestone requiring its own brief and production assets. Recording it now prevents future agents from treating the current scaffold as the final design or filling the empty space prematurely.  
+**Authority:** Human Founder  
+**Status:** APPROVED as direction. Not yet designed or implemented.
+
+**Constraints (approved):**
+- Avoid sci-fi, fantasy, landscape, and over-flashy motion.
+- Rule: "more David Gilmour, less Yngwie Malmsteen."
+- Text/button do not catch colour effects until the code-world logo object is active.
+
+---
+
+## D-027 — Future Tools Direction
+
+**Date:** 2026-06-14  
+**Decision:** Three future intelligence tools are directionally planned: (1) client discovery/intelligence tool, (2) website/brand opportunity report tool, (3) internal transformation preview tool (before any public version). These are recorded as directional intent only — no scope, brief, or implementation timeline exists yet.  
+**Rationale:** Avoids scope creep into the current build while recording the founder's intent so future agents understand what the service offer may extend to.  
+**Authority:** Human Founder  
+**Status:** DIRECTION ONLY — not approved for design or implementation.

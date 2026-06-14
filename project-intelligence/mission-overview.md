@@ -4,7 +4,7 @@
 
 **Name:** C2B Web Design  
 **Type:** Premium web design agency — trust bridge into a wider human-led AI and digital systems business  
-**Stage:** Active build — homepage complete, enquiry experience in progress
+**Stage:** Milestone complete — homepage scaffold and full enquiry flow approved at commit 2152e6e (2026-06-14)
 
 ---
 
@@ -64,20 +64,27 @@ Businesses that want a premium digital presence, faster and smarter enquiry hand
 
 ## Current Project Stage
 
-**Homepage:** Complete.
-- Navbar, Hero, Services (D-012 model), Work/Proof (agency as first proof piece — D-013), Final CTA, Footer.
-- CTA links to `/start`. Contact flow is a placeholder until the enquiry system is production-ready.
+**Milestone commit:** 2152e6e — 2026-06-14
 
-**`/start` Enquiry Experience:**
-- Stage 1 (opening reveal): Complete and approved — D-015.
-- Stage 2 (Q5 guided question — "What brought you here today?"): Complete and approved — D-016.
-- Stage 3–5 (Q4 through submit/completion): Not yet started.
+**Homepage:** Approved.
+- Navbar (Services → Work → About → Contact), Hero (scaffold only — right-side space intentionally empty, future cinematic direction planned D-026), Services (D-012), Work/Proof (D-013), Contact/CTA (D-014), Footer.
+- About section is planned but not built. When built, it sits between Work and Contact.
+- CTA links to `/start`. Send/submit backend not yet wired.
 
-**Pending:**
-- Mobile navbar responsive state (R-001 F-003).
-- Real contact flow wired to `/start` (currently placeholder).
-- Metadata, SEO, and Open Graph.
-- Q4 transition design and implementation.
+**`/start` Enquiry Experience:** Approved — full corridor complete.
+- Opening reveal → Q5 → Q4 → Q3 → Q2 → Q1 → Completion ("Understood" handoff).
+- Shared corridor architecture: D-023. All five questions approved: D-024.
+- Send button position approved. Begin / Next step / Send visibility consistent.
+- Mobile opening reveal and corridor: approved.
+- Future colour/material pass planned but not yet designed — see D-024, D-025.
+
+**Pending for Sprint 3:**
+- Send/submit backend (email service or storage — target not decided).
+- Start flow colour/material pass (D-024 future direction — requires new brief).
+- Cinematic hero (D-026 direction — requires production assets and new brief).
+- About section (planned, not yet designed).
+- Footer refinement (subtle C2B signature — future direction).
+- Metadata, SEO, Open Graph.
 - Deployment target decision.
 
 ---
@@ -88,4 +95,4 @@ This project operates under a defined multi-agent AI structure. See `/project-in
 
 ---
 
-*Last updated: 2026-05-31*
+*Last updated: 2026-06-14 — Milestone commit 2152e6e. Sprint 2 closed. Sprint 3 pending.*

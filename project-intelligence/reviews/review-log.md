@@ -21,6 +21,35 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-009 — Milestone QA: Homepage Scaffold + Full Enquiry Flow
+
+**Date:** 2026-06-14  
+**Reviewer:** Human Founder  
+**Subject:** Full site review — homepage scaffold, `/start` full Q5→Q1 corridor, completion state, mobile nav, mobile opening reveal
+
+**Findings:**
+- Homepage scaffold (Hero, Services, Work, Contact/CTA, Footer) is clean and restrained. Approved.
+- Nav order approved: Services → Work → About → Contact. About is planned but not built.
+- Hero right-side space is intentionally empty. Future cinematic direction planned (D-026). Do not fill without a brief.
+- Services section approved after spacing/anchor refinement.
+- Work section approved. Possible future centred heading or visual asset only if later design direction requires it.
+- Contact/CTA section approved. Nav landing is clean and full-screen in style.
+- Footer is acceptable for now. Subtle C2B signature refinement planned.
+- Full Q5→Q1 corridor approved. Corridor architecture (D-023) proved stable across all five questions.
+- Q labels match question text size at all corridor depths. Approved.
+- Completion state ("Understood" handoff) approved.
+- Send button position approved.
+- Begin / Next step / Send button visibility consistent and approved.
+- Mobile nav approved. Mobile opening reveal and corridor refinements approved.
+
+**Flags:**
+
+*None.*
+
+**Status:** Approved — milestone commit 2152e6e. Sprint 2 closed.
+
+---
+
 ## R-008 — Persistent Q5 Element + Compact Memory Rail
 
 **Date:** 2026-06-01  

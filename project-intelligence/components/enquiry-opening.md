@@ -1,15 +1,15 @@
 # Component Documentation — EnquiryOpening
 
-**Status:** IMPLEMENTED  
+**Status:** IMPLEMENTED — milestone approved 2026-06-14, commit 2152e6e  
 **Component file:** `components/enquiry/enquiry-opening.tsx`  
-**Review entries:** R-002 (Stage 1), R-003 (Stage 2), R-004 (Q4 stage)  
-**Related decisions:** D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022
+**Review entries:** R-002 (Stage 1), R-003 (Stage 2), R-004 (Q4 stage), R-009 (full corridor milestone)  
+**Related decisions:** D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-022, D-023, D-024
 
 ---
 
 ## Purpose
 
-The primary component for the `/start` route. Manages the full guided enquiry experience from the initial opening reveal (Stage 1) through the Q5 guided question (Stage 2) and Q4 active stage (Stage 3). Rendered by the thin server wrapper at `app/start/page.tsx`.
+The primary component for the `/start` route. Manages the full guided enquiry experience from the initial opening reveal through the complete Q5→Q1 corridor, completion state ("Understood" handoff), and Send button. Rendered by the thin server wrapper at `app/start/page.tsx`.
 
 A client component (`"use client"`) — uses `useState`, `useEffect`, `useRef`, `setTimeout`, and `window.matchMedia` for animation state, stage transitions, scroll management, and reduced-motion detection.
 
@@ -55,13 +55,11 @@ When stage content exceeds viewport height, the browser scrolls naturally — no
 
 ## Stage Machine
 
-| Stage value | Description |
-|---|---|
-| `"opening"` | Stage 1 — opening reveal sequence, Begin button |
-| `"question1"` | Stage 2 — Q5 multi-select ("What brought you here today?") |
-| `"question2"` | Stage 3 — Q5 in memory rail; Q4 single-select active; opening context recedes further |
+The full corridor runs: Opening → Q5 → Q4 → Q3 → Q2 → Q1 → Completion.
 
-`q5Phase: "active" | "settling" | "memory"` tracks Q5's visual state independently of `stage`. The Q5 DOM node persists from `stage = "question1"` through `stage = "question2"` — it is never unmounted. Visual state is driven entirely by class changes.
+Each completed question compresses into a memory capsule at corridor depth, governed by shared CSS variables (D-023). The active question always owns attention at full prominence.
+
+`q5Phase` (and equivalent phase state for each question) tracks visual state independently of `stage`. Question DOM nodes persist through the corridor — visual state is driven entirely by class changes, not unmount/remount.
 
 ---
 
@@ -240,12 +238,20 @@ No shadcn/ui primitives. No `cn()` utility — class composition uses template l
 
 ---
 
-## Future Improvements
+## Known Issues
 
-- Q4 → Q3 transition — Q4 "Next step" is currently a placeholder. Q3 model not yet designed; requires a new brief.
-- Stage 4–5 (remaining guided questions, submit dissolve, completion state) — scope not yet defined.
-- Consider extracting individual stage components (`EnquiryStage1`, `EnquiryStage2`, etc.) once Stage 4 scope is known — premature before that point.
+| ID | Description | Severity | Review Reference | Status |
+|---|---|---|---|---|
+| F-005 | "Next step" on Q5 triggered Q4 reveal | Medium | R-003 | Actioned |
+| F-006 | Q4 transition behaviour undefined | Low | R-003 | Actioned — D-017 |
+| F-007 | Q4 "Next step" was a placeholder | Low | R-004 | Actioned — full corridor complete |
+
+## Future Work
+
+- **Colour/material pass** — D-024 future direction. Active question stays white/off-white. Memory question text may use teal/duck-egg family. Q labels may use muted gold/amber. Selected state to move away from current brown fill toward glass/smoked material. Requires a new brief. Do not implement without one.
+- **Send wiring** — Send button is present and positioned. Backend target (email service, storage) not yet decided.
+- **Component extraction** — consider splitting individual corridor stages into sub-components once the Send wiring brief is defined.
 
 ---
 
-*Last updated: 2026-06-01 — D-022 applied; persistent Q5 element, chip memory rail, Q4 layout-first framing*
+*Last updated: 2026-06-14 — Full Q5→Q1 corridor and completion state approved at milestone commit 2152e6e. D-023 and D-024 added to related decisions.*
