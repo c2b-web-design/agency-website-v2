@@ -494,6 +494,15 @@
     opacity: 1;
   }
   /* .enquiry-heading-hidden intentionally excluded: must stay opacity 0 */
+  .enquiry-m-heading-line1-mask,
+  .enquiry-m-heading-line2-mask,
+  .enquiry-m-heading-line3-mask,
+  .enquiry-m-heading-line4-mask,
+  .enquiry-m-subtext-line1-mask,
+  .enquiry-m-subtext-line2-mask {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 /* Completion handoff — individual form element fade-in */
@@ -794,5 +803,27 @@
   .enquiry-heading-d4 { font-size: 8px;  opacity: 0.07; transform: translateY(2.0rem); }
   .enquiry-heading-d5 { font-size: 7px;  opacity: 0.05; transform: translateY(0.8rem); }
   .enquiry-heading-d6 { font-size: 6px;  opacity: 0.04; transform: translateY(0.1rem); }
+
+  /* Mobile opening reveal — 4-line heading, legato sequential */
+  .enquiry-m-heading-line1-mask {
+    animation: enquiry-mask-reveal-horizontal 1100ms cubic-bezier(0.37, 0, 0.63, 1) 600ms both;
+  }
+  .enquiry-m-heading-line2-mask {
+    animation: enquiry-mask-reveal-horizontal 900ms cubic-bezier(0.37, 0, 0.63, 1) 1400ms both;
+  }
+  .enquiry-m-heading-line3-mask {
+    animation: enquiry-mask-reveal-horizontal 1100ms cubic-bezier(0.37, 0, 0.63, 1) 2000ms both;
+  }
+  .enquiry-m-heading-line4-mask {
+    animation: enquiry-mask-reveal-horizontal 1100ms cubic-bezier(0.37, 0, 0.63, 1) 2800ms both;
+  }
+
+  /* Mobile opening reveal — 2-line subtext, legato sequential */
+  .enquiry-m-subtext-line1-mask {
+    animation: enquiry-mask-reveal-horizontal 2200ms cubic-bezier(0.37, 0, 0.63, 1) 3600ms both;
+  }
+  .enquiry-m-subtext-line2-mask {
+    animation: enquiry-mask-reveal-horizontal 1800ms cubic-bezier(0.37, 0, 0.63, 1) 5200ms both;
+  }
 
 }

@@ -6,6 +6,13 @@ const HEADING_LINE1 = "Let's understand what your";
 const HEADING_LINE2 = "business needs to become.";
 const SUBTEXT = "A few focused questions to help us see the right next step.";
 
+const HEADING_M1 = "Let's understand";
+const HEADING_M2 = "what your";
+const HEADING_M3 = "business needs to";
+const HEADING_M4 = "become.";
+const SUBTEXT_M1 = "A few focused questions to help us see";
+const SUBTEXT_M2 = "the right next step.";
+
 const QUESTIONS: Record<number, { question: string; options: string[] }> = {
   5: {
     question: "What brought you here today?",
@@ -256,12 +263,30 @@ export default function EnquiryOpening() {
               : " text-3xl sm:text-4xl leading-[1.15]"
           }`}
         >
-          <div className={stage === "opening" ? "enquiry-heading-line1-mask" : undefined}>
-            {HEADING_LINE1}
-          </div>
-          <div className={stage === "opening" ? "enquiry-heading-line2-mask" : undefined}>
-            {HEADING_LINE2}
-          </div>
+          {/* Desktop/tablet: two lines, original reveal */}
+          <span className="hidden sm:block">
+            <div className={stage === "opening" ? "enquiry-heading-line1-mask" : undefined}>
+              {HEADING_LINE1}
+            </div>
+            <div className={stage === "opening" ? "enquiry-heading-line2-mask" : undefined}>
+              {HEADING_LINE2}
+            </div>
+          </span>
+          {/* Mobile: four lines, sequential reveal */}
+          <span className="block sm:hidden">
+            <div className={stage === "opening" ? "enquiry-m-heading-line1-mask" : undefined}>
+              {HEADING_M1}
+            </div>
+            <div className={stage === "opening" ? "enquiry-m-heading-line2-mask" : undefined}>
+              {HEADING_M2}
+            </div>
+            <div className={stage === "opening" ? "enquiry-m-heading-line3-mask" : undefined}>
+              {HEADING_M3}
+            </div>
+            <div className={stage === "opening" ? "enquiry-m-heading-line4-mask" : undefined}>
+              {HEADING_M4}
+            </div>
+          </span>
         </h1>
 
         {/* Unified phrase corridor — every question lives here as ONE persistent phrase. */}
@@ -305,8 +330,16 @@ export default function EnquiryOpening() {
 
         {stage === "opening" ? (
           <>
-            <div className="mt-6 enquiry-subtext-mask">
-              <p className="text-base text-neutral-400 leading-relaxed">{SUBTEXT}</p>
+            <div className="mt-6">
+              {/* Desktop/tablet: single block reveal */}
+              <p className={`hidden sm:block text-base text-neutral-400 leading-relaxed${reducedMotion ? "" : " enquiry-subtext-mask"}`}>
+                {SUBTEXT}
+              </p>
+              {/* Mobile: two-line sequential reveal */}
+              <div className="block sm:hidden text-base text-neutral-400 leading-relaxed">
+                <div className={reducedMotion ? undefined : "enquiry-m-subtext-line1-mask"}>{SUBTEXT_M1}</div>
+                <div className={reducedMotion ? undefined : "enquiry-m-subtext-line2-mask"}>{SUBTEXT_M2}</div>
+              </div>
             </div>
             <div
               className={`mt-10${reducedMotion ? "" : " enquiry-button-mask"}`}
