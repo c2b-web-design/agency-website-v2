@@ -324,17 +324,17 @@ export default function EnquiryOpening() {
           </>
         ) : stage === "complete" ? (
           <div className="enquiry-active-slot" style={{ paddingTop: "3rem" }}>
-            <div className="enquiry-q5-heading" style={{ marginBottom: "0.5rem" }}>
+          <div className="enquiry-q5-heading" style={{ marginBottom: "0.5rem" }}>
               <span
                 className="enquiry-q5-question"
-                style={reducedMotion ? undefined : { animation: "enquiry-mask-reveal-horizontal 1100ms cubic-bezier(0.37, 0, 0.63, 1) 0ms both" }}
+                style={reducedMotion ? undefined : { animation: "enquiry-mask-reveal-horizontal 1100ms cubic-bezier(0.37, 0, 0.63, 1) 0ms both, eq-understood-fade-out 1400ms linear 4800ms forwards" }}
               >
                 Understood.
               </span>
             </div>
             <p
               className="text-sm text-neutral-400 leading-relaxed"
-              style={reducedMotion ? undefined : { animation: "enquiry-mask-reveal-horizontal 3600ms cubic-bezier(0.37, 0, 0.63, 1) 800ms both" }}
+              style={reducedMotion ? undefined : { animation: "enquiry-mask-reveal-horizontal 3600ms cubic-bezier(0.37, 0, 0.63, 1) 800ms both, eq-understood-fade-out 1400ms linear 4800ms forwards" }}
             >
               We&apos;re on it. Add your details and we&apos;ll turn this into a clearer direction for your site.
             </p>

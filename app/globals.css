@@ -502,6 +502,14 @@
   to   { opacity: 1; }
 }
 
+/* "Understood." + subtext fade out once the form is landing (~4800ms). */
+/* 1400ms legato fade: calm, not abrupt. Completes at ~6200ms. */
+/* Applied directly to both elements to avoid opacity stacking-context ambiguity. */
+@keyframes eq-understood-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 /* Corridor deepening — every memory phrase steps one depth deeper on each answer. */
 /* The heading is the deepest layer and deepens with them (transition while moving). */
 .enquiry-heading-deepening.enquiry-heading-d2,
