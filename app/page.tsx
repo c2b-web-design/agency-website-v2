@@ -1,4 +1,5 @@
 import Container from "@/components/layout/container";
+import SiteHeader from "@/components/layout/site-header";
 
 export default function Home() {
   return (
@@ -7,50 +8,7 @@ export default function Home() {
     // min-h-screen: ensures the dark background fills the viewport even on short pages
     <div className="bg-neutral-950 text-white min-h-screen">
 
-      {/* ── Navbar ────────────────────────────────────────────────────────────
-          border-b: subtle bottom line separates nav from content without a shadow
-          py-5: compact vertical padding keeps the nav from dominating the page      */}
-      <nav className="border-b border-neutral-800 py-5">
-        <Container>
-          {/* flex + justify-between: pushes logo to the left, links to the right
-              items-center: vertically aligns logo and links on the same baseline    */}
-          <div className="flex items-center justify-between">
-
-            {/* Brand lockup: C2B is the logo mark; Web Design is a supporting descriptor that
-                trains brand association while the identity is still being established.
-                The long-term goal is C2B standing alone — for now, "Web Design" makes the
-                pairing legible to new visitors without requiring prior familiarity.
-                items-baseline: aligns both spans on the text baseline, which is more precise
-                than items-center when pairing different visual weights.
-                gap-2 (8px): tight enough to read as one compound name, not two separate labels. */}
-            <div className="flex items-baseline gap-2">
-              {/* Logo mark: bold, uppercase, tracked-out — the dominant brand element.
-                  All the visual weight lives here; "Web Design" defers to it.           */}
-              <span className="text-xs font-bold tracking-[0.2em] uppercase">C2B</span>
-              {/* Descriptor: quieter companion. font-normal and neutral-500 make it clearly
-                  subordinate. No uppercase or wide tracking — those would create competition
-                  with the mark and make the lockup read as two items rather than one.    */}
-              <span className="text-xs font-normal tracking-normal text-neutral-500">Web Design</span>
-            </div>
-
-            {/* gap-6 (down from gap-8): gap-8 was loose enough to feel unresolved.
-                gap-6 tightens the group into a deliberate cluster without crowding.
-                duration-200 on hover: an explicit transition duration makes the hover feel smooth
-                rather than a hard snap. neutral-100 (not pure white) softens the arrival —
-                premium interfaces avoid binary on/off color states.
-                hidden md:flex: on mobile the links are hidden entirely — four nav items in a
-                single row at 400px competes with the brand lockup and feels cramped. The brand
-                lockup alone is sufficient at small sizes. A hamburger menu will be added later
-                when the site has real navigation depth to justify the interaction cost.        */}
-            <div className="hidden md:flex items-center gap-6">
-              <a href="#work"     className="text-sm text-neutral-400 hover:text-neutral-100 transition-colors duration-200">Work</a>
-              <a href="#services" className="text-sm text-neutral-400 hover:text-neutral-100 transition-colors duration-200">Services</a>
-              <a href="#"         className="text-sm text-neutral-400 hover:text-neutral-100 transition-colors duration-200">About</a>
-              <a href="#"         className="text-sm text-neutral-400 hover:text-neutral-100 transition-colors duration-200">Contact</a>
-            </div>
-          </div>
-        </Container>
-      </nav>
+      <SiteHeader />
 
       {/* ── Hero ──────────────────────────────────────────────────────────────
           py-32: generous vertical space — spaciousness signals confidence and quality  */}
