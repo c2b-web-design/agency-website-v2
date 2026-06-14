@@ -706,3 +706,93 @@
     transition: none;
   }
 }
+
+/* ─── Mobile corridor: responsive depth ladder (@max-width 639px) ──────────── */
+/* Prevents question text overlap on narrow viewports (Samsung Galaxy ~360–390px). */
+/* All desktop values are preserved; this block is purely additive.              */
+@media (max-width: 639px) {
+
+  /* Active question: 22px → 18px. 2-line qrow shrinks from ~3.85rem to ~3.04rem,
+     pulling the qrow top up from ~9.58rem to ~10.4rem inside the band.
+     line-height 1.4 → 1.35 saves ~0.18rem across 2 lines. gap 0.4rem gives
+     the question text marginally more horizontal room. bottom -1.925rem unchanged. */
+  .enquiry-pdepth-0 .enquiry-phrase-question {
+    font-size: 18px;
+    line-height: 1.35;
+  }
+  .enquiry-pdepth-0 .enquiry-phrase-qrow {
+    gap: 0.4rem;
+  }
+
+  /* Depth-1: 20px → 14px guarantees single-line for all 5 questions at mobile width.
+     bottom 1.7rem → 2.75rem places qrow bottom at 8.75rem; 1.65rem above depth-0 top.
+     Note: if 14px feels too small on device, nudge to 15px before widening the ladder. */
+  .enquiry-pdepth-1 {
+    bottom: 2.75rem;
+  }
+  .enquiry-pdepth-1 .enquiry-phrase-cue,
+  .enquiry-pdepth-1 .enquiry-phrase-question {
+    font-size: 14px;
+  }
+  .enquiry-pdepth-1 .enquiry-phrase-answers {
+    font-size: 10px;
+  }
+
+  /* Depth-2: 17px → 12px, single-line. bottom 4.5rem → 5.25rem. */
+  .enquiry-pdepth-2 {
+    bottom: 5.25rem;
+  }
+  .enquiry-pdepth-2 .enquiry-phrase-cue,
+  .enquiry-pdepth-2 .enquiry-phrase-question {
+    font-size: 12px;
+  }
+  .enquiry-pdepth-2 .enquiry-phrase-answers {
+    font-size: 9px;
+  }
+
+  /* Depth-3: 14px → 10px. bottom 6.65rem → 7.2rem. Atmospheric (opacity 0.34). */
+  .enquiry-pdepth-3 {
+    bottom: 7.2rem;
+  }
+  .enquiry-pdepth-3 .enquiry-phrase-cue,
+  .enquiry-pdepth-3 .enquiry-phrase-question {
+    font-size: 10px;
+  }
+  .enquiry-pdepth-3 .enquiry-phrase-answers {
+    font-size: 8px;
+  }
+
+  /* Depth-4: 12px → 9px. bottom 8.2rem → 8.45rem. Deep atmosphere (opacity 0.22). */
+  .enquiry-pdepth-4 {
+    bottom: 8.45rem;
+  }
+  .enquiry-pdepth-4 .enquiry-phrase-cue,
+  .enquiry-pdepth-4 .enquiry-phrase-question {
+    font-size: 9px;
+  }
+  .enquiry-pdepth-4 .enquiry-phrase-answers {
+    font-size: 7px;
+  }
+
+  /* Depth-5: 10px → 8px. bottom 9.15rem → 9.35rem. Vanishing (opacity 0.14). */
+  .enquiry-pdepth-5 {
+    bottom: 9.35rem;
+  }
+  .enquiry-pdepth-5 .enquiry-phrase-cue,
+  .enquiry-pdepth-5 .enquiry-phrase-question {
+    font-size: 8px;
+  }
+  .enquiry-pdepth-5 .enquiry-phrase-answers {
+    font-size: 6px;
+  }
+
+  /* Heading translateY recalibrated to match the repositioned memory ladder.
+     Each value places the 2-line heading bottom just below the deepest visible
+     memory qrow bottom at that depth step. */
+  .enquiry-heading-d2 { transform: translateY(6.8rem); }
+  .enquiry-heading-d3 { transform: translateY(4.6rem); }
+  .enquiry-heading-d4 { transform: translateY(2.9rem); }
+  .enquiry-heading-d5 { transform: translateY(1.5rem); }
+  .enquiry-heading-d6 { transform: translateY(0.3rem); }
+
+}
