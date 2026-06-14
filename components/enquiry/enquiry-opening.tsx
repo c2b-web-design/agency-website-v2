@@ -72,9 +72,9 @@ export default function EnquiryOpening() {
       return;
     }
     // Desktop: enquiry-button-mask 7400ms delay + 1900ms duration = 9300ms
-    // Mobile: slower reveal; subtext resolves ~9200ms, Begin interactive at 11500ms
+    // Mobile: slower reveal; subtext resolves ~9500ms, Begin interactive at 12000ms
     const isMobile = window.matchMedia("(max-width: 639px)").matches;
-    const delay = isMobile ? 11500 : 9300;
+    const delay = isMobile ? 12000 : 9300;
     const t = window.setTimeout(() => setBeginInteractive(true), delay);
     return () => clearTimeout(t);
   }, [stage]);

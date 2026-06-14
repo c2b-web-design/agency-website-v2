@@ -809,13 +809,13 @@
     animation: enquiry-mask-reveal-horizontal 1500ms cubic-bezier(0.37, 0, 0.63, 1) 600ms both;
   }
   .enquiry-m-heading-line2-mask {
-    animation: enquiry-mask-reveal-horizontal 1300ms cubic-bezier(0.37, 0, 0.63, 1) 1700ms both;
+    animation: enquiry-mask-reveal-horizontal 1550ms cubic-bezier(0.37, 0, 0.63, 1) 1700ms both;
   }
   .enquiry-m-heading-line3-mask {
     animation: enquiry-mask-reveal-horizontal 1700ms cubic-bezier(0.37, 0, 0.63, 1) 2550ms both;
   }
   .enquiry-m-heading-line4-mask {
-    animation: enquiry-mask-reveal-horizontal 1200ms cubic-bezier(0.37, 0, 0.63, 1) 3850ms both;
+    animation: enquiry-mask-reveal-horizontal 1450ms cubic-bezier(0.37, 0, 0.63, 1) 3850ms both;
   }
 
   /* Mobile opening reveal — 2-line subtext, legato sequential */
@@ -823,7 +823,12 @@
     animation: enquiry-mask-reveal-horizontal 2800ms cubic-bezier(0.37, 0, 0.63, 1) 5000ms both;
   }
   .enquiry-m-subtext-line2-mask {
-    animation: enquiry-mask-reveal-horizontal 2100ms cubic-bezier(0.37, 0, 0.63, 1) 7100ms both;
+    animation: enquiry-mask-reveal-horizontal 2400ms cubic-bezier(0.37, 0, 0.63, 1) 7100ms both;
+  }
+
+  /* Mobile Begin button: delayed to follow subtext line 2 resolution */
+  .enquiry-button-mask {
+    animation: enquiry-mask-reveal-downward 1900ms cubic-bezier(0.37, 0, 0.63, 1) 10100ms both;
   }
 
 }
