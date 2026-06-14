@@ -152,19 +152,19 @@
 }
 
 .enquiry-heading-line1-mask {
-  animation: enquiry-mask-reveal-horizontal 2500ms linear 600ms both;
+  animation: enquiry-mask-reveal-horizontal 2100ms cubic-bezier(0.37, 0, 0.63, 1) 600ms both;
 }
 
 .enquiry-heading-line2-mask {
-  animation: enquiry-mask-reveal-horizontal 2500ms linear 2900ms both;
+  animation: enquiry-mask-reveal-horizontal 2100ms cubic-bezier(0.37, 0, 0.63, 1) 2100ms both;
 }
 
 .enquiry-subtext-mask {
-  animation: enquiry-mask-reveal-horizontal 4600ms linear 5100ms both;
+  animation: enquiry-mask-reveal-horizontal 4200ms cubic-bezier(0.37, 0, 0.63, 1) 3600ms both;
 }
 
 .enquiry-button-mask {
-  animation: enquiry-mask-reveal-downward 2500ms linear 9000ms both;
+  animation: enquiry-mask-reveal-downward 1900ms cubic-bezier(0.37, 0, 0.63, 1) 7400ms both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -380,105 +380,8 @@
   top: 11.5rem;
 }
 
-/* Memory band — a fixed region spanning from the shell top (heading area) down */
-/* to the active slot's top line (height = active-slot top = 11.5rem). Its bottom */
-/* edge IS the active slot line. Memory items are positioned individually by */
-/* slot within this band (see slot bottom offsets below); the band never grows */
-/* as one block, so it cannot push into the heading. */
-.enquiry-memory-layer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 11.5rem;
-}
-
-/* Slot opacity (slot 1 = most recent memory, slot 5 = oldest) */
-.enquiry-slot-1 { opacity: 0.72; }
-.enquiry-slot-2 { opacity: 0.50; }
-.enquiry-slot-3 { opacity: 0.34; }
-.enquiry-slot-4 { opacity: 0.22; }
-.enquiry-slot-5 { opacity: 0.14; }
-
-/* Slot vertical position within the memory band. */
-/* bottom = distance above the active slot line; slot 1 sits on the line */
-/* (nearest the active question) and older slots step progressively higher by */
-/* fixed offsets, so the stack occupies known coordinates rather than growing */
-/* as one block into the heading. */
-.enquiry-slot-1 { bottom: 0; }
-.enquiry-slot-2 { bottom: 2.5rem; }
-.enquiry-slot-3 { bottom: 4.9rem; }
-.enquiry-slot-4 { bottom: 6.8rem; }
-.enquiry-slot-5 { bottom: 8.3rem; }
-
-/* Memory item layout — each item is absolutely positioned within the memory */
-/* band and anchored by slot (see slot bottom offsets above), so items occupy */
-/* fixed coordinates instead of stacking as one growing block. */
-.enquiry-mem-item {
-  position: absolute;
-  left: 0;
-  right: 0;
-  text-align: center;
-  transition: bottom 840ms linear, opacity 840ms linear;
-}
-
-.enquiry-mem-qrow {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 0.35rem;
-  line-height: 1.3;
-}
-
-.enquiry-mem-cue {
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.40);
-  flex-shrink: 0;
-  transition: font-size 840ms linear;
-}
-
-.enquiry-mem-question {
-  color: rgba(255, 255, 255, 0.65);
-  transition: font-size 840ms linear;
-}
-
-.enquiry-mem-answers {
-  line-height: 1.1;
-  color: rgba(255, 255, 255, 0.80);
-  margin-top: 0.15rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: font-size 840ms linear;
-}
-
-/* Memory font sizes per slot */
-.enquiry-slot-1 .enquiry-mem-question,
-.enquiry-slot-1 .enquiry-mem-cue { font-size: 20px; }
-.enquiry-slot-1 .enquiry-mem-answers { font-size: 14px; }
-
-.enquiry-slot-2 .enquiry-mem-question,
-.enquiry-slot-2 .enquiry-mem-cue { font-size: 17px; }
-.enquiry-slot-2 .enquiry-mem-answers { font-size: 12px; }
-
-.enquiry-slot-3 .enquiry-mem-question,
-.enquiry-slot-3 .enquiry-mem-cue { font-size: 14px; }
-.enquiry-slot-3 .enquiry-mem-answers { font-size: 10px; }
-
-.enquiry-slot-4 .enquiry-mem-question,
-.enquiry-slot-4 .enquiry-mem-cue { font-size: 12px; }
-.enquiry-slot-4 .enquiry-mem-answers { font-size: 9px; }
-
-.enquiry-slot-5 .enquiry-mem-question,
-.enquiry-slot-5 .enquiry-mem-cue { font-size: 10px; }
-.enquiry-slot-5 .enquiry-mem-answers { font-size: 8px; }
-
-/* Completion state — corridor + heading dissolve across the full Understood+sentence reveal window */
-.enquiry-memory-complete {
-  opacity: 0;
-  transition: opacity 6400ms linear;
-}
+/* (Old memory-rail band, slots, mem-item typography, and .enquiry-memory-complete */
+/* removed — replaced by the unified .enquiry-phrase / .enquiry-pdepth-* corridor.) */
 
 .enquiry-heading-d2.enquiry-heading-complete,
 .enquiry-heading-d3.enquiry-heading-complete,
@@ -486,7 +389,7 @@
 .enquiry-heading-d5.enquiry-heading-complete,
 .enquiry-heading-d6.enquiry-heading-complete {
   opacity: 0;
-  transition: opacity 6400ms linear;
+  transition: opacity 2600ms linear;
 }
 
 /* Contact cards — absolute layer in the same 11.5rem corridor band, */
@@ -524,11 +427,15 @@
 /* d3: behind slot-2 (top ~6.9rem)          → heading bottom ~5.8rem */
 /* d4: behind slot-3 (top ~4.8rem)          → heading bottom ~4rem   */
 /* d5: behind slot-4 (top ~3.1rem)          → heading bottom ~2.2rem */
-.enquiry-heading-d2 { font-size: 14px; line-height: 1.2; opacity: 0.34; transform: translateY(5.5rem); }
-.enquiry-heading-d3 { font-size: 12px; line-height: 1.2; opacity: 0.22; transform: translateY(4rem); }
-.enquiry-heading-d4 { font-size: 10px; line-height: 1.2; opacity: 0.14; transform: translateY(2.5rem); }
-.enquiry-heading-d5 { font-size: 8px;  line-height: 1.2; opacity: 0.08; transform: translateY(1rem); }
-.enquiry-heading-d6 { font-size: 7px;  line-height: 1.2; opacity: 0.05; transform: translateY(0.5rem); }
+/* Heading depths tuned against the unified ladder: heading is the deepest layer and */
+/* sits one rung below the deepest memory at each step (d2 below depth-1, d3 below    */
+/* depth-2, ...). translateY is set so the 2-line heading's BOTTOM clears the deepest */
+/* memory's question-row top with air. */
+.enquiry-heading-d2 { font-size: 14px; line-height: 1.2; opacity: 0.34; transform: translateY(5rem); }
+.enquiry-heading-d3 { font-size: 12px; line-height: 1.2; opacity: 0.22; transform: translateY(2.9rem); }
+.enquiry-heading-d4 { font-size: 10px; line-height: 1.2; opacity: 0.14; transform: translateY(1.5rem); }
+.enquiry-heading-d5 { font-size: 8px;  line-height: 1.2; opacity: 0.08; transform: translateY(0.5rem); }
+.enquiry-heading-d6 { font-size: 7px;  line-height: 1.2; opacity: 0.05; transform: translateY(0.1rem); }
 
 /* Q5 -> Q4 transition ─────────────────────────────────────────────────── */
 
@@ -566,22 +473,6 @@
   animation: eq-q5q4-heading-in 600ms linear 0ms both;
 }
 
-/* Q5 active question label fades out, 0-360ms */
-.enquiry-q5-exiting .enquiry-q5-heading {
-  animation: eq-q5q4-content-out 360ms linear 0ms forwards;
-}
-
-/* Q4 active question label fades in, 0-600ms (starts when Q4 mounts at t=260ms) */
-.enquiry-active-entering .enquiry-q5-heading {
-  opacity: 0;
-  animation: eq-q5q4-content-in 600ms linear 0ms forwards;
-}
-
-/* Memory layer fades in, 0-600ms (starts when memory mounts at t=160ms) */
-.enquiry-memory-layer-entering {
-  animation: eq-q5q4-layer-in 600ms linear 0ms both;
-}
-
 @keyframes eq-q5q4-ghost-out {
   from { opacity: 1; }
   to   { opacity: 0; }
@@ -590,55 +481,19 @@
   from { opacity: 0; }
   to   { opacity: 0.34; }
 }
-@keyframes eq-q5q4-content-out {
-  from { opacity: 1; }
-  to   { opacity: 0; }
-}
+/* Used by .enquiry-phrase-answers-enter (summary fade-in as a phrase recedes). */
 @keyframes eq-q5q4-content-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-@keyframes eq-q5q4-layer-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .enquiry-opening-ghost,
-  .enquiry-heading-d2.enquiry-heading-entering,
-  .enquiry-q5-exiting .enquiry-q5-heading,
-  .enquiry-active-entering .enquiry-q5-heading,
-  .enquiry-memory-layer-entering {
+  .enquiry-heading-d2.enquiry-heading-entering {
     animation: none;
     opacity: 1;
   }
   /* .enquiry-heading-hidden intentionally excluded: must stay opacity 0 */
-}
-
-/* Normal transition (Q4->Q3, Q3->Q2, Q2->Q1) ───────────────────────────── */
-
-/* Active question label fades out, 0-360ms */
-.enquiry-normal-exiting .enquiry-q5-heading {
-  animation: eq-q5q4-content-out 360ms linear 0ms forwards;
-}
-
-/* New active question label fades in, 0-600ms */
-.enquiry-normal-entering .enquiry-q5-heading {
-  opacity: 0;
-  animation: eq-q5q4-content-in 600ms linear 0ms forwards;
-}
-
-/* New memory item fades in to slot-1 opacity (0.72), 0-600ms. */
-/* opacity: 0 wins over enquiry-slot-N (same specificity, defined earlier in file). */
-/* fill-mode: both holds at 0.72 until entering class removed; slot-1 CSS takes over at same value. */
-.enquiry-mem-item-entering {
-  opacity: 0;
-  animation: eq-normal-mem-in 600ms linear 0ms both;
-}
-
-@keyframes eq-normal-mem-in {
-  from { opacity: 0; }
-  to   { opacity: 0.72; }
 }
 
 /* Completion handoff — individual form element fade-in */
@@ -647,25 +502,8 @@
   to   { opacity: 1; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .enquiry-normal-exiting .enquiry-q5-heading,
-  .enquiry-normal-entering .enquiry-q5-heading,
-  .enquiry-mem-item-entering {
-    animation: none;
-    opacity: 1;
-  }
-}
-
-/* Q1 → completion: whole active slot fades out before completion panel mounts */
-.enquiry-q1-completing {
-  animation: eq-q5q4-content-out 700ms linear 0ms forwards;
-}
-
-/* Slot morph transitions — existing memory items deepening on next answer ── */
-
-/* Heading: only active during normal transitions (transitionQ !== null in TSX). */
-/* Gated so Q5->Q4 special transition does not trigger a second fade-in of the */
-/* heading when enquiry-heading-hidden is removed at t=1000ms. */
+/* Corridor deepening — every memory phrase steps one depth deeper on each answer. */
+/* The heading is the deepest layer and deepens with them (transition while moving). */
 .enquiry-heading-deepening.enquiry-heading-d2,
 .enquiry-heading-deepening.enquiry-heading-d3,
 .enquiry-heading-deepening.enquiry-heading-d4,
@@ -675,10 +513,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .enquiry-mem-item,
-  .enquiry-mem-cue,
-  .enquiry-mem-question,
-  .enquiry-mem-answers,
   .enquiry-heading-deepening.enquiry-heading-d2,
   .enquiry-heading-deepening.enquiry-heading-d3,
   .enquiry-heading-deepening.enquiry-heading-d4,
@@ -688,12 +522,179 @@
   }
 }
 
-/* Q5 memory item glide — applied for ~2 frames on mount, then removed to let */
-/* enquiry-mem-item's bottom/opacity transitions carry the item from its start */
-/* position (roughly at the active slot) up to slot-1. Source order wins over */
-/* enquiry-slot-1 (defined earlier in this file). */
-/* Only applied when !reducedMotion (gated in TSX), no reduced-motion CSS needed. */
-.enquiry-mem-q5-start {
-  bottom: -3.5rem;
-  opacity: 0.72;
+/* Generic Phrase / depth corridor ─────────────────────────────────────────── */
+/* A persistent per-question element that morphs from active (depth 0) into     */
+/* memory (depth 1..5) as ONE node — the cue + question spans never unmount, so  */
+/* the question text never disappears and reappears as a separate memory copy.   */
+/* This is the SINGLE corridor system for every question (Q5..Q1): the active    */
+/* question is depth-0 and each older answered question sits one depth deeper.    */
+
+/* Band: a fixed 11.5rem-tall region whose bottom edge is the active line.       */
+/* Phrases anchor by `bottom` inside it; the box is qrow-only (answers absolute). */
+.enquiry-phrase-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 11.5rem;
+}
+
+.enquiry-phrase {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+/* Morph driver — bottom/opacity on the wrapper, size/colour/weight on the spans. */
+.enquiry-phrase-anim {
+  transition: bottom 900ms cubic-bezier(0.37, 0, 0.63, 1),
+              opacity 900ms linear;
+}
+.enquiry-phrase-anim .enquiry-phrase-cue,
+.enquiry-phrase-anim .enquiry-phrase-question {
+  transition: font-size 900ms cubic-bezier(0.37, 0, 0.63, 1),
+              font-weight 900ms linear,
+              color 900ms linear;
+}
+.enquiry-phrase-anim .enquiry-phrase-answers {
+  transition: font-size 900ms cubic-bezier(0.37, 0, 0.63, 1);
+}
+
+.enquiry-phrase-qrow {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.enquiry-phrase-cue {
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* depth 0 — active appearance (matches the current active question exactly).    */
+/* bottom: -1.925rem drops the qrow so its top sits on the active line (11.5rem). */
+.enquiry-pdepth-0 {
+  bottom: -1.925rem;
+  opacity: 1;
+}
+.enquiry-pdepth-0 .enquiry-phrase-qrow {
+  gap: 0.625rem;
+}
+.enquiry-pdepth-0 .enquiry-phrase-cue {
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.28);
+}
+.enquiry-pdepth-0 .enquiry-phrase-question {
+  font-size: 1.375rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 1);
+  line-height: 1.4;
+}
+
+/* depths 1..5 — the memory ladder. Question-row tops (shell-relative Y): d1 ~8.2, */
+/* d2 ~5.6, d3 ~3.8, d4 ~2.4, d5 ~1.6rem — two sharp layers then compressing, with  */
+/* the heading deepest (see .enquiry-heading-d*). Phrase box is qrow-only (answers  */
+/* absolute), so each `bottom` lands the question-row top directly. The whole rung  */
+/* is one persistent phrase per question; on each step every rung steps one deeper. */
+
+/* Shared memory typography (depth >= 1) */
+.enquiry-pdepth-1 .enquiry-phrase-qrow,
+.enquiry-pdepth-2 .enquiry-phrase-qrow,
+.enquiry-pdepth-3 .enquiry-phrase-qrow,
+.enquiry-pdepth-4 .enquiry-phrase-qrow,
+.enquiry-pdepth-5 .enquiry-phrase-qrow { gap: 0.35rem; line-height: 1.3; }
+.enquiry-pdepth-1 .enquiry-phrase-cue,
+.enquiry-pdepth-2 .enquiry-phrase-cue,
+.enquiry-pdepth-3 .enquiry-phrase-cue,
+.enquiry-pdepth-4 .enquiry-phrase-cue,
+.enquiry-pdepth-5 .enquiry-phrase-cue { letter-spacing: 0.12em; color: rgba(255, 255, 255, 0.40); }
+.enquiry-pdepth-1 .enquiry-phrase-question,
+.enquiry-pdepth-2 .enquiry-phrase-question,
+.enquiry-pdepth-3 .enquiry-phrase-question,
+.enquiry-pdepth-4 .enquiry-phrase-question,
+.enquiry-pdepth-5 .enquiry-phrase-question { font-weight: 400; color: rgba(255, 255, 255, 0.65); line-height: 1.3; }
+
+.enquiry-pdepth-1 { bottom: 1.7rem; opacity: 0.72; }
+.enquiry-pdepth-1 .enquiry-phrase-cue,
+.enquiry-pdepth-1 .enquiry-phrase-question { font-size: 20px; }
+
+.enquiry-pdepth-2 { bottom: 4.5rem; opacity: 0.50; }
+.enquiry-pdepth-2 .enquiry-phrase-cue,
+.enquiry-pdepth-2 .enquiry-phrase-question { font-size: 17px; }
+.enquiry-pdepth-2 .enquiry-phrase-answers { font-size: 12px; }
+
+.enquiry-pdepth-3 { bottom: 6.65rem; opacity: 0.34; }
+.enquiry-pdepth-3 .enquiry-phrase-cue,
+.enquiry-pdepth-3 .enquiry-phrase-question { font-size: 14px; }
+.enquiry-pdepth-3 .enquiry-phrase-answers { font-size: 10px; }
+
+.enquiry-pdepth-4 { bottom: 8.2rem; opacity: 0.22; }
+.enquiry-pdepth-4 .enquiry-phrase-cue,
+.enquiry-pdepth-4 .enquiry-phrase-question { font-size: 12px; }
+.enquiry-pdepth-4 .enquiry-phrase-answers { font-size: 9px; }
+
+.enquiry-pdepth-5 { bottom: 9.15rem; opacity: 0.14; }
+.enquiry-pdepth-5 .enquiry-phrase-cue,
+.enquiry-pdepth-5 .enquiry-phrase-question { font-size: 10px; }
+.enquiry-pdepth-5 .enquiry-phrase-answers { font-size: 8px; }
+
+/* Answer summary — absolutely positioned just beneath the question (top: 100%)   */
+/* so it never contributes to the phrase box height. This keeps the box at qrow   */
+/* height at every depth, so the full active->memory travel is animated by the    */
+/* `bottom` transition rather than partly jumping when the summary mounts.        */
+/* Matches the memory-rail answers (slot-1 size). Fades in as the cards fade out. */
+.enquiry-phrase-answers {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  line-height: 1.1;
+  color: rgba(255, 255, 255, 0.80);
+  margin-top: 0.15rem;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.enquiry-phrase-answers-enter {
+  opacity: 0;
+  animation: eq-q5q4-content-in 500ms linear 200ms both;
+}
+
+/* Cards + Next live below the qrow as an absolute layer, so they do not affect   */
+/* the phrase box (and therefore the question's bottom anchor). They fade out as  */
+/* the phrase recedes into memory. */
+.enquiry-phrase-extras {
+  position: absolute;
+  top: calc(100% + 1rem);
+  left: 0;
+  right: 0;
+}
+.enquiry-phrase-extras-out {
+  opacity: 0;
+  transition: opacity 300ms linear;
+  pointer-events: none;
+}
+
+/* Completion — fade the phrase with the rest of the corridor. The old question */
+/* stack dissolves well before the contact form arrives, so there is no visual */
+/* competition (form fields begin at ~3600ms; the stack is clear by ~2600ms). */
+.enquiry-phrase-complete {
+  opacity: 0;
+  transition: opacity 2600ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-phrase-answers-enter {
+    animation: none;
+    opacity: 1;
+  }
+  .enquiry-phrase-extras-out {
+    transition: none;
+  }
+  .enquiry-phrase-complete {
+    transition: none;
+  }
 }
