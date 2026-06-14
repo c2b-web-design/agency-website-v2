@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const HEADING_LINE1 = "Let's understand what your";
 const HEADING_LINE2 = "business needs to become.";
@@ -79,14 +79,17 @@ export default function EnquiryOpening() {
     return () => clearTimeout(t);
   }, [stage]);
 
-  function toggleOption(option: string) {
+  const toggleOption = useCallback((option: string) => {
     setSelected(prev => {
       const next = new Set(prev);
-      if (next.has(option)) next.delete(option);
-      else next.add(option);
+      if (next.has(option)) {
+        next.delete(option);
+      } else {
+        next.add(option);
+      }
       return next;
     });
-  }
+  }, []);
 
   // One generic corridor step for every question. The answered question is pushed to
   // memory (it becomes the newest = depth-1) and every older memory deepens by one — both
@@ -168,8 +171,10 @@ export default function EnquiryOpening() {
               role="group"
               aria-labelledby="active-q-label"
             >
-              {QUESTIONS[qNum].options.map(option => {
+              {QUESTIONS[qNum].options.map((option, idx) => {
                 const isSelected = selected.has(option);
+                const Q_GLASS_OFFSETS: Record<number, number> = { 5: 0, 4: 2, 3: 1, 2: 4, 1: 3 };
+                const glassVariant = ["a", "b", "c", "d", "e"][(idx + (Q_GLASS_OFFSETS[qNum] ?? 0)) % 5];
                 return (
                   <button
                     key={option}
@@ -177,7 +182,7 @@ export default function EnquiryOpening() {
                     role="checkbox"
                     aria-checked={isSelected}
                     onClick={() => toggleOption(option)}
-                    className={`enquiry-card text-center px-3 rounded-xl font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40${isSelected ? " enquiry-card-selected" : ""}`}
+                    className={`enquiry-card enquiry-card-glass-${glassVariant} text-center px-3 rounded-xl font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40${isSelected ? " enquiry-card-selected" : ""}`}
                   >
                     {option}
                   </button>
