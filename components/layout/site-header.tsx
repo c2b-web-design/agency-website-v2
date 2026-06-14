@@ -55,20 +55,20 @@ export default function SiteHeader() {
         </div>
       </Container>
 
-      {/* Mobile dropdown — full-width, sits below the header bar */}
+      {/* Mobile nav row — slim horizontal bar sitting below the header */}
       {menuOpen && (
         <div
           id="mobile-nav"
           className="md:hidden absolute top-full left-0 right-0 border-b border-neutral-800 bg-neutral-950 z-50"
         >
           <Container>
-            <div className="flex flex-col py-4 gap-1">
+            <div className="flex items-center justify-between py-3">
               {NAV_LINKS.map(({ label, href }) => (
                 <a
                   key={label}
                   href={href}
                   onClick={closeMenu}
-                  className="text-sm text-neutral-400 hover:text-neutral-100 transition-colors duration-200 py-2"
+                  className="text-xs text-neutral-400 hover:text-neutral-100 transition-colors duration-200"
                 >
                   {label}
                 </a>
