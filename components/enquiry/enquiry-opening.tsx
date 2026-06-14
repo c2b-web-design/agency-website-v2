@@ -71,8 +71,11 @@ export default function EnquiryOpening() {
       setBeginInteractive(true);
       return;
     }
-    // enquiry-button-mask: 7400ms delay + 1900ms duration = interactive at 9300ms
-    const t = window.setTimeout(() => setBeginInteractive(true), 9300);
+    // Desktop: enquiry-button-mask 7400ms delay + 1900ms duration = 9300ms
+    // Mobile: slower reveal; subtext resolves ~9200ms, Begin interactive at 11500ms
+    const isMobile = window.matchMedia("(max-width: 639px)").matches;
+    const delay = isMobile ? 11500 : 9300;
+    const t = window.setTimeout(() => setBeginInteractive(true), delay);
     return () => clearTimeout(t);
   }, [stage]);
 
