@@ -71,7 +71,7 @@ export default function Home() {
           border-t: hairline rule continues the visual rhythm established between all sections
           py-24: consistent section spacing — slightly less than the hero's py-32 because
           sections are supporting content, not the primary statement                */}
-      <section id="services" className="py-24 border-t border-neutral-800">
+      <section id="services" className="pt-16 pb-24 border-t border-neutral-800">
         <Container>
 
           {/* Section intro block: max-w-2xl keeps the heading and paragraph from stretching
@@ -109,21 +109,18 @@ export default function Home() {
               intentional and balanced. One column on desktop would feel stretched; four
               columns would feel cramped and lose the card structure entirely.
               gap-8: 32px between cards — consistent with the premium, spacious page feel. */}
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
 
             {/* Card: border border-neutral-800 uses the same hairline-rule vocabulary as
-                section separators, unifying the visual system. p-8 gives the text generous
-                internal breathing room. No border-radius — sharp corners feel more
-                architectural and editorial on a dark background.                          */}
+                section separators, unifying the visual system. p-6 md:p-8 matches the
+                Work card padding rhythm — generous on desktop, compact on mobile.
+                No border-radius — sharp corners feel more architectural on a dark background. */}
 
-            <div className="border border-neutral-800 p-8">
-              {/* Card heading: text-lg is one clear step above the card body text.
-                  font-semibold and tracking-tight match the heading style used elsewhere. */}
+            <div className="border border-neutral-800 p-6 md:p-8">
               <h3 className="text-lg font-semibold tracking-tight">Premium Website Design</h3>
-              {/* Card body: text-sm keeps each card compact. leading-relaxed maintains
-                  readability. max-w-sm (384px) constrains the line length on wide desktop
-                  cards — the card stays architecturally wide but the text sits in a
-                  controlled column, leaving intentional whitespace to the right.          */}
+              {/* max-w-sm (384px) constrains the line length on wide desktop cards —
+                  the card stays architecturally wide but the text sits in a controlled
+                  column, leaving intentional whitespace to the right. */}
               <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
                 A high-quality website that makes your business look more trusted, credible,
                 and worth the investment. Built with the attention to detail that reflects
@@ -131,7 +128,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="border border-neutral-800 p-8">
+            <div className="border border-neutral-800 p-6 md:p-8">
               <h3 className="text-lg font-semibold tracking-tight">Website Transformation</h3>
               <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
                 Turning a dated or underperforming website into a sharper, more persuasive
@@ -139,7 +136,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="border border-neutral-800 p-8">
+            <div className="border border-neutral-800 p-6 md:p-8">
               <h3 className="text-lg font-semibold tracking-tight">Intelligent Enquiry Systems</h3>
               {/* "Intelligent Enquiry Systems" is the one service that ventures furthest from
                   traditional web design. The copy describes business outcomes only — faster
@@ -152,7 +149,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="border border-neutral-800 p-8">
+            <div className="border border-neutral-800 p-6 md:p-8">
               <h3 className="text-lg font-semibold tracking-tight">Ongoing Growth & Improvement</h3>
               <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
                 Your website should improve over time, not sit still after launch. We continue
@@ -226,9 +223,9 @@ export default function Home() {
           register distinct from the left-aligned content sections above.
           max-w-2xl mx-auto: keeps the column intimate, not sprawling.
           href="#": placeholder until a real contact flow is built.             */}
-      <section className="py-24 border-t border-neutral-800">
+      <section id="contact" className="min-h-screen flex items-center">
         <Container>
-          <div className="text-center max-w-2xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto py-24">
 
             <h2 className="text-3xl font-semibold tracking-tight">
               Start with a sharper digital presence.

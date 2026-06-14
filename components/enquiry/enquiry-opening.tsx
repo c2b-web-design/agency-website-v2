@@ -359,29 +359,39 @@ export default function EnquiryOpening() {
             </div>
           </>
         ) : stage === "complete" ? (
-          <div className="enquiry-active-slot" style={{ paddingTop: "3rem" }}>
-          <div className="enquiry-q5-heading" style={{ marginBottom: "0.5rem" }}>
-              <span
-                className="enquiry-q5-question"
-                style={reducedMotion ? undefined : { animation: "enquiry-mask-reveal-horizontal 1100ms cubic-bezier(0.37, 0, 0.63, 1) 0ms both, eq-understood-fade-out 1400ms linear 4800ms forwards" }}
-              >
-                Understood.
-              </span>
-            </div>
-            <p
-              className="text-sm text-neutral-400 leading-relaxed"
-              style={reducedMotion ? undefined : { animation: "enquiry-mask-reveal-horizontal 3600ms cubic-bezier(0.37, 0, 0.63, 1) 800ms both, eq-understood-fade-out 1400ms linear 4800ms forwards" }}
-            >
-              We&apos;re on it. Add your details and we&apos;ll turn this into a clearer direction for your site.
-            </p>
+          <div className="enquiry-active-slot" style={{ position: "relative" }}>
+            {/* Acknowledgement — absolutely overlaid so it does not push Send down */}
             <div
-              className="mt-5"
-              style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 5600ms both" }}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                ...(reducedMotion ? undefined : { animation: "eq-understood-fade-out 1400ms linear 4800ms forwards" }),
+              }}
+            >
+              <div className="enquiry-q5-heading" style={{ marginBottom: "0.5rem" }}>
+                <span
+                  className="enquiry-q5-question"
+                  style={reducedMotion ? undefined : { animation: "enquiry-mask-reveal-horizontal 1100ms cubic-bezier(0.37, 0, 0.63, 1) 0ms both" }}
+                >
+                  Understood.
+                </span>
+              </div>
+              <p
+                className="text-sm text-neutral-400 leading-relaxed"
+                style={reducedMotion ? undefined : { animation: "enquiry-mask-reveal-horizontal 3600ms cubic-bezier(0.37, 0, 0.63, 1) 800ms both" }}
+              >
+                We&apos;re on it. Add your details and we&apos;ll turn this into a clearer direction for your site.
+              </p>
+            </div>
+            {/* Send — sits in the same space, fades in after acknowledgement has cleared */}
+            <div
+              style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 6400ms both" }}
             >
               <button
                 type="button"
-                disabled={!contactName.trim() || !contactBusiness.trim() || !contactWebsite.trim() || !contactEmail.trim()}
-                className="enquiry-nextstep-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="enquiry-nextstep-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
               >
                 Send
               </button>

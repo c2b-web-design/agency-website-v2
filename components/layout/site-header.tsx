@@ -4,10 +4,10 @@ import { useState } from "react";
 import Container from "@/components/layout/container";
 
 const NAV_LINKS = [
-  { label: "Work",     href: "#work" },
   { label: "Services", href: "#services" },
+  { label: "Work",     href: "#work" },
   { label: "About",    href: "#" },
-  { label: "Contact",  href: "#" },
+  { label: "Contact",  href: "#contact" },
 ];
 
 export default function SiteHeader() {
