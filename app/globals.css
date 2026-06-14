@@ -790,9 +790,9 @@
      Each value places the 2-line heading bottom just below the deepest visible
      memory qrow bottom at that depth step. */
   .enquiry-heading-d2 { font-size: 10px; opacity: 0.14; transform: translateY(4.5rem); }
-  .enquiry-heading-d3 { transform: translateY(4.6rem); }
-  .enquiry-heading-d4 { transform: translateY(2.9rem); }
-  .enquiry-heading-d5 { transform: translateY(1.5rem); }
-  .enquiry-heading-d6 { transform: translateY(0.3rem); }
+  .enquiry-heading-d3 { font-size: 9px;  opacity: 0.10; transform: translateY(3.5rem); }
+  .enquiry-heading-d4 { font-size: 8px;  opacity: 0.07; transform: translateY(2.0rem); }
+  .enquiry-heading-d5 { font-size: 7px;  opacity: 0.05; transform: translateY(0.8rem); }
+  .enquiry-heading-d6 { font-size: 6px;  opacity: 0.04; transform: translateY(0.1rem); }
 
 }
