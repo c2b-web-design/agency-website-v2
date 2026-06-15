@@ -37,6 +37,7 @@ Build the homepage to a complete, production-quality state and begin the `/start
 | Full Q5→Q1 corridor + completion state | `components/enquiry/enquiry-opening.tsx`, `app/globals.css` | D-024: all five questions complete; Q labels match question size at all depths; "Understood" completion handoff; Send button position; Begin/Next step/Send visibility consistent |
 | Mobile nav | `components/layout/header.tsx` | Mobile header navigation and opening reveal refinements approved |
 | Homepage + start flow QA polish | `app/page.tsx`, `components/enquiry/enquiry-opening.tsx` | Milestone commit 2152e6e — all sections and flow mechanics approved |
+| Selected-card filament border | `components/enquiry/enquiry-opening.tsx`, `app/globals.css` | D-029: single SVG rect, pathLength="1", draw on select, hold completed border, fade on deselect. Muted Q-label gold. Approved Q5–Q1. See R-011. |
 
 ---
 
@@ -59,7 +60,7 @@ Sprint 2 is complete. All success criteria met. Milestone commit: **2152e6e** (2
 | Task | Priority | Notes |
 |---|---|---|
 | Real submit/send backend | High | Send button is present but not wired. Route, email, or storage target not decided. |
-| Amber selected-circuit prototype | Medium | Paused experiment — restart as isolated single-card prototype only. Requires a new brief. See D-028. |
+| ~~Amber selected-circuit prototype~~ | ~~Medium~~ | Superseded by D-029. Filament border approved and live. |
 | Cinematic hero | Medium | D-026 direction. Requires production assets and a new brief. Do not fill hero space without one. |
 | About section | Medium | Planned between Work and Contact. Not yet designed. |
 | Footer refinement | Low | Subtle C2B signature direction noted. |

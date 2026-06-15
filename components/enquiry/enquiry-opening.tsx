@@ -182,8 +182,20 @@ export default function EnquiryOpening() {
                     role="checkbox"
                     aria-checked={isSelected}
                     onClick={() => toggleOption(option)}
-                    className={`enquiry-card enquiry-card-glass-${glassVariant} text-center px-3 rounded-xl font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40${isSelected ? " enquiry-card-selected" : ""}`}
+                    className={`enquiry-card enquiry-card-glass-${glassVariant} enquiry-card-filament-host text-center px-3 rounded-xl font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40${isSelected ? " enquiry-card-selected" : ""}`}
                   >
+                    <svg
+                      aria-hidden="true"
+                      className={`filament-svg${isSelected ? " filament-svg-visible" : ""}`}
+                    >
+                      <rect
+                        className="filament-rect"
+                        pathLength="1"
+                        fill="none"
+                        stroke="rgba(190, 145, 58, 0.80)"
+                        strokeWidth="1.5"
+                      />
+                    </svg>
                     {option}
                   </button>
                 );

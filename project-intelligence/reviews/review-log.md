@@ -21,6 +21,30 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-011 — Enquiry Selected-Card Filament Border: QA Pass
+
+**Date:** 2026-06-15  
+**Reviewer:** Human Founder + Agent QA  
+**Subject:** Animated filament border rollout across Q5–Q1 answer cards
+
+**Findings:**
+- Single-rect SVG filament border approved after iterative prototyping. Draw animation works across all cards Q5–Q1.
+- Q5 multi-select: multiple simultaneous active filaments render independently with no interference. Visually controlled.
+- Q4–Q1: selected card draws filament in; deselecting or advancing to next question fades completed border out smoothly.
+- Memory rail and answered-question states: unaffected. `handleNextStep` clears `selected` Set before pushing to memory; filament fades with the card grid during corridor morph.
+- Glass material: frosted blue glass unchanged. Filament SVG is `pointer-events: none`, `z-index: 3`; card text remains above at `z-index: 4`.
+- Colour: aligned to Q-label gold family (`rgba(190,145,58,0.80)`). Glow layers use same bronze-gold family. Not yellow, not near-white.
+- Reduced motion: animation skipped; full border appears immediately on select; opacity fade on deselect retained.
+- Lint: only the two known pre-existing `react-hooks/set-state-in-effect` errors at lines 64 and 71 of `enquiry-opening.tsx`.
+
+**Flags:**
+
+*None.*
+
+**Status:** Approved — 2026-06-15. See D-029.
+
+---
+
 ## R-010 — Enquiry Answer Card Material: Frosted Blue Glass
 
 **Date:** 2026-06-15  

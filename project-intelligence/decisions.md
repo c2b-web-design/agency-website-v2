@@ -563,3 +563,32 @@ D-022 remains the committed, deployed, approved baseline. D-023 does not patch o
 - An amber travelling bead / perimeter circuit animation on the selected card was prototyped but became unstable and was removed before commit.
 - This experiment is paused. When resumed, it should begin as a small isolated prototype on one card only — not a full-system implementation. Requires a new brief.
 - Do not restart amber circuit work without a dedicated brief.
+
+---
+
+## D-029 — Enquiry Experience: Selected-Card Filament Border
+
+**Date:** 2026-06-15  
+**Decision:** Enquiry answer cards (Q5–Q1) use an animated filament border on selection. On select, a single SVG rect stroke draws around the full card perimeter (~2400ms linear). After drawing, the completed border remains visible while the card is selected. On deselect, the completed border fades out over 600ms. Colour matches the Q-label gold family (muted bronze-gold, `rgba(190, 145, 58, 0.80)`), with a four-layer warm filament glow. No multi-path SVG, no bead/head, no segmented paths, no conic mask, no viewBox, no rotation.  
+**Rationale:** Replaces the previously approved static amber top-edge hairline selected state with a full-perimeter animated selected indicator. The draw animation confirms selection with intention and warmth without being mechanical or loud. The single-rect SVG with `pathLength="1"` avoids perimeter measurement and is geometrically correct at all card sizes. Colour alignment to Q-label gold ensures visual coherence across the corridor.  
+**Authority:** Human Founder  
+**Status:** APPROVED — 2026-06-15.
+
+---
+
+**Implementation pattern (approved):**
+- One `<svg>` per card, always in DOM, `opacity: 0` at rest.
+- One `<rect>` with `pathLength="1"`, `stroke-dasharray: 1`, `stroke-dashoffset: 0` (base = fully drawn).
+- On select: `opacity: 1` instantly; animation runs `stroke-dashoffset: 1.04 → 0` (slight phase shift to include top-left corner arc from frame 1).
+- On deselect: class removed; SVG fades via `opacity: 600ms linear`; rect returns to base fully-drawn state.
+- CSS geometry on rect (`x`, `y`, `width`, `height`, `rx`, `ry`) — accepts `calc()`, no viewBox distortion.
+- Glow: four `drop-shadow` layers in `rgba(190,145,58)` / `rgba(140,90,10)` family. No yellow, no near-white.
+- `prefers-reduced-motion`: animation skipped; full border appears immediately; opacity fade on deselect retained.
+- Text remains above SVG via `z-index: 4` on sibling content.
+
+**Failed methods (do not revive):**
+- Multi-path SVG with separate top/side segments — geometry gaps at corners, abandoned.
+- Bead/head animation — prototype became unstable, abandoned.
+- SVG stroke-dashoffset with guessed perimeter (e.g. 1000) — values were viewport-dependent, unreliable.
+- Conic-gradient CSS mask reveal on a div border — mask animated but produced no visible movement, only opacity fade.
+- Segmented clip-path reveal on SVG `<g>` groups — invisible result, reverted.
