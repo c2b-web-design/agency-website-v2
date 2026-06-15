@@ -58,8 +58,8 @@ Sprint 2 is complete. All success criteria met. Milestone commit: **2152e6e** (2
 
 | Task | Priority | Notes |
 |---|---|---|
-| Start flow colour/material pass | High | D-024 future direction. Requires a new brief. See D-024 and D-025 for direction. |
 | Real submit/send backend | High | Send button is present but not wired. Route, email, or storage target not decided. |
+| Amber selected-circuit prototype | Medium | Paused experiment — restart as isolated single-card prototype only. Requires a new brief. See D-028. |
 | Cinematic hero | Medium | D-026 direction. Requires production assets and a new brief. Do not fill hero space without one. |
 | About section | Medium | Planned between Work and Contact. Not yet designed. |
 | Footer refinement | Low | Subtle C2B signature direction noted. |

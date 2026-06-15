@@ -546,3 +546,20 @@ D-022 remains the committed, deployed, approved baseline. D-023 does not patch o
 **Rationale:** Avoids scope creep into the current build while recording the founder's intent so future agents understand what the service offer may extend to.  
 **Authority:** Human Founder  
 **Status:** DIRECTION ONLY — not approved for design or implementation.
+
+---
+
+## D-028 — Enquiry Experience: Answer Card Material — Frosted Blue Glass
+
+**Date:** 2026-06-15  
+**Decision:** The enquiry answer cards (Q5–Q1) use a frosted blue glass material for idle, hover, and selected states. Five deterministic glass variants (A–E) rotate across Q5 to Q1 to avoid repeated or tiled gradient directions. The selected state retains the amber top-edge hairline and warm halo from D-016 — selection is still expressed through material activation, not colour alone.  
+**Rationale:** The amber/gold smoked glass treatment from D-016 was functional but directionally neutral. The frosted blue glass aligns with the brand colour direction (D-025: near-black base, teal/blue as modern intelligence accent) and gives the cards a more distinctive, premium material identity. Five variants ensure no card shares a gradient direction with its neighbour.  
+**Authority:** Human Founder  
+**Status:** APPROVED — commit 3621997.
+
+---
+
+**Future material work — amber circuit (paused):**
+- An amber travelling bead / perimeter circuit animation on the selected card was prototyped but became unstable and was removed before commit.
+- This experiment is paused. When resumed, it should begin as a small isolated prototype on one card only — not a full-system implementation. Requires a new brief.
+- Do not restart amber circuit work without a dedicated brief.

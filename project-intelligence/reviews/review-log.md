@@ -21,6 +21,26 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-010 — Enquiry Answer Card Material: Frosted Blue Glass
+
+**Date:** 2026-06-15  
+**Reviewer:** Human Founder  
+**Subject:** Answer card material pass — commit 3621997
+
+**Findings:**
+- Idle, hover, and selected card states updated to frosted blue glass material. Approved.
+- Five deterministic glass variants (A–E) rotate across Q5–Q1. No repeated gradient directions. Approved.
+- Selected state retains amber top-edge hairline and warm halo from D-016 — material activation model unchanged.
+- Amber perimeter circuit experiment was prototyped, became unstable, and removed before commit. Not approved for production.
+
+**Flags:**
+
+*None.*
+
+**Status:** Approved — commit 3621997. See D-028. Amber circuit work paused; restart requires a new brief.
+
+---
+
 ## R-009 — Milestone QA: Homepage Scaffold + Full Enquiry Flow
 
 **Date:** 2026-06-14  
