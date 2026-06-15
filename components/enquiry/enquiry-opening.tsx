@@ -369,7 +369,7 @@ export default function EnquiryOpening() {
                 type="button"
                 tabIndex={beginInteractive ? 0 : -1}
                 onClick={() => setStage("active")}
-                className="rounded-full px-6 py-2.5 text-sm font-medium text-neutral-900 bg-white cursor-pointer hover:bg-neutral-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
+                className="enquiry-begin-btn rounded-full px-6 py-2.5 text-sm font-medium cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
               >
                 Begin
               </button>

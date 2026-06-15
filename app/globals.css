@@ -526,6 +526,53 @@
   .enquiry-card { transition: none; }
 }
 
+/* Begin button — ivory base (layer 1) + raised rim / bevel (layer 2) */
+.enquiry-begin-btn {
+  /* Layer 4: soft top-centre light catch layered over the existing face gradient */
+  /* Layer 3: vertical gradient — tonal curvature */
+  background:
+    radial-gradient(
+      ellipse 55% 40% at 50% 8%,
+      rgba(255, 255, 255, 0.28) 0%,
+      rgba(255, 255, 255, 0.06) 55%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      #fffef8 0%,
+      #f8f0e2 30%,
+      #e4d4b8 68%,
+      #ccb898 100%
+    );
+  color: #111110;
+  /* Layer 2/3: inset shadow stack — top rim, sub-rim definition, lower bevel depth, contact shadow */
+  box-shadow:
+    inset 0  1px 0    rgba(255, 255, 255, 1.00),
+    inset 0  3px 3px  rgba(130, 100,  50, 0.38),
+    inset 0 -2px 3px  rgba( 90,  55,  10, 0.54),
+          0  3px 9px  rgba(  0,   0,   0, 0.40);
+  transition: box-shadow 200ms linear;
+}
+
+.enquiry-begin-btn:hover {
+  background: linear-gradient(
+    180deg,
+    #f5f0e4 0%,
+    #ece4d8 38%,
+    #d8ccb4 72%,
+    #c8b494 100%
+  );
+  box-shadow:
+    inset 0  1px 0    rgba(255, 255, 255, 1.00),
+    inset 0  4px 4px  rgba(140, 110,  60, 0.28),
+    inset 0 -2px 3px  rgba( 90,  55,  10, 0.58),
+          0  3px 10px rgba(  0,   0,   0, 0.42);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-begin-btn { transition: none; }
+}
+
 /* Next step trigger */
 .enquiry-nextstep-btn {
   border: none;

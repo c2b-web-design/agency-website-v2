@@ -33,6 +33,39 @@ A component is not done until:
 - A review entry has been filed in `review-log.md`
 - Any architectural decisions made during its build are logged in `decisions.md`
 
+### Rule 8 — Every visual layer pass must verify all element states before completion
+Layered UI workflow only improves determinism if each layer is verified after it is added. A layer that is technically in scope but fails its basic visual purpose is a regression.
+
+For every visual-layer pass on a UI element, verify before marking complete:
+- Resting/default state is visible and legible without interaction
+- Hover enhances but does not reveal essential visibility (hover-only appearance is a regression unless explicitly requested)
+- Focus state remains visible
+- Active, selected, disabled, and hidden states still behave as intended
+- Existing timing and flow are intact
+- Approved layers outside the current layer are unchanged
+
+### Rule 9 — Rendered visual evidence is the source of truth for visual work
+Applies to visual styling, material, animation, layout, and interaction polish. Does not apply to every implementation task. When visual evidence is available or requested, it is evidence — not decoration.
+
+Code confirms what changed. Rendered output confirms whether it worked. CSS values can be technically present but visually invisible, too heavy, too weak, too sharp, too soft, or off-brand.
+
+When visual evidence is available or requested:
+- Inspect screenshots, browser output, or visual references before judging the result
+- Distinguish inspiration references (optical direction only) from target designs (to reproduce)
+- Compare the rendered result against the stated visual objective
+- State whether the intended visual layer is actually visible
+- If code and screenshot disagree, treat the screenshot as the user-facing truth
+- Do not claim visual success based only on CSS values
+- Use the smallest next adjustment when the screenshot shows the result is close but not correct
+
+For screenshot-based visual review, report in this shape:
+- **Objective** — what the layer was meant to achieve
+- **What the screenshot confirms** — what is visibly working
+- **What is not yet working** — gap between objective and rendered state
+- **Likely cause** — root cause of the gap
+- **Smallest next adjustment** — one targeted change to close the gap
+- **What must not change** — approved layers and behaviour to preserve
+
 ---
 
 ## Status System
@@ -168,4 +201,4 @@ An unresolved issue is never silently dropped. It either:
 
 ---
 
-*Last updated: 2026-05-23*
+*Last updated: 2026-06-15 — Rule 8 added: visual layer state verification. Rule 9 added: rendered visual evidence is the source of truth for visual work.*
