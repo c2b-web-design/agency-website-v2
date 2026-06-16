@@ -743,6 +743,40 @@
   .enquiry-nextstep-btn { transition: none; }
 }
 
+/* Send trigger — final details form. Deliberately separated from the question-flow
+   CTA (.enquiry-nextstep-btn). Neutral flat baseline for iteration; not final. */
+.enquiry-send-btn {
+  border: none;
+  border-radius: 9999px;
+  padding: 0.625rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  /* Paint via background-image (flat fill) so Tailwind preflight's
+     `button { background-color: transparent }` base reset cannot blank the
+     surface — same reason the gradient-based .enquiry-nextstep-btn is immune. */
+  background-image: linear-gradient(#ffffff, #ffffff);
+  background-color: #ffffff;
+  color: #0f1115;
+  cursor: pointer;
+  transition: background-image 150ms linear;
+}
+
+.enquiry-send-btn:hover {
+  background-image: linear-gradient(#f0f0f0, #f0f0f0);
+}
+
+.enquiry-send-btn:disabled {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.45));
+  background-color: rgba(255, 255, 255, 0.45);
+  color: rgba(15, 17, 21, 0.45);
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-send-btn { transition: none; }
+}
+
 /* Active-question staged reveal — re-runs per question because the question */
 /* text and the card grid are keyed by activeQ (so they remount on each step, */
 /* including the first Q5 after Begin). Question text wipes left-to-right (same */

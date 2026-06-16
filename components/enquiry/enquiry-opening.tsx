@@ -480,7 +480,7 @@ export default function EnquiryOpening() {
             >
               <button
                 type="button"
-                className="enquiry-nextstep-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
+                className="enquiry-send-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
               >
                 Send
               </button>
