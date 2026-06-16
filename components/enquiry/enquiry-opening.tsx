@@ -42,6 +42,73 @@ type MemoryItem = {
   answers: string;
 };
 
+// Position-aware warm reflection contributions, keyed by a card's INDEX in the
+// shared 3+2 answer grid (same layout for every question, so the model is purely
+// positional — not tied to answer text). Index → grid slot:
+//   0 top-left  1 top-middle  2 top-right  3 bottom-left  4 bottom-right
+// The Next step button sits centred below the grid, so bottom-row cards (3,4) are
+// the closest/strongest sources; the distant top-middle card (1) only feeds a faint
+// central catch. Vector: [leftRim, rightRim, upperLeft, upperRight, lowerLeft,
+// lowerRight, upperCentre]. This is the Q5-approved baseline (D-031) generalised.
+const GRID_REFL: ReadonlyArray<readonly [number, number, number, number, number, number, number]> = [
+  [0.16, 0.00, 0.14, 0.00, 0.10, 0.00, 0.00], // 0 top-left
+  [0.00, 0.00, 0.04, 0.04, 0.05, 0.05, 0.13], // 1 top-middle (distant → central)
+  [0.00, 0.16, 0.00, 0.14, 0.00, 0.10, 0.00], // 2 top-right
+  [0.26, 0.00, 0.28, 0.00, 0.30, 0.00, 0.00], // 3 bottom-left (closest)
+  [0.00, 0.26, 0.00, 0.28, 0.00, 0.30, 0.00], // 4 bottom-right (closest)
+];
+
+// Build the reflection CSS custom properties for the Next step button from the
+// currently selected answers of the active question. Returns {} when nothing is
+// selected (so no-card hover keeps normal blue-platinum behaviour, and stale
+// variables never persist between questions because this recomputes each render).
+function reflectionVars(options: string[], selected: Set<string>): React.CSSProperties {
+  if (selected.size === 0) return {};
+
+  let rL = 0, rR = 0, rUL = 0, rUR = 0, rLoL = 0, rLoR = 0, rUC = 0;
+  options.forEach((option, idx) => {
+    if (!selected.has(option)) return;
+    const c = GRID_REFL[idx];
+    if (!c) return;
+    rL += c[0]; rR += c[1]; rUL += c[2]; rUR += c[3]; rLoL += c[4]; rLoR += c[5]; rUC += c[6];
+  });
+
+  rUL = Math.min(rUL, 0.40);
+  rUR = Math.min(rUR, 0.40);
+  rUC = Math.min(rUC, 0.16);
+
+  // Hover crown/rim "white" must become amber/champagne when reflection is active.
+  // Each white hover highlight is emitted as a COMPLETE colour string (no in-CSS
+  // calc, which proved fragile in rgba()). Champagne base rgb(255,226,165); per-zone
+  // opacity frozen at idle level, then dropped below idle where that zone's amber
+  // light directly filters it.
+  const champ = (idleAlpha: number, zoneAmber: number) =>
+    `rgba(255, 226, 165, ${(idleAlpha * Math.max(0, 1 - 2.0 * zoneAmber)).toFixed(3)})`;
+
+  return {
+    "--refl-active":       "1",
+    "--refl-left":         Math.min(rL,   0.38).toFixed(3),
+    "--refl-right":        Math.min(rR,   0.38).toFixed(3),
+    "--refl-upper-left":   rUL.toFixed(3),
+    "--refl-upper-right":  rUR.toFixed(3),
+    "--refl-lower-left":   Math.min(rLoL, 0.42).toFixed(3),
+    "--refl-lower-right":  Math.min(rLoR, 0.42).toFixed(3),
+    "--refl-upper-centre": rUC.toFixed(3),
+    // crown specular halves + centre core (idle opacities 0.55 / 0.55 / 0.55)
+    "--crown-left":        champ(0.55, rUL),
+    "--crown-left-mid":    champ(0.14, rUL),
+    "--crown-right":       champ(0.55, rUR),
+    "--crown-right-mid":   champ(0.14, rUR),
+    "--crown-centre":      champ(0.55, rUC),
+    // top rim (idle opacity 0.72) — full-width, uses max side amber
+    "--crown-rim":         champ(0.72, Math.max(rUL, rUR, rUC)),
+    // lower env reflection — softer champagne, frozen at idle opacity 0.14
+    "--crown-env":         `rgba(232, 205, 158, ${(0.14).toFixed(3)})`,
+    // lower bounce underside edge — frozen to idle cool value (no hover lift)
+    "--bounce-edge":       `rgba(70, 110, 170, ${(0.18).toFixed(3)})`,
+  } as React.CSSProperties;
+}
+
 export default function EnquiryOpening() {
   const [stage, setStage] = useState<"opening" | "active" | "complete">("opening");
   const [activeQ, setActiveQ] = useState(5);
@@ -208,58 +275,11 @@ export default function EnquiryOpening() {
                 opacity: selected.size > 0 ? 1 : 0,
                 pointerEvents: selected.size > 0 ? undefined : "none",
                 transition: "opacity 600ms linear",
-                ...(qNum === 5 && selected.size > 0 ? (() => {
-                  // [leftRim, rightRim, upperLeft, upperRight, lowerLeft, lowerRight, upperCentre]
-                  // Warmth gathers on side caps + upper/lower curved quadrants, never
-                  // the central belly. Card 2 (distant, top-centre) is the only source
-                  // that feeds the faint upper-centre catch — weaker than bottom-row cards.
-                  const Q5R: Record<string, [number, number, number, number, number, number, number]> = {
-                    "Premium new website":        [0.16, 0.00, 0.14, 0.00, 0.10, 0.00, 0.00],
-                    "Current site feels dated":   [0.00, 0.00, 0.04, 0.04, 0.05, 0.05, 0.13],
-                    "Better quality enquiries":   [0.00, 0.16, 0.00, 0.14, 0.00, 0.10, 0.00],
-                    "Less manual admin":          [0.26, 0.00, 0.28, 0.00, 0.30, 0.00, 0.00],
-                    "Not sure yet":               [0.00, 0.26, 0.00, 0.28, 0.00, 0.30, 0.00],
-                  };
-                  let rL = 0, rR = 0, rUL = 0, rUR = 0, rLoL = 0, rLoR = 0, rUC = 0;
-                  for (const opt of selected) {
-                    const c = Q5R[opt];
-                    if (c) { rL += c[0]; rR += c[1]; rUL += c[2]; rUR += c[3]; rLoL += c[4]; rLoR += c[5]; rUC += c[6]; }
-                  }
-                  rUL = Math.min(rUL, 0.40);
-                  rUR = Math.min(rUR, 0.40);
-                  rUC = Math.min(rUC, 0.16);
-
-                  // Hover crown/rim "white" must become amber/champagne when reflection
-                  // is active. Each white hover highlight is emitted as a COMPLETE colour
-                  // string (no in-CSS calc, which proved fragile in rgba()). Champagne base
-                  // rgb(255,226,165); per-zone opacity frozen at idle level, then dropped
-                  // below idle where that zone's amber light directly filters it.
-                  const champ = (idleAlpha: number, zoneAmber: number) =>
-                    `rgba(255, 226, 165, ${(idleAlpha * Math.max(0, 1 - 2.0 * zoneAmber)).toFixed(3)})`;
-
-                  return {
-                    "--refl-active":       "1",
-                    "--refl-left":         Math.min(rL,   0.38).toFixed(3),
-                    "--refl-right":        Math.min(rR,   0.38).toFixed(3),
-                    "--refl-upper-left":   rUL.toFixed(3),
-                    "--refl-upper-right":  rUR.toFixed(3),
-                    "--refl-lower-left":   Math.min(rLoL, 0.42).toFixed(3),
-                    "--refl-lower-right":  Math.min(rLoR, 0.42).toFixed(3),
-                    "--refl-upper-centre": rUC.toFixed(3),
-                    // crown specular halves + centre core (idle opacities 0.55 / 0.55 / 0.55)
-                    "--crown-left":        champ(0.55, rUL),
-                    "--crown-left-mid":    champ(0.14, rUL),
-                    "--crown-right":       champ(0.55, rUR),
-                    "--crown-right-mid":   champ(0.14, rUR),
-                    "--crown-centre":      champ(0.55, rUC),
-                    // top rim (idle opacity 0.72) — full-width, uses max side amber
-                    "--crown-rim":         champ(0.72, Math.max(rUL, rUR, rUC)),
-                    // lower env reflection — softer champagne, frozen at idle opacity 0.14
-                    "--crown-env":         `rgba(232, 205, 158, ${(0.14).toFixed(3)})`,
-                    // lower bounce underside edge — frozen to idle cool value (no hover lift)
-                    "--bounce-edge":       `rgba(70, 110, 170, ${(0.18).toFixed(3)})`,
-                  } as React.CSSProperties;
-                })() : {}),
+                // Position-aware warm reflection for every question (D-031 generalised).
+                // Recomputed each render from the active question's options + selection,
+                // so reflection direction updates live and no stale vars persist between
+                // questions. Returns {} when nothing is selected → normal platinum hover.
+                ...reflectionVars(QUESTIONS[qNum].options, selected),
               }}
             >
               <button
