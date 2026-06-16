@@ -602,19 +602,19 @@
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.025em;
-  color: #000;
-  background: #fff;
+  color: #e8edf5;
+  background: linear-gradient(180deg, #253d5e 0%, #1b3050 45%, #142540 100%);
   cursor: pointer;
-  transition: background-color 200ms linear;
+  transition: background 200ms linear;
 }
 
 .enquiry-nextstep-btn:hover {
-  background: #e5e5e5;
+  background: linear-gradient(180deg, #1f3554 0%, #172948 45%, #101f36 100%);
 }
 
 .enquiry-nextstep-btn:disabled {
-  background: #fff;
-  color: #000;
+  background: linear-gradient(180deg, #253d5e 0%, #1b3050 45%, #142540 100%);
+  color: rgba(232, 237, 245, 0.4);
 }
 
 @media (prefers-reduced-motion: reduce) {
