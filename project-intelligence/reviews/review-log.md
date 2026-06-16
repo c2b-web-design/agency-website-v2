@@ -21,6 +21,25 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-013 — Next Step Button: Material/Depth Pass QA
+
+**Date:** 2026-06-16  
+**Reviewer:** Human Founder  
+**Subject:** Material/surface pass for `.enquiry-nextstep-btn` — face curvature and depth definition
+
+**Findings:**
+- Sub-pass A (face curvature): broad soft radial catch accepted. Upper face reads as gently lit surface, not a gloss blob. Atmosphere is embedded in the surface, not overlaid.
+- Sub-pass B (depth/shadow): four-layer box-shadow stack accepted. Top rim reads as caught light, not a drawn border. Lower bevel and drop shadow give the button physical presence. Button reads as a small 3D object.
+- Approval note: the lighter top read is a recognised consequence of the light direction beginning to read as 3D. Not a defect. Not a correction request.
+- Both "Next step" and "Send" buttons inherit through the shared class. No JSX changed.
+- Button remains quieter than Begin and does not overpower the selected cards or amber filament.
+
+**Flags:** None.
+
+**Status:** APPROVED — material/depth pass complete. See D-030 (updated). Extrusion/polish pass is next, pending a future brief.
+
+---
+
 ## R-012 — Next Step Button: Colour Pass QA
 
 **Date:** 2026-06-16  
