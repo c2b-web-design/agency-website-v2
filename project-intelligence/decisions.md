@@ -670,3 +670,20 @@ background: single-stop radial + smoked base gradient (pre-chrome); color: rgba(
 - Sub-pass B rim recalibration (assess after current face read settles)
 - Full metallic chrome behaviour
 - Any shape, spacing, timing, or JSX changes
+
+---
+
+## D-031 — Enquiry Experience: Next Step Button — Q5 Position-Aware Warm Environmental Reflection
+
+**Date:** 2026-06-16
+**Decision:** On Q5 only, the `.enquiry-nextstep-btn` treats selected answer cards as warm environmental light sources. The blue-platinum button catches a faint, directional amber reflection driven by which cards are selected — position-aware (left cap, right cap, upper/lower curved quadrants, faint upper-centre) and scaling in strength by card position and count. Geometry is identical between idle and hover; only reflected-light colour and intensity change.
+**Lighting rule (load-bearing):** Hover must NOT introduce a new clean white light source. White remains present as a small platinum component; selected-card amber increasingly filters/tints it as more cards activate. Amber is the only channel that intensifies on hover (×1.35). Central lower belly stays shadowed — no broad amber wash under the text.
+**Implementation architecture:** React computes complete `rgba(...)` colour strings for named crown/rim/environment variables and sets them on the button wrapper `style` (cascade into the button). CSS consumes them directly as `var(--x, <white-fallback>)`. This deliberately avoids `rgba(calc(...))` per-channel arithmetic, which proved unreliable in legacy comma-form `rgba()` and was the root cause of a persistent white hover streak (it silently fell back to white). Key variables: `--refl-active`, `--refl-left/right`, `--refl-upper-left/right/centre`, `--refl-lower-left/right`, `--crown-left`, `--crown-left-mid`, `--crown-right`, `--crown-right-mid`, `--crown-centre`, `--crown-rim`, `--crown-env`, `--bounce-edge`. Champagne base `rgb(255,226,165)`; per-zone opacity frozen at idle level, dropped below idle where that zone's amber light filters it. No-selected-card hover keeps normal blue-platinum behaviour (variables unset → white fallbacks).
+**Scope:** Q5 only. Per-card contribution table lives in `components/enquiry/enquiry-opening.tsx` (Q5R lookup, keyed on answer label). Rollout to Q4–Q1 is NOT included — reserved for a future brief. No card styling, layout, timing, or JSX-structure changes beyond the wrapper `style` variables.
+**Authority:** Human Founder
+**Status:** APPROVED — Q5 reflection prototype baseline. See R-016.
+
+**What is NOT included (reserved for future brief):**
+- Rollout to Q4–Q1 (the per-card position model must be authored per question set)
+- Any change to the approved blue-platinum foundation (D-030) — this layer sits on top of it
+- Crown/specular geometry changes

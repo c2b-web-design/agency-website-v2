@@ -21,6 +21,28 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-016 — Next Step Button: Q5 Position-Aware Warm Environmental Reflection
+
+**Date:** 2026-06-16  
+**Reviewer:** Human Founder  
+**Subject:** Q5-only selected-card amber reflection on `.enquiry-nextstep-btn`, idle and hover
+
+**Findings:**
+- Selected Q5 answer cards act as warm environmental light sources; the blue-platinum button catches a faint, directional amber reflection from them.
+- Reflection is position-aware: card position drives which curved zone warms (left cap, right cap, upper/lower quadrants, faint upper-centre for the distant card 2). Strength scales with card position and count.
+- Geometry is stable between idle and hover — only the colour and intensity of reflected light change.
+- Hover lighting rule enforced: hover must not introduce a new clean white light source. White remains a small platinum component; selected-card amber increasingly filters/tints it as more cards activate. Amber is the only channel that intensifies on hover (×1.35).
+- Central lower belly stays shadowed — no broad amber wash under the text.
+- Root cause of the persistent hover white streak identified and resolved: `rgba(calc(...))` per-channel arithmetic inside legacy comma-form `rgba()` was unreliable, silently falling back to white. Replaced with React-computed complete `rgba(...)` colour strings consumed via CSS variables.
+- No-selected-card hover and non-Q5 questions retain normal blue-platinum behaviour (variables unset → white fallbacks).
+- Scope: Q5 only. Not rolled out to Q4–Q1. No card styling, layout, timing, or JSX-structure changes beyond the wrapper `style` variables.
+
+**Flags:** None.
+
+**Status:** APPROVED — Q5 reflection prototype baseline. See D-031. Rollout to Q4–Q1 pending future brief.
+
+---
+
 ## R-015 — Next Step Button: Face/Body Separation Sub-pass QA
 
 **Date:** 2026-06-16  
@@ -418,4 +440,4 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
-*Last updated: 2026-06-01 — R-008 added (D-022 persistent Q5 element, chip memory rail, Q4 layout-first framing)*
+*Last updated: 2026-06-16 — R-016 added (D-031 Q5 position-aware warm environmental reflection on Next step button)*
