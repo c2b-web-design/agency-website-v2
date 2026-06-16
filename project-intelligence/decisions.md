@@ -598,25 +598,26 @@ D-022 remains the committed, deployed, approved baseline. D-023 does not patch o
 ## D-030 — Enquiry Experience: Next Step Button — Approved Colour + Material Foundation
 
 **Date:** 2026-06-16  
-**Decision:** The shared `.enquiry-nextstep-btn` (used for both "Next step" and "Send" buttons in the `/start` enquiry flow) uses a smoked blue-steel colour foundation with a material/depth surface pass. The button reads as a small physical blue-steel object — lit top face, bevelled depth, lifted from the dark page. Quieter than Begin. Both buttons inherit through the shared class; no JSX changed.  
-**Rationale:** The previous flat white pill was tonally disconnected from the `/start` environment. A saturated cobalt interim was tried and rejected as too product-UI. The approved smoked blue-steel direction keeps the button native to the glass-card world without overpowering it. The material pass then adds physical object read: face curvature, lit rim, lower bevel, and drop shadow — following the same architectural pattern as `.enquiry-begin-btn`, at smaller scale and quieter opacity.  
+**Decision:** The shared `.enquiry-nextstep-btn` (used for both "Next step" and "Send" buttons in the `/start` enquiry flow) uses a smoked blue-steel colour foundation with a material/depth surface pass and a rim/specular polish pass. The button reads as a shaped blue-steel object with a clearly perceptible lit top edge and face curvature. Quieter than Begin. Both buttons inherit through the shared class; no JSX changed.  
+**Rationale:** Built in three approved layers: (1) colour — smoked blue-steel gradient replacing the flat white pill; (2) material/depth — face radial, shadow stack adding object presence; (3) rim/specular polish — rim opacity raised to be clearly perceptible as a light-catching edge without reading as a UI border, face radial refined to a two-stop dissolve.  
 **Authority:** Human Founder  
-**Status:** APPROVED — colour pass commit a77c3bc; material pass commit b1fff80. Next: extrusion/polish pass (future brief).
+**Status:** APPROVED — colour a77c3bc; material b1fff80; rim polish cc27886. Next: extrusion/deeper 3D pass (future brief).
 
 ---
 
-**Approved CSS baseline (colour + material pass):**
+**Approved CSS baseline (colour + material + rim polish):**
 ```css
 /* idle */
 background:
   radial-gradient(
     ellipse 80% 25% at 50% 8%,
-    rgba(130, 175, 230, 0.12) 0%,
+    rgba(130, 175, 230, 0.22) 0%,
+    rgba(130, 175, 230, 0.06) 55%,
     transparent 100%
   ),
   linear-gradient(180deg, #253d5e 0%, #1b3050 45%, #142540 100%);
 box-shadow:
-  inset 0  1px 0    rgba(160, 200, 255, 0.30),
+  inset 0  1px 0    rgba(185, 220, 255, 0.68),
   inset 0  2px 3px  rgba( 20,  60, 120, 0.25),
   inset 0 -2px 3px  rgba(  5,  15,  40, 0.50),
         0  2px 8px  rgba(  0,   0,   0, 0.35);
@@ -627,12 +628,13 @@ transition: box-shadow 200ms linear;
 background:
   radial-gradient(
     ellipse 80% 25% at 50% 8%,
-    rgba(140, 185, 240, 0.16) 0%,
+    rgba(140, 185, 240, 0.28) 0%,
+    rgba(140, 185, 240, 0.07) 55%,
     transparent 100%
   ),
   linear-gradient(180deg, #1f3554 0%, #172948 45%, #101f36 100%);
 box-shadow:
-  inset 0  1px 0    rgba(160, 200, 255, 0.36),
+  inset 0  1px 0    rgba(190, 225, 255, 0.78),
   inset 0  2px 3px  rgba( 20,  60, 120, 0.30),
   inset 0 -2px 3px  rgba(  5,  15,  40, 0.62),
         0  3px 10px rgba(  0,   0,   0, 0.44);
@@ -642,15 +644,15 @@ background: same as idle; color: rgba(232, 237, 245, 0.4); no box-shadow
 ```
 
 **Layer rationale:**
-- **Face radial** 80% × 25%, 0.12 opacity — broad atmospheric lift, no readable edge or gloss blob
-- **Top rim** `rgba(160,200,255,0.30)` 1px inset — lit top edge; reads as caught light, not a UI border
-- **Sub-rim inner** soft blue inset — transitions the rim into the face
+- **Face radial** 80% × 25%, two-stop fade (0.22 → 0.06 at 55%) — upper face curvature clearly perceptible; dissolves without a readable blob edge
+- **Top rim** `rgba(185,220,255,0.68)` 1px inset — clearly lit edge; cool blue-white family; perceptibly precise without reading as a UI border (Begin is 1.00 pure white — this stays clearly quieter)
+- **Sub-rim inner** soft blue inset — transitions rim into face body
 - **Lower bevel** `rgba(5,15,40,0.50)` inset from bottom — underside falls away; confirms object thickness
 - **Drop shadow** `rgba(0,0,0,0.35)` — separates button from dark page; no colour, no glow
-- **Hover** deepens each shadow layer slightly; no hue shift; background darkens in-family
+- **Hover** rim brightens to 0.78; face radial to 0.28; face darkens in-family; shadows deepen slightly
 
 **What is NOT included (reserved for future brief):**
 - Full 3D extrusion logic
 - Explicit border/stroke treatment
-- Metallic chrome behaviour
+- Full metallic chrome behaviour
 - Any shape, spacing, timing, or JSX changes

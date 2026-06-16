@@ -21,6 +21,27 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-014 — Next Step Button: Rim/Specular Polish Pass QA
+
+**Date:** 2026-06-16  
+**Reviewer:** Human Founder  
+**Subject:** Rim and specular polish pass for `.enquiry-nextstep-btn`
+
+**Findings:**
+- First attempt (rim 0.42/0.52) was imperceptible in the rendered UI — too close to the prior 0.30 baseline to register on screen.
+- Correction raised rim to 0.68 idle / 0.78 hover and face radial from 0.12 to 0.22 idle / 0.16 to 0.28 hover. Effect now clearly visible.
+- Top rim reads as a perceptibly precise lit edge — not a drawn border, not a bright line. Confirmed cooler and quieter than Begin (1.00 white).
+- Face curvature now visibly contributes to the 3D surface read. Upper face clearly lighter than base.
+- Two-stop radial dissolve (via 0.06/0.07 mid-stop at 55%) embeds the catch in the surface; no blob or overlay read.
+- Button remains quieter than Begin and does not overpower the answer cards or amber filament.
+- Both "Next step" and "Send" buttons inherit through the shared class. No JSX changed.
+
+**Flags:** None.
+
+**Status:** APPROVED — rim/specular polish complete. See D-030 (updated). Next: extrusion/deeper 3D pass, pending a future brief.
+
+---
+
 ## R-013 — Next Step Button: Material/Depth Pass QA
 
 **Date:** 2026-06-16  
