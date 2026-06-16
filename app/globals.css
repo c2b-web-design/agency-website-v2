@@ -743,8 +743,14 @@
   .enquiry-nextstep-btn { transition: none; }
 }
 
-/* Send trigger — final details form. Deliberately separated from the question-flow
-   CTA (.enquiry-nextstep-btn). Neutral flat baseline for iteration; not final. */
+/* Send trigger — final details form. Separated from the question-flow CTA
+   (.enquiry-nextstep-btn). COLOUR FOUNDATION: deep blue-opal cabochon. Same domed
+   pill architecture as before (bevel offsets/blurs, footprint, timing unchanged);
+   only the material colour changed. Body = deep sapphire/ultramarine; cyan/teal is
+   a restrained internal-fire glow in the lower-mid face only; dark navy base/edge;
+   one small glossy white dome catch high-left. No refraction/mottling/glint/violet/
+   amber yet — those are later passes.
+   Layer order (top→bottom): specular dome catch, cyan internal fire, sapphire body. */
 .enquiry-send-btn {
   border: none;
   border-radius: 9999px;
@@ -752,24 +758,76 @@
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.025em;
-  /* Paint via background-image (flat fill) so Tailwind preflight's
-     `button { background-color: transparent }` base reset cannot blank the
-     surface — same reason the gradient-based .enquiry-nextstep-btn is immune. */
-  background-image: linear-gradient(#ffffff, #ffffff);
-  background-color: #ffffff;
-  color: #0f1115;
+  /* Face painted via background-image (gradient) so Tailwind preflight's
+     `button { background-color: transparent }` reset cannot blank it. */
+  background-image:
+    radial-gradient(
+      ellipse 34% 26% at 42% 12%,
+      rgba(245, 252, 255, 0.72) 0%,
+      rgba(220, 244, 255, 0.14) 50%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 60% 34% at 50% 74%,
+      rgba( 30, 214, 208, 0.40) 0%,
+      rgba( 16, 168, 200, 0.16) 48%,
+      transparent 78%
+    ),
+    linear-gradient(
+      180deg,
+      #163a8f 0%,
+      #14418f 28%,
+      #114aa5 50%,
+      #0c2f72 78%,
+      #071a42 100%
+    );
+  background-color: #114aa5;
+  color: #eef6ff;
+  box-shadow:
+    inset 0  1px 0    rgba(150, 200, 255, 0.55),
+    inset 0  3px 3px  rgba( 10,  40,  96, 0.42),
+    inset 0 -2px 3px  rgba(  3,  12,  34, 0.58),
+          0  3px 9px  rgba(  2,   8,  24, 0.46);
   cursor: pointer;
-  transition: background-image 150ms linear;
+  transition: box-shadow 200ms linear;
 }
 
 .enquiry-send-btn:hover {
-  background-image: linear-gradient(#f0f0f0, #f0f0f0);
+  /* Same stone, more depth and inner light — brighter specular, stronger fire,
+     deeper body, stronger bevel. No new white event, no hue jump. */
+  background-image:
+    radial-gradient(
+      ellipse 34% 26% at 42% 12%,
+      rgba(248, 253, 255, 0.80) 0%,
+      rgba(224, 246, 255, 0.16) 50%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 60% 34% at 50% 74%,
+      rgba( 46, 226, 220, 0.48) 0%,
+      rgba( 20, 178, 210, 0.18) 48%,
+      transparent 78%
+    ),
+    linear-gradient(
+      180deg,
+      #18408f 0%,
+      #154a9c 28%,
+      #1254b4 50%,
+      #0b2c6c 78%,
+      #06163a 100%
+    );
+  box-shadow:
+    inset 0  1px 0    rgba(160, 210, 255, 0.62),
+    inset 0  3px 3px  rgba( 10,  40,  96, 0.52),
+    inset 0 -2px 3px  rgba(  3,  12,  34, 0.66),
+          0  4px 12px rgba(  2,   8,  24, 0.54);
 }
 
 .enquiry-send-btn:disabled {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.45));
-  background-color: rgba(255, 255, 255, 0.45);
-  color: rgba(15, 17, 21, 0.45);
+  background-image: linear-gradient(#34507e, #1d335c);
+  background-color: #1d335c;
+  color: rgba(238, 246, 255, 0.42);
+  box-shadow: none;
   cursor: default;
 }
 
