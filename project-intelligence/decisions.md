@@ -595,31 +595,37 @@ D-022 remains the committed, deployed, approved baseline. D-023 does not patch o
 
 ---
 
-## D-030 — Enquiry Experience: Next Step Button — Approved Colour + Material Foundation
+## D-030 — Enquiry Experience: Next Step Button — Approved Blue-Platinum Foundation
 
 **Date:** 2026-06-16  
-**Decision:** The shared `.enquiry-nextstep-btn` (used for both "Next step" and "Send" buttons in the `/start` enquiry flow) uses a smoked blue-steel colour foundation with a material/depth surface pass and a rim/specular polish pass. The button reads as a shaped blue-steel object with a clearly perceptible lit top edge and face curvature. Quieter than Begin. Both buttons inherit through the shared class; no JSX changed.  
-**Rationale:** Built in three approved layers: (1) colour — smoked blue-steel gradient replacing the flat white pill; (2) material/depth — face radial, shadow stack adding object presence; (3) rim/specular polish — rim opacity raised to be clearly perceptible as a light-catching edge without reading as a UI border, face radial refined to a two-stop dissolve.  
+**Decision:** The shared `.enquiry-nextstep-btn` uses a smoked blue-steel colour foundation built up through five approved sequential passes toward a blue-platinum material read. The button reads as a shaped blue-platinum object — lit face, bevelled depth, perceptible rim, clear face-to-body separation. Quieter than Begin. Both buttons inherit through the shared class; no JSX changed.  
+**Rationale:** Built in five approved layers: (1) colour — smoked blue-steel gradient; (2) material/depth — face radial + shadow stack; (3) rim/specular polish — rim precision; (4) blue-chrome face pass — two-layer specular + environmental fill; (5) face/body separation — top stop lifted, specular peak raised, gradient delta widened from ~15 to ~20 lightness points. Each layer isolated and reviewed before the next.  
 **Authority:** Human Founder  
-**Status:** APPROVED — colour a77c3bc; material b1fff80; rim polish cc27886. Next: extrusion/deeper 3D pass (future brief).
+**Status:** APPROVED — a77c3bc → b1fff80 → cc27886 → (blue-chrome face) → 47f8124. Next: Sub-pass B rim recalibration and/or extrusion (future briefs).
 
 ---
 
-**Approved CSS baseline (colour + material + rim polish):**
+**Approved CSS baseline (all five passes):**
 ```css
 /* idle */
 background:
   radial-gradient(
-    ellipse 80% 25% at 50% 8%,
-    rgba(130, 175, 230, 0.22) 0%,
-    rgba(130, 175, 230, 0.06) 55%,
+    ellipse 55% 22% at 50% 6%,
+    rgba(200, 225, 255, 0.38) 0%,
+    rgba(200, 225, 255, 0.08) 60%,
     transparent 100%
   ),
-  linear-gradient(180deg, #253d5e 0%, #1b3050 45%, #142540 100%);
+  radial-gradient(
+    ellipse 90% 40% at 50% 15%,
+    rgba(100, 155, 220, 0.12) 0%,
+    transparent 100%
+  ),
+  linear-gradient(180deg, #365d86 0%, #1b3050 40%, #142540 100%);
 box-shadow:
-  inset 0  1px 0    rgba(185, 220, 255, 0.68),
-  inset 0  2px 3px  rgba( 20,  60, 120, 0.25),
+  inset 0  1px 0    rgba(205, 230, 255, 0.76),
+  inset 0  2px 3px  rgba( 15,  50, 110, 0.30),
   inset 0 -2px 3px  rgba(  5,  15,  40, 0.50),
+  inset 0 -1px 0    rgba( 80, 120, 180, 0.14),
         0  2px 8px  rgba(  0,   0,   0, 0.35);
 color: #e8edf5;
 transition: box-shadow 200ms linear;
@@ -627,32 +633,40 @@ transition: box-shadow 200ms linear;
 /* hover */
 background:
   radial-gradient(
-    ellipse 80% 25% at 50% 8%,
-    rgba(140, 185, 240, 0.28) 0%,
-    rgba(140, 185, 240, 0.07) 55%,
+    ellipse 55% 22% at 50% 6%,
+    rgba(210, 230, 255, 0.44) 0%,
+    rgba(210, 230, 255, 0.10) 60%,
     transparent 100%
   ),
-  linear-gradient(180deg, #1f3554 0%, #172948 45%, #101f36 100%);
+  radial-gradient(
+    ellipse 90% 40% at 50% 15%,
+    rgba(110, 165, 230, 0.15) 0%,
+    transparent 100%
+  ),
+  linear-gradient(180deg, #2f5378 0%, #172948 40%, #101f36 100%);
 box-shadow:
-  inset 0  1px 0    rgba(190, 225, 255, 0.78),
-  inset 0  2px 3px  rgba( 20,  60, 120, 0.30),
+  inset 0  1px 0    rgba(210, 235, 255, 0.84),
+  inset 0  2px 3px  rgba( 15,  50, 110, 0.35),
   inset 0 -2px 3px  rgba(  5,  15,  40, 0.62),
+  inset 0 -1px 0    rgba( 90, 130, 190, 0.18),
         0  3px 10px rgba(  0,   0,   0, 0.44);
 
 /* disabled */
-background: same as idle; color: rgba(232, 237, 245, 0.4); no box-shadow
+background: single-stop radial + smoked base gradient (pre-chrome); color: rgba(232,237,245,0.4); no box-shadow
 ```
 
 **Layer rationale:**
-- **Face radial** 80% × 25%, two-stop fade (0.22 → 0.06 at 55%) — upper face curvature clearly perceptible; dissolves without a readable blob edge
-- **Top rim** `rgba(185,220,255,0.68)` 1px inset — clearly lit edge; cool blue-white family; perceptibly precise without reading as a UI border (Begin is 1.00 pure white — this stays clearly quieter)
-- **Sub-rim inner** soft blue inset — transitions rim into face body
-- **Lower bevel** `rgba(5,15,40,0.50)` inset from bottom — underside falls away; confirms object thickness
-- **Drop shadow** `rgba(0,0,0,0.35)` — separates button from dark page; no colour, no glow
-- **Hover** rim brightens to 0.78; face radial to 0.28; face darkens in-family; shadows deepen slightly
+- **Key specular** 55% × 22% ellipse, peak 0.38 → fades via 0.08 → transparent — tight directional catch from above; reads as polish, not atmospheric lift
+- **Environmental fill** 90% × 40% wash at 0.12 — blue card environment reflected diffusely into the face; "platinum in a blue room"
+- **Face gradient** `#365d86 → #1b3050 → #142540` — ~20-point lightness delta; top clearly lit, base falls away dark
+- **Top rim** `rgba(205,230,255,0.76)` — precision edge catch; cool blue-white; quieter than Begin (1.00 warm white)
+- **Sub-rim** cooled to `rgba(15,50,110,0.30)` — matches the platinum face tone
+- **Lower bevel** `rgba(5,15,40,0.50)` — underside falls away; confirms thickness
+- **Lower bounce** `rgba(80,120,180,0.14)` — faint metallic reflection on lower edge; almost imperceptible individually
+- **Drop shadow** `rgba(0,0,0,0.35)` — lifts from dark page; no colour, no glow
 
 **What is NOT included (reserved for future brief):**
-- Full 3D extrusion logic
-- Explicit border/stroke treatment
+- Full 3D extrusion / ledge logic
+- Sub-pass B rim recalibration (assess after current face read settles)
 - Full metallic chrome behaviour
 - Any shape, spacing, timing, or JSX changes

@@ -21,6 +21,26 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-015 — Next Step Button: Face/Body Separation Sub-pass QA
+
+**Date:** 2026-06-16  
+**Reviewer:** Human Founder  
+**Subject:** Face/body tonal separation sub-pass for `.enquiry-nextstep-btn` (blue-platinum direction)
+
+**Findings:**
+- Core diagnosis confirmed: the prior gradient had ~15 lightness-point delta between face and base — insufficient for a metallic read.
+- Face gradient top stop lifted from `#2e4f78` (L≈32) to `#365d86` (L≈37). Gradient delta now ~20 points. Saturation held controlled (~38%) to avoid vivid polished-blue read.
+- Key specular peak raised from 0.32 to 0.38 idle / 0.38 to 0.44 hover. Reinforces the lifted face plane.
+- Hover top stop `#2a4870` → `#2f5378`. Proportionally consistent.
+- Result: upper face clearly separated from lower body. Cooler and more polished without becoming loud or vivid. Blue-platinum direction established.
+- Both "Next step" and "Send" inherit through the shared class. No JSX changed.
+
+**Flags:** None.
+
+**Status:** APPROVED — face/body separation sub-pass complete. See D-030 (updated). Sub-pass B rim recalibration and extrusion pending future briefs.
+
+---
+
 ## R-014 — Next Step Button: Rim/Specular Polish Pass QA
 
 **Date:** 2026-06-16  
