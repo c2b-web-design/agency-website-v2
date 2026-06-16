@@ -684,6 +684,25 @@ background: single-stop radial + smoked base gradient (pre-chrome); color: rgba(
 **Status:** APPROVED — Q5 reflection prototype baseline. See R-016.
 
 **What is NOT included (reserved for future brief):**
-- Rollout to Q4–Q1 (the per-card position model must be authored per question set)
+- Rollout to Q4–Q1 (the per-card position model must be authored per question set) — DONE, see D-032
 - Any change to the approved blue-platinum foundation (D-030) — this layer sits on top of it
 - Crown/specular geometry changes
+
+---
+
+## D-032 — Enquiry Experience: Reflected Amber CTA Lighting — Rollout to Q1–Q5
+
+**Date:** 2026-06-16
+**Decision:** The approved Q5 reflected-amber lighting (D-031) is rolled out to all five enquiry questions. The Next step / Send CTA reflects selected-card amber filament light across Q1–Q5. The generalisation works because all five questions render through the same shared 3+2 answer grid (`enquiry-answer-grid`, fixed `nth-child` slots), so the contribution model is purely positional. The per-card table is keyed on **card index in the grid** (0 top-left, 1 top-middle, 2 top-right, 3 bottom-left, 4 bottom-right), not on answer text.
+**Approved lighting rule (load-bearing, unchanged from D-031, restated for the system):**
+- Reflection geometry stays stable — selected-card state changes the colour/intensity of reflected light, not the architecture of the object.
+- No selected cards: normal blue-platinum hover remains.
+- Selected cards: amber/champagne environmental reflection influences the CTA.
+- Hover must NOT introduce a new clean white light source. White/platinum may remain subtly present, but amber increasingly filters/tints it as more cards are selected.
+- Amber reflection scales by selected-card position and count; bottom-row (closest) cards influence most, the distant top-middle card least.
+- Strongest amber state occurs when all visible answer cards are selected.
+- The CTA must remain blue-platinum at its core — never a flat amber button.
+**Implementation:** Module-level `GRID_REFL` table (index-keyed) + `reflectionVars(options, selected)` helper in `components/enquiry/enquiry-opening.tsx`. The button wrapper calls `reflectionVars()` unconditionally; it returns `{}` when nothing is selected and recomputes each render, so reflection direction updates live and no stale variables persist between questions. Q5 behaviour is byte-identical to the D-031 baseline (same vectors in index order, same champagne math, same variables). CSS unchanged.
+**Implementation lesson (carry forward):** Do NOT use `rgba(calc(...))` colour-channel arithmetic for this lighting system — it proved fragile and allowed white hover behaviour to leak through (silent fallback to white). Use React-computed complete `rgba(...)` strings for the named crown/rim/environment CSS custom properties.
+**Authority:** Human Founder
+**Status:** APPROVED — rollout across Q1–Q5. Branch `feat/q5-reflected-amber-lighting`: `ac3a112` (Q5 baseline) → `7fbb005` (Q1–Q5 rollout). See R-017.

@@ -21,6 +21,27 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-017 — Reflected Amber CTA Lighting: Rollout to Q1–Q5
+
+**Date:** 2026-06-16  
+**Reviewer:** Human Founder  
+**Subject:** Generalisation of the approved Q5 reflected-amber lighting (R-016 / D-031) to all five enquiry questions on `.enquiry-nextstep-btn`
+
+**Findings:**
+- The Next step / Send CTA now reflects selected-card amber filament light across Q1–Q5, not Q5 only.
+- Works because all five questions share the same 3+2 answer grid; the contribution model is purely positional, keyed on card index, not answer text.
+- Approved lighting rule holds across all questions: reflection geometry stays stable; selected-card state changes colour/intensity, not architecture; hover introduces no new clean white light source; amber increasingly filters/tints the platinum white as more cards activate; strength scales by card position and count; strongest amber when all visible cards are selected; CTA stays blue-platinum at its core.
+- No selected cards → normal blue-platinum hover. Reflection recomputes each render, so direction updates live and no stale variables persist between questions.
+- Q5 confirmed byte-identical to the approved baseline.
+- No `rgba(calc(...))` colour-channel arithmetic reintroduced; colours remain React-computed complete `rgba(...)` strings via named vars. Card styling, layout, base material, and Begin button untouched. Send inherits the shared class.
+- `tsc --noEmit` clean; ESLint shows only the two documented pre-existing `react-hooks/set-state-in-effect` errors, no new ones.
+
+**Flags:** None.
+
+**Status:** APPROVED — rollout across Q1–Q5. See D-032. Pushed on branch `feat/q5-reflected-amber-lighting` (`ac3a112` → `7fbb005`); not yet merged.
+
+---
+
 ## R-016 — Next Step Button: Q5 Position-Aware Warm Environmental Reflection
 
 **Date:** 2026-06-16  
@@ -440,4 +461,4 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
-*Last updated: 2026-06-16 — R-016 added (D-031 Q5 position-aware warm environmental reflection on Next step button)*
+*Last updated: 2026-06-16 — R-017 added (D-032 reflected amber CTA lighting rolled out across Q1–Q5)*
