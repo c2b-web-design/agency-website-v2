@@ -21,6 +21,25 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-012 — Next Step Button: Colour Pass QA
+
+**Date:** 2026-06-16  
+**Reviewer:** Human Founder  
+**Subject:** First-pass colour update for `.enquiry-nextstep-btn` (shared "Next step" and "Send" buttons)
+
+**Findings:**
+- Flat white pill replaced with three-stop smoked blue-steel gradient.
+- Two interim iterations rejected: (1) desaturated slate — read as pale neutral/ivory on screen; (2) saturated cobalt — read as product-UI primary accent, visually separate from glass cards.
+- Approved direction: smoked blue-steel, desaturated enough to feel native to the glass-card environment.
+- Button now sits naturally alongside frosted blue cards, white active question, teal memory rail, and amber filament.
+- Both "Next step" and "Send" buttons inherit the update through the shared class — no JSX changed.
+
+**Flags:** None.
+
+**Status:** APPROVED — colour pass complete. See D-030. Material/depth pass is next.
+
+---
+
 ## R-011 — Enquiry Selected-Card Filament Border: QA Pass
 
 **Date:** 2026-06-15  

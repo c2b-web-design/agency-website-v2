@@ -592,3 +592,45 @@ D-022 remains the committed, deployed, approved baseline. D-023 does not patch o
 - SVG stroke-dashoffset with guessed perimeter (e.g. 1000) — values were viewport-dependent, unreliable.
 - Conic-gradient CSS mask reveal on a div border — mask animated but produced no visible movement, only opacity fade.
 - Segmented clip-path reveal on SVG `<g>` groups — invisible result, reverted.
+
+---
+
+## D-030 — Enquiry Experience: Next Step Button — Approved Colour Foundation
+
+**Date:** 2026-06-16  
+**Decision:** The shared `.enquiry-nextstep-btn` (used for both "Next step" and "Send" buttons in the `/start` enquiry flow) uses a smoked blue-steel colour foundation. Three-stop gradient, top-to-base tonal lift to suggest object form without metallics or extrusion.  
+**Rationale:** The previous flat white pill was tonally disconnected from the `/start` environment. A saturated cobalt interim was tried and rejected as too product-UI. The approved direction is desaturated blue-steel — dark, smoky, clearly blue but calmer than a primary action colour — so the button feels like a solid sculpted object native to the glass-card environment rather than a separate UI accent.  
+**Authority:** Human Founder  
+**Status:** APPROVED — commit a77c3bc. Colour pass only. Material/depth pass is next.
+
+---
+
+**Approved CSS values (colour pass only):**
+```css
+/* idle */
+background: linear-gradient(180deg, #253d5e 0%, #1b3050 45%, #142540 100%);
+color: #e8edf5;
+
+/* hover */
+background: linear-gradient(180deg, #1f3554 0%, #172948 45%, #101f36 100%);
+
+/* disabled */
+background: linear-gradient(180deg, #253d5e 0%, #1b3050 45%, #142540 100%);
+color: rgba(232, 237, 245, 0.4);
+```
+
+**Colour family rationale:**
+- Top stop `#253d5e` (~hue 215°, sat 42%) — smoked blue crest; suggests light catching the face without chrome
+- Mid stop `#1b3050` (~hue 215°, sat 47%) — core blue-steel body; tonally aligned with the glass card stack
+- Base stop `#142540` (~hue 215°, sat 50%) — dark anchor; clearly blue, not near-black
+- Hover steps each stop ~4 lightness points darker; no hue shift; contained deepening, not a jump
+- Text `#e8edf5` — matches existing card body text family; high contrast across all three stops
+
+**What this pass does NOT include (reserved for next pass):**
+- Rim highlight or top-edge light
+- Inner shadow or bevel
+- Border treatment
+- Metallic / chrome behaviour
+- 3D extrusion logic
+
+**Scope note:** Both buttons in `enquiry-opening.tsx` share this class and inherit the colour pass automatically. No JSX was changed.
