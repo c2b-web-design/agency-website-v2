@@ -706,3 +706,26 @@ background: single-stop radial + smoked base gradient (pre-chrome); color: rgba(
 **Implementation lesson (carry forward):** Do NOT use `rgba(calc(...))` colour-channel arithmetic for this lighting system — it proved fragile and allowed white hover behaviour to leak through (silent fallback to white). Use React-computed complete `rgba(...)` strings for the named crown/rim/environment CSS custom properties.
 **Authority:** Human Founder
 **Status:** APPROVED — rollout across Q1–Q5. Branch `feat/q5-reflected-amber-lighting`: `ac3a112` (Q5 baseline) → `7fbb005` (Q1–Q5 rollout). See R-017.
+
+---
+
+## D-033 — Enquiry Experience: Send Button — Approved Deep Blue-Opal Cabochon Material
+
+**Date:** 2026-06-22
+**Context:** The Send trigger on the final details form was previously separated from the question-flow CTA (`.enquiry-nextstep-btn`) into its own class, `.enquiry-send-btn`, and given a deep blue-opal cabochon **colour foundation** with the internal opal character (mottling/refraction/violet) explicitly deferred to a later brief. This decision records the approved outcome of that later brief: the internal opal-character material pass.
+**Decision:** `.enquiry-send-btn` is approved as a stylised deep blue-opal cabochon. Its painted face (CSS `background-image` stack only) carries:
+- a smooth, dominant deep sapphire/ultramarine body with a dark navy edge/base;
+- a contained internal cyan/teal light pooling in the lower-middle (below/around the word, never reaching the rim);
+- internal structure composed around TWO focal formations — a PRIMARY irregular cyan/teal opal bloom (core + offset lobe, broken silhouette via tight multi-stop falloff) in the lower-left/lower-middle, and a restrained SECONDARY cobalt/violet-blue formation upper-right (registered at real size by a faint navy under-darkening behind a tight violet core; blue-leaning, partially obscured, no stripe/pink/magenta);
+- ONE small/deep navy/cobalt shaping mottle intersecting the upper-left edge of the primary bloom to carve an internal shadow notch (light-and-shadow depth, not a dark spot on the surface);
+- one small controlled specular dome catch high-left.
+Hover remains the same stone — the two focal formations gain local contrast/clarity only (shaping mottle deepens, focal cores tighten); the broad cyan pool is held near idle so central glow does not climb. No new white light source, no hue jump.
+**Design rule (load-bearing):** Internal visibility is carried by LOCAL CONTRAST and FALLOFF SHAPE, not by broad opacity increases or overall brightening. Overall luminance and saturation are held approximately constant between this pass and the prior one, and between idle and hover. The result is intentionally a stylised blue-opal interpretation suited to an ~84×41px text-bearing button — NOT a photographic gemstone reproduction. Reference images were optical inspiration only and were not copied (markings, texture placement, highlights and composition are original). Guiding direction: "Macro lighting from reference 5; micro-character from reference 4 — translated originally, never copied."
+**Scope:** Confined to `.enquiry-send-btn`, `.enquiry-send-btn:hover`, and their adjacent material comment in `app/globals.css`. No React/JSX, no CSS variables, no pseudo-elements, no image assets, no dependency changes. Geometry, dimensions, text styling/colour, the bevel/elevation box-shadow stack, the specular catch, the disabled state, timing, and the completion-state fade are all unchanged. Send remains UNWIRED to a backend (target service/storage still undecided).
+**Relationship to prior decisions:** D-032 / R-017 were correct at the time — Send inherited the shared `.enquiry-nextstep-btn` reflected-amber lighting before its own material was designed. D-033 is the subsequent source of truth for the Send button: Send is now a distinct material on `.enquiry-send-btn` and no longer derives its surface from the Next step CTA. The blue-platinum reflected-amber system (D-030/D-031/D-032) is unchanged and continues to govern `.enquiry-nextstep-btn`.
+**What is NOT included (reserved for future brief):**
+- Rim/glint surface-polish refinement on the Send button.
+- Contact / details-field design (unresolved, out of scope).
+- Send backend wiring.
+**Authority:** Human Founder
+**Status:** APPROVED — Send opal cabochon internal-character pass. Branch `feat/q5-reflected-amber-lighting`. See R-018.

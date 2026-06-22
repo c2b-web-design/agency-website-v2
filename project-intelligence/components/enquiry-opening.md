@@ -246,12 +246,21 @@ No shadcn/ui primitives. No `cn()` utility — class composition uses template l
 | F-006 | Q4 transition behaviour undefined | Low | R-003 | Actioned — D-017 |
 | F-007 | Q4 "Next step" was a placeholder | Low | R-004 | Actioned — full corridor complete |
 
+## Send Button
+
+The Send trigger on the completion-state details form is a distinct CTA, **separated from the question-flow Next step button** (`.enquiry-nextstep-btn`) into its own class, **`.enquiry-send-btn`** (with `.enquiry-send-btn:hover`), defined in `app/globals.css`. It does NOT inherit the blue-platinum reflected-amber lighting that governs `.enquiry-nextstep-btn`.
+
+Its approved material (D-033 / R-018) is a **stylised deep blue-opal cabochon**: a smooth dominant sapphire/ultramarine body with a dark navy edge/base; a contained lower internal cyan/teal light; restrained internal cobalt/violet-blue depth (upper-right) and a primary cyan opal bloom (lower-left/lower-middle) shaped by one dark navy mottle; a small controlled specular catch. Hover stays the same stone with modestly clearer internal definition. The material is painted entirely via the `background-image` stack; geometry, text, bevel shadows, timing, and disabled state are unchanged. Intentionally a stylised interpretation for an ~84×41px button, not a photographic gemstone.
+
+**Send remains UNWIRED to a backend** — the button is present and positioned, but the target service/storage is still undecided. Rim/glint surface-polish refinement and contact-field design remain out of scope.
+
 ## Future Work
 
 - **Colour/material pass** — D-024 future direction. Active question stays white/off-white. Memory question text may use teal/duck-egg family. Q labels may use muted gold/amber. Selected state to move away from current brown fill toward glass/smoked material. Requires a new brief. Do not implement without one.
-- **Send wiring** — Send button is present and positioned. Backend target (email service, storage) not yet decided.
+- **Send wiring** — backend target (email service, storage) not yet decided. See Send Button section above.
+- **Send rim/glint** — possible later surface-polish pass on `.enquiry-send-btn`; not yet briefed.
 - **Component extraction** — consider splitting individual corridor stages into sub-components once the Send wiring brief is defined.
 
 ---
 
-*Last updated: 2026-06-14 — Full Q5→Q1 corridor and completion state approved at milestone commit 2152e6e. D-023 and D-024 added to related decisions.*
+*Last updated: 2026-06-22 — Send Button section added: `.enquiry-send-btn` separated from `.enquiry-nextstep-btn`; deep blue-opal cabochon material approved (D-033 / R-018); Send remains unwired.*

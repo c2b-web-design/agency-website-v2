@@ -21,6 +21,28 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
+## R-018 — Send Button: Deep Blue-Opal Cabochon Internal Character
+
+**Date:** 2026-06-22  
+**Reviewer:** Human Founder  
+**Subject:** Approved internal opal-character material pass on `.enquiry-send-btn` (and `:hover`), the Send-specific class separated from `.enquiry-nextstep-btn`
+
+**Findings:**
+- Smooth deep sapphire/ultramarine cabochon body with dark navy edge/base preserved.
+- Contained lower-left/lower-middle cyan internal formation; restrained upper-right cobalt/violet-blue depth; one dark shaping mottle creating a subtle internal interruption (carved notch, not a surface spot).
+- Small controlled specular catch preserved; text remains crisp.
+- Hover remains the same stone with modestly clearer internal definition — central glow not increased; overall brightness controlled. Visibility achieved through local contrast and falloff, not broad opacity increases.
+- Intentionally a stylised blue-opal interpretation suited to an ~84×41px text-bearing button — not a photographic gemstone reproduction. Reference images were optical inspiration only and were not copied.
+- Change confined to `.enquiry-send-btn`, `.enquiry-send-btn:hover`, and their adjacent comment in `app/globals.css`. No React/JSX, CSS variables, assets, or dependency changes. Geometry, text styling, bevel/elevation shadows, specular catch, dark edge/base, timing, and disabled state unchanged.
+- Send remains unwired to a backend. Rim/glint refinement and contact-field design remain out of scope.
+- `npm run lint` reports only the two accepted pre-existing `react-hooks/set-state-in-effect` errors in `components/enquiry/enquiry-opening.tsx`; no new lint errors introduced. Turbopack compiled the CSS successfully and `/start` served successfully.
+
+**Flags:** None.
+
+**Status:** APPROVED — Send opal cabochon internal-character pass. See D-033. Pushed on branch `feat/q5-reflected-amber-lighting`; not yet merged.
+
+---
+
 ## R-017 — Reflected Amber CTA Lighting: Rollout to Q1–Q5
 
 **Date:** 2026-06-16  
@@ -461,4 +483,4 @@ Status:           Open | Actioned | Dismissed
 
 ---
 
-*Last updated: 2026-06-16 — R-017 added (D-032 reflected amber CTA lighting rolled out across Q1–Q5)*
+*Last updated: 2026-06-22 — R-018 added (D-033 Send deep blue-opal cabochon internal-character pass approved)*
