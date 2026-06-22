@@ -744,13 +744,26 @@
 }
 
 /* Send trigger — final details form. Separated from the question-flow CTA
-   (.enquiry-nextstep-btn). COLOUR FOUNDATION: deep blue-opal cabochon. Same domed
-   pill architecture as before (bevel offsets/blurs, footprint, timing unchanged);
-   only the material colour changed. Body = deep sapphire/ultramarine; cyan/teal is
-   a restrained internal-fire glow in the lower-mid face only; dark navy base/edge;
-   one small glossy white dome catch high-left. No refraction/mottling/glint/violet/
-   amber yet — those are later passes.
-   Layer order (top→bottom): specular dome catch, cyan internal fire, sapphire body. */
+   (.enquiry-nextstep-btn). MATERIAL: deep blue-opal cabochon with internal opal
+   character. Same domed pill architecture as before (bevel offsets/blurs, footprint,
+   geometry, text, transition timing all unchanged); only the painted material face
+   changed. Body = deep sapphire/ultramarine (dominant); a restrained internal cyan/
+   teal light pools in the lower-middle only (never reaching the rim). Internal structure
+   is composed around TWO focal formations rather than many soft patches (which averaged
+   into glass at ~84x41px): a PRIMARY irregular cyan/teal opal bloom (core + offset lobe)
+   in the lower-left/lower-middle. Each bloom lobe holds a core plateau then drops on a
+   tight shoulder (multi-stop falloff, no soft oval); a small/deep navy SHAPING MOTTLE
+   intersects its upper-left edge to carve an internal shadow notch (light-and-shadow
+   depth, not a dark spot on the surface). A SECONDARY cobalt/violet-blue formation sits
+   upper-right, registered at size by a faint navy under-darkening behind a tight violet
+   core (local contrast, same alpha budget); submerged, partially obscured, no stripe.
+   One faint supporting bloom only. Local contrast / falloff carries the read, NOT added
+   luminance — overall brightness matches the prior pass. Dark navy base/edge; one small
+   glossy white dome catch high-left.
+   Original interpretation — not a trace of any reference photo.
+   Still to come (NOT yet present): separate rim/glint polish pass.
+   Layer order (top->bottom): specular dome catch, secondary cobalt/violet formation,
+   primary cyan formation, shaping mottle, lower-middle internal cyan light, sapphire body. */
 .enquiry-send-btn {
   border: none;
   border-radius: 9999px;
@@ -761,18 +774,74 @@
   /* Face painted via background-image (gradient) so Tailwind preflight's
      `button { background-color: transparent }` reset cannot blank it. */
   background-image:
+    /* 1. specular dome catch — preserved exactly */
     radial-gradient(
       ellipse 34% 26% at 42% 12%,
       rgba(245, 252, 255, 0.72) 0%,
       rgba(220, 244, 255, 0.14) 50%,
       transparent 100%
     ),
+    /* 2. SECONDARY FORMATION — one cobalt/violet-blue internal body, upper-right.
+       Registered at size via local contrast: a faint navy under-darkening behind a
+       tighter-falloff violet core + small submerged lobe. Same alpha budget, sharper
+       boundary. Blue-leaning violet only; restrained, partially obscured. No stripe. */
     radial-gradient(
-      ellipse 60% 34% at 50% 74%,
+      ellipse 24% 18% at 67% 31%,
+      rgba(  8,  20,  56, 0.22) 30%,
+      transparent 82%
+    ),
+    radial-gradient(
+      ellipse 21% 15% at 66% 29%,
+      rgba(118, 124, 220, 0.34) 0%,
+      rgba( 84, 100, 192, 0.12) 46%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 13% 11% at 78% 39%,
+      rgba(100, 110, 208, 0.20) 0%,
+      transparent 66%
+    ),
+    /* 3a. PRIMARY FORMATION — one irregular cyan/teal opal bloom, lower-left to
+       lower-middle. Broken silhouette: each lobe holds a core plateau then drops on a
+       tight shoulder (no soft oval); the offset lobe overlaps asymmetrically so the
+       combined edge reads as carved, submerged material — not a circular glow. */
+    radial-gradient(
+      ellipse 23% 26% at 32% 66%,
+      rgba( 74, 206, 220, 0.42) 0%,
+      rgba( 60, 188, 214, 0.30) 44%,
+      rgba( 40, 162, 204, 0.08) 70%,
+      transparent 80%
+    ),
+    radial-gradient(
+      ellipse 14% 16% at 47% 59%,
+      rgba( 72, 196, 218, 0.26) 0%,
+      rgba( 58, 178, 208, 0.10) 56%,
+      transparent 74%
+    ),
+    /* faint supporting bloom (suppressed) — keeps a breath of depth right-of-centre */
+    radial-gradient(
+      ellipse 12% 15% at 70% 60%,
+      rgba( 56, 162, 214, 0.10) 0%,
+      transparent 76%
+    ),
+    /* 3b. SHAPING MOTTLE — small, deep navy/cobalt darkening intersecting the upper-left
+       edge of the primary bloom. Tight falloff so it carves an internal shadow notch
+       into the bloom (light-and-shadow depth), not a separate dark spot on the surface. */
+    radial-gradient(
+      ellipse 13% 12% at 35% 60%,
+      rgba(  5,  18,  52, 0.46) 0%,
+      rgba(  6,  22,  58, 0.14) 50%,
+      transparent 72%
+    ),
+    /* 4. lower-middle internal cyan/teal light — contained; core pulled lower so the
+       strongest energy sits below/around "Send", not behind it. Alpha unchanged. */
+    radial-gradient(
+      ellipse 58% 32% at 50% 80%,
       rgba( 30, 214, 208, 0.40) 0%,
       rgba( 16, 168, 200, 0.16) 48%,
       transparent 78%
     ),
+    /* 5. sapphire/ultramarine body + dark navy edge — dominant, preserved */
     linear-gradient(
       180deg,
       #163a8f 0%,
@@ -793,21 +862,69 @@
 }
 
 .enquiry-send-btn:hover {
-  /* Same stone, more depth and inner light — brighter specular, stronger fire,
-     deeper body, stronger bevel. No new white event, no hue jump. */
+  /* Same stone — the two focal formations gain local contrast/clarity only. Primary
+     bloom core + its shaping mottle and the secondary formation lift together; the
+     lower cyan pool is held near idle so central glow stays put. No new white, no hue jump. */
   background-image:
+    /* 1. specular dome catch */
     radial-gradient(
       ellipse 34% 26% at 42% 12%,
       rgba(248, 253, 255, 0.80) 0%,
       rgba(224, 246, 255, 0.16) 50%,
       transparent 100%
     ),
+    /* 2. secondary cobalt/violet formation — navy backing + tighter violet core */
     radial-gradient(
-      ellipse 60% 34% at 50% 74%,
-      rgba( 46, 226, 220, 0.48) 0%,
-      rgba( 20, 178, 210, 0.18) 48%,
+      ellipse 24% 18% at 67% 31%,
+      rgba(  8,  20,  56, 0.26) 30%,
+      transparent 82%
+    ),
+    radial-gradient(
+      ellipse 21% 15% at 66% 29%,
+      rgba(126, 132, 226, 0.40) 0%,
+      rgba( 90, 106, 198, 0.14) 46%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 13% 11% at 78% 39%,
+      rgba(106, 116, 214, 0.24) 0%,
+      transparent 66%
+    ),
+    /* 3a. primary cyan formation — broken silhouette, core + offset lobe */
+    radial-gradient(
+      ellipse 23% 26% at 32% 66%,
+      rgba( 82, 214, 228, 0.48) 0%,
+      rgba( 66, 196, 222, 0.34) 44%,
+      rgba( 44, 168, 210, 0.09) 70%,
+      transparent 80%
+    ),
+    radial-gradient(
+      ellipse 14% 16% at 47% 59%,
+      rgba( 78, 204, 226, 0.30) 0%,
+      rgba( 62, 184, 214, 0.12) 56%,
+      transparent 74%
+    ),
+    /* faint supporting bloom (suppressed) */
+    radial-gradient(
+      ellipse 12% 15% at 70% 60%,
+      rgba( 60, 168, 220, 0.12) 0%,
+      transparent 76%
+    ),
+    /* 3b. shaping mottle — small/deep, deepens the carve notch on hover, not glow */
+    radial-gradient(
+      ellipse 13% 12% at 35% 60%,
+      rgba(  5,  18,  52, 0.52) 0%,
+      rgba(  6,  22,  58, 0.16) 50%,
+      transparent 72%
+    ),
+    /* 4. lower-middle internal cyan/teal light — held near idle (alpha +0.02 only) */
+    radial-gradient(
+      ellipse 58% 32% at 50% 80%,
+      rgba( 34, 218, 212, 0.42) 0%,
+      rgba( 18, 172, 204, 0.17) 48%,
       transparent 78%
     ),
+    /* 5. sapphire/ultramarine body + dark navy edge */
     linear-gradient(
       180deg,
       #18408f 0%,
