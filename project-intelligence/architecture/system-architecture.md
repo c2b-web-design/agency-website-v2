@@ -16,6 +16,14 @@ The technical structure and conventions of the C2B Web Design project.
 | Fonts | Geist Sans / Geist Mono (Next.js) | — |
 | Icons | Lucide React | latest |
 | Class utility | clsx + tailwind-merge via `cn()` | — |
+| 3D rendering | Three.js | 0.185.1 |
+| React 3D renderer | @react-three/fiber | 9.6.1 |
+| R3F helpers | @react-three/drei | 10.7.7 |
+| React UI motion | motion | 12.42.2 |
+| Timeline animation | GSAP + @gsap/react | 3.15.0 / 2.1.2 |
+| Smooth scroll | Lenis | 1.3.25 |
+| 3D tuning panel | Leva | 0.10.1 |
+| 3D postprocessing | postprocessing + @react-three/postprocessing | 6.39.3 / 3.0.4 |
 | Package manager | npm | — |
 
 ---
@@ -107,6 +115,21 @@ shadcn/ui components use `class-variance-authority` (CVA) for variant management
 ### Font Loading Pattern
 Geist font CSS variables are applied to `<html>` in `app/layout.tsx` via `className={`${geistSans.variable} ${geistMono.variable}`}`. This makes `--font-geist-sans` and `--font-geist-mono` available at the CSS root, enabling correct resolution of `--font-sans` and `--font-heading` in the `@theme inline` block of `globals.css`. Variables are applied to `<html>`, not `<body>`, because `globals.css` sets `font-family` on the `html` element — see D-011.
 
+### Advanced Visual Toolkit Usage Rules
+The advanced visual toolkit is available by D-034. Tool choice is opt-in by task and follows the visual requirement:
+
+| Requirement | Tool choice |
+|---|---|
+| Layout, typography, ordinary styling, and flat surfaces | Tailwind CSS / CSS |
+| React UI state transitions, entrances, hover/tap motion, and microinteraction choreography | motion |
+| Timeline-heavy, precisely sequenced, or scroll-linked choreography | GSAP + @gsap/react |
+| Real 3D, camera, light, material, reflection, refraction, or depth behaviour | Three.js + @react-three/fiber + @react-three/drei |
+| Premium scroll feel or WebGL/scroll synchronisation | Lenis, only when a brief requires it |
+| Local prototype/material/scene tuning | Leva; not client-facing production UI |
+| Bloom, depth of field, vignette, or similar render effects | postprocessing + @react-three/postprocessing, only when a scene requires it |
+
+Normal website content remains semantic HTML. Canvas/WebGL is reserved for visual objects and scenes that require material, light, depth, camera, or shader-like behaviour.
+
 ---
 
 ## Constraints
@@ -160,4 +183,4 @@ All enquiry animation classes carry `prefers-reduced-motion: reduce` overrides.
 
 ---
 
-*Last updated: 2026-05-31*
+*Last updated: 2026-07-20*

@@ -729,3 +729,13 @@ Hover remains the same stone — the two focal formations gain local contrast/cl
 - Send backend wiring.
 **Authority:** Human Founder
 **Status:** APPROVED — Send opal cabochon internal-character pass. Branch `feat/q5-reflected-amber-lighting`. See R-018.
+
+---
+
+## D-034 - Advanced Visual Toolkit Available
+
+**Date:** 2026-07-20
+**Decision:** The project has a curated advanced visual toolkit available: Three.js, React Three Fiber, Drei, Motion, GSAP, @gsap/react, Lenis, Leva, postprocessing, and @react-three/postprocessing. Tool usage is opt-in by task and governed by visual requirement; no package becomes a default implementation choice because it is installed.
+**Rationale:** C2B needs a premium visual toolkit available for modern website techniques without tool-driven chaos. The amber selected-light work showed that material, light, reflection, refraction, camera, and depth behaviour should be considered Three.js/R3F territory rather than CSS-only styling once the requirement moves beyond a flat surface or border animation.
+**Authority:** Human Founder
+**Status:** APPROVED

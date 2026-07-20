@@ -109,6 +109,133 @@ function reflectionVars(options: string[], selected: Set<string>): React.CSSProp
   } as React.CSSProperties;
 }
 
+// ── Q5 PROTOTYPE reflection (Stage 2 — spatial light-FILTERING model) ────────
+// Q5-only model for the approved blue-platinum plasma-glass lens
+// (.enquiry-nextstep-btn--q5proto). Independent of GRID_REFL / reflectionVars(), which stay
+// byte-for-byte for Q1–Q4.
+//
+// CONCEPT (corrected): the reflection GEOMETRY belongs to the curved lens and never moves;
+// only its COLOUR changes with the active environmental light. The visible reflection is five
+// connected zones — [0] left cap, [1] upper-left crown, [2] upper-centre crown, [3] upper-right
+// crown, [4] right cap. Each zone accumulates an INFLUENCE value (0..1) from selected cards
+// (primary direction + restrained cross-surface spill so the field reads connected). That
+// influence interpolates the zone's catch COLOUR through three endpoints — cool platinum-blue
+// → champagne → amber — REPLACING the platinum, not painting amber on top of it. No additive
+// overlay; an uninfluenced zone stays exactly platinum-blue. Cards sit above the button, so
+// only these upper/lateral zones are ever coloured — never the text corridor, belly or
+// underside. Complete rgba() strings are computed here (never fragile in-CSS rgba(calc())).
+//
+// Per-card zone influence vector: [leftCap, ulCrown, ucCrown, urCrown, rightCap].
+// Index → grid slot: 0 TL, 1 TM, 2 TR, 3 BL, 4 BR.
+const Q5_ZONE_INFLUENCE: ReadonlyArray<readonly [number, number, number, number, number]> = [
+  [0.34, 0.30, 0.06, 0.00, 0.00], // 0 top-left    — weak-ish left + ul crown, faint centre spill
+  [0.04, 0.20, 0.40, 0.20, 0.04], // 1 top-middle  — centre, softly reaching both adjacent crowns
+  [0.00, 0.00, 0.07, 0.34, 0.40], // 2 top-right    — right cap + ur crown, slightly > card 1
+  [0.78, 0.74, 0.26, 0.04, 0.02], // 3 bottom-left  — STRONGEST left+ul, moderate centre, faint R
+  [0.02, 0.04, 0.26, 0.74, 0.78], // 4 bottom-right — STRONGEST right+ur, moderate centre, faint L
+];
+
+// Colour endpoints for the interpolation. Neutral = the approved platinum-blue crown core.
+// IDLE travels neutral → champagne → amber (Image-2 relationship). HOVER uses RICHER, brighter
+// endpoints (Image-3 relationship), so hover gains saturation/luminosity — not merely opacity.
+const Q5_NEUTRAL: readonly [number, number, number] = [205, 230, 255]; // cool platinum-blue (Image 1)
+const Q5_CHAMPAGNE: readonly [number, number, number] = [245, 208, 138];
+const Q5_AMBER: readonly [number, number, number] = [234, 154, 58];
+// Hover: clearly brighter, more saturated, more luminous (wider separation from idle).
+const Q5_CHAMPAGNE_H: readonly [number, number, number] = [255, 216, 132];
+const Q5_AMBER_H: readonly [number, number, number] = [255, 168, 48];
+
+function q5Mix(
+  a: readonly [number, number, number],
+  b: readonly [number, number, number],
+  k: number,
+): readonly [number, number, number] {
+  return [
+    Math.round(a[0] + (b[0] - a[0]) * k),
+    Math.round(a[1] + (b[1] - a[1]) * k),
+    Math.round(a[2] + (b[2] - a[2]) * k),
+  ] as const;
+}
+
+// Interpolate neutral→champagne→amber by influence t (0..1) → complete rgba string at `alpha`.
+// `hover` selects the richer endpoints. Two-segment lerp keeps a controlled champagne midpoint
+// so weak influence reads "lightly warmed platinum" before it ever looks amber. Every crown
+// segment uses this for BOTH its core and its midpoint, so no fixed white/blue stop survives
+// under an amber-filtered core.
+function q5ZoneColour(t: number, alpha: number, hover = false): string {
+  const clamped = Math.max(0, Math.min(1, t));
+  const champ = hover ? Q5_CHAMPAGNE_H : Q5_CHAMPAGNE;
+  const amber = hover ? Q5_AMBER_H : Q5_AMBER;
+  const rgb =
+    clamped <= 0.5
+      ? q5Mix(Q5_NEUTRAL, champ, clamped / 0.5)
+      : q5Mix(champ, amber, (clamped - 0.5) / 0.5);
+  return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha.toFixed(3)})`;
+}
+
+// Per-zone catch alphas. Selected-state warmth is now clearly visible at UI scale and hover is
+// decisively stronger than idle (Image-2 → Image-3). The diffuse CAP BLOOM is decoupled from the
+// thin LATERAL RIM so the bloom can be strong while the rim stays subordinate.
+//   NOTE: the *neutral fallback* alphas in CSS stay at the approved baseline (crown 0.62, mid
+//   0.16, cap 0.20) so an unselected button is byte-for-byte unchanged. These constants drive
+//   only the SELECTED colour strings.
+const A_CROWN = 0.75, A_CROWN_H = 0.92;   // crown ribbon core
+const A_MID = 0.27,  A_MID_H = 0.38;      // crown ribbon midpoint
+const A_BLOOM = 0.31, A_BLOOM_H = 0.44;   // diffuse curved-face / cap bloom (stronger)
+const A_RIM = 0.19,  A_RIM_H = 0.25;      // thin lateral rim — subordinate, far below the bloom
+
+// Build the Q5-prototype zone colour variables. Returns {} when nothing is selected, so the
+// locked neutral lens shows through unchanged. Emits its OWN namespaced vars (--q5zone-*).
+function q5ReflectionVars(options: string[], selected: Set<string>): React.CSSProperties {
+  if (selected.size === 0) return {};
+
+  // Accumulate influence per zone, bound to 1.0. Bottom-row cards (3,4) reach full warmth on
+  // their own side; spill keeps the field connected.
+  const z = [0, 0, 0, 0, 0];
+  options.forEach((option, idx) => {
+    if (!selected.has(option)) return;
+    const c = Q5_ZONE_INFLUENCE[idx];
+    if (!c) return;
+    for (let i = 0; i < 5; i++) z[i] += c[i];
+  });
+  for (let i = 0; i < 5; i++) z[i] = Math.min(z[i], 1);
+
+  // RIM — restrained and subordinate. Driven by the AVERAGE of the three crown zones (not
+  // Math.max), so one strong side cannot warm the whole outline; the far side stays mostly cool
+  // on a single selection. 4+5 → connected champagne; all-five → predominantly warm, no clean
+  // white. Rim alpha is substantially lower than before (0.78 → 0.30) so it reads as a thin cue,
+  // letting the curved-face/cap reflections carry the modelling.
+  const rimT = (z[1] + z[2] + z[3]) / 3;
+
+  return {
+    "--q5zone-active": "1",
+    // ── idle: crown core + midpoint; cap BLOOM and lateral RIM decoupled ──
+    "--q5zone-lbloom":   q5ZoneColour(z[0], A_BLOOM),  // diffuse left-cap bloom (strong)
+    "--q5zone-lrim":     q5ZoneColour(z[0], A_RIM),    // thin left lateral rim (subordinate)
+    "--q5zone-ul":       q5ZoneColour(z[1], A_CROWN),
+    "--q5zone-ul-mid":   q5ZoneColour(z[1], A_MID),
+    "--q5zone-uc":       q5ZoneColour(z[2], A_CROWN),
+    "--q5zone-uc-mid":   q5ZoneColour(z[2], A_MID),
+    "--q5zone-ur":       q5ZoneColour(z[3], A_CROWN),
+    "--q5zone-ur-mid":   q5ZoneColour(z[3], A_MID),
+    "--q5zone-rbloom":   q5ZoneColour(z[4], A_BLOOM),  // diffuse right-cap bloom (strong)
+    "--q5zone-rrim":     q5ZoneColour(z[4], A_RIM),    // thin right lateral rim (subordinate)
+    "--q5zone-rim":      q5ZoneColour(rimT, 0.30),     // top rim — preserved restrained response
+    // ── hover: richer endpoints (saturation/luminosity) AND clearly higher alpha ──
+    "--q5zone-lbloom-h": q5ZoneColour(z[0], A_BLOOM_H, true),
+    "--q5zone-lrim-h":   q5ZoneColour(z[0], A_RIM_H, true),
+    "--q5zone-ul-h":     q5ZoneColour(z[1], A_CROWN_H, true),
+    "--q5zone-ul-mid-h": q5ZoneColour(z[1], A_MID_H, true),
+    "--q5zone-uc-h":     q5ZoneColour(z[2], A_CROWN_H, true),
+    "--q5zone-uc-mid-h": q5ZoneColour(z[2], A_MID_H, true),
+    "--q5zone-ur-h":     q5ZoneColour(z[3], A_CROWN_H, true),
+    "--q5zone-ur-mid-h": q5ZoneColour(z[3], A_MID_H, true),
+    "--q5zone-rbloom-h": q5ZoneColour(z[4], A_BLOOM_H, true),
+    "--q5zone-rrim-h":   q5ZoneColour(z[4], A_RIM_H, true),
+    "--q5zone-rim-h":    q5ZoneColour(rimT, 0.36, true), // top rim — only a modest increase
+  } as React.CSSProperties;
+}
+
 export default function EnquiryOpening() {
   const [stage, setStage] = useState<"opening" | "active" | "complete">("opening");
   const [activeQ, setActiveQ] = useState(5);
@@ -275,18 +402,21 @@ export default function EnquiryOpening() {
                 opacity: selected.size > 0 ? 1 : 0,
                 pointerEvents: selected.size > 0 ? undefined : "none",
                 transition: "opacity 600ms linear",
-                // Position-aware warm reflection for every question (D-031 generalised).
-                // Recomputed each render from the active question's options + selection,
-                // so reflection direction updates live and no stale vars persist between
-                // questions. Returns {} when nothing is selected → normal platinum hover.
-                ...reflectionVars(QUESTIONS[qNum].options, selected),
+                // Position-aware warm reflection. Q1–Q4 use the shared GRID_REFL model
+                // (D-031 generalised). Q5 uses its own Stage-2 spatial light-filtering model
+                // (q5ReflectionVars → --q5zone-*), which recolours the fixed crown/cap
+                // reflection zones neutral→champagne→amber for the new lens. Both return {}
+                // when nothing is selected and recompute each render, so no stale vars persist.
+                ...(qNum === 5
+                  ? q5ReflectionVars(QUESTIONS[qNum].options, selected)
+                  : reflectionVars(QUESTIONS[qNum].options, selected)),
               }}
             >
               <button
                 type="button"
                 tabIndex={selected.size > 0 ? 0 : -1}
                 onClick={handleNextStep}
-                className="enquiry-nextstep-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
+                className={`enquiry-nextstep-btn${qNum === 5 ? " enquiry-nextstep-btn--q5proto" : ""} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40`}
               >
                 Next step
               </button>
