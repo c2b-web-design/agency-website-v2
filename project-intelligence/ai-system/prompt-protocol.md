@@ -46,6 +46,7 @@ Implement according to the brief, architecture docs, and design-system — in th
 - Do not improvise on design direction
 - Do not introduce patterns not established in `system-architecture.md` without logging a decision
 - If the brief is ambiguous on a point that will have architectural consequences: flag and escalate before implementing, not after
+- For active plan handoff, run logging, screenshots, or drift-prone work, use `live-work-protocol.md` and `project-intelligence/live-work/` so Codex can inspect saved state without Carl copying chat output
 
 ---
 
@@ -58,6 +59,16 @@ On task completion, update all relevant files per Section 3 of this document. Do
 ### Stage 5 — Review Generation
 
 If a component was built or a significant visual or architectural change was made: file a review entry in `review-log.md`. Use the schema. Self-review is acceptable; Browser QA review is preferred where possible.
+
+---
+
+### Stage 5.5 — Checkpoint Review (conditional)
+
+If the completed step is a meaningful implementation milestone — a completed visual layer, component, structural change, or rollout of an approved pattern — request a checkpoint review from Codex through the MCP bridge before building further on it.
+
+See `checkpoint-review-protocol.md` and `live-work-protocol.md` for cadence, saved artifacts, request structure, and escalation. Codex returns findings only; Carl decides the response.
+
+Not required for lint fixes, formatting, or work covered by an immediately preceding review.
 
 ---
 

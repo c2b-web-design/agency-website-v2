@@ -12,6 +12,7 @@ Human Founder
       │
 ChatGPT (PM / Creative Director)
       │         ← Governance, architecture strategy, creative direction. Feeds and reviews Claude Code.
+      │           Also reviews implementation checkpoints through the Codex MCP bridge when requested.
       │
 Claude Code (Implementation Engineer)
       │         ← Technical execution. Reads project-intelligence. Builds. Logs. Documents.
@@ -49,11 +50,14 @@ Authority flows **downward only**. Recommendations travel upward. Decisions trav
 - Produces compressed written briefs for Claude Code using the structure defined in `prompt-protocol.md`
 - Reviews completed implementation against brief and creative intent
 - Routes Browser QA findings and determines whether action is warranted
+- Performs checkpoint reviews of Claude Code implementation milestones through the Codex MCP bridge; the bridge is a review channel only, not a separate authority layer
 - Approves or dismisses recommendations before they become decisions
 - Maintains alignment between implementation and design-system
 
 **Cannot:**
 - Write or commit code
+- Fix, edit, or commit code when acting as checkpoint reviewer; findings route to Human Founder
+- Instruct Claude Code directly from a checkpoint review; findings route through Human Founder
 - Reverse an APPROVED decision without Human Founder approval
 - Initiate work outside a defined sprint or approved brief
 - Approve a recommendation that contradicts an APPROVED decision without Human Founder review
@@ -113,6 +117,7 @@ Authority flows **downward only**. Recommendations travel upward. Decisions trav
 |---|---|---|
 | Human Founder | Any decision at any layer, at any time, without justification | — |
 | ChatGPT | Claude Code's implementation approach before it ships | APPROVED decisions without Human Founder approval |
+| ChatGPT / Codex checkpoint review | Nothing directly — findings route to Human Founder | Cannot action its own findings |
 | Claude Code | Nothing — may flag and escalate, may not deviate | Design decisions, architectural decisions, sprint priorities |
 | Browser Extension | Nothing — may observe and recommend, may not act | All decisions and direction at every layer |
 

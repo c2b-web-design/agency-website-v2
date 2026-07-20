@@ -1,0 +1,7 @@
+# Keep only durable instructions/templates in Git.
+*
+!.gitignore
+!README.md
+!templates/
+!templates/**
+
