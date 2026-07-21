@@ -484,6 +484,142 @@
     );
 }
 
+/* ── Q5 top-left card — first material-response pass (TOP-RUN PROOF ONLY) ─────
+   Selected-state amber material response, synced to each card's own filament's
+   first top-edge straight run. Scoped to .q5-amber-host — applied to every Q5
+   card (Q1–Q4 do not receive it). The rules are entirely self-referential (each
+   card's own ::before/::after, its own sweep element, its own filament-synced
+   --sweep-pass), so one shared ruleset gives every Q5 card its own independent
+   instance without flattening the per-card A–E glass differences underneath.
+   No solid amber rectangle, no guide line, no new border, no flat amber overlay:
+   the amber is a set of warm illumination gradients that CONVERT the card's own
+   cool rim/scatter via mix-blend-mode (bright cool highlight -> strong amber;
+   weak pale-blue scatter -> lighter amber; deep body/shadows stay blue/dark),
+   revealed only within an animated soft-edged vertical sweep that tracks the
+   filament head left->right and reaches inward only to ~the vertical midpoint of
+   the text. Right/bottom/left runs are NOT implemented — this is top-run only.
+   Only applies while the card is selected. */
+
+/* Label lifted above the sweep so text stays crisp and unaffected. */
+.q5-amber-host .q5-amber-label {
+  position: relative;
+  z-index: 4;
+}
+
+.q5-amber-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  /* Above the card's cool ::before (z1) and ::after rim (z2) so it can convert
+     them; below the filament SVG (z3) and the lifted label (z4). */
+  z-index: 2;
+  opacity: 0;
+}
+
+/* Amber material field — warm counterparts of the card's own illumination.
+   Painted across the whole layer, but only VISIBLE through the swept mask below.
+   mix-blend-mode: overlay makes bright underlying (cool) highlights read as
+   strong amber and leaves deep/dark body largely unchanged — a conversion of the
+   existing field, not an opaque amber coat. */
+.q5-amber-host[aria-checked="true"] .q5-amber-sweep {
+  opacity: 1;
+  mix-blend-mode: overlay;
+  background:
+    /* ── Localized UPPER-LEFT high-energy boost (refinement) ──────────────────
+       Only the strongest original cool-white highlights read too white; these two
+       layers add extra amber ONLY there, mapped onto the card's own upper-left
+       highlights. They are painted first (on top) so they dominate the upper-left
+       without a global increase — the top-right and darker areas below keep the
+       original rim/scatter response unchanged. */
+    /* (a) top-left corner curve/crown + bright upper bevel just to its right —
+       mirrors the card's ::after corner glint at (8% 0%). Second same-delta
+       calibration: the prior pass set these amber stops 0 -> 0.60 / 0 -> 0.30;
+       this pass repeats that delta once more (B + (B-A)), so 0.60 -> 1.20 (clamped
+       to the 1.0 max) and 0.30 -> 0.60. Geometry unchanged; upper-left zone only. */
+    radial-gradient(
+      ellipse 34% 150% at 9% -6%,
+      rgba(255, 178, 74, 1.0) 0%,
+      rgba(246, 162, 62, 0.60) 46%,
+      transparent 78%
+    ),
+    /* (b) small left-side catch immediately below that curve — mirrors the faint
+       left rim; short vertical reach so it stays a "catch", not a left run. */
+    radial-gradient(
+      ellipse 16% 60% at 2% 34%,
+      rgba(252, 172, 70, 0.40) 0%,
+      rgba(240, 158, 60, 0.16) 55%,
+      transparent 100%
+    ),
+    /* strongest amber — over the bright top rim band (mirrors ::after top rim) */
+    linear-gradient(to bottom,
+      rgba(255, 196, 92, 0.62) 0px,
+      rgba(247, 170, 74, 0.34) 4px,
+      rgba(230, 150, 60, 0.16) 9px,
+      transparent 20px
+    ),
+    /* lighter amber — soft pale scatter converted, reaching down toward the text
+       midpoint (mirrors ::before top cloud, extended vertically so the swept area
+       reads as a converted FIELD, not just a rim line; the vertical mask caps the
+       inward reach at ~text midpoint, the deep lower body stays blue/dark). */
+    radial-gradient(
+      ellipse 120% 96% at 50% -10%,
+      rgba(255, 210, 140, 0.30) 0%,
+      rgba(242, 182, 112, 0.16) 40%,
+      rgba(232, 170, 100, 0.06) 66%,
+      transparent 100%
+    );
+  /* Soft-edged vertical sweep mask, anchored under the travelling filament head:
+     a feathered vertical band that moves left->right, and a top-anchored vertical
+     fade that limits reach to ~the text midpoint (~50% height) with a soft edge.
+     The two masks intersect so amber shows only where the band HAS passed AND
+     only in the upper band. */
+  -webkit-mask-image:
+    linear-gradient(to right,
+      #000 0%, #000 var(--sweep-pass, 0%),
+      rgba(0,0,0,0.35) calc(var(--sweep-pass, 0%) + 6%),
+      transparent calc(var(--sweep-pass, 0%) + 12%)
+    ),
+    linear-gradient(to bottom,
+      #000 0%, #000 34%, rgba(0,0,0,0.4) 46%, transparent 56%
+    );
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right,
+      #000 0%, #000 var(--sweep-pass, 0%),
+      rgba(0,0,0,0.35) calc(var(--sweep-pass, 0%) + 6%),
+      transparent calc(var(--sweep-pass, 0%) + 12%)
+    ),
+    linear-gradient(to bottom,
+      #000 0%, #000 34%, rgba(0,0,0,0.4) 46%, transparent 56%
+    );
+  mask-composite: intersect;
+  animation: q5-amber-sweep-anim 2400ms linear both;
+}
+
+/* --sweep-pass drives the left->right reveal. It reaches full width at ~40% of
+   the 2400ms cycle — matching the filament head crossing the top straight run
+   (top segment is ~0.36 of the rounded-rect perimeter) — then holds at 100% so
+   the passed area stays converted for the rest of the selected state. */
+@property --sweep-pass {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@keyframes q5-amber-sweep-anim {
+  0%   { --sweep-pass: 0%; }
+  40%  { --sweep-pass: 100%; }
+  100% { --sweep-pass: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No sweep animation: show the converted upper band immediately when selected. */
+  .q5-amber-host[aria-checked="true"] .q5-amber-sweep {
+    animation: none;
+    --sweep-pass: 100%;
+  }
+}
+
 /* Glass variants A–E — background only; pseudo-elements are shared from base */
 .enquiry-card-glass-a {
   background: linear-gradient(160deg, rgba(68,112,182,0.38) 0%, rgba(32,60,120,0.28) 50%, rgba(7,16,52,0.44) 100%);

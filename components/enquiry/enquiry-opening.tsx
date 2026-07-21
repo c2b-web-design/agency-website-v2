@@ -369,6 +369,11 @@ export default function EnquiryOpening() {
                 const isSelected = selected.has(option);
                 const Q_GLASS_OFFSETS: Record<number, number> = { 5: 0, 4: 2, 3: 1, 2: 4, 1: 3 };
                 const glassVariant = ["a", "b", "c", "d", "e"][(idx + (Q_GLASS_OFFSETS[qNum] ?? 0)) % 5];
+                // Top-run material response — all five Q5 cards. Each Q5 card gets its
+                // own selected-only, filament-synchronised amber sweep host + a lifted
+                // label so its text stays protected. All visual work is in globals.css
+                // (.q5-amber-host). Q1–Q4 receive no amber host (unaffected).
+                const isQ5 = qNum === 5;
                 return (
                   <button
                     key={option}
@@ -376,7 +381,7 @@ export default function EnquiryOpening() {
                     role="checkbox"
                     aria-checked={isSelected}
                     onClick={() => toggleOption(option)}
-                    className={`enquiry-card enquiry-card-glass-${glassVariant} enquiry-card-filament-host text-center px-3 rounded-xl font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40${isSelected ? " enquiry-card-selected" : ""}`}
+                    className={`enquiry-card enquiry-card-glass-${glassVariant} enquiry-card-filament-host text-center px-3 rounded-xl font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40${isSelected ? " enquiry-card-selected" : ""}${isQ5 ? " q5-amber-host" : ""}`}
                   >
                     <svg
                       aria-hidden="true"
@@ -390,7 +395,12 @@ export default function EnquiryOpening() {
                         strokeWidth="1.5"
                       />
                     </svg>
-                    {option}
+                    {isQ5 && <span aria-hidden="true" className="q5-amber-sweep" />}
+                    {isQ5 ? (
+                      <span className="q5-amber-label">{option}</span>
+                    ) : (
+                      option
+                    )}
                   </button>
                 );
               })}
