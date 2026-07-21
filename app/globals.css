@@ -485,12 +485,14 @@
 }
 
 /* ── Q5 top-left card — first material-response pass (TOP-RUN PROOF ONLY) ─────
-   Selected-state amber material response, synced to each card's own filament's
-   first top-edge straight run. Scoped to .q5-amber-host — applied to every Q5
-   card (Q1–Q4 do not receive it). The rules are entirely self-referential (each
-   card's own ::before/::after, its own sweep element, its own filament-synced
-   --sweep-pass), so one shared ruleset gives every Q5 card its own independent
+   Shared answer-card material response — applied to EVERY enquiry answer card
+   (Q1–Q5) via .card-amber-host. Selected-state amber, synced to each card's own
+   filament's first top-edge straight run. The rules are entirely self-referential
+   (each card's own ::before/::after, its own sweep element, its own filament-synced
+   --sweep-pass), so this one shared ruleset gives every card an independent
    instance without flattening the per-card A–E glass differences underneath.
+   The Q5 result — including the upper-left crown/bevel calibration below — is
+   preserved verbatim; this is the same ruleset, now un-gated to all questions.
    No solid amber rectangle, no guide line, no new border, no flat amber overlay:
    the amber is a set of warm illumination gradients that CONVERT the card's own
    cool rim/scatter via mix-blend-mode (bright cool highlight -> strong amber;
@@ -501,12 +503,12 @@
    Only applies while the card is selected. */
 
 /* Label lifted above the sweep so text stays crisp and unaffected. */
-.q5-amber-host .q5-amber-label {
+.card-amber-host .card-amber-label {
   position: relative;
   z-index: 4;
 }
 
-.q5-amber-sweep {
+.card-amber-sweep {
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -522,7 +524,7 @@
    mix-blend-mode: overlay makes bright underlying (cool) highlights read as
    strong amber and leaves deep/dark body largely unchanged — a conversion of the
    existing field, not an opaque amber coat. */
-.q5-amber-host[aria-checked="true"] .q5-amber-sweep {
+.card-amber-host[aria-checked="true"] .card-amber-sweep {
   opacity: 1;
   mix-blend-mode: overlay;
   background:
@@ -594,7 +596,7 @@
       #000 0%, #000 34%, rgba(0,0,0,0.4) 46%, transparent 56%
     );
   mask-composite: intersect;
-  animation: q5-amber-sweep-anim 2400ms linear both;
+  animation: card-amber-sweep-anim 2400ms linear both;
 }
 
 /* --sweep-pass drives the left->right reveal. It reaches full width at ~40% of
@@ -606,7 +608,7 @@
   inherits: false;
   initial-value: 0%;
 }
-@keyframes q5-amber-sweep-anim {
+@keyframes card-amber-sweep-anim {
   0%   { --sweep-pass: 0%; }
   40%  { --sweep-pass: 100%; }
   100% { --sweep-pass: 100%; }
@@ -614,7 +616,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   /* No sweep animation: show the converted upper band immediately when selected. */
-  .q5-amber-host[aria-checked="true"] .q5-amber-sweep {
+  .card-amber-host[aria-checked="true"] .card-amber-sweep {
     animation: none;
     --sweep-pass: 100%;
   }
