@@ -241,8 +241,11 @@ export default function EnquiryOpening() {
   const [activeQ, setActiveQ] = useState(5);
   const [memory, setMemory] = useState<MemoryItem[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [beginInteractive, setBeginInteractive] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  // The transparent Begin hit target is inactive until the visible reveal starts
+  // (set true at the mask's `animationstart`). Under reduced motion there is no
+  // reveal animation, so it is activated immediately in the effect below.
+  const [beginActive, setBeginActive] = useState(false);
   // True while the corridor is shifting one depth deeper: the answered question recedes
   // (depth-0 -> depth-1), every older memory deepens by one, the heading recedes, and the
   // next active question is gated out of depth-0 until the morph settles. Drives the heading
@@ -256,22 +259,10 @@ export default function EnquiryOpening() {
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReducedMotion(mq.matches);
+    // No radial reveal under reduced motion → no `animationstart` will fire, so
+    // make the Begin hit target usable immediately.
+    if (mq.matches) setBeginActive(true);
   }, []);
-
-  useEffect(() => {
-    if (stage !== "opening") return;
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (mq.matches) {
-      setBeginInteractive(true);
-      return;
-    }
-    // Desktop: enquiry-button-mask 7400ms delay + 1900ms duration = 9300ms
-    // Mobile: slower reveal; subtext resolves ~9500ms, Begin interactive at 12000ms
-    const isMobile = window.matchMedia("(max-width: 639px)").matches;
-    const delay = isMobile ? 12000 : 9300;
-    const t = window.setTimeout(() => setBeginInteractive(true), delay);
-    return () => clearTimeout(t);
-  }, [stage]);
 
   const toggleOption = useCallback((option: string) => {
     setSelected(prev => {
@@ -571,15 +562,49 @@ export default function EnquiryOpening() {
                 <div className={reducedMotion ? undefined : "enquiry-m-subtext-line2-mask"}>{SUBTEXT_M2}</div>
               </div>
             </div>
-            <div
-              className={`mt-10${reducedMotion ? "" : " enquiry-button-mask"}`}
-              style={{ pointerEvents: beginInteractive ? undefined : "none" }}
-            >
+            {/* Begin: a full-width, block-level, relative parent holds two
+                SIBLINGS — the visual-only reveal and the semantic hit target.
+                (1) `.enquiry-button-mask` is the visual-only child: the wide,
+                    full-width radial reveal wrapping the decorative visible pill.
+                    Its `clip-path` also clips hit-testing for ITS OWN children, so
+                    the hit target must NOT live inside it.
+                (2) `.enquiry-begin-hit` is a SIBLING of the mask (not a child), so
+                    the mask's clip-path never gates its hit-testing — the cursor
+                    turns to a hand the instant the reveal begins, not once the
+                    circle physically reaches the pill. It is absolutely centred
+                    over the visible pill with identical pill dimensions + top, and
+                    becomes pointer-active at the mask's `animationstart`.
+                The visible pill is decorative (aria-hidden, not focusable, no
+                click), so there is exactly one accessible "Begin" control. Reduced
+                motion: mask is static (no reveal), beginActive already true →
+                immediately usable. */}
+            <div className="mt-10 enquiry-begin-parent">
+              <div
+                className={`enquiry-button-mask${reducedMotion ? " enquiry-button-mask--static" : ""}`}
+                onAnimationStart={(e) => {
+                  // Activate the sibling hit target the instant the visible reveal
+                  // STARTS. Guard to this wrapper's own radial reveal only.
+                  if (
+                    e.target === e.currentTarget &&
+                    e.animationName === "enquiry-mask-reveal-radial"
+                  ) {
+                    setBeginActive(true);
+                  }
+                }}
+              >
+                <span
+                  aria-hidden="true"
+                  className="enquiry-begin-btn rounded-full px-6 py-2.5 text-sm font-medium"
+                >
+                  Begin
+                </span>
+              </div>
               <button
                 type="button"
-                tabIndex={beginInteractive ? 0 : -1}
-                onClick={() => setStage("active")}
-                className="enquiry-begin-btn rounded-full px-6 py-2.5 text-sm font-medium cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
+                tabIndex={beginActive ? 0 : -1}
+                aria-disabled={beginActive ? undefined : true}
+                onClick={() => beginActive && setStage("active")}
+                className="enquiry-begin-hit rounded-full px-6 py-2.5 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
               >
                 Begin
               </button>

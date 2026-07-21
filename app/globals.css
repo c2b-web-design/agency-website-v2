@@ -175,6 +175,11 @@
 }
 
 .enquiry-button-mask {
+  /* Visual-only, full-width block-level reveal wrapper (unchanged geometry). The
+     transparent hit target is NOT a child of this element — this element's
+     clip-path also clips hit-testing for its descendants, which would delay the
+     hand cursor until the circle physically reaches the pill. The hit target is
+     therefore a SIBLING under `.enquiry-begin-parent`. */
   clip-path: circle(0% at 50% 50%);
   -webkit-clip-path: circle(0% at 50% 50%);
   animation: enquiry-mask-reveal-radial 5000ms cubic-bezier(0.37, 0, 0.63, 1) 7400ms both;
@@ -707,6 +712,85 @@
 
 .enquiry-begin-btn:hover {
   /* Hover: same material family, more depth — light catch slightly brighter, face darker, bevel stronger */
+  background:
+    radial-gradient(
+      ellipse 55% 40% at 50% 8%,
+      rgba(255, 255, 255, 0.34) 0%,
+      rgba(255, 255, 255, 0.08) 55%,
+      transparent 100%
+    ),
+    linear-gradient(
+      180deg,
+      #f8f2e0 0%,
+      #e8d8c0 30%,
+      #d4c0a0 68%,
+      #c8b898 100%
+    );
+  box-shadow:
+    inset 0  1px 0    rgba(255, 255, 255, 1.00),
+    inset 0  3px 3px  rgba(130, 100,  50, 0.50),
+    inset 0 -2px 3px  rgba( 90,  55,  10, 0.66),
+          0  4px 12px rgba(  0,   0,   0, 0.48);
+}
+
+/* Full-width, block-level, relative Begin parent. Positioning context for the
+   absolutely-centred transparent hit target, which is a SIBLING of (not inside)
+   the visual mask — so the mask's clip-path never gates the hit target's
+   hit-testing. Not a shrink-wrap: it is full width and the mask keeps its own
+   full-width geometry. */
+.enquiry-begin-parent {
+  position: relative;
+}
+
+/* The visible pill is now a decorative <span>; render it as the pill box.
+   It stays centred within the FULL-WIDTH `.enquiry-button-mask` wrapper via the
+   text-centred shell (the wrapper is block-level and does not shrink-wrap). */
+.enquiry-begin-btn {
+  display: inline-block;
+}
+
+/* Reduced motion: `.enquiry-button-mask` is applied in all cases now (so the
+   mask wrapper is the same full-width block wrapper), but with no reveal the
+   `clip-path: circle(0%)` would hide the pill — clear it so the pill is visible
+   and usable immediately. (The prefers-reduced-motion media block still zeroes
+   the animation; this also covers the JS-detected `--static` variant.) */
+.enquiry-button-mask--static {
+  clip-path: none;
+  -webkit-clip-path: none;
+  animation: none;
+}
+
+/* Transparent, pill-sized semantic + hit target, precisely centred over the
+   visible pill within the full-width mask wrapper. No background/border → the
+   masked pill is the only rendered pill. Absolutely positioned and horizontally
+   centred; it does NOT affect the wrapper's width/height/mask geometry. Pill
+   dimensions + top position mirror the visible pill (same padding/text metrics,
+   top:0). */
+.enquiry-begin-hit {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Sit above the visual mask + its pill so the transparent target receives the
+     hover/cursor/click (the mask's clip-path does not gate it — it is a sibling,
+     not a child). */
+  z-index: 2;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  color: transparent;
+  cursor: pointer;
+  /* Inactive until activated at the reveal's animationstart. */
+  pointer-events: none;
+}
+.enquiry-begin-parent:has(.enquiry-begin-hit[tabindex="0"]) .enquiry-begin-hit {
+  pointer-events: auto;
+}
+
+/* Forward hover: hovering the active transparent target shows the visible pill's
+   existing hover appearance (the visible pill can't receive :hover itself because
+   the transparent target sits above it). Mirrors `.enquiry-begin-btn:hover`. */
+.enquiry-begin-parent:has(.enquiry-begin-hit[tabindex="0"]:hover) .enquiry-begin-btn {
   background:
     radial-gradient(
       ellipse 55% 40% at 50% 8%,
