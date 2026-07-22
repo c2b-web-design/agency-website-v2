@@ -200,6 +200,22 @@ GPT/Codex may edit project-management, architecture, strategy, governance, and s
 
 ChatGPT/Codex is one PM/governance/reviewer layer expressed through different surfaces: chat, Codex app, and the Codex MCP checkpoint-review bridge. The MCP bridge has no independent authority; it is a review channel only.
 
+Important live-work clarification:
+
+Codex does not directly read or control Claude Code's VS Code chat panel.
+
+The operational connection between Claude Code and Codex is:
+
+1. Claude Code writes shared handoff files into `project-intelligence/live-work/`.
+2. Claude Code saves visual evidence into `project-intelligence/live-work/screenshots/`.
+3. Codex reads those files directly from the repository filesystem.
+4. Codex opens screenshots directly from disk when visual review is needed.
+5. Claude Code may call the registered MCP server named `codex` to request a checkpoint review.
+
+The MCP bridge is not a remote-control channel for Codex to drive Claude Code. It is a checkpoint-review request channel. If Carl asks whether Codex can see what Claude is doing, the precise answer is:
+
+> I can see what Claude saves into the shared live-work files, plus normal saved repo changes. I cannot directly see the Claude Code chat panel unless Claude writes its relevant contents into live-work files.
+
 ### Claude Code
 
 Sole website implementation agent.
@@ -280,7 +296,7 @@ GPT/Codex may:
 * write prompts for Claude Code
 * edit project-management, architecture, strategy, governance, and starter-context documents when Carl asks or approves the update
 * review Claude Code implementation checkpoints through the Codex MCP bridge and report findings to Carl
-* inspect temporary `project-intelligence/live-work/` files so Carl does not have to copy and paste Claude Code plans, run logs, screenshots, or checkpoint material
+* inspect temporary `project-intelligence/live-work/` files so Carl does not have to copy and paste Claude Code plans, chat-window content, run logs, screenshots, or checkpoint material
 * write clearly labelled “Project Intelligence Prompt” updates
 * help with Git commit messages after Claude has completed and Carl has approved work
 
@@ -310,7 +326,18 @@ Codex/GPT may directly maintain its own project-management, architecture, strate
 
 When Claude Code requests a checkpoint review through the Codex MCP bridge, Codex reviews for structural drift, visual drift, and governance conflicts, then reports findings only to Carl. Carl decides whether to pause, redirect, approve, or ask Claude Code to revise. See `project-intelligence/ai-system/checkpoint-review-protocol.md`.
 
-Plans, run logs, checkpoint requests, screenshots, and temporary transcript extracts are exchanged through `project-intelligence/live-work/`. This folder is a disposable transport surface, not permanent project memory. Codex reads it at its discretion to reduce Carl's copy/paste burden.
+Plans, Claude Code chat-window extracts, run logs, checkpoint requests, screenshots, and temporary transcript extracts are exchanged through `project-intelligence/live-work/`. This folder is a disposable transport surface, not permanent project memory. Codex reads it at its discretion to reduce Carl's copy/paste burden.
+
+Do not misinterpret the bridge as direct access to Claude Code's VS Code chat UI. Codex should not spend time trying to connect to Claude's chat window, list Claude UI tools, or prove direct VS Code-panel access. The correct workflow is to inspect:
+
+* `project-intelligence/live-work/claude-plan.md`
+* `project-intelligence/live-work/current-status.md`
+* `project-intelligence/live-work/checkpoint-request.md`
+* `project-intelligence/live-work/claude-chat-window.md`
+* `project-intelligence/live-work/claude-run-log.md`
+* `project-intelligence/live-work/claude-run-transcript.md` when present
+* `project-intelligence/live-work/screenshots/`
+* normal saved repository changes
 
 Before giving build advice:
 
@@ -447,6 +474,49 @@ The website should not feel like:
 It should feel like:
 
 > a premium creative studio that understands business perception and quality
+
+\---
+
+## 14a\. C2B Ethos: Theme, Restraint, and Physical Consequence
+
+The C2B site is not merely an information source. It is the front door for a
+business selling front doors. The experience itself must demonstrate the
+standard C2B claims to offer.
+
+The site should have a recurring theme with variations: a coherent physical
+language of form, restraint, light, motion, material, rhythm, and consequence.
+Cards, buttons, rails, logo, hero, text, and transitions should feel like they
+belong to the same world rather than being separate effects.
+
+Carl's creative references matter:
+
+* Prefer David Gilmour restraint over Yngwie Malmsteen excess.
+* Aim for the emotional discipline of "Comfortably Numb" more than visual
+  showboating: space, tone, timing, release, and one or two moments that land.
+* Motion should feel musical: phrased, legato, paced, and choreographed.
+* Nothing should feel like a sudden UI toggle unless there is a deliberate
+  reason. Elements should complete their phrase before the next phrase begins.
+* Final tuning should be treated like mastering in music production: balance,
+  tempo, brightness, contrast, emphasis, breathing room, and emotional flow.
+
+Important visual rule:
+
+> Effects should feel caused by the world, not layered on top of it.
+
+Examples:
+
+* A glowing filament should affect nearby card light, not sit as an isolated
+  overlay.
+* A logo emerging from video into code should affect nearby text and ambience.
+* White/cool light should shift warmer near amber light sources and fade with
+  distance.
+* More selected glowing objects should mean more light in the shared
+  environment.
+
+This does not mean the site should be busy. The ambition is high, but the
+execution should be controlled, premium, and incremental. Build the track before
+adding automation. Prove one object, one motion phrase, or one light behaviour
+before rolling it out.
 
 \---
 

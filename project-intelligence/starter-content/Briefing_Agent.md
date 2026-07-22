@@ -60,6 +60,39 @@ Full details in `README.md`. All exact CSS values in `colors_and_type.css`.
 
 ---
 
+## C2B Ethos For Design Work
+
+C2B is not just a website that explains a service. It is the front door for a
+business selling better front doors. The experience itself must demonstrate
+craft, perception, trust, restraint, and quality.
+
+The site should have a recurring theme with variations: physical form,
+restrained cinematic light, material response, musical timing, and environmental
+consequence. Cards, buttons, rails, logo, hero, text, and transitions should
+feel like parts of one coherent world.
+
+Prefer restraint and phrasing over visual excess. A useful creative shorthand is
+David Gilmour rather than Yngwie Malmsteen: tone, space, timing, and impact that
+is earned.
+
+Motion should feel choreographed:
+
+* text reveals ease in
+* buttons can bloom from the centre
+* rails glide rather than snap
+* answers complete their phrase before disappearing
+* information cards arrive rhythmically
+* final timing should be tuned like mastering a music production
+
+Core rule:
+
+> Effects should feel caused by the world, not layered on top of it.
+
+Light should affect nearby surfaces. A glowing object should influence the
+environment. Transformations should have visual consequences.
+
+---
+
 ## How to Use This System (Forward Process)
 
 When building new designs, mocks, or UI for c2b:
@@ -125,4 +158,3 @@ Claude Design will produce HTML files that can be previewed in browser, exported
 * `.html` — standalone browser previews, no build step needed
 * `.png` — logo assets, standard raster images
 * `README.md` / `SKILL.md` — plain Markdown, readable by any agent
-

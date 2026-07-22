@@ -51,6 +51,47 @@ It should feel:
 
 ---
 
+## C2B ethos: theme with variations
+
+C2B is not just presenting information. The website is the front door for a
+business that sells better front doors, so the experience itself must prove the
+offer before the copy asks for trust.
+
+There should be a recurring theme with variations running through the site:
+physical form, restrained cinematic lighting, material response, musical motion,
+and environmental consequence. Cards, buttons, rails, the hero logo, text, and
+transitions should feel like they belong to one coherent world.
+
+The creative direction is closer to David Gilmour than Yngwie Malmsteen:
+restraint, tone, space, phrasing, and impact that is earned. "Comfortably Numb"
+is a useful reference for ambition: the Pulse version as the cathedral-scale
+ideal, the studio version as the perfectly judged contained version.
+
+Motion should feel performed, not toggled:
+
+- text reveals ease in rather than snap on
+- buttons can bloom from the centre
+- rail motion should be smooth and legato
+- answers should not disappear until their phrase is complete
+- info cards should arrive rhythmically and choreographically
+- the final site should be "mastered" like a production, tuning tempo, balance,
+  emphasis, contrast, glow, and breathing room
+
+The central rule:
+
+> Effects should feel caused by the world, not layered on top of it.
+
+Light should behave like light. A filament should influence nearby material. A
+logo emerging from video into code should affect the surrounding text and
+ambience. More selected luminous objects should mean more light in the shared
+environment.
+
+This ethos is ambitious, but the process must remain incremental: concept
+discussion first, then small chunks, then observe, revise, and only then layer
+the next behaviour.
+
+---
+
 ## Long-term business vision
 
 Carl’s long-term vision is to use website design as the entry point into deeper business relationships.

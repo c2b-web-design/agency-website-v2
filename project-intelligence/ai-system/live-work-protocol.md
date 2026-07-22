@@ -12,6 +12,8 @@ Claude Code's chat panel is working memory, not project memory. During active wo
 
 The live-work folder is a transport surface. It is not the permanent source of truth. Permanent outcomes still belong in `decisions.md`, `review-log.md`, component docs, sprint notes, or other established project-intelligence files.
 
+Important capability boundary: Codex cannot directly read Claude Code's VS Code chat panel. "Codex reads Claude at its discretion" means Codex inspects saved live-work files, screenshots, and normal repo changes whenever Carl asks or a sentinel check runs. If relevant Claude chat content is not saved into `project-intelligence/live-work/`, Codex cannot see it.
+
 ---
 
 ## 2. Location
@@ -35,6 +37,7 @@ Claude Code writes or updates these files during active work:
 | `current-status.md` | Short live status during implementation | Overwritten frequently |
 | `checkpoint-request.md` | Claude Code's checkpoint package for Codex | Overwritten per checkpoint |
 | `codex-checkpoint-response.md` | Codex checkpoint findings | Overwritten per checkpoint |
+| `claude-chat-window.md` | Latest relevant Claude Code chat-window content for Codex to inspect | Overwritten during and after each Claude Code action cycle |
 | `claude-run-log.md` | End-of-run summary of what happened | Overwritten per run |
 | `claude-run-transcript.md` | Optional fuller transcript/extract when useful | Created only when needed |
 | `drift-sentinel.md` | STOP/CONTINUE status when Codex detects drift | Overwritten per check |
@@ -63,6 +66,12 @@ This removes the need for Carl to copy the plan from Claude Code into Codex.
 
 ## 5. Run Log
 
+During and at the end of each Claude Code action cycle, Claude Code writes or overwrites:
+
+`project-intelligence/live-work/claude-chat-window.md`
+
+This file is the copy/paste replacement for Carl. It contains the relevant content that appeared in the Claude Code chat window: Claude's plan/status text, important tool results, errors, decisions made during the run, code-change summaries, and any final report. It does not need to be a verbatim full transcript when that would add noise, but it must include enough chat-window content for Codex to understand what Claude did, what it saw, and where the work stands without Carl pasting the chat manually.
+
 At the end of each Claude Code run, Claude Code writes:
 
 `project-intelligence/live-work/claude-run-log.md`
@@ -80,7 +89,7 @@ The log is compressed. It contains only what Codex needs to review the run:
 - Final status
 - Next suggested action
 
-Full chat transcripts are not written by default. For complex, visual, risky, or drift-prone work, Claude Code may also write a fuller extract to:
+Full raw transcripts are not written by default. For complex, visual, risky, or drift-prone work, Claude Code may also write a fuller extract to:
 
 `project-intelligence/live-work/claude-run-transcript.md`
 
