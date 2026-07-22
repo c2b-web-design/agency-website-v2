@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import ContactFieldCanvas from "./contact-field-canvas";
 
 const HEADING_LINE1 = "Let's understand what your";
 const HEADING_LINE2 = "business needs to become.";
@@ -251,10 +252,6 @@ export default function EnquiryOpening() {
   // next active question is gated out of depth-0 until the morph settles. Drives the heading
   // recede + the receding phrase's card fade-out.
   const [corridorMoving, setCorridorMoving] = useState(false);
-  const [contactName, setContactName] = useState("");
-  const [contactBusiness, setContactBusiness] = useState("");
-  const [contactWebsite, setContactWebsite] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -526,26 +523,18 @@ export default function EnquiryOpening() {
           </div>
         )}
 
+        {/* Contact layer — mounting region for the Three.js contact field. The */}
+        {/* four provisional CSS fields (Name, Business name, Website URL, Email) */}
+        {/* and their per-field fade delays were removed; the layer's geometry is */}
+        {/* unchanged: 576px (shared max-w-xl shell) x 184px (11.5rem), centred on */}
+        {/* the same horizontal axis as Send. Do not collapse or reposition it. */}
+        {/* ContactFieldCanvas overlays it absolutely (position:absolute; inset:0), */}
+        {/* so it adds no layout height and cannot displace Send or the active */}
+        {/* slot. Currently ONE static field object in the former top-left Name */}
+        {/* position — a geometry/scale/placement proof, not the finished field. */}
         {stage === "complete" && (
           <div className="enquiry-contact-layer">
-            <div className="grid grid-cols-2 gap-2 w-full text-left">
-              <div style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 3600ms both" }}>
-                <label htmlFor="cname" className="block text-xs text-neutral-400 mb-1">Name</label>
-                <input id="cname" type="text" value={contactName} onChange={e => setContactName(e.target.value)} autoComplete="name" className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40" />
-              </div>
-              <div style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 4100ms both" }}>
-                <label htmlFor="cbusiness" className="block text-xs text-neutral-400 mb-1">Business name</label>
-                <input id="cbusiness" type="text" value={contactBusiness} onChange={e => setContactBusiness(e.target.value)} autoComplete="organization" className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40" />
-              </div>
-              <div style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 4600ms both" }}>
-                <label htmlFor="cwebsite" className="block text-xs text-neutral-400 mb-1">Website URL</label>
-                <input id="cwebsite" type="url" value={contactWebsite} onChange={e => setContactWebsite(e.target.value)} autoComplete="url" className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40" />
-              </div>
-              <div style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 5100ms both" }}>
-                <label htmlFor="cemail" className="block text-xs text-neutral-400 mb-1">Email</label>
-                <input id="cemail" type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} autoComplete="email" className="w-full rounded-xl bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40" />
-              </div>
-            </div>
+            <ContactFieldCanvas />
           </div>
         )}
 
