@@ -1,7 +1,20 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import ContactFieldCanvas from "./contact-field-canvas";
+
+// How long after entering `complete` the ENTIRE completion choreography has
+// cleared — acknowledgement AND Send. Read off the existing animation
+// declarations, which this change does not touch:
+//
+//   acknowledgement block  eq-understood-fade-out 1400ms @ 4800ms -> ends 6200ms
+//   Send                   eq-completion-item-in   700ms @ 6400ms -> ends 7100ms
+//
+// 6400ms would be the wrong boundary: that is the instant Send BEGINS its
+// entrance, so starting context creation, shader compilation and PMREM
+// generation there would starve the very animation it was meant to avoid.
+// The safe boundary is the end of Send's entrance.
+const CHOREOGRAPHY_CLEAR_MS = 7100;
 
 const HEADING_LINE1 = "Let's understand what your";
 const HEADING_LINE2 = "business needs to become.";
@@ -252,6 +265,24 @@ export default function EnquiryOpening() {
   // next active question is gated out of depth-0 until the morph settles. Drives the heading
   // recede + the receding phrase's card fade-out.
   const [corridorMoving, setCorridorMoving] = useState(false);
+  // WebGL PRE-WARM. The contact canvas used to mount at `complete`, so creating
+  // its context, compiling shaders and generating the PMREM environment all ran
+  // on the main thread exactly while "Understood." was revealing. Measured: the
+  // context was created 64ms after the acknowledgement mounted, followed by
+  // 73ms/126ms/1379ms long tasks and a 183ms frame gap — the "U" painted, then
+  // the reveal visibly hesitated.
+  //
+  // The fix is scheduling, not choreography: mount the SAME canvas earlier,
+  // during the questionnaire, so that work happens while the user is reading and
+  // clicking. At completion the already-warm canvas is only revealed — it is
+  // never unmounted, remounted, or asked to rebuild its environment.
+  //
+  // This flag is the SOLE gate on mounting the canvas. There is deliberately no
+  // `stage === "complete"` fallback: a fallback would let completion itself
+  // create the context and generate the environment, which is exactly the
+  // original defect. If preparation is late, the FIELD waits — neither the
+  // acknowledgement nor Send's entrance ever does.
+  const [canvasWarm, setCanvasWarm] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -260,6 +291,126 @@ export default function EnquiryOpening() {
     // make the Begin hit target usable immediately.
     if (mq.matches) setBeginActive(true);
   }, []);
+
+  // Warm the contact canvas once the questionnaire has started, on a genuine
+  // idle opportunity so it never competes with the corridor's own animation.
+  //
+  // `requestIdleCallback` is the right primitive: it fires only when the main
+  // thread is actually free, so shader compilation lands in a gap between the
+  // user reading and answering. The `setTimeout` fallback covers Safari, which
+  // still lacks it. The 2000ms deadline is a guarantee of PROGRESS, not a delay
+  // — if the thread never goes idle, warming still happens well before Q5, which
+  // is the whole point: the expensive work must not be deferred to completion.
+  //
+  // Warming STARTS once the questionnaire has begun rather than at page mount:
+  // the opening has its own reveal choreography, and there is no reason to hold
+  // a WebGL context for a visitor who never presses Begin.
+  //
+  // THE DEPENDENCY MUST BE STABLE ACROSS `active` -> `complete`. An earlier
+  // version of this effect depended on `stage` directly, and its comment claimed
+  // that a pending warm-up "survives the transition". That claim was FALSE:
+  // React tears an effect down on ANY dependency change, so entering `complete`
+  // cancelled the pending questionnaire callback and scheduled a REPLACEMENT,
+  // which could then fire during the acknowledgement and perform exactly the
+  // WebGL work this change exists to move off the reveal.
+  //
+  // `questionnaireStarted` goes false -> true exactly once and never flips back,
+  // so the `active` -> `complete` transition does not re-run this effect at all
+  // and the originally scheduled callback is left running undisturbed.
+  const questionnaireStarted = stage !== "opening";
+
+  // The WHOLE completion choreography is protected — the "Understood." reveal
+  // AND Send's entrance. If preparation is still pending when completion
+  // begins, the field WAITS: no canvas is mounted and no WebGL or PMREM work
+  // starts until `CHOREOGRAPHY_CLEAR_MS` has passed and an idle opportunity
+  // arrives. Both boundaries are derived from the existing declarations; no
+  // acknowledgement or Send timing is altered.
+  //
+  // The instant `complete` was entered, held in a REF (not state) so that
+  // reading it can never re-run the warm-up effect.
+  //
+  // IT IS RECORDED SYNCHRONOUSLY, IMMEDIATELY BEFORE `setStage("complete")`,
+  // via `enterComplete()` below — never from a passive effect. A passive effect
+  // runs AFTER commit and paint, which leaves a real window in which a pending
+  // idle callback could fire, observe a stale `null`, and mount the canvas
+  // inside the protected choreography. Writing it before the state update
+  // instead means the timestamp is already in place before React re-renders,
+  // so any callback that runs after the transition necessarily observes it.
+  //
+  // An earlier version recorded this in `useEffect([stage])` and claimed a
+  // `stageRef` closed the race. It did not: both refs were written by the SAME
+  // passive effect, so both were equally stale. That approach is removed.
+  const completedAtRef = useRef<number | null>(null);
+
+  // The single, shared entry point into the completion stage. Every route into
+  // `complete` — reduced motion and the animated corridor alike — goes through
+  // here, so the timestamp can never be missed on one path. This changes only
+  // how completion is RECORDED; when it happens is untouched.
+  const enterComplete = useCallback(() => {
+    if (completedAtRef.current === null) completedAtRef.current = Date.now();
+    setStage("complete");
+  }, []);
+
+  useEffect(() => {
+    if (!questionnaireStarted || canvasWarm) return;
+
+    let idleId: number | null = null;
+    let timerId: number | null = null;
+
+    // The GUARD, and the reason this is safe. A callback scheduled during the
+    // questionnaire may still be pending when completion begins, so the check
+    // cannot live at scheduling time — it must happen when the callback
+    // actually FIRES. If any part of the completion choreography is still
+    // running, do not warm: reschedule for after it clears. The field waits;
+    // neither the acknowledgement nor Send ever does.
+    const warmWhenSafe = () => {
+      const completed = completedAtRef.current;
+      // REDUCED MOTION: there is no choreography to protect. Every completion
+      // animation is gated `reducedMotion ? undefined : {...}`, so under reduced
+      // motion "Understood." and Send appear immediately and nothing animates.
+      // Waiting CHOREOGRAPHY_CLEAR_MS here would stall the field for 7.1s
+      // guarding animations that never run — which, once the fields are live,
+      // is an accessibility defect: a reduced-motion user left facing an empty
+      // form. The guard is derived from the choreography, so it must preserve
+      // the condition the choreography itself depends on.
+      if (completed !== null && !reducedMotion) {
+        const remaining = CHOREOGRAPHY_CLEAR_MS - (Date.now() - completed);
+        if (remaining > 0) {
+          timerId = window.setTimeout(warmWhenSafe, remaining);
+          return;
+        }
+        // The choreography has cleared, but landing straight onto the boundary
+        // would still be a scheduled main-thread hit. Yield first — the same
+        // courtesy the normal early path gets.
+        if (typeof window.requestIdleCallback === "function") {
+          idleId = window.requestIdleCallback(() => setCanvasWarm(true), { timeout: 2000 });
+        } else {
+          // No `requestIdleCallback` (Safari). Yield past the boundary with a
+          // single short timeout so the browser can present Send's completed
+          // state before WebGL setup begins. One bounded hop — deliberately not
+          // a retry loop, so warming cannot be postponed indefinitely.
+          timerId = window.setTimeout(() => setCanvasWarm(true), 300);
+        }
+        return;
+      }
+      setCanvasWarm(true);
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      idleId = window.requestIdleCallback(warmWhenSafe, { timeout: 2000 });
+    } else {
+      timerId = window.setTimeout(warmWhenSafe, 600);
+    }
+
+    return () => {
+      if (idleId !== null) window.cancelIdleCallback(idleId);
+      if (timerId !== null) window.clearTimeout(timerId);
+    };
+    // `reducedMotion` is read by the guard above. It is set once from a media
+    // query at mount and changes only if the user alters their OS preference
+    // mid-session, so including it does not reintroduce the effect churn that
+    // the stable `questionnaireStarted` boolean exists to prevent.
+  }, [questionnaireStarted, canvasWarm, reducedMotion]);
 
   const toggleOption = useCallback((option: string) => {
     setSelected(prev => {
@@ -291,11 +442,11 @@ export default function EnquiryOpening() {
     if (fromQ === 1) {
       // Last question -> completion. The corridor holds while "Understood." + the form mount.
       if (reducedMotion) {
-        setStage("complete");
+        enterComplete();
         return;
       }
       setCorridorMoving(true);
-      setTimeout(() => { setStage("complete"); setCorridorMoving(false); }, 900);
+      setTimeout(() => { enterComplete(); setCorridorMoving(false); }, 900);
       return;
     }
 
@@ -532,8 +683,36 @@ export default function EnquiryOpening() {
         {/* so it adds no layout height and cannot displace Send or the active */}
         {/* slot. Currently ONE static field object in the former top-left Name */}
         {/* position — a geometry/scale/placement proof, not the finished field. */}
-        {stage === "complete" && (
-          <div className="enquiry-contact-layer">
+        {/* */}
+        {/* MOUNTED EARLY, REVEALED LATE. This renders from the moment the canvas */}
+        {/* is warmed (mid-questionnaire), NOT at `complete`, so WebGL setup and */}
+        {/* PMREM generation cannot land on top of the "Understood." reveal. The */}
+        {/* element is the same one throughout: entering `complete` only flips */}
+        {/* `opacity`, so React keeps the node, the WebGL context and the PMREM */}
+        {/* render target — no remount, no regenerated environment. */}
+        {/* */}
+        {/* `canvasWarm` is the ONLY mount gate. There is deliberately no */}
+        {/* `stage === "complete"` fallback: such a fallback would let completion */}
+        {/* itself create the context and generate the environment — precisely the */}
+        {/* defect this work removes. If preparation is somehow late, the FIELD */}
+        {/* waits until the whole completion choreography (acknowledgement AND */}
+        {/* Send's entrance) has cleared; neither animation is ever delayed. */}
+        {/* */}
+        {/* Hidden with `opacity`, deliberately NOT `display: none`: the layer must */}
+        {/* keep its real 576 x 184 box (measured identical in both stages) because */}
+        {/* the canvas maps 1 world unit to 1 CSS pixel from its measured size. A */}
+        {/* zero-sized canvas would destroy that mapping and force a resize on */}
+        {/* reveal. `.enquiry-contact-layer` is `position: absolute`, so mounting it */}
+        {/* early still contributes no layout and cannot move Send or the slot. */}
+        {canvasWarm && (
+          <div
+            className="enquiry-contact-layer"
+            style={{
+              opacity: stage === "complete" ? 1 : 0,
+              pointerEvents: "none",
+              visibility: stage === "complete" ? "visible" : "hidden",
+            }}
+          >
             <ContactFieldCanvas />
           </div>
         )}

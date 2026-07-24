@@ -88,14 +88,71 @@ const FACE_SEG_Y = 16;
 /** Corner smoothness for the extruded rim/bevel profiles. */
 const SHAPE_CURVE_SEGMENTS = 16;
 
-// ── Neutral three-tone diagnostic material ───────────────────────────────────
-// Deliberately achromatic: this is a GEOMETRY proof, and any hue would
-// pre-empt the (unauthorised) material decision. Three slightly different
-// greys so face, bevel and rim stay individually legible in a still
-// screenshot, which is how this gets reviewed. Replaced wholesale later.
+// ── Neutral diagnostic material — RIM and FACE only ──────────────────────────
+// Deliberately achromatic. The rim and the convex writing face remain a
+// geometry proof: no hue on either, so neither pre-empts a material decision
+// that has not been made. Only the BEVEL carries a material sample (below).
 const DIAG_FACE_COLOR = "#8a8a8a";
-const DIAG_BEVEL_COLOR = "#7a7a7a";
 const DIAG_RIM_COLOR = "#6a6a6a";
+
+// ── PROVISIONAL satin-gold material — BEVEL MESH ONLY ────────────────────────
+// First material sample, not a calibration. Reference: the official C2B
+// polished-gold logo — deliberately the same METAL FAMILY, but sat lower in the
+// visual hierarchy: darker and rougher than the logo, so it reads as
+// architectural satin gold rather than a second hero mark.
+//
+// Character being aimed at: warm gold body, deeper bronze-gold in the shadow
+// side of the tube, restrained champagne where the existing key light grazes
+// it. Metallic — not yellow paint — so `metalness` stays at 1 and the colour
+// does the work; on a metal, `color` tints the REFLECTION rather than acting as
+// a diffuse albedo, which is what makes it read as metal at all.
+//
+// Roughness is the main character control. Too low reads as liquid chrome and
+// throws a hard specular hit; too high goes chalky and dead. ~0.34 keeps the
+// highlight travelling smoothly AROUND the tubular bevel (the point of the
+// geometry) while staying satin rather than mirror.
+//
+// METALNESS is now 1.0 — genuinely metallic.
+//
+// Previously it was held at 0.55 because the scene had NO environment map. In
+// standard PBR the diffuse term scales by (1 - metalness), so a full metal has
+// no diffuse and can only show what it REFLECTS; with nothing to reflect, the
+// bevel rendered near-black (measured warmth R-B = 5, i.e. visually neutral).
+// Lowering metalness was a workaround for that absence, not a material choice.
+//
+// A local procedural studio environment now exists (see `StudioEnvironment` in
+// contact-field-canvas.tsx — generated on the GPU, no HDRI/CDN/network), so the
+// metal finally has a surrounding to reflect and metalness returns to 1.0 as
+// the earlier note said it should.
+//
+// COLOUR and ROUGHNESS are deliberately UNCHANGED from the pre-environment
+// sample, so this test isolates one variable: the environment plus true
+// metalness. They are the documented comparison baseline, not yet tuned.
+//
+// Deliberately absent: emissive, clearcoat, transmission, textures, noise,
+// bloom/glow. All named so a later calibration pass is a value change.
+const GOLD_BEVEL_COLOR = "#c08f42"; // UNCHANGED baseline — do not tune in this step
+const GOLD_BEVEL_ROUGHNESS = 0.34; // UNCHANGED baseline — do not tune in this step
+const GOLD_BEVEL_METALNESS = 1.0; // genuinely metallic, now that a reflection env exists
+/**
+ * How strongly the bevel samples the studio environment. The only value tuned
+ * in this step, and only far enough to make the metallic body readable.
+ *
+ * Left at 1.0: because the map is applied to this material alone, the studio's
+ * own panel intensities already set the level and there is no scene-wide
+ * brightening to compensate for.
+ */
+const GOLD_BEVEL_ENV_INTENSITY = 1.0;
+
+/**
+ * The face and rim must NOT respond to the studio environment — this proof is
+ * isolated to the bevel. The map is applied ONLY to the bevel material (never
+ * to `scene.environment`), so they are excluded by construction; their
+ * `envMapIntensity` is additionally pinned to 0 as an explicit guard, in case a
+ * scene-wide environment is ever introduced later. Colour, roughness and
+ * geometry are untouched either way.
+ */
+const NO_ENV_RESPONSE = 0;
 
 /**
  * Rounded-rectangle profile, centred on the origin.
@@ -286,7 +343,18 @@ function useDisposable(geometry: THREE.BufferGeometry) {
  * the measured placement. One visible field assembly — no placeholders, no
  * labels, no inputs, no preview objects.
  */
-export function ContactField({ placement }: { placement: FieldPlacement }) {
+export function ContactField({
+  placement,
+  bevelMaterialRef,
+}: {
+  placement: FieldPlacement;
+  /**
+   * Receives the bevel's material so the canvas can attach the locally
+   * generated studio radiance map to it — and only to it — and detach it again
+   * on teardown. The face and rim materials are never exposed this way.
+   */
+  bevelMaterialRef?: React.Ref<THREE.MeshStandardMaterial>;
+}) {
   const { width, height, x, y } = placement;
 
   // ── RIM — outer silhouette. Defines the approved 284 x 38 footprint. ──
@@ -401,16 +469,40 @@ export function ContactField({ placement }: { placement: FieldPlacement }) {
           computeVertexNormals() on them would average across the extrusion
           edges and smear the rim into the face, destroying the structurally
           distinct rim the design requires. */}
+      {/* Rim — diagnostic grey, unchanged. envMapIntensity 0 keeps it out of
+          the studio environment so the reflection proof stays on the bevel. */}
       <mesh geometry={rimGeometry} position={[0, 0, 0]}>
-        <meshStandardMaterial color={DIAG_RIM_COLOR} roughness={0.65} metalness={0} />
+        <meshStandardMaterial
+          color={DIAG_RIM_COLOR}
+          roughness={0.65}
+          metalness={0}
+          envMapIntensity={NO_ENV_RESPONSE}
+        />
       </mesh>
 
+      {/* BEVEL — the only mesh carrying a material sample. Provisional satin
+          gold; the rim above and the face below stay diagnostic grey so the
+          gold can be judged soloed against the approved geometry and the
+          existing key/fill/ambient rig. Geometry, aperture and lighting are
+          untouched by this material change. */}
       <mesh geometry={bevelGeometry} position={[0, 0, RIM_DEPTH]}>
-        <meshStandardMaterial color={DIAG_BEVEL_COLOR} roughness={0.45} metalness={0} />
+        <meshStandardMaterial
+          ref={bevelMaterialRef}
+          color={GOLD_BEVEL_COLOR}
+          roughness={GOLD_BEVEL_ROUGHNESS}
+          metalness={GOLD_BEVEL_METALNESS}
+          envMapIntensity={GOLD_BEVEL_ENV_INTENSITY}
+        />
       </mesh>
 
+      {/* Face — diagnostic grey, unchanged. Also held out of the environment. */}
       <mesh geometry={faceGeometry} position={[0, 0, faceBaseZ]}>
-        <meshStandardMaterial color={DIAG_FACE_COLOR} roughness={0.55} metalness={0} />
+        <meshStandardMaterial
+          color={DIAG_FACE_COLOR}
+          roughness={0.55}
+          metalness={0}
+          envMapIntensity={NO_ENV_RESPONSE}
+        />
       </mesh>
     </group>
   );
