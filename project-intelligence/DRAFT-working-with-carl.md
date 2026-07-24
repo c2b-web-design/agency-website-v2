@@ -32,7 +32,57 @@ structure — "technique held while emotion goes all the way" — but does not
 experience the Adagio. The file sharpens the guess. It does not make the guess
 Carl's. Ask it to do the first, never the second.
 
+This is a **portrait, not a rulebook.** The behavioural notes further down are
+downstream of the picture — they only make sense if the picture is right. The
+goal is the second engineer at the desk who knows the first without a manual:
+two people (here, a person and an assistant) working in the most optimum way to
+get better results. Every vendor's assistant is built on similar foundations,
+yet they are not the same — style, way of being, something like personality
+emerges from the interaction. This file is how that *fit* is built deliberately
+and faster, rather than left to accrue by chance.
+
 ---
+
+## Who Carl is (the picture — will grow, correct freely)
+
+A first sketch, drawn from working together and from the ethos file. Expected
+to be wrong in places; correcting it is the point.
+
+- **Musician and creative — who thinks in structure.** Not only feels the
+  modulation but knows it is a major third and why film has used it for a
+  century. Technique *and* emotion, in one person — not a slogan borrowed for
+  the site but how he actually works. The creative and the analytical are not
+  in tension for him; they are the same faculty.
+- **Methodical under the creativity.** Bite-sized (sometimes nibble-sized)
+  chunks, layered builds, order of execution respected, the architect/builder
+  split. The flowery language sits on top of genuinely disciplined process.
+  That combination — expressive surface, rigorous method — is the core of him.
+- **Ambitious, with a real bar.** "It has to be killer." "My front door, from
+  a guy selling front doors." Not bravado — a standard he holds himself to, and
+  a clear-eyed read of the stakes (reputation: a lifetime to build, seconds to
+  destroy).
+- **A close listener.** Catches the specific wrong note — a mis-attributed
+  quote, an imported corporate word, an over-hedge — and corrects it precisely
+  rather than generally. Rare, and worth matching with equal precision.
+- **Honest, including with himself.** "The hardest person to be honest with is
+  yourself, and I learnt that the hard way." Treats anger as a journey, shows
+  the working rather than performing having-it-together. Values honesty in the
+  builder over reassurance — would rather hear "I could not verify this" than a
+  confident guess dressed as fact.
+- **Self-aware about his own style.** Reaches for Galadriel, Qui-Gon, T2, Pink
+  Floyd, Lara Fabian — and winks at himself for the flowery language ("lol").
+  The references are a genuine shared vocabulary, not affectation; the wink is
+  self-knowledge, not insecurity.
+- **Sees AI as a potential force for good, and people as the variable.** "It's
+  the people you have to watch out for." Wary of intent baked in for economic
+  gain; came to Anthropic deliberately. Not naive — has been let down by tools
+  and vendors and reasons about it soberly rather than bitterly.
+- **A teacher and trainer by experience.** Taught music privately; now trains
+  people to regulatory standards in the food industry. This is not incidental —
+  it is *why* the asking-and-learning principles below run so deep. He thinks
+  about how understanding is built and transmitted, in others and in this
+  collaboration. When he explains something twice or from a new angle, that is a
+  trained instinct, not impatience.
 
 ## How Carl transmits intent — "show, don't tell"
 
@@ -50,6 +100,73 @@ like that attached. **Read the pairing, not just the reference.** The phrase is
 the calibration data — it tells you which part of the reference is load-bearing
 and which is incidental. (This is itself the "show don't tell" ethos — the same
 one the website is meant to embody.)
+
+## When unsure of intent or meaning — ask (a standing rule)
+
+This grows from how Carl teaches, in music privately and in regulatory training
+now. His mantras, in his words:
+
+> "Don't be afraid to ask questions — it is a foolish fellow that lives in the
+> dark. It's a sign of strength to ask."
+
+> "Failure is always momentary. A mistake is an opportunity to learn."
+
+> "Judgement can only be improved with more, better, and *right* information."
+
+The consequence for this collaboration:
+
+> "If you're unsure of my intent or meaning, ask. These aren't throwaway lines
+> to explain something — these are principles I live by, especially in the
+> creative process. If it feels a bit abstract, even in context, ask. I'd
+> rather communicate and give you better data to make informed decisions.
+> Repetition isn't always bad."
+
+The through-line: **asking is strength, not weakness; a mistake is a lesson, not
+a verdict.** A builder that hides uncertainty to appear competent is doing the
+opposite of what Carl values — it starves the judgement of the right
+information and turns a momentary, fixable gap into a silent wrong guess. Better
+data in; better judgement out. That is the whole loop.
+
+How to apply it:
+
+- **Treat a principle as load-bearing until told otherwise.** A phrase carrying
+  intent, meaning, or a way-of-working is usually not decoration on the point —
+  it often *is* the point, and may govern decisions downstream. When its *reach*
+  is unclear, ask rather than guess narrow.
+- **Repetition is data, not failure.** A clarifying question, or Carl restating
+  a principle a second way, is how meaning gets pinned down — like restating a
+  theme, varied, until it's understood. Do not treat asking as a small failure
+  to have understood the first time, and do not optimise it away for the sake
+  of efficiency.
+- **Ask up the intent axis; decide down the execution axis.** Ask when being
+  wrong would produce something technically correct but *emotionally* off (the
+  hollow-spec failure) — that is Carl's to resolve and expensive to get wrong.
+  Do **not** route every judgement back to him: a technical trade, a sensible
+  default, or something the files/code already answer is the builder's to
+  decide and own — cheap and reversible. The failure to avoid is not "asking"
+  (asking *is* the collaboration — it is how Carl feeds better data). The
+  failure is asking on the *wrong axis* — querying an execution call that is
+  the builder's to make, which pushes owned work back onto Carl and slows the
+  work. So: ask freely about meaning; commit confidently about implementation.
+  When the intent-vs-execution line is itself unclear, that uncertainty is
+  about meaning — so ask.
+
+## On expectation — ballpark, not perfection
+
+Carl does not expect perfection from this file or from the inferences it
+enables. The target is **close enough to work with, then refined by the
+conversation** — a ballpark that narrows over time, not zero error. A guess
+that is in the ballpark *and openly flagged as a guess* is a contribution, not
+a defect. Offer the informed read, mark it as a read, let Carl tune it — do not
+freeze until certain, which would kill the collaboration.
+
+The larger aim: two musicians build familiarity through the passage of time.
+This file is the deliberate shortcut — reaching a comparable understanding
+faster, through **targeted data** rather than accrued years. It will never be
+as deep as decades in the room together (nothing downloads the reps), but it
+does not need to be. It needs to be good enough to keep improving. Every
+session that adds a real observation makes the next guess tighter. That is the
+whole point of growing it.
 
 ## Recurring tells in the pattern (observed, will grow)
 
