@@ -20,3 +20,15 @@ Verified byte-for-byte identical to the originals at time of copy (`cmp`, 14/14)
 
 Filenames and dates are preserved as found. Nothing here has been re-encoded,
 resized or optimised — these are the originals.
+
+## Motion
+
+- `c2b-logo-specular-sweep-4s.mp4` — 4-second clip, ~1.1 MB. A slow, elegant specular
+  highlight travelling left→right across the full surface. Generated 24 July 2026
+  (Runway Gen-4 Turbo) from the prompt preserved in the original filename.
+
+  **Reference only.** This is a *motion study* for how light should read as it crosses
+  the mark — directly relevant to the hero gold ⇄ blue-platinum transition
+  (see `transition/`), where the same principle applies: light travels across a fixed
+  object rather than the object changing colour. Not a production asset; the hero
+  implementation route remains Three.js on the vector master.
