@@ -106,7 +106,7 @@ one the website is meant to embody.)
 This grows from how Carl teaches, in music privately and in regulatory training
 now. His mantras, in his words:
 
-> "Don't be afraid to ask questions — it is a foolish fellow that lives in the
+> "Don't be afraid to ask questions — a foolish fellow always lives in the
 > dark. It's a sign of strength to ask."
 
 > "Failure is always momentary. A mistake is an opportunity to learn."
