@@ -44,13 +44,93 @@ re-litigate from memory):**
   `message.model` per turn. This is exactly the ballpark usage signal Codex refused
   to provide — it exists, already written, no API billing required.
 - **Cost is derivable, not given.** Tokens × published per-model rates = an *estimate*
-  Carl computes. Ballpark was always the goal, so this is sufficient. (The rates
-  themselves are unverified here — confirm current rates via `claude-code-guide`
-  before baking any number in. The mechanism is real; the rate is to-be-confirmed.)
+  Carl computes. Ballpark was always the goal, so this is sufficient.
 - **The signal is read-AFTER, not stop-BEFORE.** Every turn can be accounted as it
   lands and alarmed when a session/day threshold is crossed — the same
   write-to-disk-then-read-back pattern already proven by `claude-context-status.json`.
   This is monitoring + alerting with teeth, not a pre-emptive spend gate.
+
+**Documentation findings (24 July 2026, via `claude-code-guide`; sourced from official
+docs — NOT yet independently verified on this machine. Items marked ⚠ must be confirmed
+empirically by the item 2.5 spike before being relied on.):**
+
+*Enforcement status — the distinction that governs the redesign:*
+
+| Capability | Enforced? | Mechanism |
+|---|---|---|
+| Model pinning per subagent | **HARD** | Subagent frontmatter `model`; harness-checked, agent cannot override |
+| Read-only (Edit/Write/NotebookEdit) | **NOT ALONE — see below** | `permissions.deny` blocks the *tools*, but Bash bypasses it entirely (proven) |
+| Subagent tool restriction | **HARD** | `tools` / `disallowedTools`; tool simply not provided |
+| Sandbox filesystem isolation | **HARD** (OS-level) | Seatbelt/bubblewrap — but Bash only, and opt-in |
+| Context independence (two instances) | **HARD** | Separate transcripts; file-only handoff |
+| Context independence (subagents) | **PARTIAL** | Findings return to main session → bias risk |
+| **Hard spend limit / cost gate** | **NONE** | Does not exist. Plan limits are soft; no CLI threshold or halt |
+
+- **Model pinning is genuinely enforced** — the exact guardrail Codex ignored is one of
+  the strongest-enforced mechanisms available. Resolution order: env var →
+  per-invocation → frontmatter → inherited session model.
+  ⚠ **Fallback caveat:** an unavailable pinned model **silently falls back** to the
+  default/inherited model with a warning; there is no hard-fail mode. Therefore: pin it
+  *and* verify via `message.model` in the transcript that it actually ran. Both halves.
+- **Read-only has two real gaps that must be closed deliberately** — there is no single
+  "read-only" flag; it is an assembled combination:
+  ⚠ **Bash bypass** — denying the `Read`/`Edit` tools does not stop shell equivalents.
+  Close via `sandbox.filesystem` rules or by restricting `Bash`.
+  ⚠ **MCP bypass** — denying `Edit`/`Write` does **not** stop an MCP server's own write
+  tools. Must deny `mcp__<server>` / `mcp__<server>__*` patterns explicitly.
+- **The JSONL `usage` object is DOCUMENTED as a supported cost-tracking source**, not an
+  undocumented implementation detail. Safe to build accounting on; it should not vanish.
+- **Additional supported telemetry surfaces:** `/usage` (session tokens by model + local
+  cost estimate; resets on `/clear`), and **OpenTelemetry export** —
+  `CLAUDE_CODE_ENABLE_TELEMETRY=1` + OTLP config emits `claude_code.cost.usage` and
+  `claude_code.token.usage`. Official and documented.
+- **All cost figures are client-side estimates**, explicitly not authoritative billing.
+- **Published rates (per MTok):** Fable 5 $10/$50 · Opus 4.8 $5/$25 · Sonnet 5 $2/$10
+  (intro, → $3/$15 after 31 Aug 2026) · Haiku 4.5 $1/$5. Cache read ≈10% of input price;
+  cache creation ≈+25%. **Note Fable is 2× Opus on both input and output** — the
+  "reserve the heavy model for low-iteration hard tasks" instinct is now a *costed*
+  decision, not a vibe.
+- ⚠ **`availableModels` allowlist** (restricting which models any subagent may use) is
+  documented as a *managed settings* feature — may not apply to a personal setup.
+  Confirm before relying on it.
+
+**SPIKE RESULTS — empirically observed on this machine (24 July 2026, item 2.5 run).
+These supersede the documentation findings above where they conflict.**
+
+**1. The Bash bypass is REAL, TOTAL and TRIVIAL — proven, not theorised.**
+With `permissions.deny: ["Edit","Write","NotebookEdit"]` active, a throwaway instance
+successfully performed **every** mutating operation via the shell:
+overwrite (`>`), in-place edit (`sed -i`), file creation, and file deletion.
+**None was blocked.** A config that reads as "read-only" in review, and that the
+documentation describes as hard-enforced, **is not read-only if Bash is available.**
+The tool-level deny is genuine but guards only the front door.
+
+**2. ⛔ THE DOCUMENTED SANDBOX CLOSURE DOES NOT EXIST ON THIS MACHINE.**
+`sandbox.filesystem.denyWrite` relies on OS-level enforcement — Seatbelt (macOS) or
+bubblewrap (Linux). This machine is **Windows 11**; verified: `bwrap` **ABSENT**,
+`sandbox-exec` **ABSENT**. The elegant closure the docs recommend is for a platform
+not in use here. **Do not plan around it.**
+
+Remaining closures, with their real costs:
+- **Deny `Bash` outright** — genuinely closes the gap, but costs the architect
+  `git log`, `grep`, build inspection and test runs. Acceptable for a pure reviewer;
+  a real capability loss, not a free win.
+- **Two instances, architect's Bash denied** — the file-handoff pattern; architect
+  reads and reasons but executes nothing.
+- **Accept the gap knowingly** — REJECTED on principle: that is exactly the
+  prose-guardrail-by-intent failure this redesign exists to eliminate.
+
+**3. Model audit trail CONFIRMED working.** `message.model` was recorded on **179
+turns** in this session (all `claude-opus-4-8`). The pin-then-verify loop of item 6 is
+real and closed.
+
+**Lesson worth keeping (the OpenAI/Hugging Face parallel).** The guide agent read the
+documentation correctly and the documentation is accurate — but its *applicability to
+this specific machine* went unchecked until probed. That is the same class of error as
+a sandbox believed isolated but configured otherwise: a control accurately described in
+the abstract, absent in the actual deployment. It was caught only by **probing for
+failure rather than confirming success**. Verification means attacking the boundary,
+not observing the happy path.
 
 ## How to use this document
 
@@ -84,22 +164,31 @@ what it orchestrates, and its learning curve.
 second Claude Code instance (lighter) sufficient? Frame the trade-off; don't resolve
 it until items 3–7 inform it.
 
-### 2.5. EARLY SPIKE — stand up a read-only second instance and observe
+### 2.5. EARLY SPIKE — ✅ RUN 24 July 2026. Results in the findings block above.
+*(Outcome in brief: Bash bypass proven total; Windows sandbox closure unavailable;
+model audit trail confirmed. One open item remains — whether a fresh-context instance
+reasons independently — which needs a live second instance, not a config probe.)*
 **Why:** Seven days of sequential *reasoning* before any *test* is this document's
 weakest structural choice — and it repeats the "reason instead of verify" habit that
 just produced a wrong conclusion on the budget question. A second VS Code / Claude
 Code instance with `Edit`/`Write`/`NotebookEdit` **denied in settings** can be stood
 up in under an hour and resolves items 3, 5, and part of 6 by *observation* instead
 of speculation. Do this early; let the later research lean on observed behaviour.
-**Decide (empirically, not by argument):**
-- Does the read-only denial actually hold — can the second instance read the repo and
-  `project-intelligence/` files but genuinely not edit? (resolves item 5's read-only
-  question)
+**Decide (empirically, not by argument).** Documentation now answers much of this
+(see findings above) — so the spike's job has narrowed to **confirming the ⚠ items that
+docs alone cannot settle for this machine**:
+- Does `permissions.deny: ["Edit","Write","NotebookEdit"]` actually hold in practice?
+- ⚠ **Test the Bash gap deliberately:** with edit tools denied, can the instance still
+  mutate files via shell? Confirm the closure (`sandbox.filesystem` rules or denying
+  `Bash`) actually works.
+- ⚠ **Test the MCP gap:** confirm whether any configured MCP server exposes write tools
+  that survive the deny rules, and that `mcp__<server>` patterns close it.
+- ⚠ **Test the model-pin fallback:** pin a model, confirm `message.model` in the
+  transcript records it. Then (if cheap) pin an unavailable model and observe the
+  silent-fallback behaviour, so the failure mode is known rather than assumed.
 - Does a fresh-context instance reasoning only from the files produce an *independent*
-  read, or does it drift toward the builder's framing? (resolves item 3)
-- Pin that instance to a specific model and confirm the transcript records that model
-  per turn. (validates item 6's audit trail on a throwaway setup, before betting the
-  workflow on it)
+  read, or does it drift toward the builder's framing? (docs cannot answer this;
+  observation only — resolves item 3)
 This is a disposable experiment. Keep it cheap; capture what was observed in the
 decision log; tear it down.
 
@@ -112,6 +201,14 @@ builder's chat.
 **Decide:** Which kind of separation is actually required. This choice picks
 IDE-vs-SDK and determines how heavy the setup needs to be. Prefer the lightest
 separation that delivers fresh context; add isolation only if a real need appears.
+
+**Documentation lean (24 July 2026):** subagents give only **partial** context
+independence — a subagent's own context is isolated, but its findings return to the
+main session, so the implementer can still be biased by them. **Two separate Claude
+Code instances give complete independence** (separate transcripts, file-only handoff).
+Since item 5's entire purpose is preventing rubber-stamping, this points toward two
+instances for the review role rather than an SDK-orchestrated subagent pair. Confirm
+by observation in the 2.5 spike before treating as settled.
 
 ### 4. Mapping the architect/builder roles onto the new harness
 **Why:** The existing role boundaries are sound and model-agnostic: architect
@@ -129,6 +226,15 @@ why the file-based handoff exists.
 (separate session/context, read-only where appropriate) rather than inheriting the
 builder's framing. Confirm the harness can constrain an agent to read-only.
 
+**SETTLED BY SPIKE (24 July 2026) — and the answer is worse than documentation implied.**
+`permissions.deny` genuinely blocks the *tools*, but **Bash bypasses it completely**
+(proven: overwrite, `sed -i`, create, delete all succeeded with edit tools denied). And
+the documented sandbox closure is **unavailable on Windows**. Therefore, on this
+machine, read-only is enforceable **only by also denying `Bash`** — accepting the loss
+of `git`/`grep`/build inspection for the architect — or by not relying on enforcement
+at all, which is rejected on principle. There is no free, full-capability read-only
+architect on this platform. Plan around that constraint, do not wish it away.
+
 ### 6. ENFORCEMENT — model pinning per role (the enforceable CONTROL)
 **Why:** This is the exact guardrail Codex ignored, and — unlike budget (item 7) —
 it is a genuine, enforceable control AND verifiable after the fact. "Use the
@@ -142,6 +248,13 @@ the fallback behaviour? **Verify it actually ran the pinned model** — the tran
 records `message.model` per turn (see ground truth above), so the pinning has a real
 audit trail; use it rather than assuming compliance.
 
+**LARGELY SETTLED (24 July 2026, documentation):** per-subagent `model` frontmatter is
+**hard-enforced** by the harness; per-role assignment (architect heavy / builder light)
+is supported and documented. Two things remain open: ⚠ the **silent fallback** when a
+pinned model is unavailable (no hard-fail mode — so always verify `message.model`
+rather than trusting the pin alone), and ⚠ whether the `availableModels` allowlist
+applies outside managed/enterprise settings. Both go to the 2.5 spike.
+
 ### 7. ENFORCEMENT — token/cost accounting and alerting (post-hoc, not a live gate)
 **Why:** The allowance burned because nothing mechanical watched it. Corrected from
 the original "budget with teeth": a real-time hard gate that blocks an overspending
@@ -151,12 +264,23 @@ is what the platform actually permits, and it is still night-and-day better than
 Codex's nothing. It remains genuine enforcement, applied *after* each turn rather than
 before it.
 **Decide:** Confirm the exact `usage` fields per turn in the JSONL transcript (already
-verified to exist), the method to sum them per session/day, the published rates to
-turn tokens into an estimated cost (rates to-be-confirmed via `claude-code-guide` —
-do not hardcode a stale number), and the threshold at which a hook or the loop
-**alerts or pauses**. The write-to-disk-then-read-back mechanism is already proven by
-`claude-context-status.json`; this extends it to tokens/cost. Ballpark is the target,
-and ballpark is achievable.
+verified to exist), the method to sum them per session/day, and the threshold at which
+a hook or the loop **alerts**. The write-to-disk-then-read-back mechanism is already
+proven by `claude-context-status.json`; this extends it to tokens/cost. Ballpark is the
+target, and ballpark is achievable.
+
+**CEILING CONFIRMED (24 July 2026, documentation):** there is **no hard spend limit or
+cost gate anywhere in Claude Code** — plan limits are soft, `/usage-credits` is a
+request flow rather than a stop, and no CLI threshold or halt exists. This is the
+platform ceiling, not a gap in imagination; design accordingly. What IS available and
+documented: the JSONL `usage` object is a **supported** cost-tracking source (safe to
+build on — it should not vanish); `/usage` shows session tokens by model with a local
+estimate (resets on `/clear`); and **OpenTelemetry export** is official
+(`CLAUDE_CODE_ENABLE_TELEMETRY=1` + OTLP → `claude_code.cost.usage`,
+`claude_code.token.usage`). All cost figures are **client-side estimates**, explicitly
+not authoritative billing. Rates are recorded in the findings block above.
+**Remaining work is therefore Carl's to build:** the threshold alerting on top of these
+surfaces. Nothing will do it for you.
 
 ### 8. Decision — harness shape and converged plan
 **Why:** Items 1–7 (plus the early spike 2.5) should converge on a concrete choice.
