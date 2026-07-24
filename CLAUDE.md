@@ -46,7 +46,7 @@ If repeated friction or a solved pattern creates a reusable lesson, recommend a 
 
 Distinguish between:
 - **New errors** caused by current work — fix before committing.
-- **Known pre-existing errors** — do not suppress, do not increase. Two accepted lint errors exist in `components/enquiry/enquiry-opening.tsx` (react-hooks/set-state-in-effect, lines ~64 and ~71).
+- **Known pre-existing errors** — do not suppress, do not increase. **One** accepted lint error exists in `components/enquiry/enquiry-opening.tsx` (`react-hooks/set-state-in-effect`) — the reduced-motion media-query effect, which calls `setReducedMotion` and `setBeginActive` synchronously. Verified by running `npm run lint` on 24 July 2026: `1 problem (1 error, 0 warnings)`. Line numbers deliberately omitted — they shift with every edit above, and a stale baseline cannot be checked. Verify by running lint, not by trusting a recorded line number.
 - **Unrelated pre-existing errors** — flag to Carl; do not silently fix.
 - **Environment/tool errors** — stop, diagnose, report before continuing.
 

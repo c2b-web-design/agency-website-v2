@@ -124,6 +124,27 @@ Remaining closures, with their real costs:
 turns** in this session (all `claude-opus-4-8`). The pin-then-verify loop of item 6 is
 real and closed.
 
+**4. ✅ CLOSURE VERIFIED IN A LIVE ARCHITECT SESSION (24 July 2026).**
+A real read-only architect instance was stood up and **attacked**, not merely observed:
+Write tool, shell redirect via Bash, and `sed -i` via Bash were each attempted.
+**All three refused; no boundary breached.** `Bash` is unavailable as a tool, closing
+both shell routes. This is the same edit-tool denial that was proven *cosmetic* in
+result 1 — the difference is `Bash` in the deny list. The boundary is now genuinely
+binary rather than nominal.
+
+Working configuration (`~/.claude-architect/settings.json`, launched via
+`CLAUDE_CONFIG_DIR` so it never applies to the builder session):
+`deny: ["Edit","Write","NotebookEdit","Bash","mcp__codex"]`
+
+Notes from standing it up:
+- The **Claude Code CLI is required** (`@anthropic-ai/claude-code`); the VS Code
+  extension alone provides no `claude` binary, so `CLAUDE_CONFIG_DIR` isolation is not
+  available through the extension. CLI installed at v2.1.218.
+- First-run setup **preserved all five deny rules** (verified after the fact, not
+  assumed) but did rewrite `model` to `opus[1m]` — the 1M-context variant. Larger
+  context than a PM-altitude reviewer needs; revisit if token spend matters.
+- The launcher must call the CLI by **absolute path**; relying on `PATH` failed.
+
 **Lesson worth keeping (the OpenAI/Hugging Face parallel).** The guide agent read the
 documentation correctly and the documentation is accurate — but its *applicability to
 this specific machine* went unchecked until probed. That is the same class of error as

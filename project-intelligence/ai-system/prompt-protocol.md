@@ -47,6 +47,9 @@ Implement according to the brief, architecture docs, and design-system — in th
 - Do not introduce patterns not established in `system-architecture.md` without logging a decision
 - If the brief is ambiguous on a point that will have architectural consequences: flag and escalate before implementing, not after
 - For active plan handoff, run logging, screenshots, or drift-prone work, use `live-work-protocol.md` and `project-intelligence/live-work/` so Codex can inspect saved state without Carl copying chat output
+- When Carl confirms that Claude Code has entered **Edit Automatically** or has begun executing an approved plan, Codex must immediately activate the task-scoped Drift Sentinel defined in `live-work-protocol.md`. This is automatic at execution start and must not depend on a further reminder from Carl.
+- If that Sentinel stops work before a checkpoint, Codex's `STOP CLAUDE` alert must include, in the same message, one fenced and copy-ready prompt that stops the current course and gives Claude Code the full corrective instruction, boundaries, verification, and handoff requirements. A stop-only alert requiring Carl to return for a second prompt is not sufficient. If Claude Code has already completed its handoff, treat the issue as a checkpoint finding and provide the proposed next-action prompt for Carl's approval instead of claiming Claude is still coding.
+- Context health follows the machine-readable Context Watch, GREEN / AMBER / RED bands, and Context Refresh Gate in `live-work-protocol.md`. At AMBER, finish only the command or bounded verification already running, refresh all four continuity files, and pause. Codex must verify that those files agree before `/compact` or `/clear`. Never reuse an anchoring prompt after its described command or outstanding checks have changed. After any refresh, Claude Code completes the fresh-context re-entry handshake and pauses for Carl's approval before editing. An unexpected automatic compaction triggers the same gate immediately.
 
 ---
 
@@ -225,4 +228,4 @@ ChatGPT reviews
 
 ---
 
-*Last updated: 2026-05-23*
+*Last updated: 2026-07-22 - Automatic Drift Sentinel, machine-readable Context Watch, and refresh/re-entry gate added to Stage 3.*

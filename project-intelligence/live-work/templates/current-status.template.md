@@ -1,5 +1,13 @@
 # Current Status
 
+## Context Health
+
+- Session state: Fresh / Compacted once
+- Context band: GREEN / AMBER / RED
+- Context used / remaining:
+- Last refresh action:
+- Anchor integrity verified: Yes / No
+
 ## Active Task
 
 ## Current Step
@@ -14,3 +22,8 @@
 
 Yes / No
 
+## Completed Checks
+
+## Outstanding Checks
+
+## Single Next Permitted Action

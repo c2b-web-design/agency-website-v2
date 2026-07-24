@@ -149,6 +149,8 @@ Use the established schema for every entry type. Do not add new fields. Do not o
 4. Read domain-specific files for the task (architecture, design, component docs)
 5. Do not ask for context that should already exist in project-intelligence files
 6. Do not rely on chat history from previous sessions
+7. If this is a `/compact`, `/clear`, or automatic-compaction continuation of active work, follow the fresh-context re-entry handshake in `live-work-protocol.md` before editing
+8. Treat the repository diff and consistent live-work anchor as authoritative; a resumable transcript is supporting evidence only
 
 ### During a session
 
@@ -201,4 +203,4 @@ An unresolved issue is never silently dropped. It either:
 
 ---
 
-*Last updated: 2026-06-15 — Rule 8 added: visual layer state verification. Rule 9 added: rendered visual evidence is the source of truth for visual work.*
+*Last updated: 2026-07-22 - Active-task context refresh and re-entry rules cross-referenced to `live-work-protocol.md`.*

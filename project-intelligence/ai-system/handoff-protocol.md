@@ -245,6 +245,8 @@ A future session reads, in order:
 
 No chat history. No informal handover. The file system is the handover.
 
+For an active task continued immediately after `/compact`, `/clear`, or automatic compaction, also follow `live-work-protocol.md` Section 7. The current live-work anchor supplements the durable files for that bounded task, and Claude Code must complete the re-entry handshake before implementation resumes.
+
 ### Sprint boundary
 
 When a sprint closes:
@@ -292,4 +294,4 @@ ChatGPT reviews
 
 ---
 
-*Last updated: 2026-05-23*
+*Last updated: 2026-07-22 - Active-task context refresh handoff added.*
