@@ -1,8 +1,15 @@
 # Handoff Protocol
 
-The canonical standard for brief transmission between ChatGPT (project management) and Claude Code (implementation). Governs how work is initiated, acknowledged, executed, and reported — across session boundaries.
+The canonical standard for handing work to the Builder. Work moves as a **chunk**: the
+Architect defines it, Carl routes it, the Builder plans it in Plan Mode, the Architect
+reviews the plan and amends, Carl approves, the Builder executes that chunk only. Governs
+how work is initiated, acknowledged, executed, and reported — across session boundaries.
 
-Cross-references: `prompt-protocol.md` (Claude Code's internal workflow), `context-rules.md` (information governance).
+Harness-agnostic: defined by the chunk-and-plan discipline, not by which agent fills each
+role.
+
+Cross-references: `ai-roles.md` (authority), `prompt-protocol.md` (the Builder's internal
+workflow), `context-rules.md` (information governance), `decisions.md` D-036.
 
 ---
 
@@ -10,31 +17,53 @@ Cross-references: `prompt-protocol.md` (Claude Code's internal workflow), `conte
 
 ### What a handoff is
 
-A handoff is a compressed, structured brief from ChatGPT to Claude Code. It identifies the task, points to the governing project-intelligence files, states what must not change, and defines deliverables explicitly.
+A handoff is a compressed, structured **chunk definition**, authored by the Architect and
+routed by Carl. It identifies the work, points to the governing project-intelligence
+files, states what must not change, and defines the finish condition explicitly.
 
-A handoff is not a conversation. It is not a request. It is an instruction package.
+A handoff is not a conversation. It is not a request. It is a scoping package.
+
+**What it deliberately is not: an implementation spec.** The chunk says *what* and *what
+not*; it does not say *how*. The how is the Builder's plan, written in Plan Mode and
+reviewed by the Architect at the plan-review gate (§3). That separation is the point — the
+Architect's amendments carry weight precisely because it did not author the plan it
+reviews.
 
 ### Why structured handoffs exist
 
-Claude Code begins each session with no memory of prior sessions. Without a structured brief, context is reconstructed from noise — and reconstructed context drifts. A structured brief locks the relevant project state at the moment of transmission. The brief points to files, not to ideas. When those files are updated, future sessions inherit the updates automatically. No re-briefing required.
+The Builder begins each session with no memory of prior sessions. Without a structured
+chunk definition, context is reconstructed from noise — and reconstructed context drifts.
+A structured definition locks the relevant project state at the moment of transmission. It
+points to files, not to ideas. When those files are updated, future sessions inherit the
+updates automatically. No re-briefing required.
 
 ### Why raw conversation transfer is prohibited
 
-Passing a chat transcript forces Claude Code to extract intent from uncompressed text. Extracted intent is interpreted intent. Interpreted intent drifts from original intent. The brief format eliminates this: what is written is what is meant.
+Passing a chat transcript forces the Builder to extract intent from uncompressed text.
+Extracted intent is interpreted intent. Interpreted intent drifts from original intent.
+The structured format eliminates this: what is written is what is meant.
 
 ### The authority relationship
 
 | Layer | Role |
 |---|---|
 | Project-intelligence files | Authoritative. Govern all constraints, decisions, and direction. |
-| The brief | Operational. Points to files. Defines the task scope. |
+| The chunk definition | Operational. Points to files. Defines the work's scope. |
+| The Builder's plan | Operational. Defines the approach. Reviewed before execution. |
 | Chat | Temporary working memory. Ephemeral. Not persisted. |
 
 ---
 
-## 2. Brief Structure (ChatGPT → Claude Code)
+## 2. Chunk Definition
 
-Every implementation brief follows this structure. Claude Code treats a brief missing any Mandatory field as incomplete and will not proceed without it.
+The Architect defines each chunk after the design is settled with Carl. A chunk is the
+smallest useful unit of work — bite-sized, sometimes smaller. The definition says what the
+chunk is and what it must not touch. It deliberately does **not** specify how the work is
+built: that is the Builder's plan (§3), written in Plan Mode and reviewed by the
+Architect. The Architect scopes; the Builder plans; the separation is the point.
+
+Every chunk definition follows this structure. The Builder treats a definition missing any
+Mandatory field as incomplete and will not enter Plan Mode without it (D-008).
 
 ```markdown
 ## Objective
@@ -111,9 +140,37 @@ Every implementation brief follows this structure. Claude Code treats a brief mi
 
 ---
 
+## 2.5 Plan-Review Gate
+
+*(Numbered 2.5 rather than 3 so existing section numbers — and the cross-references that
+point at them — stay stable.)*
+
+No chunk is executed from its definition alone. Between definition and execution sits a
+gate:
+
+1. **Builder plans.** In Plan Mode, the Builder writes the detailed plan for the chunk —
+   the *how*: approach, structure, the specific changes intended. Plan Mode is
+   structurally incapable of editing files, so planning cannot leak into execution.
+2. **Architect reviews and amends.** The Architect reads the Builder's plan, agrees what
+   is sound, and adds its amendments — corrections, cautions, missed constraints. This
+   review has weight because the Architect did **not** write the plan: it assesses the
+   executor's own thinking rather than grading its own. Findings and amendments only — the
+   Architect does not rewrite the plan or instruct the Builder directly.
+3. **Carl approves.** The amended plan goes to Carl, who approves, revises, or sends it
+   back. Only Carl approves (D-036).
+4. **Builder executes.** The Builder executes the approved plan, that chunk only. It does
+   not iterate beyond the approved scope during execution; a new need is a new chunk,
+   taken back through this gate.
+
+This gate is why Plan Mode is in the loop at all: it makes the plan a reviewable artefact
+*before any code exists*, so drift is caught at the plan stage rather than after it has
+been built and depended upon.
+
+---
+
 ## 3. Acknowledgement Protocol
 
-Before touching any file, Claude Code issues an acknowledgement. This prevents blind implementation.
+Before touching any file, the Builder issues an acknowledgement. This prevents blind implementation.
 
 ### Acknowledgement Structure
 
@@ -145,16 +202,31 @@ If any item is unchecked: Claude Code does not proceed.
 
 ## 4. Escalation Triggers
 
-### Pause implementation — escalate to ChatGPT
+### Pause implementation — escalate
+
+The route depends on whether work exists yet to review. Where nothing is built, there is
+no artefact for a reviewer to assess, and inserting one would only rebuild the
+intermediating tier D-036 removed.
+
+**Escalate straight to Carl** — nothing built yet:
 
 | Trigger |
 |---|
-| Brief conflicts with an APPROVED decision in `decisions.md` |
+| Chunk conflicts with an APPROVED decision in `decisions.md` |
 | Task requires deviating from `design.md` with no supporting decision |
+| Two APPROVED decisions conflict with each other |
+| A design-system conflict surfaces before implementation |
 | UX direction is ambiguous and will have architectural consequences |
 | New dependency not covered by existing stack decisions |
-| Performance trade-off conflicts with design goals |
 | Task scope is unclear and could cause significant rework |
+
+**Architect may frame, Carl decides** — an artefact or proposal exists:
+
+| Trigger |
+|---|
+| A QA finding conflicts with existing implementation |
+| Performance trade-off conflicts with design goals |
+| A recommendation conflicts with an APPROVED decision |
 | Visual direction feels inconsistent with luxury or futuristic standards |
 
 ### Pause implementation — escalate to Human Founder
@@ -245,7 +317,7 @@ A future session reads, in order:
 
 No chat history. No informal handover. The file system is the handover.
 
-For an active task continued immediately after `/compact`, `/clear`, or automatic compaction, also follow `live-work-protocol.md` Section 7. The current live-work anchor supplements the durable files for that bounded task, and Claude Code must complete the re-entry handshake before implementation resumes.
+For an active task continued immediately after `/compact`, `/clear`, or automatic compaction, also follow `live-work-protocol.md` Section 7. The current live-work anchor supplements the durable files for that bounded task, and the Builder must complete the re-entry handshake before implementation resumes.
 
 ### Sprint boundary
 
@@ -267,25 +339,23 @@ All Browser Extension output is a **Recommendation**. It is observation with sug
 ### What Browser QA cannot do
 
 - Log a `decisions.md` entry directly
-- Instruct Claude Code to implement without PM approval
+- Instruct the Builder to implement without Carl's approval
 - Override any entry in `decisions.md` or `design.md`
 - Redefine UX direction or premium standards
 - Shortcut the routing flow below
 
 ### Routing flow
 
-```
-Browser observes issue
-    │
-    ▼
-review-log.md entry — severity assigned
-    │
-    ▼
-ChatGPT reviews
-    │
-    ├── Low → ChatGPT approves → Claude Code actions
-    ├── Medium → ChatGPT decides; may route to Human Founder
-    └── High / Critical → Human Founder required
+1. Browser observes an issue.
+2. A `review-log.md` entry is filed, with severity assigned.
+3. The Architect **may frame** the finding — assess its severity, relate it to an approved
+   decision, recommend a response. Framing is not approval.
+4. **Carl decides.** Every severity routes to Carl: Low, Medium, High and Critical alike.
+
+**No severity tier may be cleared by any agent other than Carl (D-036).** The prior
+protocol allowed Low findings to be approved without the founder and Medium to be decided
+below him; both are removed. A second approver, however routine the finding, is a second
+approver — and consolidating approval is the point of D-036.
             │
             ▼
     Actioned → logged as decision → Claude Code implements
@@ -294,4 +364,10 @@ ChatGPT reviews
 
 ---
 
-*Last updated: 2026-07-22 - Active-task context refresh handoff added.*
+*Last updated: 2026-07-25 — rewritten for the Architect/Builder two-instance model.
+Reporting standard, acknowledgement discipline, anti-patterns and continuity rules
+retained from the prior protocol. §2 becomes the chunk definition (the Architect scopes;
+it does not specify implementation), §2.5 adds the plan-review gate (Builder plans,
+Architect amends, Carl approves), §4 adopts the work-exists-yet escalation discriminant,
+and §7 QA routing consolidates to Carl at every severity. Section numbers held stable so
+existing cross-references continue to resolve. See `decisions.md` D-036.*

@@ -1,4 +1,4 @@
-# Codex Plan Response
+# Architect Plan Response
 
 ## Verdict
 

@@ -22,10 +22,10 @@ Transcripts, uncompressed AI responses, and full chat logs must never be copied 
 The compression test: *would a new agent reading only this entry understand the decision, state, or finding accurately and completely, without access to any chat history?* If yes, write it. If no, compress further until it passes.
 
 ### Rule 5 — Authority flows downward
-ChatGPT direction takes precedence over Claude Code implementation preferences. Human Founder direction takes precedence over all agents. A lower-layer agent cannot introduce a change that contradicts a higher-layer decision without explicit approval logged as a new decision entry.
+The Architect's design and review direction takes precedence over Builder implementation preferences. Carl's direction takes precedence over all agents. A lower-layer agent cannot introduce a change that contradicts a higher-layer decision without explicit approval logged as a new decision entry — and only Carl grants that approval (D-036). The Architect recommends; it does not approve.
 
 ### Rule 6 — QA cannot override architecture or design-system
-Browser Extension findings are observations. They become actionable only after ChatGPT review and approval. A finding, however accurate, does not supersede an APPROVED decision.
+Browser Extension findings are observations. They become actionable only after Carl routes and approves them (D-036) — the Architect may frame a finding, but no agent other than Carl moves it to actionable. A finding, however accurate, does not supersede an APPROVED decision.
 
 ### Rule 7 — Every component requires documentation before it is considered complete
 A component is not done until:
@@ -75,7 +75,8 @@ All decisions, work items, and components carry an explicit status. Statuses are
 | Status | Definition | Used In |
 |---|---|---|
 | PROPOSED | Raised for consideration. Not yet reviewed or approved. | `decisions.md`, `review-log.md` |
-| APPROVED | Reviewed and authorised by the appropriate authority. | `decisions.md` |
+| PROVISIONAL | In place, deliberately untuned, awaiting the mastering pass (D-035). Not "unapproved" and not a gap — reviewers must not raise a missing approval entry for provisional work. | `decisions.md`, `current-sprint.md`, component docs |
+| APPROVED | Reviewed and authorised by Carl. | `decisions.md` |
 | IN PROGRESS | Actively being implemented in the current session or sprint. | `current-sprint.md` |
 | IMPLEMENTED | Built and documented. Review may still be pending. | `current-sprint.md`, component docs |
 | REVIEW REQUIRED | Implementation complete. Awaiting QA or PM review. | `review-log.md`, `current-sprint.md` |
@@ -88,16 +89,18 @@ All decisions, work items, and components carry an explicit status. Statuses are
 
 | Transition | Authority |
 |---|---|
-| PROPOSED → APPROVED | ChatGPT or Human Founder |
-| PROPOSED → REJECTED | ChatGPT or Human Founder |
-| APPROVED → IN PROGRESS | Claude Code (self-assigned) |
-| IN PROGRESS → IMPLEMENTED | Claude Code |
-| IMPLEMENTED → REVIEW REQUIRED | Claude Code (automatic on component completion) |
-| REVIEW REQUIRED → APPROVED | ChatGPT (after QA review) |
-| APPROVED → DEPRECATED | Human Founder only |
-| Any status → REJECTED | ChatGPT or Human Founder |
+| PROPOSED → APPROVED | Carl only |
+| PROPOSED → PROVISIONAL | Carl only |
+| PROVISIONAL → APPROVED | Carl only — granted in the mastering pass (D-035), which Carl runs with the Builder |
+| PROPOSED → REJECTED | Carl only |
+| APPROVED → IN PROGRESS | Builder (self-assigned) |
+| IN PROGRESS → IMPLEMENTED | Builder |
+| IMPLEMENTED → REVIEW REQUIRED | Builder (automatic on component completion) |
+| REVIEW REQUIRED → APPROVED | Carl only — after review. The Architect reports findings; it does not approve. |
+| APPROVED → DEPRECATED | Carl only |
+| Any status → REJECTED | Carl only |
 
-Claude Code cannot move a PROPOSED item to APPROVED. Claude Code can move an APPROVED item to IN PROGRESS.
+The Builder cannot move any item to APPROVED. The Builder can move an APPROVED item to IN PROGRESS. The Architect approves nothing — it recommends, and Carl grants (D-036).
 
 ---
 

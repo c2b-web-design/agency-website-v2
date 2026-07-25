@@ -1,6 +1,6 @@
 # Prompt Protocol
 
-The standard operational workflow for all future implementation tasks. All agents must operate within this protocol. Deviations require explicit approval from ChatGPT or Human Founder.
+The standard operational workflow for all future implementation tasks. All agents must operate within this protocol. Deviations require explicit approval from Carl.
 
 ---
 
@@ -10,20 +10,21 @@ Every task follows this sequence in order. No stage is optional unless the promp
 
 ### Stage 1 — Context Acquisition
 
-Before any implementation begins:
+Before any planning begins:
 
 - Read `mission-overview.md` — confirm agency identity and current project stage
-- Read `current-sprint.md` — confirm the task aligns with the active sprint goal
-- Read `decisions.md` — identify any APPROVED decisions that constrain or govern the task
-- Read domain-specific files relevant to the task (see Stage 2)
+- Read `current-sprint.md` — confirm the chunk aligns with the active sprint goal
+- Read `decisions.md` — identify the APPROVED decisions the chunk sits under, named in the chunk definition's approved-decision references
+- Read the chunk definition itself — objective, scope, must-not-change, files in scope, definition of done (`handoff-protocol.md` §2)
+- Read domain-specific files relevant to the chunk (see Stage 2)
 
-If the task conflicts with an APPROVED decision: **escalate before proceeding. Do not implement.**
+If the chunk conflicts with an APPROVED decision: **escalate before planning. Do not plan around it.** Where nothing is built yet, escalate straight to Carl (§4).
 
 ---
 
-### Stage 2 — Required File Reads
+### Stage 2 — Required File Reads, then Plan
 
-Determine which files are directly relevant to the task. Minimum reads by task type:
+Determine which files are directly relevant to the chunk. Minimum reads by task type:
 
 | Task Type | Required Files |
 |---|---|
@@ -37,19 +38,53 @@ Determine which files are directly relevant to the task. Minimum reads by task t
 
 Reading files outside this list is encouraged when scope is unclear.
 
+**Then plan, and pass the gate.** Once the required files are read, the Builder enters
+Plan Mode and writes the detailed plan for the chunk — the *how*. Plan Mode is
+structurally incapable of editing files, so planning cannot leak into execution.
+
+The plan then passes the plan-review gate (`handoff-protocol.md` §2.5) before any code is
+written:
+
+1. Builder plans in Plan Mode.
+2. Architect reviews the plan and amends — findings and amendments only; it does not
+   rewrite the plan or instruct the Builder directly. The review carries weight because
+   the Architect did not author the plan.
+3. Carl approves the amended plan. Only Carl approves (D-036).
+4. Builder proceeds to Stage 3 and executes that chunk only.
+
+**Execution does not begin until Carl has approved the plan.**
+
 ---
 
 ### Stage 3 — Task Execution
 
-Implement according to the brief, architecture docs, and design-system — in that order of authority.
+Execute the **approved plan** — that chunk only. Do not iterate beyond approved scope
+during execution; a new need is a new chunk, taken back through the gate (Stage 2).
+
+Implement according to the approved plan, architecture docs, and design-system — in that
+order of authority.
 
 - Do not improvise on design direction
 - Do not introduce patterns not established in `system-architecture.md` without logging a decision
-- If the brief is ambiguous on a point that will have architectural consequences: flag and escalate before implementing, not after
-- For active plan handoff, run logging, screenshots, or drift-prone work, use `live-work-protocol.md` and `project-intelligence/live-work/` so Codex can inspect saved state without Carl copying chat output
-- When Carl confirms that Claude Code has entered **Edit Automatically** or has begun executing an approved plan, Codex must immediately activate the task-scoped Drift Sentinel defined in `live-work-protocol.md`. This is automatic at execution start and must not depend on a further reminder from Carl.
-- If that Sentinel stops work before a checkpoint, Codex's `STOP CLAUDE` alert must include, in the same message, one fenced and copy-ready prompt that stops the current course and gives Claude Code the full corrective instruction, boundaries, verification, and handoff requirements. A stop-only alert requiring Carl to return for a second prompt is not sufficient. If Claude Code has already completed its handoff, treat the issue as a checkpoint finding and provide the proposed next-action prompt for Carl's approval instead of claiming Claude is still coding.
-- Context health follows the machine-readable Context Watch, GREEN / AMBER / RED bands, and Context Refresh Gate in `live-work-protocol.md`. At AMBER, finish only the command or bounded verification already running, refresh all four continuity files, and pause. Codex must verify that those files agree before `/compact` or `/clear`. Never reuse an anchoring prompt after its described command or outstanding checks have changed. After any refresh, Claude Code completes the fresh-context re-entry handshake and pauses for Carl's approval before editing. An unexpected automatic compaction triggers the same gate immediately.
+- If the plan proves ambiguous on a point with architectural consequences: flag and escalate before implementing, not after
+- For active plan handoff, run logging, screenshots, git evidence, or drift-prone work, use `live-work-protocol.md` and `project-intelligence/live-work/` so the Architect can inspect saved state without Carl copying chat output
+- Context health follows the machine-readable Context Watch, GREEN / AMBER / RED bands, and Context Refresh Gate in `live-work-protocol.md`. At AMBER, finish only the command or bounded verification already running, refresh all four continuity files, and pause. Never reuse an anchoring prompt after its described command or outstanding checks have changed. After any refresh, the Builder completes the fresh-context re-entry handshake and pauses for Carl's approval before editing. An unexpected automatic compaction triggers the same gate immediately.
+
+**Drift watching during execution — a currently ownerless function.** Under the retired
+layer, Codex activated a task-scoped Drift Sentinel at execution start, watched for
+divergence from the approved plan, and could issue `STOP CLAUDE`. **That function has no
+owner in the current structure.**
+
+Drift watching is a mechanism not yet built. An agent merely *asked* to watch is an
+intention, not a control — the retired Sentinel sat at `STATUS: STOP` while work was being
+submitted for review, which is precisely the failure mode this redesign exists to
+eliminate. Until the mechanism is built, `STOP CLAUDE` is **Carl-triggered**: issued when
+Carl sees drift, not by any watching agent.
+
+This is a real capability the old layer provided and the current one does not yet replace.
+It is stated as a known gap so it is not mistaken for a covered function. The conditions
+that would justify a stop are retained in `live-work-protocol.md` §8, so that whoever or
+whatever eventually owns the mechanism inherits the specification.
 
 ---
 
@@ -67,9 +102,11 @@ If a component was built or a significant visual or architectural change was mad
 
 ### Stage 5.5 — Checkpoint Review (conditional)
 
-If the completed step is a meaningful implementation milestone — a completed visual layer, component, structural change, or rollout of an approved pattern — request a checkpoint review from Codex through the MCP bridge before building further on it.
+If the completed step is a meaningful implementation milestone — a completed visual layer, component, structural change, or rollout of an approved pattern — pause for checkpoint review before building further on it.
 
-See `checkpoint-review-protocol.md` and `live-work-protocol.md` for cadence, saved artifacts, request structure, and escalation. Codex returns findings only; Carl decides the response.
+**Invocation is file-based and Carl-routed, not an MCP call** — the retired `codex` bridge is void. The Builder saves the review request, git evidence and screenshots to `live-work/` per `checkpoint-review-protocol.md` §4, and pauses. Carl routes it to the Architect, which returns findings to `live-work/`.
+
+See `checkpoint-review-protocol.md` and `live-work-protocol.md` for cadence, saved artefacts, request structure, and escalation. The Architect returns findings only; Carl decides the response.
 
 Not required for lint fixes, formatting, or work covered by an immediately preceding review.
 
@@ -106,7 +143,9 @@ No reasoning chains. No process narration. State outcomes, not method.
 
 ## 2. Standard Prompt Structure
 
-Prompts handed to Claude Code by ChatGPT or Human Founder must follow this structure. Claude Code should flag incomplete prompts before executing.
+The unit of work handed to the Builder is the **chunk**, defined by the Architect and routed by Carl. Its Mandatory fields — objective, scope, must-not-change, files in scope, approved-decision references, definition of done — are specified once, in `handoff-protocol.md` §2, and are **not restated here** so the two cannot drift apart. A chunk missing any Mandatory field is rejected before planning begins (D-008); the Builder flags it rather than proceeding.
+
+This protocol governs what the Builder does with a chunk once received: read (Stage 1), plan and pass the plan-review gate (Stage 2), execute (Stage 3), and — where the step is meaningful — checkpoint review (Stage 5.5). The structure below is the shape a chunk arrives in.
 
 ```
 ## Objective
@@ -125,7 +164,7 @@ Explicit list of expected outputs: component files, doc entries, decision logs, 
 Which files must be updated. What level of detail is expected.
 
 ## Review Requirements
-Whether a self-review, Browser QA review, or ChatGPT review is required on completion.
+Whether a self-review, Browser QA review, or Architect checkpoint review is required on completion.
 
 ## Final Reporting Requirements
 What the implementation summary must cover.
@@ -163,17 +202,24 @@ What the implementation summary must cover.
 
 Claude Code must stop and escalate before proceeding when any of the following applies.
 
-| Situation | Escalate To |
+The route depends on whether work exists yet to review. Where nothing is built, there is
+no artefact for a reviewer to assess, and inserting one only rebuilds the intermediating
+tier D-036 removed.
+
+| Situation | Route |
 |---|---|
-| Brief conflicts with an APPROVED decision in `decisions.md` | ChatGPT |
-| Task requires deviating from `design.md` with no supporting decision | ChatGPT |
-| UX direction is ambiguous and will have architectural consequences | ChatGPT |
-| New dependency not covered by existing stack decisions | ChatGPT |
-| Performance trade-off conflicts with design or animation goals | ChatGPT |
-| Task scope is unclear and could result in significant rework | ChatGPT |
-| Visual decision feels inconsistent with luxury or futuristic standards | ChatGPT |
-| An APPROVED decision needs to be reversed | Human Founder only |
-| Two APPROVED decisions conflict with each other | Human Founder only |
+| Chunk conflicts with an APPROVED decision in `decisions.md` | **Carl** — nothing built yet |
+| Task requires deviating from `design.md` with no supporting decision | **Carl** — nothing built yet |
+| A design-system conflict surfaces before implementation | **Carl** — nothing built yet |
+| UX direction is ambiguous and will have architectural consequences | **Carl** — nothing built yet |
+| New dependency not covered by existing stack decisions | **Carl** — nothing built yet |
+| Task scope is unclear and could result in significant rework | **Carl** — nothing built yet |
+| A QA finding conflicts with existing implementation | Architect may frame → **Carl decides** |
+| Performance trade-off conflicts with design or animation goals | Architect may frame → **Carl decides** |
+| A recommendation conflicts with an APPROVED decision | Architect may frame → **Carl decides** |
+| Visual decision feels inconsistent with luxury or futuristic standards | Architect may frame → **Carl decides** |
+| An APPROVED decision needs to be reversed | **Carl only** |
+| Two APPROVED decisions conflict with each other | **Carl only** — stop, do not implement, note the conflict adjacent to both entries, do not resolve at any lower level |
 
 **Escalation format:** State the conflict precisely. Reference the file and field. Propose two options if possible. Do not implement either until directed.
 
@@ -183,31 +229,27 @@ Claude Code must stop and escalate before proceeding when any of the following a
 
 ### Output Classification
 
-All Browser Extension output is classified as **Recommendation**. Nothing from the Browser Extension layer is a Decision until approved by ChatGPT or Human Founder.
+All Browser Extension output is classified as **Recommendation**. Nothing from the Browser Extension layer is a Decision until approved by Carl (D-036).
 
 | Classification | Authority | Action |
 |---|---|---|
 | Recommendation | Browser Extension | File in `review-log.md`. Await routing. |
-| Decision | ChatGPT or Human Founder | Log in `decisions.md`. Claude Code implements. |
+| Decision | **Carl only** | Log in `decisions.md`. The Builder implements. |
 
 ### Routing Flow
 
-```
-Browser Extension observes issue
-        │
-        ▼
-Entry filed in review-log.md with severity
-        │
-        ▼
-ChatGPT reviews
-        │
-        ├── Low — ChatGPT approves Claude Code to action
-        ├── Medium — ChatGPT decides; may route to Human Founder
-        └── High / Critical — Human Founder review required
-                │
-                ▼
-        If actioned: decision logged, Claude Code implements
-        If dismissed: review entry marked Dismissed with reason
+1. The Browser Extension observes an issue.
+2. An entry is filed in `review-log.md` with severity assigned.
+3. The Architect **may frame** the finding — assess severity, relate it to an approved
+   decision, recommend a response. Framing is not approval.
+4. **Carl decides.** Every severity routes to Carl: Low, Medium, High and Critical alike.
+5. If actioned: the decision is logged and the Builder implements. If dismissed: the
+   review entry is marked Dismissed with a reason.
+
+**No severity tier may be cleared by any agent other than Carl (D-036).** The prior
+protocol let Low findings be approved without the founder and Medium be decided below him;
+both are removed. A second approver, however routine the finding, is still a second
+approver.
 ```
 
 ### Severity Definitions
