@@ -288,13 +288,68 @@ heavy reviewer). Keeps both IDEs; adds hard pinning where it matters.
 *Cost:* subagent findings return to the parent session — fine for tasks, **not** a
 substitute for the architect.
 
-**(C) Agent SDK orchestration.** Programmatic roles, hard config, strongest enforcement.
-*Unknown and material:* **can the SDK drive a VS Code instance, or does the builder go
-headless?** If headless, Carl loses the IDE he works in — which may be a dealbreaker
-regardless of the enforcement win.
+**(C) Agent SDK orchestration.** ~~Programmatic roles, hard config, strongest
+enforcement.~~ **RULED OUT — see the resolution block below.** The framing here was also
+wrong, not just the conclusion: it treated the SDK as *strongest enforcement at an unknown
+IDE cost*. In fact its orchestration primitive is the **subagent**, whose findings return
+to the parent context — so it is **weaker** on independence, the property that matters
+most. Not a trade-off; closer to a straight loss.
 
-**My lean: start at (B), keep (C) open.** It gets hard pinning where it is enforceable,
-changes nothing about how Carl works day to day, and can be stood up in an afternoon.
+**(D) Agent teams.** A fourth shape the builder did not know existed, surfaced by CP.
+**Also ruled out — see below.**
+
+---
+
+### ✅ ITEM 2 RESOLVED — 25 July 2026 (CP research + builder verification)
+
+**Outcome: (B) two instances + subagent model pinning is confirmed.** Not by elimination-
+as-default, but by **documented incompatibility** in the two alternatives.
+
+**(C) Agent SDK — OUT.** CP's reasoning, which the builder accepts: *SDK orchestration
+means **code** drives the agent; an interactive VS Code session means **Carl** drives it.*
+Those are mutually exclusive. Orchestrating the builder forces it headless, costing the
+IDE Carl works in — which the fixed shape (§1a) does not permit. CP additionally flagged
+the subagent-primitive problem recorded under (C) above.
+
+**(D) Agent teams — OUT, and this one needed checking.** Real feature: released
+5 February 2026, Research Preview, works on Pro; the CLI here is **2.1.219**, well past
+requirements. Teammates are genuinely full independent Claude Code sessions with their own
+context windows and direct peer-to-peer messaging — materially different from subagents.
+CP flagged it as a possible hybrid and called for a spike. **The official documentation
+settles it without one, and against it:**
+
+> *"Teammates start with the lead's permission settings [...] you can't set per-teammate
+> modes at spawn time."* — and, under Limitations: *"Permissions set at spawn: all
+> teammates start with the lead's permission mode."*
+
+**That defeats the read-only architect outright.** The entire boundary is a *different
+permission set* — `deny: [Edit, Write, NotebookEdit, Bash, mcp__codex]` via a separate
+`CLAUDE_CONFIG_DIR`. An architect teammate would inherit the **builder's** permissions and
+could therefore write code. Subagent definitions do honour a `tools` allowlist, but that
+is tool restriction *inside* the builder's session — and **DL-1 already proved tool
+restriction without `Bash` denial is cosmetic.**
+
+Two further disqualifiers, both documented:
+- **"Lead is fixed"** — the main session leads for its lifetime. The architect would be
+  **subordinate to the builder**, inverting the hierarchy in §1a.
+- **Split panes are unsupported in VS Code's integrated terminal and Windows Terminal** —
+  so the two-VS-Code shape is not what the feature is built for.
+
+**Keep for a different drawer:** agent teams is a strong **builder-side** tool for
+parallel review. The docs' own competing-hypotheses example is explicitly designed to beat
+anchoring bias, and the parallel-review pattern (security / performance / test coverage as
+separate lenses) is directly useful inside a build task, with Carl's approval. **It is not
+the governance layer.** Recorded so the capability is not lost along with the rejection.
+
+**Process note worth keeping.** CP surfaced agent teams — a shape the builder did not know
+existed — and corrected the builder's framing of the SDK. The builder's (B) lean survived,
+but only after scrutiny it had not previously had. **First evidence that a same-vendor
+reviewer does not simply agree with the builder** (bears on §1a's open question and on
+DL-2's caveat about a single trial).
+
+---
+
+**Superseded lean, retained for the record:** *"start at (B), keep (C) open."*
 **But items 1 and 2 of the research doc are unstarted — the SDK has never been
 investigated — so (C) is unevaluated, not rejected.** Treating my lean as a conclusion
 would be exactly the "reason instead of verify" habit the research doc warns against.

@@ -10,15 +10,15 @@ failures below. Decisions that survive that test are logged (see "Decision log")
 
 | Item | State |
 |---|---|
-| 1. Ecosystem landscape | **Not started** |
-| 2. Agent SDK fundamentals | **Not started** |
+| 1. Ecosystem landscape | **Not started** — now the *only* blocker on item 8 |
+| 2. Agent SDK fundamentals | ✅ **Resolved 25 July** — SDK out (headless), agent teams out (permission inheritance); two instances confirmed. See DL-6 |
 | 2.5. Early spike | ✅ Run 24 July — all sub-questions closed |
 | 3. Meaning of "separation" | ✅ Answered empirically — independence confirmed |
 | 4. Role mapping onto new harness | ⚠ **LIVE GAP** — Codex retired; open hole, interim holding position only |
 | 5. Review independence | ✅ Settled — boundary holds *and* review is independent |
 | 6. Model pinning | ✅ Largely settled — pin *and* verify; one ⚠ open |
 | 7. Cost accounting | ✅ Ceiling confirmed — post-hoc alerting only; build work remains |
-| 8. Converged decision | **Blocked on items 1, 2 and 4** |
+| 8. Converged decision | **Blocked on items 1 and 4** (item 2 cleared 25 July) |
 
 **Two changes of circumstance since this document was first written, both after
 24 July, neither of which the original text anticipates:**
@@ -204,13 +204,36 @@ orchestration), and the Claude API underneath. Each is a different level of cont
 **Decide:** A plain-language map of the options and which layer each operates at.
 No commitment yet — just the terrain.
 
-### 2. Claude Agent SDK fundamentals
+### 2. Claude Agent SDK fundamentals — ✅ RESOLVED 25 July 2026
 **Why:** The SDK is the most likely home for a programmatic architect/builder loop
 with defined roles. Need a *relative* understanding (not bedrock) of what it is,
 what it orchestrates, and its learning curve.
 **Decide:** Is the Agent SDK the right primitive for this, or is a
 second Claude Code instance (lighter) sufficient? Frame the trade-off; don't resolve
 it until items 3–7 inform it.
+
+**ANSWER: the SDK is NOT the right primitive — two Claude Code instances are.**
+Resolved by CP research plus builder documentation verification. See **DL-6**.
+
+- **SDK ruled out.** SDK orchestration means *code* drives the agent; an interactive
+  VS Code session means *Carl* drives it. Mutually exclusive — orchestrating the builder
+  forces it **headless**, costing the IDE Carl works in. The fixed shape does not permit
+  that. Compounding it: the SDK's orchestration primitive is the **subagent**, whose
+  findings return to the parent context, which **reintroduces the independence bias**
+  item 5 exists to prevent. So the SDK is not "stronger enforcement at an IDE cost" — it
+  is *weaker* on the property that matters most.
+- **Agent teams ruled out** (a fourth option, surfaced by CP; the builder did not know it
+  existed). Real and current — 5 Feb 2026, works on Pro, CLI here is 2.1.219. But
+  documented: *"Teammates start with the lead's permission settings [...] you can't set
+  per-teammate modes at spawn time."* The read-only architect **is** a different
+  permission set, so this defeats it. Also *"Lead is fixed"* (architect would be
+  subordinate to the builder) and split panes are unsupported in VS Code's terminal on
+  Windows.
+- **Retained for a different purpose:** agent teams is a strong *builder-side* tool for
+  parallel review — the docs' competing-hypotheses pattern is designed to beat anchoring
+  bias. Useful inside a build task, with Carl's approval. **Not** governance.
+
+**⇒ Item 8's remaining blocker is item 1 alone.**
 
 ### 2.5. EARLY SPIKE — ✅ RUN 24 July 2026. Results in the findings block above.
 *(Outcome in brief: Bash bypass proven total; Windows sandbox closure unavailable;
@@ -472,6 +495,32 @@ documented, supported source), optionally via OpenTelemetry export.
 around one would repeat the "reason instead of verify" error this document names.
 **Remaining work is Carl's to build:** nothing does the threshold alerting for you.
 
+### DL-6 · Harness primitive — two instances, not the SDK (item 2) — 25 July 2026
+**Chosen:** **two Claude Code instances** (architect + builder), with **subagent
+frontmatter model pinning** for hard per-role model enforcement where it applies.
+**Rejected — Agent SDK orchestration:** SDK orchestration means code drives the agent;
+an interactive session means Carl drives it. Mutually exclusive, so orchestrating the
+builder forces it **headless** and costs the IDE. Separately, the SDK's orchestration
+primitive is the **subagent**, whose findings return to the parent context — reintroducing
+the very independence bias DL-2 and item 5 exist to prevent. Weaker where it counts.
+**Rejected — Agent teams:** real, current (5 Feb 2026; CLI 2.1.219 supports it), and
+genuinely independent sessions with peer messaging. But **permissions are inherited from
+the lead and cannot be set per teammate at spawn time** — and the read-only architect *is*
+a distinct permission set (`deny: [Edit, Write, NotebookEdit, Bash, mcp__codex]` via a
+separate `CLAUDE_CONFIG_DIR`). A teammate would inherit the builder's permissions and
+could write code. Also **"lead is fixed"** (the architect would be subordinate to the
+builder, inverting the hierarchy), and split panes are unsupported in VS Code's integrated
+terminal and Windows Terminal.
+**Not rejected, re-filed:** agent teams as a **builder-side** parallel-review tool. The
+documented competing-hypotheses pattern is designed to beat anchoring bias. Governance no;
+build-task review yes, with Carl's approval.
+**How it was resolved:** CP researched and flagged agent teams as a possible hybrid needing
+a spike; the builder verified against official documentation, which settled it **without**
+a spike. **CP surfaced an option the builder did not know existed and corrected the
+builder's framing of the SDK.** The builder's prior two-instance lean survived — but only
+after scrutiny it had not previously had. First evidence that a same-vendor reviewer does
+not merely agree with the builder.
+
 ### DL-5 · Codex retirement (item 4) — 24–25 July 2026
 **Actioned:** Codex retired as the governance layer. MCP bridge deregistered, wrapper
 deleted, `mcpServers` empty. App removal deliberately paused until ~14 August 2026
@@ -494,9 +543,15 @@ authority layer. Rewriting it is item 4's job and Carl's decision.
 - **Does `availableModels` apply to a personal (non-managed) setup?** Carried from DL-3.
 - **Does independence hold across repeated reviews**, or was the 24 July result a
   favourable single trial? Only accumulated runs can answer this.
-- **Items 1 and 2 remain unstarted** — the ecosystem map and Agent SDK fundamentals.
-  Item 8 cannot converge without them; the two-instance lean is currently evidenced but
-  has never been compared against an SDK implementation on equal terms.
+- ~~**Items 1 and 2 remain unstarted**~~ — **item 2 resolved 25 July (DL-6);** the
+  two-instance choice has now been compared against both the SDK and agent teams, and both
+  were ruled out on documented grounds. **Item 1 (ecosystem map) remains unstarted and is
+  the sole remaining blocker on item 8.**
+- **Does independence hold when the reviewer is same-vendor?** Partly answered, and
+  encouragingly: on 25 July CP surfaced **agent teams** — an option the builder did not
+  know existed — and corrected the builder's framing of the SDK. That is a same-vendor
+  reviewer contributing something the builder could not produce itself. Still one data
+  point on a research question rather than a code review; keep accumulating.
 - **Is `opus[1m]` right for the architect?** First-run setup rewrote the model to the
   1M-context variant — more context than a PM-altitude reviewer needs, and Fable/Opus
   rates make it a costed choice. Revisit if token spend matters.
