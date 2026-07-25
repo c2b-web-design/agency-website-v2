@@ -1,9 +1,10 @@
 # Handoff Protocol
 
-The canonical standard for handing work to the Builder. Work moves as a **chunk**: the
-Architect defines it, Carl routes it, the Builder plans it in Plan Mode, the Architect
-reviews the plan and amends, Carl approves, the Builder executes that chunk only. Governs
-how work is initiated, acknowledged, executed, and reported — across session boundaries.
+The canonical standard for handing work to the Builder. Work moves as a **chunk**: **Carl
+leads the design and the chunking**, the Architect records it and drafts the prompt, Carl
+approves that prompt, the Builder plans it in Plan Mode, the Architect reviews the plan and
+amends, Carl approves, the Builder executes that chunk only. Governs how work is initiated,
+acknowledged, executed, and reported — across session boundaries.
 
 Harness-agnostic: defined by the chunk-and-plan discipline, not by which agent fills each
 role.
@@ -17,15 +18,22 @@ workflow), `context-rules.md` (information governance), `decisions.md` D-036.
 
 ### What a handoff is
 
-A handoff is a compressed, structured **chunk definition**, authored by the Architect and
-routed by Carl. It identifies the work, points to the governing project-intelligence
-files, states what must not change, and defines the finish condition explicitly.
+A handoff is a structured **chunk definition** — led and scoped by Carl, recorded by the
+Architect, approved by Carl before it reaches the Builder. It identifies the work, points
+to the governing project-intelligence files, states what must not change, and defines the
+finish condition explicitly.
+
+**Compressed in expression, not in understanding.** The Architect works from the full
+picture Carl gives it — design, ethos, timing, choreography, how the work connects in
+spirit to the rest of the site. The chunk it writes is narrow; the comprehension behind it
+is not. A chunk written by compressing a brief it did not understand would carry the words
+and lose the why, which is exactly the failure the chain (§2) is built to resist.
 
 A handoff is not a conversation. It is not a request. It is a scoping package.
 
 **What it deliberately is not: an implementation spec.** The chunk says *what* and *what
 not*; it does not say *how*. The how is the Builder's plan, written in Plan Mode and
-reviewed by the Architect at the plan-review gate (§3). That separation is the point — the
+reviewed by the Architect at the plan-review gate (§2.5). That separation is the point — the
 Architect's amendments carry weight precisely because it did not author the plan it
 reviews.
 
@@ -163,13 +171,13 @@ Mandatory field as incomplete and will not enter Plan Mode without it (D-008).
 
 | Field | Status | Consequence if Missing |
 |---|---|---|
-| Objective | Mandatory | Scope is undefined. Brief rejected. |
-| Context Files | Mandatory | Governing constraints may be missed. Brief rejected. |
-| Constraints | Mandatory | Implementation drifts. Brief rejected. |
-| Design-System Considerations | Mandatory (UI) | Visual inconsistency likely. Brief rejected for UI tasks. |
-| Deliverables | Mandatory | Completion cannot be verified. Brief rejected. |
-| Documentation Update Requirements | Mandatory | Documentation will not be updated. Brief rejected. |
-| Review Requirements | Mandatory | Review routing is undefined. Brief rejected. |
+| Objective | Mandatory | Scope is undefined. Chunk definition rejected. |
+| Context Files | Mandatory | Governing constraints may be missed. Chunk definition rejected. |
+| Constraints | Mandatory | Implementation drifts. Chunk definition rejected. |
+| Design-System Considerations | Mandatory (UI) | Visual inconsistency likely. Chunk definition rejected for UI tasks. |
+| Deliverables | Mandatory | Completion cannot be verified. Chunk definition rejected. |
+| Documentation Update Requirements | Mandatory | Documentation will not be updated. Chunk definition rejected. |
+| Review Requirements | Mandatory | Review routing is undefined. Chunk definition rejected. |
 | Escalation Conditions | Optional | Claude Code applies standard escalation rules. |
 | Final Reporting Requirements | Optional | Claude Code applies standard reporting. |
 
@@ -181,7 +189,7 @@ Mandatory field as incomplete and will not enter Plan Mode without it (D-008).
 | "You know what we discussed — continue" | References chat history, not project-intelligence files |
 | "Update the design system to feel more modern" | No scope boundary, no measurable deliverable |
 | "Fix the fonts thing" | No file reference, no constraint, no deliverable |
-| Brief longer than one screen | Over-specification obscures the objective. Compress. |
+| Chunk definition longer than one screen | Over-specification obscures the objective. Narrow the chunk. |
 | Deliverables list using "etc." | Every output must be named explicitly |
 
 ---

@@ -93,7 +93,7 @@ Anthropic's own docs call argument-constraining Bash patterns fragile).
 
 - Reads project-intelligence before starting (`prompt-protocol.md` Stage 1–2).
 - Writes the detailed plan for each chunk in Plan Mode, and passes it through the
-  plan-review gate before executing (`handoff-protocol.md` §3).
+  plan-review gate before executing (`handoff-protocol.md` §2.5).
 - Implements per the approved plan, architecture, and design-system — in that order of
   authority.
 - Logs decisions, updates sprint and component docs, saves plans, screenshots, git

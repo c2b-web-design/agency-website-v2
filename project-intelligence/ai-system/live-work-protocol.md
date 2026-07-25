@@ -309,13 +309,15 @@ After `/compact`, `/clear`, or an unexpected automatic compaction, the Builder m
 6. Save the same re-entry report to `current-status.md` and `claude-chat-window.md`.
 7. Pause. Carl and the Architect compare the report with the anchor. Implementation resumes only after Carl approves that the reconstruction is accurate.
 
-If automatic compaction happens before the gate is used, Carl tells the Architect immediately. the Builder must stop before beginning its next action and follow the same anchor and re-entry sequence. Continuing from compressed chat memory while the shared files are stale is governance drift and may trigger `STOP CLAUDE`.
+If automatic compaction happens before the gate is used, Carl tells the Architect immediately. The Builder must stop before beginning its next action and follow the same anchor and re-entry sequence. Continuing from compressed chat memory while the shared files are stale is governance drift and may trigger `STOP CLAUDE`.
 
 ### Capacity and Sentinel rules
 
 Repeated compaction is not the default strategy. After one compaction in an implementation task, the next context-pressure event uses `/clear [name]` or a new conversation after a complete anchor.
 
-If the same implementation task continues through a refresh, its Drift Sentinel remains active and treats the repository plus refreshed files as authoritative. If a milestone is complete and the final read-only checkpoint passes, the Architect deletes that Sentinel before the clear; a new Sentinel starts automatically when the next implementation enters Edit Automatically.
+⚠ **No Sentinel runs — see §6 and §8.** The paragraph that stood here described a Sentinel remaining active through a refresh, being deleted at a milestone, and a new one starting automatically at the next execution. **None of that happens**: the continuous watch retired with Codex and has no owner. Retained as a note rather than deleted, so a reader who remembers the old behaviour sees why it is gone. When a mechanism is eventually built, its refresh behaviour belongs here.
+
+What **does** survive a refresh: the repository plus the refreshed continuity files are authoritative, and the Builder completes the re-entry handshake before resuming. Drift is Carl's to spot and `STOP CLAUDE` is Carl's to issue, before and after a refresh alike.
 
 ---
 
