@@ -770,7 +770,15 @@ A fourth status, **`PROVISIONAL`**, is added to the schema for work that is **in
 
 **What mastering will involve:** balance, tempo, brightness, contrast, emphasis, breathing room and emotional flow across the whole site — the same list the ethos files already give. **Files will be written to during the pass**, so the record must be clean going in. Values settled in the pass graduate from `PROVISIONAL` to `APPROVED` with an entry.
 
-**Downstream constraint — this is why "clean" matters.** When the C2B site is finished, **all C2B-specific content is stripped out and the repo is cloned as the working template for client projects.** Anything left in a half-decided state becomes a defect inherited by every future client build. The mastering pass is therefore not only a quality gate for this site; it is what makes the repo fit to clone.
+**Downstream constraint — this is why "clean" matters.** When the C2B site is finished, the repo becomes the origin of a **three-tier lineage**, and the stripping happens **exactly once**:
+
+1. **C2B site repo** — this one. The finished agency site, and the proving ground for every pattern.
+2. **The clean template** — a clone with all C2B-specific content stripped out **once**. This is the pristine, client-empty workshop. It is **never** used for client work directly and never accumulates client detail.
+3. **Per-client repos** — each one a clone *of the template*, not of the previous client.
+
+**Why the middle tier exists, in Carl's words: "we clone the clone."** Cloning client-from-client would mean stripping personal details out again on every new engagement — a recurring manual chore, done under time pressure, that eventually leaks one client's details into another's build. Keeping a pristine template means the strip is a **one-time setup cost**, and every client starts from a known-clean state rather than a scrubbed one.
+
+**The consequence for this pass:** anything left half-decided here is inherited by the template, and therefore by **every client build after it**. A provisional value that never got mastered does not cost one website — it costs all of them, and it is far more expensive to correct once the lineage has branched. The mastering pass is therefore not only a quality gate for this site; **it is what makes the template fit to be the origin of everything that follows.**
 
 **Authority:** Human Founder
 **Status:** APPROVED *(the methodology is approved; the work it governs is `PROVISIONAL`)*
