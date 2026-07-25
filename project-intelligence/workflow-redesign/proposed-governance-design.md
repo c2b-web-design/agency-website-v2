@@ -153,7 +153,12 @@ in an authority position nobody granted it — the same class of error as the ol
 ### The working loop
 
 1. **Carl and the Architect brainstorm** until the design settles.
-2. **The Architect breaks it into bite-sized chunks** — sometimes nibble-sized.
+2. **Carl leads the chunking** — bite-sized, sometimes nibble-sized — and the Architect
+   records it and drafts the prompt. **Carl approves the prompt** before it reaches the
+   Builder, checking that his design, ethos and intent survived the translation. Carl
+   deliberately gives the Architect only what it needs to know, for focus; the asymmetry
+   is a control, not an oversight. *(Corrected 25 July 2026 — an earlier draft credited
+   the Architect with leading the chunking.)*
 3. **The Builder is put into Plan Mode** and writes the plan for that chunk.
 4. **The Architect reviews the plan** — deep discussion, generally positive, but reliably
    added to or adjusted.

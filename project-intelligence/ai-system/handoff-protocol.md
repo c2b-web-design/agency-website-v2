@@ -56,11 +56,57 @@ The structured format eliminates this: what is written is what is meant.
 
 ## 2. Chunk Definition
 
-The Architect defines each chunk after the design is settled with Carl. A chunk is the
-smallest useful unit of work — bite-sized, sometimes smaller. The definition says what the
-chunk is and what it must not touch. It deliberately does **not** specify how the work is
-built: that is the Builder's plan (§3), written in Plan Mode and reviewed by the
-Architect. The Architect scopes; the Builder plans; the separation is the point.
+### Where work originates — Carl leads
+
+Work does not originate with the Architect. **Carl leads.** He looks at the section,
+states what is already approved and must not be touched, and describes what he wants —
+not only the design but the **why**: the ethos, the timing, the flow, the choreography,
+and how it connects in spirit and intent to other parts of the site. He raises technical
+questions where relevant. **The chunking is led by Carl**, at the size he judges right.
+
+Carl deliberately gives the Architect **only what it needs to know** — the same focus
+discipline applied to the Builder, and for the same reason. This is a control, not an
+oversight. Do not "fix" it by routing everything to the Architect: withholding is how
+attention is kept on the work in hand.
+
+Only then is a prompt written.
+
+### The chain, and why the file system is elaborate
+
+```
+Carl's intent  →  Carl briefs the Architect  →  Architect interprets
+              →  prompt  →  Builder interprets  →  code
+```
+
+Five hops, four translations. **Every translation can lose or bend something**, and the
+losses are not symmetric: technical detail survives well ("gold rim on the rim/bevel,
+fades in gently"), while the **why** degrades first — the spirit, the connection to
+adjacent systems, the reason a timing matters. The why is precisely what tells the Builder
+what to protect when a real constraint bites mid-build, so the most fragile part of the
+message is also the most load-bearing.
+
+**This is why `project-intelligence/` is as elaborate as it is.** It is not documentation
+for its own sake and not a memory aid. It is a **fixed reference signal** that did not
+travel down the chain: at every hop, an interpretation can be checked against ethos files,
+`decisions.md`, and worked examples rather than against the previous participant's
+paraphrase. It is what stops the whole chain drifting together, where nobody notices
+because everyone drifted at once.
+
+### The Architect drafts; Carl approves
+
+The Architect writes the prompt. **Carl approves it before it reaches the Builder**, and
+that approval is a specific check, not a formality: *has my design, ethos, thinking and
+intent been understood?* This is the one hop in the chain Carl can inspect directly, and
+the last point at which a translation error is still cheap. After it, a misread becomes
+code, and code becomes something already built upon.
+
+### What the definition contains
+
+A chunk is the smallest useful unit of work — bite-sized, sometimes smaller. The
+definition says what the chunk is and what it must not touch. It deliberately does **not**
+specify how the work is built: that is the Builder's plan (§2.5), written in Plan Mode and
+reviewed by the Architect. Carl leads the chunking; the Architect shapes and records it;
+the Builder plans the how. The separation is the point.
 
 Every chunk definition follows this structure. The Builder treats a definition missing any
 Mandatory field as incomplete and will not enter Plan Mode without it (D-008).

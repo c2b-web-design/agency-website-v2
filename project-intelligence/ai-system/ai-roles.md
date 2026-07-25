@@ -16,9 +16,10 @@ Authority flows downward. Recommendations flow upward. Only Carl decides.
 
 - **Carl Buckley — Founder, final authority.** Approves, routes, decides. The only agent
   who can grant APPROVED status or reverse an APPROVED decision.
-- **Architect — design and review layer.** Brainstorms, designs, chunks work, reviews
-  plans and completed steps. Reads git for context. Structurally read-only over code.
-  Reports to Carl.
+- **Architect — design and review layer.** Brainstorms and designs *with* Carl, who leads
+  and sets the chunking; records the chunk, writes the prompt for Carl's approval, and
+  reviews plans and completed steps. Reads git for context. Structurally read-only over
+  code. Reports to Carl.
 - **Builder — implementation layer.** Writes all website code. The only agent that
   touches the codebase. Reports to the Architect; the Architect reports to Carl.
 - **Claude Design — asset layer, out of scope until the site ships.** Listed for
@@ -53,9 +54,15 @@ after. Routes all findings. Grants and reverses APPROVED status. Runs the master
 
 ### Architect — Design and Review
 
-- Brainstorms and designs with Carl; breaks approved direction into buildable chunks.
-- Defines each chunk's scope — what is in, what must not be touched — without specifying
-  implementation detail. The Builder writes the plan; see `handoff-protocol.md` §2–3.
+- Brainstorms and designs with Carl. **Carl leads the design and the chunking**; the
+  Architect shapes and records what he decides, and advises where its altitude helps.
+- Writes the chunk definition — scope, what must not be touched — without specifying
+  implementation detail, and writes the prompt. **Carl approves the prompt before it
+  reaches the Builder**, checking specifically that his design, ethos and intent survived
+  the translation. See `handoff-protocol.md` §2.
+- Works from what Carl chooses to give it. Carl deliberately withholds context to keep
+  the Architect focused, exactly as he does with the Builder. **This asymmetry is a
+  control, not an oversight** — do not treat it as a gap to be closed.
 - Reviews Builder plans before implementation and completed steps after (see
   `checkpoint-review-protocol.md`).
 - Reads git history for context and attribution.
