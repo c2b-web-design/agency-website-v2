@@ -365,11 +365,35 @@ Under the retired layer, Codex activated a task-scoped Drift Sentinel at executi
 watched for divergence from the approved plan, and could issue `STOP CLAUDE`. **That
 continuous watching has no owner in the current structure.**
 
-Drift watching is a mechanism not yet built. An agent merely *asked* to watch is an
-intention, not a control — the retired Sentinel sat at `STATUS: STOP` while work was being
-submitted for review, which is the failure mode this whole redesign exists to eliminate.
-Until the mechanism is built, `STOP CLAUDE` is **Carl-triggered**: issued when Carl sees
-drift, not by any watching agent.
+**⚠ Continuous watching is not "not yet built" — it is not possible, and will not return.**
+Corrected 25 July 2026, on Carl's observation: *"Drift sentinel wouldn't work, no
+connection."*
+
+The old Sentinel worked because the **MCP bridge** let Codex see the Builder's live state
+continuously. That bridge is gone and has no replacement: Claude Project runs in a browser
+with no channel to this machine, and a local architect instance sees only what is on disk,
+only when Carl invites it to look. **Neither can watch a build in progress.** This is
+structural, not a gap awaiting an owner. Do not plan around a future Sentinel.
+
+An agent merely *asked* to watch was never a control anyway — the retired Sentinel sat at
+`STATUS: STOP` while work was being submitted for review. `STOP CLAUDE` is therefore
+**Carl-triggered**: issued when Carl sees drift.
+
+**What replaced it, and it is a better shape.** The chunk scope guard (below) does not
+*watch* — it **blocks**, inside the Builder's own process, needing no connection at all.
+That is why it works where the Sentinel could not. The mechanical third of the drift list
+is genuinely enforced; the judgement two-thirds move to the **plan-review gate** and
+**checkpoint review**, which are deliberate inspection points rather than continuous
+observation.
+
+**The governance choice this reflects.** Carl's position, 25 July: pasting slows the
+process, so *"if the governance we put in place can mitigate that with less iteration,
+better."* A bridge would make each handoff cheaper; governance makes fewer handoffs
+necessary. The plan-review gate catches misunderstandings before code exists, the chunk
+definition names untouchable work upfront, the scope guard stops wrong-file drift without
+anyone reviewing anything, and the fixed reference files mean both agents check against the
+record rather than against each other's paraphrase. **Fewer iterations beats faster
+couriering** — and it needs no new component to trust.
 
 This is a real capability the old layer provided and the current one does not yet replace.
 It is stated as a known gap, matching `prompt-protocol.md` Stage 3, so the two files that
@@ -426,7 +450,7 @@ for one chunk. Both are Carl's levers, not the Builder's.
 it.
 
 **The drift conditions are retained below as a specification**, so that whoever — or
-whatever — eventually owns the remaining two thirds inherits it. These describe what drift *is*, not
+whatever — eventually owns the remaining two thirds inherits it — though note the continuous-watching route above is closed, so any future owner is a blocking mechanism, not a watcher. These describe what drift *is*, not
 who watches for it, and are therefore harness-agnostic. Today they are conditions Carl
 watches for, not a running check:
 
