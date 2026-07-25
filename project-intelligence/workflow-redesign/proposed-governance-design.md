@@ -110,6 +110,88 @@ it happened to use is not load-bearing.
 
 ---
 
+## 1a. CONFIRMED STRUCTURE — Carl, 25 July 2026
+
+**Decided. Not open for the discussion to relitigate.** The aim is a business set up like
+a real company, with separated roles.
+
+```
+                    CARL — Founder, final authority
+                              │
+                    PROJECT MANAGER / ARCHITECT      (VS Code 1)
+                    brainstorms · designs · chunks · reviews plans
+                              │
+                 ┌────────────┴────────────┐
+                 │                         │
+          CLAUDE DESIGN              BUILDER — me     (VS Code 2)
+          (arrives after the         implements code
+           website ships)
+```
+
+**Both report to the PM. The PM reports to Carl.**
+
+**Claude Design — upstream in workflow, peer in authority.** Its job is client
+acquisition: extract a prospect's style, brand colours, typography and feel; produce a
+report to the PM. Carl and the PM discuss it; the redesign brief comes down to the
+builder. Carl will *probably* supply the URL. **Both statements hold at once** — Design's
+output feeds the builder's input *via the PM*, and neither outranks the other. The
+process detail is a future Carl↔PM conversation, explicitly not the builder's to design.
+
+### The working loop
+
+```
+Carl + Architect brainstorm  ──►  design settles
+                                       │
+              Architect breaks it into bite-sized chunks
+              (sometimes nibble-sized)
+                                       │
+              Builder put into PLAN MODE  ──►  writes the plan
+                                       │
+              Architect reads the plan  ──►  deep discussion;
+              generally positive, but always added to or adjusted
+                                       │
+              CARL approves  ──►  Builder executes that chunk only
+```
+
+**Why the chunking exists — the load-bearing reason.** To keep the builder focused. The
+builder does not need the gradient colouring inside the four boxes while working on the
+gold rim. *Not yet.* This is the intent-and-chunk principle from
+`DRAFT-working-with-carl.md` operating as an actual mechanism rather than an aspiration.
+
+**On the review being "always added to":** Carl's own note is that "looks good" was his
+loose paraphrase — the real pattern is a **deeply discussed** plan, generally positively
+received, but reliably amended in small ways, with Carl holding final authority. Not a
+rubber stamp; not a rewrite either.
+
+**Open question Carl raised, worth actively watching:** will a *same-vendor* architect
+behave the same way? Builder's honest guess — **yes, but the mechanism to watch is not
+ego.** A reviewer returning "approved, no changes" produces nothing the process can use,
+so there is structural pressure toward finding *something*. **Manufactured amendments
+are worse than none.** Counter-evidence is encouraging: the 24 July architect **declined
+two of four checkpoint questions** as not warranting Carl's attention rather than
+inventing findings. Track whether that restraint holds across repeated reviews.
+
+### File location — who holds what
+
+| | Location | Contents |
+|---|---|---|
+| **Architect (VS1)** | its own filesystem + git read access | Business context, wider vision, starter-pack principles, PM-role `CLAUDE.md`, CP research outputs |
+| **Builder (VS2)** | this repo | Only what is needed to build |
+
+- **The architect reads git.** Information and context matter. **It cannot change
+  anything — code is the builder's domain.** ⚠ This requires a config change: `Bash` is
+  currently denied in `~/.claude-architect/settings.json`, which is what removes `git`.
+  Reopening it reopens the DL-1 bypass, so the closure must be re-proven by attack (P4).
+- **The architect gets its own `CLAUDE.md`**, reflecting the PM role — not this repo's
+  builder-facing one.
+- **Starter-pack principles carry over**, but live on VS1's filesystem so they are read
+  every session. They sit in this repo **only while the builder wears the temporary
+  architect hat**; the repo will eventually hold builder files alone.
+- **CP-generated research and responses are stored on VS1**, deliberately keeping the
+  builder repo uncluttered.
+
+---
+
 ## 2. Design principles (derived, not invented)
 
 | # | Principle | Source |
@@ -127,33 +209,40 @@ it happened to use is not load-bearing.
 ## 3. The proposed shape
 
 ```
-                          ┌──────────────────────────┐
-                          │  CARL — final authority  │
-                          └────────────┬─────────────┘
-                                       │ decides, routes, approves
-              ┌────────────────────────┴────────────────────────┐
-              │                                                 │
-   ┌──────────▼───────────┐                        ┌────────────▼─────────┐
-   │  ARCHITECT           │                        │  BUILDER             │
-   │  VS Code instance A  │                        │  VS Code instance B  │
-   │  CLAUDE_CONFIG_DIR = │                        │  normal config       │
-   │  ~/.claude-architect │                        │  full tool access    │
-   │                      │                        │                      │
-   │  plans · reviews ·   │                        │  implements · tests  │
-   │  writes prompts      │                        │  · documents         │
-   │  NO Edit/Write/Bash  │                        │                      │
-   └──────────┬───────────┘                        └────────────┬─────────┘
-              │                                                 │
-              │        ┌─────────────────────────────┐          │
-              └───────►│  project-intelligence/      │◄─────────┘
-                reads  │  live-work/  (handoff)      │  writes
-                       │  + the repo on disk         │
-                       └─────────────────────────────┘
+                     ┌──────────────────────────┐
+                     │  CARL — final authority  │
+                     └────────────┬─────────────┘
+                                  │ approves; conduit while the seat is empty
+                     ┌────────────▼──────────────────┐
+                     │  PROJECT MANAGER / ARCHITECT  │   VS Code 1
+                     │  CLAUDE_CONFIG_DIR =          │
+                     │  ~/.claude-architect          │
+                     │                               │
+                     │  brainstorms · designs ·      │
+                     │  chunks · reviews plans       │
+                     │  git READ · no Edit/Write     │
+                     │  own CLAUDE.md + business ctx │
+                     └────────────┬──────────────────┘
+                                  │ briefs down · findings up
+                     ┌────────────▼──────────────────┐
+                     │  BUILDER                      │   VS Code 2
+                     │  normal config, full tools    │
+                     │  implements · tests · docs    │
+                     └────────────┬──────────────────┘
+                                  │ writes
+                     ┌────────────▼──────────────────┐
+                     │  the repo + live-work/        │
+                     │  (architect reads from git)   │
+                     └───────────────────────────────┘
+
+  CLAUDE DESIGN joins as the builder's peer under the PM once the site ships.
 ```
 
-**This is the old topology with Codex swapped out.** Carl plans with the architect, the
-architect writes the prompt, Carl carries it to the builder, the builder writes results
-into `live-work/`, the architect reads them from disk. The loop Carl already knows.
+**This is the old topology with Codex swapped out**, now with the hierarchy Carl has
+confirmed (§1a): the architect is the PM layer, not a side-car reviewer. Carl brainstorms
+with the architect, the architect chunks the work and briefs the builder, the builder
+implements and writes results back, the architect reads them from git. The loop Carl
+already knows — one vendor instead of two.
 
 ### Why two instances rather than subagents
 
