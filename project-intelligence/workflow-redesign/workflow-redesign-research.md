@@ -6,6 +6,33 @@ sequentially. Findings return to Claude Code (builder-context instance) to be
 pressure-tested against this file system, the established ethos, and the two prior
 failures below. Decisions that survive that test are logged (see "Decision log").
 
+**Progress as of 25 July 2026:**
+
+| Item | State |
+|---|---|
+| 1. Ecosystem landscape | **Not started** |
+| 2. Agent SDK fundamentals | **Not started** |
+| 2.5. Early spike | ✅ Run 24 July — all sub-questions closed |
+| 3. Meaning of "separation" | ✅ Answered empirically — independence confirmed |
+| 4. Role mapping onto new harness | ⚠ **LIVE GAP** — Codex retired; open hole, interim holding position only |
+| 5. Review independence | ✅ Settled — boundary holds *and* review is independent |
+| 6. Model pinning | ✅ Largely settled — pin *and* verify; one ⚠ open |
+| 7. Cost accounting | ✅ Ceiling confirmed — post-hoc alerting only; build work remains |
+| 8. Converged decision | **Blocked on items 1, 2 and 4** |
+
+**Two changes of circumstance since this document was first written, both after
+24 July, neither of which the original text anticipates:**
+1. **Codex is retired** — not "being considered for replacement". The bridge is
+   deregistered and gone. Item 4 changed from a hypothetical comparison into an open
+   hole in the governance record.
+2. **The independence question is answered** — a live read-only architect review ran on
+   24 July and reasoned independently. Item 3's last open question is closed.
+
+**⚠ Reading this repo alongside this document:** `ai-system/ai-roles.md` is **stale**
+(last updated 2026-05-23) and still documents ChatGPT as PM/Creative Director with veto
+power, plus the Codex bridge. That layer is not operating. It is left unedited
+deliberately — see item 4.
+
 ---
 
 ## Why this document exists
@@ -187,8 +214,9 @@ it until items 3–7 inform it.
 
 ### 2.5. EARLY SPIKE — ✅ RUN 24 July 2026. Results in the findings block above.
 *(Outcome in brief: Bash bypass proven total; Windows sandbox closure unavailable;
-model audit trail confirmed. One open item remains — whether a fresh-context instance
-reasons independently — which needs a live second instance, not a config probe.)*
+model audit trail confirmed. One open item remained — whether a fresh-context instance
+reasons independently — which needed a live second instance, not a config probe.*
+***That item is now CLOSED: see "Independence — ANSWERED" under item 3 and item 5.****)*
 **Why:** Seven days of sequential *reasoning* before any *test* is this document's
 weakest structural choice — and it repeats the "reason instead of verify" habit that
 just produced a wrong conclusion on the budget question. A second VS Code / Claude
@@ -231,6 +259,40 @@ Since item 5's entire purpose is preventing rubber-stamping, this points toward 
 instances for the review role rather than an SDK-orchestrated subagent pair. Confirm
 by observation in the 2.5 spike before treating as settled.
 
+**✅ INDEPENDENCE — ANSWERED EMPIRICALLY (24 July 2026, live architect review).**
+The one question documentation could not settle is now closed by observation, not
+argument. A read-only architect instance (`~/.claude-architect`, fresh context, files
+only, no access to the builder's chat) performed a full checkpoint review of the
+pre-warm work. Full record: `live-work/architect-review-findings.md`.
+
+**It reasoned independently — demonstrated on four counts, not asserted:**
+- Found a **real defect the builder had missed across two days of self-review** (F-2:
+  the reduced-motion route waits the full 7100ms for choreography that never runs).
+- Flagged a **governance gap the builder had repeatedly walked past** (F-1: the
+  undocumented q5proto Q5 lighting layer, and the resulting false "byte-identical"
+  claim in D-032).
+- **Declined two of the four checkpoint questions** as not warranting Carl's attention,
+  rather than manufacturing findings to look useful.
+- **Led with its own verification limit** (Bash denied ⇒ no `git diff`) and **refused
+  the Codex role label** it had not been granted.
+
+⇒ **Item 3's open question is resolved: a fresh-context instance reasons independently
+rather than drifting toward the builder's framing.** The two-instance lean above is
+therefore confirmed by evidence, not just by documentation.
+
+**The cost is confirmed too, and it is not free.** The same review had to hand F-1 back
+**unresolved** because it could not run `git` to establish attribution — the builder
+closed it afterwards (committed prior work, `b08815b`, zero occurrences in the working
+diff). This is the item 5 / spike-result-2 trade-off appearing in production rather
+than in theory: **a genuinely read-only architect on Windows cannot self-serve
+attribution questions.** Any design that keeps the read-only boundary must also plan a
+route for git-dependent findings to be closed — builder-supplied evidence, a
+pre-generated diff placed in `live-work/`, or Carl arbitrating.
+
+**Caveat on generality:** this is **one** run against a well-documented file set. It
+proves independence is *achievable* under this configuration, not that it is guaranteed
+on every future review. Do not over-read a single trial.
+
 ### 4. Mapping the architect/builder roles onto the new harness
 **Why:** The existing role boundaries are sound and model-agnostic: architect
 reviews and reports findings only; Carl decides; builder implements. These must
@@ -238,6 +300,42 @@ survive the pivot intact (see `checkpoint-review-protocol.md`, `context-rules.md
 **Decide:** How each existing protocol role maps to the chosen harness. What changes
 in `checkpoint-review-protocol.md` "Technical Registration" (currently the `codex`
 MCP bridge) when the architect is a Claude instance/SDK agent instead.
+
+**⚠ NO LONGER HYPOTHETICAL — THIS ITEM IS NOW THE LIVE GAP (25 July 2026).**
+Item 4 was written as a future question: what *would* change when the architect stops
+being Codex. Events have overtaken it. **Codex is retired** — the MCP bridge is
+deregistered, `mcpServers` in `~/.claude.json` is empty, and the wrapper is deleted
+(`live-work/codex-removal-status.md`). The old routing is gone whether or not a
+replacement is designed, so this is no longer a comparison between two options; it is
+an **open hole in the governance record**.
+
+**Interim measure already applied (25 July 2026), so nothing is silently broken:**
+`CLAUDE.md` workflow step 5 now states that Codex is retired, that the `codex` server
+must not be called, and that the replacement review layer is **undecided and under
+active discussion (this document)**. Crucially **the milestone gate itself is
+preserved** — the builder still stops at checkpoints, reports, and lets Carl route the
+review. Only the *routing* is open; the *obligation* is not. That clause also marks
+`checkpoint-review-protocol.md`'s Codex-specific Technical Registration as superseded.
+This is a holding position, not an answer to item 4.
+
+**⚠ STALE EXHIBIT — read this before reasoning from `ai-system/ai-roles.md`.**
+`ai-roles.md` (last updated 2026-05-23) still describes the **pre-pivot** structure and
+has NOT been revised: it places **ChatGPT as PM / Creative Director between Carl and
+Claude Code**, with authority to define sprints, compress every brief, route all QA
+findings, and **veto Claude Code's implementation before it ships**; and it names the
+Codex MCP bridge as ChatGPT's review channel. **None of that layer is operating.**
+Treat `ai-roles.md` as a historical exhibit, not a description of the current workflow.
+Deliberately left unedited — rewriting the authority structure is exactly the decision
+item 4 exists to make, and is Carl's, not the builder's.
+
+**What item 4 must now actually produce** (it inherits more than it was first scoped
+for):
+- Who or what performs checkpoint review, and how it is technically registered.
+- How the **read-only cost** established under item 3 is handled — the route by which
+  git-dependent findings get closed without granting the architect write capability.
+- A corrected `ai-roles.md` authority hierarchy with the ChatGPT/Codex layer removed
+  and whatever replaces it named.
+- Whether `checkpoint-review-protocol.md` is amended or superseded outright.
 
 ### 5. Independence of the review (avoiding rubber-stamping)
 **Why:** The checkpoint's value comes from the architect NOT sharing the builder's
@@ -255,6 +353,17 @@ machine, read-only is enforceable **only by also denying `Bash`** — accepting 
 of `git`/`grep`/build inspection for the architect — or by not relying on enforcement
 at all, which is rejected on principle. There is no free, full-capability read-only
 architect on this platform. Plan around that constraint, do not wish it away.
+
+**✅ RUBBER-STAMPING QUESTION ANSWERED IN PRODUCTION (24 July 2026).** The live
+architect review did not approve — it found a defect the builder had missed, flagged a
+governance gap, declined two questions, and refused a role label. Detail and the four
+counts are recorded under item 3 above; not repeated here. **Both halves of item 5 are
+now evidenced:** the boundary holds under attack (spike result 4), *and* the review
+that boundary protects is genuinely independent.
+
+**The trade-off is now priced, not estimated.** The same review handed F-1 back
+unresolved for want of `git`. Read-only is affordable, but it is **not free**, and
+item 4 must specify how git-dependent findings get closed.
 
 ### 6. ENFORCEMENT — model pinning per role (the enforceable CONTROL)
 **Why:** This is the exact guardrail Codex ignored, and — unlike budget (item 7) —
@@ -320,10 +429,74 @@ rejected alternatives and why.
 > One entry per resolved item: what was chosen, what was rejected, and the reason for
 > the rejection. Keeps the "why not" recoverable at build time.
 
-- _(none yet)_
+**These are research findings, not APPROVED decisions.** Nothing here has been through
+`decisions.md`; this log records what the research established and what it ruled out.
+Item 8 remains the point where research becomes a plan.
+
+### DL-1 · Read-only enforcement mechanism (items 2.5, 5) — 24 July 2026
+**Chosen:** deny `Edit`, `Write`, `NotebookEdit` **and `Bash`** together, in a separate
+config dir launched via `CLAUDE_CONFIG_DIR`. Verified by attacking it: Write tool,
+shell redirect and `sed -i` all refused.
+**Rejected — tool-deny alone (no `Bash` deny):** proven **cosmetic**. Overwrite,
+`sed -i`, create and delete all succeeded via the shell. Reads as read-only in review;
+is not read-only in fact.
+**Rejected — `sandbox.filesystem.denyWrite`:** requires Seatbelt or bubblewrap. This is
+Windows 11; both verified absent. The documented closure is for a platform not in use.
+**Rejected — accept the gap knowingly:** this is precisely the prose-guardrail failure
+the redesign exists to eliminate. Rejected on principle, not on cost.
+**Known cost:** the architect loses `git`, `grep`, build inspection and test runs.
+
+### DL-2 · Review independence (items 3, 5) — 24 July 2026
+**Established:** a fresh-context, read-only instance reasoning from files alone
+**reasons independently** — found a missed defect, flagged a walked-past governance
+gap, declined two questions, refused an ungranted role label.
+**Consequence:** the two-instance lean is confirmed by evidence, not documentation
+alone. Subagents remain **partial** independence (findings return to the main session),
+so they are not a substitute for the review role.
+**Caveat:** one trial, one well-documented file set. Independence is shown achievable,
+not guaranteed per-run.
+
+### DL-3 · Model pinning (item 6) — 24 July 2026
+**Established:** per-subagent `model` frontmatter is hard-enforced; `message.model` is
+recorded per turn (179 turns observed), so the pin has a real audit trail.
+**Not sufficient alone:** an unavailable pinned model **silently falls back** — there is
+no hard-fail mode. **Pin *and* verify** is the rule; the pin by itself is a request.
+**Still open:** whether `availableModels` applies outside managed/enterprise settings.
+
+### DL-4 · Cost control (item 7) — 24 July 2026
+**Established ceiling:** no hard spend limit or cost gate exists anywhere in Claude
+Code. Not a gap in imagination — the platform ceiling.
+**Chosen shape:** post-hoc accounting and alerting on the JSONL `usage` object (a
+documented, supported source), optionally via OpenTelemetry export.
+**Rejected — real-time budget gate:** does not exist on a subscription. Designing
+around one would repeat the "reason instead of verify" error this document names.
+**Remaining work is Carl's to build:** nothing does the threshold alerting for you.
+
+### DL-5 · Codex retirement (item 4) — 24–25 July 2026
+**Actioned:** Codex retired as the governance layer. MCP bridge deregistered, wrapper
+deleted, `mcpServers` empty. App removal deliberately paused until ~14 August 2026
+(paid access unexpired) — `live-work/codex-removal-status.md`.
+**Interim:** `CLAUDE.md` step 5 preserves the checkpoint **gate** while declaring the
+**routing** undecided. A holding position, explicitly not an answer to item 4.
+**Not actioned, by design:** `ai-system/ai-roles.md` still documents the ChatGPT/Codex
+authority layer. Rewriting it is item 4's job and Carl's decision.
 
 ---
 
 ## Open questions carried forward
 
-- _(add as they surface; do not silently drop them)_
+- **Item 4 is now the live gap** — Codex is gone, so this is an open hole in the
+  governance record rather than a design comparison. See the item 4 block above for the
+  four things it must produce.
+- **How do git-dependent findings get closed** when the architect has no `Bash`?
+  (Builder-supplied evidence? A pre-generated diff dropped into `live-work/`? Carl
+  arbitrating?) Surfaced by F-1 being handed back unresolved.
+- **Does `availableModels` apply to a personal (non-managed) setup?** Carried from DL-3.
+- **Does independence hold across repeated reviews**, or was the 24 July result a
+  favourable single trial? Only accumulated runs can answer this.
+- **Items 1 and 2 remain unstarted** — the ecosystem map and Agent SDK fundamentals.
+  Item 8 cannot converge without them; the two-instance lean is currently evidenced but
+  has never been compared against an SDK implementation on equal terms.
+- **Is `opus[1m]` right for the architect?** First-run setup rewrote the model to the
+  1M-context variant — more context than a PM-altitude reviewer needs, and Fable/Opus
+  rates make it a costed choice. Revisit if token spend matters.

@@ -1,0 +1,476 @@
+# Proposed Governance Design — Architect / Builder, Post-Codex
+
+**Status: CONVERSATION STARTER. Not a proposal awaiting approval, not implemented, no
+authority.**
+Written 25 July 2026 by Claude Code (builder), wearing the PM hat temporarily while
+the architect seat is empty. Carl's instruction: *same process — architect/builder
+method, rules and governance in place; how we achieve that is mine to design; **discuss
+first with Claude Project, decide, then implement.***
+
+**Carl's framing, which governs how to read this (25 July 2026):**
+
+> *"The document that we will send to Claude Projects is only the starting point for a
+> conversation."*
+
+So: **every recommendation here is an opening position, not a finding.** Where the builder
+has a lean it is labelled as one. Where Carl has decided, it is marked as decided. The
+distinction matters — Claude Project should feel free to overturn the leans, and should
+*not* re-litigate the decisions.
+
+**THE ONE FIXED POINT — Carl, 25 July 2026:**
+
+> **Architect with its role in one VS Code instance. Builder in another.**
+> Both see GitHub. Architect is read-only and cannot touch code.
+
+Everything else in this document is negotiable, including requirements the builder
+derived (see the R1 note in §1). If a derived requirement conflicts with the fixed shape,
+**the requirement changes, not the shape.**
+
+This document exists to be **argued with**. Take it into the Claude Project discussion
+alongside `workflow-redesign-research.md`. Nothing in the repo has been restructured to
+match it.
+
+**Companion documents:**
+- `workflow-redesign-research.md` — the evidence base. Every claim below traces to it.
+- `../ai-system/ai-roles.md` — the **stale** current structure this replaces.
+- `../DRAFT-working-with-carl.md` — how Carl works. Governs tone, not mechanism.
+
+---
+
+## 1. What we are replacing, stated honestly
+
+The old system worked like this:
+
+```
+Carl brainstorms + plans in Codex  ──►  Codex writes a prompt  ──►  Claude Code builds
+                    ▲                                                      │
+                    └──────────  Codex reads live-work/ files  ◄───────────┘
+```
+
+**The design was sound. Execution failed** — Codex ignored the token-efficiency and
+model-selection rules it was given, and the ChatGPT allowance burned. The guardrail
+that was supposed to protect the budget was the guardrail that failed.
+
+**The lesson that governs this entire document:** a guardrail written as prose that an
+agent may choose to ignore is not a control. Enforcement must be a mechanism Carl owns
+and can verify.
+
+### What the MCP bridge was actually for — corrected by Carl, 25 July 2026
+
+**An earlier draft of this section got this wrong and is corrected here rather than
+quietly amended.** It read the startup pack's "Codex cannot see the Claude Code chat
+panel" line as the whole story, and concluded the old link was plain file polling. That
+understated what was built.
+
+**Carl's account, which is authoritative:**
+
+- The bridge was set up **specifically to end the copy/paste burden** between the two
+  agents. That was the problem it solved.
+- **In Plan Mode, Codex could see the plan.** Not a file written afterwards — the plan.
+- **Temporary handoff files carried the chat-window content**, and were disposable by
+  design: if Carl needed something later, he could scroll his own window and get it.
+- **The intent was that Codex should see the builder's *methodology*, not just its
+  output** — more information, possibly better decisions.
+- **The Drift Sentinel did what its name says:** watch for drift and scope creep.
+
+Both statements are true of different things. The scripted answer was about the **raw
+VS Code chat UI**, which Codex genuinely could not read. The bridge carried the **plan
+and the handoff files**, which it could. My earlier reading collapsed the two.
+
+**Why the distinction is load-bearing for this design:**
+
+The requirement is not "replace a file-sync." It is **"the architect must see how the
+builder is thinking, not only what it produced"** — and it must arrive without Carl
+acting as a courier.
+
+That reframes §5 entirely. An architect reading only a finished diff is reviewing a
+*different object* than one that watched the reasoning form. The 24 July architect
+review is evidence both ways: it caught a real defect from files alone — **and** it had
+to hand F-1 back unresolved for want of information it could not fetch itself.
+
+**This gives us a design *goal*, not a hard constraint:**
+
+> **R1 (goal, negotiable) — It is desirable that the architect can see the builder's plan
+> and methodology, not just its output, without Carl copy/pasting between windows.**
+
+**⚠ R1 IS SUBORDINATE TO THE FIXED SHAPE — Carl, 25 July 2026.** An earlier draft
+promoted this to a first-class requirement that the architecture had to satisfy. That
+was the builder over-weighting its own derivation. Carl's ruling:
+
+> *"If VS Code instances do not satisfy R1, we will change R1. Bottom line: architect
+> with its role in one instance, you in your builder role in another."*
+
+**The two-instance shape is the decided frame. R1 is an aspiration measured against it,
+not a test it must pass.** If a cheap mechanism delivers R1 inside two instances, good.
+If not, R1 gets reduced or dropped — the shape does not.
+
+This is the intent-and-chunk principle applied to governance: the *why* behind the old
+bridge (better information → better decisions) is worth carrying forward; the *mechanism*
+it happened to use is not load-bearing.
+
+---
+
+## 2. Design principles (derived, not invented)
+
+| # | Principle | Source |
+|---|---|---|
+| P1 | **Enforcement in config, never in prose.** If an agent can choose to ignore it, it is not a control. | The Codex failure |
+| P2 | **Pin *and* verify.** A pinned model silently falls back when unavailable. The pin is a request; the transcript is the proof. | DL-3 |
+| P3 | **Independence comes from separate context, not from instruction.** A reviewer sharing the builder's context approves; one reasoning from files alone catches drift. | DL-2, proven 24 July |
+| P4 | **Verification means attacking the boundary, not observing the happy path.** | Spike lesson |
+| P5 | **Read-only costs capability.** On Windows the only real closure denies `Bash`, which costs `git`, `grep`, builds, tests. Plan the workaround, don't wish it away. | DL-1, F-1 handed back unresolved |
+| P6 | **The architect reports; Carl decides; the builder implements.** No reviewer actions its own findings. | Existing protocol — survives intact |
+| P7 | **Bite-sized chunks; the intent governs, the chunk executes.** | `DRAFT-working-with-carl.md` |
+
+---
+
+## 3. The proposed shape
+
+```
+                          ┌──────────────────────────┐
+                          │  CARL — final authority  │
+                          └────────────┬─────────────┘
+                                       │ decides, routes, approves
+              ┌────────────────────────┴────────────────────────┐
+              │                                                 │
+   ┌──────────▼───────────┐                        ┌────────────▼─────────┐
+   │  ARCHITECT           │                        │  BUILDER             │
+   │  VS Code instance A  │                        │  VS Code instance B  │
+   │  CLAUDE_CONFIG_DIR = │                        │  normal config       │
+   │  ~/.claude-architect │                        │  full tool access    │
+   │                      │                        │                      │
+   │  plans · reviews ·   │                        │  implements · tests  │
+   │  writes prompts      │                        │  · documents         │
+   │  NO Edit/Write/Bash  │                        │                      │
+   └──────────┬───────────┘                        └────────────┬─────────┘
+              │                                                 │
+              │        ┌─────────────────────────────┐          │
+              └───────►│  project-intelligence/      │◄─────────┘
+                reads  │  live-work/  (handoff)      │  writes
+                       │  + the repo on disk         │
+                       └─────────────────────────────┘
+```
+
+**This is the old topology with Codex swapped out.** Carl plans with the architect, the
+architect writes the prompt, Carl carries it to the builder, the builder writes results
+into `live-work/`, the architect reads them from disk. The loop Carl already knows.
+
+### Why two instances rather than subagents
+
+Subagents give **partial** independence only — a subagent's context is isolated, but its
+findings return to the main session, so the builder is still biased by them (DL-2). The
+entire point of the checkpoint is catching what the builder cannot see in its own work.
+Two instances give complete independence: separate transcripts, file-only handoff.
+
+Proven, not argued: the 24 July architect found a defect I had missed across two days of
+self-review, flagged a governance gap I had walked past repeatedly, declined two
+questions as not worth Carl's attention, and refused a role label it had not been
+granted.
+
+---
+
+## 4. Where the SDK fits — the honest position
+
+Carl's understanding, from an earlier session: **an SDK is about stronger enforcement
+rules written in config files.** That is broadly right, and it is the correct instinct.
+But the specifics matter, and this is the **single most valuable question for Claude
+Project**, because nobody has checked.
+
+### What we know
+
+| Mechanism | Enforcement | Where it lives |
+|---|---|---|
+| Per-**subagent** model pin | **HARD** — harness-checked, agent cannot override | `.claude/agents/*.md` frontmatter |
+| Per-subagent tool restriction | **HARD** — tool simply not provided | same frontmatter |
+| Per-**instance** tool deny | **HARD** (with `Bash` denied) | `settings.json` — **already working** |
+| Per-instance model | Set in `settings.json`, but a session-level default | currently `opus[1m]` |
+| Hard spend limit | **DOES NOT EXIST** anywhere | — |
+
+### The gap, stated plainly
+
+The **strongest** model-pinning mechanism is per-*subagent*. Two plain VS Code instances
+are two *sessions*, not subagents — so instance-level model control is a settings
+default, weaker than subagent frontmatter.
+
+**That is the real argument for a hybrid**, and it is Carl's instinct arriving at the
+right place by a different route.
+
+### Three candidate shapes — for Claude Project to resolve
+
+**(A) Two instances only.** Simplest. Separation proven. Enforcement = tool denial
+(hard) + settings model (softer) + post-hoc transcript audit.
+*Cost:* no per-role hard model pin.
+
+**(B) Two instances + subagent roles inside each.** Named agents in `.claude/agents/`
+with hard-pinned models for defined task classes (e.g. a cheap Haiku doc-checker, a
+heavy reviewer). Keeps both IDEs; adds hard pinning where it matters.
+*Cost:* subagent findings return to the parent session — fine for tasks, **not** a
+substitute for the architect.
+
+**(C) Agent SDK orchestration.** Programmatic roles, hard config, strongest enforcement.
+*Unknown and material:* **can the SDK drive a VS Code instance, or does the builder go
+headless?** If headless, Carl loses the IDE he works in — which may be a dealbreaker
+regardless of the enforcement win.
+
+**My lean: start at (B), keep (C) open.** It gets hard pinning where it is enforceable,
+changes nothing about how Carl works day to day, and can be stood up in an afternoon.
+**But items 1 and 2 of the research doc are unstarted — the SDK has never been
+investigated — so (C) is unevaluated, not rejected.** Treating my lean as a conclusion
+would be exactly the "reason instead of verify" habit the research doc warns against.
+
+**Ask Claude Project:** what the Agent SDK actually orchestrates, whether an
+SDK-orchestrated builder keeps a usable IDE, and what (B) cannot do that (C) can.
+
+### R1 — nice to have, inside the fixed two-instance shape
+
+**The shape is settled (see §1): architect in one instance, builder in another.** The
+question is not *whether* to use two instances but *how much of R1 we can get for free*
+inside them.
+
+The old bridge gave Codex the **plan** (visible in Plan Mode) and the **chat-window
+handoff files** automatically. Two instances sharing a repo give the architect what the
+builder writes down. Whether that gap matters in practice is **an open question for the
+discussion, not a settled deficiency** — the 24 July review caught a real defect from
+files alone, so files-only is demonstrably *workable*.
+
+**Candidate closures, cheapest first — take whichever survives the discussion:**
+
+| Option | How it works | Honest assessment |
+|---|---|---|
+| **Plan-file discipline** | Builder writes every plan to `live-work/claude-plan.md` *before* executing; architect reads from disk | Closest to the old behaviour. Cheap, needs no new tech. **Weakness:** relies on the builder writing it — a prose rule, which is what P1 rejects |
+| **Hook-enforced plan capture** | A `PostToolUse`/`Stop` hook writes plans and transcript extracts to `live-work/` automatically | **Satisfies P1** — the harness does it, not the agent's goodwill. Needs verification that hooks can capture plan content |
+| **A new MCP bridge, Claude↔Claude** | Rebuild what Codex had, between two Claude instances | Restores R1 fully. **Unknown:** whether a Claude Code instance can expose plan state over MCP to another instance |
+| **SDK orchestration (C)** | Both agents in one programmatic loop; plan is a passed object | Strongest R1 answer — the architect sees the plan by construction. Cost: the IDE question |
+
+**One property worth preserving whatever is chosen.** The old setup was **one-way and
+read-only**: Codex could *see* the plan but could not touch code and had no authority to
+act on its own findings. Carl confirms this explicitly — *"Codex couldn't touch the code,
+read only."* Keep that asymmetry: architect sees the builder's reasoning; the builder
+does not see the architect's in-progress review; neither can action the other's work
+without Carl. That is what kept the review independent while the bridge was open.
+
+**Question 7 for Claude Project** (added): *inside the two-instance shape, what is the
+cheapest mechanism — if any is worth it — that gives the architect the builder's plan and
+methodology without Carl couriering it?*
+
+---
+
+## 5. Closing the read-only cost (P5)
+
+The architect has no `Bash`, so it cannot run `git log`, `grep`, builds or tests. This
+is not theoretical: on 24 July, finding **F-1** was handed back **unresolved** because
+the architect could not run `git` to establish whether a code layer was drift or prior
+committed work. The builder closed it afterwards in one command.
+
+**Proposed rule — the builder pre-supplies evidence.** At each checkpoint the builder
+writes a factual evidence file into `live-work/` *before* review:
+
+- `git diff --stat` and the full diff of changed files
+- `git log --oneline` for the range
+- lint + typecheck output, verbatim
+- test/build results
+- screenshots for anything visual
+
+**Load-bearing distinction:** this is **evidence, not argument.** Raw command output the
+architect can read, not the builder's characterisation of it. The builder's reasoning
+belongs in `claude-chat-window.md`, kept separate, so the architect can weigh the
+reasoning against the raw facts rather than receiving them pre-blended.
+
+**Known weakness, stated rather than hidden:** this makes the architect partly dependent
+on the builder's honesty about what it supplies. It is a real narrowing of independence.
+Mitigations: the architect reads the repo directly (it has `Read`/`Grep`/`Glob`), so any
+claim about file *contents* is checkable; only *history* and *command output* need
+supplying. Carl can also run a command himself when a finding turns on it.
+
+**Alternative for Claude Project to weigh:** grant the architect `Bash` restricted to an
+allowlist of read-only commands (`git log`, `git diff`, `grep`). **Caution:** DL-1 proved
+that with `Bash` available the edit-tool deny is cosmetic — so this must be verified by
+*attack* (P4), not assumed from config. If allowlisting cannot be proven airtight, keep
+`Bash` denied and accept the evidence-file dependency.
+
+---
+
+## 6. Enforcement stack — what Carl owns and can verify
+
+| Layer | Mechanism | Enforced? | How Carl verifies |
+|---|---|---|---|
+| Architect cannot write | `settings.json` deny incl. `Bash` | **HARD** | Attack it: attempt Write, shell redirect, `sed -i` |
+| Role model pin | subagent frontmatter (shape B) | **HARD** | `message.model` in transcript JSONL |
+| Pin actually ran | transcript audit | **verify-after** | grep `message.model` per turn |
+| Token/cost | JSONL `usage` object | **post-hoc only** | sum per session/day; alert at threshold |
+| Spend ceiling | — | **NONE — does not exist** | accept and design around |
+
+**Two things Carl must build; nothing does them for him:**
+1. A **transcript audit script** — reads session JSONL, reports models actually used and
+   token totals per session/day. Closes P2's second half.
+2. A **threshold alert** — the write-to-disk-then-read-back pattern already proven by
+   `claude-context-status.json`.
+
+### ✅ PROVEN 25 July 2026 — the data Codex never supplied, extracted in one command
+
+Carl: *"Is it possible to monitor tokens? Absolutely."* Correct. Demonstrated live
+against 14 real session transcripts in `~/.claude/projects/<slug>/`:
+
+```
+MODEL                 TURNS      INPUT      OUTPUT      CACHE-READ     EST $
+claude-opus-4-8        2528     23,718   1,791,816     582,066,453   $389.96
+claude-sonnet-5         498      3,965     286,469     112,737,669    $35.59
+claude-opus-5            83        151      62,840       8,843,301     $8.86
+                                                        TOTAL ESTIMATE  $434.40
+
+2026-06-22  243 turns  $24.64      2026-07-23   58 turns  $12.29
+2026-07-20  607 turns  $46.55      2026-07-24  425 turns  $75.31
+2026-07-21  785 turns $132.36      2026-07-25   83 turns   $8.86
+2026-07-22  915 turns $134.41
+```
+
+**These are API-rate equivalents, not Carl's bill** — the work is on a subscription.
+They are exactly the *ballpark* asked for and never received.
+
+**Three findings from Carl's own data that should shape the efficiency rules:**
+
+1. **Output dominates cost.** 1.79M Opus output tokens ≈ $45 of the total; true input is
+   trivial (23,718 tokens). **"Token efficiency" therefore means shorter responses and
+   fewer turns — not shorter prompts.** Writing the rule the other way would optimise
+   the wrong variable.
+2. **Cache reads are 99% of input volume** (582M). Cheap at ~10% of input rate, but this
+   is the conversation being re-read every turn — the mechanism by which a long session
+   silently gets expensive. An argument for `/clear` discipline and tight scoping.
+3. **The model mix is already sane.** 498 Sonnet turns at roughly a sixth of Opus
+   per-turn cost. The instinct is operating; it just was never *measured*.
+
+**⇒ The Codex failure was never a platform limitation.** The `usage` object was written
+to disk on every turn, the whole time. The data existed; the agent simply did not supply
+it. This is the strongest possible argument for **P1** — enforcement Carl owns and can
+verify beats any agent's promise, because it does not require the agent's cooperation
+at all.
+
+**Status:** proven as a one-off extraction, **not yet a built tool.** Turning it into a
+standing script (plus threshold alerting) remains implementation steps 7–8.
+
+**Until the audit script exists, model pinning is half a control** — the pin is a
+request and nothing checks the receipt.
+
+---
+
+## 7. Governance files — proposed disposition
+
+Nothing below is actioned. This is the **plan** for after the decision.
+
+| File | Disposition | Why |
+|---|---|---|
+| `ai-system/ai-roles.md` | **REWRITE** | Names ChatGPT as PM with veto power and Codex as review channel. Neither operates. Most stale file in the repo |
+| `ai-system/checkpoint-review-protocol.md` | **REWRITE** routing, **KEEP** mechanics | Review *mechanics* are sound and model-agnostic; only "Technical Registration" (the `codex` MCP bridge) is dead |
+| `starter-content/C2B_Codex_Startup_Context_Pack.md` | **SPLIT** | §§1–7, 12–33 are ethos/vision/preferences — **excellent, model-agnostic, keep**. §§8–11 are Codex governance — replace. Rename off "Codex" |
+| `starter-content/# C2B Website Session Rules.txt` | **REPLACE** | Almost entirely Codex-specific, incl. the scripted chat-panel answer |
+| `starter-content/# C2B Web Design — Wider Vision, Et.txt` | **KEEP**, one-line fix | Only line 5 mentions Codex. Otherwise clean |
+| `starter-content/Briefing_Agent.md` | **KEEP** unchanged | About Claude Design. No Codex content |
+| `live-work/codex-*.md` (remaining) | **ARCHIVE**, do not delete | Historical record of a real process. Move to `live-work/archive/`. Some were already removed 24 July during Codex's exit |
+| `live-work/drift-sentinel.md` | **KEEP the function, reassign the owner** | Carl: it did what its name says — watched for drift and scope creep. That job did not leave with Codex. Currently Codex-owned and reading `STATUS: CONTINUE`; needs a new owner and, ideally, a **hook-driven** trigger rather than an agent remembering to check (P1) |
+| `live-work/` transport | **KEEP** — now load-bearing | Was a workaround for a vendor boundary; is now the mechanism of independence (DL-2) |
+| `CLAUDE.md` step 5 | **UPDATE** once routing is decided | Currently a holding position naming the gap |
+
+**Proposed new file: `starter-content/architect-session-start.md`** — the architect
+equivalent of what Carl used to paste into Codex. Points at the ethos documents, states
+the role boundary, lists what to read in order, and forbids implementation. Written to be
+model-agnostic so the next pivot costs a line, not a rewrite.
+
+**Deliberately NOT deleting anything yet.** Under P4 and Carl's no-retroactive-rewriting
+discipline, a superseded record is evidence; a deleted one is a gap.
+
+---
+
+## 8. What I am least sure about
+
+Recorded because hiding uncertainty starves the judgement (`DRAFT-working-with-carl.md`).
+
+1. **Whether (B) is enough, or whether (C) is genuinely needed.** I lean (B). But I have
+   never used the Agent SDK and items 1–2 are unstarted. **This is a guess in the
+   ballpark, openly flagged as a guess.**
+2. **Whether the evidence-file pattern preserves enough independence.** It reintroduces a
+   builder dependency into a boundary designed to remove one.
+3. **Whether one good architect review generalises.** One run, one well-documented file
+   set. Independence is shown *achievable*, not guaranteed.
+4. **Whether I should be designing this at all.** I am the builder proposing the system
+   that reviews me. That is a structural conflict of interest, and it is exactly why this
+   goes to Claude Project before implementation rather than after.
+
+---
+
+## 8a. Carl's own open questions — 25 July 2026
+
+Raised by Carl, recorded as **questions for the discussion, not answered here.** The
+builder's notes are context for the conversation, not conclusions.
+
+### Q-A · Should both instances see GitHub?
+
+**Carl: "Yes."** Taken as decided.
+
+*Builder note:* the architect already reads the repo from disk via `Read`/`Grep`/`Glob`.
+Worth clarifying in discussion whether "see GitHub" means (i) the local working tree
+(already true), (ii) remote branches/PR state, or (iii) the read-only GitHub connector
+that Claude Project itself uses. (ii) is the one currently blocked — it needs `git`, which
+is denied with `Bash`. Directly related to §5.
+
+### Q-B · Is a Drift Sentinel still needed?
+
+**Carl: "I don't know — it's an AI from the same vendor, same coding conventions."**
+Genuinely open.
+
+*Builder note, both directions:*
+- **Argument it is less needed:** the Sentinel guarded against a *cross-vendor* mismatch —
+  divergent conventions, a reviewer reasoning from different priors. Two Claude instances
+  share conventions and training, so that specific failure largely disappears.
+- **Argument it is still needed:** the Sentinel's stated job was **drift and scope creep**,
+  which are not vendor artefacts — they are what happens when a build runs long. The
+  24 July architect review found real drift *from a same-vendor builder*. Shared
+  conventions reduce *misunderstanding*, not *creep*.
+- **Possible middle:** keep the function, drop the ceremony. A `STATUS: STOP/CONTINUE`
+  file that a human or hook sets, rather than an agent-maintained protocol. Cheaper and
+  harder to leave stale — the current file sat at `STOP` while work was submitted for
+  review, which is exactly the failure mode of governance-by-prose.
+
+### Q-C · The read-only boundary
+
+**Carl: "Codex couldn't touch the code, read only."** Confirms the boundary to preserve.
+
+*Builder note:* already proven achievable and already built — `~/.claude-architect/`
+with `deny: [Edit, Write, NotebookEdit, Bash, mcp__codex]`, attacked and held on
+24 July. The open cost is §5: no `Bash` means no `git`/`grep`/builds. `mcp__codex` can
+come out of that deny list once the app is gone (~14 August).
+
+---
+
+## 9. Questions for Claude Project
+
+1. **Can the Agent SDK orchestrate a VS Code builder instance, or does the builder go
+   headless?** Highest-value unknown. Decides (B) vs (C).
+2. **Is there per-*session* hard model enforcement**, or is subagent frontmatter genuinely
+   the only hard pin?
+3. **Can `Bash` be allowlisted to read-only commands safely** — and can that be *attacked*
+   to prove it? Would restore `git`/`grep` to the architect and close §5's weakness.
+4. **Does `availableModels` apply outside managed/enterprise settings?** Carried from DL-3.
+5. **Is the evidence-file pattern the right closure for the no-`Bash` cost, or is there a
+   cleaner one?**
+6. **Does anything here contradict the ethos** in the starter pack or the working-with-Carl
+   portrait?
+
+---
+
+## 10. If approved — implementation order
+
+Bite-sized, in dependency order. Each is a stopping point.
+
+1. Rewrite `ai-roles.md` — authority structure, model-agnostic
+2. Rewrite `checkpoint-review-protocol.md` routing; keep mechanics
+3. Write `architect-session-start.md`
+4. Split the startup pack; excise Codex from session rules; one-line fix to Wider Vision
+5. Archive `live-work/codex-*.md` to `live-work/archive/`
+6. Stand up enforcement config (shape decided in discussion)
+7. **Build the transcript audit script** — until this exists, pinning is half a control
+8. Build threshold alerting on the JSONL `usage` object
+9. Update `CLAUDE.md` step 5 with the decided routing
+10. **Attack the finished boundary** (P4) and record the result
+
+**Steps 1–5 are documentation. Steps 6–8 are the actual enforcement, and they are where
+the Codex failure gets fixed.** Do not stop after 5 and call it done.

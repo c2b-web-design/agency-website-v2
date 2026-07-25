@@ -35,7 +35,7 @@ If a task requires changing an approved foundation layer: stop, explain why, sta
 2. Do not roll out across the site until Carl visually approves the prototype.
 3. Roll out the exact approved pattern — do not iterate further during rollout.
 4. If an experiment fails, revise or remove only the experimental layer. Preserve approved layers.
-5. At meaningful implementation milestones, request a checkpoint review from Codex via the MCP bridge (`codex` server). Codex reports findings only — findings go to Carl, who decides. See `project-intelligence/ai-system/checkpoint-review-protocol.md`.
+5. At meaningful implementation milestones, pause for checkpoint review and ask Carl how to route it. **Codex is retired** — the MCP bridge is deregistered and the `codex` server no longer exists; do not attempt to call it. The replacement review layer is **undecided and under active discussion** (`project-intelligence/workflow-redesign/`). Until Carl settles it, the milestone gate still holds: stop, report, and let Carl route the review. The read-only architect instance performed this role once, on 24 July 2026, by Carl's direction — that was a trial, not a standing appointment. Whoever reviews, the rule is unchanged: the reviewer reports findings only; findings go to Carl, who decides. `project-intelligence/ai-system/checkpoint-review-protocol.md` still describes the review *mechanics*, but its Codex-specific routing is superseded by this clause.
 6. Save plans, run logs, checkpoint requests, screenshots, and drift-sensitive status updates to `project-intelligence/live-work/` per `project-intelligence/ai-system/live-work-protocol.md`; do not leave important process information only in the Claude Code chat panel.
 
 ## Self-improvement
