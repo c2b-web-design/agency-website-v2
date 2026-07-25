@@ -13,8 +13,13 @@ Title:      Short descriptive title
 Decision:   What was decided
 Rationale:  Why — one to three sentences
 Authority:  Who decided
-Status:     APPROVED | DEPRECATED | REJECTED
+Status:     APPROVED | PROVISIONAL | DEPRECATED | REJECTED
 ```
+
+**On `PROVISIONAL`** — added 25 July 2026, see **D-035**. Means *in place, deliberately
+untuned, awaiting the mastering pass*. It is **not** "undecided", "unapproved" or
+"drifted". Reviewers: absence of an approval entry for a provisional layer is **expected
+and correct**, not a governance gap. Read D-035 before flagging one.
 
 ---
 
@@ -703,7 +708,9 @@ background: single-stop radial + smoked base gradient (pre-chrome); color: rgba(
 - Strongest amber state occurs when all visible answer cards are selected.
 - The CTA must remain blue-platinum at its core — never a flat amber button.
 **Implementation:** Module-level `GRID_REFL` table (index-keyed) + `reflectionVars(options, selected)` helper in `components/enquiry/enquiry-opening.tsx`. The button wrapper calls `reflectionVars()` unconditionally; it returns `{}` when nothing is selected and recomputes each render, so reflection direction updates live and no stale variables persist between questions. Q5 behaviour is byte-identical to the D-031 baseline (same vectors in index order, same champagne math, same variables). CSS unchanged.
-**⚠ CORRECTION (24 July 2026) — the byte-identical claim above is NO LONGER TRUE of the current code.** A later, separate "Q5 PROTOTYPE reflection (Stage 2 — spatial light-FILTERING model)" layer is live in `components/enquiry/enquiry-opening.tsx` (`Q5_ZONE_INFLUENCE`, `q5ZoneColour()`, `q5ReflectionVars()`, `--q5zone-*` variables, routed by `qNum === 5` onto `.enquiry-nextstep-btn--q5proto`). Q5 therefore now uses a **different model, different variables and a different class** from the D-031 baseline. Introduced by commit `b08815b` ("Install advanced visual toolkit") — verified by git: zero occurrences in the working diff, 29 in HEAD. **This layer has no approval entry of its own** and is recorded here per the no-retroactive-rewriting rule: the original claim is preserved above, not deleted. Raised by the architect review, 24 July 2026 (`live-work/architect-review-findings.md`, F-1). **A decision entry for the q5proto layer remains outstanding.**
+**⚠ CORRECTION (24 July 2026) — the byte-identical claim above is NO LONGER TRUE of the current code.** A later, separate "Q5 PROTOTYPE reflection (Stage 2 — spatial light-FILTERING model)" layer is live in `components/enquiry/enquiry-opening.tsx` (`Q5_ZONE_INFLUENCE`, `q5ZoneColour()`, `q5ReflectionVars()`, `--q5zone-*` variables, routed by `qNum === 5` onto `.enquiry-nextstep-btn--q5proto`). Q5 therefore now uses a **different model, different variables and a different class** from the D-031 baseline. Introduced by commit `b08815b` ("Install advanced visual toolkit") — verified by git: zero occurrences in the working diff, 29 in HEAD. **This layer has no approval entry of its own** and is recorded here per the no-retroactive-rewriting rule: the original claim is preserved above, not deleted. Raised by the architect review, 24 July 2026 (`live-work/architect-review-findings.md`, F-1). ~~**A decision entry for the q5proto layer remains outstanding.**~~
+
+**⇒ RESOLVED 25 July 2026 — see D-035.** The q5proto layer is **`PROVISIONAL`**: in place, deliberately untuned, awaiting the mastering pass Carl and the builder do together once the whole skeleton is complete. It is **not** drift and **not** a missing approval — the record simply had no way to say "deliberately untuned", which is why two separate reviewers (the 24 July architect as F-1, and CP's 25 July repo pass) both flagged the same non-problem. **The correction above remains accurate about the code**: Q5 genuinely no longer matches the D-031 baseline. What changes is the reading — that divergence is an unmastered take, not an unapproved change.
 **Implementation lesson (carry forward):** Do NOT use `rgba(calc(...))` colour-channel arithmetic for this lighting system — it proved fragile and allowed white hover behaviour to leak through (silent fallback to white). Use React-computed complete `rgba(...)` strings for the named crown/rim/environment CSS custom properties.
 **Authority:** Human Founder
 **Status:** APPROVED — rollout across Q1–Q5. Branch `feat/q5-reflected-amber-lighting`: `ac3a112` (Q5 baseline) → `7fbb005` (Q1–Q5 rollout). See R-017.
@@ -740,3 +747,30 @@ Hover remains the same stone — the two focal formations gain local contrast/cl
 **Rationale:** C2B needs a premium visual toolkit available for modern website techniques without tool-driven chaos. The amber selected-light work showed that material, light, reflection, refraction, camera, and depth behaviour should be considered Three.js/R3F territory rather than CSS-only styling once the requirement moves beyond a flat surface or border animation.
 **Authority:** Human Founder
 **Status:** APPROVED
+
+---
+
+## D-035 — Methodology: Production Then Mastering, and the PROVISIONAL Status
+
+**Date:** 2026-07-25
+**Decision:** The site is built **production-first, mastered second**, on the music-production model Carl works to: get the skeleton and every feature in place, then go through the whole site and fine-tune it **as a whole**. The final pass is done by **Carl and the builder together**, not by the builder alone.
+
+A fourth status, **`PROVISIONAL`**, is added to the schema for work that is **in place, deliberately untuned, and awaiting that pass.**
+
+**Rationale:** You cannot master a track while still tracking. Tuning one element in isolation means balancing it against a mix that does not exist yet — Q5's lighting cannot be judged finished while its neighbours are unbuilt. Provisional values are therefore **correct at this stage**, not unfinished business.
+
+**The governance problem this fixes.** The record previously had no way to say "deliberately untuned", so provisional work read as a **missing approval**. This produced two false positives from two different reviewers in eight days: the 24 July architect review raised the undocumented q5proto Q5 lighting layer as finding **F-1**, and the 25 July CP repo pass raised the same layer again. Both were reading the record correctly; **the record was wrong**. A reviewer that cannot distinguish *undecided* from *deliberately deferred* generates noise on every pass, and noise is what makes a review layer easy to ignore.
+
+**Instruction to reviewers (architect, CP, or any future layer):** the **absence** of an approval entry for a `PROVISIONAL` layer is **expected and correct**. Do not raise it as a governance gap. Raise it only if the work has **left** its provisional scope — grown beyond what was placed, or contradicted an `APPROVED` decision.
+
+**Currently PROVISIONAL** (in place, untuned, awaiting the pass — not exhaustive; the whole visual skeleton is in this state unless a `D-` entry says otherwise):
+- The **q5proto** Q5 spatial light-filtering layer (`Q5_ZONE_INFLUENCE`, `q5ZoneColour()`, `q5ReflectionVars()`, `--q5zone-*`, `.enquiry-nextstep-btn--q5proto`). This is what F-1 and the CP pass both flagged. **It is not drift.** See the correction inside D-032, which remains accurate about the *code*: Q5 no longer matches the D-031 baseline.
+- **Contact-field geometry and material constants** — crown height, plateau, seam sink, aperture margin, insets, depth stack, `#c08f42`, roughness 0.34, metalness. Already recorded in `live-work/` as "starting values, not a calibration."
+- Any visual value the record describes as provisional, diagnostic, untuned, or a starting point.
+
+**What mastering will involve:** balance, tempo, brightness, contrast, emphasis, breathing room and emotional flow across the whole site — the same list the ethos files already give. **Files will be written to during the pass**, so the record must be clean going in. Values settled in the pass graduate from `PROVISIONAL` to `APPROVED` with an entry.
+
+**Downstream constraint — this is why "clean" matters.** When the C2B site is finished, **all C2B-specific content is stripped out and the repo is cloned as the working template for client projects.** Anything left in a half-decided state becomes a defect inherited by every future client build. The mastering pass is therefore not only a quality gate for this site; it is what makes the repo fit to clone.
+
+**Authority:** Human Founder
+**Status:** APPROVED *(the methodology is approved; the work it governs is `PROVISIONAL`)*
