@@ -1,7 +1,13 @@
 # Keep only durable instructions/templates in Git.
+# Generated plans, logs, screenshots, references and checkpoint files are scratch.
 *
 !.gitignore
 !README.md
 !templates/
 !templates/**
+# The references folder itself is durable (its README explains the workflow);
+# the images dropped into it are not.
+!references/
+references/*
+!references/README.md
 
