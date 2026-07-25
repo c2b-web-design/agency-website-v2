@@ -10,7 +10,7 @@ failures below. Decisions that survive that test are logged (see "Decision log")
 
 | Item | State |
 |---|---|
-| 1. Ecosystem landscape | **Not started** — now the *only* blocker on item 8 |
+| 1. Ecosystem landscape | ✅ **Resolved 25 July** — map drawn; no fifth governance shape exists (clean "no gaps"); git gap closed via DL-7 |
 | 2. Agent SDK fundamentals | ✅ **Resolved 25 July** — SDK out (headless), agent teams out (permission inheritance); two instances confirmed. See DL-6 |
 | 2.5. Early spike | ✅ Run 24 July — all sub-questions closed |
 | 3. Meaning of "separation" | ✅ Answered empirically — independence confirmed |
@@ -18,7 +18,7 @@ failures below. Decisions that survive that test are logged (see "Decision log")
 | 5. Review independence | ✅ Settled — boundary holds *and* review is independent |
 | 6. Model pinning | ✅ Largely settled — pin *and* verify; one ⚠ open |
 | 7. Cost accounting | ✅ Ceiling confirmed — post-hoc alerting only; build work remains |
-| 8. Converged decision | **Blocked on items 1 and 4** (item 2 cleared 25 July) |
+| 8. Converged decision | **UNBLOCKED** — items 1 and 2 both cleared 25 July. Item 4 is the remaining work |
 
 **Two changes of circumstance since this document was first written, both after
 24 July, neither of which the original text anticipates:**
@@ -57,6 +57,58 @@ guardrails — model selection and token/cost budget — must be **mechanisms Ca
 and can verify**, not instructions delegated to any vendor's good faith. Staying in
 the Anthropic ecosystem is a convenience decision; it is **not** the source of trust.
 The source of trust is enforcement Carl controls.
+
+---
+
+## THE TWO GOVERNING PRINCIPLES (established 25 July 2026 — read these first)
+
+Both were **earned empirically in a single session**, from mechanisms that share no code.
+They now govern every enforcement claim in this redesign, and item 4 inherits them as a
+test any replacement review layer must pass.
+
+### P-A · Verify what ran, never what was requested
+
+The audit surface — `message.model` per turn, the actual exposed tool list, an *attacked*
+boundary — is ground truth. **The config that was supposed to produce it is only an
+intention.** Every enforcement claim in this document must name its after-the-fact
+verification surface, or it is not enforcement.
+
+**Four independent instances of this failure class are now on record, across four
+unrelated subsystems:**
+
+| # | Mechanism | Requested | Actually ran |
+|---|---|---|---|
+| 1 | **Model pin** (25 Jul) | `opus[1m]` in `settings.json` | `claude-opus-4-8` — 35 turns, silent fallback caught in the architect's own transcript |
+| 2 | **MCP surface** (verified 25 Jul) | `github-mcp-server --read-only` | Write tools (`create_branch`, `merge_pull_request`) still present **and functional** — issue #2156 |
+| 3 | **OS sandbox** (24 Jul spike) | `sandbox.filesystem.denyWrite` | Neither `bwrap` nor `sandbox-exec` exists on Windows — control absent entirely |
+| 4 | **Tool permissions** (24 Jul, DL-1) | `deny: [Edit, Write, NotebookEdit]` | Every mutating op succeeded via shell — the deny was cosmetic |
+
+**A pattern recurring across four unrelated mechanisms is not a property of those
+mechanisms. It is a property of the platform.** Treat every configured control as
+unverified until its execution is inspected.
+
+### P-B · Remove the capability; do not ask a capable surface to decline
+
+**A read-only flag on a write-capable surface is fragile. A surface with no write tools
+is robust.** Prefer removing capability entirely over requesting that a capable surface
+behave.
+
+This explains, in one rule, several findings that previously looked separate:
+- Bare-name `Bash` deny **held** (the tool is gone from context) where pattern-based Bash
+  allow-listing is **documented by Anthropic as fragile**.
+- A no-write-tools MCP surface would beat a `--read-only` flag on a write-capable one
+  (instance 2 above).
+- It is the structural reason **§5 builder-supplied evidence is sound**: it gives the
+  architect *no write-capable git surface to misfire*, rather than a git surface asked
+  nicely not to write.
+
+**⇒ For item 4:** whatever performs checkpoint review, its read-only boundary must be
+**structural absence of capability**, verified by attack, with a named audit surface —
+never a mode, flag, or instruction trusted to hold.
+
+*Both principles proposed by CP, 25 July 2026, after the builder verified instances 1
+and 2. Recorded as first-class governing principles rather than caveats attached to
+individual items.*
 
 **Verified ground truth (23 July 2026, checked against the real system — do not
 re-litigate from memory):**
@@ -197,12 +249,48 @@ not observing the happy path.
 
 ## Research items
 
-### 1. The Anthropic-ecosystem landscape
+### 1. The Anthropic-ecosystem landscape — ✅ RESOLVED 25 July 2026
 **Why:** Before choosing a harness, understand what exists — Claude Code (CLI +
 VS Code extension, runs subagents), the Claude Agent SDK (programmatic multi-agent
 orchestration), and the Claude API underneath. Each is a different level of control.
 **Decide:** A plain-language map of the options and which layer each operates at.
 No commitment yet — just the terrain.
+
+**Scope taken: decision-support map, not a reference map.** Reasoning recorded because it
+generalises: a reference map that "outlives the decision" documents ruled-out territory
+*and* silently misses live territory. Agent teams shipped 5 Feb 2026 and neither the
+builder nor CP knew of it in July — that is the shelf life of a reference map here.
+
+**THE MAP.**
+
+- **Claude Code CLI** — the interactive engine a human drives in a terminal.
+- **VS Code extension** — a front-end onto that same engine. ⚠ The extension alone
+  provides **no `claude` binary**, so `CLAUDE_CONFIG_DIR` isolation requires the CLI
+  installed (v2.1.219 here).
+- **Agent SDK** — the same engine as a Python/TypeScript library, driven by **code, not a
+  human**.
+- **API** — raw model access, no tool loop.
+
+**The two-instance choice sits entirely in the CLI/extension layer.** CP's sharpening,
+accepted: it is not "two instances *instead of* the SDK" but "two instances *in the layer
+below* the SDK" — because the SDK does not add a coordinating layer **above** interactive
+sessions, it **replaces the human driver**. Nothing orchestrates two interactive instances
+from above except agent teams, already ruled out for governance (DL-6).
+
+**Is there a fifth governance shape? No — clean "no gaps", recorded as a real finding.**
+Everything else surfaced is builder-side parallelism or an enforcement lever, not a
+separation shape:
+
+| Surfaced | What it actually is | Governance shape? |
+|---|---|---|
+| Background agents / `run_in_background` | Within-session concurrency | No |
+| Worktrees / `Agent(isolation:worktree)` | Isolated working copies, builder-side | No |
+| `--agents` JSON flag | Still the subagent primitive — inherits DL-6's independence weakness. Note `disableSideloadFlags` can reject it | No |
+| **Managed settings** | A tier **above** user/project settings that cannot be overridden, **not even by `--allowedTools`**. Precedence: managed → CLI args → local project → shared project → user | **Enforcement lever, not a shape.** ⚠ Unverified whether it applies to a personal non-org setup — same open question as `availableModels` in DL-3 |
+| Plan mode | A permission *mode* where the session is "structurally incapable of making changes" | ⚠ Lighter route to read-only, but **unverified against the DL-1 Bash bypass**. Do not adopt untested — this is exactly the docs-say-X shape P-A warns about |
+
+**⇒ Separation options remain exactly three:** two instances (**chosen**), SDK subagent
+pair (rejected — independence), agent teams (rejected — permission inheritance).
 
 ### 2. Claude Agent SDK fundamentals — ✅ RESOLVED 25 July 2026
 **Why:** The SDK is the most likely home for a programmatic architect/builder loop
@@ -456,6 +544,19 @@ rejected alternatives and why.
 `decisions.md`; this log records what the research established and what it ruled out.
 Item 8 remains the point where research becomes a plan.
 
+**Index** (entries appear below in the order they were written, not numerical order —
+numbers are stable references and are deliberately not renumbered):
+
+| Entry | Subject | Date |
+|---|---|---|
+| **DL-1** | Read-only enforcement — deny `Bash` too | 24 Jul |
+| **DL-2** | Review independence — proven by live architect run | 24 Jul |
+| **DL-3** | Model pinning — hard for subagents, silent fallback | 24 Jul |
+| **DL-4** | Cost control — post-hoc accounting only, no gate exists | 24 Jul |
+| **DL-7** | Architect's git gap — builder-supplied evidence | 25 Jul |
+| **DL-6** | Harness primitive — two instances *(carries a correction)* | 25 Jul |
+| **DL-5** | Codex retirement | 24–25 Jul |
+
 ### DL-1 · Read-only enforcement mechanism (items 2.5, 5) — 24 July 2026
 **Chosen:** deny `Edit`, `Write`, `NotebookEdit` **and `Bash`** together, in a separate
 config dir launched via `CLAUDE_CONFIG_DIR`. Verified by attacking it: Write tool,
@@ -495,7 +596,40 @@ documented, supported source), optionally via OpenTelemetry export.
 around one would repeat the "reason instead of verify" error this document names.
 **Remaining work is Carl's to build:** nothing does the threshold alerting for you.
 
+### DL-7 · The architect's git gap — builder-supplied evidence (items 1, 5) — 25 July 2026
+**Chosen:** **§5 builder-supplied evidence.** Before each checkpoint the builder writes
+raw git output (`diff --stat`, full diff, `log --oneline`, lint/typecheck verbatim, test
+results, screenshots) into `live-work/`. **Evidence, not argument** — the builder's
+reasoning stays separate in `claude-chat-window.md` so the architect weighs one against
+the other. `Bash` stays fully denied; **zero new trust surface.**
+**Why it was needed:** F-1 on 24 July was handed back **unresolved** because the architect
+could not run `git` to establish whether a code layer was drift or prior committed work.
+Real cost, observed in production.
+**Rejected — read-only-git Bash allow-list:** Anthropic's own docs state *"Bash permission
+patterns that try to constrain command arguments are **fragile**"*, and their example is
+defeated by flags-before-URL, protocol change, redirects, shell variables, and extra
+spaces. **Rejected on documentation, no spike spent** — the vendor names the weakness.
+(Confirmed separately: read-only `git` *is* in the built-in no-prompt set, but reaching it
+requires the fragile allow-list shape, and `git` prompts anyway on unquoted globs and on
+`cd`+`git` into a different directory, since git can execute that directory's hooks.)
+**Rejected — `@readonly-mcp/core` MCP server:** CP surfaced it and its design rationale
+independently restates DL-1 (allowlists not denylists, `execFile` with no shell, no `cwd`,
+no write tools in the git surface). Genuinely the right *shape* per P-B. **But builder
+verification found it disqualifying on provenance:** **not on npm at all** (404,
+unpublished), **`license: NONE`** — all-rights-reserved by default, so there is no grant
+to use it — **0 stars / 0 forks / 0 watchers**, no releases, created 2 April 2026, and
+**one** contributor (`gtbuchanan`, 32 commits) where CP had read three.
+**The license fact is dispositive before security enters**, so no audit was run: the spike
+would have decided whether to trust unlicensed code from an anonymous single author with
+privileged access to the architect's entire view of git — and the answer is no regardless
+of how the audit reads. Adopting it would replace a trust problem with a larger one, in a
+project whose two founding scars are exactly that.
+**Cost accepted:** git-dependent findings close on a one-turn handoff rather than
+architect self-service.
+
 ### DL-6 · Harness primitive — two instances, not the SDK (item 2) — 25 July 2026
+**⚠ CORRECTED 25 July 2026 — see the correction block at the end of this entry. The
+original "hard per-role pinning" claim below is WRONG and is preserved, not deleted.**
 **Chosen:** **two Claude Code instances** (architect + builder), with **subagent
 frontmatter model pinning** for hard per-role model enforcement where it applies.
 **Rejected — Agent SDK orchestration:** SDK orchestration means code drives the agent;
@@ -521,6 +655,34 @@ builder's framing of the SDK.** The builder's prior two-instance lean survived �
 after scrutiny it had not previously had. First evidence that a same-vendor reviewer does
 not merely agree with the builder.
 
+**⚠ CORRECTION — "hard per-role pinning" was wrong (25 July 2026, proven on this machine).**
+
+CP was asked to pressure-test the claim above rather than accept it, and found it
+overstated. **The builder then proved CP right from the architect's own transcript:**
+
+```
+~/.claude-architect/settings.json  requests:  "model": "opus[1m]"
+7119e808-….jsonl  message.model records:      claude-opus-4-8   x35 turns
+```
+
+**The requested model is not the model that ran.** Silent fallback, caught in the act.
+
+**Why the original claim was wrong:** subagent `model` frontmatter *is* hard-enforced —
+but the architect and builder are **two top-level sessions, not subagents**. They run
+their *session* model from their own config. DL-3's hard-pin finding therefore **does not
+transfer** to the two-instance split, and DL-3's silent-fallback caveat applies in full.
+
+**Corrected statement, which is what the record now holds:** per-role model choice on two
+instances is **config-set and verify-audited**, not hard-pinned. The 179-turn
+`message.model` audit trail from the 24 July spike **does transfer** — the *verify* half of
+pin-and-verify is intact and is precisely what exposed this.
+
+**The tension worth logging, and it is load-bearing for item 4:** *the harder pin and the
+independence we need pull in opposite directions.* Two instances buy independence and
+settle for config-plus-verify pinning. Moving the architect to a subagent would buy the
+harder pin and **cost the independence** (DL-2, item 5). **Independence wins** — it is the
+property the review layer exists to protect. This is instance 1 of principle **P-A**.
+
 ### DL-5 · Codex retirement (item 4) — 24–25 July 2026
 **Actioned:** Codex retired as the governance layer. MCP bridge deregistered, wrapper
 deleted, `mcpServers` empty. App removal deliberately paused until ~14 August 2026
@@ -537,10 +699,23 @@ authority layer. Rewriting it is item 4's job and Carl's decision.
 - **Item 4 is now the live gap** — Codex is gone, so this is an open hole in the
   governance record rather than a design comparison. See the item 4 block above for the
   four things it must produce.
-- **How do git-dependent findings get closed** when the architect has no `Bash`?
-  (Builder-supplied evidence? A pre-generated diff dropped into `live-work/`? Carl
-  arbitrating?) Surfaced by F-1 being handed back unresolved.
+- ~~**How do git-dependent findings get closed** when the architect has no `Bash`?~~
+  **CLOSED 25 July — DL-7.** Builder pre-supplies raw git evidence into `live-work/`.
+  Allow-list route rejected on Anthropic's own "fragile" warning; MCP server rejected on
+  `license: NONE` + unpublished + single anonymous author.
 - **Does `availableModels` apply to a personal (non-managed) setup?** Carried from DL-3.
+  **Now joined by the same question about the whole managed-settings tier** (item 1) —
+  managed settings sit above user/project config and cannot be overridden even by
+  `--allowedTools`, which would make it the strongest enforcement lever available. Both
+  hinge on one unknown: does the managed tier work outside an org deployment?
+- **Does plan mode close the DL-1 Bash bypass?** Surfaced by item 1. Documented as
+  "structurally incapable of making changes", which *sounds* like a lighter route to
+  read-only than the full deny-list. **Untested against the proven bypass** — and per
+  **P-A**, a documented control is an intention until its execution is inspected.
+- **Is the two-instance session model enforced at all, or only requested?** Partly
+  answered and the answer is unwelcome: `opus[1m]` requested, `claude-opus-4-8` ran (DL-6
+  correction). Open question is whether *any* session-model request is honoured reliably,
+  or whether verify-after is the only real control.
 - **Does independence hold across repeated reviews**, or was the 24 July result a
   favourable single trial? Only accumulated runs can answer this.
 - ~~**Items 1 and 2 remain unstarted**~~ — **item 2 resolved 25 July (DL-6);** the
