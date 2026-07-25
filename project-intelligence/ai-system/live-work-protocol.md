@@ -337,8 +337,58 @@ This is a real capability the old layer provided and the current one does not ye
 It is stated as a known gap, matching `prompt-protocol.md` Stage 3, so the two files that
 describe this one missing function say the same thing.
 
+### ✅ Partial mechanism built — 25 July 2026: the chunk scope guard
+
+**One third of the list below is now genuinely enforced.** A `PreToolUse` hook
+(`.claude/hooks/chunk-scope-guard.js`, registered in `.claude/settings.json`) runs before
+every `Edit`, `Write` and `NotebookEdit`. It reads `live-work/chunk-scope.json` and
+**denies** the tool call when the Builder tries to edit:
+
+- a file **outside the chunk's declared scope** (`files`), or
+- an **approved-foundation file** (`protected`) the chunk did not unlock.
+
+This is a mechanism, not an intention: it runs in the harness, before the call, and the
+Builder cannot decline it. That is the P-A distinction the retired Sentinel failed.
+
+**Opt-in by design.** No `chunk-scope.json` present ⇒ no enforcement. Scope is declared
+when a chunk starts. A guard that blocked by default would make every unscoped session
+unusable, and an unusable control gets switched off — worse than one that is honestly
+narrow. `active: false` disables it; `unlocked` lets **Carl** authorise a protected path
+for one chunk. Both are Carl's levers, not the Builder's.
+
+**Verified by attack, not by reading config (P-A), 25 July 2026 — 10/10:**
+
+| Case | Result |
+|---|---|
+| In-scope file | allowed |
+| `live-work/` prefix rule | allowed |
+| Out-of-scope file | **DENIED** |
+| Protected `app/globals.css` | **DENIED** |
+| Protected `enquiry-opening.tsx` | **DENIED** |
+| Non-file tool (Bash payload) | allowed |
+| Protected path after Carl unlocks it | allowed |
+| `active: false` | allowed |
+| Malformed scope file | allowed — **fails open** |
+| No scope file | allowed — **fails open** |
+
+**⚠ Two limits, stated so the gap is not mistaken for covered.**
+
+1. **The Bash bypass applies here too (DL-1).** The hook matches `Edit|Write|NotebookEdit`.
+   The Builder has `Bash`, so a shell redirect or `sed -i` goes around it entirely. This
+   guard raises the cost of *accidental* scope drift; it is **not** a security boundary
+   against a determined process. The read-only architect closes that gap by denying `Bash`
+   outright — the Builder cannot, because it needs the shell to work.
+2. **It enforces only the mechanical conditions.** Judgement-based drift — a coupled value
+   built as an independent overlay, a derived value that lost its source condition, visual
+   drift from the intended result — **cannot** be path-checked. The 24 July reduced-motion
+   defect was exactly that class and no scope guard would ever have caught it. Those stay
+   with checkpoint review and with Carl.
+
+⇒ `STOP CLAUDE` remains **Carl-triggered**. The guard narrows the gap; it does not close
+it.
+
 **The drift conditions are retained below as a specification**, so that whoever — or
-whatever — eventually owns the mechanism inherits it. These describe what drift *is*, not
+whatever — eventually owns the remaining two thirds inherits it. These describe what drift *is*, not
 who watches for it, and are therefore harness-agnostic. Today they are conditions Carl
 watches for, not a running check:
 

@@ -1,0 +1,21 @@
+{
+  "_comment": "Copy to live-work/chunk-scope.json when a chunk starts. Enforced by .claude/hooks/chunk-scope-guard.js before every Edit/Write. Absent file = no enforcement (opt-in by design). See ai-system/live-work-protocol.md section 8.",
+
+  "chunk": "short name of the current chunk",
+  "active": true,
+
+  "_files": "Paths the chunk may edit. Empty or omitted = no path restriction, protected list still applies. Supports exact paths, 'dir/' prefixes, and * wildcards.",
+  "files": [
+    "components/enquiry/contact-field-mesh.tsx",
+    "project-intelligence/live-work/"
+  ],
+
+  "_protected": "Approved-foundation paths the Builder must not touch. Denied unless the same path also appears in 'unlocked'.",
+  "protected": [
+    "app/globals.css",
+    "components/enquiry/enquiry-opening.tsx"
+  ],
+
+  "_unlocked": "Protected paths Carl has explicitly authorised for THIS chunk. Overrides 'protected'. Carl's call, not the Builder's.",
+  "unlocked": []
+}
