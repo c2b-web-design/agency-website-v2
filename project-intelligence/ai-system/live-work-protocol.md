@@ -95,6 +95,44 @@ than confirmatory.
 
 ## 5a. Git Evidence At Checkpoint (DL-7)
 
+> **⏸ OPEN — raise this with Carl when the VS1 architect instance is set up.**
+> *Carl's instruction, 25 July 2026: "we will revisit… you will bring it up as a reminder
+> to me. we will discuss then." Deferred, not decided. The Builder is to raise it at
+> setup time rather than wait to be asked.*
+>
+> **What is settled:** the architect reads the working tree **directly from disk** — every
+> file, current, including uncommitted work. It is not "partially sited"; it sees the
+> project. Confirmed 24 July: it read the code well enough to find a defect the Builder
+> had missed over two days.
+>
+> **What is open:** it cannot ask git questions about *time*, because `Bash` is denied and
+> that is what removes `git`. The gap is **history**, not state.
+>
+> **The question that actually bit (F-1, 24 July):** it found the q5proto layer,
+> understood it, and could not tell whether it was **new drift or prior committed work**.
+> Attribution. It handed the finding back unresolved; the Builder closed it with one
+> command.
+>
+> **The structural one, and the reason this deserves a real discussion rather than a
+> shrug:** under DL-7 the architect reviews the Builder's work against *the Builder's own
+> account of that work*. That narrows the independence the review exists to provide. It is
+> why §5a insists on **evidence, not argument** — but the dependency remains.
+>
+> **Routes to weigh at that point** (DL-7 chose the first, partly because the third turned
+> out unlicensed — it was one answer, not the only one):
+> 1. Builder-supplied evidence — current position. Zero new trust surface; keeps the
+>    dependency above.
+> 2. Re-enable `Bash` for the architect — self-serving history, but **DL-1 proved this
+>    makes the read-only boundary cosmetic**. Would need re-attacking, not re-reading.
+> 3. A read-only git MCP server — right shape per P-B (no write tools in the surface).
+>    `@readonly-mcp/core` was rejected on `license: NONE` + unpublished + single anonymous
+>    author. **Re-check whether a licensed, published option exists by then.**
+>
+> **Worth separating in that discussion:** read-only *writes* is what keeps the review
+> independent — an architect that can edit becomes a second builder. Read-only *history*
+> was never the goal; it came along because denying `Bash` was the only way to enforce the
+> first. Those two got bundled, and they need not stay bundled.
+
 The Architect is structurally read-only and runs no `git` itself, so git-dependent findings
 can only be closed from evidence the Builder supplies.
 
