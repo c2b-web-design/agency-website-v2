@@ -41,11 +41,10 @@ match it.
 
 The old system worked like this:
 
-```
-Carl brainstorms + plans in Codex  ──►  Codex writes a prompt  ──►  Claude Code builds
-                    ▲                                                      │
-                    └──────────  Codex reads live-work/ files  ◄───────────┘
-```
+1. Carl brainstormed and planned in Codex.
+2. Codex wrote a prompt for Claude Code.
+3. Claude Code built, and wrote its results into `live-work/`.
+4. Codex read those files back, closing the loop.
 
 **The design was sound. Execution failed** — Codex ignored the token-efficiency and
 model-selection rules it was given, and the ChatGPT allowance burned. The guardrail
@@ -115,43 +114,51 @@ it happened to use is not load-bearing.
 **Decided. Not open for the discussion to relitigate.** The aim is a business set up like
 a real company, with separated roles.
 
-```
-                    CARL — Founder, final authority
-                              │
-                    PROJECT MANAGER / ARCHITECT      (VS Code 1)
-                    brainstorms · designs · chunks · reviews plans
-                              │
-                 ┌────────────┴────────────┐
-                 │                         │
-          CLAUDE DESIGN              BUILDER — me     (VS Code 2)
-          (arrives after the         implements code
-           website ships)
-```
+**The target structure, in plain terms:**
 
-**Both report to the PM. The PM reports to Carl.**
+- **Carl** — founder, final authority. Decides, approves, routes everything.
+- **Project Manager / Architect** — VS Code 1. Brainstorms, designs, breaks work into
+  chunks, reviews the builder's plans. Reads git for context; **read-only over code**.
+- **Builder** — VS Code 2. Implements all website code. The only agent that touches the
+  codebase.
 
-**Claude Design — upstream in workflow, peer in authority.** Its job is client
-acquisition: extract a prospect's style, brand colours, typography and feel; produce a
-report to the PM. Carl and the PM discuss it; the redesign brief comes down to the
-builder. Carl will *probably* supply the URL. **Both statements hold at once** — Design's
-output feeds the builder's input *via the PM*, and neither outranks the other. The
-process detail is a future Carl↔PM conversation, explicitly not the builder's to design.
+The Builder reports to the PM/Architect. The PM/Architect reports to Carl.
+
+**Claude Design is deliberately out of scope here.** It arrives after the website ships
+and its role is a future Carl↔PM conversation — not the builder's to design, and not
+something this document should pre-shape. Noted only so its later arrival is not a
+surprise.
+
+### ⚠ Where Claude Project (CP) sits — corrected 25 July 2026
+
+**An earlier draft of this document implied CP occupies the PM seat. It does not, and
+Carl corrected this directly:** *"CP is not the PM, you are"* — meaning the builder is
+covering the Architect role **temporarily**, wearing two hats until the new structure is
+stood up.
+
+**CP is a research, analysis and discussion partner.** It researches questions, reads the
+repo, analyses options, argues with proposals (including this one), and produces reports
+Carl carries back. It does **not** direct the builder, does not outrank it, and does not
+approve anything.
+
+**This matters for reading the rest of the document.** Where "the architect" or "the PM"
+appears below, it means **the role** — currently held temporarily by the builder, and
+destined for VS Code 1 once stood up. It does **not** mean CP.
+
+**Recorded because the distinction is easy to lose:** CP is a *layer supporting the
+work*, not a *seat in the hierarchy*. Conflating the two would put a discussion partner
+in an authority position nobody granted it — the same class of error as the old
+`ai-roles.md` giving ChatGPT veto power over implementation.
 
 ### The working loop
 
-```
-Carl + Architect brainstorm  ──►  design settles
-                                       │
-              Architect breaks it into bite-sized chunks
-              (sometimes nibble-sized)
-                                       │
-              Builder put into PLAN MODE  ──►  writes the plan
-                                       │
-              Architect reads the plan  ──►  deep discussion;
-              generally positive, but always added to or adjusted
-                                       │
-              CARL approves  ──►  Builder executes that chunk only
-```
+1. **Carl and the Architect brainstorm** until the design settles.
+2. **The Architect breaks it into bite-sized chunks** — sometimes nibble-sized.
+3. **The Builder is put into Plan Mode** and writes the plan for that chunk.
+4. **The Architect reviews the plan** — deep discussion, generally positive, but reliably
+   added to or adjusted.
+5. **Carl approves.**
+6. **The Builder executes that chunk only.**
 
 **Why the chunking exists — the load-bearing reason.** To keep the builder focused. The
 builder does not need the gradient colouring inside the four boxes while working on the
@@ -208,35 +215,20 @@ inventing findings. Track whether that restraint holds across repeated reviews.
 
 ## 3. The proposed shape
 
-```
-                     ┌──────────────────────────┐
-                     │  CARL — final authority  │
-                     └────────────┬─────────────┘
-                                  │ approves; conduit while the seat is empty
-                     ┌────────────▼──────────────────┐
-                     │  PROJECT MANAGER / ARCHITECT  │   VS Code 1
-                     │  CLAUDE_CONFIG_DIR =          │
-                     │  ~/.claude-architect          │
-                     │                               │
-                     │  brainstorms · designs ·      │
-                     │  chunks · reviews plans       │
-                     │  git READ · no Edit/Write     │
-                     │  own CLAUDE.md + business ctx │
-                     └────────────┬──────────────────┘
-                                  │ briefs down · findings up
-                     ┌────────────▼──────────────────┐
-                     │  BUILDER                      │   VS Code 2
-                     │  normal config, full tools    │
-                     │  implements · tests · docs    │
-                     └────────────┬──────────────────┘
-                                  │ writes
-                     ┌────────────▼──────────────────┐
-                     │  the repo + live-work/        │
-                     │  (architect reads from git)   │
-                     └───────────────────────────────┘
+**Carl** — final authority. Approves everything, and acts as conduit while the architect
+seat is empty.
 
-  CLAUDE DESIGN joins as the builder's peer under the PM once the site ships.
-```
+**Project Manager / Architect — VS Code 1.** Launched with
+`CLAUDE_CONFIG_DIR=~/.claude-architect`. Brainstorms, designs, breaks work into chunks,
+reviews the builder's plans. Reads git for context; **no Edit or Write**. Has its own
+`CLAUDE.md` reflecting the PM role, plus business-context files on its own filesystem.
+Briefs flow down to the builder; findings flow back up to Carl.
+
+**Builder — VS Code 2.** Normal config, full tool access. Implements, tests and documents.
+Writes to the repo and to `live-work/`; the architect reads that from git.
+
+*(Diagrams deliberately avoided — box-drawing characters render as garbled text in some
+readers, so the structure is written in plain prose throughout this document.)*
 
 **This is the old topology with Codex swapped out**, now with the hierarchy Carl has
 confirmed (§1a): the architect is the PM layer, not a side-car reviewer. Carl brainstorms
