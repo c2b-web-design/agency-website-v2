@@ -79,10 +79,13 @@ Every checkpoint request includes:
    output is the source of truth for visual work)
 6. **Reference image paths** — stable paths, where a target or inspiration reference
    exists; state which it is
-7. **Git evidence (DL-7)** — raw diff, log, and attribution for the changed work. Because
-   the Architect is structurally read-only and runs no `git` itself, git-dependent
-   findings can only be closed from evidence the Builder supplies. This is not optional:
-   on 24 July a finding was handed back unresolved for want of it.
+7. **Git evidence (DL-7)** — raw diff, log, and attribution for the changed work. The
+   Architect is structurally read-only and runs no `git` itself. **Still not optional:**
+   on 24 July a finding was handed back unresolved for want of it. The Architect can now
+   also ask Carl to run a read-only `!` command for history the evidence did not anticipate
+   (`live-work-protocol.md` §5a) — but that is a backstop for unforeseen questions, not a
+   reason to supply less. Evidence prepared in advance does not depend on the Architect
+   thinking to ask.
 8. **Builder reasoning** — in `claude-chat-window.md`, kept **separate** from the
    evidence above. The Architect weighs reasoning against evidence rather than trusting
    either alone. The separation is deliberate and load-bearing.

@@ -80,12 +80,20 @@ after. Routes all findings. Grants and reverses APPROVED status. Runs the master
   has left its provisional scope or contradicts an APPROVED decision.
 
 **Verification limit (structural), and how it is closed.** Read-only means the Architect
-runs no `git` itself. Per `workflow-redesign/` DL-7, the Builder pre-supplies raw git
-evidence (diffs, log, attribution) into `live-work/` before each checkpoint, while the
-Builder's own reasoning stays separate in `claude-chat-window.md`. The Architect weighs
-the evidence against the reasoning rather than taking either on trust — the separation is
-deliberate, and it is what let the 24 July review catch a false byte-identical claim. The
-rejected alternatives are recorded: a read-only git MCP server (rejected — `license:
+runs no `git` itself. Two routes supply history:
+
+1. **Pre-supplied evidence (DL-7).** The Builder writes raw git evidence (diffs, log,
+   attribution) into `live-work/` before each checkpoint, while the Builder's own reasoning
+   stays separate in `claude-chat-window.md`. The Architect weighs the evidence against the
+   reasoning rather than taking either on trust — the separation is deliberate, and it is
+   what let the 24 July review catch a false byte-identical claim.
+2. **A `!` command Carl runs** (adopted 26 July 2026). The Architect proposes a read-only
+   git command; Carl runs it in his own shell and the output lands in the Architect's
+   context. This covers history questions the pre-supplied evidence did not anticipate —
+   the class that left F-1 unresolved on 24 July. **`Bash` stays denied**: the Architect
+   cannot run it, only ask. Capability stays outside the Architect; only output crosses.
+
+The rejected alternatives are recorded: a read-only git MCP server (rejected — `license:
 NONE`, unpublished, single anonymous author) and a Bash git allow-list (rejected —
 Anthropic's own docs call argument-constraining Bash patterns fragile).
 

@@ -95,18 +95,47 @@ than confirmatory.
 
 ## 5a. Git Evidence At Checkpoint (DL-7)
 
-> **⏸ OPEN — raise this with Carl when the VS1 architect instance is set up.**
-> *Carl's instruction, 25 July 2026: "we will revisit… you will bring it up as a reminder
-> to me. we will discuss then." Deferred, not decided. The Builder is to raise it at
-> setup time rather than wait to be asked.*
+> **✅ RESOLVED — 26 July 2026, by a route none of the three options anticipated.**
+> *Raised with Carl at architect setup time as undertaken (his instruction, 25 July: "we
+> will revisit… you will bring it up as a reminder to me"). It did not need the discussion
+> the note below prepared for, because the architect itself supplied the answer.*
 >
-> **What is settled:** the architect reads the working tree **directly from disk** — every
-> file, current, including uncommitted work. It is not "partially sited"; it sees the
-> project. Confirmed 24 July: it read the code well enough to find a defect the Builder
-> had missed over two days.
+> **The mechanism: the `!` prefix.** In the Claude Code CLI, a message beginning `!` runs
+> as a shell command **in Carl's own shell**, and its output is rendered into the session
+> where the Architect can read it. `! git log --oneline -10` therefore gives the Architect
+> git history it cannot fetch for itself.
 >
-> **What is open:** it cannot ask git questions about *time*, because `Bash` is denied and
-> that is what removes `git`. The gap is **history**, not state.
+> **Why this does not breach the boundary.** `Bash` remains denied — verified 26 July, the
+> deny list is unchanged. The Architect cannot *decide* to run `git`; it can only ask Carl
+> to, and Carl types it. The capability stays outside the Architect; only the **output**
+> crosses. That is P-B satisfied rather than circumvented: no write-capable tool was added
+> to the surface.
+>
+> **⚠ It is Carl's shell, with Carl's permissions.** A suggested command is suggested code
+> — read it before pressing Enter. The Architect proposing `!` commands is a convenience,
+> not an authorisation; anything destructive would run unguarded. This is the one genuine
+> risk the mechanism introduces and it is mitigated by Carl reading, not by the harness.
+>
+> **What this changes.** Route 1 below (Builder-supplied evidence) stays the default for
+> checkpoints — it is written ahead of the review, and it is the artefact
+> `checkpoint-review-protocol.md` §4 requires. The `!` prefix supplements it: it closes
+> **attribution questions the evidence file did not anticipate**, which is exactly the
+> class F-1 fell into. The Architect no longer has to hand a history question back
+> unresolved.
+>
+> **What it does not change.** The structural dependency below is narrowed, not removed:
+> the Builder still writes the evidence file, and Carl still chooses which `!` commands to
+> run. Independence improves because the Architect can now ask a question the Builder did
+> not think to answer.
+>
+> **What was settled before, and still is:** the architect reads the working tree
+> **directly from disk** — every file, current, including uncommitted work. It is not
+> "partially sited"; it sees the project. Confirmed 24 July: it read the code well enough
+> to find a defect the Builder had missed over two days.
+>
+> **The original open question, preserved:** it could not ask git questions about *time*,
+> because `Bash` is denied and that is what removes `git`. The gap was **history**, not
+> state.
 >
 > **The question that actually bit (F-1, 24 July):** it found the q5proto layer,
 > understood it, and could not tell whether it was **new drift or prior committed work**.
@@ -118,23 +147,28 @@ than confirmatory.
 > account of that work*. That narrows the independence the review exists to provide. It is
 > why §5a insists on **evidence, not argument** — but the dependency remains.
 >
-> **Routes to weigh at that point** (DL-7 chose the first, partly because the third turned
-> out unlicensed — it was one answer, not the only one):
-> 1. Builder-supplied evidence — current position. Zero new trust surface; keeps the
->    dependency above.
-> 2. Re-enable `Bash` for the architect — self-serving history, but **DL-1 proved this
->    makes the read-only boundary cosmetic**. Would need re-attacking, not re-reading.
-> 3. A read-only git MCP server — right shape per P-B (no write tools in the surface).
->    `@readonly-mcp/core` was rejected on `license: NONE` + unpublished + single anonymous
->    author. **Re-check whether a licensed, published option exists by then.**
+> **The routes as they were weighed** (DL-7 chose the first; the resolution above is a
+> fourth nobody had listed, because it was not known):
+> 1. Builder-supplied evidence — **retained as the checkpoint default.** Zero new trust
+>    surface. Written ahead of the review.
+> 2. Re-enable `Bash` for the architect — **rejected, and stays rejected.** DL-1 proved
+>    this makes the read-only boundary cosmetic.
+> 3. A read-only git MCP server — right shape per P-B, but `@readonly-mcp/core` was
+>    rejected on `license: NONE` + unpublished + single anonymous author. **No longer
+>    needed**; kept on the record in case a broader git capability is ever wanted.
+> 4. **The `!` prefix — adopted, 26 July 2026.** Carl runs the command; the Architect reads
+>    the output. Supplements route 1 for questions the evidence file did not anticipate.
 >
-> **Worth separating in that discussion:** read-only *writes* is what keeps the review
+> **The separation that made this solvable:** read-only *writes* is what keeps the review
 > independent — an architect that can edit becomes a second builder. Read-only *history*
 > was never the goal; it came along because denying `Bash` was the only way to enforce the
-> first. Those two got bundled, and they need not stay bundled.
+> first. Those two got bundled, and the `!` prefix is what unbundles them — history without
+> write capability, which is what was wanted all along.
 
-The Architect is structurally read-only and runs no `git` itself, so git-dependent findings
-can only be closed from evidence the Builder supplies.
+The Architect is structurally read-only and runs no `git` itself. Git-dependent findings
+close either from evidence the Builder supplies (below) or — for questions that evidence did
+not anticipate — from a `!` command Carl runs on the Architect's request (see the resolution
+note above).
 
 Before each checkpoint review, the Builder saves raw git evidence — `diff`, `log`, and
 attribution for the changed work — into `live-work/` as a **distinct artefact**, separate
@@ -151,8 +185,11 @@ argument-constraining Bash patterns fragile). Builder-supplied evidence gives th
 git **facts** without a git **capability**, which is the same no-write-surface principle
 that governs the read-only boundary itself.
 
-**Cost, stated plainly:** git-dependent findings close on a one-turn handoff rather than by
-the Architect serving itself. On 24 July, F-1 was handed back unresolved for want of this.
+**Cost, stated plainly:** the evidence file is written ahead of the review, so it answers
+only the questions the Builder anticipated. On 24 July, F-1 was handed back unresolved for
+want of an attribution check nobody had thought to include. **That specific cost is now
+covered** by the `!` route above — but the evidence file remains the default, because it is
+prepared, raw, and does not depend on the Architect thinking to ask.
 
 At the end of each Builder run, the Builder writes:
 
@@ -432,6 +469,22 @@ for one chunk. Both are Carl's levers, not the Builder's.
 | `active: false` | allowed |
 | Malformed scope file | allowed — **fails open** |
 | No scope file | allowed — **fails open** |
+
+**⚠ The hook broke the lint baseline when it landed — corrected 26 July 2026.**
+`chunk-scope-guard.js` is a CommonJS script run directly by `node`, so its `require()`
+calls are correct — but ESLint was linting it under the project's Next/TypeScript rules,
+where `@typescript-eslint/no-require-imports` forbids them. Lint went from the recorded
+**1 error to 3** at commit time on 25 July and was not noticed, because lint was not re-run
+after the hook was added. **Fixed by adding `.claude/hooks/**` to `globalIgnores` in
+`eslint.config.mjs`**, not by rewriting the hook: harness scripts are not application code,
+and an attack-tested governance control should not be edited to satisfy a rule that does not
+govern it. Lint re-verified at **1 problem**, and the guard re-attacked afterwards
+(out-of-scope DENIED, protected DENIED, in-scope allowed) to confirm the exclusion changed
+nothing about execution — ESLint and Node are unrelated paths, but that was verified rather
+than assumed (P-A).
+
+*Process lesson: adding a file to the repo is a code change even when it is tooling. Run
+lint.*
 
 **⚠ Two limits, stated so the gap is not mistaken for covered.**
 

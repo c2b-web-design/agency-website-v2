@@ -553,7 +553,7 @@ numbers are stable references and are deliberately not renumbered):
 | **DL-2** | Review independence — proven by live architect run | 24 Jul |
 | **DL-3** | Model pinning — hard for subagents, silent fallback | 24 Jul |
 | **DL-4** | Cost control — post-hoc accounting only, no gate exists | 24 Jul |
-| **DL-7** | Architect's git gap — builder-supplied evidence | 25 Jul |
+| **DL-7** | Architect's git gap — builder-supplied evidence · **amended 26 Jul: `!` prefix adopted as a fourth route** | 25 Jul |
 | **DL-6** | Harness primitive — two instances *(carries a correction)* | 25 Jul |
 | **DL-5** | Codex retirement | 24–25 Jul |
 
@@ -626,6 +626,45 @@ of how the audit reads. Adopting it would replace a trust problem with a larger 
 project whose two founding scars are exactly that.
 **Cost accepted:** git-dependent findings close on a one-turn handoff rather than
 architect self-service.
+
+**⚠ AMENDED 26 July 2026 — the accepted cost above is now largely recovered, by a fourth
+route none of the three options anticipated. The original decision stands and is
+preserved; what follows is an addition, not a reversal.**
+
+**The mechanism: the CLI `!` prefix.** A message beginning `!` runs as a shell command in
+**Carl's own shell**, and its output renders into the session where the Architect reads it.
+`! git log --oneline -10` therefore supplies history the Architect cannot fetch itself.
+**Surfaced by the architect instance to Carl, unprompted, during its first live session** —
+it read its own config, found `Bash` denied, and volunteered the supported way round the
+limitation.
+
+**Why it satisfies P-B rather than circumventing it.** `Bash` remains denied — re-verified
+26 July, deny list unchanged. The Architect cannot *decide* to run `git`; it proposes and
+Carl executes. **The capability never enters the Architect's surface; only the output
+crosses.** That is materially different from the rejected Bash allow-list, which would have
+given the Architect a shell it could invoke at will, with the fragile
+argument-constraining shape the vendor itself warns about.
+
+**What it unbundles — and this is the conceptual point.** Read-only *writes* is the goal:
+an architect that can edit becomes a second builder. Read-only *history* was never wanted;
+it came along because denying `Bash` was the only lever that enforced the first. §5a already
+noted the two "need not stay bundled" without a route to separate them. This is that route.
+
+**What it does not fix.** The structural dependency is narrowed, not removed: the Builder
+still authors the evidence file, and Carl still chooses which commands to run. The gain is
+specific — **the Architect can now ask a history question the Builder did not think to
+answer**, which is exactly the shape of F-1.
+
+**⚠ Residual risk, honestly stated.** It is Carl's shell with Carl's permissions and no
+harness guard. A destructive command would run. Mitigation is Carl reading before pressing
+Enter — a **human** control, not a mechanism, and therefore weaker per P-A. `architect-role.md`
+§2 accordingly instructs the Architect to propose read-only commands only (`log`, `diff`,
+`show`, `blame`) and never one that writes, checks out, resets or installs.
+
+**Method note, worth keeping.** All three original routes were evaluated by research and
+reasoning; the answer arrived from **running the thing**. P-A generalises further than it
+was written: *verify what ran, never what was requested* — and a capability survey done
+without operating the tool is a survey of what was requested.
 
 ### DL-6 · Harness primitive — two instances, not the SDK (item 2) — 25 July 2026
 **⚠ CORRECTED 25 July 2026 — see the correction block at the end of this entry. The

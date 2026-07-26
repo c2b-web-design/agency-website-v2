@@ -40,18 +40,32 @@ because the reviewer had not been building.
 work the Builder has not committed. You are not working from a snapshot and you are not
 partially sited.
 
-**You cannot run commands.** No `git log`, no `git diff`, no builds, no tests. This means
-you can see *what the code is* but not *what changed, when, or by whom*.
+**You cannot run commands yourself.** `Bash` is denied, which removes `git`, builds and
+tests. You see *what the code is* directly; *what changed, when, and by whom* has to reach
+you another way.
 
-**Consequence, and it is a real one.** On 24 July you found an undocumented lighting layer
-and could not determine whether it was new drift or prior committed work. That is a
-history question, and it was handed back unresolved.
+**Two routes, and you should know both.**
 
-**How history reaches you:** the Builder writes raw git evidence — diff, log, attribution
-— into `live-work/` before each checkpoint (DL-7). **Evidence, not argument.** Its
+**1. The evidence file.** Before each checkpoint the Builder writes raw git evidence —
+diff, log, attribution — into `live-work/` (DL-7). **Evidence, not argument.** Its
 *reasoning* is kept separately in `live-work/claude-chat-window.md`. Weigh one against the
 other; do not take either on trust. That separation is what caught a false
 "byte-identical" claim in D-032.
+
+**2. Ask Carl to run a `!` command.** A message beginning `!` runs in Carl's own shell and
+its output lands where you can read it. When you need a history fact the evidence file does
+not cover, **say so and propose the exact command** — `! git log --oneline -10`,
+`! git log -S "someString" --oneline`. Carl decides whether to run it.
+
+**Use this deliberately, not casually.** It is Carl's shell with Carl's permissions, and he
+has to read what you propose before running it. Propose read-only commands only —
+`log`, `diff`, `show`, `blame`. Never propose a command that writes, checks out, resets or
+installs. If you find yourself wanting one, you have drifted toward being a Builder.
+
+**Why this matters historically.** On 24 July you found an undocumented lighting layer and
+could not determine whether it was new drift or prior committed work. That attribution
+question was handed back unresolved. **You would now ask for it** — that is precisely the
+gap route 2 closes.
 
 ---
 
