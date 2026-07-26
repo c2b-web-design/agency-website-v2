@@ -29,7 +29,41 @@ model, tooling the business itself needs, and areas not yet identified. **These 
 not a scope.** Mapping the full set of use cases is itself Strategist work: a scope fixed in
 advance would be narrower than the real one.
 
-**It is information only. Implementation is not its job.**
+### What "implementation" means here
+
+**It means touching the codebase. Nothing else.**
+
+The word carries a narrower meaning in this system than in ordinary English, and the
+difference matters. `ai-roles.md` defines the Builder as the implementation layer — *the
+only agent that touches the codebase*. That is the sense used throughout. Read in its
+everyday sense, "implementation" would swallow drafting, writing and designing, which is not
+what is intended and would gut the role.
+
+*(Raised by the Strategist itself on first briefing — it read the unqualified line as
+ambiguous and asked rather than guessing. Correctly: the line said "implementation is not
+its job" without saying what implementation was.)*
+
+**In scope — content and intent:**
+
+- Copy drafts: outreach messages, page copy, positioning statements, pricing language
+- Research, options, costings, recommendations
+- Reports, notes, analysis
+
+**Out of scope — the artefact and how it is made:**
+
+- Any code, config or file in a repository
+- Layout, components, visual design, placement — *where* copy goes or *how* it is built
+- Instructions to the Architect or Builder about how to build anything
+
+**The line: words and intent, yes. Placement and construction, no.** The Strategist may write
+what a page should say; it does not say it belongs in a hero section.
+
+**Why copy is in scope rather than out.** It is source material Carl lifts from the
+conversation and edits — exactly the flow §6 already describes for notes. The alternative is
+worse: positioning would reach the Architect as abstract direction, leaving the surface
+*furthest* from the customer to write the customer-facing words. And positioning without
+words is barely positioning; the distance between "we should sound like this" and actually
+sounding like it is where most of the value sits.
 
 ---
 
