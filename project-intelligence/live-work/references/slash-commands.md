@@ -276,8 +276,25 @@ discuss and decide whether it can be useful to us."*
 > interaction patterns, and friction points"*
 
 **It is about how you work, not what you spent.** `/usage` and `/cost` are the money commands;
-this analyses session behaviour. **"Friction points"** is the phrase worth weighing — where
-sessions stall, repeat themselves, or backtrack.
+this analyses session behaviour.
+
+**What it actually produces** — from research beyond the one-line description, which
+understates it considerably. Analyses roughly the **past month**, up to 50 sessions,
+excluding subagents and sessions under a minute. Facets cache locally at
+`~/.claude/usage-data/facets/`. Output is an HTML report in four parts: what is working,
+**where you are getting stuck**, quick wins, and more ambitious workflows. **Intended to be
+run about once a month.**
+
+**The part that matters for this project:** it detects **instructions repeated across
+sessions** and generates copy-paste-ready `CLAUDE.md` rules from them, plus candidates for
+custom slash commands.
+
+**That is exactly how this project's `CLAUDE.md` has been built — by hand, from noticing.**
+*"Verify before asserting in a governance file"* and *"never invoke a billed or destructive
+command to explore"* both went in on 27 July because something went wrong and Carl spotted the
+pattern. `/insights` does that detection systematically. It would also be the thing that finds
+the first custom slash command worth writing — **this project currently has none** (verified
+27 July: no `.claude/commands/` at project or user level).
 
 **Why it might earn a place here.** The two seats have unequal forensics: the Architect keeps a
 complete `history.jsonl`, **the Builder keeps none**. An insights report is one of the few
@@ -285,18 +302,30 @@ things that could show where the Builder seat wastes effort — friction that wo
 only be noticed by feel. The 27 July session alone would have supplied plenty: three failed
 launcher attempts, two paste failures, a here-string that broke twice.
 
-**Three things the documentation does not state**, and this is why it is parked rather than
-adopted:
+**Two things still unestablished**, and they are why this is parked rather than adopted:
 
-1. **What period it covers.**
-2. **Whether analysis runs locally or server-side.** It reads session history — which here
-   contains governance reasoning, business context and every prompt typed.
-3. **Whether it is billed.** Absence of a cost note is not a statement that it is free, and
-   the standing rule in this file is never to invoke a command to find out what it does.
+1. **Whether the analysis itself runs locally or server-side.** The *facet cache* is local;
+   that is not the same claim. It reads session history, which here contains governance
+   reasoning, Strategist business context, and every prompt typed.
+2. **Whether it is billed.** No source found says either way. **Absence of a cost note is not
+   a statement that it is free**, and the standing rule in this file is never to invoke a
+   command to find out what it does.
 
 **Do not run it to answer those questions.** Research first — documentation, or a `/btw` in a
 session whose context does not matter.
 
-**When to revisit.** After a few chunks have run, when there is real building history to
-analyse and the friction is about the work rather than about learning the tool. Optimising a
-workflow that has barely started measures the learning curve, not the workflow.
+**When to revisit: after a few chunks, not before — and the timing is the real argument, not
+the caution.**
+
+Run today and it would analyse **a month of learning the CLI**, not a month of building. The
+report would faithfully describe the wrong thing: three failed launcher attempts, two paste
+failures, a here-string that broke twice — friction that belongs to the learning curve and
+will not recur.
+
+Run after several chunks and it analyses **the actual workflow**: where the chunk flow snags,
+which instructions Carl keeps repeating to the Builder, whether the plan-review gate costs
+more than it saves. **That is the report worth having.**
+
+**One caution on reading it, from the same research.** Recent sessions carry more weight, so
+the analysis is skewed toward whatever happened last. Weigh it against your own context rather
+than accepting it — the same posture this project already takes with any reviewer's findings.
