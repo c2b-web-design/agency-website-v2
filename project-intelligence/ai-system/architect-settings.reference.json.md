@@ -6,7 +6,8 @@ The live file is `C:\Users\Carl Buckley\.claude-architect\settings.json`, outsid
 repository and therefore outside git. This copy exists so the *intended* state of the
 Architect's security boundary is versioned, auditable and readable by the Architect itself.
 
-**Last reconciled with the live file: 27 July 2026.**
+**Last reconciled with the live file: 27 July 2026** — re-verified after the `DesignSync` and
+`allowedMcpServers` additions.
 
 ---
 
@@ -38,15 +39,26 @@ file is what is actually in force, regardless of what this one says.
       "NotebookEdit",
       "Bash",
       "mcp__codex",
-      "mcp__ide"
+      "mcp__ide",
+      "DesignSync"
     ]
   },
+  "allowedMcpServers": [],
   "model": "opus[1m]",
   "effortLevel": "high",
   "theme": "auto",
   "tui": "fullscreen"
 }
 ```
+
+⚠ **`model` and `effortLevel` are requests, not guarantees.** DL-6 records `opus[1m]`
+requested and `claude-opus-4-8` actually running for 35 turns, caught in the Architect's own
+transcript; DL-3 records that there is no hard-fail mode. **The pin is a request; the
+transcript is the proof** (P2). Verify from a live session, never from this file.
+
+**`model` and `effortLevel` are governance settings, not preferences** — the research treats
+model choice as an enforcement lever, and effort bears on review quality. `theme` and `tui`
+are cosmetic. Changing either of the first two is a change to the boundary.
 
 ---
 
@@ -58,6 +70,11 @@ file is what is actually in force, regardless of what this one says.
 | `Bash` | **A proven bypass, not a precaution.** With `Bash` available, denying the edit tools is cosmetic: shell redirect, `sed -i` and `rm` all still write. Verified by attack, 24 July 2026. The cost — no `git`, builds or tests — is accepted and mitigated by the evidence file and the `!` prefix (`architect-role.md` §2, `live-work-protocol.md` §5a). |
 | `mcp__codex` | The Codex MCP bridge. Codex is retired (D-036); the app is scheduled for removal ~14 August 2026. **This entry may come out once the app is gone** — until then it stays. |
 | `mcp__ide` | The IDE MCP server, whose `executeCode` tool runs arbitrary code — the same failure class as `Bash`. **Added 27 July 2026.** See below. |
+| `DesignSync` | A **built-in**, not MCP — so no `mcp__*` entry and no MCP allowlist ever touched it. Reads and writes the user's claude.ai design-system projects: `write_files`, `delete_files`, `create_project`. **Added 27 July 2026.** See below. |
+
+| Non-deny key | Purpose |
+|---|---|
+| `allowedMcpServers: []` | **An allowlist, and that is the point.** The `deny` list enumerates, so anything arriving later is permitted by default — F-1's objection. An empty allowlist inverts it: nothing is permitted unless named. **Added and verified by measurement 27 July 2026.** See below. |
 
 **The separate `CLAUDE_CONFIG_DIR` is part of the mechanism, not packaging.**
 `launch-architect.cmd` sets it to `~/.claude-architect`, so this deny list applies to the
@@ -150,15 +167,134 @@ permanent guarantee.
 
 ---
 
+## The MCP allowlist — 27 July 2026, measured either side of a restart
+
+**F-1's objection was correct and is now closed by a different mechanism than it proposed.**
+
+F-1 observed that the `deny` list *enumerates*: it named two MCP servers, so anything
+arriving later was permitted by default — the shape of the `mcp__ide` problem rather than a
+fix for it. It left open whether a wildcard deny (`mcp__*`) was supported. **That question is
+still unanswered**; what closed the gap is a separate, documented setting.
+
+**`allowedMcpServers` is an allowlist**, so nothing is reachable unless named. Empty means
+none.
+
+**Verified by measurement, not by reading**, either side of a restart with identical wording
+put to both sessions:
+
+| | Before | After |
+|---|---|---|
+| `mcp__claude_ai_Google_Drive__authenticate` | present | **absent** |
+| `mcp__claude_ai_Google_Drive__complete_authentication` | present | **absent** |
+| Anything with an `mcp__` prefix | two tools | **none** |
+
+**It governs account-level connectors**, which is the substantive result. The Drive server
+did not arrive through `mcpServers` — that block is `{}` — but through an account-level
+connector, which is exactly why F-1 judged the original `mcp__ide` evidence too weak. A
+`deny` entry would have had to name it; the allowlist did not need to.
+
+**The gap this closed was live, not theoretical.** The Drive server was installed and
+awaiting OAuth. What prevented its use was that nobody had completed the flow — circumstantial
+protection of precisely the kind the `mcp__ide` entry exists to eliminate. **And the risk was
+not the Architect authenticating itself**: it was Carl authenticating Drive on his main
+account for ordinary reasons, at which point the connector becomes live in a deliberately
+restricted seat with nothing announcing the change.
+
+**One limit worth recording.** `blockedMarketplaces`, `strictKnownMarketplaces` and
+`disableSideloadFlags` — which would close the plugin-install route F-1 also identified — are
+**managed-settings only**, i.e. enterprise deployment. They are not available in a personal
+`settings.json`. The official marketplace is already cloned into
+`.claude-architect/plugins/marketplaces/` and re-synced during the 27 July session, so a
+`/plugin install` remains possible in that seat. **Accepted limit, not an open question** —
+there is no route to close it at this tier.
+
+---
+
+## `DesignSync` — the surface that was not MCP at all
+
+**Found by the Architect while measuring the MCP result, and it is the more important find.**
+
+`DesignSync` is a **built-in tool**, not an MCP server. No `mcp__*` deny entry and no MCP
+allowlist would ever have touched it. It reads and writes the user's **claude.ai
+design-system projects** through the claude.ai login, with `write_files`, `delete_files` and
+`create_project` among its methods.
+
+**Why it matters here.** `write_files` accepts a `localPath` and, per its own schema, *reads
+from disk, encodes, and uploads* — up to 256 files per call, repeatable under one plan. That
+is a route from this machine to the cloud, available to the seat whose entire purpose is
+being unable to change anything.
+
+**Stated at its true size.** It is **not** a repository write path — it cannot modify
+`agency-website-v2`. The exposure is **outward**: cloud writes and exfiltration of local file
+contents.
+
+**The mitigations were real, and were still not enough.** `finalize_plan` requires a
+permission prompt, locks the exact paths and source directory before any write, and shows
+Carl the structured path list *independently of the agent's narration* — deliberately, so a
+misleading description cannot hide what is being sent. Writes outside the plan are rejected.
+
+**But it is approval-shaped, not config-shaped**, and that is the whole objection. Every other
+boundary in this seat is categorical: the tool is not there. This one depended on Carl reading
+a prompt correctly at the moment it appeared.
+
+**The auto-mode trap this removes.** Earlier the same day, auto mode was judged "harmless in
+the Architect seat, since it cannot write anyway." **That reasoning was wrong** — it can write
+outward, and a permission prompt was the only thing stopping it. Auto mode delegates exactly
+that prompt to a classifier with a measured 17% false-negative rate on genuinely risky
+actions. Denying `DesignSync` removes the trap before it can be walked into.
+
+**Cost to the seat: none.** The Architect reads this repository and reports findings. It has
+no design-system work.
+
+**Method note — the reviewer's own correction, and one correction to it.** The Architect
+reported the two Drive tools, built a recommendation on them, then found them absent after the
+restart and **withdrew its own finding**, stating it could not tell whether the tools had been
+present earlier or its earlier report had been wrong. Withdrawing an unverified premise is the
+right instinct and is exactly what the *measure, do not narrate* rule asks for.
+
+**On the facts, though, the ambiguity resolves:** the two lookups sat either side of a config
+change and a restart, both timestamped in the seat's own `history.jsonl`. The tools were
+present, and the setting removed them. Recorded because *"I cannot tell"* is the correct
+default and *"the evidence settles it"* is the correct exception — and a future reader should
+see both, not just the cautious half.
+
+---
+
 ## Changing the live file
 
 1. **Back it up first** — no git history means the backup is the only undo. Convention:
    `settings.json.bak-YYYY-MM-DD`, same folder.
-2. **Validate the JSON after editing.** A malformed settings file may fail open.
+2. **Validate the JSON after editing.** ⚠ **UNVERIFIED CLAIM, flagged 27 July 2026 (F-6):**
+   the original wording — *"a malformed settings file may fail open"* — was written by the
+   Builder without testing it, and it is load-bearing, since it justifies the whole backup
+   convention. The chunk-scope guard *was* found to fail open on a malformed scope file
+   (`live-work-protocol.md` §8), but **an analogy is not evidence.** Validate regardless: the
+   step is cheap and correct either way. **To close this properly:** corrupt a copy of
+   `settings.json`, launch the seat against it, attempt a write. Not yet done.
 3. **Restart the Architect.** Settings load at startup; a running session keeps the old list.
 4. **Update this reference file and the reconciliation date above**, in the same change.
-5. **Re-attack any relaxation.** Removing an entry reopens whatever it closed. `Bash` and the
-   chunk-scope guard were both proven by attack, not by reading.
+5. **Re-attack after every change — not only after a relaxation.** *(Corrected 27 July 2026,
+   F-7.)* The earlier wording exempted tightening edits, which is the wrong way round: a
+   tightening edit can still break the file, malformed JSON may fail open, and every change
+   needs a restart to take effect. **The edit that looks safe is the one the procedure would
+   have told you not to re-test.** One attempted write takes seconds.
+
+**Owners, because a step with no name on it drifts** *(F-8/obligation 4, 27 July 2026)*:
+steps 1–3 and 5 are Carl's; **step 4 is the Builder's** — the Architect cannot update the
+reference file, that being the write path it does not have.
+
+**When the comparison happens.** *(F-8.)* Compare the live file against this reference
+**whenever the Architect's own configuration is in scope**, and whenever Carl asks. Triggering
+it otherwise is Carl's, not a standing duty on the Architect — stated so the ambiguity does
+not become an unwritten obligation the first time a drift is missed.
+
+**What the Architect may conclude from that comparison, and what it may not:**
+
+> **It can compare two files and report a difference. It cannot conclude that the boundary
+> holds.**
+
+Confirming the deny list is intact is not confirming it is *sufficient*. F-1 and the
+`DesignSync` find were both things that read as intact and were not.
 
 ---
 
