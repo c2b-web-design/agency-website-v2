@@ -624,6 +624,43 @@ is genuinely enforced; the judgement two-thirds move to the **plan-review gate**
 **checkpoint review**, which are deliberate inspection points rather than continuous
 observation.
 
+### ⚠ The guard is OFF until a chunk scopes it — writing the scope file is part of authorising a chunk
+
+**Recorded 27 July 2026**, after the read-only Architect observed that
+`project-intelligence/live-work/chunk-scope.json` **does not exist**, and the Builder
+confirmed from disk that `chunk-scope-guard.js` reads
+`if (!fs.existsSync(SCOPE_FILE)) ALLOW(); // no chunk scoped — opt-in`.
+
+**So the Builder's only mechanical control is currently doing nothing.** Every edit is
+allowed.
+
+**That is by design and the design is right** — a guard that blocked by default would make
+every unscoped session unusable, and an unusable control gets disabled, which is worse than
+one that is honestly narrow. All of this project's governance and documentation work happens
+unscoped.
+
+**But state the consequence plainly, because the natural reading of "the Builder has a
+chunk-scope guard" is that edits are policed, and right now they are not.** It is a per-chunk
+switch that is presently off, not defence-in-depth.
+
+**The rule that follows:**
+
+> **Writing `chunk-scope.json` is part of authorising a chunk, not an optional extra.** A
+> chunk that runs without it has no scope enforcement at all — the guard is present,
+> registered, and inert.
+
+Copy `live-work/templates/chunk-scope.template.json`, fill in `chunk`, `files`, `protected`
+and `unlocked`. **`unlocked` is Carl's alone** — the Builder never widens its own scope.
+
+**Delete it when the chunk closes.** A stale scope file is worse than none: it silently
+enforces the previous chunk's boundaries against the current work, and the denial message will
+name a chunk that finished. Same single-use reasoning as the session handoff (§3a).
+
+**Do not read a passing guard as a passing chunk.** It enforces two things — wrong file,
+protected file. It cannot catch a coupled value implemented as an independent overlay, a
+derived value that lost its source condition (the 24 July reduced-motion defect was exactly
+this), or visual drift. Those stay with checkpoint review and with Carl.
+
 **The governance choice this reflects.** Carl's position, 25 July: pasting slows the
 process, so *"if the governance we put in place can mitigate that with less iteration,
 better."* A bridge would make each handoff cheaper; governance makes fewer handoffs

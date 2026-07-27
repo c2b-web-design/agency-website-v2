@@ -119,6 +119,13 @@ the Builder plans the how. The separation is the point.
 Every chunk definition follows this structure. The Builder treats a definition missing any
 Mandatory field as incomplete and will not enter Plan Mode without it (D-008).
 
+⚠ **Authorising a chunk includes writing `live-work/chunk-scope.json`.** The chunk-scope
+guard is **opt-in**: with no scope file present it allows every edit, so a chunk that runs
+without one has no mechanical scope enforcement at all. The Constraints and Scope fields below
+say what must not be touched; the scope file is what makes that *enforced* rather than
+*stated*. Copy `live-work/templates/chunk-scope.template.json`, and delete it when the chunk
+closes. Full reasoning: `live-work-protocol.md` §8.
+
 ```markdown
 ## Objective
 <!-- Mandatory. One to two sentences. What is being built or changed, and why. -->

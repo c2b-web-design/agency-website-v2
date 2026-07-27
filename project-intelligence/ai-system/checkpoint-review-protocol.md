@@ -136,6 +136,44 @@ Rule 9: if code and screenshot disagree, the screenshot is the user-facing truth
 Architect distinguishes inspiration references (optical direction only) from target
 designs (to reproduce).
 
+#### The Builder must separate what it measured from what it believes
+
+**Added 27 July 2026, with the `verify/` harness.** The Builder can now observe what a change
+renders rather than reasoning about it. That changes what a checkpoint must state.
+
+**Every visual or timing claim is one of three things, and the Builder says which:**
+
+| Kind | Meaning | Example |
+|---|---|---|
+| **Measured** | A script produced this number or image. Reproducible. | *"Begin usable at +7466ms, `verify/begin-timing.mjs`"* |
+| **Observed** | The Builder looked at a capture and is describing it. | *"The gold reads warmer than the previous pass"* |
+| **Reasoned** | Nothing was run. The Builder inferred it from the code. | *"This should not affect the corridor"* |
+
+**"Reasoned" is not forbidden — hiding it is.** A reasoned claim is a hypothesis and the
+Architect should weigh it as one. A reasoned claim written in the register of a measured one is
+the failure this section exists to prevent.
+
+**Name the command that produced a measurement**, so the Architect can ask Carl to re-run it
+(`!` prefix, `live-work-protocol.md` §5a). A screenshot is not evidence; a script that
+regenerates the screenshot is.
+
+**State what was NOT measured.** A checkpoint that reports only what passed leaves the
+Architect unable to tell a clean result from an unexercised path. *"Desktop measured; mobile
+not measured"* is a useful sentence. *"Verified and working"* is not.
+
+**Why this matters more now, not less.** A feedback loop makes the Builder faster at producing
+work that does what the code says. It cannot tell whether the code says the right thing.
+**Wrong work now arrives verified, measured and polished** — which is harder to spot than
+wrong work that arrives rough. The loop raises the value of this review; it does not reduce it.
+
+**Worked example, 27 July 2026.** Carl reported that the Three.js contact-field work had
+"gone back too far" and affected the opening. Plausible — the pre-warm genuinely does mount a
+canvas earlier than completion. Reasoning from the code would have confirmed the gate holds and
+concluded "not the Three.js work", **leaving the real defect unfound.** Measuring recorded 0
+WebGL contexts and 0 canvas elements during the opening, and pointed instead at a 7400ms CSS
+animation delay. *A plausible cause and a measured cause are different things — including when
+the hypothesis is Carl's.*
+
 ### 5.3 Governance conflicts with approved decisions
 
 Whether the step contradicts an APPROVED entry in `decisions.md`, deviates from the
