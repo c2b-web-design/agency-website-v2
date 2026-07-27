@@ -116,7 +116,18 @@ model choice as an enforcement lever, `model` **is** a governance change, and
 mark the four explicitly as operational-not-boundary. **The silence is the defect, not the
 choice.**
 
-### F-6 · "A malformed settings file may fail open" is unverified and load-bearing
+### F-6 · "A malformed settings file may fail open" — ✅ TESTED AND CLOSED 27 July 2026
+
+**Result: it fails closed by default, but fails open on one keypress.** The seat detects the
+malformed JSON and halts with a `Settings Error`, offering *"Continue without these
+settings"* — and *"files with errors are skipped entirely, not just the invalid settings"*, so
+that one choice discards the whole boundary. The original claim was half right; the half that
+was wrong is the more useful half. **Full record, method, and the two design defects caught in
+the test itself:** `ai-system/architect-settings.reference.json.md`, "F-6, tested".
+
+*Original finding preserved below.*
+
+
 
 Step 2 of the change procedure rests on it; it justifies the entire backup convention. P-A:
 a documented control is an intention until its execution is inspected. The chunk-scope guard

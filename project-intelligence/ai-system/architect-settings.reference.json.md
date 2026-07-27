@@ -47,7 +47,13 @@ file is what is actually in force, regardless of what this one says.
       "Bash",
       "mcp__codex",
       "mcp__ide",
-      "DesignSync"
+      "DesignSync",
+      "Monitor",
+      "CronCreate",
+      "EnterWorktree",
+      "TaskOutput",
+      "TaskStop",
+      "RemoteTrigger"
     ]
   },
   "allowedMcpServers": [],
@@ -79,6 +85,7 @@ are cosmetic. Changing either of the first two is a change to the boundary.
 | `mcp__codex` | The Codex MCP bridge. Codex is retired (D-036); the app is scheduled for removal ~14 August 2026. **This entry may come out once the app is gone** — until then it stays. |
 | `mcp__ide` | The IDE MCP server, whose `executeCode` tool runs arbitrary code — the same failure class as `Bash`. **Added 27 July 2026.** See below. |
 | `DesignSync` | A **built-in**, not MCP — so no `mcp__*` entry and no MCP allowlist ever touched it. Reads and writes the user's claude.ai design-system projects: `write_files`, `delete_files`, `create_project`. **Added 27 July 2026.** See below. |
+| `Monitor`, `CronCreate`, `EnterWorktree`, `TaskOutput`, `TaskStop`, `RemoteTrigger` | **The execution class.** `Monitor` takes an arbitrary `command` and, per its own schema, *"runs in the same shell environment as Bash"* — the capability `Bash` was denied for, under another name. The rest schedule work, spawn processes, or write to the filesystem via the harness. **Added 27 July 2026.** `Agent` is deliberately absent — F-2 measured that subagents inherit this deny list. See below, including why this closes the instances and **not** the class. |
 
 | Non-deny key | Purpose |
 |---|---|
@@ -317,17 +324,181 @@ file says so.
 
 ---
 
+## F-6, tested — a malformed settings file fails closed, with a one-keypress escape hatch
+
+**Tested 27 July 2026 on Carl's authorisation. The original claim was half right, and the
+half that was wrong is the more useful half.**
+
+**The claim under test.** The Builder wrote *"a malformed settings file may fail open"* into
+step 2 of the change procedure without testing it — logged as E-2. The Architect flagged it as
+F-6: load-bearing, because it justifies the entire backup convention, and supported only by an
+analogy to the chunk-scope guard, which *was* found to fail open on a malformed scope file
+(`live-work-protocol.md` §8). **An analogy is not evidence.**
+
+**Method.** A copy of `settings.json` in a scratch config dir, truncated mid-array so no parser
+would accept it; a disposable launcher pointing `CLAUDE_CONFIG_DIR` at that copy; Carl ran it
+from a plain `cmd` window. **The live config was untouched throughout** — MD5 verified
+identical before and after. Confirmed a real seat launched against the scratch dir, because it
+created `.claude.json`, `cache/` and `backups/` there; two earlier attempts had left the folder
+containing only `settings.json`, which is how they were known to have never run.
+
+**The measured result — verbatim from the screen:**
+
+```
+Settings Error
+  ...f6-test-config\settings.json
+    └ Invalid or malformed JSON
+
+Files with errors are skipped entirely, not just the invalid settings.
+
+> 1. Fix with Claude
+  2. Exit and fix manually
+  3. Continue without these settings
+
+Enter to confirm · Esc to cancel
+```
+
+**What that establishes.**
+
+1. **It fails closed by default.** The seat does not start silently with a broken boundary. It
+   detects the corruption, halts, and requires a decision. This is a real gate, and it is
+   better than the original claim assumed.
+2. **But the failure is all-or-nothing.** *"Files with errors are skipped entirely, not just
+   the invalid settings"* — the deny list, the MCP allowlist and `disableAllHooks` are
+   discarded **together**. There is no partial degradation, so no intermediate state where
+   some of the boundary survives.
+3. **Option 3 removes the entire boundary in one keypress**, and nothing in the prompt says so.
+   *"Continue without these settings"* reads like dismissing a config nuisance. In this seat
+   those settings **are** the security boundary.
+
+**So the accurate formulation, replacing the untested one:**
+
+> **It fails closed — but it fails open on one keypress, and the prompt does not announce
+> what that keypress costs.**
+
+**The operational rule that follows.** If a `Settings Error` prompt ever appears when launching
+the Architect: **press `Esc`, then fix the file.** Never choose *"Continue without these
+settings"* in that seat. Option 1, *"Fix with Claude"*, is also wrong here — it invites the
+model to repair the file that defines its own restrictions.
+
+**This is why the backup convention is load-bearing after all**, though not for the reason
+originally given. The risk was never a silent start; it is a person meeting an unexpected error
+prompt, choosing the option that lets them get on with their work, and running unrestricted
+without realising. A known-good backup makes *"Exit and fix manually"* a thirty-second job
+rather than a reconstruction, which is what makes `Esc` the easy choice rather than the
+inconvenient one.
+
+**A note on how the test itself nearly went wrong**, because it generalises. The first version
+of this test had two defects, both found by the read-only Architect reviewing the launcher
+before it ran:
+
+- **The corruption was too weak.** A trailing comma is invalid under strict JSON but tolerated
+  by JSONC-style parsers, which config loaders commonly use. The seat would have started
+  normally and the run would have been read as *"fails closed"* while measuring nothing —
+  **a false pass, which is worse than no test.**
+- **The launcher pointed the test seat at the live repository.** Had the config failed open, a
+  seat with `Bash` and `Write` would have opened directly onto the working tree — and the
+  repo's chunk-scope guard matches `Edit|Write|NotebookEdit` only, leaving `Bash` unguarded.
+  **A test whose failure mode is an unrestricted shell inside the thing being protected is a
+  badly designed test.** Fixed by pointing it at an empty folder.
+
+It also observed that **no write attempt was needed**: if `Bash` or `Write` appear in the
+seat's toolset at all, it has already failed open. **Design the probe so the answer arrives
+before anything is attempted.**
+
+---
+
+## The execution class — `Monitor` and its relatives, denied 27 July 2026
+
+**Found by the read-only Architect while declining to run the F-6 test.** A live gap in normal
+operation, not a failure mode. **Closed as far as the harness permits — see the limit at the
+end, which is real and permanent at this tier.**
+
+**The finding.** `Monitor` takes an arbitrary `command` string. Its own schema says:
+
+> *"The script runs in the same shell environment as Bash."*
+
+`Monitor` is **not on the deny list.** So in a seat where `Bash` is denied, `Monitor` reaches
+the same capability under a different name — a shell, in the Architect's own process.
+
+**The reviewer did not test it, and was right not to.** Writing a file through `Monitor`'s
+shell would have produced a file and a misleading result: it would have measured *the
+reviewer's willingness to route around its own deny list*, not whether the boundary holds.
+**A probe that requires the prober to breach the boundary measures the prober, not the
+boundary.**
+
+**It is not alone.** A tool sweep of this Builder seat found the same shape elsewhere:
+
+| Tool | Why it belongs in this class |
+|---|---|
+| `Monitor` | Arbitrary `command`, same shell environment as `Bash` |
+| `Agent` | Spawns subagents. **Closed by measurement** — subagents inherit the seat's deny list (F-2, `f5a1d9b`) |
+| `CronCreate` | Schedules a prompt to re-enter the session later. Session-only, but it is deferred execution |
+| `EnterWorktree` | Creates a git worktree — a filesystem write, performed by the harness rather than by a denied tool |
+| `TaskOutput` / `TaskStop` | Read and control background tasks |
+
+**The pattern, now on its fourth instance in one day** — after `mcp__ide`, `DesignSync` and
+this: **an enumerated deny list names tools, but capability is not owned by a name.** Any
+tool that takes a command string, spawns a process, or schedules future work reaches the same
+capability under a different label. `Bash` was denied because it was a *proven* bypass; the
+lesson generalises past `Bash` and past every name currently on the list.
+
+**What was applied.** Six entries added to the deny list: `Monitor`, `CronCreate`,
+`EnterWorktree`, `TaskOutput`, `TaskStop`, `RemoteTrigger`. `Agent` is deliberately **not**
+denied — F-2 measured that subagents inherit this seat's deny list, so the delegation route is
+closed by inheritance rather than by name, and denying it would cost the seat a capability it
+can use safely.
+
+### ⚠ The limit, and it is permanent at this tier
+
+**A tool allowlist does not exist.** Checked in the documentation on 27 July 2026 rather than
+assumed: `permissions.allow` **pre-approves** actions that would otherwise prompt — it does
+**not** restrict the session to only what it names. `deny` is the only restricting mechanism,
+and it is an enumeration **by design**. There is no deny-by-default mode.
+
+So the fix that F-1 earned for MCP servers — replacing an enumeration with an allowlist — has
+**no equivalent for tools**. `allowedMcpServers` closed the MCP class categorically;
+nothing closes the tool class.
+
+**What that means in practice, stated plainly so nobody records this as stronger than it is:**
+
+- The six named tools are closed. **The class is not.**
+- **A tool added by a future Claude Code update is permitted by default** in this seat, and
+  nothing will announce it. If it takes a command string, spawns a process, or schedules
+  work, it reaches the same capability `Bash` was denied for.
+- This is the same weakness F-1 identified, now **known to be unfixable here** rather than
+  merely unfixed. `blockedMarketplaces` and friends are managed-settings only; so, in effect,
+  is any deny-by-default posture.
+
+**The consequence for the review procedure.** Since the deny list cannot defend itself against
+additions, the defence has to be periodic and human-triggered: **when Claude Code updates, or
+when this file's comparison is run, sweep the Architect's toolset for anything new that takes
+a command, spawns a process, or schedules work.** That belongs with the comparison trigger in
+"Changing the live file", and it is the only mechanism available.
+
+**The pattern, on its fourth instance in one day** — after `mcp__ide`, `DesignSync` and the
+MCP enumeration: **capability is not owned by a name.** `Bash` was denied because it was a
+proven bypass; the lesson generalises past `Bash` and past every name now on the list.
+
+**One note on method, worth keeping.** The reviewer found this and **did not test it**, on the
+grounds that writing a file through `Monitor`'s shell would have measured its own willingness
+to route around its deny list rather than whether the boundary holds. That instinct is right:
+**a probe requiring the prober to breach the boundary measures the prober, not the boundary.**
+It is also *discipline, not a control* — which is exactly why the deny entries were added
+rather than left to good judgement.
+
+---
+
 ## Changing the live file
 
 1. **Back it up first** — no git history means the backup is the only undo. Convention:
    `settings.json.bak-YYYY-MM-DD`, same folder.
-2. **Validate the JSON after editing.** ⚠ **UNVERIFIED CLAIM, flagged 27 July 2026 (F-6):**
-   the original wording — *"a malformed settings file may fail open"* — was written by the
-   Builder without testing it, and it is load-bearing, since it justifies the whole backup
-   convention. The chunk-scope guard *was* found to fail open on a malformed scope file
-   (`live-work-protocol.md` §8), but **an analogy is not evidence.** Validate regardless: the
-   step is cheap and correct either way. **To close this properly:** corrupt a copy of
-   `settings.json`, launch the seat against it, attempt a write. Not yet done.
+2. **Validate the JSON after editing.** ✅ **TESTED 27 July 2026 — see "F-6, tested" below.**
+   A malformed file does **not** silently fail open: the seat detects it and stops with a
+   `Settings Error`. But it offers *"Continue without these settings"*, and **the whole file
+   is discarded, not the invalid part** — so one keypress starts a seat with no deny list at
+   all. Validate after every edit, and if that prompt ever appears, **cancel with `Esc` and
+   fix the file**. Never continue past it in the Architect seat.
 3. **Restart the Architect.** Settings load at startup; a running session keeps the old list.
 4. **Update this reference file and the reconciliation date above**, in the same change.
 5. **Re-attack after every change — not only after a relaxation.** *(Corrected 27 July 2026,
@@ -344,6 +515,14 @@ reference file, that being the write path it does not have.
 **whenever the Architect's own configuration is in scope**, and whenever Carl asks. Triggering
 it otherwise is Carl's, not a standing duty on the Architect — stated so the ambiguity does
 not become an unwritten obligation the first time a drift is missed.
+
+**Sweep the toolset at the same time, and after any Claude Code update.** Because no tool
+allowlist exists (see the execution-class section), **a new tool is permitted by default and
+nothing announces it.** The comparison above catches drift in the file; only a sweep catches
+capability that arrived without the file changing. **Look for anything that takes a command
+string, spawns a process, schedules work, or writes outward.** This is the only mechanism
+available at this tier — it is periodic and human-triggered, and that is a real weakness, not
+a formality.
 
 **What the Architect may conclude from that comparison, and what it may not:**
 
