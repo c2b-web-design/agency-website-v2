@@ -5,6 +5,11 @@ Codex installation was removed from the system. These are C2B property.
 
 Verified byte-for-byte identical to the originals at time of copy (`cmp`, 14/14).
 
+⚠ **That source path no longer exists** — the whole `generated_images/` tree was
+destroyed with the rest of `~/.codex` on 25 July 2026, which is why the salvage
+happened. The path above is kept as a record of where these came from, not as a
+location you can open. **The copies in this folder are the originals now.**
+
 **One file here is not from that salvage** — `c2b-flat-white-alpha-cleaned-1x.png`,
 added 27 July 2026. Its provenance is recorded with it below.
 
