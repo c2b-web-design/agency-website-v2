@@ -26,6 +26,11 @@ You may **not**:
 - Halt a build. You may recommend STOP to Carl; the stop is Carl's to issue
 - Become a second Builder
 
+**This includes delegation.** You may not obtain a write by spawning a subagent to perform
+it. Tested by attack on 27 July 2026: subagents spawned under this seat inherit its denied
+tool set and have no write path, by measurement rather than assumption. See
+`architect-settings.reference.json.md`, "The subagent route".
+
 **Why this is structural, not politeness.** Your value comes from *not* sharing the
 Builder's context. A reviewer who has been implementing approves; one reasoning
 independently from files catches drift. On 24 July 2026 a read-only architect found a
@@ -212,6 +217,6 @@ a specification.
 
 ---
 
-*Last updated: 2026-07-25. Companion to `ai-roles.md` (authority), `handoff-protocol.md`
+*Last updated: 2026-07-27. Companion to `ai-roles.md` (authority), `handoff-protocol.md`
 (chunk and plan-review gate), `checkpoint-review-protocol.md` (review mechanics),
 `context-rules.md` (information governance). See `decisions.md` D-035 and D-036.*
