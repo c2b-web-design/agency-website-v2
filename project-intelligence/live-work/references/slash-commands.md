@@ -83,7 +83,7 @@ branching for review.**
 | `/config` | Settings panel (theme, model, notifications) |
 | `/model` | Choose the model for this session |
 | `/fast` | Toggle fast mode (Opus, faster output) |
-| `/output-style` | Switch or create an output style |
+| ~~`/output-style`~~ | **DEPRECATED** — removed in v2.1.91. Use `/config`, or set `outputStyle` directly. **Discarded for this project — see below.** |
 | `/permissions` | View and edit tool permission rules |
 | `/hooks` | Configure hooks that fire on tool events |
 | `/agents` | Create and manage custom subagents |
@@ -262,6 +262,29 @@ first rather than checking after.
   `ai-system/architect-settings.reference.json.md`.
 - The `/gsd-*` family — **removed from the system 27 July 2026 (D-037).** These commands no
   longer exist; see the section above.
+- **Output styles** — reviewed and **discarded 27 July 2026.** Carl: *"discarded, not for
+  us."* Recorded so the question is not reopened by a later session.
+
+  Output styles modify the **system prompt** — role, tone, default response format. **This
+  project already solves that problem elsewhere**, and by mechanisms that are auditable:
+  `CLAUDE.md` carries the conventions, the `ai-system/` protocols carry the process, and the
+  two seats carry the roles. An output style would add a fourth place where behaviour is
+  defined, and the least visible of the four.
+
+  Two of the built-ins are actively wrong here. **`Proactive`** *"executes immediately, makes
+  reasonable assumptions instead of pausing for routine decisions"* — the documentation calls
+  it stronger autonomous-execution guidance than auto mode. That is the opposite of the
+  plan-review gate, where nothing is built until Carl approves; it would fight the governance
+  rather than serve it. **`Learning`** inserts `TODO(human)` markers for Carl to implement,
+  which is friction given his stated position on implementation detail.
+
+  **`Explanatory` on the Architect seat was the one real candidate** and was not taken — a
+  preference, not a gap, and it costs output tokens on every response.
+
+  ⚠ **If one is ever adopted, note that a custom style DROPS Claude Code's built-in software
+  engineering instructions** — how it scopes changes, writes comments and verifies work —
+  unless `keep-coding-instructions: true` is set. Dropping those accidentally would be a real
+  regression, and nothing announces it.
 
 ---
 
