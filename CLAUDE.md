@@ -62,3 +62,16 @@ Next.js 16.2.5 App Router · React 19 · Tailwind CSS v4 · TypeScript
 ## Git
 
 Do not commit or push unless Carl explicitly asks.
+
+## Billed and destructive commands
+
+**Never invoke a billed or destructive command to find out what it does.** Reading a menu
+entry costs nothing; invoking it can cost money or lose work, and an aborted run leaves no
+audit trail to inspect afterwards.
+
+Ask Carl first, every time: `/code-review ultra` (billed cloud review — user-triggered only;
+do not attempt to launch it), `/rewind` (rolls back code and conversation), `/schedule` and
+`/loop` (consume budget after the session ends). Full list and reasoning:
+`live-work/references/slash-commands.md`.
+
+`Esc` interrupts a running command immediately — faster and cleaner than closing the terminal.
