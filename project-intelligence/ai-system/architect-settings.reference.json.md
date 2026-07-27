@@ -6,8 +6,15 @@ The live file is `C:\Users\Carl Buckley\.claude-architect\settings.json`, outsid
 repository and therefore outside git. This copy exists so the *intended* state of the
 Architect's security boundary is versioned, auditable and readable by the Architect itself.
 
-**Last reconciled with the live file: 27 July 2026** — re-verified after the `DesignSync` and
-`allowedMcpServers` additions.
+**Last reconciled with the live file: 27 July 2026** — re-verified key by key against the live
+file after the `DesignSync`, `allowedMcpServers` and `disableAllHooks` additions.
+
+**Drift found and closed at this reconciliation — the first since this file was created.**
+`disableAllHooks: true` was applied to the live file on 27 July and this reference was not
+updated in the same change, so the two disagreed until the following session found it. Step 4
+of the change procedure below exists precisely to prevent that, and it was missed. Recorded
+rather than quietly fixed: **a drift-detection convention whose first real drift goes
+unremarked is a convention nobody will trust the second time.**
 
 ---
 
@@ -44,6 +51,7 @@ file is what is actually in force, regardless of what this one says.
     ]
   },
   "allowedMcpServers": [],
+  "disableAllHooks": true,
   "model": "opus[1m]",
   "effortLevel": "high",
   "theme": "auto",
@@ -75,6 +83,7 @@ are cosmetic. Changing either of the first two is a change to the boundary.
 | Non-deny key | Purpose |
 |---|---|
 | `allowedMcpServers: []` | **An allowlist, and that is the point.** The `deny` list enumerates, so anything arriving later is permitted by default — F-1's objection. An empty allowlist inverts it: nothing is permitted unless named. **Added and verified by measurement 27 July 2026.** See below. |
+| `disableAllHooks: true` | **Closes F-3.** Hooks execute outside the permissions system, so the deny list never governed them — and `launch-architect.cmd` does `cd /d` into the repository, so the Architect loads the repo's `.claude/settings.json` and its `PreToolUse` hook running `node`. A categorical off-switch, not an enumeration. **Added 27 July 2026 — effect NOT yet verified in a running seat.** See below. |
 
 **The separate `CLAUDE_CONFIG_DIR` is part of the mechanism, not packaging.**
 `launch-architect.cmd` sets it to `~/.claude-architect`, so this deny list applies to the
@@ -257,6 +266,54 @@ change and a restart, both timestamped in the seat's own `history.jsonl`. The to
 present, and the setting removed them. Recorded because *"I cannot tell"* is the correct
 default and *"the evidence settles it"* is the correct exception — and a future reader should
 see both, not just the cautious half.
+
+---
+
+## `disableAllHooks` — the surface the permissions system never governed
+
+**Added 27 July 2026, closing F-3. ⚠ Its effect is not yet verified in a running seat** — see
+the verification note at the end of this section.
+
+**The gap F-3 identified.** `launch-architect.cmd` does `cd /d` into the repository before
+launching, so the Architect loads this project's `.claude/settings.json` — which registers a
+`PreToolUse` hook executing `node` against `chunk-scope-guard.js`. **Hooks run outside the
+permissions system.** The deny list governs tool calls; it does not govern hook commands. So
+the seat's entire boundary sat alongside an execution path the boundary did not cover.
+
+**Two facts settled from the documentation**, both questions the Architect could not answer
+about itself:
+
+1. **Project hooks are not auto-trusted** — workspace trust gates them. The exposure was
+   narrower than first feared.
+2. **`disableAllHooks` exists** as a categorical off-switch. This is the one that mattered:
+   it makes the answer a rule rather than a circumstance.
+
+**Why categorical, given the hook is benign.** The repository's only hook is the chunk-scope
+guard, which blocks out-of-scope *edits* — and the Architect makes none, so the setting costs
+that seat nothing. The point is not this hook. It is that **a hook is a standing grant of
+execution that no permission audit surfaces**, and the repo's hook configuration can change
+without anyone reviewing what it means for the read-only seat. Same reasoning as `mcp__ide`:
+close the boundary by rule, not by circumstance.
+
+**The Builder's guard is fully intact.** The setting is on the Architect seat alone, carried
+by `CLAUDE_CONFIG_DIR`. `chunk-scope-guard.js` still fires in the Builder session, which is
+the seat it was written for.
+
+**Related, same day:** the GSD toolkit was found holding nine hook registrations in the
+*Builder* seat, none of them governed by any deny list (D-037). F-3 and that discovery are the
+same underlying observation reached from two directions — **hooks are a governance surface,
+and neither seat had been auditing it.**
+
+⚠ **Verification still owed.** Carl restarted the Architect for the `DesignSync` change, but
+`disableAllHooks` went in *after* that restart, so no session has yet started with it in force.
+**What is confirmed:** the key is present in the live file, checked from disk. **What is not:**
+that it takes effect. Confirm on the next Architect start that hooks are inactive there, and
+that the Builder's chunk-scope guard still fires.
+
+**Recorded as unverified deliberately.** Assuming this works because the documentation says so
+would be error E-2 again — the same mistake that produced F-6, in the same file, on the same
+day. A claim written here becomes something others rely on; if it has not been tested, the
+file says so.
 
 ---
 

@@ -798,3 +798,49 @@ A fourth status, **`PROVISIONAL`**, is added to the schema for work that is **in
 **Scope:** six governance files rewritten together (`ai-roles.md`, `context-rules.md`, `checkpoint-review-protocol.md`, `handoff-protocol.md`, `prompt-protocol.md`, `live-work-protocol.md`), plus `live-work/README.md`, the drift-sentinel status, two template renames, and `CLAUDE.md` step 5. Committed as one batch: a partial rewrite would leave governance files contradicting each other on approval authority, which reads as authoritative and is worse than uniform staleness.
 **Authority:** Human Founder
 **Status:** APPROVED — supersedes D-005's hierarchy. D-005's principle (a documented multi-agent structure exists) is retained and re-satisfied by the rewritten `ai-roles.md`.
+
+---
+
+## D-037 — Governance: The GSD Toolkit Removed from the System
+
+**Date:** 2026-07-27
+**Decision:** The third-party **GSD toolkit** (`get-shit-done`, v1.40.0, installed 3 May 2026) is removed from the user-level Claude Code installation in full — files, hook registrations, skills and cache. Carl's instruction: *"i dont use gsd anymore and have no plans to do so in the future. wipe it and its effects from the system without compromising our new setup."*
+
+**Rationale — it was not dormant, it was running.** Carl had stopped using GSD months earlier, and the assumption was that an unused toolkit is inert. It was not. Discovered while auditing `.claude` configurations for F-3, GSD held **nine hook registrations** in `~/.claude/settings.json`, all firing in the **Builder** seat — the seat that writes code. Its self-updater, `gsd-check-update.js`, ran **at 14:38:51 BST on 27 July 2026, during the session that found it** — a process pulling from a GitHub repository Carl was not following, executing in the seat with write access.
+
+**What was removed** (counts verified against the backup, not recalled):
+
+| Item | Count |
+|---|---|
+| `~/.claude/get-shit-done/` | 246 files |
+| `gsd-*` hook scripts in `~/.claude/hooks/` | 12 (9 `.js`, 3 `.sh`) |
+| `gsd-*` skills in `~/.claude/skills/` | 6 |
+| Hook registrations in `~/.claude/settings.json` | 9 |
+| `~/.cache/gsd/`, `gsd-file-manifest.json` | both |
+
+**The nine registrations, as they actually were** — recorded precisely because the first written account of them was wrong in two places, and a governance file that misdescribes a removed control teaches the wrong lesson about what to look for next time:
+
+| Event | Matcher | Script |
+|---|---|---|
+| `SessionStart` | — | `gsd-check-update.js` |
+| `SessionStart` | — | `gsd-session-state.sh` |
+| `PreToolUse` | `Write\|Edit` | `gsd-prompt-guard.js` |
+| `PreToolUse` | `Write\|Edit` | `gsd-read-guard.js` |
+| `PreToolUse` | `Write\|Edit` | `gsd-workflow-guard.js` |
+| `PreToolUse` | `Bash` | `gsd-validate-commit.sh` |
+| `PostToolUse` | `Bash\|Edit\|Write\|MultiEdit\|Agent\|Task` | `gsd-context-monitor.js` |
+| `PostToolUse` | `Read` | `gsd-read-injection-scanner.js` |
+| `PostToolUse` | `Write\|Edit` | `gsd-phase-boundary.sh` |
+
+**Preserved deliberately:** Carl's own `c2b-context-statusline.js` (23 July, his naming, not GSD's) and its `statusLine` entry; the `npm install` / `npx tsc` permissions; and the repository's own `chunk-scope-guard.js`, untouched. **Also dropped:** one dead `permissions.allow` rule — a `Rename-Item` for `Logo=Morph.png` under `agency-website`, a path that no longer exists. Flagged to Carl at the time.
+
+**Why this is a governance decision and not housekeeping.** GSD is a **competing governance system**. Its phase/plan/execute model ran alongside the chunk → plan-review gate → checkpoint chain (D-036), holding its own opinions about when a write was permitted — three `PreToolUse` guards on every `Write`/`Edit`. Two governance systems with different models of "may this write proceed" were arbitrating the same actions, and only one of them was written down here. Some unexplained friction in earlier Builder sessions may have been its guards; that is offered as a hypothesis, not a finding, since nothing was measured at the time.
+
+**The lesson worth carrying, because it generalises past GSD:** **an unused tool is not an inactive tool.** Hooks run outside the permissions system — the deny list never governed them — so a hook registration is a standing grant of execution that no permission audit would surface. The audit that found this was looking for something else. **Configuration installed and forgotten is the failure mode with the longest half-life**, because nothing about it ever surfaces until it is looked for directly.
+
+**Backup:** `C:\Users\Carl Buckley\gsd-removal-backup-2026-07-27` — 267 files, including the original `settings.json` as `settings.json.before-gsd-removal`. Retained until ~3 August 2026, then Carl's to delete.
+
+**Consequence for the record:** the six `/gsd-*` entries in `live-work/references/slash-commands.md` describe commands that no longer exist; that section is corrected in the same change as this entry.
+
+**Authority:** Human Founder
+**Status:** APPROVED — executed 27 July 2026, recorded 27 July 2026. Removal verified from disk before this entry was written: the directory, hooks, skills, cache and manifest are absent, and `~/.claude/settings.json` contains no `hooks` block and zero `gsd` matches.

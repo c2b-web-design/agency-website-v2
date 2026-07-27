@@ -81,22 +81,22 @@ than trust this file if something matters. `/help` lists what is actually in you
 | `/loop` | Run a prompt or command on a repeat, e.g. `/loop 5m /foo` |
 | `/schedule` | Create and manage scheduled cloud agents (cron) |
 
-## GSD toolkit — installed at user level
+## GSD toolkit — REMOVED 27 July 2026
 
-| Command | Description |
-|---|---|
-| `/gsd-new-project` | Initialise a project with deep context gathering |
-| `/gsd-discuss-phase` | Gather phase context through adaptive questioning |
-| `/gsd-plan-phase` | Create a detailed phase plan with verification loop |
-| `/gsd-execute-phase` | Execute all plans in a phase, wave-parallelised |
-| `/gsd-help` | Show GSD commands and usage guide |
-| `/gsd-update` | Update GSD to the latest version |
+**The six `/gsd-*` commands no longer exist.** The third-party GSD toolkit was removed from
+the system in full on 27 July 2026 — 246 files, 12 hook scripts, 6 skills and 9 hook
+registrations. See **D-037** for the removal record and the reasoning.
 
-⚠ **Not part of this project's governance.** GSD is a third-party toolkit installed at user
-level, with its own planning and execution model. Its phase/plan/execute cycle is a
-**parallel workflow** to the chunk → plan-review gate → checkpoint chain in
-`handoff-protocol.md`. Using it would bypass that chain. Noted here because it appears in the
-menu and could be invoked by mistake.
+This section is kept rather than deleted for two reasons: an earlier version of this file
+listed the commands as available, and **the removal is the more useful thing to know than the
+listing ever was.** GSD's hooks were firing in the Builder seat months after Carl stopped
+using it, including a self-updater that ran during the session that found it. Hooks execute
+outside the permissions system, so nothing in the deny list governed them.
+
+**If a `/gsd-*` command ever appears in the menu again, that is a finding, not a convenience** —
+it means the toolkit has been reinstalled, and with it a competing governance model whose
+phase/plan/execute cycle bypasses the chunk → plan-review gate → checkpoint chain in
+`handoff-protocol.md`.
 
 ## Skills loaded this session
 
@@ -219,7 +219,12 @@ first rather than checking after.
 
 **Deliberately not used:**
 
-- `/agents` — subagents are ruled out as a review substitute by DL-2 on independence grounds,
-  and F-2 (27 July) leaves it unresolved whether a subagent inherits the parent's deny list.
-  Until that is tested, do not spawn one in the Architect seat.
-- The `/gsd-*` family — see the warning above.
+- `/agents` — subagents are ruled out as a review substitute by DL-2 on independence grounds.
+  **F-2 is now closed:** measured on 27 July, a subagent spawned in the Architect seat
+  inherits that seat's deny list — `Write`, `Edit`, `Bash` and `NotebookEdit` were absent from
+  its context and the test file was never created. So the earlier caution about spawning one
+  no longer applies on *capability* grounds; the DL-2 independence objection stands unchanged
+  and is the reason this stays on the do-not-use list. See
+  `ai-system/architect-settings.reference.json.md`.
+- The `/gsd-*` family — **removed from the system 27 July 2026 (D-037).** These commands no
+  longer exist; see the section above.

@@ -106,6 +106,57 @@ that restates governance will drift from it, and then there are two versions.
 
 **Not a running log.** `claude-run-log.md` does that job (§5).
 
+**Not measured detail.** Counts, paths, timestamps, event types, file lists — anything whose
+truth lives on disk rather than in the conversation. Point at the record that holds it.
+See §3b for why.
+
+### 3b. Record in the same session that makes the change
+
+**If a change lands on disk, its canonical entry is written before that session ends.** Not
+deferred to the next session via the handoff.
+
+**Carl's rule, 27 July 2026:** *"i think its important to make changes like this in the same
+session."*
+
+**Why, and it is not tidiness.** The session that did the work is the only one that can write
+the record **from evidence** rather than from a summary. Every later session is
+reconstructing — and a reconstruction reads exactly like a first-hand account, because the
+handoff format gives it no way to signal which it is.
+
+**The worked example, from the day the rule was written.** The GSD removal and the
+`disableAllHooks` change were both executed and both deferred to the next session. The handoff
+recorded *"8 hook registrations"* and placed two hooks under the wrong event type. Measured
+against the backup: **9 registrations**, and both hooks were `PostToolUse`, not `PreToolUse`.
+The counts had been correct when the work was done. **The deferral is what introduced the
+error.** Recorded as E-4 in `live-work/2026-07-27-architect-review-settings-reference.md`.
+
+**What a handoff carries well, and what it does not.** This is the useful half of the lesson:
+
+| Carries reliably | Degrades |
+|---|---|
+| Decisions, intent, what was parked and why | Counts, paths, timestamps, event types |
+| Corrections and standing instructions Carl gave | Anything whose truth lives on disk |
+| What the next session should take up | Anything the session summarised rather than re-read |
+
+The **why** survives, because it was argued aloud and can be repeated. The **measured detail**
+degrades, because nothing forces a re-read of the disk before summarising it. Note this is the
+**inverse** of `handoff-protocol.md` §2's five-hop observation, where technical detail survives
+translation and the *why* is what erodes. A handoff fails the opposite way round, which tells a
+reader which half to spot-check.
+
+**The cost, stated honestly.** A session that has run long cannot simply stop — the recording
+has to happen before it closes, and that is friction at exactly the moment when finishing is
+what appeals. The day this rule was written ended with ten commits and a security pass that
+turned into a toolkit removal. The friction is not hypothetical.
+
+**Recovery when the rule is missed.** A Builder session can be resumed with `claude --continue`
+or `claude --resume`, so returning to the session that did the work beats reconstructing from a
+handoff. Treat that as **recovery, not a substitute for recording**: it depends on the
+transcript still existing locally, it does not answer a question asked three weeks later, and
+it is the wrong fix for the actual failure — which was deferral, not lost context. ⚠ Note the
+Builder install keeps **no `history.jsonl`** (`live-work/references/slash-commands.md`), so the
+seat that writes code has the weaker audit trail of the two.
+
 ### Gitignore
 
 `live-work/.gitignore` treats the folder as scratch, so this file needs `git add -f` to be

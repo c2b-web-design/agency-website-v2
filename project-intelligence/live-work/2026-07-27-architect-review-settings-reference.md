@@ -227,6 +227,44 @@ in this repository — records that exact pin running as `claude-opus-4-8` for 3
 **Lesson: the repo held the counter-example and it was not applied.** Reading the relevant
 files is not the same as checking the current claim against them.
 
+### E-4 · Summarised my own prose when the source was still in context
+
+**Added later the same day**, after the next session audited the handoff this one wrote.
+
+`session-handoff.md` stated **"8 hook registrations"** and described the injection scanner and
+context monitor as `PreToolUse`. Measured against the backup: **9 registrations**, and both of
+those hooks are **`PostToolUse`**. The file counts in the same paragraph — 246, 12, 6, 267 —
+were all correct.
+
+**The diagnosis is not "memory decay," and the distinction matters.** The `Read` output of
+`~/.claude/settings.json` was still in this session's context when the handoff was written. I
+did not count the registrations from it. I had described them in prose hours earlier, and when
+writing the handoff I summarised **my own prose** rather than the source that was still
+available. The original sentence ran *"three PreToolUse guards on every Write/Edit, an
+injection scanner on every Read, a context monitor"* — fluent phrasing that carried the wrong
+attribute across a clause boundary and read as accurate.
+
+**Lesson: a summary of a summary is not evidence, even when it is yours.** If the source is
+reachable, re-read it. The tell is prose that flows well across items that were never
+verified as belonging to the same category.
+
+**The structural lesson, which is larger than the error.** The write-ups for the GSD removal
+and `disableAllHooks` were deferred to the *next* session via the handoff. Those counts were
+correct when the work was done; the deferral is what introduced the error, because the record
+then had to be reconstructed by a session working from a summary. **The handoff is a pointer
+to where the record lives, not the record itself.**
+
+This also inverts what `handoff-protocol.md` §2 observes about the five-hop chain: there,
+technical detail survives translation and the *why* degrades first. A handoff does the
+opposite — the **why survives**, because it was argued aloud and can be repeated; the
+**measured detail degrades**, because nothing forces a re-read of the disk before summarising
+it. Worth knowing, because it tells a reader which half of a handoff to spot-check.
+
+**Caught by:** the next Builder session, which measured the backup instead of transcribing the
+handoff. It initially framed this as a finding about a different agent, then withdrew that
+framing unprompted — same seat, same rules, an error it was equally capable of making. Correct
+call, and worth recording alongside the error itself.
+
 ### Not logged
 
 The `git commit` here-string failure was a tool quirk, diagnosed and worked around in one
