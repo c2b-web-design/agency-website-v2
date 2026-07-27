@@ -13,15 +13,26 @@ it immediately.
 `CLAUDE_CONFIG_DIR` values, so skills, plugins and project commands can differ between them.
 A command here is not guaranteed present in the Builder seat, or vice versa.
 
-**Known gaps in this capture — both verified present in the Builder seat by screenshot the
-same day, and both absent below:**
+**Known gaps in this capture — four commands confirmed to exist and absent from the list
+below:**
 
-- `/focus` — *toggle focus view: just your prompt, summary, and response*
-- `/goal` — *set a goal Claude checks before stopping*
+| Command | What it is | How it was confirmed |
+|---|---|---|
+| `/focus` | *toggle focus view: just your prompt, summary, and response* | Builder seat completion menu, screenshot, same day |
+| `/goal` | *set a goal Claude checks before stopping* | Builder seat completion menu, screenshot, same day |
+| `/btw` | *ask a quick side question without adding to the conversation* | Official docs |
+| `/branch`, `/fork`, `/subtask`, `/insights` | conversation branching, background copy, subagent hand-off, session analysis | Official docs |
 
-Whether they are missing because the Architect seat lacks them or because the listing was
-condensed is **not established**. Do not read an absence here as proof a command does not
-exist.
+**Four separate gaps found within hours of capturing this file.** Whether they are missing
+because the Architect seat lacks them or because the listing was condensed is **not
+established** — but the pattern is now clear enough to state as a rule:
+
+> **This file is a useful record of decisions about commands. It is not a reliable inventory
+> of which commands exist.** Type `/` in the seat you are actually using, or check the
+> documentation. Never read an absence here as proof a command does not exist.
+
+The **decisions** recorded below — what is billed, what is destructive, what is deliberately
+unused — remain the value of this file, and those do not go stale the way a listing does.
 
 **2. It goes stale.** Commands arrive and change with Claude Code versions. Re-capture rather
 than trust this file if something matters. `/help` lists what is actually in your build.
@@ -41,6 +52,29 @@ than trust this file if something matters. `/help` lists what is actually in you
 | `/todos` | List the session's todo items |
 | `/usage` | Show plan limits and current consumption |
 | `/cost` | Token cost and duration for the session |
+
+### Added from the documentation, 27 July 2026 — absent from the captured menu
+
+| Command | Description | Note for this project |
+|---|---|---|
+| `/btw <question>` | Ask a quick side question **without adding to the conversation**. Answer appears in an overlay; usable while a session is mid-task. `/btw` with no argument (v2.1.212+) reopens the last one. | **Genuinely useful here.** The Architect holds one long design conversation across a whole page (§7a) — a side question would otherwise sit in that context permanently. ⚠ **Nothing said in a `/btw` is remembered.** If it produces something load-bearing, say it in the main conversation or write it to a file. Use it for *"what does this do"*, never for *"change the approach"*. |
+| `/branch [name]` | Branch the conversation here and **switch into the branch**. Original preserved, reachable via `/resume`. | **Thinking, not execution.** See below. |
+| `/fork [prompt]` | Copy the conversation into a separate **background** session and stay where you are. | **Thinking, not execution.** See below. |
+| `/subtask` | Hand a side task to a subagent that reports back into this conversation. | DL-2 independence objection applies — not a review substitute. |
+| `/insights` | Analyse sessions for project areas, interaction patterns and friction points. | ⏸ **PARKED** — see the section at the foot of this file. |
+
+**On `/branch` and `/fork` — the limit that matters.** Both fork the **conversation**. Neither
+forks the **filesystem**. Three branches exploring three approaches are three conversations
+editing **one working tree**, and whichever writes last wins silently — the collision two
+Builder sessions hit on 27 July. Good for planning, investigation and comparing options with
+no code written; **not for building three approaches.**
+
+**And they do not give you a second opinion.** A branch duplicates the current context,
+including its blind spots — three branches from one point are the same assumptions explored
+three ways, not three independent views. Independence comes from the **Architect seat**, which
+reasons from files without having built the thing. That distinction is why the 24 July defect
+was caught by a fresh reviewer and not by two days of Builder self-review. **Do not mistake
+branching for review.**
 
 ## Configuration
 
@@ -228,3 +262,41 @@ first rather than checking after.
   `ai-system/architect-settings.reference.json.md`.
 - The `/gsd-*` family — **removed from the system 27 July 2026 (D-037).** These commands no
   longer exist; see the section above.
+
+---
+
+## ⏸ PARKED for a decision — `/insights`
+
+**Carl, 27 July 2026:** *"I will do more research before we build. We will revisit it and
+discuss and decide whether it can be useful to us."*
+
+**Documented description**, quoted exactly rather than paraphrased:
+
+> *"Generate a report analyzing your Claude Code sessions, including project areas,
+> interaction patterns, and friction points"*
+
+**It is about how you work, not what you spent.** `/usage` and `/cost` are the money commands;
+this analyses session behaviour. **"Friction points"** is the phrase worth weighing — where
+sessions stall, repeat themselves, or backtrack.
+
+**Why it might earn a place here.** The two seats have unequal forensics: the Architect keeps a
+complete `history.jsonl`, **the Builder keeps none**. An insights report is one of the few
+things that could show where the Builder seat wastes effort — friction that would otherwise
+only be noticed by feel. The 27 July session alone would have supplied plenty: three failed
+launcher attempts, two paste failures, a here-string that broke twice.
+
+**Three things the documentation does not state**, and this is why it is parked rather than
+adopted:
+
+1. **What period it covers.**
+2. **Whether analysis runs locally or server-side.** It reads session history — which here
+   contains governance reasoning, business context and every prompt typed.
+3. **Whether it is billed.** Absence of a cost note is not a statement that it is free, and
+   the standing rule in this file is never to invoke a command to find out what it does.
+
+**Do not run it to answer those questions.** Research first — documentation, or a `/btw` in a
+session whose context does not matter.
+
+**When to revisit.** After a few chunks have run, when there is real building history to
+analyse and the friction is about the work rather than about learning the tool. Optimising a
+workflow that has barely started measures the learning curve, not the workflow.
