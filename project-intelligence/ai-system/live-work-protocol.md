@@ -45,8 +45,73 @@ The Builder writes or updates these files during active work:
 | `claude-run-transcript.md` | Optional fuller transcript/extract when useful | Created only when needed |
 | `claude-context-status.json` | Machine-readable Claude context-window status written by the status-line script | Replaced atomically on status-line updates; ignored by Git |
 | `drift-sentinel.md` | ⚠ **No watch currently runs** (§6, §8). Retained for history and for Carl-triggered stops. `STATUS: CONTINUE` means "no watch running", not "watched and clear" | Overwritten per check |
+| `session-handoff.md` | **Single-use** bridge from one Builder session to the next (§3a). Exists only between sessions | **Deleted by the next session once read.** Never accumulates |
 | `screenshots/` | Saved visual evidence for review | Cleared or overwritten per task |
 | `references/` | Stable references for the active task when needed | Cleared or promoted after task |
+
+---
+
+## 3a. Session Handoff — write one, read it, delete it
+
+**A single-use bridge between two Builder sessions. It is consumed on read.**
+
+Chat history does not survive a `/clear`, a new session, or a context compaction, and it is
+not canonical (D-006). Without a handoff the next session reconstructs the state of play from
+the repo, which works but is slow and lossy — it recovers *what the files say* and not *what
+Carl decided, parked, or corrected.*
+
+### The rule
+
+**Every Builder session ends by writing `live-work/session-handoff.md`. Every Builder session
+begins by checking whether one exists.**
+
+**If it exists: read it first, before anything else in `project-intelligence/`. Then delete
+it** — in the same session, once genuinely up to speed. Its job is finished the moment it has
+been read.
+
+### Why deletion is part of the rule, not tidying
+
+**A stale handoff is worse than no handoff.** It is the same failure class as the stale anchor
+corrected on 26 July 2026: a file that was accurate when written, is read later as current, and
+misleads with total confidence. A handoff is *especially* prone to it because it is written to
+be believed — a summary of what matters, in one place, by a session that no longer exists to
+correct it.
+
+**And handoffs must never accumulate.** Two handoff files is worse than one, because the next
+session must guess which is live. There is exactly one, or there is none.
+
+**Deletion timing:** at the **end** of the session that reads it, not the beginning. If the
+session compacts mid-conversation, the file is what recovers it. Delete once the work is done,
+as part of writing the replacement.
+
+### What goes in one
+
+Written for a session with **no memory of the conversation that produced it**. Assume it knows
+the repo and knows nothing else.
+
+- **Where the project is** — paused or building, what is authorised, current commit, lint
+  baseline
+- **The next session's committed subject**, if one was agreed, with the context already
+  assembled so it need not be re-derived
+- **What changed this session** and where it is recorded — pointers, not restatements
+- **Open items with owners** — particularly anything only Carl can decide
+- **Corrections and standing instructions** given during the session, which exist nowhere else
+  until written down
+- **Anything parked**, and by whose decision
+
+### What does not go in one
+
+**Not a duplicate of the canonical files.** If it is in `decisions.md`, point at it. A handoff
+that restates governance will drift from it, and then there are two versions.
+
+**Not a running log.** `claude-run-log.md` does that job (§5).
+
+### Gitignore
+
+`live-work/.gitignore` treats the folder as scratch, so this file needs `git add -f` to be
+committed. **Commit it deliberately** — it has to survive into a session that starts with a
+fresh context and possibly a different machine. The force-add is expected here, not a
+workaround.
 
 ---
 

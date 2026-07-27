@@ -10,6 +10,8 @@ Carl Buckley (Human Founder) has final authority on all creative, product, archi
 
 `project-intelligence/` is canonical. Chat history is not.
 
+**At the start of every session, check whether `project-intelligence/live-work/session-handoff.md` exists. If it does, read it before anything else** — it carries what the previous session decided, parked and corrected, which the canonical files do not record. **Delete it at the end of the session, once its replacement is written.** It is single-use by design: a stale handoff misleads with confidence, and two handoffs are worse than one. See `ai-system/live-work-protocol.md` §3a.
+
 Before significant work, read:
 - `project-intelligence/active-sprints/current-sprint.md` — current scope and blockers
 - `project-intelligence/decisions.md` — approved decisions, implementation patterns, rejected approaches
@@ -37,6 +39,7 @@ If a task requires changing an approved foundation layer: stop, explain why, sta
 4. If an experiment fails, revise or remove only the experimental layer. Preserve approved layers.
 5. **Carl leads the design and the chunking**; the Architect records the chunk and drafts the prompt, which Carl approves before it reaches you. Work therefore arrives as a **chunk** — scope and constraints, not implementation detail. Write the plan in Plan Mode, pass it through the **plan-review gate** (`handoff-protocol.md` §2.5) — Architect reviews and amends, Carl approves — then execute that chunk only. At meaningful implementation milestones, pause for **checkpoint review**: save the request, git evidence and screenshots to `live-work/`, and let Carl route it to the Architect. Invocation is file-based; **Codex is retired and the `codex` MCP server does not exist — do not attempt to call it.** The reviewer reports findings only; findings go to Carl, who decides. See `project-intelligence/ai-system/handoff-protocol.md` §2–2.5, `checkpoint-review-protocol.md`, and `decisions.md` D-036.
 6. Save plans, run logs, checkpoint requests, screenshots, and drift-sensitive status updates to `project-intelligence/live-work/` per `project-intelligence/ai-system/live-work-protocol.md`; do not leave important process information only in the Claude Code chat panel.
+7. **End each session by writing `live-work/session-handoff.md`** for the next one — where things stand, the next agreed subject, open items with owners, and any correction or standing instruction given during the session. Force-add it (`git add -f`); the folder is gitignored as scratch. **Exactly one handoff exists at a time**: the incoming one is deleted as the replacement is written. See `live-work-protocol.md` §3a.
 
 ## Self-improvement
 
