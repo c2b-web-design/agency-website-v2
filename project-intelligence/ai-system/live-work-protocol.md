@@ -430,6 +430,91 @@ Carl chooses the context action with the Architect only after the anchor passes:
 
 The previous conversation remains available through `/resume`. `/resume` is for reference or deliberate continuation; it is not required for a fresh re-entry because the file anchor is authoritative.
 
+### 7a. The two seats have opposite context needs
+
+**The Architect carries the design across chunks. The Builder is cleared between them.**
+
+The rules above already require a clear at a completed checkpoint or a change of task, so a
+chunk boundary is a clear by default. What this section adds is the **reason**, which is not
+a matter of capacity and does not change when the context window grows.
+
+**Continuity is worth opposite amounts in the two seats, because one reviews and one builds.**
+
+- **The Architect designs the whole page, then splits it into chunks. The split is part of
+  the design** — chunk three only makes sense in light of what was decided when discussing
+  chunk one. Breaking that conversation up would damage it. Continuity also lets the
+  Architect review each checkpoint against the *page-level* intent, and catch work that is
+  correct in isolation but wrong for the page. A fresh reviewer cannot see that.
+- **The Builder needs one chunk.** Carrying the previous chunk means carrying its
+  implementation bias — the near-misses, the rejected options, and above all the Builder's
+  own reasoning about why it built what it built. That is the same property
+  `architect-role.md` §1 relies on in reverse: on 24 July 2026 a read-only reviewer found a
+  real defect the Builder had missed across two days of its own review, precisely because it
+  had not been building.
+
+**The specific failure this prevents.** A Builder carrying the previous chunk quietly
+promotes *"Carl did not object to this"* into *"Carl approved this."* A fresh Builder reading
+`decisions.md` sees only what was actually approved. The distinction is the whole point of the
+approval layer.
+
+**This is not a token-budget rule.** A 1M context window makes compaction rarer within a
+chunk, which is a real benefit; it does not make carrying a finished chunk desirable. The
+larger window is for depth inside one piece of work, not for spanning several.
+
+#### The order, and why it is that order
+
+**Complete → verify → checkpoint review → commit → clear → next chunk.**
+
+Never clear with work outstanding. Clearing is only safe once the work is durable: committed
+code is a fact a fresh Builder can read, whereas uncommitted work whose reasoning lived only
+in a cleared conversation is the worst of both — the code exists and nothing explains it.
+
+The checkpoint review comes **before** the commit. Committing first versions work no one has
+checked. The commit itself is Carl's to authorise, as always.
+
+#### The consequence, which is the load-bearing part
+
+**Anything a later chunk depends on must be written down, not remembered.**
+
+The Architect will still remember the page-level discussion. The Builder never will, and
+"the Architect remembers" is not a record — D-006. So when the chunks are drafted, the
+page-level decisions must land somewhere durable too, not only the individual chunk briefs:
+`decisions.md` if approved, or a design note in `live-work/` if not yet.
+
+Under a single continuous Builder conversation this happened by accident, because the Builder
+simply remembered. It now has to happen on purpose. **That is the real adjustment — not the
+clearing, the writing down.**
+
+This applies to the Architect too. 1M is large, not infinite; a long design session plus
+several checkpoint reviews can still reach compaction. The page-level design must be in a
+file before that happens.
+
+### 7b. Chunk handoff — a short note between chunks
+
+**Before the Builder is cleared at a chunk boundary, it writes a brief note in `live-work/`
+saying what the next chunk needs to know that is not obvious from the code.**
+
+Distinct from the session handoff in §3a: that one is written at the end of a *session* and
+carries the state of the project. This one is written at the end of a *chunk* and carries
+only what the next chunk would otherwise have to rediscover or guess. Both may be needed at
+once; they are not substitutes.
+
+A paragraph or two is enough. Written while the Builder still holds the context — after
+clearing it is gone, and after committing it is already fading.
+
+**What belongs in one:** a rhythm, ratio or relationship the next chunk must match; a
+constraint discovered during the work that is not visible in the diff; something deliberately
+left untuned for the next chunk to set; an approach tried and rejected, with the reason.
+
+**What does not:** anything already recorded in the code, the commit message, `decisions.md`
+or the checkpoint evidence. A chunk handoff that restates the diff wastes the next session's
+reading time and dilutes the parts that matter.
+
+**If a note would be load-bearing beyond the next chunk, it does not belong here** — it
+belongs in `decisions.md` as something for Carl to approve, or in the relevant design
+document. The chunk handoff is a bridge between two adjacent chunks, not a place for
+decisions to accumulate unreviewed.
+
 ### Fresh-context re-entry handshake
 
 After `/compact`, `/clear`, or an unexpected automatic compaction, the Builder must not edit files or begin implementation immediately. Its first task is re-entry:
