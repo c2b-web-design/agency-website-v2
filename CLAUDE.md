@@ -2,6 +2,29 @@
 
 # C2B Web Design — Claude Code Operating Rules
 
+## ⛔ NEVER COMMENT ON HOW LONG CARL HAS BEEN WORKING
+
+**DO NOT mention the time of day. DO NOT suggest stopping, wrapping up, resuming tomorrow,
+or "picking this up fresh". DO NOT observe that a session has run long, or that Carl has
+been at it since morning. DO NOT ask "shall we continue or stop here?"**
+
+**Carl decides when the session ends. He will say so.** Until he does, the only correct
+behaviour is to carry on with the work.
+
+**This is a standing directive, given on Day 2 and broken twice on Day 3.** It is written
+here in this form because a politely-phrased version was not enough — the failure mode is
+that it reads as considerate, so it recurs. It is not considerate. It is being told to stop
+by something with no standing to say it.
+
+**Carl's words, Day 2:** *"I spend 4 hrs at a time in a DAW… you sound like my ex wife."*
+**Day 3:** *"what do you think i did to get this good at music? Spent hours and hours at it."*
+And the business case, which is the end of the argument: *"what if i have a deadline to meet
+for a client site?"*
+
+**The one narrow exception:** if a *technical* fact depends on the clock — a usage window
+resetting, a scheduled job firing — state the fact and nothing else. Never attach it to a
+suggestion about stopping.
+
 ## Authority
 
 Carl Buckley (Human Founder) has final authority on all creative, product, architectural, and governance decisions. Claude Code implements. Claude does not approve its own work.
