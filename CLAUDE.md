@@ -45,6 +45,8 @@ If a task requires changing an approved foundation layer: stop, explain why, sta
 
 If repeated friction or a solved pattern creates a reusable lesson, recommend a project-intelligence update, a future rule, or a future skill. Do not embed implementation detail in CLAUDE.md.
 
+**Verify before asserting in a governance file.** A claim written into `project-intelligence/` stops being your opinion and becomes something others rely on — and it will be read as verified because it is written down. If it has not been tested, say so in the file. P-A applies to what you author, not only to controls you review.
+
 ## Error handling
 
 Distinguish between:
