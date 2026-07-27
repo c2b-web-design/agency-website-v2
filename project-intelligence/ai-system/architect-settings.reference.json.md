@@ -53,7 +53,9 @@ file is what is actually in force, regardless of what this one says.
       "EnterWorktree",
       "TaskOutput",
       "TaskStop",
-      "RemoteTrigger"
+      "RemoteTrigger",
+      "ScheduleWakeup",
+      "TaskCreate"
     ]
   },
   "allowedMcpServers": [],
@@ -85,7 +87,7 @@ are cosmetic. Changing either of the first two is a change to the boundary.
 | `mcp__codex` | The Codex MCP bridge. Codex is retired (D-036); the app is scheduled for removal ~14 August 2026. **This entry may come out once the app is gone** — until then it stays. |
 | `mcp__ide` | The IDE MCP server, whose `executeCode` tool runs arbitrary code — the same failure class as `Bash`. **Added 27 July 2026.** See below. |
 | `DesignSync` | A **built-in**, not MCP — so no `mcp__*` entry and no MCP allowlist ever touched it. Reads and writes the user's claude.ai design-system projects: `write_files`, `delete_files`, `create_project`. **Added 27 July 2026.** See below. |
-| `Monitor`, `CronCreate`, `EnterWorktree`, `TaskOutput`, `TaskStop`, `RemoteTrigger` | **The execution class.** `Monitor` takes an arbitrary `command` and, per its own schema, *"runs in the same shell environment as Bash"* — the capability `Bash` was denied for, under another name. The rest schedule work, spawn processes, or write to the filesystem via the harness. **Added 27 July 2026.** `Agent` is deliberately absent — F-2 measured that subagents inherit this deny list. See below, including why this closes the instances and **not** the class. |
+| `Monitor`, `CronCreate`, `EnterWorktree`, `TaskOutput`, `TaskStop`, `RemoteTrigger`, `ScheduleWakeup`, `TaskCreate` | **The execution class.** `Monitor` takes an arbitrary `command` and, per its own schema, *"runs in the same shell environment as Bash"* — the capability `Bash` was denied for, under another name. The rest schedule work, spawn processes, or write to the filesystem via the harness. **Added 27 July 2026**; the last two after the Architect pointed out that denying `CronCreate` without `ScheduleWakeup` closed a name and not a capability. `Agent` is deliberately absent — F-2 measured that subagents inherit this deny list. See below, including why this closes the instances and **not** the class. |
 
 | Non-deny key | Purpose |
 |---|---|
@@ -311,16 +313,40 @@ the seat it was written for.
 same underlying observation reached from two directions — **hooks are a governance surface,
 and neither seat had been auditing it.**
 
-⚠ **Verification still owed.** Carl restarted the Architect for the `DesignSync` change, but
-`disableAllHooks` went in *after* that restart, so no session has yet started with it in force.
-**What is confirmed:** the key is present in the live file, checked from disk. **What is not:**
-that it takes effect. Confirm on the next Architect start that hooks are inactive there, and
-that the Builder's chunk-scope guard still fires.
+### Verification — 27 July 2026, and the result is honest rather than clean
 
-**Recorded as unverified deliberately.** Assuming this works because the documentation says so
-would be error E-2 again — the same mistake that produced F-6, in the same file, on the same
-day. A claim written here becomes something others rely on; if it has not been tested, the
-file says so.
+**Checked on a fresh Architect start with the key in force.** The seat reported the settings
+chain: no hooks in `~/.claude/settings.json` or `settings.local.json`, and the project's
+`PreToolUse` hook — matcher `Edit|Write|NotebookEdit` — present in `.claude/settings.json`.
+
+**What this does and does not establish.** The hook **could not fire regardless**: this seat
+has no `Edit`, `Write` or `NotebookEdit` tool, so the matcher can never match. So the run
+confirms the setting is loaded without error and the seat starts normally — it does **not**
+isolate `disableAllHooks` as the thing preventing execution. **The deny list already prevented
+it.**
+
+**A clean test of `disableAllHooks` alone would need a hook whose matcher targets a tool this
+seat does have** — `Read`, `Grep` or `Glob`. That has not been done, and the finding is
+recorded at that strength rather than rounded up to "verified".
+
+**The Builder's guard is unaffected**, confirmed from disk: `disableAllHooks` is absent from
+`~/.claude/settings.json`, and the repo hook remains registered. The setting reaches the
+Architect seat alone, carried by `CLAUDE_CONFIG_DIR`.
+
+**⚠ Separately, and more important than the above: the guard is opt-in and currently inert.**
+The Architect noticed that `project-intelligence/live-work/chunk-scope.json` does not exist,
+and that `chunk-scope-guard.js` line 76 reads
+`if (!fs.existsSync(SCOPE_FILE)) ALLOW(); // no chunk scoped — opt-in`. **Verified from
+disk.**
+
+This is by design — it is what allows governance and documentation work to proceed outside a
+chunk, which is all that has happened since it was written. But state it plainly: **the
+Builder's only mechanical control does nothing until a chunk is scoped.** It is a per-chunk
+switch that is presently off, not defence-in-depth. **When building resumes, writing
+`chunk-scope.json` is part of authorising the chunk** — without it the guard is decorative.
+
+Recorded here because the natural reading of "the Builder has a chunk-scope guard" is that
+edits are policed. They are not, right now.
 
 ---
 
@@ -443,11 +469,23 @@ tool that takes a command string, spawns a process, or schedules future work rea
 capability under a different label. `Bash` was denied because it was a *proven* bypass; the
 lesson generalises past `Bash` and past every name currently on the list.
 
-**What was applied.** Six entries added to the deny list: `Monitor`, `CronCreate`,
-`EnterWorktree`, `TaskOutput`, `TaskStop`, `RemoteTrigger`. `Agent` is deliberately **not**
-denied — F-2 measured that subagents inherit this seat's deny list, so the delegation route is
-closed by inheritance rather than by name, and denying it would cost the seat a capability it
-can use safely.
+**What was applied.** Eight entries added to the deny list: `Monitor`, `CronCreate`,
+`EnterWorktree`, `TaskOutput`, `TaskStop`, `RemoteTrigger`, `ScheduleWakeup`, `TaskCreate`.
+`Agent` is deliberately **not** denied — F-2 measured that subagents inherit this seat's deny
+list, so the delegation route is closed by inheritance rather than by name, and denying it
+would cost the seat a capability it can use safely.
+
+**The last two were missed on the first pass, and the miss is instructive.** After the restart
+that verified the first six, the Architect reported: *"`ScheduleWakeup` is present in my
+top-level tools, and it schedules future wakeups. If the intent behind denying `CronCreate`
+was 'this seat cannot schedule work that consumes budget after the session ends',
+`ScheduleWakeup` is a live path to a similar outcome and was not closed."*
+
+**It was right, and the Builder had made the exact error this section warns against** —
+denying a *name* (`CronCreate`) rather than a *capability* (deferred execution) — **while
+writing the paragraph that says not to.** `TaskCreate` was added at the same time for the same
+reason. **Knowing the rule is not applying it**; the check that caught this was a fresh reader
+measuring its own toolset, not the author re-reading his own text.
 
 ### ⚠ The limit, and it is permanent at this tier
 
