@@ -168,15 +168,54 @@ time, including when the aim is only to find out what it does.
 | `/schedule`, `/loop` | Create recurring or scheduled runs that consume budget **after** the session ends, when nobody is watching. |
 | `/agents` | See below — subagents are separately ruled out. |
 
-**What the incident showed.** The animated multi-coloured styling on `ultra` reads as a
-flourish; it is in fact the interface signalling a heavyweight operation. Usage after the
-event showed no sharp jump, so the run probably did not complete — but *probably* is the
-strongest available statement, because closing a terminal leaves nothing the Builder can
-inspect afterwards. **There is no post-hoc audit trail for an aborted command.** That is the
-reason for asking first rather than checking after.
+**What the incident showed.** The animated multi-coloured styling reads as a flourish; it is
+in fact the interface signalling a heavyweight operation. The deprecated alias
+`/ultrareview` is the only entry in the menu rendered as animated rainbow text, and is last
+alphabetically — which is what drew the eye to it.
 
-To halt a command already running: **`Esc`** interrupts immediately. Faster and cleaner than
-closing the terminal.
+**Typing or reading a command name is inert.** A slash command fires only when it is the
+first thing in the input box and Enter is pressed. Discussing one by name, in either seat,
+costs nothing.
+
+### Two things learned that were not obvious
+
+**1. Closing the terminal does not cancel a cloud review — it runs server-side.**
+
+Found by the Architect, and it corrects the Builder's initial reading. Killing the window
+stops you *watching* the run; it does not stop the run. **`Esc` is the abort.** It interrupts
+immediately and is both faster and cleaner than closing the terminal.
+
+**2. The two seats have unequal forensics, and the read-only seat has the better ones.**
+
+| Install | Typed-input log | Consequence |
+|---|---|---|
+| `~/.claude-architect` (Architect) | **`history.jsonl` present** — every prompt, every session | Anything typed is recoverable, including from an aborted session |
+| `~/.claude` (Builder) | **absent** — verified 27 July 2026 | Something typed and aborted before the first transcript write leaves **no trace** |
+
+So the seat that can change the repository is the seat with the weaker audit trail. Worth
+knowing before relying on "we can check the logs afterwards" — in the Builder seat, sometimes
+you cannot.
+
+**Neither install records billing.** That is account-side only:
+`claude.ai/code` lists cloud sessions; `claude.ai/settings/usage` is the authoritative
+record. `/usage` in-session reports a weekly aggregate, which is too coarse to confirm or
+rule out a single run.
+
+### What the 27 July check actually found
+
+Both seats searched — the Architect's complete `history.jsonl` (16 entries) and every Builder
+transcript for actual slash-command invocations. **No review command in either.** The only
+invocations present in the Builder install are `/clear`, `/model` and `/compact`. No
+cloud-bundle record anywhere.
+
+One near-miss worth recording as method: a Builder transcript with a **modification time**
+matching the incident minute looked incriminating until opened — it was a `/clear` from
+22 July on a different branch. *A file's mtime is not its creation time, and matching a
+timestamp is not evidence until the contents are read.*
+
+**Conclusion: strong evidence it did not run; not proof.** The two gaps above are why. The
+absence of a post-hoc audit trail in the Builder seat is the actual argument for asking
+first rather than checking after.
 
 **Deliberately not used:**
 
