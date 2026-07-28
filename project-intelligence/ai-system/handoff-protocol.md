@@ -364,8 +364,8 @@ None / [specific description]
 2. `current-sprint.md` reflects current state — no task left IN PROGRESS if complete
 3. Component documentation created or updated for any component touched
 4. Review entry filed for any component or significant change completed
-5. Open Questions and Blockers accurate
-6. No unresolved issue silently dropped — every issue is named and placed
+5. Blockers accurate. **No Open Questions or roadmap section** — future work is not recorded in this repository (D-038)
+6. No unresolved issue silently dropped — every issue is named and **routed to Carl**, who decides whether it becomes a chunk
 
 ### How future sessions regain context
 
@@ -385,7 +385,8 @@ For an active task continued immediately after `/compact`, `/clear`, or automati
 When a sprint closes:
 - Archive `current-sprint.md` → `active-sprints/archive/sprint-N.md`
 - Create new `current-sprint.md` with the new goal
-- Carry all unresolved Open Questions and Blockers forward verbatim — reference the archived sprint
+- Carry unresolved **Blockers** forward verbatim — reference the archived sprint
+- **Do not carry forward a roadmap or Open Questions section** (D-038). Unresolved forward-looking items go to Carl, not into the new sprint file
 
 ---
 

@@ -414,11 +414,10 @@ MCP bridge) when the architect is a Claude instance/SDK agent instead.
 
 **⚠ NO LONGER HYPOTHETICAL — THIS ITEM IS NOW THE LIVE GAP (25 July 2026).**
 Item 4 was written as a future question: what *would* change when the architect stops
-being Codex. Events have overtaken it. **Codex is retired** — the MCP bridge is
-deregistered, `mcpServers` in `~/.claude.json` is empty, and the wrapper is deleted
-(`live-work/codex-removal-status.md`). The old routing is gone whether or not a
-replacement is designed, so this is no longer a comparison between two options; it is
-an **open hole in the governance record**.
+being Codex. Events have overtaken it. **The previous seat is retired** — the MCP bridge is
+deregistered, `mcpServers` in `~/.claude.json` is empty, and the wrapper is deleted. The old
+routing is gone whether or not a replacement is designed, so this is no longer a comparison
+between two options; it is an **open hole in the governance record**.
 
 **Interim measure already applied (25 July 2026), so nothing is silently broken:**
 `CLAUDE.md` workflow step 5 now states that Codex is retired, that the `codex` server
@@ -723,9 +722,10 @@ harder pin and **cost the independence** (DL-2, item 5). **Independence wins** �
 property the review layer exists to protect. This is instance 1 of principle **P-A**.
 
 ### DL-5 · Codex retirement (item 4) — 24–25 July 2026
-**Actioned:** Codex retired as the governance layer. MCP bridge deregistered, wrapper
-deleted, `mcpServers` empty. App removal deliberately paused until ~14 August 2026
-(paid access unexpired) — `live-work/codex-removal-status.md`.
+**Actioned:** the previous seat retired as the governance layer. MCP bridge deregistered,
+wrapper deleted, `mcpServers` empty. **Fully severed from the repository 28 July 2026** —
+its files, records and residue removed; the operational checklist for the remaining app
+uninstall is kept outside this repository.
 **Interim:** `CLAUDE.md` step 5 preserves the checkpoint **gate** while declaring the
 **routing** undecided. A holding position, explicitly not an answer to item 4.
 **Not actioned, by design:** `ai-system/ai-roles.md` still documents the ChatGPT/Codex

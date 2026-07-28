@@ -502,11 +502,11 @@ Nothing below is actioned. This is the **plan** for after the decision.
 |---|---|---|
 | `ai-system/ai-roles.md` | **REWRITE** | Names ChatGPT as PM with veto power and Codex as review channel. Neither operates. Most stale file in the repo |
 | `ai-system/checkpoint-review-protocol.md` | **REWRITE** routing, **KEEP** mechanics | Review *mechanics* are sound and model-agnostic; only "Technical Registration" (the `codex` MCP bridge) is dead |
-| `starter-content/C2B_Codex_Startup_Context_Pack.md` | **SPLIT** | §§1–7, 12–33 are ethos/vision/preferences — **excellent, model-agnostic, keep**. §§8–11 are Codex governance — replace. Rename off "Codex" |
-| `starter-content/# C2B Website Session Rules.txt` | **REPLACE** | Almost entirely Codex-specific, incl. the scripted chat-panel answer |
-| `starter-content/# C2B Web Design — Wider Vision, Et.txt` | **KEEP**, one-line fix | Only line 5 mentions Codex. Otherwise clean |
-| `starter-content/Briefing_Agent.md` | **KEEP** unchanged | About Claude Design. No Codex content |
-| `live-work/codex-*.md` (remaining) | **ARCHIVE**, do not delete | Historical record of a real process. Move to `live-work/archive/`. Some were already removed 24 July during Codex's exit |
+| ~~`starter-content/C2B_Codex_Startup_Context_Pack.md`~~ | **DONE — 28 July 2026** | Split as recommended. §§2–7, 12–33 salvaged to `starter-content/c2b-ethos-and-vision.md` (model-agnostic, original section numbers preserved). §1 and §§8–11 were Codex handoff machinery — deleted with the original |
+| ~~`starter-content/# C2B Website Session Rules.txt`~~ | **DELETED — 28 July 2026** | As assessed: the Codex system prompt. Its ethos block was a condensed duplicate of material now in `c2b-ethos-and-vision.md` |
+| ~~`starter-content/# C2B Web Design — Wider Vision, Et.txt`~~ | **DELETED — 28 July 2026** ⚠ overrides "KEEP" | Verified duplicate, not merely Codex-tainted. Gilmour, "Comfortably Numb", trust bridge, "See to be", "effects caused by the world" all present in `c2b-ethos-and-vision.md`. Only `C-to-B` was unique, and §3 states the same idea in fuller words |
+| ~~`starter-content/Briefing_Agent.md`~~ | **DELETED — 28 July 2026** ⚠ overrides "KEEP" | Correctly identified as Claude Design, not Codex — but it briefs *another tool*, and it indexes a **superseded palette**: gold `#C9973A`/`#F5D060`, Montserrat/Nunito Sans, pill buttons, `✦` ornament. Verified absent from the built site, which uses Geist and Inter. **Noted:** it was the only written record that a Claude Design workspace holds a `README.md`, `colors_and_type.css`, UI kits and three logo PNGs. That workspace is untouched; the map to it is gone. Current assets are in `brand-assets/logo/` |
+| ~~Previous-seat process files in `live-work/`~~ | **DELETED — 28 July 2026** ⚠ overrides "ARCHIVE, do not delete" | Six files: the retired seat's directives, plan and checkpoint responses, working notes, session handoff, and the app-removal record. All were untracked scratch in a gitignored folder. **Carl's instruction: nothing from that seat stays in the repository — "as if it never existed."** The operational checklist for the remaining app uninstall is kept outside the repo |
 | `live-work/drift-sentinel.md` | **KEEP the function, reassign the owner** | Carl: it did what its name says — watched for drift and scope creep. That job did not leave with Codex. Currently Codex-owned and reading `STATUS: CONTINUE`; needs a new owner and, ideally, a **hook-driven** trigger rather than an agent remembering to check (P1) |
 | `live-work/` transport | **KEEP** — now load-bearing | Was a workaround for a vendor boundary; is now the mechanism of independence (DL-2) |
 | `CLAUDE.md` step 5 | **UPDATE** once routing is decided | Currently a holding position naming the gap |
@@ -518,6 +518,20 @@ model-agnostic so the next pivot costs a line, not a rewrite.
 
 **Deliberately NOT deleting anything yet.** Under P4 and Carl's no-retroactive-rewriting
 discipline, a superseded record is evidence; a deleted one is a gap.
+
+> **Superseded 28 July 2026 by Carl's decision.** The starter-content and `live-work/codex-*`
+> files above were deleted, including three this review had marked KEEP or ARCHIVE. **The
+> rows are struck through rather than removed, and each records what the review recommended
+> and why it was overruled** — which is the P4 principle applied to this document itself.
+>
+> **Carl's rule, and it generalises beyond this clean-up:** *the dead thing is the function,
+> not the filename.* Briefing a second model is obsolete now that the Builder seat holds that
+> context; ethos and vision are not. The test is therefore **what a file is for**, not whether
+> "Codex" appears in its name — which is why `Briefing_Agent.md` went despite having no Codex
+> content, and why `c2b-ethos-and-vision.md` was salvaged out of a file that did.
+>
+> Verification preceded each deletion: concept-by-concept diff for the vision file, and a
+> check of fonts, hex values and ornaments against the built site for `Briefing_Agent.md`.
 
 ---
 

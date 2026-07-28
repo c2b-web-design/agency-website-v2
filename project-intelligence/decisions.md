@@ -509,13 +509,10 @@ D-022 remains the committed, deployed, approved baseline. D-023 does not patch o
 - Begin / Next step / Send visibility: consistent and approved.
 - Mobile opening reveal and corridor refinements: complete and approved.
 
-**Future colour/material pass (not yet designed — future direction only):**
-- Active question: white/off-white (unchanged).
-- Memory question text: may use one teal/duck-egg family colour.
-- Q labels: may use muted gold/amber.
-- Depth expressed through lightness/opacity — not multiple competing hues.
-- Answer selected state: move away from current brown/amber fill toward restrained glass/smoked material.
-- This pass requires a new brief. Do not implement without one.
+**Colour/material pass — removed 2026-07-28.** A future colour/material direction was
+recorded here. **Future work is not kept in this repository**; Carl holds that record
+outside it. **The guard stands: do not change enquiry colour or material without a brief
+from Carl.** The corridor's current colour and material are approved as built.
 
 ---
 
@@ -529,28 +526,26 @@ D-022 remains the committed, deployed, approved baseline. D-023 does not patch o
 
 ---
 
-## D-026 — Hero: Future Cinematic Direction
+## D-026 — Hero: Right-Side Space Is Intentionally Empty
 
-**Date:** 2026-06-14  
-**Decision:** The current hero is a structural scaffold only. The right-side visual space is intentionally empty. The planned future hero is a cinematic dark studio world featuring the C2B logo as the central object. The logo begins in a video/film world and transitions seamlessly into a code-driven interactive object. Text and button elements may later catch subtle reflected gold/teal light only after the code-world logo becomes active.  
-**Rationale:** The hero as-built holds the layout and tone. The cinematic direction is a future creative milestone requiring its own brief and production assets. Recording it now prevents future agents from treating the current scaffold as the final design or filling the empty space prematurely.  
+**Date:** 2026-06-14. **Rewritten 2026-07-28** — see note below.  
+**Decision:** The current hero is a structural scaffold. **The right-side visual space is intentionally empty and must not be filled.** It is not an oversight, an unfinished section, or an invitation to add a placeholder, illustration, or effect.  
+**Rationale:** The hero as-built holds the layout and tone. The empty space is reserved for a future creative milestone that requires its own brief and production assets. Without this record, a session reads the gap as a defect and fills it.  
 **Authority:** Human Founder  
-**Status:** APPROVED as direction. Not yet designed or implemented.
+**Status:** APPROVED and binding. **Do not fill the hero space without a brief from Carl.**
 
-**Constraints (approved):**
-- Avoid sci-fi, fantasy, landscape, and over-flashy motion.
-- Rule: "more David Gilmour, less Yngwie Malmsteen."
-- Text/button do not catch colour effects until the code-world logo object is active.
+**2026-07-28 — future direction removed on Carl's instruction.** This entry previously described the planned cinematic hero in detail. **Carl keeps the future-work record outside this repository**, so a session reading these files is not distracted by work it does not yet need. **The constraint above survives; the description of what will eventually fill the space does not.** If and when it becomes current scope, Carl introduces it as a chunk with its own brief.
 
 ---
 
-## D-027 — Future Tools Direction
+## D-027 — Future Tools Direction — REMOVED
 
-**Date:** 2026-06-14  
-**Decision:** Three future intelligence tools are directionally planned: (1) client discovery/intelligence tool, (2) website/brand opportunity report tool, (3) internal transformation preview tool (before any public version). These are recorded as directional intent only — no scope, brief, or implementation timeline exists yet.  
-**Rationale:** Avoids scope creep into the current build while recording the founder's intent so future agents understand what the service offer may extend to.  
-**Authority:** Human Founder  
-**Status:** DIRECTION ONLY — not approved for design or implementation.
+**Removed 2026-07-28** on Carl's instruction. The entry recorded three directional future
+tools with no scope, brief or timeline. **Future work is deliberately not recorded in this
+repository** — Carl holds that record outside it, for the site and the wider business.
+
+The number is retained so the decision sequence stays unbroken and older references remain
+traceable. **Nothing here is pending, blocked, or awaiting action.**
 
 ---
 
@@ -564,10 +559,11 @@ D-022 remains the committed, deployed, approved baseline. D-023 does not patch o
 
 ---
 
-**Future material work — amber circuit (paused):**
-- An amber travelling bead / perimeter circuit animation on the selected card was prototyped but became unstable and was removed before commit.
-- This experiment is paused. When resumed, it should begin as a small isolated prototype on one card only — not a full-system implementation. Requires a new brief.
-- Do not restart amber circuit work without a dedicated brief.
+**Amber circuit — attempted and removed (record of previous work):**
+- An amber travelling bead / perimeter circuit animation on the selected card was
+  prototyped, became unstable, and was removed before commit. Superseded by the filament
+  border, D-029.
+- **Do not restart amber circuit work without a dedicated brief from Carl.**
 
 ---
 
@@ -844,3 +840,27 @@ A fourth status, **`PROVISIONAL`**, is added to the schema for work that is **in
 
 **Authority:** Human Founder
 **Status:** APPROVED — executed 27 July 2026, recorded 27 July 2026. Removal verified from disk before this entry was written: the directory, hooks, skills, cache and manifest are absent, and `~/.claude/settings.json` contains no `hooks` block and zero `gsd` matches.
+
+---
+
+## D-038 — Governance: Future Work Is Not Recorded In This Repository
+
+**Date:** 2026-07-28
+
+**Decision:** **Future work is deliberately not recorded in `project-intelligence/` or anywhere else in this repository.** Carl keeps that record outside it — for the website and for the wider business. Forward-looking roadmaps, unbuilt directions, speculative tooling and "planned but not designed" items are removed from the repo and are not to be reconstructed in it.
+
+**Rationale — Carl's, and it is the whole point:** *"I need to keep you focused on current work, or previous work and not to be distracted by things you don't have to know yet."* A session that reads a roadmap starts weighing it. It plans against work that is not authorised, treats absent future items as gaps, and quietly widens scope. Removing the material removes the pull. **The repo describes what is built and what is authorised now; nothing else.**
+
+**What this does not remove — the distinction that matters:**
+
+- **Guards that protect built work stay.** "Do not fill the hero's right-side space without a brief" (D-026) survives, while the description of what will eventually fill it does not. The constraint is current; the plan was future.
+- **Records of previous work stay**, including failed experiments — the amber circuit under D-028 is a record of something attempted and removed, which is history, not roadmap.
+- **Directions that explain built work stay.** D-025 is retained because the frosted blue glass (D-028) derives from it.
+- **Dated review and QA records are never retroactively rewritten** (P4). Historical entries keep their original wording.
+
+**Applied 28 July 2026:** ethos file §§24–29 and §31 removed (201 lines); `current-sprint.md` "Up Next" and "Open Questions" replaced with the two authorised next steps; D-027 removed and D-026 rewritten to the surviving constraint; forward-looking colour/material blocks trimmed in `decisions.md`, `design.md` and `mission-overview.md`.
+
+**Decision numbers of removed entries are retained** so the sequence stays unbroken and older references resolve. **A retained number with a removal note is not an open item.**
+
+**Authority:** Human Founder
+**Status:** APPROVED — standing policy. Applies to every future session. If a future direction becomes current scope, Carl introduces it as a chunk with its own brief.

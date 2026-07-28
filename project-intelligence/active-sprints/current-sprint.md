@@ -55,27 +55,51 @@ Sprint 2 is complete. All success criteria met. Milestone commit: **2152e6e** (2
 
 ---
 
-## Up Next (Sprint 3 — not yet started)
+## Current work
 
-| Task | Priority | Notes |
-|---|---|---|
-| Real submit/send backend | High | Send button is present but not wired. Route, email, or storage target not decided. |
-| ~~Amber selected-circuit prototype~~ | ~~Medium~~ | Superseded by D-029. Filament border approved and live. |
-| Cinematic hero | Medium | D-026 direction. Requires production assets and a new brief. Do not fill hero space without one. |
-| About section | Medium | Planned between Work and Contact. Not yet designed. |
-| Footer refinement | Low | Subtle C2B signature direction noted. |
-| Metadata, SEO, Open Graph | Low | Page titles, descriptions, and social sharing not yet set. |
-| Deployment target decision | Low | Vercel or other — not yet decided. |
-| Future tools (client intelligence etc.) | Future | D-027 direction only. No brief or timeline. |
+**Building is paused** — Carl's instruction of 25 July 2026. No chunk is authorised.
+
+**When it resumes, in this order:**
+
+1. **`/start` ivory CTA (Begin button) — a short excursion, then straight on to item 2.**
+   Unusable for 7.4 seconds. Measured: radial reveal starts +7450ms, button clickable
+   +7466ms. **Not the Three.js work** — ruled out by measurement, 0 WebGL contexts during
+   the opening. It is a CSS delay with clickability welded to the visual clock
+   (`enquiry-opening.tsx:259` — the hit target is inactive until the visible reveal
+   starts). **It was clickable immediately when built**, so this is a regression in
+   already-approved work, not a new feature. Carl: *"definitely not the intent."*
+
+   **The visual sequence is correct and must not change** — the delays derive from average
+   human reading speed, each element starting just before the previous finishes. Overlaps
+   measure 600, 600, 400ms: derived, not chosen.
+
+   Desktop 7400ms and mobile 10100ms are separate values needing separate answers.
+   Full record and re-measurement commands: `live-work/enquiry-opening-timing-reference.md`.
+
+   **Routing — decided 28 July 2026:** Carl and the Builder handle this directly. **It does
+   not go through the Architect.** It is a small fix to existing approved work, not a chunk
+   needing a plan-review gate.
+
+   **The fix itself is not yet specified.** Carl will discuss the intended behaviour at the
+   time. **Do not choose it unilaterally** — restoring instant clickability and holding a
+   shorter delay are different answers, and the choice is Carl's.
+
+2. **Four-box geometry in Three.js, on the client info page.** The current state of the
+   site build, and where sustained work resumes after the excursion above.
 
 ---
 
-## Open Questions
+## Future work — deliberately not recorded here
 
-- Deployment target? (Vercel, other)
-- Portfolio case studies — any existing client work to reference?
-- Agency tagline / positioning statement?
-- Send backend: email service, database, or other?
+**Carl keeps the future-work record outside this repository**, for the site and for the
+wider business. This is a standing policy, applied 28 July 2026.
+
+**Do not reconstruct it here, do not treat its absence as a gap, and do not plan against
+it.** A session that reads these files should see current and previous work only. When a
+future direction becomes current scope, Carl introduces it as a chunk with its own brief.
+
+**One constraint survives because it protects built work:** the hero's right-side space is
+**intentionally empty and must not be filled** without a brief from Carl — D-026.
 
 ---
 
@@ -85,4 +109,5 @@ Sprint 2 is complete. All success criteria met. Milestone commit: **2152e6e** (2
 
 ---
 
-*Last updated: 2026-06-14 — Sprint 2 closed at milestone commit 2152e6e. Sprint 3 up next items seeded.*
+*Last updated: 2026-07-28 — future-work items removed on Carl's instruction; next two steps
+recorded. Sprint 2 closed at milestone commit 2152e6e.*

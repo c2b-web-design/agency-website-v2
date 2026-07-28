@@ -147,7 +147,7 @@ Use the established schema for every entry type. Do not add new fields. Do not o
 ### Starting a session
 
 1. Read `mission-overview.md` — confirm project identity and stage
-2. Read `current-sprint.md` — understand what is IN PROGRESS and what is Up Next
+2. Read `current-sprint.md` — understand what is authorised now. **It carries no roadmap** (D-038)
 3. Read `decisions.md` — identify APPROVED decisions relevant to the task
 4. Read domain-specific files for the task (architecture, design, component docs)
 5. Do not ask for context that should already exist in project-intelligence files
@@ -158,28 +158,32 @@ Use the established schema for every entry type. Do not add new fields. Do not o
 ### During a session
 
 - If a decision is made: log it in `decisions.md` before the session ends
-- If scope expands beyond the sprint goal: flag it and add to Up Next — do not silently expand
+- If scope expands beyond the sprint goal: **flag it to Carl and stop** — do not silently expand, and do not park it in a roadmap section (D-038)
 - If a blocker is encountered: add it to `current-sprint.md` Blockers before stopping
 
 ### Ending a session
 
 1. Log all decisions made during the session in `decisions.md`
-2. Update `current-sprint.md` — completed tasks to Completed, new tasks to Up Next
+2. Update `current-sprint.md` — completed tasks to Completed. **Do not create an "Up Next" or roadmap section** (D-038); future work is not recorded in this repository. Newly discovered work goes to Carl, who decides whether it becomes a chunk
 3. Create or update component documentation if a component was built or modified
 4. File a review entry in `review-log.md` if a component or significant change was completed
-5. Record unresolved questions in `current-sprint.md` Open Questions
+5. **Raise unresolved questions with Carl** — do not record them as an Open Questions section (D-038)
 
 ### Sprint continuity
 
-Open Questions and Blockers are carried forward from sprint to sprint until resolved. When archiving a sprint, copy all unresolved Open Questions and Blockers into the new `current-sprint.md` verbatim. Do not discard them.
+**Blockers** are carried forward from sprint to sprint until resolved. When archiving a sprint, copy unresolved Blockers into the new `current-sprint.md` verbatim. Do not discard them.
+
+**Forward-looking items are not carried forward** — they go to Carl, who holds the future-work record outside this repository (D-038). A question with no current answer is not a Blocker unless it is blocking authorised work.
 
 ### Unresolved issues
 
 An unresolved issue is never silently dropped. It either:
-- Becomes a task in Up Next
-- Becomes an Open Question
-- Becomes a Blocker
+- **Goes to Carl**, who decides whether it becomes a chunk — this replaces the former "add it to Up Next" route (D-038)
+- Becomes a Blocker in `current-sprint.md`
 - Or is explicitly Dismissed with a one-line reason noted
+
+**Not being written down as future work is not the same as being dropped.** The rule is that
+Carl hears about it; the repo is not the place it waits.
 
 ---
 

@@ -67,8 +67,7 @@ Businesses that want a premium digital presence, faster and smarter enquiry hand
 **Milestone commit:** 2152e6e — 2026-06-14
 
 **Homepage:** Approved.
-- Navbar (Services → Work → About → Contact), Hero (scaffold only — right-side space intentionally empty, future cinematic direction planned D-026), Services (D-012), Work/Proof (D-013), Contact/CTA (D-014), Footer.
-- About section is planned but not built. When built, it sits between Work and Contact.
+- Navbar (Services → Work → About → Contact), Hero (scaffold only — **right-side space intentionally empty; do not fill without a brief**, D-026), Services (D-012), Work/Proof (D-013), Contact/CTA (D-014), Footer.
 - CTA links to `/start`. Send/submit backend not yet wired.
 
 **`/start` Enquiry Experience:** Approved — full corridor complete.
@@ -76,16 +75,15 @@ Businesses that want a premium digital presence, faster and smarter enquiry hand
 - Shared corridor architecture: D-023. All five questions approved: D-024.
 - Send button position approved. Begin / Next step / Send visibility consistent.
 - Mobile opening reveal and corridor: approved.
-- Future colour/material pass planned but not yet designed — see D-024, D-025.
 
-**Pending for Sprint 3:**
-- Send/submit backend (email service or storage — target not decided).
-- Start flow colour/material pass (D-024 future direction — requires new brief).
-- Cinematic hero (D-026 direction — requires production assets and new brief).
-- About section (planned, not yet designed).
-- Footer refinement (subtle C2B signature — future direction).
-- Metadata, SEO, Open Graph.
-- Deployment target decision.
+**Next, when building resumes:**
+1. **`/start` Begin button** — unusable for 7.4s. Measured; not the Three.js work. The
+   visual sequence must not change. See `live-work/enquiry-opening-timing-reference.md`.
+2. **Four-box geometry in Three.js** — current state of the build.
+
+**Future work is deliberately not recorded in this repository.** Carl holds that record
+outside it. Do not reconstruct it here or treat its absence as a gap. See
+`active-sprints/current-sprint.md`.
 
 ---
 
@@ -95,4 +93,4 @@ This project operates under a defined multi-agent AI structure. See `/project-in
 
 ---
 
-*Last updated: 2026-06-14 — Milestone commit 2152e6e. Sprint 2 closed. Sprint 3 pending.*
+*Last updated: 2026-07-28 — future-work references removed (D-038). Milestone commit 2152e6e; Sprint 2 closed. Building paused since 25 July 2026.*

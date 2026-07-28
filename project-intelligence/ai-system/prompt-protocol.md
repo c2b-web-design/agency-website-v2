@@ -123,8 +123,8 @@ Log any architectural or design decisions made during execution in `decisions.md
 Update `current-sprint.md`:
 
 - Move completed tasks from In Progress to Completed
-- Add newly discovered tasks to Up Next
-- Update or add Open Questions and Blockers
+- **Route newly discovered tasks to Carl** — do not add them to a roadmap section (D-038)
+- Update or add Blockers
 - Do not leave tasks in In Progress if they are complete
 
 ---
@@ -184,8 +184,8 @@ What the implementation summary must cover.
 | Architectural decision made | `decisions.md`, `system-architecture.md` if structural | Decision: full schema. Architecture: current state only, no narrative. |
 | Design system rule changed | `design.md`, `decisions.md` | Design: update the relevant section. Decision: full schema. |
 | New dependency added | `system-architecture.md` Stack table, `decisions.md` | Architecture: add to table. Decision: one-line rationale minimum. |
-| QA issue discovered | `review-log.md`, `current-sprint.md` Up Next if severity is High or Critical | Review: full schema. Sprint: add actionable flags. |
-| Sprint completed | Archive `current-sprint.md` to `active-sprints/archive/sprint-N.md`, create new `current-sprint.md` | Archive: full snapshot. New: goal + rolled-forward Up Next and Open Questions. |
+| QA issue discovered | `review-log.md`; **raise with Carl** if High or Critical | Review: full schema. Do not park it in a roadmap section (D-038). |
+| Sprint completed | Archive `current-sprint.md` to `active-sprints/archive/sprint-N.md`, create new `current-sprint.md` | Archive: full snapshot. New: goal and current authorised work only — **no rolled-forward roadmap** (D-038). |
 | Motion or animation introduced | `design.md` Motion section, `decisions.md` | Design: updated motion rules. Decision: full schema with rationale. |
 | Performance or security constraint added | `system-architecture.md` Constraints table, `decisions.md` | Architecture: add row. Decision: full schema. |
 

@@ -34,11 +34,10 @@ shadcn/ui design tokens (oklch-based) are available in `globals.css` for future 
 
 **Enquiry experience exception:** Amber/gold warmth and a faint teal countertone are approved for the `/start` guided enquiry card selected state — see D-016. These are scoped to `components/enquiry/enquiry-opening.tsx` and the enquiry CSS classes in `globals.css`. They do not apply to the homepage or any other surface.
 
-**Brand colour direction (future — not yet applied):**  
-Near-black base, gold/amber as premium accent light, teal/duck-egg/deep blue as modern intelligence accent. This is directional only. See D-025. Do not apply to the homepage or any surface without a brief.
+**Brand colour direction:**  
+Near-black base, gold/amber as premium accent light, teal/duck-egg/deep blue as modern intelligence accent. **Directional — not applied to the homepage.** It is recorded because it explains built work: the frosted blue glass card material (D-028) derives from it. See D-025. **Do not apply to the homepage or any surface without a brief from Carl.**
 
-**Enquiry future colour pass (future — not yet designed):**  
-Active question: white/off-white (unchanged). Memory question text: may use one teal/duck-egg family colour. Q labels: may use muted gold/amber. Depth communicated through lightness/opacity — not multiple competing hues. Selected answer state to move away from current brown/amber fill toward restrained glass/smoked material. See D-024. Requires a new brief.
+**Enquiry colour/material:** approved as built. The forward-looking colour pass previously described here was removed on 28 July 2026 — **future work is not kept in this repository.** The guard stands: no colour or material change without a brief.
 
 ---
 
