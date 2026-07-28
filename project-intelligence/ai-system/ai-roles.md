@@ -183,5 +183,25 @@ approval for a PROVISIONAL layer is expected. The reviewer withdraws; nothing ro
 
 ---
 
-*Last updated: 2026-07-25 — pivot to the Architect/Builder two-instance model. Supersedes
-the ChatGPT/Codex hierarchy. See `decisions.md` D-036.*
+---
+
+## Direct conversation with the Builder — added 28 July 2026
+
+**Carl talks to the Builder directly, not only through the Architect.** The Architect still
+writes prompts for scoped implementation work and D-036 stands; what this adds is that
+**design conversation happens in the room.**
+
+Carl's reason, and the evidence for it: *"In my old workflow i hardly ever came in here and
+talked to you. That was a mistake… The gold rim exists, thats proof enough."* An afternoon of
+direct exchange produced the Q-label fix, the restored field entrance timing, the contact
+bevel taken from copper to gold, and two stale records corrected — none of it from a written
+chunk.
+
+**See `working-with-the-builder.md`** for what made it work and how the Builder should behave
+in that mode. It is an observed method, not a governance rule, and it overrides nothing.
+
+---
+
+*Last updated: 2026-07-28 — direct-conversation method added. Architect/Builder two-instance
+model established 2026-07-25; supersedes the ChatGPT/Codex hierarchy. See `decisions.md`
+D-036.*

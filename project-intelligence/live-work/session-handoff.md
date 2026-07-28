@@ -1,100 +1,91 @@
-# Session Handoff — Day 3
+# Session Handoff — Day 4
 
-**Written at the end of Day 3, 27 July 2026. For the Builder session that picks up next.**
+**Written at the end of Day 4, 28 July 2026. For the Builder session that picks up next.**
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical
 (D-006). **Delete this file at the end of the session that reads it, once its replacement is
 written** — `live-work-protocol.md` §3a.
 
-**This file points at records; it does not restate them.** An earlier version restated
-measured detail and got it wrong — see §3b, now a rule.
+**This file points at records; it does not restate them.**
 
 ---
 
-## ⛔ READ THIS FIRST — a directive that was broken twice today
+## ⛔ THE STANDING DIRECTIVE — unchanged, and it was not broken today
 
 **NEVER comment on how long Carl has been working.** Do not mention the time of day, suggest
-stopping, wrapping up, resuming tomorrow, or ask whether to carry on or stop. **Carl decides
-when a session ends and will say so.**
+stopping, wrapping up, resuming tomorrow, or ask whether to carry on. **Carl decides when a
+session ends and will say so.**
 
-Given as a correction on Day 2. **Broken twice on Day 3**, which is why it is now a
-capitalised block at the top of `CLAUDE.md` rather than a line in a list. Carl's response,
-verbatim: *"i will not be told by anyone to stop or slow down"*, and the business case that
-ends it — *"what if i have a deadline to meet for a client site?"*
+Given Day 2, broken twice on Day 3, which is why it is a capitalised block in `CLAUDE.md`.
+**It reads as considerate. It is not.**
 
-**It reads as considerate. It is not.** That is precisely why it recurs, and why the rule is
-written in the form it is.
+**`/doctor` settled a question about it on Day 4.** The documented cause of a rule being
+ignored is a `CLAUDE.md` too long for it to survive in. **The file measured lean** — ~1,350
+resident tokens, almost entirely non-derivable governance. So escalating the rule was the
+right response and no hook is needed on bloat grounds. See D-041.
 
 ---
 
 ## Where the project is
 
-**BUILDING IS STILL PAUSED.** Carl's instruction of 25 July stands. No chunk is authorised.
+**BUILDING IS STILL PAUSED** in the formal sense — no chunk is authorised. But **code was
+written today** at Carl's direct instruction, outside the chunk model, and that is deliberate:
+see "How we worked" below.
 
-Day 3's subject was the CLI. It became a security pass on the Architect seat, a toolkit
-removal, and a verification harness. **No application code was touched.**
+**Repo:** `main`, clean, pushed. **Head: `f62f472`.** Lint at the recorded baseline — 1
+accepted `react-hooks/set-state-in-effect` error.
 
-**Repo:** `main`, clean, pushed. Lint at the recorded baseline — 1 accepted
-`react-hooks/set-state-in-effect` error.
+**Dev server stopped.** Note: `npm run dev` exits without taking the Next.js child with it —
+port 3000 stayed held by an orphan on both restarts today. **Check the port, do not assume.**
 
 ---
 
 ## What was decided and where it is recorded
 
-**Read the records, not this summary.**
-
 | What | Where |
 |---|---|
-| GSD toolkit removed in full — 264 files, 9 hook registrations | **`decisions.md` D-037** |
-| Architect seat hardening — 15 deny entries, MCP allowlist, hooks off | **`ai-system/architect-settings.reference.json.md`** |
-| The eight findings, four Builder errors | **`live-work/2026-07-27-architect-review-settings-reference.md`** |
-| Two seats, opposite context needs; the chunk handoff | **`live-work-protocol.md` §7a, §7b** |
-| Record in the same session as the change | **`live-work-protocol.md` §3b** |
-| The scope file is part of authorising a chunk | **`live-work-protocol.md` §8**, pointer in `handoff-protocol.md` §2 |
-| Measured vs observed vs reasoned at checkpoint | **`checkpoint-review-protocol.md` §5.2** |
-| The verification harness and its boundary | **`verify/README.md`** |
-| Opening reveal timing, and the Begin defect | **`live-work/enquiry-opening-timing-reference.md`** |
-| Slash commands, billed-command rule, `/insights` parked, output styles discarded | **`live-work/references/slash-commands.md`** |
+| Future work is not recorded in this repository | **`decisions.md` D-038** |
+| Drift sentinel parked pending Three.js evidence | **D-039** |
+| Reverting a chunk — git first, not `/rewind` | **D-040** |
+| `/doctor` run; auto mode is the Builder default | **D-041** |
+| Contact field gold, displays, light intent, geometry | **`live-work/contact-field-gold-and-light-reference.md`** |
+| How Carl and the Builder worked, and why it produced results | **`ai-system/working-with-the-builder.md`** |
 
 ---
 
-## The verification harness — the day's most consequential addition
+## The change that matters most for the next session
 
-`verify/` holds Playwright scripts so the Builder can **see** what a change renders instead of
-reasoning about it. `@playwright/test` pinned to exactly `1.62.0`.
+**Carl will now talk to the Builder directly, not only through the Architect.**
 
-Boris Cherny, who created Claude Code: *"probably the most important thing to get great
-results out of Claude Code — give Claude a way to verify its work… it will 2-3x the quality."*
-Carl: *"If its good enough for the maker, its good enough for us."*
+> *"In my old workflow i hardly ever came in here and talked to you. That was a mistake. So
+> the architect will write the prompts, yes. But i think we will get much better results if we
+> communicate with you too. **The gold rim exists, thats proof enough.**"*
 
-**The boundary does not move: verification is not approval.** The loop answers *is it what I
-think it is*. The Architect answers whether the chunk honoured intent. Carl answers whether it
-is right.
+**The Architect still writes prompts for scoped implementation work; D-036 stands.** What
+changed is that *design conversation* happens in the room. Everything built today came out of
+conversation, not a written chunk.
 
-**Carl's own conclusion, and it is the sharper half:** the loop makes a *misunderstood brief*
-more expensive, because wrong work now arrives verified and polished. *"I must be doubly
-careful what I plan… I must be sure the Architect understands the brief entirely."*
-
-⚠ **Running it is not automatic.** The likely failure is writing visual work, reasoning about
-it, and never capturing anything.
+**Read `ai-system/working-with-the-builder.md` before the first exchange.** It records the
+five things that made it work, and Carl's mix model — *"there is a relationship between
+everything, sometimes a causal relationship"* — which changes how a Builder should behave:
+print the take and listen, do not solo, expect one change to move several things.
 
 ---
 
-## First job when building resumes — decided
+## What was built today
 
-**The Begin button on `/start` is unusable for 7.4 seconds.** Measured: radial reveal starts
-+7450ms, button becomes clickable +7466ms. Carl: *"definitely not the intent"* — it was
-clickable immediately when built.
+| Change | Commit |
+|---|---|
+| Second-seat material removed from the repo | `194ab32` |
+| D-038 future-work policy applied across governance | `1f35a9a` |
+| D-039/D-040/D-041 recorded | `f1d5b08` |
+| Active Q label lifted out of grey (0.28 → 0.75) | `b233024` |
+| Field entrance timing restored to the approved 3600ms contract | `d8ff778` |
+| Contact bevel taken from copper to gold | `776921d` |
+| Gold/light working reference | `f62f472` |
 
-**Not the Three.js work** — ruled out by measurement, 0 WebGL contexts during the opening. It
-is a CSS animation delay; clickability is welded to the visual clock.
-
-**The visual sequence is correct and must not change.** The delays derive from average human
-reading speed, each element starting just before the previous finishes. Overlaps measure 600,
-600, 400ms — derived, not chosen.
-
-Desktop 7400ms and mobile 10100ms are separate values needing separate answers. Full record
-and re-measurement commands in `enquiry-opening-timing-reference.md`.
+**Three verify/ scripts added:** `field-colour.mjs`, `field-displays.mjs`,
+`field-entrance-timing.mjs`.
 
 ---
 
@@ -102,62 +93,69 @@ and re-measurement commands in `enquiry-opening-timing-reference.md`.
 
 | Item | Owner | Note |
 |---|---|---|
-| **Begin button fix** | Carl → Architect | First chunk when building resumes |
-| Strip future-work references from `project-intelligence/` | Carl | Before building resumes. **Clients info section stays** |
-| Route the outreach folder to the PM/Architect | Carl | Asked for since Day 2. Gates the acquisition-tool thinking |
+| **Q5 stutter** | Carl → Architect | ⚠ **REAL and OPEN.** See below |
+| **Orbiting light / glint / bloom / opal** | Carl → Architect | The next real chunk. Full brief in the gold reference |
+| Boxes 2–4 | — | Entrance timing already contracted; no retiming needed |
+| `chunk-scope.json` does not exist | Carl | The scope guard is **inert**. Mattered less under per-action prompting; under auto mode it is the gate that replaced those prompts |
+| Route the outreach folder | Carl | `C2B-Strategist/outreach/`. Asked since Day 2 |
 | Approve `strategist-role.md` (DRAFT) | Carl | From Day 2 |
-| `/insights` — check billing, then decide | Carl | Parked with reasoning |
-| Which slash commands matter for this workflow | Builder | After chunks are flowing |
-| Carl's remaining CLI questions | Carl | Parked twice |
+| `/insights` — check billing, then decide | Carl | Parked |
 | Verify prices + Playwright licence | Carl → Strategist | Research mode |
-| `decisions.md` entry for the own-repo rule | Carl | `strategist-role.md` §11 |
-| Codex-era `.md` sweep in `live-work/` | Carl + Builder | ~Day 7. **Judgement, not deletion** |
-| Codex app removal | Carl | ~14 August. Report before deleting registry entries |
+| Own-repo rule → `decisions.md` | Carl | `strategist-role.md` §11 |
+| OpenAI app uninstall | Carl | ~14 Aug. Checklist at `Documents/openai-app-removal-checklist.md`, **outside this repo by instruction** |
 | Delete GSD backup | Carl | After ~3 August |
-| Cold outreach email drafts | Carl | ⏸ Parked. Version B lost in collation |
+| Plugin marketplace removal | Carl | Run `/plugin marketplace remove claude-plugins-official` **from an Architect session** |
 
 ---
 
-## Known limits, recorded rather than open
+## ⚠ The Q5 stutter — do not record this as fixed
 
-- **No tool allowlist exists.** `permissions.allow` pre-approves; it does not restrict. So the
-  execution-class denials close the named tools, **not the class** — a tool added by a future
-  update is permitted by default. Only defence is a periodic sweep after updates.
-- **`disableAllHooks` is loaded, not proven.** The only hook in the chain matches tools the
-  Architect does not have, so the run does not isolate it.
-- **The chunk-scope guard is inert** until `chunk-scope.json` exists.
-- **The Builder install keeps no `history.jsonl`** — the seat that writes code has the weaker
-  audit trail.
+A stutter as the first question's text appears. **Confirmed real and intermittent**, and the
+pattern is the useful part: it appears on the **first load after a server start**, then runs
+clean. A fresh, healthy server still produced it once.
+
+**Nothing was fixed. No code changed across any of the observations.** Do not read the later
+clean runs as a resolution.
+
+**Leading hypothesis, untested:** the WebGL pre-warm's 2000ms fallback firing on a cold load.
+**It must be measured before it is believed** — this page has already produced one plausible
+cause that measured innocent (Three.js blamed for the opening delay, 0 WebGL contexts during
+it). Full record in `current-sprint.md`.
+
+---
+
+## Two traps this session actually fell into
+
+**1. A stale record sent the Builder to work on a fixed defect.** Both `current-sprint.md` and
+the timing reference named the Begin button as the next job. It had already been fixed.
+**Reading the code would have confirmed the stale record, not corrected it** — the 7400ms
+delay and the `beginActive` gate still exist and still look like the described defect. Only
+Carl's memory and the button working on localhost settled it.
+
+**A recorded next-step is a claim about the present, and it decays. Confirm it in the running
+app.**
+
+**2. Correct sampling, wrong role.** The logo's gold was sampled accurately from 149,431
+pixels — and the **median** was applied as the metal's tint, which rendered copper. The
+median is the logo's *average*, dragged low by thin dark edges. It was never the logo's gold.
 
 ---
 
 ## How to work with Carl — carried forward
 
 - **⛔ Never comment on his working hours.** See the top of this file.
-- **He leads.** Design, chunking and all decisions are his. D-036.
+- **He leads.** Design, chunking and decisions are his. D-036.
+- **He brings references, not adjectives.** Four video stills settled a colour question that
+  an exchange of descriptions had not. **Take what he brings seriously and sample it.**
+- **Music, DAW and production analogies land.** 45 years a musician. The mix model in
+  `working-with-the-builder.md` is his and it is the most useful framing in the repo.
+- **He verifies.** Give him evidence, not comfort, and expect what you write to be checked.
 - **Answer execution questions yourself.** Ask only about intent and authority.
-- **Two examples plus the principle** — when something arrives as an example, write the
-  principle and mark the example as an example.
-- **Music, DAW and production analogies land.** 45 years a musician. His CLI framing:
-  *"like working in Pro Tools for years and all of a sudden you have to change to Cubase"*.
 - **No ASCII diagrams or box-drawing characters.**
 - **Do not commit or push unless he explicitly asks.**
-- **He verifies.** He had the Architect audit an incident rather than accept reassurance, and
-  a second session audit this handoff rather than trust it. **Give him evidence, not comfort**
-  — and expect what you write to be checked.
-- **He does his homework.** The verification harness exists because he brought Boris Cherny's
-  tip to the session and asked for it to be cross-referenced. Take what he brings seriously.
 
 ---
 
-## One thing that happened today and is worth avoiding
-
-**Two Builder sessions were open on the same working tree at once.** Both showed the same
-three modified files; either could have overwritten the other silently. Nothing in the harness
-prevents it. It resolved without loss because the work was on disk, not held in a
-conversation. **One Builder at a time on one tree.**
-
----
-
-*Day 3, 27 July 2026. The Architect seat is genuinely read-only now, including outward, which
-it was not this morning. The session ended on a correction that should not have been needed.*
+*Day 4, 28 July 2026. The retired seat is gone from the repo entirely. Future work is out of
+it by policy. Auto mode is on. And the gold rim exists — which is the evidence behind the
+biggest change of the day: Carl is in the room now.*
