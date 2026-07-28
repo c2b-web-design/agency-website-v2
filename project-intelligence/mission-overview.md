@@ -73,17 +73,48 @@ the site is undeployed.**
 **⛔ NO OTHER HUMAN HAS SEEN IT, and none will until it is finished.** Carl, 28 July 2026:
 *"No other human has seen it. Not till its finished."*
 
-**It is protected by Vercel SSO**, which is the platform default for previews and is
-**deliberately left on**. Requests redirect to `vercel.com/sso-api`; only Carl, signed into
-the owning Vercel account, can view it. A session cookie lasts about an hour.
+### ⚠ Protection is PARTIAL — measured, not assumed
+
+**Corrected within the hour it was first written.** An earlier version of this section said
+the deployment was SSO-protected. **That is true of previews and false of production.**
+Measured 28 July 2026:
+
+| URL form | Result |
+|---|---|
+| `agency-website-v2-awjv-<hash>-c2b-web-design.vercel.app` (preview) | **302** → `vercel.com/sso-api`. Protected |
+| `agency-website-v2-awjv.vercel.app` (**production alias**) | **200.** Serves the site. **No authentication** |
+
+**On the Hobby plan, Vercel Authentication covers preview deployments only.** The short alias
+— the one anyone would naturally bookmark or paste — is **publicly reachable by anyone who
+has it.**
+
+**Carl's position, and it is a reasonable one:** nobody has the URL but him, it is linked from
+nowhere, and the practical risk is tiny. *"The risk is miniscule. That be said, someone wins
+the lottery every week."*
+
+**So the distinction to hold is unlisted, not private.** They differ only when something
+unexpected happens — which is precisely the case that cannot be planned for afterwards.
+
+**What was done in the repo** (`app/robots.ts`, `robots` metadata in `app/layout.tsx`): all
+crawlers blocked, plus a `noindex, nofollow` meta tag because some crawlers honour the tag
+but not the file. Verified rendering, not assumed.
+
+⚠ **Neither is access control.** A crawler that ignores the standard, or any person with the
+link, still reaches the site. **The real control is Vercel → project → Settings → Deployment
+Protection, which is Carl's and outside this repository.**
+
+⚠⚠ **REMOVE BOTH BEFORE LAUNCH.** A finished commercial site that blocks crawlers will never
+be indexed and will never appear in search. It would look completely correct and no one would
+find it — a silent, expensive defect. The warning is repeated in both files.
 
 **Consequences that matter:**
 
-- **Do not share the URL.** Anyone outside Carl's Vercel team gets a login wall, not the site.
-- **Do not propose disabling deployment protection.** Making it public is outward-facing and
-  hard to un-see. It requires Carl's explicit instruction, not an inference from convenience.
-- **An agent cannot fetch it.** Authenticated URLs fail `WebFetch`. Any claim about what is
-  live must come from Carl or from a local run — never from a fetch that "looked fine".
+- **Do not share the URL.** The production alias has no login wall to stop anyone.
+- **Do not propose disabling deployment protection**, and do not propose enabling it either.
+  Publishing is outward-facing and hard to un-see; it requires Carl's explicit instruction,
+  never an inference from convenience.
+- **An agent cannot fetch the preview.** Authenticated URLs fail `WebFetch`. Any claim about
+  what is live must come from Carl or a local run — never from a fetch that "looked fine".
 
 **What it is for.** Not a shop window — Carl's reference surface. *"I stare at it and try to
 go thru it to get ideas, inspiration. Instead of listening, i look."*

@@ -38,11 +38,22 @@ accepted `react-hooks/set-state-in-effect` error.
 **Dev server stopped.** Note: `npm run dev` exits without taking the Next.js child with it —
 port 3000 stayed held by an orphan on both restarts today. **Check the port, do not assume.**
 
-⚠ **The site IS deployed to Vercel, privately.** This session told Carl it was not, because
-there is no `vercel.json` and no `.vercel` directory — the project is linked through the
-GitHub integration, so **a repo-only check finds nothing and proves nothing.** Now recorded
-in `mission-overview.md` § Deployment. **No other human has seen it and none will until it is
-finished**; SSO protection stays on, and disabling it needs Carl's explicit instruction.
+⚠ **The site IS deployed to Vercel, and the production alias is PUBLIC.** Two errors in one
+hour, both now corrected in `mission-overview.md` § Deployment:
+
+1. This session told Carl there was **no deployment**, on the basis that the repo has no
+   `vercel.json` and no `.vercel` directory. A GitHub-integration link leaves neither. **A
+   repo-only check finds nothing and proves nothing.**
+2. It then recorded the deployment as **SSO-protected**. Measured: previews return 302 to the
+   login; **the production alias returns 200 and serves the site with no authentication.** On
+   Hobby, Vercel Authentication covers previews only.
+
+**No other human has seen it and none will until it is finished.** `app/robots.ts` and a
+`noindex` meta tag now block crawlers — **neither is access control**, and ⚠ **both must be
+removed before launch** or the finished site will never be indexed.
+
+**Do not propose changing Vercel's protection setting in either direction.** Outward-facing,
+Carl's alone.
 
 ---
 
