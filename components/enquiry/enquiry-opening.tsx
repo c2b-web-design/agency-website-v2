@@ -704,11 +704,18 @@ export default function EnquiryOpening() {
         {/* zero-sized canvas would destroy that mapping and force a resize on */}
         {/* reveal. `.enquiry-contact-layer` is `position: absolute`, so mounting it */}
         {/* early still contributes no layout and cannot move Send or the slot. */}
+        {/* ENTRANCE TIMING lives in CSS (`.enquiry-contact-layer--in`), not here. */}
+        {/* The layer used to flip to opacity 1 the instant `complete` mounted — */}
+        {/* completion-clock 0ms — which put the field on screen while */}
+        {/* "Understood." was still revealing (0–1100ms) and the corridor was */}
+        {/* still fading clear (0–2600ms). The approved contract starts the first */}
+        {/* field at 3600ms over 700ms linear; that is what the class restores. */}
+        {/* Boxes 2–4 take the same class with their own `--eq-field-delay`. */}
+        {/* No inline `opacity` here: it would beat the animation's own value. */}
         {canvasWarm && (
           <div
-            className="enquiry-contact-layer"
+            className={`enquiry-contact-layer${stage === "complete" ? " enquiry-contact-layer--in" : ""}`}
             style={{
-              opacity: stage === "complete" ? 1 : 0,
               pointerEvents: "none",
               visibility: stage === "complete" ? "visible" : "hidden",
             }}

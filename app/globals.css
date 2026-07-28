@@ -1450,6 +1450,23 @@
 
 /* Contact cards — absolute layer in the same 11.5rem corridor band, */
 /* separate from the fading memory layer so card fade-ins are unaffected. */
+/* Contact-field entrance — the approved field cascade, restored.
+   ────────────────────────────────────────────────────────────────────────────
+   The four provisional CSS fields each faded in on their OWN delay: Name 3600ms,
+   Business name 4100ms, Website URL 4600ms, Email 5100ms, every one a 700ms
+   linear fade, starts 500ms apart so adjacent fades overlap by 200ms. When the
+   CSS fields were replaced by the Three.js object, the per-field delays were not
+   carried over and the layer snapped to full opacity at completion-clock 0ms —
+   on top of "Understood." revealing (0–1100ms) and the corridor still fading
+   clear (0–2600ms). That collision is the defect this restores.
+
+   Contract: `contact-form-current-timing-reference.md`. Clock zero is the
+   `complete` stage mounting, 900ms after Q1 Next step.
+
+   WHY A DELAY VARIABLE, NOT A FIXED VALUE: only box 1 exists (the former Name
+   position). Boxes 2–4 are per-object entrances on the SAME contract, so each
+   gets its own `--eq-field-delay` — 4100ms, 4600ms, 5100ms — and NOTHING here
+   is retimed when they arrive. The cascade is partially built, not redesigned. */
 .enquiry-contact-layer {
   position: absolute;
   top: 0;
@@ -1459,6 +1476,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  --eq-field-delay: 3600ms;
+  opacity: 0;
+}
+
+.enquiry-contact-layer--in {
+  animation: eq-field-fade-in 700ms linear var(--eq-field-delay) both;
+}
+
+@keyframes eq-field-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Reduced motion: no cascade. The completion state is presented immediately,
+   matching how the acknowledgement and Send behave under the same query. */
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-contact-layer--in {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

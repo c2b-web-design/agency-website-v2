@@ -78,30 +78,46 @@ the present, and it decays. `enquiry-opening.tsx:259` and the 7400ms delay at
 so **reading the code alone would have confirmed the stale record rather than corrected it.**
 Only Carl's memory of the fix, and the button working on localhost, settled it.
 
-### Q5 stutter — observed, not reproducible, NOT fixed
+### ⚠ Q5 stutter — REAL, intermittent, OPEN. Deferred by Carl, not resolved
 
-Carl saw a stutter as the first question's text appeared. It is **not reproducible** on a
-freshly started dev server.
+**Symptom:** a stutter as the first question's text appears — Carl described the "W" and "h"
+of the Q5 phrase arriving raggedly.
 
-⚠ **Do not record this as fixed. Nothing was fixed** — no code changed between the two
-observations (working tree identical to `HEAD`; `enquiry-opening.tsx` and `globals.css`
-unmodified since 25 July).
+**Confirmed intermittent, and the pattern is the useful part.** Observed across two sessions
+on 28 July:
 
-**What differed was the server.** The first dev-server process reached **362s CPU and
-916 MB**, held port 3000 and stopped responding to requests; it was killed and restarted.
-A starved main thread produces exactly the symptom observed.
+| Attempt | Result |
+|---|---|
+| First load, degraded dev server | stutter |
+| Fresh server, first load | **stutter** |
+| Fresh server, 2nd and 3rd loads | clean |
 
-**That is an inference, not a measurement** — the server's state was not captured at the
-moment the stutter was seen. Two possibilities remain live:
+**It favours the first load after a server start, then stops.** That pattern is evidence, and
+it points away from the earlier dev-server-degradation theory as a *complete* explanation —
+a fresh, healthy server still produced it once.
 
-1. The stutter is a dev-server artefact and never existed in production.
-2. The stutter is real and intermittent, and a fresh server currently masks it.
+⚠ **Nothing has been fixed.** No code changed across any of these observations. Do not read
+the later clean runs as a resolution.
 
-**If it returns, measure it with `verify/`** — load `/start`, press Begin, capture frame
-timing on Q5. Intermittent faults are exactly what watching cannot settle. The plausible
-real cause, if it is real, is the WebGL pre-warm: `requestIdleCallback` schedules shader
-compilation into an idle gap, but a 2000ms fallback fires it regardless, which could land
-on Q5.
+**The leading hypothesis, untested:** the WebGL pre-warm. `requestIdleCallback` schedules
+shader compilation into an idle gap, but a **2000ms fallback fires it regardless** of whether
+the thread is free. On a cold first load — nothing cached, Turbopack compiling, shaders not
+yet in the driver cache — that work is at its most expensive and most likely to land on Q5.
+Subsequent loads hit warm caches, which fits "first load only" exactly.
+
+**This is a hypothesis and must be measured before it is believed.** This project has already
+been burned once by a plausible cause on this very page: Three.js was blamed for the opening
+delay and measured innocent — 0 WebGL contexts during the opening. The rule stands: measure
+first.
+
+**How to measure it:** a `verify/` script that loads `/start` **cold** (fresh context, cache
+disabled), presses Begin, and captures long tasks and frame gaps across the Q5 reveal, plus
+the timestamp of WebGL context creation. The question it must answer is whether shader
+compilation overlaps the Q5 phrase animation. Run it repeatedly — a fault that appears once
+per server start needs more than one sample.
+
+**Status:** deferred on Carl's instruction, 28 July 2026 — *"We will have to get to the bottom
+of this, for now it can wait."*
 
 ---
 
