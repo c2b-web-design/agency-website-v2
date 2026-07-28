@@ -864,3 +864,117 @@ A fourth status, **`PROVISIONAL`**, is added to the schema for work that is **in
 
 **Authority:** Human Founder
 **Status:** APPROVED — standing policy. Applies to every future session. If a future direction becomes current scope, Carl introduces it as a chunk with its own brief.
+
+---
+
+## D-039 — Governance: Drift Sentinel Parked Pending Evidence From The Three.js Chunks
+
+**Date:** 2026-07-28
+**Status:** PARKED — decide after the first few Three.js chunks. Not approved, not rejected.
+
+**Decision:** The continuous Drift Sentinel is **not rebuilt for now**. `drift-sentinel.md` and the retained specification in `live-work-protocol.md` §6 stay in place, unowned, until the four-box Three.js work produces evidence about whether a watch is actually needed. Carl decides then.
+
+**Why it was raised:** the Sentinel has had **no owner** since the previous governance layer retired. Nothing runs the watch. `STATUS: CONTINUE` in `drift-sentinel.md` means *"no watch is running"* — not *"watched and clear"* — which is why that file carries a warning at the top.
+
+**Why parking is reasonable rather than negligent.** The Sentinel read status files every two minutes because the reviewing seat was blind — no eyes on the browser, no eyes on the Builder's chat panel. It was a workaround for that blindness. Two of the three jobs it proxied for now have better answers:
+
+| Sentinel's job | Current answer |
+|---|---|
+| Catch visual work going wrong | `verify/` — the render is captured, not described |
+| Notice drift while it happens | Carl, switching between the chat window and localhost frequently |
+| Compare work against the approved prompt | **Still nothing automatic** — the open half |
+
+**The honest limit, recorded so it is not discovered later.** The unanswered third row is the failure Carl is most exposed to: **work that renders correctly, verifies clean, and is not what was asked for.** Neither the harness nor watching localhost catches it. Carl's own conclusion from Day 3 stands as the mitigation — *"I must be doubly careful what I plan… I must be sure the Architect understands the brief entirely."*
+
+**Note that the old Sentinel would not have caught it either.** It compared status files, which would have read as work proceeding normally. Rebuilding it would not close the gap it appears to close.
+
+**What remains in force regardless:** the Builder's obligation (§6) to write status, checkpoint and run-log files in small steps during sensitive visual, material, animation, Three.js, layout or approved-foundation work. That is independent of anything watching them — it exists so that when Carl switches over and asks what happened, there is a written answer rather than a reconstruction from memory.
+
+**The known failure mode:** Carl as drift detection only works if he looks. On a long session that is easy to intend and skip. If a stretch goes unwatched, the remedy is checkpoint discipline — not a resurrected Sentinel.
+
+**If it is ever rebuilt (P-A):** prefer a **hook** over an instruction. An agent *asked* to run a watch is an intention, not a control — that is precisely how the retired Sentinel came to sit at `STATUS: STOP` while work was being submitted for review. `.claude/hooks/chunk-scope-guard.js` is the nearest existing mechanism, currently inert until `chunk-scope.json` exists.
+
+**Authority:** Human Founder
+
+---
+
+## D-040 — Workflow: Reverting A Chunk — Git First, Not `/rewind`
+
+**Date:** 2026-07-28
+**Status:** APPROVED as guidance.
+
+**Decision:** When a chunk needs undoing, reach for **git** first. `/rewind` is reserved for the narrow case git cannot cover.
+
+| Situation | Use |
+|---|---|
+| Chunk committed and went wrong | `git revert` / checkout — fast, keeps the record **and** the Builder's context |
+| Uncommitted mess, the whole approach should be forgotten | `/rewind` |
+| Part of the work was right | **Re-prompt** — nothing else can be selective |
+
+**Rationale.** `/rewind` and re-prompting are not two routes to the same place. Rewind **erases**; re-prompting produces a new forward change that happens to land near an earlier state.
+
+Two consequences decide it:
+
+1. **`/rewind` leaves no audit trail.** The conversation that produced the bad chunk is gone and `project-intelligence/` learns nothing. This contradicts the project's own discipline — *a superseded record is evidence; a deleted one is a gap*. A rewound chunk is a gap by construction.
+2. **Rewinding discards what was learned.** If the Builder has just measured *why* an approach fails, that is the single thing most worth keeping. Rewinding hands the same task back to someone who has not tried it yet.
+
+**Git gives rewind's speed while keeping both the history and the Builder's context**, which is why it is the default.
+
+**Correction, same day.** This entry first described `/rewind` as all-or-nothing. **It is not.** The documentation states it restores **conversation only, code only, or both**, and can also summarise from a chosen message. The recommendation above is unchanged — git still keeps the history *and* the Builder's context, which is the deciding factor — but "it cannot be selective" was wrong and is withdrawn.
+
+Two further details worth knowing before relying on it:
+
+- **Checkpoints only track changes made through Claude's file-editing tools.** Changes made by Bash commands or external processes are **not** captured. It is not a replacement for git.
+- Every prompt creates a checkpoint, and they persist with the conversation, so a session can be resumed later and still rewound.
+
+⚠ **`/rewind` remains on the never-invoke-to-explore list** (`CLAUDE.md`, billed and destructive commands). Its behaviour above is taken from documentation; **it has not been tested here.** Verify before relying on it in anger.
+
+**Authority:** Human Founder
+
+---
+
+## D-041 — Tooling: `/doctor` Diagnostic Run, And Auto Mode Made The Builder Default
+
+**Date:** 2026-07-28
+**Status:** APPROVED — applied the same day.
+
+**What happened.** Carl ran `/doctor` from the read-only Architect seat and brought the raw report to the Builder rather than routing it as instructions. **That sequencing was deliberate and worth keeping:** a report converted into a prompt before the Builder sees it arrives with its findings already collapsed into orders, and the Builder cannot say which are wrong. Raw findings can be triaged; instructions cannot.
+
+### The result that mattered
+
+**`CLAUDE.md` passed the trim check.** ~1,350 estimated resident tokens, and the only derivable content was the two-line Stack section that `package.json` already states. Everything else — the working-hours directive, approved-layer locks, handoff protocol, the lint-error gotcha, the billed-command list — is non-derivable governance that belongs there.
+
+**This settles an open question.** The working-hours directive was broken twice and escalated to a capitalised block. The documented failure mode for a broken rule is *"the file is probably too long and the rule is getting lost."* **The file is not too long.** So escalation was the right response, and no hook is needed on bloat grounds.
+
+### Applied
+
+| Change | Detail |
+|---|---|
+| **Auto mode** as Builder default | `"defaultMode": "auto"` in `~/.claude/settings.json`. Applied as a one-line edit, not the whole-file replace proposed — same result, smaller blast radius. Validated: parses, both allow rules intact, statusline and model preserved |
+| 16 backup files deleted | 5 Architect settings backups, 10 `.claude.json` backups, and `.claude.json.bak-before-codex-removal` — the last removed under the standing rule that nothing from the retired seat stays |
+
+**Backups regenerate.** Three reappeared within seconds. This is tidying, not a permanent fix.
+
+### Not applied, deliberately
+
+- **Duplicate `~/.claude.json` project key** (`C:/…` stub alongside `c:/…`). Cosmetic, and the report's own caveat is the reason: it may be recreated, or recreated inverted. Hand-editing live app state to remove ten default-valued keys is not worth a malformed-edit risk. If ever done, close every session first.
+- **Plugin marketplace removal** — installed under `~/.claude-architect/`, so it must be run from an Architect session.
+- **The Stack section.** The report recommended keeping it; the Builder mildly disagreed (`package.json` is the real statement of intent, and a copy can drift). ~25 tokens either way. Left as-is.
+
+### What auto mode does and does not change
+
+**Does:** routine per-action approvals go to a safety classifier instead of prompting Carl each time.
+
+**Does not:** hooks still fire under every permission mode, so `chunk-scope-guard.js` is unaffected. The plan-review gate, checkpoint review and every governance rule stand — no commit or push without Carl asking, no touching an approved layer without asking.
+
+**The honest framing, recorded because it is a shift not a tidy-up:** oversight moves from *per-action* to *per-chunk*. That suits this model — the real gates are chunk authorisation, the plan-review gate and checkpoint review — and the documented risk of per-action gating is that *"after the tenth approval you're not really reviewing anymore, you're just clicking through."* Carl also now watches localhost directly, which catches more than a permission dialogue.
+
+⚠ **The consequence to act on:** `chunk-scope-guard.js` is **inert** until `chunk-scope.json` exists. Under per-action prompting that mattered less; under auto mode it is the deterministic gate that replaces those prompts. **Wire it up before sustained Three.js implementation.** Not urgent while building is paused.
+
+**Two corrections to the report, recorded so the record is accurate rather than flattering:**
+1. It stated the lowercase project key holds "real history." **Both keys hold zero history entries.** The lowercase one holds session *telemetry* — `lastCost`, lines added, `lastSessionId`. Acting on the stated reason could have deleted the wrong key.
+2. It counted "~14" backup files; there were **16** including the codex snapshot.
+
+**Authority:** Human Founder
+
+---

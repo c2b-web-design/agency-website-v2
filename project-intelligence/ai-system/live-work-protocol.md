@@ -343,6 +343,13 @@ activated it at execution start. Nothing does so now. The Builder's obligation t
 status and checkpoint files in small steps **remains in force**; the continuous watching of
 those files does not.
 
+**Parked deliberately — D-039 (28 July 2026).** Whether to rebuild it is being decided from
+evidence rather than in advance: Carl will judge after the first few Three.js chunks. Two of
+the three jobs it proxied for now have better answers — `verify/` captures the render, and
+Carl watches localhost directly. The third, comparing work against the approved prompt,
+remains open, **and the old Sentinel would not have closed it either** — it compared status
+files, which read as normal while a misunderstood brief proceeds.
+
 `STATUS: CONTINUE` in `drift-sentinel.md` therefore means *"no watch is running"*, not
 *"a watch is running and sees no drift"*. Do not read it as an active all-clear.
 
