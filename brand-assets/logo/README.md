@@ -1,14 +1,14 @@
 # C2B Logo Assets
 
-Salvaged 24 July 2026 from `~/.codex/generated_images/019e7de9-.../` before the
-Codex installation was removed from the system. These are C2B property.
+Salvaged 24 July 2026 from an external AI image tool's storage before that tool was
+removed from the system. These are C2B property.
 
 Verified byte-for-byte identical to the originals at time of copy (`cmp`, 14/14).
 
-⚠ **That source path no longer exists** — the whole `generated_images/` tree was
-destroyed with the rest of `~/.codex` on 25 July 2026, which is why the salvage
-happened. The path above is kept as a record of where these came from, not as a
-location you can open. **The copies in this folder are the originals now.**
+⚠ **The source no longer exists** — it was destroyed on 25 July 2026, which is why the
+salvage happened. **The copies in this folder are the originals now.** There is nothing
+to re-export from and no path to re-check them against; treat this folder as the sole
+source of truth for these assets.
 
 **One file here is not from that salvage** — `c2b-flat-white-alpha-cleaned-1x.png`,
 added 27 July 2026. Its provenance is recorded with it below.
@@ -45,7 +45,7 @@ resized or optimised — these are the originals.
   Note that it appears **blank in most image viewers**, which composite white onto white.
   It is not empty. View it against a dark background.
 
-  **Provenance:** not from the Codex salvage. It was found loose in
+  **Provenance:** not from the salvage above. It was found loose in
   `OneDrive/Pictures/Camera Roll/` on 27 July 2026 and copied here — verified byte-identical
   (`md5`) — because it existed in exactly one place and Pictures is being cleared of C2B
   material. Origin and date of creation unknown; file dated 23 June 2026. Filename kept as

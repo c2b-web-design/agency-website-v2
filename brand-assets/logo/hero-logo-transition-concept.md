@@ -5,7 +5,7 @@
 This file has two layers, and they must not be confused:
 
 1. **"The concept (2 June 2026)"** — a salvaged historical record, recovered 24 July 2026
-   from Codex session logs before that installation was removed. Preserved verbatim
+   from external tool session logs before that installation was removed. Preserved verbatim
    because the articulation is clearer than anything in `project-intelligence/`, and the
    source was being destroyed. **Parts of it are superseded** — annotated inline.
 2. **"Current direction (24 July 2026)"** — Carl's current thinking, which **supersedes
@@ -109,12 +109,11 @@ distinction survives, since it is what makes the direction consistent with appro
 ### Undecided / open
 
 - **Scene subject matter — UNDECIDED.** Abstract or otherwise; genuinely open.
-- **Source assets:** Carl intends to attempt a still image via GPT image generation
-  inside the remaining ~3-week Codex window (lapses ~mid-August 2026). For video, the
-  likely route is an existing free-use clip manipulated in Resolve, possibly with other
-  AI generation tools. ⚠ Per `live-work/codex-removal-status.md`, anything generated in
-  that window must be saved **directly into `brand-assets/`** — the Codex tree is
-  scheduled for deletion.
+- **Source assets:** Carl intends to attempt a still image via external AI image
+  generation. For video, the likely route is an existing free-use clip manipulated in
+  Resolve. ⚠ **Anything generated in an external tool must be saved directly into
+  `brand-assets/` as it is made** — not left in that tool's own storage, and not collected
+  in a batch at the end. Batches are what get forgotten when a tool is removed.
 - **Font:** not chosen.
 - **Performance, mobile behaviour and reduced-motion degradation:** not yet addressed.
   A hero built on video plus WebGL has real cost, and the enquiry work already
@@ -128,13 +127,13 @@ the agency's own proof of work and is judged before anything else is read.
 ## Asset status — verified, not assumed
 
 **No platinum-blue logo image exists on this system.** Searched exhaustively on
-24 July 2026: all 644 images under `~/.codex` (every one outside `generated_images/`
-is a plugin or marketplace asset), all 22 session logs, and filename matches for
-platinum / blue / silver / chrome. The sessions discuss a blue version only as
-*future exploration* — it was never generated.
+24 July 2026: all 644 images in the external tool's storage (every one outside its
+generated-image folder was a plugin or marketplace asset), all 22 session logs, and
+filename matches for platinum / blue / silver / chrome. The sessions discuss a blue
+version only as *future exploration* — it was never generated.
 
 The 14 files salvaged to `brand-assets/logo/` are the **complete set** of C2B images
-that existed in Codex. A platinum-blue version must therefore be **created**, not
+that existed there. A platinum-blue version must therefore be **created**, not
 recovered.
 
 ## Relationship to approved work

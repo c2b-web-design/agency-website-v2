@@ -235,7 +235,7 @@ function safeBevelSize(desired: number, radius: number): number {
  * height at the boundary but with MAXIMUM slope, so the face would meet the
  * aperture on a hard crease. The raised cosine reaches zero height AND zero
  * slope at |v| = 1, which is the tangent-smooth junction the design intends.
- * (Corrected after Codex checkpoint review flagged the original claim as
+ * (Corrected after a checkpoint review flagged the original claim as
  * mathematically wrong — it was previously hidden by the bevel occlusion.)
  *
  * The LONG axis (u) is a PLATEAU, not a cosine. A cosine along u drives the
@@ -382,7 +382,7 @@ export function ContactField({
   // crown height and would come apart under a different camera or a
   // transmissive material. Cutting a true aperture at the face boundary means
   // the face is seen THROUGH an opening and presents its own rounded-rectangle
-  // silhouette. (Found by Codex checkpoint review and independently confirmed:
+  // silhouette. (Found by checkpoint review and independently confirmed:
   // only the central ~63% of the face's short axis was clearing the cap.)
   const bevelGeometry = useMemo(() => {
     const radius = insetRadius(BEVEL_INSET);

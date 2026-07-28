@@ -1,33 +1,28 @@
-# C2B Web Design — Codex Startup Context Pack
+# C2B Web Design — Ethos, Vision and Creative Philosophy
 
-Version: 1.0  
-Purpose: Startup context for Codex / GPT / ChatGPT sessions working with Carl Buckley on C2B Web Design.
+**Model-agnostic.** This file holds Carl's ethos, brand meaning, business vision, working
+preferences and creative philosophy. It is reference material for any seat, not a briefing
+pack for a particular tool.
 
-\---
+**Provenance:** salvaged on 28 July 2026 from `C2B_Codex_Startup_Context_Pack.md`, which was
+deleted with the rest of the Codex-era material. Sections 1 and 8–11 of that file were
+handoff machinery for the retired Codex seat — how to brief it, the MCP bridge, its session
+workflow — and were **not** carried over. Governance now lives in `ai-system/`; the
+"hands on code / eyes on the system / Carl decides" principle is carried by
+`ai-system/ai-roles.md` and `ai-system/architect-role.md`.
 
-## 1\. How To Use This File
+**Original section numbers are preserved** so older references remain traceable — which is
+why they are not contiguous.
 
-Use this file at the start of a C2B Codex/GPT session to understand the project, Carl’s working style, the governance model, the wider business vision, and the creative philosophy.
+**Future-work sections were removed the same day, on Carl's instruction.** §§24–29 and §31
+(future commercial models, proof/marketing tool, sector-aware strategy, transformational
+tool, motion factory, infrastructure, future typography) are gone. **Carl keeps the
+future-work record outside this repository**, for the site and the wider business, so that
+a session reading these files is not distracted by work it does not need to know about yet.
+§30 (performance) and §32 (external inspiration) were kept — both are current practice, not
+speculation.
 
-This file does not replace:
-
-* GitHub
-* `/project-intelligence/`
-* current user instructions
-* current live site/browser inspection
-
-Always prioritise:
-
-1. Current GitHub repo state.
-2. `/project-intelligence/`.
-3. Current user instruction.
-4. This startup context file.
-
-If this file conflicts with current repo state or `/project-intelligence/`, ask Carl which source should govern.
-
-Many ideas in this file are roadmap context, not current implementation scope.
-
-\---
+---
 
 ## 2\. Core Project Identity
 
@@ -177,200 +172,6 @@ Website
 → long-term relationship
 
 The site must therefore build enough trust for a business owner to begin a serious conversation.
-
-\---
-
-## 8\. Multi-AI Operating Model
-
-Carl intends to use multiple AI tools with clear governance rather than expecting one AI to do everything.
-
-The model should resemble a structured human business with specialist roles.
-
-### Carl
-
-Founder, creative owner, final authority, business owner, taste-maker, approver.
-
-### ChatGPT / GPT / Codex
-
-Strategic operating partner, project manager, creative director, systems architect, repo-aware reviewer, browser QA, research planner, business workflow designer, prompt writer.
-
-For the website implementation codebase, GPT/Codex is read-only/advisory unless Carl explicitly changes scope for a separate non-website task.
-
-GPT/Codex may edit project-management, architecture, strategy, governance, and starter-context documents when Carl asks, or when Carl approves a documentation update. These documents support GPT/Codex's project-manager and architect role and sit outside Claude Code's website implementation lane.
-
-ChatGPT/Codex is one PM/governance/reviewer layer expressed through different surfaces: chat, Codex app, and the Codex MCP checkpoint-review bridge. The MCP bridge has no independent authority; it is a review channel only.
-
-Important live-work clarification:
-
-Codex does not directly read or control Claude Code's VS Code chat panel.
-
-The operational connection between Claude Code and Codex is:
-
-1. Claude Code writes shared handoff files into `project-intelligence/live-work/`.
-2. Claude Code saves visual evidence into `project-intelligence/live-work/screenshots/`.
-3. Codex reads those files directly from the repository filesystem.
-4. Codex opens screenshots directly from disk when visual review is needed.
-5. Claude Code may call the registered MCP server named `codex` to request a checkpoint review.
-
-The MCP bridge is not a remote-control channel for Codex to drive Claude Code. It is a checkpoint-review request channel. If Carl asks whether Codex can see what Claude is doing, the precise answer is:
-
-> I can see what Claude saves into the shared live-work files, plus normal saved repo changes. I cannot directly see the Claude Code chat panel unless Claude writes its relevant contents into live-work files.
-
-### Claude Code
-
-Sole website implementation agent.
-
-Claude writes website code inside VS Code. Claude integrates approved assets. Claude does not originate creative direction for Blender or the wider brand asset system.
-
-### Claude Chrome Browser Extension
-
-Runtime observation layer and browser intelligence bridge.
-
-Useful for:
-
-* live rendered site inspection
-* console errors
-* DOM inspection
-* visual QA
-* mobile/responsiveness checks
-* GitHub/Vercel/browser information retrieval
-* extracting relevant project decisions from browser tabs
-
-It is observational, not a governance authority.
-
-### Claude Design
-
-Creative exploration layer.
-
-Useful for:
-
-* visual exploration
-* layout experimentation
-* typography refinement
-* interaction ideation
-* emotional pacing
-* premium aesthetic development
-
-It is not a production implementation layer.
-
-### GitHub
-
-Technical source of truth for the committed project.
-
-### `/project-intelligence/`
-
-Creative, strategic, governance, and decision-memory source of truth.
-
-The purpose is curated intelligence, not raw conversation accumulation.
-
-### Vercel / Browser
-
-Live experience truth: how the site actually feels and behaves.
-
-### Blender / Future Creative Tools
-
-Creative asset studio for logo, motion, materials, particles, visual systems, and exported assets, directed by Carl + ChatGPT/GPT.
-
-### Gemini / External Auditors
-
-Possible future advisory or audit layer only.
-
-External auditors may produce critique or reports, but they do not write production code or override governance.
-
-\---
-
-## 9\. Absolute Website Governance Rule
-
-Only Claude writes website code.
-
-GPT/Codex may:
-
-* read GitHub
-* inspect repository structure
-* read `/project-intelligence/`
-* inspect the live Vercel site through browser use
-* review implementation
-* identify risks or inconsistencies
-* suggest improvements
-* advise Carl
-* write prompts for Claude Code
-* edit project-management, architecture, strategy, governance, and starter-context documents when Carl asks or approves the update
-* review Claude Code implementation checkpoints through the Codex MCP bridge and report findings to Carl
-* inspect temporary `project-intelligence/live-work/` files so Carl does not have to copy and paste Claude Code plans, chat-window content, run logs, screenshots, or checkpoint material
-* write clearly labelled “Project Intelligence Prompt” updates
-* help with Git commit messages after Claude has completed and Carl has approved work
-
-GPT/Codex must not:
-
-* directly edit website files
-* create branches
-* commit
-* open pull requests
-* run code-changing commands
-* fix code or instruct Claude Code directly through checkpoint reviews
-* create competing website implementations
-* rewrite Claude’s work independently
-* become a second website builder
-
-Concise rule:
-
-> Claude has hands on website code. GPT/Codex has eyes on the system. Carl has final authority.
-
-\---
-
-## 10\. Codex Session Behaviour
-
-For C2B website sessions, Codex/GPT should act as an advisory command room with read-only access to website implementation code.
-
-Codex/GPT may directly maintain its own project-management, architecture, strategy, governance, and starter-context documents when Carl asks or approves the update.
-
-When Claude Code requests a checkpoint review through the Codex MCP bridge, Codex reviews for structural drift, visual drift, and governance conflicts, then reports findings only to Carl. Carl decides whether to pause, redirect, approve, or ask Claude Code to revise. See `project-intelligence/ai-system/checkpoint-review-protocol.md`.
-
-Plans, Claude Code chat-window extracts, run logs, checkpoint requests, screenshots, and temporary transcript extracts are exchanged through `project-intelligence/live-work/`. This folder is a disposable transport surface, not permanent project memory. Codex reads it at its discretion to reduce Carl's copy/paste burden.
-
-Do not misinterpret the bridge as direct access to Claude Code's VS Code chat UI. Codex should not spend time trying to connect to Claude's chat window, list Claude UI tools, or prove direct VS Code-panel access. The correct workflow is to inspect:
-
-* `project-intelligence/live-work/claude-plan.md`
-* `project-intelligence/live-work/current-status.md`
-* `project-intelligence/live-work/checkpoint-request.md`
-* `project-intelligence/live-work/claude-chat-window.md`
-* `project-intelligence/live-work/claude-run-log.md`
-* `project-intelligence/live-work/claude-run-transcript.md` when present
-* `project-intelligence/live-work/screenshots/`
-* normal saved repository changes
-
-Before giving build advice:
-
-1. Read the GitHub repo current state.
-2. Read `/project-intelligence/`.
-3. Inspect relevant app/components/styles files.
-4. Inspect the live Vercel site if the task depends on rendered behaviour.
-5. Summarise what was found.
-6. Then recommend action or write a Claude prompt.
-
-Do not assume old context is more current than GitHub or `/project-intelligence/`.
-
-Do not start implementing website code.
-
-Do not run code-changing commands.
-
-\---
-
-## 11\. Fresh Session Workflow
-
-Carl may prefer fresh ChatGPT/Codex conversations for each build session to avoid long-chat lag and context rot.
-
-At the beginning of each session:
-
-1. Load this startup context file.
-2. Read `/project-intelligence/`.
-3. Inspect GitHub files relevant to the task.
-4. Confirm the current live/project status.
-5. Summarise the current state.
-6. Confirm the day’s task.
-7. Only then write Claude prompts or advise.
-
-This keeps GPT sharp while GitHub and `/project-intelligence/` provide continuity.
 
 \---
 
@@ -732,200 +533,9 @@ Before recommending current technical versions, packages, API capabilities, or O
 
 The current focus remains the C2B website unless Carl explicitly opens a future-systems or business-architecture session.
 
-Do not prematurely implement:
+**Future work is deliberately not recorded in this repository.** Carl keeps that record outside it — for the site and for the wider business. Do not reconstruct it here, do not treat its absence as a gap, and do not plan against it. If a future direction becomes current scope, Carl introduces it as a chunk.
 
-* Blender pipeline
-* Google Cloud CDN/storage
-* large 3D systems
-* lead-generation tools
-* transformation preview tool
-* client automation systems
-
-These are roadmap directions unless explicitly selected as current scope.
-
-\---
-
-## 24\. Future Commercial Models
-
-Future commercial models may include:
-
-1. Website build projects  
-One-off premium website design and build work.
-2. Website build plus hosting/maintenance  
-Build fee plus monthly retainer for hosting, maintenance, updates, monitoring, and ongoing improvement.
-3. Guided enquiry and lead systems  
-Website-connected enquiry journeys, lead capture, lead organisation, and conversion-focused systems.
-4. Workflow and admin systems  
-Custom internal tools for businesses, with higher fees and deeper client relationships.
-5. Future AI-assisted business tools  
-Sector-specific AI-supported tools that help businesses sell, operate, visualise outcomes, reduce admin, or improve customer decision-making.
-
-\---
-
-## 25\. Future C2B Proof / Marketing Tool Concept
-
-Carl has a future idea for a tool inside the C2B website.
-
-Potential client enters their current website URL.
-
-The system analyses their site and creates a 60–70% direction preview or mock-up showing what their digital presence could become.
-
-This would help solve the startup portfolio gap by providing live proof rather than relying only on past client work.
-
-The tool should be positioned as bespoke and consultative, not as a generic AI redesign generator.
-
-Useful framing:
-
-* Not instant redesign.
-* A first fitting.
-* A first direction.
-* A way to see what your website could become.
-
-Possible future evolution:
-
-* sector-specific directions
-* restaurant-specific preview styles
-* trades-specific preview styles
-* professional-services preview styles
-* multiple direction options like a tailor offering different suits
-* lead capture and conversation starter
-
-This tool should leave headroom. It should not give away the full finished product. It should create desire, trust, and dialogue.
-
-\---
-
-## 26\. Sector-Aware Strategy
-
-C2B should eventually choose target sectors deliberately.
-
-The tool/template system should not start generic.
-
-The correct order:
-
-1. Choose sectors.
-2. Research common website weaknesses.
-3. Understand customer psychology in that sector.
-4. Build sector-aware preview directions.
-5. Use outreach to send prospects into the tool.
-6. Refine based on response.
-
-Potential sectors discussed:
-
-* restaurants
-* tattoo studios
-* tradespeople
-* roofers
-* gardeners
-* driveway companies
-* estate agents
-* interiors
-* kitchens/bathrooms
-* beauty/hair
-* professional services
-
-Key question:
-
-> Where does better trust, visual presentation, and enquiry flow clearly create business value?
-
-\---
-
-## 27\. Future Transformational Tool Concept
-
-Beyond websites, C2B may later create tools that help a business’s customers visualise transformation.
-
-Examples:
-
-* Tattoo studio: upload arm/body photo and preview tattoo placement/style.
-* Estate agent: transform a cluttered room into a neutral staged shell.
-* Driveway company: upload garden/front exterior and preview paving/resin/gravel.
-* Kitchen/bathroom fitter: preview renovation directions.
-* Flooring/blinds/interior companies: preview materials and finishes.
-* Shopfront/signage company: preview signs and branding.
-
-These tools answer the customer question:
-
-> What would this look like for me?
-
-This reduces imagination friction and can help businesses win better enquiries.
-
-Some tools may be public website widgets. Others may be private consultation apps used by the business on a phone/tablet/computer.
-
-Private-app versions may reduce public misuse and create a controlled consultation process.
-
-\---
-
-## 28\. Future Motion Factory / Asset Pipeline Direction
-
-A future dual-workspace strategy may be useful.
-
-### Workspace A — Web Client
-
-The primary frontend repository.
-
-Contains:
-
-* Next.js application
-* React components
-* UI systems
-* frontend animations
-* deployment logic
-* production website code
-
-Goals:
-
-* lightweight
-* maintainable
-* performance-focused
-* architecturally clean
-
-The frontend repo should not become a dumping ground for heavy creative assets.
-
-### Workspace B — Motion Factory
-
-A separate local production environment.
-
-Purpose:
-
-* Blender pipelines
-* procedural generation
-* Python scripting
-* particle systems
-* shader experiments
-* physical simulations
-* baked cinematic sequences
-* mesh optimization
-* animation exports
-
-Heavy source files remain isolated here permanently.
-
-Only optimized runtime-ready assets should cross into deployment pipelines.
-
-This is roadmap context, not current implementation unless Carl explicitly starts that session.
-
-\---
-
-## 29\. Future Infrastructure Direction
-
-For future motion-heavy experiences, the architecture may move toward external asset hosting.
-
-Possible direction:
-
-* Google Cloud Storage for large assets
-* Google Cloud CDN for fast delivery
-* optimized runtime assets only
-* avoid bloating the Next.js frontend repository
-
-Potential assets:
-
-* `.glb` files
-* textures
-* baked sequences
-* video assets
-* cinematic motion exports
-
-The React frontend should orchestrate assets, not become an asset warehouse.
-
-This is future architecture, not current task scope.
+Build what is authorised now. Nothing else.
 
 \---
 
@@ -948,23 +558,6 @@ Targets and principles:
 * cinematic sophistication without visible strain
 
 Performance quality and design quality are connected.
-
-\---
-
-## 31\. Future Typography / Motion Direction
-
-Typography may later evolve into motion-reactive typography.
-
-Potential direction:
-
-* Google Variable Fonts
-* single-file font pipelines
-* GSAP-driven interpolation
-* scroll-bound typographic choreography
-
-This should only be pursued if it supports the design and performance goals.
-
-Typography is treated as a living design material, not decoration.
 
 \---
 

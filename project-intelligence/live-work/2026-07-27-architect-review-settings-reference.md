@@ -214,9 +214,9 @@ seat doing exactly what it exists for.
 ### E-1 · An incomplete search reported as a complete finding
 
 Grepped `project-intelligence/` for `brand-assets`, found one file, and told Carl it was the
-only reference. **There were two** — the missed one, `codex-removal-status.md`, was the more
-important, holding the salvage record that changed the recommendation. A backgrounded
-command caught it; the Builder did not.
+only reference. **There were two** — and the missed one was the more important, holding the
+salvage record that changed the recommendation. A backgrounded command caught it; the
+Builder did not.
 
 **Lesson: a confident summary drawn from one narrow search is a guess wearing a suit.** State
 the search's scope alongside its result, or run a second one with a different shape.

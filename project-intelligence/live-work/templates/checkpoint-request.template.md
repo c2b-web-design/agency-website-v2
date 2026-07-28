@@ -12,7 +12,7 @@
 
 ## Reference Images
 
-## Specific Questions For Codex
+## Specific Questions For The Architect
 
 1. Structural:
 2. Visual:

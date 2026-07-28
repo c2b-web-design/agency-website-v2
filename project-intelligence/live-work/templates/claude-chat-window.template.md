@@ -22,6 +22,6 @@
 
 ## Final Claude Report
 
-## What Codex Should Inspect
+## What The Architect Should Inspect
 
 ## Single Next Permitted Action

@@ -12,7 +12,7 @@
 
 ## Screenshots Saved
 
-## Codex Checkpoint Result
+## Checkpoint Result
 
 ## Issues / Deviations
 

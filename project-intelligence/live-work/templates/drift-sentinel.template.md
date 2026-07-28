@@ -1,6 +1,6 @@
 # Drift Sentinel
 
-> ⚠ **No automatic watch currently runs.** The continuous Sentinel retired with Codex and
+> ⚠ **No automatic watch currently runs.** The continuous Sentinel retired with the previous governance layer and
 > has no owner (`live-work-protocol.md` §6, §8). `STATUS: CONTINUE` here means *"no watch
 > is running"* — **not** *"watched and clear"*. Do not read it as an active all-clear.
 >

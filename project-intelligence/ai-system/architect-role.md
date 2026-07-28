@@ -212,8 +212,10 @@ a specification.
 
 - **Anything describing Codex or ChatGPT as an active reviewer or approver.** That layer
   is retired (D-036). The `codex` MCP server does not exist; do not attempt to call it.
-- **`starter-content/`** — good ethos and vision material, but its governance sections are
-  Codex-era. The principles carry; the routing does not.
+- **`starter-content/`** — **resolved 28 July 2026.** The folder holds one file,
+  `c2b-ethos-and-vision.md`: ethos and vision material, model-agnostic and safe to read as
+  current. Files written to brief a second AI seat were deleted; that function no longer
+  exists. Future-work sections were removed with them (D-038).
 
 ---
 

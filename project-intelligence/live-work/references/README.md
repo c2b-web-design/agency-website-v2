@@ -11,7 +11,7 @@ still there in three weeks, and after a `/clear`.
 
 The architect instance reads images from disk by path (its `Read` tool handles images), so
 this folder is how visual references reach it at all. Same discipline that saved the
-platinum-blue logo frames from Codex's deletion.
+transition logo frames from an external tool's deletion.
 
 ## State what each reference IS
 
