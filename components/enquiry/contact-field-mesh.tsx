@@ -125,14 +125,59 @@ const DIAG_RIM_COLOR = "#6a6a6a";
 // metal finally has a surrounding to reflect and metalness returns to 1.0 as
 // the earlier note said it should.
 //
-// COLOUR and ROUGHNESS are deliberately UNCHANGED from the pre-environment
-// sample, so this test isolates one variable: the environment plus true
-// metalness. They are the documented comparison baseline, not yet tuned.
+// COLOUR — the CHAMPAGNE band of the logo gold, 28 July 2026.
+//
+// ── Why not the logo's median ────────────────────────────────────────────────
+// A first attempt used #b07828, the mid-band mean of 149,431 sampled logo
+// pixels. It rendered as copper: measured #562b03 at luminance 49, against a
+// logo body of 125 and champagne of 195. Roughly 2.5x too dark WITH THE LOGO'S
+// OWN AVERAGE ALREADY APPLIED.
+//
+// The sampling was correct; the ROLE was wrong. The logo mark is mostly bright
+// gold with thin dark edges, so its median is dragged down by shadow lines and
+// anti-aliased pixels against black. That median is the logo's AVERAGE, not the
+// logo's GOLD. Feeding an average into a metal's reflectance tint reproduces the
+// shadow end of the range, never the gold.
+//
+// Sampled bands, for reference:
+//   5th pct  #603d11   shadow gold — narrow, only where the tube turns away
+//   50th pct #ad772d   median (dragged low by edges)
+//   75th pct #f2bf61   CHAMPAGNE — the gold the eye actually reads  ← this value
+//   95th pct #f6f7ec   blown specular, effectively white
+//
+// ── What Carl's video reference establishes ──────────────────────────────────
+// Four frames of the logo under a travelling light. The takeaway, in his words:
+// *"observe how light interacts with gold."*
+//
+//   1. The base at rest is ALREADY BRIGHT — champagne, not bronze. Deep tones are
+//      confined to narrow shadow lines.
+//   2. The glint goes to WHITE, not to brighter gold. It is a specular highlight
+//      above the base, not a colour change.
+//   3. Therefore the base must sit high enough that a highlight has somewhere to
+//      go. A bronze base asks the light to CREATE the gold, which reads as a
+//      colour shift rather than light travelling across a gold surface.
+//
+// ── The constraint that colour alone cannot solve ────────────────────────────
+// `metalness: 1.0` means `color` tints the REFLECTION; it is not paint. A metal
+// can only be as bright as its surroundings. This scene's surroundings are two
+// panels (see ENV_KEY_INTENSITY / ENV_FILL_INTENSITY in contact-field-canvas),
+// so raising the colour alone cannot reach champagne — there is not enough
+// radiance to tint. The environment is raised in the same change for that
+// reason, and that is the load-bearing half.
+//
+// ROUGHNESS unchanged at the baseline. Carl: *"lets keep the .34 see how it
+// looks first."*
+//
+// ⚠ STILL A ROUGH MIX, not a calibration. Carl's method is to get elements
+// sitting right first, then go back and get granular. The orbiting light, its
+// on/off glint (a few hundred ms), the coupled bloom, and the opal's
+// backlit response are all still to come, and the base will be re-judged
+// against them — a value that reads well statically may not once light moves.
 //
 // Deliberately absent: emissive, clearcoat, transmission, textures, noise,
 // bloom/glow. All named so a later calibration pass is a value change.
-const GOLD_BEVEL_COLOR = "#c08f42"; // UNCHANGED baseline — do not tune in this step
-const GOLD_BEVEL_ROUGHNESS = 0.34; // UNCHANGED baseline — do not tune in this step
+const GOLD_BEVEL_COLOR = "#f2bf61"; // logo champagne — the gold the eye reads
+const GOLD_BEVEL_ROUGHNESS = 0.34; // UNCHANGED baseline — Carl: keep .34 for now
 const GOLD_BEVEL_METALNESS = 1.0; // genuinely metallic, now that a reflection env exists
 /**
  * How strongly the bevel samples the studio environment. The only value tuned

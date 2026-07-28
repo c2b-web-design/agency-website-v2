@@ -108,10 +108,34 @@ const AMBIENT_INTENSITY = 0.22;
 const ENV_SHELL_RADIUS = 60;
 /** Broad warm-white key reflection, above and upper-left. */
 const ENV_KEY_COLOR = "#fff2dd";
-const ENV_KEY_INTENSITY = 2.6;
+/**
+ * RAISED 2.6 → 7.0, 28 July 2026. This is the load-bearing half of making the
+ * bevel read as gold rather than copper.
+ *
+ * The bevel is `metalness: 1.0`, so its `color` tints the REFLECTION — it is not
+ * paint, and the metal can only be as bright as what surrounds it. Measured with
+ * the logo's own gold already applied to the material: rendered #562b03 at
+ * luminance 49, against a logo body of 125 and champagne of 195. The colour was
+ * not the limit; the available radiance was.
+ *
+ * Two panels are the whole world this metal has to reflect. At 2.6 there was
+ * simply not enough energy for a champagne tint to land on, so every colour
+ * value tested collapsed toward bronze.
+ *
+ * Raised in the SAME change as the colour deliberately: separating them would
+ * mean judging a champagne tint against radiance that cannot carry it, which is
+ * the trap the first attempt fell into.
+ */
+const ENV_KEY_INTENSITY = 7.0;
 /** Dimmer neutral-cool opposing fill, so the far flank is not dead black. */
 const ENV_FILL_COLOR = "#c8d4e6";
-const ENV_FILL_INTENSITY = 0.5;
+/**
+ * RAISED 0.5 → 1.3, keeping the key:fill ratio near the original 5:1. The fill
+ * exists so the flank turned away from the key is not dead black; raising the
+ * key alone would have widened that gap and read as a hard, single-source look
+ * rather than a satin sweep around the tube.
+ */
+const ENV_FILL_INTENSITY = 1.3;
 
 /**
  * Build the studio radiance map on the GPU and return its texture, applied to
