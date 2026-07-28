@@ -1657,7 +1657,11 @@
 .enquiry-pdepth-0 .enquiry-phrase-cue {
   font-size: 1.375rem;
   letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.28);
+  /* Active Q label reads as white, one step under the question text so the
+     question still leads the line. Was 0.28, which read as grey rather than
+     quiet. The label turns gold once answered (depth 1+) — that transition is
+     what marks memory, and it is unaffected. */
+  color: rgba(255, 255, 255, 0.75);
 }
 .enquiry-pdepth-0 .enquiry-phrase-question {
   font-size: 1.375rem;

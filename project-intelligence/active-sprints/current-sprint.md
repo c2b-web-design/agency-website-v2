@@ -59,33 +59,49 @@ Sprint 2 is complete. All success criteria met. Milestone commit: **2152e6e** (2
 
 **Building is paused** — Carl's instruction of 25 July 2026. No chunk is authorised.
 
-**When it resumes, in this order:**
+**When it resumes:**
 
-1. **`/start` ivory CTA (Begin button) — a short excursion, then straight on to item 2.**
-   Unusable for 7.4 seconds. Measured: radial reveal starts +7450ms, button clickable
-   +7466ms. **Not the Three.js work** — ruled out by measurement, 0 WebGL contexts during
-   the opening. It is a CSS delay with clickability welded to the visual clock
-   (`enquiry-opening.tsx:259` — the hit target is inactive until the visible reveal
-   starts). **It was clickable immediately when built**, so this is a regression in
-   already-approved work, not a new feature. Carl: *"definitely not the intent."*
+**Four-box geometry in Three.js, on the client info page.** The current state of the site
+build, and where sustained work resumes.
 
-   **The visual sequence is correct and must not change** — the delays derive from average
-   human reading speed, each element starting just before the previous finishes. Overlaps
-   measure 600, 600, 400ms: derived, not chosen.
+---
 
-   Desktop 7400ms and mobile 10100ms are separate values needing separate answers.
-   Full record and re-measurement commands: `live-work/enquiry-opening-timing-reference.md`.
+### ~~Begin button, 7.4-second delay~~ — RESOLVED before 28 July 2026
 
-   **Routing — decided 28 July 2026:** Carl and the Builder handle this directly. **It does
-   not go through the Architect.** It is a small fix to existing approved work, not a chunk
-   needing a plan-review gate.
+**Carl confirmed on 28 July that this was fixed in an earlier session.** The Day 3 handoff
+and this file both still listed it as the first job when building resumed; **that record was
+stale, and the Builder began working from it before Carl caught the error.**
 
-   **The fix itself is not yet specified.** Carl will discuss the intended behaviour at the
-   time. **Do not choose it unilaterally** — restoring instant clickability and holding a
-   shorter delay are different answers, and the choice is Carl's.
+**The lesson is the one this project already holds:** a recorded next-step is a claim about
+the present, and it decays. `enquiry-opening.tsx:259` and the 7400ms delay at
+`globals.css:185` still exist and still gate `beginActive` on the mask's `animationstart` —
+so **reading the code alone would have confirmed the stale record rather than corrected it.**
+Only Carl's memory of the fix, and the button working on localhost, settled it.
 
-2. **Four-box geometry in Three.js, on the client info page.** The current state of the
-   site build, and where sustained work resumes after the excursion above.
+### Q5 stutter — observed, not reproducible, NOT fixed
+
+Carl saw a stutter as the first question's text appeared. It is **not reproducible** on a
+freshly started dev server.
+
+⚠ **Do not record this as fixed. Nothing was fixed** — no code changed between the two
+observations (working tree identical to `HEAD`; `enquiry-opening.tsx` and `globals.css`
+unmodified since 25 July).
+
+**What differed was the server.** The first dev-server process reached **362s CPU and
+916 MB**, held port 3000 and stopped responding to requests; it was killed and restarted.
+A starved main thread produces exactly the symptom observed.
+
+**That is an inference, not a measurement** — the server's state was not captured at the
+moment the stutter was seen. Two possibilities remain live:
+
+1. The stutter is a dev-server artefact and never existed in production.
+2. The stutter is real and intermittent, and a fresh server currently masks it.
+
+**If it returns, measure it with `verify/`** — load `/start`, press Begin, capture frame
+timing on Q5. Intermittent faults are exactly what watching cannot settle. The plausible
+real cause, if it is real, is the WebGL pre-warm: `requestIdleCallback` schedules shader
+compilation into an idle gap, but a 2000ms fallback fires it regardless, which could land
+on Q5.
 
 ---
 

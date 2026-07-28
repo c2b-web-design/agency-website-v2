@@ -62,7 +62,27 @@ longer. **The same overlap principle holds throughout.**
 
 ---
 
+## ✅ RESOLVED — the defect below was fixed in a session after this was written
+
+**Carl confirmed on 28 July 2026 that the Begin button now works correctly.** The measurement
+below is retained as an accurate record of what was found on 27 July; **it no longer
+describes current behaviour.**
+
+⚠ **This section misled a later session.** It, and `current-sprint.md`, both still named this
+as the first job when building resumed, and the Builder started working from it. **Reading
+the code would not have caught the error** — `enquiry-opening.tsx:259` and the 7400ms delay
+at `globals.css:185` still exist and still look like the described defect. Only Carl's memory
+and the button working on localhost settled it.
+
+**The lesson, and it generalises:** a recorded next-step is a claim about the present and it
+decays. Before acting on one, confirm it is still true — in the running app, not in the file
+that recorded it.
+
+---
+
 ## ⚠ Measured defect — the Begin button's usability, not its appearance
+
+**(Historical — resolved. See the note above.)**
 
 **Measured 27 July 2026** with `verify/begin-timing.mjs`, on Carl's report that the button
 *"was clickable immediately when it was built"* and had become slow.
