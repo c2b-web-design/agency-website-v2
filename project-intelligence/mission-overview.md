@@ -62,6 +62,44 @@ Businesses that want a premium digital presence, faster and smarter enquiry hand
 
 ---
 
+## Deployment — PRIVATE, and it stays private
+
+**The site IS deployed to Vercel.** Recorded 28 July 2026, because nothing in this repository
+said so and a Builder session consequently told Carl there was no deployment. **There is no
+`vercel.json` and no `.vercel` directory** — the project is linked through the GitHub
+integration, so a repo-only check finds nothing. **Do not conclude from the filesystem that
+the site is undeployed.**
+
+**⛔ NO OTHER HUMAN HAS SEEN IT, and none will until it is finished.** Carl, 28 July 2026:
+*"No other human has seen it. Not till its finished."*
+
+**It is protected by Vercel SSO**, which is the platform default for previews and is
+**deliberately left on**. Requests redirect to `vercel.com/sso-api`; only Carl, signed into
+the owning Vercel account, can view it. A session cookie lasts about an hour.
+
+**Consequences that matter:**
+
+- **Do not share the URL.** Anyone outside Carl's Vercel team gets a login wall, not the site.
+- **Do not propose disabling deployment protection.** Making it public is outward-facing and
+  hard to un-see. It requires Carl's explicit instruction, not an inference from convenience.
+- **An agent cannot fetch it.** Authenticated URLs fail `WebFetch`. Any claim about what is
+  live must come from Carl or from a local run — never from a fetch that "looked fine".
+
+**What it is for.** Not a shop window — Carl's reference surface. *"I stare at it and try to
+go thru it to get ideas, inspiration. Instead of listening, i look."*
+
+**Preview URLs are per-build and go stale.** A URL of the form
+`agency-website-v2-<hash>-c2b-web-design.vercel.app` is pinned to one deployment and will
+show whatever was built at that moment. **Judging colour or timing against a stale preview is
+a real risk** — seven commits landed on 28 July alone. Prefer the production alias, which
+tracks the latest push.
+
+**For viewing on the TV or phone, local is usually better:** `npm run dev` binds to the LAN
+(`http://192.168.0.60:3000` at last check), so any device on the network sees the **current**
+build with no login and no deployment lag.
+
+---
+
 ## Current Project Stage
 
 **Milestone commit:** 2152e6e — 2026-06-14

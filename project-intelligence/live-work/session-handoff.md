@@ -38,6 +38,12 @@ accepted `react-hooks/set-state-in-effect` error.
 **Dev server stopped.** Note: `npm run dev` exits without taking the Next.js child with it —
 port 3000 stayed held by an orphan on both restarts today. **Check the port, do not assume.**
 
+⚠ **The site IS deployed to Vercel, privately.** This session told Carl it was not, because
+there is no `vercel.json` and no `.vercel` directory — the project is linked through the
+GitHub integration, so **a repo-only check finds nothing and proves nothing.** Now recorded
+in `mission-overview.md` § Deployment. **No other human has seen it and none will until it is
+finished**; SSO protection stays on, and disabling it needs Carl's explicit instruction.
+
 ---
 
 ## What was decided and where it is recorded
