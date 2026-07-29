@@ -78,6 +78,39 @@ the present, and it decays. `enquiry-opening.tsx:259` and the 7400ms delay at
 so **reading the code alone would have confirmed the stale record rather than corrected it.**
 Only Carl's memory of the fix, and the button working on localhost, settled it.
 
+### Q5 stutter — CAUSE MEASURED, FIX APPLIED 29 July 2026. Awaiting Carl's eye
+
+> **Commit `a6f84fb`.** Full record: `live-work/q5-stutter-diagnosis.md`. Harness:
+> `verify/q5-stutter.mjs`.
+>
+> **The hypothesis below was half wrong, and the half that was wrong is the interesting
+> part.** The pre-warm *is* the cause. **Shader compilation is not** — measured at **0.1ms**
+> inside the reveal, with all GPU API work totalling **0.1ms**. The cost is Three.js's
+> CPU-side initialisation: **`onFirstUse` at 55.4ms**, plus geometry construction —
+> **~197ms** landing at +200–500ms inside a 700ms fade.
+>
+> **It reproduced on a production build too** (81ms worst gap vs 113ms dev), so "only a
+> dev-server artefact" is ruled out.
+>
+> **Fix:** one guard — `Q5_REVEAL_CLEAR_MS = 700`, read off `.enquiry-q5-block`'s existing
+> declaration — mirroring the `CHOREOGRAPHY_CLEAR_MS` guard that already protects
+> completion. The pre-warm predates Three.js being on the page, so it guarded the stage its
+> author knew about and not this one.
+>
+> | Production, 3 runs | Before | After |
+> |---|---:|---:|
+> | Worst frame gap in reveal | 81ms | **18–19ms** |
+> | Frames of ~42 | 35–38 | **42/42/42** |
+> | WebGL inside reveal | 3/3 | **0/3** |
+>
+> Reduced motion **+143ms** — correctly does not wait. Completion still protected: canvas
+> warm at **+820ms** on a fastest-possible run.
+>
+> ⚠ **Not approved.** Numbers are clean; Carl has not judged it by eye, and Rule 9 makes
+> rendered output the truth for visual work.
+
+**Original entry, preserved — the record of what was believed before it was measured:**
+
 ### ⚠ Q5 stutter — REAL, intermittent, OPEN. Deferred by Carl, not resolved
 
 **Symptom:** a stutter as the first question's text appears — Carl described the "W" and "h"
