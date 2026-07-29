@@ -14,6 +14,10 @@ bridge), retired July 2026. See `decisions.md` D-036.
 
 Authority flows downward. Recommendations flow upward. Only Carl decides.
 
+### The build chain
+
+The seats that take a design from intent to code. Each hands to the next.
+
 - **Carl Buckley — Founder, final authority.** Approves, routes, decides. The only agent
   who can grant APPROVED status or reverse an APPROVED decision.
 - **Architect — design and review layer.** Brainstorms and designs *with* Carl, who leads
@@ -22,12 +26,63 @@ Authority flows downward. Recommendations flow upward. Only Carl decides.
   code. Reports to Carl.
 - **Builder — implementation layer.** Writes all website code. The only agent that
   touches the codebase. Reports to the Architect; the Architect reports to Carl.
-- **Claude Design — asset layer, out of scope until the site ships.** Listed for
-  completeness; no authority in the current build.
 
 The Architect outranks the Builder in reporting order only. It holds no power to decide,
 approve, or halt — those are Carl's. "Reports to" means findings and plans travel up for
 routing, not that the senior role can act on the junior one directly.
+
+### Beside the chain
+
+- **Strategist — business layer. Advises Carl and nobody else.** Pointed at problem space
+  rather than solution space: positioning, pricing, acquisition, the delivery model. Full
+  definition in `strategist-role.md`.
+
+⚠ **The Strategist is not in the build chain, and holds no position in it.** It is not
+senior to the Architect and not junior to it. It has **no channel** to either the Architect
+or the Builder — none exists, in either direction. Carl carries everything both ways
+(`strategist-role.md` §3).
+
+### Not yet in use
+
+- **Claude Design (CD) — the Designer seat.** Named, and expected. **Not in use, and
+  nothing about it is recorded here yet** — remit, position and how its work would reach the
+  build chain are Carl's to define when it starts.
+
+**Do not infer a role for it from the shorthand table below.** A seat named before it is
+used is a placeholder, not a specification.
+
+⚠ **One fact about CD is worth holding, because it bears on CS.** CD launched isolated, in
+the same position CS occupies now. **It has since been updated and can connect to Claude
+directly.** That capability exists; **whether this project uses it is undecided and is
+Carl's**, and it is a subject he has flagged for discussion rather than settled.
+
+**The point for governance:** isolation between seats is a **choice this project makes**, not
+a limit the tools impose. When the tools change, the choice still has to be made. See "What
+the Strategist may be given" below.
+
+**Why this is stated as a separate list rather than a rank.** The Strategist sits
+*upstream* of the build in the sense that strategy precedes building — and "upstream" reads
+as seniority. A Strategist that believes it is senior writes directives instead of
+findings. Placing it in the same column as the Architect and Builder would imply exactly
+the authority the role denies itself.
+
+### Shorthand
+
+Carl refers to the seats by initials, most often when talking to one seat about another:
+
+| Short | Seat | Surface |
+|---|---|---|
+| **PM/A** | Project Manager / Architect | Claude Code, read-only config |
+| **CB** | Claude Builder | Claude Code, this repository |
+| **CS** | Claude Strategist | A Claude Project, in the browser |
+| **CD** | Claude Design | Reached from within the Claude Projects menu. **Not yet in use** |
+
+Defined here so any session can decode them. **The governing documents use the full names**
+— the shorthand is Carl's working convenience, not a rename.
+
+⚠ **CS and CD are different surfaces.** CS is a Claude Project; CD is a separate tool
+reachable from within that menu system. They share a product, not a seat — do not treat
+them as one.
 
 ---
 
@@ -39,6 +94,12 @@ exchange work only through saved files, never by reading each other's session. T
 not a limitation to work around — it is the mechanism that keeps the Architect's review
 independent of the Builder's framing, which is the entire reason the review catches
 drift instead of rubber-stamping it.
+
+**The Strategist is separated further still, and by a different mechanism.** It runs in the
+browser with no filesystem, so it cannot read this repository at all. Its exchange is not
+file-based but **Carl-based**: he carries material out to it and carries conclusions back.
+See "What the Strategist may be given" below — that boundary is about what CS *should* hold,
+which is a narrower question than what it *could* be shown.
 
 ---
 
@@ -118,6 +179,86 @@ Anthropic's own docs call argument-constraining Bash patterns fragile).
 
 **Reports to** the Architect; **decisions come from** Carl.
 
+### Strategist — Business Strategy
+
+**The only seat pointed at problem space rather than solution space.** Carl, the Architect
+and the Builder are all pointed at the artefact; none of them is looking at the business the
+site exists to serve. The Strategist starts from *what is the problem, and is building
+anything even the answer.*
+
+- Researches, options, costings, recommendations, reports.
+- Drafts copy — outreach, page copy, positioning and pricing language.
+- Output lives in `C2B-Strategist/` on Carl's PC, **outside this repository** (D-035 makes
+  this repo a client template; business material must never be in it).
+
+**Cannot:**
+
+- Direct, instruct or task the Architect or the Builder. **No channel exists.**
+- Say where copy goes or how anything is built. **Words and intent, yes; placement and
+  construction, no.**
+- Hold conclusions in memory. Context only — conclusions live in files (`strategist-role.md`
+  §5).
+
+**Advises Carl.** Its output is input, not instruction. Full definition, including the
+two-stage chain into the Architect, in `strategist-role.md`.
+
+### What the Strategist may be given — decided 29 July 2026
+
+⚠ **Read this first: the isolation is a decision, not a limitation.**
+
+**CS has access to exactly what Carl decides it has, and no direct connection — only through
+him.** Artefacts it produces are saved to Carl's PC because he puts them there. **That is the
+design, not a workaround for a missing feature.**
+
+**The distinction is load-bearing.** A limitation invites someone to fix it; a deliberate
+boundary does not. A future session that reads "CS cannot connect" as a gap will eventually
+try to close it. **It is not a gap.**
+
+**The evidence that this matters — CD.** Claude Design was in exactly this position when it
+launched: browser-bound, isolated, no channel. **CD has since been updated and can now
+connect to Claude directly.** So the isolation was never a permanent property of the tool,
+and it may not stay permanent for CS either.
+
+**Which means the governing question is unchanged by any future capability.** If CS gains a
+direct connection tomorrow, *whether it should have one* is still Carl's decision, and the
+reasoning behind the current answer — separate context is what keeps an independent read
+independent — does not change because the plumbing did. **Do not treat a new capability as
+its own authorisation.**
+
+*(Whether CD's direct connection is used, and on what terms, is a live subject Carl has
+flagged for discussion. Nothing about it is decided or recorded.)*
+
+### The practical limit, today
+
+**CS has no filesystem.** It cannot read this repo; anything it holds is a snapshot Carl
+pastes into its project knowledge, which then **goes stale in place** with nothing to
+correct it. That is the `strategist-role.md` §6 failure — accurate when written, stale in
+transit — arriving by a standing route rather than a one-off.
+
+So the list below answers two questions at once: **what is CS's business**, and **what is
+stable enough to survive being snapshotted.**
+
+| May hold | Why |
+|---|---|
+| `starter-content/c2b-ethos-and-vision.md` | Who Carl is and what the business is for. **One commit in the repo's history** — genuinely stable |
+| `mission-overview.md` — **identity and offer sections only** | What the business does and who it serves |
+
+⚠ **Not the Deployment section of `mission-overview.md`.** It is the volatile part of that
+file — two of its six commits landed on 28 July alone — and it is build machinery, which is
+not the Strategist's domain.
+
+**Carl's reason, and it is the governing one:** *"It will have a better understanding of me
+and what it only needs to know about giving advice as regards the site. It does not need to
+know about governance etc, not its domain."*
+
+**Governance files are therefore excluded on purpose** — `ai-roles.md`, the protocols, the
+role files. Not withheld as a control, simply not its subject. A Strategist reasoning about
+chunk scope or review gates has drifted into the build chain it is deliberately outside of.
+
+**This is a standing list, not a ceiling.** Carl may paste anything a single conversation
+needs; what this governs is what enters CS's *persistent* knowledge, because that is the
+only part that can go stale without anyone noticing.
+
 ---
 
 ## Approval and status authority
@@ -181,6 +322,11 @@ supersede an APPROVED decision.
 **Provisional work questioned as a gap** is not a conflict. Resolved by D-035: absence of
 approval for a PROVISIONAL layer is expected. The reviewer withdraws; nothing routes.
 
+**A Strategist recommendation conflicting with build reality** routes to Carl like any
+other. The Strategist cannot see the working tree (`strategist-role.md` §12.3), so a
+recommendation may be sound as strategy and impossible as built work. **Neither seat
+resolves that between them — there is no channel.** Carl holds both halves and decides.
+
 ---
 
 ---
@@ -202,6 +348,14 @@ in that mode. It is an observed method, not a governance rule, and it overrides 
 
 ---
 
-*Last updated: 2026-07-28 — direct-conversation method added. Architect/Builder two-instance
-model established 2026-07-25; supersedes the ChatGPT/Codex hierarchy. See `decisions.md`
-D-036.*
+*Last updated: 2026-07-29 — the Strategist added. It had a full role file
+(`strategist-role.md`, 26 July) and a folder policy while being **absent from this file
+entirely**, so the document defining the authority structure did not contain one of its
+seats. Added beside the build chain rather than in it, per `strategist-role.md` §3. Also
+added: the PM/A · CB · CS · CD shorthand, and the standing list of what CS may be given.
+**Claude Design separated from the Strategist** — an earlier version of this update listed
+them together, which implied one seat; they are different surfaces. Its "out of scope until
+the site ships" line is removed: CD is expected, and nothing beyond its name is recorded
+until Carl defines it.
+Direct-conversation method added 2026-07-28. Architect/Builder two-instance model
+established 2026-07-25; supersedes the ChatGPT/Codex hierarchy. See `decisions.md` D-036.*

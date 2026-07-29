@@ -5,6 +5,11 @@
 still writes the prompts; Carl still decides. This records *how the conversation worked* when
 it worked, so it can be repeated deliberately.
 
+**Companion to `working-with-carl.md`, and the split is deliberate.** That file is the
+**portrait** — who Carl is, what he reaches for, how he transmits intent. This one is the
+**method** — what actually worked in the room, and why. A portrait explains; a method is
+repeatable. Read the portrait to understand him; read this to work with him.
+
 ---
 
 ## The finding

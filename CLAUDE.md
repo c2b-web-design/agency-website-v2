@@ -33,6 +33,10 @@ Carl Buckley (Human Founder) has final authority on all creative, product, archi
 
 `project-intelligence/` is canonical. Chat history is not.
 
+**New to the system, or unsure which file answers a question?** `ai-system/README.md` is a
+one-page map of the four seats, how work moves, and where each rule lives. It holds no rules
+of its own — it points.
+
 **At the start of every session, check whether `project-intelligence/live-work/session-handoff.md` exists. If it does, read it before anything else** — it carries what the previous session decided, parked and corrected, which the canonical files do not record. **Delete it at the end of the session, once its replacement is written.** It is single-use by design: a stale handoff misleads with confidence, and two handoffs are worse than one. See `ai-system/live-work-protocol.md` §3a.
 
 Before significant work, read:

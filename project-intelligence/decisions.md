@@ -978,3 +978,64 @@ Two further details worth knowing before relying on it:
 **Authority:** Human Founder
 
 ---
+
+## D-042 — Governance: `strategist-role.md` Approved, And The Strategist Added To The Authority File
+
+**Date:** 2026-07-29
+**Status:** APPROVED
+
+**Two things, decided together because the second is what forced the first.**
+
+### 1. The Strategist was missing from `ai-roles.md`
+
+`ai-roles.md` defines the authority structure. It listed Carl, the Architect, the Builder and Claude Design — **and not the Strategist**, despite that seat having a full role file since 26 July, a folder policy, and a two-stage chain into the Architect. A session reading the authority file to learn the system would not have known the seat existed.
+
+**Added beside the build chain, not in it.** The file now separates **the build chain** (Carl → Architect → Builder, each handing to the next) from **beside the chain** (the Strategist). The Strategist is not senior to the Architect and not junior to it; it holds no position in the chain at all and has no channel to either seat.
+
+**Why the placement is load-bearing rather than cosmetic.** Strategy precedes building, so the Strategist reads as *upstream* — and upstream reads as seniority. `strategist-role.md` §3 states the risk directly: a Strategist that believes it is senior writes directives instead of findings. Listing it in the same column would have implied exactly the authority the role denies itself.
+
+### 2. `strategist-role.md` is APPROVED as-is
+
+DRAFT since 26 July. Approved without amendment, having been reviewed against the approved decisions and found consistent with D-006 (files canonical), D-035 (repo lineage) and D-036 (authority).
+
+**The approval was forced by the first change.** Before 29 July the DRAFT was cited by nothing. Adding the Strategist to `ai-roles.md` created **eight citations** from approved governance into an unapproved file — approved governance leaning on a draft. Approving it closes that.
+
+### Also recorded
+
+**The shorthand.** Carl refers to the seats by initials, most often when talking to one seat about another: **PM/A** (Project Manager / Architect), **CB** (Claude Builder), **CS** (Claude Strategist), **CD** (Claude Design). Defined once in `ai-roles.md`; the governing documents keep using full names. It is a working convenience, not a rename.
+
+**CS and CD are different surfaces.** CS is a Claude Project in the browser; CD is a separate tool reached from within that menu system. They share a product, not a seat. **CD is named and expected but not in use — its remit, position and routing are deliberately not recorded**, and a future session must not infer a role for it from the shorthand table.
+
+**What CS may be given, as a standing list.**
+
+⚠ **The isolation is a decision, not a limitation — and the record must say so in that
+order.** CS has access to exactly what Carl decides it has, and **no direct connection, only
+through him**; artefacts land on his PC because he puts them there. **That is the design.** A
+limitation invites a future session to fix it; a deliberate boundary does not.
+
+**CD is the evidence.** Claude Design launched in exactly CS's position — browser-bound,
+isolated, no channel — and **has since been updated so it can connect to Claude directly.**
+The isolation was never a permanent property of the tool. **So if CS gains a direct
+connection, whether it *should* use one is still Carl's decision**, and the reasoning behind
+today's answer — separate context is what keeps an independent read independent — does not
+change because the plumbing did. **A new capability is not its own authorisation.**
+
+*(Whether CD's direct connection is used, and on what terms, is flagged by Carl for
+discussion. Undecided, and deliberately not recorded.)*
+
+**The practical limit today** is that CS has no filesystem: anything it holds is a snapshot Carl pastes in, which then goes stale in place with nothing to correct it — `strategist-role.md` §6's "accurate when written, stale in transit", arriving by a standing route rather than a one-off. So the list answers two questions at once — what is **its business**, and what is **stable enough to survive being snapshotted**:
+
+- `starter-content/c2b-ethos-and-vision.md` — one commit in the repo's history; genuinely stable
+- `mission-overview.md` — **identity and offer sections only**
+
+⚠ **Not the Deployment section** — the volatile part of that file (two of its six commits landed on 28 July) and build machinery, which is not the Strategist's domain. **Governance files are excluded on purpose.** Carl's reason: *"It will have a better understanding of me and what it only needs to know about giving advice as regards the site. It does not need to know about governance etc, not its domain."*
+
+**This governs CS's *persistent* knowledge only.** Carl may paste anything a single conversation needs; what matters is what enters memory, because that is the part that goes stale unnoticed.
+
+### Open, carried forward
+
+⚠ **§11's own-repo rule still has no decision entry.** *Anything the Builder builds gets its own repository; this repo is the C2B website and nothing else.* It is a **repo-wide** constraint living inside a role file, so a session building something else has no reason to read it. Approved as part of `strategist-role.md`, but raising it to its own numbered decision is Carl's call — carried since Day 2.
+
+**Authority:** Human Founder
+
+---

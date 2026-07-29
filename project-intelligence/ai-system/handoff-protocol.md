@@ -126,6 +126,13 @@ say what must not be touched; the scope file is what makes that *enforced* rathe
 *stated*. Copy `live-work/templates/chunk-scope.template.json`, and delete it when the chunk
 closes. Full reasoning: `live-work-protocol.md` §8.
 
+**Who writes it — decided 29 July 2026.** **PM/A drafts the values, Carl approves them with
+the prompt.** Same route as the prompt itself, and for the same reason: the Builder does not
+draw its own boundary. PM/A is structurally read-only, so it supplies the values in the
+**Scope File** field below; the file itself is created from that approved content when the
+chunk starts. **`unlocked` is Carl's alone** — the Builder never widens its own scope, and
+PM/A may propose an unlock but not grant one.
+
 ```markdown
 ## Objective
 <!-- Mandatory. One to two sentences. What is being built or changed, and why. -->
@@ -161,6 +168,14 @@ closes. Full reasoning: `live-work-protocol.md` §8.
 <!-- Mandatory. Which files. What detail level. -->
 -
 
+## Scope File
+<!-- Mandatory. The chunk-scope.json that makes Constraints enforced rather than stated.
+     PM/A drafts these values; Carl approves them with the prompt. Without this field the
+     guard is inert and every edit passes. `unlocked` is Carl's alone. -->
+- files:     <paths this chunk may edit — the only paths it may edit>
+- protected: <approved-foundation paths this chunk must not touch>
+- unlocked:  <protected paths Carl has explicitly authorised for THIS chunk, usually empty>
+
 ## Review Requirements
 <!-- Mandatory. -->
 - Self-review minimum
@@ -183,6 +198,7 @@ closes. Full reasoning: `live-work-protocol.md` §8.
 | Constraints | Mandatory | Implementation drifts. Chunk definition rejected. |
 | Design-System Considerations | Mandatory (UI) | Visual inconsistency likely. Chunk definition rejected for UI tasks. |
 | Deliverables | Mandatory | Completion cannot be verified. Chunk definition rejected. |
+| Scope File | Mandatory | **The guard stays inert and every edit passes.** Scope is stated but not enforced. Chunk definition rejected. |
 | Documentation Update Requirements | Mandatory | Documentation will not be updated. Chunk definition rejected. |
 | Review Requirements | Mandatory | Review routing is undefined. Chunk definition rejected. |
 | Escalation Conditions | Optional | Claude Code applies standard escalation rules. |
@@ -256,6 +272,9 @@ If conflict or ambiguity is identified: Claude Code proposes options and waits. 
 - [ ] No ambiguity that would require a post-implementation decision
 - [ ] All escalation conditions assessed — none triggered, or all resolved
 - [ ] Deliverables list is clear and achievable
+- [ ] **`live-work/chunk-scope.json` exists and names this chunk.** Verify by reading it, not
+      by assuming it was created — the guard fails open, so an absent file looks identical to
+      a passing one
 
 If any item is unchecked: Claude Code does not proceed.
 

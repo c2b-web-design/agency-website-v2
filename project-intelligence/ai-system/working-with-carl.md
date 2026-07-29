@@ -1,14 +1,26 @@
-# DRAFT — Working With Carl (a mental sticky note, TBC)
+# Working With Carl — the portrait
 
-**Status: PRELIMINARY. Not a rule, not finalised, no authority.** A reference
-file to be worked on, expanded, and eventually formalised — a shared sticky
-note for both of us. It governs nothing. It is not a spec to build against.
-Its only job is to help intent be *inferred from context* over time, rather
-than spelled out from scratch every session.
+**Status: PRELIMINARY, and deliberately so. Not a rule, no authority.** A reference
+file to be worked on and expanded — a shared sticky note for both of us. It
+governs nothing. It is not a spec to build against. Its only job is to help
+intent be *inferred from context* over time, rather than spelled out from
+scratch every session.
+
+**Preliminary is not a stage on the way to finished.** This file describes a
+working relationship, and that keeps moving. A frozen portrait would be a worse
+portrait. **Do not formalise it, and do not treat its age as staleness.**
 
 Started 24 July 2026, out of an extended architect-altitude discussion of the
-hero section. Expected to grow: append dated observations as the working
-relationship reveals more. Do not freeze it.
+hero section. **Named and rehoused 29 July 2026** — it was `DRAFT-working-with-carl.md`
+at the repository root; the `DRAFT-` prefix was doing the job this status line
+now does properly. Expected to grow: append dated observations as the working
+relationship reveals more.
+
+**Companion to `working-with-the-builder.md`, and they are deliberately
+separate.** This one is the **portrait** — who Carl is, what he reaches for, how
+he transmits intent. That one is the **observed method** — what actually worked
+in the room on Day 4, and why. A portrait explains; a method is repeatable.
+Merging them would lose that distinction.
 
 ---
 
@@ -226,17 +238,49 @@ knows the solo is coming — but played, all the same, as verse one.
 
 ---
 
-## Open, to be worked out together
+## Settled — 29 July 2026
 
-- Final name and home for this file (companion to `mission-overview.md`?).
-- Whether the intent-and-chunk principle graduates into `prompt-protocol.md` as
-  an actual rule, while this file stays the personal portrait.
-- Whether feature-specific intent is conveyed **only live** (so it can be pushed
-  on and calibrated, and never becomes frozen context the builder reasons
-  against while coding) while only the *pattern* is recorded here. Today's
-  working assumption: yes — record how Carl works, not the contents of any one
-  in-flight brief.
-- Everything else the working relationship reveals over time. This is a
-  starting sketch, not the finished portrait.
+The three questions this section carried since 24 July, and Carl's answers.
+
+**1. Name and home.** `ai-system/working-with-carl.md`, beside
+`working-with-the-builder.md`. The two are companions, not duplicates — see the
+header. The `DRAFT-` prefix is gone; the status line does that work now.
+
+**2. The intent-and-chunk principle graduates.** It is now a rule in
+`prompt-protocol.md` Stage 3 — *the intent governs, the chunk executes* — guarding
+specifically against **helpful forward-creep**. **This file stays the portrait.**
+The rule is the operational half; the reasoning and the Qui-Gon epigraph stay
+here, because a rule without its why is the first thing to get rationalised away.
+
+**3. Feature intent is conveyed LIVE. Confirmed, not merely assumed.**
+
+Only the **pattern** is recorded here — how Carl transmits intent, what a
+reference-plus-phrase pairing means, the recurring tells. **The contents of any
+one in-flight brief are not written down.**
+
+**Day 4 is the evidence.** The gold rim came out of conversation, and four video
+stills settled in one message what an exchange of adjectives had not. Nothing
+built that afternoon arrived as a written brief.
+
+**And the reason it holds is the same failure this repository keeps finding:** a
+written brief becomes **frozen context the Builder reasons against while coding**,
+and it decays without anyone noticing. That is the stale-anchor failure — the Begin
+button on 28 July, `claude-plan.md` waiting on a retired reviewer, the median
+sampled correctly and applied to the wrong role. **Live intent can be pushed on
+and calibrated mid-flight. A written one just sits there being confidently wrong.**
+
+⚠ **This does not contradict D-006.** Chat is still not canonical, and nothing
+here licenses working from chat history. The distinction: **intent is transferred
+live; outcomes are written down.** Measured values, approved decisions and
+completed work go to files as they always have — `contact-field-gold-and-light-reference.md`
+is exactly that, and it is right. What stays out of the files is *the brief for
+work not yet done*.
+
+---
+
+## Still open
+
+- Everything else the working relationship reveals over time. This is a growing
+  sketch, not a finished portrait, and the header says why it should stay that way.
 
 **To be continued. We will return to this.**

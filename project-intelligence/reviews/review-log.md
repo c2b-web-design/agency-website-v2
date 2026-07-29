@@ -6,6 +6,32 @@ Reviews are observational. They surface findings and recommendations. They do no
 
 ---
 
+## ⚠ Why there are no entries after R-018 (22 June 2026) — read before calling this stale
+
+**Added 29 July 2026, after an audit raised the five-week gap as a finding and then withdrew
+it.** The gap is **expected and correct**, and the record needs to say so, because the third
+reader in a row was about to misdiagnose it.
+
+**This log records what Carl has APPROVED.** Since 22 June, every decision entered has been
+**governance or tooling** — D-035 through D-041: methodology, authority, toolkit removal,
+future-work policy, the sentinel, revert procedure, `/doctor`. **Not one is a visual or
+component approval**, so not one produces an entry here.
+
+**The visual work done in that period is `PROVISIONAL` under D-035** — in place, deliberately
+untuned, awaiting the mastering pass Carl runs with the Builder. **Provisional work is not
+reviewed here and generates no entry.** Its absence is not a missing approval.
+
+⚠ **This is the third time this same non-problem has been raised.** The 24 July architect
+review raised it as F-1, a 25 July repo pass raised it again, and a 29 July staleness audit
+raised it a third time before checking the decision statuses and withdrawing. **D-035 exists
+because of the first two.** If you are about to flag this gap: check whether anything
+visual has actually been approved since the last entry. If not, there is nothing to log.
+
+**An empty stretch in this file means no visual work has been approved. It does not mean
+reviews stopped happening.**
+
+---
+
 ## Schema
 
 ```
@@ -15,9 +41,18 @@ Reviewer:         Agent name or Human
 Subject:          What was reviewed
 Findings:         Observations — factual, not editorial
 Flags:            Issues requiring attention (severity: Low / Medium / High / Critical)
-Recommendations:  Optional — must route through ChatGPT before actioning
+Recommendations:  Optional — route to Carl, who decides (D-036)
 Status:           Open | Actioned | Dismissed
 ```
+
+⚠ **Corrected 29 July 2026.** The Recommendations line previously read *"must route through
+ChatGPT before actioning"*. **That seat is retired** (D-036) and the instruction contradicted
+both `handoff-protocol.md` §7 and `context-rules.md` Rule 6, which consolidate routing to
+Carl at **every** severity — Low, Medium, High and Critical alike. No agent other than Carl
+moves a finding to actionable.
+
+**Entries written under the old schema keep their original wording.** They record what the
+process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 

@@ -8,7 +8,18 @@ orientation), and `handoff-protocol.md` (how work reaches the Builder). Written
 harness-agnostic per `ai-roles.md`: the role is defined by function, not by which product
 fills it. Currently filled by a Claude Project ("CP") in the browser.
 
-**Status: DRAFT — 26 July 2026.** Awaiting Carl's approval. Building is paused.
+**Status: APPROVED — 29 July 2026.** Granted by Carl, as-is, without amendment. Drafted
+26 July; operated to from that date, and CS was briefed from it.
+
+**What approval means here:** this file is now governing, and `ai-roles.md` cites it as the
+Strategist's full definition. It carries the same weight as the other role files and changes
+to it follow the normal route — proposed, then granted by Carl.
+
+⚠ **§11's own-repo rule has no decision entry.** It is a **repo-wide** constraint (anything
+the Builder builds gets its own repository) recorded inside a role file. It stands as
+approved along with the rest of this document, but a session building something *other* than
+the Strategist layer has no reason to read this file and will not find it. Raising it to a
+numbered decision remains open — Carl's call, carried since Day 2.
 
 ---
 
@@ -373,6 +384,8 @@ not the Builder's.)*
 ---
 
 *Created 26 July 2026 as DRAFT, from a design discussion with Carl on Day 2 of the
-seven-day governance rebuild. Companion to `ai-roles.md`, `architect-role.md`,
-`handoff-protocol.md`, `checkpoint-review-protocol.md`, `context-rules.md`. See
-`decisions.md` D-006 (files canonical), D-035 (PROVISIONAL, repo lineage), D-036 (authority).*
+seven-day governance rebuild. **APPROVED as-is by Carl, 29 July 2026** — reviewed against
+the approved decisions and found consistent with D-006, D-035 and D-036; no amendment made.
+Companion to `ai-roles.md`, `architect-role.md`, `handoff-protocol.md`,
+`checkpoint-review-protocol.md`, `context-rules.md`. See `decisions.md` D-006 (files
+canonical), D-035 (PROVISIONAL, repo lineage), D-036 (authority), D-042 (this approval).*

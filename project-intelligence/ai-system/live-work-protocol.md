@@ -659,9 +659,30 @@ switch that is presently off, not defence-in-depth.
 Copy `live-work/templates/chunk-scope.template.json`, fill in `chunk`, `files`, `protected`
 and `unlocked`. **`unlocked` is Carl's alone** — the Builder never widens its own scope.
 
+**Who writes it — decided 29 July 2026. PM/A drafts, Carl approves.** The values travel in
+the **Scope File** field of the chunk definition (`handoff-protocol.md` §2), which is
+**Mandatory**: a definition missing it is incomplete and the Builder does not enter Plan
+Mode. Same route as the prompt itself, and the same reason — **the Builder does not draw its
+own boundary.** PM/A is read-only, so it supplies the content; the file is created from that
+approved content when the chunk starts.
+
+**Why it needed deciding at all.** The rule below was recorded on 27 July and was correct.
+But it lived only as prose in this section, while the artefact PM/A actually fills in — the
+chunk-definition template — had no field for it. **A rule with no slot in the form that
+operationalises it does not get followed**, and this one was not: no `chunk-scope.json` has
+ever existed. The fix was a Mandatory field, not a stronger sentence.
+
 **Delete it when the chunk closes.** A stale scope file is worse than none: it silently
 enforces the previous chunk's boundaries against the current work, and the denial message will
 name a chunk that finished. Same single-use reasoning as the session handoff (§3a).
+
+**Verified by firing it, 29 July 2026.** A temporary scope file was installed and the hook
+driven directly with three payloads. **In-scope file: allowed.** **Protected file
+(`app/globals.css`): denied**, with the approved-layer message. **Out-of-scope file
+(`app/page.tsx`): denied**, naming the chunk and listing what was in scope. The scope file
+was removed afterwards; the repo is fail-open again, which is correct while no chunk is
+authorised. **The mechanism does what this section says it does** — recorded because P-A
+requires a control be tested rather than read.
 
 **Do not read a passing guard as a passing chunk.** It enforces two things — wrong file,
 protected file. It cannot catch a coupled value implemented as an independent overlay, a

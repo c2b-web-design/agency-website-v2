@@ -67,6 +67,39 @@ order of authority.
 - Do not improvise on design direction
 - Do not introduce patterns not established in `system-architecture.md` without logging a decision
 - If the plan proves ambiguous on a point with architectural consequences: flag and escalate before implementing, not after
+
+#### The intent governs; the chunk executes — added 29 July 2026
+
+**Carl gives the whole emotional arc of a feature, not a flat spec.** That is deliberate: it
+is how the Builder knows what to **protect** and what to **sacrifice** when a real constraint
+bites mid-build. Without the why, the first hard trade is a guess, and a wrong guess builds
+something technically correct and emotionally dead.
+
+**But the arc is read-only with respect to scope.** It shapes *how* the current chunk is
+built. It never authorises:
+
+- pre-building a later beat
+- adding abstractions a future chunk might need
+- hesitating on the current chunk because of something downstream
+
+⚠ **Guard specifically against *helpful* forward-creep.** *"Verse one would be cleaner if I
+set up the breakout now."* **This is the dangerous one, because it looks like good
+engineering** — it is not laziness or scope-grabbing, it is competence pointed one beat too
+far ahead. It expands scope quietly and it expands it in good faith.
+
+**If the current chunk and the arc appear to conflict: stop and ask.** Do not reach forward,
+and do not resolve it yourself — the conflict is about intent, which is Carl's.
+
+> "Keep your concentration here and now, where it belongs."
+> — "But not at the expense of the moment."
+> *(Qui-Gon Jinn)*
+
+**Presence is not the absence of the arc.** The arc is *why the moment matters*; the moment
+is the *only place the arc gets built*. The band knows the whole song; they are recording
+verse one. Play it like it knows the solo is coming — but play it as verse one.
+
+**Full reasoning in `working-with-carl.md`**, which stays the portrait. This is its
+operational half; that file is why it is true.
 - For active plan handoff, run logging, screenshots, git evidence, or drift-prone work, use `live-work-protocol.md` and `project-intelligence/live-work/` so the Architect can inspect saved state without Carl copying chat output
 - Context health follows the machine-readable Context Watch, GREEN / AMBER / RED bands, and Context Refresh Gate in `live-work-protocol.md`. At AMBER, finish only the command or bounded verification already running, refresh all four continuity files, and pause. Never reuse an anchoring prompt after its described command or outstanding checks have changed. After any refresh, the Builder completes the fresh-context re-entry handshake and pauses for Carl's approval before editing. An unexpected automatic compaction triggers the same gate immediately.
 

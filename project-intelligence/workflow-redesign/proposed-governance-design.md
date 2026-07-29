@@ -1,5 +1,18 @@
 # Proposed Governance Design — Architect / Builder, Post-Codex
 
+> ⚠ **Historical. Its outcomes are now live in `ai-system/` and `decisions.md` — read those,
+> not this.** Note added 29 July 2026.
+>
+> **One path in here is dead:** `DRAFT-working-with-carl.md` was renamed and rehoused on
+> 29 July to **`ai-system/working-with-carl.md`** (four references below, at lines ~36, ~171,
+> ~217 and ~540). The references are left as written, per `context-rules.md`
+> "No retroactive rewriting" — this is a record of a conversation held on 25 July, and the
+> filename was correct then.
+>
+> **Its P7 principle — *the intent governs, the chunk executes* — is no longer only an
+> aspiration.** It became an actual rule in `prompt-protocol.md` Stage 3 on 29 July, which is
+> what this document argued it should be.
+
 **Status: CONVERSATION STARTER. Not a proposal awaiting approval, not implemented, no
 authority.**
 Written 25 July 2026 by Claude Code (builder), wearing the PM hat temporarily while
