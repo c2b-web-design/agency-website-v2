@@ -1,6 +1,6 @@
-# Session Handoff — Day 4
+# Session Handoff — Day 5
 
-**Written at the end of Day 4, 28 July 2026. For the Builder session that picks up next.**
+**Written at the end of Day 5, 29 July 2026. For the session that picks up next.**
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical
 (D-006). **Delete this file at the end of the session that reads it, once its replacement is
@@ -19,90 +19,80 @@ session ends and will say so.**
 Given Day 2, broken twice on Day 3, which is why it is a capitalised block in `CLAUDE.md`.
 **It reads as considerate. It is not.**
 
-**`/doctor` settled a question about it on Day 4.** The documented cause of a rule being
-ignored is a `CLAUDE.md` too long for it to survive in. **The file measured lean** — ~1,350
-resident tokens, almost entirely non-derivable governance. So escalating the rule was the
-right response and no hook is needed on bloat grounds. See D-041.
-
 ---
 
 ## Where the project is
 
-**BUILDING IS STILL PAUSED** in the formal sense — no chunk is authorised. But **code was
-written today** at Carl's direct instruction, outside the chunk model, and that is deliberate:
-see "How we worked" below.
+**Building resumes next session.** Day 5 was deliberately a review-and-cleanup day: *"the last
+session before building work resumes."*
 
-**Repo:** `main`, clean, pushed. **Head: `f62f472`.** Lint at the recorded baseline — 1
-accepted `react-hooks/set-state-in-effect` error.
+**Repo:** `main`, clean. **Head: `f7c9ac2`. Four commits ahead of `origin/main` — not pushed**,
+because Carl did not ask. Lint at the recorded baseline (1 accepted error).
 
-**Dev server stopped.** Note: `npm run dev` exits without taking the Next.js child with it —
-port 3000 stayed held by an orphan on both restarts today. **Check the port, do not assume.**
-
-⚠ **The site IS deployed to Vercel, and the production alias is PUBLIC.** Two errors in one
-hour, both now corrected in `mission-overview.md` § Deployment:
-
-1. This session told Carl there was **no deployment**, on the basis that the repo has no
-   `vercel.json` and no `.vercel` directory. A GitHub-integration link leaves neither. **A
-   repo-only check finds nothing and proves nothing.**
-2. It then recorded the deployment as **SSO-protected**. Measured: previews return 302 to the
-   login; **the production alias returns 200 and serves the site with no authentication.** On
-   Hobby, Vercel Authentication covers previews only.
-
-**No other human has seen it and none will until it is finished.** `app/robots.ts` and a
-`noindex` meta tag now block crawlers — **neither is access control**, and ⚠ **both must be
-removed before launch** or the finished site will never be indexed.
-
-**Do not propose changing Vercel's protection setting in either direction.** Outward-facing,
-Carl's alone.
+⚠ **The orphaned-port problem affects `npx next start` too, not only `npm run dev`.** The Day 4
+handoff recorded it for dev only. Both leave a `node` process holding port 3000 after the task
+is stopped. **Check the port and kill the PID; do not assume it was released.**
 
 ---
 
-## What was decided and where it is recorded
+## What happened today
 
 | What | Where |
 |---|---|
-| Future work is not recorded in this repository | **`decisions.md` D-038** |
-| Drift sentinel parked pending Three.js evidence | **D-039** |
-| Reverting a chunk — git first, not `/rewind` | **D-040** |
-| `/doctor` run; auto mode is the Builder default | **D-041** |
-| Contact field gold, displays, light intent, geometry | **`live-work/contact-field-gold-and-light-reference.md`** |
-| How Carl and the Builder worked, and why it produced results | **`ai-system/working-with-the-builder.md`** |
+| Six-finding staleness audit — **two findings withdrawn as wrong** | This file, below |
+| Strategist added to the authority file; `strategist-role.md` **APPROVED** | **`decisions.md` D-042** |
+| PM/A · CB · CS · CD shorthand; what CS may be given | **D-042**, `ai-roles.md` |
+| A one-page map of the system | **`ai-system/README.md`** |
+| Scope-guard rule made a **Mandatory field** | `handoff-protocol.md` §2 |
+| The portrait renamed, rehoused, three questions settled | **`ai-system/working-with-carl.md`** |
+| Forward-creep rule graduated to a real rule | `prompt-protocol.md` **Stage 3** |
+| npm/npx pre-approvals narrowed to this repo | Commit `8c2c25b` |
+| **Q5 stutter — cause measured, fix applied** | **`live-work/q5-stutter-diagnosis.md`** |
 
 ---
 
-## The change that matters most for the next session
+## ⚠ The Q5 stutter is FIXED but NOT APPROVED
 
-**Carl will now talk to the Builder directly, not only through the Architect.**
+**Commit `a6f84fb`.** Carl: *"I can check it when I next visit the site. I will trust my
+builder."*
 
-> *"In my old workflow i hardly ever came in here and talked to you. That was a mistake. So
-> the architect will write the prompts, yes. But i think we will get much better results if we
-> communicate with you too. **The gold rim exists, thats proof enough.**"*
+**That trust is not an approval and must not be recorded as one.** Rule 9 makes rendered
+output the truth for visual work; the evidence here is frame counts.
 
-**The Architect still writes prompts for scoped implementation work; D-036 stands.** What
-changed is that *design conversation* happens in the room. Everything built today came out of
-conversation, not a written chunk.
+**Measured, production build, 3/3 runs:** worst frame gap **81ms → 18–19ms**; frames **35–38 →
+42 of 42**; WebGL inside the reveal **3/3 → 0/3**. Reduced motion +143ms (correctly does not
+wait). Completion still protected, canvas warm at +820ms.
 
-**Read `ai-system/working-with-the-builder.md` before the first exchange.** It records the
-five things that made it work, and Carl's mix model — *"there is a relationship between
-everything, sometimes a causal relationship"* — which changes how a Builder should behave:
-print the take and listen, do not solo, expect one change to move several things.
+**How to judge it:** first load after a server start — that is the one that stuttered.
+
+⚠ **If Carl still sees something, the fix is not wrong — there is a second cause.** Do not
+revert on one sighting; re-run `verify/q5-stutter.mjs` first.
+
+**The recorded hypothesis was half wrong**, and that is the useful part: shader compilation
+measured **0.1ms** and all GPU work **0.1ms**. The cost is Three.js **CPU** initialisation —
+`onFirstUse` at 55.4ms plus geometry construction, ~197ms inside a 700ms fade. **Every check
+aimed at the GPU came back clean.**
+
+⚠ **`enterActive()` is now the single entry into the questionnaire**, mirroring
+`enterComplete()`. **A future route in — resume link, deep link — must go through it** or the
+guard will not see it.
 
 ---
 
-## What was built today
+## What building resumes on
 
-| Change | Commit |
-|---|---|
-| Second-seat material removed from the repo | `194ab32` |
-| D-038 future-work policy applied across governance | `1f35a9a` |
-| D-039/D-040/D-041 recorded | `f1d5b08` |
-| Active Q label lifted out of grey (0.28 → 0.75) | `b233024` |
-| Field entrance timing restored to the approved 3600ms contract | `d8ff778` |
-| Contact bevel taken from copper to gold | `776921d` |
-| Gold/light working reference | `f62f472` |
+**The orbiting light.** One light across three layers — logo (background), boxes (middle),
+opal (foreground). Momentary aimed glint, not a constant key. Bloom coupled to the metal and
+light intensity. **Full brief: `live-work/contact-field-gold-and-light-reference.md`.**
 
-**Three verify/ scripts added:** `field-colour.mjs`, `field-displays.mjs`,
-`field-entrance-timing.mjs`.
+⚠ **The scope-guard field is now Mandatory.** Authorising this chunk **includes** PM/A
+drafting `chunk-scope.json` values and Carl approving them. Without it the guard is inert and
+every edit passes. Tested by firing it today: in-scope allowed, protected denied, out-of-scope
+denied.
+
+⚠ **The forward-creep rule now applies** (`prompt-protocol.md` Stage 3). This chunk arrives
+with a whole-arc brief, which is exactly the condition it guards: *the intent governs, the
+chunk executes.* **Guard against the helpful kind — it looks like good engineering.**
 
 ---
 
@@ -110,51 +100,37 @@ print the take and listen, do not solo, expect one change to move several things
 
 | Item | Owner | Note |
 |---|---|---|
-| **Q5 stutter** | Carl → Architect | ⚠ **REAL and OPEN.** See below |
-| **Orbiting light / glint / bloom / opal** | Carl → Architect | The next real chunk. Full brief in the gold reference |
-| Boxes 2–4 | — | Entrance timing already contracted; no retiming needed |
-| `chunk-scope.json` does not exist | Carl | The scope guard is **inert**. Mattered less under per-action prompting; under auto mode it is the gate that replaced those prompts |
-| Route the outreach folder | Carl | `C2B-Strategist/outreach/`. Asked since Day 2 |
-| Approve `strategist-role.md` (DRAFT) | Carl | From Day 2 |
-| `/insights` — check billing, then decide | Carl | Parked |
-| Verify prices + Playwright licence | Carl → Strategist | Research mode |
-| Own-repo rule → `decisions.md` | Carl | `strategist-role.md` §11 |
-| OpenAI app uninstall | Carl | ~14 Aug. Checklist at `Documents/openai-app-removal-checklist.md`, **outside this repo by instruction** |
+| **Judge the Q5 fix by eye** | Carl | First load after a server start |
+| **Claude Design — information, not implementation** | Carl | **Parked mid-conversation today.** Nothing recorded, deliberately. CD can now connect to Claude Code directly via an MCP server; whether this project uses it is undecided |
+| Own-repo rule → its own decision | Carl | `strategist-role.md` §11. Repo-wide rule living in a role file. Carried since Day 2 |
+| `/mcp` — Google Drive connector | Carl | Never completed auth. Codex measured **absent**, nothing to remove |
+| Push 4 commits | Carl | Not pushed; not asked |
+| Route the outreach folder | Carl | `C2B-Strategist/outreach/`. Since Day 2 |
+| Plugin marketplace removal | Carl | **From an Architect session** — installed under `~/.claude-architect/` |
+| Verify prices + Playwright licence | Carl → CS | Research mode |
+| OpenAI app uninstall | Carl | ~14 Aug. Checklist outside this repo |
 | Delete GSD backup | Carl | After ~3 August |
-| Plugin marketplace removal | Carl | Run `/plugin marketplace remove claude-plugins-official` **from an Architect session** |
 
 ---
 
-## ⚠ The Q5 stutter — do not record this as fixed
+## The two findings I got WRONG today — read this before trusting an audit
 
-A stutter as the first question's text appears. **Confirmed real and intermittent**, and the
-pattern is the useful part: it appears on the **first load after a server start**, then runs
-clean. A fresh, healthy server still produced it once.
+**1. The review log's five-week gap.** I raised it as staleness. **It is correct**: every
+decision since 22 June is governance or tooling, and the visual work is PROVISIONAL under
+D-035. **I was about to become the third reviewer to flag the same non-problem** — the 24 July
+architect review and a 25 July repo pass did it first, and D-035 exists because of them. The
+log now carries a warning naming all three. **Check decision statuses before calling that gap
+a gap.**
 
-**Nothing was fixed. No code changed across any of the observations.** Do not read the later
-clean runs as a resolution.
+**2. The scope guard as an undocumented hole.** Overstated. `live-work-protocol.md` §8
+documented it thoroughly on 27 July. The real defect was narrower and more interesting: **the
+rule had no field in the form PM/A fills in**, so it was never reached. **A rule with no slot
+in the form does not get followed.**
 
-**Leading hypothesis, untested:** the WebGL pre-warm's 2000ms fallback firing on a cold load.
-**It must be measured before it is believed** — this page has already produced one plausible
-cause that measured innocent (Three.js blamed for the opening delay, 0 WebGL contexts during
-it). Full record in `current-sprint.md`.
-
----
-
-## Two traps this session actually fell into
-
-**1. A stale record sent the Builder to work on a fixed defect.** Both `current-sprint.md` and
-the timing reference named the Begin button as the next job. It had already been fixed.
-**Reading the code would have confirmed the stale record, not corrected it** — the 7400ms
-delay and the `beginActive` gate still exist and still look like the described defect. Only
-Carl's memory and the button working on localhost settled it.
-
-**A recorded next-step is a claim about the present, and it decays. Confirm it in the running
-app.**
-
-**2. Correct sampling, wrong role.** The logo's gold was sampled accurately from 149,431
-pixels — and the **median** was applied as the metal's tint, which rendered copper. The
-median is the logo's *average*, dragged low by thin dark edges. It was never the logo's gold.
+**And one thing Carl corrected.** I recorded CS's isolation as a *technical limitation*. It is
+a **decision** — CS has what Carl decides it has, and no connection except through him. **CD
+is the proof**: it launched in the same position and can now connect directly. **A new
+capability is not its own authorisation.**
 
 ---
 
@@ -162,17 +138,18 @@ median is the logo's *average*, dragged low by thin dark edges. It was never the
 
 - **⛔ Never comment on his working hours.** See the top of this file.
 - **He leads.** Design, chunking and decisions are his. D-036.
-- **He brings references, not adjectives.** Four video stills settled a colour question that
-  an exchange of descriptions had not. **Take what he brings seriously and sample it.**
-- **Music, DAW and production analogies land.** 45 years a musician. The mix model in
-  `working-with-the-builder.md` is his and it is the most useful framing in the repo.
-- **He verifies.** Give him evidence, not comfort, and expect what you write to be checked.
+- **He asks for the principle before the decision.** *"I need to understand the principles
+  first, before I make a decision. Explain simply."* **Explain, then let him choose** — do not
+  present a recommendation as a fait accompli.
+- **He brings references, not adjectives.** Take what he brings seriously and sample it.
+- **Music, DAW and production analogies land.** 45 years a musician.
+- **He verifies.** Give him evidence, not comfort.
 - **Answer execution questions yourself.** Ask only about intent and authority.
 - **No ASCII diagrams or box-drawing characters.**
 - **Do not commit or push unless he explicitly asks.**
 
 ---
 
-*Day 4, 28 July 2026. The retired seat is gone from the repo entirely. Future work is out of
-it by policy. Auto mode is on. And the gold rim exists — which is the evidence behind the
-biggest change of the day: Carl is in the room now.*
+*Day 5, 29 July 2026. The system now has a map, the Strategist is in the file that defines
+authority, the scope guard has a slot in the form, and the stutter that hid for two days is
+measured and fixed. Two of my six findings were wrong — which is the part worth keeping.*
