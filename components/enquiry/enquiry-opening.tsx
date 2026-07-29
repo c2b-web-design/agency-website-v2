@@ -16,6 +16,36 @@ import ContactFieldCanvas from "./contact-field-canvas";
 // The safe boundary is the end of Send's entrance.
 const CHOREOGRAPHY_CLEAR_MS = 7100;
 
+// How long after Begin the Q5 REVEAL has cleared. Read off the existing
+// declaration, which this change does not touch:
+//
+//   .enquiry-q5-block   enquiry-q5-block-appear 700ms linear both  (globals.css)
+//
+// WHY THIS EXISTS — the same defect as CHOREOGRAPHY_CLEAR_MS, one stage earlier.
+// The pre-warm was written to keep WebGL work off the COMPLETION choreography,
+// and it does. But pressing Begin starts two things in the same instant: this
+// 700ms phrase fade, and `questionnaireStarted` flipping true — which makes the
+// warm-up's `requestIdleCallback` eligible immediately.
+//
+// `requestIdleCallback` only fires on a genuinely free thread, which is correct.
+// Its `timeout` is a guarantee of PROGRESS, not a delay: when the deadline
+// expires the browser runs the callback ANYWAY, busy or not. On a cold load the
+// thread is never free, so the deadline fires and ~200ms of Three.js
+// initialisation lands inside a 700ms opacity animation.
+//
+// MEASURED, not assumed (`verify/q5-stutter.mjs`, 29 July 2026), 3/3 runs on
+// both dev and production builds:
+//
+//   worst frame gap inside the reveal   113ms dev / 81ms production
+//   frames rendered during the reveal   28-38 of ~42 expected at 60fps
+//   shader compilation inside reveal    0.1ms  <- NOT the cause
+//   `onFirstUse` (three.js lazy init)   55.4ms dev / 46.0ms production
+//
+// The cost is CPU-side library initialisation and geometry construction, not
+// the GPU work the original comment anticipated. Three.js is guilty here, but
+// of a different offence than the one it was charged with.
+const Q5_REVEAL_CLEAR_MS = 700;
+
 const HEADING_LINE1 = "Let's understand what your";
 const HEADING_LINE2 = "business needs to become.";
 const SUBTEXT = "A few focused questions to help us see the right next step.";
@@ -342,6 +372,17 @@ export default function EnquiryOpening() {
   // passive effect, so both were equally stale. That approach is removed.
   const completedAtRef = useRef<number | null>(null);
 
+  // The instant Begin was pressed, held in a REF for exactly the reason
+  // `completedAtRef` is: reading it must never re-run the warm-up effect.
+  //
+  // WRITTEN SYNCHRONOUSLY, immediately before `setStage("active")`, via
+  // `enterActive()` below — never from a passive effect. A passive effect runs
+  // after commit and paint, which leaves a window in which the idle callback
+  // could fire, observe a stale `null`, and do its work inside the reveal. That
+  // is the same race `completedAtRef`'s comment documents, and it is closed the
+  // same way.
+  const activatedAtRef = useRef<number | null>(null);
+
   // The single, shared entry point into the completion stage. Every route into
   // `complete` — reduced motion and the animated corridor alike — goes through
   // here, so the timestamp can never be missed on one path. This changes only
@@ -349,6 +390,15 @@ export default function EnquiryOpening() {
   const enterComplete = useCallback(() => {
     if (completedAtRef.current === null) completedAtRef.current = Date.now();
     setStage("complete");
+  }, []);
+
+  // The single, shared entry point into the questionnaire — the counterpart to
+  // `enterComplete()`. Every route into `active` goes through here so the
+  // timestamp can never be missed on one path. This changes only how the
+  // transition is RECORDED; when it happens is untouched.
+  const enterActive = useCallback(() => {
+    if (activatedAtRef.current === null) activatedAtRef.current = Date.now();
+    setStage("active");
   }, []);
 
   useEffect(() => {
@@ -364,6 +414,26 @@ export default function EnquiryOpening() {
     // running, do not warm: reschedule for after it clears. The field waits;
     // neither the acknowledgement nor Send ever does.
     const warmWhenSafe = () => {
+      // THE Q5 REVEAL GUARD. Checked FIRST because the reveal happens first:
+      // this callback becomes eligible the instant Begin is pressed, which is
+      // the same instant the phrase starts fading in.
+      //
+      // REDUCED MOTION: `.enquiry-q5-block { animation: none }` under
+      // `prefers-reduced-motion` (globals.css), so there is no reveal to
+      // protect and waiting would stall the field for 700ms guarding an
+      // animation that never runs. The guard is DERIVED from the reveal, so it
+      // must carry the reveal's own condition with it — the precise failure the
+      // 24 July review found in the completion guard (a delay correctly derived
+      // from a choreography, applied even when the choreography was gated off).
+      const activated = activatedAtRef.current;
+      if (activated !== null && !reducedMotion) {
+        const untilRevealClears = Q5_REVEAL_CLEAR_MS - (Date.now() - activated);
+        if (untilRevealClears > 0) {
+          timerId = window.setTimeout(warmWhenSafe, untilRevealClears);
+          return;
+        }
+      }
+
       const completed = completedAtRef.current;
       // REDUCED MOTION: there is no choreography to protect. Every completion
       // animation is gated `reducedMotion ? undefined : {...}`, so under reduced
@@ -778,7 +848,7 @@ export default function EnquiryOpening() {
                 type="button"
                 tabIndex={beginActive ? 0 : -1}
                 aria-disabled={beginActive ? undefined : true}
-                onClick={() => beginActive && setStage("active")}
+                onClick={() => beginActive && enterActive()}
                 className="enquiry-begin-hit rounded-full px-6 py-2.5 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40"
               >
                 Begin
