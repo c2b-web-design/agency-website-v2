@@ -154,6 +154,41 @@ of this, for now it can wait."*
 
 ---
 
+## At site completion — the workshop/template separation
+
+**Recorded 30 July 2026 on Carl's instruction, to be implemented at completion. Not now.**
+
+**Full record: `live-work/references/workshop-template-and-client-delivery.md`.**
+
+Carl's intent: the template is a **permanent workshop** holding tools, ethos and methodology.
+Site code — C2B's own as well as a client's — is packaged and shipped out, leaving the workshop
+free. A new client means an identical workshop copied alongside, running in parallel.
+
+⚠ **`.gitignore` cannot achieve this.** It governs future commits, not existing history.
+**83 of this repo's 144 commits touch `project-intelligence/`**, so a clone delivers them all
+while the working tree looks clean. The record explains the mechanism and the three safe routes.
+
+**Direction decided 30 July 2026:** the C2B site code is extracted out into a new repo of its
+own; **what remains, keeping this repo's 144 commits, is the workshop.** The workshop holds the
+history worth consulting — methodology, decisions, corrections. Open Question 3 in the record.
+
+**Question 3a also decided:** the workshop keeps the C2B site's source in its *history*, and
+every client workshop copies that. **Carl accepts it.** Not a client-exposure risk — the
+delivered repo is a fresh `git init` with no ancestry, so there is no history to mine — and it
+does not grow with each client.
+
+⚠ **Two beliefs recorded alongside that decision must not be inherited:** git history leaks
+**complete** files, not fragments, and `git log` fluency cannot be assumed absent in a
+non-AI developer. The decision holds because exposure is **zero**, not because partial exposure
+is survivable. **The real trade-secret risk is the extraction step**, not history — Question 3a
+in the record.
+
+**Nothing here is authorised and nothing changes about current work.** Its only bearing on the
+build: extraction gets harder as site code and reusable scaffolding entangle — `app/globals.css`
+is already 2,012 lines of both.
+
+---
+
 ## Future work — deliberately not recorded here
 
 **Carl keeps the future-work record outside this repository**, for the site and for the
