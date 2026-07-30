@@ -233,6 +233,25 @@ gate:
    review has weight because the Architect did **not** write the plan: it assesses the
    executor's own thinking rather than grading its own. Findings and amendments only — the
    Architect does not rewrite the plan or instruct the Builder directly.
+
+   ⚠ **The Architect presents its findings IN ITS OWN WINDOW, in full and ready to copy.**
+   Carl carries them across to `live-work/architect-plan-response.md`. **The Architect does
+   not write that file itself.** Carl's instruction, 30 July 2026, after an Architect session
+   attempted the write and could not.
+
+   **Two reasons, and the second is the load-bearing one:**
+
+   - **Capability.** The seat is locked down by design (`architect-role.md`) and may have no
+     write access at all. A protocol step that assumes a capability the seat lacks fails
+     silently at exactly the wrong moment — after the review is done and before it is saved.
+   - **Custody.** Carl reads the findings before they become a file. The gate exists so an
+     independent seat assesses the executor's thinking; routing the output through Carl keeps
+     that independence visible in the record rather than assumed.
+
+   ⚠ **If the Builder transcribes the findings instead, the file must say so.** The Builder is
+   an interested party in its own review, and a future session reading an unattributed file
+   will take it as the Architect's own record. State who transcribed it, and that the
+   Architect's window is the authority if the two ever differ.
 3. **Carl approves.** The amended plan goes to Carl, who approves, revises, or sends it
    back. Only Carl approves (D-036).
 4. **Builder executes.** The Builder executes the approved plan, that chunk only. It does

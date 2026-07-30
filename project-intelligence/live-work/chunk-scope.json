@@ -1,0 +1,29 @@
+{
+  "_comment": "Enforced by .claude/hooks/chunk-scope-guard.js before every Edit/Write. See ai-system/live-work-protocol.md section 8. Absent file = no enforcement (opt-in by design).",
+
+  "chunk": "satin-blue-field-windows",
+  "active": true,
+
+  "_files": "Paths the chunk may edit. Supports exact paths, 'dir/' prefixes, and * wildcards. live-work/ is included because CLAUDE.md rules 6 and 7 REQUIRE the Builder to write run logs, checkpoint requests and the session handoff there — a scope that omits it makes the Builder's own protocol obligations impossible to meet, which is the B-1 finding in architect-plan-response.md.",
+  "files": [
+    "components/enquiry/contact-field-mesh.tsx",
+    "components/enquiry/contact-field-geometry.ts",
+    "components/enquiry/contact-field-canvas.tsx",
+    "verify/field-colour.mjs",
+    "verify/field-cascade-timing.mjs",
+    "project-intelligence/live-work/"
+  ],
+
+  "_protected": "Approved-foundation and canonical-governance paths the Builder must not touch. Denied unless the same path also appears in 'unlocked'. Narrowed to the specific canonical files rather than a blanket 'project-intelligence/**', which would have swept up live-work scratch with them.",
+  "protected": [
+    "app/globals.css",
+    "components/enquiry/enquiry-opening.tsx",
+    "project-intelligence/decisions.md",
+    "project-intelligence/ai-system/",
+    "project-intelligence/reviews/",
+    "project-intelligence/active-sprints/"
+  ],
+
+  "_unlocked": "Protected paths Carl has explicitly authorised for THIS chunk. Overrides 'protected'. Carl's call, not the Builder's.",
+  "unlocked": []
+}
