@@ -1,20 +1,27 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import ContactFieldCanvas from "./contact-field-canvas";
+import ContactFieldCanvas, { FIELD_ENTRANCE_END_MS } from "./contact-field-canvas";
 
 // How long after entering `complete` the ENTIRE completion choreography has
-// cleared — acknowledgement AND Send. Read off the existing animation
-// declarations, which this change does not touch:
+// cleared — acknowledgement, all four boxes, AND the opal.
 //
-//   acknowledgement block  eq-understood-fade-out 1400ms @ 4800ms -> ends 6200ms
-//   Send                   eq-completion-item-in   700ms @ 6400ms -> ends 7100ms
+// ⚠ COMPUTED, NOT CHOSEN, and that is the whole point. This started as a
+// hand-written 7100 (the opal's old 6400+700 end) and went stale TWICE in one
+// session as the cascade was retimed — first to 8800, and it would have gone
+// stale again at 2000/1500. A guard derived from a choreography must move WITH
+// that choreography, which only holds if it is computed from it.
 //
-// 6400ms would be the wrong boundary: that is the instant Send BEGINS its
-// entrance, so starting context creation, shader compilation and PMREM
-// generation there would starve the very animation it was meant to avoid.
-// The safe boundary is the end of Send's entrance.
-const CHOREOGRAPHY_CLEAR_MS = 7100;
+// Leaving it behind is not a harmless lag: a stale-low value lets a late pre-warm
+// fire INTO the opal's entrance, starving the animation the guard exists to
+// protect. Exactly the class of error as the Q5 guard read off the wrong
+// animation earlier the same day.
+//
+// The end of the OPAL's entrance is the boundary, not its start: the start is the
+// instant the animation begins, so creating a context and generating PMREM there
+// would starve it.
+//
+// Declared after OPAL_FADE_IN_* below, which it depends on.
 
 // How long after Begin the Q5 phrase reveal has cleared. Read off the existing
 // declaration, which this change does not touch:
@@ -62,6 +69,57 @@ const CHOREOGRAPHY_CLEAR_MS = 7100;
 // because it measured the same wrong 700ms window: the harness and the fix
 // shared one assumption, so the check agreed with the bug.
 const Q5_REVEAL_CLEAR_MS = 1300;
+
+// ── Completion tail: the acknowledgement clearing, then the opal ─────────────
+// ⚠ THE OPAL IS MASKED OFF, and its inter-element derivation removed with it.
+//
+// Carl, 30 July 2026: *"The mistake is not to have them as one system... The key
+// is to break them apart and not have them so reliant on proportion and ratios...
+// Mask off boxes 3, 4 and the opal and separate the connection between elements.
+// We will judge it by eye and input the numbers."*
+//
+// The previous model computed the opal's delay as `FIELD_ENTRANCE_END_MS +
+// FIELD_ENTRANCE_SPACING_MS`. That coupling was well-intentioned — it kept the
+// chain honest through four retimings — but it made the boxes untunable: moving
+// box 2 moved the opal, so no single element could be judged on its own.
+//
+// While masked, the opal has no timing. When Carl reinstates it, it gets a
+// hand-entered delay like every other element, and any relationship worth keeping
+// is re-imposed deliberately rather than assumed.
+// ⚠ UNMASKED 30 July 2026, and hand-entered like everything else.
+//
+//   box 4 (Email)   5100 -> 8100ms
+//   opal (Send)     8600 -> 11600ms   one 500ms step after box 4, matching the
+//                                     step between boxes, and the same 3000ms fade
+//
+// The 500ms is the same interval Carl settled on between boxes 1 and 2, so the
+// opal continues the cascade's rhythm rather than restarting with its own. That is
+// a deliberate choice to be judged, NOT a derivation — if the opal wants a longer
+// beat before it arrives, this number moves on its own and nothing follows it.
+const OPAL_MASKED = false;
+const OPAL_FADE_IN_DURATION_MS = 3000;
+const OPAL_FADE_IN_DELAY_MS = 8600;
+
+// The acknowledgement still tracks the last VISIBLE box, so "Understood." never
+// vanishes underneath something still arriving. This is a genuine constraint
+// rather than a rhythm choice — it is about occlusion, not feel — so it stays
+// derived while the feel-carrying values are hand-entered.
+const ACK_FADE_OUT_DURATION_MS = 1400;
+const ACK_FADE_OUT_DELAY_MS = FIELD_ENTRANCE_END_MS - ACK_FADE_OUT_DURATION_MS;
+
+/**
+ * When the ENTIRE completion choreography has cleared — the pre-warm guard's
+ * boundary.
+ *
+ * ⚠ Takes the LATEST of everything that can be on screen, so masking cannot lower
+ * it and let a pre-warm fire into a live animation. While the opal is masked the
+ * last box's end is the boundary; when it returns, the opal's end is.
+ */
+const CHOREOGRAPHY_CLEAR_MS = Math.max(
+  FIELD_ENTRANCE_END_MS,
+  ACK_FADE_OUT_DELAY_MS + ACK_FADE_OUT_DURATION_MS,
+  OPAL_MASKED ? 0 : OPAL_FADE_IN_DELAY_MS + OPAL_FADE_IN_DURATION_MS,
+);
 
 const HEADING_LINE1 = "Let's understand what your";
 const HEADING_LINE2 = "business needs to become.";
@@ -792,23 +850,27 @@ export default function EnquiryOpening() {
         {/* zero-sized canvas would destroy that mapping and force a resize on */}
         {/* reveal. `.enquiry-contact-layer` is `position: absolute`, so mounting it */}
         {/* early still contributes no layout and cannot move Send or the slot. */}
-        {/* ENTRANCE TIMING lives in CSS (`.enquiry-contact-layer--in`), not here. */}
-        {/* The layer used to flip to opacity 1 the instant `complete` mounted — */}
-        {/* completion-clock 0ms — which put the field on screen while */}
-        {/* "Understood." was still revealing (0–1100ms) and the corridor was */}
-        {/* still fading clear (0–2600ms). The approved contract starts the first */}
-        {/* field at 3600ms over 700ms linear; that is what the class restores. */}
-        {/* Boxes 2–4 take the same class with their own `--eq-field-delay`. */}
-        {/* No inline `opacity` here: it would beat the animation's own value. */}
+        {/* ENTRANCE TIMING now lives in WEBGL, per box — `useEntranceCascade` in */}
+        {/* contact-field-canvas.tsx, on the same approved contract (3600/4100/ */}
+        {/* 4600/5100ms, 700ms linear each). It moved there on 30 July 2026 when */}
+        {/* boxes 2–4 arrived: all four share ONE canvas, so a CSS fade on this */}
+        {/* layer could only fade them together and cannot express four entrances */}
+        {/* 500ms apart. The old `.enquiry-contact-layer--in` class was REMOVED, */}
+        {/* not left in place — running both would multiply the two fades and give */}
+        {/* box 1 a squared, slower ramp than the contract and than its siblings. */}
+        {/* No inline `opacity` here: the materials own their own opacity. */}
         {canvasWarm && (
           <div
-            className={`enquiry-contact-layer${stage === "complete" ? " enquiry-contact-layer--in" : ""}`}
+            className="enquiry-contact-layer"
             style={{
               pointerEvents: "none",
               visibility: stage === "complete" ? "visible" : "hidden",
             }}
           >
-            <ContactFieldCanvas />
+            {/* `active` is the cascade's clock zero, and it is deliberately NOT */}
+            {/* this canvas's mount: the canvas mounts early on `canvasWarm` so */}
+            {/* WebGL setup stays off the completion choreography. */}
+            <ContactFieldCanvas active={stage === "complete"} />
           </div>
         )}
 
@@ -882,7 +944,11 @@ export default function EnquiryOpening() {
                 top: 0,
                 left: 0,
                 right: 0,
-                ...(reducedMotion ? undefined : { animation: "eq-understood-fade-out 1400ms linear 4800ms forwards" }),
+                ...(reducedMotion
+                  ? undefined
+                  : {
+                      animation: `eq-understood-fade-out ${ACK_FADE_OUT_DURATION_MS}ms linear ${ACK_FADE_OUT_DELAY_MS}ms forwards`,
+                    }),
               }}
             >
               <div className="enquiry-q5-heading" style={{ marginBottom: "0.5rem" }}>
@@ -900,9 +966,20 @@ export default function EnquiryOpening() {
                 We&apos;re on it. Add your details and we&apos;ll turn this into a clearer direction for your site.
               </p>
             </div>
-            {/* Send — sits in the same space, fades in after acknowledgement has cleared */}
+            {/* Send (the opal) — ⚠ MASKED OFF while the box 1 -> box 2 relationship */}
+            {/* is judged in isolation. `OPAL_MASKED = false` restores it. Hidden with */}
+            {/* `visibility`, not unmounted: the button keeps its real box so nothing */}
+            {/* below it shifts, and restoring it cannot change the layout. */}
             <div
-              style={reducedMotion ? undefined : { animation: "eq-completion-item-in 700ms linear 6400ms both" }}
+              style={
+                OPAL_MASKED
+                  ? { visibility: "hidden" }
+                  : reducedMotion
+                    ? undefined
+                    : {
+                        animation: `eq-completion-item-in ${OPAL_FADE_IN_DURATION_MS}ms linear ${OPAL_FADE_IN_DELAY_MS}ms both`,
+                      }
+              }
             >
               <button
                 type="button"

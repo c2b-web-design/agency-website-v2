@@ -1463,10 +1463,42 @@
    Contract: `contact-form-current-timing-reference.md`. Clock zero is the
    `complete` stage mounting, 900ms after Q1 Next step.
 
-   WHY A DELAY VARIABLE, NOT A FIXED VALUE: only box 1 exists (the former Name
-   position). Boxes 2–4 are per-object entrances on the SAME contract, so each
-   gets its own `--eq-field-delay` — 4100ms, 4600ms, 5100ms — and NOTHING here
-   is retimed when they arrive. The cascade is partially built, not redesigned. */
+   ⚠ THE CASCADE MOVED INTO WEBGL, 30 July 2026 — and the CSS fade had to go
+   with it, not sit alongside it.
+
+   All four boxes live in ONE canvas (one WebGL context, deliberately — see the
+   Q5 pre-warm work), so a CSS opacity fade on this layer can only fade all four
+   TOGETHER. It cannot express four independent staggered entrances at all, which
+   is what the contract requires. The fade is therefore driven per box, on
+   the three materials of each assembly, by `useEntranceCascade` in
+   contact-field-canvas.tsx.
+
+   ⚠ AND THE PROPORTIONAL MODEL WAS THEN ABANDONED, 30 July 2026. The timings
+   briefly derived from a single spacing RATIO, which coupled every element to
+   every other and made them untunable — four attempts at the ratio (75/50/33/10%)
+   never landed because moving one element moved them all. Carl: *"The mistake is
+   not to have them as one system... break them apart and not have them so reliant
+   on proportion and ratios."*
+
+   Each element now carries its OWN hand-entered delay and duration in
+   `FIELD_ENTRANCES` (contact-field-canvas.tsx). ⚠ Boxes 3, 4 and the opal are
+   currently MASKED while the fade speed is judged on boxes 1 and 2 alone, which
+   share a start on purpose. Nothing here is approved.
+
+   `contact-form-current-timing-reference.md` records the ORIGINAL 700/500
+   contract and has not been superseded — do not read it as current until Carl
+   approves these values.
+
+   ⚠ AND THE CSS FADE WAS REMOVED RATHER THAN LEFT IN PLACE, because leaving it
+   would MULTIPLY: layer opacity 0->1 over 3600-4300ms times box 1's own material
+   opacity 0->1 over the identical window gives a squared ramp, so box 1 would
+   enter visibly slower and later than the other three and than the contract.
+   Two fades on the same element are not a safety net; they are a different
+   curve.
+
+   This layer is now a plain positioned container: it holds the canvas's measured
+   576 x 184 box and nothing else. Visibility while not `complete` is handled by
+   the inline `visibility` in enquiry-opening.tsx, as before. */
 .enquiry-contact-layer {
   position: absolute;
   top: 0;
@@ -1476,26 +1508,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  --eq-field-delay: 3600ms;
-  opacity: 0;
-}
-
-.enquiry-contact-layer--in {
-  animation: eq-field-fade-in 700ms linear var(--eq-field-delay) both;
-}
-
-@keyframes eq-field-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-/* Reduced motion: no cascade. The completion state is presented immediately,
-   matching how the acknowledgement and Send behave under the same query. */
-@media (prefers-reduced-motion: reduce) {
-  .enquiry-contact-layer--in {
-    animation: none;
-    opacity: 1;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -39,6 +39,17 @@ export const FIELD_OFFSET_LEFT_PX = 0;
 export const FIELD_OFFSET_TOP_PX = 50;
 
 /**
+ * Vertical pitch between row 1 and row 2 of the 2x2 grid.
+ *
+ * DERIVED, not measured separately: it is exactly one grid cell, which the
+ * comment above already decomposes as label(16) + mb-1(4) + input(38) = 58.
+ * Row 2's input top is therefore 50 + 58 = 108, and the pair spans
+ * 50..146 inside the 184px layer — symmetric about the centre (50 top margin,
+ * 38 bottom), which is the `align-items: center` result the CSS grid produced.
+ */
+export const ROW_PITCH_PX = 58;
+
+/**
  * Field body width for a given contact-layer width. The layer spans the shared
  * `max-w-xl` shell, so this reproduces the recorded responsive rule
  * `(shellWidth - columnGap) / 2` — 284px at the full 576px desktop shell.
@@ -76,4 +87,59 @@ export function fieldPlacement(layerWidthPx: number, layerHeightPx: number): Fie
     x: FIELD_OFFSET_LEFT_PX + width / 2 - layerWidthPx / 2,
     y: -(FIELD_OFFSET_TOP_PX + FIELD_HEIGHT_PX / 2 - layerHeightPx / 2),
   };
+}
+
+// ── The 2x2 grid: all four field positions ───────────────────────────────────
+/**
+ * The four field slots, in the CASCADE ORDER the approved timing contract
+ * specifies: Name -> Business name -> Website URL -> Email.
+ *
+ * That order is row-major (left, right, left, right), NOT column-major, and it
+ * matters: the entrance delays are assigned by index, so reordering this array
+ * silently retimes the cascade. `contact-form-current-timing-reference.md`
+ * §Field-cascade contract is the source.
+ *
+ * `col`/`row` are grid indices; the world position is derived from them by
+ * `fieldPlacements` so the two rows and two columns cannot drift apart.
+ */
+export const FIELD_SLOTS = [
+  { id: "name", label: "Name", col: 0, row: 0 },
+  { id: "business", label: "Business name", col: 1, row: 0 },
+  { id: "website", label: "Website URL", col: 0, row: 1 },
+  { id: "email", label: "Email", col: 1, row: 1 },
+] as const;
+
+export type FieldSlotId = (typeof FIELD_SLOTS)[number]["id"];
+
+export type PlacedField = FieldPlacement & {
+  id: FieldSlotId;
+  /** Index in cascade order — 0..3. Drives the entrance delay. */
+  order: number;
+};
+
+/**
+ * All four field centres in world coordinates.
+ *
+ * Box 1 is IDENTICAL to what `fieldPlacement` returns — verified by
+ * construction, since the col-0/row-0 terms are both zero and the expression
+ * reduces to the same arithmetic. `fieldPlacement` is deliberately retained
+ * rather than replaced: it is the approved single-field placement and other
+ * callers (and the geometry proof) reference it.
+ *
+ * Column pitch is `width + COLUMN_GAP_PX`, so the pair spans the full layer
+ * width at every responsive width with the approved 8px gutter between them —
+ * the same rule the CSS 2-column grid applied.
+ */
+export function fieldPlacements(layerWidthPx: number, layerHeightPx: number): PlacedField[] {
+  const width = fieldWidthPx(layerWidthPx);
+  const colPitch = width + COLUMN_GAP_PX;
+
+  return FIELD_SLOTS.map((slot, order) => ({
+    id: slot.id,
+    order,
+    width,
+    height: FIELD_HEIGHT_PX,
+    x: FIELD_OFFSET_LEFT_PX + slot.col * colPitch + width / 2 - layerWidthPx / 2,
+    y: -(FIELD_OFFSET_TOP_PX + slot.row * ROW_PITCH_PX + FIELD_HEIGHT_PX / 2 - layerHeightPx / 2),
+  }));
 }

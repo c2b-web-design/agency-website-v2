@@ -187,7 +187,28 @@ const GOLD_BEVEL_METALNESS = 1.0; // genuinely metallic, now that a reflection e
  * own panel intensities already set the level and there is no scene-wide
  * brightening to compensate for.
  */
-const GOLD_BEVEL_ENV_INTENSITY = 1.0;
+export const GOLD_BEVEL_ENV_INTENSITY = 1.0;
+
+/**
+ * Every material starts fully TRANSPARENT and is faded up by the canvas on the
+ * approved cascade (`FIELD_ENTRANCE_DELAYS_MS` in contact-field-canvas.tsx).
+ *
+ * Starting at 0 rather than 1 matters: the boxes must not be visible before
+ * their own entrance begins. The former single-box build faded the whole LAYER
+ * in CSS, so there was nothing to hide; with four independent entrances the
+ * hiding has to happen per box.
+ *
+ * ⚠ WHY `transparent` AND `depthWrite: false` TOGETHER. `transparent` alone is
+ * not enough and the failure is visible: a transparent mesh that still writes
+ * depth occludes whatever is drawn after it, so a box at opacity 0 would punch
+ * a hole in the boxes behind it — and the rim/bevel/face of a single assembly
+ * are three overlapping meshes at different z, so it would also fight itself
+ * during its own fade. Disabling depth writes lets the three sub-meshes blend in
+ * their draw order, which for a concentric stack viewed head-on under an
+ * orthographic camera is the correct back-to-front order already (rim at z=0,
+ * bevel at RIM_DEPTH, face above it).
+ */
+const ENTRANCE_START_OPACITY = 0;
 
 /**
  * The face and rim must NOT respond to the studio environment — this proof is
@@ -391,6 +412,7 @@ function useDisposable(geometry: THREE.BufferGeometry) {
 export function ContactField({
   placement,
   bevelMaterialRef,
+  groupRef,
 }: {
   placement: FieldPlacement;
   /**
@@ -399,6 +421,16 @@ export function ContactField({
    * on teardown. The face and rim materials are never exposed this way.
    */
   bevelMaterialRef?: React.Ref<THREE.MeshStandardMaterial>;
+  /**
+   * Receives the assembly's root group so the canvas can drive this ONE box's
+   * entrance opacity independently of the other three.
+   *
+   * The opacity is applied to the three materials, not to the group (Three.js
+   * groups have no opacity), but the group is the honest handle: it is what
+   * "this box" means. The canvas walks its children — see `setFieldOpacity` in
+   * contact-field-canvas.tsx.
+   */
+  groupRef?: React.Ref<THREE.Group>;
 }) {
   const { width, height, x, y } = placement;
 
@@ -509,7 +541,7 @@ export function ContactField({
   useDisposable(faceGeometry);
 
   return (
-    <group position={[x, y, 0]}>
+    <group ref={groupRef} position={[x, y, 0]}>
       {/* Rim and bevel keep ExtrudeGeometry's own hard-edged normals. Running
           computeVertexNormals() on them would average across the extrusion
           edges and smear the rim into the face, destroying the structurally
@@ -522,6 +554,9 @@ export function ContactField({
           roughness={0.65}
           metalness={0}
           envMapIntensity={NO_ENV_RESPONSE}
+          transparent
+          opacity={ENTRANCE_START_OPACITY}
+          depthWrite={false}
         />
       </mesh>
 
@@ -537,6 +572,9 @@ export function ContactField({
           roughness={GOLD_BEVEL_ROUGHNESS}
           metalness={GOLD_BEVEL_METALNESS}
           envMapIntensity={GOLD_BEVEL_ENV_INTENSITY}
+          transparent
+          opacity={ENTRANCE_START_OPACITY}
+          depthWrite={false}
         />
       </mesh>
 
@@ -547,6 +585,9 @@ export function ContactField({
           roughness={0.55}
           metalness={0}
           envMapIntensity={NO_ENV_RESPONSE}
+          transparent
+          opacity={ENTRANCE_START_OPACITY}
+          depthWrite={false}
         />
       </mesh>
     </group>
