@@ -24,6 +24,8 @@
     "project-intelligence/active-sprints/"
   ],
 
-  "_unlocked": "Protected paths Carl has explicitly authorised for THIS chunk. Overrides 'protected'. Carl's call, not the Builder's.",
-  "unlocked": []
+  "_unlocked": "Protected paths Carl has explicitly authorised for THIS chunk. Overrides 'protected'. Carl's call, not the Builder's. live-work-protocol.md was unlocked on 30 July 2026 so the Builder could record a finding from the guard's own first live use — see the 'First live chunk' note in §8. Authorised by Carl explicitly ('unblock it if you have to, i will go on trust'), not taken by the Builder.",
+  "unlocked": [
+    "project-intelligence/ai-system/live-work-protocol.md"
+  ]
 }

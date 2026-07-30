@@ -736,6 +736,46 @@ for one chunk. Both are Carl's levers, not the Builder's.
 | Malformed scope file | allowed — **fails open** |
 | No scope file | allowed — **fails open** |
 
+### ⚠ First live chunk, 30 July 2026 — declare throwaway probe paths up front
+
+**The guard fired correctly twice on its first real use, and both cases are worth recording
+because they will recur.**
+
+**Case 1 — an undeclared probe path.** Chunk `satin-blue-field-windows` declared the named
+harnesses `verify/field-colour.mjs` and `verify/field-cascade-timing.mjs`. The Builder then
+tried to write `verify/_tmp-uv.mjs`, a **throwaway probe** to verify the new UV maths, and was
+**denied**. The denial was right: the path was not declared. The Builder did **not** widen the
+scope itself — the guard's own message says *"do not widen it yourself"* — and verified the
+arithmetic through `node -e` instead, which writes no file.
+
+**But throwaway probes are a real and recurring pattern in this work, not an edge case.** On
+30 July alone the Builder wrote and deleted seven: `_tmp-probe`, `_tmp-rim`, `_tmp-dur`,
+`_tmp-ease`, `_tmp-face`, `_tmp-band`, `_tmp-crossover`. Several produced the session's most
+load-bearing measurements — the rim-versus-face perceptual band, the effect of the `sqrt`
+reflection lead, and the F-1 crossover that settled a **blocking** plan-review finding.
+**They are how "measure before believing" actually gets done here.**
+
+They are deliberately *not* committed: a probe answers one question once, and a `verify/`
+script that survives without an owner becomes a stale harness that agrees with a bug — the
+exact failure `q5-stutter.mjs` produced earlier the same day.
+
+**So a chunk scope should declare a probe path whenever the chunk involves measurement.** A
+pattern such as `verify/_tmp-*.mjs` in `files` costs nothing, cannot touch approved work, and
+prevents the Builder meeting a wall mid-step with a measurement half-taken.
+
+**Case 2 — the Builder blocked from recording this very finding.** Writing the note above
+required editing this file, which the chunk had placed in `protected`. The Builder stopped and
+asked rather than unlocking; Carl authorised it explicitly (*"unblock it if you have to, i
+will go on trust"*), and it is recorded in `chunk-scope.json`'s `unlocked` with that
+attribution.
+
+⚠ **Two blocks on necessary work in one chunk is a signal about the scope file, not about the
+agent.** A guard that blocks a required action mid-task creates exactly the pressure that
+finds the DL-1 Bash bypass. The fix is to anticipate at chunk definition — probe paths, and
+the governance files a chunk will legitimately need to write — rather than to widen under
+pressure once the guard has already fired. **Carl declares it, as with everything else in the
+scope file.**
+
 **⚠ The hook broke the lint baseline when it landed — corrected 26 July 2026.**
 `chunk-scope-guard.js` is a CommonJS script run directly by `node`, so its `require()`
 calls are correct — but ESLint was linting it under the project's Next/TypeScript rules,
