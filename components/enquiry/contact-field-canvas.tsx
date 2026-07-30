@@ -237,6 +237,520 @@ export const FIELD_ENTRANCE_END_MS = FIELD_ENTRANCES.reduce(
   0,
 );
 
+// ── The shared satin field the four boxes are windows onto ───────────────────
+//
+// ⚠ STEP 2 OF 4 — COLOUR ONLY. No arc grain and no normal map yet, deliberately:
+// the plan builds this in independently judgeable steps so the gradient's depth
+// and its brightness against the gold can be settled before texture complexity
+// lands on top. Steps 3 (arcs -> normal map) and 4 (responsive pass) follow.
+//
+// THE MODEL. One texture, four apertures. The boxes do not each carry a material —
+// their UVs encode position within a shared field (`sharedFieldWindow` in
+// contact-field-geometry.ts), so each shows a different region of one continuous
+// surface. Carl: *"no boxes the same. No boxes with a slight variation of the same
+// idea."* The variation falls out of position rather than being authored.
+//
+// ⚠ THE HIERARCHY CONSTRAINT THAT GOVERNS EVERY VALUE HERE. The gold rim stays
+// dominant; the field's brightest point sits BELOW the rendered gold's. If the
+// interior competes, the boxes stop reading as windows and start reading as tiles.
+// Measured reference: the rim spans luminance 17.0 (floor) to 172.9 (full).
+//
+// Non-reflective by construction — `metalness: 0`, `envMapIntensity: 0`. A
+// reflective face would show the studio environment and fight the orbiting light
+// that follows this chunk; a satin face RECEIVES light instead.
+
+/** Texture resolution. 6:1 to match the field's world aspect — see below. */
+const FIELD_TEX_W = 2304;
+const FIELD_TEX_H = 384;
+
+/**
+ * ⚠ THE TEXTURE IS 6:1, NOT SQUARE, AND THAT IS LOAD-BEARING.
+ *
+ * The shared field spans 576 x 96 world units. The UVs are isotropic — 96 world
+ * units per UV unit on BOTH axes at every viewport width (verified at 576/400/300)
+ * — so a square texture would map its square pixels onto a 6:1 world rectangle and
+ * a circle drawn in texture space would render as a 6:1 ellipse. At 2304 x 384 the
+ * texel is square in world space: draw a circle, get a circle.
+ *
+ * That matters from step 3, when the arcs arrive. It costs nothing to get right
+ * now and is expensive to discover later.
+ *
+ * DENSITY: `FIELD_TEX_H / 96` = 4 texels per world unit. The face is 275 x 29
+ * units per box, so ~1100 x 116 texels against ~550 x 58 device pixels at DPR 2 —
+ * about 2x device density, comfortably above Nyquist. ~3.5 MB.
+ */
+
+// ── Palette ──────────────────────────────────────────────────────────────────
+// Deep royal through a lifted lighter blue, pitched well below the gold. Taken as
+// direction from Carl's satin-blue reference and the gradient sheet, not copied:
+// *"we can take elements from several and combine them to make the design our own.
+// Plus, any colour combinations can be made darker or lighter as we see fit."*
+//
+// ⚠ Most published blue gradients are designed as backgrounds on LIGHT pages and
+// are far too bright at their darkest point for this one. These sit deliberately
+// low. PROVISIONAL — to be judged by eye and moved.
+// ⚠ LIFTED TWICE, and the second lift was the important one.
+//
+// First attempt (#0a1836 / #16346b / #2f5f9e) was pitched low to protect the gold
+// hierarchy and over-corrected: the right-hand boxes were near-indistinguishable
+// from the page background. A window showing nothing is not a window.
+//
+// ⚠ SECOND LIFT — CALIBRATED AGAINST THE SEND OPAL, not chosen freely. Carl,
+// viewing on a 65" 4K TV: *"I am looking in comparison to the send button which is
+// a lot lighter blue. Rather than complement each other as far as colour goes...
+// the box blues are too dark and do not distinguish themselves too much from the
+// dark background."*
+//
+// The Send opal is an APPROVED element (R-018, D-033) and it already sets the blue
+// this page has. Its body is a genuinely saturated ultramarine — measured from
+// `.enquiry-send-btn` in globals.css:
+//
+//   #163a8f -> #14418f -> #114aa5   (base `background-color: #114aa5`)
+//
+// The field at #24509b was close in LIGHTNESS but well below in SATURATION, so it
+// read as muted-and-dark beside a rich blue: two palettes in one frame rather than
+// one family. These values sit in the opal's hue family and closer to its
+// saturation, so the two complement rather than compete — while the field stays
+// clearly subordinate to the gold, which measures 172.9 at full.
+// ⚠ SAMPLED FROM `brand-assets/images.jpg`, Carl's flowing-ribbon reference, then
+// COMPRESSED. He asked for it followed closely: *"if you have to copy this design
+// closely, do it. Most of it will be masked anyway."*
+//
+// Measured from the reference (699x392, sampled on a grid):
+//
+//   darkest   #000761  luminance  12
+//   mid-dark  #1148bd  luminance  69
+//   mid       #2784e1  luminance 119
+//   light     #35a9f4  luminance 150
+//   lightest  #c2ffff  luminance 242
+//
+// ⚠ ITS RANGE CANNOT BE USED DIRECTLY. Luminance 242 would blow past the gold rim's
+// measured 172.9 and break the hierarchy that governs this whole chunk — the field
+// must stay subordinate. The values below keep the reference's HUE PATH (a genuine
+// cyan lean at the light end, deep ultramarine at the dark) while compressing the
+// span to roughly 20-150, so the brightest field still sits clearly under the gold.
+//
+// The hue also sits close to the Send opal's #163a8f -> #114aa5, which is what Carl
+// asked for on the 65" TV: *"all would echo the blue opal."*
+// ── The sampled source ───────────────────────────────────────────────────────
+//
+// ⚠ A DELIBERATE EXCEPTION TO THIS PROJECT'S OWN RULE, taken by Carl with the
+// trade-off in front of him. Every other material here is GENERATED — the gold was
+// sampled from C2B's own logo, the studio environment is built in code with no
+// HDRI and no network request. `contact-field-source.jpg` is a licensed stock
+// asset (Pikbest, watermarked in the original), and using it closely was raised as
+// a licensing and originality question before it was done.
+//
+// Carl's decision, with his reasoning: *"Yes, I'd be breaking my own rule, but for
+// this effect — worth it!"* and, on the method: *"I'd be sampling in Music."*
+//
+// Recorded here so it reads as a decision rather than an oversight to whoever finds
+// it later. ⚠ **If this site is ever used as a template for client work
+// (`live-work/references/workshop-template-and-client-delivery.md`), this asset is
+// the one element that is NOT C2B's to pass on.**
+//
+// The procedural field below is kept as a working fallback for exactly that reason.
+const FIELD_SOURCE_URL = "/contact-field-source.jpg";
+// ── Grading the source against the Send opal ─────────────────────────────────
+//
+// ⚠ ANCHORED TO MEASURED VALUES, not adjusted by feel. Carl: *"look at the hex of
+// the darkest blue of the opal and the lightest blue, use them as a guide."*
+//
+// The Send opal's body gradient (globals.css, `.enquiry-send-btn`) is the target,
+// because it is the approved blue this page already has:
+//
+//   #071a42  luma  24.8   the DARKEST — dark navy edge
+//   #0c2f72  luma  44.4
+//   #163a8f  luma  56.5
+//   #14418f  luma  61.1
+//   #114aa5  luma  68.5   the LIGHTEST body tone (also its background-color)
+//
+//   => body range 24.8 .. 68.5.   Gold rim, for the ceiling: 17.0 .. 172.9.
+//
+// ⚠ AND MEASURING THE FIELD AGAINST THAT FOUND THE REAL PROBLEM, which was NOT
+// what it looked like. Carl asked for the shades to be *"a little bit lighter"*,
+// but the field's MEAN was already 67.4 — essentially the opal's lightest tone.
+// Its RANGE was the defect: min 10.0 against the opal's darkest of 24.8. The field
+// was not too dark, it was **too contrasty** — dropping to near-black in places,
+// which reads as holes rather than as one material.
+//
+// Simply lightening it made that worse: multiplying by #c4d2ea lifted the peak to
+// 185, ABOVE the gold's 172.9, breaking the hierarchy that governs this chunk.
+//
+// So the range is COMPRESSED rather than shifted — a screen pass lifts the floor
+// without touching the ceiling. Measured result: min 30.1 (just above the opal's
+// darkest), max 162.0 (safely under the gold), mean 82.5.
+/** Multiply pass — sets the ceiling, keeping the source's peak under the gold. */
+const FIELD_SOURCE_DARKEN = "#9fb4d8";
+/** Screen pass — lifts the floor, so the darks never fall below the opal's. */
+const FIELD_SOURCE_LIFT = "#0a1a3a";
+/** Overlaid to pull the hue toward the opal's ultramarine. PROVISIONAL. */
+const FIELD_SOURCE_TINT = "rgba(20, 62, 150, 0.30)";
+
+/** The shadow end. Deep ultramarine — the reference's troughs, lifted off black. */
+const FIELD_DEEP = "#0a1f5e";
+/** The body — the reference's mid-dark, and the opal's own family. */
+const FIELD_BODY = "#1548b4";
+/** The lit end. Cyan-leaning, as the reference is. Capped well below the gold. */
+const FIELD_LIT = "#4fa2ea";
+
+/**
+ * The ribbon crest — the path the bright band follows across the field.
+ *
+ * ⚠ RADIAL SPOTS WERE THE WRONG MODEL AND WERE REPLACED. Two earlier attempts
+ * placed radial light sources: one (box 1 lit, boxes 2 and 4 identical), then
+ * three (all four differed, but box 1 flattened because the energy spread out).
+ * Both failed for the same structural reason — **a spot with a ~1-unit radius is
+ * smaller than a box, which is 2.9 units wide.** Each box caught a bright patch
+ * and flat tone either side, so it never read as a gradient at all.
+ *
+ * ⚠ THE REFERENCE IS NOT SPOTS, IT IS RIBBONS. Measured from
+ * `brand-assets/images.jpg` by tracing the brightest row per column:
+ *
+ *   x=0.00  crest at 0.90    x=0.45  crest at 0.45    x=0.82  crest at 0.53
+ *   x=0.18  crest at 0.60    x=0.55  crest at 0.51    x=1.00  crest at 0.39
+ *   x=0.36  crest at 0.47    x=0.64  crest at 0.55
+ *
+ * A bright band sweeping up from the lower-left, levelling across the middle, and
+ * lifting again at the right — with the TROUGH crossing the other way, from the
+ * top-left down to the bottom-right.
+ *
+ * ⚠ THAT TROUGH CROSSING IS WHAT CARL SPECIFIED, and it falls out of the structure
+ * rather than being placed per box: *"bottom left would be lighter on the left hand
+ * side of the box but would get darker on its right side... top right the same,
+ * opposite, boxes right side to left would be lighter to darker."* Because the dark
+ * region swaps sides along the sweep, the bottom-left and top-right windows read in
+ * OPPOSITE directions — which is what stops any two boxes reading as the same idea.
+ *
+ * Control points in field UV: u across 0..6, v 0..1. Interpolated smoothly.
+ */
+const FIELD_CREST: Array<{ u: number; v: number }> = [
+  { u: 0.0, v: 0.88 },
+  { u: 1.1, v: 0.62 },
+  { u: 2.2, v: 0.47 },
+  { u: 3.3, v: 0.50 },
+  { u: 4.4, v: 0.55 },
+  { u: 5.2, v: 0.52 },
+  { u: 6.0, v: 0.40 },
+];
+
+/**
+ * Half-thickness of the bright ribbon, in v units, and how far the glow reaches
+ * beyond it before falling to the deep tone.
+ *
+ * ⚠ BOTH ARE LARGE RELATIVE TO A BOX (0.30 v-units tall), and deliberately. The
+ * falloff must span a large fraction of the field or a box sees a hard edge rather
+ * than a gradient — the defect that made the radial-spot attempts fail.
+ */
+const FIELD_CREST_CORE_V = 0.16;
+const FIELD_CREST_FALLOFF_V = 0.62;
+
+/**
+ * The crest's v at any u, smoothly interpolated between `FIELD_CREST`'s control
+ * points.
+ *
+ * ⚠ SMOOTHSTEP BETWEEN POINTS, NOT LINEAR. Linear interpolation would put a
+ * corner at every control point, and a ribbon with corners in it reads as a
+ * polygon rather than a flow — visible even under the heavy blur of the falloff,
+ * because the eye finds discontinuities in a gradient's *rate* as readily as in
+ * its value.
+ */
+function crestAt(u: number): number {
+  const pts = FIELD_CREST;
+  if (u <= pts[0].u) return pts[0].v;
+  if (u >= pts[pts.length - 1].u) return pts[pts.length - 1].v;
+  for (let i = 1; i < pts.length; i++) {
+    if (u <= pts[i].u) {
+      const a = pts[i - 1];
+      const b = pts[i];
+      const t = (u - a.u) / (b.u - a.u);
+      const s = t * t * (3 - 2 * t); // smoothstep
+      return a.v + (b.v - a.v) * s;
+    }
+  }
+  return pts[pts.length - 1].v;
+}
+
+/**
+ * Build the shared field's colour texture on a 2D canvas.
+ *
+ * ⚠ `CanvasTexture` RATHER THAN `DataTexture`, deliberately. The 2D canvas API
+ * gives `createRadialGradient` directly and — from step 3 — antialiased `arc()`
+ * strokes. Fine arcs at sub-pixel widths alias badly without AA, and hand-rolling
+ * coverage antialiasing in a `DataTexture` loop is real work for no gain.
+ *
+ * ⚠ `SRGBColorSpace` is REQUIRED on a colour map. Omitting it double-applies the
+ * transfer function and the field renders visibly darker and more saturated than
+ * authored — a silent failure that looks like a palette problem.
+ */
+function buildFieldColourTexture(source?: HTMLImageElement): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = FIELD_TEX_W;
+  canvas.height = FIELD_TEX_H;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("2D context unavailable for the contact field texture");
+
+  // ── SAMPLED FROM THE SOURCE IMAGE, when it has loaded ──────────────────────
+  //
+  // ⚠ CARL'S EXPLICIT INSTRUCTION, twice: *"if you have to copy this design
+  // closely, do it. Most of it will be masked anyway"* and *"If you have to copy
+  // the image virtually pixel by pixel — do it... I'd be sampling in Music."*
+  //
+  // The procedural ribbon below reproduced the STRUCTURE and Carl approved one
+  // region of it — *"how the left of box 1 looks is great"* — but asked for that
+  // quality everywhere. Sampling the source directly gives it everywhere, because
+  // the source already has the variation an approximation has to invent.
+  //
+  // ⚠ THE ASPECT MISMATCH IS HANDLED BY PLACEMENT, NOT BY STRETCHING. The source
+  // is 1.78:1 and the field is 6:1. Stretching to fit would flatten every ribbon
+  // into a horizontal smear — the ribbons' diagonal character IS the design. A 6:1
+  // crop would keep only 30% of the source's height and lose most of the structure.
+  //
+  // Instead the source is drawn TWICE, side by side and mirrored at the join, at
+  // its own aspect. Mirroring means the seam is continuous — the right edge of the
+  // first copy meets its own reflection, so there is no visible join — and the two
+  // halves are not identical crops, so the left and right box columns sample
+  // genuinely different content.
+  if (source) {
+    const halfW = FIELD_TEX_W / 2;
+    ctx.drawImage(source, 0, 0, halfW, FIELD_TEX_H);
+    ctx.save();
+    ctx.translate(FIELD_TEX_W, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(source, 0, 0, halfW, FIELD_TEX_H);
+    ctx.restore();
+
+    // ⚠ DARKEN, because the source is too bright for this page. Measured: the
+    // reference peaks at luminance 242 and the gold rim measures 172.9. Used raw,
+    // the field would out-shine the gold and the boxes would stop reading as
+    // windows and start reading as tiles — the constraint that governs this whole
+    // chunk. A multiply pass with the deep tone pulls the range down while keeping
+    // the source's hue path and all of its structure.
+    ctx.globalCompositeOperation = "multiply";
+    ctx.fillStyle = FIELD_SOURCE_DARKEN;
+    ctx.fillRect(0, 0, FIELD_TEX_W, FIELD_TEX_H);
+
+    // ⚠ THEN LIFT THE FLOOR. Multiply alone made the field too CONTRASTY, not too
+    // dark — its darks fell to luminance 10 against the opal's darkest of 24.8,
+    // reading as holes rather than as one continuous material. Screen raises the
+    // shadows without touching the highlights, so the range compresses toward the
+    // opal's instead of merely shifting. Order matters: multiply sets the ceiling,
+    // screen then sets the floor beneath it.
+    ctx.globalCompositeOperation = "screen";
+    ctx.fillStyle = FIELD_SOURCE_LIFT;
+    ctx.fillRect(0, 0, FIELD_TEX_W, FIELD_TEX_H);
+
+    // And a light ultramarine pass to pull the hue toward the Send opal's family,
+    // which is what Carl asked for on the 65" TV: *"all would echo the blue opal."*
+    ctx.globalCompositeOperation = "overlay";
+    ctx.fillStyle = FIELD_SOURCE_TINT;
+    ctx.fillRect(0, 0, FIELD_TEX_W, FIELD_TEX_H);
+    ctx.globalCompositeOperation = "source-over";
+
+    const sampled = new THREE.CanvasTexture(canvas);
+    sampled.colorSpace = THREE.SRGBColorSpace;
+    sampled.wrapS = THREE.ClampToEdgeWrapping;
+    sampled.wrapT = THREE.ClampToEdgeWrapping;
+    sampled.repeat.set(1 / 6, 1);
+    sampled.anisotropy = 4;
+    sampled.needsUpdate = true;
+    return sampled;
+  }
+
+  // ── PROCEDURAL FALLBACK, below ─────────────────────────────────────────────
+  // Runs on the first frame before the image loads, and permanently if it fails.
+  // Kept rather than deleted: it is a complete, self-contained field in the same
+  // palette, so a failed image load degrades to something coherent rather than to
+  // flat grey.
+
+  // Texture space: x runs 0..6 in u, y runs 0..1 in v. Canvas y is DOWN and UV v
+  // is UP, so v is flipped when converting.
+  const px = (u: number) => (u / 6) * FIELD_TEX_W;
+  const py = (v: number) => (1 - v) * FIELD_TEX_H;
+
+  /** `r, g, b` from a hex constant, so alpha variants never duplicate a colour. */
+  const rgbOf = (hex: string) => {
+    const c = new THREE.Color(hex);
+    return `${Math.round(c.r * 255)}, ${Math.round(c.g * 255)}, ${Math.round(c.b * 255)}`;
+  };
+  const bodyRGB = rgbOf(FIELD_BODY);
+
+  // Base: the deep tone everywhere. Everything else sits on top of it.
+  ctx.fillStyle = FIELD_DEEP;
+  ctx.fillRect(0, 0, FIELD_TEX_W, FIELD_TEX_H);
+
+  const litRGB = rgbOf(FIELD_LIT);
+
+  // ── The ribbon, drawn column by column ─────────────────────────────────────
+  //
+  // ⚠ ONE VERTICAL GRADIENT PER COLUMN, centred on the crest at that u. This is
+  // what makes it a flowing band rather than a spot: the gradient's CENTRE MOVES
+  // as u advances, tracing `FIELD_CREST`, so the light sweeps across the field
+  // instead of sitting in one place.
+  //
+  // Drawn as narrow vertical strips rather than as a filled path, because a path
+  // would need its own edge treatment and an edge is exactly what a satin ribbon
+  // must not have. A per-column gradient has no boundary at all — only a moving
+  // centre.
+  const STRIP_PX = 2;
+  for (let sx = 0; sx < FIELD_TEX_W; sx += STRIP_PX) {
+    const u = (sx / FIELD_TEX_W) * 6;
+    const crestV = crestAt(u);
+
+    // Vertical gradient for this column: lit at the crest, body at the edge of the
+    // core, deep beyond the falloff. Both directions from the crest, so the ribbon
+    // is symmetrical about its own path.
+    const topV = Math.min(1, crestV + FIELD_CREST_FALLOFF_V);
+    const botV = Math.max(0, crestV - FIELD_CREST_FALLOFF_V);
+    const g = ctx.createLinearGradient(0, py(topV), 0, py(botV));
+
+    // Stop positions are fractions along top->bottom of this column's span.
+    const span = topV - botV;
+    const at = (v: number) => (topV - v) / span;
+
+    g.addColorStop(0, FIELD_DEEP);
+    g.addColorStop(Math.max(0, at(crestV + FIELD_CREST_CORE_V)), FIELD_BODY);
+    g.addColorStop(at(crestV), FIELD_LIT);
+    g.addColorStop(Math.min(1, at(crestV - FIELD_CREST_CORE_V)), FIELD_BODY);
+    g.addColorStop(1, FIELD_DEEP);
+
+    ctx.fillStyle = g;
+    ctx.fillRect(sx, 0, STRIP_PX + 1, FIELD_TEX_H);
+  }
+
+  // A second, fainter ribbon offset below the first — the reference has more than
+  // one band, and a single ribbon on a 6:1 field leaves the far corners flat.
+  // Deliberately weak: it adds incident, not a second event.
+  ctx.globalCompositeOperation = "lighter";
+  for (let sx = 0; sx < FIELD_TEX_W; sx += STRIP_PX) {
+    const u = (sx / FIELD_TEX_W) * 6;
+    const crestV = crestAt(u) - 0.46;
+    const topV = crestV + 0.34;
+    const botV = crestV - 0.34;
+    const g = ctx.createLinearGradient(0, py(topV), 0, py(botV));
+    g.addColorStop(0, `rgba(${litRGB}, 0)`);
+    g.addColorStop(0.5, `rgba(${litRGB}, 0.20)`);
+    g.addColorStop(1, `rgba(${litRGB}, 0)`);
+    ctx.fillStyle = g;
+    ctx.fillRect(sx, 0, STRIP_PX + 1, FIELD_TEX_H);
+  }
+  ctx.globalCompositeOperation = "source-over";
+
+  // A very gentle body lift toward the far right, so the outer end of the right
+  // column never goes flat. Derived from FIELD_BODY — an earlier version hardcoded
+  // the then-current RGB and silently stopped matching when the palette moved.
+  const counter = ctx.createLinearGradient(px(3.4), 0, px(6), 0);
+  counter.addColorStop(0, `rgba(${bodyRGB}, 0)`);
+  counter.addColorStop(1, `rgba(${bodyRGB}, 0.30)`);
+  ctx.fillStyle = counter;
+  ctx.fillRect(0, 0, FIELD_TEX_W, FIELD_TEX_H);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  // ⚠ BOTH AXES CLAMP. u runs 0..~5.95 because the field is 6x wider than tall,
+  // and the instinct is to set `wrapS = RepeatWrapping` for that. **That is wrong
+  // and was measured wrong**: with repeat, each box showed the light gesture
+  // TILED THREE TIMES instead of one region of a continuous field — which is the
+  // opposite of the windows model, four copies of one crop rather than four
+  // different views.
+  //
+  // The texture is already DRAWN across the full 0..6 u range (`px()` above maps
+  // u/6 to the canvas width), so there is nothing to repeat. `repeat.x = 1/6`
+  // rescales the sampler to match, and clamping on both axes guarantees no tiling
+  // if a UV ever lands marginally outside.
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.repeat.set(1 / 6, 1);
+  texture.anisotropy = 4;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+/**
+ * Own the field texture for the canvas's lifetime and attach it to the four FACE
+ * materials.
+ *
+ * ⚠ LIFECYCLE COPIED FROM `useStudioEnvMap`, and for the same reasons: allocate in
+ * an EFFECT not a `useMemo` (so React Strict Mode's double-invoke cannot strand an
+ * allocation), **detach from every material BEFORE disposing** (so a disposed
+ * texture can never be sampled), and `invalidate()` on both attach and detach
+ * because the canvas runs `frameloop="demand"`.
+ *
+ * ⚠ ONE TEXTURE, FOUR MATERIALS — the deliberate divergence from `useStudioEnvMap`.
+ * The env map is genuinely per-material; this is one surface seen through four
+ * apertures, and the apertures live in the GEOMETRY's UVs. So a single texture
+ * object is shared and there is nothing per-box to vary.
+ */
+function useFieldTexture(
+  count: number,
+): Array<React.RefObject<THREE.MeshStandardMaterial | null>> {
+  const invalidate = useThree((state) => state.invalidate);
+  // A lazy `useState` initialiser, not `useRef`: the array itself is read during
+  // render (passed to children as refs), and `react-hooks/refs` correctly rejects
+  // reading `.current` there. Only the container is state.
+  const [faceMaterials] = useState(() =>
+    Array.from({ length: count }, () => ({
+      current: null as THREE.MeshStandardMaterial | null,
+    })),
+  );
+
+  useEffect(() => {
+    // Snapshot before mutating, so cleanup detaches exactly what this run
+    // attached even if a ref's `current` has since changed.
+    const attached = faceMaterials
+      .map((ref) => ref.current)
+      .filter((m): m is THREE.MeshStandardMaterial => m !== null);
+
+    /** Attach a texture to all four faces and present the result. */
+    const apply = (texture: THREE.CanvasTexture) => {
+      attached.forEach((material) => {
+        material.map = texture;
+        // The base colour must be white or it TINTS the map. `DIAG_FACE_COLOR` was
+        // the whole appearance before; now the texture is, and colour is a
+        // multiplier.
+        material.color.set("#ffffff");
+        material.needsUpdate = true;
+      });
+      invalidate();
+    };
+
+    // Draw the procedural field immediately, so there is never an untextured
+    // frame, then upgrade to the sampled source when it loads.
+    let current = buildFieldColourTexture();
+    apply(current);
+
+    // ⚠ LOADED, NOT BUNDLED. The source is a 17 KB JPEG served from `public/`, so
+    // it is fetched once and cached. It is deliberately NOT blocking: if it never
+    // arrives, the procedural field stays and the page is coherent.
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => {
+      if (cancelled) return;
+      const sampled = buildFieldColourTexture(img);
+      const previous = current;
+      current = sampled;
+      apply(sampled);
+      // Dispose the procedural one only AFTER the replacement is attached, so no
+      // material ever references a disposed texture.
+      previous.dispose();
+    };
+    img.src = FIELD_SOURCE_URL;
+
+    return () => {
+      cancelled = true;
+      attached.forEach((material) => {
+        material.map = null;
+        material.needsUpdate = true;
+      });
+      current.dispose();
+      invalidate();
+    };
+  }, [faceMaterials, invalidate]);
+
+  return faceMaterials;
+}
+
 // Static illumination. The key is deliberately RAKING from the upper left: a
 // shallow crown is only legible under a grazing light, and a head-on key
 // flattens it entirely.
@@ -765,6 +1279,10 @@ function FieldScene({ reducedMotion, active }: { reducedMotion: boolean; active:
   // direction for the set is Carl's call with the PM/A.
   const bevelMaterialRefs = useStudioEnvMap(FIELD_SLOTS.length);
 
+  // Owns the shared field texture and hands back one ref per box's FACE material.
+  // One texture, four apertures — the windows live in the geometry's UVs, not here.
+  const faceMaterialRefs = useFieldTexture(FIELD_SLOTS.length);
+
   // The layer's measured CSS box, tracked by R3F. This is the whole responsive
   // story: width changes flow into the placement maths automatically.
   const size = useThree((state) => state.size);
@@ -811,6 +1329,7 @@ function FieldScene({ reducedMotion, active }: { reducedMotion: boolean; active:
           field={field}
           groupRef={groups[i]}
           bevelMaterialRef={bevelMaterialRefs[i]}
+          faceMaterialRef={faceMaterialRefs[i]}
         />
       ))}
     </>

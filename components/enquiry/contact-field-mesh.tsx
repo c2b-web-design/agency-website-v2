@@ -465,6 +465,7 @@ export function ContactField({
   placement,
   field,
   bevelMaterialRef,
+  faceMaterialRef,
   groupRef,
 }: {
   placement: FieldPlacement;
@@ -483,6 +484,15 @@ export function ContactField({
    * on teardown. The face and rim materials are never exposed this way.
    */
   bevelMaterialRef?: React.Ref<THREE.MeshStandardMaterial>;
+  /**
+   * Receives the FACE's material so the canvas can attach the shared field
+   * texture to it — and detach it again on teardown.
+   *
+   * ⚠ All four faces receive the SAME texture object. They differ only in their
+   * UVs, which encode each box's window onto the shared field. There is nothing
+   * per-box in the material itself.
+   */
+  faceMaterialRef?: React.Ref<THREE.MeshStandardMaterial>;
   /**
    * Receives the assembly's root group so the canvas can drive this ONE box's
    * entrance opacity independently of the other three.
@@ -647,9 +657,20 @@ export function ContactField({
         />
       </mesh>
 
-      {/* Face — diagnostic grey, unchanged. Also held out of the environment. */}
+      {/* FACE — a window onto the shared satin field. The texture is attached at
+          runtime by `useFieldTexture` in contact-field-canvas.tsx; all four faces
+          share ONE texture and differ only in their UVs.
+
+          ⚠ `DIAG_FACE_COLOR` remains as the pre-texture fallback ONLY — it is what
+          renders in the frame before the effect attaches the map, and if the
+          texture ever fails to build. It is not the face's appearance any more.
+
+          Deliberately still `metalness: 0` and `envMapIntensity: 0`: the field is
+          SATIN and NON-REFLECTIVE. A reflective face would show the studio
+          environment and compete with the orbiting light rather than receive it. */}
       <mesh geometry={faceGeometry} position={[0, 0, faceBaseZ]}>
         <meshStandardMaterial
+          ref={faceMaterialRef}
           color={DIAG_FACE_COLOR}
           roughness={0.55}
           metalness={0}
