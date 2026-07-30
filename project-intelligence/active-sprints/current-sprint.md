@@ -78,6 +78,40 @@ the present, and it decays. `enquiry-opening.tsx:259` and the 7400ms delay at
 so **reading the code alone would have confirmed the stale record rather than corrected it.**
 Only Carl's memory of the fix, and the button working on localhost, settled it.
 
+### ✅ Q5 stutter — RESOLVED 30 July 2026. Confirmed by Carl: *"Success. Smooth."*
+
+> **The 29 July fix (`a6f84fb`) was incomplete — right cause, wrong boundary.** Completed
+> 30 July. **Full record: `live-work/q5-stutter-diagnosis.md`.**
+>
+> **Two animations start on Begin and are not the same length:** `.enquiry-q5-block` is a
+> **700ms** opacity fade; `.enquiry-q-text-reveal` is the **1300ms** wipe that reveals the
+> phrase. The guard was derived from the 700ms fade. **700ms is ~54% through a 1300ms wipe**, so
+> the Three.js work was pushed out of the first 700ms and into the remaining 600ms.
+>
+> **Carl caught it by eye:** the stutter had *moved* from the "Wh" of "What" to the "h" of
+> "here". ⚠ **A moved symptom is not a fixed symptom — where it lands tells you where the work
+> landed.**
+>
+> ⚠ **And `verify/q5-stutter.mjs` reported 0/3 CLEAN while the defect was visible**, because its
+> window was the same wrong 700ms. **The harness and the fix shared one assumption, so the check
+> confirmed the bug.** "Measure first" was followed and still gave a false pass, because the
+> instrument carried the error. **A harness derived from the same constant as the fix is not an
+> independent check.**
+>
+> **Fix:** `Q5_REVEAL_CLEAR_MS` 700 → **1300**, read off `.enquiry-q-text-reveal`; harness
+> window likewise. No logic changed, no approved visual layer touched.
+>
+> | Measured across the full 1300ms phrase, 3/3 runs | 700ms | **1300ms** |
+> |---|---:|---:|
+> | WebGL context created | +825–841ms | **+1438–1446ms** |
+> | WebGL ms inside the phrase | present | **0.0ms** |
+> | Worst frame gap | 81ms | **18–36ms** |
+>
+> Reduced motion still correct — `.enquiry-q-text-reveal` is disabled under
+> `prefers-reduced-motion` (globals.css:1420), verified 30 July.
+
+**Superseded entry, preserved — the incomplete 29 July fix:**
+
 ### Q5 stutter — CAUSE MEASURED, FIX APPLIED 29 July 2026. Awaiting Carl's eye
 
 > **Commit `a6f84fb`.** Full record: `live-work/q5-stutter-diagnosis.md`. Harness:

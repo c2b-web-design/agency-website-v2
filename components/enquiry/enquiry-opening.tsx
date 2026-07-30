@@ -16,22 +16,31 @@ import ContactFieldCanvas from "./contact-field-canvas";
 // The safe boundary is the end of Send's entrance.
 const CHOREOGRAPHY_CLEAR_MS = 7100;
 
-// How long after Begin the Q5 REVEAL has cleared. Read off the existing
+// How long after Begin the Q5 phrase reveal has cleared. Read off the existing
 // declaration, which this change does not touch:
 //
-//   .enquiry-q5-block   enquiry-q5-block-appear 700ms linear both  (globals.css)
+//   .enquiry-q-text-reveal   enquiry-mask-reveal-horizontal 1300ms linear both
+//
+// ⚠ TWO ANIMATIONS START ON BEGIN, AND THEY ARE NOT THE SAME LENGTH. Getting
+// this wrong is what made the 29 July fix incomplete:
+//
+//   .enquiry-q5-block       700ms   opacity fade of the whole block
+//   .enquiry-q-text-reveal  1300ms  horizontal mask that wipes the PHRASE in
+//
+// The phrase is the thing that visibly stutters, so 1300ms is the boundary that
+// matters. The 700ms opacity fade is a different animation on a parent element.
 //
 // WHY THIS EXISTS — the same defect as CHOREOGRAPHY_CLEAR_MS, one stage earlier.
 // The pre-warm was written to keep WebGL work off the COMPLETION choreography,
-// and it does. But pressing Begin starts two things in the same instant: this
-// 700ms phrase fade, and `questionnaireStarted` flipping true — which makes the
-// warm-up's `requestIdleCallback` eligible immediately.
+// and it does. But pressing Begin starts the phrase wipe and flips
+// `questionnaireStarted` true in the same instant, which makes the warm-up's
+// `requestIdleCallback` eligible immediately.
 //
 // `requestIdleCallback` only fires on a genuinely free thread, which is correct.
 // Its `timeout` is a guarantee of PROGRESS, not a delay: when the deadline
 // expires the browser runs the callback ANYWAY, busy or not. On a cold load the
 // thread is never free, so the deadline fires and ~200ms of Three.js
-// initialisation lands inside a 700ms opacity animation.
+// initialisation lands inside the phrase wipe.
 //
 // MEASURED, not assumed (`verify/q5-stutter.mjs`, 29 July 2026), 3/3 runs on
 // both dev and production builds:
@@ -44,7 +53,15 @@ const CHOREOGRAPHY_CLEAR_MS = 7100;
 // The cost is CPU-side library initialisation and geometry construction, not
 // the GPU work the original comment anticipated. Three.js is guilty here, but
 // of a different offence than the one it was charged with.
-const Q5_REVEAL_CLEAR_MS = 700;
+//
+// ⚠ CORRECTED 30 July 2026, from 700 to 1300. Carl saw the stutter again, moved:
+// originally on the "Wh" of "What", now on the "h" of "here". 700ms is ~54% of
+// the way through a 1300ms wipe — mid-phrase, right where "here" arrives. The
+// work was not removed on 29 July, only pushed past the 700ms boundary into the
+// remaining 600ms of the wipe. `verify/q5-stutter.mjs` reported 0/3 clean
+// because it measured the same wrong 700ms window: the harness and the fix
+// shared one assumption, so the check agreed with the bug.
+const Q5_REVEAL_CLEAR_MS = 1300;
 
 const HEADING_LINE1 = "Let's understand what your";
 const HEADING_LINE2 = "business needs to become.";
@@ -414,17 +431,18 @@ export default function EnquiryOpening() {
     // running, do not warm: reschedule for after it clears. The field waits;
     // neither the acknowledgement nor Send ever does.
     const warmWhenSafe = () => {
-      // THE Q5 REVEAL GUARD. Checked FIRST because the reveal happens first:
+      // THE Q5 PHRASE GUARD. Checked FIRST because the phrase happens first:
       // this callback becomes eligible the instant Begin is pressed, which is
-      // the same instant the phrase starts fading in.
+      // the same instant the phrase starts wiping in.
       //
-      // REDUCED MOTION: `.enquiry-q5-block { animation: none }` under
-      // `prefers-reduced-motion` (globals.css), so there is no reveal to
-      // protect and waiting would stall the field for 700ms guarding an
-      // animation that never runs. The guard is DERIVED from the reveal, so it
-      // must carry the reveal's own condition with it — the precise failure the
-      // 24 July review found in the completion guard (a delay correctly derived
-      // from a choreography, applied even when the choreography was gated off).
+      // REDUCED MOTION: `.enquiry-q-text-reveal { animation: none }` under
+      // `prefers-reduced-motion` (globals.css:1420 — verified 30 July 2026), so
+      // there is no wipe to protect and waiting would stall the field for
+      // 1300ms guarding an animation that never runs. The guard is DERIVED from
+      // the wipe, so it must carry the wipe's own condition with it — the
+      // precise failure the 24 July review found in the completion guard (a
+      // delay correctly derived from a choreography, applied even when the
+      // choreography was gated off).
       const activated = activatedAtRef.current;
       if (activated !== null && !reducedMotion) {
         const untilRevealClears = Q5_REVEAL_CLEAR_MS - (Date.now() - activated);

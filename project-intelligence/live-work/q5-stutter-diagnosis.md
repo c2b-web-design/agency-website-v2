@@ -1,22 +1,68 @@
 # Q5 Stutter — Measured Diagnosis
 
-**Date:** 29 July 2026
-**Status:** **CAUSE FOUND, FIX APPLIED, RESULT MEASURED.** See "The fix" at the end.
+**Date:** 29 July 2026. **Corrected and completed 30 July 2026.**
+**Status:** **RESOLVED — Carl confirmed by eye, 30 July 2026: *"Success. Smooth."***
 
-> ## Result — measured on a production build, 3/3 runs
+> ## ⚠ THE 29 JULY FIX WAS INCOMPLETE. Read this before the original below.
 >
-> | | Before | After |
+> **The cause was right. The boundary was wrong.** `Q5_REVEAL_CLEAR_MS` was derived from the
+> wrong animation, so the Three.js work was moved out of the measured window instead of out of
+> the phrase.
+>
+> **Two animations start when Begin is pressed, and they are not the same length:**
+>
+> | Rule | Duration | What it is |
+> |---|---:|---|
+> | `.enquiry-q5-block` | **700ms** | opacity fade of the whole block |
+> | `.enquiry-q-text-reveal` | **1300ms** | horizontal mask that wipes the PHRASE in |
+>
+> **The phrase is what visibly stutters, so 1300ms is the boundary.** The 29 July fix used 700.
+>
+> ### How it was caught, and it is the useful part
+>
+> **Carl, 30 July, on a production build, first load after a server start:** *"it stuttered on
+> the h of the word here. Originally it was on the Wh of the first word What."*
+>
+> ⚠ **A MOVED SYMPTOM IS NOT A FIXED SYMPTOM.** 700ms is ~54% through a 1300ms wipe — mid-phrase,
+> exactly where "here" arrives. The work was pushed out of the first 700ms and into the
+> remaining 600ms of the wipe. **Where the stutter lands tells you where the work landed.**
+>
+> ### ⚠ And the harness confirmed the bug instead of catching it
+>
+> `verify/q5-stutter.mjs` reported **0/3 clean** while the defect was plainly visible, because
+> its `Q5_REVEAL_MS` was **also 700**. **The check and the fix shared one assumption, so the
+> verification could not fail in the way it needed to.**
+>
+> **This is a sharper version of the lesson this project already holds.** "Measure before
+> accepting a hypothesis" was followed — and still produced a false pass, because the
+> *instrument* carried the error. **A harness derived from the same constant as the fix is not
+> an independent check.** Carl's eye was the only thing outside the shared assumption.
+>
+> ### The correction — 30 July 2026
+>
+> `Q5_REVEAL_CLEAR_MS` **700 → 1300**, read off `.enquiry-q-text-reveal`.
+> `Q5_REVEAL_MS` in the harness **700 → 1300**; `WATCH_MS` 2600 → 3400.
+> Comments corrected in both files, including the one that conflated the two animations.
+> **No logic changed. No approved visual layer touched.**
+>
+> **Verified `.enquiry-q-text-reveal` is disabled under `prefers-reduced-motion`**
+> (globals.css:1420), so the guard's reduced-motion bypass remains correct.
+>
+> ### Measured across the FULL 1300ms phrase — production build, 3/3 runs
+>
+> | | 700ms boundary | **1300ms boundary** |
 > |---|---:|---:|
-> | Worst frame gap in reveal | **81ms** | **18–19ms** |
-> | Frames during reveal (of ~42) | 35–38 | **42 / 42 / 42** |
-> | Runs with WebGL inside reveal | 3/3 | **0/3** |
-> | WebGL context created | +139–169ms | +825–841ms |
+> | WebGL context created | +825–841ms (inside the wipe) | **+1438–1446ms** |
+> | First shader call | inside the wipe | **+1484–1508ms** |
+> | WebGL ms inside the phrase | present | **0.0ms** |
+> | Long-task ms inside the phrase | present | **0ms** |
+> | Worst frame gap | 81ms | **18–36ms** |
+> | Frames rendered | 35–38 | **78** |
 >
-> **Reduced motion: +143ms — does NOT wait**, correctly, because there is no reveal to
-> protect. **Completion still protected: canvas warm at +820ms** on a fastest-possible run
-> to the end of the questionnaire.
+> The single 36ms gap sits at **+29ms** — the click-to-first-frame boundary, not mid-phrase.
+> Context lands ~140ms clear of the 1300ms boundary.
 >
-> ⚠ **Carl has not yet judged this by eye.** The numbers are clean; approval is his.
+> ✅ **Carl confirmed by eye on a cold first load, 30 July 2026: *"Success. Smooth."***
 
 **Original diagnosis, written before the fix, preserved below.**
 **Harness:** `verify/q5-stutter.mjs` (committed). Two throwaway probes were used for the

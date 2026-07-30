@@ -2,10 +2,16 @@
 //
 //   node verify/q5-stutter.mjs [runs]      (default 3 runs)
 //
-// THE SYMPTOM. Carl reports a stutter as the first question's text appears —
-// the "W" and "h" of the Q5 phrase arriving raggedly. Confirmed real and
-// INTERMITTENT: it favours the first load after a server start, then runs
-// clean. A fresh, healthy server still produced it once.
+// THE SYMPTOM. Carl reports a stutter as the first question's text appears.
+// Originally the "Wh" of "What" — the start of the phrase. After the 29 July
+// fix it MOVED to the "h" of "here", roughly mid-phrase, which is how the
+// incomplete fix was caught. Confirmed real and INTERMITTENT: it favours the
+// first load after a server start, then runs clean.
+//
+// ⚠ A MOVED SYMPTOM IS NOT A FIXED SYMPTOM, AND IT IS THE MOST USEFUL SIGNAL
+// HERE. Where the stutter lands tells you where the work landed. If it moves
+// again rather than disappearing, the boundary is still wrong — do not read a
+// change of position as progress toward a fix.
 //
 // THE HYPOTHESIS BEING TESTED — and it is only a hypothesis. Pressing Begin
 // sets stage="active", which does two things at the same instant:
@@ -44,10 +50,25 @@ import { chromium } from "@playwright/test";
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 const RUNS = Number(process.argv[2] ?? 3);
 
-// The Q5 block's opacity animation — globals.css `.enquiry-q5-block`.
-const Q5_REVEAL_MS = 700;
-// Watch past the reveal to catch the 2000ms idle deadline either way.
-const WATCH_MS = 2600;
+// The PHRASE wipe — globals.css `.enquiry-q-text-reveal`, 1300ms.
+//
+// ⚠ CORRECTED 30 July 2026, from 700 to 1300, and this correction is the whole
+// lesson of the second failure. Two animations start on Begin:
+//
+//   .enquiry-q5-block       700ms   opacity fade of the whole block
+//   .enquiry-q-text-reveal  1300ms  horizontal mask that wipes the PHRASE in
+//
+// This script measured 700ms and reported 0/3 CLEAN while Carl could still see
+// the stutter — moved from the "Wh" of "What" to the "h" of "here", which is
+// mid-phrase, just past 54% of the wipe. The work had been pushed out of the
+// 700ms window and into the 600ms tail that nothing was watching.
+//
+// The harness used the same constant as the fix, so it confirmed the fix instead
+// of testing it. A verification that shares an assumption with the thing it
+// checks cannot fail the way it needs to.
+const Q5_REVEAL_MS = 1300;
+// Watch well past the reveal to catch the 2000ms idle deadline either way.
+const WATCH_MS = 3400;
 
 const browser = await chromium.launch();
 const results = [];
