@@ -143,3 +143,60 @@ export function fieldPlacements(layerWidthPx: number, layerHeightPx: number): Pl
     y: -(FIELD_OFFSET_TOP_PX + slot.row * ROW_PITCH_PX + FIELD_HEIGHT_PX / 2 - layerHeightPx / 2),
   }));
 }
+
+// ── The shared field the four boxes are windows onto ─────────────────────────
+
+/**
+ * The rectangle all four boxes look through, in world coordinates.
+ *
+ * `originX`/`originY` are its bottom-left corner; `spanX`/`spanY` its extent.
+ */
+export type FieldWindow = {
+  originX: number;
+  originY: number;
+  spanX: number;
+  spanY: number;
+};
+
+/**
+ * The invisible rectangle enclosing all four boxes — the surface they reveal.
+ *
+ * ⚠ THE MODEL, in Carl's words: *"I imagine an invisible rectangle around the 4
+ * boxes. In that rectangle will be our gradient. On the second layer will be our
+ * boxes. They act as 'windows' to let the gradient through. So no boxes the same.
+ * No boxes with a slight variation of the same idea."*
+ *
+ * This is materially different from the D-028 approach of five AUTHORED glass
+ * variants rotated across cards. Here there is ONE field and four apertures: the
+ * variation is not authored per box, it FALLS OUT OF POSITION. Move a box and its
+ * appearance changes, because it is looking at a different part of the field.
+ * The boxes are therefore related by construction and cannot drift out of
+ * alignment with each other.
+ *
+ * ⚠ DERIVED FROM `fieldPlacements` OUTPUT, never from the constants directly.
+ * Re-deriving the bounds from `FIELD_OFFSET_TOP_PX`, `ROW_PITCH_PX` and the rest
+ * would create a second copy of the placement maths that could silently disagree
+ * with the first. If the boxes move, this window moves with them by construction.
+ *
+ * At the standard 576 x 184 layer this returns origin (-288, -54), span 576 x 96
+ * — the outer rim silhouettes of the four boxes, exactly spanning the layer width
+ * with the 8px gutter inside it. Note the y range is NOT symmetric about the
+ * layer centre (+42 to -54): the DOM grid it inherits was centred on label+input
+ * cells rather than on the inputs alone. That asymmetry is correct and inherited,
+ * not a defect.
+ */
+export function sharedFieldWindow(layerWidthPx: number, layerHeightPx: number): FieldWindow {
+  const placements = fieldPlacements(layerWidthPx, layerHeightPx);
+
+  const minX = Math.min(...placements.map((p) => p.x - p.width / 2));
+  const maxX = Math.max(...placements.map((p) => p.x + p.width / 2));
+  const minY = Math.min(...placements.map((p) => p.y - p.height / 2));
+  const maxY = Math.max(...placements.map((p) => p.y + p.height / 2));
+
+  return {
+    originX: minX,
+    originY: minY,
+    spanX: maxX - minX,
+    spanY: maxY - minY,
+  };
+}

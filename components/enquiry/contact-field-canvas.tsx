@@ -37,7 +37,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { fieldPlacements, FIELD_SLOTS } from "./contact-field-geometry";
+import { fieldPlacements, sharedFieldWindow, FIELD_SLOTS } from "./contact-field-geometry";
 import { ContactField, GOLD_BEVEL_ENV_INTENSITY } from "./contact-field-mesh";
 
 // ── The entrance cascade ─────────────────────────────────────────────────────
@@ -49,25 +49,36 @@ import { ContactField, GOLD_BEVEL_ENV_INTENSITY } from "./contact-field-mesh";
 //   Name 3600-4300 · Business 4100-4800 · Website 4600-5300 · Email 5100-5800
 //
 // Carl judged that too fast on the rendered 2x2 build: *"The boxes fade in too
-// fast."* Trials ran 1000/800 ("a lot better, needs fine tuning") then 2000/1500,
-// then 2000/1000. The 2000ms FADE LENGTH is approved — Carl: *"the fade ins are
-// good, correct speed appearance."* Only the spacing ratio is still moving.
+// fast."* Trials ran 1000/800 ("a lot better, needs fine tuning"), then 2000/1500,
+// 2000/1000, 2000/660, a 2000/200 overshoot, and finally 3000ms fades.
 //
-// Current values — 50%:
+// ⚠ CURRENT VALUES — the authority is `FIELD_ENTRANCES` below, not this comment:
 //
-//   Name            3600-5600ms
-//   Business name   4600-6600ms
-//   Website URL     5600-7600ms
-//   Email           6600-8600ms
+//   Name            3600-6600ms
+//   Business name   4100-7100ms
+//   Website URL     4600-7600ms
+//   Email           5100-8100ms
+//   opal (Send)     8600-11600ms   — enquiry-opening.tsx
 //
-// Each a 2000ms LINEAR fade, starts 1000ms apart. Order is row-major — left,
+// Each a 3000ms LINEAR fade, starts 500ms apart. Order is row-major — left,
 // right, left, right — matching FIELD_SLOTS.
 //
-// Spacing is expressed as a PROPORTION of the fade, not an independent number, so
-// a change of fade length cannot silently change the rhythm.
+// ⚠ CURRENT AND BEST-JUDGED, NOT APPROVED. Carl: *"The flow is good and still
+// follows the principles laid down. I am not unhappy with it."* His reservation
+// stands and is specific — the overlap is still less discernible than he wants,
+// and the boxes do not read like the other elements' fades.
+//
+// ⚠ THIS BLOCK WAS STALE AND WAS CORRECTED 30 July 2026, caught at the plan-review
+// gate (`live-work/architect-plan-response.md`). It described 3600/4600/5600/6600
+// with 2000ms fades 1000ms apart — the abandoned proportional model — while the
+// array below implemented 3600/4100/4600/5100 at 3000ms. **A comment that
+// contradicts the code beside it is worse than no comment**, because it is written
+// to be believed. The values now live in ONE place; this block describes and does
+// not define.
 //
 // ⚠ THE SPACING RATIO HAS BEEN BRACKETED FROM BOTH SIDES AND IS NOT THE REMAINING
-// LEVER. Recorded so the exercise is not repeated:
+// LEVER. Recorded so the exercise is not repeated. (Historical: the proportional
+// model these percentages belong to was removed — see below.)
 //
 //   75%  1500ms  no visible overlap. Box 2 began when box 1 measured 60.9 of a
 //                full 61.9 — 98% of final brightness, so box 1 LOOKED finished.
@@ -604,7 +615,10 @@ function setBevelEnvIntensity(
  * runs `frameloop="demand"` precisely so a static scene does not spin a 60fps
  * loop. That constraint is preserved rather than abandoned: the loop runs only
  * while the cascade is in flight and stops itself once the last box reaches full
- * opacity. The scene is static before 3600ms and static again after 5800ms.
+ * opacity. The scene is static before 3600ms and static again after
+ * `FIELD_ENTRANCE_END_MS` (8100ms at the current values). ⚠ Derived, not written:
+ * an earlier version of this line hard-coded 5800ms and went stale when the
+ * cascade was retimed.
  *
  * TIME BASE: `performance.now()` captured when the effect mounts, NOT R3F's
  * clock. The mount of this canvas IS completion-clock zero — `ContactFieldCanvas`
@@ -759,6 +773,15 @@ function FieldScene({ reducedMotion, active }: { reducedMotion: boolean; active:
     [size.width, size.height],
   );
 
+  // The shared field all four boxes are windows onto. Memoised on the same
+  // measured size as the placements, and passed to all four — one field, four
+  // apertures. Derived from `fieldPlacements` output inside `sharedFieldWindow`,
+  // so it cannot drift from where the boxes actually are.
+  const field = useMemo(
+    () => sharedFieldWindow(size.width, size.height),
+    [size.width, size.height],
+  );
+
   // One ref per box. Created once and never reordered, so a ref always refers to
   // the same slot as its entrance delay.
   const box0 = useRef<THREE.Group | null>(null);
@@ -785,6 +808,7 @@ function FieldScene({ reducedMotion, active }: { reducedMotion: boolean; active:
         <ContactField
           key={placement.id}
           placement={placement}
+          field={field}
           groupRef={groups[i]}
           bevelMaterialRef={bevelMaterialRefs[i]}
         />
@@ -843,9 +867,11 @@ export default function ContactFieldCanvas({ active }: { active: boolean }) {
         // Still DEMAND, not "always". The scene is static before the cascade
         // starts and static again once it finishes; `useEntranceCascade`
         // invalidates only while a fade is in flight, so the 60fps loop exists
-        // for the ~2.2s entrance and at no other time. The original reason for
-        // choosing demand — do not spin a loop behind a static image — is
-        // preserved rather than discarded.
+        // for the entrance alone (~4.5s at the current values — box 1's start to
+        // box 4's end) and at no other time. The original reason for choosing
+        // demand — do not spin a loop behind a static image — is preserved rather
+        // than discarded. ⚠ An earlier version of this line said "~2.2s" and went
+        // stale when the cascade was retimed.
         frameloop="demand"
         style={{ pointerEvents: "none" }}
       >

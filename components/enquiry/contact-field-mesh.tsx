@@ -23,7 +23,11 @@
 
 import { useMemo, useEffect } from "react";
 import * as THREE from "three";
-import { FIELD_RADIUS_PX, type FieldPlacement } from "./contact-field-geometry";
+import {
+  FIELD_RADIUS_PX,
+  type FieldPlacement,
+  type FieldWindow,
+} from "./contact-field-geometry";
 
 // ── Depth stack (world units == CSS px) ──────────────────────────────────────
 // Shallow by design: ~8.7 units of total depth on a 38-unit-tall object.
@@ -347,10 +351,40 @@ function crownZ(u: number, v: number): number {
  * width, and remains INDEXED — so `computeVertexNormals()` produces the smooth
  * crown the design calls for.
  */
-function roundedRectFaceGeometry(width: number, height: number, radius: number): THREE.BufferGeometry {
+function roundedRectFaceGeometry(
+  width: number,
+  height: number,
+  radius: number,
+  /** This box's centre in world coordinates, from `fieldPlacements`. */
+  centreX: number,
+  centreY: number,
+  /** The shared field all four boxes are windows onto, from `sharedFieldWindow`. */
+  field: FieldWindow,
+): THREE.BufferGeometry {
   const halfW = width / 2;
   const halfH = height / 2;
   const r = Math.max(0, Math.min(radius, halfW, halfH));
+
+  // ── The aspect correction, baked into the UVs ──────────────────────────────
+  // The field's world aspect changes with viewport width (6:1 at the 576px
+  // desktop layer, ~3:1 at 300px) because width flexes while height is fixed at
+  // 96 units. Left uncorrected, arcs drawn as circles in the texture would render
+  // as ellipses that change eccentricity with the viewport.
+  //
+  // ⚠ BAKED HERE RATHER THAN CARRIED IN `texture.repeat`/`offset`, deliberately.
+  // `map` and `normalMap` have INDEPENDENT transform uniforms in three, so setting
+  // `repeat` on one does not set it on the other — the relief would silently slide
+  // off the colour, and nothing would catch it but the eye. Baking makes that
+  // desync structurally impossible instead of a thing to remember.
+  //
+  // The cost is nil: this geometry ALREADY rebuilds on every resize (`useMemo` on
+  // [width, height] at the call site), so the UVs were never durable across resize
+  // in the first place. The TEXTURE still never regenerates, which was the goal.
+  //
+  // The short axis is the invariant one — always 96 world units — so it is the
+  // reference. v spans 0..1 across it; u is scaled to match its world density, so
+  // one UV unit covers the same world distance on both axes.
+  const uPerWorld = 1 / field.spanY;
 
   const positions: number[] = [];
   const uvs: number[] = [];
@@ -374,7 +408,25 @@ function roundedRectFaceGeometry(width: number, height: number, radius: number):
       // row's clipped span — otherwise corner rows would dome as steeply as the
       // centre and the crown would look pinched at the ends.
       positions.push(x, y, crownZ(x / halfW, y / halfH));
-      uvs.push(tx, 1 - ty);
+
+      // ── UV = this vertex's position within the SHARED FIELD ────────────────
+      // ⚠ NOT `(tx, 1 - ty)`. That gave every box a full [0,1] tile, so all four
+      // would sample identical texture — four copies of one crop, which is
+      // exactly what the windows model is not. Deriving from world position is
+      // what makes the four boxes show four different regions of one field.
+      //
+      // ⚠ AND THE `1 - ty` FLIP IS GONE. World +y is up and UV +v is up, so
+      // deriving v from world y directly is already correct; keeping the flip
+      // would mirror the field vertically.
+      //
+      // This also removes a latent defect. Corner rows are 93.1% as wide as the
+      // centre but previously consumed 100% of u, stretching any texture ~7% in
+      // the corner band. `x` is already arc-clipped, so deriving u from it fixes
+      // that by construction rather than by correction.
+      uvs.push(
+        (centreX + x - field.originX) * uPerWorld,
+        (centreY + y - field.originY) / field.spanY,
+      );
     }
   }
 
@@ -411,10 +463,20 @@ function useDisposable(geometry: THREE.BufferGeometry) {
  */
 export function ContactField({
   placement,
+  field,
   bevelMaterialRef,
   groupRef,
 }: {
   placement: FieldPlacement;
+  /**
+   * The shared field this box is a window onto — see `sharedFieldWindow`.
+   *
+   * Passed in rather than derived here: the box must not know how to compute the
+   * field, only which one it belongs to. All four boxes receive the SAME window,
+   * which is what makes them apertures onto one surface instead of four
+   * independently-textured tiles.
+   */
+  field: FieldWindow;
   /**
    * Receives the bevel's material so the canvas can attach the locally
    * generated studio radiance map to it — and only to it — and detach it again
@@ -509,14 +571,21 @@ export function ContactField({
   }, [width, height]);
 
   // ── FACE — rounded-rectangle convex writing plane, inset inside the bevel. ──
+  // ⚠ The dependency array now carries the FIELD as well as the box's own size:
+  // the UVs encode position within the shared field, so a change to the field —
+  // which happens on every responsive resize — must rebuild them. Omitting it
+  // would leave the four boxes sampling a field that no longer matches the layout.
   const faceGeometry = useMemo(
     () =>
       roundedRectFaceGeometry(
         width - FACE_INSET * 2,
         height - FACE_INSET * 2,
         insetRadius(FACE_INSET),
+        x,
+        y,
+        field,
       ),
-    [width, height],
+    [width, height, x, y, field],
   );
 
   // Face z is DERIVED from the bevel's real front plane, never assumed. A
