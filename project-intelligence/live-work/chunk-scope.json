@@ -26,10 +26,15 @@
     "project-intelligence/active-sprints/"
   ],
 
-  "_unlocked": "Protected paths Carl has EXPLICITLY authorised for THIS chunk. Overrides 'protected'. Carl's call, not the Builder's. enquiry-opening.tsx was unlocked on 31 July 2026 on Carl's word 'Authorised to explicitly unlock', in response to finding B-1 of the chunk-A plan-review gate: the chunk needs a two-line edit there (one import, one sibling element inside the existing contact-layer block) and the file is an approved-foundation path. THE UNLOCK IS FOR THAT EDIT ONLY — it is not licence to restructure an approved 1000-line file.",
+  "_unlocked": "Protected paths Carl has EXPLICITLY authorised for THIS chunk. Overrides 'protected'. Carl's call, not the Builder's. TWO unlocks, both 31 July 2026, both narrow — see the notes below. Neither is licence to restructure the file it names.",
   "unlocked": [
-    "components/enquiry/enquiry-opening.tsx"
+    "components/enquiry/enquiry-opening.tsx",
+    "components/enquiry/contact-field-canvas.tsx"
   ],
 
-  "_why_canvas_is_protected": "contact-field-canvas.tsx is READ-ONLY in this chunk. It is the source of FIELD_ENTRANCE_END_MS and the active-not-mount clock pattern, both of which chunk A imports — but the satin field and the entrance cascade inside it are finished, approved-by-eye work that this chunk has no reason to touch. contact-field-mesh.tsx likewise."
+  "_unlock_1_enquiry_opening": "Carl: 'Authorised to explicitly unlock.' Finding B-1 of the chunk-A plan-review gate: the chunk needs a two-line edit there (one import, one sibling element inside the existing contact-layer block) and the file is an approved-foundation path carrying the project's one accepted lint error. FOR THAT EDIT ONLY.",
+
+  "_unlock_2_contact_field_canvas": "Carl: 'add.' FOR ONE WORD: `const FIELD_ENTRANCES` -> `export const FIELD_ENTRANCES`. Carl's instruction was 'All labels can arrive on screen with their respective boxes. Fade in with them' — a label fading on its own box's clock must read that box's delay and duration, and FIELD_ENTRANCE_END_MS only carries the aggregate. EXPORTED RATHER THAN COPIED because restating 3600/4100/4600/5100 in the DOM layer would be the FOURTH hard-coded copy of this timing, and the third went stale in verify/field-colour.mjs — which sampled every screenshot mid-cascade while reporting the settled state. NO VALUE, ORDERING OR MASKING BEHAVIOUR MAY CHANGE. The tuning block carries Carl's standing 'close enough is not approved' reservation and is not reopened by this unlock.",
+
+  "_guard_worked": "The guard blocked this edit before the unlock existed, which is correct: unlocking is Carl's call, not the Builder's. The Builder stopped and asked rather than editing the scope file it had itself written an hour earlier — routing around a self-authored control would be the DL-1 pattern deliberately."
 }

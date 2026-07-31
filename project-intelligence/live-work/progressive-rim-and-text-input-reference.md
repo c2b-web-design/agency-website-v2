@@ -315,6 +315,56 @@ filling box 4.
 
 ---
 
+## ⚠ THE OTHER INPUT METHODS — asked by Carl before building, 31 July 2026
+
+*"Are there any other text input methods that might conflict with what we are about to build?"*
+**Asked before the chunk started, which is when it is cheap to answer.**
+
+**Verified: there are currently NO inputs, no `autoComplete` attributes, no form controls
+anywhere in `components/enquiry/`.** A clean slate.
+
+| Method | How it conflicts |
+|---|---|
+| **Paste** | Very common for email/URL. Fires ONE input event, no keystrokes. ⚠ **Identical in shape to autofill** if autofill is detected as "input with no preceding keydown" — so a paste into box 1 could trigger the whole four-box cascade with three boxes still empty |
+| **Mobile autocorrect / predictive text** | Accepting a suggestion replaces a whole word; several characters can arrive at once. ⚠ The field can be momentarily EMPTY mid-word, so the reversibility rule could make a rim **flicker** |
+| **Dictation / voice** | Text arrives in bursts and sometimes REVISES what it already inserted. Same shape as autocorrect, more pronounced |
+| **IME (Chinese/Japanese/Korean)** | Latin keystrokes compose into characters; the field holds provisional text during composition. ⚠ **A one-character trigger fires on text that may be discarded.** Standard fix is `compositionstart`/`compositionend`, but it must be designed in |
+| **Browser-restored values** (back button, refresh) | ⚠ **NO event fires at all.** The user returns to a filled form and no rim lights — **it fails silently**, the worst mode |
+| **Third-party password managers** (1Password, Bitwarden) | Inject values by scripting the field, sometimes without firing the events frameworks expect |
+| **Drag-and-drop text; browser translate** | Less likely, but both mutate field content outside the keystroke path |
+
+### ⚠ THE RESOLUTION — make the trigger STATE-BASED, not EVENT-BASED
+
+**Do not listen for "a keystroke happened" or "autofill happened".** Read whether each box
+**currently has content**, and light rims from that.
+
+⚠ **This is immune to HOW the text arrived.** Paste, dictation, IME, browser restore, password
+manager — all of them simply result in a box having content. Every row in the table above stops
+being a special case.
+
+**It also already matches two decisions taken earlier for independent reasons:** the rim is
+*"a function of current input, not a memory of what happened"* (the reversibility ruling), and
+the trigger is one character rather than a judgement about content. **State-based is the same
+answer arriving from a third direction.**
+
+### Autofill detection is then needed for ONE thing only
+
+Not *whether* a rim lights — state decides that — but **whether the cascade runs as a composed
+animation or lights as the user types.**
+
+⚠ **And the reliable signal is NOT "no keydown"** — that is what makes paste indistinguishable
+from autofill. It is **multiple boxes becoming non-empty in the same tick**, which a paste
+cannot produce because a paste fills one field.
+
+**So: STATE decides whether a rim is lit. SIMULTANEITY decides how it animates.**
+
+⚠ **Two items still need designing in, and neither is covered by the state-based rule:**
+**composition events** (so IME provisional text does not trigger or flicker), and a **check on
+mount** for browser-restored values (since no event fires, the initial state must be read
+rather than waited for).
+
+---
+
 ## Running order — the Builder's recommendation, for Carl to rule on
 
 1. **Finish `satin-blue-field-windows` steps 3–4.** It is in flight, one step from the satin

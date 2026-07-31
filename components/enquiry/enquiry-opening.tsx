@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import ContactFieldCanvas, { FIELD_ENTRANCE_END_MS } from "./contact-field-canvas";
+import ContactFieldInputs from "./contact-field-inputs";
 
 // How long after entering `complete` the ENTIRE completion choreography has
 // cleared — acknowledgement, all four boxes, AND the opal.
@@ -871,6 +872,15 @@ export default function EnquiryOpening() {
             {/* this canvas's mount: the canvas mounts early on `canvasWarm` so */}
             {/* WebGL setup stays off the completion choreography. */}
             <ContactFieldCanvas active={stage === "complete"} />
+            {/* The DOM form over the WebGL boxes. A SIBLING of the canvas, not a
+                child: the canvas wrapper is `aria-hidden`, and inputs inside it
+                would be invisible to assistive technology. `reducedMotion` is
+                passed rather than re-read — a third independent `matchMedia`
+                subscription could disagree with this file's and the canvas's. */}
+            <ContactFieldInputs
+              active={stage === "complete"}
+              reducedMotion={reducedMotion}
+            />
           </div>
         )}
 

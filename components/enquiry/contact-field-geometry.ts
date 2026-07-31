@@ -185,6 +185,84 @@ export type FieldWindow = {
  * cells rather than on the inputs alone. That asymmetry is correct and inherited,
  * not a defect.
  */
+// ── The DOM side: real text inputs positioned over the WebGL boxes ───────────
+
+/**
+ * The label's reserved vertical block above each input: 16px line-height + 4px
+ * gap = 20px.
+ *
+ * ⚠ NOT A NEW MEASUREMENT. It is the label term already decomposed in the
+ * comment above `FIELD_OFFSET_LEFT_PX` — `50 = 30 + 16 + 4` — given a name so the
+ * DOM layer can position labels without re-deriving it. `FIELD_OFFSET_TOP_PX`
+ * and `ROW_PITCH_PX` were both computed INCLUDING this block, so the 20px slot
+ * above every box already exists and is empty. **Adding labels shifts nothing.**
+ *
+ * ⚠ IT HOLDS ONLY AT 12px/16px TYPE (Tailwind `text-xs`). `text-sm` is 14px/20px
+ * and would overflow the reserved slot — and because the label is absolutely
+ * positioned, it would simply overlap with nothing on screen to signal it.
+ * Recorded in `live-work/contact-form-current-geometry-reference.md`.
+ */
+export const LABEL_BLOCK_PX = 20;
+
+/** One field's box in DOM space, relative to `.enquiry-contact-layer`'s top-left. */
+export type DomPlacement = {
+  id: FieldSlotId;
+  /** Index in cascade order — 0..3. Matches `PlacedField.order`. */
+  order: number;
+  /** px from the layer's LEFT edge. */
+  left: number;
+  /** px from the layer's TOP edge. */
+  top: number;
+  width: number;
+  height: number;
+  /** px from the layer's top edge to the LABEL's top — `top - LABEL_BLOCK_PX`. */
+  labelTop: number;
+};
+
+/**
+ * The four field boxes in DOM coordinates, for positioning real inputs over the
+ * WebGL geometry.
+ *
+ * ⚠ THIS IS ONLY VALID BECAUSE 1 WORLD UNIT == 1 CSS PIXEL. The canvas uses an
+ * orthographic camera at `zoom: 1`, so R3F sets the frustum from the measured
+ * CSS size and the mapping is exact at every viewport width. See the header of
+ * `contact-field-canvas.tsx`.
+ *
+ * ⚠ DERIVED BY INVERTING `fieldPlacements` OUTPUT, never re-derived from the
+ * constants — the same rule `sharedFieldWindow` follows, and for the same reason
+ * it states: re-deriving from `FIELD_OFFSET_TOP_PX`, `ROW_PITCH_PX` and the rest
+ * would create a SECOND COPY of the placement maths that could silently disagree
+ * with the first.
+ *
+ * The temptation here is stronger than usual, because the DOM form these boxes
+ * replaced was a CSS grid and reproducing that grid looks like the obvious move.
+ * ⚠ **It is the wrong move.** A grid expresses the placement in a second
+ * language: it would agree today by coincidence of shared inputs, and a change to
+ * `ROW_PITCH_PX` would move the WebGL boxes and leave the DOM inputs behind, with
+ * nothing to catch it. Inverting one source makes that **structurally
+ * impossible** rather than a thing to remember.
+ *
+ * The inversion: world space has its origin at the layer CENTRE with +y UP; DOM
+ * space has its origin at the top-left with +y DOWN.
+ */
+export function fieldDomPlacements(
+  layerWidthPx: number,
+  layerHeightPx: number,
+): DomPlacement[] {
+  return fieldPlacements(layerWidthPx, layerHeightPx).map((p) => {
+    const top = layerHeightPx / 2 - p.y - p.height / 2;
+    return {
+      id: p.id,
+      order: p.order,
+      left: p.x + layerWidthPx / 2 - p.width / 2,
+      top,
+      width: p.width,
+      height: p.height,
+      labelTop: top - LABEL_BLOCK_PX,
+    };
+  });
+}
+
 export function sharedFieldWindow(layerWidthPx: number, layerHeightPx: number): FieldWindow {
   const placements = fieldPlacements(layerWidthPx, layerHeightPx);
 

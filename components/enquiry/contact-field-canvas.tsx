@@ -124,7 +124,8 @@ import { ContactField, GOLD_BEVEL_ENV_INTENSITY } from "./contact-field-mesh";
 // re-imposed deliberately.
 
 /** One box's entrance: when it starts and how long it takes, on the completion clock. */
-type FieldEntrance = { delay: number; duration: number };
+/** Exported alongside `FIELD_ENTRANCES` so consumers can name its element type. */
+export type FieldEntrance = { delay: number; duration: number };
 
 /**
  * Entrance easing — the fix for "3 seconds that looks like one".
@@ -202,7 +203,27 @@ function easeEntrance(t: number): number {
  * Boxes 3 and 4 continue the same 500ms step rather than introducing new values —
  * the pair was tuned, so the pattern rolls out down the line.
  */
-const FIELD_ENTRANCES: Array<FieldEntrance | null> = [
+/*
+ * ⚠ EXPORTED 31 July 2026 — the ONLY change to this file in the text-input chunk.
+ * The values, the ordering and the masking behaviour are UNTOUCHED, and the
+ * reservation recorded above is not reopened by this.
+ *
+ * Carl's instruction: *"All labels can arrive on screen with their respective
+ * boxes. Fade in with them."* A label fading on its own box's clock has to read
+ * that box's delay and duration, and `FIELD_ENTRANCE_END_MS` carries only the
+ * aggregate.
+ *
+ * ⚠ EXPORTED RATHER THAN COPIED, deliberately. Restating 3600/4100/4600/5100 in
+ * the DOM layer would be the FOURTH hard-coded copy of this timing — and the
+ * third went stale in `verify/field-colour.mjs`, which sampled every screenshot
+ * mid-cascade while reporting the settled state. One source means a retimed
+ * cascade moves the labels with it, which matters precisely because these values
+ * are NOT APPROVED and are expected to move.
+ *
+ * ⚠ A null entry MASKS a box. Any consumer must handle null rather than assume
+ * four entries — `FIELD_ENTRANCE_END_MS` above already does.
+ */
+export const FIELD_ENTRANCES: Array<FieldEntrance | null> = [
   // Box 1 — Name, top-left. 3600ms start is unchanged and not in question: the
   // corridor is clear by 2600ms, giving a 1000ms gap before anything arrives.
   { delay: 3600, duration: 3000 },
