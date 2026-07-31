@@ -144,10 +144,68 @@ through.
    business name scrolls horizontally. **Inherited geometry, not new** — the removed CSS form had
    the same dimensions and was approved — but it was approved as a *flat surface*, and scrolling
    text inside a rendered object with a gold rim is more noticeable.
-3. ⚠ **Autofill appearance is UNVERIFIED and needs real Chrome.** Playwright cannot trigger
-   native autofill. The `-webkit-autofill` defeat is in place (Chrome forces a pale blue
-   background through a UA style ordinary CSS cannot beat) but **it has not been seen working.**
-   **The most likely visual regression in this chunk.**
+3. ✅ **Autofill appearance — VERIFIED IN REAL CHROME, 31 July 2026. The defeat HOLDS.**
+
+   Carl's result: **"Box interiors are unchanged during all previous processes described."**
+
+   Chrome forces `background-color: rgb(232,240,254)` on an autofilled input through a UA style
+   that ordinary CSS cannot beat. On this design that would have been a flat pale rectangle over
+   the satin field, inside the gold rim, on every filled box — **the most likely visual
+   regression in the chunk.** The defeat (a 600000s `background-color` transition so the colour
+   never visibly arrives, plus `-webkit-text-fill-color` for the text) works.
+
+   **Also confirmed by the same run:** the `autoComplete` tokens are right. Chrome recognised
+   the four boxes as a fillable field set and offered Name and Email. ⚠ Had the tokens been
+   wrong — the `organization`-not-`company` trap — **no dropdown would have appeared at all.**
+
+   ⚠ **ONLY A HUMAN COULD HAVE VERIFIED THIS.** Playwright setting an input's value takes a
+   different code path and never applies `:-webkit-autofill`, so the pseudo-class this entire
+   defeat targets would never have fired in an automated test. **An automated pass would have
+   been meaningless, not reassuring** — the same shape of false confidence as the harness that
+   sampled mid-cascade.
+
+   ### ⚠ AND IT SURFACED A REQUIREMENT FOR CHUNK C
+
+   Carl's description of the interaction, which is more detailed than the pass/fail:
+
+   > *"Click inside Box 1. Text box appears. **Hover over text box and saved information is
+   > displayed in the fields.** Pressing the text box and the text expands slightly in the
+   > fields."*
+
+   ⚠ **HOVERING A SUGGESTION PREVIEWS IT INTO THE REAL FIELDS, WITH NO COMMITMENT** — and moving
+   away withdraws it. So values can appear in all four boxes and then vanish, without the user
+   having chosen anything.
+
+   ⚠ **Chunk C's cascade must not fire on a preview.** The rims and the masked reveal would run
+   for text that disappears a moment later. **This is the same class of problem as IME
+   composition — a real value in a provisional state** — and the same answer applies: the signal
+   must distinguish committed content from in-flight content, not merely observe that a field
+   is non-empty.
+
+   ⚠ **The Builder misread this exchange twice before Carl corrected it**, first treating the
+   dropdown's appearance as proof of the fill and then treating a hover as a non-event. **The
+   requirement above exists only because Carl described what he actually saw rather than
+   answering the question that was asked.**
+
+   ### The committed fill, screenshotted — all four boxes, localhost
+
+   Carl then completed a real autofill. **All four boxes filled, all four rims lit, satin
+   intact behind every one.** The chain had run correctly: content in boxes 1–3 lit rims 2, 3
+   and 4. **Chunks A and B verified together, under real use.**
+
+   Also visible: **the white input text reads well over the satin** — better than the luminance
+   margin predicted — and legibly in all four boxes despite each being a different window onto
+   the field.
+
+   ⚠ **AND THE OVERFLOW RISK APPEARED AT FULL DESKTOP WIDTH, not just at 390px.** The saved
+   Website value (`agency-website-v2-awjv.vercel.app/start`) is longer than the 284px box, so
+   the text scrolled and **clipped at the LEFT edge — the visible portion is the END of the
+   string, not the start.**
+
+   **This was a genuine saved value, not a contrived test string**, which is what makes it
+   worth recording: a real URL someone would really autofill overflows the approved box at the
+   widest layout. The risk was logged as inherited geometry and a narrow-viewport concern; it
+   is neither. **Open for Carl — no change made.**
 4. **Mobile keyboard** behaviour on a real device — Playwright cannot emulate the keyboard inset.
 
 ---
