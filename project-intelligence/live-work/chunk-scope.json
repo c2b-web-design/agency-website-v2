@@ -1,8 +1,11 @@
 {
   "_comment": "Enforced by .claude/hooks/chunk-scope-guard.js before every Edit/Write. See ai-system/live-work-protocol.md section 8. Absent file = no enforcement (opt-in by design).",
 
+  "_status": "COMPLETE — all four steps built and committed at 56c2e1c, 31 July 2026. Set inactive so a finished chunk's guard does not block the next piece of work. The next chunk writes its own scope; see the note below about declaring verify/_tmp-*.mjs in it.",
+  "_next_chunk_must_declare": "verify/_tmp-*.mjs — throwaway measurement probes. The Day 6 handoff recorded this advice, THIS chunk's scope was written without it, and the guard duly blocked a probe on 31 July for the third time. The Builder worked around it from the scratchpad, which is the DL-1 lesson again: the control shaped WHERE the work happened, not WHETHER it happened.",
+
   "chunk": "satin-blue-field-windows",
-  "active": true,
+  "active": false,
 
   "_files": "Paths the chunk may edit. Supports exact paths, 'dir/' prefixes, and * wildcards. live-work/ is included because CLAUDE.md rules 6 and 7 REQUIRE the Builder to write run logs, checkpoint requests and the session handoff there — a scope that omits it makes the Builder's own protocol obligations impossible to meet, which is the B-1 finding in architect-plan-response.md.",
   "files": [
