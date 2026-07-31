@@ -1,10 +1,14 @@
 {
   "_comment": "Enforced by .claude/hooks/chunk-scope-guard.js before every Edit/Write. See ai-system/live-work-protocol.md section 8. Absent file = no enforcement (opt-in by design).",
 
-  "_status": "Chunk A COMPLETE at 3f93ce0. Chunk B COMPLETE at 0b99a36 (unlit-level A/B deliberately deferred to the light chunk). Now scoped to chunk C: the autofill cascade and masked reveal — the last of the three.",
+  "_status": "ALL THREE CHUNKS COMPLETE AND PUSHED. A at 3f93ce0, B at 0b99a36, C at 7425e78. Stood down at the end of Day 7, 31 July 2026, so a guard protecting finished work cannot block the next session — the housekeeping step that was needed at the end of every chunk today. The next chunk writes its own scope; see the notes below before it does.",
+
+  "_next_chunk_must_declare": "verify/_tmp-*.mjs — throwaway measurement probes. Declared for chunks A/B/C and blocked ZERO times; it had been blocked three times across the two chunks before that, with the advice already recorded and not followed. Also declare the chunk's OWN main file if it creates one — finding F-6 of the chunk-A gate.",
+
+  "_next_chunk_is_probably_the_light": "See live-work/orbiting-light-test-rig-brief.md. ⚠ AUTHORITY IS UNRESOLVED: Carl's standing instruction is that the orbiting-light chunk goes through the PM/A rather than direct, and the brief was given straight to the Builder. That is Carl's call and is NOT recorded as decided. ⚠ The light chunk will need contact-field-canvas.tsx in 'files' (the scene, the lights and the frame loop all live there) and will likely touch app/globals.css for nothing at all — bloom belongs in the scene, not the stylesheet.",
 
   "chunk": "autofill-cascade-and-reveal",
-  "active": true,
+  "active": false,
 
   "_files": "Paths the chunk may edit. Supports exact paths, 'dir/' prefixes, and * wildcards. live-work/ is included because CLAUDE.md rules 6 and 7 REQUIRE the Builder to write run logs, checkpoint requests and the session handoff there — the B-1 finding from the previous chunk's gate.",
   "files": [
