@@ -251,6 +251,35 @@ export default function ContactFieldInputs({
     return () => window.cancelAnimationFrame(raf);
   }, []);
 
+  /**
+   * Show the START of an overlong value rather than its end.
+   *
+   * ⚠ THE DEFECT THIS FIXES IS ABOUT TRUST, NOT TRUNCATION. An input scrolls to
+   * keep the CARET visible, and after an autofill the caret sits at the end — so a
+   * long URL displays as `...vercel.app/start` with the head clipped. Measured on
+   * a real saved value at FULL DESKTOP WIDTH, not only at narrow viewports.
+   *
+   * The value is correct and complete either way; what changes is whether the user
+   * believes it is. Carl: *"From a user's point of view, they may feel a little
+   * uncertainty if their correct info was inputted... It's a field on a site by
+   * someone who makes websites. They have to trust that 'we got this'."*
+   *
+   * ⚠ NEVER WHILE THE FIELD IS FOCUSED. Resetting `scrollLeft` under a typing user
+   * would fight their caret on every keystroke past the box's width. This runs only
+   * for values that arrived from OUTSIDE the field — autofill, paste, restore.
+   *
+   * ⚠ AND IT IS DISPLAY ONLY. The stored value is untouched. Showing something
+   * different from what will be sent is the divergence that causes real trouble
+   * later; this changes the scroll offset and nothing else.
+   */
+  useEffect(() => {
+    for (const slot of FIELD_SLOTS) {
+      const el = inputRefs.current[slot.id];
+      if (!el || el === document.activeElement) continue;
+      if (el.scrollLeft !== 0) el.scrollLeft = 0;
+    }
+  }, [values]);
+
   const placements = fieldDomPlacements(box.width, box.height);
 
   return (
@@ -343,6 +372,13 @@ export default function ContactFieldInputs({
                 const next = { ...values, [slot.id]: e.target.value };
                 setValues(next);
                 publish(next);
+              }}
+              // ⚠ ALSO ON BLUR, for the value the user TYPED. The effect above
+              // only fires when `values` changes, so tabbing away from a long URL
+              // just after typing it would leave the view stranded at the end —
+              // the same uncertainty, arrived at by a different route.
+              onBlur={(e) => {
+                e.currentTarget.scrollLeft = 0;
               }}
               onCompositionStart={() => {
                 composingRef.current = true;
