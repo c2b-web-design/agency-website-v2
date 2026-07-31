@@ -60,6 +60,47 @@ judge.
 
 ---
 
+## ⚠ THE TEST DESIGN — Carl, 31 July 2026, and it is sharper than a continuous sweep
+
+> *"While testing this partial orbit... if we make it last 4 seconds, we turn the light on and
+> off at intervals. Then we can see the effect as it travels and as it's turned on. You may wish
+> to decide not to have the orbit's speed continuous and be static at some point. This is a test
+> after all."*
+
+**A 4-second partial orbit, with the light pulsing on and off along the way.**
+
+⚠ **WHY INTERMITTENT BEATS CONTINUOUS AS A TEST, and it is not just "closer to the final
+effect".** A light that stays on shows ONE thing well — how the band travels. Pulsing shows
+**two independent things**: how the band moves, AND **how the metal responds to a light
+ARRIVING.** The second is what the glint actually depends on, because **a glint is an ignition,
+not a pass.**
+
+⚠ **AND IT SAMPLES THE ORBIT FOR FREE.** Every on-pulse catches the geometry at a different
+angle, so one 4-second run shows the rim and face responding at several positions without
+anyone having to scrub to each one.
+
+### The four modes — the orbit and the pulse are SEPARABLE, and separating them is what makes
+### this a rig rather than a demo
+
+| Mode | What it isolates |
+|---|---|
+| **Moving, continuous** | How the band travels |
+| **Moving, pulsing** | Arrival and travel together — closest to the intended effect |
+| **Static, pulsing** | The metal's response to **ignition alone**, position held |
+| **Static, on** | ⚠ **A HELD FRAME.** The only mode in which a screenshot means anything |
+
+⚠ **THE HELD FRAME IS NOT A CONVENIENCE, IT IS THE MEASURABLE STATE.** On 31 July every value
+measured from a moving or transient state proved unreliable — and the only two that gave clean
+answers were the ones that could be FROZEN: the paused wipe animation and the frozen mask.
+**A rig that can stop is a rig that can be measured.** Anything judged only in motion is judged
+by eye alone, which is fine for Carl and useless for a regression check.
+
+⚠ **Carl's framing governs the whole build: *"This is a test after all."*** The rig does not have
+to be the effect, does not have to be efficient, and does not have to survive into production.
+**It has to make the three deferred judgements possible.**
+
+---
+
 ## What this requires of the scene — established, not proposed
 
 **Verified in code on 31 July 2026:**
@@ -98,6 +139,10 @@ walking `/start` to completion takes ~14 seconds before the boxes even appear.
 
 **Candidates to expose, for the next session to settle:**
 
+- ⚠ **Orbit run/pause, and pulse on/off — INDEPENDENTLY.** The four modes above are only
+  available if these are two switches rather than one
+- ⚠ **Scrub to a position and hold it.** The held frame is the measurable state
+- pulse rate and duty (how long on, how long off)
 - beam angle / cone width
 - orbit speed, and the ellipse's shape and tilt
 - light intensity, and its falloff with distance
@@ -105,6 +150,10 @@ walking `/start` to completion takes ~14 seconds before the boxes even appear.
 - ⚠ **`FIELD_GRAIN_TINT` and the rim unlit floor** — the two deferred constants, so they can be
   moved *while the band sweeps*, which is the only condition under which they were ever going to
   be judged
+
+⚠ **THE 4-SECOND RUN IS A TEST DURATION, NOT A DESIGN VALUE.** It is long enough to watch and
+short enough to repeat. **Nothing should derive from it** — the final effect's timing is a
+separate judgement Carl has not made.
 
 ⚠ **A rebuild between each value is not a rig.** The lesson is already on the record from the
 box entrance: four tuning approaches failed, and what made the fade judgeable at all was

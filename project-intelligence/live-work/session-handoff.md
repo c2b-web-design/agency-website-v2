@@ -64,6 +64,22 @@ down, **no light on the box at that moment**, ending bottom-right looking up, on
 orbit. Narrow beam, slow speed. The observable is **a narrow band sweeping across the face, with
 bloom**.
 
+⚠ **AND THE TEST DESIGN IS PART OF THE BRIEF, not an implementation detail.** A **4-second
+partial orbit with the light PULSING on and off** along the way — Carl: *"then we can see the
+effect as it travels and as it's turned on... you may wish to decide not to have the orbit's
+speed continuous and be static at some point. **This is a test after all.**"*
+
+**Pulsing beats a continuous sweep because it shows two independent things:** how the band
+travels, and **how the metal responds to a light ARRIVING** — which is what the glint actually
+depends on, since a glint is an ignition rather than a pass. It also samples the orbit for free:
+each pulse catches the geometry at a different angle.
+
+⚠ **THE ORBIT AND THE PULSE MUST BE SEPARATE SWITCHES**, giving four modes — moving/continuous,
+moving/pulsing, static/pulsing, and **static/on: a HELD FRAME.** That last one matters: on Day 7
+every value measured from a moving or transient state proved unreliable, and the only two that
+gave clean answers were the ones that could be frozen. **A rig that can stop is a rig that can be
+measured.**
+
 ⚠ **THREE DEFERRED JUDGEMENTS DEPEND ON IT**, all deliberately left open rather than guessed:
 
 | Deferred | Current value |
