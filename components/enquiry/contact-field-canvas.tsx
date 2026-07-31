@@ -1757,7 +1757,27 @@ function useProgressiveRim(
       startedRef.current = null;
       return;
     }
-    if (startedRef.current === null) startedRef.current = performance.now();
+    if (startedRef.current === null) {
+      startedRef.current = performance.now();
+      // ⚠ RESET THE SHARED STATE AT THE START OF EACH ACTIVATION.
+      //
+      // `rimLitState` is MODULE-LEVEL, so it outlives the component: it is shared
+      // by the two loops that write `envMapIntensity` and must not be re-created
+      // per render. The cost of that is that it also survives a remount, and a
+      // second activation would resume from whatever the rims last were rather
+      // than from box-1-only.
+      //
+      // ⚠ OBSERVED IN DEV, 31 July 2026, and it is why this reset exists. A hot
+      // reload re-evaluated the component while keeping the old module instance,
+      // stranding every rim at fully lit — Carl saw four gold rims on an empty
+      // form. A hard reload cleared it, which is what identified the cause.
+      //
+      // Production has no hot reload, and `canvasWarm` only ever goes false->true
+      // so the canvas currently mounts once per session. ⚠ BUT THAT IS A PROPERTY
+      // OF THE CALL SITE, NOT OF THIS MODULE. Relying on it would leave a future
+      // change elsewhere free to reintroduce the fault silently.
+      rimLitState.current = FIELD_SLOTS.map((_, i) => (i === 0 ? 1 : 0));
+    }
 
     const target = rimLitFromFilled(filled).map((b) => (b ? 1 : 0));
 
