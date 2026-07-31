@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import ContactFieldCanvas, { FIELD_ENTRANCE_END_MS } from "./contact-field-canvas";
-import ContactFieldInputs from "./contact-field-inputs";
+import ContactFieldInputs, { type FieldStateSnapshot } from "./contact-field-inputs";
+import { FIELD_SLOTS } from "./contact-field-geometry";
 
 // How long after entering `complete` the ENTIRE completion choreography has
 // cleared — acknowledgement, all four boxes, AND the opal.
@@ -362,6 +363,29 @@ export default function EnquiryOpening() {
   const [memory, setMemory] = useState<MemoryItem[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [reducedMotion, setReducedMotion] = useState(false);
+  // Which contact boxes currently hold content, in FIELD_SLOTS order. Lifted here
+  // because ContactFieldInputs (DOM) and ContactFieldCanvas (WebGL) are SIBLINGS
+  // and this is their nearest common parent. Drives the progressive gold rim.
+  //
+  // ⚠ ONLY THE BOOLEANS TRAVEL. The values stay in the inputs — nothing above
+  // needs them, and lifting them would put the user's personal details into a
+  // component that has no reason to hold them.
+  const [fieldFilled, setFieldFilled] = useState<boolean[]>([]);
+
+  /**
+   * Receive the inputs' state snapshot and keep only what the rim needs.
+   *
+   * ⚠ THE IDENTITY GUARD IS LOAD-BEARING. This fires on EVERY keystroke, but the
+   * rim only changes when a box crosses empty <-> filled. Without the guard, every
+   * character typed would set new state on this component and re-render the whole
+   * enquiry shell — including the WebGL canvas — for a value that had not changed.
+   */
+  const handleFieldState = useCallback((snapshot: FieldStateSnapshot) => {
+    const next = FIELD_SLOTS.map((slot) => snapshot.filled[slot.id]);
+    setFieldFilled((prev) =>
+      prev.length === next.length && prev.every((v, i) => v === next[i]) ? prev : next,
+    );
+  }, []);
   // The transparent Begin hit target is inactive until the visible reveal starts
   // (set true at the mask's `animationstart`). Under reduced motion there is no
   // reveal animation, so it is activated immediately in the effect below.
@@ -871,15 +895,22 @@ export default function EnquiryOpening() {
             {/* `active` is the cascade's clock zero, and it is deliberately NOT */}
             {/* this canvas's mount: the canvas mounts early on `canvasWarm` so */}
             {/* WebGL setup stays off the completion choreography. */}
-            <ContactFieldCanvas active={stage === "complete"} />
+            <ContactFieldCanvas active={stage === "complete"} filled={fieldFilled} />
             {/* The DOM form over the WebGL boxes. A SIBLING of the canvas, not a
                 child: the canvas wrapper is `aria-hidden`, and inputs inside it
                 would be invisible to assistive technology. `reducedMotion` is
                 passed rather than re-read — a third independent `matchMedia`
-                subscription could disagree with this file's and the canvas's. */}
+                subscription could disagree with this file's and the canvas's.
+
+                ⚠ `filled` IS LIFTED THROUGH HERE because the inputs and the
+                canvas are SIBLINGS: the progressive rim lives in WebGL and the
+                content it responds to lives in the DOM, so this is their nearest
+                common parent. Only the four booleans travel — the values
+                themselves stay in the inputs. */}
             <ContactFieldInputs
               active={stage === "complete"}
               reducedMotion={reducedMotion}
+              onFieldStateChange={handleFieldState}
             />
           </div>
         )}

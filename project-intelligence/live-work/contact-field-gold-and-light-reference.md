@@ -10,6 +10,29 @@ glint, no bloom, no logo on the page, no opal response.** Those are the work ahe
 
 ---
 
+## ⚠ ADDED 31 July 2026 — THE LIGHT IS INTERMITTENT, NOT CONSTANT
+
+**Carl, on why the progressive rim's A/B could not be judged yet:**
+
+> *"We cannot judge it properly until we see a moving light shining across the boxes. **A light
+> that is not constantly on but turns on/off as it moves.**"*
+
+⚠ **This is new and materially changes the brief below.** Everything already recorded describes
+an orbiting light with a momentary aimed glint — but travelling as a **constant source**. Carl
+has now specified that it **extinguishes and re-ignites along its path.**
+
+**Two things now wait on this chunk rather than one:**
+
+| Deferred | Why |
+|---|---|
+| `FIELD_GRAIN_TINT` (0.55) | Relief exists to catch the glint; tint-vs-relief cannot be compared without it |
+| **The progressive rim's unlit technique** | Fully-dark vs dim-gold is a question about how metal reads when light crosses it |
+
+⚠ **Both A/Bs must stay in the build until this chunk runs.** Collapsing either to a single
+value first would silently discard a comparison that was built to be made under the light.
+
+---
+
 ## Carl's method — read this before using anything below
 
 **This is a rough mix, not a calibration.** Carl's process, in his words:

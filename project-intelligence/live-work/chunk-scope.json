@@ -1,24 +1,29 @@
 {
   "_comment": "Enforced by .claude/hooks/chunk-scope-guard.js before every Edit/Write. See ai-system/live-work-protocol.md section 8. Absent file = no enforcement (opt-in by design).",
 
-  "chunk": "contact-field-text-inputs",
+  "_status": "Chunk A (contact-field-text-inputs) COMPLETE and committed at 3f93ce0. Now scoped to chunk B: the progressive gold rim.",
+
+  "chunk": "progressive-gold-rim",
   "active": true,
 
   "_files": "Paths the chunk may edit. Supports exact paths, 'dir/' prefixes, and * wildcards. live-work/ is included because CLAUDE.md rules 6 and 7 REQUIRE the Builder to write run logs, checkpoint requests and the session handoff there — the B-1 finding from the previous chunk's gate.",
   "files": [
     "components/enquiry/contact-field-inputs.tsx",
     "components/enquiry/contact-field-geometry.ts",
-    "verify/field-inputs-alignment.mjs",
+    "components/enquiry/contact-field-canvas.tsx",
+    "components/enquiry/enquiry-opening.tsx",
+    "verify/field-rim-state.mjs",
     "verify/_tmp-*.mjs",
     "project-intelligence/live-work/"
   ],
+
+  "_chunk_b_note": "contact-field-canvas.tsx moves from 'protected' into 'files' for chunk B, because the rim IS the bevel material inside that file and the chunk cannot be built without editing it. Authorised by Carl on 31 July 2026 ('proceed', then the 1+3 / 2+4 A/B instruction). ⚠ THE ENTRANCE CASCADE'S VALUES, ORDERING AND MASKING REMAIN OUT OF BOUNDS — the standing 'close enough is not approved' reservation is not reopened. What changes is that envMapIntensity gains a SECOND input (rim-lit state) composed with the existing entrance progress. enquiry-opening.tsx stays in 'files' because the input state must be lifted to it to reach the canvas, which is a sibling of the inputs.",
 
   "_tmp_probe_note": "verify/_tmp-*.mjs IS DECLARED THIS TIME. The Day 6 handoff recorded the advice, the satin-blue-field scope was written without it, and the guard duly blocked a throwaway probe on 31 July — the third block in two chunks. The Builder worked around it from the scratchpad, which is the DL-1 lesson: a control that blocks a required action shapes WHERE work happens, not WHETHER it happens. Finding F-6 of the chunk-A gate raised the same point about the chunk's own main file, which is why contact-field-inputs.tsx is in 'files' above.",
 
   "_protected": "Approved-foundation and canonical-governance paths the Builder must not touch. Denied unless the same path also appears in 'unlocked'.",
   "protected": [
     "app/globals.css",
-    "components/enquiry/contact-field-canvas.tsx",
     "components/enquiry/contact-field-mesh.tsx",
     "project-intelligence/decisions.md",
     "project-intelligence/ai-system/",

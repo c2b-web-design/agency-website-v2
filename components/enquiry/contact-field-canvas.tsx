@@ -1451,10 +1451,103 @@ function setFieldRise(group: THREE.Group | null, baseY: number, rise: number) {
 function setBevelEnvIntensity(
   material: THREE.MeshStandardMaterial | null,
   progress: number,
+  /**
+   * The rim's LIT fraction, 0..1 — the progressive-rim signal, multiplied into
+   * the entrance's own ramp. 1 restores the pre-chunk-B behaviour exactly.
+   */
+  lit = 1,
+  /** This box's unlit resting fraction — see `RIM_UNLIT_FLOOR_AB`. */
+  unlitFloor = 0,
 ) {
   if (!material) return;
-  material.envMapIntensity = GOLD_BEVEL_ENV_INTENSITY * Math.sqrt(progress);
+  // ⚠ MULTIPLIED INTO the entrance ramp, not substituted for it. At lit = 1 the
+  // expression reduces to `GOLD_BEVEL_ENV_INTENSITY * sqrt(progress)` — exactly
+  // the pre-chunk-B behaviour — so the approved entrance is unchanged for any
+  // box whose rim is lit.
+  material.envMapIntensity =
+    GOLD_BEVEL_ENV_INTENSITY *
+    Math.sqrt(progress) *
+    (unlitFloor + (1 - unlitFloor) * lit);
 }
+
+// ── The progressive gold rim ─────────────────────────────────────────────────
+//
+// ⚠ THE RIM IS A WAYFINDER, NEVER PERMISSION. Carl's ruling, recorded in
+// `live-work/progressive-rim-and-text-input-reference.md`: *"The most important
+// concept is the user gets a sense of being guided along. There is a direction
+// here."* Nothing is gated by an unlit rim — every box is always focusable and
+// typeable, and Send never consults rim state.
+//
+// ⚠ AND IT IS NOT THE Q&A FILAMENT, despite looking like it. D-029 draws on
+// SELECTION — a response to something done TO that element, ON that element.
+// Here box 2's rim responds to something that happened in box 1: it points away
+// from itself, at a box the user has not touched. A cue about ELSEWHERE reads as
+// direction, which is why the no-gating rule is what makes it safe.
+//
+// ⚠ NOT MASKING. A masked box (`FIELD_ENTRANCES[i] === null`) does not exist at
+// all — no fade, no geometry, nothing to type into. That would break the
+// no-gating rule outright. All four boxes arrive complete, with their satin
+// field; only the GOLD is withheld.
+
+/**
+ * ⚠ A/B UNDER JUDGEMENT — Carl, 31 July 2026: *"use one technique on boxes 1+3
+ * and the other technique on boxes 2+4."*
+ *
+ * The two candidates for what an UNLIT box looks like:
+ *
+ *   0.0  FULLY DARK — the bevel reads as unlit metal. Maximum contrast when it
+ *        lights, and closest to Carl's *"the rim will only be on Box 1"*. ⚠ Risk:
+ *        a wholly dark edge may read as DISABLED or BROKEN rather than "not yet"
+ *        — the confirmation-vs-progression trap in visual form.
+ *   >0   DIM GOLD — a low resting value brightening to full, so the box always
+ *        looks finished and lighting is an INTENSIFICATION rather than an
+ *        arrival. Safer for a form; less dramatic.
+ *
+ * ⚠ THE SPLIT IS DIAGONAL BY COLUMN, and that is Carl's design, not an
+ * arbitrary pairing: boxes 1+3 are the LEFT column, 2+4 the RIGHT. Each
+ * technique therefore appears once in each ROW, at both a top and a bottom
+ * position — so neither is judged only under the shorter or the longer entrance
+ * delay. A top/bottom split would have confounded technique with timing.
+ *
+ * ⚠ TEMPORARY. One value ships. Delete the per-box array when Carl chooses.
+ */
+const RIM_UNLIT_FLOOR_AB: number[] = [0.0, 0.22, 0.0, 0.22];
+
+/**
+ * How long an unlit rim takes to reach full gold, and vice versa.
+ *
+ * ⚠ ITS OWN CONSTANT, NOT THE ENTRANCE'S. The design record is explicit that
+ * inheriting 3000ms would couple this to timings Carl has NOT approved — his
+ * standing reservation is that the entrance overlap is less discernible than he
+ * wants. Tuning a second feature to a rejected value propagates the defect.
+ *
+ * ⚠ AND A RIM LIGHTING ON AN ALREADY-VISIBLE BOX IS NOT A BOX MATERIALISING FROM
+ * NOTHING. 3000ms is right for the latter; this is shorter deliberately.
+ * **CURRENT AND BEST-JUDGED, NOT APPROVED** — Carl judges it by eye.
+ */
+const RIM_LIGHT_MS = 900;
+
+/**
+ * The live lit fraction per box, shared by BOTH loops that write
+ * `envMapIntensity`.
+ *
+ * ⚠ ONE OBJECT, NOT TWO COPIES. `useEntranceCascade` and `useProgressiveRim` both
+ * write the bevel's intensity — the entrance during its fade, the rim whenever
+ * `filled` changes — and they overlap in time whenever a user types while boxes
+ * are still arriving. Two separate copies of this state would disagree for
+ * exactly as long as the overlap lasts, and the symptom would be a box flashing
+ * to the wrong brightness for a few frames: visible, intermittent, and very hard
+ * to attribute later.
+ *
+ * A module-scope ref is deliberate over React state: it is written every frame by
+ * an rAF loop, and putting it in state would re-render the whole scene per frame
+ * — the opposite of what `frameloop="demand"` exists for.
+ */
+// ⚠ `number[]`, not the `(0|1)[]` TypeScript infers from the initialiser: these
+// hold FRACTIONS while a rim is in transit between unlit and lit.
+const rimLitState: { current: number[] } = {
+  current: FIELD_SLOTS.map((_, i) => (i === 0 ? 1 : 0)),
+};
 
 /**
  * Drives the four entrance fades on the approved contract.
@@ -1582,7 +1675,17 @@ function useEntranceCascade(
         // THE REFLECTION LAG — the actual fix. Holds the metal's brightness back
         // early so it keeps climbing through the second half of the fade, instead
         // of saturating in the first third. See `setBevelEnvIntensity`.
-        setBevelEnvIntensity(bevelMaterials[i]?.current ?? null, progress);
+        //
+        // ⚠ THE RIM'S LIT FRACTION IS APPLIED HERE TOO, or a box would arrive at
+        // FULL gold and only dim once the rim loop ran — a visible flash of the
+        // wrong state on every entrance. `litNow` is read from the same ref the
+        // rim loop owns, so the two agree frame by frame.
+        setBevelEnvIntensity(
+          bevelMaterials[i]?.current ?? null,
+          progress,
+          rimLitState.current[i] ?? 1,
+          RIM_UNLIT_FLOOR_AB[i] ?? 0,
+        );
         if (progress < 1) allDone = false;
       });
 
@@ -1598,7 +1701,133 @@ function useEntranceCascade(
   }, [active, reducedMotion, groups, baseYs, bevelMaterials, invalidate]);
 }
 
-function FieldScene({ reducedMotion, active }: { reducedMotion: boolean; active: boolean }) {
+/**
+ * Which boxes' rims should be lit, from which boxes hold content.
+ *
+ * ⚠ BOX 1 IS ALWAYS LIT. Carl: *"The rim will only be on Box 1 when the boxes
+ * appear."* It is the entry point, so it needs no antecedent.
+ *
+ * ⚠ BOX N+1 LIGHTS ON ONE CHARACTER IN BOX N. Carl overruled the Builder's
+ * count-based reasoning here: *"Change to 1 letter... The whole idea while in Box
+ * 1 is to say, 'this is next'. Not to start inputting in Box 2 then it appears."*
+ * The Builder had read the trigger as COMPLETION logic — *box N is done enough,
+ * so box N+1 unlocks* — which is why it kept proposing character counts and
+ * leave-the-box fallbacks. **That was the wrong model.** The cue announces what
+ * is next WHILE the user is still in box N, so it fires as early as it honestly
+ * can. One character dissolves the edge cases rather than moving them: no
+ * threshold means no answer is ever too short.
+ *
+ * ⚠ REVERSIBLE, NOT A LATCH. Emptying box N unlights box N+1. Carl ruled against
+ * the Builder's latch proposal on consistency with approved work: the D-029
+ * filament is reversible on deselect, and a rim that latches here would behave
+ * differently from the same visual language two screens earlier. **The rim is a
+ * function of CURRENT input, not a memory of what happened** — which is also why
+ * `filled` is derived from state rather than from events, and why paste,
+ * dictation, IME and browser-restore need no special handling.
+ */
+function rimLitFromFilled(filled: boolean[]): boolean[] {
+  return FIELD_SLOTS.map((_, i) => (i === 0 ? true : filled[i - 1] === true));
+}
+
+/**
+ * Animate each bevel between its unlit floor and full gold as `filled` changes.
+ *
+ * ⚠ IT SHARES `envMapIntensity` WITH `useEntranceCascade`, which writes the same
+ * property every frame while the cascade runs. They compose rather than fight:
+ * the entrance owns `progress`, this owns `lit`, and `setBevelEnvIntensity`
+ * multiplies them. This loop reads the box's CURRENT entrance progress so it
+ * cannot undo the cascade mid-flight.
+ *
+ * ⚠ `frameloop="demand"` IS PRESERVED. The loop runs only while a rim is in
+ * transit and stops itself when every rim has settled — the same discipline
+ * `useEntranceCascade` documents. A rim that is neither lighting nor unlighting
+ * costs nothing.
+ */
+function useProgressiveRim(
+  bevelMaterials: Array<React.RefObject<THREE.MeshStandardMaterial | null>>,
+  filled: boolean[],
+  active: boolean,
+  reducedMotion: boolean,
+) {
+  const invalidate = useThree((state) => state.invalidate);
+  const startedRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!active) {
+      startedRef.current = null;
+      return;
+    }
+    if (startedRef.current === null) startedRef.current = performance.now();
+
+    const target = rimLitFromFilled(filled).map((b) => (b ? 1 : 0));
+
+    /**
+     * The box's entrance progress right now, so this loop multiplies against the
+     * cascade's own value instead of assuming 1 and flashing a box to full gold
+     * before it has finished arriving.
+     */
+    const entranceProgressAt = (i: number, elapsed: number) => {
+      const e = FIELD_ENTRANCES[i];
+      if (!e) return 0;
+      if (reducedMotion) return 1;
+      return Math.min(1, Math.max(0, (elapsed - e.delay) / e.duration));
+    };
+
+    if (reducedMotion) {
+      // No transit under reduced motion — jump to the target and present once.
+      rimLitState.current = target.slice();
+      target.forEach((t, i) =>
+        setBevelEnvIntensity(bevelMaterials[i]?.current ?? null, 1, t, RIM_UNLIT_FLOOR_AB[i] ?? 0),
+      );
+      invalidate();
+      return;
+    }
+
+    let raf = 0;
+    let last = performance.now();
+    const tick = () => {
+      const now = performance.now();
+      const dt = now - last;
+      last = now;
+      const elapsed = now - (startedRef.current ?? now);
+      let settled = true;
+
+      for (let i = 0; i < FIELD_SLOTS.length; i++) {
+        const cur = rimLitState.current[i];
+        const want = target[i];
+        let next = cur;
+        if (cur !== want) {
+          const step = dt / RIM_LIGHT_MS;
+          next = want > cur ? Math.min(want, cur + step) : Math.max(want, cur - step);
+          rimLitState.current[i] = next;
+          if (next !== want) settled = false;
+        }
+        setBevelEnvIntensity(
+          bevelMaterials[i]?.current ?? null,
+          entranceProgressAt(i, elapsed),
+          next,
+          RIM_UNLIT_FLOOR_AB[i] ?? 0,
+        );
+      }
+
+      invalidate();
+      if (!settled) raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [filled, active, reducedMotion, bevelMaterials, invalidate]);
+}
+
+function FieldScene({
+  reducedMotion,
+  active,
+  filled,
+}: {
+  reducedMotion: boolean;
+  active: boolean;
+  filled: boolean[];
+}) {
   // Owns the studio render target and hands back one ref per box's bevel
   // material. ONE map, shared by all four — see `useStudioEnvMap`.
   //
@@ -1647,6 +1876,10 @@ function FieldScene({ reducedMotion, active }: { reducedMotion: boolean; active:
   const baseYs = useMemo(() => placements.map((p) => p.y), [placements]);
 
   useEntranceCascade(groups, baseYs, bevelMaterialRefs, reducedMotion, active);
+  // ⚠ AFTER the cascade hook, deliberately. Both write `envMapIntensity`; this one
+  // reads the cascade's current progress and multiplies rather than overwrites,
+  // so a rim change mid-entrance cannot undo the fade in flight.
+  useProgressiveRim(bevelMaterialRefs, filled, active, reducedMotion);
 
   return (
     <>
@@ -1700,7 +1933,19 @@ function FieldScene({ reducedMotion, active }: { reducedMotion: boolean; active:
  *   clock zero was measured wrong — the whole cascade elapsed behind
  *   `visibility: hidden` and all four boxes were fully opaque at completion 0ms.
  */
-export default function ContactFieldCanvas({ active }: { active: boolean }) {
+export default function ContactFieldCanvas({
+  active,
+  filled = [],
+}: {
+  active: boolean;
+  /**
+   * Which boxes currently hold content, in `FIELD_SLOTS` order — from
+   * `ContactFieldInputs`, lifted through `enquiry-opening.tsx` because the two are
+   * siblings. Drives the progressive rim. Defaults to empty so the canvas still
+   * renders standalone.
+   */
+  filled?: boolean[];
+}) {
   const [reducedMotion] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -1728,7 +1973,7 @@ export default function ContactFieldCanvas({ active }: { active: boolean }) {
         frameloop="demand"
         style={{ pointerEvents: "none" }}
       >
-        <FieldScene reducedMotion={reducedMotion} active={active} />
+        <FieldScene reducedMotion={reducedMotion} active={active} filled={filled} />
       </Canvas>
     </div>
   );
