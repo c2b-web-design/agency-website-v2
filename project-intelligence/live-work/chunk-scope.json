@@ -1,34 +1,35 @@
 {
   "_comment": "Enforced by .claude/hooks/chunk-scope-guard.js before every Edit/Write. See ai-system/live-work-protocol.md section 8. Absent file = no enforcement (opt-in by design).",
 
-  "_status": "COMPLETE — all four steps built and committed at 56c2e1c, 31 July 2026. Set inactive so a finished chunk's guard does not block the next piece of work. The next chunk writes its own scope; see the note below about declaring verify/_tmp-*.mjs in it.",
-  "_next_chunk_must_declare": "verify/_tmp-*.mjs — throwaway measurement probes. The Day 6 handoff recorded this advice, THIS chunk's scope was written without it, and the guard duly blocked a probe on 31 July for the third time. The Builder worked around it from the scratchpad, which is the DL-1 lesson again: the control shaped WHERE the work happened, not WHETHER it happened.",
+  "chunk": "contact-field-text-inputs",
+  "active": true,
 
-  "chunk": "satin-blue-field-windows",
-  "active": false,
-
-  "_files": "Paths the chunk may edit. Supports exact paths, 'dir/' prefixes, and * wildcards. live-work/ is included because CLAUDE.md rules 6 and 7 REQUIRE the Builder to write run logs, checkpoint requests and the session handoff there — a scope that omits it makes the Builder's own protocol obligations impossible to meet, which is the B-1 finding in architect-plan-response.md.",
+  "_files": "Paths the chunk may edit. Supports exact paths, 'dir/' prefixes, and * wildcards. live-work/ is included because CLAUDE.md rules 6 and 7 REQUIRE the Builder to write run logs, checkpoint requests and the session handoff there — the B-1 finding from the previous chunk's gate.",
   "files": [
-    "components/enquiry/contact-field-mesh.tsx",
+    "components/enquiry/contact-field-inputs.tsx",
     "components/enquiry/contact-field-geometry.ts",
-    "components/enquiry/contact-field-canvas.tsx",
-    "verify/field-colour.mjs",
-    "verify/field-cascade-timing.mjs",
+    "verify/field-inputs-alignment.mjs",
+    "verify/_tmp-*.mjs",
     "project-intelligence/live-work/"
   ],
 
-  "_protected": "Approved-foundation and canonical-governance paths the Builder must not touch. Denied unless the same path also appears in 'unlocked'. Narrowed to the specific canonical files rather than a blanket 'project-intelligence/**', which would have swept up live-work scratch with them.",
+  "_tmp_probe_note": "verify/_tmp-*.mjs IS DECLARED THIS TIME. The Day 6 handoff recorded the advice, the satin-blue-field scope was written without it, and the guard duly blocked a throwaway probe on 31 July — the third block in two chunks. The Builder worked around it from the scratchpad, which is the DL-1 lesson: a control that blocks a required action shapes WHERE work happens, not WHETHER it happens. Finding F-6 of the chunk-A gate raised the same point about the chunk's own main file, which is why contact-field-inputs.tsx is in 'files' above.",
+
+  "_protected": "Approved-foundation and canonical-governance paths the Builder must not touch. Denied unless the same path also appears in 'unlocked'.",
   "protected": [
     "app/globals.css",
-    "components/enquiry/enquiry-opening.tsx",
+    "components/enquiry/contact-field-canvas.tsx",
+    "components/enquiry/contact-field-mesh.tsx",
     "project-intelligence/decisions.md",
     "project-intelligence/ai-system/",
     "project-intelligence/reviews/",
     "project-intelligence/active-sprints/"
   ],
 
-  "_unlocked": "Protected paths Carl has explicitly authorised for THIS chunk. Overrides 'protected'. Carl's call, not the Builder's. live-work-protocol.md was unlocked on 30 July 2026 so the Builder could record a finding from the guard's own first live use — see the 'First live chunk' note in §8. Authorised by Carl explicitly ('unblock it if you have to, i will go on trust'), not taken by the Builder.",
+  "_unlocked": "Protected paths Carl has EXPLICITLY authorised for THIS chunk. Overrides 'protected'. Carl's call, not the Builder's. enquiry-opening.tsx was unlocked on 31 July 2026 on Carl's word 'Authorised to explicitly unlock', in response to finding B-1 of the chunk-A plan-review gate: the chunk needs a two-line edit there (one import, one sibling element inside the existing contact-layer block) and the file is an approved-foundation path. THE UNLOCK IS FOR THAT EDIT ONLY — it is not licence to restructure an approved 1000-line file.",
   "unlocked": [
-    "project-intelligence/ai-system/live-work-protocol.md"
-  ]
+    "components/enquiry/enquiry-opening.tsx"
+  ],
+
+  "_why_canvas_is_protected": "contact-field-canvas.tsx is READ-ONLY in this chunk. It is the source of FIELD_ENTRANCE_END_MS and the active-not-mount clock pattern, both of which chunk A imports — but the satin field and the entrance cascade inside it are finished, approved-by-eye work that this chunk has no reason to touch. contact-field-mesh.tsx likewise."
 }

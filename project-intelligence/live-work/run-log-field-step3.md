@@ -1,5 +1,37 @@
 # Run log — satin-blue-field-windows, step 3
 
+---
+
+## ⚠ CORRECTION, 31 July 2026 — EVERY MEASUREMENT BELOW WAS TAKEN MID-CASCADE
+
+**Found by the Architect at the chunk-A plan-review gate, as finding F-1.**
+
+`verify/field-colour.mjs` carried a comment saying *"the entrance completes at ~4300ms"* and
+waited **5200ms**. **The real end is `FIELD_ENTRANCE_END_MS` = 8100** — box 4 starts at 5100 and
+fades for 3000. So every screenshot this harness produced was sampled **2900ms early, with box 4
+at roughly a third of its opacity**, while the output was described as the settled state.
+
+**Measured difference, same scene, 5200ms vs 9000ms:**
+
+| | gold 50th | gold 95th |
+|---|---:|---:|
+| at 5200ms (everything below) | 134 | 181 |
+| at 9000ms (true settled) | **173** | **191** |
+
+⚠ **AND IT PRODUCED A FALSE READING I ACTED ON.** Boxes 3 and 4 appeared to have dimmer rims
+than 1 and 2. I attributed that to the field varying per box. **It was an unfinished cascade.**
+
+⚠ **Carl's judgements below still stand** — the A/B, the relief bracket and the tint comparison
+were all like-for-like at the same moment, so the *comparisons* are valid. **What is wrong is
+every claim that a number describes the SETTLED state.** Re-measure before treating any absolute
+value here as final.
+
+**This is the THIRD hard-coded copy of this timing to go stale** (`contact-field-canvas.tsx`
+carries two prior warnings). The harness now **re-reads `FIELD_ENTRANCES` from source and exits
+non-zero if its copy drifts** — the fix `verify/q5-stutter.mjs` needed and did not get.
+
+---
+
 **31 July 2026. Chunk step 3 of 4: arcs into the height field, feeding the normal map.**
 **Plan:** `C:\Users\Carl Buckley\.claude\plans\keep-it-up-lets-enchanted-spring.md`
 

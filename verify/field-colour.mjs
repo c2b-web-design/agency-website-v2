@@ -15,9 +15,44 @@
 // Requires the dev server (npm run dev).
 
 import { chromium } from "@playwright/test";
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
+
+/**
+ * ⚠ A HARNESS THAT SHARES A STALE CONSTANT WITH THE THING IT MEASURES CANNOT
+ * FAIL. This project has been burned by exactly that twice: verify/q5-stutter.mjs
+ * reported 0/3 CLEAN on a visible defect because its window used the same wrong
+ * 700ms as the fix, and this file's own 5200ms wait silently sampled mid-cascade
+ * for every screenshot taken before 31 July 2026.
+ *
+ * So the entrance delays are re-read FROM SOURCE and checked against the value
+ * this script waits on. It cannot import the TSX export, but it can prove the
+ * copy still matches — which is the part that actually goes stale.
+ */
+async function assertEntranceEndMatches(expected) {
+  const src = await readFile(
+    path.join(process.cwd(), "components", "enquiry", "contact-field-canvas.tsx"),
+    "utf8",
+  );
+  const block = src.slice(
+    src.indexOf("const FIELD_ENTRANCES"),
+    src.indexOf("export const FIELD_ENTRANCE_END_MS"),
+  );
+  const entries = [...block.matchAll(/\{\s*delay:\s*(\d+),\s*duration:\s*(\d+)\s*\}/g)];
+  if (!entries.length) {
+    console.error("\n  ✗ could not parse FIELD_ENTRANCES — check this guard, not the page.\n");
+    process.exit(1);
+  }
+  const actual = Math.max(...entries.map(([, d, dur]) => Number(d) + Number(dur)));
+  if (actual !== expected) {
+    console.error(
+      `\n  ✗ STALE HARNESS. FIELD_ENTRANCES now ends at ${actual}ms; this script ` +
+        `waits on ${expected}ms.\n    Update the constant here — do not ignore this.\n`,
+    );
+    process.exit(1);
+  }
+}
 
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 const LABEL = process.argv[2] ?? "current";
@@ -60,9 +95,24 @@ for (let q = 0; q < 5; q += 1) {
   await page.waitForTimeout(q === 4 ? 100 : 1100);
 }
 
-// The entrance completes at ~4300ms on the completion clock; wait past it so
-// the field is fully opaque before measuring.
-await page.waitForTimeout(5200);
+// ⚠ CORRECTED 31 July 2026. This said "the entrance completes at ~4300ms" and
+// waited 5200ms. The real end is FIELD_ENTRANCE_END_MS = 8100 — the last box
+// starts at 5100 and fades for 3000. So every screenshot this harness took was
+// sampled MID-CASCADE, with box 4 at roughly a third of its opacity, while the
+// output was described as the settled state.
+//
+// ⚠ THIS IS THE THIRD HARD-CODED COPY OF THIS TIMING TO GO STALE. contact-field-
+// canvas.tsx already carries two "an earlier version hard-coded this and went
+// stale" warnings. The value cannot be imported here — this is a plain .mjs
+// script and the constant lives in TSX — so it is restated WITH its derivation
+// and a runtime assertion below, rather than as a bare number.
+//
+//   FIELD_ENTRANCES: delays 3600/4100/4600/5100, each 3000ms
+//   => last box ends at 5100 + 3000 = 8100
+const FIELD_ENTRANCE_END_MS = 8100;
+const SETTLE_MARGIN_MS = 900;
+await assertEntranceEndMatches(FIELD_ENTRANCE_END_MS);
+await page.waitForTimeout(FIELD_ENTRANCE_END_MS + SETTLE_MARGIN_MS);
 
 const layer = page.locator(".enquiry-contact-layer");
 const file = path.join(OUT_DIR, `field-colour-${LABEL}.png`);
