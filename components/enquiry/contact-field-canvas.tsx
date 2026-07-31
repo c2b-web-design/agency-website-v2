@@ -387,6 +387,148 @@ const FIELD_SOURCE_LIFT = "#0a1a3a";
 /** Overlaid to pull the hue toward the opal's ultramarine. PROVISIONAL. */
 const FIELD_SOURCE_TINT = "rgba(20, 62, 150, 0.30)";
 
+// ── STEP 3: the satin grain ──────────────────────────────────────────────────
+//
+// ⚠ THE GRAIN IS SURFACE RELIEF, NOT PAINTED TONE. Carl: *"Paint looks cheap.
+// Not for us."* The arcs are drawn once into a greyscale HEIGHT FIELD, which is
+// then Sobel-differentiated into a NORMAL MAP. The colour map is left alone
+// unless `FIELD_GRAIN_TINT` is raised above 0.
+//
+// ⚠ WHY RELIEF SPECIFICALLY, and it is about the chunk that follows this one.
+// At rest the grain is a whisper. When the orbiting light's aimed glint sweeps
+// across, fine relief CATCHES it and the whole box participates in the moment
+// rather than only its rim. Carl: *"When the glints happen it will add a lot more
+// to the overall effect... That kicks it up a notch."* Painted arcs would look
+// painted under a moving light, because paint does not respond to direction.
+
+/**
+ * `normalScale` for the grain.
+ *
+ * ⚠ THE PLAN'S DERIVED 0.03 WAS MEASURED INVISIBLE AND REPLACED. Recorded here
+ * because the derivation was sound reasoning that reached the wrong number, and a
+ * future session will otherwise re-derive it the same way.
+ *
+ * The reasoning was: the crown's entire angular signal is 7.4° on the short axis,
+ * a `normalScale` of 1 perturbs roughly 45°, so 0.03 perturbs ~1.8° — a quarter of
+ * the crown, the "whisper at rest" the brief asks for.
+ *
+ * ⚠ MEASURED AGAINST A CONTROL AT RELIEF 0, IT MOVED NOTHING. High-frequency
+ * residual inside box 1's face, dev build, 1440x900 @ DPR 2:
+ *
+ *   relief 0.00 (control)  0.404   <- the SAMPLED JPEG's own noise floor
+ *   relief 0.03 (planned)  0.413   <- +0.009. Indistinguishable from the control
+ *   relief 0.15            0.560
+ *   relief 0.30            0.789
+ *   relief 0.50            1.123   <- CURRENT
+ *   relief 2.00            3.813   <- deliberate overshoot; confirmed the wiring
+ *
+ * ⚠ AND THE FIRST PROBE NEARLY CONFIRMED THE BUG. Measuring relief 0.03 alone
+ * returned 0.413 against a flat-field threshold of 0.15 and reported "grain
+ * present and measurable" — which was TRUE and irrelevant: it was measuring the
+ * source JPEG's compression noise, not the grain. **Only the control at relief 0
+ * exposed it.** The same lesson as the Q5 harness that passed on a visible defect:
+ * a measurement without a control measures whatever is loudest.
+ *
+ * Why the derivation missed: it modelled the grain against the CROWN's angular
+ * budget, but the crown is lit by a raking key at `z = 40` chosen specifically to
+ * make 7.4° legible. The grain is a *diffuse* perturbation on a `metalness: 0`
+ * face with `envMapIntensity: 0` — it has no reflection to amplify it, so it needs
+ * far more angular signal than the crown to register at all.
+ *
+ * ⚠ 0.50 IS CURRENT AND BEST-JUDGED, NOT APPROVED. Carl judges it by eye on the
+ * 27" monitor, which the plan names as the worst case and the one that decides.
+ *
+ * ⚠ THE NORMALISATION IS PART OF THIS CONSTANT'S CONTRACT (plan finding F-4).
+ * The value holds ONLY against the encoding below:
+ *
+ *   - height field: 0..255 greyscale, arcs drawn at `FIELD_ARC_ALPHA` over mid-grey
+ *   - kernel: 3x3 Sobel, taps in units of one texel
+ *   - divisor: `FIELD_SOBEL_DIVISOR` — the raw Sobel sum is /4 to bring a hard
+ *     0->255 edge to a full-scale ±1 encoded gradient
+ *   - encoded: `0.5 + 0.5 * clamp(gradient, -1, 1)` per channel, blue fixed at 255
+ *
+ * ⚠ CHANGE THE AMPLITUDE, THE KERNEL OR THE DIVISOR AND THIS NUMBER SILENTLY
+ * MEANS A DIFFERENT ANGLE, with nothing on screen to signal that a by-eye result
+ * has been invalidated. Re-measure against a control, do not carry it across.
+ */
+const FIELD_GRAIN_RELIEF = 0.5;
+
+/**
+ * How much the arcs modulate COLOUR as well as relief. 0 = pure relief.
+ *
+ * ⚠ THIS CONSTANT EXISTS BECAUSE OF A GENUINE OPEN QUESTION, not as a spare knob.
+ * Taken literally, "relief not paint" means the arcs are near-INVISIBLE until the
+ * orbiting light exists — leaving nothing to judge in this chunk. Rather than
+ * decide in advance, Carl made it a by-eye call: *"Build both, judge side by
+ * side."* 0 is pure relief; raised gives a visible trace.
+ */
+/**
+ * ⚠ 0.55 IS CURRENT AND BEST-JUDGED, NOT APPROVED — AND IT IS EXPLICITLY DEFERRED.
+ *
+ * Judged side by side on 31 July 2026 with a temporary A/B scaffold: the top row
+ * pure relief, the bottom row tinted. Carl viewed it on a 27" 1080p Lenovo and a
+ * 65" 4K LG and preferred the tinted pair — *"3 + 4 look better to me. Whether
+ * its the way the gradient is, it seems a bit brighter to me."*
+ *
+ * **His read was correct and it measures.** Same region, same size, top vs bottom:
+ *
+ *   top    (relief only)   residual 1.123   luma 7..45   mean 25.9
+ *   bottom (relief + tint) residual 1.302   luma 13..55  mean 29.4
+ *
+ * ⚠ SO THE TINT'S MAIN EFFECT IS TONE, NOT GRAIN. It adds only ~16% more
+ * high-frequency detail but lifts the floor 7 -> 13 and the ceiling 45 -> 55.
+ * **That eats headroom the orbiting light will want**, because the hierarchy
+ * constraint holds the field's peak below the gold's.
+ *
+ * ⚠ AND THE COMPARISON IS DELIBERATELY NOT SETTLED. Carl: *"I know it may look
+ * different when light is put upon it. My suggestion is keep it as it is for the
+ * moment. A better comparison may be made with the introduction of light later."*
+ *
+ * That is the correct call: relief exists to CATCH THE ORBITING GLINT, so judging
+ * relief against tint before the light exists compares a finished thing with an
+ * unfinished one. Pure relief is *supposed* to look quiet now. **Re-judge this
+ * value during the light chunk.**
+ */
+const FIELD_GRAIN_TINT = 0.55;
+
+/**
+ * Arc sweep direction, degrees. ⚠ PROVISIONAL — PENDING THE ORBITING LIGHT.
+ *
+ * Grain shimmers most when light crosses the lines and least when it runs along
+ * them, so the RIGHT angle is a property of the light's path — which belongs to
+ * the light brief, not this chunk (plan finding F-5).
+ *
+ * ⚠ BUT SOMETHING MUST BE DRAWN, or `FIELD_GRAIN_RELIEF` gets tuned by eye against
+ * a direction nobody chose, and the light chunk could then move it underneath the
+ * result. This value is chosen against the CURRENT STATIC KEY at [-160, 120, 40]:
+ * arcs sweeping roughly perpendicular to that raking direction, so the relief is
+ * legible now. **The decision stays Carl's; only the value is provisional.**
+ */
+const FIELD_ARC_ANGLE_DEG = 18;
+
+/**
+ * Arc geometry, in field-u units (u runs 0..6 across the field; a box is ~2.9
+ * world units wide, which is 0.18 u).
+ *
+ * ⚠ THE SPACING IS LARGE RELATIVE TO A BOX, AND THAT IS THE WHOLE LESSON OF STEP
+ * 2. Two procedural attempts failed there for one structural reason: features
+ * with ~1-unit radii on a field where each box is 2.9 units wide. A box caught a
+ * bright patch and flat tone either side, so it never read as a gradient — it read
+ * as an EDGE. **Any feature drawn into this field must be large relative to a box,
+ * or the box sees an edge rather than a gradient.**
+ *
+ * Grain is the deliberate exception that proves the rule: it is meant to be FINE
+ * and repeating, so a box sees MANY arcs rather than one feature. The failure mode
+ * is the middle case — a handful of arcs per box, which reads as stripes.
+ */
+const FIELD_ARC_SPACING_PX = 7;
+/** Stroke width in texture pixels. Sub-pixel widths are why AA matters here. */
+const FIELD_ARC_WIDTH_PX = 1.1;
+/** Arc contrast in the height field, 0..1 against mid-grey. */
+const FIELD_ARC_ALPHA = 0.5;
+/** Sobel divisor. See `FIELD_GRAIN_RELIEF` — part of the normalisation contract. */
+const FIELD_SOBEL_DIVISOR = 4;
+
 /** The shadow end. Deep ultramarine — the reference's troughs, lifted off black. */
 const FIELD_DEEP = "#0a1f5e";
 /** The body — the reference's mid-dark, and the opal's own family. */
@@ -472,6 +614,128 @@ function crestAt(u: number): number {
 }
 
 /**
+ * Draw the arc grain into a greyscale HEIGHT FIELD.
+ *
+ * ⚠ ONE HEIGHT FIELD, TWO OUTPUTS. This canvas is the single source for both the
+ * normal map (Sobel, below) and — when `FIELD_GRAIN_TINT` > 0 — the colour map's
+ * grain overlay. Drawing the arcs twice would let relief and tint drift apart,
+ * which is invisible in code review and obvious under a raking light.
+ *
+ * Mid-grey base: the Sobel reads DIFFERENCES, so the absolute level is irrelevant
+ * and 128 keeps the arcs symmetric about it in both directions.
+ *
+ * ⚠ ARCS, NOT STRAIGHT LINES. A straight-line grain reads as brushed metal;
+ * curvature is what makes it satin. The centre sits far OUTSIDE the field bounds
+ * so each box's window catches a different segment at a different curvature and
+ * angle — the same mechanism the whole chunk runs on. **The variation falls out of
+ * position; nothing is randomised per box.**
+ */
+function buildFieldHeightCanvas(): HTMLCanvasElement {
+  const canvas = document.createElement("canvas");
+  canvas.width = FIELD_TEX_W;
+  canvas.height = FIELD_TEX_H;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("2D context unavailable for the contact field height map");
+
+  ctx.fillStyle = "#808080";
+  ctx.fillRect(0, 0, FIELD_TEX_W, FIELD_TEX_H);
+
+  // The arc centre, placed well outside the field and offset along the sweep
+  // angle. A radius this large means each arc crosses a box as a very shallow
+  // curve rather than as a visible circle segment.
+  const angle = (FIELD_ARC_ANGLE_DEG * Math.PI) / 180;
+  const radius = FIELD_TEX_W * 1.9;
+  const cx = FIELD_TEX_W * 0.5 - Math.sin(angle) * radius;
+  const cy = FIELD_TEX_H * 0.5 + Math.cos(angle) * radius;
+
+  ctx.lineWidth = FIELD_ARC_WIDTH_PX;
+  ctx.strokeStyle = `rgba(255, 255, 255, ${FIELD_ARC_ALPHA})`;
+
+  // Concentric arcs outward from the centre. The loop bounds cover the furthest
+  // corner from the centre, so no region of the field is left ungrained.
+  const maxR = Math.hypot(
+    Math.max(cx, FIELD_TEX_W - cx),
+    Math.max(cy, FIELD_TEX_H - cy),
+  );
+  const minR = Math.max(0, radius - maxR);
+  for (let r = minR; r <= maxR; r += FIELD_ARC_SPACING_PX) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  return canvas;
+}
+
+/**
+ * Sobel the height field into a tangent-space normal map.
+ *
+ * ⚠ `NoColorSpace`, NOT `SRGBColorSpace`. A normal map carries VECTORS, not
+ * colour. Tagging it sRGB applies the transfer function to the encoded gradient
+ * and every normal comes out wrong — a silent failure that looks like a scale
+ * problem and gets "fixed" by raising `normalScale`, which is the wrong lever.
+ * The asymmetry with the colour map is deliberate and load-bearing.
+ *
+ * ⚠ THE GREEN CHANNEL AND `flipY` — plan finding F-6. `CanvasTexture` defaults to
+ * `flipY: true`, so the image is flipped on upload while the encoded gradient is
+ * not. `dy` is therefore NEGATED here so green agrees with three's OpenGL-style
+ * convention after the flip. **Get this wrong and ridges render as grooves** —
+ * every numeric check passes either way, and it is visible only under the raking
+ * key, only if someone is looking for it.
+ */
+function buildFieldNormalTexture(height: HTMLCanvasElement): THREE.CanvasTexture {
+  const hctx = height.getContext("2d");
+  if (!hctx) throw new Error("2D context unavailable reading the contact field height map");
+  const src = hctx.getImageData(0, 0, FIELD_TEX_W, FIELD_TEX_H).data;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = FIELD_TEX_W;
+  canvas.height = FIELD_TEX_H;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("2D context unavailable for the contact field normal map");
+  const out = ctx.createImageData(FIELD_TEX_W, FIELD_TEX_H);
+
+  // Red channel only — the height field is greyscale, so r == g == b.
+  const at = (x: number, y: number) => {
+    const cx = x < 0 ? 0 : x >= FIELD_TEX_W ? FIELD_TEX_W - 1 : x;
+    const cy = y < 0 ? 0 : y >= FIELD_TEX_H ? FIELD_TEX_H - 1 : y;
+    return src[(cy * FIELD_TEX_W + cx) * 4] / 255;
+  };
+
+  for (let y = 0; y < FIELD_TEX_H; y++) {
+    for (let x = 0; x < FIELD_TEX_W; x++) {
+      const tl = at(x - 1, y - 1), t = at(x, y - 1), tr = at(x + 1, y - 1);
+      const l = at(x - 1, y), r = at(x + 1, y);
+      const bl = at(x - 1, y + 1), b = at(x, y + 1), br = at(x + 1, y + 1);
+
+      const dx = (tr + 2 * r + br - tl - 2 * l - bl) / FIELD_SOBEL_DIVISOR;
+      const dy = (bl + 2 * b + br - tl - 2 * t - tr) / FIELD_SOBEL_DIVISOR;
+
+      const i = (y * FIELD_TEX_W + x) * 4;
+      const enc = (g: number) =>
+        Math.round(255 * (0.5 + 0.5 * Math.max(-1, Math.min(1, g))));
+      out.data[i] = enc(dx);
+      out.data[i + 1] = enc(-dy); // see the flipY note above
+      out.data[i + 2] = 255;
+      out.data[i + 3] = 255;
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.NoColorSpace;
+  // ⚠ IDENTICAL SAMPLER SETUP TO THE COLOUR MAP. `map` and `normalMap` have
+  // INDEPENDENT transform uniforms in three, so a mismatch here slides the relief
+  // off the colour it is meant to belong to.
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.ClampToEdgeWrapping;
+  texture.repeat.set(1 / 6, 1);
+  texture.anisotropy = 4;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+/**
  * Build the shared field's colour texture on a 2D canvas.
  *
  * ⚠ `CanvasTexture` RATHER THAN `DataTexture`, deliberately. The 2D canvas API
@@ -483,12 +747,40 @@ function crestAt(u: number): number {
  * transfer function and the field renders visibly darker and more saturated than
  * authored — a silent failure that looks like a palette problem.
  */
-function buildFieldColourTexture(source?: HTMLImageElement): THREE.CanvasTexture {
+function buildFieldColourTexture(
+  source?: HTMLImageElement,
+  height?: HTMLCanvasElement,
+): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = FIELD_TEX_W;
   canvas.height = FIELD_TEX_H;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("2D context unavailable for the contact field texture");
+
+  /**
+   * Overlay the grain as visible TONE, when `FIELD_GRAIN_TINT` > 0.
+   *
+   * ⚠ CALLED FROM BOTH RETURN PATHS. The sampled path returns early, so a single
+   * call at the end of the function would silently drop the tint the moment the
+   * source image loaded — visible only as "the grain disappeared after a second".
+   *
+   * `soft-light` rather than `overlay`: it modulates without crushing the darks,
+   * which matters because step 2 established that this field's defect mode is
+   * RANGE, not level — its darks reading as holes.
+   */
+  const applyGrainTint = () => {
+    if (!height || FIELD_GRAIN_TINT <= 0) return;
+    ctx.save();
+    // ⚠ APPLIED TO THE WHOLE FIELD. A 31 July A/B scaffold clipped this to the
+    // bottom row so the two treatments could be judged side by side; it was
+    // REMOVED once judged. Treating regions of the field differently breaks the
+    // one-continuous-field principle the whole chunk rests on — and breaks it
+    // invisibly, because the result still looks like four varied boxes.
+    ctx.globalCompositeOperation = "soft-light";
+    ctx.globalAlpha = FIELD_GRAIN_TINT;
+    ctx.drawImage(height, 0, 0);
+    ctx.restore();
+  };
 
   // ── SAMPLED FROM THE SOURCE IMAGE, when it has loaded ──────────────────────
   //
@@ -546,6 +838,8 @@ function buildFieldColourTexture(source?: HTMLImageElement): THREE.CanvasTexture
     ctx.fillStyle = FIELD_SOURCE_TINT;
     ctx.fillRect(0, 0, FIELD_TEX_W, FIELD_TEX_H);
     ctx.globalCompositeOperation = "source-over";
+
+    applyGrainTint();
 
     const sampled = new THREE.CanvasTexture(canvas);
     sampled.colorSpace = THREE.SRGBColorSpace;
@@ -645,6 +939,8 @@ function buildFieldColourTexture(source?: HTMLImageElement): THREE.CanvasTexture
   ctx.fillStyle = counter;
   ctx.fillRect(0, 0, FIELD_TEX_W, FIELD_TEX_H);
 
+  applyGrainTint();
+
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
 
@@ -702,6 +998,13 @@ function useFieldTexture(
       .map((ref) => ref.current)
       .filter((m): m is THREE.MeshStandardMaterial => m !== null);
 
+    // ⚠ THE HEIGHT FIELD IS BUILT ONCE AND OUTLIVES THE COLOUR MAP. The colour map
+    // is replaced when the source image loads; the grain does not depend on the
+    // source at all, so rebuilding the normal map alongside it would burn a
+    // full-texture Sobel pass to produce an identical result.
+    const heightCanvas = buildFieldHeightCanvas();
+    const normalMap = buildFieldNormalTexture(heightCanvas);
+
     /** Attach a texture to all four faces and present the result. */
     const apply = (texture: THREE.CanvasTexture) => {
       attached.forEach((material) => {
@@ -710,6 +1013,12 @@ function useFieldTexture(
         // the whole appearance before; now the texture is, and colour is a
         // multiplier.
         material.color.set("#ffffff");
+        material.normalMap = normalMap;
+        // ⚠ `normalScale` is a Vector2 and BOTH components matter. Setting only x
+        // leaves y at its default 1, which would make the grain ~33x stronger
+        // across the short axis than the long one — a stretched, directional
+        // shimmer rather than an even satin.
+        material.normalScale.set(FIELD_GRAIN_RELIEF, FIELD_GRAIN_RELIEF);
         material.needsUpdate = true;
       });
       invalidate();
@@ -717,7 +1026,7 @@ function useFieldTexture(
 
     // Draw the procedural field immediately, so there is never an untextured
     // frame, then upgrade to the sampled source when it loads.
-    let current = buildFieldColourTexture();
+    let current = buildFieldColourTexture(undefined, heightCanvas);
     apply(current);
 
     // ⚠ LOADED, NOT BUNDLED. The source is a 17 KB JPEG served from `public/`, so
@@ -727,7 +1036,7 @@ function useFieldTexture(
     const img = new Image();
     img.onload = () => {
       if (cancelled) return;
-      const sampled = buildFieldColourTexture(img);
+      const sampled = buildFieldColourTexture(img, heightCanvas);
       const previous = current;
       current = sampled;
       apply(sampled);
@@ -741,9 +1050,13 @@ function useFieldTexture(
       cancelled = true;
       attached.forEach((material) => {
         material.map = null;
+        material.normalMap = null;
         material.needsUpdate = true;
       });
+      // Detach BEFORE disposing, both maps — a disposed texture must never still
+      // be referenced by a live material.
       current.dispose();
+      normalMap.dispose();
       invalidate();
     };
   }, [faceMaterials, invalidate]);
