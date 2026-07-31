@@ -80,6 +80,137 @@ const SLOT_INPUT: Record<
  * Paste, dictation, IME, browser-restore and password managers then stop being
  * special cases: each simply results in a box having content.
  */
+// ── The autofill cascade ─────────────────────────────────────────────────────
+//
+// ⚠ AUTOFILL IS THE SHOWCASE, NOT THE DEGRADED PATH. Carl reframed this and the
+// reasoning governs the whole chunk: *"If autofil is used, the main purpose of
+// getting client details has been achieved, we can still 'echo' the Q + A section
+// by being visually creative. We are, of course, in the business of selling high
+// end websites. Let us take every opportunity to showcase our abilities and not
+// let an admin shortcut get in the way."*
+//
+// It is arguably the strongest moment on the page: the ONE time all four boxes
+// animate as a composed sequence rather than at the user's typing pace. Nobody is
+// waiting on it and nothing is gated behind it.
+//
+// ⚠ AND THE CHAIN STILL HAS SOMETHING TO SAY EVEN WITH NO SEQUENCE TO FOLLOW.
+// The Builder's first position was that autofill should skip the cascade — there
+// is no order to animate. Carl rejected it: four rims lighting in ONE FRAME is a
+// state change with no reading time, so the eye registers *something happened*
+// and cannot tell what. The same four in sequence is a statement the user can
+// follow. **Same information; only the sequential version is perceivable.**
+
+/**
+ * Gap between successive boxes in the autofill cascade.
+ *
+ * ⚠ HELD AS TWO LIMITS, NOT ONE TARGET. Carl: *"not so fast that the human eye
+ * cannot discern it, but not so slow as to interfere with the point most people
+ * use autofil (including me) its fast and convenient."*
+ *
+ * The limits sit far apart, which is what makes this tunable rather than fraught:
+ * the eye resolves a sequence at roughly 80–150ms per step, and an autofill user
+ * does not feel obstructed until the whole run approaches ~1s. Four boxes at
+ * 120ms is under half a second total — readable, and gone before it registers as
+ * waiting.
+ *
+ * ⚠ DELIBERATELY MUCH FASTER THAN THE ENTRANCE'S 500ms SPACING. The entrance is a
+ * first impression with nobody waiting; this happens to someone who chose the
+ * fast path. **CURRENT AND BEST-JUDGED, NOT APPROVED.**
+ *
+ * ⚠ 133ms, NOT 120, AND THE REASON IS THE FRAME GRID. 120ms is not a multiple of
+ * 16.7ms, so on a 60Hz display each step rounds to the next frame and the spacing
+ * lands unevenly. 133ms is 8 frames exactly. Measured via the Web Animations API
+ * — the animations' own `startTime`, not a sampled approximation:
+ *
+ *   at 120ms target:  gaps of 200 / 134 / 133ms
+ *   at 133ms target:  see the run log
+ *
+ * ⚠ AND THE MEASUREMENT METHOD MATTERED MORE THAN THE VALUE. Sampling `--wipe`
+ * per frame reported 205/206/73ms and sent the Builder chasing a scheduling bug
+ * that was partly the instrument: a sampled value only appears once React has
+ * committed the style, so it conflates *when the animation started* with *when
+ * the render landed*. **`getAnimations()` reports what the compositor actually
+ * did.**
+ */
+const CASCADE_STAGGER_MS = 133;
+
+/**
+ * How long one box's reveal takes — the text wipe AND the rim fade together.
+ *
+ * ⚠ STAGGER AND DURATION ARE TWO DIFFERENT NUMBERS. The stagger is the gap
+ * BETWEEN boxes; this is the length of one box's own event. A fast stagger with a
+ * slower individual reveal still reads as a cascade, and likely reads better than
+ * making everything uniformly quick.
+ *
+ * ⚠ ONE VALUE DRIVES BOTH THE WIPE AND THE RIM, and that is a constraint rather
+ * than a convenience. Carl: *"it would work better if the fade in time and the
+ * reveal time were the same."* Different durations read as two events that happen
+ * to overlap; matched, they read as ONE event with two expressions.
+ *
+ * ⚠ NOT COPIED FROM THE OPENING'S MASK (D-015). That reveals a phrase arriving
+ * across a long line; this is a shorter distance on a smaller element. The
+ * GESTURE matches — left-to-right, echoing the start page — the number need not.
+ */
+const CASCADE_REVEAL_MS = 520;
+
+/**
+ * How long to wait before believing a multi-field fill is real.
+ *
+ * ⚠ THIS EXISTS BECAUSE OF THE PREVIEW PROBLEM, which Carl found in real Chrome
+ * and which no automated test would have surfaced: hovering an autofill
+ * suggestion writes the values into the actual fields, and moving the pointer
+ * away withdraws them. Without this guard the cascade would run in full for text
+ * that then disappears — and re-run on every hover.
+ *
+ * ⚠ SHORT ENOUGH TO BE IMPERCEPTIBLE, LONG ENOUGH TO OUTLAST A POINTER MOVE. It
+ * delays the cascade's start by this much against the ~500ms the cascade itself
+ * runs for. **CURRENT AND BEST-JUDGED, NOT APPROVED.**
+ */
+const AUTOFILL_SETTLE_MS = 90;
+
+/**
+ * Register `--wipe` and the wipe keyframes, once per document.
+ *
+ * ⚠ `CSS.registerProperty` AND A STYLESHEET RULE, NOT A REACT `<style>` TAG. The
+ * first attempt put an `@property` block inside `<style>{...}</style>` in the
+ * JSX; **it never registered.** Measured: `--wipe` read back empty on a fresh
+ * element, so the mask's `var(--wipe)` was invalid, the mask covered everything,
+ * and all four boxes showed their text in full while the animation dutifully ran.
+ * ⚠ **The animation was running the whole time** — `animationName:
+ * contactFieldWipe` was set on every box — which is exactly why this needed
+ * measuring rather than eyeballing. A visibly-broken reveal and a correctly
+ * running animation looked identical from the outside.
+ *
+ * Registration matters because an UNREGISTERED custom property is just a string:
+ * it flips from `0%` to `100%` at the halfway point instead of interpolating. The
+ * registration is what makes it a `<percentage>` the engine can animate smoothly.
+ *
+ * ⚠ Kept out of `globals.css` deliberately — that file is approved, 2,024 lines,
+ * and protected by this chunk's scope; these rules are meaningless outside this
+ * component.
+ */
+let wipeRegistered = false;
+function registerWipeAnimation() {
+  if (wipeRegistered || typeof window === "undefined") return;
+  wipeRegistered = true;
+  try {
+    // Throws if already registered — harmless under Strict Mode's double-invoke.
+    (CSS as unknown as { registerProperty: (d: object) => void }).registerProperty({
+      name: "--wipe",
+      syntax: "<percentage>",
+      inherits: false,
+      initialValue: "0%",
+    });
+  } catch {
+    /* already registered */
+  }
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(
+    "@keyframes contactFieldWipe { from { --wipe: 0%; } to { --wipe: 100%; } }",
+  );
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+}
+
 export type FieldStateSnapshot = {
   values: Record<FieldSlotId, string>;
   /** ⚠ Trimmed — a box holding only whitespace is not filled. */
@@ -145,6 +276,11 @@ export default function ContactFieldInputs({
   // wrong size: the whole layer is `visibility:hidden` until `complete`, which
   // is minutes after mount.
   const [box, setBox] = useState({ width: 576, height: 184 });
+
+  // Registered before any reveal can run; idempotent and document-wide.
+  useEffect(() => {
+    registerWipeAnimation();
+  }, []);
 
   useEffect(() => {
     const el = hostRef.current;
@@ -215,16 +351,183 @@ export default function ContactFieldInputs({
    * outright; it is the SIGNAL DERIVED from the value that must not fire on text
    * the user may still discard.
    */
-  const publish = (next: Record<FieldSlotId, string>, force = false) => {
+  const publish = (incoming: Record<FieldSlotId, string>, force = false) => {
     if (composingRef.current && !force) return;
+    // ⚠ MERGE ONTO THE TICK'S ACCUMULATED VALUES, do not replace them. Each
+    // `onChange` closure carries stale `values` plus its own field's new content,
+    // so taking `incoming` wholesale would erase its three siblings' updates from
+    // the same tick. Merging keeps every field that has landed so far.
+    const next: Record<FieldSlotId, string> = { ...latestValuesRef.current, ...incoming };
+    latestValuesRef.current = next;
     const filled = deriveFilled(next);
     const previous = filledRef.current;
     const becameFilled = (Object.keys(filled) as FieldSlotId[]).filter(
       (id) => filled[id] && !previous[id],
     );
     filledRef.current = filled;
+
+    // ⚠ MORE THAN ONE BOX FILLING IN A SINGLE UPDATE IS THE AUTOFILL SIGNAL.
+    //
+    // ⚠ AND THE RIM MUST NOT LIGHT AHEAD OF THE REVEAL. On a multi-box fill the
+    // snapshot is withheld until each box's own step arrives, so the rim and the
+    // text are ONE event with two expressions rather than two that overlap. On
+    // any single-box change it publishes immediately, as before.
+    //
+    // NOT "an input event with no preceding keydown", which is the obvious test
+    // and the wrong one: **a paste looks identical to autofill under it.** A paste
+    // fills ONE field; autofill fills several in the same tick. So simultaneity
+    // is the discriminator, and it needs no event archaeology at all.
+    //
+    // ⚠ STATE DECIDES WHETHER A RIM IS LIT; SIMULTANEITY DECIDES HOW IT ANIMATES.
+    // That split is what lets paste, dictation, IME and browser-restore stay
+    // ordinary — none of them is a special case, because none of them fills more
+    // than one box at once.
+    // ⚠ ACCUMULATE ACROSS THE TICK, DO NOT TEST ONE UPDATE.
+    //
+    // This was the Builder's first mistake in this chunk, and it is worth stating
+    // because the reasoning LOOKED right: "autofill fills several fields in one
+    // tick, so `becameFilled.length > 1` is the signal." **The premise is true and
+    // the test is in the wrong place.** Chrome dispatches a SEPARATE `input` event
+    // per field, so React runs `onChange` four times and each update sees exactly
+    // ONE newly-filled box. The condition never fired, and every box simply lit
+    // and appeared at once — measured: `animationName: none` on all four.
+    //
+    // The fix is to count what arrives in the same TICK rather than in the same
+    // update. A paste still fills one field; autofill still fills several. The
+    // discriminator is unchanged — only where it is measured.
+    if (becameFilled.length) {
+      tickBatchRef.current.push(...becameFilled);
+      if (tickFlushRef.current !== null) window.clearTimeout(tickFlushRef.current);
+      tickFlushRef.current = window.setTimeout(() => {
+        tickFlushRef.current = null;
+        const batch = tickBatchRef.current;
+        tickBatchRef.current = [];
+        if (batch.length > 1) startCascade(batch, latestValuesRef.current);
+        else
+          onChangeRef.current?.({
+            values: latestValuesRef.current,
+            filled: deriveFilled(latestValuesRef.current),
+            becameFilled: batch,
+          });
+      }, 0);
+      latestValuesRef.current = next;
+      return;
+    }
+
     onChangeRef.current?.({ values: next, filled, becameFilled });
   };
+
+  // ── The cascade, and the preview problem ───────────────────────────────────
+  //
+  // ⚠ HOVERING A CHROME SUGGESTION WRITES VALUES INTO THE REAL FIELDS WITH NO
+  // COMMITMENT, and moving away withdraws them. Found by Carl in real Chrome:
+  // *"Hover over text box and saved information is displayed in the fields."*
+  //
+  // So all four boxes can fill and then empty again without the user choosing
+  // anything. **A cascade that fired on the preview would run its whole
+  // performance for text that vanishes a moment later** — and would re-run on
+  // every hover of every suggestion.
+  //
+  // ⚠ SAME CLASS AS IME COMPOSITION: a real value in a provisional state. The
+  // answer is the same too — the value is honoured, the SIGNAL derived from it
+  // waits for commitment.
+  //
+  // The guard is a short settle window. A preview is withdrawn as the pointer
+  // moves, so it does not survive; a committed fill does. This costs the cascade
+  // one settle period before it begins, which is imperceptible against the
+  // ~500ms the cascade itself runs for.
+  const cascadeTimersRef = useRef<number[]>([]);
+  const cascadeRafRef = useRef<number | null>(null);
+  const settleRef = useRef<number | null>(null);
+  /** Slots that became filled within the current tick — see `publish`. */
+  const tickBatchRef = useRef<FieldSlotId[]>([]);
+  const tickFlushRef = useRef<number | null>(null);
+  /**
+   * ⚠ THE LATEST VALUES ACROSS THE WHOLE TICK, not the ones one `onChange` saw.
+   *
+   * React's `onChange` fires per field and its handler closes over `values` from
+   * the render it was created in — so during a four-field autofill, all four
+   * handlers see the SAME stale `values` and each produces an object holding only
+   * its own new content. Reading any one of them would show one filled box and
+   * three empty ones.
+   */
+  const latestValuesRef = useRef<Record<FieldSlotId, string>>(EMPTY_VALUES);
+  const [revealed, setRevealed] = useState<Partial<Record<FieldSlotId, number>>>({});
+
+  const startCascade = (ids: FieldSlotId[], next: Record<FieldSlotId, string>) => {
+    if (settleRef.current !== null) window.clearTimeout(settleRef.current);
+    settleRef.current = window.setTimeout(() => {
+      settleRef.current = null;
+      // ⚠ RE-READ THE DOM. If this was a preview the pointer has moved on and the
+      // fields are empty again, so the cascade never starts. Trusting the values
+      // captured when the event fired would defeat the whole guard.
+      const stillFilled = ids.filter((id) => (inputRefs.current[id]?.value ?? "").trim() !== "");
+      if (stillFilled.length < 2) {
+        // Not a real fill — publish normally so nothing downstream is stranded.
+        onChangeRef.current?.({ values: next, filled: deriveFilled(next), becameFilled: ids });
+        return;
+      }
+
+      cascadeTimersRef.current.forEach((t) => window.clearTimeout(t));
+      cascadeTimersRef.current = [];
+
+      // ⚠ CASCADE IN FIELD_SLOTS ORDER, not in the order the browser happened to
+      // fill them. The visual sequence must be 1 -> 2 -> 3 -> 4 regardless.
+      const ordered = FIELD_SLOTS.filter((s) => stillFilled.includes(s.id));
+      setRevealed({});
+      // Rims start unlit for the boxes about to cascade, then light one by one.
+      const running: Record<FieldSlotId, string> = { ...next };
+      ordered.forEach((s) => {
+        running[s.id] = "";
+      });
+
+      // ⚠ ONE CLOCK, NOT FOUR TIMERS. Each step both sets React state and
+      // publishes upward, which re-renders all four inputs and the WebGL scene —
+      // enough work that independent `setTimeout`s drift badly under it.
+      // **Measured with four timers: gaps of 205/206/73ms against a 120ms
+      // target** — uneven, and the last step arriving at barely half the spacing
+      // of the others, which is exactly the "state change with no reading time"
+      // defect the cascade exists to avoid.
+      //
+      // Driving every step from a single rAF loop against one start timestamp
+      // means a late frame delays a step without compounding into the next.
+      // ⚠ THE CLOCK STARTS ON THE FIRST FRAME, NOT ON THE CALL. Starting it here
+      // meant box 1's step fired in the same frame the loop was created while its
+      // siblings each waited for a later frame — measured as a 200ms first gap
+      // against 133ms for the rest. Deferring the origin to the first rAF puts
+      // every box on the same footing.
+      let started = 0;
+      let fired = 0;
+      const step = () => {
+        if (started === 0) started = performance.now();
+        const elapsed = performance.now() - started;
+        while (fired < ordered.length && elapsed >= fired * CASCADE_STAGGER_MS) {
+          const slot = ordered[fired];
+          fired += 1;
+          setRevealed((prev) => ({ ...prev, [slot.id]: performance.now() }));
+          // ⚠ PUBLISH THIS BOX'S CONTENT AS ITS OWN STEP ARRIVES, so the rim
+          // lights in step with the wipe rather than all four at once.
+          running[slot.id] = next[slot.id];
+          onChangeRef.current?.({
+            values: next,
+            filled: deriveFilled(running),
+            becameFilled: [slot.id],
+          });
+        }
+        if (fired < ordered.length) cascadeRafRef.current = requestAnimationFrame(step);
+      };
+      cascadeRafRef.current = requestAnimationFrame(step);
+    }, AUTOFILL_SETTLE_MS);
+  };
+
+  useEffect(
+    () => () => {
+      cascadeTimersRef.current.forEach((t) => window.clearTimeout(t));
+      if (settleRef.current !== null) window.clearTimeout(settleRef.current);
+      if (cascadeRafRef.current !== null) cancelAnimationFrame(cascadeRafRef.current);
+    },
+    [],
+  );
 
   // ⚠ BROWSER-RESTORED VALUES FIRE NO EVENT AT ALL — the design record's worst
   // case, because it fails silently: the user returns to a filled form and
@@ -243,7 +546,19 @@ export default function ContactFieldInputs({
       }
       if (any) {
         setValues(found);
-        publish(found);
+        // ⚠ PUBLISHED DIRECTLY, NOT THROUGH `publish`, and NOT as a cascade.
+        //
+        // Restored values are already on the page when it arrives — nothing fills
+        // in front of the user, so there is no moment to perform. Routing this
+        // through `publish` would see several boxes become filled in one update,
+        // read that as autofill, and run the whole cascade on a page the user has
+        // only just opened.
+        //
+        // ⚠ It also keeps this effect free of `publish` as a dependency, which
+        // would otherwise re-run the mount sweep whenever the closure changed.
+        const filled = deriveFilled(found);
+        filledRef.current = filled;
+        onChangeRef.current?.({ values: found, filled, becameFilled: [] });
       }
     };
     sweep();
@@ -359,6 +674,26 @@ export default function ContactFieldInputs({
             </label>
             <input
               id={`contact-field-${slot.id}`}
+              // ⚠ THE MASKED LEFT-TO-RIGHT WIPE — the reveal, and the reason the
+              // browser's instant fill does not have to look instant.
+              //
+              // Autofill speed CANNOT be controlled: Chrome sets `input.value` in
+              // one shot. Reading it back and re-typing it would fight the
+              // password manager, break the browser's own autofilled state, and
+              // risk a wrong value if anything interrupted — it works in a demo
+              // and produces support tickets.
+              //
+              // The mask fights nothing. The value lands instantly and correctly
+              // from the first frame; only VISIBILITY is animated. Nothing is
+              // faked and no input state is manipulated.
+              //
+              // ⚠ THE VOCABULARY IS ALREADY ON THIS SITE — it is the opening's
+              // clip-path mask (D-015): the phrase exists, the mask governs when
+              // it is seen. That matters more than the technique being clever.
+              //
+              // ⚠ REDUCED MOTION SKIPS IT ENTIRELY. A wipe is exactly the kind of
+              // motion the query exists to suppress, and the value is already
+              // there — so there is nothing to lose by showing it at once.
               ref={(el) => {
                 inputRefs.current[slot.id] = el;
               }}
@@ -369,9 +704,14 @@ export default function ContactFieldInputs({
               spellCheck={cfg.spellCheck}
               value={values[slot.id]}
               onChange={(e) => {
-                const next = { ...values, [slot.id]: e.target.value };
-                setValues(next);
-                publish(next);
+                const v = e.target.value;
+                // Functional update: four handlers from the same render would
+                // otherwise each overwrite the others with their own stale copy.
+                setValues((prev) => ({ ...prev, [slot.id]: v }));
+                // ⚠ ONLY THIS FIELD is passed — `publish` merges onto the tick's
+                // accumulated values, so sending a whole stale object here would
+                // undo its siblings.
+                publish({ [slot.id]: v } as Record<FieldSlotId, string>);
               }}
               // ⚠ ALSO ON BLUR, for the value the user TYPED. The effect above
               // only fires when `values` changes, so tabbing away from a long URL
@@ -388,9 +728,9 @@ export default function ContactFieldInputs({
                 // ⚠ `compositionend` fires AFTER the final input event in Chrome
                 // and BEFORE it in Safari/Firefox, so recompute from the current
                 // value rather than waiting for another event that may not come.
-                const next = { ...values, [slot.id]: e.currentTarget.value };
-                setValues(next);
-                publish(next, true);
+                const v = e.currentTarget.value;
+                setValues((prev) => ({ ...prev, [slot.id]: v }));
+                publish({ [slot.id]: v } as Record<FieldSlotId, string>, true);
               }}
               // ⚠ REACHABILITY IS GATED, NOT EDITABILITY. `readOnly` and
               // `disabled` BOTH suppress autofill — `readonly` plus a focus
@@ -422,6 +762,41 @@ export default function ContactFieldInputs({
                 height: p.height,
                 borderRadius: FIELD_RADIUS_PX,
                 pointerEvents: reachable ? "auto" : "none",
+                // ⚠ A CSS MASK, keyed so a re-cascade restarts it. The value is
+                // present and correct throughout — only its visibility sweeps.
+                ...(revealed[slot.id] !== undefined && !reducedMotion
+                  ? {
+                      WebkitMaskImage:
+                        "linear-gradient(to right, #000 0 var(--wipe), transparent var(--wipe))",
+                      maskImage:
+                        "linear-gradient(to right, #000 0 var(--wipe), transparent var(--wipe))",
+                      // ⚠ SIZE AND REPEAT ARE NOT OPTIONAL, and omitting them is
+                      // what broke this for four attempts.
+                      //
+                      // `mask-image` alone leaves `mask-size: auto` and
+                      // `mask-repeat: repeat` at their initial values. A gradient
+                      // whose opaque stop sits at 0% then has an effectively
+                      // zero-width tile, which REPEATS across the element and
+                      // fills it with opaque mask — so at `--wipe: 0%` the text
+                      // was fully visible instead of fully hidden, the exact
+                      // opposite of the intent.
+                      //
+                      // ⚠ Every diagnostic looked healthy throughout: the property
+                      // was registered, `--wipe` interpolated smoothly (measured
+                      // 0% -> 22.4%), the animation ran, the parent was clean, and
+                      // an isolated input with the same gradient masked correctly.
+                      // **The isolated test used the `-webkit-mask-image` shorthand,
+                      // which sets these sub-properties; the component set only the
+                      // image.** The control that was supposed to prove the
+                      // mechanism differed from the real thing in the one way that
+                      // mattered.
+                      WebkitMaskSize: "100% 100%",
+                      maskSize: "100% 100%",
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      animation: `contactFieldWipe ${CASCADE_REVEAL_MS}ms linear both`,
+                    }
+                  : null),
               }}
             />
           </div>

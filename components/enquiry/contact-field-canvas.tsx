@@ -1490,28 +1490,59 @@ function setBevelEnvIntensity(
 // field; only the GOLD is withheld.
 
 /**
- * ⚠ A/B UNDER JUDGEMENT — Carl, 31 July 2026: *"use one technique on boxes 1+3
- * and the other technique on boxes 2+4."*
+ * An unlit box's gold. ⚠ ZERO — SETTLED 31 July 2026, on principle rather than by
+ * waiting for the light.
  *
- * The two candidates for what an UNLIT box looks like:
+ * **Carl's statement of the concept, which is what decided it:**
  *
- *   0.0  FULLY DARK — the bevel reads as unlit metal. Maximum contrast when it
- *        lights, and closest to Carl's *"the rim will only be on Box 1"*. ⚠ Risk:
- *        a wholly dark edge may read as DISABLED or BROKEN rather than "not yet"
- *        — the confirmation-vs-progression trap in visual form.
- *   >0   DIM GOLD — a low resting value brightening to full, so the box always
- *        looks finished and lighting is an INTENSIFICATION rather than an
- *        arrival. Safer for a form; less dramatic.
+ * > *"Box 1 when it appears should have a gold rim. Boxes 2, 3 + 4 shouldn't.
+ * > **Only the potential to have a gold rim.** It is when box 1 is triggered that
+ * > that potential is realised, and it fades in. In the Q+A the gold rim makes a
+ * > journey, a circuit. In client info, they fade in by a trigger."*
  *
- * ⚠ THE SPLIT IS DIAGONAL BY COLUMN, and that is Carl's design, not an
- * arbitrary pairing: boxes 1+3 are the LEFT column, 2+4 the RIGHT. Each
- * technique therefore appears once in each ROW, at both a top and a bottom
- * position — so neither is judged only under the shorter or the longer entrance
- * delay. A top/bottom split would have confounded technique with timing.
+ * ⚠ THIS RESOLVED THE A/B AND SHOWED IT WAS NOT AN A/B AT ALL. Two treatments had
+ * been built for comparison under the orbiting light — fully dark on boxes 1+3, a
+ * 0.22 dim-gold floor on 2+4 — on the assumption that both expressed the same
+ * idea at different strengths. **They do not.** A dim floor says *some gold now,
+ * more later*; the concept requires *no gold now, gold when triggered*. **A
+ * reduced amount of the thing is not the potential for the thing.**
  *
- * ⚠ TEMPORARY. One value ships. Delete the per-box array when Carl chooses.
+ * ⚠ AND THE DEFECT SURFACED THROUGH CARL'S READING, NOT THROUGH A MEASUREMENT.
+ * He looked at the correct, as-specified resting state and reported *"all 4 rims
+ * are visible. Only Box 1 should be."* The three brightness levels were all
+ * present and rendering exactly as written — but if the person who specified the
+ * behaviour reads the resting state as *everything is lit*, the unlit states are
+ * not communicating. **Visible is not the same as lit, and the design has to win
+ * that distinction on sight rather than on explanation.**
+ *
+ * ⚠ BUT NOT ZERO EITHER — and this is Carl's correction to the Builder's first
+ * attempt at implementing the concept:
+ *
+ * > *"What you could do is turn the intensity of the gold right down. **If it is
+ * > black it will merge into the background.** If it's gold but turned right down,
+ * > so it's barely seen by the human eye, turning it up with the fade will achieve
+ * > the same effect."*
+ *
+ * ⚠ AT ZERO THE BEVEL IS BLACK METAL ON A NEAR-BLACK PAGE, so an unlit box loses
+ * its edge and the shape dissolves. Carl's earlier *"low in the mix"* reading was
+ * pointing at exactly this: the rim was present, but only because the background
+ * is not quite black.
+ *
+ * A very low gold keeps the material's IDENTITY. The box holds a defined edge and
+ * reads as a finished object waiting, and the trigger becomes a **continuous
+ * intensification of one thing** rather than a substance appearing from nothing —
+ * which is what "the potential is realised" describes.
+ *
+ * ⚠ THE DIFFERENCE FROM THE REJECTED 0.22 FLOOR IS LEVEL, NOT CONCEPT. 0.22 said
+ * *some gold now, more later*. This says *the form is there, the light is not yet*.
+ *
+ * ⚠ CURRENT AND BEST-JUDGED, NOT APPROVED. Carl judges the level by eye — it has
+ * to be barely visible without merging into the background.
+ *
+ * ⚠ Kept as a per-box array rather than collapsed to one constant, so a future
+ * per-box exception stays cheap. All four are deliberately identical.
  */
-const RIM_UNLIT_FLOOR_AB: number[] = [0.0, 0.22, 0.0, 0.22];
+const RIM_UNLIT_FLOOR_AB: number[] = [0.05, 0.05, 0.05, 0.05];
 
 /**
  * How long an unlit rim takes to reach full gold, and vice versa.
@@ -1726,7 +1757,31 @@ function useEntranceCascade(
  * dictation, IME and browser-restore need no special handling.
  */
 function rimLitFromFilled(filled: boolean[]): boolean[] {
-  return FIELD_SLOTS.map((_, i) => (i === 0 ? true : filled[i - 1] === true));
+  // ⚠ A FILLED BOX IS ALWAYS LIT, regardless of what precedes it.
+  //
+  // Found by Carl, 31 July 2026, on a real autofill: *"Using autofill and I can
+  // input into boxes 1, 2 + 4. Boxes 1, 2 + 3 are on but not 4."* Chrome's address
+  // profiles hold no website field, so box 3 stays empty and boxes 1, 2 and 4 fill.
+  //
+  // ⚠ THE ORIGINAL RULE — light box N when box N-1 has content — PRODUCED EXACTLY
+  // THAT, AND IT WAS CORRECT BY ITS OWN LOGIC. Box 3's rim lit from box 2's
+  // content; box 4's did not, because box 3 was empty. **The result on screen was
+  // an empty box wearing a gold rim beside a completed box with none — the one
+  // field the user had actually finished looked like the one they had not.**
+  //
+  // The rule was designed for sequential typing, where an empty box means *you
+  // have not reached it yet*. Under autofill an empty box in the middle means
+  // *the browser had nothing for that field* — nothing was skipped, and everything
+  // after it is genuinely done.
+  //
+  // ⚠ THIS IS NOT A NEW PRINCIPLE, it is the wayfinder one applied honestly: the
+  // rim shows where you are and where you are going. A box's OWN content is the
+  // strongest evidence it is complete — stronger than any inference from its
+  // neighbour. So: box 1 always, or this box has content, or the box before it
+  // does (the "here is next" pointer).
+  return FIELD_SLOTS.map(
+    (_, i) => i === 0 || filled[i] === true || filled[i - 1] === true,
+  );
 }
 
 /**
