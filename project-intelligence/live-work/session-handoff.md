@@ -1,12 +1,21 @@
-# Session Handoff — Day 8
+# Session Handoff — 2 August 2026
 
-**Written at the end of Day 8, 2 August 2026. For the session that picks up next.**
+**Written at the end of the session of 2 August 2026. For the session that picks up next.**
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical
 (D-006). **Delete this file at the end of the session that reads it, once its replacement is
 written** — `live-work-protocol.md` §3a.
 
 **This file points at records; it does not restate them.**
+
+⚠ **DAY NUMBERING HAS STOPPED — USE DATES.** *"The Day numbers... was brought into being in my
+estimation at setting up the CLI and modifying the governance files. I estimated 7 days. We
+actually got it done in 4/5. **Days are no longer a thing now, we are well into building.**"*
+
+**The counter was measuring the governance setup, and that finished.** Carrying it forward
+would imply a schedule that does not exist, and a future session reading "Day 14" would infer a
+timeline that was never real. **References to Day 2, 3 and 7 below are historical** — they
+point at things that genuinely happened while the counter was live, and they stay.
 
 ---
 
@@ -58,7 +67,7 @@ is 22.5 degrees. **The texture was never the problem; the geometry was too weak 
 
 ## ⚠ THE NEXT CHUNK — rebuild the Q&A answer cards in Three.js
 
-**This is Carl's decision, made at the end of Day 8, and it is a major rebuild of an approved
+**This is Carl's decision, made at the end of the 2 August session, and it is a major rebuild of an approved
 layer.** Nothing has been built. No plan exists.
 
 ### Why
@@ -115,7 +124,7 @@ rendering, not the design.**
 while the WebGL card is judged in dedicated space — the same sequencing the contact field
 used. Only when it is right does anything approved get touched.
 
-### ⚠ What was READ on Day 8, so the next session need not re-derive it
+### ⚠ What was READ on 2 August, so the next session need not re-derive it
 
 **The Q5 top-left card is `"Premium new website"`.** Grid columns 1/3 of a 6-column grid in
 the 576px `max-w-xl` shell with 0.5rem gaps — **roughly 186 x 48px**. Similar scale to a
@@ -245,7 +254,7 @@ applies to what you author, not only to what you review.**
 
 ---
 
-*Day 8, 2 August 2026. The contact field's faces went from flat to genuinely dimensional, an
+*2 August 2026. The contact field's faces went from flat to genuinely dimensional, an
 orbiting light now crosses the whole assembly, and the Send opal responds to it. Two commits,
 both pushed.*
 
