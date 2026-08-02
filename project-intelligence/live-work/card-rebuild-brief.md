@@ -179,6 +179,105 @@ does not exist. Only `app/page.tsx` and `app/start/page.tsx` exist.
 
 ---
 
+## ⚠ WHAT IS TECHNICALLY AVAILABLE — checked against the installed three.js, not a blog
+
+**Verified 2 August 2026 against `three@0.185.1` in `node_modules`.**
+
+⚠ **`MeshPhysicalMaterial.transmission` REFRACTS OTHER OBJECTS IN THE SCENE, NOT JUST THE
+ENVIRONMENT MAP.** The renderer draws the scene into a `transmissionRenderTarget` and the
+transmissive material samples that texture — confirmed in `three.module.js` (the target is
+created per camera at ~line 17977 and bound as `transmissionSamplerMap` at ~15479). **The
+published documentation does not state this; the source does.**
+
+**So real glass here would genuinely bend whatever sits behind it** — which is the property
+every reference Carl supplied is actually showing.
+
+### ⚠ THE HARD PREREQUISITE IS ALREADY SOLVED IN THIS CODEBASE
+
+Transmission needs an environment map, and **`useStudioEnvMap` in `contact-field-canvas.tsx`
+already generates one entirely locally** — a small scene of reflection panels converted by
+`PMREMGenerator.fromScene()` on the GPU. **No HDRI, no CDN, no network request**, and it is
+proven in production on the gold bevel.
+
+⚠ **THAT MATTERS BECAUSE THE OBVIOUS PATH FAILED HERE ONCE ALREADY.** Passing `preset` or
+`files` to drei's `Environment` triggers a remote fetch, and a 301 from the drei-assets host
+went unhandled inside Suspense and left the scene blank **with no console error**. The local
+generator exists because of that.
+
+### The cost, stated plainly
+
+- **`MeshPhysicalMaterial` is the most expensive material three.js ships**, per its own docs.
+- **Transmission adds a full extra scene render per frame.**
+- ⚠ **The enquiry canvas would no longer be able to run `frameloop="demand"` while glass is on
+  screen** — the same change in kind the orbiting light already raised. **This must be a
+  deliberate decision, not a side effect.**
+
+**Reference reading:** Codrops on transmissive glass (2021) and the glass-torus refraction study
+(2025); three.js `MeshPhysicalMaterial` docs for `transmission`, `thickness`, `ior` and
+`dispersion` (the last being chromatic separation — *"only usable with transmissive objects"*).
+
+---
+
+## ⚠ WHAT GOES BEHIND THE GLASS — and why the question had to be asked
+
+⚠ **REFRACTION SHOWS WHAT IS BEHIND. THE PAGE IS NEAR-BLACK, SO THERE IS NOTHING TO BEND.**
+Every glass reference Carl supplied — Apple's Liquid Glass, the glassmorphism cards, the fluid
+blobs — works because the glass sits over rich colour or imagery. **On a near-black page the
+effect that makes those images striking has almost nothing to work with.**
+
+⚠ **THIS IS A DESIGN PROBLEM SURFACED BY A TECHNICAL FINDING, NOT A TECHNICAL PROBLEM.** It
+would have been discovered late and expensively — the glass would simply have looked flat, and
+the natural but wrong response would have been to push the material harder.
+
+**The contact field already solved the same problem** by putting the shared satin field behind
+the four boxes. **The cards need an equivalent.**
+
+### Carl's answer: the platinum-blue logo
+
+> *"We could put something behind the cards, not the gold logo but the platinum blue one. It
+> would have to be faded so as not to interfere with the answers."*
+
+**Asset: `brand-assets/logo/Logo 2.2.png`** — deep navy through cyan with a fine gold hairline
+along its edges. ⚠ **It is on WHITE and has no transparent variant**, unlike the gold hero
+(`c2b-logo-gold-hero-transparent.png`). Extraction is a step.
+
+**Why it fits, beyond being available:**
+
+- ⚠ **It is already the page's blue family.** The navy-to-cyan run is the same path as the Send
+  opal (`#163a8f → #114aa5`) and the satin field's compressed range. It sits in the palette
+  rather than importing a new one.
+- **The gold hairline ties back to the filament and the contact rims** without competing,
+  because it is a line rather than a mass.
+- **Platinum-blue over gold is right on hierarchy grounds.** Gold is the corridor's accent —
+  Q-labels, the filament, the contact rims. **Gold behind the cards would compete with the
+  filament that is meant to be the event.**
+
+### ⚠ IT IS A REPRISE, NOT AN INTRODUCTION
+
+**Carl, 2 August 2026:** *"The blue logo will already have made an appearance. Not telling
+where yet, it will be a reprise for it, in true C2B ethos style."*
+
+⚠ **THE LOCATION IS DELIBERATELY WITHHELD AND MUST NOT BE GUESSED OR DESIGNED AROUND.**
+
+**But the fact that it is a reprise changes the treatment.** The user has met this mark before,
+so seeing it again behind the answers is **the site remembering something it showed them** —
+not a brand stamp. ⚠ **A reprise works because it is half-recognised, which argues for MORE
+fade rather than less.** And it argues for **one mark behind the whole grid** rather than one
+per card: a reprise should feel like the same object glimpsed again, not five copies of it.
+
+### Settled by Carl
+
+| Question | Answer |
+|---|---|
+| Arrangement | ⚠ **ONE large mark behind the whole grid.** Each card reveals a different part — the **windows model**, exactly as the contact field works. Variation falls out of position rather than being authored |
+| Fade level | ⚠ **BUILD IT ADJUSTABLE AND JUDGE BY EYE**, as the light rig was. Not a value to be chosen in advance |
+
+⚠ **THE WINDOWS MODEL IS THE POINT OF THE ARRANGEMENT, AND IT IS ALREADY PROVEN HERE.** Carl on
+the contact field: *"no boxes the same. No boxes with a slight variation of the same idea."* One
+logo per card would reproduce exactly the defect that model exists to prevent.
+
+---
+
 ## ⚠ Approved decisions this touches
 
 **D-028** frosted blue glass, five A–E variants · **D-029** the filament border · **D-030 to
