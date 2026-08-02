@@ -79,6 +79,15 @@ is 22.5 degrees. **The texture was never the problem; the geometry was too weak 
 
 ## ⚠ THE NEXT CHUNK — rebuild the Q&A answer cards in Three.js
 
+⚠ **THE BRIEF IS ALREADY WRITTEN: `live-work/card-rebuild-brief.md`. READ IT FIRST.** It carries
+the specification, the measured card geometry, the placement constraint and what is explicitly
+out of scope. **The summary below duplicates only enough to explain why the chunk exists** —
+the brief is the source.
+
+⚠ **AND IT GOES TO THE ARCHITECT AT THE OUTSET, NOT AS A FINISHED PLAN.** Carl: *"We should
+tell the Architect exactly what we are doing at the outset... it mirrors the client info
+process."* Brief first, then a plan through the plan-review gate (D-043).
+
 **This is Carl's decision, made at the end of the 2 August session, and it is a major rebuild of an approved
 layer.** Nothing has been built. No plan exists.
 
