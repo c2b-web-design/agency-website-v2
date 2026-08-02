@@ -17,6 +17,18 @@ would imply a schedule that does not exist, and a future session reading "Day 14
 timeline that was never real. **References to Day 2, 3 and 7 below are historical** — they
 point at things that genuinely happened while the counter was live, and they stay.
 
+⚠ **AND THE COUNTER WAS NEVER THE PROJECT'S AGE. THE PROJECT IS ABOUT FOUR MONTHS OLD.** Carl,
+2 August 2026: *"As for project length, it's been about 4 months."*
+
+**"Day 8" was the eighth day of a governance sprint inside a project already three and a half
+months along** — not an eight-day-old build. The distinction matters because it changes how
+settled everything should be assumed to be: the approved layers are the product of months of
+iteration, not of a fortnight.
+
+⚠ **GIT UNDERCOUNTS IT, AND GIT IS THE ONLY AGE SIGNAL A FUTURE SESSION HAS.** First commit is
+**6 May 2026** — just under three months. **Roughly a month of work precedes the repository**,
+so `git log --reverse` is a floor on the project's age, not a measure of it.
+
 ---
 
 ## ⛔ THE STANDING DIRECTIVE — unchanged, and it was not broken today
