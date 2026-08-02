@@ -237,9 +237,39 @@ the four boxes. **The cards need an equivalent.**
 > *"We could put something behind the cards, not the gold logo but the platinum blue one. It
 > would have to be faded so as not to interfere with the answers."*
 
-**Asset: `brand-assets/logo/Logo 2.2.png`** — deep navy through cyan with a fine gold hairline
-along its edges. ⚠ **It is on WHITE and has no transparent variant**, unlike the gold hero
-(`c2b-logo-gold-hero-transparent.png`). Extraction is a step.
+### ⚠ WHICH BLUE LOGO — there are several, and the first pick was wrong
+
+**Carl:** *"There are various blue logos in the brand assets file, some interestingly with
+blue+teal."* ⚠ **A first pass at this brief named `Logo 2.2.png` before the folder had been
+surveyed properly. That was premature.** The candidates, all inspected 2 August 2026:
+
+| Asset | What it is | Fit |
+|---|---|---|
+| `transition/c2b-transition-1-platinum-blue.png` | ⚠ **Icy platinum, cool blue edge definition, ALREADY ON A DARK BACKGROUND.** Frame 1 of the documented gold ⇄ blue hero transition | ⚠ **Strongest candidate** |
+| `Logo 2.2.png` | Deep navy → cyan, fine gold hairline edging | Good colour, **but on WHITE** — needs extraction |
+| `transition/c2b-ref-blue-chrome-warm-rim.png` | Blue chrome, warm amber rim light | ⚠ **Geometry does NOT match the master** — material study only, never a logo variant |
+| `origins/c2b-01-teal-flat-lockup.png` | Navy → teal flat vector lockup with wordmark | The brand's **historical** identity, not the current metallic direction |
+
+⚠ **THE TRANSITION FRAME IS PROBABLY THE RIGHT ONE, AND FOR A REASON BEYOND ITS BACKGROUND.**
+`brand-assets/logo/transition/README.md` documents it as the **"code" end state** of a hero
+gold ⇄ blue-platinum transition, with its own concept doc
+(`hero-logo-transition-concept.md`) and an intended Three.js implementation route on the vector
+master. **If the blue logo's earlier appearance is that hero transition, then the reprise should
+almost certainly echo the state the user actually saw.**
+
+⚠ **BUT CARL HAS NOT SAID WHERE THE FIRST APPEARANCE IS, SO THIS IS INFERENCE AND MUST BE
+CONFIRMED, NOT ASSUMED.**
+
+⚠ **AND THE TRANSITION FRAMES ARE REFERENCE, NOT PRODUCTION ASSETS.** Their own README is
+explicit: backgrounds are baked in with no alpha, and *"the geometry in some frames does not
+match the master."* **The production route is the vector master
+(`c2b-logo-gold-hero.svg`) with material properties driven in Three.js** — same geometry
+throughout. That route suits this chunk exactly, since the card scene will already have a
+locally generated environment map.
+
+⚠ **A KNOWN GAP, RECORDED IN THAT README:** a **teal/copper** variant was generated and lost
+before it could be saved. Judged *"more saturated than the brand line permits"*, so its loss is
+not material — noted only so it is not hunted for.
 
 **Why it fits, beyond being available:**
 
@@ -258,6 +288,17 @@ along its edges. ⚠ **It is on WHITE and has no transparent variant**, unlike t
 where yet, it will be a reprise for it, in true C2B ethos style."*
 
 ⚠ **THE LOCATION IS DELIBERATELY WITHHELD AND MUST NOT BE GUESSED OR DESIGNED AROUND.**
+
+⚠ **BUT THE ASSET SURVEY MAKES ONE READING LIKELY, AND IT RAISES THE STAKES.**
+`hero-logo-transition-concept.md` documents a **hero gold ⇄ blue-platinum transition** as the
+site's opening move — a cinematic arrival that hands over to a live coded logo, so *"the brand
+becomes active rather than just playing a finished render."* **If that is the first appearance,
+the reprise behind the answer cards is a callback to the site's opening gesture**, not merely a
+texture that happens to be on-brand.
+
+⚠ **WHICH ARGUES FOR RESTRAINT RATHER THAN PRESENCE. A callback that is too loud repeats a
+moment that should stay singular.** ⚠ **Still inference. Carl has not confirmed it and it must
+not be built on.**
 
 **But the fact that it is a reprise changes the treatment.** The user has met this mark before,
 so seeing it again behind the answers is **the site remembering something it showed them** —
