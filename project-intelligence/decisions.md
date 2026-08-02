@@ -1039,3 +1039,117 @@ discussion. Undecided, and deliberately not recorded.)*
 **Authority:** Human Founder
 
 ---
+
+## D-043 — Governance: The Architect Seat Moved In-House, And The Orbiting-Light Chunk Routes Direct
+
+**Date:** 2026-08-02
+**Status:** APPROVED
+
+**Two things, decided together because the first is what settles the second.**
+
+### 1. The PM/Architect seat is now Claude CLI, not an outside source
+
+Carl has rebuilt the governance system so the **Architect runs as Claude CLI** rather than an external tool. The seat is unchanged in remit and authority — D-036's hierarchy and `handoff-protocol.md`'s chain both stand — but the surface filling it is now in-house.
+
+⚠ **During the changeover the Builder held both seats.** Carl's words: *"In the course of that you were my Builder and PM/A. You are winding down from that PM/A role. I had to tell you the whole remit in the client info section."* That doubling was a transitional necessity, **not a precedent**, and it is recorded here precisely so a future session does not read it as one. A seat that reviews its own plans is not a gate; the Architect's amendments carry weight only because it did not author what it reviews (`handoff-protocol.md` §1).
+
+### 2. What that means for the current section, and for after it
+
+| Phase | How work arrives |
+|---|---|
+| **This section** | ⚠ The brief came to the Builder **direct**. In Plan Mode the **Architect evaluates the plan and returns it to the Builder to execute.** The plan-review gate runs; the drafting step does not. |
+| **After this section** | **Carl and the Architect brainstorm and plan together**; the Builder receives **bitesize chunks** — scope and constraints, not implementation detail. The full `handoff-protocol.md` chain. |
+
+⚠ **This resolves the open authority item on the orbiting-light chunk.** `orbiting-light-test-rig-brief.md` §"Authority" and the Day 7 handoff both recorded it as **Carl's call and not decided**. It is now decided: **for this chunk, direct to the Builder supersedes the PM/A route**, with the plan-review gate intact. Carl: *"For this section, we are good to go."*
+
+**Why the gate surviving matters more than the drafting step.** The chain has two separable protections: the Architect *writing* the chunk, and the Architect *reviewing* the plan. Only the second one catches the failure D-039 names as the one Carl is most exposed to — **work that renders correctly, verifies clean, and is not what was asked for.** Dropping the drafting step for a brief Carl wrote himself costs little, because the brief already carries his specification verbatim. Dropping the review would remove the only check on the Builder's interpretation of it.
+
+**Authority:** Human Founder
+
+---
+
+## D-044 — Contact Field: The Face Crown Deepened, And The Orbiting Light Built
+
+**Date:** 2026-08-02
+**Status:** PROVISIONAL (D-035) — in place, deliberately untuned, for the mastering pass.
+
+⚠ **Carl's framing, which governs every value below:** *"At the end of the whole building of the website I'm going to go through it all from start to finish and fine tune things. Look upon it as mastering. We can keep what we've got so far."*
+
+**So nothing here is approved and nothing here needs approving.** These are takes.
+
+### 1. The crown was too shallow to shade — one number explains it
+
+`CROWN_HEIGHT` **1.2 → 5.0**, with `FACE_SEAM_SINK` **0.35 → 5.35**.
+
+⚠ **Carl's report was that the faces looked flat** — *"I cannot tell any face being convex... it was my understanding that doing this with three.js mesh and real geometry that it would highlight its 3D qualities, moreso when light is used."* **He was right, and the geometry was the cause.**
+
+A raised-cosine crown 1.2 units tall over a 19-unit half-height has a **maximum surface tilt of 5.67°**. Lambert shading depends on the angle between light and normal, so:
+
+| light angle | upper/lower ratio |
+|---|---|
+| 45° | 1.22 — nothing visible |
+| 60° | 1.41 |
+| 75° | 2.18 — only now reading |
+| 84° | the lower face finally darkens |
+
+⚠ **The shadow lived in the last ~6° of a 90° sweep.** The geometry was real and physically incapable of showing itself. At 5.0 the maximum tilt is **22.5°** and the shadow forms from ~67°.
+
+**Measured before and after**, top/bottom luminance ratio across box 1's face: mid-arc **1.38 → 3.69**.
+
+⚠ **THE TWO CONSTANTS MOVE TOGETHER — `FACE_SEAM_SINK = CROWN_HEIGHT + 0.35`.** `faceBaseZ` derives from the bevel's front plane at z=8, so a taller crown pushes the face's peak *forward*: at crown 5 with the old sink the face would sit **proud of its own gold rim**, reading as a lens on top of its frame rather than a window. The crown therefore grows **backward**. Written wrong once during the change (4.15 put the peak 0.85 proud) and caught by redoing the arithmetic, not by looking — a 0.85-unit protrusion on a 38-unit box is easy to miss on screen.
+
+### 2. The texture was never the problem
+
+⚠ **A probe measured the bare shaded geometry at 36 luminance of convex gradient against 18 with the colour map applied**, and this was initially read as *"the texture is drowning the geometry"*. **That reading was wrong.** The texture was not too strong — the geometry was too weak to compete. Deepened, they cooperate: the photograph supplies colour and variation, the crown supplies form and movement.
+
+⚠ **AND IT PRODUCED THE DAY'S BEST RESULT.** Carl: *"the gradients are animated... that is so fckn cool."* **Nothing about the texture moves.** It is one static baked photograph; a travelling light across a sufficiently curved surface produces a travelling highlight. The apparent animation is the geometry doing its job.
+
+### 3. The orbiting light
+
+A tilted 3D ellipse around the whole four-box group, anticlockwise, spacebar on/off. Lives in `components/enquiry/contact-field-light-rig.tsx` behind `?lightrig=1` — **a throwaway instrument, deletable in one move.**
+
+**Carl specified the path by naming two points**, both edge midpoints rather than box centres: the middle of **box 1's left vertical edge** and of **box 4's right vertical edge**, each with the light 200 units beyond — *"at the same distance it was from the face."* Aiming at an edge rather than a face is what satisfies the brief's *"no light should be on the box at this moment"*: the sweep has to **arrive**.
+
+| Property | Value | Source |
+|---|---|---|
+| semi-major | ~489 | derived from the two edge points |
+| semi-minor | 400 | Carl's cap — *"not more than double these corner distances"* |
+| depth | ±400 | same envelope front and back |
+| tilt | ~-5.7° | falls out of the two points |
+| circuit | **6s front / 3s back** | Carl: *"let's try variable speed"* |
+
+⚠ **THE ELLIPSE HAS NO INHERENT START.** Carl: *"it's circular, we could have chosen any start and halfway points."* The two edges fix the **axis**; the halfway cap fixes the **width**; the start is a free phase offset.
+
+⚠ **THE TWO TIGHT BENDS DO THREE THINGS AT ONCE** — closest approach, sharpest curvature, and the front/back crossing. So **neither box gets a held moment of maximum light**; the glint is a passing event *by construction*, which is what the brief means by *"a glint is an ignition, not a pass."* No pulsing was needed.
+
+**Why variable speed:** at the geometry probe's pace one circuit measured **45 seconds**. Carl: *"If a user waits for the page to load, realises what to do and uses autofill, we may have to speed things up."* A circuit the user never completes is an effect they never see.
+
+**`decay = 0` → `decay = 2`**, because distance now has to matter. ⚠ **The intensity is derived, not guessed** — 1.6 × 341² = **185864**, where 341 is the measured nearest approach from a box *centre*. A first attempt used the 200 standoff and the whole orbit measured 18–27 luminance, barely above unlit: **the standoff is the distance from a box EDGE along the axis, not from a box centre to the light.**
+
+### 4. The opal responds — and D-033 stays intact
+
+The Send button's **specular dome catch only** now reads `var(--opal-shine, 0.72)`, resting **0.45** and peaking **0.85** as the light sweeps the front pass.
+
+⚠ **THIS TOUCHES AN APPROVED MATERIAL (D-033 / R-018) ON CARL'S EXPLICIT AUTHORISATION.** One layer. The body gradient, both opal blooms, the shaping mottle and every box-shadow are untouched — Carl: *"The whole opal doesn't have to interact, but just that subtle shine on the opal."*
+
+⚠ **AND IT IS INERT ON AN ORDINARY LOAD.** The variable is only ever written by the rig, so `var(--opal-shine, 0.72)` falls back to the approved value. **Verified: on a normal `/start` the property is empty and the button renders exactly as approved.**
+
+⚠ **THE WEBGL LIGHT CANNOT ILLUMINATE A DOM ELEMENT** — different rendering worlds. The opal does not get lit; it **responds**, driven from the same phase on the same frame. Carl set the correct bar: *"The user won't know about the ellipse, all they will see is its effects. The goal is to give the impression the opal lives in our 3D world."* **Belonging, not accuracy.**
+
+**True proximity was measured and rejected:** the closest approach lands at phase 0.953 — *inside the hidden half* — and the distance varies only 1.3×, because the opal sits near the ellipse's centre-bottom. It would have peaked while the boxes were dark.
+
+⚠ **THE "PULSE" IS EMERGENT AND NOBODY WROTE IT.** Carl: *"it's as if the opal's shine pulses and the light of the cards is having some sort of effect on it."* The shine is one smooth rise and fall, then a flat hold through the hidden half — **the pause is what makes the next rise read as a new beat.** And nothing connects the boxes to the opal technically; they share a clock, and the brain supplies the causation.
+
+### The box choice, settled
+
+⚠ **Carl's original question — choose one box and apply it to all four — is CLOSED, and the answer is to change nothing:** *"leave it as they are. I like the randomness and adds to each box's individuality."*
+
+**The variation IS the design.** The windows model stays intact, and the earlier worry that there was "no clean mechanism to apply one box's character to the others" is moot — that was never wanted.
+
+### Parked
+
+**Option B — text rendered on the curved surface**, so it follows the crown and catches the light. Currently DOM text over WebGL, so it stays flat while the surface behind it now has real form. Carl: *"Park option B, we will come back to it."* It would need a hidden input for accessibility, autofill and typing — a real chunk with its own risk.
+
+**Authority:** Human Founder
+
+---

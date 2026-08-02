@@ -184,14 +184,19 @@ of the existing measurements can see it. **Re-measure the hierarchy with bloom o
 
 ---
 
-## ⚠ Authority — unresolved, and it must be settled before work starts
+## Authority — RESOLVED 2 August 2026, see D-043
 
-**Carl's standing instruction is that the orbiting light chunk goes through the PM/A, not
-direct.** This brief was given straight to the Builder.
+**Carl's standing instruction was that the orbiting light chunk goes through the PM/A, not
+direct.** This brief was given straight to the Builder, and the Builder did not treat that as
+superseding the instruction — it was left as Carl's call.
 
-⚠ **The Builder did not treat that as superseding the instruction.** Whether this brief goes to
-the PM/A first, or whether Carl's giving it directly replaces that route, **is Carl's call and is
-not recorded as decided.**
+⚠ **Carl settled it on 2 August 2026: for this chunk, direct supersedes the PM/A route.**
+*"For this section, we are good to go."* **The plan-review gate still runs** — the Builder plans
+in Plan Mode, **the Architect (now Claude CLI, moved in-house) evaluates the plan and returns it
+to the Builder to execute.** The drafting step is what was dropped, not the review.
+
+**After this section** the full chain resumes: Carl and the Architect brainstorm and plan
+together, and the Builder receives bitesize chunks. **See D-043.**
 
 ---
 
