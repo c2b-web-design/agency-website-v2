@@ -1,6 +1,6 @@
-# Session Handoff — Day 7
+# Session Handoff — Day 8
 
-**Written at the end of Day 7, 31 July 2026. For the session that picks up next.**
+**Written at the end of Day 8, 2 August 2026. For the session that picks up next.**
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical
 (D-006). **Delete this file at the end of the session that reads it, once its replacement is
@@ -23,159 +23,192 @@ Given Day 2, broken twice on Day 3, which is why it is a capitalised block in `C
 
 ## Where things stand
 
-**Repo: `main`, head `7425e78`, tree clean, PUSHED.** Nine commits today, all on origin.
-Lint at the recorded baseline (1 accepted error). Dev server was running.
+**Repo: `main`, head `02b25d4`, tree clean, PUSHED.** Two commits today; three earlier ones
+that had never been pushed went up with them. Lint at the recorded baseline (1 accepted
+error). Dev server stopped, port 3000 released.
 
-⚠ **`live-work/chunk-scope.json` is STILL ACTIVE on `autofill-cascade-and-reveal`.** It will
-deny edits outside that chunk's file set. **Stand it down or rewrite it before starting new
-work** — this is the housekeeping step that has been needed at the end of every chunk.
+⚠ **No `chunk-scope.json` guard is active.** It was stood down at the end of Day 7 and was not
+rewritten for today's work. **The next chunk should write its own** — and must declare
+`verify/_tmp-*.mjs` and its own main file (findings F-6 / DL-1).
 
-### The contact field is COMPLETE as a form
+### Today: the contact field's faces became genuinely three-dimensional
 
-Three chunks, planned and built today in sequence, all committed and pushed:
+**Full records: D-043, D-044, and `live-work/run-log-orbiting-light.md`.**
 
-| Chunk | What | Commit |
-|---|---|---|
-| Satin field steps 3–4 | Arc grain into a normal map; responsive verified | `56c2e1c` |
-| **A** — text inputs | Four real DOM inputs + labels over the WebGL boxes | `3f93ce0` |
-| **B** — progressive rim | Box 1 lit; one character lights the next; reversible | `0b99a36` |
-| **C** — autofill cascade | Masked left-to-right reveal, rim and text on one clock | `7425e78` |
-
-Plus `b4bd4b3`, `bc169fa`, `86a5d0f`, `f69d673`, `1221d4c` — fixes and records, all described in
-their own commit messages.
-
-**Full records:** `run-log-field-step3.md`, `run-log-chunk-a-text-inputs.md`,
-`run-log-chunk-b-progressive-rim.md`, `run-log-chunk-c-autofill-cascade.md`.
-
-**Carl on the finished result:** *"it looks great!"*
-
----
-
-## ⚠ THE NEXT SUBJECT — the orbiting light, and its brief is already written
-
-**`live-work/orbiting-light-test-rig-brief.md`** — written at the end of today from Carl's
-specification. **Read it before planning anything.** Alongside it,
-`contact-field-gold-and-light-reference.md` holds the intent, the three-layer depth model and
-the measured gold; the new brief does not repeat them.
-
-**The short version:** Carl wants a **test rig, not a finished effect** — *"test it first,
-especially against the components that need decisions."* Start top-left just above box 1 pointing
-down, **no light on the box at that moment**, ending bottom-right looking up, on an elliptical
-orbit. Narrow beam, slow speed. The observable is **a narrow band sweeping across the face, with
-bloom**.
-
-⚠ **AND THE TEST DESIGN IS PART OF THE BRIEF, not an implementation detail.** A **4-second
-partial orbit with the light PULSING on and off** along the way — Carl: *"then we can see the
-effect as it travels and as it's turned on... you may wish to decide not to have the orbit's
-speed continuous and be static at some point. **This is a test after all.**"*
-
-**Pulsing beats a continuous sweep because it shows two independent things:** how the band
-travels, and **how the metal responds to a light ARRIVING** — which is what the glint actually
-depends on, since a glint is an ignition rather than a pass. It also samples the orbit for free:
-each pulse catches the geometry at a different angle.
-
-⚠ **THE ORBIT AND THE PULSE MUST BE SEPARATE SWITCHES**, giving four modes — moving/continuous,
-moving/pulsing, static/pulsing, and **static/on: a HELD FRAME.** That last one matters: on Day 7
-every value measured from a moving or transient state proved unreliable, and the only two that
-gave clean answers were the ones that could be frozen. **A rig that can stop is a rig that can be
-measured.**
-
-⚠ **THREE DEFERRED JUDGEMENTS DEPEND ON IT**, all deliberately left open rather than guessed:
-
-| Deferred | Current value |
+| What | Where |
 |---|---|
-| `FIELD_GRAIN_TINT` | `0.55` |
-| Rim unlit floor | `0.05` |
-| The glint itself | does not exist |
+| Authority resolved — Architect seat in-house | **D-043** |
+| Crown deepened, orbit built, opal responds | **D-044** (all PROVISIONAL) |
+| The sequence, the corrections, the six wrong turns | **run-log-orbiting-light.md** |
 
-⚠ **AUTHORITY IS UNRESOLVED AND MUST BE SETTLED FIRST.** Carl's standing instruction is that the
-light chunk **goes through the PM/A, not direct**. This brief was given straight to the Builder.
-**Whether that supersedes the instruction is Carl's call and is NOT recorded as decided.**
+**Carl on the result:** *"the gradients are animated... that is so fckn cool"* and *"it's as if
+the opal's shine pulses and the light of the cards is having some sort of effect on it."*
 
-⚠ **Two structural changes the brief implies** — recorded in the brief, flagged here because they
-change the canvas in kind: `frameloop="demand"` becomes a continuous loop while the light moves,
-and bloom adds an `EffectComposer` pass. Post-processing is **already installed**; no new
-dependency is needed.
+⚠ **Both of those are EMERGENT and neither was built.** The texture never moves — it is one
+static photograph, and a travelling light on a curved surface makes it look animated. Nothing
+connects the boxes to the opal technically; they share a clock and the brain supplies the
+causation.
+
+⚠ **THE ONE FINDING THAT MATTERS: a crown of 1.2 units on a 38-unit box has a maximum surface
+tilt of 5.67 degrees.** That single number is why Carl reported the faces looked flat — the
+shadow lived in the last ~6 degrees of a 90-degree sweep. Real, and invisible. At 5.0 the tilt
+is 22.5 degrees. **The texture was never the problem; the geometry was too weak to compete.**
 
 ---
 
-## ⚠ The through-line of the day: self-consistent logic, wrong on screen
+## ⚠ THE NEXT CHUNK — rebuild the Q&A answer cards in Three.js
 
-**Six times a measurement or a rule was internally correct and described the wrong thing.**
-Carl's eye caught every one. This is the same pattern Day 6 recorded, and it recurred all day.
+**This is Carl's decision, made at the end of Day 8, and it is a major rebuild of an approved
+layer.** Nothing has been built. No plan exists.
 
-| What | The trap |
+### Why
+
+Carl, having seen the contact field lit: *"by comparison in the Q+A the answer cards look
+cheap. I like the idea, like the geometry, like the concept. It's like watching something in
+1080p and we've just built something in 4k."*
+
+⚠ **NOT A CRITICISM OF THE CARDS.** *"They are well made, I wouldn't have sent you an example
+if they weren't, but some of the effects I was trying to get over in CSS can be done better
+with Three.js and WebGL."*
+
+⚠ **THE ACTUAL ARGUMENT, AND IT IS NOT ABOUT FIDELITY.** *"The white on the cards is supposed
+to represent light. The amber influencing the white is the filament effect. **What you don't
+see are secondary effects as the filament is in proximity to other cards.** It's hinted at in
+the next step button."*
+
+**In CSS the filament can only light itself. In a real scene it is a light source, and every
+neighbouring card responds for free.** That is the whole point.
+
+⚠ **AND THE EXISTING CSS ALREADY ADMITS THE LIMIT.** `--sweep-pass` in `globals.css` is a
+hand-timed masked amber wash synced to *"the filament head crossing the top straight run"* — a
+manual approximation of light spilling from the filament onto its own face, and it reaches no
+other card. D-031/D-032's `GRID_REFL` table exists for the same reason: CSS cannot compute
+light transport, so the contribution of each card to the CTA had to be authored per grid slot.
+**In a real scene that table is unnecessary rather than needing porting.**
+
+### ⚠ THE SCOPE, IN CARL'S WORDS — narrower than it first sounds
+
+> *"All numbers for card appearance, filament speed etc will be used or converted. That's all
+> good. **We are only changing how the answers look and rebuilding the next step button.**"*
+
+**So the existing values are INPUTS, NOT OBSTACLES.** Timings, choreography, filament speed,
+card geometry, entrance sequencing — all carried across or converted. **What changes is the
+rendering, not the design.**
+
+- *"There would be no animated light."* The filament is the moving element; there is no
+  orbiting light here.
+- *"The cards have a resting state and a hover state. Could the effect of a moving filament
+  with the right reflective material be used?"*
+- *"The geometry of the cards is good. We build one card and then roll it out."*
+- *"Timings and choreography all stay."*
+- *"The next step button could keep the same implied geometry but we do it in Three.js and
+  possibly change the material."*
+
+### Where to build it — Carl's instruction
+
+> *"We build Q5 top left. Geometry first, we follow the same process. On the page, build it on
+> the left... after the ivory button, when Q5 appears, build on the left. **The CSS can stay in
+> place for now.** We reach the stage when Q5 answers can be deleted. We put the top left
+> answer in place."*
+
+⚠ **BUILD ALONGSIDE THE LIVE CSS GRID, NOT INSTEAD OF IT.** The approved cards keep working
+while the WebGL card is judged in dedicated space — the same sequencing the contact field
+used. Only when it is right does anything approved get touched.
+
+### ⚠ What was READ on Day 8, so the next session need not re-derive it
+
+**The Q5 top-left card is `"Premium new website"`.** Grid columns 1/3 of a 6-column grid in
+the 576px `max-w-xl` shell with 0.5rem gaps — **roughly 186 x 48px**. Similar scale to a
+contact-field box, so the same orthographic 1-world-unit-per-CSS-pixel mapping applies.
+
+**The card material is four stacked layers** (`app/globals.css` from ~line 287):
+
+| Layer | What |
 |---|---|
-| Grain probe read **JPEG compression noise**, reported "grain present" | No control. Only a run at relief 0 exposed it |
-| Texel ratio computed from `spanX`; **the code scales by `spanY`** | Measured a quantity the code does not use. Reported a defect that did not exist |
-| `verify/field-colour.mjs` waited **5200ms for an 8100ms cascade** | Every screenshot sampled mid-cascade and was described as settled |
-| Autofill signal tested **per update, not per tick** | Chrome fires one `input` event per field, so the condition never fired once |
-| Mask left `mask-repeat: repeat` | ⚠ **The isolated control used the `-webkit` shorthand, which sets it.** The control differed from the real thing in the one way that mattered |
-| Rim rule: *light box N when box N-1 has content* | Correct by its own logic. On screen: **an empty box wearing a gold rim beside a completed box with none** |
+| body | 160° linear gradient, three stops |
+| `::before` | two radials — the frosted diffusion |
+| `::after` | three gradients — top-edge band, corner glint, left rim |
+| box-shadow | **six insets** faking rim lights from four directions |
 
-⚠ **THE LESSON, STATED PLAINLY: a control that differs from the real thing proves nothing, and a
-measurement without a control measures whatever is loudest.** Both failure modes produced
-confident, plausible numbers.
+⚠ **THE SIX INSET SHADOWS ARE THE TELL.** Top bright, left secondary at a third of it, bottom
+and right as depth shadow — **a studio lighting model, hand-painted, from a fixed direction.**
+In WebGL that is one light and a material.
 
-**`verify/field-colour.mjs` now re-reads `FIELD_ENTRANCES` from source and exits non-zero if its
-copy drifts** — the guard `verify/q5-stutter.mjs` needed and never got.
+**The filament** (D-029) is an SVG `rect` with `pathLength="1"`, stroking the perimeter over
+2400ms, colour `rgba(190, 145, 58, 0.80)`. Rendered in `enquiry-opening.tsx` ~line 698.
 
----
+**The grid** is 6 columns with an offset second row — cards 4 and 5 at columns 2/4 and 4/6,
+centred beneath the first three. Any WebGL card must land pixel-exact on that.
 
-## ⚠ What only Carl could verify
+⚠ **THERE IS NO LAB ROUTE AND NO `components/lab/`.** The reference to
+`components/lab/grid-layout.ts` in `contact-field-geometry.ts` is **STALE** — the directory
+does not exist. Only two routes exist: `app/page.tsx` and `app/start/page.tsx`.
 
-**The `-webkit-autofill` background defeat.** Chrome forces a pale-blue background through a UA
-style ordinary CSS cannot beat; on this design that would be a flat rectangle over the satin
-field inside every gold rim. **Verified working, by Carl, in real Chrome.**
+### ⚠ Approved decisions this chunk touches
 
-⚠ **Playwright setting an input's value takes a different code path and never applies the
-pseudo-class**, so an automated pass would have been **meaningless rather than reassuring.**
+**D-028** (frosted blue glass, five A–E variants), **D-029** (filament border), **D-030 to
+D-032** (blue-platinum CTA + reflected amber, `GRID_REFL`). ⚠ **All approved.** The
+`CLAUDE.md` rule applies: **stop, explain why, state the risk, and ask before editing.**
 
-**And his description of the interaction surfaced a requirement no test would have found:**
-hovering an autofill suggestion **previews values into the real fields with no commitment**, and
-moving away withdraws them. The cascade must not fire on a preview — `AUTOFILL_SETTLE_MS = 90`
-plus a DOM re-read is the guard.
+### Two questions Carl did NOT answer — ask before planning
 
-⚠ **Chrome's address profiles hold NO website field**, so a real autofill fills boxes 1, 2 and 4
-and leaves 3 empty. That gap will happen to almost every user and **no test covered it.**
-
----
-
-## The scope guard — used four times, and it worked
-
-`chunk-scope.json` was rewritten for each chunk and **tested by firing the hook, not by reading
-it**, every time.
-
-⚠ **It blocked the Builder from exporting a constant it needed, in a file the Builder had itself
-protected an hour earlier.** The Builder **did not edit its own scope file to proceed** — it
-stopped, stated the change, the reason and the risk, and asked. Carl: *"add."* Both unlocks are
-narrow and recorded in the file with their authorisation.
-
-⚠ **`verify/_tmp-*.mjs` was declared this time** and was not blocked once. It had been blocked
-three times across the previous two chunks, with the advice already on the record and not
-followed.
+1. **Exact placement of the WebGL card.** "On the left" — a separate canvas in the empty space
+   beside the 576px shell was proposed but not confirmed.
+2. **First-build scope.** Geometry + resting material only (the contact-field pattern), or
+   include the filament from the start since the secondary effects are the whole premise.
 
 ---
 
-## Open items
+## Parked, and deliberately
 
-| Item | Owner | Note |
-|---|---|---|
-| **Light chunk: PM/A or direct?** | Carl | ⚠ Blocks starting the next chunk |
-| **Stand down `chunk-scope.json`** | Builder | Still active on chunk C |
-| **Submission — what happens to Q&A answers + personal info** | Carl | Explicitly *"a later session"*. ⚠ The form now collects real data and Send does nothing |
-| The ~183ms first cascade gap | Carl | vs 133ms for the other two. Judged by eye, not fixed |
-| `RIM_LIGHT_MS = 900` | Carl | Current and best-judged, not approved |
-| Entrance timings 3600/4100/4600/5100 | Carl | ⚠ **Standing reservation: "close enough is not approved"** |
-| Mobile keyboard on a real device | Carl | Playwright cannot emulate the keyboard inset |
-| Claude Design | Carl | **Still parked.** Research positive; nothing recorded, deliberately |
-| Own-repo rule → its own decision | Carl | `strategist-role.md` §11. Since Day 2 |
-| `/mcp` — Google Drive connector | Carl | Never authorised; unavailable |
-| Route the outreach folder | Carl | `C2B-Strategist/outreach/`. Since Day 2 |
-| Plugin marketplace removal | Carl | Installed under `~/.claude-architect/` |
-| Verify prices + Playwright licence | Carl → CS | Research mode |
-| OpenAI app uninstall | Carl | ~14 Aug |
-| Delete GSD backup | Carl | After ~3 August |
+| Item | Note |
+|---|---|
+| **Option B — text on a curved surface** | ⚠ Carl: *"we sort out the text issue after we have built it, and with the client info section as well."* **One answer, applied in both places.** Needs a hidden input for accessibility, autofill and typing |
+| **Crown depth 5.0** | Legible, not chosen. PROVISIONAL |
+| **The 3s hidden half of the orbit** | May read abrupt against the 6s front |
+| **Grain tint 0.55, rim unlit floor 0.05** | ⚠ **Now genuinely judgeable** — there is finally a moving light to judge them under |
+
+⚠ **AND THE "WHICH BOX" QUESTION IS CLOSED.** Carl looked and settled it the other way:
+*"leave it as they are. I like the randomness and adds to each box's individuality."* **The
+variation IS the design.** Do not reopen it.
+
+---
+
+## ⚠ Mastering — the standing methodology, restated because it governs everything above
+
+Carl: *"At the end of the whole building of the website I'm going to go through it all from
+start to finish and fine tune things. Look upon it as mastering. We can keep what we've got so
+far."*
+
+**So PROVISIONAL values do not need approving and should not be chased.** They are takes. See
+D-035.
+
+---
+
+## ⚠ The day's lesson, and it cuts against the Builder
+
+**Carl's eye said the geometry was not reading. The instruments said it was fine. The geometry
+was the thing that was wrong.**
+
+Every probe that disagreed with him was measuring something other than what it claimed:
+
+| Wrong turn | What it actually was |
+|---|---|
+| Light aimed one box behind the readout | `updateMatrixWorld()` called before the position propagated |
+| "Off" left the light aimed at the world origin | `return null` unmounted it; the wiring effect never re-ran |
+| Sampling windows read empty space | Guessed fractions; a box is 38px in a 184px layer |
+| ⚠ **A long stretch of intensity/penumbra/easing changes** | **Screenshots taken BEFORE the boxes rendered.** Blank background read as an unlit face |
+| Exact `0.00` deltas called a render race, then a reporting bug | Both wrong. A byte diff proved the captures fine |
+| `decay = 2` with intensity 900, then 64000 | **Units.** One world unit is ONE CSS PIXEL; physical falloff assumes metres |
+
+⚠ **THE HARNESS NOW POLLS UNTIL BRIGHT PIXELS EXIST** rather than waiting a fixed interval.
+**Do not re-introduce a fixed wait after the corridor walk** — the boxes appear ~1500ms after
+the inputs do, and a short wait silently measures a blank stage.
+
+⚠ **AND ONE FAILURE WAS WORSE THAN A WRONG NUMBER.** A comment was written into the rig
+claiming box 3 was kept dark *"verified by measurement, not assumed"* — **written before the
+measurement, and false.** The words are preserved in the source rather than deleted. **P-A
+applies to what you author, not only to what you review.**
 
 ---
 
@@ -184,13 +217,13 @@ followed.
 - **⛔ Never comment on his working hours.** See the top of this file.
 - **He leads.** Design, chunking and decisions are his. D-036.
 - **He asks for the principle before the decision.** Explain, then let him choose.
-- **He brings references, not adjectives**, and expects them combined rather than copied.
-- **Music, DAW and production analogies land.** 45 years a musician. *"Low in the mix"* was his
-  correction to the Builder's overstatement that a rim was invisible — **a level, not a defect.**
-- **He verifies.** Give him evidence, not comfort. **His eye beat the instrument six times
-  today.**
-- **He chunks deliberately:** *"I would rather do things in stages with a better chance of
-  getting it right than implement more fully with a greater chance of getting it wrong."*
+- ⚠ **His analogies are precise, not decorative.** *"It's like volume on a fader — you don't
+  need powerful light to see a shadow"* corrected an intensity that had been chased upward
+  until it blew the face out. **A shadow is a ratio, not a level.** 45 years a musician;
+  DAW and production analogies land and carry real content.
+- **He verifies, and his eye beat the instrument repeatedly again today.**
+- **He chunks deliberately** and isolates variables — the method that has produced every good
+  result on this object.
 - **Answer execution questions yourself.** Ask only about intent and authority.
 - **No ASCII diagrams or box-drawing characters.**
 - **Do not commit or push unless he explicitly asks.**
@@ -199,23 +232,23 @@ followed.
 
 ## ⚠ Environment notes
 
-- **The orphaned-port problem affects `npx next start` as well as `npm run dev`.** Check the port
-  and kill the PID; it does not release on its own.
+- **The orphaned-port problem is real and was hit again.** Stopping the background task left
+  PID 11588 still `LISTENING` on 3000; it needed an explicit `Stop-Process`. Leftover
+  `CLOSE_WAIT` entries belong to a browser tab and are harmless.
 - **`python3` is not available.** Use `node`, `sed` or the Edit tool.
-- ⚠ **A throwaway probe in the scratchpad cannot `import` project modules by bare specifier** —
-  module resolution follows the file's location. Use absolute `file:///` URLs into
-  `node_modules`, or `npx tsx` from the project root.
-- ⚠ **Screenshot round-trips at DPR 2 are slower than a ~500ms animation.** Sampling a CSS
-  custom property per frame conflates *when the animation started* with *when the render landed*
-  — **use `getAnimations()` for animation timing.**
+- ⚠ **Screenshots at DPR 2 exhausted the headless GPU** on a canvas running a continuous rAF
+  loop — a verify script timed out waiting for a layer that was demonstrably visible. **DPR 1
+  worked.** Suspect the harness before the page.
+- ⚠ **A blanket string replace rewrote an accessor into infinite recursion** (`unlitFloorFor`
+  calling itself). Caught by reading the result. **Prefer targeted edits over `.split().join()`
+  across a file.**
 
 ---
 
-*Day 7, 31 July 2026. The contact field went from four decorative `aria-hidden` boxes to a
-working, accessible form with a progressive gold rim and an autofill cascade — and the satin
-material was finished on the way. Nine commits, all pushed.*
+*Day 8, 2 August 2026. The contact field's faces went from flat to genuinely dimensional, an
+orbiting light now crosses the whole assembly, and the Send opal responds to it. Two commits,
+both pushed.*
 
-*The day's real lesson is one the project keeps relearning: **every failure today was
-arithmetically sound.** The probes agreed with themselves, the rules were self-consistent, and
-the controls passed. What none of them did was measure the thing being judged. Carl's eye did,
-six times.*
+*The next chunk is the largest yet proposed: rebuilding the Q&A answer cards in Three.js so the
+filament becomes a real light and its secondary effects on neighbouring cards come for free.
+**Only the rendering changes — every number is carried across.***
