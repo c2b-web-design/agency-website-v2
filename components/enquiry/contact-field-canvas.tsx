@@ -39,6 +39,11 @@ import { Canvas, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { fieldPlacements, sharedFieldWindow, FIELD_SLOTS } from "./contact-field-geometry";
 import { ContactField, GOLD_BEVEL_ENV_INTENSITY } from "./contact-field-mesh";
+// ⚠ TEST INSTRUMENT, gated behind `?lightrig=1` and absent from every ordinary
+// page load. See `contact-field-light-rig.tsx` — it is meant to be deleted once
+// the geometry question is answered, which is why it is a separate file and why
+// this is the only place the canvas refers to it.
+import { LightRigScene, useLightRig, BASE_LIGHT_SCALE } from "./contact-field-light-rig";
 
 // ── The entrance cascade ─────────────────────────────────────────────────────
 // ⚠ RETIMED 30 July 2026 ON CARL'S INSTRUCTION — a TRIAL, to be judged by eye.
@@ -1898,10 +1903,16 @@ function FieldScene({
   reducedMotion,
   active,
   filled,
+  lightRigOn,
 }: {
   reducedMotion: boolean;
   active: boolean;
   filled: boolean[];
+  /**
+   * ⚠ TEST RIG ONLY. `undefined` means the rig is not mounted, which is the case
+   * on every ordinary page load; a boolean is the probe light's on/off state.
+   */
+  lightRigOn?: boolean;
 }) {
   // Owns the studio render target and hands back one ref per box's bevel
   // material. ONE map, shared by all four — see `useStudioEnvMap`.
@@ -1950,6 +1961,10 @@ function FieldScene({
   // placements so a re-render at the same size does not restart the cascade.
   const baseYs = useMemo(() => placements.map((p) => p.y), [placements]);
 
+  // ⚠ TEST RIG ONLY. 1 on every ordinary load — the base lights are untouched
+  // unless the probe is mounted.
+  const baseScale = lightRigOn === undefined ? 1 : BASE_LIGHT_SCALE;
+
   useEntranceCascade(groups, baseYs, bevelMaterialRefs, reducedMotion, active);
   // ⚠ AFTER the cascade hook, deliberately. Both write `envMapIntensity`; this one
   // reads the cascade's current progress and multiplies rather than overwrites,
@@ -1961,9 +1976,22 @@ function FieldScene({
       {/* Existing key/fill/ambient rig — UNCHANGED. The studio map adds
           something for the metal to REFLECT; it does not relight the scene and
           is never assigned to `scene.environment`. */}
-      <ambientLight intensity={AMBIENT_INTENSITY} />
-      <directionalLight position={KEY_LIGHT_POSITION} intensity={KEY_LIGHT_INTENSITY} />
-      <directionalLight position={FILL_LIGHT_POSITION} intensity={FILL_LIGHT_INTENSITY} />
+      {/* ⚠ THE BASE RIG IS DIMMED WHILE THE PROBE RUNS — `baseScale` is 1 on every
+          ordinary load, so these three are unchanged in behaviour there. The key
+          light rakes from the upper left at intensity 1.6 and lifts exactly the
+          part of the face that should fall into shadow at the top of the probe's
+          arc, so leaving it at full would wash out the thing being tested. */}
+      <ambientLight intensity={AMBIENT_INTENSITY * baseScale} />
+      <directionalLight
+        position={KEY_LIGHT_POSITION}
+        intensity={KEY_LIGHT_INTENSITY * baseScale}
+      />
+      <directionalLight
+        position={FILL_LIGHT_POSITION}
+        intensity={FILL_LIGHT_INTENSITY * baseScale}
+      />
+      {/* ⚠ TEST RIG ONLY — absent unless `?lightrig=1`. */}
+      {lightRigOn !== undefined && <LightRigScene lightOn={lightRigOn} />}
       {placements.map((placement, i) => (
         <ContactField
           key={placement.id}
@@ -2027,6 +2055,20 @@ export default function ContactFieldCanvas({
       window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
 
+  /**
+   * ⚠ TEST RIG ONLY — `?lightrig=1`. A query parameter rather than an env var:
+   * it toggles without a rebuild and cannot be left switched on in a deployed
+   * build. A lazy initialiser for the same reason `reducedMotion` is one — it
+   * must be settled before the first frame, and this component only ever mounts
+   * client-side.
+   */
+  const [lightRigEnabled] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("lightrig") === "1",
+  );
+  const { lightOn: rigLightOn } = useLightRig(lightRigEnabled);
+
   return (
     <div
       aria-hidden="true"
@@ -2048,7 +2090,12 @@ export default function ContactFieldCanvas({
         frameloop="demand"
         style={{ pointerEvents: "none" }}
       >
-        <FieldScene reducedMotion={reducedMotion} active={active} filled={filled} />
+        <FieldScene
+          reducedMotion={reducedMotion}
+          active={active}
+          filled={filled}
+          lightRigOn={lightRigEnabled ? rigLightOn : undefined}
+        />
       </Canvas>
     </div>
   );

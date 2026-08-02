@@ -64,8 +64,44 @@ const BEVEL_SIZE = 0.5;
 const BEVEL_INSET = 1.5;
 const FACE_INSET = 4.5;
 
-/** Height of the shallow convex crown above the face's base plane. */
-const CROWN_HEIGHT = 1.2;
+/**
+ * Height of the convex crown above the face's base plane.
+ *
+ * ⚠ RAISED 1.2 -> 5.0 ON 2 AUGUST 2026, ON CARL'S EXPLICIT AUTHORISATION:
+ * *"If you have to adjust the face geometry I'm good with that. Increase the
+ * numbers as you see fit so we can achieve this effect."*
+ *
+ * ⚠ WHY 1.2 COULD NEVER READ AS 3D, AND IT IS ONE NUMBER. A raised-cosine crown
+ * 1.2 units tall over a 19-unit half-height has a **maximum surface tilt of 5.67
+ * degrees**. Lambert shading depends on the angle between light and normal, so
+ * with the surface never departing 5.7 degrees from flat:
+ *
+ *   light at 45 deg   upper/lower ratio 1.22    nothing visible
+ *   light at 60 deg   upper/lower ratio 1.41
+ *   light at 75 deg   upper/lower ratio 2.18    only now starting to read
+ *   light at 84 deg   the lower face finally goes dark
+ *
+ * **The shadow lived in the last ~6 degrees of a 90-degree sweep.** Carl's report
+ * was exactly right: *"I cannot tell any face being convex... those faces look
+ * flat."* The geometry was real and physically incapable of showing itself.
+ *
+ * At 5.0 the maximum tilt is **22.5 degrees** and the shadow begins forming at
+ * ~67 degrees — present and developing across a quarter of the sweep rather than
+ * flashing past at the very end.
+ *
+ * ⚠ AND THE FACE MUST NOT PROTRUDE PAST THE GOLD RIM, which is the constraint
+ * that caps this. `faceBaseZ` is derived from the bevel's front plane (z = 8), so
+ * a taller crown pushes the face's peak forward: at crown 6 the peak would sit
+ * 3.65 units PROUD of the rim, and the face would stop reading as a window and
+ * start reading as a lens sitting on top of its frame. **The crown therefore
+ * grows BACKWARD** — `FACE_SEAM_SINK` sinks the base plane by the same amount, so
+ * the curvature increases while the peak stays tucked under the bevel.
+ *
+ * ⚠ NOT AN APPROVED VALUE. It is chosen to make the effect legible so Carl can
+ * judge it; the depth that looks right is his call, and this is the first number
+ * that makes the question answerable at all.
+ */
+const CROWN_HEIGHT = 5.0;
 /**
  * Fraction of the LONG axis held at full crown height before rolling off into
  * the end caps. Keeps the writing plane broad and calm rather than letting the
@@ -74,10 +110,26 @@ const CROWN_HEIGHT = 1.2;
 const CROWN_PLATEAU_U = 0.72;
 /**
  * How far (in world units) the face's base plane sits below the bevel's front
- * plane. Small and absolute — just enough to tuck the junction inside the
- * aperture so it cannot gap or z-fight, without burying the face's boundary.
+ * plane.
+ *
+ * ⚠ RAISED 0.35 -> 5.35 ALONGSIDE `CROWN_HEIGHT`, AND THE TWO MOVE TOGETHER.
+ * It was originally "small and absolute — just enough to tuck the junction inside
+ * the aperture so it cannot gap or z-fight". It still does that job, but it now
+ * also carries the crown's extra depth.
+ *
+ * **The arithmetic that ties them:** the bevel's front plane is at z = 8, and
+ * `faceBaseZ = bevelFrontZ - FACE_SEAM_SINK`, so the face's peak lands at
+ * `8 - 5.35 + 5.0 = 7.65` — 0.35 below the bevel front, exactly the clearance the
+ * original 0.35 sink gave the near-flat face.
+ *
+ * ⚠ THE RULE IS `FACE_SEAM_SINK = CROWN_HEIGHT + 0.35`, and the two must be
+ * changed together. **Raise `CROWN_HEIGHT` alone and the face bulges out through
+ * its own gold rim.** Written wrong once while making this change — 4.15 put the
+ * peak at 8.85, i.e. 0.85 PROUD of the rim — and caught by redoing the
+ * arithmetic rather than by looking at the render, where a 0.85-unit protrusion
+ * on a 38-unit box would have been easy to miss.
  */
-const FACE_SEAM_SINK = 0.35;
+const FACE_SEAM_SINK = 5.35;
 /**
  * How far the bevel's aperture is opened beyond the face boundary, so the
  * face's own edge is never clipped by the opening it shows through.

@@ -1216,10 +1216,26 @@
   /* Face painted via background-image (gradient) so Tailwind preflight's
      `button { background-color: transparent }` reset cannot blank it. */
   background-image:
-    /* 1. specular dome catch — preserved exactly */
+    /* 1. specular dome catch — THE ONE LAYER THE ORBITING LIGHT DRIVES.
+       ⚠ TOUCHES AN APPROVED MATERIAL (D-033 / R-018), on Carl's explicit
+       authorisation, 2 August 2026. Its alpha was the fixed 0.72 below; it now
+       reads `--opal-shine`, which the light rig writes each frame as the orbit
+       sweeps past — resting 0.45, peaking 0.85.
+
+       ⚠ THE FALLBACK IS THE APPROVED VALUE. `var(--opal-shine, 0.72)` means an
+       ordinary page load, with no rig mounted and the variable never set, renders
+       the D-033 material EXACTLY as approved. The change is inert unless
+       something is driving it.
+
+       ⚠ AND IT IS DELIBERATELY THE ONLY ANIMATED LAYER. Every gradient below —
+       the secondary formation, both opal blooms, the shaping mottle, the body
+       and every box-shadow — is untouched. Carl: *"The whole opal doesn't have to
+       interact, but just that subtle shine on the opal."* One specular catch
+       responding reads as a material in a lit world; the whole button moving
+       would read as a light show. */
     radial-gradient(
       ellipse 34% 26% at 42% 12%,
-      rgba(245, 252, 255, 0.72) 0%,
+      rgba(245, 252, 255, var(--opal-shine, 0.72)) 0%,
       rgba(220, 244, 255, 0.14) 50%,
       transparent 100%
     ),
