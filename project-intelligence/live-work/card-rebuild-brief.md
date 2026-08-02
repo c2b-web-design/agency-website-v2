@@ -306,6 +306,48 @@ not a brand stamp. ⚠ **A reprise works because it is half-recognised, which ar
 fade rather than less.** And it argues for **one mark behind the whole grid** rather than one
 per card: a reprise should feel like the same object glimpsed again, not five copies of it.
 
+### ⚠ A POSSIBILITY, NOT A DECISION — the backdrop logo transitioning blue → teal
+
+**Carl, 2 August 2026, framed explicitly as a possibility:** *"To achieve a simpler effect in
+Three.js and have the faded background logo transition from blue to teal is a possibility... It
+would echo the teal in the rail system, blue the cards and maybe Next step button."*
+
+⚠ **THE COLOUR LOGIC IS THE POINT, NOT THE TRANSITION.** Teal belongs to the rail — where the
+user's answers accumulate. Blue belongs to the cards — where they choose. **A mark migrating
+between those two colours behind the whole thing says the two systems are one journey.**
+
+⚠ **AND IT GIVES THE REPRISE A JOB.** A callback to the hero could otherwise read as decoration
+— *here is the logo again*. If the colours it moves between are the corridor's **own** two
+colours, the reprise is the brand showing the two halves of the experience belonging to each
+other. **A reason to be there, not merely a nice thing.**
+
+**Why it is cheap where the reference is expensive.** The inspiration is a video wipe — a
+travelling energy boundary with plasma tendrils and sparks at the seam, done in Fusion with a
+third-party plugin (Carl: *"gold to blue logo then back... about a second"*). ⚠ **At low opacity
+behind glass the seam detail is exactly what can be dropped.** The eye reads the colour
+travelling, not the edge quality. A threshold with soft noise is enough; the expensive part of
+the reference is the part this does not need.
+
+**Two things it gets almost for free:**
+
+- ⚠ **It gives the backdrop MOTION, which refraction wants.** A static mark behind glass is
+  inert. Something live behind it is more convincing to bend.
+- **It is already this codebase's idiom** — one texture, many apertures, exactly as the satin
+  field works. Each card catches the shift at a different moment because each looks at a
+  different part of the mark.
+
+⚠ **THE CAUTION IS RESTRAINT, NOT FEASIBILITY. The cards are where the user READS and CHOOSES.**
+Anything moving behind them competes with that. Slow and faint enough it is atmosphere; slightly
+too much and it pulls the eye off the answers. **Judge it with the fade level, on the same
+control, by eye.**
+
+⚠ **AND IT IMPLICATES THE NEXT STEP BUTTON**, which is already in scope. It is the element that
+receives light from the selected cards (D-031/D-032). If it also sits in the blue family, the
+backdrop's blue end has somewhere to land — **echoed forward rather than merely passed
+through.**
+
+---
+
 ### Settled by Carl
 
 | Question | Answer |
