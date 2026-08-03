@@ -1,49 +1,44 @@
 {
   "_comment": "Enforced by .claude/hooks/chunk-scope-guard.js before every Edit/Write. See ai-system/live-work-protocol.md section 8. Absent file = no enforcement (opt-in by design).",
 
-  "_status": "ALL THREE CHUNKS COMPLETE AND PUSHED. A at 3f93ce0, B at 0b99a36, C at 7425e78. Stood down at the end of Day 7, 31 July 2026, so a guard protecting finished work cannot block the next session — the housekeeping step that was needed at the end of every chunk today. The next chunk writes its own scope; see the notes below before it does.",
+  "_status": "ACTIVE. Chunk 1 of the Q&A answer-card rebuild — CARD GEOMETRY ONLY. Plan: .claude/plans/glowing-sniffing-quiche.md. Briefing: live-work/architect-briefing-card-rebuild.md. The previous scope (autofill-cascade-and-reveal, chunks A/B/C) was stood down at the end of Day 7 and is superseded by this file; its carried-forward advice is honoured below.",
 
-  "_next_chunk_must_declare": "verify/_tmp-*.mjs — throwaway measurement probes. Declared for chunks A/B/C and blocked ZERO times; it had been blocked three times across the two chunks before that, with the advice already recorded and not followed. Also declare the chunk's OWN main file if it creates one — finding F-6 of the chunk-A gate.",
+  "chunk": "q5-answer-card-geometry",
+  "active": true,
 
-  "_next_chunk_is_probably_the_light": "See live-work/orbiting-light-test-rig-brief.md. ⚠ AUTHORITY IS UNRESOLVED: Carl's standing instruction is that the orbiting-light chunk goes through the PM/A rather than direct, and the brief was given straight to the Builder. That is Carl's call and is NOT recorded as decided. ⚠ The light chunk will need contact-field-canvas.tsx in 'files' (the scene, the lights and the frame loop all live there) and will likely touch app/globals.css for nothing at all — bloom belongs in the scene, not the stylesheet.",
-
-  "chunk": "autofill-cascade-and-reveal",
-  "active": false,
-
-  "_files": "Paths the chunk may edit. Supports exact paths, 'dir/' prefixes, and * wildcards. live-work/ is included because CLAUDE.md rules 6 and 7 REQUIRE the Builder to write run logs, checkpoint requests and the session handoff there — the B-1 finding from the previous chunk's gate.",
+  "_files": "Paths the chunk may edit. Supports exact paths, 'dir/' prefixes, and * wildcards. live-work/ is included because CLAUDE.md rules 6 and 7 REQUIRE run logs, checkpoint requests and the session handoff to be written there (finding B-1). verify/_tmp-*.mjs and the chunk's OWN main files are declared per the previous scope's carried-forward advice (findings F-6 / DL-1) — the advice was recorded twice and not followed twice, and the guard duly blocked a throwaway probe on 31 July.",
   "files": [
-    "components/enquiry/contact-field-inputs.tsx",
-    "components/enquiry/contact-field-geometry.ts",
-    "components/enquiry/contact-field-canvas.tsx",
-    "components/enquiry/enquiry-opening.tsx",
-    "verify/field-rim-state.mjs",
+    "components/enquiry/answer-card-geometry.ts",
+    "components/enquiry/answer-card-mesh.tsx",
+    "components/enquiry/answer-card-canvas.tsx",
     "verify/_tmp-*.mjs",
     "project-intelligence/live-work/"
   ],
 
-  "_chunk_c_note": "Chunk C: the autofill cascade and masked text reveal. Same file set as chunk B — the cascade drives the rim (canvas) and the reveal (inputs) from ONE progress value per box, so both sides move together. ⚠ STILL OUT OF BOUNDS: the entrance cascade's values, ordering and masking; the chunk-B unlit-level A/B, which must NOT be collapsed to a single value because it is deliberately deferred to the light chunk. ⚠ AND THE PREVIEW PROBLEM IS PART OF THIS CHUNK: hovering a Chrome autofill suggestion writes values into the real fields with no commitment, and moving away withdraws them — the cascade must not fire on a preview or it runs for text that vanishes.",
+  "_chunk_note": "GEOMETRY ONLY: silhouette 186.66 x 48, radius 14px, half-tube rim, swept bevel, slightly convex face RECESSED behind the rim apex. Neutral three-tone diagnostic material. Built in the left margin BESIDE the live CSS grid, never on top of it. ⚠ EXPLICITLY OUT OF SCOPE: glass, transmission, environment map, the filament, any light beyond the static diagnostic rig, text on the card, the A-E variants, the logo backdrop, the Next step button, and ANY edit to the five live CSS cards. Those are chunks 2-5.",
 
-  "_tmp_probe_note": "verify/_tmp-*.mjs IS DECLARED THIS TIME. The Day 6 handoff recorded the advice, the satin-blue-field scope was written without it, and the guard duly blocked a throwaway probe on 31 July — the third block in two chunks. The Builder worked around it from the scratchpad, which is the DL-1 lesson: a control that blocks a required action shapes WHERE work happens, not WHETHER it happens. Finding F-6 of the chunk-A gate raised the same point about the chunk's own main file, which is why contact-field-inputs.tsx is in 'files' above.",
+  "_budget_note": "⚠ A HALF-TUBE CONSUMES 2R PER SIDE, NOT R — the sweep path is inset by R so theta=pi lands at 2R. The plan's first draft assumed R and its defaults failed its own assertion (face height 24 against a '>50% of 48' guard). Two assertions ship with the geometry: faceHeight >= 0.5 * cardHeight AND faceRadius >= 4. Caught by the plan-review gate, 3 August.",
 
-  "_protected": "Approved-foundation and canonical-governance paths the Builder must not touch. Denied unless the same path also appears in 'unlocked'.",
+  "_protected": "Approved-foundation and canonical-governance paths the Builder must not touch. Denied unless the same path also appears in 'unlocked'. contact-field-* is listed in full: it is APPROVED and must not move when this card is tuned — the reason the mesh helpers are COPIED rather than imported.",
   "protected": [
     "app/globals.css",
     "components/enquiry/contact-field-mesh.tsx",
+    "components/enquiry/contact-field-canvas.tsx",
+    "components/enquiry/contact-field-geometry.ts",
+    "components/enquiry/contact-field-inputs.tsx",
+    "components/enquiry/contact-field-light-rig.tsx",
     "project-intelligence/decisions.md",
     "project-intelligence/ai-system/",
     "project-intelligence/reviews/",
     "project-intelligence/active-sprints/"
   ],
 
-  "_unlocked": "Protected paths Carl has EXPLICITLY authorised for THIS chunk. Overrides 'protected'. Carl's call, not the Builder's. TWO unlocks, both 31 July 2026, both narrow — see the notes below. Neither is licence to restructure the file it names.",
+  "_unlocked": "Protected paths Carl has EXPLICITLY authorised for THIS chunk. Overrides 'protected'. Carl's call, not the Builder's.",
   "unlocked": [
-    "components/enquiry/enquiry-opening.tsx",
-    "components/enquiry/contact-field-canvas.tsx"
+    "components/enquiry/enquiry-opening.tsx"
   ],
 
-  "_unlock_1_enquiry_opening": "Carl: 'Authorised to explicitly unlock.' Finding B-1 of the chunk-A plan-review gate: the chunk needs a two-line edit there (one import, one sibling element inside the existing contact-layer block) and the file is an approved-foundation path carrying the project's one accepted lint error. FOR THAT EDIT ONLY.",
+  "_unlock_enquiry_opening": "Carl: 'unlock authorised', 3 August 2026, after the Builder stated the reason, the exact edit and the residual risk. FOR TWO ADDITIONS ONLY: (1) one import line; (2) one JSX element inside the existing showExtras block, as a sibling of .enquiry-answer-grid, gated on qNum === 5. NOTHING EXISTING MAY BE MODIFIED OR REMOVED. The canvas must mount here because .enquiry-phrase-extras is already absolutely positioned with the answer grid as its first child — a sibling of the shell would inherit none of the shell's translateY(calc(38vh - 5rem)) and would force the y-position to be re-derived from the viewport, creating a second copy of the placement maths (the exact failure contact-field-geometry.ts warns against).",
 
-  "_unlock_2_contact_field_canvas": "Carl: 'add.' FOR ONE WORD: `const FIELD_ENTRANCES` -> `export const FIELD_ENTRANCES`. Carl's instruction was 'All labels can arrive on screen with their respective boxes. Fade in with them' — a label fading on its own box's clock must read that box's delay and duration, and FIELD_ENTRANCE_END_MS only carries the aggregate. EXPORTED RATHER THAN COPIED because restating 3600/4100/4600/5100 in the DOM layer would be the FOURTH hard-coded copy of this timing, and the third went stale in verify/field-colour.mjs — which sampled every screenshot mid-cascade while reporting the settled state. NO VALUE, ORDERING OR MASKING BEHAVIOUR MAY CHANGE. The tuning block carries Carl's standing 'close enough is not approved' reservation and is not reopened by this unlock.",
-
-  "_guard_worked": "The guard blocked this edit before the unlock existed, which is correct: unlocking is Carl's call, not the Builder's. The Builder stopped and asked rather than editing the scope file it had itself written an hour earlier — routing around a self-authored control would be the DL-1 pattern deliberately."
+  "_unlock_risk_accepted": "⚠ THE GUARD IS PATH-BASED AND CANNOT EXPRESS 'ADDITIVE ONLY'. enquiry-opening.tsx holds D-029 (the filament SVG rect) and GRID_REFL (D-031/D-032, the 35-number reflection table), and carries the project's one accepted lint error (react-hooks/set-state-in-effect). The additive-only constraint above is STATED, NOT ENFORCED. ⚠ IT MUST BE VERIFIED BY READING THE DIFF AT CHECKPOINT — the diff should be one import and one element, and anything larger means something has gone wrong. Precedent: the same narrow unlock was granted on 31 July and held."
 }

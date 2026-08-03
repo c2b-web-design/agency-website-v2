@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import ContactFieldCanvas, { FIELD_ENTRANCE_END_MS } from "./contact-field-canvas";
 import ContactFieldInputs, { type FieldStateSnapshot } from "./contact-field-inputs";
 import { FIELD_SLOTS } from "./contact-field-geometry";
+import AnswerCardCanvas from "./answer-card-canvas";
 
 // How long after entering `complete` the ENTIRE completion choreography has
 // cleared — acknowledgement, all four boxes, AND the opal.
@@ -670,6 +671,22 @@ export default function EnquiryOpening() {
 
         {showExtras && (
           <div className={`enquiry-phrase-extras${isActive ? "" : " enquiry-phrase-extras-out"}`}>
+            {/*
+              WebGL answer-card GEOMETRY PROTOTYPE — chunk 1 of the card rebuild.
+              Q5 only, and it sits in the left viewport margin BESIDE the live CSS
+              grid, never on top of it (Carl, 3 August: "It must not be built on
+              top. We can use it to compare and contrast").
+
+              Mounted HERE because `.enquiry-phrase-extras` is already
+              `position: absolute` with the answer grid as its first child, so the
+              proto lands level with row 1 for free. A sibling of the shell would
+              inherit none of the shell's `translateY(calc(38vh - 5rem))` and would
+              force the position to be re-derived from the viewport — a second copy
+              of the placement maths that could silently disagree with the first.
+
+              Renders only at >= 1280px and only for Q5; absent otherwise.
+            */}
+            {qNum === 5 && <AnswerCardCanvas active={isActive} />}
             <div
               className={`enquiry-answer-grid${reducedMotion ? "" : " enquiry-cards-reveal"}`}
               role="group"
