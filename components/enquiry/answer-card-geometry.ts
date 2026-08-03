@@ -20,6 +20,8 @@
  * (3 August 2026), not computed from the CSS grid definition.
  */
 
+import { GRID_WIDTH_PX, GRID_HEIGHT_PX } from "./answer-card-backdrop-geometry";
+
 // ── Measured card body ───────────────────────────────────────────────────────
 /**
  * Card width. Grid columns 1/3 of a 6-column grid in the 576px `max-w-xl`
@@ -345,41 +347,72 @@ export function maxFaceTiltDegrees(
   return (Math.atan((crownHeight * Math.PI) / (2 * halfAxis)) * 180) / Math.PI;
 }
 
-// ── Placement beside the live CSS card ───────────────────────────────────────
+// ── Placement: the card in grid slot 1 ───────────────────────────────────────
 
 /**
- * Horizontal gap between the WebGL card's right edge and CSS card 1's left edge.
+ * ⚠ THE CARD HAS MOVED OUT OF THE LEFT MARGIN AND INTO THE GRID. Carl, 3 August
+ * 2026: *"put the card in its location, top left, and make it glass, not
+ * frosted."*
  *
- * Carl, 3 August: *"Put the new card just to the left of Card 1, top left. It
- * must not be built on top. We can use it to compare and contrast."* Wide enough
- * that the two read as separate objects, close enough to compare in one glance.
+ * ⚠ AND THE MOVE IS NOT A CSS REPOSITION — IT IS A SCENE MERGE, which is the
+ * one structural fact that governs this whole step. **A WebGL canvas can only
+ * refract objects in its OWN scene.** The card and the lockup were in two
+ * separate canvases, so moving the card's `<div>` over the lockup would have put
+ * it in front visually while it refracted NOTHING — the same pale slab, now
+ * merely overlapping the logo.
+ *
+ * That is the real answer to *"still frosted"*: the card was transmitting its
+ * own throwaway stand-in, a smooth blue→teal ramp with no detail in it. Clear
+ * glass and frosted glass look identical over a surface that has nothing sharp
+ * to destroy. The frost was never the problem; the absence of anything worth
+ * seeing through was.
+ *
+ * So the two canvases become one, spanning the grid, and the stand-in is gone.
  */
-export const PROTO_GAP_PX = 24;
 
 /**
- * Minimum viewport width at which the proto card renders.
+ * Grid geometry, duplicated from `answer-card-backdrop-geometry.ts`.
  *
- * ⚠ THE CARD PLUS ITS GUTTER NEEDS ~211px AND THE MARGIN DOES NOT ALWAYS HAVE
- * IT. Measured free margin left of card 1: 432px at 1440, 352px at 1280, but
- * only 200px at 1024 — where the card would overflow the viewport and add a
- * horizontal scrollbar. Below this width the CSS grid behaves exactly as it does
- * today and the proto card is simply absent.
+ * ⚠ IMPORTED THERE, NOT REDECLARED — see the import at the top of
+ * `answer-card-canvas.tsx`. This comment marks the coupling: the card's slot
+ * position is derived from `CARD_BOXES`, so the two modules must agree, and they
+ * agree by SHARING the constant rather than by both being edited correctly.
+ */
+
+/**
+ * Minimum viewport width at which the WebGL card renders.
+ *
+ * ⚠ THE THRESHOLD SURVIVES THE MOVE BUT ITS REASON HAS CHANGED. It existed
+ * because the card needed ~211px of free left margin, and at 1024 there were
+ * only 200px — it would have overflowed and added a horizontal scrollbar. **In
+ * the grid there is no margin requirement at all.**
+ *
+ * It is kept because the answer grid's own three-column layout is what the slot
+ * coordinates in `CARD_BOXES` describe, and that layout is only guaranteed above
+ * this width. Below it the CSS grid reflows and a card pinned to a hard-coded
+ * 186.66 x 48 box at (0, 0) would land wrong.
+ *
+ * ⚠ SO IT IS NOW A CORRECTNESS GUARD, NOT AN OVERFLOW GUARD, and chunk 5 must
+ * revisit it rather than inherit it: five cards cannot simply vanish below
+ * 1280px the way one prototype could.
  */
 export const PROTO_MIN_VIEWPORT_PX = 1280;
 
 /**
- * The canvas box, in CSS px, relative to `.enquiry-phrase-extras`.
+ * The canvas box, in CSS px, relative to `.enquiry-answer-grid`.
  *
- * ⚠ DERIVED FROM THE GRID'S OWN SPAN RULE, NOT FROM MEASURING CARD 1. An earlier
- * draft proposed `getBoundingClientRect()` on the live card. That would make the
- * WebGL card DEPEND ON THE DOM CARD IT EXISTS TO REPLACE — and chunk 3 removes
- * the CSS cards, so the proto would lose its position source on the exact step
- * where it becomes the only card. It also avoids a measure → state → render
- * cycle on every resize.
+ * ⚠ IT SPANS THE WHOLE GRID, NOT ONE CARD. The canvas must contain the lockup
+ * as well as the card, because the lockup is what the glass refracts — a
+ * card-sized canvas physically cannot see beyond its own edges.
  *
- * `left` is negative: the card sits OUTSIDE the extras box, in the viewport
- * margin to its left. `top: 0` aligns it with the first grid row, because
- * `.enquiry-answer-grid` is the extras box's first child.
+ * ⚠ AND IT MOUNTS INSIDE `.enquiry-answer-grid` NOW, NOT ON
+ * `.enquiry-phrase-extras`. The backdrop already mounted there; the card joins
+ * it rather than the reverse, so both share one coordinate origin instead of two
+ * that must be kept in step.
+ *
+ * Dimensions come from the grid's own span rule, never from
+ * `getBoundingClientRect()` on a live card — that would make the WebGL card
+ * depend on the DOM cards it exists to replace, which are gone.
  */
 export function protoCanvasBox(): {
   left: number;
@@ -388,10 +421,33 @@ export function protoCanvasBox(): {
   height: number;
 } {
   return {
-    left: -(CARD_WIDTH_PX + PROTO_GAP_PX),
+    left: 0,
     top: 0,
-    width: CARD_WIDTH_PX,
-    height: CARD_HEIGHT_PX,
+    width: GRID_WIDTH_PX,
+    height: GRID_HEIGHT_PX,
+  };
+}
+
+/**
+ * Where the card sits in the canvas's world coordinates.
+ *
+ * ⚠ THE CANVAS ORIGIN IS ITS CENTRE; THE GRID ORIGIN IS ITS TOP-LEFT. Under an
+ * orthographic camera at `zoom: 1`, @react-three/fiber puts (0,0) at the canvas
+ * centre with +y UP, while `CARD_BOXES` is in CSS layout space with (0,0) at the
+ * top-left and +y DOWN. Both conversions are needed and the y flip is the one
+ * that is easy to drop.
+ *
+ * ⚠ DERIVED FROM `CARD_BOXES[slot]`, NOT HARD-CODED. The backdrop's four colour
+ * zones are positioned against those same boxes, so a card placed from an
+ * independent copy of the numbers could drift out of its own colour region while
+ * every assertion still passed.
+ */
+export function cardSlotPosition(
+  slot: { x: number; y: number; w: number; h: number },
+): { x: number; y: number } {
+  return {
+    x: slot.x + slot.w / 2 - GRID_WIDTH_PX / 2,
+    y: GRID_HEIGHT_PX / 2 - (slot.y + slot.h / 2),
   };
 }
 

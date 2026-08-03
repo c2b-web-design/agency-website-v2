@@ -15,14 +15,15 @@
  * failure chunk 2 hit twice.
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
+import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import {
   GRID_WIDTH_PX,
   GRID_HEIGHT_PX,
   REGION_SHIFT_MS,
   CARD_BOXES,
+  GROUND_COLOR,
   drawBackdrop,
   type BackdropRegions,
 } from "./answer-card-backdrop-geometry";
@@ -117,9 +118,46 @@ export function AnswerCardBackdrop({
   }, [material, texture, invalidate]);
 
   return (
-    <mesh position={[0, 0, -1]} material={material}>
-      <planeGeometry args={[GRID_WIDTH_PX, GRID_HEIGHT_PX]} />
-    </mesh>
+    <>
+      {/*
+        ⚠ THE GROUND PLANE, AND IT IS THE DIFFERENCE BETWEEN GLASS AND A SLAB.
+
+        Carl, 3 August 2026: *"that is not glass. If it was inside the card you
+        would see the coloured lettering AND the dark background."* He was right,
+        and the cause is in three's own transmission pass rather than in any
+        value that had been tuned.
+
+        `renderTransmissionPass` (three.module.js:18007-18021) clears the
+        transmission target before rendering `opaqueObjects` into it — and at
+        :18019, `if ( _currentClearAlpha < 1 ) setClearColor( 0xffffff, 0.5 )`.
+        This canvas is created with `alpha: true`, so the clear alpha IS 0, so
+        **the target is cleared to WHITE.**
+
+        ⚠ THE PAGE'S BLACK IS CSS, NOT A SCENE OBJECT. The lockup is a cut-out
+        (`alphaTest`), so everywhere the logo is not, the glass was sampling that
+        white clear rather than the dark page behind it. MEASURED 3 August:
+        outside the card 44.9% of the mark's pixels are below luminance 32;
+        inside the card, **0.0%** — not dimmed, absent. The letterform could not
+        read because its ground had been replaced by white.
+
+        ⚠ AND IT EXPLAINS WHY LOWERING ROUGHNESS DID NOTHING. Frost was never
+        removing the dark ground; the transmission pass never had one. Three
+        rounds went into the frost value before the target's clear colour was
+        suspected.
+
+        So the page's own darkness is given to the scene as a real object. It
+        sits behind the lockup and is opaque, which is what puts it in
+        `opaqueObjects` and therefore into the transmission target.
+      */}
+      <mesh position={[0, 0, -2]}>
+        <planeGeometry args={[GRID_WIDTH_PX * 2, GRID_HEIGHT_PX * 2]} />
+        <meshBasicMaterial color={GROUND_COLOR} toneMapped={false} transparent={false} />
+      </mesh>
+
+      <mesh position={[0, 0, -1]} material={material}>
+        <planeGeometry args={[GRID_WIDTH_PX, GRID_HEIGHT_PX]} />
+      </mesh>
+    </>
   );
 }
 
@@ -164,61 +202,23 @@ export function useRegionShift(selected: boolean[]): React.RefObject<number[]> {
   return values;
 }
 
-/**
- * The backdrop's own canvas, overlaying the answer grid.
- *
- * ⚠ A SEPARATE CANVAS FROM THE PROTO CARD'S, and that is structural rather than
- * incidental: the proto card's canvas is card-sized and sits in the LEFT MARGIN,
- * while the backdrop spans the full 576px grid. One cannot contain the other
- * until chunk 4 moves the card into the grid, at which point they merge.
- *
- * ⚠ AND IT DEFERS ITS OWN WEBGL SETUP PAST THE Q5 PHRASE WIPE, for the same
- * reason `answer-card-canvas.tsx` does: a second canvas initialising inside the
- * 1300ms reveal reintroduces the stutter Carl has now reported twice. The gate
- * that already existed knew nothing about the first extra canvas; it knows
- * nothing about this one either.
- */
-const Q5_REVEAL_CLEAR_MS = 1300;
-
-export default function AnswerCardBackdropCanvas() {
-  const [reducedMotion] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-  );
-  const [revealCleared, setRevealCleared] = useState(reducedMotion);
-
-  useEffect(() => {
-    if (reducedMotion) return;
-    const id = window.setTimeout(() => setRevealCleared(true), Q5_REVEAL_CLEAR_MS);
-    return () => window.clearTimeout(id);
-  }, [reducedMotion]);
-
-  if (!revealCleared) return null;
-
-  return (
-    <div
-      aria-hidden="true"
-      data-testid="answer-card-backdrop"
-      style={{
-        position: "absolute",
-        left: 0,
-        top: 0,
-        width: GRID_WIDTH_PX,
-        height: GRID_HEIGHT_PX,
-        pointerEvents: "none",
-      }}
-    >
-      <Canvas
-        orthographic
-        camera={{ zoom: 1, position: [0, 0, 1000], near: 0.1, far: 4000 }}
-        dpr={[1, 2]}
-        gl={{ antialias: true, alpha: true }}
-        frameloop="demand"
-        style={{ pointerEvents: "none" }}
-      >
-        <AnswerCardBackdrop />
-      </Canvas>
-    </div>
-  );
-}
+// ── The backdrop's own canvas: DELETED, 3 August 2026 ───────────────────────
+//
+// ⚠ THE TWO CANVASES ARE NOW ONE. This file used to export a default
+// `AnswerCardBackdropCanvas` that mounted its own `<Canvas>` over the grid,
+// separate from the proto card's card-sized canvas in the left margin. The
+// comment here said they would merge "in chunk 4, when the card moves into the
+// grid" — that is what has happened, on Carl's instruction: *"put the card in
+// its location, top left, and make it glass, not frosted."*
+//
+// ⚠ AND THE MERGE WAS NOT OPTIONAL. A WebGL canvas can only refract objects in
+// ITS OWN scene: the transmission pass renders the scene's `opaqueObjects` into
+// a target the glass samples (`three.module.js:18039`). Two canvases meant the
+// card was structurally incapable of seeing the logo no matter how they were
+// stacked in CSS — moving the card's `<div>` over the lockup would have put it
+// in FRONT of the logo while refracting nothing.
+//
+// `AnswerCardBackdrop` above is now rendered as a plain mesh inside the card's
+// scene; see `CardScene` in `answer-card-canvas.tsx`. The phrase-wipe deferral
+// that lived here is unchanged and still applies — it is on the one remaining
+// canvas, in `answer-card-canvas.tsx`'s `Q5_REVEAL_CLEAR_MS`.

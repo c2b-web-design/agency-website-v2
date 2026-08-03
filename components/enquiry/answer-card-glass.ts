@@ -13,7 +13,9 @@
  * read."*
  */
 
-import * as THREE from "three";
+// ⚠ NO `three` IMPORT ANY MORE. This module is now pure constants — the two
+// functions that needed THREE (`buildStandInTexture`, `standInMaterial`) went
+// with the stand-in. See the tombstone at the foot of the file.
 
 // ── ⚠ WHAT THIS MATERIAL ACTUALLY BUYS, STATED HONESTLY ─────────────────────
 //
@@ -59,9 +61,35 @@ import * as THREE from "three";
  * "gone". **If that shows up the fix is `renderer.transmissionResolutionScale`,
  * not more roughness precision.**
  *
+ * ⚠ LOWERED 0.28 -> 0.08 ON CARL'S INSTRUCTION, 3 August: *"dial down the
+ * number that makes the glass frosted. I need to see it in a glass state so I
+ * can see clearly what's underneath the glass."* And restated when it appeared
+ * to have done nothing: *"make it glass, not frosted."*
+ *
+ * ⚠ IT HAD ALREADY DONE SOMETHING — THE SUBJECT WAS THE PROBLEM, NOT THE
+ * CONTROL. Measured 3 August on a horizontal scanline through the card:
+ *
+ *     roughness 0.08 (default)   edge energy 4.50
+ *     roughness 0    (forced)    edge energy 4.64
+ *     roughness 0.45 (forced)    edge energy 1.06
+ *
+ * The control was working across its whole range. But the card was sitting over
+ * the THROWAWAY STAND-IN — a smooth blue→teal ramp with no sharp features
+ * anywhere in it — and **frost can only be seen destroying detail that exists.**
+ * Over a pure gradient, clear glass and heavy frost are indistinguishable.
+ *
+ * ⚠ SO THE FIX WAS NOT A SMALLER NUMBER. It was putting the card over the real
+ * lockup, in one shared scene, which is what the move into grid slot 1 does.
+ *
+ * **Still not a design decision.** This is the value at which the logo is
+ * plainly readable through the glass, which is what Carl asked to see. Chunk 2's
+ * measured band is 0 to ~0.45 legible, gone by 0.60; the frost level that SHIPS
+ * is an open question for the mastering pass, and Carl's original specification
+ * was *"slightly frosted but not enough that the logo cannot be legible."*
+ *
  * ⚠ NOT AN APPROVED VALUE. Adjustable; PROVISIONAL under D-035.
  */
-export const GLASS_ROUGHNESS = 0.28;
+export const GLASS_ROUGHNESS = 0.08;
 
 /**
  * How much light passes through rather than reflecting off.
@@ -168,169 +196,27 @@ export const ENV_FILL_INTENSITY = 1.1;
 /** How strongly the face samples the environment map. */
 export const GLASS_ENV_INTENSITY = 1.0;
 
-// ── The calibration stand-in ────────────────────────────────────────────────
+// ── The calibration stand-in: DELETED, 3 August 2026 ────────────────────────
 //
-// ⚠ THROWAWAY. Carl: *"The stand-in is throwaway, this is so we can judge the
-// frosted glass and legibility. Place it where you see fit."* It is deleted in
-// chunk 3, when the real logo backdrop is designed.
+// ⚠ IT WAS ALWAYS THROWAWAY. Carl: *"the stand-in is throwaway, this is so we
+// can judge the frosted glass and legibility. Place it where you see fit."* It
+// is deleted here because the real lockup now sits behind the card, in the same
+// scene, which is strictly better at the job the stand-in was standing in for.
 //
-// ⚠ A TEST PATTERN, NOT THE c2b MARK — AND THE SWERVE WAS FORCED BY
-// MEASUREMENT, not preference. The plan's first revision proposed placing the
-// whole mark behind one card and judging its legibility, on a claimed 4.24px
-// thinnest stroke. That figure came from a SINGLE mid-line scan of the mask and
-// was wrong. Scanning the whole mark:
+// ⚠ AND ITS LAST ACT WAS TO MISLEAD, WHICH IS WORTH RECORDING. It was a smooth
+// blue→teal ramp with no sharp features. Frost can only be seen destroying
+// detail that exists, so over that ramp EVERY roughness value looked the same —
+// and the card read as permanently frosted while the roughness control was
+// working correctly across its whole range (edge energy 4.50 at 0.08, 1.06 at
+// 0.45). Three exchanges went into "why is it still frosted" before the subject,
+// rather than the control, was suspected.
 //
-//    thinnest stroke   14px of a 566px-tall mark   (ratio 0.0247)
-//    at the proposed 32px placement                 0.79px on screen
+// ⚠ THE GENERAL FORM, WHICH THIS PROJECT HAS NOW LOGGED THREE TIMES: a test
+// fixture that cannot express the effect under test will report no effect. See
+// also `verify/q5-stutter.mjs` sharing a constant with its own fix.
 //
-// ⚠ A 4px STROKE NEEDS THE MARK ~162px TALL — FIVE TIMES THE FACE'S HEIGHT. The
-// whole mark cannot sit behind one card and stay readable at any frost level, so
-// the test as designed could not have worked.
-//
-// ⚠ THE PATTERN ANSWERS A SHARPER QUESTION THAN THE LOGO COULD: "at what stroke
-// width does this frost destroy detail?" That is a number rather than a
-// preference, and it hands chunk 3 arithmetic instead of a guess —
-//
-//    required mark height = strokeWidth / 0.0247
-//
-// so a mark spanning the grid's full 576px width gives a 7.18px stroke. The end
-// state is fine; only the one-card placement was not.
+// What it held, should any of it be wanted again: STANDIN_STROKE_WIDTHS
+// [2,4,6,8], STANDIN_BLUE #163a8f, STANDIN_TEAL rgb(125,210,205),
+// STANDIN_DEPTH 10, `buildStandInTexture()` and `standInMaterial()`. All in git
+// at commit 3038a34.
 
-/**
- * Stroke widths in the calibration pattern, in CSS pixels.
- *
- * Chosen to bracket the range chunk 3 will care about: 2px is below anything the
- * real mark would use at grid scale, 8px is comfortably above the 7.18px a
- * full-width mark produces.
- */
-export const STANDIN_STROKE_WIDTHS = [2, 4, 6, 8] as const;
-
-/**
- * The corridor's own two colours, read from `app/globals.css`.
- *
- * ⚠ NO AMBER. That belongs to the filament (chunk 4) and would compete with the
- * event the card is meant to stage.
- *
- * ⚠ AND NO MOTION. A moving backdrop is chunk 3's design question, and it would
- * confound a legibility reading.
- */
-export const STANDIN_BLUE = "#163a8f";
-export const STANDIN_TEAL = "rgb(125, 210, 205)";
-
-/**
- * Build the calibration texture: a blue-to-teal ramp with vertical strokes of
- * known widths laid across it.
- *
- * `pixelRatio` renders the canvas larger than its world size so the strokes are
- * not themselves destroyed by texture sampling before the glass ever sees them —
- * the pattern must be sharp going in for the frost's effect on it to mean
- * anything.
- *
- * ⚠ THE RESULTING TEXTURE GOES ON AN OPAQUE MATERIAL. See `standInMaterial`.
- */
-export function buildStandInTexture(
-  widthPx: number,
-  heightPx: number,
-  /**
-   * Whether to lay the calibration strokes over the wash.
-   *
-   * ⚠ FALSE BY DEFAULT, AND THAT MATTERS FOR WHAT THE PAGE LOOKS LIKE. The wash
-   * alone is what an ordinary load shows: it gives the glass something to
-   * transmit so the card reads as glass rather than as a pale grey slab.
-   *
-   * ⚠ WITHOUT A BACKDROP THE CARD IS NOT GLASS IN ANY VISIBLE SENSE — this
-   * chunk's central finding, and Carl hit it three times in one session:
-   * "Card appears in a grey state", "back to grey", "No glass". Glass over a
-   * near-black page shows near-black. Turning the calibration pattern off
-   * removed the only evidence the material existed.
-   *
-   * The strokes return with `?standin=1` when the frost threshold needs
-   * measuring. They are a measuring instrument, not a design.
-   */
-  withStrokes = false,
-  pixelRatio = 4,
-): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(widthPx * pixelRatio));
-  canvas.height = Math.max(1, Math.round(heightPx * pixelRatio));
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("2d context unavailable for the stand-in texture");
-
-  ctx.scale(pixelRatio, pixelRatio);
-
-  // Blue -> teal ramp, left to right: the corridor's two colours, the same axis
-  // the real backdrop will use.
-  const ramp = ctx.createLinearGradient(0, 0, widthPx, heightPx);
-  ramp.addColorStop(0, STANDIN_BLUE);
-  ramp.addColorStop(1, STANDIN_TEAL);
-  ctx.fillStyle = ramp;
-  ctx.fillRect(0, 0, widthPx, heightPx);
-
-  if (withStrokes) {
-    // Strokes in a light tint of the same family, so contrast comes from value
-    // rather than from a foreign hue.
-    ctx.fillStyle = "#e8f4ff";
-
-    // Lay the strokes out with generous gaps, so the frost blurring one into its
-    // neighbour is itself visible.
-    const groupWidth = STANDIN_STROKE_WIDTHS.reduce((sum, w) => sum + w, 0);
-    const gaps = STANDIN_STROKE_WIDTHS.length + 1;
-    const gap = (widthPx - groupWidth) / gaps;
-
-    let x = gap;
-    for (const w of STANDIN_STROKE_WIDTHS) {
-      ctx.fillRect(x, heightPx * 0.15, w, heightPx * 0.7);
-      x += w + gap;
-    }
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.needsUpdate = true;
-  return texture;
-}
-
-/**
- * The stand-in's material.
- *
- * ⚠ IT MUST BE OPAQUE, AND ON BOTH COUNTS — `transmission: 0` AND
- * `transparent: false`.
- *
- * The transmission pass renders `opaqueObjects` ONLY (`three.module.js:18039`),
- * and the render-list split at `:8237` sends a material to the TRANSPARENT list
- * whenever `transparent === true`, entirely independently of transmission. So an
- * object is invisible to the glass if it is EITHER transmissive OR transparent.
- *
- * ⚠ THIS IS WHY THERE IS NO "STAND-IN OPACITY" CONTROL ON THE RIG. Driving
- * opacity requires `transparent: true`, which would remove the backdrop from
- * what the glass can see. It would present as "the frost went completely flat"
- * WITH EVERY ASSERTION STILL GREEN — the same class of silent failure as chunk
- * 1's inverted winding, where a flipped normal had the same |normal.z| and every
- * check passed.
- *
- * Brightness, if it is ever needed, must be a colour lerp inside the texture —
- * never `material.opacity`.
- *
- * `MeshBasicMaterial` rather than a lit one: this is a thing to be SEEN THROUGH
- * the glass, and lighting it would make the reading depend on the diagnostic
- * light rig as well as on the frost.
- */
-export function standInMaterial(texture: THREE.Texture): THREE.MeshBasicMaterial {
-  return new THREE.MeshBasicMaterial({
-    map: texture,
-    toneMapped: false,
-    transparent: false,
-    side: THREE.FrontSide,
-  });
-}
-
-/**
- * How far behind the card's face the stand-in sits, in world units (= CSS px).
- *
- * Far enough that it reads as a separate surface behind the glass rather than
- * as a texture painted on it; close enough to stay inside the card's silhouette
- * under an orthographic camera (where there is no perspective divergence, so
- * this distance does not change its apparent size at all).
- */
-export const STANDIN_DEPTH = 10;

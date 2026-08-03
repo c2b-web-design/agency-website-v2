@@ -41,10 +41,9 @@ import {
   ENV_KEY_INTENSITY,
   ENV_FILL_COLOR,
   ENV_FILL_INTENSITY,
-  STANDIN_DEPTH,
-  buildStandInTexture,
-  standInMaterial,
 } from "./answer-card-glass";
+import { AnswerCardBackdrop } from "./answer-card-backdrop";
+import { CARD_BOXES } from "./answer-card-backdrop-geometry";
 import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
@@ -52,17 +51,11 @@ import {
   CARD_RISE_TRANSLATE_PX,
   PROTO_MIN_VIEWPORT_PX,
   protoCanvasBox,
-  cardBudget,
+  cardSlotPosition,
   checkBudget,
   maxFaceTiltDegrees,
   MIN_FACE_TILT_DEGREES,
 } from "./answer-card-geometry";
-
-/**
- * Padding around the card inside the canvas, so the rim's outermost pixels and
- * any shading are not clipped by the canvas edge.
- */
-const CANVAS_PAD_PX = 12;
 
 /**
  * How long the Q5 phrase wipe runs, in ms.
@@ -126,7 +119,6 @@ function useCardRig(): {
   enabled: boolean;
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
-  strokes: boolean;
 } {
   const [enabled] = useState(
     () =>
@@ -150,26 +142,21 @@ function useCardRig(): {
       : DEFAULT_GLASS_TUNING;
   });
   const [selected, setSelected] = useState<RigParamKey | GlassRigParamKey>("roughness");
-  // ⚠ THE BACKDROP IS ALWAYS ON; ONLY THE CALIBRATION STROKES ARE OPTIONAL, and
-  // that split took two corrections to arrive at.
+
+  // ⚠ THE `?standin=1` / `[s]` CALIBRATION-STROKE TOGGLE IS GONE, because the
+  // thing it toggled is gone. The stand-in was a throwaway measuring instrument;
+  // the real lockup is behind the card now, and it carries far more detail than
+  // four parallel bars ever did.
   //
-  // It first shipped with the strokes ON, so an ordinary load showed four white
-  // bars across the card and Carl reasonably asked what they were — a
-  // measurement instrument rendering by default reads as a design decision.
-  // Turning the whole stand-in OFF then removed the backdrop too, and the card
-  // became a pale grey slab: *"No glass."*
+  // The history is worth keeping even though the code is not: the strokes first
+  // shipped ON, so an ordinary load showed four white bars across the card and
+  // Carl reasonably asked what they were — a measuring instrument rendering by
+  // default reads as a design decision. Turning the whole stand-in OFF then
+  // removed the backdrop too and the card became a pale grey slab: *"No glass."*
   //
-  // ⚠ BOTH REPORTS HAVE ONE CAUSE — GLASS OVER A NEAR-BLACK PAGE SHOWS
-  // NEAR-BLACK. The backdrop is not decoration; it is the only thing that makes
-  // the material visible at all, which is precisely why chunk 3 exists.
-  //
-  // So the default is the corridor's blue→teal wash with no strokes. `?standin=1`
-  // adds them for a tuning session; `[s]` toggles them live.
-  const [strokes, setStrokes] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("standin") === "1",
-  );
+  // ⚠ ONE CAUSE UNDER BOTH REPORTS, AND IT IS STILL THE GOVERNING FACT: GLASS
+  // OVER A NEAR-BLACK PAGE SHOWS NEAR-BLACK. The backdrop is not decoration
+  // behind the cards; it is the content the cards are lenses onto.
 
   useEffect(() => {
     if (!enabled) return;
@@ -189,7 +176,6 @@ function useCardRig(): {
           ...GLASS_RIG_PARAMS.map(
             (p) => `${mark(p.key)} ${p.label.padEnd(30)} ${g[p.key].toFixed(2)}`,
           ),
-          `  calibration strokes [s]        ${strokes ? "on" : "off"}`,
           "  ─────",
           `  face                           ${check.budget.faceWidth.toFixed(2)} x ${check.budget.faceHeight.toFixed(2)}`,
           `  face corner radius             ${check.budget.faceRadius.toFixed(2)}`,
@@ -209,12 +195,6 @@ function useCardRig(): {
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
       if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) {
-        return;
-      }
-
-      if (e.key === "s" || e.key === "S") {
-        e.preventDefault();
-        setStrokes((v) => !v);
         return;
       }
 
@@ -283,13 +263,11 @@ function useCardRig(): {
     };
 
     window.addEventListener("keydown", onKey);
-    console.log(
-      "card rig active — [1-6] geometry, [7-8] glass, [s] stand-in, [↑/↓] adjust, [0] print",
-    );
+    console.log("card rig active — [1-6] geometry, [7-8] glass, [↑/↓] adjust, [0] print");
     return () => window.removeEventListener("keydown", onKey);
-  }, [enabled, selected, strokes]);
+  }, [enabled, selected]);
 
-  return { enabled, tuning, glassTuning, strokes };
+  return { enabled, tuning, glassTuning };
 }
 
 // ── Entrance ─────────────────────────────────────────────────────────────────
@@ -571,62 +549,41 @@ function useLocalEnvMap(): THREE.Texture {
 }
 
 /**
- * The calibration stand-in — an OPAQUE plane behind the card.
+ * ⚠ `StandIn` IS DELETED, AND ITS DELETION IS THE POINT OF THIS STEP.
  *
- * ⚠ OPAQUE ON BOTH COUNTS: `transmission: 0` AND `transparent: false`. The
- * transmission pass renders `opaqueObjects` only, and `transparent === true`
- * routes a material away from that list just as surely as transmission does. A
- * transparent stand-in would be INVISIBLE to the glass refracting it, and would
- * present as "the frost went flat" with every assertion still green.
- */
-/**
- * The calibration backdrop.
+ * It was a throwaway calibration plane — a smooth blue→teal ramp, optionally
+ * with 2/4/6/8px strokes — sized to the card's own face and sitting 10 units
+ * behind it. Carl always described it as disposable: *"the stand-in is
+ * throwaway, this is so we can judge the frosted glass and legibility."*
  *
- * ⚠ RENDERED INSIDE THE CARD'S OWN GROUP, NOT BESIDE IT — see `CardScene`.
+ * ⚠ AND IT IS WHY THE CARD KEPT READING AS FROSTED NO MATTER WHAT THE ROUGHNESS
+ * WAS. A smooth gradient has no detail for frost to destroy, so clear glass and
+ * frosted glass look IDENTICAL over it. Roughness was measured to be applying
+ * correctly (edge energy 4.50 at 0.08 against 1.06 at 0.45) while the card
+ * looked unchanged — a control working perfectly on a subject that could not
+ * show it.
+ *
+ * ⚠ THE REAL LOCKUP REPLACES IT, and that is the whole reason the card moves
+ * into the grid: **a WebGL canvas can only refract objects in its own scene.**
  */
-function StandIn({ withStrokes }: { withStrokes: boolean }) {
-  const invalidate = useThree((state) => state.invalidate);
-
-  const { texture, material } = useMemo(() => {
-    const budget = cardBudget();
-    const tex = buildStandInTexture(budget.faceWidth, budget.faceHeight, withStrokes);
-    return { texture: tex, material: standInMaterial(tex) };
-  }, [withStrokes]);
-
-  useEffect(() => {
-    invalidate();
-    return () => {
-      material.dispose();
-      texture.dispose();
-    };
-  }, [material, texture, invalidate]);
-
-  const budget = useMemo(() => cardBudget(), []);
-
-  // ⚠ ALWAYS VISIBLE. The backdrop is what makes the card read as glass at all;
-  // only the calibration strokes are optional.
-  return (
-    <mesh position={[0, 0, -STANDIN_DEPTH]} material={material}>
-      <planeGeometry args={[budget.faceWidth, budget.faceHeight]} />
-    </mesh>
-  );
-}
 
 function CardScene({
   active,
   reducedMotion,
   tuning,
   glassTuning,
-  strokes,
 }: {
   active: boolean;
   reducedMotion: boolean;
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
-  strokes: boolean;
 }) {
   const groupRef = useCardEntrance(active, reducedMotion);
   const envMap = useLocalEnvMap();
+
+  // Grid slot 1, top-left. Derived from `CARD_BOXES` so the card cannot drift
+  // out of the backdrop colour zone that is positioned against the same box.
+  const slot = useMemo(() => cardSlotPosition(CARD_BOXES[0]), []);
 
   return (
     <>
@@ -645,33 +602,57 @@ function CardScene({
       <directionalLight position={[70, -60, 60]} intensity={0.35} />
 
       {/*
-        ⚠ THE BACKDROP RENDERS INSIDE THE CARD'S GROUP so it inherits `visible`
-        and the entrance transform. As a sibling it drew for the whole 220ms
-        entrance delay while the card mesh was still hidden, so the first thing
-        on screen was a plain bright RECTANGLE that then became the card — Carl:
-        *"it appears as a rectangle at first, very fast, no curves."*
+        ⚠ THE LOCKUP IS NOW A SIBLING OF THE CARD, NOT A CHILD OF IT — and that
+        inverts chunk 2's arrangement deliberately.
+
+        The stand-in was parented INTO the card's group so it inherited
+        `visible` and the entrance transform. Without that it drew during the
+        entrance delay while the card mesh was still hidden, and the first thing
+        on screen was a bright rectangle: Carl, *"it appears as a rectangle at
+        first, very fast, no curves."*
+
+        ⚠ THAT CANNOT APPLY HERE, because the lockup is NOT the card's backdrop
+        — it spans the whole grid and belongs to all five cards. Parenting it to
+        one card would drag the entire logo 6px upward through card 1's entrance
+        rise, and in chunk 5 it would have to be parented to five cards at once,
+        which is not a thing.
+
+        ⚠ SO THE ENTRANCE-RECTANGLE DEFECT IS PREVENTED A DIFFERENT WAY: the
+        card entrance no longer has a hidden delay to flash out of (see
+        `useCardEntrance` — visibility is owned by the tick loop alone, and the
+        first drawn frame is already frame 0 of the rise). The lockup simply
+        renders throughout, which is correct: it is the page, not the card.
       */}
-      <AnswerCardMesh
-        tuning={tuning}
-        groupRef={groupRef}
-        glass
-        glassTuning={glassTuning}
-        envMap={envMap}
-      >
-        <StandIn withStrokes={strokes} />
-      </AnswerCardMesh>
+      <AnswerCardBackdrop />
+
+      {/*
+        ⚠ ONE SCENE, WHICH IS THE ENTIRE REASON FOR THIS STEP. The transmission
+        pass renders the scene's `opaqueObjects` into a target that the glass
+        then samples — so the glass can only ever refract what is in ITS OWN
+        scene graph. Two canvases meant the card refracted its own stand-in and
+        was blind to the logo, however exactly they were overlaid in CSS.
+      */}
+      <group position={[slot.x, slot.y, 0]}>
+        <AnswerCardMesh
+          tuning={tuning}
+          groupRef={groupRef}
+          glass
+          glassTuning={glassTuning}
+          envMap={envMap}
+        />
+      </group>
     </>
   );
 }
 
 /**
- * The proto card canvas.
+ * The answer-card canvas — the card in grid slot 1, over the lockup.
  *
- * ⚠ RENDERS ONLY AT >= 1280px. The card plus its gutter needs ~211px of free
- * margin. Measured: 432px at 1440 and 352px at 1280, but only 200px at 1024 —
- * where it would overflow the viewport and add a horizontal scrollbar. Below
- * this width it is simply absent and the CSS grid behaves exactly as it does
- * today.
+ * ⚠ RENDERS ONLY AT >= 1280px, and the reason has changed with the move. It was
+ * an OVERFLOW guard: the card needed ~211px of free left margin and there were
+ * only 200px at 1024. In the grid there is no margin requirement, so it is now a
+ * CORRECTNESS guard — `CARD_BOXES` describes the three-column layout, which only
+ * holds above this width. See `PROTO_MIN_VIEWPORT_PX`.
  */
 export default function AnswerCardCanvas({ active }: { active: boolean }) {
   const [reducedMotion] = useState(
@@ -745,7 +726,7 @@ export default function AnswerCardCanvas({ active }: { active: boolean }) {
     return () => mq.removeEventListener("change", apply);
   }, []);
 
-  const { tuning, glassTuning, strokes } = useCardRig();
+  const { tuning, glassTuning } = useCardRig();
 
   const box = useMemo(() => protoCanvasBox(), []);
 
@@ -757,10 +738,19 @@ export default function AnswerCardCanvas({ active }: { active: boolean }) {
       data-testid="answer-card-proto"
       style={{
         position: "absolute",
-        left: box.left - CANVAS_PAD_PX,
-        top: box.top - CANVAS_PAD_PX,
-        width: box.width + CANVAS_PAD_PX * 2,
-        height: box.height + CANVAS_PAD_PX * 2,
+        // ⚠ NO PADDING NOW, AND THE PAD CONSTANT IS GONE WITH IT. It existed
+        // because the canvas was card-sized in the margin, so the rim's
+        // outermost pixels sat on the canvas edge and were clipped. The canvas
+        // now spans the whole grid and every card is well inside it.
+        //
+        // ⚠ AND PADDING WOULD ACTIVELY BREAK THE LOCKUP. The backdrop plane is
+        // exactly GRID_WIDTH_PX x GRID_HEIGHT_PX; inside a canvas 12px larger on
+        // each side it would no longer reach the edges, leaving a visible gutter
+        // where the logo used to run out to the grid boundary.
+        left: box.left,
+        top: box.top,
+        width: box.width,
+        height: box.height,
         pointerEvents: "none",
       }}
     >
@@ -777,7 +767,6 @@ export default function AnswerCardCanvas({ active }: { active: boolean }) {
           reducedMotion={reducedMotion}
           tuning={tuning}
           glassTuning={glassTuning}
-          strokes={strokes}
         />
       </Canvas>
     </div>

@@ -207,6 +207,35 @@ export const BACKDROP_BLUE = "#1b4fa8";
 export const BACKDROP_TEAL = "#00c8e0";
 
 /**
+ * The page's own darkness, as a real object in the scene.
+ *
+ * ⚠ IT EXISTS FOR THE TRANSMISSION PASS, NOT FOR THE EYE. On screen it is
+ * indistinguishable from the page behind it — which is the point: it must not
+ * be visible as a rectangle (a first version of the BACKDROP made exactly that
+ * mistake with a flat `#0a0a0a` fill, and Carl saw it immediately: *"I can see
+ * the black rectangle the text is sitting in"*).
+ *
+ * ⚠ THE DIFFERENCE IS THAT THIS ONE IS BEHIND A CUT-OUT, NOT PAINTED INTO IT.
+ * The earlier failure filled the lockup's own canvas, so the rectangle's edges
+ * sat against the page's radial gradient and mismatched it. This plane is a
+ * separate mesh at z=-2 with no alpha and no edge inside the viewport — it is
+ * oversized (2x the grid) precisely so its boundary is never on screen.
+ *
+ * ⚠ WHY IT IS NEEDED AT ALL: `renderTransmissionPass` clears the transmission
+ * target to WHITE when the canvas has `alpha: true` (three.module.js:18019), and
+ * the page's real background is CSS, which no WebGL pass can see. Without this
+ * object the glass samples white wherever the lockup is cut away, and the
+ * letterform's dark ground is destroyed — measured at 0.0% dark pixels inside
+ * the card against 44.9% outside it.
+ *
+ * ⚠ SAMPLED, NOT INVENTED. `app/globals.css` sets
+ * `radial-gradient(ellipse at 50% 40%, #141414, #080808)`. The answer grid sits
+ * below the ellipse's centre, between the two stops — #101010 is the value
+ * measured off the rendered page at the grid's own rows.
+ */
+export const GROUND_COLOR = "#101010";
+
+/**
  * How long a region takes to travel from blue to teal, in ms.
  *
  * ⚠ 2400ms IS THE FILAMENT'S CIRCUIT, NOT AN ARBITRARY DURATION. Carl, 3
