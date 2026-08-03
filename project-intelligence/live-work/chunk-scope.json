@@ -1,9 +1,11 @@
 {
   "_comment": "Enforced by .claude/hooks/chunk-scope-guard.js before every Edit/Write. See ai-system/live-work-protocol.md section 8. Absent file = no enforcement (opt-in by design).",
 
-  "_status": "ACTIVE. Chunk 2 of the Q&A answer-card rebuild — THE GLASS MATERIAL. Plan: .claude/plans/glowing-sniffing-quiche.md (revision 2). Briefing: live-work/architect-briefing-card-rebuild.md. Chunk 1 (geometry) is committed and approved by eye; its scope is superseded by this file.",
+  "_status": "ACTIVE. Chunk 3 of the Q&A answer-card rebuild — THE LOGO BACKDROP. Chunks 1 (geometry) and 2 (glass) are committed. ⚠ NO PLAN-MODE PLAN FOR THIS CHUNK: Carl, 3 August 2026 — 'just remove the 5 cards that are there now and build. No need for plan mode on this chunk.' The design was settled in discussion instead; it is recorded in the run log.",
 
-  "chunk": "q5-answer-card-glass",
+  "_sequence_changed": "⚠ THE REMAINING ORDER IS NOW: logo -> card in place -> filament -> clone. Carl, 3 August. The proto card moves into the grid BEFORE the filament, not after. That is the better order: the filament's entire argument is neighbouring cards responding to it, which cannot be judged while the card sits alone in the margin.",
+
+  "chunk": "q5-logo-backdrop",
   "active": true,
 
   "_files": "Paths the chunk may edit. Supports exact paths, 'dir/' prefixes, and * wildcards. live-work/ is included because CLAUDE.md rules 6 and 7 REQUIRE run logs, checkpoint requests and the session handoff to be written there (finding B-1). verify/_tmp-*.mjs and the chunk's OWN main files are declared per the carried-forward advice (findings F-6 / DL-1) — the advice was recorded twice and not followed twice, and the guard duly blocked a throwaway probe on 31 July.",
@@ -12,6 +14,9 @@
     "components/enquiry/answer-card-mesh.tsx",
     "components/enquiry/answer-card-canvas.tsx",
     "components/enquiry/answer-card-glass.ts",
+    "components/enquiry/answer-card-backdrop-geometry.ts",
+    "components/enquiry/answer-card-mark.ts",
+    "components/enquiry/answer-card-backdrop.tsx",
     "verify/_tmp-*.mjs",
     "project-intelligence/live-work/"
   ],
@@ -42,6 +47,10 @@
   "unlocked": [
     "components/enquiry/enquiry-opening.tsx"
   ],
+
+  "_unlock_chunk3_remove_cards": "⚠ THIS ONE REOPENS AN APPROVED LAYER, AND DELIBERATELY. Carl, 3 August 2026: 'just remove the 5 cards that are there now and build', and when the Builder put the cost to him explicitly — that the corridor cannot advance past Q5 with no answers to select — 'we do not need to advance atm.' The Builder offered a flag-gated alternative that would have preserved the flow; Carl chose deletion. D-028 (frosted blue glass, A-E variants) and D-029 (the filament border) are his to reopen and he has done so.",
+
+  "_unlock_chunk3_cost": "⚠ THE PAGE IS NON-FUNCTIONAL BEYOND Q5 FOR THE DURATION OF THIS CHUNK. No card can be selected, so Next step never activates, so Q4-Q1 and the contact field are unreachable. This is ACCEPTED, not overlooked. ⚠ AND GRID_REFL (D-031/D-032) BECOMES DEAD CODE while the cards are gone — it must not be deleted as 'unused': it is the specification the chunk-5 physics has to reproduce (bottom row 0.26-0.30 vs top row 0.04-0.16).",
 
   "_unlock_closed_then_reopened": "⚠ RETURNED TO EMPTY FOR CHUNK 2, THEN REOPENED FOR A REGRESSION FIX. It was unlocked on 3 August for chunk 1's canvas mount (+17 insertions / 0 deletions), then correctly closed because chunk 2 touches only the answer-card-* files. ⚠ THE GUARD THEN BLOCKED THE STUTTER FIX, WHICH IS THE CONTROL WORKING: the Builder stopped and asked rather than widening a scope it had itself written minutes earlier — the DL-1 pattern it must not repeat. Carl: 'fix the stutter', 3 August 2026.",
 

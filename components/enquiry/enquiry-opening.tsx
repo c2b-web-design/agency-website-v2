@@ -5,6 +5,7 @@ import ContactFieldCanvas, { FIELD_ENTRANCE_END_MS } from "./contact-field-canva
 import ContactFieldInputs, { type FieldStateSnapshot } from "./contact-field-inputs";
 import { FIELD_SLOTS } from "./contact-field-geometry";
 import AnswerCardCanvas from "./answer-card-canvas";
+import AnswerCardBackdropCanvas from "./answer-card-backdrop";
 
 // How long after entering `complete` the ENTIRE completion choreography has
 // cleared — acknowledgement, all four boxes, AND the opal.
@@ -584,6 +585,12 @@ export default function EnquiryOpening() {
     // the stable `questionnaireStarted` boolean exists to prevent.
   }, [questionnaireStarted, canvasWarm, reducedMotion]);
 
+  // ⚠ UNUSED WHILE CHUNK 3 RUNS, AND DELIBERATELY KEPT. The five CSS cards that
+  // called this are removed, so nothing selects anything — but this is working
+  // selection logic that chunk 5 needs when the WebGL grid takes over, and the
+  // same reasoning that protects GRID_REFL protects it: "unused" here means
+  // "waiting", not "dead".
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const toggleOption = useCallback((option: string) => {
     setSelected(prev => {
       const next = new Set(prev);
@@ -699,48 +706,39 @@ export default function EnquiryOpening() {
               `answer-card-canvas.tsx`.
             */}
             {qNum === 5 && <AnswerCardCanvas active={isActive} />}
+            {/*
+              ⚠ THE FIVE CSS ANSWER CARDS ARE REMOVED FOR CHUNK 3, ON CARL'S
+              EXPLICIT INSTRUCTION: *"just remove the 5 cards that are there now
+              and build."* The Builder put the cost to him — that with no answers
+              to select the corridor cannot advance past Q5, so Next step never
+              activates and Q4–Q1 and the contact field are unreachable — and
+              offered a flag-gated alternative that would have preserved the
+              flow. Carl: *"we do not need to advance atm."*
+
+              ⚠ SO THE PAGE IS DELIBERATELY NON-FUNCTIONAL BEYOND Q5 while this
+              chunk runs. That is accepted, not overlooked.
+
+              This reopens D-028 (frosted blue glass, A–E variants) and D-029
+              (the filament border). Both are approved layers and both are
+              Carl's to reopen; he has done so.
+
+              ⚠ THE MARKUP IS NOT LOST — it is in git at commit c7afca3 and
+              earlier, and chunk 5 rebuilds the grid in WebGL rather than
+              restoring this. ⚠ AND `GRID_REFL` IN THIS FILE IS NOW DEAD CODE
+              BUT MUST NOT BE DELETED AS UNUSED: it is the specification the
+              chunk-5 physics has to reproduce — bottom row 0.26–0.30 against
+              top row 0.04–0.16.
+
+              The grid element itself stays so the backdrop has a box to size
+              against; only the buttons are gone.
+            */}
             <div
-              className={`enquiry-answer-grid${reducedMotion ? "" : " enquiry-cards-reveal"}`}
+              className="enquiry-answer-grid"
               role="group"
               aria-labelledby="active-q-label"
+              style={{ position: "relative", minHeight: "6.5rem" }}
             >
-              {QUESTIONS[qNum].options.map((option, idx) => {
-                const isSelected = selected.has(option);
-                const Q_GLASS_OFFSETS: Record<number, number> = { 5: 0, 4: 2, 3: 1, 2: 4, 1: 3 };
-                const glassVariant = ["a", "b", "c", "d", "e"][(idx + (Q_GLASS_OFFSETS[qNum] ?? 0)) % 5];
-                // Top-run material response — shared across every enquiry answer card
-                // (Q1–Q5). Each card gets its own selected-only, filament-synchronised
-                // amber sweep host + a lifted label so its text stays protected. All
-                // visual work is in globals.css (.card-amber-host). The rules are
-                // self-referential (each card's own ::before/::after, its own sweep,
-                // its own filament-synced --sweep-pass), so this one mechanism gives
-                // every card an independent instance without flattening its A–E glass.
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    role="checkbox"
-                    aria-checked={isSelected}
-                    onClick={() => toggleOption(option)}
-                    className={`enquiry-card enquiry-card-glass-${glassVariant} enquiry-card-filament-host card-amber-host text-center px-3 rounded-xl font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40${isSelected ? " enquiry-card-selected" : ""}`}
-                  >
-                    <svg
-                      aria-hidden="true"
-                      className={`filament-svg${isSelected ? " filament-svg-visible" : ""}`}
-                    >
-                      <rect
-                        className="filament-rect"
-                        pathLength="1"
-                        fill="none"
-                        stroke="rgba(190, 145, 58, 0.80)"
-                        strokeWidth="1.5"
-                      />
-                    </svg>
-                    <span aria-hidden="true" className="card-amber-sweep" />
-                    <span className="card-amber-label">{option}</span>
-                  </button>
-                );
-              })}
+              {qNum === 5 && <AnswerCardBackdropCanvas />}
             </div>
 
             <div
