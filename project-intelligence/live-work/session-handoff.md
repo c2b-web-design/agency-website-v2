@@ -1,6 +1,6 @@
-# Session Handoff — 2 August 2026
+# Session Handoff — 3 August 2026
 
-**Written at the end of the session of 2 August 2026. For the session that picks up next.**
+**Written at the end of the session of 3 August 2026. For the session that picks up next.**
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical
 (D-006). **Delete this file at the end of the session that reads it, once its replacement is
@@ -8,26 +8,9 @@ written** — `live-work-protocol.md` §3a.
 
 **This file points at records; it does not restate them.**
 
-⚠ **DAY NUMBERING HAS STOPPED — USE DATES.** *"The Day numbers... was brought into being in my
-estimation at setting up the CLI and modifying the governance files. I estimated 7 days. We
-actually got it done in 4/5. **Days are no longer a thing now, we are well into building.**"*
-
-**The counter was measuring the governance setup, and that finished.** Carrying it forward
-would imply a schedule that does not exist, and a future session reading "Day 14" would infer a
-timeline that was never real. **References to Day 2, 3 and 7 below are historical** — they
-point at things that genuinely happened while the counter was live, and they stay.
-
-⚠ **AND THE COUNTER WAS NEVER THE PROJECT'S AGE. THE PROJECT IS ABOUT FOUR MONTHS OLD.** Carl,
-2 August 2026: *"As for project length, it's been about 4 months."*
-
-**"Day 8" was the eighth day of a governance sprint inside a project already three and a half
-months along** — not an eight-day-old build. The distinction matters because it changes how
-settled everything should be assumed to be: the approved layers are the product of months of
-iteration, not of a fortnight.
-
-⚠ **GIT UNDERCOUNTS IT, AND GIT IS THE ONLY AGE SIGNAL A FUTURE SESSION HAS.** First commit is
-**6 May 2026** — just under three months. **Roughly a month of work precedes the repository**,
-so `git log --reverse` is a floor on the project's age, not a measure of it.
+⚠ **USE DATES, NOT DAY NUMBERS.** The counter measured a governance sprint that finished; it was
+never the project's age. **The project is about four months old** — first commit 6 May 2026,
+with roughly a month of work preceding the repository.
 
 ---
 
@@ -37,224 +20,146 @@ so `git log --reverse` is a floor on the project's age, not a measure of it.
 stopping, wrapping up, resuming tomorrow, or ask whether to carry on. **Carl decides when a
 session ends and will say so.**
 
-Given Day 2, broken twice on Day 3, which is why it is a capitalised block in `CLAUDE.md`.
-**It reads as considerate. It is not.**
-
 ---
 
 ## Where things stand
 
-**Repo: `main`, head `02b25d4`, tree clean, PUSHED.** Two commits today; three earlier ones
-that had never been pushed went up with them. Lint at the recorded baseline (1 accepted
-error). Dev server stopped, port 3000 released.
+**Repo: `main`, head `4fa1917`, PUSHED. Seven commits today.** Lint at the recorded baseline
+(1 accepted error in `enquiry-opening.tsx`). `npx tsc --noEmit` clean.
 
-⚠ **No `chunk-scope.json` guard is active.** It was stood down at the end of Day 7 and was not
-rewritten for today's work. **The next chunk should write its own** — and must declare
-`verify/_tmp-*.mjs` and its own main file (findings F-6 / DL-1).
+⚠ **TWO TEMPORARY HARNESSES ARE UNTRACKED AND SHOULD STAY THAT WAY:**
+`verify/_tmp-answer-card-geometry.mjs` (chunk 1, 18 checks) and
+`verify/_tmp-glass-threshold.mjs` (chunk 2, the frost sweep). **Both still pass.** Delete when
+their chunks close.
 
-### Today: the contact field's faces became genuinely three-dimensional
+⚠ **A `chunk-scope.json` GUARD IS ACTIVE** — `q5-logo-backdrop`, with `enquiry-opening.tsx`
+unlocked. **The next chunk should rewrite it.**
 
-**Full records: D-043, D-044, and `live-work/run-log-orbiting-light.md`.**
-
-| What | Where |
-|---|---|
-| Authority resolved — Architect seat in-house | **D-043** |
-| Crown deepened, orbit built, opal responds | **D-044** (all PROVISIONAL) |
-| The sequence, the corrections, the six wrong turns | **run-log-orbiting-light.md** |
-
-**Carl on the result:** *"the gradients are animated... that is so fckn cool"* and *"it's as if
-the opal's shine pulses and the light of the cards is having some sort of effect on it."*
-
-⚠ **Both of those are EMERGENT and neither was built.** The texture never moves — it is one
-static photograph, and a travelling light on a curved surface makes it look animated. Nothing
-connects the boxes to the opal technically; they share a clock and the brain supplies the
-causation.
-
-⚠ **THE ONE FINDING THAT MATTERS: a crown of 1.2 units on a 38-unit box has a maximum surface
-tilt of 5.67 degrees.** That single number is why Carl reported the faces looked flat — the
-shadow lived in the last ~6 degrees of a 90-degree sweep. Real, and invisible. At 5.0 the tilt
-is 22.5 degrees. **The texture was never the problem; the geometry was too weak to compete.**
+⚠ **THE PAGE DOES NOT ADVANCE PAST Q5.** The five CSS answer cards were deleted on Carl's
+instruction. No selection, no Next step, no Q4–Q1, no contact field. **Deliberate, and accepted
+by him after the cost was put to him explicitly.**
 
 ---
 
-## ⚠ THE NEXT CHUNK — rebuild the Q&A answer cards in Three.js
+## Today: three chunks of the Q&A card rebuild
 
-⚠ **THE BRIEF IS ALREADY WRITTEN: `live-work/card-rebuild-brief.md`. READ IT FIRST.** It carries
-the specification, the measured card geometry, the placement constraint and what is explicitly
-out of scope. **The summary below duplicates only enough to explain why the chunk exists** —
-the brief is the source.
+**Full records: the three run logs in `live-work/`, and the commit messages, which carry the
+detail.**
 
-⚠ **AND IT GOES TO THE ARCHITECT AT THE OUTSET, NOT AS A FINISHED PLAN.** Carl: *"We should
-tell the Architect exactly what we are doing at the outset... it mirrors the client info
-process."* Brief first, then a plan through the plan-review gate (D-043).
+| Chunk | What | Commit |
+|---|---|---|
+| **1 — geometry** | Half-tube rim, swept bevel, convex recessed face | `b3a935c` |
+| **2 — glass** | `MeshPhysicalMaterial` + transmission, local PMREM env map | `3de771e` |
+| **3 — backdrop** | The `c2b DESIGN` lockup, four-zone blue/teal | `01cbe22`, `4fa1917` |
 
-**This is Carl's decision, made at the end of the 2 August session, and it is a major rebuild of an approved
-layer.** Nothing has been built. No plan exists.
+**Carl approved the geometry by eye** — *"The geometry looks good"* — and the backdrop —
+*"a lot better."* **Nothing else is approved.**
 
-### Why
+### The one number the next chunks need
 
-Carl, having seen the contact field lit: *"by comparison in the Q+A the answer cards look
-cheap. I like the idea, like the geometry, like the concept. It's like watching something in
-1080p and we've just built something in 4k."*
-
-⚠ **NOT A CRITICISM OF THE CARDS.** *"They are well made, I wouldn't have sent you an example
-if they weren't, but some of the effects I was trying to get over in CSS can be done better
-with Three.js and WebGL."*
-
-⚠ **THE ACTUAL ARGUMENT, AND IT IS NOT ABOUT FIDELITY.** *"The white on the cards is supposed
-to represent light. The amber influencing the white is the filament effect. **What you don't
-see are secondary effects as the filament is in proximity to other cards.** It's hinted at in
-the next step button."*
-
-**In CSS the filament can only light itself. In a real scene it is a light source, and every
-neighbouring card responds for free.** That is the whole point.
-
-⚠ **AND THE EXISTING CSS ALREADY ADMITS THE LIMIT.** `--sweep-pass` in `globals.css` is a
-hand-timed masked amber wash synced to *"the filament head crossing the top straight run"* — a
-manual approximation of light spilling from the filament onto its own face, and it reaches no
-other card. D-031/D-032's `GRID_REFL` table exists for the same reason: CSS cannot compute
-light transport, so the contribution of each card to the CTA had to be authored per grid slot.
-**In a real scene that table is unnecessary rather than needing porting.**
-
-### ⚠ THE SCOPE, IN CARL'S WORDS — narrower than it first sounds
-
-> *"All numbers for card appearance, filament speed etc will be used or converted. That's all
-> good. **We are only changing how the answers look and rebuilding the next step button.**"*
-
-**So the existing values are INPUTS, NOT OBSTACLES.** Timings, choreography, filament speed,
-card geometry, entrance sequencing — all carried across or converted. **What changes is the
-rendering, not the design.**
-
-- *"There would be no animated light."* The filament is the moving element; there is no
-  orbiting light here.
-- *"The cards have a resting state and a hover state. Could the effect of a moving filament
-  with the right reflective material be used?"*
-- *"The geometry of the cards is good. We build one card and then roll it out."*
-- *"Timings and choreography all stay."*
-- *"The next step button could keep the same implied geometry but we do it in Three.js and
-  possibly change the material."*
-
-### Where to build it — Carl's instruction
-
-> *"We build Q5 top left. Geometry first, we follow the same process. On the page, build it on
-> the left... after the ivory button, when Q5 appears, build on the left. **The CSS can stay in
-> place for now.** We reach the stage when Q5 answers can be deleted. We put the top left
-> answer in place."*
-
-⚠ **BUILD ALONGSIDE THE LIVE CSS GRID, NOT INSTEAD OF IT.** The approved cards keep working
-while the WebGL card is judged in dedicated space — the same sequencing the contact field
-used. Only when it is right does anything approved get touched.
-
-### ⚠ What was READ on 2 August, so the next session need not re-derive it
-
-**The Q5 top-left card is `"Premium new website"`.** Grid columns 1/3 of a 6-column grid in
-the 576px `max-w-xl` shell with 0.5rem gaps — **roughly 186 x 48px**. Similar scale to a
-contact-field box, so the same orthographic 1-world-unit-per-CSS-pixel mapping applies.
-
-**The card material is four stacked layers** (`app/globals.css` from ~line 287):
-
-| Layer | What |
-|---|---|
-| body | 160° linear gradient, three stops |
-| `::before` | two radials — the frosted diffusion |
-| `::after` | three gradients — top-edge band, corner glint, left rim |
-| box-shadow | **six insets** faking rim lights from four directions |
-
-⚠ **THE SIX INSET SHADOWS ARE THE TELL.** Top bright, left secondary at a third of it, bottom
-and right as depth shadow — **a studio lighting model, hand-painted, from a fixed direction.**
-In WebGL that is one light and a material.
-
-**The filament** (D-029) is an SVG `rect` with `pathLength="1"`, stroking the perimeter over
-2400ms, colour `rgba(190, 145, 58, 0.80)`. Rendered in `enquiry-opening.tsx` ~line 698.
-
-**The grid** is 6 columns with an offset second row — cards 4 and 5 at columns 2/4 and 4/6,
-centred beneath the first three. Any WebGL card must land pixel-exact on that.
-
-⚠ **THERE IS NO LAB ROUTE AND NO `components/lab/`.** The reference to
-`components/lab/grid-layout.ts` in `contact-field-geometry.ts` is **STALE** — the directory
-does not exist. Only two routes exist: `app/page.tsx` and `app/start/page.tsx`.
-
-### ⚠ Approved decisions this chunk touches
-
-**D-028** (frosted blue glass, five A–E variants), **D-029** (filament border), **D-030 to
-D-032** (blue-platinum CTA + reflected amber, `GRID_REFL`). ⚠ **All approved.** The
-`CLAUDE.md` rule applies: **stop, explain why, state the risk, and ask before editing.**
-
-### Two questions Carl did NOT answer — ask before planning
-
-1. **Exact placement of the WebGL card.** "On the left" — a separate canvas in the empty space
-   beside the 576px shell was proposed but not confirmed.
-2. **First-build scope.** Geometry + resting material only (the contact-field pattern), or
-   include the filament from the start since the secondary effects are the whole premise.
+Chunk 2's product is a measured table: **frost is legible to roughness ~0.45 and gone by 0.60**,
+four usable steps. With `thinnest stroke = 0.0247 × mark height`, that is what set the
+backdrop's scale.
 
 ---
 
-## Parked, and deliberately
+## ⚠ THE NEXT CHUNK — move the proto card into the grid
 
-| Item | Note |
-|---|---|
-| **Option B — text on a curved surface** | ⚠ Carl: *"we sort out the text issue after we have built it, and with the client info section as well."* **One answer, applied in both places.** Needs a hidden input for accessibility, autofill and typing |
-| **Crown depth 5.0** | Legible, not chosen. PROVISIONAL |
-| **The 3s hidden half of the orbit** | May read abrupt against the 6s front |
-| **Grain tint 0.55, rim unlit floor 0.05** | ⚠ **Now genuinely judgeable** — there is finally a moving light to judge them under |
+**Carl's sequence, given 3 August: logo → card in place → filament → clone.**
 
-⚠ **AND THE "WHICH BOX" QUESTION IS CLOSED.** Carl looked and settled it the other way:
-*"leave it as they are. I like the randomness and adds to each box's individuality."* **The
-variation IS the design.** Do not reopen it.
+⚠ **THE CARD MOVES INTO PLACE BEFORE THE FILAMENT, not after.** That is a change from the
+earlier order and it is the better one: **the filament's entire argument is neighbouring cards
+responding to it**, which cannot be judged while the card sits alone in the left margin.
+
+**Where it is now:** `answer-card-canvas.tsx` renders a card-sized canvas in the left viewport
+margin, ≥1280px only, ~1300ms after the CSS cards would have appeared.
+
+**Where it goes:** into the grid, over the backdrop — which means the two canvases merge.
+`answer-card-backdrop.tsx` currently has its own canvas spanning 576 × 104 because the card's is
+card-sized and elsewhere; **that reason disappears when the card moves.**
+
+### ⚠ Constraints that will bite, all learned the hard way today
+
+- ⚠ **A TRANSMISSIVE CARD CANNOT CROSS-FADE BY MATERIAL OPACITY.** `material.opacity` requires
+  `transparent = true`, and `three.module.js:8237` routes transparent materials out of the
+  opaque list while `:18039` renders only `opaqueObjects` into the transmission target. **So
+  fading a card removes its neighbours from its own refraction for the duration.** When the
+  rollout needs the approved 700ms/220ms ladder on five cards, the route is a **group-level**
+  effect — scale, position, or a masked reveal — **never per-material opacity.**
+- ⚠ **EVERY NEW CANVAS MUST DEFER ITS WEBGL SETUP PAST THE 1300ms PHRASE WIPE.** The Q5 stutter
+  returned today because chunk 1's canvas bypassed the `canvasWarm` gate that already existed.
+  **A guard written for one canvas does not cover the next one**, and chunks 4–5 add more.
+- ⚠ **`GRID_REFL` AND `toggleOption` IN `enquiry-opening.tsx` ARE UNUSED BUT MUST NOT BE
+  DELETED.** "Unused" means "waiting". `GRID_REFL` is the **specification** the chunk-5 physics
+  must reproduce — bottom row 0.26–0.30 against top row 0.04–0.16.
 
 ---
 
-## ⚠ Mastering — the standing methodology, restated because it governs everything above
+## ⚠ The day's lesson, and it cost the most time
 
-Carl: *"At the end of the whole building of the website I'm going to go through it all from
-start to finish and fine tune things. Look upon it as mastering. We can keep what we've got so
-far."*
+**Four separate faults today were each chased through two or more wrong fixes, and in every case
+the wrong fixes adjusted a VALUE when the fault was in a MECHANISM.**
 
-**So PROVISIONAL values do not need approving and should not be chased.** They are takes. See
-D-035.
+| Fault | Wrong attempts | What actually found it |
+|---|---|---|
+| Entrance flash | 4 patches | **Counting draw calls per frame** — 0 visibility flips |
+| Wordmark tiny | 3 (two sizing rewrites, one font gate) | **Reading `ctx.font` back** — `var()` is invalid in canvas, silently falls back to `10px sans-serif` |
+| DESIGN colour inverted | 2 repositionings | **Tracing the easing function across 0..1** — values of 6.00 and 2.91 from a missing branch |
+| Card arrives late | 2 diagnoses, both wrong | **Timestamping the DOM** — the wipe runs *alongside* the cards, not before |
+
+⚠ **AND THE COMMON THREAD IS THE INSTRUMENT, NOT THE REASONING.** Screenshot round-trips are
+~200ms; every stage Carl reported was shorter than that. **The probe said "fine", so the wrong
+mechanism got fixed.** In each case a purpose-built measurement found it in one run.
+
+**Carl, on the cost:** *"Most of this session has been trying to fix the fix on this chunk."*
+**He is right, and the pattern is the Builder's to break: when a symptom keeps moving, stop
+adjusting inputs and measure the mechanism.**
 
 ---
 
-## ⚠ The day's lesson, and it cuts against the Builder
+## ⚠ Two process corrections Carl made
 
-**Carl's eye said the geometry was not reading. The instruments said it was fine. The geometry
-was the thing that was wrong.**
+**1. The Builder widened its own scope.** It added `public/brand-assets/` to `chunk-scope.json`
+to copy a logo asset into the web root — **exactly the DL-1 pattern it had stopped and asked
+about an hour earlier.** Carl: *"revert. I can always point you at things or give you explicit
+permission if needed."*
 
-Every probe that disagreed with him was measuring something other than what it claimed:
+⚠ **THE RESULT WAS BETTER: `brand-assets/` stays the single source**, and the mark is now
+embedded as a packed 1-bit bitmap in `answer-card-mark.ts` — no file copy, no `public/` edit.
+**And the `.svg` "master" is not a vector**: it embeds a base64 PNG inside an `<image>` element
+and has zero `<path>` elements.
 
-| Wrong turn | What it actually was |
-|---|---|
-| Light aimed one box behind the readout | `updateMatrixWorld()` called before the position propagated |
-| "Off" left the light aimed at the world origin | `return null` unmounted it; the wiring effect never re-ran |
-| Sampling windows read empty space | Guessed fractions; a box is 38px in a 184px layer |
-| ⚠ **A long stretch of intensity/penumbra/easing changes** | **Screenshots taken BEFORE the boxes rendered.** Blank background read as an unlit face |
-| Exact `0.00` deltas called a render race, then a reporting bug | Both wrong. A byte diff proved the captures fine |
-| `decay = 2` with intensity 900, then 64000 | **Units.** One world unit is ONE CSS PIXEL; physical falloff assumes metres |
+**2. Plan mode was entered without being asked for**, twice. Carl: *"no we are not finished
+discussing, I will tell you when we will plan"*, and later *"no need for plan mode on this
+chunk."* **Discussion is not a preamble to planning.**
 
-⚠ **THE HARNESS NOW POLLS UNTIL BRIGHT PIXELS EXIST** rather than waiting a fixed interval.
-**Do not re-introduce a fixed wait after the corridor walk** — the boxes appear ~1500ms after
-the inputs do, and a short wait silently measures a blank stage.
+---
 
-⚠ **AND ONE FAILURE WAS WORSE THAN A WRONG NUMBER.** A comment was written into the rig
-claiming box 3 was kept dark *"verified by measurement, not assumed"* — **written before the
-measurement, and false.** The words are preserved in the source rather than deleted. **P-A
-applies to what you author, not only to what you review.**
+## How to look at it
+
+```
+http://localhost:3000/start                  walk to Q5 — backdrop in the grid, proto card left of it
+http://localhost:3000/start?cardrig=1        [1-6] geometry, [7-8] glass, [s] strokes, [↑/↓], [0]
+http://localhost:3000/start?roughness=0.45   jump to a frost level
+http://localhost:3000/start?standin=1        add the calibration strokes
+http://localhost:3000/start?lightrig=1       the contact field's orbiting light (localhost default ON)
+```
 
 ---
 
 ## How to work with Carl — carried forward
 
-- **⛔ Never comment on his working hours.** See the top of this file.
+- **⛔ Never comment on his working hours.**
 - **He leads.** Design, chunking and decisions are his. D-036.
 - **He asks for the principle before the decision.** Explain, then let him choose.
-- ⚠ **His analogies are precise, not decorative.** *"It's like volume on a fader — you don't
-  need powerful light to see a shadow"* corrected an intensity that had been chased upward
-  until it blew the face out. **A shadow is a ratio, not a level.** 45 years a musician;
-  DAW and production analogies land and carry real content.
-- **He verifies, and his eye beat the instrument repeatedly again today.**
-- **He chunks deliberately** and isolates variables — the method that has produced every good
-  result on this object.
-- **Answer execution questions yourself.** Ask only about intent and authority.
+- ⚠ **HIS DESIGN CORRECTIONS REMOVE PROBLEMS RATHER THAN SOLVING THEM.** Cutting "web" from the
+  wordmark eliminated a size-ratio compensation that only existed because two words had unequal
+  length. Setting DESIGN in caps removed a descender that made the block ragged **and** improved
+  frost legibility. **Both were better than the Builder's proposals, and simpler.**
+- ⚠ **HIS EYE BEAT THE INSTRUMENTS FOUR TIMES TODAY.** Every report was real; every "it measures
+  clean" was the probe missing the window.
+- **He chunks deliberately** and will swerve when measurement demands it: *"something may arise
+  in the process that we must swerve and be adaptable."*
 - **No ASCII diagrams or box-drawing characters.**
 - **Do not commit or push unless he explicitly asks.**
 
@@ -262,23 +167,23 @@ applies to what you author, not only to what you review.**
 
 ## ⚠ Environment notes
 
-- **The orphaned-port problem is real and was hit again.** Stopping the background task left
-  PID 11588 still `LISTENING` on 3000; it needed an explicit `Stop-Process`. Leftover
-  `CLOSE_WAIT` entries belong to a browser tab and are harmless.
-- **`python3` is not available.** Use `node`, `sed` or the Edit tool.
-- ⚠ **Screenshots at DPR 2 exhausted the headless GPU** on a canvas running a continuous rAF
-  loop — a verify script timed out waiting for a layer that was demonstrably visible. **DPR 1
-  worked.** Suspect the harness before the page.
-- ⚠ **A blanket string replace rewrote an accessor into infinite recursion** (`unlitFloorFor`
-  calling itself). Caught by reading the result. **Prefer targeted edits over `.split().join()`
-  across a file.**
+- ⚠ **`var(--font-*)` IS INVALID IN A CANVAS FONT STRING.** The browser discards the whole
+  declaration and falls back to `10px sans-serif`, silently. Name the family literally.
+- ⚠ **`readPixels()` on a live canvas returns an EMPTY buffer** — three.js does not set
+  `preserveDrawingBuffer`. Screenshot the composited result. **DPR 1.**
+- ⚠ **Screenshot round-trips are ~200ms and will miss short stages.** For anything briefer,
+  instrument in-page: wrap `drawElements`, timestamp the DOM, trace the function.
+- ⚠ **`react-hooks/immutability` rejects mutating anything traceable to a hook** — including
+  `texture.needsUpdate` on a `useMemo` value. **The contact field's `useStudioEnvMap` pattern
+  cannot be copied**; produce a finished value instead of patching a held one.
+- **Playwright bundles a PNG decoder** — `playwright-core/lib/utilsBundle`, no new dependency.
+- **The Begin button is disabled until the opening mask fires**; wait for `!disabled`, not just
+  visibility.
+- **`python3` is unavailable.** Use `node`, `sed`, or the Edit tool.
 
 ---
 
-*2 August 2026. The contact field's faces went from flat to genuinely dimensional, an
-orbiting light now crosses the whole assembly, and the Send opal responds to it. Two commits,
-both pushed.*
+*3 August 2026. The Q&A answer card now exists in WebGL with real glass, and the c2b DESIGN
+lockup sits behind the grid in the corridor's own two colours. Seven commits, all pushed.*
 
-*The next chunk is the largest yet proposed: rebuilding the Q&A answer cards in Three.js so the
-filament becomes a real light and its secondary effects on neighbouring cards come for free.
-**Only the rendering changes — every number is carried across.***
+*The next chunk moves the card into the grid, where the backdrop is already waiting for it.*
