@@ -2056,17 +2056,39 @@ export default function ContactFieldCanvas({
   );
 
   /**
-   * ⚠ TEST RIG ONLY — `?lightrig=1`. A query parameter rather than an env var:
-   * it toggles without a rebuild and cannot be left switched on in a deployed
-   * build. A lazy initialiser for the same reason `reducedMotion` is one — it
-   * must be settled before the first frame, and this component only ever mounts
+   * ⚠ TEST RIG ONLY — on by default on localhost, never on a deployed build.
+   *
+   * A lazy initialiser for the same reason `reducedMotion` is one — it must be
+   * settled before the first frame, and this component only ever mounts
    * client-side.
+   *
+   * ⚠ THE HOSTNAME CHECK IS THE GATE, NOT THE QUERY PARAMETER. Carl asked to see
+   * the orbit on localhost without appending a flag every time (3 August 2026).
+   * Deployed builds are unchanged and still require `?lightrig=1`, because two
+   * things make it unfit for production as it stands:
+   *
+   *   1. `useLightRig` binds SPACEBAR to toggle the light. On a deployed page
+   *      that key belongs to the user — it scrolls, and it activates a focused
+   *      button. A visitor would toggle a test rig by pressing space.
+   *   2. The orbit runs a continuous rAF loop, so the canvas cannot sit in
+   *      `frameloop="demand"` while it is on — a phone renders WebGL for as long
+   *      as the section is on screen.
+   *
+   * ⚠ AND THE ORBIT IS PROVISIONAL (D-044) — crown depth, grain tint and the 3s
+   * hidden half are takes, not decisions. Promoting it to production is a design
+   * call for Carl under the mastering methodology (D-035), not a config change.
+   *
+   * `?lightrig=0` forces it off locally; the parameter still forces it on anywhere.
    */
-  const [lightRigEnabled] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("lightrig") === "1",
-  );
+  const [lightRigEnabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      const flag = new URLSearchParams(window.location.search).get("lightrig");
+      if (flag !== null) return flag === "1";
+      const { hostname } = window.location;
+      return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+    }
+    return false;
+  });
   const { lightOn: rigLightOn } = useLightRig(lightRigEnabled);
 
   return (
