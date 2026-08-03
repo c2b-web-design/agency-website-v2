@@ -49,7 +49,6 @@ import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
   CARD_RISE_DURATION_MS,
-  CARD_RISE_DELAY_MS,
   CARD_RISE_TRANSLATE_PX,
   PROTO_MIN_VIEWPORT_PX,
   protoCanvasBox,
@@ -328,6 +327,11 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
     (group: THREE.Group | null) => {
       groupRef.current = group;
       if (!group) return;
+      // ⚠ HIDDEN AT ATTACH, and shown by the tick loop's very first frame. The
+      // ref callback runs during commit, BEFORE the renderer draws, so this
+      // guarantees the card is never drawn at its pre-entrance position. There
+      // is no hidden→visible step on screen because the first drawn frame is
+      // already the entrance's frame 0.
       group.visible = false;
       group.position.y = -CARD_RISE_TRANSLATE_PX;
     },
@@ -392,32 +396,43 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
     if (playedRef.current) return;
     playedRef.current = true;
 
-    group.visible = true;
+    // ⚠ DELIBERATELY NOT `group.visible = true` HERE.
+    //
+    // An earlier version did, and the tick loop then set it straight back to
+    // false for the 220ms delay — so the card rendered at full brightness for
+    // one frame before disappearing and rising. That was the last of Carl's
+    // four entrance reports: *"it appears, flashes and moves up."*
+    //
+    // Visibility is owned by the tick loop alone, from here on. There is exactly
+    // one place that decides whether the group is on screen.
 
     if (reducedMotion) {
+      group.visible = true;
       group.position.y = 0;
       invalidate();
       return;
     }
 
+    // ⚠ NO ENTRANCE DELAY. `CARD_RISE_DELAY_MS` (220) exists to stagger card 1
+    // against its four neighbours in the CSS grid. This proto card has no
+    // neighbours, and it already mounts ~1300ms after the CSS cards because it
+    // waits out the phrase wipe — so a further 220ms of deliberate invisibility
+    // buys nothing and was the source of a visible hidden→visible step.
+    //
+    // ⚠ THE STAGGER RETURNS IN CHUNK 5, where it means something: five cards on
+    // the approved 220/350/480/610/740 ladder.
     let raf = 0;
     const start = performance.now();
 
     const tick = () => {
-      const elapsed = performance.now() - start - CARD_RISE_DELAY_MS;
+      const elapsed = performance.now() - start;
 
-      // ⚠ HIDDEN UNTIL THE DELAY ELAPSES, rather than faded from zero opacity.
-      // `visible` costs nothing and, unlike `material.opacity`, does not require
-      // `transparent = true` — which would drop the rim and bevel out of the
+      // ⚠ VISIBLE FROM THE FIRST FRAME, ALREADY RISING. There is no hidden state
+      // to step out of, so there is nothing that can flash.
+      //
+      // ⚠ AND `visible` IS USED RATHER THAN `material.opacity`, which would
+      // require `transparent = true` and drop the rim and bevel out of the
       // transmission target for the whole rise. See the note on `attachGroup`.
-      if (elapsed < 0) {
-        group.visible = false;
-        group.position.y = -CARD_RISE_TRANSLATE_PX;
-        invalidate();
-        raf = requestAnimationFrame(tick);
-        return;
-      }
-
       group.visible = true;
 
       // `linear`, matching the CSS keyframe's timing function exactly.
@@ -564,6 +579,11 @@ function useLocalEnvMap(): THREE.Texture {
  * transparent stand-in would be INVISIBLE to the glass refracting it, and would
  * present as "the frost went flat" with every assertion still green.
  */
+/**
+ * The calibration backdrop.
+ *
+ * ⚠ RENDERED INSIDE THE CARD'S OWN GROUP, NOT BESIDE IT — see `CardScene`.
+ */
 function StandIn({ withStrokes }: { withStrokes: boolean }) {
   const invalidate = useThree((state) => state.invalidate);
 
@@ -610,7 +630,6 @@ function CardScene({
 
   return (
     <>
-      <StandIn withStrokes={strokes} />
       {/*
         Static diagnostic lighting. Above and slightly LEFT, which is the
         direction the six CSS inset shadows already imply: top bright, left
@@ -625,13 +644,22 @@ function CardScene({
           which would read as a missing surface rather than a shadowed one. */}
       <directionalLight position={[70, -60, 60]} intensity={0.35} />
 
+      {/*
+        ⚠ THE BACKDROP RENDERS INSIDE THE CARD'S GROUP so it inherits `visible`
+        and the entrance transform. As a sibling it drew for the whole 220ms
+        entrance delay while the card mesh was still hidden, so the first thing
+        on screen was a plain bright RECTANGLE that then became the card — Carl:
+        *"it appears as a rectangle at first, very fast, no curves."*
+      */}
       <AnswerCardMesh
         tuning={tuning}
         groupRef={groupRef}
         glass
         glassTuning={glassTuning}
         envMap={envMap}
-      />
+      >
+        <StandIn withStrokes={strokes} />
+      </AnswerCardMesh>
     </>
   );
 }

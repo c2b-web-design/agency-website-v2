@@ -462,6 +462,7 @@ export function AnswerCardMesh({
   glass = false,
   envMap = null,
   glassTuning = DEFAULT_GLASS_TUNING,
+  children,
 }: {
   tuning?: AnswerCardTuning;
   groupRef?: React.Ref<THREE.Group>;
@@ -485,6 +486,17 @@ export function AnswerCardMesh({
    * there is no "before" state to correct.
    */
   envMap?: THREE.Texture | null;
+  /**
+   * Rendered INSIDE the card's group, so anything placed behind the face
+   * inherits the group's `visible` flag and its entrance transform.
+   *
+   * ⚠ THIS IS WHY THE BACKDROP LIVES HERE RATHER THAN BESIDE THE CARD. As a
+   * sibling it drew for the whole 220ms entrance delay while the card mesh was
+   * still hidden, so the first thing on screen was a plain bright RECTANGLE that
+   * then became the card. Carl: *"it appears as a rectangle at first, very fast,
+   * no curves."*
+   */
+  children?: React.ReactNode;
 }) {
   const { tubeRadius, bevelWidth, bevelRise, crownHeight, plateauU, faceRecess } = tuning;
 
@@ -593,6 +605,7 @@ export function AnswerCardMesh({
 
   return (
     <group ref={groupRef}>
+      {children}
       <mesh geometry={rimGeometry}>
         <meshStandardMaterial
           color={DIAG_RIM_COLOR}
