@@ -28,7 +28,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { AnswerCardMesh, DEFAULT_TUNING, type AnswerCardTuning } from "./answer-card-mesh";
+import {
+  AnswerCardMesh,
+  DEFAULT_TUNING,
+  DEFAULT_GLASS_TUNING,
+  type AnswerCardTuning,
+  type GlassTuning,
+} from "./answer-card-mesh";
+import {
+  ENV_SHELL_RADIUS,
+  ENV_KEY_COLOR,
+  ENV_KEY_INTENSITY,
+  ENV_FILL_COLOR,
+  ENV_FILL_INTENSITY,
+  STANDIN_DEPTH,
+  buildStandInTexture,
+  standInMaterial,
+} from "./answer-card-glass";
 import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
@@ -37,6 +53,7 @@ import {
   CARD_RISE_TRANSLATE_PX,
   PROTO_MIN_VIEWPORT_PX,
   protoCanvasBox,
+  cardBudget,
   checkBudget,
   maxFaceTiltDegrees,
   MIN_FACE_TILT_DEGREES,
@@ -47,6 +64,18 @@ import {
  * any shading are not clipped by the canvas edge.
  */
 const CANVAS_PAD_PX = 12;
+
+/**
+ * How long the Q5 phrase wipe runs, in ms.
+ *
+ * ⚠ READ OFF `.enquiry-q-text-reveal` IN `globals.css`, the same declaration
+ * `enquiry-opening.tsx`'s own `Q5_REVEAL_CLEAR_MS` is derived from. That file
+ * records the history: the value was 700 until 30 July, when Carl saw the
+ * stutter MOVE from the "Wh" of "What" to the "h" of "here" — 700ms is ~54% of
+ * the way through a 1300ms wipe, so the work had been pushed into the remainder
+ * rather than removed. **A moved symptom is not a fixed symptom.**
+ */
+const Q5_REVEAL_CLEAR_MS = 1300;
 
 // ── Tuning harness ───────────────────────────────────────────────────────────
 
@@ -59,7 +88,27 @@ const RIG_PARAMS = [
   { key: "faceRecess", label: "face recess behind rim apex", step: 0.25, min: -2, max: 6 },
 ] as const;
 
+/**
+ * Chunk 2's material controls, on `[7]` and `[8]`.
+ *
+ * ⚠ TWO KNOBS, NOT FOUR. `thickness` and `ior` are deliberately absent: under an
+ * orthographic camera their maximum effect across the whole face is 0.801px, so
+ * exposing them would move numbers and change nothing visible — this project's
+ * own logged trap, where a measurable change the eye cannot see means the metric
+ * is not tracking what is being judged.
+ *
+ * ⚠ AND THERE IS NO "STAND-IN OPACITY" CONTROL. Driving opacity requires
+ * `transparent: true`, which removes the backdrop from the transmission pass's
+ * opaque list — the glass would stop seeing it entirely, presenting as "the
+ * frost went flat" with every assertion still green.
+ */
+const GLASS_RIG_PARAMS = [
+  { key: "roughness", label: "roughness (THE FROST)", step: 0.02, min: 0, max: 1 },
+  { key: "transmission", label: "transmission", step: 0.05, min: 0, max: 1 },
+] as const;
+
 type RigParamKey = (typeof RIG_PARAMS)[number]["key"];
+type GlassRigParamKey = (typeof GLASS_RIG_PARAMS)[number]["key"];
 
 /**
  * Keyboard tuning, mirroring `useLightRig` in `contact-field-light-rig.tsx`.
@@ -74,28 +123,67 @@ type RigParamKey = (typeof RIG_PARAMS)[number]["key"];
  * text inputs, and a tuning rig that swallows arrow keys inside them would be a
  * genuine bug rather than a harmless dev affordance.
  */
-function useCardRig(): { enabled: boolean; tuning: AnswerCardTuning } {
+function useCardRig(): {
+  enabled: boolean;
+  tuning: AnswerCardTuning;
+  glassTuning: GlassTuning;
+  standIn: boolean;
+} {
   const [enabled] = useState(
     () =>
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("cardrig") === "1",
   );
   const [tuning, setTuning] = useState<AnswerCardTuning>(DEFAULT_TUNING);
-  const [selected, setSelected] = useState<RigParamKey>("crownHeight");
+  /**
+   * ⚠ `?roughness=` AND `?standin=0` EXIST FOR THE HARNESS, not for tuning by
+   * hand. The chunk's product is a table of "at what roughness does each stroke
+   * width stop being distinguishable", which requires sweeping roughness from
+   * outside the page and capturing a stand-in-free reference frame. Both are
+   * read once at mount; the keyboard rig remains the interactive route.
+   */
+  const [glassTuning, setGlassTuning] = useState<GlassTuning>(() => {
+    if (typeof window === "undefined") return DEFAULT_GLASS_TUNING;
+    const q = new URLSearchParams(window.location.search).get("roughness");
+    const r = q === null ? NaN : Number(q);
+    return Number.isFinite(r)
+      ? { ...DEFAULT_GLASS_TUNING, roughness: Math.min(1, Math.max(0, r)) }
+      : DEFAULT_GLASS_TUNING;
+  });
+  const [selected, setSelected] = useState<RigParamKey | GlassRigParamKey>("roughness");
+  // ⚠ THE STAND-IN IS OFF BY DEFAULT, and that is a correction. It shipped ON,
+  // so an ordinary page load showed four white calibration bars across the card
+  // — Carl reasonably asked what they were. A throwaway measurement surface that
+  // renders by default reads as a design decision, which it is not.
+  //
+  // `?standin=1` turns it on for a tuning session; `[s]` toggles it live. The
+  // harness drives it explicitly either way.
+  const [standIn, setStandIn] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("standin") === "1",
+  );
 
   useEffect(() => {
     if (!enabled) return;
 
-    const report = (t: AnswerCardTuning) => {
+    const report = (t: AnswerCardTuning, g: GlassTuning) => {
       const check = checkBudget(t.tubeRadius, t.bevelWidth);
       const tilt = maxFaceTiltDegrees(t.crownHeight, t.tubeRadius, t.bevelWidth);
+      const mark = (k: string) => (k === selected ? "▶" : " ");
       console.log(
         [
           "── card rig ──────────────────────────────",
+          "  GEOMETRY  [1-6]",
           ...RIG_PARAMS.map(
-            (p) =>
-              `${p.key === selected ? "▶" : " "} ${p.label.padEnd(30)} ${t[p.key].toFixed(2)}`,
+            (p) => `${mark(p.key)} ${p.label.padEnd(30)} ${t[p.key].toFixed(2)}`,
           ),
+          "  GLASS  [7-8]",
+          ...GLASS_RIG_PARAMS.map(
+            (p) => `${mark(p.key)} ${p.label.padEnd(30)} ${g[p.key].toFixed(2)}`,
+          ),
+          `  stand-in [s]                   ${standIn ? "on" : "off"}`,
+          "  ─────",
           `  face                           ${check.budget.faceWidth.toFixed(2)} x ${check.budget.faceHeight.toFixed(2)}`,
           `  face corner radius             ${check.budget.faceRadius.toFixed(2)}`,
           `  face height ratio              ${(check.budget.faceHeightRatio * 100).toFixed(1)}%`,
@@ -104,6 +192,9 @@ function useCardRig(): { enabled: boolean; tuning: AnswerCardTuning } {
           `  max face tilt (predicted)      ${tilt.toFixed(2)}° (floor ${MIN_FACE_TILT_DEGREES}°)`,
           check.ok ? "  budget OK" : `  ⚠ BUDGET FAIL: ${check.failures.join("; ")}`,
           tilt >= MIN_FACE_TILT_DEGREES ? "  tilt OK" : "  ⚠ TILT BELOW FLOOR — convexity will not read",
+          // ⚠ thickness and ior are FIXED and absent by design — under an
+          // orthographic camera their whole-face effect is 0.801px.
+          "  (thickness/ior fixed — 0.8px max effect under ortho)",
         ].join("\n"),
       );
     };
@@ -114,16 +205,30 @@ function useCardRig(): { enabled: boolean; tuning: AnswerCardTuning } {
         return;
       }
 
+      if (e.key === "s" || e.key === "S") {
+        e.preventDefault();
+        setStandIn((v) => !v);
+        return;
+      }
+
       const numeric = Number(e.key);
       if (numeric >= 1 && numeric <= RIG_PARAMS.length) {
         e.preventDefault();
         setSelected(RIG_PARAMS[numeric - 1].key);
         return;
       }
+      if (numeric > RIG_PARAMS.length && numeric <= RIG_PARAMS.length + GLASS_RIG_PARAMS.length) {
+        e.preventDefault();
+        setSelected(GLASS_RIG_PARAMS[numeric - RIG_PARAMS.length - 1].key);
+        return;
+      }
       if (e.key === "0") {
         e.preventDefault();
         setTuning((t) => {
-          report(t);
+          setGlassTuning((g) => {
+            report(t, g);
+            return g;
+          });
           return t;
         });
         return;
@@ -131,14 +236,40 @@ function useCardRig(): { enabled: boolean; tuning: AnswerCardTuning } {
       if (e.key === "ArrowUp" || e.key === "ArrowDown") {
         e.preventDefault();
         const dir = e.key === "ArrowUp" ? 1 : -1;
+
+        const glassSpec = GLASS_RIG_PARAMS.find((p) => p.key === selected);
+        if (glassSpec) {
+          setGlassTuning((g) => {
+            const next = {
+              ...g,
+              [glassSpec.key]: Math.min(
+                glassSpec.max,
+                Math.max(glassSpec.min, g[glassSpec.key] + dir * glassSpec.step),
+              ),
+            };
+            setTuning((t) => {
+              report(t, next);
+              return t;
+            });
+            return next;
+          });
+          return;
+        }
+
+        // Narrowed by `find` on the geometry bank: reaching here means `selected`
+        // is a geometry key, since the glass branch above returns.
         const spec = RIG_PARAMS.find((p) => p.key === selected);
         if (!spec) return;
+        const key = spec.key;
         setTuning((t) => {
           const next = {
             ...t,
-            [selected]: Math.min(spec.max, Math.max(spec.min, t[selected] + dir * spec.step)),
+            [key]: Math.min(spec.max, Math.max(spec.min, t[key] + dir * spec.step)),
           };
-          report(next);
+          setGlassTuning((g) => {
+            report(next, g);
+            return g;
+          });
           return next;
         });
       }
@@ -146,12 +277,12 @@ function useCardRig(): { enabled: boolean; tuning: AnswerCardTuning } {
 
     window.addEventListener("keydown", onKey);
     console.log(
-      "card rig active — [1-6] select parameter, [↑/↓] adjust, [0] print all values",
+      "card rig active — [1-6] geometry, [7-8] glass, [s] stand-in, [↑/↓] adjust, [0] print",
     );
     return () => window.removeEventListener("keydown", onKey);
-  }, [enabled, selected]);
+  }, [enabled, selected, standIn]);
 
-  return { enabled, tuning };
+  return { enabled, tuning, glassTuning, standIn };
 }
 
 // ── Entrance ─────────────────────────────────────────────────────────────────
@@ -287,19 +418,173 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
 
 // ── Scene ────────────────────────────────────────────────────────────────────
 
+/**
+ * The environment map, generated entirely locally.
+ *
+ * ⚠ NO HDRI, NO CDN, NO NETWORK REQUEST. A small scene of `MeshBasicMaterial`
+ * reflection panels is converted to a prefiltered radiance map by
+ * `PMREMGenerator.fromScene()` on the GPU.
+ *
+ * ⚠ THE PATTERN IS COPIED FROM `useStudioEnvMap` IN `contact-field-canvas.tsx`;
+ * THE VALUES ARE NOT. That rig's key is warm gold at intensity 7.0, tuned for a
+ * gold bevel — wrong for blue glass, and its constants are `protected` because
+ * tuning this card must not move an approved object.
+ *
+ * ⚠ THE MAP IS BUILT IN `useMemo` AND HANDED TO THE MATERIAL BY A CALLBACK REF,
+ * which is a DEPARTURE from `useStudioEnvMap`'s effect-based lifecycle. The
+ * reason is the lint rules, and it is worth recording because the contact
+ * field's shape looks like the obvious precedent to copy:
+ *
+ *   - Holding the material in a container and assigning `envMap` inside an
+ *     effect trips `react-hooks/immutability` in EVERY form tried —
+ *     `useState<RefObject>`, a one-element `useState` array (exactly
+ *     `useStudioEnvMap`'s shape), `useMemo`, and a forwarded ref. The rule
+ *     traces provenance through wrapper objects, array elements and hook
+ *     arguments alike.
+ *   - Publishing the texture with `setEnvMap` inside the effect then trips
+ *     `react-hooks/set-state-in-effect` — the SAME rule as the project's one
+ *     accepted pre-existing error. Trading one rule for another is not a fix.
+ *
+ * ⚠ SO THE ALLOCATION MOVES OUT OF THE EFFECT, and the Strict Mode concern that
+ * motivated `useStudioEnvMap`'s choice is handled instead by disposing the
+ * PREVIOUS target whenever a new one is built, plus on unmount. A stranded
+ * double-invoke allocation is released by the next run rather than leaking.
+ *
+ * The rest of the discipline is unchanged and still earns its place: DETACH
+ * FROM THE MATERIAL BEFORE DISPOSING (so a disposed texture can never be
+ * sampled), and `invalidate()` because the canvas runs `frameloop="demand"`.
+ */
+function useLocalEnvMap(): (m: THREE.MeshPhysicalMaterial | null) => void {
+  const gl = useThree((state) => state.gl);
+  const invalidate = useThree((state) => state.invalidate);
+
+  const target = useMemo(() => {
+    const studio = new THREE.Scene();
+    const disposables: Array<THREE.BufferGeometry | THREE.Material> = [];
+
+    // Panels are things to be SEEN IN a reflection, not lights: colour
+    // pre-multiplied by intensity, `toneMapped: false`. Large rather than
+    // fierce — a curved face reflects a wide arc, so a big soft source reads as
+    // a satin sweep rather than a hot pinpoint.
+    const panel = (
+      color: string,
+      intensity: number,
+      position: [number, number, number],
+      size: [number, number],
+    ) => {
+      const geometry = new THREE.PlaneGeometry(size[0], size[1]);
+      const material = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(color).multiplyScalar(intensity),
+        side: THREE.DoubleSide,
+        toneMapped: false,
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(position[0], position[1], position[2]);
+      mesh.lookAt(0, 0, 0);
+      studio.add(mesh);
+      disposables.push(geometry, material);
+    };
+
+    const shellGeometry = new THREE.SphereGeometry(ENV_SHELL_RADIUS, 16, 16);
+    const shellMaterial = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      side: THREE.BackSide,
+      toneMapped: false,
+    });
+    studio.add(new THREE.Mesh(shellGeometry, shellMaterial));
+    disposables.push(shellGeometry, shellMaterial);
+
+    panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY, [-16, 22, 18], [70, 38]);
+    panel(ENV_FILL_COLOR, ENV_FILL_INTENSITY, [18, -16, 14], [48, 26]);
+
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const built = pmrem.fromScene(studio, 0, 0.1, 200);
+    pmrem.dispose();
+    disposables.forEach((d) => d.dispose());
+    studio.clear();
+
+    return built;
+  }, [gl]);
+
+  // Dispose the previous target when a new one is built, and on unmount. This
+  // is what replaces the effect-based allocation: a Strict Mode double-invoke
+  // leaves its first target to be released here rather than stranded.
+  useEffect(() => {
+    invalidate();
+    return () => {
+      target.dispose();
+      invalidate();
+    };
+  }, [target, invalidate]);
+
+  // The material is a plain argument here — not a value React holds — so
+  // assigning to it is an ordinary imperative update to an external system,
+  // which is precisely what a callback ref is for.
+  return useCallback(
+    (material: THREE.MeshPhysicalMaterial | null) => {
+      if (!material) return;
+      material.envMap = target.texture;
+      material.needsUpdate = true;
+      invalidate();
+    },
+    [target, invalidate],
+  );
+}
+
+/**
+ * The calibration stand-in — an OPAQUE plane behind the card.
+ *
+ * ⚠ OPAQUE ON BOTH COUNTS: `transmission: 0` AND `transparent: false`. The
+ * transmission pass renders `opaqueObjects` only, and `transparent === true`
+ * routes a material away from that list just as surely as transmission does. A
+ * transparent stand-in would be INVISIBLE to the glass refracting it, and would
+ * present as "the frost went flat" with every assertion still green.
+ */
+function StandIn({ visible }: { visible: boolean }) {
+  const invalidate = useThree((state) => state.invalidate);
+
+  const { texture, material } = useMemo(() => {
+    const budget = cardBudget();
+    const tex = buildStandInTexture(budget.faceWidth, budget.faceHeight);
+    return { texture: tex, material: standInMaterial(tex) };
+  }, []);
+
+  useEffect(() => {
+    invalidate();
+    return () => {
+      material.dispose();
+      texture.dispose();
+    };
+  }, [material, texture, invalidate]);
+
+  const budget = useMemo(() => cardBudget(), []);
+
+  return (
+    <mesh visible={visible} position={[0, 0, -STANDIN_DEPTH]} material={material}>
+      <planeGeometry args={[budget.faceWidth, budget.faceHeight]} />
+    </mesh>
+  );
+}
+
 function CardScene({
   active,
   reducedMotion,
   tuning,
+  glassTuning,
+  standIn,
 }: {
   active: boolean;
   reducedMotion: boolean;
   tuning: AnswerCardTuning;
+  glassTuning: GlassTuning;
+  standIn: boolean;
 }) {
   const groupRef = useCardEntrance(active, reducedMotion);
+  const attachFaceMaterial = useLocalEnvMap();
 
   return (
     <>
+      <StandIn visible={standIn} />
       {/*
         Static diagnostic lighting. Above and slightly LEFT, which is the
         direction the six CSS inset shadows already imply: top bright, left
@@ -314,7 +599,13 @@ function CardScene({
           which would read as a missing surface rather than a shadowed one. */}
       <directionalLight position={[70, -60, 60]} intensity={0.35} />
 
-      <AnswerCardMesh tuning={tuning} groupRef={groupRef} />
+      <AnswerCardMesh
+        tuning={tuning}
+        groupRef={groupRef}
+        glass
+        glassTuning={glassTuning}
+        faceMaterialRef={attachFaceMaterial}
+      />
     </>
   );
 }
@@ -335,6 +626,62 @@ export default function AnswerCardCanvas({ active }: { active: boolean }) {
       window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
 
+  /**
+   * ⚠ THE CANVAS DEFERS ITS OWN WEBGL SETUP PAST THE Q5 PHRASE WIPE.
+   *
+   * The stutter Carl reported on the "W" and "h" of "What" was this canvas's
+   * Three.js initialisation landing inside the 1300ms reveal — measured at
+   * +58-64ms with a 1827-2138ms long task behind it, 3/3 cold runs.
+   *
+   * ⚠ A FIRST FIX GATED THE MOUNT ON `canvasWarm` IN `enquiry-opening.tsx`. It
+   * removed the stutter but was the WRONG INSTRUMENT: that gate is derived from
+   * the CONTACT FIELD's warm-up and only clears once an idle opportunity arrives
+   * after it, so the proto card arrived at +8270ms — roughly 1330ms AFTER its
+   * CSS neighbours, which appear at +6938ms. Carl: *"the card arrives too
+   * late."*
+   *
+   * ⚠ AND THE CORRIDOR'S OWN TIMING IS WHY A BEGIN-RELATIVE GUARD CANNOT WORK.
+   * The answer cards do not appear when Begin is pressed; they arrive ~6.9s
+   * later, after the opening phrase choreography. The reveal that must be
+   * protected is the one that starts WHEN THIS COMPONENT MOUNTS, so the delay
+   * has to be measured from here rather than inherited from a gate anchored to
+   * Begin.
+   *
+   * Q5_REVEAL_CLEAR_MS (1300) is read off `.enquiry-q-text-reveal` in
+   * `globals.css` — the same declaration `enquiry-opening.tsx` derives its own
+   * guard from. Duplicated as a local constant rather than imported because this
+   * file must not depend on an approved-foundation module for a value it only
+   * needs to wait out.
+   *
+   * ⚠ REDUCED MOTION SKIPS THE WAIT. `.enquiry-q-text-reveal` has
+   * `animation: none` under `prefers-reduced-motion`, so there is no wipe to
+   * protect and waiting would delay the card guarding an animation that never
+   * runs — the exact failure mode `enquiry-opening.tsx` documents for its own
+   * guards.
+   *
+   * ⚠ THE COST: THE PROTO ARRIVES ~1300ms AFTER THE CSS CARDS, AND THAT IS
+   * ACCEPTED. Measured 3 August — the CSS cards and the phrase wipe both start
+   * at +6982ms after Begin and the wipe ends at +8282ms, so the two genuinely
+   * compete for the same window. The card cannot match card 1's 220ms entrance
+   * without putting the stutter back.
+   *
+   * Carl, 3 August: *"the new card is a test, it's not important it reveals
+   * with card 1, only that it's there."* **So the lag is deliberate, not
+   * outstanding.**
+   *
+   * ⚠ IT BECOMES A REAL QUESTION IN CHUNK 5, when the card moves into the grid
+   * and must arrive on the approved 700ms/220ms ladder. The fix at that point is
+   * to warm the canvas during the opening choreography — mounted hidden, well
+   * before the cards, so its setup lands in dead time — NOT to shorten this
+   * wait. `enquiry-opening.tsx` records why: a moved symptom is not a fixed one.
+   */
+  const [revealCleared, setRevealCleared] = useState(reducedMotion);
+  useEffect(() => {
+    if (reducedMotion) return;
+    const id = window.setTimeout(() => setRevealCleared(true), Q5_REVEAL_CLEAR_MS);
+    return () => window.clearTimeout(id);
+  }, [reducedMotion]);
+
   const [wideEnough, setWideEnough] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia(`(min-width: ${PROTO_MIN_VIEWPORT_PX}px)`);
@@ -344,11 +691,11 @@ export default function AnswerCardCanvas({ active }: { active: boolean }) {
     return () => mq.removeEventListener("change", apply);
   }, []);
 
-  const { tuning } = useCardRig();
+  const { tuning, glassTuning, standIn } = useCardRig();
 
   const box = useMemo(() => protoCanvasBox(), []);
 
-  if (!wideEnough) return null;
+  if (!wideEnough || !revealCleared) return null;
 
   return (
     <div
@@ -371,7 +718,13 @@ export default function AnswerCardCanvas({ active }: { active: boolean }) {
         frameloop="demand"
         style={{ pointerEvents: "none" }}
       >
-        <CardScene active={active} reducedMotion={reducedMotion} tuning={tuning} />
+        <CardScene
+          active={active}
+          reducedMotion={reducedMotion}
+          tuning={tuning}
+          glassTuning={glassTuning}
+          standIn={standIn}
+        />
       </Canvas>
     </div>
   );

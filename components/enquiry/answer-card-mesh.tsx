@@ -54,6 +54,32 @@ import {
   FACE_SEAM_SINK,
   cardBudget,
 } from "./answer-card-geometry";
+import {
+  GLASS_COLOR,
+  GLASS_ROUGHNESS,
+  GLASS_TRANSMISSION,
+  GLASS_THICKNESS,
+  GLASS_IOR,
+  GLASS_ENV_INTENSITY,
+} from "./answer-card-glass";
+
+/**
+ * The two glass properties that are adjustable.
+ *
+ * ⚠ `thickness` AND `ior` ARE DELIBERATELY ABSENT. Under an orthographic camera
+ * their maximum effect across the whole face is 0.801px — they would move
+ * numbers and change nothing on screen. See `answer-card-glass.ts` for the
+ * measured displacement table.
+ */
+export type GlassTuning = {
+  roughness: number;
+  transmission: number;
+};
+
+export const DEFAULT_GLASS_TUNING: GlassTuning = {
+  roughness: GLASS_ROUGHNESS,
+  transmission: GLASS_TRANSMISSION,
+};
 
 // ── Diagnostic material ──────────────────────────────────────────────────────
 // Three distinct greys so rim, bevel and face are separable by eye.
@@ -433,9 +459,24 @@ export const DEFAULT_TUNING: AnswerCardTuning = {
 export function AnswerCardMesh({
   tuning = DEFAULT_TUNING,
   groupRef,
+  glass = false,
+  glassTuning = DEFAULT_GLASS_TUNING,
+  faceMaterialRef,
 }: {
   tuning?: AnswerCardTuning;
   groupRef?: React.Ref<THREE.Group>;
+  /**
+   * Whether the face wears glass (chunk 2) or chunk 1's diagnostic grey.
+   *
+   * ⚠ THE RIM AND BEVEL ARE UNAFFECTED EITHER WAY and stay grey. Colouring them
+   * in the same chunk that introduces the glass would mix two variables Carl
+   * could otherwise separate, and it contradicts chunk 1's own argument that
+   * grey exists so a form defect cannot hide behind a plausible colour.
+   */
+  glass?: boolean;
+  glassTuning?: GlassTuning;
+  /** So the canvas can attach the locally generated environment map. */
+  faceMaterialRef?: React.Ref<THREE.MeshPhysicalMaterial>;
 }) {
   const { tubeRadius, bevelWidth, bevelRise, crownHeight, plateauU, faceRecess } = tuning;
 
@@ -562,11 +603,32 @@ export function AnswerCardMesh({
         />
       </mesh>
 
+      {/*
+        ⚠ THE FACE IS THE ONLY TRANSMISSIVE SURFACE, and that is a constraint
+        rather than a preference. `three.module.js:18039` renders `opaqueObjects`
+        ONLY into the transmission target, and the render-list split at `:8237`
+        pushes anything with `transmission > 0` into a separate list. So a
+        transmissive rim or bevel would DELETE ITSELF from what the face
+        refracts — the card would lose its own edges.
+
+        ⚠ AND THE RIM AND BEVEL ARE ALREADY EXCLUDED DURING THE ENTRANCE, for
+        the OTHER arm of the same rule: the entrance sets `transparent = true`
+        while it fades, and `transparent === true` also routes a material away
+        from the opaque list. They rejoin it once the fade completes.
+      */}
       <mesh geometry={faceGeometry} position={[0, 0, faceBaseZ]}>
-        <meshStandardMaterial
-          color={DIAG_FACE_COLOR}
-          roughness={0.65}
+        <meshPhysicalMaterial
+          ref={faceMaterialRef}
+          color={glass ? GLASS_COLOR : DIAG_FACE_COLOR}
+          roughness={glass ? glassTuning.roughness : 0.65}
           metalness={0}
+          transmission={glass ? glassTuning.transmission : 0}
+          // ⚠ FIXED, NOT TUNABLE — see answer-card-glass.ts. Under an
+          // orthographic camera the crown centre is at normal incidence, so the
+          // maximum lateral displacement across the whole face is 0.801px.
+          thickness={GLASS_THICKNESS}
+          ior={GLASS_IOR}
+          envMapIntensity={GLASS_ENV_INTENSITY}
           side={THREE.DoubleSide}
         />
       </mesh>

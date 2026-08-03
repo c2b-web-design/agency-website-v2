@@ -685,6 +685,18 @@ export default function EnquiryOpening() {
               of the placement maths that could silently disagree with the first.
 
               Renders only at >= 1280px and only for Q5; absent otherwise.
+
+              ⚠ THE CANVAS DEFERS ITS OWN WEBGL SETUP PAST THE PHRASE WIPE and
+              needs no gate here. Mounting it unguarded reintroduced the Q5
+              stutter on the "W" and "h" of "What" — measured 3 August at
+              +58-64ms into the reveal with a 1827-2138ms long task behind it.
+
+              ⚠ AND `canvasWarm` WAS TRIED FIRST AND WAS THE WRONG INSTRUMENT.
+              It removed the stutter but arrives ~1330ms after the CSS cards do,
+              because it is derived from the CONTACT FIELD's warm-up rather than
+              from this phrase. The correct boundary is measured from when this
+              component mounts — see `Q5_REVEAL_CLEAR_MS` in
+              `answer-card-canvas.tsx`.
             */}
             {qNum === 5 && <AnswerCardCanvas active={isActive} />}
             <div
