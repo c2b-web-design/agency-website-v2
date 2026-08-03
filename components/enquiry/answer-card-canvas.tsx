@@ -127,7 +127,7 @@ function useCardRig(): {
   enabled: boolean;
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
-  standIn: boolean;
+  strokes: boolean;
 } {
   const [enabled] = useState(
     () =>
@@ -151,14 +151,22 @@ function useCardRig(): {
       : DEFAULT_GLASS_TUNING;
   });
   const [selected, setSelected] = useState<RigParamKey | GlassRigParamKey>("roughness");
-  // ⚠ THE STAND-IN IS OFF BY DEFAULT, and that is a correction. It shipped ON,
-  // so an ordinary page load showed four white calibration bars across the card
-  // — Carl reasonably asked what they were. A throwaway measurement surface that
-  // renders by default reads as a design decision, which it is not.
+  // ⚠ THE BACKDROP IS ALWAYS ON; ONLY THE CALIBRATION STROKES ARE OPTIONAL, and
+  // that split took two corrections to arrive at.
   //
-  // `?standin=1` turns it on for a tuning session; `[s]` toggles it live. The
-  // harness drives it explicitly either way.
-  const [standIn, setStandIn] = useState(
+  // It first shipped with the strokes ON, so an ordinary load showed four white
+  // bars across the card and Carl reasonably asked what they were — a
+  // measurement instrument rendering by default reads as a design decision.
+  // Turning the whole stand-in OFF then removed the backdrop too, and the card
+  // became a pale grey slab: *"No glass."*
+  //
+  // ⚠ BOTH REPORTS HAVE ONE CAUSE — GLASS OVER A NEAR-BLACK PAGE SHOWS
+  // NEAR-BLACK. The backdrop is not decoration; it is the only thing that makes
+  // the material visible at all, which is precisely why chunk 3 exists.
+  //
+  // So the default is the corridor's blue→teal wash with no strokes. `?standin=1`
+  // adds them for a tuning session; `[s]` toggles them live.
+  const [strokes, setStrokes] = useState(
     () =>
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("standin") === "1",
@@ -182,7 +190,7 @@ function useCardRig(): {
           ...GLASS_RIG_PARAMS.map(
             (p) => `${mark(p.key)} ${p.label.padEnd(30)} ${g[p.key].toFixed(2)}`,
           ),
-          `  stand-in [s]                   ${standIn ? "on" : "off"}`,
+          `  calibration strokes [s]        ${strokes ? "on" : "off"}`,
           "  ─────",
           `  face                           ${check.budget.faceWidth.toFixed(2)} x ${check.budget.faceHeight.toFixed(2)}`,
           `  face corner radius             ${check.budget.faceRadius.toFixed(2)}`,
@@ -207,7 +215,7 @@ function useCardRig(): {
 
       if (e.key === "s" || e.key === "S") {
         e.preventDefault();
-        setStandIn((v) => !v);
+        setStrokes((v) => !v);
         return;
       }
 
@@ -280,9 +288,9 @@ function useCardRig(): {
       "card rig active — [1-6] geometry, [7-8] glass, [s] stand-in, [↑/↓] adjust, [0] print",
     );
     return () => window.removeEventListener("keydown", onKey);
-  }, [enabled, selected, standIn]);
+  }, [enabled, selected, strokes]);
 
-  return { enabled, tuning, glassTuning, standIn };
+  return { enabled, tuning, glassTuning, strokes };
 }
 
 // ── Entrance ─────────────────────────────────────────────────────────────────
@@ -322,16 +330,43 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
       if (!group) return;
       group.visible = false;
       group.position.y = -CARD_RISE_TRANSLATE_PX;
-      group.traverse((o) => {
-        const m = (o as THREE.Mesh).material as THREE.Material | undefined;
-        if (m) {
-          m.transparent = true;
-          m.opacity = 0;
-        }
-      });
     },
     [],
   );
+
+  /**
+   * Whether the entrance fade is still running.
+   *
+   * ⚠ THE FADE AND THE GLASS FIGHT EACH OTHER, and this is the third stage Carl
+   * reported: *"fades in, moves slightly up then brightens."*
+   *
+   * The fade drives `material.opacity`, which requires `transparent = true` on
+   * every sub-mesh. But `three.module.js:8237` routes ANY material with
+   * `transparent === true` out of the opaque list, and `:18039` renders only
+   * `opaqueObjects` into the transmission target. **So for the whole 700ms rise,
+   * the rim and bevel are invisible to the glass refracting them** — and the
+   * card visibly changes when the fade ends and they rejoin the opaque list.
+   *
+   * ⚠ IT IS THE SAME CONSTRAINT THIS CHUNK ALREADY DOCUMENTED FOR THE STAND-IN,
+   * arriving from the other direction. The stand-in was made opaque on purpose;
+   * the entrance was quietly making everything else transparent.
+   *
+   * ⚠ SO THE OPACITY FADE IS REMOVED AND THE 6px RISE IS KEPT. The meshes stay
+   * opaque throughout, the transmission target never changes membership, and the
+   * card is fully-formed glass from its first visible frame.
+   *
+   * ⚠ THIS IS A DEPARTURE FROM CARD 1's CSS ENTRANCE, which fades opacity 0 -> 1
+   * as well as rising. It is accepted for the proto because Carl has already
+   * settled that the test object's entrance does not need to match: *"the new
+   * card is a test, it's not important it reveals with card 1, only that it's
+   * there."*
+   *
+   * ⚠ AND IT IS A REAL CONSTRAINT FOR CHUNK 5, not a temporary shortcut. A
+   * transmissive card CANNOT cross-fade by material opacity without dropping its
+   * own neighbours out of the refraction for the duration. When the rollout
+   * needs the approved 700ms/220ms fade, the route is a group-level effect
+   * (scale, position, or a masked reveal) — never per-material opacity.
+   */
 
   /**
    * ⚠ THE ENTRANCE RUNS ONCE PER ACTIVATION, GUARDED BY A REF.
@@ -361,13 +396,6 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
 
     if (reducedMotion) {
       group.position.y = 0;
-      group.traverse((o) => {
-        const m = (o as THREE.Mesh).material as THREE.Material | undefined;
-        if (m) {
-          m.transparent = false;
-          m.opacity = 1;
-        }
-      });
       invalidate();
       return;
     }
@@ -375,31 +403,25 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
     let raf = 0;
     const start = performance.now();
 
-    const setOpacity = (v: number) => {
-      group.traverse((o) => {
-        const mesh = o as THREE.Mesh;
-        const m = mesh.material as THREE.Material | undefined;
-        if (m) {
-          m.transparent = v < 1;
-          m.opacity = v;
-        }
-      });
-    };
-
     const tick = () => {
       const elapsed = performance.now() - start - CARD_RISE_DELAY_MS;
 
+      // ⚠ HIDDEN UNTIL THE DELAY ELAPSES, rather than faded from zero opacity.
+      // `visible` costs nothing and, unlike `material.opacity`, does not require
+      // `transparent = true` — which would drop the rim and bevel out of the
+      // transmission target for the whole rise. See the note on `attachGroup`.
       if (elapsed < 0) {
-        setOpacity(0);
+        group.visible = false;
         group.position.y = -CARD_RISE_TRANSLATE_PX;
         invalidate();
         raf = requestAnimationFrame(tick);
         return;
       }
 
+      group.visible = true;
+
       // `linear`, matching the CSS keyframe's timing function exactly.
       const t = Math.min(1, elapsed / CARD_RISE_DURATION_MS);
-      setOpacity(t);
       // World +y is UP and the CSS translate is DOWN, hence the negation.
       group.position.y = -CARD_RISE_TRANSLATE_PX * (1 - t);
       invalidate();
@@ -454,7 +476,7 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
  * FROM THE MATERIAL BEFORE DISPOSING (so a disposed texture can never be
  * sampled), and `invalidate()` because the canvas runs `frameloop="demand"`.
  */
-function useLocalEnvMap(): (m: THREE.MeshPhysicalMaterial | null) => void {
+function useLocalEnvMap(): THREE.Texture {
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
 
@@ -517,18 +539,20 @@ function useLocalEnvMap(): (m: THREE.MeshPhysicalMaterial | null) => void {
     };
   }, [target, invalidate]);
 
-  // The material is a plain argument here — not a value React holds — so
-  // assigning to it is an ordinary imperative update to an external system,
-  // which is precisely what a callback ref is for.
-  return useCallback(
-    (material: THREE.MeshPhysicalMaterial | null) => {
-      if (!material) return;
-      material.envMap = target.texture;
-      material.needsUpdate = true;
-      invalidate();
-    },
-    [target, invalidate],
-  );
+  // ⚠ THE TEXTURE IS RETURNED FOR A DECLARATIVE `envMap` PROP, NOT ASSIGNED
+  // THROUGH A CALLBACK REF.
+  //
+  // The callback-ref version attached the map correctly, but only AFTER the
+  // material had been created — so the first render drew the card with no
+  // environment, and `needsUpdate = true` then forced a shader recompile.
+  // Carl saw the result: *"Card appears in a grey state then gets brighter."*
+  // Measured 3 August — draws 1-4 at +236ms after mount, then the corrected
+  // draws at +264ms.
+  //
+  // Passing the texture as a prop means it is part of the material's FIRST
+  // construction: there is no unlit frame and no recompile, because there is
+  // no "before" state to correct.
+  return target.texture;
 }
 
 /**
@@ -540,14 +564,14 @@ function useLocalEnvMap(): (m: THREE.MeshPhysicalMaterial | null) => void {
  * transparent stand-in would be INVISIBLE to the glass refracting it, and would
  * present as "the frost went flat" with every assertion still green.
  */
-function StandIn({ visible }: { visible: boolean }) {
+function StandIn({ withStrokes }: { withStrokes: boolean }) {
   const invalidate = useThree((state) => state.invalidate);
 
   const { texture, material } = useMemo(() => {
     const budget = cardBudget();
-    const tex = buildStandInTexture(budget.faceWidth, budget.faceHeight);
+    const tex = buildStandInTexture(budget.faceWidth, budget.faceHeight, withStrokes);
     return { texture: tex, material: standInMaterial(tex) };
-  }, []);
+  }, [withStrokes]);
 
   useEffect(() => {
     invalidate();
@@ -559,8 +583,10 @@ function StandIn({ visible }: { visible: boolean }) {
 
   const budget = useMemo(() => cardBudget(), []);
 
+  // ⚠ ALWAYS VISIBLE. The backdrop is what makes the card read as glass at all;
+  // only the calibration strokes are optional.
   return (
-    <mesh visible={visible} position={[0, 0, -STANDIN_DEPTH]} material={material}>
+    <mesh position={[0, 0, -STANDIN_DEPTH]} material={material}>
       <planeGeometry args={[budget.faceWidth, budget.faceHeight]} />
     </mesh>
   );
@@ -571,20 +597,20 @@ function CardScene({
   reducedMotion,
   tuning,
   glassTuning,
-  standIn,
+  strokes,
 }: {
   active: boolean;
   reducedMotion: boolean;
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
-  standIn: boolean;
+  strokes: boolean;
 }) {
   const groupRef = useCardEntrance(active, reducedMotion);
-  const attachFaceMaterial = useLocalEnvMap();
+  const envMap = useLocalEnvMap();
 
   return (
     <>
-      <StandIn visible={standIn} />
+      <StandIn withStrokes={strokes} />
       {/*
         Static diagnostic lighting. Above and slightly LEFT, which is the
         direction the six CSS inset shadows already imply: top bright, left
@@ -604,7 +630,7 @@ function CardScene({
         groupRef={groupRef}
         glass
         glassTuning={glassTuning}
-        faceMaterialRef={attachFaceMaterial}
+        envMap={envMap}
       />
     </>
   );
@@ -691,7 +717,7 @@ export default function AnswerCardCanvas({ active }: { active: boolean }) {
     return () => mq.removeEventListener("change", apply);
   }, []);
 
-  const { tuning, glassTuning, standIn } = useCardRig();
+  const { tuning, glassTuning, strokes } = useCardRig();
 
   const box = useMemo(() => protoCanvasBox(), []);
 
@@ -723,7 +749,7 @@ export default function AnswerCardCanvas({ active }: { active: boolean }) {
           reducedMotion={reducedMotion}
           tuning={tuning}
           glassTuning={glassTuning}
-          standIn={standIn}
+          strokes={strokes}
         />
       </Canvas>
     </div>

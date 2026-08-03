@@ -460,8 +460,8 @@ export function AnswerCardMesh({
   tuning = DEFAULT_TUNING,
   groupRef,
   glass = false,
+  envMap = null,
   glassTuning = DEFAULT_GLASS_TUNING,
-  faceMaterialRef,
 }: {
   tuning?: AnswerCardTuning;
   groupRef?: React.Ref<THREE.Group>;
@@ -475,8 +475,16 @@ export function AnswerCardMesh({
    */
   glass?: boolean;
   glassTuning?: GlassTuning;
-  /** So the canvas can attach the locally generated environment map. */
-  faceMaterialRef?: React.Ref<THREE.MeshPhysicalMaterial>;
+  /**
+   * The locally generated environment map.
+   *
+   * ⚠ PASSED AS A PROP, NOT ASSIGNED THROUGH A REF. An earlier version attached
+   * it imperatively after mount, which drew the card unlit for a frame and then
+   * forced a shader recompile — Carl saw it as *"a grey state then gets
+   * brighter."* As a prop it is part of the material's first construction, so
+   * there is no "before" state to correct.
+   */
+  envMap?: THREE.Texture | null;
 }) {
   const { tubeRadius, bevelWidth, bevelRise, crownHeight, plateauU, faceRecess } = tuning;
 
@@ -618,7 +626,7 @@ export function AnswerCardMesh({
       */}
       <mesh geometry={faceGeometry} position={[0, 0, faceBaseZ]}>
         <meshPhysicalMaterial
-          ref={faceMaterialRef}
+          envMap={glass ? envMap : null}
           color={glass ? GLASS_COLOR : DIAG_FACE_COLOR}
           roughness={glass ? glassTuning.roughness : 0.65}
           metalness={0}

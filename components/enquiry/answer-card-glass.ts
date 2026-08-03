@@ -231,6 +231,23 @@ export const STANDIN_TEAL = "rgb(125, 210, 205)";
 export function buildStandInTexture(
   widthPx: number,
   heightPx: number,
+  /**
+   * Whether to lay the calibration strokes over the wash.
+   *
+   * ⚠ FALSE BY DEFAULT, AND THAT MATTERS FOR WHAT THE PAGE LOOKS LIKE. The wash
+   * alone is what an ordinary load shows: it gives the glass something to
+   * transmit so the card reads as glass rather than as a pale grey slab.
+   *
+   * ⚠ WITHOUT A BACKDROP THE CARD IS NOT GLASS IN ANY VISIBLE SENSE — this
+   * chunk's central finding, and Carl hit it three times in one session:
+   * "Card appears in a grey state", "back to grey", "No glass". Glass over a
+   * near-black page shows near-black. Turning the calibration pattern off
+   * removed the only evidence the material existed.
+   *
+   * The strokes return with `?standin=1` when the frost threshold needs
+   * measuring. They are a measuring instrument, not a design.
+   */
+  withStrokes = false,
   pixelRatio = 4,
 ): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
@@ -250,20 +267,22 @@ export function buildStandInTexture(
   ctx.fillStyle = ramp;
   ctx.fillRect(0, 0, widthPx, heightPx);
 
-  // Strokes in a light tint of the same family, so contrast comes from value
-  // rather than from a foreign hue.
-  ctx.fillStyle = "#e8f4ff";
+  if (withStrokes) {
+    // Strokes in a light tint of the same family, so contrast comes from value
+    // rather than from a foreign hue.
+    ctx.fillStyle = "#e8f4ff";
 
-  // Lay the strokes out with generous gaps, so the frost blurring one into its
-  // neighbour is itself visible.
-  const groupWidth = STANDIN_STROKE_WIDTHS.reduce((sum, w) => sum + w, 0);
-  const gaps = STANDIN_STROKE_WIDTHS.length + 1;
-  const gap = (widthPx - groupWidth) / gaps;
+    // Lay the strokes out with generous gaps, so the frost blurring one into its
+    // neighbour is itself visible.
+    const groupWidth = STANDIN_STROKE_WIDTHS.reduce((sum, w) => sum + w, 0);
+    const gaps = STANDIN_STROKE_WIDTHS.length + 1;
+    const gap = (widthPx - groupWidth) / gaps;
 
-  let x = gap;
-  for (const w of STANDIN_STROKE_WIDTHS) {
-    ctx.fillRect(x, heightPx * 0.15, w, heightPx * 0.7);
-    x += w + gap;
+    let x = gap;
+    for (const w of STANDIN_STROKE_WIDTHS) {
+      ctx.fillRect(x, heightPx * 0.15, w, heightPx * 0.7);
+      x += w + gap;
+    }
   }
 
   const texture = new THREE.CanvasTexture(canvas);

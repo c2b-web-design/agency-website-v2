@@ -119,19 +119,50 @@ choreography — mounted hidden, well before the cards — NOT to shorten the wa
 
 ---
 
-## ⚠ The stand-in shipped ON, and it read as a design decision
+## ⚠ THE BACKDROP QUESTION TOOK THREE REPORTS TO GET RIGHT, AND ALL THREE HAVE ONE CAUSE
 
-Carl, seeing the card: *"What are the 4 white bands?"*
+| Carl's report | What was actually happening |
+|---|---|
+| *"What are the 4 white bands?"* | The calibration strokes shipped ON — a measuring instrument rendering by default |
+| *"back to grey"* / *"No glass"* | Turning the stand-in off removed the **backdrop** too, so the glass had nothing to transmit |
+| *"Card appears in a grey state then gets brighter"* | The env map attached imperatively AFTER the material was built (fixed separately) |
 
-**They were the calibration stand-in rendering on an ordinary page load.** A throwaway
-measurement surface that appears by default is indistinguishable from a design choice.
+⚠ **GLASS OVER A NEAR-BLACK PAGE SHOWS NEAR-BLACK.** That is this chunk's own central finding,
+and the Builder walked into it from both sides — first leaving a measurement pattern on by
+default, then removing the only thing that made the material visible at all.
 
-**Now OFF by default** — `?standin=1` for a tuning session, `[s]` to toggle live.
+**Settled by Carl, and now the shipped default:** the corridor's **blue→teal wash, no
+calibration strokes**. The card reads as glass on an ordinary load; nothing on screen looks like
+a design decision; `?standin=1` adds the strokes when the frost needs measuring, `[s]` toggles
+them live.
 
-⚠ **AND THAT IMMEDIATELY PRODUCED THE SECOND REPORT: *"back to grey."*** With the stand-in off
-there is nothing behind the glass to transmit, so it reads as grey. **That is this chunk's own
-central finding arriving as a surprise** — glass over a near-black page shows near-black. Not a
-fault, and the reason chunk 3 exists.
+⚠ **THE BACKDROP IS NOT DECORATION. It is the only thing that makes the material visible**, and
+that is precisely why chunk 3 exists rather than being an embellishment on top of chunk 2.
+
+---
+
+## ⚠ The entrance and the glass were fighting each other
+
+Carl: *"fades in, moves slightly up then brightens."* Three stages where there should be one.
+
+**The entrance faded `material.opacity`, which requires `transparent = true` on every
+sub-mesh.** But `three.module.js:8237` routes any transparent material out of the opaque list,
+and `:18039` renders **only** `opaqueObjects` into the transmission target.
+
+⚠ **SO FOR THE WHOLE 700ms RISE, THE RIM AND BEVEL WERE INVISIBLE TO THE GLASS REFRACTING
+THEM** — and the card visibly changed when the fade ended and they rejoined the opaque list.
+
+⚠ **IT IS THE SAME CONSTRAINT THIS CHUNK ALREADY DOCUMENTED FOR THE STAND-IN, ARRIVING FROM THE
+OTHER DIRECTION.** The stand-in was made opaque on purpose; the entrance was quietly making
+everything else transparent.
+
+**Fix:** the opacity fade is removed and the 6px rise kept, with the group toggling `visible`.
+The meshes stay opaque throughout, so the transmission target never changes membership.
+
+⚠ **AND THIS IS A REAL CONSTRAINT FOR CHUNK 5, NOT A SHORTCUT. A transmissive card cannot
+cross-fade by material opacity** without dropping its own neighbours out of the refraction for
+the duration. When the rollout needs the approved 700ms/220ms fade on five cards, the route is a
+group-level effect — scale, position, or a masked reveal — **never per-material opacity.**
 
 ---
 
