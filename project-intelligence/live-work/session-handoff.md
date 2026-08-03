@@ -95,7 +95,17 @@ card-sized and elsewhere; **that reason disappears when the card moves.**
 
 ---
 
-## ⚠ The day's lesson, and it cost the most time
+## ⚠ The day's lesson, and it now has a permanent home
+
+⚠ **`ai-system/working-with-the-builder.md` HAS A CORRECTIONS RECORD, opened 3 August.** What
+follows here is a summary; **that file is the record and it is where new entries go.**
+
+⚠ **AND IT IS SHARED, NOT A BUILDER FAULT LIST.** The Builder proposed a log of its own
+mistakes and Carl corrected it: *"mistakes are not exclusive to AI."* **Either party adds to
+it.** A file that catalogues one side's failures trains defensiveness; a shared one makes
+examining a wrong turn ordinary.
+
+
 
 **Four separate faults today were each chased through two or more wrong fixes, and in every case
 the wrong fixes adjusted a VALUE when the fault was in a MECHANISM.**

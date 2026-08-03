@@ -45,8 +45,11 @@
 
   "_unlocked": "Protected paths Carl has EXPLICITLY authorised for THIS chunk. Overrides 'protected'. Carl's call, not the Builder's.",
   "unlocked": [
-    "components/enquiry/enquiry-opening.tsx"
+    "components/enquiry/enquiry-opening.tsx",
+    "project-intelligence/ai-system/working-with-the-builder.md"
   ],
+
+  "_unlock_corrections_record": "Carl, 3 August 2026: 'Authorisation granted, word it how you want to give you better understanding.' FOR ONE ADDITION: a shared corrections record appended to working-with-the-builder.md. ⚠ SHARED, NOT A BUILDER FAULT LIST — Carl: 'I have mentioned this before because I also added that I would endeavour to do the same because mistakes are not exclusive to AI.' The Builder had proposed it as a record of its own errors and had to be corrected; that correction is itself the first entry's shape.",
 
   "_unlock_chunk3_remove_cards": "⚠ THIS ONE REOPENS AN APPROVED LAYER, AND DELIBERATELY. Carl, 3 August 2026: 'just remove the 5 cards that are there now and build', and when the Builder put the cost to him explicitly — that the corridor cannot advance past Q5 with no answers to select — 'we do not need to advance atm.' The Builder offered a flag-gated alternative that would have preserved the flow; Carl chose deletion. D-028 (frosted blue glass, A-E variants) and D-029 (the filament border) are his to reopen and he has done so.",
 

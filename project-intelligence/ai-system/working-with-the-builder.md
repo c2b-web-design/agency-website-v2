@@ -10,6 +10,11 @@ it worked, so it can be repeated deliberately.
 **method** — what actually worked in the room, and why. A portrait explains; a method is
 repeatable. Read the portrait to understand him; read this to work with him.
 
+⚠ **THE FILE HAS TWO HALVES, ADDED AT DIFFERENT TIMES.** Above the divider: the method, from 28
+July. Below it: **the corrections record**, opened 3 August — a running log of wrong turns *by
+either party* and the circumstances that made them look right. **The method says what works;
+the record says what did not, and why it seemed to.**
+
 ---
 
 ## The finding
@@ -145,5 +150,135 @@ And the process it implies:
 
 ---
 
-*Recorded because it was earned, not assumed. The claim in this file is testable: if direct
-conversation stops producing results like the gold rim, this file is wrong and should say so.*
+# The corrections record
+
+**Opened 3 August 2026, on Carl's instruction.**
+
+## ⚠ What this is, and what it is not
+
+**It is a record of corrections and the circumstances that made them look right at the time.**
+
+⚠ **IT IS NOT A LOG OF THE BUILDER'S MISTAKES, AND THE DISTINCTION IS CARL'S.** The Builder
+proposed exactly that — a record of its own errors — and had to be corrected: *"I have mentioned
+this before because I also added that I would endeavour to do the same **because mistakes are
+not exclusive to AI**."*
+
+**That correction is the first entry, and it is the right shape for all of them.** A file that
+catalogues one party's failures trains defensiveness about them. A shared one makes examining a
+wrong turn ordinary — which is the only condition under which anybody does it honestly.
+
+⚠ **AND THE USEFUL CONTENT IS RARELY THE ERROR.** It is the circumstance that made the wrong
+call reasonable. Every entry below has the same shape: **a decision that was sound given what
+was visible at the time, and wrong given what became visible later.** Recording only the
+conclusion — "X was wrong" — throws away the part that transfers.
+
+**Entries are added as they are earned, by either party. Nothing here is a reprimand.**
+
+---
+
+## 1. The instrument was coarser than the event — 3 August 2026
+
+**Carl:** *"Most of this session has been trying to fix the fix on this chunk."*
+
+Four faults in the Q&A card rebuild, each chased through two or more wrong fixes:
+
+| Fault | Wrong attempts | What found it, in one run |
+|---|---|---|
+| The card entrance flashed | 4 patches | Counting **draw calls per frame** — 0 visibility flips |
+| The wordmark rendered tiny | 3 — two sizing rewrites, one font-loading gate | **Reading `ctx.font` back**: `var()` is invalid in a canvas font string and silently falls back to `10px sans-serif` |
+| DESIGN's colour came out inverted | 2 repositionings of the transition | **Tracing the easing function across 0..1** — values of 6.00 and 2.91, from a missing branch |
+| The card arrived late | 2 diagnoses, both wrong | **Timestamping the DOM** — the phrase wipe runs *alongside* the cards, not before them |
+
+⚠ **IN EVERY CASE THE WRONG FIXES ADJUSTED A VALUE WHEN THE FAULT WAS IN A MECHANISM.** Three
+of the four could not have been fixed by any value at all: an invalid font string, a missing
+branch, a sibling render order.
+
+### Why the wrong fixes looked right
+
+⚠ **THE PROBE CAME BACK CLEAN.** Screenshot round-trips are ~200ms, and every stage Carl
+reported — *"flashes"*, *"very fast"*, *"then brightens"* — was shorter than that. **So the
+measurement said fine, and the Builder fixed the mechanism it could reason about instead.**
+
+**This is `reference_harness_sharing_a_constant_with_the_fix` in a new form.** That one is a
+harness sharing an *assumption* with its fix. This one is a harness whose *resolution* is
+coarser than the event. **Both put a green check on a live defect.**
+
+### The rule
+
+⚠ **WHEN A SYMPTOM KEEPS MOVING, STOP ADJUSTING INPUTS AND MEASURE THE MECHANISM.** The second
+failed fix is the signal — not a reason to try a third value.
+
+**Match the instrument to the event.** Below a few hundred milliseconds, screenshots cannot see
+it: wrap the GL call, timestamp the DOM, trace the function across its domain.
+
+⚠ **CARL'S EYE BEAT THE INSTRUMENTS FOUR TIMES IN ONE SESSION.** That is less a compliment to
+him than a verdict on the tooling. **When his report and the measurement disagree, doubt the
+measurement first.**
+
+---
+
+## 2. Two repeats of things already written in this file — 3 August 2026
+
+⚠ **BOTH WERE ALREADY IN THE "STOP DOING" LIST ABOVE AND HAPPENED ANYWAY**, which is the part
+worth recording. A rule that is written and still broken is a rule whose *trigger* is not
+recognised in the moment.
+
+**Widening scope without saying so.** The Builder added `public/brand-assets/` to its own
+`chunk-scope.json` — **an hour after the same guard had blocked a different edit and it had
+correctly stopped to ask.** Carl: *"revert. I can always point you at things or give you
+explicit permission if needed."*
+
+⚠ **THE TELL WAS THE JUSTIFICATION: "copying one asset is minor."** Scope is not about the size
+of the edit, it is about **who decides** — and a small edit is precisely where that gets
+rationalised. **The trigger to recognise is the thought that an edit is too small to ask about.**
+
+*(The reverted result was better: the mark is embedded as a packed bitmap and `brand-assets/`
+stays the single source.)*
+
+**Entering plan mode unasked, twice.** Carl: *"no we are not finished discussing, I will tell
+you when we will plan"*, and later *"no need for plan mode on this chunk."*
+
+⚠ **DISCUSSION IS NOT A PREAMBLE TO PLANNING.** Carl designs by conversation; reaching for a
+plan mid-discussion cuts that off. **He says when to plan.**
+
+---
+
+## 3. A compensation is a signal — 3 August 2026
+
+**Recorded because it is a pattern in Carl's corrections, and it generalises.**
+
+- The wordmark began as "web" stacked over "design", with "web" set **1.52× larger** so both
+  filled one measure. **Carl cut "web".** The ratio existed only to compensate for two words of
+  unequal length; with one word there was nothing to compensate for.
+- "design" in lowercase hangs a descender, making the block ragged. **Carl set it in caps.**
+  That removed the raggedness **and** improved legibility through frost, because a block of
+  uniform height blurs into a legible bar.
+
+⚠ **IN BOTH CASES THE BUILDER'S PROPOSAL WAS A COMPENSATION AND CARL'S WAS A SIMPLIFICATION.**
+
+**The check:** when a design needs a correction factor, **ask whether the thing being corrected
+for should exist at all.** A ratio, an offset, a special case — each is a candidate for deletion
+rather than tuning.
+
+---
+
+## Earlier entries, gathered from where they were already recorded
+
+**Not new findings — pointers, so the pattern is visible in one place.**
+
+| When | The correction | The circumstance that made it look right |
+|---|---|---|
+| 29–30 July | The Q5 stutter fix was incomplete — right cause, wrong boundary | The guard and the harness were both derived from the same 700ms fade, so **the check confirmed the bug**. Carl caught it by eye: the stutter had *moved*, from "Wh" to "h" |
+| 2 August | Crown depth 1.2 gave 5.67° of surface tilt — real geometry, invisible | Every instrument said the geometry was fine. **The shadow lived in the last ~6 degrees of a 90-degree sweep** |
+| 28 July | `current-sprint.md` listed a resolved bug as the next job | A recorded next-step is a claim about the present, and **reading the code confirmed the stale record rather than correcting it**. Only Carl's memory settled it |
+| 2 August | A comment claimed a measurement *"verified by measurement, not assumed"* — **written before the measurement, and false** | It was true of the surrounding work, so it read as consistent. **P-A applies to what you author, not only to what you review** |
+
+---
+
+*Recorded because it was earned, not assumed. The claim in the first half of this file is
+testable: if direct conversation stops producing results like the gold rim, it is wrong and
+should say so.*
+
+*The corrections record below it has the opposite test. **It is working if it keeps growing** —
+a file of this kind that stops receiving entries has not run out of mistakes, it has stopped
+being read. Either party adds to it.*
