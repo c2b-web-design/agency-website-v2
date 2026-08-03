@@ -179,11 +179,32 @@ export const WORDMARK_TRACKING_EM = -0.02;
 // ⚠ NO AMBER. That is the filament's (chunk 4) and would compete with the event
 // the card is meant to stage.
 
-/** The Send opal's deep blue — `.enquiry-nextstep-btn`. */
-export const BACKDROP_BLUE = "#163a8f";
-
-/** The memory rail's teal — `.enquiry-pdepth-*` question colour. */
-export const BACKDROP_TEAL = "rgb(125, 210, 205)";
+/**
+ * ⚠ SAMPLED FROM CARL'S OWN RENDER, NOT CHOSEN FROM THE STYLESHEET.
+ *
+ * Carl, 3 August: *"The c2b is my design. Copy the colour and gradient
+ * exactly."* The values below are measured from
+ * `brand-assets/logo/ig_...6430c3d4...png` — the blue/teal reference — by
+ * sampling the brightest saturated body pixel in each vertical slice of the
+ * mark, skipping the white ground, the gold hairlines and the blown speculars.
+ *
+ * Measured across the mark, left to right:
+ *
+ *     0%   rgb( 72,159,236)     50%  rgb(  7,222,232)
+ *    10%   rgb( 56,138,227)     60%  rgb( 13,216,230)
+ *    20%   rgb( 78,149,219)     70%  rgb( 38,237,248)
+ *    30%   rgb( 45,182,219)     80%  rgb( 23,241,250)
+ *    40%   rgb(  4,204,232)     90%  rgb( 20,230,240)
+ *
+ * ⚠ THE FIRST VERSION USED THE STYLESHEET'S `#163a8f` AND `rgb(125,210,205)`,
+ * and Carl's report was that *"the contrast between colours is not wide
+ * enough."* He was right, and the reason is visible in the numbers: the rail's
+ * teal is a muted grey-green beside the render's near-cyan, and the opal's blue
+ * is darker and flatter than the render's. **The corridor's UI colours and the
+ * logo's own colours are not the same palette.**
+ */
+export const BACKDROP_BLUE = "#1b4fa8";
+export const BACKDROP_TEAL = "#00c8e0";
 
 /**
  * How long a region takes to travel from blue to teal, in ms.
@@ -224,6 +245,112 @@ export const CARD_BOXES = [
   { x: 292, y: 56, w: 186.66, h: 48 },
 ] as const;
 
+/**
+ * ⚠ FOUR ZONES ACROSS THE LOCKUP: BLUE, TEAL, BLUE, TEAL.
+ *
+ * Carl, 3 August: *"C2B should be treated separately so the C is mostly blue,
+ * the b is mostly teal and the 2 the transition. Copy the screenshot exactly
+ * with its distribution of colour. So throughout the phrase 'c2b DESIGN' the
+ * colour distribution is Blue Teal Blue Teal. 4 areas where the changes will
+ * affect 5 cards."*
+ *
+ * ⚠ THE MARK'S OWN BOUNDS ARE MEASURED FROM CARL'S RENDER, not estimated.
+ * Sampling the brightest saturated body pixel in 24 vertical slices of
+ * `ig_...6430c3d4...png` and reading green-to-blue ratio:
+ *
+ *     0% → 33%    g/b 0.58–0.80    BLUE      the `c`
+ *    33% → 46%    g/b 0.80–0.88    changing  the `2`
+ *    46% → 100%   g/b 0.88–0.97    TEAL      the `b`
+ *
+ * Those fractions are of the MARK's width, and the mark occupies the left
+ * portion of the lockup — so they are rescaled below.
+ *
+ * ⚠ AND FOUR ZONES IS NOT DECORATION. Five cards sit across this width; four
+ * colour areas means no two adjacent cards show the same thing, and the
+ * boundaries fall between cards rather than on them. That is the windows model
+ * doing real work — variation falls out of POSITION rather than being authored
+ * per card.
+ */
+type Zone = { start: number; end: number };
+
+/**
+ * The two transitions, as fractions of the whole lockup width.
+ *
+ * The first is the mark's `2`, the second is DESIGN's `SI`. Both are computed
+ * from the layout in `drawBackdrop` rather than hard-coded, so moving the mark
+ * or resizing the word cannot leave them behind.
+ */
+function transitionZones(markFraction: number, textStart: number): Zone[] {
+  return [
+    // The `2` — 33%–46% of the mark's own width.
+    { start: markFraction * 0.33, end: markFraction * 0.46 },
+    // ⚠ THE RESET, and it needs real width. It runs from inside the `b`'s
+    // trailing edge to the start of DESIGN, so the colour is back to blue before
+    // the first letter. Placing it in the mark-to-word gap alone left it ~3% of
+    // the width — not enough to complete, which inverted the whole second half.
+    { start: markFraction * 0.82, end: textStart },
+    // The `SI` — DESIGN's six letters divide its span evenly; S and I are
+    // letters 3 and 4, so they occupy the middle third.
+    { start: textStart + (1 - textStart) * 0.33, end: textStart + (1 - textStart) * 0.62 },
+  ];
+}
+
+/**
+ * Position → colour, 0 = blue and 1 = teal, across four alternating zones.
+ *
+ * ⚠ THE SECOND ZONE RETURNS TO BLUE, which is the whole point of Carl's
+ * distribution: the lockup reads blue, teal, blue, teal rather than one long
+ * run. `smoothstep` on each transition so neither has a visible entry or exit
+ * edge — the colour arrives and departs gradually, reading as one material
+ * changing rather than two colours meeting.
+ */
+function easeBlueTeal(t: number, zones: Zone[]): number {
+  const smooth = (u: number) => u * u * (3 - 2 * u);
+
+  const [mark, reset, word] = zones;
+
+  //  c  →  2  →  b     DE  →  SI  →  GN
+  // blue  ramp  teal  blue   ramp   teal
+  //
+  // ⚠ THE THIRD ZONE RETURNS TO BLUE, and that is the point of Carl's
+  // distribution: four alternating areas rather than one long run. The reset
+  // happens in the gap between the mark and the word, where nothing is drawn,
+  // so it is never visible as a hard edge.
+  if (t <= mark.start) return 0; //  the `c`            BLUE
+  if (t < mark.end) return smooth((t - mark.start) / (mark.end - mark.start));
+
+  // ⚠ THE RESET TO BLUE HAPPENS INSIDE THE `b`'s TRAILING EDGE, not in the gap
+  // between mark and word.
+  //
+  // A first version put it in the gap, reasoning that nothing is drawn there so
+  // the change would be invisible. **The gap is far too narrow** — roughly 3% of
+  // the width against the 13% each real transition needs — so the ramp could not
+  // complete and DESIGN came out teal→blue: DE teal, GN blue, the exact
+  // inverse of what Carl specified.
+  //
+  // Running it across the `b`'s last third instead gives it room. The `b` still
+  // reads teal at its widest point, and by the time the eye reaches DESIGN the
+  // colour has returned to blue.
+  if (t <= reset.start) return 1; //  the `b`           TEAL
+  if (t < reset.end) {
+    return 1 - smooth((t - reset.start) / (reset.end - reset.start));
+  }
+
+  // ⚠ THE `DE` HOLD, AND ITS ABSENCE WAS THE BUG. Without this branch the range
+  // between the reset ending and `SI` beginning fell through to the `SI`
+  // formula with a NEGATIVE numerator, so `smooth()` extrapolated instead of
+  // interpolating — traced values of 6.00 and 2.91 where the domain is 0..1.
+  //
+  // The visible result was DESIGN rendering teal→blue: DE teal, GN blue, the
+  // exact inverse of the specification, twice in a row. Two attempts adjusted
+  // the reset's POSITION when the fault was a missing branch, and only tracing
+  // the function's own output across 0..1 found it.
+  if (t <= word.start) return 0; //   `DE`              BLUE
+
+  if (t < word.end) return smooth((t - word.start) / (word.end - word.start));
+  return 1; //  `GN`                                    TEAL
+}
+
 function mixColour(a: THREE.Color, b: THREE.Color, t: number): string {
   const c = a.clone().lerp(b, Math.min(1, Math.max(0, t)));
   return `#${c.getHexString()}`;
@@ -252,10 +379,15 @@ export function drawBackdrop(
   const blue = new THREE.Color(BACKDROP_BLUE);
   const teal = new THREE.Color(BACKDROP_TEAL);
 
-  // Near-black ground: the page's own colour, so anything the lockup does not
-  // cover matches the surrounding page rather than showing a panel edge.
-  ctx.fillStyle = "#0a0a0a";
-  ctx.fillRect(0, 0, widthPx, heightPx);
+  // ⚠ CLEARED, NOT FILLED. A first version painted `#0a0a0a` here as "the
+  // page's own colour" — but the page background is a RADIAL GRADIENT
+  // (`radial-gradient(ellipse at 50% 40%, #141414, #080808)`), so a flat fill
+  // does not match it at any point and Carl saw the result immediately: *"I can
+  // see the black rectangle the text is sitting in."*
+  //
+  // Transparent lets the real page show through, which is correct in every case
+  // and cannot go stale if the background changes.
+  ctx.clearRect(0, 0, widthPx, heightPx);
 
   const sx = widthPx / GRID_WIDTH_PX;
   const sy = heightPx / GRID_HEIGHT_PX;
@@ -323,10 +455,18 @@ export function drawBackdrop(
   // region travels while its neighbours hold.
   lc.globalCompositeOperation = "source-in";
 
+  // ⚠ THE ZONES ARE DERIVED FROM THE LAYOUT ABOVE, not hard-coded. Moving the
+  // mark or resizing the word moves the transitions with them, so the four
+  // colour areas cannot drift away from the letterforms they belong to.
+  const zones = transitionZones(markW / widthPx, textLeft / widthPx);
+
   const ramp = lc.createLinearGradient(0, 0, widthPx, 0);
   // Sample the region shifts across the width so the ramp bends toward teal
   // wherever a card is selected, and stays blue elsewhere.
-  const stops = 12;
+  // ⚠ 48, NOT 12. The transition is now PLACED rather than spread across the
+  // whole width, so it occupies a quarter of the span and needs enough stops
+  // inside that quarter to read as smooth rather than banded.
+  const stops = 48;
   for (let i = 0; i <= stops; i++) {
     const t = i / stops;
     const x = t * GRID_WIDTH_PX;
@@ -339,16 +479,19 @@ export function drawBackdrop(
       weight += w;
     });
     const local = weight > 0 ? shift / weight : 0;
-    // ⚠ THE RESTING RAMP TRAVELS THE FULL BLUE→TEAL RANGE ACROSS THE WIDTH.
+
+    // ⚠ THE TRANSITION IS PLACED, NOT SPREAD — Carl, 3 August: *"in DESIGN, the
+    // DE should be blue. The GN should be teal. The SI is where the slow
+    // gradient transition should take place."*
     //
-    // A first version weighted it `t * 0.35`, which meant the right-hand end
-    // only reached about a third of the way to teal and the whole lockup read as
-    // blue with a faint shift. The resting state should show both of the
-    // corridor's colours — blue where the cards are chosen, teal where the rail
-    // remembers — because that pairing is the reason the two were picked.
+    // A linear ramp across the full width put every letter at a different
+    // colour, so nothing read as definitely blue or definitely teal. Holding the
+    // ends and moving only through the middle gives two clear statements and one
+    // transition between them — which is what a two-colour identity needs.
     //
-    // A selected region then pushes its own patch the rest of the way to teal.
-    ramp.addColorStop(t, mixColour(blue, teal, Math.min(1, t + local * (1 - t))));
+    // `easeBlueTeal` maps position to colour with flat ends and a smooth centre.
+    const base = easeBlueTeal(t, zones);
+    ramp.addColorStop(t, mixColour(blue, teal, Math.min(1, base + local * (1 - base))));
   }
   lc.fillStyle = ramp;
   lc.fillRect(0, 0, widthPx, heightPx);

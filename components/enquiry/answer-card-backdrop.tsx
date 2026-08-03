@@ -91,8 +91,16 @@ export function AnswerCardBackdrop({
       new THREE.MeshBasicMaterial({
         map: texture,
         toneMapped: false,
-        // ⚠ BOTH OF THESE. Transmission > 0 OR transparent === true removes the
-        // object from the transmission pass's opaque list.
+        // ⚠ `alphaTest`, NOT `transparent`. The lockup sits on a cleared canvas
+        // so the page's radial-gradient background shows through — but
+        // `transparent: true` would route this material out of the transmission
+        // pass's opaque list (three.module.js:8237, :18039) and the glass would
+        // stop seeing it entirely, with every assertion still green.
+        //
+        // `alphaTest` discards fully-transparent fragments in the shader instead,
+        // which gives cut-out edges while the material stays OPAQUE to the
+        // renderer's sorting. Exactly what is needed here.
+        alphaTest: 0.5,
         transparent: false,
         side: THREE.FrontSide,
       }),
