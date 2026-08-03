@@ -1,16 +1,12 @@
-# Session Handoff — 3 August 2026
+# Session Handoff — 3 August 2026 (second session of the day)
 
-**Written at the end of the session of 3 August 2026. For the session that picks up next.**
+**Written at the end of the card-in-grid session. For the session that picks up next.**
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical
 (D-006). **Delete this file at the end of the session that reads it, once its replacement is
 written** — `live-work-protocol.md` §3a.
 
 **This file points at records; it does not restate them.**
-
-⚠ **USE DATES, NOT DAY NUMBERS.** The counter measured a governance sprint that finished; it was
-never the project's age. **The project is about four months old** — first commit 6 May 2026,
-with roughly a month of work preceding the repository.
 
 ---
 
@@ -24,136 +20,187 @@ session ends and will say so.**
 
 ## Where things stand
 
-**Repo: `main`, head `4fa1917`, PUSHED. Seven commits today.** Lint at the recorded baseline
-(1 accepted error in `enquiry-opening.tsx`). `npx tsc --noEmit` clean.
+**Repo: `main`, head `3038a34`, pushed. ⚠ THIS SESSION'S WORK IS UNCOMMITTED —** six modified
+files in `components/enquiry/`, plus untracked harnesses in `verify/`. **Carl has not asked for
+a commit.** Lint at the recorded baseline (1 accepted error in `enquiry-opening.tsx`);
+`npx tsc --noEmit` clean.
 
-⚠ **TWO TEMPORARY HARNESSES ARE UNTRACKED AND SHOULD STAY THAT WAY:**
-`verify/_tmp-answer-card-geometry.mjs` (chunk 1, 18 checks) and
-`verify/_tmp-glass-threshold.mjs` (chunk 2, the frost sweep). **Both still pass.** Delete when
-their chunks close.
+⚠ **`chunk-scope.json` HAS BEEN DELETED — the repo is FAIL-OPEN and every edit is allowed.**
+It named `q5-logo-backdrop`, which closed, and §8 is explicit that a stale scope file is worse
+than none: it enforces the previous chunk's boundaries and denies with the name of a chunk that
+finished. **Deletion shows as a staged change (`D`) because the file was tracked.**
 
-⚠ **A `chunk-scope.json` GUARD IS ACTIVE** — `q5-logo-backdrop`, with `enquiry-opening.tsx`
-unlocked. **The next chunk should rewrite it.**
+⚠ **THE FILAMENT CHUNK MUST BE GIVEN A NEW ONE, AND THAT IS PART OF AUTHORISING IT, NOT AN
+EXTRA** (§8). **PM/A drafts, Carl approves; `unlocked` is Carl's alone.** Declare
+`verify/_tmp-*.mjs` up front — the guard has already blocked a throwaway probe twice for want of
+it.
 
-⚠ **THE PAGE DOES NOT ADVANCE PAST Q5.** The five CSS answer cards were deleted on Carl's
-instruction. No selection, no Next step, no Q4–Q1, no contact field. **Deliberate, and accepted
-by him after the cost was put to him explicitly.**
+⚠ **THE PAGE STILL DOES NOT ADVANCE PAST Q5.** The five CSS answer cards remain deleted, on
+Carl's instruction, cost accepted. No selection, no Next step, no Q4–Q1, no contact field.
 
----
+### What this session did
 
-## Today: three chunks of the Q&A card rebuild
+**The card moved from the left margin into grid slot 1, over the lockup, and now reads as
+glass.** Full record: **`live-work/run-log-card-in-grid.md`** — the two mechanism faults, the
+wrong instrument, and the file-by-file changes.
 
-**Full records: the three run logs in `live-work/`, and the commit messages, which carry the
-detail.**
-
-| Chunk | What | Commit |
-|---|---|---|
-| **1 — geometry** | Half-tube rim, swept bevel, convex recessed face | `b3a935c` |
-| **2 — glass** | `MeshPhysicalMaterial` + transmission, local PMREM env map | `3de771e` |
-| **3 — backdrop** | The `c2b DESIGN` lockup, four-zone blue/teal | `01cbe22`, `4fa1917` |
-
-**Carl approved the geometry by eye** — *"The geometry looks good"* — and the backdrop —
-*"a lot better."* **Nothing else is approved.**
-
-### The one number the next chunks need
-
-Chunk 2's product is a measured table: **frost is legible to roughness ~0.45 and gone by 0.60**,
-four usable steps. With `thinnest stroke = 0.0247 × mark height`, that is what set the
-backdrop's scale.
+**Carl's verdict:** *"Yes, now we are on the same page."* ⚠ **That is agreement that the
+mechanism is right. It is NOT approval of the frost level, the transmission value, or the rim.**
 
 ---
 
-## ⚠ THE NEXT CHUNK — move the proto card into the grid
+## ⚠ THE NEXT CHUNK — the filament
 
-**Carl's sequence, given 3 August: logo → card in place → filament → clone.**
+**Its design was settled in discussion at the end of this session and is written up in full:**
 
-⚠ **THE CARD MOVES INTO PLACE BEFORE THE FILAMENT, not after.** That is a change from the
-earlier order and it is the better one: **the filament's entire argument is neighbouring cards
-responding to it**, which cannot be judged while the card sits alone in the left margin.
+### → `live-work/references/filament-design-reference.md`
 
-**Where it is now:** `answer-card-canvas.tsx` renders a card-sized canvas in the left viewport
-margin, ≥1280px only, ~1300ms after the CSS cards would have appeared.
+**Read that before planning the chunk.** It carries Carl's three reference photographs' findings,
+his decision on the physics question, and the constraints that come with it. The headline:
 
-**Where it goes:** into the grid, over the backdrop — which means the two canvases merge.
-`answer-card-backdrop.tsx` currently has its own canvas spanning 576 × 104 because the card's is
-card-sized and elsewhere; **that reason disappears when the card moves.**
+> **"obey the physics, but the physics of heat rather than the physics of drawing"** — Carl
 
-### ⚠ Constraints that will bite, all learned the hard way today
-
-- ⚠ **A TRANSMISSIVE CARD CANNOT CROSS-FADE BY MATERIAL OPACITY.** `material.opacity` requires
-  `transparent = true`, and `three.module.js:8237` routes transparent materials out of the
-  opaque list while `:18039` renders only `opaqueObjects` into the transmission target. **So
-  fading a card removes its neighbours from its own refraction for the duration.** When the
-  rollout needs the approved 700ms/220ms ladder on five cards, the route is a **group-level**
-  effect — scale, position, or a masked reveal — **never per-material opacity.**
-- ⚠ **EVERY NEW CANVAS MUST DEFER ITS WEBGL SETUP PAST THE 1300ms PHRASE WIPE.** The Q5 stutter
-  returned today because chunk 1's canvas bypassed the `canvasWarm` gate that already existed.
-  **A guard written for one canvas does not cover the next one**, and chunks 4–5 add more.
-- ⚠ **`GRID_REFL` AND `toggleOption` IN `enquiry-opening.tsx` ARE UNUSED BUT MUST NOT BE
-  DELETED.** "Unused" means "waiting". `GRID_REFL` is the **specification** the chunk-5 physics
-  must reproduce — bottom row 0.26–0.30 against top row 0.04–0.16.
+⚠ **AND ONE THING IN IT CHANGES AN EXISTING ASSUMPTION: the rim is the UNLIT FILAMENT.** Not
+diagnostic grey waiting to be covered — a metal element that is present at rest and heats up.
+The rim wants a metal material in this chunk.
 
 ---
 
-## ⚠ The day's lesson, and it now has a permanent home
+## ⚠ Five observations Carl recorded for the NEXT session — NOT for implementation now
 
-⚠ **`ai-system/working-with-the-builder.md` HAS A CORRECTIONS RECORD, opened 3 August.** What
-follows here is a summary; **that file is the record and it is where new entries go.**
+**He was explicit: *"I have a few observations I want you to make a note of and we will fix them
+in the next session. Not for implementation now."*** They are listed in the order he gave them.
 
-⚠ **AND IT IS SHARED, NOT A BUILDER FAULT LIST.** The Builder proposed a log of its own
-mistakes and Carl corrected it: *"mistakes are not exclusive to AI."* **Either party adds to
-it.** A file that catalogues one side's failures trains defensiveness; a shared one makes
-examining a wrong turn ordinary.
+### 1. Lettering opacity outside the cards
 
+**The lockup's lettering is too bright where it is not covered by a card.** The colour effect is
+wanted **inside** the cards; outside it competes.
 
+⚠ **AND HE RESOLVED THE MECHANISM WHEN ASKED:** *"outside the cards, in between them will look
+like strong shapes."* **So it is NOT a global opacity reduction** — brightness is tied to card
+position. Bright under the cards, quiet between them.
 
-**Four separate faults today were each chased through two or more wrong fixes, and in every case
-the wrong fixes adjusted a VALUE when the fault was in a MECHANISM.**
+⚠ **A CONSTRAINT FOR WHOEVER BUILDS IT:** the gaps are 8px between columns and 8px between rows.
+Whatever masks the lockup has to soften over a very short distance, or **the mask edge itself
+becomes a visible shape** — trading one problem for another.
 
-| Fault | Wrong attempts | What actually found it |
-|---|---|---|
-| Entrance flash | 4 patches | **Counting draw calls per frame** — 0 visibility flips |
-| Wordmark tiny | 3 (two sizing rewrites, one font gate) | **Reading `ctx.font` back** — `var()` is invalid in canvas, silently falls back to `10px sans-serif` |
-| DESIGN colour inverted | 2 repositionings | **Tracing the easing function across 0..1** — values of 6.00 and 2.91 from a missing branch |
-| Card arrives late | 2 diagnoses, both wrong | **Timestamping the DOM** — the wipe runs *alongside* the cards, not before |
+⚠ **AND IT GETS WORSE BEFORE IT GETS BETTER:** with one card, four of the five regions have
+nothing over them at all. This is currently the worst case, and it improves at the clone.
 
-⚠ **AND THE COMMON THREAD IS THE INSTRUMENT, NOT THE REASONING.** Screenshot round-trips are
-~200ms; every stage Carl reported was shorter than that. **The probe said "fine", so the wrong
-mechanism got fixed.** In each case a purpose-built measurement found it in one run.
+### 2. Changes happen only inside the card
 
-**Carl, on the cost:** *"Most of this session has been trying to fix the fix on this chunk."*
-**He is right, and the pattern is the Builder's to break: when a symptom keeps moving, stop
-adjusting inputs and measure the mechanism.**
+**The colour transition is confined to the card's own region.** Same argument as observation 1.
+
+⚠ **WITH ONE EXCEPTION HE VOLUNTEERED:** *"if a region outside the cards contains a gradient
+area and you think for consistency to invert the colours here too, that would be better."*
+**Consistency wins over strict per-card confinement where the two conflict.**
+
+### 3. A sixth beat — the text fades in after all five cards
+
+**The cards arrive on the existing choreographed ladder — 1, 2, 3, 4, then 5 — and a SIXTH beat
+is added: the answer text fades in once all five are in place.** The text arrives into a settled
+grid rather than riding in with the card that carries it.
+
+⚠ **THE LADDER IS ALREADY IN CODE** — `answer-card-geometry.ts` carries the rise duration, delay
+and translate. The five-card stagger and the resulting end-of-ladder time are what the sixth
+beat anchors to. **Read them from the file; do not retype them into a plan.**
+
+⚠ **THE TEXT MECHANISM IS A SEPARATE PROBLEM.** Text on a transmissive face is parked, shared
+with the contact field's own unsolved version. This observation gives it an **arrival moment**,
+not a rendering method.
+
+### 4. Next step becomes the SEVENTH beat
+
+**Carl: *"so if the next step was the 6th beat, that must be pushed back."*** It moves with the
+text fade — a consequence of observation 3, not an independent item.
+
+⚠ **DERIVE IT, DO NOT TYPE IT.** `enquiry-opening.tsx` already carries a computed
+end-of-choreography constant, and its own comment records that a hand-written value **went stale
+twice**. Push Next step back by deriving from the text fade's end.
+
+### 5. The mastering method — two faders, both from zero
+
+**Carl's instruction, and it governs the final pass:**
+
+> *"we build the new button. we add static light. then like pushing two faders up at once, we add
+> light and frosted glass to get the effect we want. Rather than start with frosted glass at a
+> half way point, we bring the 'volume' down same for the lights, and push the faders up."*
+
+⚠ **THIS IS METHOD, NOT PREFERENCE, AND THE REASON IS ON THE RECORD.** Every frost value so far
+has been a guess dressed as a starting point — and 0.28 was chosen while the transmission target
+was clearing to white, so it was tuned against a broken subject.
+
+⚠ **AND THE TWO ARE NOT INDEPENDENT.** Roughness drives both the transmission blur **and** the
+specular response — the same number that softens what is behind the glass spreads the highlight
+across it. Moving one alone gives a reading that changes when the other moves.
+
+⚠ **THE RIG IS NOT READY FOR THIS.** `?cardrig=1` has roughness `[7]` and transmission `[8]`.
+**Light has no fader** — env-map intensity and the two directional lights are constants. **Add a
+light fader before the pass**, or Carl tunes one by ear and one by file edit.
 
 ---
 
-## ⚠ Two process corrections Carl made
+## The remaining sequence, as Carl set it
 
-**1. The Builder widened its own scope.** It added `public/brand-assets/` to `chunk-scope.json`
-to copy a logo asset into the web root — **exactly the DL-1 pattern it had stopped and asked
-about an hour earlier.** Carl: *"revert. I can always point you at things or give you explicit
-permission if needed."*
+1. **Filament on card 1** — the reference file above
+2. **Clone** — roll the approved card out to all five
+3. **Timings back in place** — the ladder, plus beats six and seven
+4. **New button design** — Next step, in WebGL
 
-⚠ **THE RESULT WAS BETTER: `brand-assets/` stays the single source**, and the mark is now
-embedded as a packed 1-bit bitmap in `answer-card-mark.ts` — no file copy, no `public/` edit.
-**And the `.svg` "master" is not a vector**: it embeds a base64 PNG inside an `<image>` element
-and has zero `<path>` elements.
+⚠ **THE TIMINGS COME BACK AFTER THE CLONE, AND THAT IS DELIBERATE.** The ladder is a five-card
+stagger; it cannot be judged with one card and no neighbours. Same argument that moved the card
+before the filament.
 
-**2. Plan mode was entered without being asked for**, twice. Carl: *"no we are not finished
-discussing, I will tell you when we will plan"*, and later *"no need for plan mode on this
-chunk."* **Discussion is not a preamble to planning.**
+⚠ **THE CANVAS WARM-UP LIVES INSIDE STEP 3.** Carl: *"we will put the timing back in place and
+judge, possibly fine tune."* The card currently arrives ~1300ms late by design, because the
+canvas defers past the phrase wipe. Fixing that properly means warming the canvas during the
+opening choreography so its setup lands in dead time — **not** shortening the wait. The Builder
+asked whether it needed its own slot; Carl folded it into step 3.
+
+---
+
+## Open questions — Carl's to answer, asked and not yet resolved
+
+- **Does the amber sing or stay restrained?** Near-complementary against the backdrop's blue and
+  cyan, so it will be the most saturated thing on the page. Changes the value the chunk starts
+  from.
+- **The filament and the region shift on one clock** — Carl confirmed they share timings and
+  that changes happen inside the card. **Whether two simultaneous events read as too much is
+  still an eye judgement**, not settled.
+
+---
+
+## ⚠ The session's lesson — the instrument, again
+
+⚠ **`ai-system/working-with-the-builder.md` HAS THE SHARED CORRECTIONS RECORD.** New entries go
+there. **It is shared, not a Builder fault list** — Carl: *"mistakes are not exclusive to AI."*
+
+**This session's entry: a metric that could not distinguish the defect from the fix.** Edge
+energy reported **"85% retained"** on a card containing **zero** dark pixels, and that false
+claim was reported to Carl as a result. Gradient magnitude cannot tell a transmitted edge from a
+smeared one.
+
+⚠ **THIRD INSTANCE OF THE SAME CLASS IN THIS PROJECT** — after `q5-stutter.mjs` sharing a
+constant with its fix, and chunk 2's stand-in being a fixture that could not express the effect
+under test. **A measurement that cannot fail is not evidence.**
+
+**Carl's eye caught it in one glance.** The honest instrument — a luminance histogram of the
+*ground* rather than the ink — was unambiguous on its first run. Detail in
+`run-log-card-in-grid.md`.
 
 ---
 
 ## How to look at it
 
 ```
-http://localhost:3000/start                  walk to Q5 — backdrop in the grid, proto card left of it
-http://localhost:3000/start?cardrig=1        [1-6] geometry, [7-8] glass, [s] strokes, [↑/↓], [0]
+http://localhost:3000/start                  walk to Q5 — card in slot 1, over the lockup
+http://localhost:3000/start?cardrig=1        [1-6] geometry, [7-8] glass, [↑/↓] adjust, [0] print
 http://localhost:3000/start?roughness=0.45   jump to a frost level
-http://localhost:3000/start?standin=1        add the calibration strokes
 http://localhost:3000/start?lightrig=1       the contact field's orbiting light (localhost default ON)
 ```
+
+⚠ **`?standin=1` AND `[s]` NO LONGER EXIST.** The calibration stand-in was deleted with the
+merge. The earlier handoff listed them; they are gone.
 
 ---
 
@@ -162,38 +209,37 @@ http://localhost:3000/start?lightrig=1       the contact field's orbiting light 
 - **⛔ Never comment on his working hours.**
 - **He leads.** Design, chunking and decisions are his. D-036.
 - **He asks for the principle before the decision.** Explain, then let him choose.
-- ⚠ **HIS DESIGN CORRECTIONS REMOVE PROBLEMS RATHER THAN SOLVING THEM.** Cutting "web" from the
-  wordmark eliminated a size-ratio compensation that only existed because two words had unequal
-  length. Setting DESIGN in caps removed a descender that made the block ragged **and** improved
-  frost legibility. **Both were better than the Builder's proposals, and simpler.**
-- ⚠ **HIS EYE BEAT THE INSTRUMENTS FOUR TIMES TODAY.** Every report was real; every "it measures
-  clean" was the probe missing the window.
-- **He chunks deliberately** and will swerve when measurement demands it: *"something may arise
-  in the process that we must swerve and be adaptable."*
+- ⚠ **HE ANSWERS THE QUESTION BEHIND THE QUESTION.** Asked whether the filament should fade or
+  travel, he supplied a third reference photograph and let the physics settle it. Asked whether
+  the lettering wanted global or per-region opacity, he described what it looks like between the
+  cards. **Give him the trade-off; he will reframe it better than the options offered.**
+- ⚠ **HIS EYE BEATS THE INSTRUMENTS. AGAIN.** Every report this session was real; the
+  measurement that disagreed was wrong.
+- ⚠ **HE PARKS THINGS DELIBERATELY AND EXPECTS THEM TO STAY PARKED.** The frost level is
+  *"when the time is right"*, not forgotten.
 - **No ASCII diagrams or box-drawing characters.**
 - **Do not commit or push unless he explicitly asks.**
 
 ---
 
-## ⚠ Environment notes
+## ⚠ Environment notes — additions from this session
 
-- ⚠ **`var(--font-*)` IS INVALID IN A CANVAS FONT STRING.** The browser discards the whole
-  declaration and falls back to `10px sans-serif`, silently. Name the family literally.
-- ⚠ **`readPixels()` on a live canvas returns an EMPTY buffer** — three.js does not set
-  `preserveDrawingBuffer`. Screenshot the composited result. **DPR 1.**
-- ⚠ **Screenshot round-trips are ~200ms and will miss short stages.** For anything briefer,
-  instrument in-page: wrap `drawElements`, timestamp the DOM, trace the function.
-- ⚠ **`react-hooks/immutability` rejects mutating anything traceable to a hook** — including
-  `texture.needsUpdate` on a `useMemo` value. **The contact field's `useStudioEnvMap` pattern
-  cannot be copied**; produce a finished value instead of patching a held one.
-- **Playwright bundles a PNG decoder** — `playwright-core/lib/utilsBundle`, no new dependency.
-- **The Begin button is disabled until the opening mask fires**; wait for `!disabled`, not just
-  visibility.
-- **`python3` is unavailable.** Use `node`, `sed`, or the Edit tool.
+**The earlier handoff's environment notes all still hold.** New:
+
+- ⚠ **`renderTransmissionPass` CLEARS ITS TARGET TO WHITE** when the canvas has `alpha: true`
+  (`three.module.js:18019`, `setClearColor(0xffffff, 0.5)` whenever clear alpha < 1). **The
+  page's CSS background is invisible to it.** Any transmissive material over a cut-out needs a
+  real dark object in the scene or it samples white. This cost three rounds.
+- ⚠ **A WEBGL CANVAS ONLY REFRACTS ITS OWN SCENE.** Two canvases cannot see each other however
+  they are stacked in CSS. **Relevant to chunk 5:** the Next-step button reacting to selected
+  cards means the button and the cards share a scene, or it cannot work.
+- ⚠ **EDGE ENERGY IS THE WRONG METRIC FOR "IS THIS TRANSMITTED".** Use a luminance histogram of
+  the ground. See above.
 
 ---
 
-*3 August 2026. The Q&A answer card now exists in WebGL with real glass, and the c2b DESIGN
-lockup sits behind the grid in the corridor's own two colours. Seven commits, all pushed.*
+*3 August 2026, second session. The card sits in grid slot 1 and the c2b mark reads through the
+glass — coloured letterform on the page's own black, with a specular sweep across the face.
+Uncommitted, awaiting Carl.*
 
-*The next chunk moves the card into the grid, where the backdrop is already waiting for it.*
+*Next: the filament — heat, not drawing.*

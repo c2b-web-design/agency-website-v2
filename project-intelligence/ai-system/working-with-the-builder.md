@@ -262,6 +262,57 @@ rather than tuning.
 
 ---
 
+## 4. A metric that cannot distinguish the defect from the fix — 3 August 2026
+
+⚠ **THIRD INSTANCE OF ONE CLASS, AND THE FIRST TWO ARE ALREADY IN THIS FILE.** That is why it is
+written up as a class rather than a third anecdote.
+
+**What happened.** The card was moved into the grid so the glass would refract the logo. The
+Builder measured **edge energy** — mean absolute luminance gradient — inside the card against
+the bare lockup, got **85% retained**, and reported to Carl that *"structure IS visible through
+the glass."*
+
+**It was false.** The card interior contained **zero** pixels below luminance 32, against 44.9%
+outside it. The letterform had not been transmitted; it had been averaged into a wash.
+
+**Carl, in one glance:** *"that is not glass. If it was inside the card you would see the
+coloured lettering and the dark background."*
+
+⚠ **THE METRIC WAS INCAPABLE OF FAILING.** Gradient magnitude cannot distinguish a *transmitted*
+edge from a *smeared* one — a blur of roughly the right colours scores well on it. The number
+was measuring "is something colourful in there", and reporting it as "is the letterform intact".
+
+**What found it in one run:** a **luminance histogram of the ground**. Outside the card the mark
+is bright strokes on near-black; if the glass transmits, the black *between* the strokes
+survives. Measuring the **ground rather than the ink** was unambiguous immediately.
+
+### The class, now visible three times
+
+| Instance | The harness's defect |
+|---|---|
+| `verify/q5-stutter.mjs`, 30 July | Shared a constant with the fix it was checking |
+| Chunk 2's calibration stand-in, 3 August | A **fixture** that could not express the effect under test — a smooth gradient has no detail for frost to destroy, so every roughness value looked identical |
+| Edge energy, 3 August | A **metric** that could not separate the defect from the fix |
+
+⚠ **THE CONSTANT, THE FIXTURE, AND THE METRIC.** Three different components of a measurement,
+each capable of the same failure: producing a confident green on a broken subject.
+
+**The check that would have caught all three:** *before trusting a measurement, ask what value
+it would report if the thing were completely broken.* If the answer is "roughly what it reports
+now", the measurement is not evidence.
+
+⚠ **AND IT COST MORE THAN THE WRONG NUMBER.** Two of the three rounds spent on *"why is it still
+frosted"* adjusted the roughness value — while roughness was working correctly across its whole
+range, on a subject that could not show it. **The pattern this file already records, arriving
+through a new door: when a symptom will not move, stop adjusting inputs and measure the
+mechanism.**
+
+*The real cause, for the record, was in three's own source: `renderTransmissionPass` clears its
+target to white when the canvas has `alpha: true`, and the page's black is CSS, which no WebGL
+pass can see.*
+
+---
+
 ## Earlier entries, gathered from where they were already recorded
 
 **Not new findings — pointers, so the pattern is visible in one place.**
