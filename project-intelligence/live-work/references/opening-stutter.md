@@ -59,6 +59,57 @@ by hand.
 
 ---
 
+---
+
+## ⚠ MEASURED 4 August (later): IT WAS NEVER SHADER COMPILATION
+
+**A CPU profile of the opening, with every `linkProgram` and `texImage2D` call wrapped and timed:**
+
+```
+programs linked   16, costing    0ms
+texImage2D        12, costing    0ms
+onFirstUse        4 calls,    1384ms      <- 80% of the blocking time
+total blocking                1740ms
+```
+
+⚠ **SHADER LINKING IS 0% OF IT.** The GPU links asynchronously and never blocks. **Every fix
+attempted before this — three reschedules, deleting 560 lines of dead GLSL, collapsing five point
+lights — was aimed at a cost that does not exist.** The dead-code removal was worth doing on its
+own merits and bought ~7%, which should have been the clue.
+
+**The real cost is `onFirstUse` (`three.module.js:7094`)**, which runs the first time a program's
+uniforms are read. It does two things:
+
+1. `getProgramInfoLog` / `getProgramParameter(LINK_STATUS)` when `checkShaderErrors` is on.
+2. **`new WebGLUniforms(gl, program)` and `fetchAttributeLocations(gl, program)`** — enumerating
+   every active uniform and attribute via `getActiveUniform` / `getUniformLocation`.
+
+⚠ **BOTH ARE SYNCHRONOUS DRIVER QUERIES THAT WAIT FOR LINKING TO FINISH.** That is why linking
+measures 0ms and this measures 1384ms: **the wait was moved, not removed.**
+
+### `checkShaderErrors = false` — tried TWICE, and it is not the answer
+
+First attempt measured 0ms improvement and was written off. **That test was wrong** — it was set
+on the wrong renderer, since the warm-up canvas has its own. Retried correctly on the right one:
+**1740ms → 1692ms.** So the error queries are a small part; **the uniform enumeration is the bulk,
+and there is no flag to disable it.**
+
+⚠ **THE DANGEROUS PART WAS RETIRING A CORRECT-SOUNDING HYPOTHESIS WITH A BROKEN TEST.** It was
+recorded here as a dead end on evidence that did not support the claim.
+
+### What this leaves
+
+`onFirstUse` runs **once per program**, and 16 programs exist because five cards × three materials
+plus the backdrop each get their own. **The lever is fewer distinct programs, not smaller ones:**
+five cards sharing one rim material instance, one bevel instance and one face instance would cut
+16 programs to about 4.
+
+⚠ **THAT IS A REAL REFACTOR AND IT WAS NOT ATTEMPTED.** Materials are currently constructed
+per-card by `AnswerCardMesh`; sharing them means hoisting construction out and passing instances
+down, which changes how per-card state (the filament's own uniforms) is addressed.
+
+---
+
 ## What is still untested
 
 - **Simplifying the shaders themselves.** The rim and bevel each carry a full copy of
