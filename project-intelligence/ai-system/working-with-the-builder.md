@@ -313,6 +313,64 @@ pass can see.*
 
 ---
 
+## 5. The test rig was not the machine under test — 4 August 2026
+
+**The single most expensive error in this project so far, measured in wrong conclusions rather
+than in time.** Full context: `live-work/run-log-clone-and-beats.md`, third pass.
+
+**Headless Playwright has no GPU.** It falls back to SwiftShader — Chromium's *software*
+rasteriser — so shader compilation and the transmission pass both ran on the CPU. Every
+performance number taken before this was noticed was measured on a different machine from the one
+Carl uses.
+
+**What was reported to Carl as fact, and was not:**
+
+| claim | on SwiftShader | on the real GPU |
+|---|---:|---:|
+| "fixed cost of putting glass on screen" | ~2900ms | **349ms** |
+| `compileAsync` "does not help" | true — no `KHR_parallel_shader_compile` | **false, it works** |
+| "one card costs the same as five" | 2846 / 2986 / 2949ms | never re-tested |
+
+⚠ **THE FLAT 1-VS-5 RESULT WAS THE MOST PERSUASIVE EVIDENCE AND THE MOST WRONG.** It was read as
+proof that the cost was per-scene rather than per-card — a real conclusion, drawn from a
+measurement where compilation dominated so heavily that mesh count could not register. **The
+conclusion happened to survive; the evidence for it never supported it.**
+
+**THE RULE: for anything GPU-timed, headless is not the machine under test.** Run headed with
+`--enable-gpu`, and **print the renderer string in the output** so the substitution cannot happen
+silently. A probe that does not say what hardware it ran on is not reporting a measurement.
+
+⚠ **AND THE SAME SESSION PRODUCED SEVEN FAILURES OF ONE OTHER SHAPE:** `gl.readPixels` returning
+zeros under `frameloop="demand"`; in-page `drawImage` the same; Playwright's first `screenshot()`
+costing ~4900ms — **longer than the 2140ms animation it was built to catch**; an r3f scene walk
+finding no scene; and a warm-up gate that opened perfectly with **`canvases=0`** because the thing
+it warmed did not exist yet.
+
+**Every one reported ABSENCE — which is exactly what a genuine defect reports.** Entry 4 already
+named this pattern; this session ran it seven more times. **The generalisation, stated as plainly
+as it can be:**
+
+> **An instrument must be shown capable of reporting PRESENCE before its report of absence means
+> anything.** Give every probe a positive control — a condition under which it MUST return a
+> non-zero result — and check that first.
+
+The probes that worked in this session all had one. The hue sampler caught its own `readPixels`
+failure only because REST should have been lit and measured zero. The bleed probe refused to
+certify card 4 because its own control failed.
+
+⚠ **AND CARL'S EYE BEAT THE INSTRUMENTS TWICE MORE.** He located the stall to *"between cards
+1+2"* — the exact gap a trace then confirmed at 260ms of blocking work. And on the hover-confinement
+bug the Builder argued **two wrong diagnoses** (a stale baseline, then a stale dev server) before
+opening a screenshot that showed the real fault — the lockup vanishing outside the hovered card —
+**immediately, and in one glance.**
+
+**The check that would have saved both:** the failing measurements had *identical values across
+conditions that should have differed*. Bleed figures were the same whichever card was hovered; a
+"stale server" produced byte-identical output across three different constant values. **Invariance
+where variation is expected is a fault in the instrument, not a finding.** Look at the picture.
+
+---
+
 ## Earlier entries, gathered from where they were already recorded
 
 **Not new findings — pointers, so the pattern is visible in one place.**
