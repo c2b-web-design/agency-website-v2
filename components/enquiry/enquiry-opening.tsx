@@ -437,19 +437,6 @@ export default function EnquiryOpening() {
   // (set true at the mask's `animationstart`). Under reduced motion there is no
   // reveal animation, so it is activated immediately in the effect below.
   const [beginActive, setBeginActive] = useState(false);
-
-  /**
-   * Whether the opening's Begin reveal has FINISHED — the warm-up's gate.
-   *
-   * ⚠ NOT `beginActive`, WHICH FIRES AT THE REVEAL'S START. The reveal runs
-   * 5000ms from a 7400ms delay, so gating on its start released the warm-up a
-   * second into the animation it exists to protect. Carl: *"begin button
-   * stalls."*
-   *
-   * ⚠ ALSO TRUE IMMEDIATELY UNDER REDUCED MOTION, where the reveal is
-   * `animation: none` and no `animationend` will ever fire.
-   */
-  const [openingRevealDone, setOpeningRevealDone] = useState(false);
   // True while the corridor is shifting one depth deeper: the answered question recedes
   // (depth-0 -> depth-1), every older memory deepens by one, the heading recedes, and the
   // next active question is gated out of depth-0 until the morph settles. Drives the heading
@@ -520,7 +507,7 @@ export default function EnquiryOpening() {
     // is set at the Begin mask's `animationstart`, which is the last beat. Waiting
     // for a STATE rather than a DURATION cannot be wrong by a few hundred
     // milliseconds when a timing changes.
-    if (!openingRevealDone) return;
+    if (!beginActive) return;
 
     let idleId: number | null = null;
     let timerId: number | null = null;
@@ -562,18 +549,14 @@ export default function EnquiryOpening() {
       }
       if (timerId !== null) window.clearTimeout(timerId);
     };
-  }, [cardCanvasWarm, openingRevealDone]);
+  }, [cardCanvasWarm, beginActive]);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReducedMotion(mq.matches);
     // No radial reveal under reduced motion → no `animationstart` will fire, so
     // make the Begin hit target usable immediately.
-    if (mq.matches) {
-      setBeginActive(true);
-      // No radial reveal under reduced motion, so no `animationend` will fire.
-      setOpeningRevealDone(true);
-    }
+    if (mq.matches) setBeginActive(true);
   }, []);
 
   // Warm the contact canvas once the questionnaire has started, on a genuine
@@ -1276,34 +1259,6 @@ export default function EnquiryOpening() {
                     e.animationName === "enquiry-mask-reveal-radial"
                   ) {
                     setBeginActive(true);
-                  }
-                }}
-                onAnimationEnd={(e) => {
-                  /**
-                   * ⚠ THE WARM-UP WAITS FOR THIS, NOT FOR `beginActive`.
-                   *
-                   * `beginActive` fires at the reveal's `animationstart` — it
-                   * exists to make the hit target usable the instant the circle
-                   * begins expanding, which is correct for ITS job and wrong as a
-                   * warm-up gate. **The reveal runs 5000ms from a 7400ms delay**
-                   * (`globals.css:185`), so gating on its START released the
-                   * warm-up a second INTO the very animation it was meant to
-                   * avoid.
-                   *
-                   * ⚠ MEASURED, COLD: the warm-up canvas mounted at +8096ms and a
-                   * 641ms task followed at +8193 — squarely on the Begin reveal.
-                   * Carl: *"begin button stalls."*
-                   *
-                   * ⚠ THIRD TIME THIS FILE HAS LEARNED "A STATE, NOT A DURATION"
-                   * — and this one is subtler: the state was right, the EDGE was
-                   * wrong. `animationstart` and `animationend` are different
-                   * facts about the same animation.
-                   */
-                  if (
-                    e.target === e.currentTarget &&
-                    e.animationName === "enquiry-mask-reveal-radial"
-                  ) {
-                    setOpeningRevealDone(true);
                   }
                 }}
               >
