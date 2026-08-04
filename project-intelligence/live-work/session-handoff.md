@@ -1,6 +1,6 @@
-# Session Handoff — 4 August 2026 (second session of the day)
+# Session Handoff — 4 August 2026 (third session of the day)
 
-**Written at the end of the filament session. For the session that picks up next.**
+**Written at the end of the filament / black-body session. For the session that picks up next.**
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical
 (D-006). **Delete this file at the end of the session that reads it, once its replacement is
@@ -20,142 +20,148 @@ session ends and will say so.** It was not broken today.
 
 ## Where things stand
 
-**Repo: `main`, head `2a3d0a8`, COMMITTED and clean. NOTHING IS PUSHED** — the last push was
-`f57b6db`, so four commits are local only. Lint at the recorded baseline; `npx tsc --noEmit` clean.
+**Repo: `main`, head `662d657`, committed and clean. ⚠ NOTHING SINCE `f57b6db` IS PUSHED** —
+**seven commits are local only.** Lint at the recorded baseline; `npx tsc --noEmit` clean.
 
 ⚠ **`chunk-scope.json` IS STILL DELETED — the repo is FAIL-OPEN.** Unchanged all day. Carl has
-been directing chunks conversationally and approving as he goes; **no scope file was drafted and
-he did not ask for one.**
+directed every chunk conversationally and approved by eye; no scope file was drafted and he has
+not asked for one.
 
-⚠ **THE PAGE STILL DOES NOT ADVANCE PAST Q5.** Clicking a card now fires its filament, but that is
-NOT selection — no Next step, no Q4, no contact field.
+⚠ **THE PAGE STILL DOES NOT ADVANCE PAST Q5.** Clicking a card fires its filament; that is not
+selection. No Next step, no Q4, no contact field.
 
 ### What this session did
 
-**Two chunks, both by Carl's direction, both approved by eye as they went.**
+**The filament, twice — and the second version replaced the first entirely.**
 
-1. **`97b987d` — the inactive state.** Rim as unlit tungsten, bevel as its glass holder, plus the
-   light fader. Carl: *"That looks a lot better."*
-2. **`1dfce8a` — the filament circuit.** Travel, bevel latch, uniform fade-out on a second press.
-3. **`2a3d0a8` — the open-defect record.**
-
-**Full records: the commit messages themselves are detailed, and
-`live-work/references/opening-stutter.md` carries the outstanding defect.**
-
----
-
-## ⚠ THE OUTSTANDING DEFECT — the opening stutters
-
-### → `live-work/references/opening-stutter.md`
-
-**Read it before touching this.** Carl: *"the text on the start page, where the ivory button is,
-stutters."* The OPENING, before Begin — not Q5.
-
-⚠ **THE BUILDER CAUSED IT.** The warm-up canvas compiles the filament's two new custom shaders
-during the opening. That was cheap when it compiled one plain material.
-
-⚠ **THREE FIXES ARE MEASURED AND DEAD.** The record lists them so they are not retried as fresh
-ideas. **The most important lesson in it: the compile is ~1.6s and no gap that size exists in the
-opening, so RESCHEDULING CANNOT WORK.** Three rounds went into treating a size problem as a timing
-problem, and one of those rounds moved the stutter onto the Begin reveal — a moved symptom.
-
-**Untested, in the order the Builder would try them:** simplify the bevel's shader (it carries a
-full copy of the circuit function and only needs a latch); retry the single shared light with the
-position maths corrected (it helped, 900ms → 645ms, but broke the spill onto card 2); or do not
-warm during the opening at all and take the cost at Q5.
-
-⚠ **AND ONE QUESTION IS CARL'S, NOT THE BUILDER'S:** whether the filament is worth a ~1.6s compile
-on every page load.
+1. **`94a4167`** — Carl reframed the whole chunk: *"does it have to move? become animated? No. it
+   could fade in, like a real light bulb filament. How does light/heat work? Start of red, orange,
+   white. blue"*. The travelling circuit was **deleted**, not disabled: 560 deletions against 229
+   insertions. **That reframe removed four defects rather than fixing them** — all of them existed
+   because something moved along a path.
+2. **`a3acfa2`** — the end colour pulled back from white to amber. Carl: *"white looks too blown
+   out."* His verdict on the result: ***"thats the best its looked."***
+3. **`a17d582`** — the opening stutter, half fixed, plus the lockup dimmed to 50%.
+4. **`662d657`** — two wrong records corrected.
 
 ---
 
-## ⚠ Also open — the head does not read as a hot core
+## ⚠ THE FIRST JOB — the env map, and the fix is already chosen
 
-**Only ~8 points brighter than its own trail**, so it reads closer to a uniform fill than the
-*"hot core and bloom"* the design reference asks for. Four values were tried; the contrast moved
-from 4 to 8 points. **Something else pins the head near the top of the range and it was not
-found.** Detail in the same reference file.
+**~572ms of PMREM work still blocks the opening.** The Architect found why the Builder's gating
+never touched it: **`useLocalEnvMap` runs in a `useMemo` during React render**, so `mayCompile` /
+`warm` — which gate `useScenePrecompile` only — never applied to it. Noted at the function itself.
 
----
+### → Do the DEFERRAL, not the resize
 
-## The sequence, as it now stands
+Two routes exist. **Take the first:**
 
-1. ~~Clone the cards~~ — done, earlier session
-2. ~~Inactive rim and bevel~~ — done, `97b987d`
-3. ~~The filament circuit~~ — done, `1dfce8a`, **with the two defects above**
-4. **The two faders** — lockup opacity down, frost up. **Still not started**, and still what Carl
-   named as next before the filament took priority.
-5. **New button design** — Next step, in WebGL
+- **Move the allocation behind the warm gate.** Same deferral that just worked for the
+  transmission pass, costs nothing visually, and needs no judgement from Carl.
+- ~~`fromScene(studio, 0, 0.1, 200, { size: 64 })`~~ — **a VISUAL change and Carl's call.** It is
+  a real lever (256 → lodMax 8 and a 768x1024 target; 64 → lodMax 6 and 336x256), but he has not
+  seen 256/128/64 side by side. **Do not take it to save time.**
 
 ---
 
-## ⚠ How Carl worked today — this is the most useful part of this file
+## ⚠ THE ARCHITECT WAS CONSULTED AND WAS RIGHT
 
-- ⚠ **HE GIVES CONSTRUCTIONS, NOT ADJECTIVES.** *"The N of DESIGN can end at the same distance
-  from the perceived edge as when the c starts"*; *"put that half way point at the half way point
-  in the gap between the cards."* **Both were exactly buildable and both worked first time.** Ask
-  for the construction.
-- ⚠ **HE SETTLES DESIGN QUESTIONS WITH PHYSICS.** Asked whether the bevel should be metal too:
-  *"What would some metal be doing connected to a metal filament that is about to heat up?...
-  i would imagine that the bevel is some sort of 'holder'... If its made of glass it would conduct
-  and reflect the heat/light."* **His answer was better than either option offered.**
-- ⚠ **HE CORRECTS FALSE PRECISION.** *"it doesnt have to be exact, im looking for ball park
-  figures."*
-- ⚠ **HE BRACKETS NUMBERS RATHER THAN GUESSING THEM.** *"if we change 1100ms to 1500ms and its too
-  slow we will have a range to work with."*
-- ⚠ **HE READS THE SCREEN BETTER THAN THE INSTRUMENTS DO.** Today he caught: a phantom second
-  filament head, a section losing intensity mid-circuit, a 15px lag between bevel and rim, and the
-  opening stutter — **all before any probe found them, and all real.**
+### → `live-work/architect-answer-opening-stutter.md`
+
+**Read it before touching the stutter.** Carl asked for it after the Builder had failed six times.
+
+**The cause, which no Builder theory came near: every material compiles TWICE.** The program cache
+key carries `outputColorSpace` (branching on `currentRenderTarget === null`) and `toneMapping`.
+The canvas is sRGB + ACES filmic; the transmission pass renders to a target at linear +
+`NoToneMapping`. Only the canvas variant was being warmed.
+
+**Fixed in `a17d582`** — compile twice, once in each renderer state, via a 1x1 probe target.
+`renderTransmissionPass` is now **absent from the profile's top fourteen**, down from 777ms.
+
+⚠ **ONE CONSTRAINT THAT WILL BREAK IT SILENTLY:** lights are gathered with `traverseVisible`, and
+`numPointLights` is in the cache key. **The `FilamentLight`s must stay in the always-visible outer
+group.** Move one into a hidden group and every program warmed there becomes the wrong variant.
+
+---
+
+## ⚠ The session's lesson — a wrong "ruled out" is worse than no note
+
+**Two of the Builder's six theories were retired by tests that never exercised the knob:**
+
+- **`checkShaderErrors`** — set on the wrong renderer (the warm-up canvas has its own). The 0ms
+  result meant nothing. Correctly retried: 1740 → 1692ms.
+- **Env-map "resolution"** — `fromScene`'s fourth argument is the **far plane**. With
+  `ENV_SHELL_RADIUS` at 60 the studio was inside the frustum either way, so **nothing could have
+  changed**. The 5ms delta went into a **code comment that then forbade the real fix for hours.**
+
+> **Both times the check was "did the number move", never "was the knob connected."**
+
+**The control, and it is cheap: before trusting a null result, show the test CAN fail** — set the
+parameter absurd and confirm a large move.
+
+**And the classifier that would have found the cause at theory 1:** the task's DURATION never
+changed across three reschedules, only its start time. **Duration invariant under scheduling means
+the cost is intrinsic to an operation's FIRST USE.** That reaches the answer on the first hop.
+
+**Both entries are struck in place in `references/opening-stutter.md`.** New corrections-record
+entries belong in `ai-system/working-with-the-builder.md` (entries 5 and 6 are from today).
+
+---
+
+## ⚠ Open, and Carl's to decide
+
+- **The amber filter onto neighbouring cards.** Designed in conversation, not built. Carl's
+  framing: *"if a light source is shining on glass and a colour filter is placed in front of the
+  lens, would not that influence the colour?"* — **subtraction, not addition**: a filter removes
+  blue rather than adding orange, so it DARKENS and saturates instead of washing out. The specular
+  sweep is where it will read hardest. **Tune it with all five lit** — his instruction: *"if you
+  start from a position of all 5 cards on, and work out theres little effect on other colours,
+  thats the strongest its gonna get."*
+- ⚠ **AND THE BACKDROP SHOULD PROBABLY BE EXEMPT** — a filter reaching the lockup would take blue
+  out of blue letterforms and go muddy. Physically right, visually wrong. Departure to be stated
+  in the code, not silent.
+- **The lockup dim is GLOBAL, which is not the whole of his 3 August observation.** He asked for
+  brightness tied to card POSITION — bright under the cards, quiet between them. The gaps are 8px,
+  so a mask edge becomes a visible shape in its own right. **Not attempted.**
+- **Does the amber sing or stay restrained?** Still unanswered, carried from two sessions back.
+
+---
+
+## How Carl worked today
+
+- ⚠ **HE REPLACES DESIGNS, NOT JUST VALUES.** The travelling filament was working and approved in
+  mechanism when he asked *"does it have to move? No."* **The reframe deleted four defects.** When
+  he questions a premise, the premise is usually the problem.
+- ⚠ **HE REASONS FROM PHYSICS AND IS RIGHT.** Black-body colour, the glass bevel as a holder
+  rather than a conductor, the colour filter as subtraction. **Three times today his physics beat
+  the Builder's implementation instinct.**
+- ⚠ **HE TUNES FROM THE EXTREME.** *"start from a position of all 5 cards on."* Find the worst
+  case; everything lesser is safe by construction.
+- **He asks for the principle before deciding**, and **brackets numbers rather than guessing**.
 - **No ASCII diagrams or box-drawing characters.**
-- **Do not commit or push unless he explicitly asks.**
-
----
-
-## ⚠ The session's lesson — four defects, each caused by the previous fix
-
-**`ai-system/working-with-the-builder.md` HAS THE SHARED CORRECTIONS RECORD.** Entry 5 was added
-this morning. **This session earns another, and it is a new shape:**
-
-1. The tail **wrapped** → a phantom second head at the far end of the loop.
-2. Removing the wrap → the origin became **a hard edge**. Carl: *"the effect of heat doesnt
-   diminish in a straight line."*
-3. The back-bleed was **a fixed constant** → that section dropped to it and stayed pinned. Carl:
-   *"as if some of the juice has been turned down for that section."*
-4. The bevel lagged 15px — **not the trigger width**, which was blamed first and changed nothing.
-   The rim and bevel are swept along **different rectangles** (perimeters 433 vs 408), so equal
-   fractions land in different places.
-
-⚠ **THE PATTERN: EACH FIX WAS LOCALLY CORRECT AND CREATED THE NEXT DEFECT.** None was a careless
-error; each followed from the last. **The check that would have caught them earlier is to ask what
-the fix makes true that was not true before**, rather than only whether it removes the symptom.
-
-⚠ **AND THE ASSUMED-GEOMETRY TRAP RECURRED.** A probe sampled the right edge at t=0.30 and called
-it "the head" — but the top edge alone is **0 → 0.356** of this card's circuit, so the head was
-still on it. That probe reported the head as **119 points dimmer than its trail**, a defect that
-did not exist, and it was acted on twice before the segment proportions were computed rather than
-assumed. **Find the edge; do not place it.**
+- **Do not commit or push unless he explicitly asks.** He asked twice today; **nothing is pushed.**
 
 ---
 
 ## How to look at it
 
 ```
-http://localhost:3000/start                  the walk; click a card to fire its filament
-http://localhost:3000/start?cardrig=1        [1-6] geometry, [7-9] glass/light,
-                                             [r] rim roughness, [m] cycle metal,
-                                             [f] filament intensity, [0] print
-http://localhost:3000/start?light=0.6        hold a light level across reloads
+http://localhost:3000/start                  click a card to fire its filament; click again to cool
+http://localhost:3000/start?cardrig=1        [1-6] geometry, [7-9] glass/light, [r] rim roughness,
+                                             [m] cycle metal, [f] filament intensity, [0] print
 http://localhost:3000/start?beattrace=1      performance.mark per entrance beat
 ```
 
 ⚠ **MEASURE HEADED, WITH `--enable-gpu`, AND PRINT THE RENDERER STRING.** Headless Playwright has
 no GPU and silently substitutes SwiftShader — it invalidated a whole investigation this morning.
-See corrections-record entry 5.
+
+⚠ **AND READ A CALL TREE, NOT SELF-TIME.** Self-time attributed 1384ms to `onFirstUse`, whose own
+work measures ~1ms. The tree named the two real costs in ten minutes, after six theories had not.
 
 ---
 
-*4 August 2026, second session. The rim is tungsten, the bevel is its glass holder, and the
-filament runs a circuit that latches the bevel behind it and fades out on a second press.
-Committed at `2a3d0a8`, **unpushed**.*
+*4 August 2026, third session. The filament heats in place through red, orange and amber, and
+cools back down the same ramp. The rim is tungsten, the bevel its glass holder, the lockup at half
+strength behind them. Committed at `662d657`, **unpushed**.*
 
-*Next: the opening stutter — and it is a size problem, not a timing one.*
+*Next: defer the env map, then the amber filter onto the neighbours.*

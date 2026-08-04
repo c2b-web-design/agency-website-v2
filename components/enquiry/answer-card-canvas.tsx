@@ -797,7 +797,9 @@ function AnswerCard({
   reducedMotion: boolean;
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
-  envMap: THREE.Texture;
+  // Null until the env map's build is released by the warm gate — the materials
+  // simply render without an environment until then. See `useLocalEnvMap`.
+  envMap: THREE.Texture | null;
   /** Whether this card's filament has been fired. */
   lit: boolean;
 }) {
@@ -1075,11 +1077,33 @@ function CardLighting({
  * taken yet: move the allocation behind the gate, or pass `{ size: 64 }` to
  * `fromScene` — the second is a VISUAL change and Carl's call.
  */
-function useLocalEnvMap(): THREE.Texture {
+function useLocalEnvMap(ready: boolean): THREE.Texture | null {
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
 
   const target = useMemo(() => {
+    /**
+     * ⚠ GATED — THIS IS THE FIX FOR THE REMAINING ~572ms OF THE OPENING STUTTER.
+     *
+     * The memo used to run unconditionally, which meant it executed during
+     * `CardScene`'s FIRST RENDER — outside every gate the Builder had added.
+     * `mayCompile` / `warm` gate `useScenePrecompile` only, so ~572ms of PMREM
+     * work sat on the opening choreography with nothing deferring it. Caught by
+     * the Architect: `live-work/architect-answer-opening-stutter.md`.
+     *
+     * ⚠ RETURNING `null` IS SAFE, AND THAT IS WHY THIS WORKS WITHOUT A REWRITE.
+     * `envMap` is a declarative prop; three renders the material with no
+     * environment until a texture arrives, then rebuilds it once. The cards are
+     * hidden and unlit during the opening anyway, so nothing is visible in the
+     * interval.
+     *
+     * ⚠ AND THE DEFERRAL WAS CHOSEN OVER `{ size: 64 }` DELIBERATELY. Shrinking
+     * the map is a real lever (256 → lodMax 8 and a 768x1024 target; 64 → lodMax
+     * 6 and 336x256) but it is a VISUAL change and Carl's call — he has not seen
+     * 256/128/64 side by side. **Deferral costs nothing to look at.**
+     */
+    if (!ready) return null;
+
     const studio = new THREE.Scene();
     const disposables: Array<THREE.BufferGeometry | THREE.Material> = [];
 
@@ -1151,7 +1175,7 @@ function useLocalEnvMap(): THREE.Texture {
     studio.clear();
 
     return built;
-  }, [gl]);
+  }, [gl, ready]);
 
   // Dispose the previous target when a new one is built, and on unmount. This
   // is what replaces the effect-based allocation: a Strict Mode double-invoke
@@ -1159,7 +1183,7 @@ function useLocalEnvMap(): THREE.Texture {
   useEffect(() => {
     invalidate();
     return () => {
-      target.dispose();
+      target?.dispose();
       invalidate();
     };
   }, [target, invalidate]);
@@ -1177,7 +1201,19 @@ function useLocalEnvMap(): THREE.Texture {
   // Passing the texture as a prop means it is part of the material's FIRST
   // construction: there is no unlit frame and no recompile, because there is
   // no "before" state to correct.
-  return target.texture;
+  //
+  // ⚠ THAT ARGUMENT NOW HAS ONE EXCEPTION, AND IT IS DELIBERATE. While `ready`
+  // is false this returns null, so the materials ARE built without an
+  // environment and rebuilt once it arrives — the "grey then brighter" recompile
+  // the note above exists to prevent.
+  //
+  // ⚠ IT IS INVISIBLE HERE BECAUSE OF WHEN IT HAPPENS: the gate opens during the
+  // opening, long before the cards are drawn, and they are hidden AND unlit
+  // (`CardLighting` holds every material at zero) until their own rung of the
+  // ladder. The recompile lands in dead time rather than on screen. **If the
+  // gate ever moves later than the cards' entrance, this comment stops being
+  // true and the flash returns.**
+  return target ? target.texture : null;
 }
 
 /**
@@ -1415,7 +1451,10 @@ function CardScene({
   onWarm: () => void;
   mayCompile: boolean;
 }) {
-  const envMap = useLocalEnvMap();
+  // ⚠ GATED ON THE SAME SIGNAL AS THE SHADER WARM-UP. Its ~572ms of PMREM work
+  // previously ran during this component's first render, outside every gate —
+  // see `useLocalEnvMap`.
+  const envMap = useLocalEnvMap(mayCompile);
   useScenePrecompile(onWarm, mayCompile);
 
   /**
