@@ -542,14 +542,29 @@ export const HEAT_RED = "#8c1f06";
 /** Mid-ramp — orange, the temperature a filament passes through. */
 export const HEAT_ORANGE = "#ff6a1a";
 /**
- * The settled colour: warm white, sitting between amber and true white.
+ * The settled colour: amber-orange, NOT white.
  *
- * ⚠ NOT PURE WHITE AND NOT THE RAIL'S AMBER — Carl's *"somewhere between the
- * two."* A real filament at 2800K is white with a warm cast, which is what this
- * is; the amber's brand job is carried by the ramp it travels through rather
- * than by where it stops.
+ * ⚠ PULLED BACK DOWN THE RAMP ON CARL'S REPORT, 4 August: *"the end state of the
+ * filament is too bright/white. it reaches optimum red and as it transitions to
+ * nearly white i would imagine it would be amber/orange? white looks too blown
+ * out."*
+ *
+ * ⚠ AND HE IS RIGHT ON THE PHYSICS AS WELL AS THE LOOK. Tungsten runs ~2800K,
+ * which is *nominally* white but reads distinctly WARM — "white hot" in ordinary
+ * speech is more like 5000K, which tungsten never reaches because it melts at
+ * ~3700K. The previous `#ffd9a8` was sitting at a temperature the metal cannot
+ * survive.
+ *
+ * ⚠ IT ALSO RESOLVES *"somewhere between the two"* MORE HONESTLY. That was read
+ * as "a white with a warm cast"; the truer reading is an amber that has climbed
+ * as far toward white as the metal allows — which is what this is, and which
+ * keeps the rail's amber doing its brand job at the moment the eye settles on
+ * the card rather than only in passing.
+ *
+ * The constant keeps its name because it is the ramp's TOP END, not because it
+ * is white.
  */
-export const HEAT_WHITE = "#ffd9a8";
+export const HEAT_WHITE = "#ffab52";
 
 /**
  * How long the filament takes to reach temperature.
