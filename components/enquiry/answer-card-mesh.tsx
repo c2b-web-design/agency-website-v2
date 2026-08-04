@@ -61,36 +61,63 @@ import {
   GLASS_THICKNESS,
   GLASS_IOR,
   GLASS_ENV_INTENSITY,
+  RIM_METAL_COLOR,
+  RIM_METALS,
+  RIM_METALNESS,
+  RIM_ROUGHNESS,
+  RIM_ENV_INTENSITY,
+  BEVEL_GLASS_COLOR,
+  BEVEL_ROUGHNESS,
+  BEVEL_CLEARCOAT,
+  BEVEL_CLEARCOAT_ROUGHNESS,
+  BEVEL_ENV_INTENSITY,
+  LIGHT_LEVEL,
 } from "./answer-card-glass";
 
 /**
- * The two glass properties that are adjustable.
+ * The material properties that are adjustable during the mastering pass.
  *
  * ⚠ `thickness` AND `ior` ARE DELIBERATELY ABSENT. Under an orthographic camera
  * their maximum effect across the whole face is 0.801px — they would move
  * numbers and change nothing on screen. See `answer-card-glass.ts` for the
  * measured displacement table.
+ *
+ * ⚠ `lightLevel` JOINED THEM ON 4 AUGUST because Carl's method needs it as a
+ * fader rather than a constant — see `GLASS_RIG_PARAMS` in
+ * `answer-card-canvas.tsx`.
  */
 export type GlassTuning = {
   roughness: number;
   transmission: number;
+  lightLevel: number;
+  /** The rim metal's own surface roughness — the dial with real range on it. */
+  rimRoughness: number;
+  /** Index into `RIM_METALS`. Cycled with `[m]`; see that constant for why. */
+  rimMetal: number;
 };
 
 export const DEFAULT_GLASS_TUNING: GlassTuning = {
   roughness: GLASS_ROUGHNESS,
   transmission: GLASS_TRANSMISSION,
+  lightLevel: LIGHT_LEVEL,
+  rimRoughness: RIM_ROUGHNESS,
+  rimMetal: 0,
 };
 
 // ── Diagnostic material ──────────────────────────────────────────────────────
-// Three distinct greys so rim, bevel and face are separable by eye.
 //
 // ⚠ GREY IS THE POINT, NOT A PLACEHOLDER. A form defect hides behind a colour
 // that already looks plausible: the contact field's 5.67-degree crown failure
 // was only findable under a diagnostic material, because a blue-tinted card
 // would have read as "roughly right" and carried the defect into the material
 // chunk. Confirmed by Carl, 3 August.
-const DIAG_RIM_COLOR = "#6a6a6a";
-const DIAG_BEVEL_COLOR = "#8a8a8a";
+// ⚠ THE RIM'S AND BEVEL'S DIAGNOSTIC GREYS ARE RETIRED — both now carry a real
+// material brief from Carl (4 August): the rim is unlit tungsten, the bevel is
+// the glass holder that supports it. The diagnostic did its job; the form it was
+// protecting is approved.
+//
+// `DIAG_FACE_COLOR` REMAINS, and only as the non-glass fallback — the face wears
+// real glass whenever `glass` is set, and this is what renders otherwise.
 const DIAG_FACE_COLOR = "#a8a8a8";
 
 /** Samples around the perimeter. Corners need the density; straights do not suffer. */
@@ -461,6 +488,7 @@ export function AnswerCardMesh({
   groupRef,
   glass = false,
   envMap = null,
+  lightLevel = LIGHT_LEVEL,
   glassTuning = DEFAULT_GLASS_TUNING,
   children,
 }: {
@@ -486,6 +514,15 @@ export function AnswerCardMesh({
    * there is no "before" state to correct.
    */
   envMap?: THREE.Texture | null;
+  /**
+   * The scene's light level, as a multiplier on every environment response.
+   *
+   * ⚠ IT IS A FADER, AND IT STARTS LOW BY INSTRUCTION. Carl, 4 August: *"we give
+   * it one and start with it low so it has hardly no effect on the metal. We
+   * bring it up to a relative level and judge it against both metal and glass."*
+   * Bound to `[9]` in `?cardrig=1`.
+   */
+  lightLevel?: number;
   /**
    * Rendered INSIDE the card's group, so anything placed behind the face
    * inherits the group's `visible` flag and its entrance transform.
@@ -606,20 +643,57 @@ export function AnswerCardMesh({
   return (
     <group ref={groupRef}>
       {children}
+      {/*
+        ⚠ THE RIM IS TUNGSTEN AT REST — the filament before any current. Carl,
+        4 August: *"Filaments are usually grey metal... if its metal, the light
+        would have some interaction with it before it is active."*
+
+        ⚠ `metalness: 1` AND A REAL `envMapIntensity` ARE BOTH LOAD-BEARING. A
+        metal has almost no diffuse response, so the environment map IS its
+        appearance — the previous `metalness: 0` with no env response could not
+        read as metal at any roughness, because there was nothing for it to
+        reflect. See `answer-card-glass.ts`.
+
+        ⚠ THE HALF-TUBE EARNS ITS KEEP HERE, and it is why the profile was built
+        this way. Carl: *"A half tube will emit the light in multiple directions
+        as opposed to it being flat."* A curved surface presents every angle to
+        the light at once, so the specular runs ALONG the rim rather than
+        flashing at one spot — which is exactly what his first reference shows on
+        the unlit coil.
+      */}
       <mesh geometry={rimGeometry}>
         <meshStandardMaterial
-          color={DIAG_RIM_COLOR}
-          roughness={0.55}
-          metalness={0}
+          color={RIM_METALS[glassTuning.rimMetal]?.color ?? RIM_METAL_COLOR}
+          roughness={glassTuning.rimRoughness}
+          metalness={RIM_METALNESS}
+          envMap={envMap}
+          envMapIntensity={RIM_ENV_INTENSITY * lightLevel}
           side={THREE.DoubleSide}
         />
       </mesh>
 
+      {/*
+        ⚠ THE BEVEL IS GLASS — THE FILAMENT'S MOUNT, NOT PART OF THE CONDUCTOR.
+        Carl settled it by physics: *"What would some metal be doing connected to
+        a metal filament that is about to heat up?... i would imagine that the
+        bevel is some sort of 'holder' that supports the filament. If its made of
+        glass it would conduct and reflect the heat/light. Thus aiding with the
+        bloom."*
+
+        ⚠ REFLECTIVE, NOT TRANSMISSIVE, AND THAT IS A CHOICE — see
+        `answer-card-glass.ts`. `reflect` is the operative word in Carl's own
+        sentence, and a second transmissive surface per card would both cost the
+        transmission pass and blur the rim/face boundary.
+      */}
       <mesh geometry={bevelGeometry} position={[0, 0, 0]}>
-        <meshStandardMaterial
-          color={DIAG_BEVEL_COLOR}
-          roughness={0.6}
+        <meshPhysicalMaterial
+          color={BEVEL_GLASS_COLOR}
+          roughness={BEVEL_ROUGHNESS}
           metalness={0}
+          clearcoat={BEVEL_CLEARCOAT}
+          clearcoatRoughness={BEVEL_CLEARCOAT_ROUGHNESS}
+          envMap={envMap}
+          envMapIntensity={BEVEL_ENV_INTENSITY * lightLevel}
           side={THREE.DoubleSide}
         />
       </mesh>
@@ -649,7 +723,12 @@ export function AnswerCardMesh({
           // maximum lateral displacement across the whole face is 0.801px.
           thickness={GLASS_THICKNESS}
           ior={GLASS_IOR}
-          envMapIntensity={GLASS_ENV_INTENSITY}
+          // ⚠ THE FACE RIDES THE SAME FADER. The pass Carl specified judges the
+          // metal *"against both metal and glass"*, so the light has to come up
+          // on the whole card at once — a face at fixed intensity while the rim
+          // and bevel ramp would make every reading a comparison against a
+          // moving reference.
+          envMapIntensity={GLASS_ENV_INTENSITY * lightLevel}
           side={THREE.DoubleSide}
         />
       </mesh>

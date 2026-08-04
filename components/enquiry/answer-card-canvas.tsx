@@ -41,6 +41,7 @@ import {
   ENV_KEY_INTENSITY,
   ENV_FILL_COLOR,
   ENV_FILL_INTENSITY,
+  RIM_METALS,
 } from "./answer-card-glass";
 import { AnswerCardBackdrop, useRegionShift } from "./answer-card-backdrop";
 import { CARD_BOXES } from "./answer-card-backdrop-geometry";
@@ -107,7 +108,46 @@ const RIG_PARAMS = [
 const GLASS_RIG_PARAMS = [
   { key: "roughness", label: "roughness (THE FROST)", step: 0.02, min: 0, max: 1 },
   { key: "transmission", label: "transmission", step: 0.05, min: 0, max: 1 },
+  /**
+   * ⚠ THE LIGHT FADER, ADDED 4 AUGUST ON CARL'S INSTRUCTION — *"If the rig has
+   * no light fader we give it one and start with it low so it has hardly no
+   * effect on the metal."*
+   *
+   * ⚠ WITHOUT IT THE MASTERING PASS CANNOT RUN AS SPECIFIED. Carl's method is
+   * two faders from zero pushed up together — *"Rather than start with frosted
+   * glass at a half way point, we bring the 'volume' down same for the lights,
+   * and push the faders up."* With light as a file constant, one hand tunes by
+   * ear and the other by editing source, which is not the same pass.
+   *
+   * ⚠ AND THE TWO ARE NOT INDEPENDENT: roughness drives both the transmission
+   * blur AND the specular response, so the same number that softens what is
+   * behind the glass also spreads the highlight across it. Moving one alone
+   * gives a reading that changes when the other moves.
+   *
+   * Range to 2 rather than 1: 1.0 is "full env response", not a ceiling, and the
+   * pass may want to push past it.
+   */
+  { key: "lightLevel", label: "LIGHT LEVEL (the fader)", step: 0.05, min: 0, max: 2 },
+  /**
+   * ⚠ THE RIM'S OWN ROUGHNESS, AND IT IS THE DIAL WITH REAL RANGE ON IT.
+   *
+   * Carl asked which metal reflects best when off. The honest answer is that at
+   * ~4px of tube the base colour barely registers — `roughness` is what decides
+   * whether the rim reads as polished trim or as drawn wire, which is the
+   * difference his reference photographs actually show.
+   */
+  { key: "rimRoughness", label: "rim roughness [r]", step: 0.02, min: 0, max: 1 },
 ] as const;
+
+/**
+ * The rim metal, cycled with `[m]` rather than nudged with the arrows.
+ *
+ * ⚠ A LIST, NOT A SLIDER, because metals are discrete materials rather than
+ * points on a scale — interpolating tungsten toward silver describes nothing
+ * real. See `RIM_METALS` for the reflectance table and for why the bright end
+ * carries a cost.
+ */
+const METAL_CYCLE_KEY = "m";
 
 type RigParamKey = (typeof RIG_PARAMS)[number]["key"];
 type GlassRigParamKey = (typeof GLASS_RIG_PARAMS)[number]["key"];
@@ -145,11 +185,24 @@ function useCardRig(): {
    */
   const [glassTuning, setGlassTuning] = useState<GlassTuning>(() => {
     if (typeof window === "undefined") return DEFAULT_GLASS_TUNING;
-    const q = new URLSearchParams(window.location.search).get("roughness");
-    const r = q === null ? NaN : Number(q);
-    return Number.isFinite(r)
-      ? { ...DEFAULT_GLASS_TUNING, roughness: Math.min(1, Math.max(0, r)) }
-      : DEFAULT_GLASS_TUNING;
+    const q = new URLSearchParams(window.location.search);
+    const next = { ...DEFAULT_GLASS_TUNING };
+
+    const r = Number(q.get("roughness"));
+    if (q.get("roughness") !== null && Number.isFinite(r)) {
+      next.roughness = Math.min(1, Math.max(0, r));
+    }
+
+    // ⚠ `?light=` MIRRORS `?roughness=` AND EXISTS FOR THE SAME REASON: a
+    // harness must be able to sweep a fader from outside the page. The keyboard
+    // rig stays the interactive route; this is how a probe holds the fader at a
+    // known value across several loads.
+    const l = Number(q.get("light"));
+    if (q.get("light") !== null && Number.isFinite(l)) {
+      next.lightLevel = Math.min(2, Math.max(0, l));
+    }
+
+    return next;
   });
   const [selected, setSelected] = useState<RigParamKey | GlassRigParamKey>("roughness");
 
@@ -182,10 +235,11 @@ function useCardRig(): {
           ...RIG_PARAMS.map(
             (p) => `${mark(p.key)} ${p.label.padEnd(30)} ${t[p.key].toFixed(2)}`,
           ),
-          "  GLASS  [7-8]",
+          "  MATERIAL  [7-9, then 0 is print]",
           ...GLASS_RIG_PARAMS.map(
             (p) => `${mark(p.key)} ${p.label.padEnd(30)} ${g[p.key].toFixed(2)}`,
           ),
+          `  rim metal  [m]                 ${RIM_METALS[g.rimMetal]?.name ?? "?"}`,
           "  ─────",
           `  face                           ${check.budget.faceWidth.toFixed(2)} x ${check.budget.faceHeight.toFixed(2)}`,
           `  face corner radius             ${check.budget.faceRadius.toFixed(2)}`,
@@ -214,9 +268,35 @@ function useCardRig(): {
         setSelected(RIG_PARAMS[numeric - 1].key);
         return;
       }
-      if (numeric > RIG_PARAMS.length && numeric <= RIG_PARAMS.length + GLASS_RIG_PARAMS.length) {
+      // ⚠ ONLY THE FIRST THREE MATERIAL PARAMS GET DIGITS — [7], [8], [9].
+      // A fourth would map to "10", which is not a single keypress, and its
+      // leading character would collide with [0] = print. The fourth is bound to
+      // a letter below rather than silently unreachable.
+      if (
+        numeric > RIG_PARAMS.length &&
+        numeric <= RIG_PARAMS.length + GLASS_RIG_PARAMS.length &&
+        numeric <= 9
+      ) {
         e.preventDefault();
         setSelected(GLASS_RIG_PARAMS[numeric - RIG_PARAMS.length - 1].key);
+        return;
+      }
+      // Rim roughness — the fourth material param, on [r].
+      if (e.key === "r") {
+        e.preventDefault();
+        setSelected("rimRoughness");
+        return;
+      }
+      if (e.key === METAL_CYCLE_KEY) {
+        e.preventDefault();
+        setGlassTuning((g) => {
+          const next = { ...g, rimMetal: (g.rimMetal + 1) % RIM_METALS.length };
+          setTuning((t) => {
+            report(t, next);
+            return t;
+          });
+          return next;
+        });
         return;
       }
       if (e.key === "0") {
@@ -273,7 +353,10 @@ function useCardRig(): {
     };
 
     window.addEventListener("keydown", onKey);
-    console.log("card rig active — [1-6] geometry, [7-8] glass, [↑/↓] adjust, [0] print");
+    console.log(
+      "card rig active — [1-6] geometry, [7-9] glass/light, [r] rim roughness, " +
+        "[m] cycle rim metal, [↑/↓] adjust, [0] print",
+    );
     return () => window.removeEventListener("keydown", onKey);
   }, [enabled, selected]);
 
@@ -601,6 +684,7 @@ function AnswerCard({
           glass
           glassTuning={glassTuning}
           envMap={envMap}
+          lightLevel={glassTuning.lightLevel}
         />
       </CardLighting>
     </group>
@@ -1010,11 +1094,23 @@ function CardScene({
         direction means the WebGL card is lit the same way as its neighbour, so a
         difference between them is a difference of FORM rather than of lighting.
       */}
-      <ambientLight intensity={0.35} />
-      <directionalLight position={[-60, 90, 120]} intensity={2.1} />
+      {/*
+        ⚠ THE DIRECTIONALS RIDE THE FADER TOO, or *"light level"* would only mean
+        *"environment response"* and the two halves of the lighting would drift
+        apart as it moves. Carl's pass judges the metal *"against both metal and
+        glass"* — one control has to move all of it.
+      */}
+      <ambientLight intensity={0.35 * glassTuning.lightLevel} />
+      <directionalLight
+        position={[-60, 90, 120]}
+        intensity={2.1 * glassTuning.lightLevel}
+      />
       {/* A weak fill from below-right stops the lower bevel going fully black,
           which would read as a missing surface rather than a shadowed one. */}
-      <directionalLight position={[70, -60, 60]} intensity={0.35} />
+      <directionalLight
+        position={[70, -60, 60]}
+        intensity={0.35 * glassTuning.lightLevel}
+      />
 
       {/*
         ⚠ THE LOCKUP IS NOW A SIBLING OF THE CARD, NOT A CHILD OF IT — and that

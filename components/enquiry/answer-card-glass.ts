@@ -196,6 +196,289 @@ export const ENV_FILL_INTENSITY = 1.1;
 /** How strongly the face samples the environment map. */
 export const GLASS_ENV_INTENSITY = 1.0;
 
+// ── The rim: tungsten, unlit ─────────────────────────────────────────────────
+//
+// ⚠ THE RIM IS THE FILAMENT AT REST, NOT GREY WAITING TO BE COVERED. Carl, 4
+// August, with three photographs of unlit tungsten: *"Filaments are usually grey
+// metal... if its metal, the light would have some interaction with it before it
+// is active."*
+//
+// ⚠ THAT SENTENCE IS THE SPECIFICATION. The unlit state is not "off" — it is a
+// metal object in a lit scene, already catching the environment before any
+// current arrives. The references show it plainly: a bright specular run along
+// the coil's upper surface falling to near-black underneath, reading as metal
+// through light alone, with no colour at all.
+//
+// ⚠ AND IT RETIRES THE DIAGNOSTIC GREY ON THE RIM, DELIBERATELY. `DIAG_RIM_COLOR`
+// existed so a form defect could not hide behind a plausible colour (chunk 1's
+// argument, confirmed by Carl 3 August). The form is now approved, and the rim
+// has a real material brief, so the diagnostic has done its job here. **The
+// bevel and face keep theirs until they are briefed in turn.**
+
+/**
+ * Tungsten's own colour — very slightly warm grey, not blue steel.
+ *
+ * ⚠ NEAR-NEUTRAL BY MEASUREMENT OF THE REFERENCES, not by preference. In all
+ * three photographs the unlit metal carries almost no hue; what reads as
+ * "metal" is the SPECULAR BEHAVIOUR, not the tint. A saturated metal colour
+ * here would pre-empt the amber that arrives in chunk 2.
+ */
+export const RIM_METAL_COLOR = "#b8b4ae";
+
+/**
+ * Auditionable metals for the rim, in ascending reflectance.
+ *
+ * ⚠ ADDED BECAUSE CARL ASKED THE RIGHT QUESTION, 4 August: *"filaments can be
+ * made out of metal materials other than tungsten. Titanium for example. Which
+ * would have the best reflective states when off?"*
+ *
+ * ⚠ AND THE HONEST ANSWER IS THAT THE TINT BARELY MATTERS AT THIS SCALE. In a
+ * PBR model, base colour shifts a metal's HUE; `roughness` and the environment
+ * decide its brightness and character. The rim is ~4px of tube, so tungsten's
+ * ~50% reflectance against titanium's ~55% is invisible — while a roughness
+ * change is obvious. **These exist so that claim can be checked by eye rather
+ * than taken on trust**, which is what this project's record says to do with any
+ * claim of the form "you will not be able to see it".
+ *
+ * Approximate visible-light reflectance, for the record:
+ *
+ *     tungsten   ~50%   neutral, faintly warm     the references' own metal
+ *     titanium   ~55%   warm-grey, notably flat
+ *     nickel     ~65%   neutral
+ *     aluminium  ~91%   very slightly blue
+ *     silver     ~97%   essentially neutral       brightest metal there is
+ *
+ * ⚠ THE BRIGHT TWO CARRY A REAL COST, NOT JUST A LOOK. The filament lighting up
+ * should be the brightest event on the card; a near-silver rim at rest spends
+ * that headroom before the amber arrives. Bracketed here, not recommended.
+ *
+ * Cycled with `[m]` under `?cardrig=1`.
+ */
+export const RIM_METALS = [
+  { name: "tungsten", color: "#b8b4ae" },
+  { name: "titanium", color: "#c4bdb4" },
+  { name: "nickel", color: "#cdcbc6" },
+  { name: "aluminium", color: "#e8ebef" },
+  { name: "silver", color: "#f5f3ee" },
+] as const;
+
+/**
+ * Fully metallic.
+ *
+ * ⚠ 1, NOT A BLEND. `metalness` is a physical switch in a PBR model rather than
+ * a dial: values between 0 and 1 describe no real material and mostly produce a
+ * plastic that happens to be shiny. The rim was `metalness: 0` — a dielectric —
+ * which is why it could not read as metal at any roughness.
+ */
+export const RIM_METALNESS = 1;
+
+/**
+ * Surface roughness.
+ *
+ * ⚠ ROUGH, NOT POLISHED, AND THE SEM REFERENCE IS WHY. Carl's third photograph
+ * is a scanning-electron close-up of a tungsten coil: the surface is visibly
+ * textured — drawn wire, not a mirror. A near-zero roughness would give chrome,
+ * which reflects its surroundings sharply and reads as machined trim.
+ *
+ * A rough metal scatters instead, which is what produces the broad soft run of
+ * light along the coil in the first reference rather than a hard glint.
+ *
+ * ⚠ NOT AN APPROVED VALUE. PROVISIONAL under D-035 — Carl judges it by eye.
+ */
+export const RIM_ROUGHNESS = 0.34;
+
+/**
+ * How strongly the rim samples the environment map.
+ *
+ * ⚠ IT WAS EFFECTIVELY ZERO BEFORE, WHICH IS WHY THE RIM COULD NOT CATCH LIGHT
+ * AT ALL. A metal with no environment to reflect is black — metals have almost
+ * no diffuse response, so the env map IS their appearance. This is the single
+ * property that makes *"the light would have some interaction with it"* possible.
+ */
+export const RIM_ENV_INTENSITY = 1.6;
+
+// ── The bevel: glass, as the filament's mount ────────────────────────────────
+//
+// ⚠ CARL SETTLED THIS BY PHYSICS, NOT BY TASTE, and his reasoning replaced the
+// Builder's question rather than answering it. Asked whether the bevel should be
+// metal too:
+//
+// > *"The rim is the only metal, the bevel shouldnt be metal. What would some
+// > metal be doing connected to a metal filament that is about to heat up?
+// > Unless some sort of insulation is implied. i would imagine that the bevel is
+// > some sort of 'holder' that supports the filament. If its made of glass it
+// > would conduct and reflect the heat/light. Thus aiding with the bloom."*
+//
+// ⚠ IT ANSWERS THE ELECTRICAL QUESTION AND THE OPTICAL ONE AT ONCE. Metal
+// touching a heating element implies a circuit path or a heat sink; glass
+// implies containment — which is exactly what the references show, a filament
+// mounted on supports inside a glass envelope. And a glass bevel picks up the
+// filament's light along its inner edge and carries it outward, where a diffuse
+// grey surface would absorb it.
+//
+// ⚠ SO THE BLOOM IS PART OF THE STRUCTURE RATHER THAN PAINTED ON. This is the
+// ethos file's rule doing real work: *"effects should feel caused by the world,
+// not layered on top of it."*
+
+/**
+ * The bevel's body colour.
+ *
+ * Near-white for the same reason `GLASS_COLOR` is: in `MeshPhysicalMaterial`,
+ * `color` tints transmitted light AND acts as the diffuse albedo of the fraction
+ * that is not transmitted. A tinted bevel would dye whatever the filament throws
+ * through it.
+ */
+/**
+ * ⚠ DARK, AND THAT IS THE ONLY DIAL THAT ACTUALLY CONTROLS THIS SURFACE.
+ *
+ * Three rounds of tuning `roughness`, `clearcoat` and `envMapIntensity` moved
+ * the bevel barely at all — at `envMapIntensity` 0.1 it still measured 86.5
+ * against the rim's 53.9. **The environment map was never what lit it.**
+ *
+ * ⚠ THE MECHANISM: the rim is `metalness: 1` and a metal has almost NO diffuse
+ * response — the env map is its entire appearance. The bevel is a dielectric
+ * with a full diffuse response, so the scene's two directional lights, which
+ * strike both surfaces identically, light the bevel and barely touch the rim.
+ * **No material dial on the bevel could win against its own base colour.**
+ *
+ * ⚠ AND A NEAR-WHITE DIELECTRIC UNDER DIRECTIONAL LIGHT IS THE BRIGHTEST THING
+ * IT IS POSSIBLE TO PUT ON THIS CARD. `#eef2f8` was chosen by analogy with
+ * `GLASS_COLOR`, where near-white is correct because that surface is
+ * TRANSMISSIVE and its colour tints what passes through. The bevel transmits
+ * nothing, so the same value means something completely different on it.
+ *
+ * Dark glass still reads as glass — it is the specular and the clearcoat that
+ * say "glass", not the body value.
+ */
+export const BEVEL_GLASS_COLOR = "#2a2f36";
+
+/**
+ * ⚠ REFLECTIVE, NOT TRANSMISSIVE — AND THE DISTINCTION IS DELIBERATE.
+ *
+ * The face is already a transmissive surface. Making the bevel transmissive too
+ * would put a second one in every card, and the transmission pass is the most
+ * expensive thing on this page — it is what the whole warm-up apparatus in
+ * `answer-card-canvas.tsx` exists to tame.
+ *
+ * ⚠ AND IT WOULD COST DEFINITION. The bevel currently separates the rim from the
+ * face by being visibly a different material; two transmissive surfaces meeting
+ * would blur that boundary.
+ *
+ * A high-clearcoat dielectric gives the glassy specular response Carl's brief
+ * needs — *"it would conduct and reflect the heat/light"* — without joining the
+ * transmission pass. **Reflect is the operative word in that sentence.**
+ */
+/**
+ * ⚠ THE BEVEL SITS WELL BELOW THE RIM IN BRIGHTNESS, AND THAT SEPARATION IS THE
+ * POINT RATHER THAN A TASTE CALL.
+ *
+ * Carl, 4 August: *"With the light at its current level the rim and bevel are
+ * less distinguishable. You could make out more of a difference when the light
+ * was lower."*
+ *
+ * ⚠ HE IS DESCRIBING SATURATION, AND THE EARLIER MEASUREMENTS SHOW IT: the rim
+ * ring's luminance range was 163 at light 0.12 and 230 at 0.35. Both surfaces
+ * climb toward the top of the scale together, so at a usable light level they
+ * converge into one bright band and the boundary stops reading.
+ *
+ * ⚠ SO THE FIX IS CONTRAST, NOT LIGHT LEVEL — otherwise the choice is between
+ * "bright enough to judge" and "distinguishable", which is a false one. A
+ * rougher, dimmer bevel keeps its own value range low while the rim stays
+ * specular, so the two separate at any light level rather than only at the
+ * bottom of the fader.
+ *
+ * ⚠ AND IT IS TRUER TO THE BRIEF. Glass holding a filament is not as bright as
+ * the metal it holds; it carries light rather than competing with it.
+ */
+export const BEVEL_ROUGHNESS = 0.62;
+export const BEVEL_CLEARCOAT = 0.45;
+export const BEVEL_CLEARCOAT_ROUGHNESS = 0.38;
+export const BEVEL_ENV_INTENSITY = 0.1;
+
+/**
+ * ⚠ THE TWO SURFACES WERE NOT INVERTED — THEY WERE MERGED, AND THAT DIAGNOSIS
+ * TOOK A FULL LUMINANCE PROFILE TO REACH.
+ *
+ * Sampling at assumed depths (2px "rim", 6px "bevel") reported the bevel as two
+ * to three times brighter and sent two rounds of tuning in the wrong direction.
+ * Walking inward one pixel at a time instead, at light 0.35:
+ *
+ *     px    0     1     2     3     4     5     6     7     8    9   10 ... 14
+ *     L    16.7  58.6 116.7 174.9 162.5 175.4 175.4 175.4 164.7  16   16    54.6
+ *
+ * ⚠ **A SINGLE FLAT PLATEAU FROM 3px TO 8px.** The rim consumes ~4px and the
+ * bevel ~4px, so that plateau spans BOTH — the metal's lit crown and the glass
+ * were sitting at the same value, which is precisely Carl's *"the rim and bevel
+ * are less distinguishable."* The 2px sample had been reading the tube's dark
+ * OUTER edge, not the metal at all.
+ *
+ * ⚠ THE LESSON IS THE ONE THIS PROJECT KEEPS RELEARNING: the Builder assumed
+ * where the boundary was instead of measuring it, and the assumption was baked
+ * into the instrument. **Find the edge; do not place it.**
+ */
+
+/**
+ * ⚠ THE BEVEL WAS BRIGHTER THAN THE RIM, WHICH INVERTED THE WHOLE BRIEF.
+ *
+ * Measured 4 August across the fader — luminance on card 1's top edge:
+ *
+ *     light   rim    bevel
+ *     0.12    36.9   115.4
+ *     0.35    88.9   190.4
+ *     1.0    163.9   232.8
+ *
+ * **The glass was two to three times brighter than the metal at every level.**
+ * In Carl's reference photographs it is the METAL that catches the light and the
+ * glass that carries it — so the card was reading as a bright plastic frame with
+ * a dark outline, rather than as a filament in a holder.
+ *
+ * ⚠ AND IT EXPLAINS HIS REPORT EXACTLY. *"With the light at its current level
+ * the rim and bevel are less distinguishable"* — at 0.35 the bevel is at 190 and
+ * heading for the top of the scale, where it flattens and the boundary with
+ * everything else stops reading. The dim end preserved the difference only
+ * because nothing had saturated yet.
+ *
+ * ⚠ THE BUILDER'S FIRST ATTEMPT MADE IT WORSE by raising the rim's env response
+ * and lowering the bevel's SLIGHTLY — treating it as a contrast tweak when the
+ * ordering itself was wrong. **A gap in the wrong direction is not a gap.**
+ */
+
+/**
+ * The scene's overall light level, as a multiplier.
+ *
+ * ⚠ IT STARTS LOW, ON CARL'S INSTRUCTION, AND THAT IS METHOD RATHER THAN TASTE:
+ * *"If the rig has no light fader we give it one and start with it low so it has
+ * hardly no effect on the metal. We bring it up to a relative level and judge it
+ * against both metal and glass."*
+ *
+ * ⚠ THE ALTERNATIVE IS WHAT THIS PROJECT ALREADY GOT WRONG ONCE. Every frost
+ * value so far was *"a guess dressed as a starting point"* — and 0.28 was chosen
+ * while the transmission target was clearing to white, so it was tuned against a
+ * broken subject. Starting both faders at the bottom and pushing them up means
+ * no value is ever chosen against an unknown.
+ *
+ * ⚠ 0.12 WAS TRIED AND WAS TOO DARK TO JUDGE BY. Carl brought it back to 0.35 —
+ * the level at which the materials can actually be read. **"Start low" means low
+ * enough that nothing is assumed, not so low that nothing is visible.**
+ *
+ * ⚠ AND THE BRIGHT PATCH AT EACH CARD'S TOP-LEFT IS THE BEVEL, NOT THE RIM —
+ * Carl, 4 August, correcting the Builder, who had attributed it to the metal.
+ * It is the clearcoat catching the env map's key panel, which sits above and to
+ * the left. **That is the glass holder behaving exactly as the brief intends**,
+ * and it is worth keeping straight because the two surfaces are tuned by
+ * different dials.
+ *
+ * ⚠ IT ALSO SITS WHERE THE FILAMENT'S CIRCUIT BEGINS. Carl: *"Starts top left."*
+ * So in chunk 2 the amber's origin coincides with the brightest point already on
+ * the card. Options, when it matters: move the key panel to above-RIGHT, let the
+ * emissive filament simply out-shine a reflection, or move the origin. **The
+ * first is cheapest and the third is the one to resist** — top-left is the
+ * natural origin for a left-to-right corridor.
+ *
+ * Bound to `[9]` in `?cardrig=1`.
+ */
+export const LIGHT_LEVEL = 0.35;
+
 // ── The calibration stand-in: DELETED, 3 August 2026 ────────────────────────
 //
 // ⚠ IT WAS ALWAYS THROWAWAY. Carl: *"the stand-in is throwaway, this is so we
