@@ -20,8 +20,8 @@ session ends and will say so.** It was not broken today.
 
 ## Where things stand
 
-**Repo: `main`, head `59a6327`, committed and clean. ⚠ NOTHING SINCE `f57b6db` IS PUSHED** —
-**nine commits are local only.** Lint at the recorded baseline; `npx tsc --noEmit` clean.
+**Repo: `main`, head `8e562ed`, committed, clean and PUSHED.** Lint at the recorded baseline;
+`npx tsc --noEmit` clean.
 
 ⚠ **`chunk-scope.json` IS STILL DELETED — the repo is FAIL-OPEN.** Unchanged all day. Carl has
 directed every chunk conversationally and approved by eye; no scope file was drafted and he has
@@ -46,7 +46,76 @@ selection. No Next step, no Q4, no contact field.
 
 ---
 
-## ⚠ THE FIRST JOB — the warm-up canvas is thrown away, and that is the whole problem
+## ⚠ CARL SET THE ORDER FOR NEXT SESSION — follow it
+
+> *"we will start with the begin button next session. then the card timings, then implement the
+> light changes"*
+
+1. **The Begin button stall** — the section below. **Take it to the Architect first**, see the
+   warning under it.
+2. **The card timings** — `references/card-1-anchor.md`. Card 1 enters ~1.4s AFTER the phrase
+   reveal finishes, when Carl's instruction is that it starts at the reveal's MIDPOINT. **Measure
+   before acting: the lateness is exactly the precompile gap, so item 1 may repair it.**
+3. **The light changes** — the amber filter onto neighbouring cards. Designed in conversation, not
+   built; see the open-items section further down.
+
+⚠ **DO NOT REORDER THESE.** Each depends on the one before: the card timings cannot be judged
+while the entrance clock is still hostage to the precompile, and the filter cannot be tuned while
+the cards arrive at the wrong moment.
+
+---
+
+## ⚠ THE BEGIN BUTTON STALLS — AND THE BUILDER MADE IT WORSE, TWICE
+
+**Carl, at the end of the session: *"the cards do not come on. lets leave, youre making the problem
+worse."*** He was right and the work was reverted (`8e562ed`, pushed).
+
+**The stall, measured cold, before Begin is pressed:**
+
+```
+warm-up canvas mounts   +8096ms
+641ms blocking task     +8193ms      <- lands on the Begin reveal
+6 dropped frames, 4 long tasks >50ms
+```
+
+The Begin reveal runs **5000ms from a 7400ms delay** (`globals.css:185`), so it is animating from
+7400 to 12400ms. The warm-up lands squarely inside it.
+
+### ⚠ WHAT WAS TRIED AND WHY IT BROKE THE PAGE
+
+Gating the warm-up on the reveal's **`animationend`** instead of `beginActive` (which fires at
+`animationstart`). **It removed the stall — 6 dropped frames to 3, the 641ms task gone — and
+BROKE THE CARDS: they never appeared.**
+
+⚠ **THE CONTROL HAD ALREADY SAID SO AND THE BUILDER REPORTED IT AS A TRADE-OFF.** The probe found
+*"the warm-up canvas now never mounts"* and the entrance running **6 seconds earlier**. **Both
+were symptoms of the gate never opening**, and both were written up as possible improvements.
+**An entrance that gets dramatically faster because a dependency stopped happening is a defect
+report, not a win.**
+
+### The real shape of it
+
+**The stall and the cards are coupled.** The warm-up must happen for the cards to arrive, and
+wherever it happens it blocks something. Moving it has now moved the symptom four times:
+
+| attempt | result |
+|---|---|
+| lead of 900ms, then 5200ms | stall stayed, moved later |
+| gate on `beginActive` | moved onto the Begin reveal |
+| gate on `animationend` | stall gone, **cards gone** |
+
+⚠ **TAKE THIS TO THE ARCHITECT BEFORE TOUCHING IT.** Two consultations today
+(`architect-answer-opening-stutter.md`, `architect-answer-lockup-fade.md`) each solved in one pass
+what the Builder had failed at repeatedly — six theories on the first, four on the second. **This
+is the same shape a third time.**
+
+⚠ **AND IT IS PROBABLY NOT A SEPARATE PROBLEM.** The discarded warm-up canvas, the ~1.9s
+precompile, the card-1 anchor and this stall keep resolving to the same root: **a second WebGL
+context that must be built somewhere, and every "somewhere" is inside an animation.**
+
+---
+
+## The older analysis — the warm-up canvas is thrown away
 
 **Carl: *"the c2b DESIGN text entrance is not smooth."* Found at the very end of the session,
 after the env map work below.**
@@ -209,7 +278,11 @@ work measures ~1ms. The tree named the two real costs in ten minutes, after six 
 
 *4 August 2026, third session. The filament heats in place through red, orange and amber, and
 cools back down the same ramp. The rim is tungsten, the bevel its glass holder, the lockup at half
-strength behind them. Committed at `59a6327`, **unpushed**.*
+strength behind them. Committed at `8e562ed`, **pushed**.*
 
-*Next: one canvas instead of two — the warm-up is discarded at Q5 and everything it built dies
-with it. Then the amber filter onto the neighbours.*
+⚠ *The last change of the session broke the cards and was reverted. Carl called it: **"lets leave,
+youre making the problem worse."** The Begin stall is real, unfixed, and the fourth symptom of one
+root cause.*
+
+*Next, in Carl's order: **the Begin button** (Architect first), then the card timings, then the
+light changes.*
