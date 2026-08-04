@@ -1060,6 +1060,21 @@ function CardLighting({
  * FROM THE MATERIAL BEFORE DISPOSING (so a disposed texture can never be
  * sampled), and `invalidate()` because the canvas runs `frameloop="demand"`.
  */
+/**
+ * ⚠ THIS RUNS OUTSIDE THE WARM GATE, AND THAT IS AN OPEN DEFECT.
+ *
+ * The `useMemo` below executes during `CardScene`'s first React render.
+ * `mayCompile` / `warm` gate `useScenePrecompile` ONLY — so in the Q5 canvas this
+ * ~572ms of PMREM work is not deferred by anything, and in the warm-up canvas it
+ * runs a second time in its own GL context.
+ *
+ * Caught by the Architect, 4 August, after the Builder had gated the wrong
+ * thing: `live-work/architect-answer-opening-stutter.md`.
+ *
+ * ⚠ IT IS NOW THE LARGEST REMAINING COST IN THE OPENING. Two routes, neither
+ * taken yet: move the allocation behind the gate, or pass `{ size: 64 }` to
+ * `fromScene` — the second is a VISUAL change and Carl's call.
+ */
 function useLocalEnvMap(): THREE.Texture {
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
@@ -1186,6 +1201,17 @@ function useLocalEnvMap(): THREE.Texture {
 
 /**
  * Pre-compile the scene's shaders before anything is choreographed.
+ *
+ * ⚠ THE PARAGRAPH BELOW IS PARTLY SUPERSEDED — READ THIS FIRST. It says the
+ * stall is "shader compilation at first draw", which is true of the CARD-LADDER
+ * stall it was written for and NOT of the opening stutter. A later profile
+ * measured 16 programs linking in 0ms: **compilation itself never blocks.**
+ * What blocks is the synchronous read of a program's uniforms in the same frame
+ * it is linked — see the two-state compile above, and
+ * `live-work/architect-answer-opening-stutter.md`.
+ *
+ * Kept because the card-count evidence in it is still sound and still the reason
+ * this warm-up exists.
  *
  * ⚠ THE STALL IS SHADER COMPILATION AT FIRST DRAW, AND THAT WAS MEASURED RATHER
  * THAN GUESSED — after one wrong hypothesis had already been acted on.

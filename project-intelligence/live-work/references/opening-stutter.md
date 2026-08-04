@@ -1,4 +1,23 @@
-# The opening stutter — what is known, and what has been ruled out
+# The opening stutter — SOLVED IN PART, 4 August 2026
+
+⚠ **READ THE RESOLUTION FIRST: `live-work/architect-answer-opening-stutter.md`.** Most of what
+follows is the record of six wrong Builder diagnoses, kept because the PATTERN is the lesson. The
+cause was found by the Architect and is not in this file's original text.
+
+⚠ **AND TWO "RULED OUT" ENTRIES BELOW ARE WRONG.** Theory 2 was tested on the wrong renderer;
+theory 6 changed a clip plane while claiming to change a resolution. **Both recorded a null as a
+finding, and a wrong "ruled out" removes the lever for everyone who reads it after.** Each is
+struck in place.
+
+**Fixed:** the 777ms `renderTransmissionPass` cost — every material compiles twice (canvas and
+transmission-target variants) and only one was being warmed. Commit `a17d582`.
+
+**Still open:** the env map at ~572ms, which runs in a `useMemo` during React render and escapes
+the warm gate entirely.
+
+---
+
+# The original record — six wrong diagnoses
 
 **Open defect, 4 August 2026.** Carl: *"the text on the start page, where the ivory button is,
 stutters."* The OPENING choreography, before Begin — text, subtext, ivory button. Not Q5.
@@ -37,9 +56,11 @@ timing problem cost three rounds.
 **The `beginActive` gate is still the right mechanism and is IN THE CODE** — a duration cannot
 answer *"has the opening finished"*. It just does not solve this.
 
-**2. `renderer.debug.checkShaderErrors = false`.** The theory was good — `three.module.js:7097`
-issues blocking `getProgramParameter` queries when it is on, which would defeat `compileAsync`.
-**Measured: moved the task by 0ms.** Reverted; it silently disables shader error reporting.
+**2. ~~`renderer.debug.checkShaderErrors = false`.~~** ⚠ **THIS ENTRY WAS WRONG.** The test was
+run on the WRONG RENDERER — the warm-up canvas has its own — so it never exercised the knob, and
+the 0ms result meant nothing. Retried correctly: **1740ms → 1692ms.** A genuine but small effect,
+not a dead end. **The theory was sound and the test was broken**, which is worse than not testing:
+it retired a correct hypothesis with evidence that did not support the claim.
 
 **3. Collapsing five point lights to one.** ⚠ **PARTIAL, AND IT BROKE THE SPILL.**
 
@@ -107,6 +128,41 @@ five cards sharing one rim material instance, one bevel instance and one face in
 ⚠ **THAT IS A REAL REFACTOR AND IT WAS NOT ATTEMPTED.** Materials are currently constructed
 per-card by `AnswerCardMesh`; sharing them means hoisting construction out and passing instances
 down, which changes how per-card state (the filament's own uniforms) is addressed.
+
+---
+
+**6. ~~Env-map resolution, 200 → 64.~~** ⚠ **THIS ENTRY WAS WRONG TOO, AND IN THE SAME WAY.**
+`fromScene(scene, sigma, near, far, options)` — **the fourth argument is the FAR PLANE**, and
+`size` lives in `options`, defaulting to 256 (`three.module.js:2706`, `:2709`). The change moved a
+clip plane. `ENV_SHELL_RADIUS` is 60, so the studio was inside the frustum at either value and
+**nothing could have changed**. The 5ms delta was measured, believed, and written up as ruling the
+lever out — in a code comment that then **actively forbade the real fix**.
+
+⚠ **SIZE IS GENUINELY LOAD-BEARING AND REMAINS UNTESTED:** 256 → lodMax 8 and a 768×1024 cubeUV
+target; 64 → lodMax 6 and 336×256. And `_applyPMREM` is not a blur chain in 0.185 — it is GGX VNDF
+importance sampling at `GGX_SAMPLES = 256`, a 256-tap loop per fragment per LOD.
+
+---
+
+## ⚠ THE PATTERN IN THEORIES 2 AND 6 — the Architect's generalisation
+
+**Both retired a correct-sounding hypothesis with a test that never exercised the knob. Both
+recorded the null as a finding.**
+
+> **Both times the check was "did the number move", never "was the knob connected."**
+
+**The control, and it is cheap:** before trusting a null result, **show the test can fail** — set
+the parameter to an absurd value and confirm the number moves a lot. If it does not, the test is
+not testing.
+
+⚠ **AND A WRONG "RULED OUT" IS WORSE THAN NO NOTE AT ALL**, because it removes the lever for
+everyone who reads it afterwards. Theory 6's note did exactly that, in code, for hours.
+
+**The classifier that would have found the real cause at theory 1:** the task's DURATION never
+changed across three reschedules, only its start time. **Duration invariant under scheduling means
+the cost is intrinsic to an operation's FIRST USE, not to when it runs** — which redirects from
+*"when does it run"* to *"what does this operation do the first time"*, and reaches the answer on
+the first hop.
 
 ---
 
