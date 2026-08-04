@@ -149,6 +149,21 @@ const ACK_FADE_OUT_DELAY_MS = FIELD_ENTRANCE_END_MS - ACK_FADE_OUT_DURATION_MS;
  */
 const OPENING_WARM_LEAD_MS = 600;
 
+/**
+ * An absolute ceiling, from Begin, on how long the contact field's warm-up will
+ * wait for the card entrance to report itself.
+ *
+ * ⚠ IT EXISTS SO A STATE GATE IS NEVER THE ONLY EXIT. The card canvas does not
+ * mount below `PROTO_MIN_VIEWPORT_PX` (1280) and does not animate under
+ * `prefers-reduced-motion` — on both paths `onEntranceStart` never fires, and
+ * without this the contact field would wait forever.
+ *
+ * ⚠ GENEROUS ON PURPOSE. It is a backstop against a path that cannot report,
+ * not a schedule — if it is ever the thing that releases the warm-up on a normal
+ * desktop load, the state gate has failed and that is the bug to fix.
+ */
+const ENTRANCE_ANCHOR_CEILING_MS = 20000;
+
 const CHOREOGRAPHY_CLEAR_MS = Math.max(
   FIELD_ENTRANCE_END_MS,
   ACK_FADE_OUT_DELAY_MS + ACK_FADE_OUT_DURATION_MS,
@@ -605,6 +620,21 @@ export default function EnquiryOpening() {
   // same way.
   const activatedAtRef = useRef<number | null>(null);
 
+  /**
+   * The instant the card entrance's six beats actually began.
+   *
+   * ⚠ NULL UNTIL THE CANVAS SAYS SO, and null means WAIT rather than clear. The
+   * entrance waits on an async precompile, so its start is ~1944ms after the
+   * cards mount and cannot be derived from Begin. See the guard in
+   * `warmWhenSafe` and `live-work/architect-answer-lockup-fade.md`.
+   */
+  const cardEntranceStartedAtRef = useRef<number | null>(null);
+  const noteCardEntranceStart = useCallback(() => {
+    if (cardEntranceStartedAtRef.current === null) {
+      cardEntranceStartedAtRef.current = Date.now();
+    }
+  }, []);
+
   // The single, shared entry point into the completion stage. Every route into
   // `complete` — reduced motion and the animated corridor alike — goes through
   // here, so the timestamp can never be missed on one path. This changes only
@@ -664,12 +694,59 @@ export default function EnquiryOpening() {
       //
       // ⚠ THE GUARD'S OWN PRINCIPLE IS UNCHANGED — it just has more to protect.
       // Same derivation, same reduced-motion carve-out, one more boundary.
+      /**
+       * ⚠ MEASURED FROM WHEN THE ENTRANCE ACTUALLY STARTED, NOT FROM BEGIN — and
+       * getting that wrong is what put a second WebGL context inside the lockup's
+       * fade.
+       *
+       * `ENTRANCE_END_MS` (6330) is a duration measured from the entrance's own
+       * clock. This guard used to subtract it from `activatedAtRef` (Begin), so
+       * it believed the six beats ran +0 → +6330. **They actually run +8857 →
+       * +15187**, because the entrance waits on the async precompile — measured
+       * at 1944ms after the cards mount.
+       *
+       * ⚠ SO IT RELEASED ~2.5 SECONDS BEFORE BEAT SIX HAD BEGUN, and the contact
+       * canvas mounted at +13248 — 202ms before the first dropped frame. Carl:
+       * *"the c2b DESIGN text entrance is not smooth."* Diagnosed by the
+       * Architect: `live-work/architect-answer-lockup-fade.md`.
+       *
+       * ⚠ AND THE COMMENT BELOW THIS ONE ALREADY CLAIMED TO HAVE FIXED THIS
+       * COLLISION once, for the card ladder. **The boundary was added; the
+       * ANCHOR was never checked.** It moved the collision rather than removing
+       * it.
+       *
+       * ⚠ A STATE, NOT A DURATION — the third time this file has learned it. See
+       * `OPENING_WARM_LEAD_MS` for the first two.
+       */
+      const entranceStarted = cardEntranceStartedAtRef.current;
       const activated = activatedAtRef.current;
-      if (activated !== null && !reducedMotion) {
-        const untilChoreographyClears =
-          Math.max(Q5_REVEAL_CLEAR_MS, ENTRANCE_END_MS) - (Date.now() - activated);
-        if (untilChoreographyClears > 0) {
-          timerId = window.setTimeout(warmWhenSafe, untilChoreographyClears);
+
+      if (!reducedMotion && activated !== null) {
+        // ⚠ THE OUTER CEILING, AND IT IS LOAD-BEARING. The card canvas does not
+        // mount below `PROTO_MIN_VIEWPORT_PX`, so on narrow viewports
+        // `onEntranceStart` never fires. Without this the contact field would
+        // wait forever — a state gate must never be the only exit.
+        const sinceBegin = Date.now() - activated;
+        const pastCeiling = sinceBegin >= ENTRANCE_ANCHOR_CEILING_MS;
+
+        if (!pastCeiling) {
+          if (entranceStarted === null) {
+            // ⚠ "NOT STARTED" MEANS WAIT, NOT CLEAR. Falling through here is
+            // precisely the bug being fixed.
+            timerId = window.setTimeout(warmWhenSafe, 500);
+            return;
+          }
+          const untilClear = ENTRANCE_END_MS - (Date.now() - entranceStarted);
+          if (untilClear > 0) {
+            timerId = window.setTimeout(warmWhenSafe, untilClear);
+            return;
+          }
+        }
+
+        // The phrase wipe still has to clear on its own Begin-relative clock.
+        const untilReveal = Q5_REVEAL_CLEAR_MS - sinceBegin;
+        if (untilReveal > 0) {
+          timerId = window.setTimeout(warmWhenSafe, untilReveal);
           return;
         }
       }
@@ -877,7 +954,13 @@ export default function EnquiryOpening() {
 
                 Renders only at >= 1280px and only for Q5; absent otherwise.
               */}
-              {qNum === 5 && <AnswerCardCanvas active={isActive} warm={cardCanvasWarm} />}
+              {qNum === 5 && (
+                <AnswerCardCanvas
+                  active={isActive}
+                  warm={cardCanvasWarm}
+                  onEntranceStart={noteCardEntranceStart}
+                />
+              )}
             </div>
 
             <div

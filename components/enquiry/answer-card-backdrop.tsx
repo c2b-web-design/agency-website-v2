@@ -283,15 +283,18 @@ function useBackdropRedraw(
  */
 function useLockupFade(active: boolean, reducedMotion: boolean): React.RefObject<number> {
   const value = useRef<number>(0);
+  const invalidate = useThree((state) => state.invalidate);
 
   useEffect(() => {
     if (!active) {
       value.current = 0;
+      invalidate();
       return;
     }
     if (reducedMotion) {
       // Reduced motion: no fade, straight to the resting level.
       value.current = LOCKUP_REST_LEVEL;
+      invalidate();
       return;
     }
 
@@ -322,13 +325,42 @@ function useLockupFade(active: boolean, reducedMotion: boolean): React.RefObject
       // ⚠ SETTLES AT `LOCKUP_REST_LEVEL`, NOT AT 1. The lockup's resting
       // presence is below full so it does not compete with the cards — see that
       // constant. Beat six is still the same fade; only where it lands changed.
-      value.current = t * LOCKUP_REST_LEVEL;
+      /**
+       * ⚠ EASED, MATCHING THE CARDS. Carl's instruction for beat six was *"The
+       * cards fade in at a certain speed, the text should do the same"* — and
+       * `useCardEntrance` uses this exact cubic ease-out while `CardLighting`
+       * uses smoothstep. A linear ramp over 2000ms has hard corners at both ends
+       * and reads as a different gesture from the five beats before it.
+       */
+      const eased = 1 - Math.pow(1 - t, 3);
+      value.current = eased * LOCKUP_REST_LEVEL;
+
+      /**
+       * ⚠ WITHOUT THIS THE FADE ADVANCES AND THE SCREEN NEVER SEES IT. Carl:
+       * *"the c2b DESIGN text entrance is not smooth."*
+       *
+       * ⚠ MEASURED: **THREE REPAINTS ACROSS THE ENTIRE 2000ms FADE** — gaps of
+       * 8ms and 178ms. The canvas is `frameloop="demand"`, so `useBackdropRedraw`
+       * only repaints on frames something ELSE has scheduled. This loop moved
+       * `value.current` sixty times a second and asked for none of them.
+       *
+       * ⚠ IT IS THE SAME BUG FIXED IN `useFilament` EARLIER THE SAME DAY, in the
+       * neighbouring file, with the same symptom and the same cause. **A ref
+       * animated under `demand` must invalidate, every frame, or it is a
+       * calculation nobody draws.**
+       *
+       * ⚠ AND IT EXPLAINS WHY EASING NEVER LOOKED LIKE THE ANSWER: at three
+       * samples, a linear ramp and a cubic ease are indistinguishable. The curve
+       * was never the problem.
+       */
+      invalidate();
+
       if (t < 1) raf = requestAnimationFrame(tick);
     };
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [active, reducedMotion]);
+  }, [active, reducedMotion, invalidate]);
 
   return value;
 }

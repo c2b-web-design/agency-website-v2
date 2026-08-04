@@ -1608,9 +1608,27 @@ export default function AnswerCardCanvas({
    * decides only whether it may render, which is where the cost actually is.
    */
   warm = true,
+  /**
+   * Fired once, the instant the six-beat entrance actually begins.
+   *
+   * ⚠ THE ENTRANCE DOES NOT START AT BEGIN, AND THE CODEBASE ASSUMED IT DID.
+   * It starts when `active && compiled && warm` first goes true — `compiled` is
+   * the async precompile resolving, which measured **1944ms after the cards
+   * mount**. So the six beats run +8857 → +15187 from Begin, not +0 → +6330.
+   *
+   * ⚠ THAT ONE WRONG ASSUMPTION CAUSED THE LOCKUP'S STUTTER. The contact field's
+   * warm-up guard computes `ENTRANCE_END_MS` from Begin, so it released ~2.5s
+   * before beat six had even started and mounted a second WebGL context mid-fade.
+   * Diagnosed by the Architect: `live-work/architect-answer-lockup-fade.md`.
+   *
+   * ⚠ SO THE GUARD MUST WAIT FOR A STATE, NOT A DURATION — the third time this
+   * file has learned that. `OPENING_WARM_LEAD_MS` records the first two.
+   */
+  onEntranceStart,
 }: {
   active: boolean;
   warm?: boolean;
+  onEntranceStart?: () => void;
 }) {
   const [reducedMotion] = useState(
     () =>
@@ -1751,6 +1769,20 @@ export default function AnswerCardCanvas({
   const [compiled, setCompiled] = useState(false);
   const markWarm = useCallback(() => setCompiled(true), []);
 
+  /**
+   * Announce the entrance's real start, once.
+   *
+   * ⚠ IN AN EFFECT, NOT AT THE `active` PROP, so it fires after commit — when
+   * the beats genuinely begin rather than when React decides they will.
+   */
+  const entranceAnnounced = useRef(false);
+  const entranceRunning = active && compiled && warm;
+  useEffect(() => {
+    if (!entranceRunning || entranceAnnounced.current) return;
+    entranceAnnounced.current = true;
+    onEntranceStart?.();
+  }, [entranceRunning, onEntranceStart]);
+
   if (!wideEnough || !revealCleared) return null;
 
   return (
@@ -1814,7 +1846,7 @@ export default function AnswerCardCanvas({
           // ⚠ BOTH GATES. `compiled` is this scene's own shader and
           // transmission warm-up; `warm` is the opening having yielded an idle
           // window for it to happen in. The choreography waits for both.
-          active={active && compiled && warm}
+          active={entranceRunning}
           reducedMotion={reducedMotion}
           tuning={tuning}
           glassTuning={glassTuning}
