@@ -20,8 +20,8 @@ session ends and will say so.** It was not broken today.
 
 ## Where things stand
 
-**Repo: `main`, head `662d657`, committed and clean. ⚠ NOTHING SINCE `f57b6db` IS PUSHED** —
-**seven commits are local only.** Lint at the recorded baseline; `npx tsc --noEmit` clean.
+**Repo: `main`, head `59a6327`, committed and clean. ⚠ NOTHING SINCE `f57b6db` IS PUSHED** —
+**nine commits are local only.** Lint at the recorded baseline; `npx tsc --noEmit` clean.
 
 ⚠ **`chunk-scope.json` IS STILL DELETED — the repo is FAIL-OPEN.** Unchanged all day. Carl has
 directed every chunk conversationally and approved by eye; no scope file was drafted and he has
@@ -46,7 +46,54 @@ selection. No Next step, no Q4, no contact field.
 
 ---
 
-## ⚠ THE FIRST JOB — the env map, and the fix is already chosen
+## ⚠ THE FIRST JOB — the warm-up canvas is thrown away, and that is the whole problem
+
+**Carl: *"the c2b DESIGN text entrance is not smooth."* Found at the very end of the session,
+after the env map work below.**
+
+**Measured, watching canvas mounts relative to Begin:**
+
+```
++6902ms   the warm-up canvas UNMOUNTS   (0 canvases)
++6913ms   the real Q5 canvas MOUNTS     (1 canvas)
+
+frame drops at +6690ms and +7066ms — straddling that swap
+```
+
+⚠ **A WEBGL CONTEXT IS PER-CANVAS.** Everything the warm-up compiled — programs, PMREM, the
+transmission target — **dies with it.** The replacement rebuilds all of it from scratch, at exactly
+the moment the lockup begins its fade.
+
+⚠ **SO THE WARM-UP AS DESIGNED CANNOT HELP THE CANVAS THAT REPLACES IT.** It only ever warmed the
+driver's binary cache, which is why cold and warm runs differed while the stall never went away.
+**Every fix aimed at making the warm-up better was aimed at the wrong object.**
+
+### → The fix is the Architect's option D, and it needs its own chunk
+
+**One canvas instead of two — mounted early, revealed late**, the pattern `enquiry-opening.tsx`
+already uses for the contact layer. The Architect's note: *"The objection at `:1111` is true of
+MOVING the node, not of rendering it once at a stable position and placing it with CSS."*
+
+⚠ **DO NOT START IT AS A TWEAK.** It changes where the card canvas mounts in the tree.
+
+---
+
+## ⚠ AND ONE APPROVED COMPONENT WAS EDITED, WITH CARL'S EXPLICIT AUTHORISATION
+
+**`contact-field-canvas.tsx` now sets `gl.debug.checkShaderErrors = false`.** Carl: *"do what it
+takes to fix it."*
+
+**The flag IS in effect** — control confirms `getProgramInfoLog` goes 6 calls / 445ms → **zero**.
+**It did not fix the entrance**: frame drops identical before and after. So the 450ms of self-time
+the profiler charged to `getProgramInfoLog` was **a wait attributed to the waiter**, the same
+misattribution that earlier pointed at `onFirstUse`.
+
+**Kept** because the queries were real, blocking, and bought nothing. **Nothing about the contact
+field's appearance, timing or materials changes.** Flip it back while developing shaders there.
+
+---
+
+## ⚠ THE ENV MAP — done, but only deferred
 
 **~572ms of PMREM work still blocks the opening.** The Architect found why the Builder's gating
 never touched it: **`useLocalEnvMap` runs in a `useMemo` during React render**, so `mayCompile` /
@@ -162,6 +209,7 @@ work measures ~1ms. The tree named the two real costs in ten minutes, after six 
 
 *4 August 2026, third session. The filament heats in place through red, orange and amber, and
 cools back down the same ramp. The rim is tungsten, the bevel its glass holder, the lockup at half
-strength behind them. Committed at `662d657`, **unpushed**.*
+strength behind them. Committed at `59a6327`, **unpushed**.*
 
-*Next: defer the env map, then the amber filter onto the neighbours.*
+*Next: one canvas instead of two — the warm-up is discarded at Q5 and everything it built dies
+with it. Then the amber filter onto the neighbours.*
