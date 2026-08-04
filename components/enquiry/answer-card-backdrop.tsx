@@ -27,6 +27,11 @@ import {
   drawBackdrop,
   type BackdropRegions,
 } from "./answer-card-backdrop-geometry";
+import {
+  LOCKUP_FADE_OVERLAPPED_DELAY_MS,
+  LOCKUP_FADE_DURATION_MS,
+  faceInset,
+} from "./answer-card-geometry";
 
 /**
  * Texture resolution multiplier.
@@ -40,18 +45,36 @@ const TEXTURE_SCALE = 2;
 
 export function AnswerCardBackdrop({
   /**
-   * Per-card blue→teal position, 0..1, in grid order.
+   * Per-card blue→teal position, 0..1, in grid order — LIVE, as a ref.
    *
-   * ⚠ ALL ZEROES FOR CHUNK 3 — the five CSS cards are removed, so nothing can be
-   * selected and there is no state to respond to yet. `useRegionShift` below
-   * builds the mechanism; **chunk 5 wires it to real selection**, at which point
-   * the same 2400ms clock drives both this and the filament.
+   * ⚠ A REF RATHER THAN A PROP ARRAY, because this animates every frame while a
+   * region travels. Passing the numbers as props would mean a React render per
+   * frame of a 2400ms transition, re-running the whole scene graph to change
+   * pixels on one texture.
+   *
+   * ⚠ AND THE TEXTURE IS REDRAWN IN PLACE, which is a departure from the
+   * build-in-`useMemo` rule below. See `useBackdropRedraw` for why that rule
+   * still holds for ALLOCATION and why mutation is unavoidable for ANIMATION.
+   *
+   * Undefined means static: the backdrop draws once at rest, which is what the
+   * lockup does when no card is hovered.
    */
-  shift = [0, 0, 0, 0, 0],
+  shift,
+  /**
+   * ⚠ BEAT SIX — the lockup is not on screen until the five cards have landed.
+   *
+   * Carl, 4 August: *"The cards come on in sequential order. 1,2,3,4 and then 5.
+   * There should be a 6 beat and that is the text underneath fading in"* — and
+   * *"the text underneath"* is this lockup, `c2b DESIGN`.
+   */
+  reducedMotion = false,
+  active = true,
 }: {
-  shift?: number[];
+  shift?: React.RefObject<number[]>;
+  reducedMotion?: boolean;
+  active?: boolean;
 }) {
-  const shiftKey = shift.join(",");
+  const fade = useLockupFade(active, reducedMotion);
 
   // ⚠ NO FONT-LOADING GATE HERE, AND ONE WAS TRIED AND REMOVED. The tiny
   // wordmark looked like a race with webfont loading, so a `document.fonts.ready`
@@ -71,21 +94,39 @@ export function AnswerCardBackdrop({
   // produce a finished value rather than patch a held one. Drawing during the
   // memo means the texture is complete before it is ever handed to a material,
   // so there is no "needs update" state to signal.
-  const texture = useMemo(() => {
+  //
+  // ⚠ THE MEMO NOW ALLOCATES AND DRAWS THE RESTING STATE ONLY. Animation cannot
+  // go through it: a memo keyed on the shift values would rebuild the canvas,
+  // the texture and the material 60 times a second for the length of every
+  // transition. The live redraw is in `useBackdropRedraw`, and the canvas it
+  // draws into is held here so there is exactly one allocation.
+  const canvas = useMemo(() => {
     const c = document.createElement("canvas");
     c.width = GRID_WIDTH_PX * TEXTURE_SCALE;
     c.height = GRID_HEIGHT_PX * TEXTURE_SCALE;
-
     const ctx = c.getContext("2d");
     if (ctx) {
-      const regions: BackdropRegions = { shift: shiftKey.split(",").map(Number) };
+      // ⚠ DRAWN AT FADE 0 — ABSENT, not resting. The memo's output is what the
+      // renderer sees on the very first frame, and a lockup drawn at full
+      // strength here would flash before `useLockupFade` could set beat six's
+      // frame 0. That is the same class of defect `attachGroup` exists to
+      // prevent for the cards, arriving from the other direction.
+      const regions: BackdropRegions = {
+        shift: new Array(CARD_BOXES.length).fill(0),
+        fade: 0,
+      };
       drawBackdrop(ctx, c.width, c.height, regions);
     }
+    return c;
+  }, []);
 
-    const t = new THREE.CanvasTexture(c);
+  const texture = useMemo(() => {
+    const t = new THREE.CanvasTexture(canvas);
     t.colorSpace = THREE.SRGBColorSpace;
     return t;
-  }, [shiftKey]);
+  }, [canvas]);
+
+  useBackdropRedraw(canvas, texture, shift, fade);
 
   const material = useMemo(
     () =>
@@ -162,40 +203,205 @@ export function AnswerCardBackdrop({
 }
 
 /**
- * Drive each region from blue toward teal over the filament's own 2400ms.
+ * Redraw the lockup whenever a region's colour is actually moving.
  *
- * ⚠ THE DURATION IS THE FILAMENT'S CIRCUIT, NOT AN ARBITRARY EASE. Carl: *"The
- * blue pixels will turn teal in the same time frame as the filament takes to do
- * a circuit."* In chunk 4 both start on one event and finish together.
+ * ⚠ THIS MUTATES A MEMOISED TEXTURE, WHICH THE REST OF THIS FILE GOES OUT OF ITS
+ * WAY TO AVOID — and the departure is deliberate rather than an oversight.
  *
- * ⚠ STATIC AT REST, BY DECISION. Nothing moves unless a card is selected, so all
- * motion in this backdrop MEANS something — the alternative, a slow ambient
- * drift, risked burying the feedback in the ambience while the user is reading
- * five options.
+ * The rule the file documents ("produce a finished value rather than patch a
+ * held one") exists because `react-hooks/immutability` traces provenance through
+ * hooks. It is the right shape for ALLOCATION. It cannot express ANIMATION: a
+ * 2400ms transition redrawn by rebuilding the memo would allocate a canvas, a
+ * texture and a material on every frame, and hand the renderer a new material
+ * 144 times per transition — a shader recompile storm for a colour change.
+ *
+ * ⚠ SO THE ALLOCATION STAYS IN `useMemo` AND ONLY THE PIXELS MOVE. The canvas and
+ * texture are created exactly once; this loop repaints the canvas's 2D context
+ * and flags the texture. That is the standard `CanvasTexture` contract.
+ *
+ * ⚠ IT RUNS ONLY WHILE SOMETHING IS TRAVELLING. The loop compares each frame's
+ * values against the last drawn ones and stops when they are identical, so a
+ * settled grid costs nothing — which is what keeps `frameloop="demand"` honest.
  */
-export function useRegionShift(selected: boolean[]): React.RefObject<number[]> {
-  // ⚠ A REF, NOT STATE, AND THE CANVAS IS REDRAWN DIRECTLY. Sixty React renders
-  // a second to animate a colour would be re-rendering the whole scene graph to
-  // change pixels on one texture. The ref carries the values; the draw call
-  // reads them.
-  const values = useRef<number[]>(new Array(CARD_BOXES.length).fill(0));
-  const targetKey = selected.join(",");
+function useBackdropRedraw(
+  canvas: HTMLCanvasElement,
+  texture: THREE.CanvasTexture,
+  shift: React.RefObject<number[]> | undefined,
+  fade: React.RefObject<number>,
+) {
+  const invalidate = useThree((state) => state.invalidate);
+  const lastDrawn = useRef<string>("");
 
   useEffect(() => {
     let raf = 0;
-    const start = performance.now();
-    const from = values.current.slice();
-    const targets = selected.map((s) => (s ? 1 : 0));
-
     const tick = () => {
-      const t = Math.min(1, (performance.now() - start) / REGION_SHIFT_MS);
-      values.current = from.map((v, i) => v + (targets[i] - v) * t);
+      const values = shift ? shift.current : new Array(CARD_BOXES.length).fill(0);
+      // Quantised so imperceptible float drift at the end of a transition does
+      // not keep the loop alive redrawing identical frames.
+      const key = `${values.map((v) => v.toFixed(3)).join(",")}|${fade.current.toFixed(3)}`;
+
+      if (key !== lastDrawn.current) {
+        lastDrawn.current = key;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          drawBackdrop(ctx, canvas.width, canvas.height, {
+            shift: values,
+            fade: fade.current,
+            inset: faceInset(),
+          });
+          texture.needsUpdate = true;
+          invalidate();
+        }
+      }
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [canvas, texture, shift, fade, invalidate]);
+}
+
+/**
+ * The lockup's beat-six arrival, 0 = absent, 1 = fully present.
+ *
+ * ⚠ IT FADES THE DRAWN COLOUR, NOT `material.opacity` — and that constraint is
+ * the same one this file documents twice already. Driving opacity needs
+ * `transparent: true`, which routes the material out of `opaqueObjects`
+ * (`three.module.js:8237`) and therefore out of the transmission target
+ * (`:18039`). **The glass would stop seeing the lockup entirely** — so the
+ * "fade" would present as the lockup vanishing from inside the cards while
+ * remaining visible outside them.
+ *
+ * ⚠ SO THE FADE IS PAINTED. `drawBackdrop` mixes each colour toward the ground
+ * before it is drawn, which the glass sees exactly as it sees any other colour.
+ *
+ * ⚠ REDUCED MOTION SKIPS IT. The CSS card ladder is disabled under
+ * `prefers-reduced-motion` (`globals.css`), so a lockup that faded in while the
+ * cards did not would be the mismatch that rule exists to prevent.
+ */
+function useLockupFade(active: boolean, reducedMotion: boolean): React.RefObject<number> {
+  const value = useRef<number>(0);
+
+  useEffect(() => {
+    if (!active) {
+      value.current = 0;
+      return;
+    }
+    if (reducedMotion) {
+      value.current = 1;
+      return;
+    }
+
+    let raf = 0;
+    let marked = false;
+    const start = performance.now();
+    const tick = () => {
+      const elapsed = performance.now() - start;
+      if (elapsed < LOCKUP_FADE_OVERLAPPED_DELAY_MS) {
+        value.current = 0;
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      // Dev-only beat trace, gated on `?beattrace=1` — see the note in
+      // `useCardEntrance`, which records why the animation's own clock is the
+      // instrument here rather than a pixel reader.
+      if (!marked) {
+        marked = true;
+        if (new URLSearchParams(window.location.search).get("beattrace") === "1") {
+          performance.mark("lockup-beat-6");
+        }
+      }
+
+      const t = Math.min(
+        1,
+        (elapsed - LOCKUP_FADE_OVERLAPPED_DELAY_MS) / LOCKUP_FADE_DURATION_MS,
+      );
+      value.current = t;
       if (t < 1) raf = requestAnimationFrame(tick);
     };
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // `targetKey` is the real dependency; `selected` is a fresh array each render.
+  }, [active, reducedMotion]);
+
+  return value;
+}
+
+/**
+ * Drive each region from blue toward teal over the filament's own 2400ms.
+ *
+ * ⚠ THE DURATION IS THE FILAMENT'S CIRCUIT, NOT AN ARBITRARY EASE. Carl: *"The
+ * blue pixels will turn teal in the same time frame as the filament takes to do
+ * a circuit."* Carl again, 4 August, defining what a circuit IS: *"the time it
+ * takes for the filament to start its journey and meet up with itself."*
+ *
+ * ⚠ STATIC AT REST, BY DECISION. Nothing moves unless a card is hovered or
+ * selected, so all motion in this backdrop MEANS something — the alternative, a
+ * slow ambient drift, risked burying the feedback in the ambience while the user
+ * is reading five options.
+ *
+ * ⚠ EACH CARD CARRIES ITS OWN START TIME AND ITS OWN FROM-VALUE — they are NOT
+ * five positions on one shared clock, and that is a real change from the version
+ * this replaces.
+ *
+ * Carl, 4 August: *"It may well be a user hovers and before the colour
+ * transition has completed, they press the mouse. The same length of timings
+ * apply, they just start at different times."* One duration, independent phase.
+ *
+ * ⚠ AND THE FROM-VALUE IS READ AT THE MOMENT THE TARGET CHANGES, not reset to an
+ * endpoint. A mouse crossing the grid faster than 2400ms retargets a region
+ * mid-travel, and picking up from where the colour ACTUALLY IS is what stops
+ * that reading as a jump.
+ */
+export function useRegionShift(target: number[]): React.RefObject<number[]> {
+  // ⚠ A REF, NOT STATE, AND THE CANVAS IS REDRAWN DIRECTLY. Sixty React renders
+  // a second to animate a colour would be re-rendering the whole scene graph to
+  // change pixels on one texture. The ref carries the values; the draw call
+  // reads them.
+  const values = useRef<number[]>(new Array(CARD_BOXES.length).fill(0));
+
+  // Per-card travel: where this card's current transition started, and when.
+  const from = useRef<number[]>(new Array(CARD_BOXES.length).fill(0));
+  const startedAt = useRef<number[]>(new Array(CARD_BOXES.length).fill(0));
+  const goal = useRef<number[]>(new Array(CARD_BOXES.length).fill(0));
+
+  const targetKey = target.join(",");
+
+  useEffect(() => {
+    const now = performance.now();
+
+    // ⚠ ONLY THE CARDS WHOSE TARGET ACTUALLY MOVED ARE RE-PHASED. Restarting
+    // every card on every change would drag a settled neighbour back into
+    // motion — and with five cards under one pointer, that is the difference
+    // between one region travelling and the whole lockup breathing.
+    target.forEach((g, i) => {
+      if (goal.current[i] === g) return;
+      from.current[i] = values.current[i];
+      startedAt.current[i] = now;
+      goal.current[i] = g;
+    });
+
+    let raf = 0;
+    const tick = () => {
+      const t = performance.now();
+      let running = false;
+
+      values.current = values.current.map((v, i) => {
+        const p = Math.min(1, (t - startedAt.current[i]) / REGION_SHIFT_MS);
+        if (p < 1) running = true;
+        // Smoothstep: heat does not arrive or leave at a constant rate, and a
+        // linear ramp announces its own start and stop.
+        const e = p * p * (3 - 2 * p);
+        return from.current[i] + (goal.current[i] - from.current[i]) * e;
+      });
+
+      if (running) raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // `targetKey` is the real dependency; `target` is a fresh array each render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetKey]);
 

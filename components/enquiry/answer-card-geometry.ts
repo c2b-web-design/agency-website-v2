@@ -467,6 +467,180 @@ export function cardSlotPosition(
  * ⚠ DISABLED UNDER `prefers-reduced-motion` — the CSS rule disables the card
  * rise, so the WebGL card must not animate either.
  */
-export const CARD_RISE_DURATION_MS = 700;
+/**
+ * How long one card takes to arrive: the rise, the scale, and the light coming
+ * up, all on this one number.
+ *
+ * ⚠ 2000 — SET BY CARL BY EAR, 4 August, still BRACKETING rather than settling.
+ * The method is his: *"if we change 1100ms to 1500ms and its too slow we will
+ * have a range to work with."* Find the two ends, then close on the value
+ * between them.
+ *
+ * The walk to here, so the range is not lost:
+ *
+ *   700ms   the CSS ladder's value, carried across   *"far too fast"*
+ *   1100ms  first correction                         *"a little too fast"*
+ *   1500ms  bracketing upward                        (not reported)
+ *   2000ms  current                                  <- looking for the far end
+ *
+ * ⚠ THE CSS's 700 WAS NEVER THE RIGHT REFERENCE, and it is worth recording why
+ * so it is not reached for again. It was matched verbatim while the WebGL card
+ * stood beside its CSS neighbour and had to arrive with it. **Those cards are
+ * gone.** It also carried an opacity fade that this entrance cannot have — so
+ * the same duration reads faster here, because less is happening inside it.
+ *
+ * ⚠ THIS NUMBER ALSO SETS THE GAP BETWEEN CARDS, via `CARD_OVERLAP` — raising it
+ * stretches the whole sequence. Carl: *"The sequence can get a little longer."*
+ * If the fade is right but the sequence runs long, the correction belongs in the
+ * overlap, not here.
+ *
+ * PROVISIONAL under D-035. Carl tunes it by eye.
+ */
+export const CARD_RISE_DURATION_MS = 2000;
 export const CARD_RISE_DELAY_MS = 220;
-export const CARD_RISE_TRANSLATE_PX = 6;
+
+/**
+ * ⚠ 10px, NOT 6 — the rise needs distance to be readable as motion once it is
+ * eased. A 6px cubic ease-out spends most of its travel in the last few pixels
+ * and reads as an appearance rather than an arrival.
+ *
+ * PROVISIONAL. Carl tunes it by eye.
+ */
+export const CARD_RISE_TRANSLATE_PX = 10;
+
+/**
+ * Scale the card starts at, growing to 1.
+ *
+ * ⚠ THE ONLY "FADE" AVAILABLE TO A TRANSMISSIVE CARD. `material.opacity` needs
+ * `transparent = true`, which routes the rim and bevel out of the transmission
+ * target for the whole entrance — the constraint that removed the opacity fade
+ * on 3 August. Scale touches no material, so every mesh stays opaque for every
+ * frame.
+ *
+ * Deliberately subtle: this is a card settling into its slot, not a pop.
+ */
+export const CARD_RISE_SCALE_FROM = 0.94;
+
+/**
+ * The five-card stagger, read off `.enquiry-cards-reveal .enquiry-card:nth-child(n)`
+ * in `app/globals.css`.
+ *
+ * ⚠ READ FROM THE CSS, NOT INVENTED. These are the approved ladder — 130ms apart,
+ * starting at card 1's 220ms — and they are what the WebGL cards must match now
+ * that all five exist. Carl: *"All numbers for card appearance, filament speed
+ * etc will be used or converted."*
+ *
+ * ⚠ AND THEY ARE IN GRID ORDER, which is also DOM order: 0 top-left, 1
+ * top-middle, 2 top-right, 3 bottom-left, 4 bottom-right. The cards arrive
+ * left-to-right along the top row, then left-to-right along the bottom — Carl,
+ * 4 August: *"The cards come on in sequential order. 1,2,3,4 and then 5."*
+ */
+/**
+ * ⚠ THE LADDER IS NOW DERIVED FROM THE PHRASE, NOT FROM THE OLD CSS NUMBERS.
+ *
+ * Carl, 4 August, describing the walk from Begin:
+ *
+ * > *"The first thing a user will see is Q5 as it reveals from left to right.
+ * > That reveal time is not random. It is the speed an average person reads. The
+ * > user will be focused on that. Rather than wait for the line to end, card 1
+ * > can begin its appearance half way through the text reveal."*
+ *
+ * ⚠ SO THE PHRASE IS THE TEMPO, AND EVERYTHING ANSWERS TO IT. The reveal is a
+ * READING-SPEED instrument, not a delay to be waited out — which is why card 1
+ * starts at its midpoint rather than at its end.
+ *
+ * > *"It continues the flow established on the start page with text, subtext and
+ * > button, but much tighter."*
+ *
+ * And on the character of the sequence:
+ *
+ * > *"the fade in doesnt have to complete before the next element. As its
+ * > reaching its full appearance state the next card can begin its entrance. So
+ * > instead of a rapid fire, almost bullet like appearance, we will achieve a
+ * > choreographed flow."*
+ *
+ * ⚠ "AS IT IS REACHING ITS FULL APPEARANCE" IS THE SPECIFICATION, and it fixes
+ * the gap as a FRACTION of the duration rather than an independent number. At
+ * `CARD_OVERLAP` = 0.72 each card begins when the previous is 72% of the way
+ * through its own entrance — past its main travel, still settling.
+ *
+ * ⚠ AND THIS IS WHY THE OLD 130ms GAP READ AS BULLET-FIRE. Against a 1100ms
+ * entrance it was 12% — five cards effectively simultaneous. The gap has to
+ * scale with what it staggers, so it is now expressed as a ratio and cannot
+ * drift out of step when the duration is tuned.
+ *
+ * ⚠ EVERY VALUE HERE IS A STARTING POINT, EXPLICITLY. Carl: *"figures are not
+ * set in stone... if at first we are in the ballpark all we would have to do is
+ * increase the numbers slightly to fine tune, to master."* PROVISIONAL under
+ * D-035.
+ */
+export const CARD_OVERLAP = 0.72;
+
+/** The gap between card entrances, derived from the overlap. */
+export const CARD_RISE_GAP_MS = Math.round(CARD_RISE_DURATION_MS * (1 - CARD_OVERLAP));
+
+/**
+ * When card 1 begins, measured from the phrase reveal starting.
+ *
+ * ⚠ HALF THE REVEAL, ON CARL'S INSTRUCTION — *"card 1 can begin its appearance
+ * half way through the text reveal."* Derived from the reveal's own duration so
+ * it cannot drift if the phrase is retimed.
+ */
+export const Q5_REVEAL_MS = 1300;
+export const CARD_FIRST_ENTRANCE_MS = Math.round(Q5_REVEAL_MS / 2);
+
+export const CARD_RISE_LADDER_MS = [0, 1, 2, 3, 4].map(
+  (i) => CARD_FIRST_ENTRANCE_MS + i * CARD_RISE_GAP_MS,
+);
+
+/**
+ * ⚠ THE SIXTH BEAT — the lockup fades in once all five cards are in place.
+ *
+ * Carl, 4 August: *"There should be a 6 beat and that is the text underneath
+ * fading in."* And, when asked what "the text underneath" meant: *"by text
+ * underneath i mean 'c2b DESIGN'."* It is the BACKDROP, not answer labels.
+ *
+ * ⚠ IT SPANS ALL FIVE CARDS AND ARRIVES AS ONE EVENT. Carl: *"It spans the 5
+ * cards"* and *"The cards fade in at a certain speed, the text should do the
+ * same. 6 beats instead of 5."* One lockup, one fade, at the cards' own 700ms —
+ * not five per-region fades, which would fold beat six back into the ladder.
+ *
+ * ⚠ DERIVED, NEVER TYPED. `enquiry-opening.tsx` records that a hand-written
+ * end-of-choreography value went stale TWICE. The last card starts at 740 and
+ * runs 700, so the ladder ends at 1440 and the lockup begins there.
+ */
+export const LOCKUP_FADE_DELAY_MS =
+  CARD_RISE_LADDER_MS[CARD_RISE_LADDER_MS.length - 1] + CARD_RISE_DURATION_MS;
+
+/**
+ * ⚠ BEAT SIX OVERLAPS TOO, BY THE SAME RULE AS THE CARDS. Carl's *"the fade in
+ * doesnt have to complete before the next element"* is a statement about the
+ * whole choreography, not about cards only — so the lockup begins as the last
+ * card is reaching its full appearance rather than after it has settled.
+ *
+ * Without this the sequence would go legato, legato, legato, legato, **stop**,
+ * then the lockup — a gap of a full card-length in the middle of a phrase that
+ * is meant to flow.
+ */
+export const LOCKUP_FADE_OVERLAPPED_DELAY_MS =
+  CARD_RISE_LADDER_MS[CARD_RISE_LADDER_MS.length - 1] +
+  Math.round(CARD_RISE_DURATION_MS * CARD_OVERLAP);
+
+/** How long the lockup takes to fade up. The cards' own duration — Carl: *"the same"*. */
+export const LOCKUP_FADE_DURATION_MS = CARD_RISE_DURATION_MS;
+
+/**
+ * When the whole six-beat entrance has finished, measured from Begin.
+ *
+ * ⚠ IT MUST USE THE OVERLAPPED DELAY, because that is when beat six ACTUALLY
+ * starts. Deriving it from the non-overlapped `LOCKUP_FADE_DELAY_MS` would
+ * overstate the end by one overlap and — since this is what the contact field's
+ * warm-up now waits for — would delay that warm-up for no reason.
+ *
+ * ⚠ AND IT IS CONSUMED OUTSIDE THIS MODULE: `enquiry-opening.tsx` imports it so
+ * the contact field's own WebGL warm-up cannot land inside the card ladder.
+ * Measured 4 August, before that guard existed: a 355ms blocking task at
+ * +2622ms after Begin, between card 2 and card 3.
+ */
+export const ENTRANCE_END_MS =
+  LOCKUP_FADE_OVERLAPPED_DELAY_MS + LOCKUP_FADE_DURATION_MS;

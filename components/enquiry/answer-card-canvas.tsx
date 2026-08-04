@@ -42,13 +42,15 @@ import {
   ENV_FILL_COLOR,
   ENV_FILL_INTENSITY,
 } from "./answer-card-glass";
-import { AnswerCardBackdrop } from "./answer-card-backdrop";
+import { AnswerCardBackdrop, useRegionShift } from "./answer-card-backdrop";
 import { CARD_BOXES } from "./answer-card-backdrop-geometry";
 import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
   CARD_RISE_DURATION_MS,
   CARD_RISE_TRANSLATE_PX,
+  CARD_RISE_LADDER_MS,
+  CARD_RISE_SCALE_FROM,
   PROTO_MIN_VIEWPORT_PX,
   protoCanvasBox,
   cardSlotPosition,
@@ -67,7 +69,15 @@ import {
  * the way through a 1300ms wipe, so the work had been pushed into the remainder
  * rather than removed. **A moved symptom is not a fixed symptom.**
  */
-const Q5_REVEAL_CLEAR_MS = 1300;
+// ⚠ THE 1300ms DEFER-THE-WHOLE-CANVAS GUARD IS GONE, DELIBERATELY, and the
+// constant with it. Carl's walk puts card 1 at the reveal's MIDPOINT, which a
+// guard that waits for the reveal to END makes impossible by construction.
+//
+// ⚠ THE STUTTER IT PROTECTED AGAINST IS STILL PROTECTED — by moving Three.js
+// setup EARLIER (before the phrase) rather than later. That is the fix this file
+// already prescribed for this exact moment; see the note in `AnswerCardCanvas`.
+// The reveal's own duration now lives in `answer-card-geometry.ts` as
+// `Q5_REVEAL_MS`, where the ladder derives card 1's entrance from it.
 
 // ── Tuning harness ───────────────────────────────────────────────────────────
 
@@ -284,9 +294,30 @@ function useCardRig(): {
  * card 1 is disabled there too. A WebGL card that animated while its neighbour
  * did not would be a defect the CSS explicitly avoids.
  */
-function useCardEntrance(active: boolean, reducedMotion: boolean) {
+function useCardEntrance(
+  active: boolean,
+  reducedMotion: boolean,
+  delayMs: number,
+  onProgress: (p: number) => void = () => {},
+) {
   const groupRef = useRef<THREE.Group | null>(null);
   const invalidate = useThree((s) => s.invalidate);
+
+  /**
+   * ⚠ HELD IN A REF SO IT IS NOT AN EFFECT DEPENDENCY. `onProgress` is a fresh
+   * closure on every render, so depending on it would tear down and restart the
+   * entrance whenever anything unrelated re-rendered — the card rig's `selected`
+   * state churn is enough, and that is the exact defect `playedRef` exists to
+   * prevent from the other direction.
+   */
+  const onProgressRef = useRef(onProgress);
+  useEffect(() => {
+    // ⚠ IN AN EFFECT, NOT DURING RENDER. `react-hooks` rejects ref access in the
+    // render body ("Cannot access refs during render") — refs are for values
+    // that survive renders, and writing one while rendering is the pattern that
+    // makes a component's output depend on when it happened to run.
+    onProgressRef.current = onProgress;
+  }, [onProgress]);
 
   /**
    * ⚠ HIDE THE GROUP THE MOMENT THE REF IS ATTACHED, NOT IN AN EFFECT.
@@ -312,6 +343,11 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
       // already the entrance's frame 0.
       group.visible = false;
       group.position.y = -CARD_RISE_TRANSLATE_PX;
+      // ⚠ SET HERE TOO, FOR THE SAME REASON AS `visible` AND `position`: the ref
+      // callback runs during commit, before the renderer draws, so frame 0 must
+      // already be the entrance's frame 0 in EVERY property it animates. A scale
+      // left at 1 until the effect ran would show one full-size frame first.
+      group.scale.set(CARD_RISE_SCALE_FROM, CARD_RISE_SCALE_FROM, 1);
     },
     [],
   );
@@ -359,6 +395,8 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
    * disappearing and coming back.
    */
   const playedRef = useRef(false);
+  /** Whether this card's rung has been reached; drives the dev beat trace. */
+  const shownRef = useRef(false);
 
   useEffect(() => {
     const group = groupRef.current;
@@ -367,6 +405,7 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
     if (!active) {
       group.visible = false;
       playedRef.current = false;
+      shownRef.current = false;
       invalidate();
       return;
     }
@@ -387,36 +426,99 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
     if (reducedMotion) {
       group.visible = true;
       group.position.y = 0;
+      group.scale.set(1, 1, 1);
       invalidate();
       return;
     }
 
-    // ⚠ NO ENTRANCE DELAY. `CARD_RISE_DELAY_MS` (220) exists to stagger card 1
-    // against its four neighbours in the CSS grid. This proto card has no
-    // neighbours, and it already mounts ~1300ms after the CSS cards because it
-    // waits out the phrase wipe — so a further 220ms of deliberate invisibility
-    // buys nothing and was the source of a visible hidden→visible step.
+    // ⚠ THE STAGGER IS BACK, AND THE COMMENT THAT REMOVED IT HAS EXPIRED.
     //
-    // ⚠ THE STAGGER RETURNS IN CHUNK 5, where it means something: five cards on
-    // the approved 220/350/480/610/740 ladder.
+    // It previously said: *"`CARD_RISE_DELAY_MS` (220) exists to stagger card 1
+    // against its four neighbours. This proto card has no neighbours, so a
+    // further 220ms of deliberate invisibility buys nothing"* — and predicted its
+    // own reversal: *"THE STAGGER RETURNS IN CHUNK 5, where it means something:
+    // five cards on the approved 220/350/480/610/740 ladder."*
+    //
+    // **That is now.** The cards have neighbours, so the delay means something
+    // again: it is the sequence Carl asked for — *"The cards come on in
+    // sequential order. 1,2,3,4 and then 5."*
+    //
+    // ⚠ THE HIDDEN→VISIBLE FLASH THE OLD COMMENT WARNED ABOUT IS STILL REAL, and
+    // it is handled rather than avoided: the group is hidden at attach (see
+    // `attachGroup`) and the tick loop below only shows it once its own rung has
+    // arrived. Visibility is still owned by exactly one place.
     let raf = 0;
     const start = performance.now();
 
     const tick = () => {
       const elapsed = performance.now() - start;
 
-      // ⚠ VISIBLE FROM THE FIRST FRAME, ALREADY RISING. There is no hidden state
-      // to step out of, so there is nothing that can flash.
-      //
-      // ⚠ AND `visible` IS USED RATHER THAN `material.opacity`, which would
+      // ⚠ STILL HIDDEN UNTIL THIS CARD'S RUNG. The group was hidden at attach and
+      // stays hidden through its delay, so there is no frame in which it is drawn
+      // early. `visible` rather than `material.opacity` throughout, which would
       // require `transparent = true` and drop the rim and bevel out of the
-      // transmission target for the whole rise. See the note on `attachGroup`.
+      // transmission target for the whole rise — see the note on `attachGroup`.
+      if (elapsed < delayMs) {
+        // Held at zero through the delay — unlit, not merely invisible, so the
+        // first lit frame is the entrance's own frame 0 in light as well as in
+        // position.
+        onProgressRef.current(0);
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+
+      // ⚠ A DEV-ONLY BEAT TRACE, gated on `?beattrace=1`.
+      //
+      // Four pixel-reading instruments failed to answer "does the entrance
+      // run": `gl.readPixels` and in-page `drawImage` both return an empty
+      // buffer under `frameloop="demand"`, and Playwright's first
+      // `screenshot()` costs ~4900ms — longer than the entrance it was meant to
+      // catch. All three reported ABSENCE, which is what a broken entrance
+      // reports too.
+      //
+      // The animation's own clock is the honest source, so it says when it
+      // starts. Costs one `performance.mark` per card per run, and nothing at
+      // all without the flag.
+      if (!shownRef.current) {
+        shownRef.current = true;
+        if (typeof window !== "undefined" &&
+            new URLSearchParams(window.location.search).get("beattrace") === "1") {
+          performance.mark(`card-beat-${delayMs}`);
+        }
+      }
+
       group.visible = true;
 
-      // `linear`, matching the CSS keyframe's timing function exactly.
-      const t = Math.min(1, elapsed / CARD_RISE_DURATION_MS);
+      const raw = Math.min(1, (elapsed - delayMs) / CARD_RISE_DURATION_MS);
+      onProgressRef.current(raw);
+
+      /**
+       * ⚠ EASED, NOT LINEAR — AND THIS REOPENS AN ACCEPTED TRADE-OFF ON CARL'S
+       * REPORT: *"still, no fade and far too fast."*
+       *
+       * ⚠ THE CARD CANNOT FADE BY OPACITY, AND THAT IS NOT A PREFERENCE.
+       * `material.opacity` requires `transparent = true`, which routes a
+       * material out of `opaqueObjects` (`three.module.js:8237`) and therefore
+       * out of the transmission target (`:18039`) — so the rim and bevel would
+       * VANISH FROM THE GLASS REFRACTING THEM for the whole entrance, and the
+       * card would visibly change when they rejoined. That is exactly why the
+       * opacity fade was removed on 3 August.
+       *
+       * ⚠ SO THE SOFTNESS COMES FROM MOTION INSTEAD OF FROM ALPHA. A cubic
+       * ease-out plus a small scale-up reads as an arrival rather than a snap,
+       * and every mesh stays opaque for every frame of it — no membership of the
+       * transmission target ever changes.
+       */
+      const t = 1 - Math.pow(1 - raw, 3);
+
       // World +y is UP and the CSS translate is DOWN, hence the negation.
       group.position.y = -CARD_RISE_TRANSLATE_PX * (1 - t);
+
+      // ⚠ A SCALE ENTRANCE IS THE ONE ROUTE OPACITY CANNOT BLOCK. Kept small —
+      // this is a card settling into its slot, not a pop.
+      const s = CARD_RISE_SCALE_FROM + (1 - CARD_RISE_SCALE_FROM) * t;
+      group.scale.set(s, s, 1);
+
       invalidate();
 
       if (t < 1) {
@@ -426,9 +528,158 @@ function useCardEntrance(active: boolean, reducedMotion: boolean) {
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [active, reducedMotion, invalidate]);
+  }, [active, reducedMotion, delayMs, invalidate]);
 
   return attachGroup;
+}
+
+/**
+ * One card, on its own rung of the ladder.
+ *
+ * ⚠ A COMPONENT PER CARD, BECAUSE THE ENTRANCE IS A HOOK. `useCardEntrance` holds
+ * one group ref and one rAF loop, so five cards need five instances of it —
+ * calling it in a loop inside `CardScene` would be a conditional hook call.
+ */
+function AnswerCard({
+  slot,
+  delayMs,
+  active,
+  reducedMotion,
+  tuning,
+  glassTuning,
+  envMap,
+}: {
+  slot: { x: number; y: number };
+  delayMs: number;
+  active: boolean;
+  reducedMotion: boolean;
+  tuning: AnswerCardTuning;
+  glassTuning: GlassTuning;
+  envMap: THREE.Texture;
+}) {
+  /**
+   * ⚠ THE CARD FADES BY LIGHT, NOT BY ALPHA — and this is the route the ethos
+   * file points at rather than a workaround for a rendering limit.
+   *
+   * Carl, 4 August: *"the card has to fade in. no sudden appearance. Look at the
+   * other elements on the site. Its the essence of the c2b ethos file."*
+   *
+   * `c2b-ethos-and-vision.md` §14a: **"Nothing should feel like a sudden UI
+   * toggle unless there is a deliberate reason. Elements should complete their
+   * phrase before the next phrase begins."** And the rule that decides the
+   * MECHANISM: **"Effects should feel caused by the world, not layered on top of
+   * it."**
+   *
+   * ⚠ THAT SENTENCE RULES OUT AN ALPHA FADE ON ITS OWN TERMS, before any
+   * three.js constraint is considered. Driving a material's opacity is a layer
+   * on top of the world; a card emerging from darkness into light is the world
+   * doing it. §18 agrees — *"the best motion often feels almost invisible."*
+   *
+   * ⚠ AND IT HAPPENS TO BE THE ONLY ROUTE THAT DOES NOT BREAK REFRACTION.
+   * `transparent = true` routes a material out of `opaqueObjects`
+   * (`three.module.js:8237`), and `renderTransmissionPass` renders ONLY
+   * `opaqueObjects` into the target the glass samples (`:18039`). With the
+   * entrances overlapping, something is always fading — so an alpha fade would
+   * leave every card refracting an edgeless scene for the whole choreography.
+   *
+   * Two properties carry it, because the card has two kinds of surface:
+   *   - rim and bevel are lit `MeshStandardMaterial` → drive `color` from black
+   *   - the face is transmissive glass → drive `envMapIntensity`, since almost
+   *     everything it shows is environment reflection plus what it transmits
+   */
+  const litRef = useRef<number>(0);
+  const groupRef = useCardEntrance(active, reducedMotion, delayMs, (p) => {
+    litRef.current = p;
+  });
+
+  return (
+    <group position={[slot.x, slot.y, 0]}>
+      <CardLighting progress={litRef} reducedMotion={reducedMotion}>
+        <AnswerCardMesh
+          tuning={tuning}
+          groupRef={groupRef}
+          glass
+          glassTuning={glassTuning}
+          envMap={envMap}
+        />
+      </CardLighting>
+    </group>
+  );
+}
+
+/**
+ * Drives a card's materials from unlit to lit as its entrance runs.
+ *
+ * ⚠ IT WALKS THE SUBTREE EACH FRAME RATHER THAN HOLDING MATERIAL REFS. The mesh
+ * builds its own materials declaratively and rebuilds them whenever tuning
+ * changes, so a held reference would go stale the moment `?cardrig=1` moved a
+ * value — silently, with the card stuck dark.
+ *
+ * ⚠ AND IT MUTATES MATERIALS, WHICH THE BACKDROP FILE GOES OUT OF ITS WAY TO
+ * AVOID. Same justification as `useBackdropRedraw` there: the immutability rule
+ * is right for ALLOCATION and cannot express ANIMATION. These materials are
+ * created by `AnswerCardMesh`; this only moves numbers on them per frame.
+ */
+function CardLighting({
+  progress,
+  reducedMotion,
+  children,
+}: {
+  progress: React.RefObject<number>;
+  reducedMotion: boolean;
+  children: React.ReactNode;
+}) {
+  const groupRef = useRef<THREE.Group | null>(null);
+  const invalidate = useThree((s) => s.invalidate);
+
+  useEffect(() => {
+    const group = groupRef.current;
+    if (!group) return;
+
+    // Sampled once from the materials the mesh built, so tuning changes are
+    // picked up and nothing is hard-coded here.
+    const originals = new Map<THREE.Material, { color?: THREE.Color; env?: number }>();
+
+    let raf = 0;
+    let last = -1;
+    const apply = () => {
+      const p = reducedMotion ? 1 : progress.current;
+      if (p !== last) {
+        last = p;
+        // Ease so the light arrives the way light does — quickly out of black,
+        // then settling. A linear ramp reads as a dimmer being turned.
+        const lit = p * p * (3 - 2 * p);
+
+        group.traverse((o) => {
+          const mesh = o as THREE.Mesh;
+          const mat = mesh.material as THREE.MeshStandardMaterial | undefined;
+          if (!mat || Array.isArray(mat)) return;
+
+          if (!originals.has(mat)) {
+            originals.set(mat, {
+              color: mat.color?.clone(),
+              env: mat.envMapIntensity,
+            });
+          }
+          const base = originals.get(mat);
+          if (!base) return;
+
+          // ⚠ TOWARD BLACK, NOT TOWARD TRANSPARENT. An unlit surface in a dark
+          // scene IS the page behind it, so this reads as the card not yet
+          // having arrived rather than as a ghost of it.
+          if (base.color) mat.color.copy(base.color).multiplyScalar(lit);
+          if (base.env !== undefined) mat.envMapIntensity = base.env * lit;
+        });
+        invalidate();
+      }
+      raf = requestAnimationFrame(apply);
+    };
+
+    raf = requestAnimationFrame(apply);
+    return () => cancelAnimationFrame(raf);
+  }, [progress, reducedMotion, invalidate]);
+
+  return <group ref={groupRef}>{children}</group>;
 }
 
 // ── Scene ────────────────────────────────────────────────────────────────────
@@ -567,23 +818,187 @@ function useLocalEnvMap(): THREE.Texture {
  * into the grid: **a WebGL canvas can only refract objects in its own scene.**
  */
 
+/**
+ * Pre-compile the scene's shaders before anything is choreographed.
+ *
+ * ⚠ THE STALL IS SHADER COMPILATION AT FIRST DRAW, AND THAT WAS MEASURED RATHER
+ * THAN GUESSED — after one wrong hypothesis had already been acted on.
+ *
+ * The first diagnosis was "five transmissive cards are five times the work", and
+ * it was wrong. Varying the card count via `?cards=N` settled it:
+ *
+ *     cards=1   blocking task at first draw   2846ms
+ *     cards=3   blocking task at first draw   2986ms
+ *     cards=5   blocking task at first draw   2949ms
+ *
+ * ⚠ **FLAT.** One card costs what five cost, so it is a FIXED price for putting
+ * transmissive glass on screen at all — not a per-card cost, and therefore never
+ * something cloning caused or that fewer cards would fix.
+ *
+ * ⚠ AND IT ALSO RULED OUT THE FIX THIS FILE HAD ALREADY PRESCRIBED. Mounting the
+ * canvas earlier ("warm it during the opening choreography") was tried in the
+ * same pass and made the stall WORSE — 1732ms to 2840ms — because the cost lands
+ * at first **draw**, not at mount. Moving the mount moves setup; it does not
+ * move compilation.
+ *
+ * `compileAsync` is three's own answer: it uses `KHR_parallel_shader_compile` and
+ * resolves *"when the given scene can be rendered without unnecessary stalling
+ * due to shader compilation"* (`three.module.js:17479`). The work still happens —
+ * it just happens off the critical path, before any card is due.
+ */
+function useScenePrecompile(onReady: () => void, mayCompile: boolean) {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
+  const readyRef = useRef(onReady);
+
+  useEffect(() => {
+    readyRef.current = onReady;
+  }, [onReady]);
+
+  useEffect(() => {
+    // ⚠ THE GATE COVERS THE COMPILE ITSELF, NOT JUST THE CHOREOGRAPHY. Gating
+    // only the entrance would leave this work running during the phrase wipe —
+    // which is precisely the regression that put the Q5 stutter back on the "W"
+    // and "h" of "What".
+    if (!mayCompile) return;
+
+    let cancelled = false;
+
+    // ⚠ ONE FRAME'S GRACE FIRST. `compileAsync` walks the scene graph as it
+    // stands, so it must run after the cards' meshes have been committed —
+    // otherwise it compiles an empty scene, resolves instantly, and the real
+    // compile still lands on the first card. A silent no-op that looks like a
+    // fix is exactly this project's standing trap.
+    const id = requestAnimationFrame(() => {
+      if (cancelled) return;
+      gl.compileAsync(scene, camera)
+        .then(() => {
+          if (cancelled) return;
+
+          /**
+           * ⚠ ONE FULL RENDER BEFORE HANDING OVER, AND IT IS NOT REDUNDANT
+           * AFTER `compileAsync`.
+           *
+           * `compileAsync` walks the SCENE GRAPH and compiles the materials it
+           * finds. **The transmission pass is not in the scene graph.** The
+           * first time a transmissive object is drawn, `renderTransmissionPass`
+           * allocates its render target and builds the material variant that
+           * samples it (`three.module.js:17967`) — work that no amount of
+           * scene-graph precompilation can reach.
+           *
+           * ⚠ MEASURED, NOT ASSUMED: a 260ms blocking task landed at exactly
+           * card 1's first visible frame, and card 2 fired the instant it
+           * cleared — gap 1 came in at 263ms against a 560ms target, three runs
+           * consistent. Carl saw it independently: *"the stall occurs between
+           * cards 1+2."*
+           *
+           * Rendering the scene once here pays that cost while every card is
+           * still hidden, so the first CHOREOGRAPHED frame is the second real
+           * render rather than the first.
+           *
+           * ⚠ THE CARDS MUST BE VISIBLE FOR THIS ONE FRAME, WHICH IS THE WHOLE
+           * SUBTLETY. They are hidden until their own rung (`attachGroup` sets
+           * `visible = false`), and a renderer skips invisible objects entirely
+           * — so a plain `render()` here would draw no transmissive object, the
+           * transmission pass would never run, and the warm-up would be a
+           * silent no-op that LOOKS like a fix. That is this project's standing
+           * trap, and it would have shipped as one.
+           *
+           * ⚠ AND IT IS INVISIBLE ANYWAY, because the cards are still at scale
+           * 0.94 and — crucially — UNLIT: `CardLighting` holds every material's
+           * colour and `envMapIntensity` at zero until the entrance runs. So
+           * this frame draws black cards on a black ground, over a lockup that
+           * is itself at fade 0.
+           */
+          const hidden: THREE.Object3D[] = [];
+          scene.traverse((o) => {
+            if (o.type === "Group" && o.visible === false) {
+              hidden.push(o);
+              o.visible = true;
+            }
+          });
+
+          gl.render(scene, camera);
+
+          hidden.forEach((o) => {
+            o.visible = false;
+          });
+
+          readyRef.current();
+        })
+        .catch(() => {
+          // ⚠ FAIL OPEN, NEVER FAIL CLOSED. If precompilation is unavailable
+          // the choreography must still run — a stall is a defect, but a card
+          // grid that never appears is a broken page.
+          if (!cancelled) readyRef.current();
+        });
+    });
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(id);
+    };
+  }, [gl, scene, camera, mayCompile]);
+}
+
 function CardScene({
   active,
   reducedMotion,
   tuning,
   glassTuning,
+  hovered,
+  onWarm,
+  mayCompile,
 }: {
   active: boolean;
   reducedMotion: boolean;
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
+  hovered: number | null;
+  onWarm: () => void;
+  mayCompile: boolean;
 }) {
-  const groupRef = useCardEntrance(active, reducedMotion);
   const envMap = useLocalEnvMap();
+  useScenePrecompile(onWarm, mayCompile);
 
-  // Grid slot 1, top-left. Derived from `CARD_BOXES` so the card cannot drift
-  // out of the backdrop colour zone that is positioned against the same box.
-  const slot = useMemo(() => cardSlotPosition(CARD_BOXES[0]), []);
+  /**
+   * ⚠ HOVER INVERTS THE REGION UNDER THE CARD, AND "INVERT" IS THE OPERATIVE
+   * WORD. Carl, 4 August: *"When in a hover state the card that the mouse is in
+   * would change from blue to teal and vice versa."*
+   *
+   * The lockup is not uniformly blue — `easeBlueTeal` gives it four alternating
+   * zones, so card 1 sits over the `c` (blue) while card 3 sits over the `b`
+   * (teal). A hover target of 1 would drive both toward teal, which would be a
+   * no-op on the cards that are teal already.
+   *
+   * ⚠ SO THE TARGET IS THE FLIP, NOT THE DESTINATION. `drawBackdrop` composes
+   * `base + local * (1 - base)`, where `base` is the zone's resting colour — so
+   * a shift of 1 means "fully teal" regardless of where the region started.
+   * Inverting a teal region needs the drawing side to understand the direction,
+   * which is what `shift: -1` now means there.
+   */
+  const target = useMemo(
+    () => CARD_BOXES.map((_, i) => (i === hovered ? 1 : 0)),
+    [hovered],
+  );
+  const shift = useRegionShift(target);
+
+  // ⚠ ALL FIVE SLOTS NOW. Derived from `CARD_BOXES` so no card can drift out of
+  // the backdrop region positioned against the same box — the sharing rule that
+  // `cardSlotPosition` documents, now load-bearing five times over.
+  const slots = useMemo(() => CARD_BOXES.map((b) => cardSlotPosition(b)), []);
+
+  // ⚠ THE `?cards=N` DIAGNOSTIC IS REMOVED. It existed to separate "does ANY
+  // transmissive card cost this" from "do FIVE cost five times", and it answered
+  // that — but the answer was taken on a SOFTWARE RASTERISER (headless
+  // Playwright has no GPU), where compilation dominates so heavily that mesh
+  // count cannot register. On real hardware the whole premise was wrong: the
+  // stall was shader compilation and the transmission pass, fixed by
+  // `useScenePrecompile` and the opening warm-up.
+  //
+  // A knob whose finding was invalidated is worse than no knob — the next reader
+  // would trust it. The lesson is recorded in `live-work/run-log-clone-and-beats.md`.
 
   return (
     <>
@@ -623,7 +1038,25 @@ function CardScene({
         first drawn frame is already frame 0 of the rise). The lockup simply
         renders throughout, which is correct: it is the page, not the card.
       */}
-      <AnswerCardBackdrop />
+      {/*
+        ⚠ THE LOCKUP IS BEAT SIX — it is no longer on screen from the first frame.
+
+        Carl, 4 August: *"There should be a 6 beat and that is the text underneath
+        fading in"*, and on what that means: *"by text underneath i mean 'c2b
+        DESIGN'."* It spans all five cards and fades at the cards' own speed —
+        *"The cards fade in at a certain speed, the text should do the same. 6
+        beats instead of 5."*
+
+        ⚠ AND THE CARDS LOOK LIKE THE "NO GLASS" FAILURE UNTIL IT ARRIVES. Glass
+        over a near-black page reads as a pale slab — the governing fact this whole
+        rebuild is downstream of. For the ~1440ms of the ladder there is nothing
+        behind the cards to transmit, so they will read as dark slabs and only
+        become glass when the lockup lights behind them.
+
+        **That is the design, not a defect.** Flagged to Carl before it was built:
+        the cards fill with colour as the light comes up behind them.
+      */}
+      <AnswerCardBackdrop shift={shift} reducedMotion={reducedMotion} active={active} />
 
       {/*
         ⚠ ONE SCENE, WHICH IS THE ENTIRE REASON FOR THIS STEP. The transmission
@@ -632,15 +1065,18 @@ function CardScene({
         scene graph. Two canvases meant the card refracted its own stand-in and
         was blind to the logo, however exactly they were overlaid in CSS.
       */}
-      <group position={[slot.x, slot.y, 0]}>
-        <AnswerCardMesh
+      {slots.map((slot, i) => (
+        <AnswerCard
+          key={i}
+          slot={slot}
+          delayMs={CARD_RISE_LADDER_MS[i]}
+          active={active}
+          reducedMotion={reducedMotion}
           tuning={tuning}
-          groupRef={groupRef}
-          glass
           glassTuning={glassTuning}
           envMap={envMap}
         />
-      </group>
+      ))}
     </>
   );
 }
@@ -654,7 +1090,20 @@ function CardScene({
  * CORRECTNESS guard — `CARD_BOXES` describes the three-column layout, which only
  * holds above this width. See `PROTO_MIN_VIEWPORT_PX`.
  */
-export default function AnswerCardCanvas({ active }: { active: boolean }) {
+export default function AnswerCardCanvas({
+  active,
+  /**
+   * Whether the opening has yielded an idle window for this canvas's setup.
+   *
+   * ⚠ IT OPENS BEFORE BEGIN, DURING THE OPENING STAGE — see `cardCanvasWarm` in
+   * `enquiry-opening.tsx`. The canvas still MOUNTS with the Q5 grid; this gate
+   * decides only whether it may render, which is where the cost actually is.
+   */
+  warm = true,
+}: {
+  active: boolean;
+  warm?: boolean;
+}) {
   const [reducedMotion] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -710,12 +1159,34 @@ export default function AnswerCardCanvas({ active }: { active: boolean }) {
    * before the cards, so its setup lands in dead time — NOT to shorten this
    * wait. `enquiry-opening.tsx` records why: a moved symptom is not a fixed one.
    */
-  const [revealCleared, setRevealCleared] = useState(reducedMotion);
-  useEffect(() => {
-    if (reducedMotion) return;
-    const id = window.setTimeout(() => setRevealCleared(true), Q5_REVEAL_CLEAR_MS);
-    return () => window.clearTimeout(id);
-  }, [reducedMotion]);
+  /**
+   * ⚠ THE CANVAS NO LONGER WAITS OUT THE WHOLE REVEAL — IT MOUNTS IMMEDIATELY
+   * AND THE CARDS THEMSELVES HOLD BACK.
+   *
+   * Carl, 4 August: *"card 1 can begin its appearance half way through the text
+   * reveal."* The old guard deferred the entire canvas until the reveal had
+   * FINISHED (1300ms), which makes a 650ms entrance impossible by construction.
+   *
+   * ⚠ AND THE GUARD'S REAL JOB IS PRESERVED, NOT DROPPED. It exists because
+   * Three.js initialisation landing inside the phrase caused the stutter Carl
+   * caught on the "Wh" of "What" — measured at +58-64ms with a 1827-2138ms long
+   * task behind it. **That work is setup, not drawing.** Mounting early means the
+   * setup happens BEFORE the phrase rather than during it, which is the fix this
+   * file already prescribed for exactly this moment:
+   *
+   *   *"The fix at that point is to warm the canvas during the opening
+   *   choreography — mounted hidden, well before the cards, so its setup lands
+   *   in dead time — NOT to shorten this wait."*
+   *
+   * ⚠ SO THIS IS THE PRESCRIBED FIX ARRIVING, NOT THE GUARD BEING WEAKENED. The
+   * cards are invisible until their own rung (see `attachGroup`), so nothing is
+   * drawn early; only the expensive setup moves earlier, into dead time.
+   *
+   * ⚠ IT ALSO ADDRESSES THE 1732ms STALL that made all five cards land together
+   * — same cause, same fix. **Unverified at the time of writing; it must be
+   * measured with `?beattrace=1` rather than assumed.**
+   */
+  const revealCleared = true;
 
   const [wideEnough, setWideEnough] = useState(false);
   useEffect(() => {
@@ -729,6 +1200,31 @@ export default function AnswerCardCanvas({ active }: { active: boolean }) {
   const { tuning, glassTuning } = useCardRig();
 
   const box = useMemo(() => protoCanvasBox(), []);
+
+  /**
+   * Which card the pointer is inside, or null.
+   *
+   * ⚠ ONE INDEX, NOT FIVE BOOLEANS. A pointer is in exactly one card at a time,
+   * and modelling it as five independent flags invites the state where two are
+   * true — which `pointerleave`/`pointerenter` ordering makes reachable on a fast
+   * diagonal crossing between adjacent cards.
+   */
+  const [hovered, setHovered] = useState<number | null>(null);
+
+  /**
+   * Whether the renderer has finished compiling this scene's shaders.
+   *
+   * ⚠ THE CHOREOGRAPHY WAITS FOR THIS, AND THAT IS THE WHOLE FIX. The entrance
+   * clock must not start while a ~2900ms compile is pending, or every beat after
+   * card 1 lands in one lump when it clears — which is exactly what Carl saw:
+   * *"on first walking the sequence they all came on at the same time."*
+   *
+   * ⚠ IT IS NOT A DELAY ADDED TO THE CHOREOGRAPHY. The compile was always
+   * happening; it was landing ON the choreography. This moves the sequence to
+   * after it rather than making the user wait longer overall.
+   */
+  const [compiled, setCompiled] = useState(false);
+  const markWarm = useCallback(() => setCompiled(true), []);
 
   if (!wideEnough || !revealCleared) return null;
 
@@ -763,12 +1259,63 @@ export default function AnswerCardCanvas({ active }: { active: boolean }) {
         style={{ pointerEvents: "none" }}
       >
         <CardScene
-          active={active}
+          // ⚠ BOTH GATES. `compiled` is this scene's own shader and
+          // transmission warm-up; `warm` is the opening having yielded an idle
+          // window for it to happen in. The choreography waits for both.
+          active={active && compiled && warm}
           reducedMotion={reducedMotion}
           tuning={tuning}
           glassTuning={glassTuning}
+          hovered={hovered}
+          onWarm={markWarm}
+          mayCompile={warm}
         />
       </Canvas>
+
+      {/*
+        ⚠ HOVER IS DETECTED IN THE DOM, NOT IN THE SCENE, AND THE CANVAS STAYS
+        `pointerEvents: none`.
+
+        @react-three/fiber can raycast `onPointerOver` onto a mesh, which looks
+        like the natural route. It is the wrong one here for two reasons:
+
+          1. **The canvas spans the WHOLE GRID.** Turning pointer events on for
+             raycasting makes the element itself a pointer target across all five
+             slots, so it would swallow events over the four cards that do not
+             exist yet — and, at rollout, over whatever occupies them.
+          2. **Raycasting a transmissive mesh is not free.** The card's silhouette
+             is a swept half-tube with a crowned face; hit-testing it per
+             pointermove is real work to answer a question a rectangle already
+             answers exactly.
+
+        ⚠ AND THE BOXES ARE THE SAME `CARD_BOXES` THE SCENE PLACES CARDS FROM, so
+        the hover region cannot drift away from the card it belongs to. That is
+        the same sharing rule `cardSlotPosition` already documents.
+
+        ⚠ `aria-hidden` AND NOT FOCUSABLE, DELIBERATELY. These are not the
+        controls — they are a hover surface for a prototype with no selection
+        behaviour yet. The real cards carry the roles, labels and keyboard
+        handling when they return at rollout; a div with a pointer handler must
+        not start impersonating a control in the accessibility tree.
+      */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0 }}>
+        {CARD_BOXES.map((b, i) => (
+          <div
+            key={i}
+            data-testid={`answer-card-hover-${i}`}
+            onPointerEnter={() => setHovered(i)}
+            onPointerLeave={() => setHovered((h) => (h === i ? null : h))}
+            style={{
+              position: "absolute",
+              left: b.x,
+              top: b.y,
+              width: b.w,
+              height: b.h,
+              pointerEvents: "auto",
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

@@ -170,6 +170,81 @@ export const WORDMARK_TEXT = "DESIGN";
  */
 export const WORDMARK_TRACKING_EM = -0.02;
 
+// ── Lockup layout — tuned for EVEN COVERAGE, not for composition ─────────────
+//
+// ⚠ THE BRIEF IS LUMINOSITY, AND IT MAKES THIS A MEASURABLE TARGET RATHER THAN
+// A MATTER OF TASTE. Carl, 4 August: *"The goal is to get approximately the same
+// amount of text in each box. When light is shone upon the cards they will all
+// have roughly the same amount of luminosity... What i am looking for is
+// balance."*
+//
+// ⚠ CARL'S EYE RANKED THE IMBALANCE CORRECTLY BEFORE ANY MEASUREMENT — *"cards
+// in order of how much text is in them - 1, 4, 2, 3+5"*. Measured coverage of
+// each card box by lockup ink, before this block existed:
+//
+//     card 1  44.6%   card 2  26.7%   card 3  12.5%
+//     card 4  40.8%   card 5  17.3%
+//     spread 32.0 points; 29.6% of all ink outside any card
+//
+// His three prescriptions are the three constants below: *"DESIGN can be made
+// bigger and shifted to the right. c2b can be shifted to the right."*
+
+/**
+ * The mark's height as a fraction of the grid's.
+ *
+ * ⚠ BELOW 1.0 SO THE MARK STOPS OVERFLOWING THE ROWS. At full height it ran the
+ * entire 104px band, which is what put *"too much c2 outside the card"* in the
+ * bottom-left gutter — the mark was taller than either row of cards.
+ */
+export const MARK_HEIGHT_RATIO = 0.78;
+
+/**
+ * How far the mark is inset from the grid's left edge, in grid px.
+ *
+ * ⚠ CARL: *"c2b can be shifted to the right."* At x=0 the mark's leading edge
+ * sat outside card 1 entirely, spending ink where no card could catch it.
+ */
+export const MARK_LEFT_PX = 30;
+
+/**
+ * Gap between the mark and the wordmark, in grid px.
+ *
+ * ⚠ THIS IS THE LEVER ON CARDS 3 AND 5, the two that stayed lowest after the
+ * first correction. Widening it pushes DESIGN right, into the top-right and
+ * bottom-right boxes, without changing the word's size.
+ */
+export const WORDMARK_GAP_PX = 22;
+
+/**
+ * The wordmark's cap height as a fraction of the grid's height.
+ *
+ * ⚠ RAISED FROM 0.62 — Carl: *"DESIGN can be made bigger."* DESIGN spans cards
+ * 2, 3 and 5, the three that were starving, so its size is the main lever on the
+ * right-hand half of the grid.
+ */
+export const WORDMARK_CAP_RATIO = 0.72;
+
+/**
+ * The vertical centre of the gap between the two card rows, in grid px.
+ *
+ * ⚠ DESIGN IS CENTRED ON THIS, NOT ON THE BAND. Carl's construction, 4 August:
+ * *"The height of DESIGN will have a number and also a number that is half the
+ * height. Put that half way point at the half way point in the gap between the
+ * cards."*
+ *
+ * ⚠ DERIVED FROM THE ROWS, NOT TYPED. The grid is two 48px rows with an 8px gap
+ * (`CARD_BOXES`: top row at y=0, bottom row at y=56), so the gutter runs 48..56
+ * and its centre is 52. Reading it from the boxes means a change to the row
+ * geometry moves the wordmark with it.
+ *
+ * ⚠ A FUNCTION, NOT A CONST, because `CARD_BOXES` is declared below this point —
+ * a top-level const here is a temporal-dead-zone error rather than a style
+ * preference.
+ */
+export function gutterCentrePx(): number {
+  return (CARD_BOXES[0].y + CARD_BOXES[0].h + CARD_BOXES[3].y) / 2;
+}
+
 // ── Colour ───────────────────────────────────────────────────────────────────
 //
 // ⚠ THE CORRIDOR'S OWN TWO COLOURS, read from `app/globals.css` rather than
@@ -255,14 +330,39 @@ export const REGION_SHIFT_MS = 2400;
 
 export type BackdropRegions = {
   /**
-   * Per-card shift, 0 = resting blue, 1 = fully teal. Indexed in grid order:
-   * 0 top-left, 1 top-middle, 2 top-right, 3 bottom-left, 4 bottom-right.
+   * Per-card shift, 0 = the region's resting colour, 1 = fully inverted.
+   * Indexed in grid order: 0 top-left, 1 top-middle, 2 top-right, 3
+   * bottom-left, 4 bottom-right.
+   *
+   * ⚠ INVERSION, NOT "TOWARD TEAL" — and the distinction is load-bearing. The
+   * lockup has four alternating zones, so a blue region inverts to teal and a
+   * teal region inverts to blue. See the `1 - 2 * base` composition in
+   * `drawBackdrop`, and Carl's *"and vice versa"*.
    *
    * ⚠ PER-REGION, NOT GLOBAL. Carl: *"In its own region is a good idea."* Each
    * card owns the patch of backdrop behind it, so its state changes the colour
    * beneath IT rather than shifting the whole field.
    */
   shift: number[];
+  /**
+   * Beat six: 0 = the lockup is absent, 1 = fully present.
+   *
+   * ⚠ PAINTED, NOT `material.opacity`. Driving opacity requires
+   * `transparent: true`, which routes the backdrop out of the transmission
+   * pass's opaque list — the glass would stop seeing it, so the lockup would
+   * fade in everywhere EXCEPT inside the cards. See `useLockupFade`.
+   */
+  fade?: number;
+  /**
+   * How far each hover rectangle is pulled in from the card's silhouette, in
+   * grid px — so its edges sit UNDER the rim and bevel rather than on the
+   * card's outline.
+   *
+   * ⚠ SUPPLIED BY THE CALLER AS `faceInset()`, not imported here.
+   * `answer-card-geometry.ts` already depends on this module, so reaching back
+   * for it would be circular. See the use site.
+   */
+  inset?: number;
 };
 
 /** The five card boxes in grid coordinates, matching `.enquiry-answer-grid`. */
@@ -309,15 +409,19 @@ type Zone = { start: number; end: number };
  * from the layout in `drawBackdrop` rather than hard-coded, so moving the mark
  * or resizing the word cannot leave them behind.
  */
-function transitionZones(markFraction: number, textStart: number): Zone[] {
+function transitionZones(markStart: number, markEnd: number, textStart: number): Zone[] {
+  // ⚠ THE MARK NO LONGER STARTS AT ZERO, so every zone is expressed as a
+  // position WITHIN the mark's span rather than as a fraction of the whole
+  // width. `at(f)` reads "f of the way across the mark".
+  const at = (f: number) => markStart + (markEnd - markStart) * f;
   return [
     // The `2` — 33%–46% of the mark's own width.
-    { start: markFraction * 0.33, end: markFraction * 0.46 },
+    { start: at(0.33), end: at(0.46) },
     // ⚠ THE RESET, and it needs real width. It runs from inside the `b`'s
     // trailing edge to the start of DESIGN, so the colour is back to blue before
     // the first letter. Placing it in the mark-to-word gap alone left it ~3% of
     // the width — not enough to complete, which inverted the whole second half.
-    { start: markFraction * 0.82, end: textStart },
+    { start: at(0.82), end: textStart },
     // The `SI` — DESIGN's six letters divide its span evenly; S and I are
     // letters 3 and 4, so they occupy the middle third.
     { start: textStart + (1 - textStart) * 0.33, end: textStart + (1 - textStart) * 0.62 },
@@ -380,8 +484,22 @@ function easeBlueTeal(t: number, zones: Zone[]): number {
   return 1; //  `GN`                                    TEAL
 }
 
-function mixColour(a: THREE.Color, b: THREE.Color, t: number): string {
+/**
+ * Blue→teal at `t`, then faded toward the ground by beat six's `fade`.
+ *
+ * ⚠ THE FADE IS TOWARD `GROUND_COLOR`, NOT TOWARD TRANSPARENCY. The lockup is a
+ * cut-out on an opaque material (`alphaTest`, never `transparent`), because a
+ * transparent backdrop is invisible to the transmission pass — the failure this
+ * module documents twice. Fading alpha would therefore make the lockup disappear
+ * from INSIDE the cards while remaining visible outside them: the precise
+ * inverse of the intended effect.
+ *
+ * Mixing the drawn colour toward the page's own darkness gives an identical
+ * result to the eye and keeps the material opaque throughout.
+ */
+function mixColour(a: THREE.Color, b: THREE.Color, t: number, fade = 1): string {
   const c = a.clone().lerp(b, Math.min(1, Math.max(0, t)));
+  if (fade < 1) c.lerp(new THREE.Color(GROUND_COLOR), 1 - Math.min(1, Math.max(0, fade)));
   return `#${c.getHexString()}`;
 }
 
@@ -407,6 +525,7 @@ export function drawBackdrop(
 ): void {
   const blue = new THREE.Color(BACKDROP_BLUE);
   const teal = new THREE.Color(BACKDROP_TEAL);
+  const fade = regions.fade ?? 1;
 
   // ⚠ CLEARED, NOT FILLED. A first version painted `#0a0a0a` here as "the
   // page's own colour" — but the page background is a RADIAL GRADIENT
@@ -432,9 +551,26 @@ export function drawBackdrop(
 
   lc.fillStyle = "#ffffff";
 
-  // ── The mark, on the left, fitted to the full height ──
-  const markH = heightPx;
+  // ── The mark, fitted to the height and inset from the left ──
+  //
+  // ⚠ THE LAYOUT IS TUNED FOR EVEN COVERAGE PER CARD, NOT FOR COMPOSITION.
+  // Carl, 4 August: *"The goal is to get approximately the same amount of text
+  // in each box. When light is shone upon the cards they will all have roughly
+  // the same amount of luminosity."*
+  //
+  // ⚠ MEASURED BEFORE IT WAS TOUCHED, and Carl's eye had already ranked it
+  // correctly — *"cards in order of how much text is in them - 1, 4, 2, 3+5"*:
+  //
+  //     card 1  44.6%      card 2  26.7%      card 3  12.5%
+  //     card 4  40.8%      card 5  17.3%
+  //     spread 32.0 points, 29.6% of the ink outside any card
+  //
+  // The mark previously started at x=0 at FULL height, which is what put *"too
+  // much c2 outside the card"* bottom-left while the right-hand cards starved.
+  const markH = heightPx * MARK_HEIGHT_RATIO;
   const markW = markH * MARK_ASPECT;
+  const markLeft = MARK_LEFT_PX * sx;
+  const markTop = (heightPx - markH) / 2;
   const mark = decodeMark();
   const px = markW / mark.width;
   const py = markH / mark.height;
@@ -442,7 +578,7 @@ export function drawBackdrop(
     for (let x = 0; x < mark.width; x++) {
       if (mark.bits[y * mark.width + x]) {
         // +1 on each dimension so neighbouring cells meet without hairlines.
-        lc.fillRect(x * px, y * py, px + 1, py + 1);
+        lc.fillRect(markLeft + x * px, markTop + y * py, px + 1, py + 1);
       }
     }
   }
@@ -451,33 +587,79 @@ export function drawBackdrop(
   //
   // Sized so the word fills the remaining width, and vertically centred on the
   // mark. One word means no ragged block and no compensation — see WORDMARK_TEXT.
-  const gap = 18 * sx;
-  const textLeft = markW + gap;
-  const textWidth = widthPx - textLeft;
+  const gap = WORDMARK_GAP_PX * sx;
+  const textLeft = markLeft + markW + gap;
+  const textWidth = widthPx - textLeft - MARK_LEFT_PX * sx;
 
   lc.textBaseline = "middle";
   lc.letterSpacing = `${WORDMARK_TRACKING_EM}em`;
 
-  // ⚠ SIZED BY CAP HEIGHT, NOT BY FITTING THE WIDTH.
+  // ⚠ SIZED TO A MARGIN, NOT TO A CAP HEIGHT — AND THE HISTORY MATTERS BECAUSE
+  // THE PREVIOUS RULE READ AS SETTLED.
   //
-  // A first version scaled the word to fill the remaining width and clamped it
-  // to a fraction of the canvas height. The clamp bound first — 150px against a
-  // width that allowed 213px — so the word came out small and the arithmetic
-  // silently disagreed with itself.
+  // It was: *"sized by cap height, not by fitting the width"*, after an earlier
+  // version's width-fit clamp bound first (150px against a width that allowed
+  // 213px) and left the word silently small. That reasoning was sound while the
+  // target was "a legible word beside the mark".
   //
-  // Caps make the honest approach available: with no descenders the block IS
-  // cap height, so setting the size from the available height is exact rather
-  // than approximate. The word then occupies whatever width it occupies, and
-  // only shrinks if that would overflow.
-  let size = heightPx * 0.62;
+  // ⚠ CARL CHANGED THE TARGET. The brief is now BALANCE — even ink per card —
+  // and he supplied the construction for it, so the word's size is a CONSEQUENCE
+  // of the margin rather than an input.
+  //
+  // ⚠ DESIGN IS SIZED TO LAND ITS `N` AS FAR FROM THE RIGHT EDGE AS THE `c` IS
+  // FROM THE LEFT — Carl's construction, 4 August: *"The N of DESIGN can end at
+  // the same distance from the perceived edge as when the c starts. Design can be
+  // made taller and the text of DESIGN be changed in proportion."*
+  //
+  // ⚠ SO THE SIZE IS SOLVED FOR, NOT CHOSEN. `WORDMARK_CAP_RATIO` is only the
+  // starting guess; the word is then scaled by the ratio of the width it should
+  // occupy to the width it does. That makes the margin exact at any mark size,
+  // and it cannot drift when the mark or the gap is retuned.
+  //
+  // ⚠ AND IT IS MEASURED FROM THE INK, NOT THE ADVANCE WIDTH. A font's advance
+  // includes side bearings the letterform does not fill, so sizing on
+  // `measureText().width` would leave the N's stem short of the target by the
+  // trailing bearing — measured 56.5px adrift before this was solved for.
+  let size = heightPx * WORDMARK_CAP_RATIO;
   lc.font = `${WORDMARK_WEIGHT} ${size}px ${WORDMARK_FONT_STACK}`;
-  const measured = lc.measureText(WORDMARK_TEXT).width;
-  if (measured > textWidth && measured > 0) {
-    size *= textWidth / measured;
+
+  const inkWidthAt = (px: number) => {
+    lc.font = `${WORDMARK_WEIGHT} ${px}px ${WORDMARK_FONT_STACK}`;
+    const b = lc.measureText(WORDMARK_TEXT);
+    // Right edge of the ink, relative to the draw origin.
+    return b.actualBoundingBoxRight;
+  };
+
+  const targetInkWidth = textWidth;
+  const inkAt = inkWidthAt(size);
+  if (inkAt > 0) {
+    size *= targetInkWidth / inkAt;
     lc.font = `${WORDMARK_WEIGHT} ${size}px ${WORDMARK_FONT_STACK}`;
   }
 
-  lc.fillText(WORDMARK_TEXT, textLeft, heightPx / 2);
+  // ⚠ CENTRED ON THE GUTTER BY ITS OWN MEASURED GLYPH BOX, NOT BY
+  // `textBaseline: "middle"`.
+  //
+  // Carl's construction, 4 August: *"The height of DESIGN will have a number and
+  // also a number that is half the height. Put that half way point at the half
+  // way point in the gap between the cards."*
+  //
+  // ⚠ `"middle"` IS NOT THE GLYPH'S CENTRE. It centres on the font's em box,
+  // which includes descender space `DESIGN` never uses — measured 6.3px HIGH of
+  // the gutter's centre (mid-point y=45.8 against a gutter centre of 52.0).
+  //
+  // `actualBoundingBoxAscent/Descent` report where the ink actually falls, so
+  // the correction is exact rather than a nudge: shift by the difference between
+  // the box's own centre and the baseline.
+  // ⚠ MEASURED AFTER THE FINAL SIZE IS SET, AND `textBaseline` SWITCHED FIRST.
+  // `actualBoundingBox*` are reported RELATIVE TO THE CURRENT BASELINE, so
+  // measuring while `textBaseline` was still "middle" and the font was still the
+  // pre-solve size gave a correction for neither — the word drew clipped at
+  // y=0, 21.8px adrift.
+  lc.textBaseline = "alphabetic";
+  const box = lc.measureText(WORDMARK_TEXT);
+  const inkCentreFromBaseline = (box.actualBoundingBoxAscent - box.actualBoundingBoxDescent) / 2;
+  lc.fillText(WORDMARK_TEXT, textLeft, gutterCentrePx() * sy + inkCentreFromBaseline);
 
   // ── Colour it, per region ──
   // Each card's patch gets its own blue→teal position, so a selected card's
@@ -487,27 +669,31 @@ export function drawBackdrop(
   // ⚠ THE ZONES ARE DERIVED FROM THE LAYOUT ABOVE, not hard-coded. Moving the
   // mark or resizing the word moves the transitions with them, so the four
   // colour areas cannot drift away from the letterforms they belong to.
-  const zones = transitionZones(markW / widthPx, textLeft / widthPx);
+  // ⚠ THE MARK'S SPAN IS NOW `markLeft` TO `markLeft + markW`, NOT `0` TO
+  // `markW`. `transitionZones` places the `2`'s colour ramp at fractions of the
+  // MARK's own width, so passing an un-inset figure would slide every zone
+  // boundary left of the letterform it belongs to — the four-zone distribution
+  // would drift off the glyphs it was measured against.
+  const zones = transitionZones(
+    markLeft / widthPx,
+    (markLeft + markW) / widthPx,
+    textLeft / widthPx,
+  );
 
   const ramp = lc.createLinearGradient(0, 0, widthPx, 0);
   // Sample the region shifts across the width so the ramp bends toward teal
   // wherever a card is selected, and stays blue elsewhere.
-  // ⚠ 48, NOT 12. The transition is now PLACED rather than spread across the
-  // whole width, so it occupies a quarter of the span and needs enough stops
-  // inside that quarter to read as smooth rather than banded.
-  const stops = 48;
+  // ⚠ 96, NOT 48. The transition is PLACED rather than spread across the whole
+  // span, so it needs enough stops inside its own quarter to read as smooth
+  // rather than banded — and the hover falloff now adds a SECOND feature at a
+  // finer scale, a per-card ramp roughly 93px wide.
+  //
+  // At 48 stops that is ~7 stops per falloff, on a gradient that is also being
+  // blurred by the glass in front of it. Doubling costs one more pass over a
+  // 1152px canvas and removes the risk entirely.
+  const stops = 96;
   for (let i = 0; i <= stops; i++) {
     const t = i / stops;
-    const x = t * GRID_WIDTH_PX;
-    let shift = 0;
-    let weight = 0;
-    CARD_BOXES.forEach((box, idx) => {
-      const centre = box.x + box.w / 2;
-      const w = Math.max(0, 1 - Math.abs(x - centre) / box.w);
-      shift += (regions.shift[idx] ?? 0) * w;
-      weight += w;
-    });
-    const local = weight > 0 ? shift / weight : 0;
 
     // ⚠ THE TRANSITION IS PLACED, NOT SPREAD — Carl, 3 August: *"in DESIGN, the
     // DE should be blue. The GN should be teal. The SI is where the slow
@@ -519,14 +705,123 @@ export function drawBackdrop(
     // transition between them — which is what a two-colour identity needs.
     //
     // `easeBlueTeal` maps position to colour with flat ends and a smooth centre.
-    const base = easeBlueTeal(t, zones);
-    ramp.addColorStop(t, mixColour(blue, teal, Math.min(1, base + local * (1 - base))));
+    //
+    // ⚠ THE RESTING COLOUR ONLY. Hover is NOT painted through this ramp — see
+    // the per-card pass below for why it cannot be.
+    ramp.addColorStop(t, mixColour(blue, teal, easeBlueTeal(t, zones), fade));
   }
   lc.fillStyle = ramp;
   lc.fillRect(0, 0, widthPx, heightPx);
+
+  // ── Hover, painted per card and CLIPPED TO THAT CARD'S OWN BOX ──────────────
+  //
+  // ⚠ A HORIZONTAL GRADIENT PHYSICALLY CANNOT CONFINE A CHANGE TO ONE CARD, and
+  // that is why this is a separate pass rather than more stops on the ramp above.
+  //
+  // Carl, 4 August: *"only inside the card should this transition take place.
+  // Card 4 will sit under card 1, right now the way its working card 1's hover
+  // affects where card 4 will be."*
+  //
+  // He is right, and it is structural. `createLinearGradient(0, 0, widthPx, 0)`
+  // has NO y-component: every column is one colour top to bottom. Card 1 spans
+  // x 194-381 in the TOP row and card 4 spans x 292-478 in the BOTTOM row, so
+  // they share columns 292-381 and a horizontal ramp cannot give them different
+  // colours there. **No amount of tuning the weighting could have fixed it** —
+  // the previous attempt's neighbour falloff was the right idea applied to an
+  // instrument that has only one axis.
+  //
+  // ⚠ MEASURED BEFORE IT WAS BELIEVED: hovering card 0 moved card 3's hue by
+  // +0.6° with the pointer nowhere near it.
+  //
+  // Each hovered region is now drawn as its own rectangle, so its influence stops
+  // at its own edges — which is what *"in its own region"* has to mean once the
+  // grid has two rows.
+  // ⚠ `source-atop`, NOT the `source-in` LEFT OVER FROM THE RESTING FILL.
+  //
+  // `source-in` keeps only the intersection of new and existing pixels and
+  // DISCARDS THE REST OF THE LAYER — so each per-card rectangle replaced the
+  // whole lockup with itself, and hovering one card erased the other four
+  // regions entirely. Measured as a uniform 217.9 hue in every non-hovered
+  // region, and visible immediately in a screenshot: the lockup vanished except
+  // inside the hovered card.
+  //
+  // ⚠ AND THE PROBE'S "NOT CONFINED" VERDICT WAS RIGHT FOR THE WRONG REASON —
+  // two wrong diagnoses (a stale baseline, then a pre-fade hold) were argued
+  // before the screenshot settled it in one glance. **The image was available the
+  // whole time.** Carl's standing lesson: his eye beats the instruments, and a
+  // number that cannot say WHAT is wrong is worth less than a picture.
+  //
+  // `source-atop` draws the new colour only where the layer is already opaque —
+  // the letterforms — and leaves everything else untouched.
+  lc.globalCompositeOperation = "source-atop";
+
+  regions.shift.forEach((amount, idx) => {
+    if (amount <= 0) return;
+    const box = CARD_BOXES[idx];
+    if (!box) return;
+
+    // ⚠ INSET SO THE RECTANGLE'S EDGES RUN UNDER THE RIM AND BEVEL.
+    //
+    // Carl, 4 August: *"you can see some bleed outside the box. Make the
+    // rectangle the colour sits in smaller. If its edges ran under the filament
+    // or bevel this might eliminate the problem."*
+    //
+    // ⚠ HE IS RIGHT ABOUT BOTH THE CAUSE AND THE CURE. `CARD_BOXES` is the
+    // SILHOUETTE — the rim's outer edge sits exactly on it — so a fill to that
+    // boundary reaches the card's outline with nothing left to hide it, and any
+    // softness in the gradient or the glass spills past the card entirely.
+    //
+    // `faceInset()` is the existing budget maths for precisely this distance:
+    // `2 * tubeRadius + bevelWidth`, the depth the rim and bevel consume per
+    // side before the face begins. Pulling the rectangle in by it puts every
+    // edge underneath opaque geometry, so the boundary is occluded rather than
+    // merely faint.
+    //
+    // ⚠ DERIVED FROM THE SAME CONSTANTS THE MESH IS BUILT FROM, never a
+    // hand-tuned margin — a literal here would drift the moment the rim or bevel
+    // is retuned in `?cardrig=1`, and the bleed would silently return.
+    //
+    // ⚠ PASSED IN, NOT IMPORTED. `faceInset()` lives in `answer-card-geometry.ts`,
+    // which already imports `GRID_WIDTH_PX` from THIS module — importing it back
+    // would make the two files circular. The caller supplies it, so the value is
+    // still the mesh's own and the dependency still points one way.
+    const inset = regions.inset ?? 0;
+    const x0 = (box.x + inset) * sx;
+    const y0 = (box.y + inset) * sy;
+    const w = (box.w - 2 * inset) * sx;
+    const h = (box.h - 2 * inset) * sy;
+
+    // The inverted colour, sampled across this card's own span so the lockup's
+    // four zones still read correctly inside the region.
+    const local = lc.createLinearGradient(x0, 0, x0 + w, 0);
+    const localStops = 24;
+    for (let i = 0; i <= localStops; i++) {
+      const u = i / localStops;
+      // Sampled across the INSET span, matching the rectangle actually filled —
+      // so the lockup's four zones still line up with the letterforms inside it.
+      const t = (box.x + inset + u * (box.w - 2 * inset)) / GRID_WIDTH_PX;
+      const base = easeBlueTeal(t, zones);
+
+      // ⚠ THE SHIFT INVERTS THE REGION, IT DOES NOT DRIVE IT TOWARD TEAL. Carl,
+      // 4 August: *"the card that the mouse is in would change from blue to teal
+      // and vice versa."*
+      //
+      // ⚠ "AND VICE VERSA" IS THE WHOLE INSTRUCTION. This lockup has FOUR
+      // alternating zones, so the five cards do NOT all start blue — measured,
+      // `base` at each card's centre is 0.99, 0.00, 1.00, 0.66, 0.41. A shift
+      // that always travelled toward teal would be a no-op on cards 0 and 2.
+      //
+      // Interpolating toward `1 - base` inverts each region about its own
+      // resting colour, so a blue region goes teal and a teal region goes blue —
+      // one mechanism, no per-card special-casing.
+      local.addColorStop(u, mixColour(blue, teal, base + (1 - 2 * base) * amount, fade));
+    }
+
+    lc.fillStyle = local;
+    lc.fillRect(x0, y0, w, h);
+  });
+
   lc.globalCompositeOperation = "source-over";
 
   ctx.drawImage(layer, 0, 0);
-
-  void sy;
 }

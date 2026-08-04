@@ -5,6 +5,10 @@ import ContactFieldCanvas, { FIELD_ENTRANCE_END_MS } from "./contact-field-canva
 import ContactFieldInputs, { type FieldStateSnapshot } from "./contact-field-inputs";
 import { FIELD_SLOTS } from "./contact-field-geometry";
 import AnswerCardCanvas from "./answer-card-canvas";
+// ⚠ THE CARD CHOREOGRAPHY'S OWN END, DERIVED THERE AND IMPORTED HERE — never
+// retyped. This file's own history records a hand-written end-of-choreography
+// value going stale twice.
+import { ENTRANCE_END_MS } from "./answer-card-geometry";
 
 // How long after entering `complete` the ENTIRE completion choreography has
 // cleared — acknowledgement, all four boxes, AND the opal.
@@ -118,6 +122,16 @@ const ACK_FADE_OUT_DELAY_MS = FIELD_ENTRANCE_END_MS - ACK_FADE_OUT_DURATION_MS;
  * it and let a pre-warm fire into a live animation. While the opal is masked the
  * last box's end is the boundary; when it returns, the opal's end is.
  */
+/**
+ * How long after mount the answer-card canvas may begin its setup.
+ *
+ * ⚠ IT ONLY HAS TO CLEAR THE OPENING'S OWN FIRST FRAMES, not the whole opening.
+ * `requestIdleCallback` does the real work of finding a free thread; this is
+ * just a lead-in so the very first scheduling attempt is not made while the
+ * opening reveal is starting up.
+ */
+const OPENING_WARM_LEAD_MS = 900;
+
 const CHOREOGRAPHY_CLEAR_MS = Math.max(
   FIELD_ENTRANCE_END_MS,
   ACK_FADE_OUT_DELAY_MS + ACK_FADE_OUT_DURATION_MS,
@@ -415,6 +429,64 @@ export default function EnquiryOpening() {
   // acknowledgement nor Send's entrance ever does.
   const [canvasWarm, setCanvasWarm] = useState(false);
 
+  /**
+   * Whether the ANSWER-CARD canvas may do its expensive setup yet.
+   *
+   * ⚠ THIS OPENS DURING THE OPENING STAGE, BEFORE BEGIN — which is the opposite
+   * of `canvasWarm` above, and deliberately so.
+   *
+   * ⚠ IT EXISTS BECAUSE THE Q5 STUTTER CAME BACK, AND THE BUILDER CAUSED IT.
+   * Carl, 4 August: *"On first run the stutter on W+H on Q5 was back. On runs
+   * 2,3+4 that resolved but the stall returned."* Both halves are one cause: to
+   * let card 1 appear at the reveal's MIDPOINT, this session removed the guard
+   * that deferred the whole canvas until the 1300ms wipe had finished — so
+   * Three.js setup, shader compilation and the transmission warm-up all moved
+   * INTO the phrase. Cold, they land on the text; warm, they are cheap enough to
+   * clear but too late to have finished before card 1 is due.
+   *
+   * ⚠ AND "DEFER IT AGAIN" CANNOT BE THE ANSWER, because the choreography Carl
+   * specified requires the cards to exist during the phrase. **The work has to
+   * move EARLIER, not later** — which is exactly what this file's own record
+   * prescribed for this moment: *"warm the canvas during the opening
+   * choreography — mounted hidden, well before the cards, so its setup lands in
+   * dead time — NOT to shorten this wait."*
+   *
+   * The opening runs ~11.5s of CSS-only choreography before Begin is even
+   * pressable. That is a large, genuinely idle window, and nothing in it
+   * competes with WebGL setup.
+   *
+   * ⚠ `requestIdleCallback` WITH A TIMEOUT, matching the pattern above: it fires
+   * only on a free thread, so it cannot land on the opening's own animation, but
+   * the timeout guarantees it eventually runs on browsers that stay busy.
+   */
+  const [cardCanvasWarm, setCardCanvasWarm] = useState(false);
+  useEffect(() => {
+    if (cardCanvasWarm) return;
+
+    let idleId: number | null = null;
+    let timerId: number | null = null;
+
+    // ⚠ A SHORT LEAD-IN FIRST. The opening's own reveal animation starts on
+    // mount; firing into its first frames would trade the Q5 stutter for a
+    // stutter one stage earlier, which is precisely the mistake this project
+    // already logged ("a moved symptom is not a fixed symptom").
+    timerId = window.setTimeout(() => {
+      if (typeof window.requestIdleCallback === "function") {
+        idleId = window.requestIdleCallback(() => setCardCanvasWarm(true), { timeout: 3000 });
+      } else {
+        // No `requestIdleCallback` (Safari). Yield past the frame boundary.
+        timerId = window.setTimeout(() => setCardCanvasWarm(true), 0);
+      }
+    }, OPENING_WARM_LEAD_MS);
+
+    return () => {
+      if (idleId !== null && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timerId !== null) window.clearTimeout(timerId);
+    };
+  }, [cardCanvasWarm]);
+
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReducedMotion(mq.matches);
@@ -527,11 +599,28 @@ export default function EnquiryOpening() {
       // precise failure the 24 July review found in the completion guard (a
       // delay correctly derived from a choreography, applied even when the
       // choreography was gated off).
+      //
+      // ⚠ AND IT NOW COVERS THE CARD LADDER, NOT ONLY THE WIPE. This guard was
+      // written when the phrase was the only thing that happened after Begin.
+      // The answer cards are now a six-beat choreography running to
+      // ~ENTRANCE_END_MS, and this warm-up was landing INSIDE it: measured 4
+      // August, a third WebGL context created at +2362ms after Begin followed by
+      // a 355ms blocking task at +2622ms — squarely between card 2 and card 3.
+      //
+      // ⚠ THAT IS WHAT CARL SAW AS *"run 1 stall, run 2 less stall, run 3 ok"*:
+      // beat gaps of 1019/121 against a 560ms target on the cold run. The card
+      // canvas's own warm-up was already correct by then and had 4.2s of
+      // headroom; this was a SECOND warm-up, for a different canvas, colliding
+      // with the ladder.
+      //
+      // ⚠ THE GUARD'S OWN PRINCIPLE IS UNCHANGED — it just has more to protect.
+      // Same derivation, same reduced-motion carve-out, one more boundary.
       const activated = activatedAtRef.current;
       if (activated !== null && !reducedMotion) {
-        const untilRevealClears = Q5_REVEAL_CLEAR_MS - (Date.now() - activated);
-        if (untilRevealClears > 0) {
-          timerId = window.setTimeout(warmWhenSafe, untilRevealClears);
+        const untilChoreographyClears =
+          Math.max(Q5_REVEAL_CLEAR_MS, ENTRANCE_END_MS) - (Date.now() - activated);
+        if (untilChoreographyClears > 0) {
+          timerId = window.setTimeout(warmWhenSafe, untilChoreographyClears);
           return;
         }
       }
@@ -739,7 +828,7 @@ export default function EnquiryOpening() {
 
                 Renders only at >= 1280px and only for Q5; absent otherwise.
               */}
-              {qNum === 5 && <AnswerCardCanvas active={isActive} />}
+              {qNum === 5 && <AnswerCardCanvas active={isActive} warm={cardCanvasWarm} />}
             </div>
 
             <div
@@ -940,6 +1029,61 @@ export default function EnquiryOpening() {
               reducedMotion={reducedMotion}
               onFieldStateChange={handleFieldState}
             />
+          </div>
+        )}
+
+        {/*
+          ⚠ THE ANSWER-CARD CANVAS'S WARM-UP MOUNT — INVISIBLE, AND OUTSIDE THE
+          PHRASE BAND ON PURPOSE.
+
+          ⚠ IT EXISTS BECAUSE THE Q5 STUTTER CAME BACK AND A FIRST FIX DID
+          NOTHING. Carl, 4 August: *"On first run the stutter on W+H on Q5 was
+          back. On runs 2,3+4 that resolved but the stall returned."*
+
+          The cause was the Builder's: to let card 1 arrive at the phrase's
+          MIDPOINT (Carl's walk), the guard that deferred the canvas past the
+          1300ms wipe was removed — so Three.js setup, shader compilation and the
+          transmission warm-up all moved INTO the phrase.
+
+          ⚠ A WARM-UP GATE WAS ADDED FIRST AND WAS A SILENT NO-OP. It opened
+          during the opening exactly as designed, and measured `canvases=0`
+          before Begin — because the phrase band, and the Q5 grid inside it, are
+          gated on `stage !== "opening"` (see above). **There was no canvas to
+          warm.** It would have shipped as a fix that changed nothing; only
+          checking for the canvas caught it.
+
+          ⚠ SO THE CANVAS MUST EXIST DURING THE OPENING, and this is the same
+          pattern the contact layer already uses two blocks up: MOUNTED EARLY,
+          REVEALED LATE, hidden with `visibility` and never `display: none` —
+          the canvas maps one world unit to one CSS pixel from its MEASURED size,
+          so a zero-sized box would destroy the mapping and force a resize on
+          reveal.
+
+          ⚠ AND IT IS A SEPARATE INSTANCE FROM THE Q5 ONE, DELIBERATELY. Sharing
+          a single node would mean moving it between two parents mid-corridor,
+          which remounts it in React and throws away the very context this exists
+          to prepare. This one's only job is to make the browser compile the
+          shaders and build the transmission target; the real canvas then hits a
+          warm driver cache.
+
+          The opening runs ~11.5s of CSS-only choreography before Begin is
+          pressable, so this work lands in genuinely dead time.
+        */}
+        {stage === "opening" && cardCanvasWarm && (
+          <div
+            aria-hidden="true"
+            data-testid="answer-card-warmup"
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: 576,
+              height: 104,
+              visibility: "hidden",
+              pointerEvents: "none",
+            }}
+          >
+            <AnswerCardCanvas active={false} warm />
           </div>
         )}
 
