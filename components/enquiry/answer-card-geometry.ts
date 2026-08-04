@@ -521,6 +521,110 @@ export const CARD_RISE_TRANSLATE_PX = 10;
  */
 export const CARD_RISE_SCALE_FROM = 0.94;
 
+// ── The filament's circuit ───────────────────────────────────────────────────
+
+/**
+ * Where the head is at progress `t` (0..1) around the card's perimeter, in the
+ * card's own local coordinates.
+ *
+ * ⚠ THE ROUTE IS CARL'S, WALKED STEP BY STEP, 4 August:
+ *
+ * > *"Filament starts top left. Travels anticlockwise... first curve and travels
+ * > down card 1s right edge. Second curve and travels along its bottom edge,
+ * > adjacent to card 4. Third curve and on its left edge travels upward."*
+ *
+ * So the order is: **top-left origin → RIGHTWARD along the top → down the right
+ * edge → LEFTWARD along the bottom → up the left edge → back to the origin.**
+ *
+ * ⚠ THE FIRST READING OF THIS WAS BACKWARDS, and Carl corrected it. "Anticlockwise"
+ * was taken to mean the head left the top-left corner heading DOWN the left edge
+ * — which would have put the spill on the far side of the grid from the cards it
+ * is supposed to reach. **The spill targets are the check on the direction:**
+ * card 2 sits right of card 1, so the head must travel the RIGHT edge to affect
+ * it; card 4 sits below, so it must travel the BOTTOM edge.
+ *
+ * ⚠ AND IT IS A CLOSED LOOP. Carl: *"the time it takes for the filament to start
+ * its journey and meet up with itself, that is a circuit."* `t = 1` returns to
+ * `t = 0`, which is what lets the whole rim finish hot from one mechanism.
+ *
+ * Coordinates are centred on the card, +y UP — the same convention the mesh uses.
+ */
+export function filamentHeadAt(
+  t: number,
+  width: number = CARD_WIDTH_PX,
+  height: number = CARD_HEIGHT_PX,
+  radius: number = CARD_RADIUS_PX,
+): { x: number; y: number } {
+  const hw = width / 2;
+  const hh = height / 2;
+  const r = Math.max(0, Math.min(radius, hw, hh));
+
+  const runX = width - 2 * r; // top and bottom straights
+  const runY = height - 2 * r; // left and right straights
+  const quarter = (Math.PI / 2) * r; // one corner arc
+  const total = 2 * runX + 2 * runY + 4 * quarter;
+
+  // Wrap, so a tail reaching back past the origin is handled by the caller
+  // passing t < 0 or > 1 without special-casing.
+  let d = ((t % 1) + 1) % 1 * total;
+
+  // 1. Top edge, rightward from the top-left corner's end.
+  if (d < runX) return { x: -hw + r + d, y: hh };
+  d -= runX;
+
+  // 2. Top-right corner, 90° -> 0°.
+  if (d < quarter) {
+    const a = Math.PI / 2 - (d / quarter) * (Math.PI / 2);
+    return { x: hw - r + Math.cos(a) * r, y: hh - r + Math.sin(a) * r };
+  }
+  d -= quarter;
+
+  // 3. Right edge, downward. ⚠ THE ONE THAT LIGHTS CARD 2.
+  if (d < runY) return { x: hw, y: hh - r - d };
+  d -= runY;
+
+  // 4. Bottom-right corner, 0° -> -90°.
+  if (d < quarter) {
+    const a = -(d / quarter) * (Math.PI / 2);
+    return { x: hw - r + Math.cos(a) * r, y: -hh + r + Math.sin(a) * r };
+  }
+  d -= quarter;
+
+  // 5. Bottom edge, leftward. ⚠ THE ONE THAT LIGHTS CARD 4 — and where the head
+  //    rounding the previous curve bleeds RIGHT of card 4's own vertical edge.
+  if (d < runX) return { x: hw - r - d, y: -hh };
+  d -= runX;
+
+  // 6. Bottom-left corner, -90° -> -180°.
+  if (d < quarter) {
+    const a = -Math.PI / 2 - (d / quarter) * (Math.PI / 2);
+    return { x: -hw + r + Math.cos(a) * r, y: -hh + r + Math.sin(a) * r };
+  }
+  d -= quarter;
+
+  // 7. Left edge, upward.
+  if (d < runY) return { x: -hw, y: -hh + r + d };
+  d -= runY;
+
+  // 8. Top-left corner, 180° -> 90° — closing the loop at the origin.
+  const a = Math.PI - (d / quarter) * (Math.PI / 2);
+  return { x: -hw + r + Math.cos(a) * r, y: hh - r + Math.sin(a) * r };
+}
+
+/**
+ * Shortest distance between two points on the circuit, as a fraction, respecting
+ * the wrap.
+ *
+ * ⚠ THE WRAP IS LOAD-BEARING FOR THE TAIL. Without it the warm trail vanishes
+ * the instant the head crosses the origin, which would show as the rim going
+ * cold at exactly the moment the circuit completes — the opposite of the
+ * intended *"by the end of the circuit the whole rim is hot."*
+ */
+export function circuitDelta(a: number, b: number): number {
+  const d = Math.abs(a - b) % 1;
+  return Math.min(d, 1 - d);
+}
+
 /**
  * The five-card stagger, read off `.enquiry-cards-reveal .enquiry-card:nth-child(n)`
  * in `app/globals.css`.

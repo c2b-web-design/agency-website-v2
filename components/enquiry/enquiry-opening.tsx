@@ -130,7 +130,24 @@ const ACK_FADE_OUT_DELAY_MS = FIELD_ENTRANCE_END_MS - ACK_FADE_OUT_DURATION_MS;
  * just a lead-in so the very first scheduling attempt is not made while the
  * opening reveal is starting up.
  */
-const OPENING_WARM_LEAD_MS = 900;
+/**
+ * A short breath after the choreography ends, before the warm-up may run.
+ *
+ * ⚠ THE REAL GUARD IS `beginActive`, NOT THIS NUMBER. Two attempts to fix the
+ * opening stutter by choosing a longer delay both failed — 900ms landed a 920ms
+ * task on the text reveals, and 5200ms only moved it to +7194ms, still
+ * mid-choreography. **A duration cannot answer "has the opening finished"; only
+ * the opening can.**
+ *
+ * ⚠ AND THE OPENING IS NOT IDLE JUST BECAUSE IT IS CSS. The masks, the subtext
+ * lines and the Begin reveal all animate. The original comment here asserted
+ * that *"nothing in it competes with WebGL setup"* as though it had been
+ * checked; it had not, and it was wrong.
+ *
+ * This remains only so the compile does not begin in the same frame the Begin
+ * reveal starts.
+ */
+const OPENING_WARM_LEAD_MS = 600;
 
 const CHOREOGRAPHY_CLEAR_MS = Math.max(
   FIELD_ENTRANCE_END_MS,
@@ -463,16 +480,48 @@ export default function EnquiryOpening() {
   useEffect(() => {
     if (cardCanvasWarm) return;
 
+    // ⚠ GATED ON THE CHOREOGRAPHY BEING OVER, NOT ON A GUESSED DELAY.
+    //
+    // Two attempts at a fixed lead both landed inside the opening: 900ms put a
+    // 920ms task on the text reveals, and 5200ms merely moved it to +7194ms —
+    // still mid-choreography, because `requestIdleCallback` never finds genuine
+    // idle while the opening animates and the backstop timeout fires anyway.
+    //
+    // ⚠ THE MISTAKE BOTH TIMES WAS TREATING "HOW LONG" AS THE QUESTION. The real
+    // one is "has the opening finished", and the page already knows: `beginActive`
+    // is set at the Begin mask's `animationstart`, which is the last beat. Waiting
+    // for a STATE rather than a DURATION cannot be wrong by a few hundred
+    // milliseconds when a timing changes.
+    if (!beginActive) return;
+
     let idleId: number | null = null;
     let timerId: number | null = null;
 
-    // ⚠ A SHORT LEAD-IN FIRST. The opening's own reveal animation starts on
-    // mount; firing into its first frames would trade the Q5 stutter for a
-    // stutter one stage earlier, which is precisely the mistake this project
-    // already logged ("a moved symptom is not a fixed symptom").
+    // ⚠ A LEAD-IN FIRST, AND IT IS NOW PAST THE OPENING'S OWN CHOREOGRAPHY
+    // RATHER THAN JUST ITS FIRST FRAMES.
+    //
+    // Carl, 4 August: *"the text on the start page, where the ivory button is,
+    // stutters."* Measured on both cold and warm runs: a 920ms blocking task at
+    // +2763ms and a 695ms one at +1423ms, seven dropped frames across the
+    // opening.
+    //
+    // ⚠ THE WARM-UP WAS CHEAP WHEN IT WAS ADDED AND IS NOT ANY MORE. It compiled
+    // a plain glass card; the filament work since gave it TWO custom shaders,
+    // rim and bevel, each with a full circuit function. "Lands in dead time" was
+    // measured against the old cost.
+    //
+    // ⚠ AND `{ timeout: 3000 }` DEFEATED THE GUARD IT WAS ATTACHED TO. A
+    // `requestIdleCallback` timeout fires the callback whether or not the thread
+    // is free — so on a busy opening it ran at ~3900ms regardless, which is
+    // exactly where the 920ms task landed. **An idle callback with a short
+    // timeout is not an idle callback.**
+    //
+    // The opening runs ~11.5s before Begin is pressable, so there is room to
+    // wait for real idleness. The timeout is now long enough to be a genuine
+    // backstop rather than a schedule.
     timerId = window.setTimeout(() => {
       if (typeof window.requestIdleCallback === "function") {
-        idleId = window.requestIdleCallback(() => setCardCanvasWarm(true), { timeout: 3000 });
+        idleId = window.requestIdleCallback(() => setCardCanvasWarm(true), { timeout: 6000 });
       } else {
         // No `requestIdleCallback` (Safari). Yield past the frame boundary.
         timerId = window.setTimeout(() => setCardCanvasWarm(true), 0);
@@ -485,7 +534,7 @@ export default function EnquiryOpening() {
       }
       if (timerId !== null) window.clearTimeout(timerId);
     };
-  }, [cardCanvasWarm]);
+  }, [cardCanvasWarm, beginActive]);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");

@@ -479,6 +479,241 @@ export const BEVEL_ENV_INTENSITY = 0.1;
  */
 export const LIGHT_LEVEL = 0.35;
 
+// ── The filament, lit ────────────────────────────────────────────────────────
+//
+// ⚠ CHUNK 2: THE "ON" STATE. Carl walked the circuit, 4 August:
+//
+// > *"Filament starts top left. Travels anticlockwise... first curve and travels
+// > down card 1s right edge. Second curve and travels along its bottom edge,
+// > adjacent to card 4. Third curve and on its left edge travels upward."*
+//
+// So: top-left origin, RIGHTWARD along the top, down the right edge, leftward
+// along the bottom, up the left edge, back to the origin. A closed loop that
+// meets itself — which is what makes it a circuit rather than a fuse.
+//
+// ⚠ AND THE SPILL IS THE POINT, NOT A SIDE EFFECT. Carl:
+//
+// > *"As it travels downwards it should have some effect on the left of card 2.
+// > Likewise, as it navigates the second curve, it should affect card 4. But as
+// > its rounding curve 2 there would be some effect on card 4 and not just to
+// > the left of the vertical line, it would bleed a little to the right on the
+// > top of card 4."*
+//
+// ⚠ **THAT SECOND SENTENCE IS WHY THIS MUST BE A REAL LIGHT.** A head that
+// bleeds ACROSS a corner is a source with an angular spread, not a point tracked
+// along a line. And the spill crosses onto a NEIGHBOURING CARD — a different
+// mesh — which nothing painted into card 1's own material could ever do. It is
+// the same requirement that forced the two canvases into one scene: light only
+// reaches what shares its scene.
+
+/**
+ * How long the head takes to leave the origin and meet itself again.
+ *
+ * ⚠ THE SAME 2400ms AS THE REGION SHIFT, DELIBERATELY. Carl: *"The blue pixels
+ * will turn teal in the same time frame as the filament takes to do a circuit"*
+ * — one clock, two expressions, finishing together. Imported from
+ * `answer-card-backdrop-geometry.ts` rather than redeclared.
+ */
+
+/**
+ * The filament's colour.
+ *
+ * ⚠ AMBER, ECHOING THE Q NUMBERS IN THE RAIL — Carl: *"The filament is not gold.
+ * It will be amber to echo the Q numbers in the rail system."* Against the
+ * backdrop's blue and cyan this is near-complementary and will be the most
+ * saturated thing on the page.
+ *
+ * ⚠ WHETHER IT SINGS OR STAYS RESTRAINED IS STILL CARL'S OPEN QUESTION. This is
+ * a starting value for the fader, not an answer to it.
+ */
+export const FILAMENT_COLOR = "#ffb057";
+
+/**
+ * Peak emissive intensity at the head.
+ *
+ * ⚠ IT STARTS LOW, BY INSTRUCTION AND FOR THE SAME REASON AS THE LIGHT FADER.
+ * Carl: *"When it comes to implementing the filaments 'on' state, it should be
+ * dialed down, so only some 'juice' is flowing through it. Coming from a
+ * position of 'low volume' and pushing faders up, filament intensity combined
+ * with frosted glass is the way to go here. Rather than pick arbitrary figures.
+ * We bring the numbers up."*
+ *
+ * Bound to `[f]` in `?cardrig=1`.
+ */
+export const FILAMENT_INTENSITY = 0.45;
+
+/**
+ * How far the hot core extends along the rim, as a fraction of the circuit.
+ *
+ * ⚠ SOFT-EDGED, BECAUSE A HARD HEAD READS AS A PROGRESS BAR. The filament design
+ * reference is explicit: *"The fuse reads as wrong only if the head is
+ * hard-edged, like a line being drawn. Give it what the reference has — hot
+ * core, bloom, and a long warm tail falling off behind — and it stops being a
+ * progress bar and becomes heat moving through metal."*
+ */
+export const FILAMENT_CORE = 0.035;
+
+/**
+ * How far the warm tail falls off behind the head, as a fraction of the circuit.
+ *
+ * ⚠ THE RIM BEHIND THE HEAD STAYS WARM RATHER THAN SNAPPING BACK TO GREY, and
+ * the rim AHEAD is already faintly picking up — real filaments conduct heat in
+ * both directions. By the end of the circuit the whole rim is hot, which is how
+ * the card reaches its resting selected state from ONE mechanism rather than a
+ * separate step.
+ */
+export const FILAMENT_TAIL = 0.42;
+
+/**
+ * Faint pre-heat ahead of the head, as a fraction of the circuit.
+ *
+ * Smaller than the tail: metal conducts forward as well as back, but the
+ * travelling hot spot leaves more heat behind it than it sends ahead.
+ */
+export const FILAMENT_LEAD = 0.08;
+
+/**
+ * The travelling light's reach, in world units (== CSS px).
+ *
+ * ⚠ THIS IS WHAT PUTS LIGHT ON THE NEIGHBOURS. Carl's spill onto card 2's left
+ * side and card 4's top is a function of this radius — too small and the head
+ * lights only its own card, which is the *"painted glow"* the design reference
+ * rules out. The cards are 8px apart, so the reach must comfortably exceed that.
+ */
+export const FILAMENT_LIGHT_DISTANCE = 90;
+
+/**
+ * How strongly the travelling head lights the scene, relative to its emissive.
+ *
+ * Separate from `FILAMENT_INTENSITY` because the two do different jobs: the
+ * emissive is how bright the rim ITSELF looks, and this is how much it throws
+ * onto everything else. Tuning them together would confound the bloom with the
+ * spill.
+ */
+export const FILAMENT_LIGHT_POWER = 60;
+
+/**
+ * How long the filament takes to cool once the card is pressed again.
+ *
+ * ⚠ FASTER THAN THE CIRCUIT, AND DELIBERATELY SO. Carl, 4 August: *"pressing
+ * inside the card should have all the filament fading out... A user may change
+ * his mind about the choice."*
+ *
+ * ⚠ THE WAY BACK IS NOT THE WAY IN. Lighting travels a circuit and takes 2400ms
+ * because the journey IS the statement — *"I am choosing this."* Releasing a
+ * choice should not perform the same ceremony in reverse; it should just let go.
+ * A deselection that took as long as a selection would make changing your mind
+ * feel as weighty as making it up.
+ *
+ * ⚠ AND IT IS NOT A RETRACE. The whole element cools at once, which is also what
+ * the physics gives: current stops everywhere simultaneously, so there is no end
+ * for the heat to withdraw toward.
+ *
+ * PROVISIONAL under D-035.
+ */
+export const FILAMENT_COOL_MS = 900;
+
+/**
+ * How brightly the bevel glows once the head has passed it.
+ *
+ * ⚠ DIALLED DOWN ON CARL'S REPORT, 4 August: *"the bevel is too bright, it
+ * should be dialled down."*
+ *
+ * ⚠ AND IT SHOULD SIT BELOW THE RIM BY DESIGN, NOT JUST BY TASTE. The bevel is
+ * glass CARRYING the filament's light, not a source of its own — the same
+ * ordering that chunk 1 had to correct when a near-white bevel was out-shining
+ * the metal it holds. If the holder glows as hard as the element, the card stops
+ * reading as a filament in a mount.
+ *
+ * PROVISIONAL under D-035; bound to no key yet — say the word and it gets one.
+ */
+export const BEVEL_GLOW = 0.45;
+
+/**
+ * How sharply the bevel's latch switches on, as a fraction of the circuit.
+ *
+ * ⚠ THE TRIGGER STRADDLES THE HEAD RATHER THAN SITTING BEHIND IT. Used as
+ * `smoothstep(-TRIGGER, +TRIGGER, head - pos)`, so the glass reaches half
+ * brightness exactly AS the head passes and settles immediately after.
+ *
+ * ⚠ CARL SAW THE VERSION THAT LAGGED: *"the bevel being affected is too far
+ * behind. There is a noticable gap, even without zooming in."* It used
+ * `smoothstep(0, 0.035, ...)`, which only completes a full core-length after the
+ * head — about 15px on this card's top edge, and plainly visible.
+ *
+ * ⚠ SMALL, BECAUSE THE GAP IS THE DEFECT. Widening this to soften the edge
+ * reintroduces exactly what he reported; the softness belongs in the falloff
+ * behind, not in the trigger's own width.
+ *
+ * PROVISIONAL under D-035.
+ */
+export const BEVEL_TRIGGER = 0.008;
+
+/**
+ * How far heat bleeds BACKWARDS past the circuit's starting point, as a
+ * fraction of the circuit.
+ *
+ * ⚠ IT EXISTS BECAUSE THE PREVIOUS FIX CREATED A WALL. Carl, 4 August: *"when
+ * the filament starts and has it effects on the bevel, both leave a straight
+ * line on its starting position. This is not how heat would work. there would be
+ * some heat/bloom/bleed on its left. the effect of heat doesnt diminish in a
+ * straight line."*
+ *
+ * ⚠ TWO FIXES IN A ROW, EACH CREATING THE NEXT PROBLEM, AND THAT IS WORTH
+ * NOTING. The tail originally WRAPPED, which put a phantom second head at the
+ * far end of the loop. Removing the wrap fixed that and made the origin a hard
+ * edge — hot metal on one side, untouched metal a pixel away. **The truth is
+ * neither: heat conducts backwards past the start, but weakly and over a short
+ * distance, not all the way round.**
+ *
+ * Much shorter than `FILAMENT_TAIL` (0.42) for that reason: conduction against
+ * the direction of travel is real but weak.
+ *
+ * PROVISIONAL under D-035.
+ */
+export const FILAMENT_BLEED = 0.035;
+
+/**
+ * How hot the rim stays behind the head, once the head has moved on.
+ *
+ * ⚠ A FLOOR, NOT A DECAY TO ZERO — and the difference is what makes the circuit
+ * end with the whole rim lit. The head is white-hot at 1.0; the metal it has
+ * already passed settles to this and holds.
+ *
+ * ⚠ IT IS THE DESIGN REFERENCE'S OWN REQUIREMENT: *"The rim behind the head
+ * stays warm rather than snapping back to grey... By the end of the circuit the
+ * whole rim is hot."* Current keeps flowing through metal the head has passed —
+ * it does not cool while the circuit is still being made.
+ *
+ * ⚠ AND CARL CAUGHT THE VERSION THAT DID DECAY: *"filament sets off but at a
+ * certain point seems to lose some of its intensity at the beginning... its
+ * still there when the circuit is complete."* Measured on the origin patch, mean
+ * red channel: 236 as the head passed, 172 by mid-circuit.
+ *
+ * PROVISIONAL under D-035 — the gap between 1.0 and this value is how much
+ * hotter the travelling head reads than its own trail.
+ */
+export const FILAMENT_TAIL_FLOOR = 0.38;
+
+/**
+ * The rim's emissive multiplier — how bright "fully hot" renders.
+ *
+ * ⚠ IT MUST LEAVE THE TRAIL HEADROOM, which is a stronger constraint than it
+ * looks. At 12.0 a perimeter scan mid-circuit found the ENTIRE top edge pegged
+ * at 255 while the head was still on the right edge: the trail had saturated, so
+ * the head — which should be the hottest thing on the card — had nowhere
+ * brighter to go, and measured 119 points DIMMER than what it had left behind.
+ *
+ * ⚠ SATURATION DESTROYS THE ONE RELATIONSHIP THE DESIGN DEPENDS ON. A hot core
+ * with a cooler trail is the whole difference between heat travelling through
+ * metal and a bar filling up. Once the trail clips, that difference cannot be
+ * expressed at any tail-floor value.
+ *
+ * PROVISIONAL under D-035, and the one to reach for FIRST if the filament needs
+ * to be brighter — raising it past the clipping point buys nothing.
+ */
+export const FILAMENT_GLOW = 3.2;
+
 // ── The calibration stand-in: DELETED, 3 August 2026 ────────────────────────
 //
 // ⚠ IT WAS ALWAYS THROWAWAY. Carl: *"the stand-in is throwaway, this is so we

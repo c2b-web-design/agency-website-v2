@@ -26,7 +26,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import {
   AnswerCardMesh,
@@ -34,6 +34,7 @@ import {
   DEFAULT_GLASS_TUNING,
   type AnswerCardTuning,
   type GlassTuning,
+  type FilamentState,
 } from "./answer-card-mesh";
 import {
   ENV_SHELL_RADIUS,
@@ -42,9 +43,15 @@ import {
   ENV_FILL_COLOR,
   ENV_FILL_INTENSITY,
   RIM_METALS,
+  FILAMENT_COLOR,
+  FILAMENT_CORE,
+  FILAMENT_TAIL,
+  FILAMENT_LIGHT_DISTANCE,
+  FILAMENT_LIGHT_POWER,
+  FILAMENT_COOL_MS,
 } from "./answer-card-glass";
 import { AnswerCardBackdrop, useRegionShift } from "./answer-card-backdrop";
-import { CARD_BOXES } from "./answer-card-backdrop-geometry";
+import { CARD_BOXES, REGION_SHIFT_MS } from "./answer-card-backdrop-geometry";
 import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
@@ -52,6 +59,7 @@ import {
   CARD_RISE_TRANSLATE_PX,
   CARD_RISE_LADDER_MS,
   CARD_RISE_SCALE_FROM,
+  filamentHeadAt,
   PROTO_MIN_VIEWPORT_PX,
   protoCanvasBox,
   cardSlotPosition,
@@ -137,6 +145,17 @@ const GLASS_RIG_PARAMS = [
    * difference his reference photographs actually show.
    */
   { key: "rimRoughness", label: "rim roughness [r]", step: 0.02, min: 0, max: 1 },
+  /**
+   * ⚠ THE FILAMENT'S OWN FADER, AND IT STARTS LOW BY INSTRUCTION. Carl: *"it
+   * should be dialed down, so only some 'juice' is flowing through it. Coming
+   * from a position of 'low volume' and pushing faders up, filament intensity
+   * combined with frosted glass is the way to go here."*
+   *
+   * ⚠ IT IS THE PARTNER OF `roughness` IN THE MASTERING PASS, not an independent
+   * control — the amber's visibility through the face depends on the frost, and
+   * the frost's read depends on what is behind it. Both move together.
+   */
+  { key: "filamentIntensity", label: "FILAMENT intensity [f]", step: 0.05, min: 0, max: 3 },
 ] as const;
 
 /**
@@ -285,6 +304,12 @@ function useCardRig(): {
       if (e.key === "r") {
         e.preventDefault();
         setSelected("rimRoughness");
+        return;
+      }
+      // The filament's fader — the fifth material param, on [f].
+      if (e.key === "f") {
+        e.preventDefault();
+        setSelected("filamentIntensity");
         return;
       }
       if (e.key === METAL_CYCLE_KEY) {
@@ -617,6 +642,112 @@ function useCardEntrance(
 }
 
 /**
+ * Drive the filament's circuit: the head leaves the origin and meets itself.
+ *
+ * ⚠ ONE MECHANISM PRODUCES BOTH THE TRAVEL AND THE RESTING LIT STATE. The
+ * filament design reference is explicit that these are not two steps: *"The rim
+ * behind the head stays warm rather than snapping back to grey... By the end of
+ * the circuit the whole rim is hot... SO THE CARD ENDS IN THE RESTING SELECTED
+ * STATE WITHOUT A SEPARATE STEP."*
+ *
+ * The tail does that on its own. As the head approaches `t = 1` its trailing
+ * warmth has wrapped the entire perimeter, so holding the head at the origin
+ * once the circuit completes leaves the whole rim lit.
+ *
+ * ⚠ AND THE HEAD RUNS ONCE, NOT ON A LOOP. A filament that kept circling would
+ * be an animation playing; this is a state being reached.
+ */
+function useFilament(lit: boolean, intensityTarget: number): FilamentState {
+  const head = useRef(0);
+  const intensity = useRef(0);
+  const core = useRef(FILAMENT_CORE);
+  const tail = useRef(FILAMENT_TAIL);
+  const invalidate = useThree((s) => s.invalidate);
+
+  /**
+   * ⚠ THE FIRST RUN IS SKIPPED SO AN UNFIRED CARD DOES NOT PLAY A COOL-DOWN.
+   * `lit` starts false, and without this the mount would run the fade-out branch
+   * on every card — harmless to look at, but it would light the whole scene's
+   * worth of rAF loops for nothing on first paint.
+   */
+  const hasFired = useRef(false);
+
+  useEffect(() => {
+    if (!lit) {
+      if (!hasFired.current) {
+        head.current = 0;
+        intensity.current = 0;
+        invalidate();
+        return;
+      }
+
+      /**
+       * ⚠ THE COOL-DOWN IS UNIFORM, NOT A SECOND CIRCUIT — and that is physics
+       * rather than a shortcut.
+       *
+       * Carl, 4 August: *"pressing inside the card should have all the filament
+       * fading out."* **All of it**, which is what actually happens: current
+       * stops everywhere at once, so the whole element cools together. A
+       * travelling un-lighting would imply the power is being withdrawn from one
+       * end, which is not a thing.
+       *
+       * ⚠ AND THE HEAD IS LEFT WHERE IT IS. Resetting it to zero would slide the
+       * hot spot back to the origin as it dimmed — a visible movement during
+       * what should be a still fade.
+       */
+      let raf = 0;
+      const start = performance.now();
+      const from = intensity.current;
+      const tick = () => {
+        const t = Math.min(1, (performance.now() - start) / FILAMENT_COOL_MS);
+        // Metal cools fast at first and lingers dull — the inverse of the ramp
+        // in, and the reason a linear fade reads as a dimmer being turned down.
+        intensity.current = from * (1 - t) * (1 - t);
+        invalidate();
+        if (t < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(raf);
+    }
+
+    hasFired.current = true;
+
+    let raf = 0;
+    const start = performance.now();
+    const tick = () => {
+      const t = Math.min(1, (performance.now() - start) / REGION_SHIFT_MS);
+      head.current = t;
+
+      // ⚠ THE INTENSITY RAMPS IN RATHER THAN SWITCHING ON. Metal takes a moment
+      // to glow — and a hard switch at t=0 would put a bright point on screen
+      // before any travel has read as travel.
+      intensity.current = intensityTarget * Math.min(1, t / 0.08);
+
+      // ⚠ THE TAIL GROWS TO COVER THE WHOLE CIRCUIT. Held at its resting value
+      // the trailing warmth would fall off behind the head and the rim would
+      // finish with a cold arc where the journey began. Growing it to 1 means
+      // the last thing the head does is close the loop on its own heat.
+      tail.current = FILAMENT_TAIL + (1 - FILAMENT_TAIL) * t * t;
+
+      // ⚠ WITHOUT THIS THE CIRCUIT RUNS AND NOTHING IS DRAWN. The canvas is
+      // `frameloop="demand"`, so `useFrame` — which is what copies these refs
+      // into the shader uniforms and moves the light — only fires on frames
+      // something else has already scheduled. The head advanced correctly and
+      // the screen never saw it: measured 0.5% warm pixels across a whole
+      // circuit, with zero reaching the neighbours.
+      invalidate();
+
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [lit, intensityTarget, invalidate]);
+
+  return { head, intensity, core, tail };
+}
+
+/**
  * One card, on its own rung of the ladder.
  *
  * ⚠ A COMPONENT PER CARD, BECAUSE THE ENTRANCE IS A HOOK. `useCardEntrance` holds
@@ -631,6 +762,7 @@ function AnswerCard({
   tuning,
   glassTuning,
   envMap,
+  lit,
 }: {
   slot: { x: number; y: number };
   delayMs: number;
@@ -639,6 +771,8 @@ function AnswerCard({
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
   envMap: THREE.Texture;
+  /** Whether this card's filament has been fired. */
+  lit: boolean;
 }) {
   /**
    * ⚠ THE CARD FADES BY LIGHT, NOT BY ALPHA — and this is the route the ethos
@@ -670,6 +804,20 @@ function AnswerCard({
    *   - the face is transmissive glass → drive `envMapIntensity`, since almost
    *     everything it shows is environment reflection plus what it transmits
    */
+  /**
+   * The filament's circuit.
+   *
+   * ⚠ IT RUNS ON THE SAME 2400ms AS THE REGION SHIFT, which is what makes the
+   * two one event rather than two that happen to match. Carl: *"The blue pixels
+   * will turn teal in the same time frame as the filament takes to do a
+   * circuit."*
+   *
+   * ⚠ AND THE INTENSITY IS A FADER STARTING LOW, not a fixed value — Carl:
+   * *"it should be dialed down, so only some 'juice' is flowing through it...
+   * Rather than pick arbitrary figures. We bring the numbers up."*
+   */
+  const filament = useFilament(lit, glassTuning.filamentIntensity);
+
   const litRef = useRef<number>(0);
   const groupRef = useCardEntrance(active, reducedMotion, delayMs, (p) => {
     litRef.current = p;
@@ -685,9 +833,82 @@ function AnswerCard({
           glassTuning={glassTuning}
           envMap={envMap}
           lightLevel={glassTuning.lightLevel}
+          filament={filament}
         />
       </CardLighting>
+
+      {/*
+        ⚠ THE TRAVELLING HEAD, AS A REAL LIGHT IN THE SHARED SCENE — and this is
+        the whole reason the filament could not be painted.
+
+        Carl, 4 August, walking the circuit: *"As it travels downwards it should
+        have some effect on the left of card 2... as its rounding curve 2 there
+        would be some effect on card 4 and not just to the left of the vertical
+        line, it would bleed a little to the right on the top of card 4."*
+
+        ⚠ THE SPILL CROSSES ONTO A DIFFERENT MESH. Nothing written into card 1's
+        own material can light card 2 — only a light can. And it works only
+        because all five cards share ONE scene, which is the same constraint that
+        forced the two canvases to merge on 3 August: light reaches what shares
+        its scene, and nothing else.
+
+        ⚠ AND THE BLEED ACROSS A CORNER IS WHY IT IS A POINT LIGHT RATHER THAN
+        ANYTHING TIGHTER. A source with real falloff illuminates an ARC as it
+        rounds the curve, which is exactly Carl's *"not just to the left of the
+        vertical line"*. A spotlight aimed along the path would track a line and
+        miss the effect he asked for.
+      */}
+      <FilamentLight filament={filament} />
     </group>
+  );
+}
+
+/**
+ * The head's own light, moved along the circuit each frame.
+ *
+ * ⚠ ONE LIGHT PER CARD, AND THAT IS A REAL COST TO WATCH. Five point lights in
+ * a scene with transmissive materials is not free; if it shows up as a frame-rate
+ * problem the honest fix is fewer lights (one shared light driven by whichever
+ * card is active), NOT a painted fake — the spill onto neighbours is the design.
+ */
+function FilamentLight({ filament }: { filament: FilamentState }) {
+  const ref = useRef<THREE.PointLight | null>(null);
+  const invalidate = useThree((s) => s.invalidate);
+
+  useFrame(() => {
+    const light = ref.current;
+    if (!light) return;
+    const intensity = filament.intensity.current;
+    // Dark means genuinely off — a point light at zero intensity still costs a
+    // shader branch per fragment, but leaving it in the scene keeps the material
+    // variants stable and avoids a recompile when it lights.
+    // ⚠ NOT MULTIPLIED BY `lightLevel`, AND THAT IS DELIBERATE. The scene fader
+    // is the AMBIENT level — how brightly the room lights the metal. The
+    // filament is its own source and does not dim because the room does; a
+    // heating element in a dark room is brighter, not dimmer.
+    //
+    // ⚠ AND `decay: 2` MEANS INTENSITY IS IN INVERSE-SQUARE UNITS AT THIS SCALE.
+    // One world unit is one CSS pixel, so a light 40px from what it lights needs
+    // an intensity in the hundreds, not the tens — the same units trap that made
+    // the contact field's orbiting rig need 64000.
+    light.intensity = intensity * FILAMENT_LIGHT_POWER;
+    if (intensity > 0) {
+      const p = filamentHeadAt(filament.head.current);
+      // ⚠ SLIGHTLY PROUD OF THE CARD so the light is not buried inside its own
+      // geometry, where it would light the rim's inner face and nothing else.
+      light.position.set(p.x, p.y, 6);
+      invalidate();
+    }
+  });
+
+  return (
+    <pointLight
+      ref={ref}
+      color={FILAMENT_COLOR}
+      distance={FILAMENT_LIGHT_DISTANCE}
+      decay={2}
+      intensity={0}
+    />
   );
 }
 
@@ -954,6 +1175,12 @@ function useScenePrecompile(onReady: () => void, mayCompile: boolean) {
     // otherwise it compiles an empty scene, resolves instantly, and the real
     // compile still lands on the first card. A silent no-op that looks like a
     // fix is exactly this project's standing trap.
+    // ⚠ `renderer.debug.checkShaderErrors = false` WAS TRIED HERE AND CHANGED
+    // NOTHING. The theory was sound — `three.module.js:7097` issues blocking
+    // `getProgramParameter` queries when it is on, which would defeat
+    // `compileAsync` — but measured against the opening it moved the ~900ms task
+    // by 0ms. Recorded so it is not retried as a fresh idea, and NOT left in the
+    // code, since it silently disables shader error reporting.
     const id = requestAnimationFrame(() => {
       if (cancelled) return;
       gl.compileAsync(scene, camera)
@@ -1032,6 +1259,7 @@ function CardScene({
   tuning,
   glassTuning,
   hovered,
+  litCards,
   onWarm,
   mayCompile,
 }: {
@@ -1040,6 +1268,7 @@ function CardScene({
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
   hovered: number | null;
+  litCards: boolean[];
   onWarm: () => void;
   mayCompile: boolean;
 }) {
@@ -1171,6 +1400,7 @@ function CardScene({
           tuning={tuning}
           glassTuning={glassTuning}
           envMap={envMap}
+          lit={litCards[i] ?? false}
         />
       ))}
     </>
@@ -1308,6 +1538,23 @@ export default function AnswerCardCanvas({
   const [hovered, setHovered] = useState<number | null>(null);
 
   /**
+   * Which cards have had their filament fired.
+   *
+   * ⚠ MOUSE-DOWN STARTS THE JOURNEY, and it does not wait for the hover
+   * transition. Carl, 4 August: *"If when hovering the user presses the mouse
+   * button that will start the filaments journey. It may well be a user hovers
+   * and before the colour transition has completed, they press the mouse. The
+   * same length of timings apply, they just start at different times."*
+   *
+   * ⚠ THIS IS NOT SELECTION. The corridor still cannot advance past Q5 — no
+   * Next step, no Q4. This lights the filament and nothing else, which is what
+   * chunk 2 is scoped to.
+   */
+  const [litCards, setLitCards] = useState<boolean[]>(() =>
+    new Array(CARD_BOXES.length).fill(false),
+  );
+
+  /**
    * Whether the renderer has finished compiling this scene's shaders.
    *
    * ⚠ THE CHOREOGRAPHY WAITS FOR THIS, AND THAT IS THE WHOLE FIX. The entrance
@@ -1363,6 +1610,7 @@ export default function AnswerCardCanvas({
           tuning={tuning}
           glassTuning={glassTuning}
           hovered={hovered}
+          litCards={litCards}
           onWarm={markWarm}
           mayCompile={warm}
         />
@@ -1401,6 +1649,25 @@ export default function AnswerCardCanvas({
             data-testid={`answer-card-hover-${i}`}
             onPointerEnter={() => setHovered(i)}
             onPointerLeave={() => setHovered((h) => (h === i ? null : h))}
+            // ⚠ `pointerdown`, NOT `click` — Carl specified the mouse BUTTON as
+            // the trigger, and the two differ: `click` fires on release, so a
+            // slow press would delay the journey's start by however long the
+            // button was held.
+            // ⚠ A TOGGLE, BECAUSE A USER MAY CHANGE THEIR MIND. Carl, 4 August:
+            // *"pressing inside the card should have all the filament fading
+            // out... A user may change his mind about the choice."*
+            //
+            // ⚠ AND THE WAY BACK IS NOT THE WAY IN. Firing travels a circuit;
+            // releasing fades uniformly. The journey is what says *"I am
+            // choosing this"* — replaying it backwards would make taking a
+            // choice back look like making one.
+            onPointerDown={() =>
+              setLitCards((prev) => {
+                const next = prev.slice();
+                next[i] = !prev[i];
+                return next;
+              })
+            }
             style={{
               position: "absolute",
               left: b.x,
