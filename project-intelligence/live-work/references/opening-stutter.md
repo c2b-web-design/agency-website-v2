@@ -166,6 +166,56 @@ the first hop.
 
 ---
 
+---
+
+## ⚠ THE LOCKUP'S ENTRANCE — a SECOND, separate defect, 4 August
+
+Carl: *"the c2b DESIGN text entrance is not smooth."*
+
+**Measured, profiling only the entrance window:**
+
+```
+450ms  getProgramInfoLog        self-time, reached via onFirstUse from setProgram
+       ...DURING THE RENDER, not during the warm-up
+  3.4ms mean  the backdrop's own per-frame repaint — NOT the cause
+```
+
+**Frame drops of 206ms and 368ms land at +6713 and +7081 from Begin.** The cards mount ~1300ms
+after Begin, so entrance-relative that is **5413ms and 5781ms — inside the lockup's fade, which
+runs 4330–6330ms.**
+
+⚠ **SO THEORY 2 (`checkShaderErrors`) WAS RIGHT AFTER ALL, AND WAS DISMISSED TWICE.** Once by a
+test on the wrong renderer, once by a corrected retry that only covered the WARM-UP window and
+missed the render window entirely. **Two bad tests retired a correct hypothesis** — precisely the
+pattern the Architect named.
+
+### ⚠ AND THE FIX IS NOT IN THIS COMPONENT
+
+Setting `gl.debug.checkShaderErrors = false` via `onCreated` on the ANSWER-CARD canvas **changed
+nothing**: verified with a control, `getProgramInfoLog` was still called **6 times for 445ms**.
+
+**The calls come from a different canvas.** `contact-field-canvas.tsx:2099` is a separate
+`<Canvas>` with its own renderer, and its warm-up fires mid-questionnaire — while the lockup is
+fading.
+
+⚠ **THE CONTACT FIELD IS APPROVED WORK.** Fixing a lockup defect by editing it is exactly the case
+the operating rules say to stop and ask about. **Carl's call, not the Builder's.**
+
+**If he approves it, the change is one line in `contact-field-canvas.tsx`'s `<Canvas>`:**
+
+```jsx
+onCreated={({ gl }) => { gl.debug.checkShaderErrors = false; }}
+```
+
+**The cost:** shader errors stop being logged for that canvas. Its materials are stable and
+approved, so the risk is low — but it is a real reduction in diagnostics.
+
+⚠ **AND THE CONTROL IS MANDATORY GIVEN THE HISTORY:** after applying it, count
+`getProgramInfoLog` calls. **Zero means the flag took; anything else means the wrong renderer
+again.** Do not judge by whether the frame drops moved.
+
+---
+
 ## What is still untested
 
 - **Simplifying the shaders themselves.** The rim and bevel each carry a full copy of

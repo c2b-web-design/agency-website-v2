@@ -1782,6 +1782,33 @@ export default function AnswerCardCanvas({
         gl={{ antialias: true, alpha: true }}
         frameloop="demand"
         style={{ pointerEvents: "none" }}
+        /**
+         * ⚠ `checkShaderErrors` OFF FOR THIS CANVAS — AND THIS IS THE FIX FOR
+         * THE LOCKUP'S ENTRANCE, WHICH CARL REPORTED AS *"not smooth"*.
+         *
+         * A profile scoped to the entrance window found **450ms of self-time in
+         * `getProgramInfoLog`**, reached via `onFirstUse` from `setProgram`
+         * DURING THE RENDER — not during the warm-up. Programs are still being
+         * linked as the cards and lockup arrive, and that call blocks until the
+         * driver finishes.
+         *
+         * ⚠ THIS WAS THEORY 2, AND IT WAS RIGHT ALL ALONG. It was dismissed
+         * twice: first with a test on the WRONG RENDERER (0ms, meaningless), then
+         * with a corrected retry that only covered the WARM-UP window and missed
+         * this one entirely. **Two wrong tests retired a correct hypothesis** —
+         * the pattern the Architect named as the session's real lesson.
+         *
+         * ⚠ SET ON THE CANVAS, NOT AROUND THE WARM-UP, because the blocking
+         * calls happen wherever a program is first used. Scoping it to a window
+         * is what let it be missed.
+         *
+         * ⚠ THE COST: shader errors stop being logged for this canvas. Accepted —
+         * the materials here are stable, and the alternative is a visible stall
+         * on every entrance. Flip it while developing shaders.
+         */
+        onCreated={({ gl }) => {
+          gl.debug.checkShaderErrors = false;
+        }}
       >
         <CardScene
           // ⚠ BOTH GATES. `compiled` is this scene's own shader and
