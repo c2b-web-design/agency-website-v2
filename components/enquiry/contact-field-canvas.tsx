@@ -2110,6 +2110,38 @@ export default function ContactFieldCanvas({
         // than discarded. ⚠ An earlier version of this line said "~2.2s" and went
         // stale when the cascade was retimed.
         frameloop="demand"
+        /**
+         * ⚠ `checkShaderErrors` OFF — AND THIS IS A CHANGE TO AN APPROVED
+         * COMPONENT MADE TO FIX A DEFECT ELSEWHERE. Carl authorised it
+         * explicitly, 4 August: *"do what it takes to fix it."*
+         *
+         * ⚠ THE DEFECT IS THE LOCKUP'S ENTRANCE, NOT THIS FIELD. Carl: *"the c2b
+         * DESIGN text entrance is not smooth."* Profiling only that window found
+         * **450ms of self-time in `getProgramInfoLog`**, reached via `onFirstUse`
+         * from `setProgram` during the render — and this canvas is where the
+         * calls come from. Its warm-up fires mid-questionnaire, while the lockup
+         * is fading (drops at 5413ms and 5781ms; the fade runs 4330–6330ms).
+         *
+         * ⚠ THE SAME FLAG ON THE ANSWER-CARD CANVAS DID NOTHING, and a control
+         * proved it: `getProgramInfoLog` was still called 6 times for 445ms.
+         * **Two separate `<Canvas>` elements mean two renderers.** That
+         * component-boundary blindness is why this was missed twice.
+         *
+         * ⚠ WHY THE CALL BLOCKS AT ALL: `getProgramInfoLog` waits for the driver
+         * to finish linking. Compilation itself never blocks — 16 programs link
+         * in 0ms — so the cost is the QUERY insisting on seeing the work done.
+         *
+         * ⚠ THE COST OF THIS CHANGE: shader errors stop being logged for this
+         * canvas. Its materials are approved and stable, so the risk is low, but
+         * it is a real reduction in diagnostics. **Flip it back while developing
+         * shaders here.**
+         *
+         * ⚠ NOTHING ABOUT THIS FIELD'S APPEARANCE, TIMING OR MATERIALS CHANGES.
+         * The flag governs error reporting only.
+         */
+        onCreated={({ gl }) => {
+          gl.debug.checkShaderErrors = false;
+        }}
         style={{ pointerEvents: "none" }}
       >
         <FieldScene
