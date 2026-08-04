@@ -67,16 +67,12 @@ import {
   RIM_METALNESS,
   RIM_ROUGHNESS,
   RIM_ENV_INTENSITY,
-  FILAMENT_COLOR,
   FILAMENT_INTENSITY,
-  FILAMENT_CORE,
-  FILAMENT_TAIL,
-  FILAMENT_LEAD,
   BEVEL_GLOW,
-  BEVEL_TRIGGER,
-  FILAMENT_BLEED,
-  FILAMENT_TAIL_FLOOR,
   FILAMENT_GLOW,
+  HEAT_RED,
+  HEAT_ORANGE,
+  HEAT_WHITE,
   BEVEL_GLASS_COLOR,
   BEVEL_ROUGHNESS,
   BEVEL_CLEARCOAT,
@@ -105,12 +101,18 @@ import {
  * number. Same argument as `useRegionShift` in the backdrop.
  */
 export type FilamentState = {
-  /** Head position around the circuit, 0..1. */
-  head: React.RefObject<number>;
   /** Overall intensity — 0 when unlit. The fader. */
   intensity: React.RefObject<number>;
-  core: React.RefObject<number>;
-  tail: React.RefObject<number>;
+  /**
+   * Position on the black-body ramp: 0 = first dull red, 1 = settled warm white.
+   *
+   * ⚠ SEPARATE FROM `intensity` BECAUSE COLOUR AND BRIGHTNESS ARE NOT THE SAME
+   * JOURNEY. A filament reaches most of its brightness before it reaches its
+   * final colour, and on the way out the colour falls back down the ramp while
+   * the brightness fades — holding one while moving the other is what makes it
+   * read as metal rather than as a dimmer switch.
+   */
+  temperature: React.RefObject<number>;
 };
 
 export type GlassTuning = {
@@ -153,16 +155,20 @@ const DIAG_FACE_COLOR = "#a8a8a8";
 /**
  * The rim's material: tungsten that heats.
  *
- * ⚠ THE HEAT IS COMPUTED IN THE SHADER FROM EACH FRAGMENT'S OWN POSITION, not
- * baked into a vertex attribute. The alternative — writing a "distance along the
- * circuit" attribute when the geometry is swept — would put the circuit's
- * definition in two places, and `filamentHeadAt` would be free to disagree with
- * it. Deriving it here from the same rounded-rect arithmetic means one
- * definition; the shader and the light position cannot drift apart.
+ * ⚠ THE WHOLE FILAMENT HEATS AT ONCE — there is no position term left in this
+ * shader. Carl, 4 August: *"does it have to move? become animated? No. it could
+ * fade in, like a real light bulb filament."*
  *
- * ⚠ AND THE EMISSIVE IS ADDITIVE ON TOP OF THE METAL, NOT A REPLACEMENT FOR IT.
- * The filament design reference is explicit that the rim does not stop being
- * metal when it lights: *"The dynamite fuse burns away. This does not."* So the
+ * ⚠ AND THE TRAVELLING-HEAD MACHINERY IS DELETED, NOT DISABLED. It was ~60 lines
+ * of GLSL — a rounded-rect circuit solver plus a core/tail/lead/bleed heat
+ * profile — carried by this material AND the bevel's. Leaving it inert would
+ * have kept every byte of it in the compile, and **shader size is the cause of
+ * the opening stutter** (`live-work/references/opening-stutter.md`). Dead code
+ * that costs 1.6s of compile is not dead.
+ *
+ * ⚠ THE EMISSIVE IS ADDITIVE ON TOP OF THE METAL, NOT A REPLACEMENT FOR IT. The
+ * filament design reference is explicit that the rim does not stop being metal
+ * when it lights: *"The dynamite fuse burns away. This does not."* So the
  * tungsten keeps reflecting the environment throughout, and the glow is added.
  */
 function RimMaterial({
@@ -179,173 +185,50 @@ function RimMaterial({
   filament: FilamentState;
 }) {
   const uniforms = useRef({
-    uHead: { value: 0 },
-    uCore: { value: FILAMENT_CORE },
-    uTail: { value: FILAMENT_TAIL },
-    uLead: { value: FILAMENT_LEAD },
-    uBleed: { value: FILAMENT_BLEED },
     uIntensity: { value: 0 },
-    uColor: { value: new THREE.Color(FILAMENT_COLOR) },
-    // ⚠ THE RIM'S CENTRE-LINE, NOT THE CARD'S SILHOUETTE. The tube is swept
-    // along a path inset by `tubeRadius`, so its vertices sit on that smaller
-    // rectangle — feeding the silhouette's half-extents here would put the
-    // shader's idea of "the top edge" a tube-radius away from the actual
-    // geometry, and the heat would track a rectangle the metal is not on.
-    uHalf: {
-      value: new THREE.Vector2(
-        CARD_WIDTH_PX / 2 - RIM_TUBE_RADIUS,
-        CARD_HEIGHT_PX / 2 - RIM_TUBE_RADIUS,
-      ),
-    },
-    uRadius: { value: Math.max(0, CARD_RADIUS_PX - RIM_TUBE_RADIUS) },
+    /** Position on the black-body ramp, 0 = first red glow, 1 = settled white. */
+    uTemp: { value: 0 },
+    uRed: { value: new THREE.Color(HEAT_RED) },
+    uOrange: { value: new THREE.Color(HEAT_ORANGE) },
+    uWhite: { value: new THREE.Color(HEAT_WHITE) },
   });
 
-  // Keep the uniforms in step with the live filament state. A ref rather than
-  // props on the material, because this changes every frame while the head
-  // travels and a React render per frame would rebuild the scene graph.
+  // Keep the uniforms in step with the live filament state. Refs rather than
+  // props, because these change every frame while the metal heats and a React
+  // render per frame would rebuild the scene graph.
   useFrame(() => {
     const u = uniforms.current;
-    u.uHead.value = filament.head.current;
     u.uIntensity.value = filament.intensity.current;
-    u.uCore.value = filament.core.current;
-    u.uTail.value = filament.tail.current;
+    u.uTemp.value = filament.temperature.current;
   });
 
   const onBeforeCompile = useCallback((shader: THREE.WebGLProgramParametersWithUniforms) => {
     Object.assign(shader.uniforms, uniforms.current);
 
-    shader.vertexShader = `varying vec3 vLocalPos;\n${shader.vertexShader}`.replace(
-      "#include <begin_vertex>",
-      "#include <begin_vertex>\n  vLocalPos = position;",
-    );
-
     shader.fragmentShader = `
-      uniform float uHead;
-      uniform float uCore;
-      uniform float uTail;
-      uniform float uLead;
-      uniform float uBleed;
       uniform float uIntensity;
-      uniform vec3  uColor;
-      uniform vec2  uHalf;
-      uniform float uRadius;
-      varying vec3  vLocalPos;
-
-      ${CIRCUIT_POS_GLSL}
-
-      // Heat at this point: a hot core, a long tail BEHIND, a faint lead AHEAD.
-      //
-      // THE TAIL MUST NOT WRAP. A first version used fract() here and it put a
-      // SECOND HEAD on the card. Carl, 4 August: "When the filament starts it
-      // proceeds to go right but at the same time a part of it on the bottom
-      // line starts a head of its own and races to the beginning."
-      //
-      // With a wrapped difference, a point near the END of the circuit
-      // (pos ~ 0.9) sits only 0.1 behind a head at 0.0 — well inside the tail —
-      // so the bottom-left lit before the head had been near it, and appeared to
-      // travel backwards toward the origin as the head advanced.
-      //
-      // ⚠ THE CIRCUIT WRAPS; THE JOURNEY DOES NOT. The head runs 0 -> 1 exactly
-      // once, so "how far behind me has the head been" is a plain subtraction.
-      // Points the head has not yet reached are simply cold.
-      // AND THE ORIGIN IS NOT A WALL EITHER. Carl, 4 August: "when the filament
-      // starts and has it effects on the bevel, both leave a straight line on
-      // its starting position. This is not how heat would work. there would be
-      // some heat/bloom/bleed on its left. the effect of heat doesnt diminish in
-      // a straight line."
-      //
-      // HE IS RIGHT, AND IT WAS INTRODUCED BY THE PREVIOUS FIX. Killing the wrap
-      // stopped the phantom head, but it also made "not yet reached" mean
-      // absolutely cold — so the start of the circuit became a hard edge, hot
-      // metal on one side and untouched metal a pixel away. Real heat conducts
-      // backwards past where the current entered.
-      //
-      // The bleed term restores that: a short falloff reaching BEHIND the
-      // origin, which in circuit terms is the far end of the loop. Deliberately
-      // much shorter than the tail — conduction against the direction of travel
-      // is real but weak.
-      float heatAt(float pos, float head) {
-        float behind = head - pos;          // >0 once the head has passed
-        float ahead  = pos - head;          // >0 while it is still coming
-
-        float core = 1.0 - smoothstep(0.0, uCore, abs(behind));
-
-        // ⚠ THE TAIL SETTLES TO A FLOOR RATHER THAN DECAYING TO NOTHING, and
-        // that floor is what makes the circuit end with the whole rim hot.
-        //
-        // Carl, 4 August: *"filament sets off but at a certain point seems to
-        // lose some of its intensity at the beginning... its still there when
-        // the circuit is complete."* A first version let the tail fall from 0.72
-        // toward zero, so the origin measured 236 as the head passed and 172 by
-        // mid-circuit — the metal visibly cooling behind the head.
-        //
-        // THAT CONTRADICTS THE DESIGN REFERENCE, which is explicit: "The rim
-        // behind the head stays warm rather than snapping back to grey... By the
-        // end of the circuit the whole rim is hot." Current keeps flowing
-        // through metal the head has already passed — it does not cool while the
-        // circuit is still being made.
-        //
-        // So the tail falls only as far as the floor: a short drop from the
-        // core's white-hot peak to a settled glow, not a fade to cold.
-        float tail = behind < 0.0 ? 0.0
-                   : mix(1.0, ${FILAMENT_TAIL_FLOOR.toFixed(3)},
-                         smoothstep(0.0, uTail, behind));
-        float lead = ahead < 0.0 ? 0.0
-                   : (1.0 - smoothstep(0.0, uLead, ahead)) * 0.30;
-
-        // ⚠ THE BLEED INHERITS THE ORIGIN'S OWN HEAT — IT DOES NOT IMPOSE A
-        // CONSTANT. Carl, 4 August: *"filament sets off but at a certain point
-        // seems to lose some of its intensity at the beginning. Its bright at
-        // first then fades a bit, as if some of the juice has been turned down
-        // for that section. its still there when the circuit is complete."*
-        //
-        // ⚠ HE DESCRIBED THE BUG PRECISELY. A first version multiplied the
-        // bleed by a fixed 0.55, anchored at the origin and independent of the
-        // head — so that section was at core brightness (1.0) while the head sat
-        // on it, then DROPPED to 0.55 as the head moved away, and stayed pinned
-        // there for the rest of the circuit. Exactly "the juice turned down for
-        // that section", and exactly why it was still visible at the end.
-        //
-        // The bleed is heat CONDUCTED from the metal at the start line, so it
-        // can only be as hot as that metal is. Sampling the tail's value AT the
-        // origin and attenuating with distance means the bleed rises and falls
-        // with everything else instead of holding its own level.
-        float originHeat = head <= 0.0 ? 0.0
-                         : mix(1.0, ${FILAMENT_TAIL_FLOOR.toFixed(3)},
-                               smoothstep(0.0, uTail, head));
-        float pastOrigin = 1.0 - pos;
-        float bleed = (1.0 - smoothstep(0.0, uBleed, pastOrigin))
-                    * smoothstep(0.0, uCore, head)
-                    * originHeat;
-
-        return clamp(max(max(core, bleed), max(tail, lead)), 0.0, 1.0);
-      }
+      uniform float uTemp;
+      uniform vec3  uRed;
+      uniform vec3  uOrange;
+      uniform vec3  uWhite;
 
       ${shader.fragmentShader}
     `.replace(
       "#include <emissivemap_fragment>",
       `#include <emissivemap_fragment>
        {
-         float pos = circuitPos(vLocalPos.xy, uHalf, uRadius);
-         float heat = heatAt(pos, uHead) * uIntensity;
-         // ⚠ ADDED, NOT SUBSTITUTED — the metal keeps reflecting throughout.
-         // The curve steepens the core so the head reads as hotter than its
-         // own tail rather than as a uniform bar.
-         // LINEAR IN heat, NOT SQUARED. heat*heat crushed the tail to nothing:
-         // at heat 0.3 it delivered 0.09, so the long warm trail was present in
-         // the maths and invisible on screen.
-         //
-         // THE MULTIPLIER MUST NOT CLIP THE TRAIL, and 12.0 did. A perimeter
-         // scan mid-circuit found the ENTIRE top edge pegged at 255 while the
-         // head itself was on the right edge — so the trail was saturated and
-         // the head had nowhere brighter to go. Measured contrast between head
-         // and trail: -119, i.e. inverted.
-         //
-         // The head reads hotter than its own trail only if the trail has
-         // headroom left. FILAMENT_TAIL_FLOOR sets how far below the core the
-         // trail settles; this multiplier has to keep that difference on screen
-         // rather than flattening it against the top of the range.
-         totalEmissiveRadiance += uColor * heat * ${FILAMENT_GLOW.toFixed(3)};
+         // THE COLOUR CLIMBS THE BLACK-BODY RAMP as the metal heats: dull red,
+         // through orange, to a settled warm white. Two mixes rather than one,
+         // because the curve is not a straight line between its ends -- the
+         // orange midpoint is where a real filament spends most of its climb.
+         vec3 heatColor = uTemp < 0.5
+           ? mix(uRed, uOrange, smoothstep(0.0, 0.5, uTemp))
+           : mix(uOrange, uWhite, smoothstep(0.5, 1.0, uTemp));
+
+         // ADDED, NOT SUBSTITUTED -- the metal keeps reflecting the environment
+         // throughout. The design reference: "The dynamite fuse burns away.
+         // This does not."
+         totalEmissiveRadiance += heatColor * uIntensity * ${FILAMENT_GLOW.toFixed(3)};
        }`,
     );
   }, []);
@@ -357,7 +240,11 @@ function RimMaterial({
       metalness={RIM_METALNESS}
       envMap={envMap}
       envMapIntensity={envMapIntensity}
-      emissive={new THREE.Color(FILAMENT_COLOR)}
+      // ⚠ PRESENT SO THE MATERIAL COMPILES ITS EMISSIVE PATH AT ALL — three
+      // omits `<emissivemap_fragment>` entirely when a material has no emissive,
+      // and the shader injection above would then have nothing to attach to.
+      // The actual colour comes from the black-body ramp per frame.
+      emissive={new THREE.Color(HEAT_ORANGE)}
       emissiveIntensity={0}
       side={THREE.DoubleSide}
       onBeforeCompile={onBeforeCompile}
@@ -365,70 +252,37 @@ function RimMaterial({
   );
 }
 
-/**
- * The GLSL for "where am I around the circuit", shared by the rim and the bevel.
- *
- * ⚠ ONE DEFINITION, USED TWICE, AND THAT IS THE POINT. Carl, 4 August, on the
- * bevel: *"So the head of the filament should trigger the bevel. Making sure not
- * to get ahead of itself or fall behind."* Two copies of this arithmetic could
- * drift by a fraction of the perimeter and the bevel would visibly lead or lag
- * the metal — the exact defect he named, arriving through the back door.
- */
-const CIRCUIT_POS_GLSL = `
-  float circuitPos(vec2 p, vec2 half_, float r) {
-    float hw = half_.x, hh = half_.y;
-    float runX = 2.0 * hw - 2.0 * r;
-    float runY = 2.0 * hh - 2.0 * r;
-    float quarter = 1.5707963 * r;
-    float total = 2.0 * runX + 2.0 * runY + 4.0 * quarter;
+// ── The circuit solver: DELETED, 4 August 2026 ───────────────────────────────
+//
+// A ~40-line GLSL function mapping a fragment to its position around the
+// rounded-rectangle perimeter, shared by the rim and bevel so a travelling head
+// could be tracked identically by both.
+//
+// It went with the travelling head. Carl, 4 August: "does it have to move?
+// become animated? No. it could fade in, like a real light bulb filament."
+//
+// DELETED RATHER THAN LEFT UNUSED because shader size is the cause of the
+// opening stutter -- see live-work/references/opening-stutter.md. It is in git
+// at 1dfce8a if the travelling circuit is ever wanted back.
 
-    float d;
-    if (p.y > hh - r && p.x > -hw + r && p.x < hw - r) {
-      d = (p.x + hw - r);                                       // top
-    } else if (p.x > hw - r && p.y < hh - r && p.y > -hh + r) {
-      d = runX + quarter + (hh - r - p.y);                      // right
-    } else if (p.y < -hh + r && p.x > -hw + r && p.x < hw - r) {
-      d = runX + quarter + runY + quarter + (hw - r - p.x);     // bottom
-    } else if (p.x < -hw + r) {
-      d = 2.0*runX + 3.0*quarter + runY + (p.y + hh - r);       // left
-    } else if (p.x > 0.0 && p.y > 0.0) {
-      float a = atan(p.y - (hh - r), p.x - (hw - r));
-      d = runX + (1.5707963 - a) / 1.5707963 * quarter;
-    } else if (p.x > 0.0) {
-      float a = atan(p.y + (hh - r), p.x - (hw - r));
-      d = runX + quarter + runY + (-a) / 1.5707963 * quarter;
-    } else if (p.y < 0.0) {
-      float a = atan(p.y + (hh - r), p.x + (hw - r));
-      d = 2.0*runX + 2.0*quarter + runY + (-a - 1.5707963) / 1.5707963 * quarter;
-    } else {
-      float a = atan(p.y - (hh - r), p.x + (hw - r));
-      d = 2.0*runX + 3.0*quarter + 2.0*runY + (3.1415927 - a) / 1.5707963 * quarter;
-    }
-    return fract(d / total);
-  }
-`;
 
 /**
- * The bevel: glass that stays warm once the head has passed it.
+ * The bevel: glass that carries the filament's heat.
  *
- * ⚠ IT LATCHES. IT DOES NOT TRACK. Carl, 4 August, correcting a first version
- * where the bevel simply lit wherever the travelling light happened to be:
+ * ⚠ THE LATCH IS GONE, WITH THE TRAVELLING HEAD IT EXISTED FOR. It answered
+ * *"has the head passed me yet"* — a question that stops meaning anything once
+ * the whole filament heats at once. Carl, 4 August: *"does it have to move?
+ * become animated? No."*
  *
- * > *"That white strip on the bevel has now turned orange. Good, as it should.
- * > But it is travelling with the filament as an orange strip. What should
- * > happen is the bevel should all turn orange as the filament races past. So
- * > the head of the filament should trigger the bevel... It is a consequence of
- * > the heated filament that stays on."*
+ * ⚠ AND IT IS DELETED RATHER THAN LEFT INERT. The latch carried a rounded-rect
+ * circuit solver, a projection from the bevel's rectangle onto the rim's, a
+ * core-lead offset and a back-bleed term — all still compiled, all doing
+ * nothing. **Shader size is the cause of the opening stutter**
+ * (`live-work/references/opening-stutter.md`), so dead GLSL is not free.
  *
- * ⚠ THE DIFFERENCE IS "IS THE HEAD HERE NOW" VERSUS "HAS THE HEAD BEEN HERE
- * YET", and only the second is physical. The rim behind the head is still hot,
- * so the glass beside it is still being lit — a moving strip would mean the
- * metal cooled the instant the head moved on, which is precisely what the
- * filament design reference rules out: *"the rim behind the head stays warm
- * rather than snapping back to grey."*
- *
- * So the bevel reads the same circuit position as the rim and asks whether
- * `uHead` has reached it, rather than how far away it is.
+ * ⚠ THE GLASS TAKES THE METAL'S OWN COLOUR, dimmer. It is warmed BY the
+ * filament, so it cannot be at a different temperature — which is also why
+ * `BEVEL_GLOW` sits well below the rim's.
  */
 function BevelMaterial({
   envMap,
@@ -440,154 +294,39 @@ function BevelMaterial({
   filament: FilamentState;
 }) {
   const uniforms = useRef({
-    uHead: { value: 0 },
     uIntensity: { value: 0 },
-    uBleed: { value: FILAMENT_BLEED },
-    uColor: { value: new THREE.Color(FILAMENT_COLOR) },
-
-    /**
-     * ⚠ THE RIM'S RECTANGLE, NOT THE BEVEL'S OWN — AND THIS IS THE REAL CAUSE OF
-     * THE LAG CARL SAW.
-     *
-     * *"the bevel being affected is too far behind. There is a noticable gap,
-     * even without zooming in."* The trigger's width was blamed first and
-     * changing it did nothing, because the gap was geometric:
-     *
-     *     rim centre-line    182.7 x 44.0, r 12   perimeter 432.7
-     *     bevel centre-line  174.7 x 36.0, r  8   perimeter 407.6
-     *
-     * **Two different perimeters, so the same fraction lands in two different
-     * places.** At t=0.2 the rim's point sits at x=7.2 and the bevel's at
-     * x=2.2 — 5px apart before any trigger is applied, widening along the edge
-     * to the 15px measured on screen.
-     *
-     * ⚠ THE BEVEL IS NOT RUNNING ITS OWN CIRCUIT. It is being warmed BY the rim,
-     * so "has the head passed me" must be asked in the RIM's coordinates.
-     * Projecting the bevel's fragment onto the rim's rectangle makes the two
-     * share one parameterisation, which is what Carl's *"not to get ahead of
-     * itself or fall behind"* actually requires.
-     */
-    uHalf: {
-      value: new THREE.Vector2(
-        CARD_WIDTH_PX / 2 - RIM_TUBE_RADIUS,
-        CARD_HEIGHT_PX / 2 - RIM_TUBE_RADIUS,
-      ),
-    },
-    uRadius: { value: Math.max(0, CARD_RADIUS_PX - RIM_TUBE_RADIUS) },
-    /**
-     * How far the rim's core reaches ahead of the head — see the trigger.
-     *
-     * ⚠ HALF THE CORE, NOT THE WHOLE CORE. `uCore` is the distance at which the
-     * core's smoothstep reaches zero, so the metal's VISIBLE edge sits around
-     * half of it ahead of the head, not the full width. Using the whole value
-     * overshot and put the glass 5px in FRONT of the metal — measured, after it
-     * had been 10px behind.
-     */
-    uCoreLead: { value: FILAMENT_CORE * 0.5 },
-    /** The bevel's own half-extents, used only to project onto the rim's. */
-    uBevelHalf: {
-      value: new THREE.Vector2(
-        CARD_WIDTH_PX / 2 - 2 * RIM_TUBE_RADIUS - BEVEL_WIDTH / 2,
-        CARD_HEIGHT_PX / 2 - 2 * RIM_TUBE_RADIUS - BEVEL_WIDTH / 2,
-      ),
-    },
+    uTemp: { value: 0 },
+    uRed: { value: new THREE.Color(HEAT_RED) },
+    uOrange: { value: new THREE.Color(HEAT_ORANGE) },
+    uWhite: { value: new THREE.Color(HEAT_WHITE) },
   });
 
   useFrame(() => {
-    uniforms.current.uHead.value = filament.head.current;
     uniforms.current.uIntensity.value = filament.intensity.current;
+    uniforms.current.uTemp.value = filament.temperature.current;
   });
 
   const onBeforeCompile = useCallback((shader: THREE.WebGLProgramParametersWithUniforms) => {
     Object.assign(shader.uniforms, uniforms.current);
 
-    shader.vertexShader = `varying vec3 vBevelPos;\n${shader.vertexShader}`.replace(
-      "#include <begin_vertex>",
-      "#include <begin_vertex>\n  vBevelPos = position;",
-    );
-
     shader.fragmentShader = `
-      uniform float uHead;
       uniform float uIntensity;
-      uniform float uBleed;
-      uniform vec3  uColor;
-      uniform vec2  uHalf;
-      uniform float uRadius;
-      uniform vec2  uBevelHalf;
-      uniform float uCoreLead;
-      varying vec3  vBevelPos;
-      ${CIRCUIT_POS_GLSL}
+      uniform float uTemp;
+      uniform vec3  uRed;
+      uniform vec3  uOrange;
+      uniform vec3  uWhite;
       ${shader.fragmentShader}
     `.replace(
       "#include <emissivemap_fragment>",
       `#include <emissivemap_fragment>
        {
-         // ⚠ PROJECTED ONTO THE RIM'S RECTANGLE BEFORE THE LOOKUP. The bevel's
-         // own vertices sit INSIDE that rectangle, so feeding them straight in
-         // would ask "where is this point on the rim's circuit" of a point that
-         // is not on it — and the corners in particular would map badly.
-         // Scaling the fragment out to the rim's half-extents keeps the angle
-         // and puts it on the path the head actually travels.
-         // Per-axis scale from the bevel's own half-extents to the rim's, so a
-         // point on the bevel's top edge lands on the rim's top edge at the same
-         // proportional position along it.
-         vec2 onRim = vBevelPos.xy * (uHalf / uBevelHalf);
-         float pos = circuitPos(onRim, uHalf, uRadius);
+         // The glass carries the metal's own colour as it heats, dimmer -- it is
+         // warmed BY the filament, so it cannot be a different temperature.
+         vec3 heatColor = uTemp < 0.5
+           ? mix(uRed, uOrange, smoothstep(0.0, 0.5, uTemp))
+           : mix(uOrange, uWhite, smoothstep(0.5, 1.0, uTemp));
 
-         // THE LATCH MUST NOT WRAP, even though the circuit does. "Has the head
-         // passed me" is a question about the journey so far, and the journey
-         // runs 0 -> 1 exactly once. A wrapped difference turns "not yet
-         // reached" into "reached long ago" at the seam — see the rim's own
-         // note, where that produced a visible second head.
-         // ⚠ THE TRIGGER IS CENTRED ON THE HEAD, NOT PLACED BEHIND IT. Carl,
-         // 4 August: "the bevel being affected is too far behind. There is a
-         // noticable gap, even without zooming in."
-         //
-         // A first version used smoothstep(0.0, 0.035, uHead - pos), which only
-         // reaches full brightness 0.035 of a circuit AFTER the head has gone —
-         // so the glass lagged the metal by a whole core-length. On this card
-         // the top edge is 0.356 of the circuit across 158px, so 0.035 is ~15px
-         // of visible gap, which is exactly what Carl could see unzoomed.
-         //
-         // Straddling zero instead means the bevel reaches half brightness AS
-         // the head passes and settles just after it — lit by the metal beside
-         // it rather than trailing it. Carl's own constraint from the walk:
-         // "making sure not to get ahead of itself or fall behind."
-         // ⚠ OFFSET FORWARD BY THE CORE'S OWN HALF-WIDTH. The rim's core spreads
-         // uCore AHEAD of the head as well as behind it, so the metal's lit edge
-         // leads the head position — while a trigger centred on the head starts
-         // the glass exactly at it. That difference is the residual lag: 10px
-         // measured after the coordinate systems were unified, down from 15px
-         // but still visible.
-         //
-         // The bevel is lit by the metal beside it, so its edge must follow the
-         // METAL'S edge, not the head's centre.
-         float lit = smoothstep(-${BEVEL_TRIGGER.toFixed(3)}, ${BEVEL_TRIGGER.toFixed(3)},
-                                (uHead + uCoreLead) - pos);
-
-         // ⚠ THE START LINE IS NOT A WALL. Carl: "both leave a straight line on
-         // its starting position. This is not how heat would work... the effect
-         // of heat doesnt diminish in a straight line."
-         //
-         // The latch alone gives a hard boundary at the origin — glass lit on
-         // one side, untouched a pixel away. The bevel is being warmed BY the
-         // metal beside it, so wherever the rim bleeds back past the start, the
-         // glass follows.
-         // ⚠ THE BEVEL'S BLEED LATCHES TOO, and that is what keeps it in step
-         // with the rest of the bevel rather than dimming as the head departs.
-         // The rim's version has to inherit the origin's falling heat (see its
-         // note — a fixed value there produced a section that visibly lost
-         // brightness and never recovered). The bevel is different: it LATCHES
-         // everywhere else, so its bleed must latch too, or the one region past
-         // the origin would be the only part of the glass that dims.
-         float pastOrigin = 1.0 - pos;
-         float bleed = (1.0 - smoothstep(0.0, uBleed, pastOrigin))
-                     * smoothstep(0.0, ${BEVEL_TRIGGER.toFixed(3)}, uHead);
-         lit = max(lit, bleed);
-
-         // Before the head has travelled at all, nothing is lit. Once the
-         // circuit closes, uHead reaches 1 and the whole bevel is on.
-         totalEmissiveRadiance += uColor * lit * uIntensity * ${BEVEL_GLOW.toFixed(3)};
+         totalEmissiveRadiance += heatColor * uIntensity * ${BEVEL_GLOW.toFixed(3)};
        }`,
     );
   }, []);
@@ -601,7 +340,7 @@ function BevelMaterial({
       clearcoatRoughness={BEVEL_CLEARCOAT_ROUGHNESS}
       envMap={envMap}
       envMapIntensity={envMapIntensity}
-      emissive={new THREE.Color(FILAMENT_COLOR)}
+      emissive={new THREE.Color(HEAT_ORANGE)}
       emissiveIntensity={0}
       side={THREE.DoubleSide}
       onBeforeCompile={onBeforeCompile}

@@ -196,6 +196,8 @@ export const ENV_FILL_INTENSITY = 1.1;
 /** How strongly the face samples the environment map. */
 export const GLASS_ENV_INTENSITY = 1.0;
 
+import { CARD_RISE_DURATION_MS } from "./answer-card-geometry";
+
 // ── The rim: tungsten, unlit ─────────────────────────────────────────────────
 //
 // ⚠ THE RIM IS THE FILAMENT AT REST, NOT GREY WAITING TO BE COVERED. Carl, 4
@@ -515,18 +517,53 @@ export const LIGHT_LEVEL = 0.35;
  * `answer-card-backdrop-geometry.ts` rather than redeclared.
  */
 
+
+// ── The black-body ramp ──────────────────────────────────────────────────────
+//
+// ⚠ CARL REFRAMED THE WHOLE CHUNK, 4 August, after the travelling circuit was
+// working:
+//
+// > *"the filament must become active to show that a choice has been selected.
+// > does it have to move? become animated? No. it could fade in, like a real
+// > light bulb filament. How does light/heat work? Start of red, orange, white.
+// > blue"*
+//
+// ⚠ THAT IS THE BLACK-BODY CURVE AND IT IS LITERAL. Incandescence follows
+// temperature: dull red ~800K, orange ~1300K, yellow-white ~2000K, white ~2800K
+// — which is where a working tungsten bulb actually sits. Blue-white needs
+// ~5000K+, hotter than tungsten survives, so the ramp stops short of it.
+//
+// ⚠ AND THE END POINT IS A DESIGN CALL, NOT A PHYSICS ONE. The physics ends
+// white; the filament reference says amber, to echo the Q numbers in the rail.
+// Carl settled it: *"Amber or white? Somewhere between the two."*
+
+/** First glow — dull red, the metal barely conducting. */
+export const HEAT_RED = "#8c1f06";
+/** Mid-ramp — orange, the temperature a filament passes through. */
+export const HEAT_ORANGE = "#ff6a1a";
 /**
- * The filament's colour.
+ * The settled colour: warm white, sitting between amber and true white.
  *
- * ⚠ AMBER, ECHOING THE Q NUMBERS IN THE RAIL — Carl: *"The filament is not gold.
- * It will be amber to echo the Q numbers in the rail system."* Against the
- * backdrop's blue and cyan this is near-complementary and will be the most
- * saturated thing on the page.
- *
- * ⚠ WHETHER IT SINGS OR STAYS RESTRAINED IS STILL CARL'S OPEN QUESTION. This is
- * a starting value for the fader, not an answer to it.
+ * ⚠ NOT PURE WHITE AND NOT THE RAIL'S AMBER — Carl's *"somewhere between the
+ * two."* A real filament at 2800K is white with a warm cast, which is what this
+ * is; the amber's brand job is carried by the ramp it travels through rather
+ * than by where it stops.
  */
-export const FILAMENT_COLOR = "#ffb057";
+export const HEAT_WHITE = "#ffd9a8";
+
+/**
+ * How long the filament takes to reach temperature.
+ *
+ * ⚠ MATCHED TO THE CARD'S OWN FADE, on Carl's instruction: *"see what a filament
+ * fade in looks like if its the same as a card fade in."* One arrival language
+ * across the whole card rather than two.
+ *
+ * ⚠ NOTE IT IS NOT THE BACKDROP'S 2400ms. Carl asked to *"keep the backdrops
+ * timings"* AND to match the card fade, which are different numbers (2400 vs
+ * 2000). The card's is used because it is the direct instruction; whether the
+ * 400ms mismatch reads as wrong is for his eye.
+ */
+export const FILAMENT_HEAT_MS = CARD_RISE_DURATION_MS;
 
 /**
  * Peak emissive intensity at the head.
@@ -542,35 +579,8 @@ export const FILAMENT_COLOR = "#ffb057";
  */
 export const FILAMENT_INTENSITY = 0.45;
 
-/**
- * How far the hot core extends along the rim, as a fraction of the circuit.
- *
- * ⚠ SOFT-EDGED, BECAUSE A HARD HEAD READS AS A PROGRESS BAR. The filament design
- * reference is explicit: *"The fuse reads as wrong only if the head is
- * hard-edged, like a line being drawn. Give it what the reference has — hot
- * core, bloom, and a long warm tail falling off behind — and it stops being a
- * progress bar and becomes heat moving through metal."*
- */
-export const FILAMENT_CORE = 0.035;
 
-/**
- * How far the warm tail falls off behind the head, as a fraction of the circuit.
- *
- * ⚠ THE RIM BEHIND THE HEAD STAYS WARM RATHER THAN SNAPPING BACK TO GREY, and
- * the rim AHEAD is already faintly picking up — real filaments conduct heat in
- * both directions. By the end of the circuit the whole rim is hot, which is how
- * the card reaches its resting selected state from ONE mechanism rather than a
- * separate step.
- */
-export const FILAMENT_TAIL = 0.42;
 
-/**
- * Faint pre-heat ahead of the head, as a fraction of the circuit.
- *
- * Smaller than the tail: metal conducts forward as well as back, but the
- * travelling hot spot leaves more heat behind it than it sends ahead.
- */
-export const FILAMENT_LEAD = 0.08;
 
 /**
  * The travelling light's reach, in world units (== CSS px).
@@ -647,31 +657,7 @@ export const BEVEL_GLOW = 0.45;
  *
  * PROVISIONAL under D-035.
  */
-export const BEVEL_TRIGGER = 0.008;
 
-/**
- * How far heat bleeds BACKWARDS past the circuit's starting point, as a
- * fraction of the circuit.
- *
- * ⚠ IT EXISTS BECAUSE THE PREVIOUS FIX CREATED A WALL. Carl, 4 August: *"when
- * the filament starts and has it effects on the bevel, both leave a straight
- * line on its starting position. This is not how heat would work. there would be
- * some heat/bloom/bleed on its left. the effect of heat doesnt diminish in a
- * straight line."*
- *
- * ⚠ TWO FIXES IN A ROW, EACH CREATING THE NEXT PROBLEM, AND THAT IS WORTH
- * NOTING. The tail originally WRAPPED, which put a phantom second head at the
- * far end of the loop. Removing the wrap fixed that and made the origin a hard
- * edge — hot metal on one side, untouched metal a pixel away. **The truth is
- * neither: heat conducts backwards past the start, but weakly and over a short
- * distance, not all the way round.**
- *
- * Much shorter than `FILAMENT_TAIL` (0.42) for that reason: conduction against
- * the direction of travel is real but weak.
- *
- * PROVISIONAL under D-035.
- */
-export const FILAMENT_BLEED = 0.035;
 
 /**
  * How hot the rim stays behind the head, once the head has moved on.
@@ -693,7 +679,6 @@ export const FILAMENT_BLEED = 0.035;
  * PROVISIONAL under D-035 — the gap between 1.0 and this value is how much
  * hotter the travelling head reads than its own trail.
  */
-export const FILAMENT_TAIL_FLOOR = 0.38;
 
 /**
  * The rim's emissive multiplier — how bright "fully hot" renders.

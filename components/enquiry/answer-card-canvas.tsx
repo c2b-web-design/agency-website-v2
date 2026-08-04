@@ -43,15 +43,19 @@ import {
   ENV_FILL_COLOR,
   ENV_FILL_INTENSITY,
   RIM_METALS,
-  FILAMENT_COLOR,
-  FILAMENT_CORE,
-  FILAMENT_TAIL,
+  HEAT_WHITE,
   FILAMENT_LIGHT_DISTANCE,
   FILAMENT_LIGHT_POWER,
   FILAMENT_COOL_MS,
+  FILAMENT_HEAT_MS,
 } from "./answer-card-glass";
 import { AnswerCardBackdrop, useRegionShift } from "./answer-card-backdrop";
-import { CARD_BOXES, REGION_SHIFT_MS } from "./answer-card-backdrop-geometry";
+// ⚠ `REGION_SHIFT_MS` IS NO LONGER IMPORTED. The filament ran on the backdrop's
+// 2400ms circuit clock while it travelled; it now heats in place over the CARD's
+// own fade duration instead, on Carl's instruction — *"see what a filament fade
+// in looks like if its the same as a card fade in."* The backdrop keeps its own
+// 2400ms, so the two are no longer one clock. See `FILAMENT_HEAT_MS`.
+import { CARD_BOXES } from "./answer-card-backdrop-geometry";
 import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
@@ -59,7 +63,6 @@ import {
   CARD_RISE_TRANSLATE_PX,
   CARD_RISE_LADDER_MS,
   CARD_RISE_SCALE_FROM,
-  filamentHeadAt,
   PROTO_MIN_VIEWPORT_PX,
   protoCanvasBox,
   cardSlotPosition,
@@ -658,10 +661,9 @@ function useCardEntrance(
  * be an animation playing; this is a state being reached.
  */
 function useFilament(lit: boolean, intensityTarget: number): FilamentState {
-  const head = useRef(0);
   const intensity = useRef(0);
-  const core = useRef(FILAMENT_CORE);
-  const tail = useRef(FILAMENT_TAIL);
+  /** Position on the black-body ramp, 0 = first red glow, 1 = settled. */
+  const temperature = useRef(0);
   const invalidate = useThree((s) => s.invalidate);
 
   /**
@@ -675,7 +677,6 @@ function useFilament(lit: boolean, intensityTarget: number): FilamentState {
   useEffect(() => {
     if (!lit) {
       if (!hasFired.current) {
-        head.current = 0;
         intensity.current = 0;
         invalidate();
         return;
@@ -698,11 +699,17 @@ function useFilament(lit: boolean, intensityTarget: number): FilamentState {
       let raf = 0;
       const start = performance.now();
       const from = intensity.current;
+      const fromTemp = temperature.current;
       const tick = () => {
         const t = Math.min(1, (performance.now() - start) / FILAMENT_COOL_MS);
         // Metal cools fast at first and lingers dull — the inverse of the ramp
         // in, and the reason a linear fade reads as a dimmer being turned down.
         intensity.current = from * (1 - t) * (1 - t);
+        // ⚠ THE COLOUR COOLS TOO, back down the black-body ramp. A filament
+        // losing power passes white → orange → red on the way out, exactly as it
+        // climbed on the way in. Holding the colour while only the brightness
+        // fell would read as a dimmer switch rather than as metal cooling.
+        temperature.current = fromTemp * (1 - t);
         invalidate();
         if (t < 1) raf = requestAnimationFrame(tick);
       };
@@ -715,26 +722,46 @@ function useFilament(lit: boolean, intensityTarget: number): FilamentState {
     let raf = 0;
     const start = performance.now();
     const tick = () => {
-      const t = Math.min(1, (performance.now() - start) / REGION_SHIFT_MS);
-      head.current = t;
+      const t = Math.min(1, (performance.now() - start) / FILAMENT_HEAT_MS);
 
-      // ⚠ THE INTENSITY RAMPS IN RATHER THAN SWITCHING ON. Metal takes a moment
-      // to glow — and a hard switch at t=0 would put a bright point on screen
-      // before any travel has read as travel.
-      intensity.current = intensityTarget * Math.min(1, t / 0.08);
+      /**
+       * ⚠ THE WHOLE FILAMENT HEATS AT ONCE. THERE IS NO TRAVELLING HEAD.
+       *
+       * Carl, 4 August, reframing the chunk after the circuit was working:
+       *
+       * > *"the filament must become active to show that a choice has been
+       * > selected. does it have to move? become animated? No. it could fade in,
+       * > like a real light bulb filament. How does light/heat work? Start of
+       * > red, orange, white. blue"*
+       *
+       * ⚠ HE IS DESCRIBING THE BLACK-BODY CURVE, AND IT IS LITERAL PHYSICS.
+       * Incandescence follows temperature: dull red ~800K, orange ~1300K,
+       * yellow-white ~2000K, white ~2800K — which is where a working tungsten
+       * bulb actually sits. The colour sequence is not a stylisation; it is what
+       * the metal does on its way up, compressed.
+       *
+       * ⚠ AND IT DELETES FOUR DEFECTS RATHER THAN FIXING THEM. The phantom
+       * second head, the hard origin edge, the constant-anchored back-bleed and
+       * the 15px bevel lag all existed BECAUSE something moved along a path.
+       * With no path, none of them can occur — and the unsolved head-versus-trail
+       * contrast stops being a question at all.
+       *
+       * `head` is kept at 1 so every point on the rim reads as "reached": the
+       * shader's circuit position still works, it simply applies everywhere.
+       */
 
-      // ⚠ THE TAIL GROWS TO COVER THE WHOLE CIRCUIT. Held at its resting value
-      // the trailing warmth would fall off behind the head and the rim would
-      // finish with a cold arc where the journey began. Growing it to 1 means
-      // the last thing the head does is close the loop on its own heat.
-      tail.current = FILAMENT_TAIL + (1 - FILAMENT_TAIL) * t * t;
+      // ⚠ EASED, NOT LINEAR. A filament does not heat at a constant rate — it
+      // rushes toward temperature and settles. Linear would read as a dimmer.
+      intensity.current = intensityTarget * (1 - Math.pow(1 - t, 3));
 
-      // ⚠ WITHOUT THIS THE CIRCUIT RUNS AND NOTHING IS DRAWN. The canvas is
-      // `frameloop="demand"`, so `useFrame` — which is what copies these refs
-      // into the shader uniforms and moves the light — only fires on frames
-      // something else has already scheduled. The head advanced correctly and
-      // the screen never saw it: measured 0.5% warm pixels across a whole
-      // circuit, with zero reaching the neighbours.
+      // The colour's own journey up the black-body curve, 0 = first red glow,
+      // 1 = the settled warm white. Consumed by the shader.
+      temperature.current = t;
+
+
+      // ⚠ WITHOUT THIS THE HEAT-UP RUNS AND NOTHING IS DRAWN. The canvas is
+      // `frameloop="demand"`, so `useFrame` — which copies these refs into the
+      // shader uniforms — only fires on frames something else has scheduled.
       invalidate();
 
       if (t < 1) raf = requestAnimationFrame(tick);
@@ -744,7 +771,7 @@ function useFilament(lit: boolean, intensityTarget: number): FilamentState {
     return () => cancelAnimationFrame(raf);
   }, [lit, intensityTarget, invalidate]);
 
-  return { head, intensity, core, tail };
+  return { intensity, temperature };
 }
 
 /**
@@ -892,19 +919,27 @@ function FilamentLight({ filament }: { filament: FilamentState }) {
     // an intensity in the hundreds, not the tens — the same units trap that made
     // the contact field's orbiting rig need 64000.
     light.intensity = intensity * FILAMENT_LIGHT_POWER;
-    if (intensity > 0) {
-      const p = filamentHeadAt(filament.head.current);
-      // ⚠ SLIGHTLY PROUD OF THE CARD so the light is not buried inside its own
-      // geometry, where it would light the rim's inner face and nothing else.
-      light.position.set(p.x, p.y, 6);
-      invalidate();
-    }
+    if (intensity > 0) invalidate();
   });
 
   return (
     <pointLight
       ref={ref}
-      color={FILAMENT_COLOR}
+      // ⚠ STATIC AT THE CARD'S CENTRE — IT NO LONGER TRACKS A HEAD.
+      //
+      // While the filament travelled, this light moved with it and its position
+      // was the whole point: the spill onto card 2 and card 4 came from the head
+      // being NEAR them at the right moment.
+      //
+      // ⚠ THE FILAMENT NOW HEATS ALL AT ONCE, so the whole rim is the source and
+      // there is nowhere for the light to be but the middle of it. The spill
+      // onto neighbours survives — it comes from the rim being lit at all, not
+      // from where along it the brightest point sits.
+      //
+      // ⚠ SLIGHTLY PROUD OF THE CARD (z=6) so the light is not buried inside its
+      // own geometry, where it would light the rim's inner face and nothing else.
+      position={[0, 0, 6]}
+      color={HEAT_WHITE}
       distance={FILAMENT_LIGHT_DISTANCE}
       decay={2}
       intensity={0}
