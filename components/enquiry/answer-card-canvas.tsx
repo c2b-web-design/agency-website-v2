@@ -1103,6 +1103,32 @@ function useLocalEnvMap(): THREE.Texture {
     panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY, [-16, 22, 18], [70, 38]);
     panel(ENV_FILL_COLOR, ENV_FILL_INTENSITY, [18, -16, 14], [48, 26]);
 
+    /**
+     * ⚠ THE FOURTH ARGUMENT IS `far`, NOT THE RESOLUTION — and a comment here
+     * previously claimed the opposite and forbade the real fix.
+     *
+     * `fromScene( scene, sigma = 0, near = 0.1, far = 100, options = {} )`
+     * (`three.module.js:2706`), with `size = 256` living in `options`
+     * (`:2709`). So `200` is a clip plane, and the env map has been at the
+     * DEFAULT 256 throughout.
+     *
+     * ⚠ "DROPPING IT 200 -> 64 MOVED `fromScene` BY 5ms" WAS TRUE AND MEANT
+     * NOTHING. `ENV_SHELL_RADIUS` is 60, so the studio sits inside the frustum
+     * at either value — nothing could have changed. **A 5ms delta is what "I
+     * changed nothing" looks like**, and it was recorded as a finding that ruled
+     * the lever out. Caught by the Architect, 4 August; see
+     * `live-work/architect-answer-opening-stutter.md`.
+     *
+     * ⚠ SIZE IS GENUINELY LOAD-BEARING: 256 gives lodMax 8 and a 768x1024 cubeUV
+     * target; 64 gives lodMax 6 and 336x256 — ~9x fewer pixels and two fewer LOD
+     * passes. And `_applyPMREM` is not a blur chain in 0.185, it is GGX VNDF
+     * importance sampling at `GGX_SAMPLES = 256` (`:2636`) — a 256-tap loop per
+     * fragment per LOD.
+     *
+     * ⚠ REDUCING IT IS A VISUAL CHANGE AND CARL'S CALL, not a free optimisation.
+     * Left at the default until he has seen 256/128/64 side by side at the
+     * approved roughness.
+     */
     const pmrem = new THREE.PMREMGenerator(gl);
     const built = pmrem.fromScene(studio, 0, 0.1, 200);
     pmrem.dispose();
@@ -1216,9 +1242,65 @@ function useScenePrecompile(onReady: () => void, mayCompile: boolean) {
     // `compileAsync` — but measured against the opening it moved the ~900ms task
     // by 0ms. Recorded so it is not retried as a fresh idea, and NOT left in the
     // code, since it silently disables shader error reporting.
-    const id = requestAnimationFrame(() => {
+    const id = requestAnimationFrame(async () => {
       if (cancelled) return;
-      gl.compileAsync(scene, camera)
+
+      /**
+       * ⚠ COMPILED TWICE, IN TWO RENDERER STATES — AND THIS IS THE FIX FOR THE
+       * OPENING STUTTER. Diagnosed by the Architect, 4 August; full reasoning in
+       * `live-work/architect-answer-opening-stutter.md`.
+       *
+       * ⚠ EVERY MATERIAL IN THIS SCENE COMPILES TWICE, and nothing here knew it.
+       * The program cache key carries `outputColorSpace` — which branches on
+       * `currentRenderTarget === null` (`three.module.js:7585`) — and
+       * `toneMapping` (`:7857`). @react-three/fiber sets sRGB + ACES filmic on
+       * the canvas, while `renderTransmissionPass` renders into a target at
+       * linear + `NoToneMapping` (`:18015`, `:18028`).
+       *
+       * **So there are two variants of every material, and the old single
+       * `compileAsync` warmed only the canvas one.** The transmission variants
+       * were linked inside `renderTransmissionPass` and had their uniforms read
+       * in the SAME synchronous block — no window at all for
+       * `KHR_parallel_shader_compile`. That is the 777ms.
+       *
+       * ⚠ AND IT EXPLAINS THE PROGRAM COUNT THAT WAS MEASURED AND NOT
+       * UNDERSTOOD: rim, bevel, face and backdrop are 4 materials, "16 programs"
+       * is 8 materials seen twice, plus PMREM's own.
+       *
+       * ⚠ A 1x1 PROBE TARGET IS ENOUGH. `getParameters` only tests
+       * `currentRenderTarget === null`; the target's SIZE is not in the cache
+       * key. And `compile()` walks with `scene.traverse` (`:17427`), so the
+       * hidden cards are covered without un-hiding them here.
+       *
+       * ⚠ THE LIGHTS MUST STAY VISIBLE. Lights are gathered with
+       * `traverseVisible` (`:17385`), so `numPointLights` — which IS in the
+       * cache key — is whatever is visible at compile time. The `FilamentLight`s
+       * sit in the always-visible outer group, so this matches today. **Moving a
+       * light into a hidden group would make every program compiled here the
+       * wrong variant**, silently.
+       */
+      const probe = new THREE.WebGLRenderTarget(1, 1);
+      const prevTone = gl.toneMapping;
+
+      try {
+        // Transmission-pass variants: linear output, no tone mapping.
+        gl.setRenderTarget(probe);
+        gl.toneMapping = THREE.NoToneMapping;
+        await gl.compileAsync(scene, camera);
+
+        // Canvas variants: back to the renderer's own state.
+        gl.setRenderTarget(null);
+        gl.toneMapping = prevTone;
+        await gl.compileAsync(scene, camera);
+      } finally {
+        // ⚠ RESTORED ON THE ERROR PATH TOO. Leaving the renderer pointed at a
+        // disposed 1x1 target would break every subsequent frame.
+        gl.setRenderTarget(null);
+        gl.toneMapping = prevTone;
+        probe.dispose();
+      }
+
+      await Promise.resolve()
         .then(() => {
           if (cancelled) return;
 

@@ -311,6 +311,37 @@ export const BACKDROP_TEAL = "#00c8e0";
 export const GROUND_COLOR = "#101010";
 
 /**
+ * How present the lockup is once beat six has finished — its resting level.
+ *
+ * ⚠ BELOW 1 ON CARL'S INSTRUCTION, and it was his own observation from 3 August,
+ * carried through two sessions: *"The lockup's lettering is too bright where it
+ * is not covered by a card."* The colour effect is wanted INSIDE the cards;
+ * outside it competes.
+ *
+ * ⚠ AND IT IS BEING DONE NOW BECAUSE THE FILTER DEPENDS ON IT. Carl, 4 August:
+ * *"if you want to dial down the c2b DESIGN opacity first that would be
+ * better."* The cards' amber filter acts on what is BEHIND the glass, so tuning
+ * the filter against a lockup that is about to get dimmer would be tuning
+ * against a moving subject — the same trap that made the frost value meaningless
+ * when it was chosen while the transmission target was clearing to white.
+ *
+ * ⚠ IT DIMS TOWARD `GROUND_COLOR`, NOT TOWARD TRANSPARENCY — the same mechanism
+ * beat six's fade uses, and for the same reason: a transparent backdrop is
+ * invisible to the transmission pass, so the lockup would vanish from inside the
+ * cards while staying visible outside them.
+ *
+ * ⚠ THIS IS A GLOBAL DIM, WHICH IS NOT THE WHOLE OF CARL'S OBSERVATION. He was
+ * explicit that brightness should be tied to CARD POSITION — *"outside the
+ * cards, in between them will look like strong shapes"* — bright under the
+ * cards, quiet between them. **That is a harder problem** (the gaps are 8px, so
+ * a mask edge becomes a visible shape in its own right) and is not attempted
+ * here. This is the simple lever, so the filter has a settled subject.
+ *
+ * PROVISIONAL under D-035.
+ */
+export const LOCKUP_REST_LEVEL = 0.5;
+
+/**
  * How long a region takes to travel from blue to teal, in ms.
  *
  * ⚠ 2400ms IS THE FILAMENT'S CIRCUIT, NOT AN ARBITRARY DURATION. Carl, 3

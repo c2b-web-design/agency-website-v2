@@ -24,6 +24,7 @@ import {
   REGION_SHIFT_MS,
   CARD_BOXES,
   GROUND_COLOR,
+  LOCKUP_REST_LEVEL,
   drawBackdrop,
   type BackdropRegions,
 } from "./answer-card-backdrop-geometry";
@@ -289,7 +290,8 @@ function useLockupFade(active: boolean, reducedMotion: boolean): React.RefObject
       return;
     }
     if (reducedMotion) {
-      value.current = 1;
+      // Reduced motion: no fade, straight to the resting level.
+      value.current = LOCKUP_REST_LEVEL;
       return;
     }
 
@@ -317,7 +319,10 @@ function useLockupFade(active: boolean, reducedMotion: boolean): React.RefObject
         1,
         (elapsed - LOCKUP_FADE_OVERLAPPED_DELAY_MS) / LOCKUP_FADE_DURATION_MS,
       );
-      value.current = t;
+      // ⚠ SETTLES AT `LOCKUP_REST_LEVEL`, NOT AT 1. The lockup's resting
+      // presence is below full so it does not compete with the cards — see that
+      // constant. Beat six is still the same fade; only where it lands changed.
+      value.current = t * LOCKUP_REST_LEVEL;
       if (t < 1) raf = requestAnimationFrame(tick);
     };
 
