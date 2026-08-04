@@ -1,7 +1,6 @@
-# Session Handoff — 4 August 2026
+# Session Handoff — 4 August 2026 (second session of the day)
 
-**Written at the end of the clone / hover / choreography session. For the session that picks up
-next.**
+**Written at the end of the filament session. For the session that picks up next.**
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical
 (D-006). **Delete this file at the end of the session that reads it, once its replacement is
@@ -21,173 +20,142 @@ session ends and will say so.** It was not broken today.
 
 ## Where things stand
 
-**Repo: `main`, head `b25fb5f`, COMMITTED and clean.** Lint at the recorded baseline (1 accepted
-error in `enquiry-opening.tsx`); `npx tsc --noEmit` clean.
+**Repo: `main`, head `2a3d0a8`, COMMITTED and clean. NOTHING IS PUSHED** — the last push was
+`f57b6db`, so four commits are local only. Lint at the recorded baseline; `npx tsc --noEmit` clean.
 
-⚠ **THE PREVIOUS HANDOFF'S "WORK IS UNCOMMITTED" WARNING WAS STALE ON ARRIVAL** — two commits had
-landed after it was written. Worth knowing as a live example of §3a's own argument.
+⚠ **`chunk-scope.json` IS STILL DELETED — the repo is FAIL-OPEN.** Unchanged all day. Carl has
+been directing chunks conversationally and approving as he goes; **no scope file was drafted and
+he did not ask for one.**
 
-⚠ **`chunk-scope.json` IS STILL DELETED — the repo is FAIL-OPEN and every edit is allowed.**
-Unchanged from the last handoff. **The filament chunk must be given a new one, and that is part of
-authorising it, not an extra** (§8). PM/A drafts, **Carl approves; `unlocked` is Carl's alone.**
-Declare `verify/_tmp-*.mjs` up front — the guard has blocked throwaway probes twice for want of it.
-
-⚠ **THE PAGE STILL DOES NOT ADVANCE PAST Q5.** No selection, no Next step, no Q4–Q1, no contact
-field. Unchanged, on Carl's standing instruction.
+⚠ **THE PAGE STILL DOES NOT ADVANCE PAST Q5.** Clicking a card now fires its filament, but that is
+NOT selection — no Next step, no Q4, no contact field.
 
 ### What this session did
 
-**Full record: `live-work/run-log-clone-and-beats.md`** — four passes, the faults, and the
-measurements. Headline: five cards cloned, hover inversion confined per card, six-beat entrance,
-and the stall fixed.
+**Two chunks, both by Carl's direction, both approved by eye as they went.**
 
-**Carl's verdicts:** *"its good"* (the 2000ms fade), *"looks good"* (the ladder once stepping),
-*"That looks great"* (the lockup balance). ⚠ **These are approvals of the MECHANISM AND THE
-TIMING. They are NOT approval of the frost level or the lockup's opacity** — both explicitly still
-to come.
+1. **`97b987d` — the inactive state.** Rim as unlit tungsten, bevel as its glass holder, plus the
+   light fader. Carl: *"That looks a lot better."*
+2. **`1dfce8a` — the filament circuit.** Travel, bevel latch, uniform fade-out on a second press.
+3. **`2a3d0a8` — the open-defect record.**
 
----
-
-## ⚠ THE NEXT SUBJECT — Carl named it as he approved the lockup
-
-> *"Remember, the opacity of the text is gonna be reduced and the glass will be slightly frosted."*
-
-**Two faders, and they are the mastering pass the previous handoff already recorded as method:**
-
-> *"we build the new button. we add static light. then like pushing two faders up at once, we add
-> light and frosted glass to get the effect we want. Rather than start with frosted glass at a
-> half way point, we bring the 'volume' down same for the lights, and push the faders up."*
-
-⚠ **THE RIG IS STILL NOT READY FOR IT.** `?cardrig=1` has roughness `[7]` and transmission `[8]`.
-**Light has no fader.** Add one before the pass, or Carl tunes one by ear and one by file edit.
-
-⚠ **AND THE THREE VALUES ARE ONE SYSTEM** — frost, lockup opacity, and (later) amber intensity.
-See `references/filament-design-reference.md`, the coupled-system section. **Do not pick a frost
-value and tune the others around it.**
+**Full records: the commit messages themselves are detailed, and
+`live-work/references/opening-stutter.md` carries the outstanding defect.**
 
 ---
 
-## ⚠ Then the filament — design already settled, unchanged
+## ⚠ THE OUTSTANDING DEFECT — the opening stutters
 
-### → `live-work/references/filament-design-reference.md`
+### → `live-work/references/opening-stutter.md`
 
-**Read it before planning that chunk.** *"obey the physics, but the physics of heat rather than
-the physics of drawing."* The rim is the UNLIT FILAMENT — a metal element present at rest that
-heats up, not grey waiting to be covered.
+**Read it before touching this.** Carl: *"the text on the start page, where the ivory button is,
+stutters."* The OPENING, before Begin — not Q5.
 
-**Carl's sequence, and the clone step is now DONE:**
+⚠ **THE BUILDER CAUSED IT.** The warm-up canvas compiles the filament's two new custom shaders
+during the opening. That was cheap when it compiled one plain material.
 
-1. ~~Clone the cards~~ — done this session
-2. **Frost + lockup opacity** — the two faders above, next
-3. **Filament on card 1**, then rolled out
-4. **New button design** — Next step, in WebGL
+⚠ **THREE FIXES ARE MEASURED AND DEAD.** The record lists them so they are not retried as fresh
+ideas. **The most important lesson in it: the compile is ~1.6s and no gap that size exists in the
+opening, so RESCHEDULING CANNOT WORK.** Three rounds went into treating a size problem as a timing
+problem, and one of those rounds moved the stutter onto the Begin reveal — a moved symptom.
 
-⚠ **THE ORDER OF 1 AND 3 WAS SWAPPED THIS SESSION, ON CARL'S DECISION.** He asked which was
-better; the argument that decided it was that the filament's justification is light spilling onto
-NEIGHBOURS, which cannot be judged with one card. Recorded because the previous handoff had them
-the other way round.
+**Untested, in the order the Builder would try them:** simplify the bevel's shader (it carries a
+full copy of the circuit function and only needs a latch); retry the single shared light with the
+position maths corrected (it helped, 900ms → 645ms, but broke the spill onto card 2); or do not
+warm during the opening at all and take the cost at Q5.
 
----
-
-## ⚠ Open questions — Carl's to answer, still unresolved
-
-Both carried from the previous handoff, neither raised this session:
-
-- **Does the amber sing or stay restrained?** Near-complementary against the backdrop's blue and
-  cyan, so it will be the most saturated thing on the page.
-- **The filament and the region shift run on one clock** — whether two simultaneous events read as
-  too much is an eye judgement, not settled.
+⚠ **AND ONE QUESTION IS CARL'S, NOT THE BUILDER'S:** whether the filament is worth a ~1.6s compile
+on every page load.
 
 ---
 
-## ⚠ The session's lesson — the instruments failed EIGHT times
+## ⚠ Also open — the head does not read as a hot core
 
-**`ai-system/working-with-the-builder.md` HAS THE SHARED CORRECTIONS RECORD.** New entries go
-there. **It is shared, not a Builder fault list** — Carl: *"mistakes are not exclusive to AI."*
+**Only ~8 points brighter than its own trail**, so it reads closer to a uniform fill than the
+*"hot core and bloom"* the design reference asks for. Four values were tried; the contrast moved
+from 4 to 8 points. **Something else pins the head near the top of the range and it was not
+found.** Detail in the same reference file.
 
-⚠ **THE BIG ONE, AND IT INVALIDATED TWO DIAGNOSES REPORTED TO CARL AS FACT:** every GPU timing
-before the third pass came from **headless Playwright, which has no GPU** and was running
-SwiftShader — shader compilation and the transmission pass on the CPU. A "~2900ms fixed cost of
-putting glass on screen" was reported to Carl as a property of the page. **Real GPU: 349ms.**
+---
 
-**THE RULE THIS ADDS: for anything GPU-timed, headless Playwright is not the machine under test.**
-Run headed with `--enable-gpu`, and **print the renderer string** so the substitution cannot happen
-silently.
+## The sequence, as it now stands
 
-⚠ **AND A SECOND PATTERN, SEVEN TIMES OVER: every failing instrument reported ABSENCE** — which is
-exactly what a genuine defect also reports. `gl.readPixels`, `drawImage`, Playwright `screenshot()`
-(first call ~4900ms, longer than the animation it was catching), the r3f scene walk, a warm-up gate
-that opened with `canvases=0`. **An instrument must be shown capable of reporting PRESENCE before
-its absence means anything.** The probes that worked all carried a positive control.
+1. ~~Clone the cards~~ — done, earlier session
+2. ~~Inactive rim and bevel~~ — done, `97b987d`
+3. ~~The filament circuit~~ — done, `1dfce8a`, **with the two defects above**
+4. **The two faders** — lockup opacity down, frost up. **Still not started**, and still what Carl
+   named as next before the filament took priority.
+5. **New button design** — Next step, in WebGL
 
-⚠ **CARL'S EYE BEAT THE INSTRUMENTS AGAIN, TWICE.** He located the stall to *"between cards 1+2"*
-— the exact gap the trace then confirmed. And on the confinement bug the Builder argued **two
-wrong diagnoses** before opening the screenshot, which showed the real fault immediately. **The
-image was available the whole time.**
+---
+
+## ⚠ How Carl worked today — this is the most useful part of this file
+
+- ⚠ **HE GIVES CONSTRUCTIONS, NOT ADJECTIVES.** *"The N of DESIGN can end at the same distance
+  from the perceived edge as when the c starts"*; *"put that half way point at the half way point
+  in the gap between the cards."* **Both were exactly buildable and both worked first time.** Ask
+  for the construction.
+- ⚠ **HE SETTLES DESIGN QUESTIONS WITH PHYSICS.** Asked whether the bevel should be metal too:
+  *"What would some metal be doing connected to a metal filament that is about to heat up?...
+  i would imagine that the bevel is some sort of 'holder'... If its made of glass it would conduct
+  and reflect the heat/light."* **His answer was better than either option offered.**
+- ⚠ **HE CORRECTS FALSE PRECISION.** *"it doesnt have to be exact, im looking for ball park
+  figures."*
+- ⚠ **HE BRACKETS NUMBERS RATHER THAN GUESSING THEM.** *"if we change 1100ms to 1500ms and its too
+  slow we will have a range to work with."*
+- ⚠ **HE READS THE SCREEN BETTER THAN THE INSTRUMENTS DO.** Today he caught: a phantom second
+  filament head, a section losing intensity mid-circuit, a 15px lag between bevel and rim, and the
+  opening stutter — **all before any probe found them, and all real.**
+- **No ASCII diagrams or box-drawing characters.**
+- **Do not commit or push unless he explicitly asks.**
+
+---
+
+## ⚠ The session's lesson — four defects, each caused by the previous fix
+
+**`ai-system/working-with-the-builder.md` HAS THE SHARED CORRECTIONS RECORD.** Entry 5 was added
+this morning. **This session earns another, and it is a new shape:**
+
+1. The tail **wrapped** → a phantom second head at the far end of the loop.
+2. Removing the wrap → the origin became **a hard edge**. Carl: *"the effect of heat doesnt
+   diminish in a straight line."*
+3. The back-bleed was **a fixed constant** → that section dropped to it and stayed pinned. Carl:
+   *"as if some of the juice has been turned down for that section."*
+4. The bevel lagged 15px — **not the trigger width**, which was blamed first and changed nothing.
+   The rim and bevel are swept along **different rectangles** (perimeters 433 vs 408), so equal
+   fractions land in different places.
+
+⚠ **THE PATTERN: EACH FIX WAS LOCALLY CORRECT AND CREATED THE NEXT DEFECT.** None was a careless
+error; each followed from the last. **The check that would have caught them earlier is to ask what
+the fix makes true that was not true before**, rather than only whether it removes the symptom.
+
+⚠ **AND THE ASSUMED-GEOMETRY TRAP RECURRED.** A probe sampled the right edge at t=0.30 and called
+it "the head" — but the top edge alone is **0 → 0.356** of this card's circuit, so the head was
+still on it. That probe reported the head as **119 points dimmer than its trail**, a defect that
+did not exist, and it was acted on twice before the segment proportions were computed rather than
+assumed. **Find the edge; do not place it.**
 
 ---
 
 ## How to look at it
 
 ```
-http://localhost:3000/start                  the walk: six beats, then hover any region
-http://localhost:3000/start?beattrace=1      performance.mark per beat (dev only, free without it)
-http://localhost:3000/start?cardrig=1        [1-6] geometry, [7-8] glass, [↑/↓] adjust, [0] print
-http://localhost:3000/start?roughness=0.45   jump to a frost level
+http://localhost:3000/start                  the walk; click a card to fire its filament
+http://localhost:3000/start?cardrig=1        [1-6] geometry, [7-9] glass/light,
+                                             [r] rim roughness, [m] cycle metal,
+                                             [f] filament intensity, [0] print
+http://localhost:3000/start?light=0.6        hold a light level across reloads
+http://localhost:3000/start?beattrace=1      performance.mark per entrance beat
 ```
 
-⚠ **`?cards=N` WAS ADDED AND THEN REMOVED THIS SESSION.** Its finding — that five cards cost the
-same as one — was taken on the software rasteriser and is not trustworthy. **A knob whose finding
-was invalidated is worse than no knob**, because the next reader trusts it.
+⚠ **MEASURE HEADED, WITH `--enable-gpu`, AND PRINT THE RENDERER STRING.** Headless Playwright has
+no GPU and silently substitutes SwiftShader — it invalidated a whole investigation this morning.
+See corrections-record entry 5.
 
 ---
 
-## How to work with Carl — carried forward
+*4 August 2026, second session. The rim is tungsten, the bevel is its glass holder, and the
+filament runs a circuit that latches the bevel behind it and fades out on a second press.
+Committed at `2a3d0a8`, **unpushed**.*
 
-- **⛔ Never comment on his working hours.**
-- **He leads.** Design, chunking and decisions are his. D-036.
-- **He asks for the principle before the decision.** Explain, then let him choose.
-- ⚠ **HE GIVES CONSTRUCTIONS, NOT JUST CORRECTIONS.** Asked to balance the lockup he did not say
-  "move it a bit" — he specified *"the N of DESIGN can end at the same distance from the perceived
-  edge as when the c starts"* and *"put that half way point at the half way point in the gap."*
-  **Both were exactly buildable and both worked first time.** Ask for the construction.
-- ⚠ **HE CORRECTS FALSE PRECISION.** *"it doesnt have to be exact, im looking for ball park
-  figures. A user wont be able to tell one card has, say 5% more text than others."* The Builder
-  was chasing decimal points on a spread the eye reads as balanced-or-not.
-- ⚠ **HE TREATS NUMBERS AS A RANGE TO BRACKET, NOT A VALUE TO GUESS.** *"if we change 1100ms to
-  1500ms and its too slow we will have a range to work with."* Offer brackets.
-- ⚠ **AND THE FIGURES ARE NOT SACRED.** *"figures are not set in stone. We are redesigning the
-  q+a system, the figures can act as a guide. Some CSS timings may not translate so well."* The
-  Builder had been guarding the approved CSS ladder as if it were canon; it was tuned for cards
-  that no longer exist.
-- **No ASCII diagrams or box-drawing characters.**
-- **Do not commit or push unless he explicitly asks.** He asked this session; `b25fb5f` is the
-  result. **Nothing is pushed.**
-
----
-
-## ⚠ Environment notes — additions from this session
-
-**The earlier handoff's environment notes all still hold.** New:
-
-- ⚠ **`transparent: true` REMOVES A MATERIAL FROM THE TRANSMISSION TARGET** (`:8237`, `:18039`).
-  **No WebGL element on this page can fade by opacity** without dropping out of what the glass
-  refracts. The card entrance fades by LIGHT; the lockup fades by painting toward `GROUND_COLOR`.
-- ⚠ **`compileAsync` WALKS THE SCENE GRAPH; THE TRANSMISSION PASS IS NOT IN IT.** A transmissive
-  material's real cost lands at first DRAW. Warming it needs an actual `render()` with the meshes
-  temporarily visible — a plain render skips invisible objects and is a silent no-op.
-- ⚠ **THE PHRASE BAND IS GATED ON `stage !== "opening"`**, so nothing inside it — including the Q5
-  grid and its canvas — exists during the opening. Anything that must warm up before Begin has to
-  mount OUTSIDE that gate.
-- ⚠ **TWO WARM-UPS NOW EXIST AND THEY MUST NOT COLLIDE.** The contact field's guard was written
-  when the phrase was the only thing after Begin; it now also waits for `ENTRANCE_END_MS`. **A
-  third canvas would need the same treatment.**
-- ⚠ **`textBaseline: "middle"` IS NOT A GLYPH'S VISUAL CENTRE**, and `measureText().width` is not
-  its ink width. Use `actualBoundingBox*` for both — they were 6.3px and 56.5px adrift here.
-
----
-
-*4 August 2026. Five cards arrive on a six-beat ladder, the lockup balanced across them, hover
-inverting each region in its own box. Committed at `b25fb5f`, unpushed.*
-
-*Next: the two faders — lockup opacity down, frost up.*
+*Next: the opening stutter — and it is a size problem, not a timing one.*

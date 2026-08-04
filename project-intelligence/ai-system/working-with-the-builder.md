@@ -371,6 +371,54 @@ where variation is expected is a fault in the instrument, not a finding.** Look 
 
 ---
 
+## 6. Each fix was correct and created the next defect — 4 August 2026
+
+**A new shape, and the reason it is worth its own entry: none of these was a careless error.**
+Every one followed logically from the fix before it. Full detail in the commit message for
+`1dfce8a`.
+
+Building the filament's travelling head, in order:
+
+1. **The tail WRAPPED**, so heat reached back around the loop → a phantom second head appeared at
+   the far end and raced toward the origin. Carl saw it immediately.
+2. **Removing the wrap fixed that** — and made the origin a hard edge, hot metal one side and
+   untouched metal a pixel away. Carl: *"the effect of heat doesnt diminish in a straight line."*
+3. **Adding a back-bleed fixed that** — as a fixed constant anchored at the origin, so that
+   section dropped to it as the head left and stayed pinned there. Carl: *"as if some of the juice
+   has been turned down for that section."*
+4. **The bevel then lagged the rim by 15px.** The trigger's width was blamed and changing it did
+   nothing: the rim and bevel are swept along **different rectangles** (perimeters 433 vs 408), so
+   equal fractions of "the circuit" land in different physical places.
+
+⚠ **THE CHECK THAT WOULD HAVE SHORTENED THIS: ask what the fix makes TRUE that was not true
+before, not only whether it removes the symptom.** Every one of these was found by Carl looking at
+the screen after the Builder had declared the previous problem solved.
+
+⚠ **AND (4) IS A REPEAT OF ENTRY 5's SHAPE IN NEW CLOTHES.** Two things were assumed to share a
+coordinate system because they described "the same" circuit. They did not. **When two components
+must agree, make them read ONE definition rather than two that ought to match.**
+
+### The assumed-geometry trap, again
+
+A probe sampled the card's right edge at t=0.30 and called it "the head". **The card is 186x48, so
+the top edge alone is 0 → 0.356 of the circuit** — the head was still on it. The probe reported the
+head as **119 points dimmer than its own trail**, a defect that did not exist, and it was acted on
+twice before the segment proportions were computed instead of assumed.
+
+**Find the edge; do not place it.**
+
+### And a size problem treated as a timing problem
+
+The opening stutter (`live-work/references/opening-stutter.md`) took **three rounds of
+rescheduling** before the Builder measured that the compile is ~1.6s and no gap that size exists
+in the opening. **One of those rounds moved the stutter onto the Begin reveal** — a moved symptom,
+which this file has already named as a failure mode twice.
+
+⚠ **THE TELL WAS AVAILABLE FROM THE FIRST MEASUREMENT:** the task's DURATION never changed, only
+its start time. **If rescheduling does not shrink it, the schedule is not the problem.**
+
+---
+
 ## Earlier entries, gathered from where they were already recorded
 
 **Not new findings — pointers, so the pattern is visible in one place.**
