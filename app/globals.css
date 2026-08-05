@@ -760,6 +760,53 @@
   animation: none;
 }
 
+/* ⚠ HELD — the TEXT reveals. Step 4.
+
+   ⚠ WITHHOLDING A MASK CLASS DOES NOT HOLD ITS ELEMENT — IT COMPLETES IT. The
+   base state of the heading and subtext is unmasked, fully-visible text, which
+   is the animation's END state, not its start. The first version of Step 4
+   withheld the classes and the opening showed all its text immediately, sat
+   there for ~2 seconds, and then wiped it in again from the left. Caught on a
+   screenshot at +500ms; nothing in the timings showed it, because every timing
+   was correct.
+
+   So the hold must assert the `from` state of
+   `enquiry-mask-reveal-horizontal` explicitly: fully clipped, invisible, and
+   waiting. When the class is removed the animation runs from exactly this
+   state, so the join is seamless.
+
+   ⚠ `opacity: 0` RATHER THAN THE KEYFRAME'S `0.85`: the keyframe's from-state
+   is only ever seen for one frame under a clip that already hides the content,
+   whereas this state can persist for seconds. A faint ghost of the finished
+   text sitting behind the clip would be visible where a single frame of it is
+   not. */
+.enquiry-opening-held {
+  clip-path: inset(0 100% 0 0);
+  -webkit-clip-path: inset(0 100% 0 0);
+  opacity: 0;
+}
+
+/* ⚠ HELD — the BEGIN reveal. Step 4. The opening's choreography waits for the
+   card canvas to report `compiled`, so every reveal must be suspended until it
+   does.
+
+   ⚠ AND FOR THIS ONE, SUSPENDING MEANS KEEPING THE CLASS AND KILLING THE
+   ANIMATION — NOT WITHHOLDING THE CLASS. `.enquiry-button-mask`'s BASE rule
+   carries `clip-path: circle(0% at 50% 50%)`, which is what hides the pill
+   before its reveal. Drop the class and the Begin button is fully visible and
+   clickable from the first frame, which is the opposite of the intent.
+
+   The heading and subtext masks are safe to withhold by contrast: their base
+   state is unmasked, and the class only adds the animation.
+
+   `animation: none` here (rather than `paused`) is deliberate — the animation
+   has not started, and `both` fill would otherwise apply the from-state twice
+   over. When the class is removed the 5000ms/7400ms animation runs from zero
+   exactly as authored. */
+.enquiry-button-mask--held {
+  animation: none;
+}
+
 /* Transparent, pill-sized semantic + hit target, precisely centred over the
    visible pill within the full-width mask wrapper. No background/border → the
    masked pill is the only rendered pill. Absolutely positioned and horizontally

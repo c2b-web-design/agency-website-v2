@@ -1625,10 +1625,26 @@ export default function AnswerCardCanvas({
    * file has learned that. `OPENING_WARM_LEAD_MS` records the first two.
    */
   onEntranceStart,
+  /**
+   * Fired once, when this canvas's shaders and transmission target are ready.
+   *
+   * ⚠ IT IS WHAT LETS THE OPENING WAIT FOR THE COMPILE INSTEAD OF THE REVERSE —
+   * Step 4, `enquiry-opening.tsx`'s `openingArmed`. The warm-up instance uses it
+   * to arm the opening choreography; the real Q5 instance has no need of it and
+   * passes nothing.
+   *
+   * ⚠ IT REPORTS THIS CANVAS'S OWN READINESS AND NOTHING MORE. A WebGL context
+   * is per-canvas, so this firing does NOT mean the Q5 canvas is warm — measured
+   * 5 August, the warm-up is in fact a 329ms net COST to it. What it does mean
+   * is that the expensive first-use work has happened somewhere and the main
+   * thread is free, which is the only thing the choreography needs to know.
+   */
+  onCompiled,
 }: {
   active: boolean;
   warm?: boolean;
   onEntranceStart?: () => void;
+  onCompiled?: () => void;
 }) {
   const [reducedMotion] = useState(
     () =>
@@ -1774,9 +1790,15 @@ export default function AnswerCardCanvas({
     // (Architect, 5 August, `live-work/architect-answer-begin-stall.md` Step 2).
     // `performance.mark` is a no-op cost and safe to leave; remove it only when
     // the question it answers is closed.
-    try { performance.mark("card-canvas-compiled"); } catch {}
+    // ⚠ THE MARK NAMES DISTINGUISH THE TWO CANVASES, and that distinction is
+    // load-bearing for `verify/card-1-anchor.mjs`. Since Step 4 the warm-up
+    // instance compiles ~6-7s BEFORE Begin, so a shared mark name made the
+    // harness read "reveal start" off the wrong canvas and report negative
+    // times. `warm && !active` is the warm-up; the real Q5 canvas is the other.
+    try { performance.mark(warm && !active ? "warmup-canvas-compiled" : "card-canvas-compiled"); } catch {}
     setCompiled(true);
-  }, []);
+    onCompiled?.();
+  }, [onCompiled, warm, active]);
 
   /**
    * Announce the entrance's real start, once.
@@ -1850,8 +1872,11 @@ export default function AnswerCardCanvas({
         onCreated={({ gl }) => {
           gl.debug.checkShaderErrors = false;
           // ⚠ DIAGNOSTIC ONLY — pairs with `card-canvas-compiled`. See the note
-          // at `markWarm`.
-          try { performance.mark("card-canvas-created"); } catch {}
+          // at `markWarm`, including why the warm-up and the real canvas must
+          // NOT share a mark name.
+          try {
+            performance.mark(warm && !active ? "warmup-canvas-created" : "card-canvas-created");
+          } catch {}
         }}
       >
         <CardScene

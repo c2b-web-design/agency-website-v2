@@ -131,23 +131,46 @@ const ACK_FADE_OUT_DELAY_MS = FIELD_ENTRANCE_END_MS - ACK_FADE_OUT_DURATION_MS;
  * opening reveal is starting up.
  */
 /**
- * A short breath after the choreography ends, before the warm-up may run.
+ * ⚠ REMOVED 5 August 2026 — `OPENING_WARM_LEAD_MS`. The record is kept because
+ * three separate comments in this file cite it as the place two failed attempts
+ * are written down, and a dangling reference is worse than a note.
  *
- * ⚠ THE REAL GUARD IS `beginActive`, NOT THIS NUMBER. Two attempts to fix the
- * opening stutter by choosing a longer delay both failed — 900ms landed a 920ms
- * task on the text reveals, and 5200ms only moved it to +7194ms, still
- * mid-choreography. **A duration cannot answer "has the opening finished"; only
- * the opening can.**
+ * It was a lead-in before the warm-up canvas could be scheduled. THE WHOLE IDEA
+ * OF SCHEDULING THE WARM-UP WAS THE DEFECT, so the constant went with the effect
+ * that used it — see the note where that effect stood.
  *
- * ⚠ AND THE OPENING IS NOT IDLE JUST BECAUSE IT IS CSS. The masks, the subtext
- * lines and the Begin reveal all animate. The original comment here asserted
- * that *"nothing in it competes with WebGL setup"* as though it had been
- * checked; it had not, and it was wrong.
+ * ⚠ THE LESSON IT RECORDED, WHICH STILL STANDS: a duration cannot answer "has
+ * the opening finished"; only the opening can. Two attempts to fix the stutter
+ * by choosing a longer delay both failed — 900ms landed a 920ms task on the text
+ * reveals, and 5200ms only moved it to +7194ms, still mid-choreography.
  *
- * This remains only so the compile does not begin in the same frame the Begin
- * reveal starts.
+ * ⚠ AND THE SECOND LESSON, WHICH IS WHY THE THIRD ATTEMPT FAILED TOO: the
+ * opening is NOT idle just because it is CSS. It animates without a break from
+ * 600ms to 12400ms. An earlier comment here asserted that "nothing in it
+ * competes with WebGL setup" as though it had been checked; it had not, and it
+ * was wrong.
+ *
+ * Step 4 answers both by inverting the dependency: the choreography waits for
+ * the compile, so there is no longer anything to schedule. See `openingArmed`.
  */
-const OPENING_WARM_LEAD_MS = 600;
+
+/**
+ * An absolute ceiling on how long the opening will wait for the card canvas to
+ * compile before starting anyway — Step 4's backstop.
+ *
+ * ⚠ A GUARANTEE OF PROGRESS, NOT A SCHEDULE. On every normal path the compile
+ * reports first and this timer is cancelled unused; measured 5 August, the
+ * compile lands at ~1.1s cold and ~0.8s warm. It exists for the paths where
+ * `compiled` never arrives at all — no WebGL, a lost context, a driver fault —
+ * because an opening that never starts is far worse than one that stutters.
+ *
+ * ⚠ IF THIS IS EVER THE THING THAT STARTS THE OPENING ON A NORMAL RUN, THE GATE
+ * IS BROKEN AND THE PAGE IS MERELY HIDING IT. That is exactly how the warm-up's
+ * own `requestIdleCallback` timeout came to be the only path rather than a
+ * backstop. `verify/opening-arm.mjs` reports which of the two armed the opening
+ * — check it, do not assume.
+ */
+const OPENING_ARM_CEILING_MS = 4000;
 
 /**
  * An absolute ceiling, from Begin, on how long the contact field's warm-up will
@@ -461,37 +484,25 @@ export default function EnquiryOpening() {
   // acknowledgement nor Send's entrance ever does.
   const [canvasWarm, setCanvasWarm] = useState(false);
 
-  /**
-   * Whether the ANSWER-CARD canvas may do its expensive setup yet.
+  /*
+   * ⚠ `cardCanvasWarm` IS GONE — 5 August. It was the flag that decided WHEN the
+   * answer-card canvas could do its expensive setup, and the premise under it
+   * was false.
    *
-   * ⚠ THIS OPENS DURING THE OPENING STAGE, BEFORE BEGIN — which is the opposite
-   * of `canvasWarm` above, and deliberately so.
+   * The premise, written here and believed for two sessions: *"the opening runs
+   * ~11.5s of CSS-only choreography before Begin is even pressable — a large,
+   * genuinely idle window, and nothing in it competes with WebGL setup."*
    *
-   * ⚠ IT EXISTS BECAUSE THE Q5 STUTTER CAME BACK, AND THE BUILDER CAUSED IT.
-   * Carl, 4 August: *"On first run the stutter on W+H on Q5 was back. On runs
-   * 2,3+4 that resolved but the stall returned."* Both halves are one cause: to
-   * let card 1 appear at the reveal's MIDPOINT, this session removed the guard
-   * that deferred the whole canvas until the 1300ms wipe had finished — so
-   * Three.js setup, shader compilation and the transmission warm-up all moved
-   * INTO the phrase. Cold, they land on the text; warm, they are cheap enough to
-   * clear but too late to have finished before card 1 is due.
+   * ⚠ IT ANIMATES WITHOUT A BREAK FROM 600ms TO 12400ms. Heading 600→2700,
+   * heading 2100→4200, subtext 3600→7800, Begin reveal 7400→12400. The only
+   * animation-free window on the page is 0→600ms. **There was never anywhere to
+   * put the work**, which is why four scheduling attempts each moved the stall
+   * to a different animation and none removed it.
    *
-   * ⚠ AND "DEFER IT AGAIN" CANNOT BE THE ANSWER, because the choreography Carl
-   * specified requires the cards to exist during the phrase. **The work has to
-   * move EARLIER, not later** — which is exactly what this file's own record
-   * prescribed for this moment: *"warm the canvas during the opening
-   * choreography — mounted hidden, well before the cards, so its setup lands in
-   * dead time — NOT to shorten this wait."*
-   *
-   * The opening runs ~11.5s of CSS-only choreography before Begin is even
-   * pressable. That is a large, genuinely idle window, and nothing in it
-   * competes with WebGL setup.
-   *
-   * ⚠ `requestIdleCallback` WITH A TIMEOUT, matching the pattern above: it fires
-   * only on a free thread, so it cannot land on the opening's own animation, but
-   * the timeout guarantees it eventually runs on browsers that stay busy.
+   * The canvas now mounts with the opening and the choreography waits for it —
+   * `openingArmed` below. Nothing schedules the compile, so the compile cannot
+   * be scheduled onto an animation.
    */
-  const [cardCanvasWarm, setCardCanvasWarm] = useState(false);
 
   /**
    * ⚠ DIAGNOSTIC ONLY — `?nowarmup=1` suppresses the hidden warm-up canvas.
@@ -519,64 +530,104 @@ export default function EnquiryOpening() {
       new URLSearchParams(window.location.search).get("nowarmup") === "1",
   );
 
+  /**
+   * ⚠ STEP 4 — THE ORDERING INVERSION. The opening's animated classes are held
+   * back until the warm-up canvas reports `compiled`, then applied together.
+   *
+   * ⚠ THIS IS THE FIX THE OTHER FOUR ATTEMPTS COULD NOT BE. Architect,
+   * 5 August, straight off `globals.css`: the opening animates WITHOUT A BREAK
+   * from 600ms to 12400ms (heading 600→2700, heading 2100→4200, subtext
+   * 3600→7800, Begin 7400→12400). The only animation-free window on the page is
+   * 0→600ms. So there was never a gap to schedule the compile INTO, and every
+   * attempt merely chose which animation to stutter.
+   *
+   * > The warm-up waited for the choreography and always lost, because there is
+   * > no gap. The choreography now waits for the compile.
+   *
+   * The 600/2100/3600/7400 delays run from the moment this flips, intact and in
+   * proportion, onto a thread with nothing left to do.
+   *
+   * ⚠ AND IT IS WHAT PUTS CARD 1 AT THE REVEAL'S MIDPOINT — Carl's approved
+   * instruction, unmet since it was given. Measured 5 August: card 1 was 791ms
+   * late and the precompile gap was 791ms, the same number, because
+   * `CARD_FIRST_ENTRANCE_MS` counts from the entrance clock's zero (when the
+   * precompile finishes) and not from the reveal's start. With the compile
+   * already done before the reveal begins, the two coincide.
+   *
+   * ⚠ NOT A FIXED DELAY BEFORE APPLYING THE CLASSES. That is a duration
+   * answering a state question, and this file has got that wrong three times
+   * (see `OPENING_WARM_LEAD_MS`).
+   *
+   * ⚠ THE BACKSTOP IS NOT OPTIONAL. If the compile never reports — no WebGL, a
+   * lost context, a driver fault — the opening must still run. A state gate is
+   * never the only exit; `ENTRANCE_ANCHOR_CEILING_MS` is why the 4 August
+   * failure cost only the cards and not the contact field too.
+   */
+  const [openingArmed, setOpeningArmed] = useState(false);
+  const armOpening = useCallback(() => setOpeningArmed(true), []);
+
+  /**
+   * A mask class once the opening is armed; the HELD state until then.
+   *
+   * ⚠ WITHHOLDING THE CLASS DOES NOT HOLD THE ELEMENT — IT COMPLETES IT. These
+   * masks' base state is unmasked, fully-visible text, which is the animation's
+   * END state. The first version of Step 4 returned `undefined` here, and the
+   * opening showed all of its text at once, held it for ~2 seconds, then wiped
+   * it in again from the left.
+   *
+   * ⚠ EVERY TIMING WAS CORRECT WHILE THAT WAS HAPPENING. The arm fired on the
+   * compile 3/3, card 1 sat at the midpoint, the gate did exactly what it was
+   * asked. A screenshot at +500ms is what found it. **A measurement of when
+   * something starts says nothing about what is on screen before it does.**
+   *
+   * `.enquiry-opening-held` asserts the keyframe's `from` state instead, so the
+   * text waits clipped and invisible and the animation joins it seamlessly.
+   *
+   * ⚠ THE BEGIN MASK IS NOT ROUTED THROUGH HERE. Its base rule already carries
+   * `clip-path: circle(0%)` — it holds itself — so it needs only its animation
+   * suppressed. See `.enquiry-button-mask--held` in `globals.css`.
+   */
+  const openingMask = useCallback(
+    (cls: string) => {
+      if (stage !== "opening" || reducedMotion) return undefined;
+      return openingArmed ? cls : "enquiry-opening-held";
+    },
+    [stage, openingArmed, reducedMotion],
+  );
   useEffect(() => {
-    if (cardCanvasWarm) return;
+    if (openingArmed) return;
+    // Reduced motion has no animations to protect — arm immediately so the
+    // opening is never gated on WebGL for a visitor who will not see a reveal.
+    if (reducedMotion) {
+      const id = window.setTimeout(armOpening, 0);
+      return () => window.clearTimeout(id);
+    }
+    const id = window.setTimeout(armOpening, OPENING_ARM_CEILING_MS);
+    return () => window.clearTimeout(id);
+  }, [openingArmed, reducedMotion, armOpening]);
 
-    // ⚠ GATED ON THE CHOREOGRAPHY BEING OVER, NOT ON A GUESSED DELAY.
-    //
-    // Two attempts at a fixed lead both landed inside the opening: 900ms put a
-    // 920ms task on the text reveals, and 5200ms merely moved it to +7194ms —
-    // still mid-choreography, because `requestIdleCallback` never finds genuine
-    // idle while the opening animates and the backstop timeout fires anyway.
-    //
-    // ⚠ THE MISTAKE BOTH TIMES WAS TREATING "HOW LONG" AS THE QUESTION. The real
-    // one is "has the opening finished", and the page already knows: `beginActive`
-    // is set at the Begin mask's `animationstart`, which is the last beat. Waiting
-    // for a STATE rather than a DURATION cannot be wrong by a few hundred
-    // milliseconds when a timing changes.
-    if (!beginActive) return;
-
-    let idleId: number | null = null;
-    let timerId: number | null = null;
-
-    // ⚠ A LEAD-IN FIRST, AND IT IS NOW PAST THE OPENING'S OWN CHOREOGRAPHY
-    // RATHER THAN JUST ITS FIRST FRAMES.
-    //
-    // Carl, 4 August: *"the text on the start page, where the ivory button is,
-    // stutters."* Measured on both cold and warm runs: a 920ms blocking task at
-    // +2763ms and a 695ms one at +1423ms, seven dropped frames across the
-    // opening.
-    //
-    // ⚠ THE WARM-UP WAS CHEAP WHEN IT WAS ADDED AND IS NOT ANY MORE. It compiled
-    // a plain glass card; the filament work since gave it TWO custom shaders,
-    // rim and bevel, each with a full circuit function. "Lands in dead time" was
-    // measured against the old cost.
-    //
-    // ⚠ AND `{ timeout: 3000 }` DEFEATED THE GUARD IT WAS ATTACHED TO. A
-    // `requestIdleCallback` timeout fires the callback whether or not the thread
-    // is free — so on a busy opening it ran at ~3900ms regardless, which is
-    // exactly where the 920ms task landed. **An idle callback with a short
-    // timeout is not an idle callback.**
-    //
-    // The opening runs ~11.5s before Begin is pressable, so there is room to
-    // wait for real idleness. The timeout is now long enough to be a genuine
-    // backstop rather than a schedule.
-    timerId = window.setTimeout(() => {
-      if (typeof window.requestIdleCallback === "function") {
-        idleId = window.requestIdleCallback(() => setCardCanvasWarm(true), { timeout: 6000 });
-      } else {
-        // No `requestIdleCallback` (Safari). Yield past the frame boundary.
-        timerId = window.setTimeout(() => setCardCanvasWarm(true), 0);
-      }
-    }, OPENING_WARM_LEAD_MS);
-
-    return () => {
-      if (idleId !== null && typeof window.cancelIdleCallback === "function") {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timerId !== null) window.clearTimeout(timerId);
-    };
-  }, [cardCanvasWarm, beginActive]);
+  /*
+   * ⚠ THE WARM-UP SCHEDULING EFFECT IS GONE, AND ITS DELETION IS THE FIX.
+   *
+   * It used to gate the warm-up canvas on `beginActive` plus
+   * `OPENING_WARM_LEAD_MS` plus a `requestIdleCallback`. Four variants of that
+   * scheduling were tried across two sessions — lead 900ms, lead 5200ms, gate on
+   * `beginActive`, gate on `animationend` — and every one of them moved the
+   * blocking task onto a different animation without ever removing it:
+   *
+   *     900ms   → stuttered the heading
+   *     5200ms  → stuttered the subtext
+   *     beginActive → stuttered the Begin reveal   (the stall Carl kept seeing)
+   *     animationend → removed the stall AND THE CARDS  (reverted, 8e562ed)
+   *
+   * ⚠ BECAUSE THERE WAS NO GAP TO SCHEDULE INTO. The opening animates without a
+   * break from 600ms to 12400ms, so `requestIdleCallback` never found genuine
+   * idle and its timeout — nominally a backstop — was in fact the only path.
+   *
+   * The canvas now mounts as soon as the opening does, and the CHOREOGRAPHY
+   * waits for it (`openingArmed` above). Nothing is scheduled, so nothing can be
+   * scheduled onto an animation.
+   */
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -1107,27 +1158,32 @@ export default function EnquiryOpening() {
               : " text-3xl sm:text-4xl leading-[1.15]"
           }`}
         >
+          {/* ⚠ `openingMask` — NOT `stage === "opening"` alone. The mask classes
+              carry the animations, so withholding the CLASS is what holds the
+              choreography until the compile has landed (Step 4, `openingArmed`).
+              Applying them all in one commit keeps the 600/2100/3600/7400 delays
+              in proportion to each other; they simply start later. */}
           {/* Desktop/tablet: two lines, original reveal */}
           <span className="hidden sm:block">
-            <div className={stage === "opening" ? "enquiry-heading-line1-mask" : undefined}>
+            <div className={openingMask("enquiry-heading-line1-mask")}>
               {HEADING_LINE1}
             </div>
-            <div className={stage === "opening" ? "enquiry-heading-line2-mask" : undefined}>
+            <div className={openingMask("enquiry-heading-line2-mask")}>
               {HEADING_LINE2}
             </div>
           </span>
           {/* Mobile: four lines, sequential reveal */}
           <span className="block sm:hidden">
-            <div className={stage === "opening" ? "enquiry-m-heading-line1-mask" : undefined}>
+            <div className={openingMask("enquiry-m-heading-line1-mask")}>
               {HEADING_M1}
             </div>
-            <div className={stage === "opening" ? "enquiry-m-heading-line2-mask" : undefined}>
+            <div className={openingMask("enquiry-m-heading-line2-mask")}>
               {HEADING_M2}
             </div>
-            <div className={stage === "opening" ? "enquiry-m-heading-line3-mask" : undefined}>
+            <div className={openingMask("enquiry-m-heading-line3-mask")}>
               {HEADING_M3}
             </div>
-            <div className={stage === "opening" ? "enquiry-m-heading-line4-mask" : undefined}>
+            <div className={openingMask("enquiry-m-heading-line4-mask")}>
               {HEADING_M4}
             </div>
           </span>
@@ -1272,7 +1328,7 @@ export default function EnquiryOpening() {
           per-canvas and dies with the node. Remove the switch when that question
           is closed.
         */}
-        {stage === "opening" && cardCanvasWarm && !suppressWarmup && (
+        {stage === "opening" && !suppressWarmup && (
           <div
             aria-hidden="true"
             data-testid="answer-card-warmup"
@@ -1286,7 +1342,7 @@ export default function EnquiryOpening() {
               pointerEvents: "none",
             }}
           >
-            <AnswerCardCanvas active={false} warm />
+            <AnswerCardCanvas active={false} warm onCompiled={armOpening} />
           </div>
         )}
 
@@ -1294,13 +1350,13 @@ export default function EnquiryOpening() {
           <>
             <div className="mt-6">
               {/* Desktop/tablet: single block reveal */}
-              <p className={`hidden sm:block text-base text-neutral-400 leading-relaxed${reducedMotion ? "" : " enquiry-subtext-mask"}`}>
+              <p className={["hidden sm:block text-base text-neutral-400 leading-relaxed", openingMask("enquiry-subtext-mask")].filter(Boolean).join(" ")}>
                 {SUBTEXT}
               </p>
               {/* Mobile: two-line sequential reveal */}
               <div className="block sm:hidden text-base text-neutral-400 leading-relaxed">
-                <div className={reducedMotion ? undefined : "enquiry-m-subtext-line1-mask"}>{SUBTEXT_M1}</div>
-                <div className={reducedMotion ? undefined : "enquiry-m-subtext-line2-mask"}>{SUBTEXT_M2}</div>
+                <div className={openingMask("enquiry-m-subtext-line1-mask")}>{SUBTEXT_M1}</div>
+                <div className={openingMask("enquiry-m-subtext-line2-mask")}>{SUBTEXT_M2}</div>
               </div>
             </div>
             {/* Begin: a full-width, block-level, relative parent holds two
@@ -1321,7 +1377,7 @@ export default function EnquiryOpening() {
                 immediately usable. */}
             <div className="mt-10 enquiry-begin-parent">
               <div
-                className={`enquiry-button-mask${reducedMotion ? " enquiry-button-mask--static" : ""}`}
+                className={`enquiry-button-mask${reducedMotion ? " enquiry-button-mask--static" : ""}${!reducedMotion && !openingArmed ? " enquiry-button-mask--held" : ""}`}
                 onAnimationStart={(e) => {
                   // Activate the sibling hit target the instant the visible reveal
                   // STARTS. Guard to this wrapper's own radial reveal only.
