@@ -492,6 +492,33 @@ export default function EnquiryOpening() {
    * the timeout guarantees it eventually runs on browsers that stay busy.
    */
   const [cardCanvasWarm, setCardCanvasWarm] = useState(false);
+
+  /**
+   * ⚠ DIAGNOSTIC ONLY — `?nowarmup=1` suppresses the hidden warm-up canvas.
+   *
+   * Arm B of `verify/warmup-value.mjs`, which measures whether that canvas buys
+   * the REAL one anything (Architect, 5 August, Step 2).
+   *
+   * ⚠ LAZY INITIALISER, NOT AN EFFECT, AND DELIBERATELY. Reading this in an
+   * effect and calling `setState` adds a SECOND `react-hooks/set-state-in-effect`
+   * error to a file whose recorded baseline is exactly one — and the standing
+   * rule is that known errors are not to be increased. The initialiser runs once
+   * before first paint, so there is no cascading render to avoid in the first
+   * place.
+   *
+   * SSR-safe via the `typeof window` guard: the server renders `false`, and
+   * hydration agrees on every URL that lacks the flag — which is every URL a
+   * visitor ever sees.
+   *
+   * ⚠ IT MUST NEVER GATE THE REAL CANVAS. Suppressing the warm-up is a
+   * measurement; suppressing the entrance is the 4 August failure.
+   */
+  const [suppressWarmup] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("nowarmup") === "1",
+  );
+
   useEffect(() => {
     if (cardCanvasWarm) return;
 
@@ -954,10 +981,38 @@ export default function EnquiryOpening() {
 
                 Renders only at >= 1280px and only for Q5; absent otherwise.
               */}
+              {/*
+                ⚠ `warm` IS DELIBERATELY NOT PASSED. It defaults to `true`.
+
+                Architect, 5 August (`live-work/architect-answer-begin-stall.md`
+                Step 1): `cardCanvasWarm` was ONE FLAG DOING TWO JOBS — gating
+                the hidden warm-up canvas AND gating this, the real one. On this
+                side `warm` feeds both `mayCompile` and `entranceRunning`, so a
+                flag that never flipped meant: no precompile, no `onWarm`, no
+                `compiled` — AND THE CARDS NEVER ENTERED.
+
+                ⚠ THAT IS THE WHOLE OF THE 4 AUGUST FAILURE, reverted at
+                `8e562ed`. Gating the warm-up on the Begin reveal's
+                `animationend` was sound in itself; the listener lives inside the
+                `stage === "opening"` branch, and Begin is pressable at 7400ms
+                while the reveal runs to 12400ms — so pressing Begin in those
+                five seconds DESTROYS THE ELEMENT BEFORE ITS `animationend`
+                FIRES. A gate whose opening event is destroyed by the action it
+                waits behind. It was reported as a trade-off; it was a defect.
+
+                Unhooking is safe, not a weakening: this canvas only mounts
+                inside the phrase band, gated on `stage !== "opening"`, so it
+                does not exist until after Begin — the choreography `warm` was
+                protecting is already over by then. On every normal path the flag
+                was already true when this mounted.
+
+                The `warm` prop and `mayCompile` STAY on the component: that seam
+                is what an early-mount restructure would use. This changes the
+                caller, not the contract.
+              */}
               {qNum === 5 && (
                 <AnswerCardCanvas
                   active={isActive}
-                  warm={cardCanvasWarm}
                   onEntranceStart={noteCardEntranceStart}
                 />
               )}
@@ -1198,10 +1253,26 @@ export default function EnquiryOpening() {
           shaders and build the transmission target; the real canvas then hits a
           warm driver cache.
 
-          The opening runs ~11.5s of CSS-only choreography before Begin is
-          pressable, so this work lands in genuinely dead time.
+          ⚠ AND THE CLAIM THAT USED TO SIT HERE — "the opening runs ~11.5s of
+          CSS-only choreography, so this work lands in genuinely dead time" — IS
+          FALSE. Architect, 5 August, straight off `globals.css`: heading 600→2700,
+          heading 2100→4200, subtext 3600→7800, Begin reveal 7400→12400. THE
+          OPENING ANIMATES WITHOUT A BREAK FROM 600ms TO 12400ms. The only
+          animation-free window on the page is 0→600ms.
+
+          That is why `requestIdleCallback` has never once fired on genuine idle
+          here and every backstop timeout has fired unguarded: the backstop is not
+          a backstop, it is the only path. Each scheduling attempt merely chose
+          WHICH ANIMATION TO STUTTER — 900ms picked the heading, 5200ms the
+          subtext, `beginActive` the Begin reveal.
+
+          ⚠ `?nowarmup=1` SUPPRESSES THIS BLOCK — diagnostic only, for
+          `verify/warmup-value.mjs` arm B. The open question is whether this
+          canvas buys the real one anything at all, given a WebGL context is
+          per-canvas and dies with the node. Remove the switch when that question
+          is closed.
         */}
-        {stage === "opening" && cardCanvasWarm && (
+        {stage === "opening" && cardCanvasWarm && !suppressWarmup && (
           <div
             aria-hidden="true"
             data-testid="answer-card-warmup"

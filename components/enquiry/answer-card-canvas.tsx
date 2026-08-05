@@ -1767,7 +1767,16 @@ export default function AnswerCardCanvas({
    * after it rather than making the user wait longer overall.
    */
   const [compiled, setCompiled] = useState(false);
-  const markWarm = useCallback(() => setCompiled(true), []);
+  const markWarm = useCallback(() => {
+    // ⚠ DIAGNOSTIC ONLY — `verify/warmup-value.mjs` reads this mark, paired with
+    // `card-canvas-created` below. Mount → compiled IS THE NUMBER that decides
+    // whether the hidden warm-up canvas buys the real one anything at all
+    // (Architect, 5 August, `live-work/architect-answer-begin-stall.md` Step 2).
+    // `performance.mark` is a no-op cost and safe to leave; remove it only when
+    // the question it answers is closed.
+    try { performance.mark("card-canvas-compiled"); } catch {}
+    setCompiled(true);
+  }, []);
 
   /**
    * Announce the entrance's real start, once.
@@ -1840,6 +1849,9 @@ export default function AnswerCardCanvas({
          */
         onCreated={({ gl }) => {
           gl.debug.checkShaderErrors = false;
+          // ⚠ DIAGNOSTIC ONLY — pairs with `card-canvas-compiled`. See the note
+          // at `markWarm`.
+          try { performance.mark("card-canvas-created"); } catch {}
         }}
       >
         <CardScene
