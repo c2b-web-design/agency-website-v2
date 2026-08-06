@@ -141,6 +141,44 @@ origin-centred arc passed 195 units to its right.
 maximum** and the face at **38%** — a brightness-based hover had little room. A moving light needs
 none: what changes is *which surfaces are lit*, not how bright the card is.
 
+### ⚠⚠ THE CONTACT FIELD ALREADY DOES THIS, AND IT IS APPROVED
+
+**Carl pointed the Builder at the client info section at the end of the session, and it settles the
+next chunk.** `?skip=1` reaches it (a dev door added the same session — see below).
+
+**The four contact boxes are lit by a single ORBITING light on a 9000ms circuit**
+(`contact-field-light-rig.tsx`: `ORBIT_FRONT_MS` 6000 visible + `ORBIT_BACK_MS` 3000 hidden). What
+looks like an animated gradient on each face **is one source travelling behind four translucent
+slabs.** Sampled across the circuit (`verify/client-info-motion.mjs`):
+
+| orbit | `--opal-shine` | the faces |
+|---:|---:|---|
+| 0° | 0.835 | bright band high in each face |
+| 92° | 0.699 | band slid down and left |
+| 138–230° | 0.450 | **deep and dark — only the gold rim holds** |
+| 322° | 0.847 | light climbing back |
+
+⚠ **THREE THINGS THIS SETTLES:**
+
+1. **The hover mechanism is not a new idea to invent — it is the corridor's existing language
+   arriving at the card.** The field has been doing it since it was approved. That is a far stronger
+   argument for the next chunk than "it looked good in the clay study".
+2. **The Send button rides the same clock.** It is a DOM element no WebGL light can reach, driven
+   through the `--opal-shine` custom property written on the same frame as the light moves. One
+   light event, two rendering technologies. **The pattern for keeping non-WebGL elements in step
+   already exists** — do not invent a second one.
+3. ⚠ **A BUILDER CLAIM IS RETRACTED BY THIS.** Earlier in the session the Builder argued the field's
+   faces were *"blue and lit from within"* and concluded the answer card needed its own material
+   tint. **That was read off a SINGLE FRAME and it is wrong** — at 184° the field's faces are nearly
+   as dark as the card's. **The field's advantage over the card is not material, it is that it has a
+   moving light and the card does not.** Give the card the same travelling source and the gap
+   largely closes.
+
+⚠ **AND THE GOLD RIM IS THE CONSTANT.** It holds its outline at every phase while the faces come and
+go. **The rim says "object"; the light says "alive."** That division is worth preserving when the
+card gets the same treatment — the answer card's own rim carries selection (D-029), so it must stay
+legible at every point of the hover sweep.
+
 ### What Carl specified
 
 **Resting:** the same light, **static, in front of the card, lower intensity**. Each card gets its
@@ -202,6 +240,31 @@ filament."*
 
 ---
 
+## ⚠⚠ THE WORKING RULE THIS SESSION PRODUCED — reading a file is not seeing it
+
+**Carl, on discovering the Builder had never watched the contact field:** *"It is a lesson for me.
+Id assumed you could already see it, its in the codebase, the files. I didnt realise that at times i
+would have to point you at stuff."*
+
+⚠ **THE BUILDER HAD READ `contact-field-light-rig.tsx` THE SAME SESSION** — and quoted its rAF
+pattern while building the clay light. **It took the code structure and missed what the thing looks
+like**, because source tells you how something is implemented and never how it reads on screen.
+
+⚠ **THIS IS NOT A LIMITATION TO APOLOGISE FOR, IT IS A PROCEDURE TO FOLLOW.** Before designing
+anything visual, RUN the parts of the site that already solve a similar problem and WATCH them.
+Reading for the thing you are looking for will not tell you what is already there.
+
+⚠ **AND ONE FRAME IS NOT A MOVING OBJECT.** Carl: *"did you see a single snapshot or many. this
+thing has an orbital light and the gradient 'appears' to be animated."* A single screenshot of an
+animated object is a claim about one instant; the Builder described it as the object itself and drew
+a wrong conclusion about the material from it. **Sample across the cycle, and never on a divisor of
+its period.**
+
+**Carl should keep pointing.** The assumption that the codebase is visible to a reader is reasonable
+and wrong; a two-word instruction — *"go look at X"* — is worth more than a session of inference.
+
+---
+
 ## ⚠ Two Builder errors worth inheriting
 
 **1. A shell rewrite corrupted a source file.** `Set-Content` was used twice for edits the Edit tool
@@ -237,6 +300,11 @@ before theorising about the write.**
 http://localhost:3000/start                the shipped glass card, five cards
 http://localhost:3000/start?clay=1         THE FORM STUDY — plastic, white face,
                                            moving light, shadows, all five cards
+http://localhost:3000/start?skip=1         THE CONTACT FIELD — jumps straight to
+                                           completion. A DEV DOOR: the corridor
+                                           cannot reach it because Q5 has no
+                                           selectable cards. DELETE when chunk 5
+                                           gives Q5 real selection.
 http://localhost:3000/start?cardrig=1      [1-6] geometry, [7-9] glass/light, [r] rim rough,
                                            [m] metal, [f] filament, [d] cutoff, [p] spill,
                                            [z] light height, [b] glass filter,
@@ -266,4 +334,8 @@ not, and a drawing is cheaper than an approval given against the wrong object.
 
 *6 August 2026. The lockup is out, the cross-section is rebuilt and confirmed by eye, and the
 lighting system is saved. All five cards carry card 2's vertical arc; moving the other four lights
-into their corners is the next chunk. The glass material has not been seen on the new geometry.*
+into their corners is the next chunk. The glass material has not been judged on the new geometry.*
+
+*And the last hour changed what the next chunk IS. The contact field — approved, shipped, two
+components away — has been doing the travelling-light thing all along. **The card is not getting a
+new idea; it is getting the corridor's own language.***

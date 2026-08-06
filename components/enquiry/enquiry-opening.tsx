@@ -428,7 +428,41 @@ function q5ReflectionVars(options: string[], selected: Set<string>): React.CSSPr
 }
 
 export default function EnquiryOpening() {
-  const [stage, setStage] = useState<"opening" | "active" | "complete">("opening");
+  /**
+   * ⚠ `?skip=1` — JUMP STRAIGHT TO THE CONTACT FIELD. A DEV DOOR, NOT A FEATURE.
+   *
+   * Carl, 6 August 2026: *"If you cant get there build a simple button so we can
+   * get there... its getting replaced anyway."*
+   *
+   * ⚠ THE CORRIDOR CANNOT REACH COMPLETION RIGHT NOW, and that is documented and
+   * accepted rather than broken: Q5's five CSS answer cards were removed for the
+   * WebGL rebuild (*"just remove the 5 cards that are there now and build"*), so
+   * there is nothing at Q5 that registers as a SELECTION. The WebGL cards fire
+   * their filament on pointerdown, which is deliberately not the same thing.
+   *
+   * ⚠ WHY IT MATTERS ENOUGH TO ADD A DOOR. Carl: *"Its important that you see it,
+   * because what comes before it, what weve been building, has more than a direct
+   * relationship to what comes after."* The contact field is four boxes built
+   * from the same rim/bevel/face vocabulary as the answer card — so a change to
+   * the card's cross-section is a statement about the field too, and the two
+   * cannot be judged apart.
+   *
+   * ⚠ DELETE THIS WHEN Q5 CARRIES REAL SELECTION AGAIN (chunk 5). It is a
+   * scaffold with an expiry, and it is gated on a query param so it can never
+   * fire for a visitor who has not typed it.
+   */
+  const [stage, setStage] = useState<"opening" | "active" | "complete">(() => {
+    // ⚠ A LAZY INITIALISER, NOT AN EFFECT. An effect would render the opening
+    // for a frame and then swap, firing the opening's choreography and leaving
+    // the contact field's own entrance racing it.
+    //
+    // ⚠ AND IT READS `window` INSIDE THE INITIALISER, which only runs on the
+    // client — reading it at module scope would break the server render.
+    if (typeof window === "undefined") return "opening";
+    const q = new URLSearchParams(window.location.search).get("skip");
+    const skip = q !== null && q !== "" && q !== "0" && q !== "false";
+    return skip ? "complete" : "opening";
+  });
   const [activeQ, setActiveQ] = useState(5);
   const [memory, setMemory] = useState<MemoryItem[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
