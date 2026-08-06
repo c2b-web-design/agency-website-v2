@@ -61,15 +61,59 @@ export const CARD_GAP_PX = 8;
 export const RIM_TUBE_RADIUS = 2;
 
 /**
+ * The bevel's rise as a FRACTION of the rim's apex — Carl, 5 August: *"change the
+ * bevel proportionate to the filament."*
+ *
+ * ⚠ THE PROPORTION IS THE APPROVED THING, NOT THE NUMBER. `BEVEL_RISE` was a
+ * hand-entered 1.6 against a rim apex of 2.0, and the ratio between them is what
+ * the build actually depends on: the bevel must rise enough to read as a forward
+ * slope while staying contained by the rim. 0.8 preserves exactly the geometry
+ * that was approved.
+ *
+ * ⚠ AND IT MUST STAY BELOW 1.0. A first build set the rise to 2.5 against a rim
+ * apex of 2.0 — the bevel stood proud of the rim, the face was anchored below it,
+ * and the card rendered with a BLACK INTERIOR: the face at the bottom of a well,
+ * correctly lit and correctly invisible. Deriving the rise removes the way that
+ * defect is reached by hand, but a ratio at or above 1.0 reintroduces it.
+ *
+ * ⚠ THIS IS WHY THE RIM CAN NOW BE SHRUNK SAFELY. Carl's chunk lowers the
+ * filament below the convex face's apex so neighbouring faces catch light on the
+ * curve turned TOWARD the source rather than away. Taking `RIM_TUBE_RADIUS` down
+ * used to mean remembering to take the bevel with it; now the bevel follows.
+ */
+export const BEVEL_RISE_RATIO = 0.8;
+
+/**
  * Width of the bevel band — the equidistant slope from the rim inward and
  * toward the viewer.
  *
  * Carl's specification, 3 August: *"a 'slope' that comes toward us. Equidistant
  * all the way around. Top, bottom, sides and corners."*
  *
+ * ⚠ ZERO SINCE 5 AUGUST 2026 — THE BEVEL IS REMOVED. Carl: *"a bevel may not be
+ * neccersary at all. the face can rise from the bottom of the rim/filament, its
+ * so small on screen anyway."*
+ *
+ * ⚠ HE IS RIGHT ABOUT THE SCALE AND IT IS THE WHOLE ARGUMENT. At 4 units on a
+ * 48-unit card the bevel was ~4 SCREEN PIXELS — a sixth of the card's height
+ * spent on a facet too small to read as a facet, while creating the
+ * discontinuity that made the face look like a separate object floating in the
+ * middle. **It cost the thing it was supposed to provide.**
+ *
+ * ⚠ AND IT IS KEPT AS A ZERO RATHER THAN DELETED because the budget maths
+ * (`faceInset`, `cardBudget`) threads it through every derived dimension, and a
+ * zero flows through all of it correctly: the face simply grows by what the
+ * bevel was eating — 8 units of height returned, face height 34 -> 40. Deleting
+ * the parameter would mean editing six call sites to prove the same thing.
+ *
+ * ⚠ RESTORING IT IS ONE EDIT, and the geometry still supports it — but note that
+ * `BEVEL_RISE` is derived from the rim, so a restored bevel would rise forward
+ * again unless that is reconsidered too. The old model is documented at
+ * `FACE_TUCK_RATIO`.
+ *
  * ⚠ NOT AN APPROVED VALUE. Adjustable; PROVISIONAL.
  */
-export const BEVEL_WIDTH = 4;
+export const BEVEL_WIDTH = 0;
 
 /**
  * How far the bevel rises toward the viewer across its width.
@@ -77,18 +121,23 @@ export const BEVEL_WIDTH = 4;
  * This is what makes the slope read as coming forward rather than as a flat
  * inward step — Carl: *"a 'slope' that comes toward us."*
  *
+ * ⚠ DERIVED FROM THE RIM, NOT HAND-ENTERED — Carl, 5 August: *"change the bevel
+ * proportionate to the filament."* It is `RIM_TUBE_RADIUS * BEVEL_RISE_RATIO`,
+ * and at the approved 2.0 × 0.8 it evaluates to the 1.6 that was approved. See
+ * `BEVEL_RISE_RATIO` for why the ratio rather than the number is the real value.
+ *
  * ⚠ IT MUST NOT EXCEED THE RIM'S APEX (`RIM_TUBE_RADIUS`), OR THE BEVEL BREACHES
  * THE SILHOUETTE'S FRONTMOST SURFACE. A first build set this to 2.5 against a
  * rim apex of 2.0: the bevel stood proud of the rim, the face was anchored below
  * it, and the card rendered with a black interior — the face sitting at the
- * bottom of a well, correctly lit and correctly invisible.
+ * bottom of a well, correctly lit and correctly invisible. **Deriving it means
+ * shrinking the rim can no longer strand the bevel above it.**
  *
- * At 1.6 against a rim apex of 2.0 the bevel rises to 80% of the rim's height:
- * a clear forward slope that still reads as contained by the rim. The half-tube
- * remains the frontmost surface, which is what makes it the outline — and, in
- * chunk 4, what keeps the filament unobstructed.
+ * At 80% of the rim's height the bevel is a clear forward slope that still reads
+ * as contained by the rim. The half-tube remains the frontmost surface, which is
+ * what makes it the outline — and what keeps the filament unobstructed.
  */
-export const BEVEL_RISE = 1.6;
+export const BEVEL_RISE = RIM_TUBE_RADIUS * BEVEL_RISE_RATIO;
 
 /**
  * Height of the convex crown above the face's base plane, on the SHORT axis.
@@ -181,8 +230,160 @@ export const CROWN_PLATEAU_U = 0.72;
  * contact field uses the same mechanism (`FACE_SEAM_SINK`) for a cross-section
  * that is otherwise INVERTED relative to this one — there the face is a window
  * in a frame; here the interior comes forward.
+ *
+ * ⚠ THE TUCK IS NOW PROPORTIONATE TO THE BEVEL, NOT A FIXED 0.5 — Carl,
+ * 5 August, on shrinking the rim to lower the filament: *"you may have to change
+ * the face slightly now that the bevel will become smaller."*
+ *
+ * The face's apex is anchored to the bevel's inner edge (`bevelInnerZ`), so a
+ * fixed drop below a SHRINKING bevel eats the whole rise. At `tubeRadius` 0.6 the
+ * bevel rises only 0.48 — a 0.5 tuck would put the face apex BELOW where the
+ * bevel began, which is the "face at the bottom of a well" defect this module
+ * already records, reached from the other direction.
+ *
+ * ⚠ FACE WIDTH NEEDS NO SUCH FIX — it was already derived. `faceInset` is
+ * `2 * tubeRadius + bevelWidth`, so `cardBudget` widens the face and keeps its
+ * corner radius concentric automatically as the rim comes down. Only the Z
+ * placement was hand-held.
  */
-export const FACE_SEAM_SINK = CROWN_HEIGHT + 0.5;
+export const FACE_TUCK_RATIO = 0.3125;
+
+/**
+ * ⚠ THE CROSS-SECTION WAS REBUILT ON 5 AUGUST 2026, AND THE VALUES ABOVE ARE THE
+ * OLD MODEL. Read this before trusting `FACE_TUCK_RATIO`, `FACE_SEAM_SINK` or
+ * `BEVEL_WIDTH` — the card is no longer three pieces with a step between them.
+ *
+ * ⚠ WHAT WAS WRONG. The card was a rim tube, a bevel rising forward from it, and
+ * a face mesh floating **5.00 units behind the bevel's inner edge with nothing
+ * modelled across the gap** (measured by `verify/cross-section.mjs`). The face's
+ * apex sat 0.90 BELOW the rim's apex, so the interior could never catch light
+ * across its top. Carl drew what the renderer actually contained — two tubes,
+ * two bevel stubs pointing at nothing, and a dome floating free — and it was
+ * exact.
+ *
+ * ⚠ HOW IT SURVIVED SO LONG. *"Parts dont exist and its difficult to tell
+ * whether something exists in total darkness and no light can illuminate
+ * something that is not there."* A dark transmissive card looks identical
+ * whether a surface is present or absent, so an entire session of lighting work
+ * — light level, direction, type, roughness, clearcoat — was spent tuning
+ * illumination for geometry that was missing.
+ *
+ * ⚠ AND THE APPROVALS DID NOT PROTECT IT, WHICH IS THE PROCESS LESSON. Carl:
+ * *"approved geometry are meaningless now because i was approving things built
+ * on what i thought was there."* The "recessed, never proud" decision was taken
+ * by the Builder under delegation, written up with four confident reasons, and
+ * then read as settled because it was in a governance file. **The reasoning was
+ * inverted, not merely wrong** — reason 2 argued a proud face would obstruct the
+ * filament, when Carl's requirement is that the face be proud precisely SO IT
+ * ACTS ON the other surfaces.
+ *
+ * ⚠ THE TARGET IS THE CSS CARD'S IMPLIED GEOMETRY, not the sketch literally.
+ * Carl: *"whats important is its the same implied geometry as the CSS version."*
+ * `.enquiry-card` in `app/globals.css` describes ONE continuous form — its inset
+ * shadows are a shoulder turning inward on all four sides (light at top and
+ * left, dark at bottom and right), with the interior rising out of that turn and
+ * no seam anywhere. It reads as solid because it is described as one solid
+ * thing.
+ *
+ * ⚠ THE BEVEL IS GONE, ON CARL'S INSTRUCTION: *"a bevel may not be neccersary at
+ * all. the face can rise from the bottom of the rim/filament, its so small on
+ * screen anyway."* He is right about the scale — the bevel was 3 units on a
+ * 48-unit card, roughly 3 screen pixels, spending a sixth of the height on a
+ * facet too small to read while creating the very discontinuity that made the
+ * face look like a separate object.
+ *
+ * See `RIM_TUBE_RADIUS`, `BEVEL_WIDTH` and `FACE_RISE_FROM` for the new values.
+ */
+
+/**
+ * How far the face's base plane sits below the bevel's inner (front) edge.
+ *
+ * ⚠ SUPERSEDED BY `FACE_RISE_FROM` — see below. Retained only because the
+ * contact field declares its own constant of the same name and the two used to
+ * be described as the same mechanism; they are no longer. Nothing in the answer
+ * card reads this.
+ */
+export const FACE_SEAM_SINK = CROWN_HEIGHT + BEVEL_RISE * FACE_TUCK_RATIO;
+
+/**
+ * Where the face's edge begins, in z — the height it rises FROM.
+ *
+ * ⚠ THE FACE NOW STARTS AT THE RIM'S BASE AND CLIMBS PAST ITS APEX. That is the
+ * whole correction of 5 August 2026, and it is the reverse of what the card did
+ * before. Carl: *"the face can rise from the bottom of the rim/filament"*, and
+ * on where it must end up: *"the highest part of the convex face should sit
+ * above the rim to have effect on the other faces."*
+ *
+ * ⚠ ZERO IS THE TUBE'S BASE, not its apex. The rim is a half-tube swept about a
+ * path at z = 0, so it occupies z 0..`RIM_TUBE_RADIUS` and its widest point — the
+ * base of the visible bead — is exactly z = 0. Starting the face there means the
+ * two surfaces meet at the same height with nothing to bridge: **the 5.00-unit
+ * gap is not closed, it ceases to exist.**
+ *
+ * ⚠ AND THERE IS NOTHING TO TUCK ANY MORE. `FACE_TUCK_RATIO` and
+ * `FACE_SEAM_SINK` existed to hold the face BELOW a lip it was never joined to.
+ * With the bevel gone and the face rising from the tube's own base, the concepts
+ * they encode no longer describe the object.
+ */
+export const FACE_RISE_FROM = 0;
+
+/**
+ * How far the face's apex stands PROUD of the rim's apex, in world units.
+ *
+ * ⚠ PROUD, NOT RECESSED, AND THIS REVERSES A DOCUMENTED DECISION. The old model
+ * put the face apex 0.90 BELOW the rim (`FACE_TUCK_RATIO`), recorded with four
+ * reasons and read as settled. Carl overturned it: *"the highest part of the
+ * convex face should sit above the rim to have effect on the other faces."*
+ *
+ * ⚠ THE REQUIREMENT IS FUNCTIONAL, NOT AESTHETIC, and that is why the old
+ * reasoning was inverted rather than merely wrong. Its second reason argued a
+ * proud face would obstruct the filament's light travelling inward. **The point
+ * is that the face must be high enough to ACT ON the other surfaces** — a crown
+ * sunk below its own rim is shaded by it and can never catch light across its
+ * top, which is exactly why the card read as an outline around a dark hole.
+ *
+ * ⚠ "PROUD", NOT "A DOME" — Carl: *"it should not be a dome but the highest part
+ * of the convex face should sit above the rim."* A crown reading as a dome was
+ * rejected once already (see `CROWN_HEIGHT`, where 7.5 measured 36.4° and was
+ * called a dome). This value has to satisfy both ends of that sentence.
+ *
+ * ⚠ 2.0 IS THE FLOOR THE TILT GUARD IMPOSES, NOT A PREFERENCE — and the guard
+ * caught a value that looked reasonable. 1.0 was tried first and produced a face
+ * tilt of **13.3°, below the 16° minimum** (`MIN_FACE_TILT_DEGREES`): the
+ * convexity would have been real and unable to show itself, which is precisely
+ * the defect this rebuild exists to fix.
+ *
+ * ⚠ THE CAUSE IS THAT REMOVING THE BEVEL MADE THE FACE WIDER. The short-axis
+ * half-span went 17 -> 20, so the same rise spread over a longer run is a
+ * shallower curve. **Two changes that each looked safe interacted**, and only
+ * re-running the budget arithmetic found it.
+ *
+ *     proud 1.00  ->  13.3°   under the guard
+ *     proud 1.75  ->  16.4°   the bare minimum
+ *     proud 2.00  ->  17.4°   shipped — clear of the floor, still not a dome
+ *     proud 3.00  ->  21.4°
+ *
+ * At 2.0 the apex sits at z = 4.0 against a rim apex of 2.0: unambiguously the
+ * frontmost point of the card, on a 40-unit span, at less than half the tilt the
+ * rejected dome reached.
+ *
+ * PROVISIONAL under D-035.
+ */
+export const FACE_PROUD_OF_RIM = 2.0;
+
+/**
+ * The crown's height, derived so the apex lands exactly `FACE_PROUD_OF_RIM`
+ * above the rim.
+ *
+ * ⚠ DERIVED, NOT TYPED, so the two cannot drift apart. The face rises from
+ * `FACE_RISE_FROM` (the tube's base, z = 0) and must reach
+ * `RIM_TUBE_RADIUS + FACE_PROUD_OF_RIM`, so the crown IS that difference. Under
+ * the old model `CROWN_HEIGHT` and the sink were two hand-held numbers that had
+ * to be changed together, and the contact field's own copy of this records
+ * getting that arithmetic wrong once — *"4.15 put the peak at 8.85, i.e. 0.85
+ * PROUD of the rim"* — caught by redoing the sums rather than by looking.
+ */
+export const FACE_CROWN_RISE = RIM_TUBE_RADIUS + FACE_PROUD_OF_RIM - FACE_RISE_FROM;
 
 // ── The budget: three coupled quantities, one 48px axis ──────────────────────
 
@@ -608,53 +809,32 @@ export const CARD_RISE_LADDER_MS = [0, 1, 2, 3, 4].map(
 );
 
 /**
- * ⚠ THE SIXTH BEAT — the lockup fades in once all five cards are in place.
+ * When the whole entrance has finished, measured from the phrase reveal
+ * starting: the last card's start plus its own rise.
  *
- * Carl, 4 August: *"There should be a 6 beat and that is the text underneath
- * fading in."* And, when asked what "the text underneath" meant: *"by text
- * underneath i mean 'c2b DESIGN'."* It is the BACKDROP, not answer labels.
+ * ⚠ FIVE BEATS, NOT SIX — THE LOCKUP AND ITS BEAT WERE REMOVED ON CARL'S
+ * INSTRUCTION, 5 August 2026. Beat six was the `c2b DESIGN` backdrop fading in
+ * behind the cards (*"There should be a 6 beat and that is the text underneath
+ * fading in"*), and the three constants that timed it —
+ * `LOCKUP_FADE_DELAY_MS`, `LOCKUP_FADE_OVERLAPPED_DELAY_MS` and
+ * `LOCKUP_FADE_DURATION_MS` — went with it.
  *
- * ⚠ IT SPANS ALL FIVE CARDS AND ARRIVES AS ONE EVENT. Carl: *"It spans the 5
- * cards"* and *"The cards fade in at a certain speed, the text should do the
- * same. 6 beats instead of 5."* One lockup, one fade, at the cards' own 700ms —
- * not five per-region fades, which would fold beat six back into the ladder.
+ * ⚠ CARL'S REASONING WAS THAT THE FEATURE WAS NEVER NECESSARY, only the state
+ * change it was serving: *"This is the reason the background exists. I needed
+ * something to distinguish between card resting state and hover state... Is it
+ * necessary? No. Is a resting state and hover state necessary. Yes."* The
+ * distinction returns on the card's own surface, as the CSS version does it.
+ *
+ * ⚠ THE EXPORT SURVIVES THE CUT DELIBERATELY, because it does not belong to the
+ * lockup — it means *"when is the entrance over"*, and there is still an
+ * entrance. `enquiry-opening.tsx` imports it so the contact field's own WebGL
+ * warm-up cannot land inside the card ladder. Measured 4 August, before that
+ * guard existed: a 355ms blocking task at +2622ms after Begin, between card 2
+ * and card 3. **That guard is still needed and still correct** — only its value
+ * changes, 6330 -> 5440, because the thing it waits for is genuinely shorter now.
  *
  * ⚠ DERIVED, NEVER TYPED. `enquiry-opening.tsx` records that a hand-written
- * end-of-choreography value went stale TWICE. The last card starts at 740 and
- * runs 700, so the ladder ends at 1440 and the lockup begins there.
- */
-export const LOCKUP_FADE_DELAY_MS =
-  CARD_RISE_LADDER_MS[CARD_RISE_LADDER_MS.length - 1] + CARD_RISE_DURATION_MS;
-
-/**
- * ⚠ BEAT SIX OVERLAPS TOO, BY THE SAME RULE AS THE CARDS. Carl's *"the fade in
- * doesnt have to complete before the next element"* is a statement about the
- * whole choreography, not about cards only — so the lockup begins as the last
- * card is reaching its full appearance rather than after it has settled.
- *
- * Without this the sequence would go legato, legato, legato, legato, **stop**,
- * then the lockup — a gap of a full card-length in the middle of a phrase that
- * is meant to flow.
- */
-export const LOCKUP_FADE_OVERLAPPED_DELAY_MS =
-  CARD_RISE_LADDER_MS[CARD_RISE_LADDER_MS.length - 1] +
-  Math.round(CARD_RISE_DURATION_MS * CARD_OVERLAP);
-
-/** How long the lockup takes to fade up. The cards' own duration — Carl: *"the same"*. */
-export const LOCKUP_FADE_DURATION_MS = CARD_RISE_DURATION_MS;
-
-/**
- * When the whole six-beat entrance has finished, measured from Begin.
- *
- * ⚠ IT MUST USE THE OVERLAPPED DELAY, because that is when beat six ACTUALLY
- * starts. Deriving it from the non-overlapped `LOCKUP_FADE_DELAY_MS` would
- * overstate the end by one overlap and — since this is what the contact field's
- * warm-up now waits for — would delay that warm-up for no reason.
- *
- * ⚠ AND IT IS CONSUMED OUTSIDE THIS MODULE: `enquiry-opening.tsx` imports it so
- * the contact field's own WebGL warm-up cannot land inside the card ladder.
- * Measured 4 August, before that guard existed: a 355ms blocking task at
- * +2622ms after Begin, between card 2 and card 3.
+ * end-of-choreography value went stale TWICE.
  */
 export const ENTRANCE_END_MS =
-  LOCKUP_FADE_OVERLAPPED_DELAY_MS + LOCKUP_FADE_DURATION_MS;
+  CARD_RISE_LADDER_MS[CARD_RISE_LADDER_MS.length - 1] + CARD_RISE_DURATION_MS;

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 /**
  * Q&A answer-card canvas — the WebGL proto card, mounted in the left margin
@@ -45,16 +45,16 @@ import {
   RIM_METALS,
   HEAT_WHITE,
   FILAMENT_LIGHT_DISTANCE,
-  FILAMENT_LIGHT_POWER,
   FILAMENT_COOL_MS,
   FILAMENT_HEAT_MS,
 } from "./answer-card-glass";
-import { AnswerCardBackdrop, useRegionShift } from "./answer-card-backdrop";
-// ⚠ `REGION_SHIFT_MS` IS NO LONGER IMPORTED. The filament ran on the backdrop's
-// 2400ms circuit clock while it travelled; it now heats in place over the CARD's
-// own fade duration instead, on Carl's instruction — *"see what a filament fade
-// in looks like if its the same as a card fade in."* The backdrop keeps its own
-// 2400ms, so the two are no longer one clock. See `FILAMENT_HEAT_MS`.
+// ⚠ THE BACKDROP IS NOW THE GROUND PLANE ALONE. `useRegionShift` and
+// `REGION_SHIFT_MS` are gone with the `c2b DESIGN` lockup, removed 5 August 2026
+// — there is no per-card colour travel behind the cards to drive. The filament
+// already ran on the CARD's own fade duration rather than the backdrop's 2400ms
+// circuit (Carl: *"see what a filament fade in looks like if its the same as a
+// card fade in"*), so nothing about the filament's clock changes here.
+import { AnswerCardBackdrop } from "./answer-card-backdrop";
 import { CARD_BOXES } from "./answer-card-backdrop-geometry";
 import {
   CARD_WIDTH_PX,
@@ -90,6 +90,326 @@ import {
 // already prescribed for this exact moment; see the note in `AnswerCardCanvas`.
 // The reveal's own duration now lives in `answer-card-geometry.ts` as
 // `Q5_REVEAL_MS`, where the ladder derives card 1's entrance from it.
+
+/**
+ * The clay study's light travel — `?clay=1`.
+ *
+ * ⚠ A CONTINUOUS ORBIT, NOT STOPS. Carl's first instruction was three positions
+ * on one axis — *"you will have 3 reference points to judge the card from"* —
+ * and he replaced it the same session: *"instead of 3 ref points, animate the
+ * light on an 8 second loop showing a multitude of angles to best see the
+ * geometry."*
+ *
+ * ⚠ AND THE SECOND INSTRUCTION IS THE BETTER ONE, for a reason worth recording:
+ * a surface announces itself by how its shading CHANGES as light crosses it.
+ * Three stills give three readings; a circuit gives the transitions between
+ * them, which is where a step, a gap or a wrongly-facing slope actually shows.
+ * **A frozen light can hide a missing surface behind a plausible highlight.**
+ *
+ * ⚠ THE THREE-POSITION VERSION WAS BUILT AND REMOVED RATHER THAN LEFT INERT.
+ * `CLAY_LIGHT_POSITIONS` and the `?lightpos=` freeze are gone; the orbit below
+ * passes through all three angles and many more.
+ */
+
+/**
+ * One full pass of the light, in ms.
+ *
+ * ⚠ SLOW IS LOAD-BEARING, NOT A DIAGNOSTIC CONVENIENCE. Carl asked for it so he
+ * could inspect the form — *"if you slow the animation right down, you should
+ * see the transition clearly, especially the rim shadow that would move because
+ * of the light angle"* — and then found the slowness was doing something else
+ * too: *"even though the speed of the light is slower, it brings out the 3d
+ * geometry."* The shadow's TRAVEL is the reading; at speed the eye gets a
+ * flicker instead of a transition.
+ *
+ * ⚠ THIS IS THE CANDIDATE HOVER MECHANISM, WHICH IS WHY THE VALUE MATTERS
+ * BEYOND THE STUDY. It arrived as a by-product of the form render: a card whose
+ * geometry reveals itself under a travelling light distinguishes hover from rest
+ * without needing to get brighter — which sidesteps the measured problem that
+ * the rim is already at 72% of its reachable maximum.
+ */
+const CLAY_SWEEP_MS = 45000;
+
+/**
+ * The arc's radius — how far the light swings out from the card's centre.
+ *
+ * ⚠ AN ARC, NOT AN AXIS. Carl's plan view, 6 August 2026, settling three earlier
+ * misreadings: the light starts to the RIGHT of the card at face level, rises
+ * over the TOP, and descends to the LEFT. The card is drawn edge-on with its
+ * face toward the viewer (*"US"*), so the light orbits in the vertical plane
+ * that contains the viewer — passing over the card as the sun passes overhead.
+ *
+ * ⚠ AND THE ARC IS WHY THE SHADOW MOVES. On a straight vertical axis the rim's
+ * shadow would only lengthen and shorten; swinging the source through 180°
+ * sweeps that shadow ACROSS the face, which is the transition Carl wants to
+ * watch: *"especially the rim shadow that would move because of the light
+ * angle."*
+ *
+ * ⚠ IT MUST CLEAR THE CARD WITHOUT TOWERING OVER IT. Carl: *"the light needs to
+ * go in the middle of the card and outside the rectangle youve built for it."*
+ * Too close and the point light appears in frame as a bright dot — a bare bulb
+ * competing with what it lights. Too far and the angle stops changing: at radius
+ * 150 the source sat 150 above a 48-tall card, so most of the sweep was spent
+ * high overhead where nothing moves.
+ *
+ * 58 clears the card's 24-unit half-height while keeping the source close enough
+ * that the angle — and so the rim's shadow — travels visibly across the arc.
+ *
+ * ⚠ AND THE ARC IS CENTRED ON THE CARD, NOT THE SCENE. Card 1 sits at
+ * x = −194.67, y = 28 in world space; an arc about the origin passed almost 195
+ * units to its right, so the two ends of the sweep were at different distances
+ * and their shadows could not match. Carl caught that by eye: *"the shadows that
+ * appear on the left side and right side should be equal, theyre not."* The arc
+ * itself was symmetric all along — **the fault was where it was centred.**
+ */
+const CLAY_ARC_RADIUS = 58;
+
+/**
+ * How far the light travels toward and away from the card plane.
+ *
+ * ⚠ THE Z MOVEMENT IS WHAT MAKES THE ANGLES A MULTITUDE RATHER THAN A CIRCLE.
+ * At a fixed z the light only ever presents one elevation; oscillating it means
+ * the same in-plane position is visited at a steep rake and at a near-head-on
+ * angle in the same circuit. The low end is deliberately close to the card's own
+ * plane (the rim's apex is at z=2), because a grazing light is the one that
+ * reveals whether a surface is there at all.
+ */
+/**
+ * The vertical travel — the whole point of the study.
+ *
+ * ⚠ THE POSITIONS ARE READ OFF CARL'S FRONT-VIEW SKETCH, 5 August 2026, after
+ * TWO wrong readings of an earlier side view. His three light boxes sit: clear
+ * ABOVE the card, straddling its TOP EDGE, and INSIDE the card below that edge.
+ * So the light descends the screen, crosses the card's own top rim, and carries
+ * on into the card's area — it is not orbiting, and it is not in front.
+ *
+ * ⚠ THE MIDDLE POSITION IS THE TEST, AND IT IS FALSIFIABLE. Carl: *"When level
+ * with the rim there should be a shadow on the face where it starts to rise."*
+ * At that height the rim tube stands between the light and the crown, so it must
+ * throw a shadow onto the face's lower slope. **If no shadow appears, the face
+ * is not rising from the rim** — which is precisely the defect this rebuild was
+ * meant to correct.
+ *
+ * And either side of it: *"When below the rim the face should be darker...
+ * Lighter when above."*
+ *
+ * ⚠ THE CARD'S HALF-HEIGHT IS 24, so these are deliberately close in. An earlier
+ * pass used ±34 with the light off to one side, which lit the card's short END
+ * and could never produce the middle state at all.
+ */
+/**
+ * How far the arc tilts toward the viewer.
+ *
+ * ⚠ THE ARC IS NOT IN THE CARD'S PLANE — it leans out toward us, which is what
+ * Carl's plan view shows: the light passes over the card on the viewer's side,
+ * not behind it. Without this lean the light would swing through the card's own
+ * plane, where it lights nothing at the extremes and the face goes black at both
+ * ends of the sweep.
+ *
+ * ⚠ 0.5 KEEPS THE SOURCE AHEAD OF THE FACE'S APEX (z = 4) THROUGHOUT, so there
+ * is always a lit side to read, while still dropping low enough at each end for
+ * the rim to occlude it and cast.
+ */
+const CLAY_ARC_TILT = 0.5;
+
+/**
+ * What the arc is FOR, and what to watch as it travels.
+ *
+ *   light out to one SIDE, low   grazing along the face — the rim stands between
+ *                                it and the crown, so the tube casts a long
+ *                                shadow across the face
+ *   light OVER THE TOP           it clears the rim entirely and reaches the whole
+ *                                crown — *"Lighter when above"*
+ *   descending the other SIDE    the shadow returns, thrown the opposite way
+ *
+ * ⚠ THIS IS A FALSIFIABLE TEST OF THE REBUILT CROSS-SECTION, not a look. The
+ * rim can only cast onto the face if the face RISES FROM the rim's base and
+ * stands proud of its apex. Under the old geometry the face sat 0.90 BELOW the
+ * rim, behind a 5.00-unit unmodelled gap — **no arc, at any speed, could have
+ * produced a travelling rim shadow on it.** If no shadow appears now, the
+ * rebuild has not worked.
+ */
+
+/**
+ * The clay light's exposure — its intensity per unit of distance SQUARED.
+ *
+ * ⚠ NOT AN INTENSITY. `decay: 2` is physical inverse-square falloff, and this
+ * orbit ranges from ~8 units away to ~160 — a 400x swing in delivered light. A
+ * fixed intensity therefore blew out the near angles and lost the far ones
+ * entirely: the first run of this study had five of its eight frames either
+ * pure white or black.
+ *
+ * ⚠ SO THE LOOP MULTIPLIES THIS BY d² EACH FRAME, holding the exposure constant
+ * so that the ONLY thing changing around the circuit is the light's direction.
+ * That is the variable the study exists to isolate; brightness moving with it
+ * would make every frame unattributable.
+ */
+// ⚠ LOWERED FOR THE WHITE FACE. A white surface reflects roughly 1.5x what the
+// previous mid-grey did, so holding the old exposure would clip the crown to
+// flat white at the top of the sweep — losing the "lighter when above" reading
+// at exactly the elevation it is meant to be read.
+/**
+ * ⚠ MEASURED, NOT GUESSED — and only after guessing wrong three times. 2.4 blew
+ * out; 0.55, 0.62 and 1.35 all read too dark on the sheet. Each miss cost a full
+ * render and a look.
+ *
+ * `verify/clay-exposure.mjs` sweeps the value at the top of the arc, where the
+ * face is most fully lit, and reports the percentile spread:
+ *
+ *     1.35   p95 200   readable, no clipping
+ *     2.50   p95 225   readable, no clipping   <- shipped
+ *     4.00   p95 237   near clip
+ *     9.00   p95 248   1.6% clipped
+ *    13.00   p95 251   8.3% clipped
+ *
+ * 2.5 is the highest value that keeps the crown's brightest moment off the
+ * ceiling, so the "lighter above / shadowed at the rim / darker below" range has
+ * room at both ends.
+ *
+ * ⚠ AND A NOTE FOR ANYONE WHO THINKS IT LOOKS DARK: most of the card is unlit at
+ * any instant, because the source is a single point on an arc. **That is the
+ * study working, not the exposure failing** — a sheet where the whole card is
+ * bright would mean the light had stopped telling us which way each surface
+ * faces. Sweep with `?exposure=` before changing this.
+ */
+const CLAY_LIGHT_EXPOSURE = 2.5;
+
+/**
+ * The clay study's single travelling light.
+ *
+ * ⚠ MODELLED ON `contact-field-light-rig.tsx`, WHICH CARL POINTED AT: *"animate
+ * the light source like we did in the client section."* Two things are taken
+ * from it directly, and both are load-bearing.
+ *
+ * ⚠ FIRST: rAF, NOT `useFrame`. Under `frameloop="demand"` R3F only runs its
+ * loop when something calls `invalidate()`, so a `useFrame` callback that
+ * invalidates itself never gets a first frame to run in. That finding is
+ * recorded three times in this codebase — the light rig, both contact-field
+ * cascade hooks, and `useLockupFade`, where a ref animated without invalidating
+ * produced **three repaints across an entire 2000ms fade.** The loop drives the
+ * position; `invalidate()` only PRESENTS it.
+ *
+ * ⚠ SECOND: THE POSITION IS SET ON THE LIGHT OBJECT, NOT THROUGH STATE. Sixty
+ * React renders a second to move one vector would rebuild the scene graph each
+ * frame.
+ *
+ * ⚠ AND `?lightpos=` PARKS IT. A frozen light at a known stop is what makes two
+ * captures comparable; a moving one cannot be screenshotted twice the same way.
+ */
+function ClayFormLight({ centre }: { centre: { x: number; y: number } }) {
+  const ref = useRef<THREE.PointLight | null>(null);
+  const invalidate = useThree((s) => s.invalidate);
+
+  // ⚠ `?exposure=` — SO THE LEVEL IS MEASURED RATHER THAN GUESSED. It was
+  // guessed and missed three times (2.4 blew out, 0.55/0.62/1.35 too dark),
+  // costing a full render and a look each time. `verify/clay-exposure.mjs`
+  // sweeps this and reports which values clip and which are readable.
+  const exposure = useMemo(() => {
+    if (typeof window === "undefined") return CLAY_LIGHT_EXPOSURE;
+    const n = Number(new URLSearchParams(window.location.search).get("exposure"));
+    return Number.isFinite(n) && n > 0 ? n : CLAY_LIGHT_EXPOSURE;
+  }, []);
+
+  useEffect(() => {
+    let raf = 0;
+    const start = performance.now();
+    const tick = () => {
+      const light = ref.current;
+      if (light) {
+        // ⚠ AN ARC OVER THE CARD — right, over the top, down to the left, and
+        // back. `a` runs 0..pi across the sweep, so the light rises from face
+        // level on one side to directly overhead and descends the other side.
+        //
+        // ⚠ IT REVERSES RATHER THAN WRAPPING. A full 0..2pi circuit would take
+        // the light UNDER the card, where it lights nothing and the study goes
+        // dark for half its duration. Travelling back along the same arc keeps
+        // every moment of the loop readable, and the cosine easing means the
+        // turn at each end has no corner.
+        const p = ((performance.now() - start) % (CLAY_SWEEP_MS * 2)) / CLAY_SWEEP_MS;
+        const tri = p <= 1 ? p : 2 - p;
+        const a = tri * Math.PI;
+
+        // ⚠ CENTRED ON THE CARD, NOT ON THE GRID'S ORIGIN — and getting this
+        // wrong is what Carl caught by eye: *"the shadows that appear on the
+        // left side and right side should be equal, theyre not."*
+        //
+        // ⚠ THE ARC ITSELF WAS ALWAYS SYMMETRIC. Checked at every 30°: a perfect
+        // mirror in x, matched in y and z. **The asymmetry was in WHERE it was
+        // centred.** Card 1 sits at x = −194.67, y = 28 in world space, so an arc
+        // about the origin passed almost 195 units to the card's RIGHT — the two
+        // ends of the sweep were at completely different distances from it and
+        // their shadows could not possibly match.
+        //
+        // His plan view draws the arc as a vertical line THROUGH THE CARD. That
+        // is the specification: the light passes over the card's own centre.
+        const x = Math.cos(a) * CLAY_ARC_RADIUS + centre.x;
+        const y = Math.sin(a) * CLAY_ARC_RADIUS + centre.y;
+        // ⚠ THE ARC LEANS TOWARD THE VIEWER, so the source stays on the face's
+        // side throughout. Tied to the arc's own height, so the light is
+        // furthest forward at the ends — where it grazes and casts — and highest
+        // over the card at the top, where it floods the crown.
+        const z = CLAY_ARC_RADIUS * CLAY_ARC_TILT * (1 - Math.sin(a) * 0.55);
+        light.position.set(x, y, z);
+
+        // ⚠ THE INTENSITY TRACKS DISTANCE, AND WITHOUT IT THE STUDY IS
+        // UNREADABLE. `decay: 2` is inverse-square, so a light travelling this
+        // far in y would brighten and dim purely from moving — and a render
+        // whose brightness changes with its angle cannot attribute what it shows
+        // to either. Compensating by d² holds the exposure constant so the only
+        // variable left is ELEVATION, which is what Carl is judging.
+        // ⚠ DISTANCE TO THE CARD, NOT TO THE ORIGIN. Measuring from the scene's
+        // centre would compensate for the wrong number now the arc has moved,
+        // and the exposure would swing across the sweep again.
+        const dx = x - centre.x;
+        const dy = y - centre.y;
+        const d2 = dx * dx + dy * dy + z * z;
+        light.intensity = exposure * d2;
+        light.updateMatrixWorld(true);
+        invalidate();
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [centre, exposure, invalidate]);
+
+  return (
+    <pointLight
+      ref={ref}
+      position={[centre.x + CLAY_ARC_RADIUS, centre.y, CLAY_ARC_RADIUS * CLAY_ARC_TILT]}
+      /* Overwritten every frame by the loop, which scales it by d². */
+      intensity={CLAY_LIGHT_EXPOSURE * CLAY_ARC_RADIUS ** 2}
+      decay={2}
+      castShadow
+      /* A tight, high-res map — the feature under inspection is a few units
+         across, and the default 512 would render its shadow as a soft smear the
+         width of the thing casting it. */
+      shadow-mapSize-width={2048}
+      shadow-mapSize-height={2048}
+      shadow-camera-near={1}
+      shadow-camera-far={400}
+      /*
+        ⚠ THE BIAS PAIR IS TUNED FOR A CURVED SELF-SHADOWING SURFACE, and the
+        first attempt was wrong in a way Carl spotted on screen before the sheet
+        did: *"theres a dark patch on the bottom face."*
+
+        ⚠ THAT PATCH IS SHADOW ACNE, NOT SHADING. Now the crown stands PROUD it
+        is tall enough to shadow its own lower half, so the face is testing
+        itself against its own depth map. At `bias -0.0004` alone the comparison
+        fails across a broad band of nearly-tangent fragments and returns a hard
+        blocky wedge with a stair-stepped edge — the giveaway that it is a
+        sampling artefact rather than a cast shadow.
+
+        `normalBias` offsets the sample along the surface normal, which is the
+        correct fix for curvature: it scales with how obliquely the light hits,
+        so it does nothing where the surface faces the light and grows exactly
+        where the acne appears. The constant bias then only needs to be small.
+      */
+      shadow-bias={-0.0001}
+      shadow-normalBias={0.6}
+    />
+  );
+}
 
 // ── Tuning harness ───────────────────────────────────────────────────────────
 
@@ -159,6 +479,70 @@ const GLASS_RIG_PARAMS = [
    * the frost's read depends on what is behind it. Both move together.
    */
   { key: "filamentIntensity", label: "FILAMENT intensity [f]", step: 0.05, min: 0, max: 3 },
+  /**
+   * ⚠ THE CUTOFF, AND IT IS ON THE RIG TO MAKE ONE FINDING TANGIBLE: raising it
+   * changes NOTHING on the card you are looking at, because Three's `distance`
+   * is a window multiplying an already-complete inverse-square falloff, not a
+   * normaliser. Sweep it and watch the near field hold still while the far cards
+   * arrive. If the near field DOES move, something else is wrong — investigate
+   * rather than compensate.
+   *
+   * Range starts at 90 — the old value, which amputated each card's own face at
+   * 93.3px of half-width. See `FILAMENT_LIGHT_DISTANCE`.
+   */
+  { key: "filamentDistance", label: "filament CUTOFF [d]", step: 25, min: 90, max: 900 },
+  /**
+   * ⚠ THE SPILL FADER, AND THE ONE CARL'S WORST-CASE METHOD DRIVES: *"if you
+   * start from a position of all 5 cards on, and work out theres little effect
+   * on other colours, thats the strongest its gonna get."* All five lit, push
+   * until other colours shift, back off.
+   *
+   * Separate from `filamentIntensity` deliberately — that is how bright the rim
+   * looks, this is how much it throws onto everything else. Confounding them
+   * would repeat the `roughness`/`lightLevel` trap recorded above.
+   */
+  { key: "filamentPower", label: "filament SPILL power [p]", step: 5, min: 0, max: 600 },
+  /**
+   * ⚠ THE ONE THAT ACTUALLY BUYS THE NEIGHBOUR EFFECT. Power was the obvious dial
+   * and it is the wrong one: a 5x power sweep moved the lit card 5.4x and its
+   * neighbour not at all, because every card surface is specular-only and at z=6
+   * a neighbour sees the light nearly edge-on. See `FILAMENT_LIGHT_HEIGHT`.
+   *
+   * ⚠ RAISE IT WITH [p], NOT ALONE — own-card brightness falls as 1/z², so 6 → 15
+   * needs roughly 60 → 375 to hold the current look. One control in two hands.
+   */
+  { key: "filamentHeight", label: "filament HEIGHT [z]", step: 1, min: 6, max: 60 },
+  /**
+   * ⚠ THE FILTER OVER THE LENS — Carl's *"the equivalent of having white light
+   * and then over the lens you put an amber filter."*
+   *
+   * ⚠ AIM LOW. The brief is *"the most subtle effect to confirm and reinforce
+   * that this is a 3D object"* — evidence, not decoration. **An obviously visible
+   * setting has probably overshot.** And the glass will be frosted later, which
+   * scatters and makes the same value read stronger.
+   *
+   * Independent of `[f]` on purpose: `[f]` is how bright the filament is, this is
+   * how much its light filters the glass. Confounding them would repeat the
+   * `roughness`/`lightLevel` trap recorded above.
+   */
+  { key: "glassFilterStrength", label: "GLASS filter (the tinge) [b]", step: 0.05, min: 0, max: 4 },
+  /**
+   * ⚠ THE POLISHED SKIN OVER THE FROSTED BODY, AND IT MUST BE SWEPT WITH `[7]`
+   * roughness RATHER THAN ALONE. The pair IS the effect: the body scatters light
+   * across the face as a gradient, the coat holds a crisp glint on the edge.
+   * Either one without the other is a surface doing half a job — a rough face
+   * with no coat is dull, a coat over a polished face is two speculars.
+   *
+   * ⚠ STARTS AT 0, WHICH IS TODAY'S CARD EXACTLY. Nothing moves until it is
+   * swept, so this addition cannot have changed the resting look.
+   */
+  { key: "glassClearcoat", label: "FACE clearcoat [c]", step: 0.05, min: 0, max: 1 },
+  /**
+   * ⚠ AIM LOW — the coat's whole job is to stay sharp while the body goes rough.
+   * At a roughness near the base's own, the two layers stop being distinguishable
+   * and the coat is just more surface.
+   */
+  { key: "glassClearcoatRoughness", label: "face coat ROUGHNESS [v]", step: 0.02, min: 0, max: 1 },
 ] as const;
 
 /**
@@ -222,6 +606,41 @@ function useCardRig(): {
     const l = Number(q.get("light"));
     if (q.get("light") !== null && Number.isFinite(l)) {
       next.lightLevel = Math.min(2, Math.max(0, l));
+    }
+
+    // ⚠ `?fz=` AND `?fp=` — the filament light's HEIGHT and POWER, for the z
+    // sweep. They must move TOGETHER: own-card brightness falls as 1/z², so a
+    // sweep that raises z alone measures a dimming, not a ratio. See
+    // `FILAMENT_LIGHT_HEIGHT`.
+    const fz = Number(q.get("fz"));
+    if (q.get("fz") !== null && Number.isFinite(fz)) {
+      next.filamentHeight = Math.min(60, Math.max(1, fz));
+    }
+    const fp = Number(q.get("fp"));
+    if (q.get("fp") !== null && Number.isFinite(fp)) {
+      next.filamentPower = Math.min(2000, Math.max(0, fp));
+    }
+
+    // ⚠ `?tinge=` — the glass filter's strength, for the A/B harness. `?tinge=0`
+    // is the falsifying control: with the filter off, a sweep of the filament
+    // must produce NO warm shift on the face's reflection. A harness that still
+    // reports one is measuring its own noise.
+    const tg = Number(q.get("tinge"));
+    if (q.get("tinge") !== null && Number.isFinite(tg)) {
+      next.glassFilterStrength = Math.min(4, Math.max(0, tg));
+    }
+
+    // ⚠ `?coat=` AND `?coatr=` — the face's clearcoat and its sharpness. They
+    // exist for the same reason `?roughness=` does: a harness must be able to
+    // hold a value across several loads, and this pair is swept AGAINST
+    // `?roughness=` rather than on its own. See `GLASS_CLEARCOAT`.
+    const cc = Number(q.get("coat"));
+    if (q.get("coat") !== null && Number.isFinite(cc)) {
+      next.glassClearcoat = Math.min(1, Math.max(0, cc));
+    }
+    const ccr = Number(q.get("coatr"));
+    if (q.get("coatr") !== null && Number.isFinite(ccr)) {
+      next.glassClearcoatRoughness = Math.min(1, Math.max(0, ccr));
     }
 
     return next;
@@ -313,6 +732,43 @@ function useCardRig(): {
       if (e.key === "f") {
         e.preventDefault();
         setSelected("filamentIntensity");
+        return;
+      }
+      // The filament light's cutoff — sixth material param, on [d].
+      if (e.key === "d") {
+        e.preventDefault();
+        setSelected("filamentDistance");
+        return;
+      }
+      // The filament's spill power — seventh material param, on [p].
+      if (e.key === "p") {
+        e.preventDefault();
+        setSelected("filamentPower");
+        return;
+      }
+      // The filament light's height above the card plane — on [z].
+      if (e.key === "z") {
+        e.preventDefault();
+        setSelected("filamentHeight");
+        return;
+      }
+      // The glass filter's strength — the tinge — on [b].
+      if (e.key === "b") {
+        e.preventDefault();
+        setSelected("glassFilterStrength");
+        return;
+      }
+      // ⚠ THE FACE'S CLEARCOAT ON [c], ITS ROUGHNESS ON [v] — and [c] is meant to
+      // be worked ALONGSIDE [7], not instead of it. See `GLASS_CLEARCOAT`: the
+      // frosted body and the sharp coat are one surface in two layers.
+      if (e.key === "c") {
+        e.preventDefault();
+        setSelected("glassClearcoat");
+        return;
+      }
+      if (e.key === "v") {
+        e.preventDefault();
+        setSelected("glassClearcoatRoughness");
         return;
       }
       if (e.key === METAL_CYCLE_KEY) {
@@ -790,6 +1246,7 @@ function AnswerCard({
   glassTuning,
   envMap,
   lit,
+  clay,
 }: {
   slot: { x: number; y: number };
   delayMs: number;
@@ -802,6 +1259,8 @@ function AnswerCard({
   envMap: THREE.Texture | null;
   /** Whether this card's filament has been fired. */
   lit: boolean;
+  /** `?clay=1` — render the FORM in opaque matte greys instead of glass. */
+  clay: boolean;
 }) {
   /**
    * ⚠ THE CARD FADES BY LIGHT, NOT BY ALPHA — and this is the route the ethos
@@ -855,10 +1314,15 @@ function AnswerCard({
   return (
     <group position={[slot.x, slot.y, 0]}>
       <CardLighting progress={litRef} reducedMotion={reducedMotion}>
+        {/*
+          ⚠ `?clay=1` RENDERS THE FORM, NOT THE MATERIAL. Opaque matte greys, no
+          transmission, no env map — so a surface that EXISTS can be told from
+          one that does not. See `DIAG_FACE_COLOR` for why this came back.
+        */}
         <AnswerCardMesh
           tuning={tuning}
           groupRef={groupRef}
-          glass
+          glass={!clay}
           glassTuning={glassTuning}
           envMap={envMap}
           lightLevel={glassTuning.lightLevel}
@@ -887,7 +1351,7 @@ function AnswerCard({
         vertical line"*. A spotlight aimed along the path would track a line and
         miss the effect he asked for.
       */}
-      <FilamentLight filament={filament} />
+      <FilamentLight filament={filament} glassTuning={glassTuning} />
     </group>
   );
 }
@@ -900,7 +1364,13 @@ function AnswerCard({
  * problem the honest fix is fewer lights (one shared light driven by whichever
  * card is active), NOT a painted fake — the spill onto neighbours is the design.
  */
-function FilamentLight({ filament }: { filament: FilamentState }) {
+function FilamentLight({
+  filament,
+  glassTuning,
+}: {
+  filament: FilamentState;
+  glassTuning: GlassTuning;
+}) {
   const ref = useRef<THREE.PointLight | null>(null);
   const invalidate = useThree((s) => s.invalidate);
 
@@ -920,7 +1390,17 @@ function FilamentLight({ filament }: { filament: FilamentState }) {
     // One world unit is one CSS pixel, so a light 40px from what it lights needs
     // an intensity in the hundreds, not the tens — the same units trap that made
     // the contact field's orbiting rig need 64000.
-    light.intensity = intensity * FILAMENT_LIGHT_POWER;
+    light.intensity = intensity * glassTuning.filamentPower;
+    // ⚠ SET PER FRAME, NOT AS A JSX PROP. The rig mutates `filamentDistance`
+    // live and a static prop would only apply on remount — which for a light is
+    // exactly what must never happen (see the cache-key note below). Assigning
+    // it here keeps the node identity stable while the value moves.
+    light.distance = glassTuning.filamentDistance;
+    // ⚠ HEIGHT IS THE DIAL FOR NEIGHBOUR SPILL, NOT POWER. Every card surface is
+    // specular-only (rim metalness:1 → zero diffuse; face transmission 0.97), and
+    // specular needs N·L. All five cards share one plane, so at z=6 a neighbour
+    // sees the light almost edge-on. See `FILAMENT_LIGHT_HEIGHT`.
+    light.position.z = glassTuning.filamentHeight;
     if (intensity > 0) invalidate();
   });
 
@@ -942,6 +1422,8 @@ function FilamentLight({ filament }: { filament: FilamentState }) {
       // own geometry, where it would light the rim's inner face and nothing else.
       position={[0, 0, 6]}
       color={HEAT_WHITE}
+      // Initial values only — both are driven per frame from `glassTuning`
+      // above so the rig can move them without remounting the light.
       distance={FILAMENT_LIGHT_DISTANCE}
       decay={2}
       intensity={0}
@@ -1437,7 +1919,6 @@ function CardScene({
   reducedMotion,
   tuning,
   glassTuning,
-  hovered,
   litCards,
   onWarm,
   mayCompile,
@@ -1446,7 +1927,6 @@ function CardScene({
   reducedMotion: boolean;
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
-  hovered: number | null;
   litCards: boolean[];
   onWarm: () => void;
   mayCompile: boolean;
@@ -1458,26 +1938,50 @@ function CardScene({
   useScenePrecompile(onWarm, mayCompile);
 
   /**
-   * ⚠ HOVER INVERTS THE REGION UNDER THE CARD, AND "INVERT" IS THE OPERATIVE
-   * WORD. Carl, 4 August: *"When in a hover state the card that the mouse is in
-   * would change from blue to teal and vice versa."*
+   * ⚠ `?clay=1` — THE FORM RENDER. Opaque matte greys, real light, no glass.
    *
-   * The lockup is not uniformly blue — `easeBlueTeal` gives it four alternating
-   * zones, so card 1 sits over the `c` (blue) while card 3 sits over the `b`
-   * (teal). A hover target of 1 would drive both toward teal, which would be a
-   * no-op on the cards that are teal already.
+   * Carl, 5 August 2026: *"i will have no way of knowing if its right if its
+   * clear glass. That why you should ramp it up so i can see something more
+   * substantial and then shine a light on it so i can zoom in and check."*
    *
-   * ⚠ SO THE TARGET IS THE FLIP, NOT THE DESTINATION. `drawBackdrop` composes
-   * `base + local * (1 - base)`, where `base` is the zone's resting colour — so
-   * a shift of 1 means "fully teal" regardless of where the region started.
-   * Inverting a teal region needs the drawing side to understand the direction,
-   * which is what `shift: -1` now means there.
+   * ⚠ IT EXISTS BECAUSE A DARK TRANSMISSIVE CARD CANNOT ANSWER "IS THE SURFACE
+   * THERE". The bevel and face never meet — a 5.00-unit unmodelled step, found
+   * by `verify/cross-section.mjs` — and it survived several sessions of lighting
+   * work precisely because *"no light can illuminate something that is not
+   * there."* The material was hiding the geometry.
    */
-  const target = useMemo(
-    () => CARD_BOXES.map((_, i) => (i === hovered ? 1 : 0)),
-    [hovered],
-  );
-  const shift = useRegionShift(target);
+  const clay = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    // ⚠ TOLERANT, NOT `=== "1"`. A pasted URL arrived as `?clay=1.` with a
+    // trailing dot, which failed a strict match — so the study rendered five
+    // cards under the shipped lighting while LOOKING like it had engaged,
+    // because the material path had already switched. A diagnostic flag that
+    // half-applies is worse than one that fails loudly.
+    const q = new URLSearchParams(window.location.search).get("clay");
+    return q !== null && q !== "" && q !== "0" && q !== "false";
+  }, []);
+
+  /**
+   * ⚠ THE CLAY RENDER IS LIT TO BE READ, NOT TO BE JUDGED AS A MATERIAL.
+   *
+   * `lightLevel` is 0.35 because that is where the GLASS looks right, and a
+   * diagnostic inheriting it would be as dark as the thing it is diagnosing —
+   * which is the whole failure this render exists to correct. Clay gets its own
+   * level so the slope's shading is legible at a zoom.
+   */
+  const sceneLight = clay ? 1.6 : glassTuning.lightLevel;
+
+  // ⚠ THE HOVER-DRIVEN REGION SHIFT IS GONE, and with it the only thing hover
+  // had to drive. It inverted the lockup's colour under the hovered card — Carl,
+  // 4 August: *"the card that the mouse is in would change from blue to teal and
+  // vice versa"* — and the lockup was removed on 5 August.
+  //
+  // ⚠ THE HOVER PLUMBING ITSELF SURVIVES DELIBERATELY. Carl, on the cut:
+  // *"Hover state will still be the mouse entering the box."* The pointer
+  // targets and the `hovered` index below are unchanged and still correct; what
+  // changes is that the state has no consumer until the card brightening is
+  // designed. **That is the next chunk, and it acts on the card's own surface**
+  // (`app/globals.css`, `.enquiry-card:hover`) rather than on anything behind it.
 
   // ⚠ ALL FIVE SLOTS NOW. Derived from `CARD_BOXES` so no card can drift out of
   // the backdrop region positioned against the same box — the sharing rule that
@@ -1511,59 +2015,91 @@ function CardScene({
         apart as it moves. Carl's pass judges the metal *"against both metal and
         glass"* — one control has to move all of it.
       */}
-      <ambientLight intensity={0.35 * glassTuning.lightLevel} />
-      <directionalLight
-        position={[-60, 90, 120]}
-        intensity={2.1 * glassTuning.lightLevel}
-      />
-      {/* A weak fill from below-right stops the lower bevel going fully black,
-          which would read as a missing surface rather than a shadowed one. */}
-      <directionalLight
-        position={[70, -60, 60]}
-        intensity={0.35 * glassTuning.lightLevel}
-      />
+      {clay ? (
+        /*
+          ⚠ ONE LIGHT, NO AMBIENT, NO FILL, NO ENVIRONMENT — Carl's instruction,
+          5 August 2026: *"Enable shadows and the placement of a light is all
+          important. Dont use global illumination, just focus on card 1."*
+
+          ⚠ AMBIENT IS THE ENEMY OF A FORM STUDY. It lifts every surface equally
+          regardless of which way it faces, so it fills in exactly the shading
+          that tells you a slope is there. The shipped scene runs ambient plus
+          two near-head-on directionals — good for judging a material, useless
+          for judging a shape, and part of why a missing seam went unseen.
+
+          ⚠ A POINT LIGHT, NOT DIRECTIONAL, BECAUSE FALLOFF IS INFORMATION. A
+          directional light is parallel rays from infinity: it cannot make a
+          near surface brighter than a far one, so it flattens the very
+          depth-cue this render exists to show.
+        */
+        <>
+          {/*
+            ⚠ A FLOOR, NOT A FILL. Carl's instruction was *"dont use global
+            illumination"* and this does not reinstate it: at 0.10 it lifts the
+            unlit side off pure black so a surface facing away is still READABLE
+            as a surface, without contributing enough to fill in the shading
+            that says which way it faces. The first run had five of eight sample
+            angles at effectively zero — a form study cannot report on a card
+            nobody can see.
+          */}
+          <ambientLight intensity={0.10} />
+          {/*
+            ⚠ ONE LIGHT PER CARD, EACH ORBITING ITS OWN CENTRE. Carl, 6 August
+            2026: *"make all 5 cards like card 2. we only have to move the other
+            cards lights into position."*
+
+            ⚠ ALL FIVE ARCS ARE IDENTICAL AND VERTICAL TODAY — card 2's case,
+            which is the one already proven. Card 2 sits on the grid's centre
+            line, so a vertical arc is correct for it and the four others are
+            merely not yet tilted. **That is the next chunk**, not an oversight:
+            his diagram gives cards 1+3 as a mirror pair and 4+5 as another, each
+            arc leaning along its own diagonal toward the nearest corner.
+
+            ⚠ AND PER-CARD LIGHTING IS THE POINT, NOT A COST. It makes each card
+            independent of its grid position — the thing the reference sheets do
+            and the shared-rig "wall" problem cannot. Five point lights with no
+            shadows is affordable; five SHADOW-CASTING lights would not be, which
+            is why the study casts from one card at a time.
+          */}
+          {slots.map((slot, i) => (
+            <ClayFormLight key={i} centre={slot} />
+          ))}
+        </>
+      ) : (
+        <>
+          <ambientLight intensity={0.35 * sceneLight} />
+          <directionalLight
+            position={[-60, 90, 120]}
+            intensity={2.1 * sceneLight}
+          />
+          {/* A weak fill from below-right stops the lower bevel going fully black,
+              which would read as a missing surface rather than a shadowed one. */}
+          <directionalLight
+            position={[70, -60, 60]}
+            intensity={0.35 * sceneLight}
+          />
+        </>
+      )}
 
       {/*
-        ⚠ THE LOCKUP IS NOW A SIBLING OF THE CARD, NOT A CHILD OF IT — and that
-        inverts chunk 2's arrangement deliberately.
+        ⚠ THE GROUND, AND IT IS A SIBLING OF THE CARDS RATHER THAN A CHILD OF
+        ONE. It spans the whole grid and belongs to all five, so parenting it to
+        any single card would drag it through that card's entrance rise.
 
-        The stand-in was parented INTO the card's group so it inherited
-        `visible` and the entrance transform. Without that it drew during the
-        entrance delay while the card mesh was still hidden, and the first thing
-        on screen was a bright rectangle: Carl, *"it appears as a rectangle at
-        first, very fast, no curves."*
+        ⚠ IT IS STATIC AND ON SCREEN FROM THE FIRST FRAME. It used to carry the
+        `c2b DESIGN` lockup, which arrived as a sixth beat after the card ladder;
+        **the lockup was removed on 5 August 2026 and beat six went with it** —
+        the entrance is five beats again. What is left is an unlit near-black
+        plane that exists for the transmission pass, not for the eye, so there is
+        nothing for it to animate and no entrance for it to take part in.
 
-        ⚠ THAT CANNOT APPLY HERE, because the lockup is NOT the card's backdrop
-        — it spans the whole grid and belongs to all five cards. Parenting it to
-        one card would drag the entire logo 6px upward through card 1's entrance
-        rise, and in chunk 5 it would have to be parented to five cards at once,
-        which is not a thing.
-
-        ⚠ SO THE ENTRANCE-RECTANGLE DEFECT IS PREVENTED A DIFFERENT WAY: the
-        card entrance no longer has a hidden delay to flash out of (see
-        `useCardEntrance` — visibility is owned by the tick loop alone, and the
-        first drawn frame is already frame 0 of the rise). The lockup simply
-        renders throughout, which is correct: it is the page, not the card.
+        ⚠ AND THE RISK THIS CARRIES IS RECORDED RATHER THAN DISCOVERED LATER.
+        The note here used to read that the cards *"read as dark slabs and only
+        become glass when the lockup lights behind them."* With a flat ground
+        there is nothing distinctive left to refract. **If the cards read flat,
+        that is why** — the lever is `GROUND_COLOR`, not the lockup.
       */}
-      {/*
-        ⚠ THE LOCKUP IS BEAT SIX — it is no longer on screen from the first frame.
-
-        Carl, 4 August: *"There should be a 6 beat and that is the text underneath
-        fading in"*, and on what that means: *"by text underneath i mean 'c2b
-        DESIGN'."* It spans all five cards and fades at the cards' own speed —
-        *"The cards fade in at a certain speed, the text should do the same. 6
-        beats instead of 5."*
-
-        ⚠ AND THE CARDS LOOK LIKE THE "NO GLASS" FAILURE UNTIL IT ARRIVES. Glass
-        over a near-black page reads as a pale slab — the governing fact this whole
-        rebuild is downstream of. For the ~1440ms of the ladder there is nothing
-        behind the cards to transmit, so they will read as dark slabs and only
-        become glass when the lockup lights behind them.
-
-        **That is the design, not a defect.** Flagged to Carl before it was built:
-        the cards fill with colour as the light comes up behind them.
-      */}
-      <AnswerCardBackdrop shift={shift} reducedMotion={reducedMotion} active={active} />
+      <AnswerCardBackdrop clay={clay} />
 
       {/*
         ⚠ ONE SCENE, WHICH IS THE ENTIRE REASON FOR THIS STEP. The transmission
@@ -1572,6 +2108,12 @@ function CardScene({
         scene graph. Two canvases meant the card refracted its own stand-in and
         was blind to the logo, however exactly they were overlaid in CSS.
       */}
+      {/* ⚠ ALL FIVE CARDS IN CLAY MODE SINCE 6 AUGUST. It rendered card 1 alone
+          while the cross-section was in doubt — Carl: *"just focus on card 1"* —
+          and that question is now settled. His instruction on closing:
+          *"make all 5 cards like card 2. we only have to move the other cards
+          lights into position."* Every card currently gets the SAME vertical
+          arc; the per-card tilt is the next chunk. */}
       {slots.map((slot, i) => (
         <AnswerCard
           key={i}
@@ -1583,6 +2125,7 @@ function CardScene({
           glassTuning={glassTuning}
           envMap={envMap}
           lit={litCards[i] ?? false}
+          clay={clay}
         />
       ))}
     </>
@@ -1750,8 +2293,25 @@ export default function AnswerCardCanvas({
    * and modelling it as five independent flags invites the state where two are
    * true — which `pointerleave`/`pointerenter` ordering makes reachable on a fast
    * diagonal crossing between adjacent cards.
+   *
+   * ⚠ TRACKED BUT NOT YET CONSUMED, AND THAT IS DELIBERATE RATHER THAN DEAD
+   * CODE. Its only reader was the lockup's per-card colour inversion, removed on
+   * 5 August 2026 with the lockup itself. Carl kept the mechanism in the same
+   * instruction that cut the artwork: *"Hover state will still be the mouse
+   * entering the box."*
+   *
+   * ⚠ THE NEXT CHUNK IS ITS CONSUMER — the card brightening, on the card's own
+   * surface, as the CSS version does it at `app/globals.css`
+   * (`.enquiry-card:hover` lifts the surface, its top-edge glint and its inner
+   * diffusion). Carl: *"In the CSS version the card gets brighter."* Deleting
+   * this now would mean rebuilding the pointer plumbing next session to get back
+   * to exactly here.
+   *
+   * ⚠ THE VALUE IS INTENTIONALLY UNREAD, WHICH IS WHY THE READ SLOT IS EMPTY.
+   * Binding a name nothing consumes is a lint error and, worse, reads as an
+   * oversight; an empty slot states that the write is the point for now.
    */
-  const [hovered, setHovered] = useState<number | null>(null);
+  const [, setHovered] = useState<number | null>(null);
 
   /**
    * Which cards have had their filament fired.
@@ -1840,6 +2400,12 @@ export default function AnswerCardCanvas({
     >
       <Canvas
         orthographic
+        /*
+          ⚠ A `?zoom=` CAMERA PARAM WAS ADDED HERE AND REMOVED THE SAME HOUR.
+          Carl: *"i can zoom in myself win+"* — the OS magnifier does the job
+          without a code path to maintain, and the version built here panned the
+          camera wrongly and put the card off screen entirely.
+        */
         camera={{ zoom: 1, position: [0, 0, 1000], near: 0.1, far: 4000 }}
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true }}
@@ -1871,6 +2437,23 @@ export default function AnswerCardCanvas({
          */
         onCreated={({ gl }) => {
           gl.debug.checkShaderErrors = false;
+          // ⚠ SHADOWS ARE FOR THE CLAY FORM STUDY ONLY (`?clay=1`), and they are
+          // enabled here rather than as a `<Canvas shadows>` prop so the shipped
+          // card never pays for them. Carl, 5 August 2026: *"Enable shadows and
+          // the placement of a light is all important."*
+          //
+          // ⚠ THEY ARE NOT A CANDIDATE FOR THE REAL CARD AS THINGS STAND. Five
+          // shadow-casting point lights would be five cube maps — thirty passes
+          // a frame — behind transmissive materials. The Architect's advice is
+          // to park real shadows and buy the grounding with a contact/AO term in
+          // the face shader instead. This is a diagnostic, not a preview.
+          const clayQ = typeof window === "undefined"
+            ? null
+            : new URLSearchParams(window.location.search).get("clay");
+          if (clayQ !== null && clayQ !== "" && clayQ !== "0" && clayQ !== "false") {
+            gl.shadowMap.enabled = true;
+            gl.shadowMap.type = THREE.PCFSoftShadowMap;
+          }
           // ⚠ DIAGNOSTIC ONLY — pairs with `card-canvas-compiled`. See the note
           // at `markWarm`, including why the warm-up and the real canvas must
           // NOT share a mark name.
@@ -1887,7 +2470,6 @@ export default function AnswerCardCanvas({
           reducedMotion={reducedMotion}
           tuning={tuning}
           glassTuning={glassTuning}
-          hovered={hovered}
           litCards={litCards}
           onWarm={markWarm}
           mayCompile={warm}
@@ -1962,3 +2544,5 @@ export default function AnswerCardCanvas({
 }
 
 export { CARD_WIDTH_PX, CARD_HEIGHT_PX };
+
+

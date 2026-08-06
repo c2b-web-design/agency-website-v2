@@ -92,6 +92,60 @@
 export const GLASS_ROUGHNESS = 0.08;
 
 /**
+ * The face's clearcoat — a polished skin over a frosted body.
+ *
+ * ⚠ ZERO TODAY, WHICH IS WHY IT IS DECLARED AT ALL. The face has never had a
+ * clearcoat; the BEVEL has one (`BEVEL_CLEARCOAT` 0.45) and the face does not.
+ * This constant exists so the rig can sweep it, not because a value has been
+ * chosen. **Default 0 = today's behaviour exactly**, so nothing changes until
+ * someone moves the fader.
+ *
+ * ⚠ THE MECHANISM, AND IT IS THE ONE THING THIS SESSION'S RESEARCH AGREED ON
+ * FROM THREE INDEPENDENT DIRECTIONS: *"the INSIDE is blurry from high roughness,
+ * but the SURFACE remains highly reflective."* A rough base scatters light across
+ * the face as a gradient; a sharp coat over it keeps a crisp glint on the edge.
+ * **One material, two effects** — which is how the reference sheets carry a soft
+ * distribution and a hard hairline at the same time.
+ *
+ * ⚠ CARL READ THAT OFF THE PICTURES BEFORE ANY SOURCE CONFIRMED IT, 5 August:
+ * *"the glint where the light catches the edge on all the shapes, but the
+ * distribution of light is like a gradient on frosted glass."* The 2026 CSS
+ * practice calls the same thing "surface transduction"; Gemini's material config
+ * pairs `clearcoat: 1.0` with `clearcoatRoughness: 0.1`.
+ *
+ * ⚠ IT PAIRS WITH `GLASS_ROUGHNESS` AND MUST BE SWEPT WITH IT, NOT ALONE. The
+ * two are the body and the skin of one surface — a sharp coat over an already
+ * polished base (roughness 0.08) adds a second specular to a surface that
+ * already has one, which is not the effect. This project has already recorded
+ * the cost of tuning one value while another was still moving.
+ *
+ * ⚠ AND IT IS NOT FREE. Clearcoat adds a second specular lobe to the shader on
+ * all five faces, and shader size is the recorded cause of the opening stutter
+ * (`live-work/references/opening-stutter.md`). Re-measure the compile before
+ * shipping a non-zero value.
+ *
+ * PROVISIONAL under D-035. Bound to `[c]` in `?cardrig=1`; `?coat=` overrides.
+ */
+export const GLASS_CLEARCOAT = 0;
+
+/**
+ * How sharp that clearcoat's own reflection is.
+ *
+ * ⚠ LOW IS THE POINT. The coat exists to stay CRISP while the body underneath
+ * goes rough — a coat as rough as the base would just be more of the same
+ * surface. Gemini's config: `clearcoatRoughness: 0.1`, described as *"keeps the
+ * outer reflection sharp."* The bevel's equivalent runs higher (0.38) because it
+ * is a shoulder catching a broad env panel rather than a flat face holding a
+ * hairline.
+ *
+ * ⚠ INERT WHILE `GLASS_CLEARCOAT` IS 0. Three skips the clearcoat path entirely
+ * when the coat is zero, so this value does nothing until the coat is raised.
+ *
+ * PROVISIONAL under D-035. Bound to `[v]` in `?cardrig=1`.
+ */
+export const GLASS_CLEARCOAT_ROUGHNESS = 0.1;
+
+/**
  * How much light passes through rather than reflecting off.
  *
  * ⚠ RAISED 0.85 -> 0.97 AFTER THE FIRST RENDER, and the reason is a real
@@ -104,6 +158,18 @@ export const GLASS_ROUGHNESS = 0.08;
  * ⚠ AND IT DESTROYED THE CHUNK'S OWN TEST. The calibration strokes registered as
  * a 13-point lift on a 148 base — barely legible, so the frost threshold could
  * not have been read off it.
+ *
+ * ⚠ TRIED AT 0.20 ON 5 AUGUST AND REVERTED THE SAME HOUR — the record matters
+ * because the value looks like an obvious lever and is not. Reducing the
+ * background's influence by closing the window produced **white lozenges**: the
+ * fraction NOT transmitted behaves as an ordinary lit diffuse surface in `color`,
+ * and at 0.20 that fraction is EIGHTY PERCENT of a near-white `GLASS_COLOR`
+ * (`#e8eef8`). The cards stopped being glass at all — the same *"bright saturated
+ * plastic button"* defect this comment already records at 0.85, and worse.
+ *
+ * **The background's influence is reduced by DIMMING THE BACKGROUND, not by
+ * closing the glass.** Carl: *"don't touch the glass, return it to its previous
+ * value. It's the c2b DESIGN that should be dimmed/fainter."*
  *
  * ⚠ NOT AN APPROVED VALUE. Adjustable; PROVISIONAL.
  */
@@ -508,15 +574,13 @@ export const LIGHT_LEVEL = 0.35;
 // the same requirement that forced the two canvases into one scene: light only
 // reaches what shares its scene.
 
-/**
- * How long the head takes to leave the origin and meet itself again.
- *
- * ⚠ THE SAME 2400ms AS THE REGION SHIFT, DELIBERATELY. Carl: *"The blue pixels
- * will turn teal in the same time frame as the filament takes to do a circuit"*
- * — one clock, two expressions, finishing together. Imported from
- * `answer-card-backdrop-geometry.ts` rather than redeclared.
- */
-
+// ⚠ THE CIRCUIT DURATION IS NO LONGER DECLARED OR SHARED. This comment used to
+// document a constant tying the filament's circuit to the backdrop's 2400ms
+// colour travel — Carl: *"The blue pixels will turn teal in the same time frame
+// as the filament takes to do a circuit."* The filament stopped travelling when
+// Carl reframed it as a fade (see below), and the backdrop's colour travel was
+// removed with the lockup on 5 August 2026. **Neither side of that shared clock
+// exists now.** `FILAMENT_HEAT_MS` is the filament's own timing.
 
 // ── The black-body ramp ──────────────────────────────────────────────────────
 //
@@ -567,6 +631,81 @@ export const HEAT_ORANGE = "#ff6a1a";
 export const HEAT_WHITE = "#ffab52";
 
 /**
+ * The glass's TRANSMITTANCE while its own filament is lit — the amber filter
+ * over the lens.
+ *
+ * ⚠ THE GOVERNING SENTENCE, IN CARL'S WORDS, BECAUSE THIS KEEPS EVAPORATING.
+ * Agreed three times across three sessions and never surviving into the code,
+ * because it lived in chat while the code carried only values:
+ *
+ * > *"So do I want amber frosted glass? No. I need the frosted glass to be
+ * > tinged by the light. To have the most subtle effect to confirm and reinforce
+ * > that this is a 3D object. The filament's intensity can be changed to achieve
+ * > this."*
+ *
+ * > *"The scene is lit by global white light, hence the reflections. When card 1
+ * > is locally lit, that white reflection wouldn't stay white — the amber would
+ * > overpower it. It's the equivalent of having white light and then over the
+ * > lens you put an amber filter."*
+ *
+ * **A FILTER, NOT A MATERIAL.** Amber glass is the same colour whether the
+ * filament lives or dies. Glass *tinged by light* exists only while there is
+ * light to tinge it — **and that difference is the whole point, because the
+ * effect's job is EVIDENCE that the object is real, not decoration on it.**
+ *
+ * **SUBTRACTION, NOT ADDITION.** A filter REMOVES blue rather than adding
+ * orange, so it darkens and saturates instead of washing out.
+ *
+ * ⚠ AND ADDITION — THE LITERALLY-CORRECT PHYSICAL TERM — IS THE WRONG ANSWER
+ * HERE, which is why this argument recurs. Adding a light does add a specular
+ * lobe, but that lobe is geometrically invisible on these surfaces at this
+ * camera, and the band is already near clipping (`FILAMENT_GLOW` is 3.2 and its
+ * own note says raising it past clipping buys nothing). Adding amber to an
+ * already-bright band drives it to white — ***"white looks too blown out"***,
+ * the verdict Carl already gave once on this exact axis. **Addition has no
+ * headroom. Multiplication works downward, where all the headroom is.**
+ *
+ * ⚠ IT IS A TRANSMITTANCE, NOT THE EMITTER'S COLOUR — the correction that makes
+ * this subtle rather than theatrical. `HEAT_WHITE` normalised is
+ * (1.0, 0.67, 0.32): a filter passing only 32% of blue is **a stage gel**. This
+ * passes ~89% of blue. **If a future session substitutes `HEAT_WHITE` here the
+ * effect becomes the thing Carl rejected.**
+ *
+ * ⚠ AND IT IS NOT A FAKE. `radiance` is the reflection of the studio env panels,
+ * which are lit by white light. If the filament also lit that little world, the
+ * panels would read white x amber. **Multiplying is the first-order model of
+ * "the filament is now one of the illuminants of the world this card reflects"**
+ * — Carl's own "one world", not a hand-authored influence table.
+ *
+ * ⚠ FLOOR OF 0.001 PER CHANNEL: the shader raises this to a power, and
+ * `pow(0, 0)` is undefined in GLSL.
+ *
+ * ⚠ DELIBERATELY UNDER-TUNED FOR CRISP GLASS — frosting scatters and will read
+ * stronger. Bound to `[b]` in `?cardrig=1`; Carl sets the final value by eye.
+ */
+export const GLASS_FILTER_TRANSMITTANCE = "#fff2e2";
+
+/**
+ * How strongly the filter responds to the filament's own intensity.
+ *
+ * `amber = filament.intensity * this`, feeding `pow(transmittance, amber)`.
+ *
+ * ⚠ SEPARATE FROM THE FILAMENT'S OWN FADER, AND THAT SEPARATION IS THE POINT.
+ * Carl's method is faders that move independently — *"all the parameters are in
+ * place, like a mixing desk. Now we have to move and blend."* Normalising this
+ * against `[f]` would make the filament's fader deaf to the tint and confound
+ * the desk. `[f]` sets how bright the filament is; this sets how much its light
+ * filters the glass.
+ *
+ * ⚠ BEER-LAMBERT, SO THE RAMP IS `pow` AND NOT `mix`. `mix(vec3(1), tint, a)` is
+ * a lerp TOWARD a colour — that is "amber glass", the thing Carl rejected,
+ * reached by a different route. `pow(T, density)` is what a filter of varying
+ * optical density does: strictly multiplicative, exactly 1.0 at zero, and safe
+ * past 1.0 (a denser filter, not a broken one).
+ */
+export const GLASS_FILTER_STRENGTH = 1.0;
+
+/**
  * How long the filament takes to reach temperature.
  *
  * ⚠ MATCHED TO THE CARD'S OWN FADE, on Carl's instruction: *"see what a filament
@@ -598,24 +737,106 @@ export const FILAMENT_INTENSITY = 0.45;
 
 
 /**
- * The travelling light's reach, in world units (== CSS px).
+ * The filament light's cutoff, in world units (== CSS px).
  *
- * ⚠ THIS IS WHAT PUTS LIGHT ON THE NEIGHBOURS. Carl's spill onto card 2's left
- * side and card 4's top is a function of this radius — too small and the head
- * lights only its own card, which is the *"painted glow"* the design reference
- * rules out. The cards are 8px apart, so the reach must comfortably exceed that.
+ * ⚠ IT IS A WINDOW, NOT A REACH — AND NOT A NORMALISER. Read off
+ * `three/src/renderers/shaders/ShaderChunk/lights_pars_begin.glsl.js:56-70`:
+ *
+ *     distanceFalloff = 1 / r^decay
+ *     if (cutoffDistance > 0) distanceFalloff *= (1 - (r/cutoff)^4)^2
+ *
+ * The window MULTIPLIES an already-complete inverse-square falloff. So raising
+ * this value cannot brighten anything at close range — it only stops crushing
+ * what is further away. **Raising it is free.**
+ *
+ * ⚠ AND 90 WAS AMPUTATING EACH CARD'S OWN FACE. `CARD_WIDTH_PX` is 186.66, so a
+ * card's half-width is 93.3 and the light — at the card's centre — is ~93.5 from
+ * its own far end. Against a cutoff of 90 the window reads:
+ *
+ *     40px → 0.923      60px → 0.644      80px → 0.141      >=90px → ZERO
+ *
+ * **The outer third of every lit card's own face received no light from its own
+ * filament**, which is why Carl's *"the reflection on each card that nearly
+ * spans its width"* did not span the width.
+ *
+ * ⚠ THE OLD COMMENT REASONED FROM THE WRONG NUMBER. It justified 90 with *"the
+ * cards are 8px apart, so the reach must comfortably exceed that"* — but 8px is
+ * the GAP between card edges, not the distance light travels. What matters is
+ * centre-to-surface: ~33px to a diagonal neighbour's nearest edge, ~102px to a
+ * same-row neighbour's, ~201px to the far card's.
+ *
+ * ⚠ WHY 700, stated so it can be CHECKED rather than trusted: the longest
+ * distance that must still read is the far card's nearest edge at ~201px. At
+ * cutoff 700 the window there is (1 - (201/700)^4)^2 = **0.986** — a 1.4% cost,
+ * so `decay: 2` alone shapes the falloff across the whole grid. At cutoff 400
+ * that same edge keeps only 47%, and a 389px centre-to-centre receiver keeps
+ * 1.1%: the window, not the physics, would be deciding.
+ *
+ * ⚠ DELIBERATELY UNDER-TUNED FOR CRISP GLASS. The face will be frosted later,
+ * and frosting SCATTERS — the same intensity reads stronger once it lands. Do
+ * not "correct" a value here that looks low; it is low on purpose.
  */
-export const FILAMENT_LIGHT_DISTANCE = 90;
+export const FILAMENT_LIGHT_DISTANCE = 700;
 
 /**
- * How strongly the travelling head lights the scene, relative to its emissive.
+ * How strongly the filament lights the scene, relative to its emissive.
  *
  * Separate from `FILAMENT_INTENSITY` because the two do different jobs: the
  * emissive is how bright the rim ITSELF looks, and this is how much it throws
  * onto everything else. Tuning them together would confound the bloom with the
  * spill.
+ *
+ * ⚠ UNCHANGED BY THE CUTOFF FIX, BUT NO LONGER KNOWN-GOOD. Lifting
+ * `FILAMENT_LIGHT_DISTANCE` 90 → 700 leaves close-range intensity identical —
+ * the window is a multiplier, so at the card centre it was already ~1.0. But it
+ * restores light across the outer third of every lit card's own face and across
+ * the whole grid, so TOTAL light per card rises materially even though no single
+ * near-field sample changed.
+ *
+ * **Expect to retune this by eye**, on `[p]`, using Carl's standing method:
+ * all five cards lit, push until other colours shift, then back off.
  */
 export const FILAMENT_LIGHT_POWER = 60;
+
+/**
+ * How far the filament light sits PROUD of the card plane, in world units.
+ *
+ * ⚠ THIS IS THE DIAL THAT DECIDES WHETHER NEIGHBOURS ARE LIT AT ALL, and it was
+ * never the intensity. Architect, 5 August.
+ *
+ * ⚠ NO CARD SURFACE HAS A USABLE DIFFUSE RESPONSE. The rim is `metalness: 1`, and
+ * `lights_physical_fragment.glsl.js:4` computes
+ * `diffuseContribution = diffuseColor * (1 - metalness)` — **exactly zero**. The
+ * face is `transmission: 0.97`, and `transmission_fragment.glsl.js:33` mixes 97%
+ * of its diffuse away. So every cross-card contribution is SPECULAR ONLY, and
+ * specular needs `N·L`.
+ *
+ * ⚠ AT z = 6 A NEIGHBOUR IS GEOMETRICALLY BLIND TO THE LIGHT. All five cards
+ * share one plane, so the direction from a neighbour to the light is essentially
+ * in-plane: `N·L = 6/sqrt(33² + 6²) = 0.179` at the closest approach any two
+ * cards make, with the reflected lobe pointing away from an orthographic camera
+ * on +Z. **Raising POWER multiplies a term that is already near zero** — measured,
+ * a 5x power sweep moved the lit card 5.4x and its neighbour not at all.
+ *
+ * Own-to-neighbour ratio at a 33px lateral gap:
+ *
+ *     ratio = [ z² / (1089 + z²) ]^1.5
+ *     z=6 → 175:1     z=15 → 14:1     z=30 → 3.3:1     z=45 → 1.9:1
+ *
+ * Carl's brief — *"not as much as its own filament would affect it"* — lands
+ * between 15 and 20.
+ *
+ * ⚠ RAISING z DIMS THE OWN CARD AS 1/z², so `FILAMENT_LIGHT_POWER` must rise with
+ * it. **They are one control**, like `roughness` and `lightLevel`.
+ *
+ * ⚠ THERE IS A FLOOR BUT NO CEILING WAS EVER ESTABLISHED. 6 was chosen so the
+ * light was not buried inside its own geometry — see the note at the `pointLight`
+ * itself. Confirm the light stays clear of `faceBaseZ` and the rim tube as z rises.
+ *
+ * ⚠ DELIBERATELY UNDER-TUNED FOR CRISP GLASS — frosting scatters and will read
+ * stronger. Low on purpose.
+ */
+export const FILAMENT_LIGHT_HEIGHT = 6;
 
 /**
  * How long the filament takes to cool once the card is pressed again.

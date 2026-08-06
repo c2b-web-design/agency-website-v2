@@ -50,9 +50,16 @@ import {
   RIM_TUBE_RADIUS,
   BEVEL_WIDTH,
   BEVEL_RISE,
-  CROWN_HEIGHT,
+  BEVEL_RISE_RATIO,
+  // ⚠ `FACE_TUCK_RATIO`, `CROWN_HEIGHT` AND `FACE_SEAM_SINK` ARE NO LONGER
+  // IMPORTED. All three belonged
+  // to the recess model, where the crown's height and the face's sink were two
+  // hand-held numbers that had to be changed together. Since the 6 August
+  // rebuild the crown is DERIVED from how proud the apex must sit
+  // (`FACE_CROWN_RISE`), so importing them would be importing the old model.
   CROWN_PLATEAU_U,
-  FACE_SEAM_SINK,
+  FACE_RISE_FROM,
+  FACE_CROWN_RISE,
   cardBudget,
 } from "./answer-card-geometry";
 import {
@@ -68,6 +75,11 @@ import {
   RIM_ROUGHNESS,
   RIM_ENV_INTENSITY,
   FILAMENT_INTENSITY,
+  FILAMENT_LIGHT_DISTANCE,
+  FILAMENT_LIGHT_POWER,
+  FILAMENT_LIGHT_HEIGHT,
+  GLASS_FILTER_TRANSMITTANCE,
+  GLASS_FILTER_STRENGTH,
   BEVEL_GLOW,
   FILAMENT_GLOW,
   HEAT_RED,
@@ -79,6 +91,8 @@ import {
   BEVEL_CLEARCOAT_ROUGHNESS,
   BEVEL_ENV_INTENSITY,
   LIGHT_LEVEL,
+  GLASS_CLEARCOAT,
+  GLASS_CLEARCOAT_ROUGHNESS,
 } from "./answer-card-glass";
 
 /**
@@ -98,7 +112,12 @@ import {
  *
  * ⚠ REFS, NOT PROPS. The head moves every frame for 2400ms; passing it as a prop
  * would mean a React render per frame, rebuilding the scene graph to move one
- * number. Same argument as `useRegionShift` in the backdrop.
+ * number.
+ *
+ * (This note used to cite `useRegionShift` in the backdrop as the matching case.
+ * That hook animated the lockup's per-card colour and was removed with the
+ * lockup on 5 August 2026 — the reasoning it shared with this one is now stated
+ * here directly rather than by reference to code that no longer exists.)
  */
 export type FilamentState = {
   /** Overall intensity — 0 when unlit. The fader. */
@@ -125,6 +144,31 @@ export type GlassTuning = {
   rimMetal: number;
   /** The filament's peak intensity — the second fader in the mastering pass. */
   filamentIntensity: number;
+  /**
+   * The filament light's cutoff. ⚠ A WINDOW, NOT A REACH — raising it cannot
+   * brighten anything at close range. See `FILAMENT_LIGHT_DISTANCE`.
+   */
+  filamentDistance: number;
+  /** How hard the filament throws light onto everything else. */
+  filamentPower: number;
+  /**
+   * How far the filament light sits proud of the card plane.
+   * ⚠ THE DIAL THAT DECIDES WHETHER NEIGHBOURS ARE LIT AT ALL — not power. See
+   * `FILAMENT_LIGHT_HEIGHT`.
+   */
+  filamentHeight: number;
+  /**
+   * How strongly the filament's own light filters the glass it sits in.
+   * ⚠ A FILTER, NOT A MATERIAL — see `GLASS_FILTER_TRANSMITTANCE`.
+   */
+  glassFilterStrength: number;
+  /**
+   * The face's polished skin over its frosted body.
+   * ⚠ SWEEP IT WITH `roughness`, NEVER ALONE — see `GLASS_CLEARCOAT`.
+   */
+  glassClearcoat: number;
+  /** How sharp that skin's reflection is. Inert while the coat is 0. */
+  glassClearcoatRoughness: number;
 };
 
 export const DEFAULT_GLASS_TUNING: GlassTuning = {
@@ -134,6 +178,12 @@ export const DEFAULT_GLASS_TUNING: GlassTuning = {
   rimRoughness: RIM_ROUGHNESS,
   rimMetal: 0,
   filamentIntensity: FILAMENT_INTENSITY,
+  filamentDistance: FILAMENT_LIGHT_DISTANCE,
+  filamentPower: FILAMENT_LIGHT_POWER,
+  filamentHeight: FILAMENT_LIGHT_HEIGHT,
+  glassFilterStrength: GLASS_FILTER_STRENGTH,
+  glassClearcoat: GLASS_CLEARCOAT,
+  glassClearcoatRoughness: GLASS_CLEARCOAT_ROUGHNESS,
 };
 
 // ── Diagnostic material ──────────────────────────────────────────────────────
@@ -148,9 +198,163 @@ export const DEFAULT_GLASS_TUNING: GlassTuning = {
 // the glass holder that supports it. The diagnostic did its job; the form it was
 // protecting is approved.
 //
-// `DIAG_FACE_COLOR` REMAINS, and only as the non-glass fallback — the face wears
-// real glass whenever `glass` is set, and this is what renders otherwise.
-const DIAG_FACE_COLOR = "#a8a8a8";
+// ⚠ AND THEY CAME BACK ON 5 AUGUST 2026, for a reason the note above could not
+// have anticipated: the form they were protecting turned out NOT to be right.
+// The bevel and face never meet — there is a 5.00-unit unmodelled step at the
+// seam (`verify/cross-section.mjs`) — and it went unseen for sessions because a
+// dark transmissive card looks identical whether a surface is there or not.
+//
+// ⚠ CARL: *"i will have no way of knowing if its right if its clear glass...
+// ramp it up so i can see something more substantial and then shine a light on
+// it so i can zoom in and check."* THREE DISTINCT GREYS, so the eye can tell
+// where one surface ends and the next begins before interpreting any lighting.
+//
+// Reached with `?clay=1`. The glass path is untouched and still the default.
+// ⚠ THE FACE IS WHITE, ON CARL'S INSTRUCTION: *"make the face white so the
+// effect will be clearly visible."* A mid-grey face compresses the very range
+// the study is reporting — the three states of his sketch are LIGHTER above the
+// rim, SHADOWED at rim level, DARKER below, and a surface starting at 66% has
+// little room to brighten and muddies the shadow. White gives the full range in
+// both directions.
+//
+// ⚠ AND THE RIM IS NOW DARKER THAN THE FACE, deliberately reversing the earlier
+// pairing. The rim's job here is to be the thing that CASTS onto the face, so it
+// needs to read as a distinct object in front of a bright surface rather than
+// competing with it.
+const DIAG_FACE_COLOR = "#ffffff";
+const DIAG_RIM_COLOR = "#9a9a9a";
+const DIAG_BEVEL_COLOR = "#8a8a8a";
+
+/**
+ * The face's glass — and the filter its own filament puts over it.
+ *
+ * ⚠ THE GOVERNING SENTENCE LIVES AT `GLASS_FILTER_TRANSMITTANCE`, IN CARL'S OWN
+ * WORDS. Read it before changing anything here. The short form: **a filter, not
+ * a material; subtraction, not addition; it exists only while the light does.**
+ * This physics was agreed three times across three sessions and never survived
+ * into the build, because it lived in chat while the code carried only values.
+ *
+ * ⚠ THE MULTIPLY LANDS ON `radiance` — THE ENV REFLECTION — AND NOTHING ELSE.
+ * That band is the mirrored image of the studio's two COOL panels
+ * (`#dceaff` / `#9fb4d0`), swept across the convex crown. It is the "white
+ * reflection" in Carl's sentence, and filtering it is what makes the glass tinge
+ * rather than glow.
+ *
+ * ⚠ AND IT SURVIVES TRANSMISSION AT FULL STRENGTH. `meshphysical.glsl.js:193-198`
+ * — `transmission_fragment` mixes only `totalDiffuse`; `totalSpecular` is added
+ * unmodified. So the band the eye reads is not the 3% of diffuse that survives
+ * `transmission: 0.97`; it is the specular term, untouched.
+ *
+ * ⚠ INSERTED **BEFORE** `<lights_fragment_end>`, NEVER AFTER. `radiance` is
+ * written at `lights_fragment_maps.glsl.js:33` and CONSUMED by
+ * `RE_IndirectSpecular` inside `lights_fragment_end.glsl.js:16`. Tinting after
+ * that include writes to a dead variable — **it compiles, runs, and does
+ * nothing**, and the natural reading of the result would be "the premise was
+ * wrong" rather than "the insertion point was".
+ */
+function FaceMaterial({
+  envMap,
+  envMapIntensity,
+  color,
+  roughness,
+  transmission,
+  filament,
+  filterStrength,
+  clearcoat,
+  clearcoatRoughness,
+}: {
+  envMap: THREE.Texture | null;
+  envMapIntensity: number;
+  color: string;
+  roughness: number;
+  transmission: number;
+  filament: FilamentState;
+  filterStrength: number;
+  clearcoat: number;
+  clearcoatRoughness: number;
+}) {
+  const uniforms = useRef({
+    /** Optical density of the filter — 0 is clear glass. */
+    uAmber: { value: 0 },
+    uGlassFilter: { value: new THREE.Color(GLASS_FILTER_TRANSMITTANCE) },
+  });
+
+  useFrame(() => {
+    // ⚠ DRIVEN BY THE FILAMENT'S OWN INTENSITY, UNNORMALISED — Carl: *"if the
+    // intensity of the filament was reduced so would the impact on the
+    // reflection, and if it was ramped up."* `intensity.current` already carries
+    // the `[f]` fader (`answer-card-canvas.tsx:818`), so raising `[f]` raises the
+    // tint. Dividing by the fader here would make `[f]` deaf to the filter and
+    // confound the desk.
+    uniforms.current.uAmber.value = Math.min(
+      4,
+      Math.max(0, filament.intensity.current * filterStrength),
+    );
+  });
+
+  const onBeforeCompile = useCallback((shader: THREE.WebGLProgramParametersWithUniforms) => {
+    Object.assign(shader.uniforms, uniforms.current);
+
+    shader.fragmentShader = `
+      uniform float uAmber;
+      uniform vec3  uGlassFilter;
+
+      /**
+       * ⚠ THE SEAM. Today the filter is uniform across the face; the filament is
+       * a closed LOOP around the rim, so a later step weights this by distance
+       * from the perimeter — Carl: *"you will also have the filament on its
+       * bottom edge whose light will travel through glass and add to the
+       * reflection."*
+       *
+       * Replacing this function body is the WHOLE of that change: the insertion
+       * point, the uniform, the driver and the operation are identical under
+       * either model. **Nothing about building on a point source has to be
+       * undone** — the point source is not in this shader, only its intensity is.
+       */
+      float cardPerimeterWeight() { return 1.0; }
+
+      ${shader.fragmentShader}
+    `.replace(
+      "#include <lights_fragment_end>",
+      `
+       // ⚠ BEER-LAMBERT: T = T0^density. A filter of increasing optical density,
+       // NOT a lerp toward a colour. A mix() toward a tint would be "amber
+       // glass" — the thing Carl explicitly rejected — reached by another route.
+       // pow() is strictly multiplicative: exactly 1.0 at zero density, it can
+       // never wash out or overshoot, and a density past 1.0 is simply a denser
+       // filter rather than a broken one.
+       radiance *= pow(max(uGlassFilter, vec3(0.001)), vec3(uAmber * cardPerimeterWeight()));
+       #include <lights_fragment_end>
+      `,
+    );
+  }, []);
+
+  return (
+    <meshPhysicalMaterial
+      envMap={envMap}
+      envMapIntensity={envMapIntensity}
+      color={color}
+      roughness={roughness}
+      metalness={0}
+      transmission={transmission}
+      // ⚠ THE POLISHED SKIN OVER THE FROSTED BODY. Zero by default, so this is
+      // inert until the rig moves it — three skips the clearcoat path entirely
+      // at 0, which is also why adding it costs nothing while it stays there.
+      // ⚠ IT IS THE PARTNER OF `roughness`, NOT AN INDEPENDENT DIAL. See
+      // `GLASS_CLEARCOAT`: the body scatters, the coat stays sharp, and a coat
+      // over an already-polished base is just a second specular.
+      clearcoat={clearcoat}
+      clearcoatRoughness={clearcoatRoughness}
+      // ⚠ FIXED, NOT TUNABLE — see answer-card-glass.ts. Under an orthographic
+      // camera the crown centre is at normal incidence, so the maximum lateral
+      // displacement across the whole face is 0.801px.
+      thickness={GLASS_THICKNESS}
+      ior={GLASS_IOR}
+      side={THREE.DoubleSide}
+      onBeforeCompile={onBeforeCompile}
+    />
+  );
+}
 
 /**
  * The rim's material: tungsten that heats.
@@ -684,12 +888,11 @@ export type AnswerCardTuning = {
   crownHeight: number;
   plateauU: number;
   /**
-   * How far the face's apex sits BEHIND the rim's apex, in world units.
-   *
-   * ⚠ POSITIVE MEANS RECESSED, AND THE DEFAULT IS RECESSED — decided by the
-   * Builder on Carl's delegation, 3 August. See `FACE_SEAM_SINK` in
-   * `answer-card-geometry.ts` for the four reasons. Exposed here so Carl can
-   * overrule by eye; it will not go proud without a deliberate change.
+   * ⚠ NO LONGER PLACES THE FACE. Retained so the `?cardrig=1` bank keeps its
+   * shape, but the face's z is now derived: it rises from `FACE_RISE_FROM` (the
+   * rim's base) and its apex lands `FACE_PROUD_OF_RIM` above the rim's apex.
+   * The recess model — face tucked behind a lip it never touched — is what left
+   * a 5.00-unit unmodelled gap in the cross-section. See `FACE_TUCK_RATIO`.
    */
   faceRecess: number;
 };
@@ -698,9 +901,12 @@ export const DEFAULT_TUNING: AnswerCardTuning = {
   tubeRadius: RIM_TUBE_RADIUS,
   bevelWidth: BEVEL_WIDTH,
   bevelRise: BEVEL_RISE,
-  crownHeight: CROWN_HEIGHT,
+  // ⚠ THE CROWN IS DERIVED FROM HOW PROUD THE APEX MUST SIT, not typed. See
+  // `FACE_CROWN_RISE` — the two used to be independent numbers that had to be
+  // changed together, and the contact field records getting that wrong once.
+  crownHeight: FACE_CROWN_RISE,
   plateauU: CROWN_PLATEAU_U,
-  faceRecess: FACE_SEAM_SINK - CROWN_HEIGHT,
+  faceRecess: 0,
 };
 
 /**
@@ -766,7 +972,25 @@ export function AnswerCardMesh({
    */
   children?: React.ReactNode;
 }) {
-  const { tubeRadius, bevelWidth, bevelRise, crownHeight, plateauU, faceRecess } = tuning;
+  const { tubeRadius, bevelWidth, crownHeight, plateauU } = tuning;
+  // ⚠ THE BEVEL FOLLOWS THE RIM — Carl, 5 August: *"change the bevel proportionate
+  // to the filament."* Taking `tubeRadius` down in the rig used to strand
+  // `bevelRise` at its old absolute value, which is how a bevel comes to stand
+  // proud of the rim and render the card with a black interior. Deriving it here
+  // means the proportion cannot be broken by moving one dial.
+  //
+  // `tuning.bevelRise` is deliberately NOT read. It stays on the type and in the
+  // rig readout as the resulting value, so `[0]` still prints what the geometry
+  // actually used.
+  const bevelRise = tubeRadius * BEVEL_RISE_RATIO;
+  // ⚠ THE FACE'S TUCK IS GONE WITH THE RECESS MODEL. It used to be
+  // `bevelRise * FACE_TUCK_RATIO`, holding the face below a lip it never touched
+  // — which is what left a 5.00-unit unmodelled step in the cross-section. The
+  // face now rises FROM the rim's base and its apex is derived; see
+  // `FACE_RISE_FROM` and `FACE_CROWN_RISE` in `answer-card-geometry.ts`.
+  //
+  // The face's WIDTH still needs no equivalent: `faceInset` is already
+  // `2 * tubeRadius + bevelWidth`, so it widens on its own as the rim comes down.
 
   const path = useMemo(
     () => sampleRoundedRectPath(CARD_WIDTH_PX, CARD_HEIGHT_PX, CARD_RADIUS_PX, PATH_SAMPLES),
@@ -854,22 +1078,22 @@ export function AnswerCardMesh({
 
   // ── Where the face sits in z ──────────────────────────────────────────────
   //
-  // ⚠ THE FACE JOINS THE BEVEL, NOT THE RIM, so its apex is measured from the
-  // BEVEL'S INNER EDGE (`bevelRise`) — not from the rim's apex.
+  // ⚠ REBUILT 6 AUGUST 2026 — THE FACE RISES FROM THE RIM'S BASE AND STANDS
+  // PROUD OF ITS APEX. The old model anchored it below the bevel's inner edge
+  // and left a 5.00-unit unmodelled step between them, measured by
+  // `verify/cross-section.mjs`. Carl drew what the renderer actually contained:
+  // two tubes, two bevel stubs pointing at nothing, and a dome floating free.
+  // The full record is at `FACE_TUCK_RATIO` in `answer-card-geometry.ts`.
   //
-  // ⚠ A FIRST BUILD ANCHORED THIS TO THE RIM AND THE CARD RENDERED WITH A BLACK
-  // INTERIOR. With rim apex 2, recess 0.5 and crown 4.5 the face apex landed at
-  // z = 1.5 while the bevel's inner edge stood at z = 2.5 — so the bevel rose
-  // ABOVE the face and the face sat at the bottom of a well, correctly lit and
-  // correctly invisible. The geometry was doing exactly what it was told.
+  // ⚠ THE SEAM IS NOT CLOSED — IT NO LONGER EXISTS. The face's edge starts at
+  // z = 0, the tube's own base, so both surfaces begin at the same height and
+  // there is nothing left to bridge.
   //
-  // Anchoring here means the face's apex sits `faceRecess` below the lip it
-  // meets, which is what "recessed behind the rim" actually has to mean once the
-  // bevel rises. Raising the crown still sinks the base plane by the same
-  // amount, so curvature grows BACKWARD and the apex never breaches the lip.
-  const bevelInnerZ = bevelRise;
-  const faceApexZ = bevelInnerZ - faceRecess;
-  const faceBaseZ = faceApexZ - crownHeight;
+  // ⚠ AND THE APEX IS DERIVED, NOT PLACED. `crownHeight` comes from
+  // `FACE_CROWN_RISE`, which solves for the apex landing `FACE_PROUD_OF_RIM`
+  // above the rim — so the two cannot drift apart the way the old crown and sink
+  // could. `faceRecess` survives on the tuning type only to keep the rig's shape.
+  const faceBaseZ = FACE_RISE_FROM;
 
   return (
     <group ref={groupRef}>
@@ -892,14 +1116,37 @@ export function AnswerCardMesh({
         flashing at one spot — which is exactly what his first reference shows on
         the unlit coil.
       */}
-      <mesh geometry={rimGeometry}>
-        <RimMaterial
-          color={RIM_METALS[glassTuning.rimMetal]?.color ?? RIM_METAL_COLOR}
-          roughness={glassTuning.rimRoughness}
-          envMap={envMap}
-          envMapIntensity={RIM_ENV_INTENSITY * lightLevel}
-          filament={filament}
-        />
+      {/* ⚠ SHADOW FLAGS ARE CLAY-ONLY. They cost nothing when the renderer's
+          shadow map is disabled, which it is for the shipped card — see the
+          `onCreated` note in `answer-card-canvas.tsx`. Every surface both casts
+          and receives, because the question is whether the BEVEL shadows the
+          face at the seam. */}
+      <mesh geometry={rimGeometry} castShadow={!glass} receiveShadow={!glass}>
+        {glass ? (
+          <RimMaterial
+            color={RIM_METALS[glassTuning.rimMetal]?.color ?? RIM_METAL_COLOR}
+            roughness={glassTuning.rimRoughness}
+            envMap={envMap}
+            envMapIntensity={RIM_ENV_INTENSITY * lightLevel}
+            filament={filament}
+          />
+        ) : (
+          /*
+            ⚠ CLAY, AND THE RIM ESPECIALLY NEEDS IT. `metalness: 1` means the
+            metal has almost no diffuse response — the env map IS its
+            appearance. Under a clay render there is no env map, so a metal rim
+            would go BLACK and take the seam with it. A diffuse stand-in is the
+            only way the tube's curve is legible at all here.
+          */
+          <meshPhysicalMaterial
+            color={DIAG_RIM_COLOR}
+            roughness={0.3}
+            metalness={0}
+            clearcoat={1}
+            clearcoatRoughness={0.1}
+            side={THREE.DoubleSide}
+          />
+        )}
       </mesh>
 
       {/*
@@ -915,12 +1162,27 @@ export function AnswerCardMesh({
         sentence, and a second transmissive surface per card would both cost the
         transmission pass and blur the rim/face boundary.
       */}
-      <mesh geometry={bevelGeometry} position={[0, 0, 0]}>
-        <BevelMaterial
-          envMap={envMap}
-          envMapIntensity={BEVEL_ENV_INTENSITY * lightLevel}
-          filament={filament}
-        />
+      <mesh geometry={bevelGeometry} position={[0, 0, 0]} castShadow={!glass} receiveShadow={!glass}>
+        {glass ? (
+          <BevelMaterial
+            envMap={envMap}
+            envMapIntensity={BEVEL_ENV_INTENSITY * lightLevel}
+            filament={filament}
+          />
+        ) : (
+          /*
+            ⚠ A DIFFERENT GREY FROM THE RIM AND THE FACE, DELIBERATELY. The
+            question this render exists to answer is where one surface ENDS and
+            the next BEGINS — so the three parts must be tellable apart by tone
+            alone, before any lighting is interpreted.
+          */
+          <meshStandardMaterial
+            color={DIAG_BEVEL_COLOR}
+            roughness={0.85}
+            metalness={0}
+            side={THREE.DoubleSide}
+          />
+        )}
       </mesh>
 
       {/*
@@ -936,26 +1198,84 @@ export function AnswerCardMesh({
         while it fades, and `transparent === true` also routes a material away
         from the opaque list. They rejoin it once the fade completes.
       */}
-      <mesh geometry={faceGeometry} position={[0, 0, faceBaseZ]}>
+      {/*
+        ⚠ THE GLASS PATH CARRIES THE FILTER; THE DIAGNOSTIC PATH DOES NOT. The
+        `glass={false}` variant is a flat stand-in with no envMap, so there is no
+        `radiance` worth filtering and no filament to drive it. Keeping it on the
+        plain material also keeps the diagnostic honest — it stays what it has
+        always been.
+      */}
+      <mesh
+        geometry={faceGeometry}
+        position={[0, 0, faceBaseZ]}
+        castShadow={!glass}
+        receiveShadow={!glass}
+      >
+        {glass ? (
+          <FaceMaterial
+            envMap={envMap}
+            // ⚠ THE FACE RIDES THE SAME FADER. The pass Carl specified judges the
+            // metal *"against both metal and glass"*, so the light has to come up
+            // on the whole card at once — a face at fixed intensity while the rim
+            // and bevel ramp would make every reading a comparison against a
+            // moving reference.
+            envMapIntensity={GLASS_ENV_INTENSITY * lightLevel}
+            color={GLASS_COLOR}
+            roughness={glassTuning.roughness}
+            transmission={glassTuning.transmission}
+            filament={filament}
+            filterStrength={glassTuning.glassFilterStrength}
+            clearcoat={glassTuning.glassClearcoat}
+            clearcoatRoughness={glassTuning.glassClearcoatRoughness}
+          />
+        ) : (
+        /*
+          ⚠ CLAY. THE POINT OF THIS PATH IS TO MAKE THE FORM VISIBLE, and it is
+          not the glass path with transmission turned off.
+
+          Carl, 5 August 2026: *"i will have no way of knowing if its right if
+          its clear glass. That why you should ramp it up so i can see something
+          more substantial and then shine a light on it so i can zoom in and
+          check."*
+
+          ⚠ AND THE REASON HE HAD TO SAY IT: an entire session of lighting work
+          went onto geometry that turned out to be missing at the seam — *"no
+          light can illuminate something that is not there."* A clear, dark,
+          transmissive card cannot answer "is the slope there", because every
+          surface reads as the same near-black whether it exists or not.
+
+          ⚠ SO: FULLY OPAQUE, MID-GREY, MATTE, AND NOT ON THE SCENE FADER. The
+          light level is deliberately NOT multiplied in here — `lightLevel` is
+          0.35 for the shipped glass look, and a diagnostic that inherits it
+          would be as dark as the thing it is diagnosing. This surface is lit to
+          be READ, not to be judged as a material.
+        */
+        /*
+          ⚠ PLASTIC, NOT CHALK — Carl, 5 August 2026: *"similar would be plastic
+          for its light reflective qualities."*
+
+          ⚠ AND HE IS RIGHT THAT IT IS THE BETTER TEST SURFACE. A fully matte
+          material scatters equally in every direction, so its shading reports
+          only which way a surface faces on AVERAGE — a broad, forgiving wash
+          that hides exactly the small changes in curvature this study needs to
+          show. A specular surface puts a compact highlight on the steepest part
+          of a curve and MOVES it as the light travels, so the eye reads the
+          shape from the highlight's path rather than from a tonal guess.
+
+          ⚠ `clearcoat` ON TOP OF A MID ROUGHNESS is what makes it read as
+          moulded plastic rather than as polished metal: the body stays diffuse
+          and holds its own colour, while a thin sharp skin carries the
+          reflection.
+        */
         <meshPhysicalMaterial
-          envMap={glass ? envMap : null}
-          color={glass ? GLASS_COLOR : DIAG_FACE_COLOR}
-          roughness={glass ? glassTuning.roughness : 0.65}
+          color={DIAG_FACE_COLOR}
+          roughness={0.35}
           metalness={0}
-          transmission={glass ? glassTuning.transmission : 0}
-          // ⚠ FIXED, NOT TUNABLE — see answer-card-glass.ts. Under an
-          // orthographic camera the crown centre is at normal incidence, so the
-          // maximum lateral displacement across the whole face is 0.801px.
-          thickness={GLASS_THICKNESS}
-          ior={GLASS_IOR}
-          // ⚠ THE FACE RIDES THE SAME FADER. The pass Carl specified judges the
-          // metal *"against both metal and glass"*, so the light has to come up
-          // on the whole card at once — a face at fixed intensity while the rim
-          // and bevel ramp would make every reading a comparison against a
-          // moving reference.
-          envMapIntensity={GLASS_ENV_INTENSITY * lightLevel}
+          clearcoat={1}
+          clearcoatRoughness={0.12}
           side={THREE.DoubleSide}
         />
+        )}
       </mesh>
     </group>
   );
