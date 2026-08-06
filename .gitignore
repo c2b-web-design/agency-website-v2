@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# verification harness output — screenshots and JSON the verify/ scripts emit.
+# Regenerated on every run and worth ~800K a session; the SCRIPTS are the record
+# worth keeping, not their output. The `/out/` rule above is root-anchored and
+# does not cover this path.
+verify/out/
