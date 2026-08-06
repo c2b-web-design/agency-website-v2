@@ -214,6 +214,73 @@ filament."*
 
 ---
 
+## 🔴 START HERE — THE Q5 ENTRANCE IS BROKEN. DIAGNOSED, NOT FIXED
+
+**Carl, at the end of the session:** *"the choreography on Q5 cards is now wrong. Their appearance
+is now bullet like instead of smooth."* **He needs this fixed before the next chunk starts.**
+
+### The measurement — it is NOT the timing
+
+The ladder is unchanged: 560ms gaps, 28% of the 2000ms rise, `ENTRANCE_END_MS` 4890. Verified
+against the constants. **And the card's own fade is smooth** — the biggest single step in its rise
+is 6% of the whole range.
+
+**The fault is a hard discontinuity just before the rise** (`verify/entrance-now.mjs`):
+
+| t (ms) | luminance | |
+|---:|---:|---|
+| 0–970 | **16.00** | the bare ground plane — `GROUND_COLOR` #101010 is exactly 16 |
+| ~972 | **4.55** | ⚠ drops 11.45 in one step |
+| 972–2900 | 4.55 → 54.41 | the real entrance, smooth |
+
+**The card does not fade in. It punches a dark hole and then brightens out of it**, and that
+vanish-and-restart is what the eye reads as a bullet.
+
+### The cause — CONFIRMED against a falsifying control
+
+**It is the transmission pass engaging.** The moment the glass face first renders it samples the
+transmission target and darkens what was behind it.
+
+`verify/entrance-drop.mjs` tests this properly — `?clay=1` has no transmission, so if the hypothesis
+were wrong clay would drop too:
+
+| | steepest drop |
+|---|---:|
+| glass (transmission on) | **−11.36** at t=972ms |
+| clay (no transmission) — CONTROL | **−0.53** |
+
+⚠ **THE CONTROL IS THE POINT.** This harness can fail, which is why its verdict is worth something.
+
+### ⚠ TWO ROUTES. THE OBVIOUS ONE IS A TRAP
+
+**Route A — darken `GROUND_COLOR` so there is no step. DO NOT DO THIS.**
+`verify/ground-match.mjs` computes that #050505 would render at the card's floor and remove the jump
+entirely. **It also reintroduces a defect Carl already caught once:** the ground is sampled to match
+the page's radial gradient at the grid's rows, so darkening it makes the plane visible as a
+rectangle against the page — *"I can see the black rectangle the text is sitting in."* **Trading one
+bug for a worse one.**
+
+**Route B — ramp `transmission` with the entrance. THIS IS THE ONE, and it was HALF-STARTED AND
+REVERTED** so nothing is left in a broken state.
+
+`CardLighting` (`answer-card-canvas.tsx`) already drives two properties from 0→1 across the rise:
+`color` (rim and bevel) and `envMapIntensity` (the face). **`transmission` is not among them, so it
+is at full strength from the card's very first frame** — which is exactly why the ground darkens
+instantly instead of gradually.
+
+The change is to sample `transmission` into the `originals` map alongside `color` and `env`, and
+scale it by the same eased `lit` value. Then the glass arrives as glass rather than switching on.
+
+⚠ **VERIFY IT WITH THE HARNESS THAT FOUND IT.** `node verify/entrance-drop.mjs` — the glass drop
+must come down toward clay's −0.53. **And then let Carl judge it by eye**, because a smooth number
+is not the same as a smooth entrance.
+
+⚠ **ONE RISK TO CHECK:** three may recompile the face's shader when `transmission` crosses 0, which
+would stutter the entrance — the exact thing this is meant to fix. If it does, start the ramp at a
+small non-zero value rather than at 0.
+
+---
+
 ## ⚠ Open, and unresolved
 
 - **The filament light now sits very close to the face.** It is at z = 6; the face's apex moved from
@@ -272,6 +339,13 @@ should have made, and PowerShell re-encoded the whole file: **691 mojibake seque
 becoming `âš`. **It still compiled**, which is what made it dangerous — the damage was confined to
 comments and read as noise. Fully repaired (`verify/fix-mojibake.mjs`), zero remaining across every
 enquiry file. **Never pipe a source file through a shell rewrite.**
+
+**3. `git stash` was run without checking `git stash list` first.** A June entry — *"revert-2026-06-13:
+session corridor work + pre-session WIP (recoverable parachute)"* — was already there, and `stash
+pop` tried to apply THAT over the day's work, leaving six files conflicted including `.gitignore`.
+**Nothing was lost, because everything was already committed and pushed**, and a `git reset --hard
+HEAD` restored it cleanly with the June stash still intact. **Always read the stash list before
+stashing, and prefer committing to stashing when the work is worth keeping.**
 
 **2. A cached file read produced two wrong diagnoses.** The form sheet appeared byte-identical
 across three constant changes; the Builder concluded the build was stale, then that the harness was
@@ -339,3 +413,7 @@ into their corners is the next chunk. The glass material has not been judged on 
 *And the last hour changed what the next chunk IS. The contact field — approved, shipped, two
 components away — has been doing the travelling-light thing all along. **The card is not getting a
 new idea; it is getting the corridor's own language.***
+
+🔴 ***But fix the Q5 entrance first.** It is diagnosed, the cause is confirmed against a control,
+and the route is known — see the top of this file. Carl: "i need it fixed so we can start the next
+session building."*
