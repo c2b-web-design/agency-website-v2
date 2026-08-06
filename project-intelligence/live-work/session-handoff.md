@@ -195,9 +195,10 @@ filament."*
 - ⚠ **SHADOW.** Still parked. The clay study proves how much it adds; the Architect's advice stands
   — five shadow-casting point lights behind transmissive materials is thirty passes a frame. Buy the
   grounding with a contact/AO term in the face shader instead.
-- **`app/cards-reference/` is a TEMPORARY page** rendering Q4's CSS cards, recovered from git at
-  `c7afca3`. It exists because the live corridor cannot reach Q4. **Delete it when the card is
-  settled.**
+- ~~`app/cards-reference/`~~ — **DELETED at Carl's instruction the same session**, never committed.
+  It rendered Q4's CSS cards as a form reference because the live corridor cannot reach Q4. Its job
+  is done: the implied geometry it was there to demonstrate is now built. **If it is ever wanted
+  again the markup is in git at `c7afca3`** — do not reconstruct it by hand.
 
 ---
 
@@ -236,7 +237,6 @@ before theorising about the write.**
 http://localhost:3000/start                the shipped glass card, five cards
 http://localhost:3000/start?clay=1         THE FORM STUDY — plastic, white face,
                                            moving light, shadows, all five cards
-http://localhost:3000/cards-reference      Q4's CSS cards (temporary reference page)
 http://localhost:3000/start?cardrig=1      [1-6] geometry, [7-9] glass/light, [r] rim rough,
                                            [m] metal, [f] filament, [d] cutoff, [p] spill,
                                            [z] light height, [b] glass filter,
