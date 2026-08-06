@@ -988,10 +988,26 @@ export default function EnquiryOpening() {
 
               ⚠ THE MARKUP IS NOT LOST — it is in git at commit c7afca3 and
               earlier, and chunk 5 rebuilds the grid in WebGL rather than
-              restoring this. ⚠ AND `GRID_REFL` IN THIS FILE IS NOW DEAD CODE
-              BUT MUST NOT BE DELETED AS UNUSED: it is the specification the
-              chunk-5 physics has to reproduce — bottom row 0.26–0.30 against
-              top row 0.04–0.16.
+              restoring this. `GRID_REFL` in this file is now dead code but must
+              not be deleted as unused; see the correction directly below.
+
+              ⚠ CORRECTED 5 AUGUST — `GRID_REFL` IS NOT A SPECIFICATION. This
+              comment used to call it *"the specification the chunk-5 physics has
+              to reproduce — bottom row 0.26–0.30 against top row 0.04–0.16."*
+              **Carl retired that reading:** it was a CSS-era simulation of the
+              filament effect, *"approved only within the constraints of CSS"* —
+              the best available fake at the time, not a description of what the
+              real thing should look like.
+
+              ⚠ AND IT COULD NOT BE A PHYSICAL TARGET ANYWAY. Those numbers are a
+              hand-authored influence table with no falloff behind them. Real
+              inverse-square light from the actual card positions produces
+              different ratios, and **being different is not a defect.**
+
+              **Direction only: the bottom row receives more than the top row.**
+              Nothing is measured against these values — the geometry decides and
+              Carl judges by eye. The Next step button this drives is itself being
+              rebuilt in Three.js later, so it is provisional too.
 
               The grid element itself stays so the canvas has a box to size
               against; only the buttons are gone.
