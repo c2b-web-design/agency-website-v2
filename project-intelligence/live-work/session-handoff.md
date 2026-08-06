@@ -1,288 +1,269 @@
-# Session Handoff — 4 August 2026 (third session of the day)
+# Session Handoff — 6 August 2026
 
-**Written at the end of the filament / black-body session. For the session that picks up next.**
+**Written at the end of the lockup-removal / cross-section-rebuild session.**
 
-**Read this first, then `project-intelligence/` as normal.** Chat history is not canonical
-(D-006). **Delete this file at the end of the session that reads it, once its replacement is
-written** — `live-work-protocol.md` §3a.
-
-**This file points at records; it does not restate them.**
+**Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
+**Delete this file at the end of the session that reads it, once its replacement is written** —
+`live-work-protocol.md` §3a.
 
 ---
 
 ## ⛔ THE STANDING DIRECTIVE
 
 **NEVER comment on how long Carl has been working.** Do not mention the time of day, suggest
-stopping, wrapping up, resuming tomorrow, or ask whether to carry on. **Carl decides when a
-session ends and will say so.** It was not broken today.
+stopping, wrapping up, resuming tomorrow, or ask whether to carry on. **Carl decides when a session
+ends and will say so.** It was not broken today.
+
+---
+
+## THE HEADLINE — the card was missing pieces, and every approval before today was given against an object that was never rendered
+
+**Carl:** *"approved geometry are meaningless now because i was approving things built on what i
+thought was there."*
+
+**The card was three disconnected objects.** A rim tube, a bevel stub rising from it, and a face
+mesh floating **5.00 units behind the bevel's inner edge with nothing modelled across the gap.** The
+face's apex sat **0.90 BELOW the rim's apex**, so the interior could never catch light across its
+top. Carl drew what the renderer actually contained — two tubes, two bevel stubs pointing at
+nothing, and a dome floating free — and it was exact.
+
+⚠ **IT SURVIVED BECAUSE THE MATERIAL HID IT.** Carl: *"parts dont exist and its difficult to tell
+whether something exists in total darkness and no light can illuminate something that is not
+there."* A dark transmissive card looks identical whether a surface is present or absent. **An
+entire session of lighting work — light level, direction, type, roughness, clearcoat, backlighting —
+was spent tuning illumination for geometry that was missing.**
+
+⚠ **AND THE DOCUMENTATION MADE IT HARDER TO CATCH, NOT EASIER.** The "recessed, never proud"
+decision was taken by the Builder under delegation, written up with four confident reasons, and then
+read as settled because it was in a governance file. **Reason 2 was inverted** — it argued a proud
+face would obstruct the filament, when Carl's actual requirement is that the face be proud
+*precisely so it acts on* the other surfaces.
 
 ---
 
 ## Where things stand
 
-**Repo: `main`, head `8e562ed`, committed, clean and PUSHED.** Lint at the recorded baseline;
-`npx tsc --noEmit` clean.
+**Repo: `main`, head `fc27418`, UNCHANGED — nothing was committed today.** `npx tsc --noEmit`
+clean; lint at the recorded baseline (`1 problem (1 error, 0 warnings)` — the known
+`enquiry-opening.tsx` reduced-motion effect).
 
-⚠ **`chunk-scope.json` IS STILL DELETED — the repo is FAIL-OPEN.** Unchanged all day. Carl has
-directed every chunk conversationally and approved by eye; no scope file was drafted and he has
-not asked for one.
+⚠ **THE WORKING TREE IS LARGE AND NONE OF IT IS APPROVED.** Eight modified files, one deletion,
+one new page, twelve new verify scripts.
 
-⚠ **THE PAGE STILL DOES NOT ADVANCE PAST Q5.** Clicking a card fires its filament; that is not
-selection. No Next step, no Q4, no contact field.
+⚠ **`chunk-scope.json` IS STILL DELETED — the repo is FAIL-OPEN.** Unchanged for a third day.
 
-### What this session did
-
-**The filament, twice — and the second version replaced the first entirely.**
-
-1. **`94a4167`** — Carl reframed the whole chunk: *"does it have to move? become animated? No. it
-   could fade in, like a real light bulb filament. How does light/heat work? Start of red, orange,
-   white. blue"*. The travelling circuit was **deleted**, not disabled: 560 deletions against 229
-   insertions. **That reframe removed four defects rather than fixing them** — all of them existed
-   because something moved along a path.
-2. **`a3acfa2`** — the end colour pulled back from white to amber. Carl: *"white looks too blown
-   out."* His verdict on the result: ***"thats the best its looked."***
-3. **`a17d582`** — the opening stutter, half fixed, plus the lockup dimmed to 50%.
-4. **`662d657`** — two wrong records corrected.
+⚠ **The dev server was left running.**
 
 ---
 
-## ⚠ CARL SET THE ORDER FOR NEXT SESSION — follow it
+## ✅ What was finished
 
-> *"we will start with the begin button next session. then the card timings, then implement the
-> light changes"*
+### 1. The c2b DESIGN lockup — REMOVED on Carl's decision
 
-1. **The Begin button stall** — the section below. **Take it to the Architect first**, see the
-   warning under it.
-2. **The card timings** — `references/card-1-anchor.md`. Card 1 enters ~1.4s AFTER the phrase
-   reveal finishes, when Carl's instruction is that it starts at the reveal's MIDPOINT. **Measure
-   before acting: the lateness is exactly the precompile gap, so item 1 may repair it.**
-3. **The light changes** — the amber filter onto neighbouring cards. Designed in conversation, not
-   built; see the open-items section further down.
+*"Is it necessary? No. Is a resting state and hover state necessary. Yes."*
 
-⚠ **DO NOT REORDER THESE.** Each depends on the one before: the card timings cannot be judged
-while the entrance clock is still hostage to the precompile, and the filter cannot be tuned while
-the cards arrive at the wrong moment.
+**Gone:** `answer-card-mark.ts` (deleted), `drawBackdrop` and the whole canvas-drawing path, the
+four-zone blue/teal colour system, `useRegionShift`, `useLockupFade`, `useBackdropRedraw`, and beat
+six's three timing constants. `AnswerCardBackdrop` is now the ground plane alone.
 
----
+**Kept deliberately:** `CARD_BOXES`, `GRID_WIDTH_PX`/`GRID_HEIGHT_PX`, `GROUND_COLOR` — all
+load-bearing for the cards, not the lockup. **The ground plane stays**: without an opaque object
+behind the cards, `renderTransmissionPass` clears the transmission target to WHITE.
 
-## ⚠ THE BEGIN BUTTON STALLS — AND THE BUILDER MADE IT WORSE, TWICE
+**The entrance is five beats now.** `ENTRANCE_END_MS` re-derived from the ladder: **6330 → 4890**.
+It is imported by `enquiry-opening.tsx` to keep the contact field's WebGL warm-up out of the card
+ladder — that guard is still needed, still correct, and now releases ~1.4s earlier.
 
-**Carl, at the end of the session: *"the cards do not come on. lets leave, youre making the problem
-worse."*** He was right and the work was reverted (`8e562ed`, pushed).
+**The predicted risk landed:** with a flat ground the cards read as dark slabs. That is recorded at
+`GROUND_COLOR`, which is the one-line lever if it needs addressing.
 
-**The stall, measured cold, before Begin is pressed:**
+### 2. The cross-section — REBUILT. Carl confirmed by eye
 
-```
-warm-up canvas mounts   +8096ms
-641ms blocking task     +8193ms      <- lands on the Begin reveal
-6 dropped frames, 4 long tasks >50ms
-```
+**Carl:** *"Before the light was centered i could already tell the geometry was looking right. Now
+it confirms it."*
 
-The Begin reveal runs **5000ms from a 7400ms delay** (`globals.css:185`), so it is animating from
-7400 to 12400ms. The warm-up lands squarely inside it.
+| | before | after |
+|---|---:|---:|
+| bevel width | 4 | **0 — removed** |
+| gap at the seam | **5.00 units** | **none — the concept no longer exists** |
+| face rises from | z = −3.40 (a pit) | **z = 0, the rim's own base** |
+| face apex | z = 1.10 (0.90 BELOW the rim) | **z = 4.00 (2.00 PROUD)** |
+| face height ratio | 0.708 | **0.833** |
+| face tilt | 13.6° | **17.4°** |
 
-### ⚠ WHAT WAS TRIED AND WHY IT BROKE THE PAGE
+**The bevel went on Carl's instruction:** *"a bevel may not be neccersary at all. the face can rise
+from the bottom of the rim/filament, its so small on screen anyway."* At 4 units on a 48-unit card
+it was ~4 screen pixels — a sixth of the height spent on a facet too small to read, while creating
+the discontinuity that made the face look like a separate object.
 
-Gating the warm-up on the reveal's **`animationend`** instead of `beginActive` (which fires at
-`animationstart`). **It removed the stall — 6 dropped frames to 3, the 641ms task gone — and
-BROKE THE CARDS: they never appeared.**
+⚠ **THE TARGET WAS THE CSS CARD'S IMPLIED GEOMETRY**, not the sketch literally. Carl: *"whats
+important is its the same implied geometry as the CSS version."* `.enquiry-card` describes ONE
+continuous form — a shoulder turning inward on all four sides, interior rising out of it, no seam.
 
-⚠ **THE CONTROL HAD ALREADY SAID SO AND THE BUILDER REPORTED IT AS A TRADE-OFF.** The probe found
-*"the warm-up canvas now never mounts"* and the entrance running **6 seconds earlier**. **Both
-were symptoms of the gate never opening**, and both were written up as possible improvements.
-**An entrance that gets dramatically faster because a dependency stopped happening is a defect
-report, not a win.**
+⚠ **THE TILT GUARD CAUGHT A VALUE THAT LOOKED FINE.** `FACE_PROUD_OF_RIM` 1.0 produced a face tilt
+of **13.3°, below the 16° minimum** — because removing the bevel made the face WIDER (half-span
+17 → 20), so the same rise spread over a longer run is a shallower curve. **Two safe-looking changes
+interacted.** 2.0 was chosen off the arithmetic, not by eye.
 
-### The real shape of it
+### 3. The lighting system — BUILT AND SAVED
 
-**The stall and the cards are coupled.** The warm-up must happen for the cards to arrive, and
-wherever it happens it blocks something. Moving it has now moved the symptom four times:
+`?clay=1` renders the form instead of the material: opaque plastic, white face, one moving light,
+shadows on, no global illumination.
 
-| attempt | result |
-|---|---|
-| lead of 900ms, then 5200ms | stall stayed, moved later |
-| gate on `beginActive` | moved onto the Begin reveal |
-| gate on `animationend` | stall gone, **cards gone** |
+| Constant | Value | Note |
+|---|---:|---|
+| `CLAY_SWEEP_MS` | 45000 | slow is load-bearing, see below |
+| `CLAY_ARC_RADIUS` | 58 | clears the card without towering over it |
+| `CLAY_ARC_TILT` | 0.5 | leans the arc toward the viewer |
+| `CLAY_LIGHT_EXPOSURE` | 2.5 | **measured, not guessed** |
 
-⚠ **TAKE THIS TO THE ARCHITECT BEFORE TOUCHING IT.** Two consultations today
-(`architect-answer-opening-stutter.md`, `architect-answer-lockup-fade.md`) each solved in one pass
-what the Builder had failed at repeatedly — six theories on the first, four on the second. **This
-is the same shape a third time.**
+**The arc is centred on each card, not the scene** — and getting that wrong is what Carl caught:
+*"the shadows that appear on the left side and right side should be equal, theyre not."* The arc was
+symmetric all along; **the fault was where it was centred.** Card 1 sits at x = −194.67, so an
+origin-centred arc passed 195 units to its right.
 
-⚠ **AND IT IS PROBABLY NOT A SEPARATE PROBLEM.** The discarded warm-up canvas, the ~1.9s
-precompile, the card-1 anchor and this stall keep resolving to the same root: **a second WebGL
-context that must be built somewhere, and every "somewhere" is inside an animation.**
+**Exposure was guessed and missed three times** (2.4 blew out; 0.55, 0.62, 1.35 too dark) before
+`verify/clay-exposure.mjs` measured it. 2.5 is the highest value that does not clip.
 
----
-
-## The older analysis — the warm-up canvas is thrown away
-
-**Carl: *"the c2b DESIGN text entrance is not smooth."* Found at the very end of the session,
-after the env map work below.**
-
-**Measured, watching canvas mounts relative to Begin:**
-
-```
-+6902ms   the warm-up canvas UNMOUNTS   (0 canvases)
-+6913ms   the real Q5 canvas MOUNTS     (1 canvas)
-
-frame drops at +6690ms and +7066ms — straddling that swap
-```
-
-⚠ **A WEBGL CONTEXT IS PER-CANVAS.** Everything the warm-up compiled — programs, PMREM, the
-transmission target — **dies with it.** The replacement rebuilds all of it from scratch, at exactly
-the moment the lockup begins its fade.
-
-⚠ **SO THE WARM-UP AS DESIGNED CANNOT HELP THE CANVAS THAT REPLACES IT.** It only ever warmed the
-driver's binary cache, which is why cold and warm runs differed while the stall never went away.
-**Every fix aimed at making the warm-up better was aimed at the wrong object.**
-
-### → The fix is the Architect's option D, and it needs its own chunk
-
-**One canvas instead of two — mounted early, revealed late**, the pattern `enquiry-opening.tsx`
-already uses for the contact layer. The Architect's note: *"The objection at `:1111` is true of
-MOVING the node, not of rendering it once at a stable position and placing it with CSS."*
-
-⚠ **DO NOT START IT AS A TWEAK.** It changes where the card canvas mounts in the tree.
+**All five cards now carry the same vertical arc** — card 2's case, on Carl's closing instruction.
 
 ---
 
-## ⚠ AND ONE APPROVED COMPONENT WAS EDITED, WITH CARL'S EXPLICIT AUTHORISATION
+## ⚠ THE NEXT CHUNK — DECIDED, NOT STARTED
 
-**`contact-field-canvas.tsx` now sets `gl.debug.checkShaderErrors = false`.** Carl: *"do what it
-takes to fix it."*
+> **Carl:** *"an unexpected bonus is that even though the speed of the light is slower, it brings
+> out the 3d geometry. If we are looking for a hover state, we may have found an answer, or at least
+> something we can work with."*
 
-**The flag IS in effect** — control confirms `getProgramInfoLog` goes 6 calls / 445ms → **zero**.
-**It did not fix the entrance**: frame drops identical before and after. So the 450ms of self-time
-the profiler charged to `getProgramInfoLog` was **a wait attributed to the waiter**, the same
-misattribution that earlier pointed at `onFirstUse`.
+**THE MOVING LIGHT IS THE CANDIDATE HOVER MECHANISM.** Not a brightness change.
 
-**Kept** because the queries were real, blocking, and bought nothing. **Nothing about the contact
-field's appearance, timing or materials changes.** Flip it back while developing shaders there.
+⚠ **AND IT SIDESTEPS A MEASURED DEAD END.** The rim was measured at **72% of its reachable
+maximum** and the face at **38%** — a brightness-based hover had little room. A moving light needs
+none: what changes is *which surfaces are lit*, not how bright the card is.
 
----
+### What Carl specified
 
-## ⚠ THE ENV MAP — done, but only deferred
+**Resting:** the same light, **static, in front of the card, lower intensity**. Each card gets its
+own ambient. *"that will provide each card with its own ambient light."*
 
-**~572ms of PMREM work still blocks the opening.** The Architect found why the Builder's gating
-never touched it: **`useLocalEnvMap` runs in a `useMemo` during React render**, so `mayCompile` /
-`warm` — which gate `useScenePrecompile` only — never applied to it. Noted at the function itself.
+**Hover:** the light **moves, with a little more intensity**. The arc rotates **90° toward the
+viewer** — front → up over the top → back down past the front → under, looking up at the card. *"It
+only has to go just a little behind the card."*
 
-### → Do the DEFERRAL, not the resize
+**Per-card arc tilt — the four corners.** Carl's diagram: *"Card 2 is its own. Cards 1+3 mirror
+images as are 4+5... as card 2 is its own, there are 4 cards left with 4 corners."* Card 2 sits on
+the grid's centre line so its arc is vertical; the other four lean along their own diagonal toward
+the nearest corner. **Only the light positions need moving — all five arcs are already built.**
 
-Two routes exist. **Take the first:**
+⚠ **DERIVE THE TILT FROM GRID POSITION, DO NOT HAND-SET IT.** Same principle as the lockup's
+four-zone colour system: position decides, not a table. A Builder started this and Carl stopped it —
+it is next session's work, not today's.
 
-- **Move the allocation behind the warm gate.** Same deferral that just worked for the
-  transmission pass, costs nothing visually, and needs no judgement from Carl.
-- ~~`fromScene(studio, 0, 0.1, 200, { size: 64 })`~~ — **a VISUAL change and Carl's call.** It is
-  a real lever (256 → lodMax 8 and a 768x1024 target; 64 → lodMax 6 and 336x256), but he has not
-  seen 256/128/64 side by side. **Do not take it to save time.**
+**He also flagged:** *"i suspect we may have to bring the boxes in a little bit to light most of the
+face"*, and *"there must be a balance against the filament. we do resting and hover and tweak the
+filament."*
 
----
+### ⚠ Open questions the Builder raised and Carl has NOT answered
 
-## ⚠ THE ARCHITECT WAS CONSULTED AND WAS RIGHT
-
-### → `live-work/architect-answer-opening-stutter.md`
-
-**Read it before touching the stutter.** Carl asked for it after the Builder had failed six times.
-
-**The cause, which no Builder theory came near: every material compiles TWICE.** The program cache
-key carries `outputColorSpace` (branching on `currentRenderTarget === null`) and `toneMapping`.
-The canvas is sRGB + ACES filmic; the transmission pass renders to a target at linear +
-`NoToneMapping`. Only the canvas variant was being warmed.
-
-**Fixed in `a17d582`** — compile twice, once in each renderer state, via a 1x1 probe target.
-`renderTransmissionPass` is now **absent from the profile's top fourteen**, down from 777ms.
-
-⚠ **ONE CONSTRAINT THAT WILL BREAK IT SILENTLY:** lights are gathered with `traverseVisible`, and
-`numPointLights` is in the cache key. **The `FilamentLight`s must stay in the always-visible outer
-group.** Move one into a hidden group and every program warmed there becomes the wrong variant.
+- **Does the hover light loop or run one pass and settle?** A loop risks becoming ambient motion,
+  which this project has deliberately avoided.
+- **What happens on unhover** — fade, finish the pass, or snap back?
+- **How does hover read against selection?** The filament is also a light. Two light events on one
+  card must be distinguishable or hover reads as weak selection.
+- ⚠ **PERFORMANCE IS UNMEASURED.** The shipped canvas runs `frameloop="demand"` precisely to avoid
+  continuous rendering. Five cards with animated hover lights is a different profile. Not a blocker
+  — the contact field already runs an orbiting light — but **measure before shipping, not after.**
 
 ---
 
-## ⚠ The session's lesson — a wrong "ruled out" is worse than no note
+## ⚠ Open, and unresolved
 
-**Two of the Builder's six theories were retired by tests that never exercised the knob:**
-
-- **`checkShaderErrors`** — set on the wrong renderer (the warm-up canvas has its own). The 0ms
-  result meant nothing. Correctly retried: 1740 → 1692ms.
-- **Env-map "resolution"** — `fromScene`'s fourth argument is the **far plane**. With
-  `ENV_SHELL_RADIUS` at 60 the studio was inside the frustum either way, so **nothing could have
-  changed**. The 5ms delta went into a **code comment that then forbade the real fix for hours.**
-
-> **Both times the check was "did the number move", never "was the knob connected."**
-
-**The control, and it is cheap: before trusting a null result, show the test CAN fail** — set the
-parameter absurd and confirm a large move.
-
-**And the classifier that would have found the cause at theory 1:** the task's DURATION never
-changed across three reschedules, only its start time. **Duration invariant under scheduling means
-the cost is intrinsic to an operation's FIRST USE.** That reaches the answer on the first hop.
-
-**Both entries are struck in place in `references/opening-stutter.md`.** New corrections-record
-entries belong in `ai-system/working-with-the-builder.md` (entries 5 and 6 are from today).
+- **The filament light now sits very close to the face.** It is at z = 6; the face's apex moved from
+  z = 1.10 to **z = 4.00**. Carl saw the result on the clay render: *"i clicked the card, what is
+  the dot in the middle?"* — the point light reading as a hotspot. `FILAMENT_LIGHT_HEIGHT` says to
+  *"confirm the light stays clear of `faceBaseZ` and the rim tube as z rises"*; **that check now
+  needs redoing because the FACE moved, not the light.**
+- **Should the filament fire at all in the clay study?** It contaminates a one-light form render.
+  Not decided.
+- **The glass material is untouched and unjudged since the rebuild.** Everything today was seen in
+  clay. `?clay=1` off returns the shipped glass card — **nobody has looked at it on the new
+  geometry.**
+- **`GLASS_CLEARCOAT` was added and defaults to 0** — inert. The frost/coat grid found roughness is
+  the real lever and **clearcoat barely earned its shader cost** on our flat ortho face. Not
+  removed, because it was never judged on the REBUILT geometry.
+- **The ~2.9s cold opening wait** — Carl has never judged it.
+- ⚠ **SHADOW.** Still parked. The clay study proves how much it adds; the Architect's advice stands
+  — five shadow-casting point lights behind transmissive materials is thirty passes a frame. Buy the
+  grounding with a contact/AO term in the face shader instead.
+- **`app/cards-reference/` is a TEMPORARY page** rendering Q4's CSS cards, recovered from git at
+  `c7afca3`. It exists because the live corridor cannot reach Q4. **Delete it when the card is
+  settled.**
 
 ---
 
-## ⚠ Open, and Carl's to decide
+## ⚠ Two Builder errors worth inheriting
 
-- **The amber filter onto neighbouring cards.** Designed in conversation, not built. Carl's
-  framing: *"if a light source is shining on glass and a colour filter is placed in front of the
-  lens, would not that influence the colour?"* — **subtraction, not addition**: a filter removes
-  blue rather than adding orange, so it DARKENS and saturates instead of washing out. The specular
-  sweep is where it will read hardest. **Tune it with all five lit** — his instruction: *"if you
-  start from a position of all 5 cards on, and work out theres little effect on other colours,
-  thats the strongest its gonna get."*
-- ⚠ **AND THE BACKDROP SHOULD PROBABLY BE EXEMPT** — a filter reaching the lockup would take blue
-  out of blue letterforms and go muddy. Physically right, visually wrong. Departure to be stated
-  in the code, not silent.
-- **The lockup dim is GLOBAL, which is not the whole of his 3 August observation.** He asked for
-  brightness tied to card POSITION — bright under the cards, quiet between them. The gaps are 8px,
-  so a mask edge becomes a visible shape in its own right. **Not attempted.**
-- **Does the amber sing or stay restrained?** Still unanswered, carried from two sessions back.
+**1. A shell rewrite corrupted a source file.** `Set-Content` was used twice for edits the Edit tool
+should have made, and PowerShell re-encoded the whole file: **691 mojibake sequences**, every `⚠`
+becoming `âš`. **It still compiled**, which is what made it dangerous — the damage was confined to
+comments and read as noise. Fully repaired (`verify/fix-mojibake.mjs`), zero remaining across every
+enquiry file. **Never pipe a source file through a shell rewrite.**
+
+**2. A cached file read produced two wrong diagnoses.** The form sheet appeared byte-identical
+across three constant changes; the Builder concluded the build was stale, then that the harness was
+phase-locked. **Both wrong — the file had been updating all along and the read was cached.** Copying
+to a fresh filename settled it in one step. **When output looks impossibly unchanged, check the read
+before theorising about the write.**
 
 ---
 
 ## How Carl worked today
 
-- ⚠ **HE REPLACES DESIGNS, NOT JUST VALUES.** The travelling filament was working and approved in
-  mechanism when he asked *"does it have to move? No."* **The reframe deleted four defects.** When
-  he questions a premise, the premise is usually the problem.
-- ⚠ **HE REASONS FROM PHYSICS AND IS RIGHT.** Black-body colour, the glass bevel as a holder
-  rather than a conductor, the colour filter as subtraction. **Three times today his physics beat
-  the Builder's implementation instinct.**
-- ⚠ **HE TUNES FROM THE EXTREME.** *"start from a position of all 5 cards on."* Find the worst
-  case; everything lesser is safe by construction.
-- **He asks for the principle before deciding**, and **brackets numbers rather than guessing**.
+- ⚠ **HIS DRAWINGS SETTLED IN ONE GLANCE WHAT PROSE HAD FAILED AT FOR SESSIONS.** Four sketches, each
+  correcting a misreading. **Ask for a drawing earlier.**
+- ⚠ **HE READS GEOMETRY OFF A RENDER FASTER THAN THE INSTRUMENT DOES.** The dark patch on the bottom
+  face, the unequal shadows, the separate object in the middle — all caught by eye first.
+- **He questions premises, and the premise is usually the problem.** The lockup, the bevel.
+- **He asks for the principle before deciding**, and wants reasoning, not a recommendation.
 - **No ASCII diagrams or box-drawing characters.**
-- **Do not commit or push unless he explicitly asks.** He asked twice today; **nothing is pushed.**
+- **Do not commit or push unless he explicitly asks.**
 
 ---
 
 ## How to look at it
 
 ```
-http://localhost:3000/start                  click a card to fire its filament; click again to cool
-http://localhost:3000/start?cardrig=1        [1-6] geometry, [7-9] glass/light, [r] rim roughness,
-                                             [m] cycle metal, [f] filament intensity, [0] print
-http://localhost:3000/start?beattrace=1      performance.mark per entrance beat
+http://localhost:3000/start                the shipped glass card, five cards
+http://localhost:3000/start?clay=1         THE FORM STUDY — plastic, white face,
+                                           moving light, shadows, all five cards
+http://localhost:3000/cards-reference      Q4's CSS cards (temporary reference page)
+http://localhost:3000/start?cardrig=1      [1-6] geometry, [7-9] glass/light, [r] rim rough,
+                                           [m] metal, [f] filament, [d] cutoff, [p] spill,
+                                           [z] light height, [b] glass filter,
+                                           [c] face clearcoat, [v] coat roughness, [0] print
+?roughness= ?light= ?coat= ?coatr= ?exposure= ?tinge= ?fz= ?fp=
 ```
 
-⚠ **MEASURE HEADED, WITH `--enable-gpu`, AND PRINT THE RENDERER STRING.** Headless Playwright has
-no GPU and silently substitutes SwiftShader — it invalidated a whole investigation this morning.
+⚠ **MEASURE HEADED, WITH `--enable-gpu`, AND PRINT THE RENDERER STRING.** Headless substitutes
+SwiftShader. Confirmed real: `ANGLE (AMD Radeon(TM) Graphics, D3D11)`.
 
-⚠ **AND READ A CALL TREE, NOT SELF-TIME.** Self-time attributed 1384ms to `onFirstUse`, whose own
-work measures ~1ms. The tree named the two real costs in ten minutes, after six theories had not.
+**New harnesses:** `cross-section.mjs` (draws the card's profile — **run this before trusting any
+geometry claim**), `clay-form.mjs`, `clay-exposure.mjs`, `clay-arc-symmetry.mjs`,
+`probe-clay-motion.mjs`, `light-ladder.mjs`, `brightness-headroom.mjs`, `card-modelling.mjs`,
+`frost-and-coat.mjs`, `lockup-removed.mjs`, `fix-mojibake.mjs`.
 
 ---
 
-*4 August 2026, third session. The filament heats in place through red, orange and amber, and
-cools back down the same ramp. The rim is tungsten, the bevel its glass holder, the lockup at half
-strength behind them. Committed at `8e562ed`, **pushed**.*
+## ⚠ The session's lesson
 
-⚠ *The last change of the session broke the cards and was reverted. Carl called it: **"lets leave,
-youre making the problem worse."** The Begin stall is real, unfixed, and the fourth symptom of one
-root cause.*
+**A described object and a built object diverged for several sessions and no instrument caught it.**
+The lighting harnesses were all honest and all beside the point — they measured a card that was
+missing its seam. **`verify/cross-section.mjs` now draws the profile as a line; run it before
+tuning anything that depends on the form.** Carl's pencil sketch did in one glance what prose could
+not, and a drawing is cheaper than an approval given against the wrong object.
 
-*Next, in Carl's order: **the Begin button** (Architect first), then the card timings, then the
-light changes.*
+---
+
+*6 August 2026. The lockup is out, the cross-section is rebuilt and confirmed by eye, and the
+lighting system is saved. All five cards carry card 2's vertical arc; moving the other four lights
+into their corners is the next chunk. The glass material has not been seen on the new geometry.*
