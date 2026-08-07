@@ -645,9 +645,19 @@ export function protoCanvasBox(): {
  */
 export function cardSlotPosition(
   slot: { x: number; y: number; w: number; h: number },
+  /**
+   * The grid's MEASURED width. Defaults to the 576px reference so every existing
+   * caller is unchanged.
+   *
+   * ⚠ IT MUST BE THE SAME WIDTH THE SLOT CAME FROM. Pass boxes from
+   * `cardBoxesAt(w)` together with that same `w` — mixing a scaled box with the
+   * default width re-centres the card against a grid it is not in, which places
+   * it plausibly but wrongly. See `cardBoxesAt`.
+   */
+  gridWidthPx: number = GRID_WIDTH_PX,
 ): { x: number; y: number } {
   return {
-    x: slot.x + slot.w / 2 - GRID_WIDTH_PX / 2,
+    x: slot.x + slot.w / 2 - gridWidthPx / 2,
     y: GRID_HEIGHT_PX / 2 - (slot.y + slot.h / 2),
   };
 }
@@ -712,11 +722,20 @@ export const CARD_RISE_TRANSLATE_PX = 10;
 /**
  * Scale the card starts at, growing to 1.
  *
- * ⚠ THE ONLY "FADE" AVAILABLE TO A TRANSMISSIVE CARD. `material.opacity` needs
- * `transparent = true`, which routes the rim and bevel out of the transmission
- * target for the whole entrance — the constraint that removed the opacity fade
- * on 3 August. Scale touches no material, so every mesh stays opaque for every
- * frame.
+ * ⚠ NO LONGER "THE ONLY FADE AVAILABLE" — THE OPACITY FADE RETURNED ON
+ * 7 AUGUST 2026. This comment used to justify scale as the sole substitute for
+ * alpha, because `transparent = true` routes the rim out of the transmission
+ * target. That cost is real but it is now SCOPED to each card's own rise rather
+ * than treated as a prohibition; the substitute it licensed — ramping the
+ * material from black — is what produced the black rectangle Carl reported.
+ * See `CardLighting` in `answer-card-canvas.tsx`.
+ *
+ * ⚠ SO SCALE IS NOW A THIRD STRAND, NOT A STAND-IN, and it is the one most
+ * likely to be surplus. Carl specified *"a slight rise coupled with an opacity
+ * fade"* — he did not ask for a scale-up. Kept for now because it is subtle and
+ * removing it is a change to judge by eye, not to make silently while fixing
+ * something else. **If the entrance reads as a pop or a zoom, this is the first
+ * thing to try at 1.0.**
  *
  * Deliberately subtle: this is a card settling into its slot, not a pop.
  */
@@ -776,8 +795,17 @@ export const CARD_RISE_SCALE_FROM = 0.94;
  *
  * ⚠ "AS IT IS REACHING ITS FULL APPEARANCE" IS THE SPECIFICATION, and it fixes
  * the gap as a FRACTION of the duration rather than an independent number. At
- * `CARD_OVERLAP` = 0.72 each card begins when the previous is 72% of the way
- * through its own entrance — past its main travel, still settling.
+ * `CARD_OVERLAP` = 0.72 each card's rise OVERLAPS ITS PREDECESSOR'S BY 72% of
+ * the duration — the next card begins 28% in, 560ms into a 2000ms rise, so the
+ * two are climbing together for 1440ms.
+ *
+ * ⚠ THIS CLAUSE USED TO READ "each card begins when the previous is 72% of the
+ * way through", AND THAT SENTENCE WAS WRONG AND COST A SESSION. A Builder read
+ * it, found `(1 - CARD_OVERLAP)` disagreeing, "fixed" the arithmetic to match
+ * the prose, and shipped a 1440ms gap that spreads the five cards so far apart
+ * each is seen alone in the dark early part of its own rise. Carl rejected it on
+ * sight: *"There is no overlap between ths cards."* **The constant, its name and
+ * the arithmetic were all correct; one clause of the description was not.**
  *
  * ⚠ AND THIS IS WHY THE OLD 130ms GAP READ AS BULLET-FIRE. Against a 1100ms
  * entrance it was 12% — five cards effectively simultaneous. The gap has to
@@ -791,7 +819,11 @@ export const CARD_RISE_SCALE_FROM = 0.94;
  */
 export const CARD_OVERLAP = 0.72;
 
-/** The gap between card entrances, derived from the overlap. */
+/**
+ * The gap between card entrances: 560ms, the 28% of a rise that has elapsed when
+ * the next card starts. Approved behaviour — see `CARD_OVERLAP` for why the
+ * description above it once said otherwise.
+ */
 export const CARD_RISE_GAP_MS = Math.round(CARD_RISE_DURATION_MS * (1 - CARD_OVERLAP));
 
 /**

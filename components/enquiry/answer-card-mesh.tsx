@@ -96,6 +96,45 @@ import {
 } from "./answer-card-glass";
 
 /**
+ * Every card material is built `transparent`, so the entrance can drive
+ * `opacity` without three linking a new shader.
+ *
+ * ⚠⚠ `transparent` IS PART OF THE PROGRAM CACHE KEY, AND THAT IS THE WHOLE
+ * REASON THIS CONSTANT EXISTS. The entrance fade (`CardLighting` in
+ * `answer-card-canvas.tsx`) first flipped it false -> true -> false around each
+ * card's rise. That is the obvious implementation and it is a trap: the flip
+ * forces a fresh shader LINK on the card's first fading frame, which
+ * `useScenePrecompile` cannot have warmed because it compiles materials as they
+ * exist at compile time.
+ *
+ * ⚠ MEASURED, WITH A CONTROL — self-time in `getProgramParameter`, the driver
+ * blocking on link (`verify/stall-profile.mjs`):
+ *
+ *     built opaque, toggled per fade    1977ms
+ *     built transparent (this)           725ms
+ *
+ * The extra 1250ms arrived as one ~1490ms freeze partway through the ladder.
+ * Carl saw it exactly: *"cards 1+2 look good, 3 happens, then a pause, 3 flashes
+ * and 4+5 come on."*
+ *
+ * ⚠ THE COST OF LEAVING IT TRUE IS REAL AND IS ACCEPTED KNOWINGLY.
+ * `transparent === true` routes a material out of `opaqueObjects`
+ * (`three.module.js:8237`), and `renderTransmissionPass` renders ONLY
+ * `opaqueObjects` into the target the glass samples (`:18039`) — so a card's rim
+ * is not present in what its NEIGHBOURS refract. On this grid that is a
+ * sub-pixel effect: the cards are 186x48 with ~8px between them, the face is
+ * `transmission: 0.97` sampling a blurred mip, and no card overlaps another.
+ * **The 1490ms freeze was plainly visible; this is not.** If it ever does show,
+ * the fix is a depth-sorted opaque pass, NOT a per-frame `transparent` flip.
+ *
+ * ⚠ AND `depthWrite` STAYS TRUE. three defaults `transparent` materials to
+ * writing depth anyway, but making it explicit prevents the rim/face ordering
+ * from becoming camera-dependent — they are coincident surfaces on a flat ortho
+ * view, where a lost depth write reads as z-fighting.
+ */
+const ENTRANCE_NEEDS_ALPHA = true;
+
+/**
  * The material properties that are adjustable during the mastering pass.
  *
  * ⚠ `thickness` AND `ior` ARE DELIBERATELY ABSENT. Under an orthographic camera
@@ -337,6 +376,14 @@ function FaceMaterial({
       roughness={roughness}
       metalness={0}
       transmission={transmission}
+      // ⚠ THE FACE TOO, AND IT IS THE ONE THAT LOOKS UNNECESSARY. A
+      // `transmission > 0` material is ALREADY excluded from `opaqueObjects`
+      // (`three.module.js:8237` splits on transmission before transparency), so
+      // this changes nothing about what the card refracts. It is here because
+      // the PROGRAM KEY still carries `transparent`, and a face that flips it
+      // mid-fade re-links exactly like the rim did. See `ENTRANCE_NEEDS_ALPHA`.
+      transparent={ENTRANCE_NEEDS_ALPHA}
+      depthWrite
       // ⚠ THE POLISHED SKIN OVER THE FROSTED BODY. Zero by default, so this is
       // inert until the rig moves it — three skips the clearcoat path entirely
       // at 0, which is also why adding it costs nothing while it stays there.
@@ -444,6 +491,10 @@ function RimMaterial({
       metalness={RIM_METALNESS}
       envMap={envMap}
       envMapIntensity={envMapIntensity}
+      // See `ENTRANCE_NEEDS_ALPHA` — set at construction so the entrance's
+      // opacity fade never triggers a shader re-link.
+      transparent={ENTRANCE_NEEDS_ALPHA}
+      depthWrite
       // ⚠ PRESENT SO THE MATERIAL COMPILES ITS EMISSIVE PATH AT ALL — three
       // omits `<emissivemap_fragment>` entirely when a material has no emissive,
       // and the shader injection above would then have nothing to attach to.
@@ -540,6 +591,9 @@ function BevelMaterial({
       color={BEVEL_GLASS_COLOR}
       roughness={BEVEL_ROUGHNESS}
       metalness={0}
+      // See `ENTRANCE_NEEDS_ALPHA`.
+      transparent={ENTRANCE_NEEDS_ALPHA}
+      depthWrite
       clearcoat={BEVEL_CLEARCOAT}
       clearcoatRoughness={BEVEL_CLEARCOAT_ROUGHNESS}
       envMap={envMap}

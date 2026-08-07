@@ -55,7 +55,7 @@ import {
 // circuit (Carl: *"see what a filament fade in looks like if its the same as a
 // card fade in"*), so nothing about the filament's clock changes here.
 import { AnswerCardBackdrop } from "./answer-card-backdrop";
-import { CARD_BOXES } from "./answer-card-backdrop-geometry";
+import { CARD_BOXES, cardBoxesAt, GRID_WIDTH_PX } from "./answer-card-backdrop-geometry";
 import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
@@ -63,7 +63,13 @@ import {
   CARD_RISE_TRANSLATE_PX,
   CARD_RISE_LADDER_MS,
   CARD_RISE_SCALE_FROM,
-  PROTO_MIN_VIEWPORT_PX,
+  // ⚠ IMPORTED FOR THE ANCHOR'S OVERRUN CLAMP, not for the ladder itself —
+  // see `revealStart` in `useCardEntrance`.
+  CARD_FIRST_ENTRANCE_MS,
+  // ⚠ `PROTO_MIN_VIEWPORT_PX` IS NO LONGER IMPORTED. The 1280px gate it drove
+  // was removed on 7 August — the cards now measure the grid instead. The
+  // constant still exists because `ENTRANCE_ANCHOR_CEILING_MS` cites it; see the
+  // note on this component.
   protoCanvasBox,
   cardSlotPosition,
   checkBudget,
@@ -1015,20 +1021,102 @@ function useCardEntrance(
     // `attachGroup`) and the tick loop below only shows it once its own rung has
     // arrived. Visibility is still owned by exactly one place.
     let raf = 0;
-    const start = performance.now();
+
+    /** Read once, not per frame — see the progress trace inside `tick`. */
+    const tracing =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("beattrace") === "1";
+
+    /**
+     * ⚠ THE LADDER'S ZERO IS THE PHRASE REVEAL'S OWN CLOCK, NOT THIS EFFECT'S.
+     *
+     * Carl, 6 August: *"the entrance of card 1 should happen halfway between the
+     * Q5 text reveal. its happening after."*
+     *
+     * ⚠ THE CONSTANT WAS ALREADY RIGHT, WHICH IS WHY THIS WAS EASY TO MISREAD.
+     * `CARD_FIRST_ENTRANCE_MS` is `Q5_REVEAL_MS / 2` = 650, derived exactly as
+     * intended. **The bug was never the number; it was the origin it counts
+     * from.** This effect's `performance.now()` fires when the WebGL canvas is
+     * mounted and active — which is AFTER the CSS reveal has already started.
+     * Measured by `verify/q5-card-latency.mjs` against the animation's own
+     * `startTime`: reveal at 10631ms, card 1's rung at 11548ms. **917ms into a
+     * 1300ms reveal — 71%, when it was scheduled for 50%.**
+     *
+     * ⚠ AND AN EARLIER PROBE READ THAT OFFSET AS 17ms, which is the instructive
+     * part. It sampled the animation only once the card canvas was READY, so it
+     * measured from a point already past the drift and reported the two clocks
+     * as almost aligned. **A measurement taken at the wrong instant is not a
+     * weaker measurement, it is a wrong one.** `startTime` is authoritative
+     * because it is the animation's own origin rather than an observation of it.
+     *
+     * ⚠ SO THE CLOCKS ARE TIED BY CONSTRUCTION RATHER THAN BY COINCIDENCE, and
+     * the ladder cannot drift again if mounting, compilation or the warm-up gate
+     * changes speed — all of which have moved during this project.
+     *
+     * ⚠⚠ BUT THE ANCHOR IS ONLY VALID WHILE IT IS STILL AHEAD OF CARD 1's RUNG,
+     * AND WITHOUT THE CLAMP BELOW IT IS A REGRESSION GENERATOR.
+     *
+     * This effect is gated on `compiled`, which measured **1944ms after the
+     * cards mount** (see the note on `entranceRunning`) — two `compileAsync`
+     * passes, a full `gl.render`, and `useLocalEnvMap`'s ~572ms of ungated PMREM.
+     * Meanwhile `.enquiry-q-text-reveal` is `1300ms ... both`, and the `both`
+     * fill keeps the animation RELEVANT after it finishes — so `getAnimations()`
+     * keeps returning it and `startTime` stays readable indefinitely. **The
+     * fallback therefore never fires**, and an unclamped anchor faithfully
+     * returns an origin arbitrarily far in the past.
+     *
+     * ⚠ THE FAILURE IS NOT THAT THE ENTRANCE STARTS EARLY — IT IS THAT THE FIRST
+     * FRAME CONSUMES EVERY RUNG ALREADY PASSED. At 1944ms of overrun the first
+     * tick sees `elapsed ≈ 1944` against rungs of 650/1210/1770, so cards 1, 2
+     * and 3 all become visible in the SAME FRAME at `raw` 0.65/0.37/0.09.
+     * **Measured, not predicted** (`verify/entrance-fade.mjs`): "card 2 starts
+     * 0ms after card 1 — 0% into card 1's rise", the same for card 3, with 52,
+     * 86 and 120 frames of rise left respectively.
+     *
+     * ⚠ THAT IS THE EXACT DEFECT THE `compiled` GATE EXISTS TO PREVENT — *"on
+     * first walking the sequence they all came on at the same time"* — and it is
+     * what Carl reported of this anchor: *"There is no overlap between ths cards
+     * and each cards first appearance is a rectangular black shape, not glass."*
+     *
+     * ⚠ AND IT LOOKS IDENTICAL TO A WORKING STAGGER IN A STILL. Three cards at
+     * three brightnesses is consistent with a correct ladder AND with one that
+     * consumed three rungs in a frame. Screenshots cannot tell them apart; only
+     * the per-frame `raw` trace can. **Do not accept this on a screenshot.**
+     *
+     * So the anchor is used only while it has not overrun, and otherwise degrades
+     * to today's behaviour — card 1 arriving at its own rung from now. **Fail to
+     * the current timing, never to a collapsed ladder.**
+     */
+    const nowMs = performance.now();
+    const anchor = (() => {
+      if (typeof document === "undefined") return nowMs;
+      const el = document.querySelector(".enquiry-q-text-reveal");
+      // ⚠ MATCHED BY NAME, NOT BY INDEX. `getAnimations()[0]` is order-dependent,
+      // so a second animation or a transition on this element would silently
+      // hand the ladder the wrong clock.
+      const anim = el
+        ?.getAnimations?.()
+        .find((a) => (a as CSSAnimation).animationName === "enquiry-mask-reveal-horizontal");
+      // `startTime` is `CSSNumberish`; on a document timeline it is a number, and
+      // this guard is what keeps that true rather than assumed.
+      if (anim && typeof anim.startTime === "number") return anim.startTime;
+      return nowMs;
+    })();
+
+    const revealStart =
+      nowMs - anchor > CARD_FIRST_ENTRANCE_MS ? nowMs - CARD_FIRST_ENTRANCE_MS : anchor;
 
     const tick = () => {
-      const elapsed = performance.now() - start;
+      const elapsed = performance.now() - revealStart;
 
       // ⚠ STILL HIDDEN UNTIL THIS CARD'S RUNG. The group was hidden at attach and
       // stays hidden through its delay, so there is no frame in which it is drawn
-      // early. `visible` rather than `material.opacity` throughout, which would
-      // require `transparent = true` and drop the rim and bevel out of the
-      // transmission target for the whole rise — see the note on `attachGroup`.
+      // early. `visible` is what holds it before the rung — a card waiting its
+      // turn is absent, not transparent — and alpha then carries the entrance
+      // itself from that first visible frame.
       if (elapsed < delayMs) {
-        // Held at zero through the delay — unlit, not merely invisible, so the
-        // first lit frame is the entrance's own frame 0 in light as well as in
-        // position.
+        // Held at zero through the delay, so the first drawn frame is the
+        // entrance's own frame 0 in alpha as well as in position.
         onProgressRef.current(0);
         raf = requestAnimationFrame(tick);
         return;
@@ -1060,21 +1148,45 @@ function useCardEntrance(
       onProgressRef.current(raw);
 
       /**
+       * ⚠ A DEV-ONLY PROGRESS TRACE, gated on the same `?beattrace=1` as the
+       * mark above and costing nothing without it.
+       *
+       * ⚠ IT EXISTS BECAUSE PIXELS CANNOT RESOLVE THIS CHOREOGRAPHY. A
+       * screenshot per sample costs ~40-130ms, so a harness built that way left
+       * a 330ms hole in its own timeline and reported cards 1 and 2 as rising in
+       * perfect lockstep with a 0ms gap — an instrument artefact, since the beat
+       * marks show their rungs firing exactly `CARD_RISE_GAP_MS` apart. **A
+       * sampler slower than the thing it samples will invent a defect and hide a
+       * real one.**
+       *
+       * Publishing `raw` per card per frame lets `verify/entrance-fade.mjs` read
+       * the actual curves and their overlap at full rAF resolution.
+       */
+      if (tracing) {
+        const w = window as unknown as {
+          __cardTrace?: Array<{ t: number; card: number; raw: number }>;
+        };
+        w.__cardTrace ??= [];
+        w.__cardTrace.push({ t: Math.round(performance.now()), card: delayMs, raw });
+      }
+
+      /**
        * ⚠ EASED, NOT LINEAR — AND THIS REOPENS AN ACCEPTED TRADE-OFF ON CARL'S
        * REPORT: *"still, no fade and far too fast."*
        *
-       * ⚠ THE CARD CANNOT FADE BY OPACITY, AND THAT IS NOT A PREFERENCE.
-       * `material.opacity` requires `transparent = true`, which routes a
-       * material out of `opaqueObjects` (`three.module.js:8237`) and therefore
-       * out of the transmission target (`:18039`) — so the rim and bevel would
-       * VANISH FROM THE GLASS REFRACTING THEM for the whole entrance, and the
-       * card would visibly change when they rejoined. That is exactly why the
-       * opacity fade was removed on 3 August.
+       * ⚠ THE OPACITY FADE IS BACK, ON CARL'S INSTRUCTION OF 7 AUGUST 2026:
+       * *"The card has a slight rise coupled with an opacity fade will enhance
+       * the 3d features."* The paragraph that stood here said the card CANNOT
+       * fade by opacity and called it *"not a preference"*. The three.js
+       * constraint it cited is real, but it was treated as a prohibition when it
+       * is a COST — and the substitute chosen instead (ramping `color` and
+       * `envMapIntensity` from black) is what produced the black rectangle. See
+       * the long note above `CardLighting` for the full reversal.
        *
-       * ⚠ SO THE SOFTNESS COMES FROM MOTION INSTEAD OF FROM ALPHA. A cubic
-       * ease-out plus a small scale-up reads as an arrival rather than a snap,
-       * and every mesh stays opaque for every frame of it — no membership of the
-       * transmission target ever changes.
+       * ⚠ THE MOTION STAYS. Alpha and the rise are one event, exactly as
+       * `@keyframes enquiry-card-rise` has always done it on the CSS cards. The
+       * rise is what makes the card *"catch more of the light as it fades in"* —
+       * the light is static, so movement through it is the whole mechanism.
        */
       const t = 1 - Math.pow(1 - raw, 3);
 
@@ -1275,22 +1387,57 @@ function AnswerCard({
    * MECHANISM: **"Effects should feel caused by the world, not layered on top of
    * it."**
    *
-   * ⚠ THAT SENTENCE RULES OUT AN ALPHA FADE ON ITS OWN TERMS, before any
-   * three.js constraint is considered. Driving a material's opacity is a layer
-   * on top of the world; a card emerging from darkness into light is the world
-   * doing it. §18 agrees — *"the best motion often feels almost invisible."*
+   * ⚠⚠ THE "EMERGE FROM DARKNESS" READING OF THAT RULE WAS REVERSED BY CARL ON
+   * 7 AUGUST 2026, AND THE PARAGRAPHS BELOW RECORD WHY — they are kept because
+   * the argument they make is coherent, was acted on for four days, and was
+   * still WRONG. Deleting them would invite the same reasoning back.
    *
-   * ⚠ AND IT HAPPENS TO BE THE ONLY ROUTE THAT DOES NOT BREAK REFRACTION.
+   * > *"The light is already there and static. The card has a slight rise
+   * > coupled with an opacity fade will enhance the 3d features... The card will
+   * > catch more of the light as it fades in and rises."*
+   * > *"The cards end state should be its beginning state too."*
+   *
+   * ⚠ THE CARD DOES NOT GET LIT UP; IT RISES INTO LIGHT THAT WAS ALREADY ON.
+   * The material never changes. What the ramp below used to call "the world
+   * doing it" was in fact a brightness dial — the exact thing the handoff warns
+   * about: *"Global lighting renders a shape. A placed light renders geometry."*
+   *
+   * ⚠ AND THE RAMP'S PREMISE EXPIRED WITHOUT ANYONE NOTICING. It multiplied
+   * `color` and `envMapIntensity` toward BLACK, justified as *"an unlit surface
+   * in a dark scene IS the page behind it."* That held while the lockup sat
+   * behind the cards at fade 0. **The lockup was removed on 5 August and the
+   * ground plane at `GROUND_COLOR` #101010 — luminance 16 — took its place**, so
+   * an unlit card became DARKER than its background and read as a hole punched
+   * in the ground. Carl: *"on appearance, the cards are showing a black
+   * rectangle. That should not happen."* Measured at −11.45 luminance in one
+   * step by `verify/entrance-now.mjs`.
+   *
+   * ⚠ THE GEOMETRY REBUILD IS WHY IT BECAME UNMISSABLE. The ramp was tuned when
+   * the card was a rim, a bevel stub and a face floating 5.00 units behind it
+   * with nothing modelled across the gap — *"parts dont exist and its difficult
+   * to tell whether something exists in total darkness."* A dark card and a card
+   * with a void in it look identical. Now the form is continuous, so the whole
+   * 40-unit span goes black together.
+   *
+   * ⚠ THE APPROVED FIGURES WERE IN `globals.css` THE WHOLE TIME.
+   * `@keyframes enquiry-card-rise` — `opacity: 0 -> 1` with `translateY(6px)` —
+   * is the CSS card's approved entrance. The WebGL card departed from it to
+   * dodge the transmission constraint below; that departure is what produced the
+   * defect.
+   *
+   * ── the constraint, which is real and is now SCOPED rather than avoided ──
+   *
    * `transparent = true` routes a material out of `opaqueObjects`
    * (`three.module.js:8237`), and `renderTransmissionPass` renders ONLY
-   * `opaqueObjects` into the target the glass samples (`:18039`). With the
-   * entrances overlapping, something is always fading — so an alpha fade would
-   * leave every card refracting an edgeless scene for the whole choreography.
+   * `opaqueObjects` into the target the glass samples (`:18039`). So a card
+   * mid-fade is absent from what its neighbours refract.
    *
-   * Two properties carry it, because the card has two kinds of surface:
-   *   - rim and bevel are lit `MeshStandardMaterial` → drive `color` from black
-   *   - the face is transmissive glass → drive `envMapIntensity`, since almost
-   *     everything it shows is environment reflection plus what it transmits
+   * ⚠ THE OLD NOTE CALLED THIS FATAL BECAUSE *"something is always fading"*. That
+   * is true of the LADDER, not of any one card: `transparent` is now held only
+   * while `alpha < 1` and dropped the instant a card lands, so each card rejoins
+   * the refraction after its own 2000ms rather than after the whole sequence.
+   * **Whether that residual cost is visible is a question for the eye, and it is
+   * measured — not assumed — by `verify/entrance-drop.mjs` and its clay control.**
    */
   /**
    * The filament's circuit.
@@ -1470,9 +1617,10 @@ function CardLighting({
       const p = reducedMotion ? 1 : progress.current;
       if (p !== last) {
         last = p;
-        // Ease so the light arrives the way light does — quickly out of black,
-        // then settling. A linear ramp reads as a dimmer being turned.
-        const lit = p * p * (3 - 2 * p);
+        // Ease so the alpha arrives the way the CSS card's does — the shape is
+        // the same smoothstep the material ramp used, applied to opacity now
+        // rather than to colour.
+        const a = p * p * (3 - 2 * p);
 
         group.traverse((o) => {
           const mesh = o as THREE.Mesh;
@@ -1488,11 +1636,43 @@ function CardLighting({
           const base = originals.get(mat);
           if (!base) return;
 
-          // ⚠ TOWARD BLACK, NOT TOWARD TRANSPARENT. An unlit surface in a dark
-          // scene IS the page behind it, so this reads as the card not yet
-          // having arrived rather than as a ghost of it.
-          if (base.color) mat.color.copy(base.color).multiplyScalar(lit);
-          if (base.env !== undefined) mat.envMapIntensity = base.env * lit;
+          // ⚠ THE MATERIAL IS RESTORED, NOT RAMPED. Carl, 7 August 2026: *"The
+          // cards end state should be its beginning state too."* The card is
+          // finished glass from its first visible frame; only its ALPHA and its
+          // POSITION change. Writing the originals back on every frame keeps
+          // that true even if a previous build left a scaled value behind.
+          if (base.color) mat.color.copy(base.color);
+          if (base.env !== undefined) mat.envMapIntensity = base.env;
+
+          // ⚠⚠ `transparent` IS NEVER TOGGLED HERE, AND THE REASON COST A
+          // MEASURED 1250ms. It is set ONCE at material construction (see
+          // `ENTRANCE_NEEDS_ALPHA` in `answer-card-mesh.tsx`); only `opacity`
+          // moves on this path.
+          //
+          // The first version of this fade flipped `transparent` false -> true
+          // -> false around the rise, reasoning that it would confine the
+          // transmission-target cost to the fade. **`transparent` IS IN THE
+          // PROGRAM CACHE KEY.** Flipping it makes three link a NEW shader
+          // variant on the card's first fading frame — and `useScenePrecompile`
+          // cannot have warmed it, because it compiles the materials as they
+          // exist at compile time.
+          //
+          // ⚠ MEASURED, WITH A CONTROL. `verify/stall-profile.mjs`, self-time in
+          // `getProgramParameter` (the driver blocking on shader link):
+          //
+          //     without the toggle   725ms   (417 + 308)
+          //     with the toggle     1977ms   (1208 + 480 + 289)
+          //
+          // The difference landed as a single ~1490ms freeze ~330ms after card
+          // 4's rung, which is exactly what Carl reported: *"3 happens, then a
+          // pause, 3 flashes and 4+5 come on."*
+          //
+          // ⚠ AND IT LOOKED LIKE THE CONTACT FIELD'S WARM-UP, WHICH IT WAS NOT.
+          // `verify/warm-guard.mjs` shows that guard holding correctly to
+          // +14945ms — exactly `ENTRANCE_END_MS` after the entrance start. Two
+          // instruments were pointed at the wrong component before the profiler
+          // named the function. **The stall was self-inflicted by this hook.**
+          mat.opacity = a;
         });
         invalidate();
       }
@@ -1883,18 +2063,45 @@ function useScenePrecompile(onReady: () => void, mayCompile: boolean) {
            * this frame draws black cards on a black ground, over a lockup that
            * is itself at fade 0.
            */
-          const hidden: THREE.Object3D[] = [];
+          /**
+           * ⚠ REVEALED AND SCALED TO NOTHING, BECAUSE THE "IT IS INVISIBLE
+           * ANYWAY" ARGUMENT ABOVE EXPIRED WITH THE LOCKUP.
+           *
+           * That reasoning held while the lockup sat behind the cards at fade 0
+           * and the background really was black. **The lockup was removed on
+           * 6 August**, and the ground plane at `GROUND_COLOR` #101010 —
+           * luminance 16 — took its place. So "black cards on a black ground"
+           * became black cards on a LIGHTER ground, and this frame started
+           * showing as a flash: measured at t=254ms by
+           * `verify/entrance-step.mjs`, 16.00 -> 4.65 -> 16.00, one frame wide,
+           * ~680ms before the entrance begins.
+           *
+           * ⚠ SCALE, NOT `visible`, FOR EXACTLY THE REASON THE NOTE ABOVE GIVES:
+           * `visible = false` makes the renderer skip the object entirely and
+           * turns this warm-up back into the silent no-op it was written to
+           * avoid. At scale 0 the draw call still happens and the transmission
+           * pass still allocates its target, while the silhouette collapses to
+           * nothing. The scale is restored immediately, before any frame the
+           * user sees, and `useCardEntrance` sets its own scale from `raw` on
+           * every tick regardless.
+           */
+          const revealed: THREE.Object3D[] = [];
+          const scales = new Map<THREE.Object3D, THREE.Vector3>();
           scene.traverse((o) => {
             if (o.type === "Group" && o.visible === false) {
-              hidden.push(o);
+              revealed.push(o);
+              scales.set(o, o.scale.clone());
               o.visible = true;
+              o.scale.set(0, 0, 0);
             }
           });
 
           gl.render(scene, camera);
 
-          hidden.forEach((o) => {
+          revealed.forEach((o) => {
             o.visible = false;
+            const s = scales.get(o);
+            if (s) o.scale.copy(s);
           });
 
           readyRef.current();
@@ -1922,6 +2129,7 @@ function CardScene({
   litCards,
   onWarm,
   mayCompile,
+  gridWidth,
 }: {
   active: boolean;
   reducedMotion: boolean;
@@ -1930,6 +2138,16 @@ function CardScene({
   litCards: boolean[];
   onWarm: () => void;
   mayCompile: boolean;
+  /**
+   * The grid's measured width in CSS px — one world unit each, under the
+   * orthographic camera at `zoom: 1`.
+   *
+   * ⚠ PASSED IN RATHER THAN MEASURED HERE. The scene renders inside the canvas,
+   * which is already sized from this number; measuring again in here would give
+   * the canvas's width rather than the grid's and would drift the instant the
+   * two differed.
+   */
+  gridWidth: number;
 }) {
   // ⚠ GATED ON THE SAME SIGNAL AS THE SHADER WARM-UP. Its ~572ms of PMREM work
   // previously ran during this component's first render, outside every gate —
@@ -1986,7 +2204,22 @@ function CardScene({
   // ⚠ ALL FIVE SLOTS NOW. Derived from `CARD_BOXES` so no card can drift out of
   // the backdrop region positioned against the same box — the sharing rule that
   // `cardSlotPosition` documents, now load-bearing five times over.
-  const slots = useMemo(() => CARD_BOXES.map((b) => cardSlotPosition(b)), []);
+  // ⚠ BOXES AND POSITIONS COME FROM THE SAME MEASURED WIDTH. `cardSlotPosition`
+  // re-centres against the grid it is given, so a scaled box paired with the
+  // default 576 would land plausibly and wrongly. See `cardBoxesAt`.
+  const slots = useMemo(
+    () => cardBoxesAt(gridWidth).map((b) => cardSlotPosition(b, gridWidth)),
+    [gridWidth],
+  );
+
+  /**
+   * How much smaller the card is than the 576px reference.
+   *
+   * ⚠ ONE RATIO FOR THE WHOLE CARD, taken from the grid rather than from a card
+   * box, so it stays exact even if the box table is ever re-measured. 1 at
+   * 576px and above; ~0.59 at a 390px phone grid.
+   */
+  const cardScale = gridWidth / GRID_WIDTH_PX;
 
   // ⚠ THE `?cards=N` DIAGNOSTIC IS REMOVED. It existed to separate "does ANY
   // transmissive card cost this" from "do FIVE cost five times", and it answered
@@ -2114,19 +2347,45 @@ function CardScene({
           *"make all 5 cards like card 2. we only have to move the other cards
           lights into position."* Every card currently gets the SAME vertical
           arc; the per-card tilt is the next chunk. */}
+      {/*
+        ⚠ THE CARDS ARE SCALED, NOT REBUILT, AND THAT IS THE POINT.
+
+        The mesh is generated from `CARD_WIDTH_PX` (186.66) — the rim's half-tube,
+        the crown's rise, the corner radius and the face's tilt are all derived
+        from that width through `cardBudget`. Rebuilding the geometry at a
+        narrower width would change the CROSS-SECTION as well as the size: the
+        rim would stay 2 units on a shorter span, the face would grow
+        proportionally wider, and the tilt guard (`MIN_FACE_TILT_DEGREES`, 16°)
+        could silently fall below its floor. **That is exactly how
+        `FACE_PROUD_OF_RIM` at 1.0 produced 13.3° while looking fine** — two safe
+        changes interacting.
+
+        Scaling the group instead keeps the approved 5 August cross-section
+        EXACTLY as Carl confirmed it, and simply presents it smaller. The card at
+        390px is the same object as the card at 1440px.
+
+        ⚠ UNIFORM ON X AND Y, because `.enquiry-card` keeps a fixed 48px height at
+        every width (`min-height: 3rem`, measured) while its width scales. A
+        non-uniform scale would stretch the rim's circular profile into an
+        ellipse and shear the corner radii — the silhouette would stop matching
+        the CSS card it is derived from. So the cards get proportionally taller
+        relative to their row as the screen narrows; the row's own 48px is what
+        the pointer targets use.
+      */}
       {slots.map((slot, i) => (
-        <AnswerCard
-          key={i}
-          slot={slot}
-          delayMs={CARD_RISE_LADDER_MS[i]}
-          active={active}
-          reducedMotion={reducedMotion}
-          tuning={tuning}
-          glassTuning={glassTuning}
-          envMap={envMap}
-          lit={litCards[i] ?? false}
-          clay={clay}
-        />
+        <group key={i} scale={[cardScale, cardScale, 1]}>
+          <AnswerCard
+            slot={{ x: slot.x / cardScale, y: slot.y / cardScale }}
+            delayMs={CARD_RISE_LADDER_MS[i]}
+            active={active}
+            reducedMotion={reducedMotion}
+            tuning={tuning}
+            glassTuning={glassTuning}
+            envMap={envMap}
+            lit={litCards[i] ?? false}
+            clay={clay}
+          />
+        </group>
       ))}
     </>
   );
@@ -2135,11 +2394,27 @@ function CardScene({
 /**
  * The answer-card canvas — the card in grid slot 1, over the lockup.
  *
- * ⚠ RENDERS ONLY AT >= 1280px, and the reason has changed with the move. It was
- * an OVERFLOW guard: the card needed ~211px of free left margin and there were
- * only 200px at 1024. In the grid there is no margin requirement, so it is now a
- * CORRECTNESS guard — `CARD_BOXES` describes the three-column layout, which only
- * holds above this width. See `PROTO_MIN_VIEWPORT_PX`.
+ * ⚠ RENDERS AT EVERY WIDTH SINCE 7 AUGUST 2026. It used to return `null` below
+ * 1280px, which meant narrow visitors got NO ANSWER CARDS AT ALL — and since the
+ * five CSS cards were removed for chunk 3, there was nothing behind them.
+ *
+ * ⚠ THE GUARD'S STATED REASON WAS FALSE. It claimed the CSS grid reflows below
+ * 1280 so the hard-coded `CARD_BOXES` would land wrong. Measured at eight widths
+ * (`verify/grid-by-width.mjs`), `.enquiry-answer-grid` never reflows: it is
+ * 576 x 104 down to 640px and scales proportionally below that, holding the 3+2
+ * arrangement to 375px without overflowing. **The grid was never the problem.**
+ *
+ * ⚠ THE REAL PROBLEM WAS AN ABSOLUTE-PIXEL TABLE SHADOWING A FLUID LAYOUT, and
+ * that is now fixed at source: the grid is measured with `ResizeObserver`, the
+ * boxes come from `cardBoxesAt(width)`, and the card meshes are scaled by the
+ * same ratio. See `cardBoxesAt` and `cardScale`.
+ *
+ * ⚠ `PROTO_MIN_VIEWPORT_PX` IS NO LONGER READ HERE. It is kept in the geometry
+ * module because the contact field's warm-up ceiling still cites it as the
+ * reason `onEntranceStart` can fail to fire — see `ENTRANCE_ANCHOR_CEILING_MS`.
+ * **That citation is now stale too and should be revisited**; it is left alone
+ * deliberately rather than changed in passing, because it guards a different
+ * component's timing.
  */
 export default function AnswerCardCanvas({
   active,
@@ -2273,18 +2548,77 @@ export default function AnswerCardCanvas({
    */
   const revealCleared = true;
 
-  const [wideEnough, setWideEnough] = useState(false);
+  /**
+   * The grid's MEASURED width, and the host element it is measured from.
+   *
+   * ⚠⚠ THIS REPLACES A `min-width: 1280px` MEDIA QUERY THAT WITHHELD ALL FIVE
+   * CARDS FROM EVERY NARROWER VISITOR. `PROTO_MIN_VIEWPORT_PX`'s comment
+   * justified it as a correctness guard — *"below it the CSS grid reflows and a
+   * card pinned to a hard-coded 186.66 x 48 box at (0,0) would land wrong"* —
+   * and **the reflow half of that is false.** Measured at eight widths
+   * (`verify/grid-by-width.mjs`), `.enquiry-answer-grid` is 576 x 104 from
+   * 1440px all the way down to 640px, and below that it scales proportionally
+   * without ever reflowing or overflowing: the 3+2 arrangement survives to
+   * 375px.
+   *
+   * ⚠ THE REAL BUG WAS THE COUPLING, NOT THE LAYOUT. `CARD_BOXES` is an
+   * absolute-pixel table shadowing a `repeat(6, 1fr)` CSS grid. It is correct at
+   * 576px and wrong at every width below it — at 390px the real cards are 108.8
+   * wide, so a hard-coded 186.66 card is ~70% oversized and misplaced. **The
+   * guard was hiding a stale table, not protecting a fragile layout.**
+   *
+   * ⚠ SO THE CARDS NOW TRACK THE CSS. `ResizeObserver` on the grid feeds
+   * `cardBoxesAt(width)`, and everything downstream — the canvas box, the world
+   * positions, the pointer targets — derives from that one measurement.
+   *
+   * ⚠ MEASURED, NOT ASSUMED FROM THE VIEWPORT. The grid's width is set by the
+   * `max-w-xl` shell and its padding, not by `window.innerWidth`; deriving it
+   * from the viewport would reintroduce exactly the kind of duplicated layout
+   * knowledge this change removes.
+   *
+   * ⚠ NULL UNTIL MEASURED, AND NULL MEANS WAIT. Rendering at a guessed width for
+   * one frame would place every card wrongly and then correct it — visible as a
+   * jump on exactly the entrance this project has spent sessions smoothing.
+   */
+  const [gridEl, setGridEl] = useState<HTMLDivElement | null>(null);
+  const [gridWidth, setGridWidth] = useState<number | null>(null);
   useEffect(() => {
-    const mq = window.matchMedia(`(min-width: ${PROTO_MIN_VIEWPORT_PX}px)`);
-    const apply = () => setWideEnough(mq.matches);
+    if (!gridEl) return;
+    /**
+     * ⚠ THE PARENT IS MEASURED, NOT THIS ELEMENT.
+     *
+     * The host's own width comes from `box`, which is derived from `gridWidth` —
+     * so observing itself would be a feedback loop: measure, resize, measure the
+     * resize. The parent is `.enquiry-answer-grid`, whose width is set by the
+     * CSS layout and is the thing the cards must actually track.
+     */
+    const target = gridEl.parentElement;
+    if (!target) return;
+    const apply = () => {
+      const w = target.getBoundingClientRect().width;
+      // Ignore a zero width — it means the element is display:none or not yet
+      // laid out, and committing it would collapse every card to a point.
+      if (w > 0) setGridWidth((prev) => (prev !== null && Math.abs(prev - w) < 0.5 ? prev : w));
+    };
     apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
+    const ro = new ResizeObserver(apply);
+    ro.observe(target);
+    return () => ro.disconnect();
+  }, [gridEl]);
 
   const { tuning, glassTuning } = useCardRig();
 
-  const box = useMemo(() => protoCanvasBox(), []);
+  // ⚠ THE CANVAS SPANS THE MEASURED GRID, NOT THE 576px REFERENCE. The backdrop
+  // plane is sized to the canvas, so a fixed-width canvas over a narrower grid
+  // would push the ground plane past the grid's edges — visible as the black
+  // rectangle Carl has already rejected once.
+  const box = useMemo(() => {
+    const b = protoCanvasBox();
+    return gridWidth === null ? b : { ...b, width: gridWidth };
+  }, [gridWidth]);
+
+  // The pointer targets, on the same measured layout the scene uses.
+  const boxes = useMemo(() => cardBoxesAt(gridWidth ?? GRID_WIDTH_PX), [gridWidth]);
 
   /**
    * Which card the pointer is inside, or null.
@@ -2374,10 +2708,24 @@ export default function AnswerCardCanvas({
     onEntranceStart?.();
   }, [entranceRunning, onEntranceStart]);
 
-  if (!wideEnough || !revealCleared) return null;
+  /**
+   * ⚠ THE HOST ALWAYS RENDERS; ONLY THE CANVAS WAITS FOR ITS MEASUREMENT.
+   *
+   * It has to: `ResizeObserver` needs an element in the document to observe, so
+   * returning `null` until `gridWidth` is known would mean it is never known —
+   * the gate would hold itself shut. The host is a zero-cost positioned div
+   * until the width arrives.
+   *
+   * ⚠ AND THIS IS WHY THE OLD `wideEnough` GATE COULD RETURN NULL SAFELY: it
+   * asked the VIEWPORT via `matchMedia`, which needs no element. Measuring the
+   * grid instead is what makes the early return unavailable, and missing that is
+   * how a measurement gate becomes a deadlock.
+   */
+  if (!revealCleared) return null;
 
   return (
     <div
+      ref={setGridEl}
       aria-hidden="true"
       data-testid="answer-card-proto"
       style={{
@@ -2473,6 +2821,10 @@ export default function AnswerCardCanvas({
           litCards={litCards}
           onWarm={markWarm}
           mayCompile={warm}
+          // Falls back to the 576px reference for the frames before the first
+          // measurement lands — the canvas is not yet visible then, and the
+          // effect below commits the real width on the same frame it observes.
+          gridWidth={gridWidth ?? GRID_WIDTH_PX}
         />
       </Canvas>
 
@@ -2503,7 +2855,11 @@ export default function AnswerCardCanvas({
         not start impersonating a control in the accessibility tree.
       */}
       <div aria-hidden="true" style={{ position: "absolute", inset: 0 }}>
-        {CARD_BOXES.map((b, i) => (
+        {/* ⚠ `boxes`, NOT `CARD_BOXES` — the same measured layout the scene
+            places cards from. Using the raw table here would leave the hover
+            regions at their 576px positions while the cards moved, which is the
+            exact drift `cardSlotPosition`'s comment warns about. */}
+        {boxes.map((b, i) => (
           <div
             key={i}
             data-testid={`answer-card-hover-${i}`}
