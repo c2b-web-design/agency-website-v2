@@ -125,12 +125,31 @@ for (let run = 1; run <= RUNS; run++) {
     // in every run — is what caught it.
     const HEADING_DELAY_MS = 600;
     const armedAt = d.headingAt === null ? null : d.headingAt - HEADING_DELAY_MS;
+
+    // ⚠ THERE ARE THREE EXITS NOW, NOT TWO, AND THIS CLASSIFIER USED TO KNOW
+    // ONLY TWO. On 7 August the opening gained a READY GATE — `document.fonts.
+    // ready` plus a committed frame — because the compile path does not exist at
+    // all below `PROTO_MIN_VIEWPORT_PX` (1280), where the card canvas renders
+    // `null` and the 4000ms ceiling was arming every single load.
+    //
+    // ⚠ WITH ONLY TWO BRANCHES THIS SCRIPT REPORTED THE FIX AS A FAILURE. Arming
+    // at +275ms against a compile at +1299ms scored as "not the compile,
+    // therefore the backstop" — and printed the gate-is-broken warning at the
+    // exact moment the gate started working. **A classifier that cannot name a
+    // new-but-correct state will call it a regression.**
+    //
+    // The ready gate is the EXPECTED path now: it fires on fonts + one frame,
+    // which lands in the low hundreds of ms, well before either other exit.
     let armedBy = "unknown";
     if (armedAt !== null) {
-      if (d.warmupCompiled !== null && Math.abs(armedAt - d.warmupCompiled) < 250) {
-        armedBy = "COMPILE";
-      } else if (Math.abs(armedAt - ARM_CEILING_MS) < 400) {
+      if (Math.abs(armedAt - ARM_CEILING_MS) < 400) {
+        // Checked FIRST: the ceiling is the only genuinely bad answer, and it
+        // must not be shadowed by a coincidental match against a slow compile.
         armedBy = "BACKSTOP";
+      } else if (armedAt < 900) {
+        armedBy = "READY GATE";
+      } else if (d.warmupCompiled !== null && Math.abs(armedAt - d.warmupCompiled) < 250) {
+        armedBy = "COMPILE";
       } else {
         armedBy = "neither cleanly — investigate";
       }
@@ -154,6 +173,11 @@ try { rmSync(profile, { recursive: true, force: true }); } catch {}
 
 const waits = results.map((r) => r.headingAt).filter((x) => x !== null);
 const med = (xs) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] : null);
+// ⚠ THE QUESTION IS "DID THE BACKSTOP FIRE", NOT "DID THE COMPILE WIN". Either
+// real gate — the ready gate or the compile — is a pass; the ceiling is the only
+// failure. Counting COMPILE alone made the ready gate look like a regression.
+const byBackstop = results.filter((r) => r.armedBy === "BACKSTOP").length;
+const byReady = results.filter((r) => r.armedBy === "READY GATE").length;
 const byCompile = results.filter((r) => r.armedBy === "COMPILE").length;
 
 console.log(`\n${"═".repeat(62)}`);
@@ -161,18 +185,25 @@ console.log(`VERDICT — ${RUNS} run(s)`);
 console.log(`${"═".repeat(62)}`);
 console.log(`  Cold wait before the opening starts:  ${results[0]?.headingAt ?? "?"}ms`);
 console.log(`  Median wait across runs:              ${med(waits) ?? "?"}ms`);
-console.log(`  Runs armed by the COMPILE (not the backstop): ${byCompile}/${RUNS}`);
+console.log(`  Armed by the READY GATE: ${byReady}/${RUNS}   by the COMPILE: ${byCompile}/${RUNS}   ⚠ by the BACKSTOP: ${byBackstop}/${RUNS}`);
 
-if (byCompile < RUNS) {
+if (byBackstop > 0) {
   console.log(`
   ⚠ AT LEAST ONE RUN WAS ARMED BY THE BACKSTOP. That is the failure mode this
     script exists to catch: the gate is not doing the work and the ceiling is
-    hiding it. Do not read the timings above as a working inversion.`);
+    hiding it. Do not read the timings above as a working inversion.
+
+    ⚠ RUN \`verify/arm-by-width.mjs\` NEXT. This script tests ONE viewport, and
+    the 4.2s blank screen it missed for days was visible only below 1280px —
+    where the card canvas does not render and the compile path does not exist.`);
 } else {
   console.log(`
-  → The compile armed the opening on every run; the backstop was never needed.
-    The wait above is the real cold-load cost of Step 4, and whether it is
-    acceptable is Carl's judgement, not this script's.`);
+  → A real gate armed the opening on every run; the backstop was never needed.
+    The wait above is the real cold-load cost, and whether it is acceptable is
+    Carl's judgement, not this script's.
+
+    ⚠ ONE VIEWPORT ONLY. \`verify/arm-by-width.mjs\` sweeps the widths, and it is
+    the one that catches a canvas-dependent gate failing on narrow screens.`);
 }
 console.log(`
   ⚠ Verification is not approval.
