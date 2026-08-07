@@ -169,6 +169,21 @@ const ACK_FADE_OUT_DELAY_MS = FIELD_ENTRANCE_END_MS - ACK_FADE_OUT_DURATION_MS;
  * own `requestIdleCallback` timeout came to be the only path rather than a
  * backstop. `verify/opening-arm.mjs` reports which of the two armed the opening
  * — check it, do not assume.
+ *
+ * ⚠⚠ AND THAT WARNING CAME TRUE — IT WAS THE ONLY PATH ON EVERY VIEWPORT UNDER
+ * 1280px, ON EVERY LOAD. `AnswerCardCanvas` returns `null` below
+ * `PROTO_MIN_VIEWPORT_PX`, so no canvas existed, nothing reported `compiled`,
+ * and this timer armed the opening after a 4.2-SECOND BLANK SCREEN. It was
+ * caught by an independent audit, not by this project's own harness, because
+ * `verify/opening-arm.mjs` only ever ran at 1440px — where the canvas exists and
+ * the gate works. **A harness that only tests the passing case is not a test.**
+ * `verify/arm-by-width.mjs` now sweeps the widths.
+ *
+ * ⚠ THE FIX IS AT `openingArmed`'s EFFECT, NOT HERE. The opening now also arms
+ * on `document.fonts.ready` plus a committed frame, so this is a true backstop
+ * again. **Lowering this value was considered and rejected** — it would have
+ * made a shorter blank screen rather than removing the dependency, and the
+ * heading never needed WebGL in the first place.
  */
 const OPENING_ARM_CEILING_MS = 4000;
 
@@ -636,8 +651,69 @@ export default function EnquiryOpening() {
       const id = window.setTimeout(armOpening, 0);
       return () => window.clearTimeout(id);
     }
+
+    /**
+     * ⚠⚠ THE READY GATE — AND IT EXISTS BECAUSE THE BACKSTOP WAS THE ONLY PATH
+     * ON EVERY VIEWPORT UNDER 1280px.
+     *
+     * `AnswerCardCanvas` returns `null` below `PROTO_MIN_VIEWPORT_PX` (1280).
+     * No canvas means nothing ever reports `compiled`, so `armOpening` was
+     * reached ONLY by the 4000ms ceiling below — and the visitor watched a blank
+     * screen for 4.2 seconds before the heading began. Measured across widths
+     * (`verify/arm-by-width.mjs`):
+     *
+     *     1440   canvas present   armed by the compile     heading at 2349ms
+     *     1280   canvas present   armed by the compile     heading at  759ms
+     *     1279   NO CANVAS        ⚠ armed by the ceiling   heading at 4413ms
+     *     1180   NO CANVAS        ⚠ armed by the ceiling   heading at 4406ms
+     *     1024   NO CANVAS        ⚠ armed by the ceiling   heading at 4382ms
+     *
+     * ⚠ A 1279px LAPTOP IS A NORMAL RUN, NOT AN EDGE CASE. `OPENING_ARM_CEILING_MS`'s
+     * own comment states the rule this broke: *"IF THIS IS EVER THE THING THAT
+     * STARTS THE OPENING ON A NORMAL RUN, THE GATE IS BROKEN AND THE PAGE IS
+     * MERELY HIDING IT."* It was, and it was.
+     *
+     * ⚠ AND THE CARD CANVAS IS THE WRONG THING FOR THE HEADING TO WAIT ON
+     * ANYWAY. That canvas exists to precompile shaders so the CARD entrance does
+     * not stutter after Begin. The heading's reveal is `clip-path` on the
+     * compositor — it needs fonts and a frame, not WebGL. Gating text on a
+     * graphics warm-up was always a stronger coupling than the problem required.
+     *
+     * ⚠ SO THIS ARMS ON WHICHEVER COMES FIRST: the compile (`armOpening` via
+     * `onCompiled`, unchanged), or the page genuinely being ready to animate.
+     * `document.fonts.ready` is the honest signal — a reveal that wipes text
+     * before its webfont has swapped would reflow mid-animation — and the double
+     * rAF guarantees a committed frame so the keyframes start from a painted
+     * `enquiry-opening-held` state rather than joining midway.
+     *
+     * ⚠ THE CEILING STAYS, AND IT IS STILL NOT OPTIONAL. `fonts.ready` can in
+     * principle never settle; a state gate must never be the only exit. It is
+     * now a genuine backstop rather than the default path — which is what
+     * `verify/opening-arm.mjs` checks, so run it after touching this.
+     */
+    let raf1 = 0;
+    let raf2 = 0;
+    let cancelled = false;
+    const armWhenPainted = () => {
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => {
+          if (!cancelled) armOpening();
+        });
+      });
+    };
+    if (typeof document !== "undefined" && document.fonts?.ready) {
+      document.fonts.ready.then(armWhenPainted, armWhenPainted);
+    } else {
+      armWhenPainted();
+    }
+
     const id = window.setTimeout(armOpening, OPENING_ARM_CEILING_MS);
-    return () => window.clearTimeout(id);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      window.clearTimeout(id);
+    };
   }, [openingArmed, reducedMotion, armOpening]);
 
   /*
@@ -833,6 +909,26 @@ export default function EnquiryOpening() {
       const entranceStarted = cardEntranceStartedAtRef.current;
       const activated = activatedAtRef.current;
 
+      // ⚠ DEV-ONLY TRACE OF THE GUARD'S OWN DECISION, gated on `?warmtrace=1`
+      // and costing nothing without it. It exists because this guard has now
+      // been reasoned about wrongly twice from its source alone: the anchor it
+      // waits on is set by a callback from another component, so whether it has
+      // ARRIVED at the moment of the check cannot be read off the code.
+      // `verify/warm-collision.mjs` names the stall; this says which branch let
+      // it through.
+      if (
+        typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("warmtrace") === "1"
+      ) {
+        const w = window as unknown as { __warmTrace?: unknown[] };
+        w.__warmTrace ??= [];
+        w.__warmTrace.push({
+          t: Math.round(performance.now()),
+          entranceStarted: entranceStarted === null ? null : Math.round(Date.now() - entranceStarted),
+          sinceBegin: activated === null ? null : Math.round(Date.now() - activated),
+        });
+      }
+
       if (!reducedMotion && activated !== null) {
         // ⚠ THE OUTER CEILING, AND IT IS LOAD-BEARING. The card canvas does not
         // mount below `PROTO_MIN_VIEWPORT_PX`, so on narrow viewports
@@ -861,6 +957,18 @@ export default function EnquiryOpening() {
           timerId = window.setTimeout(warmWhenSafe, untilReveal);
           return;
         }
+      }
+
+      // Reached only when every guard above has cleared — so if the trace shows
+      // this line running while the ladder is mid-flight, the guards are the
+      // thing to fix, not the warm-up.
+      if (
+        typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("warmtrace") === "1"
+      ) {
+        const w = window as unknown as { __warmTrace?: unknown[] };
+        w.__warmTrace ??= [];
+        w.__warmTrace.push({ t: Math.round(performance.now()), passedGuards: true });
       }
 
       const completed = completedAtRef.current;
