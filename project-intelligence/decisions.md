@@ -1153,3 +1153,130 @@ The Send button's **specular dome catch only** now reads `var(--opal-shine, 0.72
 **Authority:** Human Founder
 
 ---
+
+## D-045 — Answer Cards: The Hover Light Specified, And Glass Put Under Review
+
+**Date:** 2026-08-07
+**Status:** SPECIFIED, NOT BUILT. The material is undecided and Carl is researching it. Build agreed for "a couple of days" from this date.
+
+⚠ **NOTHING IN THIS ENTRY HAS BEEN BUILT OR SEEN.** It is a design specification given by Carl in conversation, recorded so the build is one pass rather than five. Every value marked *derived* is a rule, not a measured result. **Where a number appears it is Carl's first guess and is expected to move.**
+
+### 1. The hierarchy, stated — and it reverses what the handoff assumed
+
+> **Carl:** *"the q+a section will be the parent to the client info section."*
+
+⚠ **THE 6 AUGUST HANDOFF HAD THIS BACKWARDS.** It recorded the contact field's orbiting light as prior art the card would inherit — *"the corridor's existing language arriving at the card."* **The field is DOWNSTREAM.** The card defines the language; the field is the first place it is reused. Getting this the wrong way round would have made the card a copy of its own child.
+
+### 2. Hover is the user pondering, and that decides the mechanism
+
+> **Carl:** *"Is the user pondering over a decision to pick that answer?... Does pondering have movement? Is it an ongoing process?"*
+
+**Hover is not a visual state. It is attention dwelling.** So:
+
+- **It LOOPS** — travels the arc and returns, continuously, while the pointer rests.
+- ⚠ **AND THAT ANSWERS THE HANDOFF'S OPEN OBJECTION RATHER THAN OVERRIDING IT.** The worry was *"a loop risks becoming ambient motion, which this project has deliberately avoided."* Ambient motion happens REGARDLESS of the user. Here there is **zero motion on the page until someone points at something** — the loop satisfies the principle more strictly than a one-shot, which fires and then leaves a changed state sitting there.
+- **A one-way pass asserts a conclusion the user has not reached.** It says "done" while they are still thinking.
+- **Its duration is not chosen.** It is however long the user dwells — the timing comes from the person, not from a constant.
+
+### 3. Motion character
+
+> **Carl:** *"The motion should ease in/out and be at a slower speed and be subtle. The light will bring out the geometry. Pondering must feel relaxing, we dont want no fast, changing geometry to rush the user."*
+
+**Eased at the reversals, slow, subtle.** The Builder argued for constant velocity with easing only at loop entry/exit, on the grounds that easing at every turn makes a repeating beat. **Carl overruled it and the reasoning is sound:**
+
+> *"Not if the easing is slow enough. The alternative is to smash into the corners. The theory is sound but only a true judgement can be made visually."*
+
+⚠ **CONSTANT VELOCITY MEANS AN INSTANTANEOUS REVERSAL** — infinite acceleration at each end, which is the "smash". At the speeds intended, a decelerating turn has no onset to register as a beat. **Neither reading is settled from argument; it is a tuning question and it needs eyes.** Build it so the easing shape and cycle length are adjustable without a rebuild.
+
+### 4. The per-card arcs — the drawing, and what varies
+
+**Card 2 is its own case.** Centred on the grid's centre line, vertical arc, starts in the middle. Symmetric, so it can use the full sweep: light rakes DOWN across the face with shadow on the lower half, then looks UP with shadow above, shining over the rim at both ends.
+
+**The other four each take the diagonal toward their own nearest corner** — 1 top-left, 3 top-right, 4 bottom-left, 5 bottom-right. Carl's diagram (two drawings, 5 and 7 August): the small squares are the LIGHT SOURCE, the blue line its path.
+
+⚠ **THE SOURCE STARTS JUST INSIDE THE CORNER, NOT ON IT.** Carl: *"i suspect we may well have to bring them in a little bit to get a more even coverage of light."* There is a measured precedent — the clay light's note records an earlier pass at ±34 that *"lit the card's short END and could never produce the middle state at all."*
+
+**Start direction pairs on the DIAGONAL, and this is the one deliberate asymmetry:**
+
+| card | position | direction |
+|---|---|---|
+| 1 | top-left | **out** → in → out |
+| 3 | top-right | **in** → out → in |
+| 4 | bottom-left | **in** → out → in |
+| 5 | bottom-right | **out** → in → out |
+
+Nothing mirrors left-right or top-bottom, so the pattern does not resolve — which is what makes the four read as individuals rather than two mirrored pairs. Carl: *"Even though the cards are geometrically the same they will appear individual because of the placement and arc of light."*
+
+### 5. ⚠ The sweep must STOP SHORT on the corner cards, and card 2 must not
+
+> **Carl:** *"It may not be neccersary to have the arc follow 0 deg - 180 deg... If it goes to the corners... the opposite corner may not receive as much light. Its not symmetrical like card 2. It may have to stop on 30 deg and 150 deg. At a point when the corners are most illuminated."*
+
+⚠ **THE ENDPOINT THAT FLATTERS A SYMMETRIC CARD STARVES AN ASYMMETRIC ONE.** Card 2 is symmetric about its arc, so its extremes are where its shading is strongest. On a diagonal arc the source at 0°/180° sits out at a corner and rakes the face along its own diagonal — near corner lit hard, far corner barely reached.
+
+**30°/150° is Carl's first guess, not a value.** The correct limit is wherever the far corner stops receiving useful light, which depends on cone angle, arc radius and the card's diagonal — **all known, so DERIVE the limits.** A hand-typed 30° goes stale the moment the beam width changes.
+
+⚠ **AND IT IS MEASURABLE, NOT ONLY JUDGEABLE.** "The point at which the corners are most illuminated" = sample the face's four corners across the sweep, find where the spread between brightest and dimmest is smallest. Same method as `verify/clay-exposure.mjs`, which found 2.5 after three guesses missed. **Give Carl a measured starting value to adjust, not a guess.**
+
+### 6. Intensity varies along the arc — build it as a curve from the start
+
+> **Carl:** *"the lights intensity can also be varied at certain points in the arc. I wont know till i see it. It may well be that at the bottom of the arc, the light intensity should be slightly increased to bring out more of the curve."*
+
+**This compensates for real physics** — at the ends of the arc the light rakes at a shallow angle and Lambert shading returns less, so constant intensity does not produce constant disclosure.
+
+⚠ **BUT THERE IS A LIVE TENSION WITH `decay = 2`.** The contact field records that falloff was made physical *so distance matters*, and that a `decay = 0` probe was rejected because equal intensity everywhere destroyed the unevenness that was the effect. **A second variation on top could correct the shading OR flatten it.** Unknowable from here.
+
+⚠ **SO INTENSITY MUST BE A FUNCTION OF ARC POSITION FROM THE OUTSET**, even if flat initially. Retrofitting position-dependence onto a constant is a rewrite; moving a control point is a keypress.
+
+### 7. Only TWO things need judging, and that is also the correctness test
+
+> **Carl:** *"there will only have to be two versions. Card 2 is its own thing, the others are mirror images of themselves."*
+
+Tilt, inset and sweep limits all come from one calculation with sign flips; the start direction is the deliberate exception.
+
+⚠ **IF CARD 3 NEEDS TUNING SEPARATELY AFTER CARD 1 IS RIGHT, THE DERIVATION IS WRONG** — it means something was hand-set and position is not actually deciding. Same principle as the retired four-zone colour system.
+
+### 8. ⚠ GLASS IS UNDER REVIEW — the face material may not survive
+
+> **Carl:** *"Glass for the card face may well be changed... Its so 'Apple' anyway and im wondering at this stage in modern website design its use could be considered somewhat cliched."*
+
+**Ruled out by eye this session, without building either:**
+
+- **Brushed / anodised metal** — *"its too close in look to the client info cards."* ⚠ The Builder had argued this made a "family"; **Carl's objection is better reasoning.** Derivation means a child expresses an inherited principle DIFFERENTLY. Two objects in the same material at the same scale is repetition, and the corridor depends on the cards and the field being distinguishable.
+- **Satin** — Carl on the reference images: *"This is interesting. i like the way the light interacts with it."* Leading candidate at the close of the session, not chosen.
+
+⚠ **AND THE CSS CARD WAS NEVER REALLY DESCRIBING GLASS.** `.enquiry-card`'s comment says *"frosted blue glass"*, but its six inset shadows are a **studio lighting diagram**: soft catch top, 1px hard specular, secondary catch left at one-third, depth shadow bottom and right, elevation drop. The border is *"thin structural edge"* at 0.20 — nearly invisible. **The rim light comes from the inset shadows, not the border.**
+
+> **Carl:** *"My description was what the light should be doing. It is remarkable that the implied geometry is recognisable. Also on the ivory button and opal button too."*
+
+⚠ **THE GENERAL RULE, AND IT WOULD HAVE PREVENTED THE TRANSMISSIVE CARD:** in this codebase **the labels name the CSS TECHNIQUE and the shadow stacks describe the OBJECT.** *"Frosted blue glass"*, *"opal cabochon"* — closest available names. Where the two disagree, **the shadows are right**, because they are what Carl tuned by eye. The WebGL card went transmissive because a Builder read the label.
+
+⚠ **AND `backdrop-filter` WAS THE WORKAROUND, NOT THE SPECIFICATION** — the same correction Carl already made to `GRID_REFL`: *"approved only within the constraints of CSS."*
+
+### 9. The Begin button's hover is the existing precedent
+
+Measured off `globals.css` this session. **Every value moves deeper, and the specular line does not move at all:**
+
+| | rest | hover |
+|---|---:|---:|
+| top light catch | 0.28 | **0.34** |
+| face top | `#fffef8` | `#f8f2e0` darker |
+| top rim, 1px white | **1.00** | **1.00** unchanged |
+| sub-rim shadow | 0.38 | **0.50** |
+| lower bevel | 0.54 | **0.66** |
+| drop shadow | `3px 9px` 0.40 | **`4px 12px` 0.48** |
+
+⚠ **THE CATCH BRIGHTENS WHILE THE FACE DARKENS** — that is increasing CONTRAST, not brightness. A single dial cannot produce it. And the hard specular holding constant is the same rule as the field's gold rim through the orbit: **the rim says "object", the light says "alive."**
+
+**Carl on the relationship:** *"Not the same reading but a similar change."* The card's hover is a moving light; the button's is a static light with the surface responding more. Different means, same family.
+
+### 10. Sequencing
+
+1. **Material decided by Carl** (researching Three.js, WebGL and React; has videos and tutorials lined up).
+2. **Cards built and rolled out to the other questions.**
+3. **THEN the Next step button in Three.js** — Carl: *"We already have 2 exotic materials in ivory and opal. We need to keep in the same vein for this button."* ⚠ Note that the opal is currently lit by the FIELD's rig through `--opal-shine`; in Three.js it can be lit directly, but **whatever rig the cards get is the rig that button will live under.**
+
+**Parked this session:** a rim light behind the contact field's boxes to catch the gold edges. Carl: *"Park it, i may come up with a better idea after i learn more."* Measured finding that motivated it — during the hidden return the rims are the only structure on screen and they hold it **dimly and unevenly**, because the orbiting spot targets the box group's CENTRE, so behind the boxes it points THROUGH them rather than raking their edges. **Position is not aim.**
+
+**Authority:** Human Founder
+
+---
