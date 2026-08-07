@@ -37,6 +37,46 @@ export const CARD_BOXES = [
   { x: 292, y: 56, w: 186.66, h: 48 },
 ] as const;
 
+/**
+ * The same five boxes, scaled to a grid of any width.
+ *
+ * ⚠⚠ THIS EXISTS BECAUSE `CARD_BOXES` IS AN ABSOLUTE-PIXEL TABLE SHADOWING A
+ * FLUID CSS LAYOUT, AND THE MISMATCH IS WHY THE CARDS WERE WITHHELD BELOW 1280px.
+ *
+ * `.enquiry-answer-grid` is `repeat(6, 1fr)` with no media query — it is
+ * PROPORTIONAL. Measured live (`verify/grid-by-width.mjs`, `grid-narrow.mjs`) it
+ * holds 576px while the `max-w-xl` shell allows, then scales with the viewport:
+ *
+ *     1279..640px   grid 576.0   card 186.7   3 + 2
+ *          540px    grid 492.5   card 158.8   3 + 2
+ *          430px    grid 382.2   card 122.1   3 + 2
+ *          390px    grid 342.5   card 108.8   3 + 2
+ *          375px    grid 327.0   card 103.7   3 + 2
+ *
+ * ⚠ IT NEVER REFLOWS AND IT NEVER OVERFLOWS. The 3+2 arrangement survives to
+ * 375px. **`PROTO_MIN_VIEWPORT_PX`'s stated reason — *"below it the CSS grid
+ * reflows"* — is FALSE, and was never measured.** What actually breaks below
+ * 576px is this table: a WebGL card drawn at a hard-coded 186.66 wide inside a
+ * 342px grid is ~70% too large and lands in the wrong place. The guard was real,
+ * but it named the wrong mechanism, which is why it read as a layout guard
+ * rather than as the coupling bug it is.
+ *
+ * ⚠ SO THE TABLE IS KEPT AS THE REFERENCE PROPORTION, NOT DELETED. Every value
+ * above is a ratio of `GRID_WIDTH_PX` (576) expressed in pixels at that width,
+ * and scaling preserves the ratios exactly — including the 8px gaps and the
+ * bottom row's half-card inset, which are what make the 3+2 read as deliberate.
+ * The numbers stay auditable against the CSS they were measured from.
+ *
+ * ⚠ HEIGHT IS NOT SCALED, AND THAT IS NOT AN OVERSIGHT. `.enquiry-card` is
+ * `min-height: 3rem` — a FIXED 48px at every width, which the measurements above
+ * confirm. Scaling y by the width ratio would lift the cards off the rows the
+ * CSS actually puts them on.
+ */
+export function cardBoxesAt(gridWidthPx: number): Array<{ x: number; y: number; w: number; h: number }> {
+  const s = gridWidthPx / GRID_WIDTH_PX;
+  return CARD_BOXES.map((b) => ({ x: b.x * s, y: b.y, w: b.w * s, h: b.h }));
+}
+
 // ── The ground ───────────────────────────────────────────────────────────────
 
 /**
