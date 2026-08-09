@@ -1,0 +1,54 @@
+{
+  "capturedAt": "2026-08-09T13:22:04.644Z",
+  "runs": 3,
+  "opening": [
+    {
+      "name": "enquiry-mask-reveal-horizontal",
+      "label": "Let's understand what your",
+      "med": 1012,
+      "rel": 0
+    },
+    {
+      "name": "enquiry-mask-reveal-horizontal",
+      "label": "business needs to become.",
+      "med": 2512,
+      "rel": 1500
+    },
+    {
+      "name": "enquiry-mask-reveal-horizontal",
+      "label": "A few focused questions to help us see",
+      "med": 4012,
+      "rel": 3000
+    },
+    {
+      "name": "enquiry-mask-reveal-radial",
+      "label": "Begin",
+      "med": 7812,
+      "rel": 6800
+    }
+  ],
+  "openingAnchor": 1012,
+  "wipeAtBegin": 62,
+  "ladder": [
+    {
+      "card": 650,
+      "med": 695
+    },
+    {
+      "card": 1210,
+      "med": 1264
+    },
+    {
+      "card": 1770,
+      "med": 1831
+    },
+    {
+      "card": 2330,
+      "med": 2381
+    },
+    {
+      "card": 2890,
+      "med": 2949
+    }
+  ]
+}

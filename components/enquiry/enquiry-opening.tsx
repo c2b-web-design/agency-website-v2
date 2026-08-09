@@ -580,6 +580,66 @@ export default function EnquiryOpening() {
   );
 
   /**
+   * ⚠ THE WARM-UP CANVAS OUTLIVES THE STAGE CHANGE BY A SHORT OVERLAP.
+   *
+   * ⚠ THE DEFECT, MEASURED 9 AUGUST 2026 ON THE REAL GPU. The warm-up renders
+   * only while `stage === "opening"`; the real Q5 canvas renders only after it.
+   * They are MUTUALLY EXCLUSIVE, so pressing Begin destroys the warm context in
+   * the same commit that creates the real one. A WebGL context is per-canvas and
+   * dies with its node, so the real canvas rebuilt everything from scratch:
+   * a third context created at +114-203ms after Begin, followed by ~580ms of
+   * Three.js CPU-side initialisation — landing inside the 1300ms phrase wipe,
+   * which starts at +60ms. Carl saw it as a stutter half way through the reveal.
+   *
+   * ⚠ SHADER COMPILATION IS NOT THE COST — measured at 0.2-0.3ms inside the
+   * reveal, exactly as in July. The cost is Three.js initialisation for a
+   * newly-created context. Blaming "shader compilation" here would be the third
+   * time this project chased that particular ghost.
+   *
+   * ⚠ WHAT THE WARM-UP IS ACTUALLY WORTH, AND IT REFUTED THE OBVIOUS READING.
+   * The reasoning "the context dies, so the warm-up buys nothing, so delete it"
+   * is wrong. `verify/warmup-value.mjs`, 3 runs per arm, cold GPU profile each:
+   *
+   *     mount -> compiled, warm-up PRESENT    161ms
+   *     mount -> compiled, warm-up ABSENT     919ms
+   *
+   * ANGLE's ON-DISK BINARY SHADER CACHE survives the context's death and is
+   * worth ~758ms. Deleting the warm-up would have made the stutter twice as bad.
+   *
+   * ⚠ SO THIS HOLDS THE WARM NODE ALIVE ACROSS THE HANDOVER instead of removing
+   * it. The real canvas is created and does its setup while the warm context
+   * still exists, then the warm one goes.
+   *
+   * ⚠ WHY NOT ONE SHARED CANVAS — THE ROUTE THAT LOOKS RIGHT AND IS NOT. Moving
+   * a single node between the opening branch and the phrase band changes its
+   * PARENT, which remounts it in React and destroys the very context the move
+   * exists to preserve. The comment on the warm-up block has said so since
+   * 5 August. A true single-canvas fix needs a host that never unmounts, which
+   * means restructuring approved layout; that is a bigger change than this
+   * defect justifies, and Carl's constraint of 9 August is that nothing he has
+   * approved may shift.
+   *
+   * ⚠ AN OVERLAP, NOT A DELAY ON THE STAGE CHANGE. `stage` flips exactly when it
+   * always did, so every consumer of it — the phrase band, the Q5 grid, the card
+   * ladder, the opening's own teardown — is untouched. The ONLY thing extended
+   * is how long an invisible, `aria-hidden`, `pointer-events: none` node stays
+   * in the tree. Delaying the stage change itself would move the choreography.
+   *
+   * ⚠ 900ms, AND THE FIGURE IS DERIVED, NOT PICKED. It must outlast the real
+   * canvas's setup (161ms mount->compiled, plus the ~580ms initialisation
+   * behind it = ~740ms) with margin, and it must end before anything the eye is
+   * on. The first card beat is at +695ms and the phrase wipe ends at +1360ms
+   * (60 + 1300), so the node is gone before the reveal completes and costs
+   * nothing visible — it never draws.
+   *
+   * ⚠ IF THIS VALUE EVER NEEDS TUNING, THE OVERLAP IS THE WRONG FIX AND THE
+   * SHARED-HOST RESTRUCTURE IS THE RIGHT ONE. A number that has to grow to keep
+   * working is hiding a lifecycle problem rather than solving it.
+   */
+  const [warmupHeldOver, setWarmupHeldOver] = useState(false);
+  const WARMUP_OVERLAP_MS = 900;
+
+  /**
    * ⚠ STEP 4 — THE ORDERING INVERSION. The opening's animated classes are held
    * back until the warm-up canvas reports `compiled`, then applied together.
    *
@@ -838,8 +898,28 @@ export default function EnquiryOpening() {
   // transition is RECORDED; when it happens is untouched.
   const enterActive = useCallback(() => {
     if (activatedAtRef.current === null) activatedAtRef.current = Date.now();
+    // ⚠ SET BEFORE `setStage`, IN THE SAME EVENT. React batches both into one
+    // commit, so the warm node is already marked held-over in the render that
+    // creates the real canvas. Setting it afterwards — or from an effect —
+    // would allow a commit in which the warm node had gone and the real canvas
+    // had arrived, which is the exact gap this closes.
+    setWarmupHeldOver(true);
     setStage("active");
   }, []);
+
+  /**
+   * Ends the overlap. Nothing visible depends on this timer: the node it
+   * removes is invisible and never drew, so a late or early fire changes only
+   * how long an idle context lingers.
+   *
+   * ⚠ CLEARED ON UNMOUNT — a `setState` after teardown is the lint error this
+   * file already carries one of, and one is enough.
+   */
+  useEffect(() => {
+    if (!warmupHeldOver) return;
+    const id = window.setTimeout(() => setWarmupHeldOver(false), WARMUP_OVERLAP_MS);
+    return () => window.clearTimeout(id);
+  }, [warmupHeldOver]);
 
   useEffect(() => {
     if (!questionnaireStarted || canvasWarm) return;
@@ -1486,7 +1566,16 @@ export default function EnquiryOpening() {
           per-canvas and dies with the node. Remove the switch when that question
           is closed.
         */}
-        {stage === "opening" && !suppressWarmup && (
+        {/*
+          ⚠ `|| warmupHeldOver` — THE NODE OUTLIVES THE STAGE CHANGE ON PURPOSE.
+          Without it this block and the real Q5 canvas are mutually exclusive, so
+          Begin destroyed the warm context in the same commit that created the
+          real one and the real one rebuilt everything from scratch: ~580ms of
+          Three.js initialisation inside the phrase wipe, measured 9 August 2026.
+          See `warmupHeldOver` for the measurements and for why one shared canvas
+          is NOT the smaller fix it appears to be.
+        */}
+        {(stage === "opening" || warmupHeldOver) && !suppressWarmup && (
           <div
             aria-hidden="true"
             data-testid="answer-card-warmup"
