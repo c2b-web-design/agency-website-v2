@@ -52,13 +52,26 @@ import {
   REST_FILL_POSITION,
   REST_FILL_INTENSITY,
   REST_AMBIENT_INTENSITY,
-  REST_TRAVEL_FROM,
-  REST_TRAVEL_TO,
+  // ⚠ `REST_TRAVEL_FROM` / `_TO` ARE NO LONGER IMPORTED HERE, deliberately. The
+  // endpoints are inputs to `restTravelPoint` and nothing outside that function
+  // should be reconstructing positions from them — that reconstruction is
+  // exactly what made the helper draw a different curve from the light.
   REST_TRAVEL_SAG,
   REST_TRAVEL_FORWARD,
-  REST_TRAVEL_INTENSITY,
+  REST_TRAVEL_JUDGED_INTENSITY,
   REST_TRAVEL_MS,
   REST_RETURN_MS,
+  // ⚠ THE PATH AND ITS CLOCK COME FROM THE GLASS MODULE, NOT FROM LOCAL MATHS.
+  // One definition, three callers — the light, the helper, and the intensity
+  // derivation. See `restTravelPoint`.
+  restTravelPoint,
+  restTravelPhase,
+  // ⚠ THE KEYFRAMED AIM. The cone turns as the light travels — see `restAimAt`.
+  restAimAt,
+  REST_TRAVEL_CONE_ANGLE,
+  REST_TRAVEL_CONE_PENUMBRA,
+  REST_TRAVEL_DECAY,
+  REST_TRAVEL_NEAREST_SQ,
 } from "./answer-card-glass";
 // ⚠ THE BACKDROP IS NOW THE GROUND PLANE ALONE. `useRegionShift` and
 // `REGION_SHIFT_MS` are gone with the `c2b DESIGN` lockup, removed 5 August 2026
@@ -447,10 +460,21 @@ function ClayFormLight({ centre }: { centre: { x: number; y: number } }) {
  * makes the highlight move BETWEEN cards, so the motion is measured against the
  * whole 576-unit row instead of against one small face.
  *
- * ⚠ A POINT LIGHT, BECAUSE THE BOW ONLY MEANS SOMETHING IF DISTANCE DOES. A
- * DirectionalLight has no position — only its angle exists — so bowing its path
- * would change nothing whatsoever. Established the expensive way across four
- * earlier attempts.
+ * ⚠⚠ A SPOTLIGHT AT `decay = 2`, CHANGED 9 August 2026 — Carl: *"change from a
+ * point light. Ref client info section"*.
+ *
+ * ⚠ THE PREVIOUS RIG CONTRADICTED ITSELF AND THAT IS WHY SIX ATTEMPTS READ AS
+ * FLAT. It was a PointLight chosen explicitly *"because the bow only means
+ * something if distance does"* — and then given `decay={0}`, which takes
+ * distance out of the falloff. **A decay-0 light is the same brightness
+ * everywhere, so no path shape can modulate it.** Measured on the real GPU:
+ * `?travint=6`, seven times the old default, changed nothing visible.
+ *
+ * ⚠ AND A SPOTLIGHT NEEDS A REAL TARGET OBJECT. three.js resolves a spot's
+ * direction from `target.matrixWorld`; **assigning a bare `Vector3` silently
+ * does nothing** — a trap `contact-field-light-rig.tsx` already records. The
+ * target here is an `<object3D>` at the row's centre, so the cone aims across
+ * the whole assembly rather than at any one card.
  *
  * ⚠ `invalidate()` EVERY FRAME. The canvas is `frameloop="demand"`; a light that
  * moves without requesting a render is an animation that runs and is invisible.
@@ -486,87 +510,77 @@ function TravellingLight({
    */
   showHelper: boolean;
 }) {
-  const ref = useRef<THREE.PointLight | null>(null);
+  const ref = useRef<THREE.SpotLight | null>(null);
+  const targetRef = useRef<THREE.Object3D | null>(null);
   const scene = useThree((s) => s.scene);
   const invalidate = useThree((s) => s.invalidate);
+
+  /**
+   * ⚠ THE CONE IS AIMED BY A REAL OBJECT, AND IT MUST BE IN THE SCENE GRAPH.
+   * three.js reads a spot's direction from `target.matrixWorld`, so a target
+   * that is never added to the scene never gets its world matrix updated and the
+   * cone points at the origin regardless of what was assigned.
+   */
+  useEffect(() => {
+    const light = ref.current;
+    const targetObj = targetRef.current;
+    if (!light || !targetObj) return;
+    light.target = targetObj;
+    targetObj.updateMatrixWorld(true);
+    invalidate();
+  }, [invalidate]);
 
   useEffect(() => {
     const light = ref.current;
     if (!light) return;
 
     /**
-     * The visible pass, `t` from 0 (entering upper-left) to 1 (exiting
-     * lower-right). The curve is Carl's drawing: it sags BELOW the straight line
-     * between the endpoints and comes FORWARD of the card plane at the same
-     * time, so it passes beneath the row and rakes up at the lower cards.
+     * ⚠ THE PATH COMES FROM `restTravelPoint`, THE SINGLE SHARED DEFINITION.
+     * This function does not know the curve's shape and must not learn it — the
+     * helper below and the intensity derivation call the same one. Seven
+     * recorded "harness that lies" faults in this project all began with a
+     * second copy of a curve or a constant.
      */
     const place = (t: number) => {
-      const x = REST_TRAVEL_FROM[0] + (REST_TRAVEL_TO[0] - REST_TRAVEL_FROM[0]) * t;
-      const yLine = REST_TRAVEL_FROM[1] + (REST_TRAVEL_TO[1] - REST_TRAVEL_FROM[1]) * t;
-      const zLine = REST_TRAVEL_FROM[2] + (REST_TRAVEL_TO[2] - REST_TRAVEL_FROM[2]) * t;
-
-      // `sin(pi*t)` is 0 at both ends and 1 at the midpoint, so the path leaves
-      // and rejoins its endpoints smoothly instead of kinking.
-      const bow = Math.sin(Math.PI * t);
-      const y = yLine - bow * sag;
-      const z = zLine + bow * forward;
-
+      const [x, y, z] = restTravelPoint(t);
       light.position.set(x, y, z);
       light.updateMatrixWorld(true);
+
+      /**
+       * ⚠ THE CONE TURNS TOO — the target is keyframed, not fixed. Carl: *"can
+       * the light be turned itself? ... in the middle pointing at all the
+       * faces, like the arrow suggests."*
+       *
+       * ⚠ AND THE TARGET'S MATRIX MUST BE UPDATED EVERY FRAME OR THE TURN DOES
+       * NOTHING. three.js reads the cone's direction from `target.matrixWorld`;
+       * moving the object without refreshing that matrix leaves the light
+       * pointing wherever it last resolved — a moving value that changes no
+       * pixels, which is the failure mode this file has already paid for twice.
+       */
+      const targetObj = targetRef.current;
+      if (targetObj) {
+        const [ax, ay, az] = restAimAt(t);
+        targetObj.position.set(ax, ay, az);
+        targetObj.updateMatrixWorld(true);
+      }
     };
 
-    // REDUCED MOTION: park it at the midpoint — in front, beneath the row, the
-    // most even position and the one that asserts least about direction.
+    // REDUCED MOTION: park it at the belly — in front, beneath the row, the most
+    // even position and the one that asserts least about direction.
     if (reducedMotion) {
-      place(0.5);
+      place(0.25);
       invalidate();
       return;
     }
 
     let raf = 0;
     const start = performance.now();
-    const CYCLE = travelMs + returnMs;
 
     const tick = () => {
-      const elapsed = (performance.now() - start) % CYCLE;
-
-      if (elapsed < travelMs) {
-        /**
-         * ⚠ THE VISIBLE PASS, WITH EASING AT THE TIGHT CURVES — Carl: *"Apply
-         * easing at the tight curves."* His drawing is tightest at the two ends,
-         * where the path turns into and out of the sweep; the middle is a long
-         * gentle traverse.
-         *
-         * ⚠ SO THE EASING IS AT BOTH ENDS AND NOT IN THE MIDDLE, which a plain
-         * ease-in-out would get backwards by slowing the traverse too. A
-         * smootherstep holds the middle closer to constant velocity while still
-         * arriving and leaving softly.
-         */
-        const t = elapsed / travelMs;
-        const eased = t * t * t * (t * (t * 6 - 15) + 10);
-        place(eased);
-      } else {
-        /**
-         * ⚠ THE RETURN — ROUND THE BACK, RACING. Carl's own solution: *"when it
-         * goes round the back have it race to the beginning."*
-         *
-         * ⚠ IT IS WHY THIS RIG NEVER TURNS IN VIEW. Every earlier version
-         * reversed along its own path, so the light had to decelerate, stop and
-         * come back — three moments the eye catches. A circuit only ever travels
-         * one way, and its single reversal happens behind the cards where a
-         * point light illuminates nothing.
-         *
-         * The return arcs BACKWARD in z rather than retracing the visible curve,
-         * so at no point on the way home is it in front of the cards.
-         */
-        const r = (elapsed - travelMs) / returnMs;
-        const x = REST_TRAVEL_TO[0] + (REST_TRAVEL_FROM[0] - REST_TRAVEL_TO[0]) * r;
-        const y = REST_TRAVEL_TO[1] + (REST_TRAVEL_FROM[1] - REST_TRAVEL_TO[1]) * r;
-        const z = REST_TRAVEL_FROM[2] - Math.sin(Math.PI * r) * forward;
-        light.position.set(x, y, z);
-        light.updateMatrixWorld(true);
-      }
-
+      // ⚠ PHASE COMES FROM `restTravelPhase`, which owns BOTH the fast hidden
+      // half and the easing at the tight curves. Duplicating either here is how
+      // the two would drift apart.
+      place(restTravelPhase(performance.now() - start));
       invalidate();
       raf = requestAnimationFrame(tick);
     };
@@ -590,20 +604,23 @@ function TravellingLight({
   useEffect(() => {
     if (!showHelper) return;
 
+    /**
+     * ⚠⚠ THE HELPER CALLS `restTravelPoint` — THE SAME FUNCTION THE LIGHT DOES.
+     * It previously built its own points from the endpoints and a `sin` bow,
+     * which drew STRAIGHT SEGMENTS WITH A HARD CORNER while the light followed
+     * something else. Carl judged the arc against that marker and correctly
+     * rejected it: *"i can tell by the arc of the white sphere that it is
+     * wrong."* **The marker was wrong, and a debugging aid that lies is worse
+     * than none** — the eighth instance of that class in this project.
+     *
+     * ⚠ AND IT DRAWS THE WHOLE CLOSED RING, both halves. The hidden half is
+     * drawn too, because "does the back half mirror the front" is exactly the
+     * question this instrument now exists to answer.
+     */
     const pts: THREE.Vector3[] = [];
-    for (let i = 0; i <= 64; i++) {
-      const t = i / 64;
-      const bow = Math.sin(Math.PI * t);
-      pts.push(
-        new THREE.Vector3(
-          REST_TRAVEL_FROM[0] + (REST_TRAVEL_TO[0] - REST_TRAVEL_FROM[0]) * t,
-          // ⚠ THE LIVE DIALS, NOT THE DEFAULTS. A helper drawing the constant
-          // curve while the light follows a tuned one would be a marker that
-          // lies — the failure this instrument has already had twice.
-          REST_TRAVEL_FROM[1] + (REST_TRAVEL_TO[1] - REST_TRAVEL_FROM[1]) * t - bow * sag,
-          REST_TRAVEL_FROM[2] + (REST_TRAVEL_TO[2] - REST_TRAVEL_FROM[2]) * t + bow * forward,
-        ),
-      );
+    for (let i = 0; i <= 128; i++) {
+      const [x, y, z] = restTravelPoint(i / 128);
+      pts.push(new THREE.Vector3(x, y, z));
     }
     const geo = new THREE.BufferGeometry().setFromPoints(pts);
     const mat = new THREE.LineBasicMaterial({
@@ -647,18 +664,37 @@ function TravellingLight({
   }, [showHelper, scene, sag, forward]);
 
   return (
-    <pointLight
-      ref={ref}
-      position={REST_TRAVEL_FROM}
-      intensity={intensity * level}
-      // ⚠ `decay: 0` — NOT physical, and deliberately so. Inverse-square over a
-      // 660-unit traverse would make the traveller violent near the cards and
-      // absent at the ends; the BOW is meant to modulate the highlight, not to
-      // blow it out. Distance still varies the angle and the spread, which is
-      // where the effect lives.
-      decay={0}
-      distance={0}
-    />
+    <>
+      {/* ⚠ THE AIM POINT, WHICH MOVES. It starts on the first keyframe rather
+          than at a fixed centre; `place()` drives it every frame from
+          `restAimAt`. A static position here would be the value the cone used
+          for one frame before the loop takes over — harmless, but it must not
+          be mistaken for where the light actually points. */}
+      <object3D ref={targetRef} position={restAimAt(0)} />
+      <spotLight
+        ref={ref}
+        position={restTravelPoint(0)}
+        angle={REST_TRAVEL_CONE_ANGLE}
+        penumbra={REST_TRAVEL_CONE_PENUMBRA}
+        /**
+         * ⚠ DERIVED FROM THE MEASURED NEAREST APPROACH, NOT PICKED BY FEEL. With
+         * `decay = 2` the delivered brightness falls as 1/d², so the property
+         * three.js wants is `judged × nearest²`. This scene's world unit is ONE
+         * CSS PIXEL and physical falloff is calibrated for metres, which is why
+         * the number is large and why writing it as a literal would be
+         * meaningless.
+         *
+         * ⚠ `restTravelNearest()` SWEEPS THE ACTUAL PATH. The field's rig got
+         * this wrong once by scaling with its standoff constant instead of the
+         * real centre-to-light distance and landed four orders of magnitude
+         * short. The distance is measured from the curve, never assumed from the
+         * constants that shaped it.
+         */
+        intensity={intensity * level * REST_TRAVEL_NEAREST_SQ}
+        decay={REST_TRAVEL_DECAY}
+        distance={0}
+      />
+    </>
   );
 }
 
@@ -2730,7 +2766,14 @@ function CardScene({
    *   ?fwd=      how far it comes FORWARD of the card plane       (default 190)
    *   ?travelms= the visible pass, ms                             (default 11000)
    *   ?returnms= the race round the back, ms                      (default 2200)
-   *   ?travint=  the traveller's intensity                        (default 0.9)
+   *   ?travint=  the JUDGED brightness at nearest approach        (default 1.6)
+   *
+   * ⚠ `?travint=` NOW MEANS SOMETHING DIFFERENT, AND THE OLD NUMBERS DO NOT
+   * TRANSFER. It was a raw `intensity` on a decay-0 point light, where 0.9 was
+   * the whole story; it is now the brightness the spotlight should DELIVER at
+   * its closest approach, which the canvas multiplies by the measured distance
+   * squared. **A `?travint=6` from an earlier session is now enormous, not
+   * 6/0.9 times brighter.**
    */
   const travelDials = useMemo(() => {
     const d = {
@@ -2738,7 +2781,7 @@ function CardScene({
       forward: REST_TRAVEL_FORWARD,
       travelMs: REST_TRAVEL_MS,
       returnMs: REST_RETURN_MS,
-      intensity: REST_TRAVEL_INTENSITY,
+      intensity: REST_TRAVEL_JUDGED_INTENSITY,
     };
     if (typeof window === "undefined") return d;
     const q = new URLSearchParams(window.location.search);

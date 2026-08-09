@@ -660,6 +660,19 @@ export const LIGHT_LEVEL = 1.1;
  * 1:1 the eye integrates it into one tone. **The fix is a wider range and a
  * steeper falloff, not more light**: the bloom needs somewhere to travel from
  * and somewhere to arrive.
+ *
+ * ⚠⚠ DARKENED TO `#061027` ON 9 AUGUST AND PUT STRAIGHT BACK. Carl asked for
+ * *"Darken the baked body"* on the strength of a Builder finding that the face
+ * was 77% baked albedo and only 23% lit. **The finding was real and the fix was
+ * still wrong**, for a reason the same session then established: the card AS
+ * APPROVED did not have dark edges — Carl: *"the card in general was approved.
+ * If it had dark edges i would of flagged it"* — so the floating is a
+ * REGRESSION introduced on 9 August, not a property of the material.
+ *
+ * ⚠ DARKENING THE ALBEDO TREATS A SYMPTOM OF SOMETHING ELSE. It also barely
+ * worked: halving the colour moved the unlit floor 44.4 → 41.7, because the
+ * floor is held up by the SHEEN lobe (colour luminance 149), not by the body
+ * colour (luminance 15.5). See `SATIN_BAKED_ALBEDO_SHARE`.
  */
 export const SATIN_COLOR = "#0b1f4d";
 
@@ -797,6 +810,42 @@ export const SATIN_ANISOTROPY_ROTATION = 0;
 export const SATIN_ENV_INTENSITY = 0.22;
 
 /**
+ * ⚠⚠ THE FACE IS MOSTLY NOT LIT, AND THIS IS WHY THE EDGES READ BLACK.
+ *
+ * Carl, 9 August: *"the cards face look like they are floating. It reads black
+ * at the edges."* Measured with `verify/face-drivers.mjs`, traveller off, real
+ * GPU, sampling card 1's face above the baked label:
+ *
+ *     static rig at full   face = 57.75
+ *     static rig at ZERO   face = 44.42     <- 77% survives with NO lights
+ *     static rig x0.5      face = 51.20
+ *     static rig x2        face = 69.74
+ *
+ * ⚠ **THE WHOLE KEY + FILL + AMBIENT RIG IS WORTH 13 LUMINANCE POINTS OUT OF
+ * 58.** The other 44 is the satin body colour BAKED INTO THE ALBEDO TEXTURE —
+ * `buildLabelTexture` paints it in and the material's `color` is white, because
+ * `MeshPhysicalMaterial` computes `color * map` and no single `color` serves
+ * both the body and the glyphs.
+ *
+ * ⚠ **A BAKED COLOUR CANNOT SHADE.** It is the same value at the centre of the
+ * face and at the edge where the crown turns away, so the surface has almost no
+ * directional response left to model its own form with. That is the "floating"
+ * look: a flat painted rectangle inside a rim that IS fully lit
+ * (`metalness: 1`, `envMapIntensity: 1.6`, measured peak 162–240).
+ *
+ * ⚠ **SO TUNING KEY AND FILL CANNOT FIX IT, AND ONE ATTEMPT PROVED THAT** —
+ * raising the fill 0.35 → 0.8 was predicted by a Lambert model to cut the
+ * crown's swing from 3.06x to 1.83x and moved the measured face by TWO POINTS.
+ * The lever is the split between baked albedo and lit response, not the rig.
+ *
+ * **This is a finding, not a fix. The fix is Carl's call** — the honest options
+ * are to darken the baked body so the lights have somewhere to work, or to stop
+ * baking the body colour and find another way to give the glyphs their own
+ * value. The second is more truthful and more expensive.
+ */
+export const SATIN_BAKED_ALBEDO_SHARE = 0.77;
+
+/**
  * How high the two symmetric scene lights sit above the card plane.
  *
  * ⚠ THE RESTING STATE IS LIT FROM LEFT AND RIGHT — Carl, 9 August 2026: *"What
@@ -905,8 +954,25 @@ export const SCENE_KEY_ELEVATION = 70;
 export const REST_KEY_POSITION: [number, number, number] = [-160, 120, 40];
 export const REST_KEY_INTENSITY = 1.6;
 
-/** Bottom-right, quiet. The field's `FILL_LIGHT_POSITION`, ~1/5 of the key. */
+/** Bottom-right. The field's `FILL_LIGHT_POSITION`. */
 export const REST_FILL_POSITION: [number, number, number] = [140, -90, 60];
+
+/**
+ * Bottom-right, quiet. The field's `FILL_LIGHT_POSITION`, ~1/5 of the key.
+ *
+ * ⚠⚠ RAISED TO 0.8 ON 9 AUGUST AND PUT BACK, BECAUSE THE MEASUREMENT KILLED THE
+ * REASONING. Carl's instinct was sound — *"If the face is lit by 1 global light
+ * you might want to use 2"* — and a Lambert model agreed, predicting the crown's
+ * 3.06x left-to-right swing would fall to 1.83x. **On the real GPU the face
+ * moved from 56 to 58.** Essentially nothing.
+ *
+ * ⚠ THE REASON IS THE FINDING THAT MATTERS, AND IT IS RECORDED AT
+ * `SATIN_BAKED_ALBEDO_SHARE` BELOW: with the entire static rig scaled to ZERO
+ * the face still reads **44 of 58** (`verify/face-drivers.mjs`). Only ~23% of
+ * this surface's brightness comes from the lights at all, so no key/fill ratio
+ * can shade its edges. **A hand-calculated shading model described a surface
+ * this material is not.**
+ */
 export const REST_FILL_INTENSITY = 0.35;
 
 /**
@@ -924,9 +990,26 @@ export const REST_AMBIENT_INTENSITY = 0.18;
 // fill already define — from where the key sits to where the fill sits — and it
 // bows out into an ellipse between them rather than travelling a straight line.
 //
-// ⚠ IT IS A POINT LIGHT, because the ellipse only means something if distance
-// does. A directional light has no position: only its angle exists, so bowing
-// its path would change nothing at all. That was established the expensive way.
+// ⚠⚠ IT WAS A POINT LIGHT AT `decay = 0`, AND THOSE TWO FACTS CONTRADICTED EACH
+// OTHER. The note here read *"IT IS A POINT LIGHT, because the ellipse only
+// means something if distance does"* — and the canvas then set `decay={0}`,
+// which removes distance from the falloff entirely. **At decay 0 the bow in the
+// path cannot modulate anything, because distance is not in the equation.** The
+// two decisions cancelled out, and the reason six attempts at a resting light
+// all read as flat was sitting in the gap between them.
+//
+// ⚠ MEASURED, NOT ARGUED, 9 August 2026: `?travint=6` — nearly SEVEN times the
+// old 0.9 — produced no visible change on the real GPU. Frames in
+// `verify/out/rest-vs-field/cards-alone-bright-*.png`. **Raising the intensity
+// was never going to reach this**, which is why the previous handoff's "turn it
+// up" instruction was a dead end.
+//
+// ⚠ SO IT IS NOW A SPOTLIGHT WITH PHYSICAL FALLOFF, COPIED FROM THE APPROVED
+// SIBLING. Carl: *"change from a point light. Ref client info section"*, and
+// earlier *"Lets emulate something that works."* `contact-field-light-rig.tsx`
+// has run a `SpotLight` at `decay = 2` aimed at a real target object since
+// 2 August and its boxes visibly take a moving highlight; the cards' point light
+// never did.
 //
 // ⚠ AND IT IS GRID-WIDE RATHER THAN PER-CARD, which is the correction the
 // five-light attempt earned. Per-card lights each lit a ~104px face and could
@@ -935,17 +1018,42 @@ export const REST_AMBIENT_INTENSITY = 0.18;
 // measured against the whole row rather than against one small face.
 
 /**
- * ⚠ THE PATH IS IN THE GRID'S OWN PLANE, SEEN FACE-ON — corrected 9 August 2026
- * from Carl's drawing. An earlier version ran a diagonal that bowed toward the
- * VIEWER, which is a different curve entirely: his sweeps down and across
- * BENEATH the row, and the bow is within the plane rather than in depth.
+ * ⚠⚠ THE PATH IS CARL'S DRAWN CURVE, CLOSED BY REFLECTION — 9 August 2026.
  *
- * *"Start just behind top left and end just behind bottom right. If you want to
- * keep the circuit, when it goes round the back have it race to the beginning.
- * Apply easing at the tight curves."*
+ * > *"the ellipse should follow the diagram, except its closed, but with the
+ * > same symmetry"*
+ *
+ * ⚠ **THIS IS NOT AN ELLIPSE FITTED BETWEEN TWO ENDPOINTS.** The drawn blue
+ * curve IS the visible half; closing it means REFLECTING THAT SAME CURVE THROUGH
+ * THE CARD PLANE, not substituting a generic ellipse that shares its ends. A
+ * previous build did the latter and the helper drew straight segments with a
+ * hard corner — which is what Carl caught: *"i can tell by the arc of the white
+ * sphere that it is wrong."*
+ *
+ * ⚠ **AND THE BIG CIRCUMSCRIBING ELLIPSE IS REJECTED.** Carl drew one in red
+ * captioned NO: *"the red ellipse is rejected, its wrong, thats what is there
+ * now. It needs to be like the blue ellipse."* The blue is SHALLOW and HUGS the
+ * row, passing through the gap between the two rows.
+ *
+ * ⚠ **THE APPROVED SIBLING INDEPENDENTLY PROVES WHY SHALLOW IS RIGHT.**
+ * `contact-field-light-rig.tsx` caps its minor axis and justifies the cap in
+ * these terms: *"Left unbounded, the light would swing far enough out that all
+ * four boxes sit at effectively the same distance — which would deliver flat,
+ * even light and destroy the very unevenness the ellipse exists to create."*
+ * **The red ellipse IS that unbounded swing.** Carl's eye and that measurement
+ * reject the same shape for the same reason.
+ *
+ *     FACE-ON (what the user sees)        FROM ABOVE
+ *                                           front  ___----___
+ *        \__              __/                     /          \
+ *           \___   ______/               ─────█──█──█──█──█─────  cards
+ *               \_/    ↑                        \__      __/
+ *                                           back   ----
+ *        both halves trace the
+ *        SAME arc on screen             a true closed ring
  */
 
-/** Enters upper-left of card 1 — BEHIND the card plane, so it emerges into view. */
+/** Enters upper-left, above card 1's top edge and already descending. */
 export const REST_TRAVEL_FROM: [number, number, number] = [-360, 120, -70];
 /** Exits lower-right past card 5, behind the plane again. */
 export const REST_TRAVEL_TO: [number, number, number] = [360, -150, -70];
@@ -967,31 +1075,821 @@ export const REST_TRAVEL_TO: [number, number, number] = [360, -150, -70];
 export const REST_TRAVEL_SAG = 150;
 export const REST_TRAVEL_FORWARD = 190;
 
-/** The traveller's brightness. Below the key, so it accents rather than lights. */
-export const REST_TRAVEL_INTENSITY = 0.9;
+/**
+ * ── THE TILTED RING'S OWN FRAME ──────────────────────────────────────────────
+ *
+ * ⚠ THESE FOUR REPLACE `SAG`/`FORWARD` AS THE SHAPE'S REAL DESCRIPTION. Sag and
+ * forward describe a curve BENT IN DEPTH; they cannot express a flat ring that
+ * has been tilted, which is what Carl is asking for. They survive only as the
+ * `?sag=`/`?fwd=` dial defaults so old URLs do not error.
+ */
+
+/**
+ * The diagonal the light flies along — Carl: *"top right to bottom left"*.
+ *
+ * ⚠ MEASURED FROM HIS DRAWING, NOT CHOSEN. Entry ~(180, 305) to exit ~(1010,
+ * 480) in the sketch's pixels: ~830 across against ~175 of drop. Read as a
+ * screen angle that is about -12°, but the drawn curve is a PERSPECTIVE view of
+ * a tilted ring, so the ring's own diagonal is steeper than its projection.
+ *
+ * ⚠ NEGATIVE IS DOWN-TO-THE-RIGHT in this scene's coordinates (+y is up).
+ */
+/**
+ * ⚠ LOWERED SLIGHTLY ON CARL'S EYE, 9 August: *"left side of ellipse should be
+ * lower slightly."* −11.7° → −9°, which drops the left bend from y=87 to y=71.
+ *
+ * ⚠ THE SIGN IS THE EASY THING TO GET BACKWARDS HERE. The axis runs DOWN to the
+ * right, so it is a NEGATIVE angle; making the left end lower means a SMALLER
+ * magnitude, not a larger one. −11.7 was read off his drawing, and this is his
+ * correction to it by eye on the running scene — which outranks the sketch.
+ *
+ * ⚠⚠ THEN −9° → −3° TO BALANCE THE TWO ARRIVALS. Carl, on the bright moment as
+ * the light reaches card 1: *"you see that bit of intensity when it first
+ * affects card 1, top left of card. Try and reproduce that effect on the right
+ * of card 5 or 3."*
+ *
+ * ⚠ THAT MOMENT IS A PROXIMITY EVENT, NOT AN AIM EVENT. Measured: the ring's
+ * left bend passes **15 units** from card 1's top-left corner while the right
+ * bend sat **100 units** from card 3's top-right — so under `decay = 2` the
+ * right side received about **2%** of the left's peak. No amount of aiming
+ * closes a 1/d² gap that wide; the PATH has to come as close on both sides.
+ *
+ * ⚠ AND PERFECT SYMMETRY WOULD COST THE TILT ENTIRELY. A level axis (0°, centre
+ * 40) puts both bends 21 units from their corners — equal arrivals, but the
+ * ring stops leaning and Carl explicitly asked for the left to sit lower.
+ * **−3° with the centre at 40 is his choice of the compromise**: left bend 18
+ * from its corner, right bend 33, and a visible downward lean retained.
+ */
+export const REST_TRAVEL_DIAGONAL_DEG = -3;
+
+/**
+ * How far the ring is rolled out of the screen plane.
+ *
+ * ⚠⚠ SET FROM A REFERENCE IMAGE CARL CHOSE, NOT FROM A GUESS. He pointed at
+ * Saturn's rings and then at one specific frame of a "Saturn Oppositions
+ * 2001–2029" grid: **4/15/2012 — *"the closest"***. That frame shows the ring
+ * clearly open but still quite flat, with the left side riding higher than the
+ * right. Measured off it: **about 13° from edge-on.**
+ *
+ * ⚠ A PREVIOUS VALUE OF 22° WAS MY GUESS AT *"almost laying flat"* AND IT WAS
+ * TOO OPEN. The Saturn grid is a far better instrument than the adjective,
+ * because it shows the same object at every angle from edge-on (3/8/2009,
+ * 9/8/2024) to wide open (12/17/02, 6/15/2017) — so a single frame fixes the
+ * number exactly. **This is why the reference image beat three rounds of
+ * describing it in words.**
+ *
+ * ⚠ AND THIS IS THE DIAL THAT WAS MISSING ENTIRELY BEFORE. The previous two
+ * builds had no tilt term at all — they bent the path in Z, which produces a
+ * warped curve rather than a tilted plane. From the side the difference is
+ * total, and it is why the arc read wrong from the first attempt.
+ */
+export const REST_TRAVEL_TILT_DEG = 23.5;
+
+/**
+ * The ring's two radii, in world units (one unit = one CSS pixel).
+ *
+ * ⚠ THE LONG AXIS OVERRUNS THE ROW so the light enters and exits from off-stage
+ * rather than appearing at a card's edge. The grid is 576 wide; 470 of semi-major
+ * on the diagonal carries the light past both ends.
+ *
+ * ⚠ THE SHORT AXIS IS DELIBERATELY SMALL — this is the "shallow, hugs the row"
+ * constraint that rejected the red ellipse. The approved field rig caps its own
+ * minor axis for exactly this reason: *"Left unbounded, the light would swing
+ * far enough out that all four boxes sit at effectively the same distance —
+ * which would deliver flat, even light and destroy the very unevenness the
+ * ellipse exists to create."*
+ */
+/**
+ * ⚠⚠ DERIVED FROM CARD EDGES, NOT FROM THE SKETCH'S PIXELS — 9 August, third
+ * correction. Carl: *"the curves where it says ease, they are just outside the
+ * outer vertical lines of cards 1+3."*
+ *
+ * **That is a constraint against the GEOMETRY, and it beats measuring his
+ * drawing.** Card 1's left outer edge is at −285 and card 3's right outer edge
+ * at +285, so the bends sit at ±303 with a small margin. Reading the sketch's
+ * own pixels gave 352 and put the right-hand bend off the edge of the canvas.
+ *
+ * ⚠ THE LESSON: WHEN A DRAWING AND THE THING IT DEPICTS DISAGREE, ANCHOR TO THE
+ * THING. The sketch's scale was inferred from an assumed grid width; the card
+ * edges are known exactly.
+ */
+export const REST_TRAVEL_SEMI_MAJOR = 303;
+
+/**
+ * ⚠⚠ MEASURED OFF CARL'S ANNOTATED DRAWING, NOT CHOSEN — and it is the value
+ * that was most wrong. 9 August: *"the ellipse is too big and wide, more like
+ * the red. It should be tighter, like the blue... The diagram is not a guide,
+ * its accurate."*
+ *
+ * Read from the drawing's own pixels and scaled by the grid's known 576-unit
+ * width: **semi-minor 91**, against the 260 that was built. **The ring was
+ * nearly three times too fat.**
+ *
+ * ⚠ AND CARL DIAGNOSED THIS WITHOUT SEEING THE WHOLE SHAPE, which is worth
+ * recording as a method: *"I can tell by how long the light disappears below and
+ * the time it takes it to reappear going faster behind. The partial shape of the
+ * ellipse i can see has implied size, combined with speed i can tell its too
+ * big."* **At a known speed, time-out-of-sight measures the hidden arc's
+ * length** — so the disappearance is a ruler, and the short axis is what it
+ * measures. He was right and the number confirms it.
+ *
+ * ⚠ THE EARLIER NOTE HERE ARGUED THE OPPOSITE — that flattening the tilt meant
+ * the short axis had to GROW to keep the depth. That reasoning is sound in
+ * isolation and produced a ring far too wide, because it was never checked
+ * against the drawing. **A derivation that is internally correct can still be
+ * measuring the wrong thing.**
+ */
+/**
+ * ⚠⚠ SET BY A SECOND GEOMETRIC CONSTRAINT OF CARL'S: *"notice how the arc goes
+ * through card 4."* The lower (front, slow) arc must actually cross the
+ * bottom-left card, which spans x −189..−3, y −56..−8.
+ *
+ * Solved against that: at semi-minor 85 with the ring centred on y = 0 the arc
+ * reaches y = −17 as it passes card 4's midpoint — inside the card. 123 of 800
+ * sampled points fall within its rect.
+ *
+ * ⚠ TWO EARLIER VALUES MISSED IT ENTIRELY. 260 was a derivation from the tilt
+ * that was never checked against the cards; 91 came from the sketch's pixels and
+ * passed *below* card 4 rather than through it. **Both were internally
+ * consistent and both were measuring the wrong thing.**
+ */
+/**
+ * ⚠ WIDENED 85 → 150 WHEN THE RING'S CENTRE ROSE TO 40, AND THE TWO ARE
+ * COUPLED. Raising the centre to balance the left/right arrivals lifted the
+ * whole ring off card 4, breaking Carl's *"notice how the arc goes through card
+ * 4."* A longer short axis reaches back down: the front arc now crosses card 4's
+ * midpoint at y = −12, inside its −56..−8 band, while the arrivals stay at 18
+ * (card 1) and 33 (card 3).
+ *
+ * ⚠ THIS IS THE THIRD VALUE HERE AND EACH ONE WAS RIGHT FOR THE GEOMETRY IT WAS
+ * FITTED TO. 260 came from a tilt derivation, 91 from the sketch's pixels, 85
+ * from the card-4 crossing at centre 0. **The constant is not independently
+ * meaningful — it only makes sense against the centre and the diagonal**, which
+ * is why every change here has to be re-checked against all three of Carl's
+ * reference points rather than tuned alone.
+ */
+export const REST_TRAVEL_SEMI_MINOR = 150;
+
+/**
+ * Where the ring is centred.
+ *
+ * ⚠ SOLVED, NOT PICKED. Fitted so the ring's top and bottom match the extent of
+ * Carl's drawn blue: he places its highest point 162 drawing-px above the grid
+ * centre and its lowest 113 below, which scale to +125 and −90 in world units.
+ * A sweep of candidate centres gives **y = 16** as the best fit, and at that
+ * centre the visible half bottoms out at **−64** — clear of the bottom row's
+ * −56 edge, so the light still passes beneath it and rakes upward, which is
+ * what the up-arrow in the earlier drawing marks.
+ *
+ * ⚠ TWO EARLIER VALUES WERE WRONG IN INSTRUCTIVE WAYS. `-6` predated the
+ * measurement entirely. `37` came from reading the drawing's centre offset
+ * correctly but then assuming the major-axis drop and the minor-axis lift reach
+ * their extremes together — **they peak at different phases**, so the ring sat
+ * ~20 units too high and stopped dipping below the bottom row at all. The fit
+ * above avoids the assumption by sampling the whole curve.
+ */
+/**
+ * ⚠ RAISED TO 40 SO BOTH BENDS GRAZE THE TOP ROW'S OUTER CORNERS. Those corners
+ * sit at y=52; a ring centred on 0 kept both bends well below them, which is
+ * why the bright arrival only ever happened on the left, and only because the
+ * left bend happened to fall near card 1. See `REST_TRAVEL_DIAGONAL_DEG`.
+ */
+export const REST_TRAVEL_CENTRE: [number, number, number] = [0, 40, 0];
+
+/**
+ * ⚠ WHERE THE BELLY BOTTOMS OUT, as a fraction of the visible pass. Carl's
+ * choice, 9 August: **mid-group** — under the gap between the two bottom cards,
+ * which is exactly where he drew the up-arrow. **Not at either end.**
+ *
+ * ⚠ SO THE RAKE HAPPENS IN THE MIDDLE OF THE SWEEP, not as it leaves. 0.5 is the
+ * symmetric case and is what "the same symmetry" asks for; the constant exists
+ * so the low point can be nudged off-centre without rewriting the curve.
+ */
+export const REST_TRAVEL_BELLY_AT = 0.5;
+
+/**
+ * ⚠ THE CONE. Sized to cover a whole card rather than a spot in its middle —
+ * the field learned this the expensive way: *"make it the width of the box. The
+ * edges of the face have geometry too."* An earlier 0.45 there lit only the
+ * centre, which is the FLATTEST part of the crown; the ends are where the
+ * surface turns away most and where the shading actually lives.
+ *
+ * ⚠ `penumbra` IS THE FRACTION OF THE CONE GIVEN TO FALLOFF, and the field
+ * records 0.85 as a bug: it left a full-intensity core only ~15% of the cone's
+ * radius. 0.3 keeps a soft edge with ~70% of the cone at full strength.
+ */
+export const REST_TRAVEL_CONE_ANGLE = 0.65;
+export const REST_TRAVEL_CONE_PENUMBRA = 0.3;
+
+/**
+ * ⚠ PHYSICAL FALLOFF — `decay = 2`. This is the change that makes DISTANCE
+ * MATTER, and without it the bow in the path is decorative.
+ */
+export const REST_TRAVEL_DECAY = 2;
+
+/**
+ * ⚠⚠ THE CONE TURNS AS THE LIGHT TRAVELS — KEYFRAMED. Carl, 9 August: *"can the
+ * light be turned itself? so while top left its pointing right. in the middle
+ * pointing at all the faces, like the arrow suggests. While bottom right
+ * pointing left."* And on the method: *"if i were doing this in Fusion in
+ * DaVinci Resolve i would keyframe it and use easing."*
+ *
+ * **That is exactly what this is** — three keys on the aim point, eased between.
+ * The only difference from a Fusion spline is that the interpolation is a
+ * function rather than a curve editor.
+ *
+ * ⚠ WHY IT MATTERS, MEASURED. With a FIXED aim point at `[0,-12,0]` the cone sat
+ * over the bottom row all circuit and the reach was wildly uneven
+ * (`verify/per-card-reach.mjs`, swing per card across a full pass):
+ *
+ *     card 5 bot-right  48.4     card 3 top-right  11.6
+ *     card 4 bot-left   40.5     card 1 top-left    7.5
+ *                                card 2 top-mid     4.0
+ *
+ * Carl saw this before it was measured: *"it has an effect on cards 1,4+5 but
+ * hardly any effect on cards 2+3."* **A fixed aim point CAUSES that asymmetry** —
+ * the cone favours whatever it is pinned to, and the top row was never in it.
+ *
+ * ⚠ THE KEYS ARE AIM POINTS IN WORLD SPACE, one per third of the visible pass:
+ *
+ *     phase 0.00   aim RIGHT   — entering top-left, the cone thrown ahead
+ *     phase 0.25   aim AT THE FACES — the up-arrow in his drawing, the moment
+ *                  the whole row is addressed
+ *     phase 0.50   aim LEFT    — leaving bottom-right, the cone trailing behind
+ *
+ * ⚠ AND THE HIDDEN HALF HOLDS THE LAST KEY. There is nothing to aim at behind
+ * the cards, and swinging the target while out of sight would only produce a
+ * discontinuity at the moment the light reappears.
+ */
+export const REST_AIM_KEYS: { at: number; aim: [number, number, number] }[] = [
+  // Thrown ahead to the right, so the cone leads the light in rather than
+  // arriving with it. ⚠ THIS IS ALSO THE ATTITUDE THE RETURN MUST RESTORE —
+  // Carl: *"Make sure its at the required position when approaching card 1."*
+  { at: 0.0, aim: [300, 10, 0] },
+  /**
+   * ⚠⚠ THE DIP — AIMING LOWER WHILE THE LIGHT CROSSES CARDS 4 AND 5. Carl,
+   * 9 August: *"the way around the tilt is as the light is passing in front of
+   * cards 4+5, just lower the light direction just a tad."*
+   *
+   * ⚠ THIS IS HOW THE LEAN COMES BACK WITHOUT COSTING THE ARRIVALS. Balancing
+   * the left and right arrivals forced the axis from −9° to −3°, which flattened
+   * the ring — and the tilt was something Carl had asked for twice. **Rather
+   * than trade one against the other, the lean moves from the PATH to the AIM**:
+   * the ring stays level enough for both bends to graze their corners, and the
+   * cone dips through the middle where the bottom row is.
+   *
+   * Measured: the light is over card 4 from phase 0.15 and over card 5 until
+   * 0.35, so the dip is keyed across that span. The previous single mid-key at
+   * 0.25 aimed UP at y=20 — the opposite of what this moment wants.
+   */
+  { at: 0.18, aim: [-120, 2, 0] },
+  { at: 0.30, aim: [90, 0, 0] },
+  /**
+   * ⚠ FINISHING THE PASS, THE CONE PITCHES UP AT CARD 3. Carl, 9 August: *"As
+   * its finishing its path facing card 5, point it up at card 3."*
+   *
+   * ⚠ AND THIS IS THE ANSWER TO A DISTANCE PROBLEM, NOT AN AIM PROBLEM. Measured
+   * at phase 0.10: card 1 sits 71 units from the light and card 3 sits 440. With
+   * `decay = 2` that is **(71/440)² ≈ 2.6%** of the brightness — the cone was
+   * already pointing straight at card 3 (2° off axis) and card 3 still read
+   * nothing. **Aiming at a far object cannot compensate for inverse-square.**
+   *
+   * The fix is to aim at card 3 from the END of the pass, where the light is at
+   * x≈+239 and card 3 is only ~108 units away instead of 440. Same card, same
+   * cone, a fifth of the distance — and 1/d² turns that into ~17x the light.
+   */
+  { at: 0.42, aim: [192, 28, 0] },
+  /**
+   * ⚠⚠ THE CONE KEEPS GOING RIGHT, IT DOES NOT SWING BACK. This key used to be
+   * `[-300, 10, 0]` — a hard swing to the far left — and **that was the "shoots
+   * off" fault Carl reported three times.**
+   *
+   * Traced frame by frame (`verify/card3-exit.mjs`): between 10000ms and 13500ms
+   * the light barely moves (x 266 → 303, nine units in the last two seconds)
+   * while the AIM raced from +190 to −300. So the cone turned away while the
+   * light was still parked on card 3, and the highlight **died in place on the
+   * word "enquiries"** instead of travelling off the edge. The captured frames
+   * show it clearly: a hard bright streak pinned at the card's right end from
+   * 13000ms, fading without moving.
+   *
+   * ⚠ TWO CLOCK FIXES FAILED BEFORE THIS BECAUSE IT WAS NEVER A CLOCK PROBLEM.
+   * Moving the handover cut the glint; extending the pass and adding a bend hold
+   * gave the highlight more time to sit still. **The symptom was in the aim
+   * curve the whole time** — and the aim curve was something this Builder added
+   * two steps earlier, which is exactly where a new fault should have been
+   * looked for first.
+   *
+   * Carrying the aim PAST the card lets the highlight run off the right-hand
+   * edge under its own momentum. The return leg then rotates the target back to
+   * the entry attitude while the light is hidden, which is where that swing
+   * belongs — see the `wrapped > REST_HANDOVER_AT` branch in `restAimAt`.
+   *
+   * ⚠⚠ AND THE AIM CANNOT GO PAST THE LIGHT'S OWN X. A first attempt used 560
+   * and the highlight vanished completely — the card rendered flat and every
+   * sampled frame returned an identical 39.61, which is a frozen image, not a
+   * result. **The light ends the pass at x=303, so an aim beyond that points the
+   * cone BACKWARDS**: the angle to card 3 jumps from 9° at aim 250 to 73° at aim
+   * 300, straight outside the 37° cone. 250 is the furthest the aim can lead
+   * while card 3 stays lit.
+   */
+  { at: 0.5, aim: [250, 34, 0] },
+];
+
+/**
+ * The aim point at phase `t`, eased between the keys.
+ *
+ * ⚠ SMOOTHSTEP BETWEEN KEYS, NOT LINEAR. A linear blend changes direction
+ * abruptly at each key — the cone would visibly "kick" as it passed the middle.
+ * Easing each segment gives the turn the same continuity the travel already has.
+ */
+export function restAimAt(t: number): [number, number, number] {
+  const wrapped = ((t % 1) + 1) % 1;
+
+  /**
+   * ⚠⚠ THE HIDDEN HALF ROTATES THE AIM BACK TO THE ENTRY ATTITUDE. It used to
+   * HOLD the last key, and that was wrong: the target would then jump from
+   * aiming hard left to aiming hard right in a single frame at phase 0 — on the
+   * top-left bend, the exact moment Carl asked to be eased.
+   *
+   * Carl: *"Make sure its at the required position when approaching card 1."*
+   * **The return is when that repositioning happens** — the light is behind the
+   * cards, lighting nothing, so the whole swing from the exit attitude back to
+   * the entry attitude is free. It arrives already pointing the right way.
+   */
+  if (wrapped > REST_HANDOVER_AT) {
+    const last = REST_AIM_KEYS[REST_AIM_KEYS.length - 1].aim;
+    const first = REST_AIM_KEYS[0].aim;
+    const u = (wrapped - REST_HANDOVER_AT) / (1 - REST_HANDOVER_AT);
+    const eased = u * u * (3 - 2 * u);
+    return [
+      last[0] + (first[0] - last[0]) * eased,
+      last[1] + (first[1] - last[1]) * eased,
+      last[2] + (first[2] - last[2]) * eased,
+    ];
+  }
+
+  /**
+   * ⚠ THE KEYS ARE AUTHORED ON A 0→0.5 SCALE AND REMAPPED ONTO THE ACTUAL
+   * VISIBLE SPAN. `REST_HANDOVER_AT` moved off 0.5 to stop the race cutting card
+   * 3's glint short; rescaling here means the keyframes keep their meaning
+   * ("a quarter of the way across the front pass") instead of silently landing
+   * somewhere else every time the handover is tuned.
+   */
+  const p = (wrapped / REST_HANDOVER_AT) * 0.5;
+
+  let a = REST_AIM_KEYS[0];
+  let b = REST_AIM_KEYS[REST_AIM_KEYS.length - 1];
+  for (let i = 0; i < REST_AIM_KEYS.length - 1; i++) {
+    if (p >= REST_AIM_KEYS[i].at && p <= REST_AIM_KEYS[i + 1].at) {
+      a = REST_AIM_KEYS[i];
+      b = REST_AIM_KEYS[i + 1];
+      break;
+    }
+  }
+
+  const span = b.at - a.at;
+  const u = span <= 0 ? 0 : (p - a.at) / span;
+  const eased = u * u * (3 - 2 * u);
+
+  return [
+    a.aim[0] + (b.aim[0] - a.aim[0]) * eased,
+    a.aim[1] + (b.aim[1] - a.aim[1]) * eased,
+    a.aim[2] + (b.aim[2] - a.aim[2]) * eased,
+  ];
+}
+
+/**
+ * The brightness the traveller should DELIVER at its closest approach.
+ *
+ * ⚠ THIS IS A JUDGED LEVEL, NOT THE `intensity` PROPERTY. With `decay = 2` the
+ * value handed to three.js has to be scaled by the square of the distance, and
+ * this scene's world unit is ONE CSS PIXEL — physical falloff is calibrated for
+ * scenes measured in metres, so the raw number is enormous and meaningless on
+ * its own. The canvas derives the real intensity from this and the MEASURED
+ * nearest approach.
+ *
+ * ⚠ THE FIELD GOT THIS WRONG ONCE IN EXACTLY THE WAY WORTH AVOIDING: it scaled
+ * by the STANDOFF (200) instead of the measured centre-to-light distance (341),
+ * landing four orders of magnitude short and reading 18–27 luminance against an
+ * expected ~61. **The standoff is not the distance to a card centre.** Derive it
+ * from the path, never from the constant that shaped the path.
+ */
+export const REST_TRAVEL_JUDGED_INTENSITY = 1.6;
+
+/**
+ * ⚠⚠ THE ONE PLACE THE PATH IS DEFINED. The light reads it, the helper draws it,
+ * and the intensity derivation samples it — **all three call this function.**
+ *
+ * ⚠ THIS IS A DIRECT ANSWER TO THIS PROJECT'S MOST EXPENSIVE RECURRING FAULT.
+ * Seven recorded instances of a "harness that lies", and the shape of the fault
+ * is always the same: **a second copy of a value or a curve, which drifts from
+ * the first and then certifies the drift.** The previous helper interpolated its
+ * own straight segments while the light followed a bowed path, so the marker
+ * Carl was asked to judge the arc by was drawing a different arc. A debugging
+ * aid that lies is worse than none.
+ *
+ * **If the path is ever changed, it is changed HERE and nowhere else.**
+ *
+ * ── THE CURVE ────────────────────────────────────────────────────────────────
+ *
+ * ⚠⚠ IT IS A NEARLY-FLAT ELLIPSE ON A DIAGONAL AXIS, NOT A CURVE DRAWN ON THE
+ * SCREEN. Corrected by Carl on 9 August after two wrong builds:
+ *
+ * > *"the ellipse is almost laying flat, its left side has been lifted up."*
+ * > *"imagine the cards in 3d space, the light is flying across the face, top
+ * > right to bottom left. Its at these points where the curves are tighter.
+ * > Thats why they need easing"*
+ *
+ * **Three things follow, and the first two were built wrong before this.**
+ *
+ * ⚠ 1. THE LONG AXIS IS A 3D DIAGONAL — top-right to bottom-left ACROSS THE
+ * FACE. Not left-to-right along the row, which is what the previous two versions
+ * assumed. Everything about where the tight bends fall depends on this.
+ *
+ * ⚠ 2. THE RING LIES ALMOST FLAT, ROLLED SO THE LEFT SIDE LIFTS. It is close to
+ * the ground plane rather than standing up in the screen plane. **This is why
+ * the drawn entry looks like a steep ~45° descent** — a nearly-flat ellipse seen
+ * in perspective, with the near-left end raised toward the viewer. A previous
+ * build read that 45° as a face-on curve and produced something far too shallow.
+ *
+ * ⚠ 3. THE TIGHT BENDS ARE THE TWO ENDS OF THE DIAGONAL, and that is where the
+ * easing belongs. Carl has now said this twice, and the earlier build put the
+ * easing at the ends of a LEFT-RIGHT sweep — a different pair of points
+ * entirely, so the care was being spent in the wrong place.
+ *
+ * `t` runs 0..1 around the closed ring. `t` in [0, 0.5] is the visible half, in
+ * front of the cards; [0.5, 1] is hidden behind them.
+ */
+export function restTravelPoint(t: number): [number, number, number] {
+  /**
+   * ⚠⚠ PHASE 0 STARTS AT THE LEFT-HAND BEND AND THE VISIBLE HALF IS THE *LOWER*
+   * ARC. Corrected 9 August from Carl's annotated diagram, which labels the
+   * upper arc **"back = speed up"** and the lower arc **"front = slower"**, with
+   * *"ease"* arrows at both the left and right ends.
+   *
+   * ⚠ THE PREVIOUS BUILD HAD THIS INVERTED — measured, not guessed: its visible
+   * half ran phase 0.25–0.5 along the UPPER arc, so the slow pass was happening
+   * where Carl wants the fast return and vice versa. **The ring's shape was
+   * arguably right and its traversal was wrong**, which looks like a pacing
+   * problem and is actually a phase problem.
+   *
+   * The `+ pi` offset puts phase 0 at the LEFT bend (x negative), so the visible
+   * half sweeps left→right along the bottom and the hidden half returns
+   * right→left along the top.
+   */
+  const a = ((t % 1) + 1) % 1 * Math.PI * 2 + Math.PI;
+  const cosA = Math.cos(a);
+  const sinA = Math.sin(a);
+
+  /**
+   * ⚠ THE ELLIPSE IS BUILT IN ITS OWN FRAME AND THEN PLACED, which is the only
+   * way a tilted ring stays a single flat plane. Building it directly in world
+   * coordinates is what produced the earlier "bow in Z" version — that is a
+   * curve bent in depth, NOT a tilted plane, and the two look nothing alike from
+   * the side.
+   *
+   * `along` runs the long diagonal; `across` is the short axis, which carries
+   * the ring's near-flatness and its lift.
+   */
+  const along = cosA * REST_TRAVEL_SEMI_MAJOR;
+  const across = sinA * REST_TRAVEL_SEMI_MINOR;
+
+  // The diagonal's direction in the screen plane: top-right to bottom-left.
+  const th = (REST_TRAVEL_DIAGONAL_DEG * Math.PI) / 180;
+  const dx = Math.cos(th);
+  const dy = Math.sin(th);
+
+  /**
+   * ⚠ THE ROLL. The short axis is tipped out of the screen plane by
+   * `REST_TRAVEL_TILT_DEG`, so it carries mostly DEPTH and only a little height
+   * — which is what "almost laying flat" means. At 90° the ring would stand up
+   * face-on; near 0° it lies flat like a plate on a table.
+   */
+  const tilt = (REST_TRAVEL_TILT_DEG * Math.PI) / 180;
+  const acrossY = Math.sin(tilt);
+  const acrossZ = Math.cos(tilt);
+
+  return [
+    REST_TRAVEL_CENTRE[0] + dx * along - dy * across * acrossY,
+    REST_TRAVEL_CENTRE[1] + dy * along + dx * across * acrossY,
+    /**
+     * ⚠ DEPTH COMES FROM THE SHORT AXIS, so the ring stays ONE FLAT PLANE — the
+     * front arc genuinely comes forward of the cards and the back arc passes
+     * behind them.
+     *
+     * ⚠ AND THE SIGN IS NEGATED so that the LOWER arc is the FORWARD one. Carl's
+     * diagram puts "front = slower" on the bottom sweep and "back = speed up" on
+     * the top; without this the tilt would carry the lower arc behind the cards,
+     * where the slow pass would light nothing at all.
+     */
+    REST_TRAVEL_CENTRE[2] - across * acrossZ,
+  ];
+}
+
+/**
+ * Where the cone aims: the vertical centre of the two rows.
+ *
+ * ⚠ MIDWAY BETWEEN THE ROWS, NOT AT THE ORIGIN. The grid straddles y = 0 but the
+ * two rows are not symmetric about it, and a cone aimed at the origin favours
+ * whichever row happens to sit nearer. Aiming at the row centre is what makes
+ * this a light on the ASSEMBLY rather than on one row.
+ */
+export const REST_TRAVEL_AIM_Y = -12;
+
+/**
+ * ⚠ THE NEAREST APPROACH, MEASURED BY SWEEPING THE ACTUAL PATH.
+ *
+ * With `decay = 2` the intensity handed to three.js must be scaled by the square
+ * of the distance at which the judged brightness should land. **That distance is
+ * measured here, from `restTravelPoint` itself** — never assumed from `SAG`,
+ * `FORWARD` or any other constant that merely shapes the curve.
+ *
+ * ⚠ THIS IS THE FIELD RIG'S RECORDED MISTAKE, AVOIDED DELIBERATELY. It scaled by
+ * `EDGE_STANDOFF` (200) instead of the real centre-to-light distance (341),
+ * giving an intensity 3x too low and an orbit that measured 18–27 luminance
+ * against an expected ~61. Its note is blunt about the lesson: *"The standoff is
+ * the distance from a box EDGE along the major axis; it is not the distance from
+ * a box CENTRE to the light."*
+ *
+ * Sampled across the VISIBLE half only — the hidden half's closest approach is
+ * behind the cards, where it lights nothing and must not set the exposure.
+ */
+function restTravelNearestSq(): number {
+  let nearest = Infinity;
+  for (let i = 0; i <= 240; i++) {
+    const [x, y, z] = restTravelPoint((i / 240) * 0.5);
+    // Distance to the aim point, which is the centre of what the cone lights.
+    const d2 = x * x + (y - REST_TRAVEL_AIM_Y) * (y - REST_TRAVEL_AIM_Y) + z * z;
+    if (d2 < nearest) nearest = d2;
+  }
+  return nearest;
+}
+
+export const REST_TRAVEL_NEAREST_SQ = restTravelNearestSq();
+
+/**
+ * Phase at a given elapsed time, honouring the fast hidden half.
+ *
+ * ⚠ THE SPLIT IS IN TIME, NOT IN GEOMETRY — see `REST_RETURN_MS`. The first
+ * `REST_TRAVEL_MS` covers phase 0→0.5 (visible) and the next `REST_RETURN_MS`
+ * covers 0.5→1 (hidden).
+ *
+ * ⚠⚠ EASING AT THE TIGHT CURVES — AND ON A TILTED RING THOSE ARE THE ENDS OF THE
+ * DIAGONAL. Carl, twice: *"Apply easing at the tight curves"*, then *"the light
+ * is flying across the face, top right to bottom left. Its at these points where
+ * the curves are tighter. Thats why they need easing."*
+ *
+ * ⚠ AN EARLIER BUILD PUT THE EASING AT THE ENDS OF A LEFT-RIGHT SWEEP, which on
+ * this geometry is a DIFFERENT PAIR OF POINTS — so the care was being spent
+ * where the curve is not actually tight. On an ellipse the sharpest curvature is
+ * at the two ends of the MAJOR axis, and here that axis is the top-right /
+ * bottom-left diagonal. Those fall at phase 0 and phase 0.5.
+ *
+ * ⚠ PHASE 0.5 IS THE HANDOVER TO THE HIDDEN HALF, so easing the visible pass at
+ * both its ends puts the slow-down exactly on both bends: one as the light
+ * arrives at the start of the sweep, one as it reaches the far end and turns
+ * away behind the cards.
+ *
+ * **A plain ease-in-out would get this backwards** by also slowing the long
+ * middle traverse. A smootherstep holds the middle near constant velocity while
+ * still arriving and leaving softly.
+ */
+/**
+ * ⚠⚠ WHERE THE VISIBLE PASS HANDS OVER TO THE RACE. **Not 0.5, and that was a
+ * real bug Carl caught by eye.**
+ *
+ * > *"the card 3 glint, just as its about to exit its card, it appears to shoot
+ * > off very quickly, thatll be the race around the back happening a little too
+ * > early due to the ellipse modifications"*
+ *
+ * ⚠ HIS DIAGNOSIS WAS RIGHT AND THE MECHANISM IS A COUPLING NOBODY DECLARED.
+ * The handover was hardcoded at phase 0.5 — the ellipse's geometric halfway
+ * point — while the ellipse itself was reshaped four times. Measured after the
+ * last reshape: the light's closest approach to card 3 is at phase **0.408**,
+ * so it spends the final **~1000ms** of the "visible" pass already receding, and
+ * then the race fires. The glint peaks and the light is snatched away.
+ *
+ * ⚠ SO THE HANDOVER FOLLOWS THE GEOMETRY RATHER THAN THE PARAMETERISATION. It
+ * ends the visible pass once the light has actually finished with the last card,
+ * and starts the race when there is nothing left to light. **A constant that is
+ * only correct for one shape has to move when the shape does, or it silently
+ * becomes a timing bug.**
+ *
+ * ⚠⚠ AND 0.44 WAS THE SAME MISTAKE A SECOND TIME. It was set from card 3's
+ * CLOSEST APPROACH (phase 0.408) on the assumption that the glint ends there.
+ * Carl, immediately: *"its speeding up before it has gone past card 3, i can see
+ * it. the glint is also gone on card 3."* **Both symptoms, one cause.**
+ *
+ * Measured properly — brightness at card 3 as a share of its own peak:
+ *
+ *     phase 0.41   x=254   100%   <- closest approach
+ *     phase 0.44   x=280    95%   <- the old handover: STILL 95% LIT,
+ *                                    and x=280 has not yet cleared card 3's
+ *                                    right edge at 285
+ *     phase 0.45   x=287    92%   <- only now past the card
+ *     phase 0.50   x=303    85%
+ *
+ * ⚠ **CLOSEST APPROACH IS NOT THE END OF THE GLINT.** Under `decay = 2` the
+ * falloff either side of the minimum is gentle — card 3 is still at 85% of peak
+ * when the light reaches the far bend. Cutting at 0.44 killed the glint *at
+ * full strength* and started the race while the light was still on screen, which
+ * is exactly the pair of faults Carl reported. **The pass must run to the end.**
+ */
+export const REST_HANDOVER_AT = 0.5;
+
+/**
+ * ⚠⚠ A HOLD AT THE BOTTOM-RIGHT BEND. Carl, 9 August: *"instead of the time on
+ * the back being 500ms, make it 350ms, but add the 150ms to the bottom right."*
+ *
+ * ⚠ THE 150ms DOES NOT GO INTO EITHER EXISTING SEGMENT, and that is why this is
+ * a third phase rather than an adjustment to the other two. Adding it to the
+ * visible pass would spread it across the whole sweep; adding it to the return
+ * would put it behind the cards where nothing is lit. **He is asking for the
+ * light to LINGER at the far bend** — the moment it has just finished with card
+ * 3 and is about to disappear.
+ *
+ * ⚠ AND A HOLD IS NOT A STALL. The light keeps moving through the bend; it
+ * simply covers that stretch slowly. `restEase` already floors the velocity so
+ * nothing ever comes to a dead stop — see `REST_EASE_FLOOR`, which exists
+ * because an earlier smootherstep drove the speed to 3.8e-12 at exactly these
+ * two bends.
+ */
+export const REST_BEND_HOLD_MS = 150;
+
+/**
+ * How far the phase advances during the hold.
+ *
+ * ⚠ DERIVED FROM THE ARRIVAL SPEED, NOT PICKED. The eased pass reaches the bend
+ * travelling at 1.037e-5 of phase per ms, so 150ms at that rate covers 0.00156.
+ * Matching it means the light enters the hold with **no change of pace at all** —
+ * the dwell is created by the geometry tightening at the bend, not by a sudden
+ * gear change the eye would catch.
+ */
+export const REST_BEND_CREEP = 0.00156;
+
+export function restTravelPhase(elapsedMs: number): number {
+  const cycle = elapsedMs % (REST_TRAVEL_MS + REST_BEND_HOLD_MS + REST_RETURN_MS);
+
+  /**
+   * ⚠ THE HOLD SITS BETWEEN THE PASS AND THE RACE. The light is parked at the
+   * handover point — the bottom-right bend — travelling slowly rather than
+   * stopped, before the return takes over.
+   */
+  if (cycle >= REST_TRAVEL_MS && cycle < REST_TRAVEL_MS + REST_BEND_HOLD_MS) {
+    /**
+     * ⚠ IT CREEPS, IT DOES NOT FREEZE. Returning a constant phase here would
+     * park the light dead still for 150ms — a full stop at the bend, which is
+     * the precise fault `REST_EASE_FLOOR` was introduced to eliminate and which
+     * Carl has never asked for. Instead it advances at the same slow rate the
+     * eased pass is already travelling at as it arrives, so the hold reads as
+     * the light dwelling through the turn rather than the animation hitching.
+     */
+    const creep = (cycle - REST_TRAVEL_MS) / REST_BEND_HOLD_MS;
+    return REST_HANDOVER_AT + creep * REST_BEND_CREEP;
+  }
+
+  if (cycle < REST_TRAVEL_MS) {
+    /**
+     * ⚠ PHASE 1 — SLOW ACROSS THE FACE. Carl: *"it needs to travel slower across
+     * the face."* Eased at both ends, near-constant through the middle traverse,
+     * so the two tight bends get the care and the long gentle stretch does not
+     * crawl.
+     */
+    // ⚠ SCALED BY `REST_HANDOVER_AT`, NOT 0.5 — the visible pass now runs to
+    // wherever the last glint finishes rather than to the ellipse's arbitrary
+    // halfway point. See `REST_HANDOVER_AT`.
+    return restEase(cycle / REST_TRAVEL_MS) * REST_HANDOVER_AT;
+  }
+
+  /**
+   * ⚠⚠ PHASES 2 AND 3 — THE HIDDEN HALF IS *NOT* A CONSTANT RACE, and treating
+   * it as one was the defect. Carl, 9 August:
+   *
+   * > *"When it reaches bottom right and goes behind the card, then it can speed
+   * > up to just before it enters top left, it must slow down again. Thats why
+   * > easing is so important"*
+   *
+   * ⚠ THE PREVIOUS BUILD RAN THE RETURN AT A FLAT RATE RIGHT UP TO `t = 1`, so
+   * the light **snapped** from race-speed to slow exactly at the top-left entry
+   * — a velocity discontinuity ON one of the two tight bends. The path was
+   * continuous and the SPEED was not, which is the kind of fault that reads as
+   * "the arc is wrong" without looking like a wrong arc.
+   *
+   * ⚠ SO THE RETURN ACCELERATES AWAY FROM BOTTOM-RIGHT AND DECELERATES BACK INTO
+   * TOP-LEFT, **finishing its slow-down while still hidden.** The light arrives
+   * at the entry already travelling at the visible pass's pace, so the two
+   * segments meet at matched speed and the seam disappears.
+   *
+   * A smootherstep does exactly this: zero velocity at both ends, fast through
+   * the middle. Its slow ends land on the two bends; its fast middle is the part
+   * behind the cards that lights nothing.
+   */
+  /**
+   * ⚠⚠ THE HIDDEN HALF'S EASING IS SCALED SO THE TWO HALVES MEET AT MATCHED
+   * SPEED, and without this there is a hard 5x velocity jump at bottom-right.
+   *
+   * Measured: with both halves using the same floor, the light crossed into the
+   * hidden half at **5.00x its arrival speed** — an instant jump, on the very
+   * bend Carl asked to be eased. **Fixing the top-left seam and leaving this one
+   * would have moved the fault rather than removed it, which this project has
+   * already paid for once: *"a moved symptom is not a fixed symptom."***
+   *
+   * ⚠ AND THE TWO HALVES NO LONGER COVER EQUAL PHASE DISTANCE. Once the
+   * handover moved off 0.5 the visible pass covers `REST_HANDOVER_AT` and the
+   * return covers the remaining `1 - REST_HANDOVER_AT`, so the pace ratio has to
+   * account for both the time split AND the distance split. Using the old
+   * `REST_TRAVEL_MS / REST_RETURN_MS` alone would reintroduce the very velocity
+   * jump this block exists to remove.
+   */
+  /**
+   * ⚠ THE RETURN STARTS WHERE THE HOLD LEFT OFF, not at `REST_HANDOVER_AT`. The
+   * creep advances the phase by `REST_BEND_CREEP`, and a return that ignored
+   * that would jump the light backwards by the same amount as the race begins.
+   */
+  const from = REST_HANDOVER_AT + REST_BEND_CREEP;
+  const visibleRate = REST_HANDOVER_AT / REST_TRAVEL_MS;
+  const hiddenRate = (1 - from) / REST_RETURN_MS;
+  const paceRatio = hiddenRate / visibleRate;
+  const r = (cycle - REST_TRAVEL_MS - REST_BEND_HOLD_MS) / REST_RETURN_MS;
+  return from + restEase(r, REST_EASE_FLOOR / paceRatio) * (1 - from);
+}
+
+/**
+ * The easing both halves share.
+ *
+ * ⚠⚠ IT MUST NOT REACH ZERO VELOCITY, AND A SMOOTHERSTEP DOES. Measured before
+ * this function existed: a plain smootherstep on both halves drove the phase
+ * velocity to **3.8e-12 at both bends** — the light came to a dead STOP at
+ * top-left and bottom-right, once per circuit.
+ *
+ * ⚠ THAT IS THE EXACT FAULT THIS RIG WAS BUILT TO AVOID, and the approved field
+ * rig states it plainly: a light that has to *"decelerate, stop and come back"*
+ * gives the eye three moments to catch. **Easing the bends is not the same as
+ * stopping at them** — Carl asked for a slow-down, and a stall is a different
+ * event that happens to sit at the same place on the curve.
+ *
+ * ⚠ SO THE EASE IS FLOOR-LIMITED. `REST_EASE_FLOOR` is the fraction of average
+ * speed the light keeps at its slowest, blended against a linear ramp. At 0.28
+ * the bends are visibly slower than the traverse while the light never sits
+ * still, and the velocity is continuous across the seam between the two halves.
+ */
+function restEase(x: number, floor: number = REST_EASE_FLOOR): number {
+  const smootherstep = x * x * x * (x * (x * 6 - 15) + 10);
+  return floor * x + (1 - floor) * smootherstep;
+}
+
+/**
+ * How much speed the light keeps at the tight bends, as a fraction of linear.
+ *
+ * ⚠ 0 WOULD BE A FULL STOP (pure smootherstep) AND 1 WOULD BE NO EASING AT ALL
+ * (pure linear). The dial exists because "slower at the bends" is a judgement
+ * Carl makes by eye, and the number that satisfies it is not derivable.
+ */
+export const REST_EASE_FLOOR = 0.28;
 
 /**
  * The VISIBLE pass — entering upper-left, crossing, exiting lower-right.
  *
  * ⚠ SLOW, ON CARL'S STANDING INSTRUCTION: *"slow, small and continuous... too
  * fast and the effect wont be noticeable."*
+ *
+ * ⚠⚠ EXTENDED 11000 → 13500 TO START THE RACE LATER WITHOUT TOUCHING THE
+ * ELLIPSE. Carl, 9 August: *"leave the glint there. just start its race slightly
+ * later."*
+ *
+ * ⚠ THAT INSTRUCTION RULED OUT THE TWO FIXES ALREADY TRIED AND RULED OUT A
+ * THIRD. Moving `REST_HANDOVER_AT` earlier cut the glint off at 95% of its peak;
+ * lengthening the semi-major so the light draws further from card 3 would have
+ * changed the shape he has now approved by eye. **Extending the pass leaves both
+ * the glint and the geometry exactly where they are** and simply gives the light
+ * longer to complete its final stretch before the race fires.
+ *
+ * The tail — the span between card 3's peak at phase 0.41 and the end of the
+ * pass — grows from 3103ms to ~3800ms, so the light visibly draws away rather
+ * than being snatched.
  */
-export const REST_TRAVEL_MS = 11000;
+export const REST_TRAVEL_MS = 13500;
 
 /**
- * The RETURN — round the back, racing to the start.
+ * The RETURN — the mirrored half, behind the cards, racing to the start.
  *
- * ⚠ CARL'S SOLUTION TO A PROBLEM EVERY EARLIER VERSION HAD: *"when it goes round
- * the back have it race to the beginning."* A light that reverses has to turn,
- * and a turn in view is either a visible corner or a slow crawl through the
- * moment the eye is most likely to notice. **A circuit never turns in view at
- * all** — the light always travels the same direction, and the only reversal
+ * ⚠ CARL'S SOLUTION TO A PROBLEM EVERY EARLIER VERSION HAD, restated 9 August:
+ * *"the blue ellipse can be closed, just speed it up when it goes round the back
+ * of the cards because there it is having no effect."* A light that reverses has
+ * to turn, and a turn in view is either a visible corner or a slow crawl through
+ * the moment the eye is most likely to notice. **A circuit never turns in view
+ * at all** — the light always travels the same direction, and the only reversal
  * happens behind the cards where nothing is lit.
+ *
+ * ⚠ THE SPLIT IS IN TIME, NOT IN GEOMETRY. The path stays one closed curve; only
+ * the rate at which `t` advances changes. **Nothing is faked** — the light
+ * genuinely travels the whole ring, it simply does not dawdle where it cannot be
+ * seen. The approved field rig splits 6000/3000 for the same reason.
  *
  * ⚠ FAST, AND THAT IS WHY IT WORKS. At a fifth of the visible pass the return is
  * over before the absence registers as a gap.
  */
-export const REST_RETURN_MS = 2200;
+export const REST_RETURN_MS = 350;
 
 
 // ── The filament, lit ────────────────────────────────────────────────────────
