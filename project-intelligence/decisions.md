@@ -1280,3 +1280,107 @@ Measured off `globals.css` this session. **Every value moves deeper, and the spe
 **Authority:** Human Founder
 
 ---
+
+## D-046 — The Warm Context Outlives Begin: An Overlap, Not A Shared Canvas
+
+**Date:** 2026-08-09
+**Status:** APPROVED by Carl's eye — *"it looks pretty clean"*. Implemented, commit `3a7cf1f`.
+**Supersedes nothing. Constrains D-022/D-023/D-024 only in that it did NOT touch them.**
+
+---
+
+### The defect
+
+Carl, 9 August: *"Q5 stuttered half way through its reveal on first run."*
+
+Measured on the real GPU (`ANGLE (AMD Radeon(TM) Graphics, D3D11)`), cold: a **~580ms freeze at
++114–203ms** after Begin, inside a 1300ms phrase wipe that starts at +60ms. **40 of an expected
+78 frames.** "Half way through" was accurate to the frame.
+
+**Cause:** the warm-up canvas renders only while `stage === "opening"`; the real Q5 canvas only
+after it. **They are mutually exclusive**, so Begin destroyed the warm WebGL context in the same
+commit that created the real one, and the real one rebuilt everything from scratch.
+
+⚠ **Shader compilation was NOT the cost** — 0.2–0.5ms inside the reveal. Three.js CPU-side
+initialisation was. **This is the third time this project has cleared shader compilation of a
+stutter it looked guilty of.**
+
+### The decision
+
+**An overlap on the warm node's lifetime, not a shared canvas.** The warm node stays mounted
+900ms past the stage change, so the real canvas does its setup while the warm context still
+exists.
+
+⚠ **`stage` FLIPS EXACTLY WHEN IT ALWAYS DID.** Every consumer of it — the phrase band, the Q5
+grid, the card ladder, the opening's teardown — is untouched. The only thing extended is how
+long an invisible, `aria-hidden`, `pointer-events: none` node stays in the tree. **Delaying the
+stage change itself would have moved the choreography**, which was forbidden.
+
+| | before | after |
+|---|---:|---:|
+| Worst frame gap, cold | 584ms | **86ms** |
+| Worst frame gap, warm | 591ms | **73ms** |
+| Frames of ~78 | 40 | **76** |
+
+⚠ **NOT ELIMINATED, AND NOT RECORDED AS FIXED.** ~70ms still lands in the wipe, above the ~50ms
+visible threshold. Carl's eye accepted it; the residue is real.
+
+### ⚠ THE REJECTED ROUTE, AND WHY IT LOOKS RIGHT
+
+**One canvas shared across the stage change — rejected, and it was the Builder's first
+recommendation.** Moving a single node between the opening branch and the phrase band **changes
+its parent, which remounts it in React and destroys the very context the move exists to
+preserve.** `enquiry-opening.tsx` had said so in a comment since 5 August; the Builder
+recommended it anyway and found the warning only when opening the file to edit it.
+
+**A true single-canvas fix needs a host that never unmounts** — a restructure of approved
+layout, with a known hazard: the canvas maps one world unit to one CSS pixel from its *measured*
+size, so a changed measurement path would reposition every card. **That is the route to the
+remaining ~70ms, and it is not authorised.**
+
+### ⚠⚠ THE FINDING THAT REFUTED THE OBVIOUS READING
+
+**"The context dies at unmount, so the warm-up buys nothing, so delete it" is WRONG.**
+`verify/warmup-value.mjs`, 3 runs per arm, cold GPU profile each:
+
+    mount → compiled, warm-up PRESENT    161ms
+    mount → compiled, warm-up ABSENT     919ms
+
+**ANGLE's on-disk binary shader cache survives the context's death and is worth ~758ms.**
+Deleting the warm-up would have made the stutter roughly twice as bad. The Builder reasoned its
+way to the deletion and was saved only by running the experiment the harness's own header
+demanded — its warning was explicit: *"only the binary cache crosses" is not "the binary cache
+is worth 641ms".*
+
+### Carl's constraint, and how it was met
+
+> *"Nothing ive approved must shift. The start page text arrival and the choreography of Q5 and
+> the cards."*
+
+Verified by `verify/approved-timings.mjs --compare`, 3 runs, real GPU:
+
+| | delta |
+|---|---|
+| **Card ladder internal gaps** (the choreography) | **−1 / 0 / +1 / −2ms** |
+| Opening text rhythm | within the no-change control's own noise |
+| Whole ladder, absolute | **+14ms uniform** — under one frame at 60fps |
+
+⚠ **THE INTERNAL GAPS ARE REPORTED SEPARATELY FROM THE ABSOLUTE POSITION, AND THAT SEPARATION IS
+THE POINT.** Every beat sliding together by 14ms is indistinguishable, in an absolute-only
+report, from the ladder merely starting earlier — but only one of those is a corrupted
+choreography. **A verification of "did it move" must be able to tell those apart.**
+
+### ⚠ THE STALE FIGURES THIS WORK CORRECTED
+
+Source comments claimed the entrance ran **+8857 → +15187ms from Begin**, with `compiled`
+costing ~1944ms. **Measured: the ladder runs +695 → +2949ms** — nearly six seconds earlier.
+Those comments predated the 7 August entrance fix.
+
+⚠ **THE STALE FIGURE WAS ACTIVELY DANGEROUS, NOT MERELY OUT OF DATE.** It nearly caused a
+~1944ms hold to be written into the Begin path to "preserve" a compile wait **that no longer
+exists** — moving the approved entrance in the name of protecting it. **A recorded timing is a
+claim about the past. Measure the ladder; do not read it off a comment.**
+
+**Authority:** Human Founder
+
+---

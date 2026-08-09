@@ -1057,8 +1057,19 @@ function useCardEntrance(
      * AND WITHOUT THE CLAMP BELOW IT IS A REGRESSION GENERATOR.
      *
      * This effect is gated on `compiled`, which measured **1944ms after the
-     * cards mount** (see the note on `entranceRunning`) — two `compileAsync`
-     * passes, a full `gl.render`, and `useLocalEnvMap`'s ~572ms of ungated PMREM.
+     * cards mount** on 5 August — two `compileAsync` passes, a full `gl.render`,
+     * and `useLocalEnvMap`'s ~572ms of ungated PMREM.
+     *
+     * ⚠ THAT 1944ms IS A HISTORICAL WORKED EXAMPLE, NOT CURRENT TIMING — noted
+     * 9 August 2026, when the same figure was found quoted as live fact in three
+     * other comments. It is kept HERE because the arithmetic below depends on a
+     * concrete overrun to be legible, and the failure it demonstrates is
+     * scale-free: ANY overrun past card 1's rung collapses the ladder. Do not
+     * read it as what `compiled` costs today.
+     *
+     * ⚠ WHAT IT COSTS TODAY, measured on the real GPU: the ladder runs
+     * **+695 → +2949ms from Begin** (`verify/approved-timings.mjs`), and the
+     * clamp below is why an overrun no longer reaches the rungs.
      * Meanwhile `.enquiry-q-text-reveal` is `1300ms ... both`, and the `both`
      * fill keeps the animation RELEVANT after it finishes — so `getAnimations()`
      * keeps returning it and `startTime` stays readable indefinitely. **The
@@ -2431,8 +2442,31 @@ export default function AnswerCardCanvas({
    *
    * ⚠ THE ENTRANCE DOES NOT START AT BEGIN, AND THE CODEBASE ASSUMED IT DID.
    * It starts when `active && compiled && warm` first goes true — `compiled` is
-   * the async precompile resolving, which measured **1944ms after the cards
-   * mount**. So the six beats run +8857 → +15187 from Begin, not +0 → +6330.
+   * the async precompile resolving.
+   *
+   * ⚠⚠ THE FIGURES THAT USED TO SIT HERE — "1944ms after the cards mount", "the
+   * six beats run +8857 → +15187 from Begin" — ARE STALE AND WERE CORRECTED ON
+   * 9 AUGUST 2026. They described the build before the 7 August entrance fix.
+   * Measured on the real GPU, 3 runs, `verify/approved-timings.mjs`:
+   *
+   *     card 1   +695ms      card 2   +1264ms     card 3   +1831ms
+   *     card 4   +2381ms     card 5   +2949ms          (all from Begin)
+   *
+   * **The whole ladder runs +695 → +2949ms — nearly six seconds earlier than
+   * the old comment claimed**, with ~560ms gaps rather than the 220ms rungs
+   * quoted elsewhere.
+   *
+   * ⚠ AND THE STALE FIGURE WAS ACTIVELY DANGEROUS, not merely out of date. On
+   * 9 August it nearly caused a ~1944ms hold to be written into the Begin path
+   * to "preserve" a compile wait that no longer exists — which would have MOVED
+   * the approved entrance in the name of protecting it. Carl's constraint that
+   * day was that nothing he had approved may shift.
+   *
+   * ⚠ SO MEASURE THE LADDER, DO NOT READ IT OFF A COMMENT — including this one.
+   * `verify/approved-timings.mjs --compare` diffs against a saved baseline and
+   * reports the beats' INTERNAL GAPS separately from their absolute position,
+   * because a ladder sliding whole is a different fault from a ladder whose
+   * rhythm has been corrupted.
    *
    * ⚠ THAT ONE WRONG ASSUMPTION CAUSED THE LOCKUP'S STUTTER. The contact field's
    * warm-up guard computes `ENTRANCE_END_MS` from Begin, so it released ~2.5s

@@ -78,7 +78,77 @@ the present, and it decays. `enquiry-opening.tsx:259` and the 7400ms delay at
 so **reading the code alone would have confirmed the stale record rather than corrected it.**
 Only Carl's memory of the fix, and the button working on localhost, settled it.
 
-### ✅ Q5 stutter — RESOLVED 30 July 2026. Confirmed by Carl: *"Success. Smooth."*
+### ⚠ Q5 stutter — RETURNED 9 August 2026. Largely fixed again; the 30 July EVIDENCE was void
+
+> **Carl, 9 August:** *"Q5 stuttered half way through its reveal on first run."*
+> **Commit `3a7cf1f`.** Measured on the real GPU, cold: a **~580ms freeze at +114–203ms**
+> after Begin, inside a 1300ms wipe that starts at +60ms — 40 of an expected 78 frames.
+>
+> **Cause:** the warm-up canvas renders only while `stage === "opening"`, the real Q5 canvas
+> only after it. **Mutually exclusive** — so Begin destroyed the warm WebGL context in the same
+> commit that created the real one, and the real one rebuilt everything from scratch. **Shader
+> compilation was not the cost** (0.2–0.5ms inside the reveal); Three.js CPU-side
+> initialisation was. Fixed with a 900ms overlap on the warm node's lifetime; `stage` flips
+> exactly when it always did.
+>
+> | | before | after |
+> |---|---:|---:|
+> | Worst frame gap, cold | 584ms | **86ms** |
+> | Worst frame gap, warm | 591ms | **73ms** |
+> | Frames of ~78 | 40 | **76** |
+>
+> ⚠ **NOT ELIMINATED.** ~70ms still lands in the wipe, above the ~50ms visible threshold.
+> Removing it needs a canvas host that never unmounts — a restructure of approved layout,
+> deliberately not attempted. **Carl by eye: *"it looks pretty clean"*.**
+>
+> ⚠ **AND DELETING THE WARM-UP WOULD HAVE MADE IT TWICE AS BAD.** The obvious reading — a
+> WebGL context is per-canvas and dies with the node, so the warm-up buys nothing — is
+> **refuted by measurement**. `verify/warmup-value.mjs`, 3 runs per arm, cold GPU profile
+> each: mount→compiled is **161ms with** the warm-up and **919ms without**. ANGLE's on-disk
+> binary shader cache survives the context's death and is worth ~758ms.
+
+### ⚠⚠ THE 30 JULY "RESOLVED" ENTRY BELOW CITED EVIDENCE THAT NEVER TOUCHED A GPU
+
+**`verify/q5-stutter.mjs` launched headless until 9 August 2026.** Bare `chromium.launch()`,
+while fourteen other harnesses in `verify/` launch headed with `--enable-gpu` and print the
+renderer string. **Headless Chromium silently substitutes SwiftShader**, which compiles all 120
+shaders on the CPU — measured as a flat ~2000ms freeze, *identical on cold and warm runs*.
+
+⚠ **So the "0/3 CLEAN, worst gap 18–36ms" table below describes a software rasteriser, not
+Carl's machine. It is not evidence and must not be cited.** The `Q5_REVEAL_CLEAR_MS` 700→1300
+correction it accompanied is still believed correct — it is derived from `.enquiry-q-text-reveal`
+and was verified by Carl's eye — but it was never verified against a GPU.
+
+**A second, independent defect in the same file:** its overlap assertion was
+`firstCtx.at <= Q5_REVEAL_MS`, and `at` is clamped at t=0 (set just before the Begin click). A
+context created *before* Begin therefore reported +0ms and tripped the flag. On 9 August it
+printed **OVERLAP on all three runs while shader time inside the reveal was 0.5 / 0.2 / 0.0ms** —
+the flag said guilty while the quantity it exists to detect was zero.
+
+Both fixed in `3a7cf1f`. **This is the fifth and sixth recorded instance of this project's
+harness-lies class**, after `q5-stutter.mjs`'s own 700ms window (30 July), `cross-section.mjs`'s
+duplicated `BEVEL_WIDTH` and `opening-arm.mjs` running only at 1440px (both 7 August).
+
+⚠ **AND THE CLASS HAS NOW BROADENED TWICE.** The first three were harnesses holding a stale
+**copy of a value**. These two are different failures wearing the same coat:
+
+| | the lie |
+|---|---|
+| **Wrong environment** | headless has no GPU, so a GPU defect is invisible by construction |
+| **Wrong assertion** | the flag fired on a *pre-existing* context — a **false positive**, which sends the next session hunting a suspect the numbers had already cleared |
+
+⚠ **A SEVENTH WAS CAUGHT THE SAME DAY, BEFORE IT COULD MISLEAD ANYONE — and how it was caught
+is the transferable part.** `verify/approved-timings.mjs` was run **twice on identical code** as
+a deliberate no-change control *before* being trusted. It reported four opening rows "SHIFTED"
+by +74–92ms; the cause was its own t=0, measured from page load, which varies with server
+warmth and font loading. Re-anchored to the opening's first reveal, the control now returns
+22ms worst.
+
+⚠ **RUN EVERY NEW HARNESS AS A NO-CHANGE CONTROL BEFORE TRUSTING IT.** A harness that reports
+drift on unchanged code cannot certify a change — and had that control been skipped, an
+ordinary boot-time wobble would have been read as the fix breaking Carl's constraint.
+
+### Superseded — the 30 July entry, preserved for its reasoning, NOT for its numbers
 
 > **The 29 July fix (`a6f84fb`) was incomplete — right cause, wrong boundary.** Completed
 > 30 July. **Full record: `live-work/q5-stutter-diagnosis.md`.**

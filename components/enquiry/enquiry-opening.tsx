@@ -869,12 +869,21 @@ export default function EnquiryOpening() {
   const activatedAtRef = useRef<number | null>(null);
 
   /**
-   * The instant the card entrance's six beats actually began.
+   * The instant the card entrance's beats actually began.
    *
    * ⚠ NULL UNTIL THE CANVAS SAYS SO, and null means WAIT rather than clear. The
-   * entrance waits on an async precompile, so its start is ~1944ms after the
-   * cards mount and cannot be derived from Begin. See the guard in
-   * `warmWhenSafe` and `live-work/architect-answer-lockup-fade.md`.
+   * entrance waits on an async precompile, so its start CANNOT be derived from
+   * Begin. See the guard in `warmWhenSafe` and
+   * `live-work/architect-answer-lockup-fade.md`.
+   *
+   * ⚠ STALE FIGURE REMOVED, 9 AUGUST 2026 — this said "~1944ms after the cards
+   * mount", which predates the 7 August entrance fix. Measured now: the ladder
+   * runs **+695 → +2949ms from Begin** (`verify/approved-timings.mjs`). The lag
+   * is deliberately not restated as a number here, because a number in a
+   * comment is what went stale; the ref holds the real instant.
+   *
+   * ⚠ "SIX BEATS" CORRECTED TO "BEATS" — there are FIVE. The lockup's sixth was
+   * removed on Carl's instruction, 5 August; see `ENTRANCE_END_MS`.
    */
   const cardEntranceStartedAtRef = useRef<number | null>(null);
   const noteCardEntranceStart = useCallback(() => {
@@ -967,11 +976,25 @@ export default function EnquiryOpening() {
        * getting that wrong is what put a second WebGL context inside the lockup's
        * fade.
        *
-       * `ENTRANCE_END_MS` (6330) is a duration measured from the entrance's own
-       * clock. This guard used to subtract it from `activatedAtRef` (Begin), so
-       * it believed the six beats ran +0 → +6330. **They actually run +8857 →
-       * +15187**, because the entrance waits on the async precompile — measured
-       * at 1944ms after the cards mount.
+       * `ENTRANCE_END_MS` is a duration measured from the entrance's own clock.
+       * This guard used to subtract it from `activatedAtRef` (Begin), so it
+       * believed the beats ran +0 → ENTRANCE_END_MS *from Begin*. They do not —
+       * the entrance waits on the async precompile, so it starts later than
+       * Begin and this guard must be anchored to the entrance's own start.
+       *
+       * ⚠⚠ THE NUMBERS THAT USED TO SIT HERE — "(6330)", "+8857 → +15187",
+       * "1944ms after the cards mount" — ARE STALE, CORRECTED 9 AUGUST 2026.
+       * They predate the 7 August entrance fix. Measured on the real GPU,
+       * `verify/approved-timings.mjs`, 3 runs: **the ladder runs +695 → +2949ms
+       * from Begin**, beats ~560ms apart.
+       *
+       * ⚠ `ENTRANCE_END_MS` IS DERIVED, NEVER TYPED — read it from
+       * `answer-card-geometry.ts`. A value quoted in prose is a claim about the
+       * past; the export is the present.
+       *
+       * ⚠ THE PRINCIPLE IS UNAFFECTED BY THE CORRECTION, and that is the point:
+       * the guard must wait on the entrance's own START, not on a duration from
+       * Begin. Anchoring is what makes the numbers replaceable.
        *
        * ⚠ SO IT RELEASED ~2.5 SECONDS BEFORE BEAT SIX HAD BEGUN, and the contact
        * canvas mounted at +13248 — 202ms before the first dropped frame. Carl:
