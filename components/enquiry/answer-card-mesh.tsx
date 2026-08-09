@@ -63,12 +63,26 @@ import {
   cardBudget,
 } from "./answer-card-geometry";
 import {
-  GLASS_COLOR,
-  GLASS_ROUGHNESS,
-  GLASS_TRANSMISSION,
   GLASS_THICKNESS,
   GLASS_IOR,
-  GLASS_ENV_INTENSITY,
+  /**
+   * ⚠ THE SATIN — chunk 1, 9 August 2026. Glass is discarded on Carl's decision.
+   *
+   * ⚠ `GLASS_COLOR`, `GLASS_ROUGHNESS`, `GLASS_TRANSMISSION` and
+   * `GLASS_ENV_INTENSITY` ARE NO LONGER IMPORTED. A first pass kept them with a
+   * comment claiming the diagnostic path still needed them; **the linter proved
+   * that false** — nothing in this file read them once the face changed. They
+   * remain EXPORTED from `answer-card-glass.ts`, where their documentation is
+   * the record of what the transmissive face was and why it could not disclose
+   * the crown. `GLASS_THICKNESS` and `GLASS_IOR` below ARE still used.
+   */
+  SATIN_COLOR,
+  SATIN_ROUGHNESS,
+  SATIN_SHEEN_COLOR,
+  SATIN_SHEEN_ROUGHNESS,
+  SATIN_ANISOTROPY,
+  SATIN_ANISOTROPY_ROTATION,
+  SATIN_ENV_INTENSITY,
   RIM_METAL_COLOR,
   RIM_METALS,
   RIM_METALNESS,
@@ -208,11 +222,23 @@ export type GlassTuning = {
   glassClearcoat: number;
   /** How sharp that skin's reflection is. Inert while the coat is 0. */
   glassClearcoatRoughness: number;
+  /**
+   * ⚠ THE SATIN DIALS — chunk 1, 9 August 2026. Glass is discarded; these are
+   * the values that decide whether the crown's 23.8° discloses itself.
+   */
+  satinAnisotropy: number;
+  satinAnisotropyRotation: number;
+  satinSheenRoughness: number;
 };
 
 export const DEFAULT_GLASS_TUNING: GlassTuning = {
-  roughness: GLASS_ROUGHNESS,
-  transmission: GLASS_TRANSMISSION,
+  // ⚠ `roughness` NOW CARRIES THE SATIN, NOT THE FROST. The key is reused rather
+  // than renamed so the rig binding, the `?roughness=` harness door and every
+  // existing sweep keep working — the dial's MEANING changed with the material,
+  // its identity did not.
+  roughness: SATIN_ROUGHNESS,
+  // Transmission is dead on the face. Kept in the type for the diagnostic path.
+  transmission: 0,
   lightLevel: LIGHT_LEVEL,
   rimRoughness: RIM_ROUGHNESS,
   rimMetal: 0,
@@ -223,6 +249,9 @@ export const DEFAULT_GLASS_TUNING: GlassTuning = {
   glassFilterStrength: GLASS_FILTER_STRENGTH,
   glassClearcoat: GLASS_CLEARCOAT,
   glassClearcoatRoughness: GLASS_CLEARCOAT_ROUGHNESS,
+  satinAnisotropy: SATIN_ANISOTROPY,
+  satinAnisotropyRotation: SATIN_ANISOTROPY_ROTATION,
+  satinSheenRoughness: SATIN_SHEEN_ROUGHNESS,
 };
 
 // ── Diagnostic material ──────────────────────────────────────────────────────
@@ -296,7 +325,11 @@ function FaceMaterial({
   envMapIntensity,
   color,
   roughness,
-  transmission,
+  anisotropy,
+  anisotropyRotation,
+  sheenColor,
+  sheenRoughness,
+  labelMap,
   filament,
   filterStrength,
   clearcoat,
@@ -304,9 +337,22 @@ function FaceMaterial({
 }: {
   envMap: THREE.Texture | null;
   envMapIntensity: number;
+  /**
+   * ⚠ WHITE WHEN `labelMap` IS PRESENT. The map carries the satin body colour
+   * AND the glyphs, because `color` multiplies `map` and no single `color` can
+   * serve both. See `buildLabelTexture`.
+   */
   color: string;
   roughness: number;
-  transmission: number;
+  /** The answer label, drawn into the face's albedo. Null on the warm-up card. */
+  labelMap: THREE.Texture | null;
+  /** Satin's smear along the tangent. Inert without a `tangent` attribute. */
+  anisotropy: number;
+  /** The smear's direction, radians from the tangent. 0 = along the roll. */
+  anisotropyRotation: number;
+  /** The near-white grazing lobe that carries the peak. */
+  sheenColor: string;
+  sheenRoughness: number;
   filament: FilamentState;
   filterStrength: number;
   clearcoat: number;
@@ -375,13 +421,67 @@ function FaceMaterial({
       color={color}
       roughness={roughness}
       metalness={0}
-      transmission={transmission}
-      // ⚠ THE FACE TOO, AND IT IS THE ONE THAT LOOKS UNNECESSARY. A
-      // `transmission > 0` material is ALREADY excluded from `opaqueObjects`
-      // (`three.module.js:8237` splits on transmission before transparency), so
-      // this changes nothing about what the card refracts. It is here because
-      // the PROGRAM KEY still carries `transparent`, and a face that flips it
-      // mid-fade re-links exactly like the rim did. See `ENTRANCE_NEEDS_ALPHA`.
+      /**
+       * ⚠ TRANSMISSION IS GONE — THE FACE IS SATIN, 9 August 2026. It is passed
+       * as 0 rather than removed so the prop's contract is unchanged for the
+       * clay/diagnostic path and for anything still reading `glassTuning`.
+       *
+       * ⚠ AND ITS REMOVAL IS THE WHOLE POINT OF THE CHUNK, not a side effect.
+       * `transmission_fragment.glsl.js:33` mixes away 97% of the diffuse, so the
+       * 23.8° crown could not disclose itself no matter how it was lit —
+       * measured flat before the change (`verify/crown-disclosure.mjs`).
+       */
+      transmission={0}
+      /**
+       * ⚠ THE SMEAR. This is what makes the surface satin rather than a shiny
+       * blue plastic: the specular lobe is stretched along the tangent, which
+       * `convexFaceGeometry` builds along the card's LONG axis — the axis the
+       * cylindrical crown does not curve on. The result is a band running the
+       * card's width, disclosing the curve across its height.
+       *
+       * ⚠ INERT WITHOUT THE `tangent` ATTRIBUTE. See `convexFaceGeometry`.
+       */
+      anisotropy={anisotropy}
+      anisotropyRotation={anisotropyRotation}
+      /**
+       * ⚠ THE SHEEN IS A SEPARATE LOBE FROM THE SPECULAR, and it is what carries
+       * the near-white peak in Carl's references while the body stays deep blue.
+       * `sheenColor` is the light the surface returns at grazing angles — the
+       * fabric behaviour — where `color` is the albedo underneath it.
+       */
+      sheen={1}
+      sheenRoughness={sheenRoughness}
+      sheenColor={sheenColor}
+      /**
+       * ⚠ THE ANSWER LABEL, AS PART OF THE SURFACE. Mapped onto the face's own
+       * UVs so it is transformed, lit and faded by this mesh — see
+       * `buildLabelTexture` for why three DOM versions could not be made to read
+       * as one object with the card.
+       *
+       * ⚠ IT IS THE `map`, NOT AN EMISSIVE. Emissive text would glow at a fixed
+       * brightness regardless of the light, which would make the label the one
+       * part of the card that does NOT respond to the hover arc in chunk 2 —
+       * precisely backwards. On `map` the glyphs are albedo: they take the
+       * satin's own lighting, brighten under the bloom, and will travel with the
+       * moving light.
+       *
+       * ⚠⚠ `color` MULTIPLIES `map`, AND THAT DECIDES HOW THIS TEXTURE IS BUILT.
+       * `MeshPhysicalMaterial` computes albedo as `color * map`, so a deep-blue
+       * `color` would drag near-white glyphs down to a dim blue and a white
+       * `color` would throw away the satin body colour everywhere else.
+       *
+       * ⚠ SO THE TEXTURE CARRIES BOTH: the satin blue is painted as its
+       * BACKGROUND and the label on top, with `color` left at pure white. The
+       * body colour moves from the material into the texture rather than being
+       * multiplied against it. One albedo, no compromise at either end.
+       */
+      map={labelMap ?? null}
+      // ⚠ KEPT THOUGH TRANSMISSION HAS GONE. `ENTRANCE_NEEDS_ALPHA` is in the
+      // PROGRAM KEY, and a material that flips `transparent` mid-fade re-links
+      // its shader — measured at 1977ms against 725ms on 7 August, arriving as
+      // a ~1490ms freeze. The entrance still fades this face in, so it must be
+      // BUILT transparent rather than becoming transparent. See D-046 and
+      // `ENTRANCE_NEEDS_ALPHA`.
       transparent={ENTRANCE_NEEDS_ALPHA}
       depthWrite
       // ⚠ THE POLISHED SKIN OVER THE FROSTED BODY. Zero by default, so this is
@@ -773,6 +873,110 @@ function roundedRectHalfWidthAt(y: number, halfW: number, halfH: number, r: numb
  * Copied in form from `contact-field-mesh.tsx`'s `crownZ`, which is the shape
  * already approved there.
  */
+/**
+ * ⚠ THE ANSWER LABEL, DRAWN INTO A TEXTURE SO IT IS PART OF THE FACE.
+ *
+ * ⚠⚠ THREE DOM VERSIONS FAILED BEFORE THIS, AND THE REASON THEY ALL FAILED IS
+ * STRUCTURAL RATHER THAN NUMERICAL. Carl, 9 August 2026: *"The movement just
+ * doesnt feel right. As if the text is trying to catch up with the card or
+ * mimmic its movement and not being quite right."* That is exactly what it was:
+ *
+ *   1. Shared clock, own animation  — different easing, distance, no scale.
+ *   2. Polled the card's published values — right values, one frame late (0.025).
+ *   3. Same frame, same values, transform driven by alpha — measured 0.0000
+ *      divergence, and STILL read as two objects.
+ *
+ * ⚠ VERSION 3 PROVED THE NUMBERS WERE NOT THE PROBLEM. A DOM label moves in 2D
+ * CSS pixels; the card rises in 3D WORLD SPACE under a perspective camera. A
+ * 10-unit world translation does not project to a fixed pixel translation — it
+ * depends on depth and changes as the card scales. **The two are moving through
+ * different geometries, so they can agree at the endpoints and disagree
+ * everywhere between.** No amount of matching values fixes a projection
+ * mismatch; it only makes the mimicry more convincing, which is worse.
+ *
+ * ⚠ SO THE TEXT IS NOW THE SURFACE, NOT AN OVERLAY ON IT. Drawn into a
+ * `CanvasTexture` and mapped onto the face's own UVs, it is transformed once,
+ * lit once, and faded once — by the same mesh. There is nothing left to
+ * synchronise because there is no second object.
+ *
+ * ⚠ AND IT ANSWERS CARL'S OTHER QUESTION — *"is wrapping the text around the
+ * convex face... enough to warp it and make it unreadable?"* Measured, no:
+ * `CROWN_PLATEAU_U` is 0.72, so the LONG axis — the reading direction — is FLAT
+ * across 72% of its width. The crown's raised cosine is on the SHORT axis, and
+ * the label band sits near its apex where the curve is flattest. Glyphs are not
+ * stretched along the direction that would destroy legibility.
+ *
+ * ⚠ THE GAIN, WHICH IS THE POINT: the text now catches the light exactly as the
+ * surface does, and in chunk 2 the hover arc will light the LABEL as it sweeps,
+ * because the label is part of the material rather than sitting in front of it.
+ *
+ * ⚠ ACCESSIBILITY IS NOT SOLVED HERE AND MUST NOT BE FORGOTTEN. A texture is
+ * not readable by a screen reader and not selectable. The DOM hover surfaces
+ * remain, and when these cards return as real controls they carry the roles and
+ * accessible names — the visible text being a texture makes a correct DOM label
+ * MANDATORY at that point, not optional. Recorded as a known debt.
+ */
+const LABEL_TEX_W = 2048;
+const LABEL_TEX_H = 512;
+
+function buildLabelTexture(text: string, bodyColor: string): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = LABEL_TEX_W;
+  canvas.height = LABEL_TEX_H;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return new THREE.CanvasTexture(canvas);
+
+  /**
+   * ⚠ THE SATIN BODY COLOUR IS PAINTED AS THE BACKGROUND, NOT LEFT TRANSPARENT.
+   *
+   * `MeshPhysicalMaterial` computes albedo as `color * map`. If this texture
+   * were a transparent mask, the material's `color` would still have to be the
+   * deep satin blue — and it would multiply the near-white glyphs down to a dim
+   * blue, making the label darker than the surface it sits on. Setting `color`
+   * to white instead would fix the glyphs and throw the body colour away.
+   *
+   * ⚠ SO THE WHOLE ALBEDO LIVES HERE and the material's `color` is white. The
+   * body colour and the ink are one image, which is also what makes them one
+   * surface under the light: they are lit by the same shading, not composited.
+   */
+  ctx.fillStyle = bodyColor;
+  ctx.fillRect(0, 0, LABEL_TEX_W, LABEL_TEX_H);
+
+  /**
+   * ⚠ THE FACE IS ~576 x 104 CSS px AT THE REFERENCE WIDTH and this texture is
+   * 2048 x 512, so the label is drawn at ~3.5x device density before any DPR
+   * scaling — comfortably above what a 0.75rem label needs to stay crisp.
+   * Crispness was the stated cost of moving text into WebGL; it is paid here
+   * with resolution rather than left to chance.
+   */
+  const fontPx = Math.round(LABEL_TEX_H * 0.30);
+  ctx.font = `500 ${fontPx}px Geist, system-ui, -apple-system, "Segoe UI", sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  // The approved label colour from `.enquiry-card` — a cool near-white that
+  // belongs to the corridor rather than a plain #fff, which reads warmer than
+  // everything around it.
+  ctx.fillStyle = "rgb(238, 241, 252)";
+
+  // ⚠ A SOFT DARK SHADOW, AS THE DOM LABEL CARRIED. The satin bloom runs
+  // brightest across the middle of the face, which is where the text sits; the
+  // shadow keeps it legible across that band without a scrim over the material.
+  ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
+  ctx.shadowBlur = Math.round(fontPx * 0.22);
+  ctx.shadowOffsetY = Math.round(fontPx * 0.06);
+
+  ctx.fillText(text, LABEL_TEX_W / 2, LABEL_TEX_H / 2, LABEL_TEX_W * 0.86);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  // ⚠ sRGB, BECAUSE THIS IS COLOUR. The field's NORMAL map is tagged
+  // `NoColorSpace` for the opposite reason; getting this wrong would darken the
+  // text against the surface it has to stay legible on.
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  texture.needsUpdate = true;
+  return texture;
+}
+
 function crownZ(u: number, v: number, crownHeight: number, plateauU: number): number {
   const shortAxis = (1 + Math.cos(v * Math.PI)) / 2;
 
@@ -876,6 +1080,28 @@ function convexFaceGeometry(
   const cols = FACE_SEGMENTS_U + 1;
   const rows = FACE_SEGMENTS_V + 1;
   const positions = new Float32Array(cols * rows * 3);
+  /**
+   * ⚠ UVs AND TANGENTS EXIST FOR THE SATIN, AND WITHOUT THEM ANISOTROPY IS
+   * SILENTLY INERT — added 9 August 2026.
+   *
+   * `MeshPhysicalMaterial.anisotropy` works in TANGENT SPACE: it stretches the
+   * specular lobe along the surface tangent. With no `tangent` attribute three
+   * derives one from screen-space UV derivatives, and with no `uv` either the
+   * direction is undefined — the highlight either does not stretch at all or
+   * stretches differently per triangle. **The material would appear to "not
+   * work" while every value was correct**, which is the kind of failure this
+   * project has repeatedly mistaken for a wrong number.
+   *
+   * ⚠ THE TANGENT RUNS ALONG `u` — THE CARD'S LONG AXIS — AND THAT IS THE WHOLE
+   * DESIGN. The crown is a cylindrical roll: `CROWN_PLATEAU_U` holds it flat
+   * across the middle of the long axis and it curves on the SHORT axis. Satin's
+   * sheen smears PERPENDICULAR to the fibre, along the roll's axis, which is
+   * what produces the long soft bands in Carl's references rather than a round
+   * specular dot. A tangent along `v` would smear across the curve and destroy
+   * the disclosure the crown exists to provide.
+   */
+  const uvs = new Float32Array(cols * rows * 2);
+  const tangents = new Float32Array(cols * rows * 4);
 
   for (let iy = 0; iy < rows; iy++) {
     const v = (iy / FACE_SEGMENTS_V) * 2 - 1; // -1 .. 1
@@ -892,6 +1118,34 @@ function convexFaceGeometry(
       positions[idx] = x;
       positions[idx + 1] = y;
       positions[idx + 2] = crownZ(u, v, crownHeight, plateauU);
+
+      const uvIdx = (iy * cols + ix) * 2;
+      uvs[uvIdx] = ix / FACE_SEGMENTS_U;
+      uvs[uvIdx + 1] = iy / FACE_SEGMENTS_V;
+
+      /**
+       * ⚠ THE TANGENT IS THE SURFACE'S OWN, NOT A CONSTANT +X. Along the long
+       * axis the crown is flat across the plateau but ROLLS OFF near the ends,
+       * so a flat (1,0,0) would be wrong exactly where the surface curves most
+       * and the sheen would break away from the form at the card's ends.
+       *
+       * dP/du at fixed v, taken analytically from the same `crownZ` the
+       * positions come from, then normalised. The w component is the bitangent
+       * handedness three multiplies by; +1 for this winding.
+       */
+      const du = 1 / FACE_SEGMENTS_U;
+      const uAhead = Math.min(1, u + du);
+      const uBehind = Math.max(-1, u - du);
+      const dx = (uAhead - uBehind) * rowHalfW;
+      const dz =
+        crownZ(uAhead, v, crownHeight, plateauU) - crownZ(uBehind, v, crownHeight, plateauU);
+      const len = Math.hypot(dx, dz) || 1;
+
+      const tIdx = (iy * cols + ix) * 4;
+      tangents[tIdx] = dx / len;
+      tangents[tIdx + 1] = 0;
+      tangents[tIdx + 2] = dz / len;
+      tangents[tIdx + 3] = 1;
     }
   }
 
@@ -920,6 +1174,8 @@ function convexFaceGeometry(
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geo.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+  geo.setAttribute("tangent", new THREE.BufferAttribute(tangents, 4));
   geo.setIndex(indices);
   // ⚠ Computed from the surface itself, never asserted from the crown constant —
   // the verification harness reads these normals back, and a normal derived from
@@ -979,10 +1235,25 @@ export function AnswerCardMesh({
   lightLevel = LIGHT_LEVEL,
   filament,
   glassTuning = DEFAULT_GLASS_TUNING,
+  label,
   children,
 }: {
   tuning?: AnswerCardTuning;
   groupRef?: React.Ref<THREE.Group>;
+  /**
+   * The answer text, drawn INTO the face's albedo rather than laid over it.
+   *
+   * ⚠ IT IS TEXT ON THE SURFACE, NOT TEXT ON TOP OF IT — and that distinction is
+   * the whole reason it moved here from the DOM. Three DOM versions could not be
+   * made to read as one object with the card, because a DOM label moves in 2D
+   * CSS pixels while the card rises in 3D world space under a perspective
+   * camera: different geometries, so they agree at the endpoints and disagree
+   * everywhere between. Carl: *"as if the text is trying to catch up with the
+   * card or mimmic its movement and not being quite right."*
+   *
+   * Undefined on the warm-up instance and the clay study, which have no label.
+   */
+  label?: string;
   /**
    * Whether the face wears glass (chunk 2) or chunk 1's diagnostic grey.
    *
@@ -1130,6 +1401,36 @@ export function AnswerCardMesh({
   useDisposable(bevelGeometry);
   useDisposable(faceGeometry);
 
+  /**
+   * The face's albedo: the satin body colour with the answer label drawn into
+   * it. Null when there is no label — the warm-up instance and the clay study.
+   *
+   * ⚠ REBUILT ONLY WHEN THE TEXT OR THE BODY COLOUR CHANGES. Drawing to a 2048
+   * canvas per frame would be absurd; per label change it is free. `SATIN_COLOR`
+   * is in the deps because the texture BAKES it — see `buildLabelTexture` for
+   * why the colour lives in the map rather than in the material's `color`.
+   *
+   * ⚠ GUARDED ON `document`, because this file is imported during SSR even
+   * though the canvas only mounts on the client.
+   */
+  const labelMap = useMemo(() => {
+    if (!label || typeof document === "undefined") return null;
+    return buildLabelTexture(label, SATIN_COLOR);
+  }, [label]);
+
+  /**
+   * ⚠ TEXTURES LEAK IF THEY ARE NOT DISPOSED, and this one is rebuilt whenever
+   * the label changes — five cards through five questions is twenty-five
+   * textures over a corridor walk. `useDisposable` covers geometries; a texture
+   * needs the same treatment and does not get it for free.
+   */
+  useEffect(() => {
+    if (!labelMap) return;
+    return () => {
+      labelMap.dispose();
+    };
+  }, [labelMap]);
+
   // ── Where the face sits in z ──────────────────────────────────────────────
   //
   // ⚠ REBUILT 6 AUGUST 2026 — THE FACE RISES FROM THE RIM'S BASE AND STANDS
@@ -1273,10 +1574,26 @@ export function AnswerCardMesh({
             // on the whole card at once — a face at fixed intensity while the rim
             // and bevel ramp would make every reading a comparison against a
             // moving reference.
-            envMapIntensity={GLASS_ENV_INTENSITY * lightLevel}
-            color={GLASS_COLOR}
+            // ⚠ SATIN'S ENV CONTRIBUTION IS LOW BUT NOT ZERO — the rig has to
+            // stay capable of lighting the platinum-blue Next step button that
+            // D-045 §10 puts under this same rig. See `SATIN_ENV_INTENSITY`.
+            envMapIntensity={SATIN_ENV_INTENSITY * lightLevel}
+            /**
+             * ⚠ WHITE WHEN THE LABEL MAP IS PRESENT, THE SATIN BLUE WHEN IT IS
+             * NOT — and this is not a special case, it is where the colour
+             * lives. `MeshPhysicalMaterial` computes albedo as `color * map`, so
+             * with a map the body colour is baked into the texture and `color`
+             * must be neutral or it would multiply the blue twice and dim the
+             * glyphs. Without a map (the warm-up card, the clay study) the
+             * material carries the colour as before.
+             */
+            color={labelMap ? "#ffffff" : SATIN_COLOR}
+            labelMap={labelMap}
             roughness={glassTuning.roughness}
-            transmission={glassTuning.transmission}
+            anisotropy={glassTuning.satinAnisotropy}
+            anisotropyRotation={glassTuning.satinAnisotropyRotation}
+            sheenColor={SATIN_SHEEN_COLOR}
+            sheenRoughness={glassTuning.satinSheenRoughness}
             filament={filament}
             filterStrength={glassTuning.glassFilterStrength}
             clearcoat={glassTuning.glassClearcoat}

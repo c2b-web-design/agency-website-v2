@@ -262,7 +262,10 @@ export const ENV_FILL_INTENSITY = 1.1;
 /** How strongly the face samples the environment map. */
 export const GLASS_ENV_INTENSITY = 1.0;
 
-import { CARD_RISE_DURATION_MS } from "./answer-card-geometry";
+// ⚠ `CROWN_HEIGHT` IS IMPORTED, NEVER RETYPED. `FILAMENT_LIGHT_HEIGHT` is
+// derived from it, and the defect that correction fixes — a light left at 6
+// while the face rose to 4.5 — is precisely what a hand-copied number produces.
+import { CARD_RISE_DURATION_MS, CROWN_HEIGHT } from "./answer-card-geometry";
 
 // ── The rim: tungsten, unlit ─────────────────────────────────────────────────
 //
@@ -545,7 +548,451 @@ export const BEVEL_ENV_INTENSITY = 0.1;
  *
  * Bound to `[9]` in `?cardrig=1`.
  */
-export const LIGHT_LEVEL = 0.35;
+/**
+ * ⚠ RAISED 0.35 → 1.1 ON 9 AUGUST 2026, AND THE OLD VALUE WAS A GLASS VALUE.
+ *
+ * 0.35 was tuned against a face at `transmission: 0.97`, which mixes 97% of the
+ * diffuse away — the surface returned almost nothing, so the fader sat low to
+ * keep the RIM from blowing out. Satin is diffuse and returns light properly, so
+ * the same fader leaves the card far too dark: measured mean luminance **21.6
+ * out of 255**, which is why it read as a flat dark slab at normal scale however
+ * the lights were placed.
+ *
+ * ⚠ IT WAS THE ACTUAL CAUSE OF WHAT CARL SAW, and four attempts at the light's
+ * POSITION missed it. *"When i zoom in on my PC it is more like this but at a
+ * normal scale not so much defined."* A gradient that survives magnification and
+ * washes out at 1:1 is under-resolved OR under-exposed; three position changes
+ * chased the first and the answer was the second.
+ *
+ * Swept on `?light=`, all other values held (peak position from
+ * `verify/key-elevation-sweep.mjs`'s profile method):
+ *
+ *     light   mean    max    ratio   peak
+ *     0.35    21.6   48.6     6.16    17%   <- the glass value: too dark to read
+ *     0.70    41.3   84.6     4.44    17%
+ *     1.10    59.3  115.3     3.83    30%   <- shipped
+ *     1.60    77.3  142.3     3.45    30%
+ *     2.20    89.5  158.4     3.16    17%
+ *
+ * ⚠ BRIGHTNESS AND CONTRAST PULL AGAINST EACH OTHER, and the ratio alone would
+ * pick the darkest option. More light lifts the peak but lifts the shadows with
+ * it, so disclosure FALLS as exposure rises. 1.1 is chosen as the balance: the
+ * peak is on the face at 30%, the ratio of 3.83 is still well clear of the 2.18
+ * this project measured as *"only now starting to read"*, and the card is
+ * finally bright enough to be seen at 1:1.
+ *
+ * ⚠ THE CEILING CONSTRAINT IS UNTESTED AT THIS VALUE. The contact field keeps
+ * its brightest point below the gold rim's measured 172.9. The card's max is now
+ * 115.3, comfortably under — but the card's rim is unlit tungsten rather than
+ * the field's gold bevel, so whether the same ceiling even applies here is
+ * Carl's call and he has left it open: *"Same ceiling for the moment, it is
+ * subject to possible iteration."*
+ *
+ * Bound to `[9]`.
+ */
+export const LIGHT_LEVEL = 1.1;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THE SATIN FACE — chunk 1, 9 August 2026. GLASS IS DISCARDED.
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// ⚠ CARL'S DECISION AND HIS REASONING, which is structural rather than taste:
+// *"Glass has been discarded. Reason — it needs a background to become truly
+// effective and it could be seen as cliched in 2026."* The first half is the
+// load-bearing one: glass is a LENS, and it needs something behind it to
+// refract. **The lockup went on 5 August**, so the thing that gave the
+// transmissive face something to do is already gone. `GROUND_COLOR` #101010
+// took its place, and a lens onto a flat dark plane is a dark flat card.
+//
+// ⚠ AND THE MEASUREMENT AGREES. `verify/crown-disclosure.mjs`, run on the glass
+// card before it was replaced: the short-axis profile is a flat 69.5 plateau
+// across the top 42%, a cliff, then a flat ~15 — two flat regions with a step,
+// which is the RIM against the FACE BODY. `bothSidesFall: NO`. **The 23.8°
+// crown discloses nothing.** `transmission: 0.97` mixes 97% of the diffuse away
+// (`transmission_fragment.glsl.js:33`), so a correct crown renders flat.
+//
+// ⚠ THE JOB OF THIS MATERIAL, IN CARL'S WORDS: *"The most important thing with
+// the cards is to bring out the geometry. Both with static light, and moreso
+// with moving light."* **Disclosure, not decoration.** Every value below is
+// chosen to make the crown's curve READ, and the success test is measurable:
+// the disclosure ratio, and whether luminance falls away on BOTH sides of the
+// peak (a curve) rather than ramping monotonically (a flat plane).
+//
+// ⚠ THE HIERARCHY IT SITS IN — Carl, 9 August: *"the q+a section will be the
+// parent to the client info section"* (D-045 §1), and *"as good/cool that
+// section looks, this has to be greater/better."* The contact field gets its
+// variation from POSITION IN A SHARED STATIC TEXTURE — one gradient, four
+// windows. The card gets its variation from A MOVING LIGHT ON REAL GEOMETRY.
+// Same principle, live rather than painted. **So the card must NOT use the
+// window/texture trick**: repeating the child's mechanism is the same error
+// that ruled out brushed metal — *"its too close in look to the client info
+// cards."*
+
+/**
+ * The satin body colour — the blue the surface IS, before any light reaches it.
+ *
+ * ⚠ ANCHORED TO MEASURED BRAND VALUES, NOT PICKED. Carl, 9 August: *"There
+ * should be consistency in colours, our brand colours. Gold and amber. From the
+ * blue family — teal, a dark blue and light blue."* And the standing method,
+ * from the field's own grading pass: *"look at the hex of the darkest blue of
+ * the opal and the lightest blue, use them as a guide."*
+ *
+ * The Send opal is an APPROVED element (R-018, D-033) and already sets this
+ * page's blue: `#163a8f -> #14418f -> #114aa5`. This sits in that hue family.
+ *
+ * ⚠ IT IS THE DARK END ON PURPOSE. On a diffuse surface `color` is the albedo —
+ * what the material returns where light is WEAK. The lit peak comes from the
+ * specular sheen, not from this. Setting this to the light blue would flatten
+ * the range: a bright albedo everywhere leaves the shadow nowhere to go, and
+ * range is exactly what the references have and the old glass face lacked.
+ *
+ * ⚠ PROVISIONAL. To be moved by eye on `[b]`.
+ *
+ * ⚠ DEEPENED 9 AUGUST 2026, AND THE REASON IS RANGE RATHER THAN COLOUR. The
+ * first satin pass measured 18–52 out of 255 across the whole face — a 34-level
+ * span, which at the card's actual ~104px height is too little contrast spread
+ * over too few pixels to read as anything but a flat slab. Carl, on his 27"
+ * monitor: *"when i zoom in on my PC it is more like this but at a normal scale
+ * not so much defined."*
+ *
+ * ⚠ THAT IS A RESOLUTION SYMPTOM, NOT AN ABSENCE. The gradient IS present in
+ * the pixels — it survives magnification — but it is spread so gently that at
+ * 1:1 the eye integrates it into one tone. **The fix is a wider range and a
+ * steeper falloff, not more light**: the bloom needs somewhere to travel from
+ * and somewhere to arrive.
+ */
+export const SATIN_COLOR = "#0b1f4d";
+
+/**
+ * The sheen's own colour — what the light becomes on the surface.
+ *
+ * ⚠ NOT WHITE, AND NOT THE BODY BLUE. Carl's third satin reference shows the
+ * highlight going near-white while the shadow stays deeply saturated, with a
+ * faint cool cast where the band rolls off. That cast is the *teal* of the
+ * brand palette — the cyan lean the contact field measured in its own reference
+ * (`#c2ffff`, luminance 242) and had to COMPRESS OUT to stay under its gold
+ * bevel.
+ *
+ * ⚠ THE CARD MAY BE ABLE TO SPEND WHAT THE FIELD COULD NOT, and Carl has left
+ * that open: *"Same ceiling for the moment, it is subject to possible
+ * iteration."* So this is pitched to reach the light-blue/teal end WITHOUT
+ * exceeding the field's ceiling today. If the ceiling lifts, this is the value
+ * that moves first.
+ *
+ * ⚠⚠ CORRECTED 9 AUGUST 2026 — IT WAS `#9fd4f0`, A PALE CYAN REACHING FOR
+ * NEAR-WHITE, AND THAT IS THE THING CARL RULED OUT. His reference for the
+ * finish is a deep blue satin whose lit bands are *"less mountainous"* than the
+ * folded-fabric images: long, shallow, directional, and **never white**. The
+ * brightest region in it is still unmistakably BLUE.
+ *
+ * > *"i would also mention the falloff between lighter and darker parts. Its
+ * > almost like a gradient, a bloom."*
+ *
+ * A near-white sheen produces a PEAK — a bright crest sitting on top of the
+ * roll, which is the "white peak topography" he was describing and rejecting.
+ * A saturated lighter blue produces a BLOOM: the light stays in the same hue
+ * family as the body, so the transition between them reads as one continuous
+ * surface brightening rather than as a highlight laid over a colour.
+ */
+export const SATIN_SHEEN_COLOR = "#5b9ede";
+
+/**
+ * How broad the sheen lobe is.
+ *
+ * ⚠ THE PARTNER OF `SATIN_ROUGHNESS`, NOT AN INDEPENDENT DIAL — the same
+ * relationship `GLASS_CLEARCOAT` records with `roughness`. The body's roughness
+ * decides the main specular's softness; this decides the grazing lobe's. Sweeping
+ * one without the other produces a surface with two disagreeing finishes, which
+ * reads as a rendering error rather than a material.
+ *
+ * ⚠ BROADER THAN THE BODY ON PURPOSE. In real satin the grazing sheen is the
+ * SOFT part — the long bloom that runs along a fold — while the core specular
+ * stays tighter. Equal values collapse the two into one lobe and the fabric
+ * quality goes with it.
+ */
+export const SATIN_SHEEN_ROUGHNESS = 0.62;
+
+/**
+ * How rough the satin is — the softness of the sheen.
+ *
+ * ⚠ THE DIAL THAT DECIDES WHETHER THE GEOMETRY READS. Low roughness gives a
+ * tight bright core whose POSITION on the roll tells the eye where the surface
+ * turns; high roughness spreads it into a wash that flattens the form. Carl's
+ * fabric references are soft and spread; the C2B logo — which the Next step
+ * button will echo in platinum blue — is tight and bright.
+ *
+ * ⚠ PITCHED TOWARD THE TIGHTER END BECAUSE DISCLOSURE IS THE BRIEF. A soft
+ * sheen is prettier in a still and worse at showing a curve. Bound to `[7]`;
+ * expect Carl to move it.
+ *
+ * ⚠ TIGHTENED 9 AUGUST 2026 TO STEEPEN THE FALLOFF. Carl's own diagnosis was a
+ * SCALE one — the gradient reads when magnified and washes out at 1:1 — and a
+ * gentler falloff spread across ~104px is exactly what washes out. Lowering
+ * roughness concentrates the transition into fewer pixels so the bloom still
+ * has a shape at actual size.
+ *
+ * ⚠ THIS IS THE DIAL TO MOVE FIRST IF THE CARD READS AS A FLAT SLAB, and the
+ * one to move BACK if it starts reading as polished plastic. The boundary
+ * between "satin bloom" and "specular highlight" lives here.
+ */
+export const SATIN_ROUGHNESS = 0.26;
+
+/**
+ * Anisotropy strength — how far the specular lobe is smeared along the tangent.
+ *
+ * ⚠ THIS IS WHAT MAKES IT SATIN RATHER THAN PLASTIC. At 0 the highlight is a
+ * round dot and the material is a shiny blue surface. Raised, the lobe stretches
+ * along the roll's axis into the long soft band that every one of Carl's
+ * references shows.
+ *
+ * ⚠ IT REQUIRES THE `tangent` ATTRIBUTE, WHICH THE FACE GEOMETRY NOW CARRIES.
+ * Without it three falls back to screen-space UV derivatives and the direction
+ * is undefined — the material would look "not working" while every value here
+ * was correct. See `convexFaceGeometry`.
+ *
+ * ⚠ VERIFIED WIRED, NOT ASSUMED. `verify/satin-wired.mjs` renders the same card
+ * at rotation 0 and rotation π/2 and diffs the pixels: mean 6.4, worst 30.7.
+ * Strength 0.68 against 0 differs by mean 2.5. **Both dials move the render**,
+ * so the tangent is present and meaningful. That test exists because two
+ * attempts to READ the live material — via `canvas.__r3f` and by walking the
+ * React fiber tree — both found nothing on this version of R3F, and a probe
+ * that cannot find the object cannot clear it either.
+ *
+ * ⚠ RAISED 9 AUGUST 2026 to 0.86. Carl's chosen reference is strongly
+ * directional — long shallow streaks running one way across the whole surface —
+ * and that direction is what anisotropy supplies. The earlier 0.68 read as a
+ * general softness rather than as grain.
+ */
+export const SATIN_ANISOTROPY = 0.86;
+
+/**
+ * The smear's direction, in radians, measured counter-clockwise from the
+ * tangent.
+ *
+ * ⚠ ZERO MEANS "ALONG THE ROLL", AND THAT IS THE DESIGN. The tangent is built
+ * along the card's long axis — the axis the cylindrical crown does NOT curve on
+ * — so the band runs the card's width and the curve is disclosed across its
+ * height. Rotating this to π/2 would smear ACROSS the curve and hide it.
+ *
+ * Adjustable so the choice can be SEEN rather than argued. Bound to `[a]`.
+ */
+export const SATIN_ANISOTROPY_ROTATION = 0;
+
+/**
+ * How strongly the satin face samples the studio environment map.
+ *
+ * ⚠ LOW, NOT ZERO, AND THE REASON IS THE NEXT STEP BUTTON. A satin surface
+ * RECEIVES light rather than mirroring its surroundings — the contact field
+ * sets its own field to `envMapIntensity: 0` for exactly that reason. But
+ * D-045 §10 records that *"whatever rig the cards get is the rig that button
+ * will live under"*, and Carl has now specified that button as **platinum blue,
+ * the C2B logo's look** — a polished material that NEEDS an environment to
+ * reflect.
+ *
+ * ⚠ SO THE RIG STAYS CAPABLE OF LIGHTING A REFLECTIVE MATERIAL even though this
+ * surface barely uses it. Stripping the environment because satin does not need
+ * it would leave the platinum button with nothing to mirror, and rebuilding a
+ * studio rig later is far more expensive than keeping one now.
+ */
+export const SATIN_ENV_INTENSITY = 0.22;
+
+/**
+ * How high the two symmetric scene lights sit above the card plane.
+ *
+ * ⚠ THE RESTING STATE IS LIT FROM LEFT AND RIGHT — Carl, 9 August 2026: *"What
+ * might be better in the resting state is to light the scene globally with 2
+ * lights left and right."* A single key has to choose a direction, and every
+ * direction is wrong for a symmetric object at rest; direction is what chunk 2's
+ * hover arc introduces, and it reads as an event because the resting state has
+ * none.
+ *
+ * ⚠ ELEVATION IS THE DIAL, NOT INTENSITY. The face curves on the SHORT axis
+ * (`crownZ` — raised cosine top-to-bottom, plateau left-to-right), so light with
+ * too little vertical separation rakes along the FLAT axis and discloses
+ * nothing. Raising intensity on a badly-placed light makes a brighter flat card.
+ *
+ * ⚠ MEASURED, NOT CHOSEN. `verify/key-elevation-sweep.mjs` sweeps this and
+ * reports where the luminance peak lands as a fraction of face height. A peak
+ * near 50% means the light is on the FACE; near 0% or 100% it is on an EDGE —
+ * and a thin bright rim against a black face scores BETTER on the disclosure
+ * ratio than a properly lit card, which is the trap three hand-adjustments fell
+ * into before this was swept.
+ */
+export const SCENE_KEY_ELEVATION = 70;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ⚠⚠ A MOVING RESTING LIGHT WAS BUILT ON 9 AUGUST 2026 AND REMOVED THE SAME DAY
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Carl asked for it — *"the light should move bringing out the 3d qualities of
+// the cards... slow, small and continuous"* — and later removed it on the
+// evidence: *"it looks ok zoomed in but not at this scale. Return it to the way
+// it was and i dont think 5 point lights are the solution."*
+//
+// ⚠ FIVE ATTEMPTS, ALL RECORDED HERE SO NONE IS REPEATED:
+//
+//   1. Two directionals, ANTIPHASE elevation swing. The bloom did not move at
+//      all — 8 samples across a full cycle every one at peak 38%. Opposing
+//      swings on a symmetric card cancel exactly.
+//   2. Same pair, IN PHASE. Exposure swung 25% and the peak still did not move:
+//      the cards pulsed brighter and dimmer without disclosing anything.
+//   3. Lateral (x) swing. Peak 0%, exposure 29%. The face is flat on that axis
+//      (`CROWN_PLATEAU_U`), so there was nothing for it to reveal.
+//   4. One moving directional plus one static fill, ±49°. Bloom migrated 13%
+//      while brightness swung 43% — measurably a light changing intensity
+//      rather than position.
+//   5. FIVE POINT LIGHTS, one per card, on a tight ellipse — Carl's own design,
+//      and the only one that could work in principle: a point light has a
+//      position, so proximity can narrow and widen the beam. `arcx` swept 26 to
+//      180. At 26 the edges went black (*"the face is floating on its own"*);
+//      past ~115 the light is far enough that distance barely varies and the
+//      ellipse stops being an ellipse in any useful sense. No value did both.
+//
+// ⚠ THE FINDING WORTH KEEPING, AND IT IS ABOUT SCALE RATHER THAN ABOUT LIGHTS.
+// The card's face is ~104px tall on screen. An effect that works by moving a
+// light across a curve has to resolve inside that, and none of these did — they
+// read at zoom and vanished at size. **What carries the form at this scale is
+// the MATERIAL'S OWN response**, which is why the satin's anisotropy and its
+// bloom do the disclosing and the approved look does not need the light to move.
+//
+// ⚠ IT MAY STILL BE RIGHT FOR THE HOVER. D-045's arcs are per-card and fire on
+// attention, where the user is looking at ONE card and a bigger, faster gesture
+// is legitimate. Nothing here rules that out; it rules out ambient motion at
+// resting scale.
+//
+// ⚠ THE DIAGNOSTIC DOORS SURVIVE because they are how this was found:
+// `?lighthelpers=1` draws the lights, `?keyy=` moves their elevation, and
+// `verify/key-elevation-sweep.mjs` measures where the light lands.
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THE RESTING RIG — DERIVED FROM THE CONTACT FIELD, WHICH ALREADY WORKS
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// ⚠ CARL, 9 August 2026, after five attempts at deriving a rig from scratch:
+// *"Lets emulate something that works — lighting on the client info section.
+// Have a light central illuminating all the cards, you may have to dial it down
+// slightly, and then another light starting top left, looking across the cards
+// and ending bottom right with an ellipse in between."*
+//
+// ⚠ COPYING A PROVEN RIG IS THE RIGHT MOVE AND THE PREVIOUS FIVE WERE NOT. Every
+// earlier attempt reasoned from the geometry — swing the elevation, swing the
+// azimuth, antiphase, in phase, five point lights — and each was measured
+// failing. The contact field is an APPROVED object built from the same
+// rim/bevel/face vocabulary, lit in a way Carl has already accepted by eye.
+// **The question "what lighting suits this form" was answered months ago on its
+// sibling.**
+//
+// ⚠⚠ AND THE FIELD'S RIG IS ASYMMETRIC, WHICH IS EXACTLY WHAT THE CARDS LACKED.
+// Measured from `contact-field-canvas.tsx`:
+//
+//     key    [-160, 120,  40]  intensity 1.60   top-left, grazing
+//     fill   [ 140, -90,  60]  intensity 0.35   bottom-right, ~1/5 of the key
+//     ambient                  intensity 0.22
+//
+// The cards were running TWO EQUAL LIGHTS at 1.55 each — a symmetry this Builder
+// introduced — and that symmetry is what produced two pinned blooms with a dead
+// band between them. **One dominant direction plus a quiet fill is what makes a
+// shallow crown read.**
+//
+// ⚠ AND THE FIELD'S OWN COMMENT EXPLAINS THE ANGLE, which the cards had wrong:
+// *"Dropping z well below the lateral offsets puts the key at a genuinely
+// grazing angle (~76 degrees off-normal), so a shallow crown and the bevel
+// shoulder both register."* At z=200 it measured a ~5% Lambert response across
+// the whole crown — *"a flat slab with no readable form"*. The cards' z=70
+// against x=±150 was far less grazing than the field's z=40 against x=-160.
+
+/** Top-left, grazing. Taken from the field's `KEY_LIGHT_POSITION`. */
+export const REST_KEY_POSITION: [number, number, number] = [-160, 120, 40];
+export const REST_KEY_INTENSITY = 1.6;
+
+/** Bottom-right, quiet. The field's `FILL_LIGHT_POSITION`, ~1/5 of the key. */
+export const REST_FILL_POSITION: [number, number, number] = [140, -90, 60];
+export const REST_FILL_INTENSITY = 0.35;
+
+/**
+ * ⚠ THE FIELD'S 0.22, DIALLED DOWN AS CARL ANTICIPATED: *"you may have to dial
+ * it down slightly."* The cards carry a travelling light the field does not, and
+ * ambient is what erases the shadows a travelling light exists to cast.
+ */
+export const REST_AMBIENT_INTENSITY = 0.18;
+
+// ── The travelling light ─────────────────────────────────────────────────────
+//
+// ⚠ ONE LIGHT, NOT FIVE, AND IT CROSSES THE WHOLE GRID. Carl: *"another light
+// starting top left, looking across the cards and ending bottom right with an
+// ellipse in between."* So its path runs the same diagonal the static key and
+// fill already define — from where the key sits to where the fill sits — and it
+// bows out into an ellipse between them rather than travelling a straight line.
+//
+// ⚠ IT IS A POINT LIGHT, because the ellipse only means something if distance
+// does. A directional light has no position: only its angle exists, so bowing
+// its path would change nothing at all. That was established the expensive way.
+//
+// ⚠ AND IT IS GRID-WIDE RATHER THAN PER-CARD, which is the correction the
+// five-light attempt earned. Per-card lights each lit a ~104px face and could
+// not resolve at that size; one light crossing all five cards produces a
+// highlight that MOVES BETWEEN them, which is legible because the travel is
+// measured against the whole row rather than against one small face.
+
+/**
+ * ⚠ THE PATH IS IN THE GRID'S OWN PLANE, SEEN FACE-ON — corrected 9 August 2026
+ * from Carl's drawing. An earlier version ran a diagonal that bowed toward the
+ * VIEWER, which is a different curve entirely: his sweeps down and across
+ * BENEATH the row, and the bow is within the plane rather than in depth.
+ *
+ * *"Start just behind top left and end just behind bottom right. If you want to
+ * keep the circuit, when it goes round the back have it race to the beginning.
+ * Apply easing at the tight curves."*
+ */
+
+/** Enters upper-left of card 1 — BEHIND the card plane, so it emerges into view. */
+export const REST_TRAVEL_FROM: [number, number, number] = [-360, 120, -70];
+/** Exits lower-right past card 5, behind the plane again. */
+export const REST_TRAVEL_TO: [number, number, number] = [360, -150, -70];
+
+/**
+ * How far the path sags BELOW the straight line between its endpoints, and how
+ * far it comes FORWARD of the card plane at the same time.
+ *
+ * ⚠ THE SAG IS WHAT MAKES IT CARL'S CURVE RATHER THAN A DIAGONAL. His drawing
+ * dips well under the second row before rising to the exit, so the light passes
+ * beneath the whole grid at its lowest point and rakes UP at the lower cards —
+ * which is the only position from which their bottom edges catch anything.
+ *
+ * ⚠ AND THE FORWARD LEAN IS WHAT BRINGS IT IN FRONT. Both endpoints sit behind
+ * the card plane (`z = -70`); the light has to cross to the visible side for the
+ * middle of its pass and return behind for the ends. That crossing is what makes
+ * it EMERGE rather than switch on.
+ */
+export const REST_TRAVEL_SAG = 150;
+export const REST_TRAVEL_FORWARD = 190;
+
+/** The traveller's brightness. Below the key, so it accents rather than lights. */
+export const REST_TRAVEL_INTENSITY = 0.9;
+
+/**
+ * The VISIBLE pass — entering upper-left, crossing, exiting lower-right.
+ *
+ * ⚠ SLOW, ON CARL'S STANDING INSTRUCTION: *"slow, small and continuous... too
+ * fast and the effect wont be noticeable."*
+ */
+export const REST_TRAVEL_MS = 11000;
+
+/**
+ * The RETURN — round the back, racing to the start.
+ *
+ * ⚠ CARL'S SOLUTION TO A PROBLEM EVERY EARLIER VERSION HAD: *"when it goes round
+ * the back have it race to the beginning."* A light that reverses has to turn,
+ * and a turn in view is either a visible corner or a slow crawl through the
+ * moment the eye is most likely to notice. **A circuit never turns in view at
+ * all** — the light always travels the same direction, and the only reversal
+ * happens behind the cards where nothing is lit.
+ *
+ * ⚠ FAST, AND THAT IS WHY IT WORKS. At a fifth of the visible pass the return is
+ * over before the absence registers as a gap.
+ */
+export const REST_RETURN_MS = 2200;
+
 
 // ── The filament, lit ────────────────────────────────────────────────────────
 //
@@ -796,7 +1243,45 @@ export const FILAMENT_LIGHT_DISTANCE = 700;
  * **Expect to retune this by eye**, on `[p]`, using Carl's standing method:
  * all five cards lit, push until other colours shift, then back off.
  */
-export const FILAMENT_LIGHT_POWER = 60;
+/**
+ * ⚠ RAISED WITH THE HEIGHT, 9 August 2026 — THEY ARE ONE CONTROL. The comment
+ * above states it: *"raising z dims the own card as 1/z², so
+ * `FILAMENT_LIGHT_POWER` must rise with it."*
+ *
+ * `FILAMENT_LIGHT_HEIGHT` moved 6 → 16 to clear the crown's apex, which is a
+ * 1/z² loss of (16/6)² ≈ 7.1. This restores the surface's own illumination to
+ * roughly where it was rather than leaving the card dark and the defect looking
+ * like a lighting failure.
+ *
+ * ⚠ THE COMPENSATION IS ARITHMETIC; THE RESULT IS NOT PREDICTED. Satin's
+ * diffuse response is a different surface from the transmissive face this was
+ * tuned against, so the compensated value is a STARTING POINT for Carl's
+ * standing method — all five cards lit, push until other colours shift, then
+ * back off — not a settled number. Bound to `[p]`.
+ *
+ * ⚠ DERIVED FROM THE HEIGHT CONSTANT, NOT FROM A COPY OF IT. Writing
+ * `(16 / 6) ** 2` here would recreate the exact defect being fixed one line
+ * above — a number that stops matching the geometry the moment the geometry
+ * moves. If `FILAMENT_LIGHT_HEIGHT` changes again, this follows on its own.
+ */
+/**
+ * ⚠ THE HEIGHT IS DEFINED HERE AND RE-EXPORTED BELOW, NOT THE OTHER WAY ROUND.
+ * `FILAMENT_LIGHT_HEIGHT`'s documented home is further down this file with the
+ * neighbour-ratio analysis it belongs to, but `const` has no hoisting — the
+ * power below would read it in its temporal dead zone and throw at module load.
+ * Defining the value here and exporting it at its documented site keeps ONE
+ * source of truth without moving two large annotated blocks past each other.
+ */
+const FILAMENT_LIGHT_HEIGHT_VALUE = CROWN_HEIGHT + 11.5;
+
+/** The height this power was originally tuned against, before the 9 Aug fix. */
+const FILAMENT_POWER_TUNED_AT_Z = 6;
+/** The power that read correctly at that height, on the transmissive face. */
+const FILAMENT_POWER_AT_TUNED_Z = 60;
+
+export const FILAMENT_LIGHT_POWER =
+  FILAMENT_POWER_AT_TUNED_Z *
+  (FILAMENT_LIGHT_HEIGHT_VALUE / FILAMENT_POWER_TUNED_AT_Z) ** 2;
 
 /**
  * How far the filament light sits PROUD of the card plane, in world units.
@@ -835,8 +1320,45 @@ export const FILAMENT_LIGHT_POWER = 60;
  *
  * ⚠ DELIBERATELY UNDER-TUNED FOR CRISP GLASS — frosting scatters and will read
  * stronger. Low on purpose.
+ *
+ * ═════════════════════════════════════════════════════════════════════════
+ * ⚠⚠ CORRECTED 9 AUGUST 2026, AND EVERY WORD ABOVE THIS LINE DESCRIBES GLASS.
+ * ═════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠ THE ARITHMETIC DEFECT, CARRIED FOR FOUR SESSIONS. The face was rebuilt on
+ * 5 August to rise from the rim's base and stand PROUD of it: `FACE_RISE_FROM`
+ * is 0 and the crown's apex sits at `CROWN_HEIGHT` = 4.5. **The light stayed at
+ * 6.** So the source hangs 1.5 units above the apex of a curved surface — and
+ * that is the *"dot in the middle"* Carl reported and every handoff since has
+ * listed as outstanding. It was never a design question; it was a number that
+ * did not move when the geometry under it did.
+ *
+ * ⚠ AND IT IS FAR WORSE ON SATIN THAN IT WAS ON GLASS. The reasoning above is
+ * explicitly built on there being NO usable diffuse response — the face was
+ * `transmission: 0.97`, which mixes 97% of the diffuse away, so the whole
+ * neighbour analysis is specular-only. **Satin is diffuse.** A point source
+ * 1.5 units above a diffuse crown produces a hard hot spot with visible
+ * falloff: the exact opposite of the long soft bands Carl's references show,
+ * and it would defeat the brief — *"the most important thing with the cards is
+ * to bring out the geometry."*
+ *
+ * ⚠ DERIVED FROM THE APEX, NOT TYPED — which is the whole reason the old value
+ * went stale. Clearance above the crown, so raising `CROWN_HEIGHT` can never
+ * again leave the light stranded inside the surface it is meant to rake.
+ *
+ * ⚠ THE RATIO THE BRIEF ACTUALLY CONSTRAINS. Carl's own-to-neighbour brief is
+ * *"not as much as its own filament would affect it"*, and the table above puts
+ * that between z=15 and z=20 — but that table was computed for a SPECULAR-ONLY
+ * surface. With diffuse restored the neighbour term is no longer near-zero, so
+ * the ratio must be re-measured on satin rather than inherited. **This value is
+ * a starting point for that measurement, not its conclusion.**
+ *
+ * ⚠ RAISING z DIMS THE OWN CARD AS 1/z², so `FILAMENT_LIGHT_POWER` MUST rise
+ * with it — they are one control. That re-derivation is chunk 1's tuning pass,
+ * on Carl's standing method: all five cards lit, push until other colours
+ * shift, then back off.
  */
-export const FILAMENT_LIGHT_HEIGHT = 6;
+export const FILAMENT_LIGHT_HEIGHT = FILAMENT_LIGHT_HEIGHT_VALUE;
 
 /**
  * How long the filament takes to cool once the card is pressed again.

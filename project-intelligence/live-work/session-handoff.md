@@ -1,6 +1,6 @@
-# Session Handoff — 7 August 2026
+# Session Handoff — 9 August 2026
 
-**Written at the end of the entrance-fix / responsive-cards session.**
+**Written at the end of the satin / resting-light session.**
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -16,217 +16,175 @@ say so.** It was not broken today.
 
 ---
 
-## THE STATE — everything is committed, the tree is clean, nothing is half-built
+## ⚠⚠ THE TREE IS DIRTY. ~1560 LINES UNCOMMITTED. COMMIT BEFORE ANYTHING ELSE.
 
-**Five commits on `main`, from `0961332`:**
+Two commits landed early (`3a7cf1f`, `2e71e5c`). **Everything after them is unstaged** —
+the satin material, the label texture, and the whole resting-light investigation are in one
+block across three files:
 
-| | |
-|---|---|
-| `1e3d65c` | the card arrives as glass, and stops re-linking its shader |
-| `9957465` | the opening no longer waits on WebGL to show its first line |
-| `26f6981` | the answer cards follow the grid at every width |
-| `d8dd1a8` | verify harnesses for the entrance, the arm path, the responsive grid |
-| `e429fc2` | verify harnesses for the ground edge, the page background, the field orbit |
+    components/enquiry/answer-card-canvas.tsx   +710
+    components/enquiry/answer-card-glass.ts     +530
+    components/enquiry/answer-card-mesh.tsx     +353
 
-`npx tsc --noEmit` clean. Lint at the recorded baseline: **1 problem (1 error, 0 warnings)** —
-the known `enquiry-opening.tsx` reduced-motion effect. **Dev server stopped.**
+plus 12 untracked `verify/` harnesses. `npx tsc --noEmit` clean. Lint at the recorded
+baseline: **1 problem (1 error, 0 warnings)** — the known `enquiry-opening.tsx`
+reduced-motion effect. **Dev server was running on :3000.**
 
-**One stash: `ground-gradient-attempt-7aug`** — three failed attempts at the ground plane,
-see below. `stash@{1}` is still the June parachute; leave it alone.
-
-⚠ **`chunk-scope.json` IS STILL DELETED — the repo is FAIL-OPEN.** Unchanged for a fourth day.
+⚠ **`chunk-scope.json` IS STILL DELETED — the repo is FAIL-OPEN.** Fifth day.
 
 ---
 
 ## ✅ APPROVED BY CARL'S EYE THIS SESSION
 
-**The card entrance** — *"The cards look good."*
-**The opening's text** — *"The text appearance is a lot better."*
-**The responsive cards** — *"I seen the narrow widths when you were doing your thing and
-understand that it is all about scaling."*
+**The Q5 stutter fix** — *"it looks pretty clean"* (86ms, down from 584ms).
+**The satin card with its label** — *"Thats looks great!"*
 
-Everything else below is measured, not approved.
+Everything else below is measured or built, **not approved**.
 
 ---
 
-## 🔴 START HERE NEXT SESSION — THE MATERIAL DECIDES, AND CARL DECIDES IT
+## 🔴 START HERE — THE RESTING LIGHT, AND CARL IS DIRECTING IT
 
-**Carl is researching Three.js, WebGL and React** — videos and tutorials lined up. He said so
-explicitly and it is the right call:
+**He is drawing the path and correcting it by eye. Do not derive it.** His words when the
+Builder kept measuring instead of showing him: *"Youre not listening... Youre not directing
+them, i am. i have the advantage in a situation like this."* **He is right and he has been
+right every time today.**
 
-> *"i would make better decisions if i learnt more."*
-> *"The design and my ability to talk to you in appropriate and coherent language will be best
-> served if i research and learn about what we are trying to achieve."*
+### The path, from his final drawing
 
-**Build agreed for "a couple of days" from 7 August.** ⚠ **DO NOT START BUILDING THE HOVER
-LIGHT UNTIL THE MATERIAL IS SETTLED** — the two decisions are coupled (a moving light reveals
-a coated or anisotropic surface very differently from how it reveals glass).
+**A blue curve, NOT a closed ellipse.** He drew a red ellipse around the grid captioned **NO**
+— ⚠ **that red ellipse is the REJECTED shape.** A previous read had this backwards; do not
+rebuild an orbit.
 
-### ⚠⚠ THE FULL HOVER SPECIFICATION IS IN `decisions.md` D-045. READ IT BEFORE BUILDING.
+The blue path: **enters upper-left of card 1, sweeps down and across BENEATH the row, exits
+lower-right past card 5**, and a small arrow curls back at the right — *"when it goes round the
+back have it race to the beginning."* A **blue vertical arrow in the middle points UP** at the
+cards: at its lowest the light rakes UP at the lower row, which is how their bottom edges catch.
 
-It is long, it is Carl's, and it is complete enough to build in one pass. Summary only here:
+> *"Start just behind top left and end just behind bottom right... Apply easing at the tight
+> curves."*
 
-- **Hover is the user PONDERING** — so the light **loops** while the pointer rests, eased,
-  slow, subtle. A one-way pass asserts a conclusion the user has not reached.
-- **Card 2 is its own case** — centred, vertical arc, full sweep, symmetric.
-- **The other four take the diagonal to their nearest corner**, source starting **just inside**
-  the corner, and **stop short** of the extremes (Carl's guess: 30°/150°) because an
-  asymmetric card is starved where a symmetric one is flattered.
-- **Start direction pairs on the diagonal** — 1 and 5 start outward, 3 and 4 inward. The one
-  deliberate asymmetry; everything else mirrors.
-- **Derive tilt, inset and sweep limits from grid position.** ⚠ **If card 3 needs tuning
-  separately after card 1 is right, the derivation is wrong.**
-- **Intensity must be a function of arc position from the outset**, even if flat initially.
+**Built and on URL doors** (`TravellingLight` in `answer-card-canvas.tsx`):
 
-### ⚠ GLASS IS UNDER REVIEW AND MAY NOT SURVIVE
+    ?sag=       dip below the straight line     150
+    ?fwd=       forward of the card plane       190
+    ?travelms=  the visible pass                11000
+    ?returnms=  the race round the back         2200
+    ?travint=   the traveller's intensity       0.9
+    ?noglobal=  1 = static rig off, or a fraction
+    ?lighthelpers=1  draws BOTH statics AND the traveller's whole path + a ball on it
 
-> *"Its so 'Apple' anyway and im wondering at this stage in modern website design its use could
-> be considered somewhat cliched."*
+⚠ **CARL'S LAST INSTRUCTION, NOT YET SATISFIED:** *"i can tell by the arc of the white sphere
+that it is wrong. Follow the ellipse, it is not a guide, its pretty accurate."* **The drawn
+curve is a specification to be matched, not approximated.**
 
-**Ruled out by eye, without building:** brushed/anodised metal — *"its too close in look to the
-client info cards."* **Leading candidate:** satin — *"I like the way the light interacts with
-it."* Not chosen.
+⚠ **AND WITH `?noglobal=1` THE TRAVELLER IS FAR TOO WEAK** — the faces are nearly black and the
+rims carry everything. Carl: *"before you try it turn the global light off, only then will you
+see the true effect."* `?travint=` needs to go up substantially before the path can be judged.
 
-⚠ **AND THE CSS CARD WAS NEVER DESCRIBING GLASS.** Its six inset shadows are a studio lighting
-diagram. **The labels name the CSS technique; the shadow stacks describe the object.** Where
-they disagree the shadows are right. See D-045 §8 — this is the most transferable finding of
-the session.
+### ⚠⚠ SIX RESTING-LIGHT ATTEMPTS FAILED BEFORE THIS. ALL RECORDED IN `answer-card-glass.ts`.
 
----
+Antiphase directionals (peak 38% every sample); in phase (exposure +25%, peak still still);
+lateral swing (peak 0%); one moving directional (bloom 13%, brightness 43%); **five per-card
+point lights on a tight ellipse — Carl's own design, removed by him**: *"it looks ok zoomed in
+but not at this scale... i dont think 5 point lights are the solution."*
 
-## What was fixed, and the two errors worth inheriting
+⚠ **THE FINDING WORTH KEEPING:** the face is ~104px tall on screen. **An effect that works by
+moving a light across a curve cannot resolve at that size.** What carries the form is the
+MATERIAL's own response. This does not rule the technique out for HOVER, where one card has
+attention and a bigger gesture is legitimate.
 
-### 1. The black rectangle — a workaround whose premise expired
-
-`CardLighting` ramped `color` and `envMapIntensity` from black, justified as *"an unlit surface
-in a dark scene IS the page behind it."* True while the lockup sat behind the cards; **the
-lockup went on 5 August and `GROUND_COLOR` #101010 took its place**, so an unlit card became
-DARKER than its background. Steepest drop at arrival **−11.36 → −0.59** (clay control −0.35).
-
-The approved figures were in `globals.css` all along — `@keyframes enquiry-card-rise`,
-opacity 0→1 with translateY.
-
-### 2. ⚠ THE FIX'S FIRST VERSION CAUSED A WORSE BUG, AND THIS IS THE LESSON
-
-Toggling `mat.transparent` per fade **re-links the shader** — `transparent` is in the program
-cache key, so `useScenePrecompile` cannot have warmed it. Measured in `getProgramParameter`
-self-time, with a stash-and-compare control:
-
-    without the toggle    725ms
-    with the toggle      1977ms
-    built transparent     424ms   <- shipped
-
-That ~1250ms arrived as one ~1490ms freeze 330ms after card 4's rung. **Carl saw it exactly:**
-*"cards 1+2 look good, 3 happens, then a pause, 3 flashes and 4+5 come on."*
-
-⚠ **THE BUILDER SUSPECTED THE CONTACT FIELD AND BUILT TWO INSTRUMENTS POINTING AT IT.**
-`verify/warm-guard.mjs` proved that guard innocent — it held correctly to +14945ms, exactly
-`ENTRANCE_END_MS` after the entrance start. **The profiler naming the function is what found
-the truth; the stash-and-compare is what proved it was the Builder's own.**
-
-### 3. The opening's 4.2-second blank screen — caught by an outside audit
-
-`AnswerCardCanvas` returns `null` below 1280px, so no canvas existed, nothing reported
-`compiled`, and the 4000ms ceiling armed the opening **on every load**:
-
-| width | canvas | armed by | heading |
-|---:|:---:|---|---:|
-| 1440 | yes | compile | 2349ms |
-| 1279 | **no** | **⚠ ceiling** | **4413ms** |
-| 1024 | **no** | **⚠ ceiling** | **4382ms** |
-
-⚠ **`OPENING_ARM_CEILING_MS`'s OWN COMMENT STATED THE RULE THIS BROKE** — *"if this is ever the
-thing that starts the opening on a normal run, the gate is broken and the page is merely hiding
-it."*
-
-⚠ **AND THIS PROJECT'S OWN HARNESS COULD NEVER HAVE CAUGHT IT.** `verify/opening-arm.mjs` only
-ever ran at 1440px, where the gate works. **A harness that exercises only the passing case is
-not a test.** `verify/arm-by-width.mjs` now sweeps widths. Fixed by arming on
-`document.fonts.ready` + a committed frame; ready gate 3/3, backstop 0/3, all widths now
-408–609ms.
-
-### 4. The 1280px cliff — a false reason hiding a real coupling bug
-
-`PROTO_MIN_VIEWPORT_PX` claimed the grid *"reflows"* below 1280. **Measured at eight widths: it
-never reflows.** 576×104 down to 640px, then proportional, 3+2 intact to 375px, no overflow.
-
-**The real bug was `CARD_BOXES` — an absolute-pixel table shadowing a `repeat(6, 1fr)` layout.**
-Now: `ResizeObserver` measures the grid, `cardBoxesAt(width)` scales the boxes, cards are
-**scaled not rebuilt** (rebuilding would change the cross-section and could drop the 16° tilt
-guard below its floor). Five cards at every width, 0.01px drift.
+⚠ **AND THE STATIC RIG IS NOW THE CONTACT FIELD'S, COPIED** — Carl: *"Lets emulate something
+that works."* Key `[-160,120,40]` @1.6 top-left grazing, fill `[140,-90,60]` @0.35,
+ambient 0.18. **The asymmetry is the point.** The cards had two EQUAL directionals at 1.55 — a
+Builder invention — and that symmetry made two pinned blooms with a dead band.
 
 ---
 
-## ⚠ THE FAILURE — the ground plane, three attempts, escalated not shipped
+## THE THREE STATES — Carl's model, 9 August
 
-**The rectangle is real and measured.** The flat plane steps **+1 luminance level** against the
-page at its left and right edges (15 outside, 16 inside), along a straight vertical edge
-hundreds of pixels long. Top and bottom match perfectly. Amplified 24× it is unmistakable:
-`verify/out/ground/left-edge-amplified.png`.
+| state | spec |
+|---|---|
+| **Resting** | light moves, brings out the 3D. **In progress, above.** |
+| **Hover** | the answer text becomes **teal** — the rail system's colour — gentle transition |
+| **Selected** | filament warms off → amber → **stops halfway between amber and red** |
 
-**Cause:** `GROUND_COLOR` #101010 is one sample of a radial gradient, and a flat fill can only
-match a gradient at one distance from its centre. ⚠ **Oversizing the mesh does not help** —
-that fixes a BOUNDARY mismatch; this is a COLOUR mismatch, and the plane is clipped by the
-CANVAS anyway.
-
-**Three attempts, all failed:**
-
-| | result | cause |
-|---|---:|---|
-| 1 | −15 levels | `THREE.Color` converts sRGB→linear; a raw shader needs `#include <colorspace_fragment>` |
-| 2 | −1.00 | per-axis radii — wrong formula for CSS `farthest-corner` |
-| 3 | +1.00 | √2 radii — closer, still not the browser's curve |
-
-**The gradient plane ended up no better than the flat one it replaced.** Solving radii from
-measured pixels gives rx 960 / ry 808 — ratios 1.333 and 1.497 against farthest-side, which
-**disagree**, meaning the browser is not interpolating the way the formula assumes.
-
-⚠ **STASHED, NOT COMMITTED, AND ESCALATED.** Carl's rule is escalate after two attempts; this
-went to three. `git stash list` → `ground-gradient-attempt-7aug`.
-
-**A candidate route, UNTESTED and recorded as a candidate not a prescription:** sample the
-page's PAINTED gradient into a texture and upload it, so the plane carries the browser's own
-pixels rather than a reconstruction. *(The previous handoff asserted an untested fix as "THIS
-IS THE ONE" and cost a session. That is not repeated here.)*
+⚠ **THE TEXT CANNOT TAKE A TINT FROM LIGHT ALONE.** Measured (`verify/label-lit.mjs`): the
+glyphs sit at luminance 208, so a warm light shifts them only 5 points — imperceptible. **A
+colour change needs the texture redrawn, OR the glyph luminance dropped so light can tint it.**
+The second is more truthful, the first more controllable. Carl's call.
 
 ---
 
-## ⚠ Open, and unresolved
+## WHAT WAS BUILT AND APPROVED
 
-- **`FILAMENT_LIGHT_HEIGHT` still needs re-checking.** The face moved z=1.10 → z=4.00 in the
-  rebuild while the filament light stayed at z=6 — that is the *"dot in the middle"* Carl saw.
-  **Arithmetic, not design. Still not done.**
-- **The glass material has never been judged on the rebuilt geometry** — and may now be
-  replaced entirely.
-- **`GLASS_CLEARCOAT` defaults to 0, inert.** The frost/coat grid that dismissed it ran on the
-  OLD broken geometry. ⚠ **Worth re-testing on the rebuilt crown, not inheriting.**
-- **`?warmtrace=1`** was added to `enquiry-opening.tsx` — inert without the flag, and
-  `verify/warm-guard.mjs` depends on it.
-- **`PROTO_MIN_VIEWPORT_PX` is no longer read by the canvas** but `ENTRANCE_ANCHOR_CEILING_MS`
-  still cites it. **That citation is stale** — left deliberately rather than changed in
-  passing, because it guards another component's timing.
-- **~2.4MB of three + @react-three/fiber loads eagerly.** An outside audit flagged
-  `next/dynamic` with `ssr: false`. Not done — real, but a build-level change with its own
-  risks and it does not affect the timeline.
-- ⚠ **SHADOW.** Still parked, fourth session.
+### Glass is discarded. The face is satin. (Carl's decision, with his reasoning)
+
+> *"it needs a background to become truly effective and it could be seen as cliched in 2026."*
+
+The first half is load-bearing: glass is a lens, and **the lockup it refracted went on 5 August**.
+Measured before the change — the short-axis profile was a flat 69.5 plateau, a cliff, then flat
+~15: **the 23.8° crown disclosed nothing**, because `transmission: 0.97` mixes away 97% of the
+diffuse.
+
+**After:** a smooth arc, `bothSidesFall: yes`, ratio 2.91 → 7.26 as the palette deepened.
+
+⚠ **`LIGHT_LEVEL` 0.35 → 1.1 WAS THE REAL FIX FOR "TOO FLAT AT NORMAL SCALE".** 0.35 was a
+GLASS value; on satin it left mean luminance at 21.6/255. Three attempts at light POSITION
+missed it. Carl's symptom — *"when i zoom in it is more like this but at a normal scale not so
+much defined"* — was under-exposure, not under-resolution.
+
+⚠ **`FILAMENT_LIGHT_HEIGHT` FIXED AFTER FOUR SESSIONS** — 6 → `CROWN_HEIGHT + 11.5` (16), now
+DERIVED. The face rose to 4.5 on 5 August and the light never moved: the *"dot in the middle"*.
+`FILAMENT_LIGHT_POWER` compensated ×(16/6)², also derived.
+
+### The answer text is now PART OF THE FACE, not a DOM overlay
+
+⚠ **THREE DOM VERSIONS FAILED AND THE THIRD IS THE INSTRUCTIVE ONE.** Shared clock (wrong
+easing/distance/no scale); polled values (one frame late, 0.025); **same frame, same values,
+measured 0.0000 divergence — and Carl still saw two objects**: *"as if the text is trying to
+catch up with the card or mimmic its movement."*
+
+⚠ **WHEN THE NUMBERS ARE PROVABLY IDENTICAL AND THE EYE STILL READS TWO OBJECTS, THE NUMBERS
+WERE NEVER THE PROBLEM.** A DOM label moves in 2D CSS pixels; the card rises in 3D world space
+under a perspective camera. **Different geometries — they agree at the endpoints and disagree
+everywhere between.**
+
+Now drawn into the face's albedo (`buildLabelTexture`), transformed and lit once.
+⚠ **The satin body colour is BAKED INTO the texture and `color` is white**, because
+`MeshPhysicalMaterial` computes `color * map` and no single `color` serves both.
+⚠ **ACCESSIBILITY DEBT:** the visible text is a texture — not in the a11y tree. Mandatory to
+fix when these become real controls.
+
+### Carl answered his own question about wrapping text on the curve
+
+*"Would the curve be enough to warp it and make it unreadable?"* **No** — `CROWN_PLATEAU_U` is
+0.72, so the LONG axis (the reading direction) is flat across 72% of its width.
 
 ---
 
-## How Carl worked today
+## ⚠ HOW THE BUILDER WASTED CARL'S TIME TODAY — read this before repeating it
 
-- ⚠ **HIS DRAWINGS AND HIS EYE SETTLED WHAT PROSE COULD NOT, AGAIN.** Two arc diagrams. He
-  also ruled out two materials on sight without either being built — fast and cheap and the
-  right way round.
-- ⚠ **HE CORRECTED THE BUILDER'S REASONING TWICE, AND WAS RIGHT BOTH TIMES.** On brushed metal
-  being "family" (it is repetition, not derivation) and on easing at the reversals (*"not if
-  the easing is slow enough"*). **When his argument and the Builder's disagree, check the
-  Builder's premise first.**
-- **He questions premises.** *"Is it necessary?"* on the lockup; *"is it cliched?"* on glass.
-- **He asks for the principle before deciding.** Reasoning first, trade-offs stated, the choice
-  left with him.
-- **No ASCII diagrams or box-drawing characters.**
-- **Do not commit or push unless he explicitly asks.** He asked today; five commits on `main`,
-  and he chose `main` over a branch when asked.
+1. **Kept measuring when asked to show.** Carl asked for light helpers; the Builder ran another
+   harness instead. **He has the advantage watching continuous motion; a sampler sees 8 frames.**
+2. **Changed two variables at once** (fill 1.55→0.16 AND arc radius 26) so the black-edge cause
+   was unattributable.
+3. **Built a helper that froze at mount** and then one that vanished against black. ⚠ **A
+   debugging aid that lies is worse than none** — fifth recorded instance of that class.
+4. **Coloured the helpers cyan/magenta**, and Carl reasonably read it as the LIGHTS being
+   coloured. They are white. Markers must not imply properties.
+5. **Reasoned instead of copying.** The contact field — an approved sibling — had a working rig
+   the whole time. Carl: *"Lets emulate something that works."*
+
+---
+
+## Still open, unchanged from before
+
+- **`GLASS_CLEARCOAT` = 0, inert.** The grid that dismissed it ran on the OLD geometry.
+- **The ground plane** — three attempts, stashed as `ground-gradient-attempt-7aug`.
+- **~2.4MB of three + fiber loads eagerly.** `next/dynamic` flagged, not done.
+- ⚠ **SHADOW.** Fifth session parked.
+- **~70ms of Q5 stutter remains** — needs the shared-canvas host (route A), not authorised.
 
 ---
 
@@ -234,54 +192,29 @@ IS THE ONE" and cost a session. That is not repeated here.)*
 
 ```
 npm run dev
-http://localhost:3000/start                the corridor
-http://localhost:3000/start?clay=1         the form study
-http://localhost:3000/start?skip=1         the contact field  (DEV DOOR — delete when Q5
-                                           gets real selection)
-http://localhost:3000/start?cardrig=1      [1-6] geometry, [7-9] glass/light, [r] rim rough,
-                                           [m] metal, [f] filament, [c] face clearcoat,
-                                           [v] coat roughness, [0] print
-http://localhost:3000/start?beattrace=1    per-frame card progress
-http://localhost:3000/start?warmtrace=1    the contact field's warm-up guard decisions
+http://localhost:3000/start                       the corridor
+http://localhost:3000/start?lighthelpers=1        the lights and the traveller's path
+http://localhost:3000/start?noglobal=1            static rig off — the traveller alone
+http://localhost:3000/start?cardrig=1             [7] satin tightness, [a] smear,
+                                                  [n] direction, [s] sheen, [9] light,
+                                                  [p] power, [z] height, [0] print
 ```
 
-⚠ **MEASURE HEADED, WITH `--enable-gpu`, AND PRINT THE RENDERER STRING.** Headless substitutes
-SwiftShader. Confirmed real: `ANGLE (AMD Radeon(TM) Graphics, D3D11)`.
+⚠ **MEASURE HEADED, WITH `--enable-gpu`, AND PRINT THE RENDERER.** Confirmed real:
+`ANGLE (AMD Radeon(TM) Graphics, D3D11)`.
 
-**New harnesses:** `arm-by-width.mjs`, `cards-by-width.mjs`, `grid-by-width.mjs`,
-`grid-narrow.mjs`, `opening-held.mjs`, `entrance-frames.mjs`, `stall-profile.mjs`,
-`warm-collision.mjs`, `warm-guard.mjs`, `ground-edge.mjs`, `bg-truth.mjs`,
-`field-light-walk.mjs`. `stall-source.mjs` is **kept as a record of failure** — its prototype
-wrap never took because three is bundled, and an instrument that cannot fire is not a negative
-result.
+**New harnesses:** `crown-disclosure.mjs` (the disclosure ratio + profile SHAPE),
+`satin-wired.mjs` (proves anisotropy is connected by differencing renders — introspection
+FAILED on this R3F version), `label-coupling.mjs`, `label-frames.mjs`, `label-lit.mjs`,
+`key-elevation-sweep.mjs`, `resting-motion.mjs`, `rest-dials.mjs`, `satin-look.mjs`,
+`field-crops.mjs`, `field-material-study.mjs`, `label-with-card.mjs`.
 
----
-
-## ⚠⚠ THE SESSION'S LESSON — a harness that only tests the passing case is not a test
-
-**Two harnesses were found LYING this session, and both had been trusted.**
-
-`verify/cross-section.mjs` held its own copy of `BEVEL_WIDTH = 3.0` while the source said 0, so
-it printed the **pre-rebuild card** — a 3-wide bevel and a 5.00-unit gap in a card that had not
-had either for two days. **It nearly produced a false report that the geometry rebuild had been
-lost.** It is the file the handoff calls the authority on the form.
-
-`verify/opening-arm.mjs` only ever ran at 1440px, where the gate works — so a **4.2-second blank
-screen on every narrower viewport survived for days** and was found by an outside audit, not by
-this project's own instruments.
-
-⚠ **THIS IS THE THIRD AND FOURTH RECORDED INSTANCE OF THE SAME CLASS.** `q5-stutter.mjs`
-reported 0/3 CLEAN on a visible defect for the same reason. **A harness holding a duplicate of
-the value it checks cannot fail when that value moves; a harness that exercises one case cannot
-find a defect in the others.** Both are fixed and both now say so in their own headers.
+⚠ **`resting-motion.mjs` REPORTED "NO CHANGE" ON A VISIBLY ANIMATING SCENE** — it samples a
+narrow strip and the profile has TWO bands, so its "peak position" flipped between two local
+maxima. **Do not trust it without reading the full profile.**
 
 ---
 
-*7 August 2026. The entrance is fixed and approved, the opening starts on time at every width,
-and the cards exist below 1280px for the first time. The ground plane defeated three attempts
-and is stashed.*
-
-*And the next chunk is now specified rather than sketched — D-045 carries the whole hover
-design in Carl's words. **The material comes first, and it is Carl's to decide.** He is
-learning the stack so he can specify it himself, which is the right order and worth waiting
-for.*
+*9 August 2026. Glass is gone, satin is approved with its label, and the Q5 stutter is 85%
+fixed. The resting light is Carl's to direct — he has drawn the path twice and corrected it
+three times, and the next session should hand him the dials rather than another derivation.*

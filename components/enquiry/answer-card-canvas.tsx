@@ -47,6 +47,18 @@ import {
   FILAMENT_LIGHT_DISTANCE,
   FILAMENT_COOL_MS,
   FILAMENT_HEAT_MS,
+  REST_KEY_POSITION,
+  REST_KEY_INTENSITY,
+  REST_FILL_POSITION,
+  REST_FILL_INTENSITY,
+  REST_AMBIENT_INTENSITY,
+  REST_TRAVEL_FROM,
+  REST_TRAVEL_TO,
+  REST_TRAVEL_SAG,
+  REST_TRAVEL_FORWARD,
+  REST_TRAVEL_INTENSITY,
+  REST_TRAVEL_MS,
+  REST_RETURN_MS,
 } from "./answer-card-glass";
 // ⚠ THE BACKDROP IS NOW THE GROUND PLANE ALONE. `useRegionShift` and
 // `REGION_SHIFT_MS` are gone with the `c2b DESIGN` lockup, removed 5 August 2026
@@ -419,6 +431,237 @@ function ClayFormLight({ centre }: { centre: { x: number; y: number } }) {
 
 // ── Tuning harness ───────────────────────────────────────────────────────────
 
+/**
+ * The travelling light — one source crossing the whole grid, top-left to
+ * bottom-right, bowing toward the viewer in between.
+ *
+ * ⚠ CARL'S DESIGN, 9 August 2026: *"another light starting top left, looking
+ * across the cards and ending bottom right with an ellipse in between."* It sits
+ * on top of a static rig copied from the contact field, which is an approved
+ * object lit in a way he has already accepted.
+ *
+ * ⚠ ONE LIGHT ACROSS THE ROW, NOT ONE PER CARD — and that is the correction the
+ * five-light attempt earned rather than a preference. Per-card lights each had
+ * to disclose a ~104px face by moving within it, and could not resolve at that
+ * size: *"it looks ok zoomed in but not at this scale."* A single traveller
+ * makes the highlight move BETWEEN cards, so the motion is measured against the
+ * whole 576-unit row instead of against one small face.
+ *
+ * ⚠ A POINT LIGHT, BECAUSE THE BOW ONLY MEANS SOMETHING IF DISTANCE DOES. A
+ * DirectionalLight has no position — only its angle exists — so bowing its path
+ * would change nothing whatsoever. Established the expensive way across four
+ * earlier attempts.
+ *
+ * ⚠ `invalidate()` EVERY FRAME. The canvas is `frameloop="demand"`; a light that
+ * moves without requesting a render is an animation that runs and is invisible.
+ */
+function TravellingLight({
+  reducedMotion,
+  level,
+  showHelper,
+  sag,
+  forward,
+  travelMs,
+  returnMs,
+  intensity,
+}: {
+  reducedMotion: boolean;
+  level: number;
+  /** How far the curve dips below the straight line. `?sag=` */
+  sag: number;
+  /** How far it comes forward of the card plane. `?fwd=` */
+  forward: number;
+  /** The visible pass, ms. `?travelms=` */
+  travelMs: number;
+  /** The race round the back, ms. `?returnms=` */
+  returnMs: number;
+  /** The traveller's brightness. `?travint=` */
+  intensity: number;
+  /**
+   * ⚠ `?lighthelpers=1` DRAWS THE TRAVELLER AND ITS WHOLE PATH. A point light
+   * has no body, and this one moves — so without a marker the only way to know
+   * where it goes is to infer it from shading, which is exactly the blind
+   * reasoning that cost five attempts at the resting rig. Carl: *"i need to see
+   * where the light is moving, not just the effect."*
+   */
+  showHelper: boolean;
+}) {
+  const ref = useRef<THREE.PointLight | null>(null);
+  const scene = useThree((s) => s.scene);
+  const invalidate = useThree((s) => s.invalidate);
+
+  useEffect(() => {
+    const light = ref.current;
+    if (!light) return;
+
+    /**
+     * The visible pass, `t` from 0 (entering upper-left) to 1 (exiting
+     * lower-right). The curve is Carl's drawing: it sags BELOW the straight line
+     * between the endpoints and comes FORWARD of the card plane at the same
+     * time, so it passes beneath the row and rakes up at the lower cards.
+     */
+    const place = (t: number) => {
+      const x = REST_TRAVEL_FROM[0] + (REST_TRAVEL_TO[0] - REST_TRAVEL_FROM[0]) * t;
+      const yLine = REST_TRAVEL_FROM[1] + (REST_TRAVEL_TO[1] - REST_TRAVEL_FROM[1]) * t;
+      const zLine = REST_TRAVEL_FROM[2] + (REST_TRAVEL_TO[2] - REST_TRAVEL_FROM[2]) * t;
+
+      // `sin(pi*t)` is 0 at both ends and 1 at the midpoint, so the path leaves
+      // and rejoins its endpoints smoothly instead of kinking.
+      const bow = Math.sin(Math.PI * t);
+      const y = yLine - bow * sag;
+      const z = zLine + bow * forward;
+
+      light.position.set(x, y, z);
+      light.updateMatrixWorld(true);
+    };
+
+    // REDUCED MOTION: park it at the midpoint — in front, beneath the row, the
+    // most even position and the one that asserts least about direction.
+    if (reducedMotion) {
+      place(0.5);
+      invalidate();
+      return;
+    }
+
+    let raf = 0;
+    const start = performance.now();
+    const CYCLE = travelMs + returnMs;
+
+    const tick = () => {
+      const elapsed = (performance.now() - start) % CYCLE;
+
+      if (elapsed < travelMs) {
+        /**
+         * ⚠ THE VISIBLE PASS, WITH EASING AT THE TIGHT CURVES — Carl: *"Apply
+         * easing at the tight curves."* His drawing is tightest at the two ends,
+         * where the path turns into and out of the sweep; the middle is a long
+         * gentle traverse.
+         *
+         * ⚠ SO THE EASING IS AT BOTH ENDS AND NOT IN THE MIDDLE, which a plain
+         * ease-in-out would get backwards by slowing the traverse too. A
+         * smootherstep holds the middle closer to constant velocity while still
+         * arriving and leaving softly.
+         */
+        const t = elapsed / travelMs;
+        const eased = t * t * t * (t * (t * 6 - 15) + 10);
+        place(eased);
+      } else {
+        /**
+         * ⚠ THE RETURN — ROUND THE BACK, RACING. Carl's own solution: *"when it
+         * goes round the back have it race to the beginning."*
+         *
+         * ⚠ IT IS WHY THIS RIG NEVER TURNS IN VIEW. Every earlier version
+         * reversed along its own path, so the light had to decelerate, stop and
+         * come back — three moments the eye catches. A circuit only ever travels
+         * one way, and its single reversal happens behind the cards where a
+         * point light illuminates nothing.
+         *
+         * The return arcs BACKWARD in z rather than retracing the visible curve,
+         * so at no point on the way home is it in front of the cards.
+         */
+        const r = (elapsed - travelMs) / returnMs;
+        const x = REST_TRAVEL_TO[0] + (REST_TRAVEL_FROM[0] - REST_TRAVEL_TO[0]) * r;
+        const y = REST_TRAVEL_TO[1] + (REST_TRAVEL_FROM[1] - REST_TRAVEL_TO[1]) * r;
+        const z = REST_TRAVEL_FROM[2] - Math.sin(Math.PI * r) * forward;
+        light.position.set(x, y, z);
+        light.updateMatrixWorld(true);
+      }
+
+      invalidate();
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // ⚠ THE DIALS ARE DEPENDENCIES OR THE URL DOORS SILENTLY DO NOTHING. The
+    // loop closes over them, so without these the effect would keep running with
+    // whatever values it started with — a knob that appears to work and changes
+    // nothing, which is worse than no knob.
+  }, [reducedMotion, invalidate, sag, forward, travelMs, returnMs]);
+
+  /**
+   * ⚠ THE PATH, DRAWN — dev only, `?lighthelpers=1`, and it draws the WHOLE
+   * curve rather than just the light's current position. Seeing where the
+   * traveller IS answers half the question; seeing the line it follows answers
+   * the other half, and it is the half that has been guessed at repeatedly.
+   *
+   * The visible pass is drawn solid; the return leg is not drawn at all, because
+   * it runs behind the cards and lighting nothing is the point of it.
+   */
+  useEffect(() => {
+    if (!showHelper) return;
+
+    const pts: THREE.Vector3[] = [];
+    for (let i = 0; i <= 64; i++) {
+      const t = i / 64;
+      const bow = Math.sin(Math.PI * t);
+      pts.push(
+        new THREE.Vector3(
+          REST_TRAVEL_FROM[0] + (REST_TRAVEL_TO[0] - REST_TRAVEL_FROM[0]) * t,
+          // ⚠ THE LIVE DIALS, NOT THE DEFAULTS. A helper drawing the constant
+          // curve while the light follows a tuned one would be a marker that
+          // lies — the failure this instrument has already had twice.
+          REST_TRAVEL_FROM[1] + (REST_TRAVEL_TO[1] - REST_TRAVEL_FROM[1]) * t - bow * sag,
+          REST_TRAVEL_FROM[2] + (REST_TRAVEL_TO[2] - REST_TRAVEL_FROM[2]) * t + bow * forward,
+        ),
+      );
+    }
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    const mat = new THREE.LineBasicMaterial({
+      color: "#ffffff",
+      // Drawn over everything, for the same reason the directional helpers are:
+      // a marker hidden behind the object it describes cannot be read.
+      depthTest: false,
+      transparent: true,
+      opacity: 0.7,
+    });
+    const line = new THREE.Line(geo, mat);
+    line.renderOrder = 999;
+    scene.add(line);
+
+    // A small ball riding the light itself, so its position on the path is
+    // visible as well as the path.
+    const ball = new THREE.Mesh(
+      new THREE.SphereGeometry(7, 12, 12),
+      new THREE.MeshBasicMaterial({ color: "#ffffff", depthTest: false, transparent: true, opacity: 0.9 }),
+    );
+    ball.renderOrder = 1000;
+    scene.add(ball);
+
+    let raf = 0;
+    const follow = () => {
+      const l = ref.current;
+      if (l) ball.position.copy(l.position);
+      raf = requestAnimationFrame(follow);
+    };
+    raf = requestAnimationFrame(follow);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      scene.remove(line);
+      scene.remove(ball);
+      geo.dispose();
+      mat.dispose();
+      ball.geometry.dispose();
+      (ball.material as THREE.Material).dispose();
+    };
+  }, [showHelper, scene, sag, forward]);
+
+  return (
+    <pointLight
+      ref={ref}
+      position={REST_TRAVEL_FROM}
+      intensity={intensity * level}
+      // ⚠ `decay: 0` — NOT physical, and deliberately so. Inverse-square over a
+      // 660-unit traverse would make the traveller violent near the cards and
+      // absent at the ends; the BOW is meant to modulate the highlight, not to
+      // blow it out. Distance still varies the angle and the spread, which is
+      // where the effect lives.
+      decay={0}
+      distance={0}
+    />
+  );
+}
+
 const RIG_PARAMS = [
   { key: "tubeRadius", label: "rim tube radius R", step: 0.25, min: 0.5, max: 6 },
   { key: "bevelWidth", label: "bevel width", step: 0.5, min: 1, max: 12 },
@@ -442,9 +685,168 @@ const RIG_PARAMS = [
  * opaque list — the glass would stop seeing it entirely, presenting as "the
  * frost went flat" with every assertion still green.
  */
+/**
+ * The five Q5 answers, shown on the prototype cards.
+ *
+ * ⚠ ADDED 9 August 2026 — Carl: *"Put the answer text in the boxes, we shouldnt
+ * judge it in isolation."* The material is being judged as the BACKGROUND TO A
+ * LABEL, which is what it will always actually be. A satin bloom that reads well
+ * on a blank card can still be the wrong surface to put text on.
+ *
+ * ⚠⚠ THIS IS A PROTOTYPE DUPLICATE AND IT MUST NOT SURVIVE ROLLOUT. The real
+ * source is `QUESTIONS[5].options` in `enquiry-opening.tsx`, which also holds
+ * Q1–Q4. Copying it here is exactly the pattern this project has recorded
+ * failing four times — a harness or a component holding its own copy of a value
+ * that lives somewhere else, which cannot fail when the original moves.
+ *
+ * ⚠ IT IS DONE ANYWAY, DELIBERATELY AND NARROWLY, because the alternative is
+ * worse today: this canvas is mounted by `enquiry-opening.tsx` but does not
+ * receive the question, and threading a `labels` prop through the entrance,
+ * the warm-up instance and the clay path to show text on a PROTOTYPE would
+ * change the component's contract for a study. **When the cards return as real
+ * controls they take their labels from the corridor as props, and this constant
+ * is deleted.** Recorded here so it reads as a known debt rather than an
+ * oversight.
+ */
+const CARD_LABELS = [
+  "Premium new website",
+  "Current site feels dated",
+  "Better quality enquiries",
+  "Less manual admin",
+  "Not sure yet",
+] as const;
+
+/**
+ * A visible marker for a light that has no body of its own — dev only.
+ *
+ * ⚠ IT MOUNTS THE HELPER IN AN EFFECT, NOT IN RENDER. `directionalLightHelper`
+ * takes the light INSTANCE as a constructor argument, and a ref is null on the
+ * first render — passing `ref.current!` inline throws or silently draws nothing
+ * depending on timing. The effect runs after the ref is populated, which is the
+ * only point at which the light exists.
+ *
+ * ⚠ AND IT ADDS ITSELF TO THE SCENE RATHER THAN BEING RENDERED AS A CHILD, for
+ * the same reason: it is a plain three object built imperatively, and R3F's
+ * declarative path cannot construct it before its subject exists.
+ *
+ * ⚠ THE HELPER MUST BE UPDATED AND DISPOSED. It caches the light's transform, so
+ * without `update()` on each change it would draw where the light USED to be —
+ * a debugging aid that lies is worse than none, which this project has recorded
+ * about instruments four times over.
+ */
+
+function LightHelper({
+  lightRef,
+  color,
+}: {
+  lightRef: React.RefObject<THREE.DirectionalLight | null>;
+  color: string;
+}) {
+  const scene = useThree((s) => s.scene);
+  const helperRef = useRef<THREE.DirectionalLightHelper | null>(null);
+
+  useEffect(() => {
+    const light = lightRef.current;
+    if (!light) return;
+    /**
+     * ⚠ BIG AND BRIGHT, BECAUSE A HELPER THAT CANNOT BE SEEN IS NOT A HELPER.
+     * Carl, 9 August 2026: *"the problem ive got is that it disappears into the
+     * black background when above the card."* The scene's ground is #101010 and
+     * the page behind it is near-black, so a 30-unit marker in a mid colour
+     * vanishes exactly where the light spends half its arc.
+     *
+     * ⚠ THIS IS THE SECOND TIME THIS INSTRUMENT HAS FAILED AT ITS ONE JOB. The
+     * first version never called `update()`, so it froze at the resting pose
+     * while the light swung underneath it. Both failures shared a cause: the
+     * helper was treated as decoration rather than as the thing Carl is actually
+     * steering by.
+     */
+    const helper = new THREE.DirectionalLightHelper(light, 90, color);
+    // The helper's own lines ignore scene lighting, but depth-testing hides them
+    // behind the cards and the ground plane. This rig exists to be watched, not
+    // to be occluded by the thing it is lighting.
+    const paint = (o: THREE.Object3D) => {
+      const m = (o as THREE.Line).material as THREE.Material | undefined;
+      if (m && "depthTest" in m) {
+        (m as THREE.LineBasicMaterial).depthTest = false;
+        (m as THREE.LineBasicMaterial).transparent = true;
+        (m as THREE.LineBasicMaterial).opacity = 0.95;
+      }
+      o.renderOrder = 999;
+    };
+    paint(helper);
+    helper.traverse(paint);
+
+    scene.add(helper);
+    helper.update();
+    helperRef.current = helper;
+    return () => {
+      helperRef.current = null;
+      scene.remove(helper);
+      helper.dispose();
+    };
+  }, [lightRef, color, scene]);
+
+  /**
+   * ⚠ THE HELPER MUST BE UPDATED EVERY FRAME OR IT DRAWS WHERE THE LIGHT USED
+   * TO BE — and that is exactly what happened on the first version, 9 August
+   * 2026. `DirectionalLightHelper` caches its subject's transform at
+   * construction; mounting it once in an effect meant it froze at the resting
+   * pose while the light swung underneath it.
+   *
+   * ⚠ CARL ASKED FOR THE HELPERS PRECISELY TO WATCH THE MOTION — *"i need to see
+   * where the light is moving, not just the effect."* A helper that shows a
+   * stationary marker over a moving light answers the opposite question, and
+   * would have been read as "the light is not moving". **A debugging aid that
+   * lies is worse than none**, which this project has now recorded about
+   * instruments five times.
+   */
+  useFrame(() => {
+    helperRef.current?.update();
+  });
+
+  return null;
+}
+
 const GLASS_RIG_PARAMS = [
-  { key: "roughness", label: "roughness (THE FROST)", step: 0.02, min: 0, max: 1 },
-  { key: "transmission", label: "transmission", step: 0.05, min: 0, max: 1 },
+  // ⚠ THE LABEL SAYS SATIN, NOT FROST — the face material changed on 9 August
+  // 2026 and this dial's MEANING changed with it. On glass it drove the
+  // transmission blur; on satin it decides how tight the sheen's core is, and
+  // therefore whether the crown's 23.8° curve reads at all. The KEY is
+  // deliberately unchanged so the `?roughness=` harness door and every existing
+  // sweep keep working.
+  { key: "roughness", label: "roughness (SATIN TIGHTNESS)", step: 0.02, min: 0, max: 1 },
+  // ⚠ INERT ON THE FACE SINCE 9 AUGUST — the satin passes `transmission={0}`.
+  // Kept on the rig because the clay/diagnostic path still reads it and because
+  // removing a dial mid-chunk invalidates every note that cites it.
+  { key: "transmission", label: "transmission (INERT — satin)", step: 0.05, min: 0, max: 1 },
+  /**
+   * ⚠ THE SMEAR — what makes the surface satin rather than shiny blue plastic.
+   *
+   * At 0 the specular is a round dot; raised, it stretches along the tangent
+   * into the long soft band every one of Carl's references shows. The tangent
+   * is built along the card's LONG axis in `convexFaceGeometry`, which is the
+   * axis the cylindrical crown does NOT curve on — so the band runs the card's
+   * width and the curve is disclosed across its height.
+   *
+   * ⚠ IT IS SILENTLY INERT WITHOUT THE GEOMETRY'S `tangent` ATTRIBUTE. If this
+   * dial appears to do nothing, check the attribute before changing the value.
+   */
+  { key: "satinAnisotropy", label: "SATIN anisotropy [a]", step: 0.04, min: 0, max: 1 },
+  /**
+   * ⚠ THE SMEAR'S DIRECTION, in radians from the tangent. 0 runs ALONG the roll
+   * — the design. π/2 (~1.57) smears ACROSS the curve and hides the very
+   * geometry the material exists to disclose, which makes this dial the fastest
+   * way to prove the tangent is doing what it claims.
+   */
+  { key: "satinAnisotropyRotation", label: "SATIN direction [n]", step: 0.08, min: 0, max: 3.15 },
+  /**
+   * ⚠ THE GRAZING LOBE'S SOFTNESS, AND THE PARTNER OF `roughness` RATHER THAN AN
+   * INDEPENDENT DIAL. In real satin the sheen is the SOFT part — the long bloom
+   * along a fold — while the core specular stays tighter. Equal values collapse
+   * the two into one lobe and the fabric quality goes with it.
+   */
+  { key: "satinSheenRoughness", label: "SATIN sheen softness [s]", step: 0.04, min: 0, max: 1 },
   /**
    * ⚠ THE LIGHT FADER, ADDED 4 AUGUST ON CARL'S INSTRUCTION — *"If the rig has
    * no light fader we give it one and start with it low so it has hardly no
@@ -649,6 +1051,32 @@ function useCardRig(): {
       next.glassClearcoatRoughness = Math.min(1, Math.max(0, ccr));
     }
 
+    /**
+     * ⚠ `?aniso=`, `?anisorot=`, `?sheenr=` — THE SATIN DIALS, FROM OUTSIDE THE
+     * PAGE. Same reason `?roughness=` exists: the keyboard rig is the
+     * interactive route, but a harness has to be able to HOLD a value across a
+     * reload and compare two renders.
+     *
+     * ⚠ AND THE FIRST THING THEY ARE FOR IS PROVING THE DIAL IS WIRED AT ALL.
+     * `anisotropy` is silently inert without the geometry's `tangent`
+     * attribute, and an inert dial looks exactly like a badly-set one. Rotating
+     * the smear 90° must visibly change the render; if `?anisorot=0` and
+     * `?anisorot=1.57` produce identical pixels, the feature is not reaching the
+     * shader and NO value will fix it.
+     */
+    const an = Number(q.get("aniso"));
+    if (q.get("aniso") !== null && Number.isFinite(an)) {
+      next.satinAnisotropy = Math.min(1, Math.max(0, an));
+    }
+    const anr = Number(q.get("anisorot"));
+    if (q.get("anisorot") !== null && Number.isFinite(anr)) {
+      next.satinAnisotropyRotation = anr;
+    }
+    const shr = Number(q.get("sheenr"));
+    if (q.get("sheenr") !== null && Number.isFinite(shr)) {
+      next.satinSheenRoughness = Math.min(1, Math.max(0, shr));
+    }
+
     return next;
   });
   const [selected, setSelected] = useState<RigParamKey | GlassRigParamKey>("roughness");
@@ -732,6 +1160,29 @@ function useCardRig(): {
       if (e.key === "r") {
         e.preventDefault();
         setSelected("rimRoughness");
+        return;
+      }
+      /**
+       * ⚠ THE SATIN DIALS — [a] smear, [n] its direction, [s] sheen softness.
+       *
+       * ⚠ THE DIRECTION IS ON [n], NOT [d], BECAUSE [d] IS ALREADY THE FILAMENT'S
+       * CUTOFF DISTANCE. Binding it twice would silently shadow one of them and
+       * leave a dial that "does nothing" — a failure this project has recorded
+       * repeatedly as being mistaken for a wrong value rather than a wrong wire.
+       */
+      if (e.key === "a") {
+        e.preventDefault();
+        setSelected("satinAnisotropy");
+        return;
+      }
+      if (e.key === "n") {
+        e.preventDefault();
+        setSelected("satinAnisotropyRotation");
+        return;
+      }
+      if (e.key === "s") {
+        e.preventDefault();
+        setSelected("satinSheenRoughness");
         return;
       }
       // The filament's fader — the fifth material param, on [f].
@@ -844,7 +1295,9 @@ function useCardRig(): {
 
     window.addEventListener("keydown", onKey);
     console.log(
-      "card rig active — [1-6] geometry, [7-9] glass/light, [r] rim roughness, " +
+      "card rig active — [1-6] geometry, [7-9] material/light, [r] rim roughness, " +
+        "[a] satin smear, [n] smear direction, [s] sheen softness, " +
+        "[f] filament, [p] power, [z] light height, " +
         "[m] cycle rim metal, [↑/↓] adjust, [0] print",
     );
     return () => window.removeEventListener("keydown", onKey);
@@ -1209,6 +1662,31 @@ function useCardEntrance(
       const s = CARD_RISE_SCALE_FROM + (1 - CARD_RISE_SCALE_FROM) * t;
       group.scale.set(s, s, 1);
 
+      /**
+       * ⚠ NOTHING IS PUBLISHED FOR THE LABEL ANY MORE, AND THAT IS THE FIX.
+       *
+       * ⚠ THREE VERSIONS TRIED TO SYNCHRONISE A DOM LABEL WITH THIS ANIMATION
+       * AND ALL THREE FAILED, 9 August 2026:
+       *
+       *   1. Shared start time, its own easing — different curve, 6px instead
+       *      of 10px, no scale. Carl: *"2 separate things."*
+       *   2. Polled this card's published values — right values, one frame
+       *      late. Measured 0.025 alpha divergence.
+       *   3. Applied in this very frame, transform driven by alpha — measured
+       *      **0.0000** divergence, and Carl still saw it: *"as if the text is
+       *      trying to catch up with the card or mimmic its movement."*
+       *
+       * ⚠ VERSION 3 IS THE ONE THAT SETTLES IT. When the numbers are provably
+       * identical and the eye still reads two objects, the numbers were never
+       * the problem. A DOM label moves in 2D CSS pixels; this card rises in 3D
+       * world space under a perspective camera. **Different geometries — they
+       * agree at the endpoints and disagree everywhere between**, and a better
+       * imitation only makes the mismatch harder to name.
+       *
+       * The label is now drawn INTO the face's albedo (`buildLabelTexture` in
+       * `answer-card-mesh.tsx`), so it is transformed, lit and faded by this
+       * group along with everything else. There is nothing left to synchronise.
+       */
       invalidate();
 
       if (t < 1) {
@@ -1370,9 +1848,12 @@ function AnswerCard({
   envMap,
   lit,
   clay,
+  label,
 }: {
   slot: { x: number; y: number };
   delayMs: number;
+  /** The answer text, drawn into this card's face. See `AnswerCardMesh`. */
+  label?: string;
   active: boolean;
   reducedMotion: boolean;
   tuning: AnswerCardTuning;
@@ -1485,6 +1966,10 @@ function AnswerCard({
           envMap={envMap}
           lightLevel={glassTuning.lightLevel}
           filament={filament}
+          // ⚠ THE LABEL IS PART OF THE FACE NOW, not a DOM element over it.
+          // Undefined on the clay study, which exists to show the FORM and
+          // would be answering a different question with text on it.
+          label={clay ? undefined : label}
         />
       </CardLighting>
 
@@ -2200,6 +2685,97 @@ function CardScene({
    */
   const sceneLight = clay ? 1.6 : glassTuning.lightLevel;
 
+  /**
+   * How high the two symmetric scene lights sit, in world units.
+   *
+   * ⚠ A SWEEPABLE DOOR BECAUSE FOUR HAND-ADJUSTMENTS IN A ROW GOT IT WRONG,
+   * 9 August 2026 — the key went from a top-down pool, to a rim-skimming line,
+   * to a symmetric pair that still peaked at the very top edge. Each change was
+   * reasoned about and each reading was worse than the last, which is what
+   * tuning without measuring looks like.
+   *
+   * ⚠ ELEVATION IS THE VARIABLE BECAUSE THE GEOMETRY SAYS SO. `crownZ` puts a
+   * raised cosine on the SHORT axis: the face curves top-to-bottom and is flat
+   * left-to-right across `CROWN_PLATEAU_U`. Light arriving with little vertical
+   * separation rakes along the FLAT axis and discloses nothing.
+   *
+   * `verify/key-elevation-sweep.mjs` sweeps this and reports where the peak
+   * lands as a percentage of face height — a peak near 50% means the light is
+   * on the FACE, near 0% or 100% means it is on an EDGE. **The ratio alone
+   * cannot tell those apart**, and a thin bright rim against a black face
+   * scores better on ratio than a properly lit card.
+   */
+  /**
+   * The two scene lights, so `?lighthelpers=1` can draw where they point.
+   * Null until mount; `LightHelper` waits for them in an effect.
+   */
+  const keyLeftRef = useRef<THREE.DirectionalLight | null>(null);
+  const keyRightRef = useRef<THREE.DirectionalLight | null>(null);
+
+  /**
+   * ⚠ `?lighthelpers=1` — DEV ONLY, INERT WITHOUT THE FLAG, and it costs nothing
+   * when absent. Carl asked to SEE where the lights are, and the request is well
+   * founded: a directional light has no visible body, so its placement has only
+   * ever been inferable from the shading it produces. Four position changes were
+   * made blind before `verify/key-elevation-sweep.mjs` measured one.
+   */
+  /**
+   * ⚠ THE TRAVELLER'S PATH, ON URL DOORS — so Carl shapes the curve directly.
+   *
+   * ⚠ THIS RIG HAS BEEN GUESSED AT SIX TIMES AND HIS EYE HAS BEEN RIGHT EVERY
+   * TIME. The useful thing is not another derivation; it is putting the shape
+   * where he can turn it while watching the helpers.
+   *
+   *   ?sag=      how far the curve dips BELOW the straight line   (default 150)
+   *   ?fwd=      how far it comes FORWARD of the card plane       (default 190)
+   *   ?travelms= the visible pass, ms                             (default 11000)
+   *   ?returnms= the race round the back, ms                      (default 2200)
+   *   ?travint=  the traveller's intensity                        (default 0.9)
+   */
+  const travelDials = useMemo(() => {
+    const d = {
+      sag: REST_TRAVEL_SAG,
+      forward: REST_TRAVEL_FORWARD,
+      travelMs: REST_TRAVEL_MS,
+      returnMs: REST_RETURN_MS,
+      intensity: REST_TRAVEL_INTENSITY,
+    };
+    if (typeof window === "undefined") return d;
+    const q = new URLSearchParams(window.location.search);
+    const num = (key: string, fallback: number) => {
+      const raw = q.get(key);
+      const n = Number(raw);
+      return raw !== null && Number.isFinite(n) ? n : fallback;
+    };
+    return {
+      sag: num("sag", d.sag),
+      forward: num("fwd", d.forward),
+      travelMs: num("travelms", d.travelMs),
+      returnMs: num("returnms", d.returnMs),
+      intensity: num("travint", d.intensity),
+    };
+  }, []);
+
+  /**
+   * ⚠ `?noglobal=1` — the static rig off, so the traveller is the only light.
+   * Also accepts a fraction (`?noglobal=0.3`) for judging it against a dim
+   * base rather than none at all.
+   */
+  const globalScale = useMemo(() => {
+    if (typeof window === "undefined") return 1;
+    const raw = new URLSearchParams(window.location.search).get("noglobal");
+    if (raw === null) return 1;
+    if (raw === "1" || raw === "") return 0;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : 0;
+  }, []);
+
+  const lightHelpers = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).get("lighthelpers") === "1";
+  }, []);
+
+
   // ⚠ THE HOVER-DRIVEN REGION SHIFT IS GONE, and with it the only thing hover
   // had to drive. It inverted the lockup's colour under the hovered card — Carl,
   // 4 August: *"the card that the mouse is in would change from blue to teal and
@@ -2311,17 +2887,129 @@ function CardScene({
         </>
       ) : (
         <>
-          <ambientLight intensity={0.35 * sceneLight} />
+          {/*
+            ⚠ TWO SYMMETRIC DIRECTIONAL LIGHTS, STATIC. This is the rig the satin
+            was tuned against and the one Carl approved the material under.
+
+            ⚠⚠ A FIVE-POINT-LIGHT RESTING RIG WAS BUILT HERE ON 9 AUGUST 2026 AND
+            REMOVED THE SAME DAY, ON CARL'S JUDGEMENT: *"Return it to the way it
+            was and i dont think 5 point lights are the solution."* It is worth
+            recording why, because the idea was HIS and it was well reasoned —
+            one point light per card on a tight ellipse, so proximity would
+            narrow and widen the beam and *"the light and shadows on all the
+            curves will be highlighted at specific points in time."*
+
+            ⚠ WHAT KILLED IT WAS SCALE, NOT THE CONCEPT. Carl: *"it looks ok
+            zoomed in but not at this scale."* The cards are ~104px tall on
+            screen. An effect that needs a light to travel across a curve and
+            change its spread has to resolve inside that, and it did not — the
+            per-card lights either raked a narrow band and left the edges black
+            (*"the face is floating on its own"*) or, widened enough to reach the
+            corners, stopped varying proximity enough to matter. `arcx` from 26
+            to 180 was swept; past ~115 the point light behaves like a distant
+            one and the ellipse stops being an ellipse in any useful sense.
+
+            ⚠ THE FINDING WORTH KEEPING: this card's face is too small on screen
+            for LIGHT POSITION to be the mechanism that discloses its form. What
+            reads at this size is the material's own response — which is why the
+            satin's anisotropy and its bloom carry the geometry, and why the
+            approved look does not depend on the light moving at all.
+
+            ⚠ THE HELPERS AND THE DIALS ARE KEPT (`?lighthelpers=1`, `?keyy=`).
+            They cost nothing when unused and they are how this was diagnosed.
+          */}
+          {/*
+            ⚠ THE STATIC RIG IS THE CONTACT FIELD'S, COPIED — Carl, 9 August
+            2026: *"Lets emulate something that works — lighting on the client
+            info section."* Key top-left and grazing at 1.6, fill bottom-right at
+            0.35, ambient dialled down from the field's 0.22 because the cards
+            carry a traveller the field does not.
+
+            ⚠ THE ASYMMETRY IS THE POINT AND IT IS WHAT THE CARDS LACKED. They
+            were running two EQUAL directionals at 1.55 — a symmetry this Builder
+            introduced and then spent five attempts trying to make move. Two
+            equal lights produce two pinned blooms with a dead band between them,
+            measured at 21% and 46% with the lower face flat. **One dominant
+            direction plus a quiet fill is what makes a shallow crown read**, and
+            the field proved that before the cards existed.
+
+            ⚠ `keyElevation` (`?keyy=`) NO LONGER APPLIES to the key's Y — the
+            field's position is taken whole rather than half-inherited. The door
+            stays for the helpers.
+          */}
+          {/*
+            ⚠ `?noglobal=1` KILLS THE STATIC RIG SO ONLY THE TRAVELLER LIGHTS THE
+            CARDS — Carl, 9 August 2026: *"before you try it turn the global
+            light off, only then will you see the true effect."*
+
+            ⚠ HE IS RIGHT AND IT IS THE ONLY HONEST TEST OF THIS LIGHT. The key
+            runs at 1.6 and the traveller at 0.9, so against a lit card the
+            traveller's contribution is a small modulation on top of something
+            much brighter — visible in a measurement, hard to judge by eye, and
+            impossible to attribute. With the global off, everything on screen is
+            the moving light and nothing else.
+          */}
+          <ambientLight intensity={REST_AMBIENT_INTENSITY * sceneLight * globalScale} />
           <directionalLight
-            position={[-60, 90, 120]}
-            intensity={2.1 * sceneLight}
+            ref={keyLeftRef}
+            position={REST_KEY_POSITION}
+            intensity={REST_KEY_INTENSITY * sceneLight * globalScale}
           />
-          {/* A weak fill from below-right stops the lower bevel going fully black,
-              which would read as a missing surface rather than a shadowed one. */}
           <directionalLight
-            position={[70, -60, 60]}
-            intensity={0.35 * sceneLight}
+            ref={keyRightRef}
+            position={REST_FILL_POSITION}
+            intensity={REST_FILL_INTENSITY * sceneLight * globalScale}
           />
+          {/* ⚠ THE TRAVELLER — top-left to bottom-right, bowing toward the
+              viewer between. One light across the whole grid, not one per card. */}
+          <TravellingLight
+            reducedMotion={reducedMotion}
+            level={sceneLight}
+            showHelper={lightHelpers}
+            sag={travelDials.sag}
+            forward={travelDials.forward}
+            travelMs={travelDials.travelMs}
+            returnMs={travelDials.returnMs}
+            intensity={travelDials.intensity}
+          />
+          {/*
+            ⚠ LIGHT HELPERS — `?lighthelpers=1`, DEV ONLY AND INERT WITHOUT IT.
+            Carl, 9 August 2026: *"Can you enable the light helpers so i can see
+            where they are?"*
+
+            ⚠ THEY EXIST BECAUSE THE LIGHTS' POSITIONS HAVE BEEN ARGUED ABOUT
+            FOUR TIMES AND MOVED BLIND EACH TIME. A directional light has no
+            visible body, so its direction is only knowable from the shading it
+            produces — which is exactly the reasoning-from-symptoms this chunk
+            has already paid for. `verify/key-elevation-sweep.mjs` measures where
+            the light LANDS; these show where it IS.
+
+            ⚠ A DIRECTIONAL LIGHT'S `position` IS A DIRECTION, NOT A PLACE. Three
+            points it at its `target` (the origin by default), so only the
+            VECTOR matters — moving it from [-150, 70, 70] to [-15, 7, 7] changes
+            nothing at all. The helper draws that vector, which is the single
+            most useful thing to see here and the easiest thing to misread from
+            numbers alone.
+          */}
+          {lightHelpers && (
+            <>
+              {/*
+                ⚠ WHITE, BECAUSE THE LIGHTS ARE WHITE AND A MARKER MUST NOT
+                IMPLY OTHERWISE. A previous pass drew these cyan and magenta
+                purely to tell the two apart, and Carl reasonably read the
+                colour as a property of the LIGHT: *"why are the coloured lights
+                and not white."* On a card whose entire subject is blue satin
+                under white light, a cyan marker is a false statement about the
+                rig.
+
+                ⚠ THE TWO ARE TOLD APART BY BEHAVIOUR, NOT BY HUE — one swings
+                and one holds still, which is visible without a colour code and
+                is the only difference that matters.
+              */}
+              <LightHelper lightRef={keyLeftRef} color="#ffffff" />
+              <LightHelper lightRef={keyRightRef} color="#ffffff" />
+            </>
+          )}
         </>
       )}
 
@@ -2395,6 +3083,7 @@ function CardScene({
             envMap={envMap}
             lit={litCards[i] ?? false}
             clay={clay}
+            label={CARD_LABELS[i]}
           />
         </group>
       ))}
@@ -2697,6 +3386,7 @@ export default function AnswerCardCanvas({
   const [litCards, setLitCards] = useState<boolean[]>(() =>
     new Array(CARD_BOXES.length).fill(false),
   );
+
 
   /**
    * Whether the renderer has finished compiling this scene's shaders.
