@@ -1883,6 +1883,7 @@ function AnswerCard({
   glassTuning,
   envMap,
   lit,
+  hovered,
   clay,
   label,
 }: {
@@ -1890,6 +1891,8 @@ function AnswerCard({
   delayMs: number;
   /** The answer text, drawn into this card's face. See `AnswerCardMesh`. */
   label?: string;
+  /** Whether the pointer is over THIS card. Turns its label teal. */
+  hovered: boolean;
   active: boolean;
   reducedMotion: boolean;
   tuning: AnswerCardTuning;
@@ -2006,6 +2009,7 @@ function AnswerCard({
           // Undefined on the clay study, which exists to show the FORM and
           // would be answering a different question with text on it.
           label={clay ? undefined : label}
+          hovered={hovered}
         />
       </CardLighting>
 
@@ -2659,6 +2663,7 @@ function CardScene({
   tuning,
   glassTuning,
   litCards,
+  hovered,
   onWarm,
   mayCompile,
   gridWidth,
@@ -2668,6 +2673,8 @@ function CardScene({
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
   litCards: boolean[];
+  /** Index of the card under the pointer, or null. Drives the label's teal. */
+  hovered: number | null;
   onWarm: () => void;
   mayCompile: boolean;
   /**
@@ -3125,6 +3132,7 @@ function CardScene({
             glassTuning={glassTuning}
             envMap={envMap}
             lit={litCards[i] ?? false}
+            hovered={hovered === i}
             clay={clay}
             label={CARD_LABELS[i]}
           />
@@ -3407,11 +3415,12 @@ export default function AnswerCardCanvas({
    * this now would mean rebuilding the pointer plumbing next session to get back
    * to exactly here.
    *
-   * ⚠ THE VALUE IS INTENTIONALLY UNREAD, WHICH IS WHY THE READ SLOT IS EMPTY.
-   * Binding a name nothing consumes is a lint error and, worse, reads as an
-   * oversight; an empty slot states that the write is the point for now.
+   * ⚠ IT HAS A CONSUMER AGAIN AS OF 10 AUGUST 2026 — the answer text turning
+   * teal. The read slot was empty from 5 August, when the lockup's region shift
+   * (its only reader) was removed; the note then said the write was the point
+   * "for now", and this is the end of that period.
    */
-  const [, setHovered] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<number | null>(null);
 
   /**
    * Which cards have had their filament fired.
@@ -3586,6 +3595,7 @@ export default function AnswerCardCanvas({
           tuning={tuning}
           glassTuning={glassTuning}
           litCards={litCards}
+          hovered={hovered}
           onWarm={markWarm}
           mayCompile={warm}
           // Falls back to the 576px reference for the frames before the first

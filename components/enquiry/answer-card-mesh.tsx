@@ -330,6 +330,8 @@ function FaceMaterial({
   sheenColor,
   sheenRoughness,
   labelMap,
+  labelTealMap,
+  hovered,
   filament,
   filterStrength,
   clearcoat,
@@ -346,6 +348,10 @@ function FaceMaterial({
   roughness: number;
   /** The answer label, drawn into the face's albedo. Null on the warm-up card. */
   labelMap: THREE.Texture | null;
+  /** The same label in the rail's teal — the hover target. Blended, not swapped. */
+  labelTealMap: THREE.Texture | null;
+  /** Whether the pointer is over this card. Drives `uHover` through an ease. */
+  hovered: boolean;
   /** Satin's smear along the tangent. Inert without a `tangent` attribute. */
   anisotropy: number;
   /** The smear's direction, radians from the tangent. 0 = along the roll. */
@@ -362,9 +368,21 @@ function FaceMaterial({
     /** Optical density of the filter — 0 is clear glass. */
     uAmber: { value: 0 },
     uGlassFilter: { value: new THREE.Color(GLASS_FILTER_TRANSMITTANCE) },
+    /**
+     * ⚠ THE HOVER BLEND, 0 → 1. Two label textures exist — resting white and
+     * rail teal — and this mixes between them on the GPU.
+     *
+     * ⚠ WHY A BLEND AND NOT A REDRAW. The label lives in a 2048x512 canvas, so
+     * fading its colour by rebuilding would mean redrawing that canvas several
+     * times per hover — visibly stepped, and a cost paid on the main thread at
+     * exactly the moment the user is interacting. Building both textures once
+     * and mixing them costs one extra sampler.
+     */
+    uHover: { value: 0 },
+    uLabelTeal: { value: null as THREE.Texture | null },
   });
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     // ⚠ DRIVEN BY THE FILAMENT'S OWN INTENSITY, UNNORMALISED — Carl: *"if the
     // intensity of the filament was reduced so would the impact on the
     // reflection, and if it was ramped up."* `intensity.current` already carries
@@ -375,6 +393,27 @@ function FaceMaterial({
       4,
       Math.max(0, filament.intensity.current * filterStrength),
     );
+
+    /**
+     * ⚠ THE TEAL ARRIVES SLOWLY — Carl: *"answer text turns teal slowly when
+     * hovered."* An exponential ease toward the target rather than a CSS-style
+     * duration, because the pointer can leave mid-transition and this has to
+     * turn round from wherever it got to without a jump.
+     *
+     * ⚠ AND IT IS FRAME-RATE INDEPENDENT. A fixed step per frame would fade at
+     * half the speed on a 30fps machine; `delta` keeps the timing honest on any
+     * display.
+     */
+    const target = hovered ? 1 : 0;
+    const u = uniforms.current.uHover;
+    u.value += (target - u.value) * Math.min(1, delta / LABEL_HOVER_TAU);
+
+    // ⚠ THE SAMPLER IS REFRESHED HERE BECAUSE THE TEXTURE IS REBUILT WHENEVER
+    // THE LABEL CHANGES. `onBeforeCompile` runs once per program; a texture
+    // created after that would never reach the shader, and the hover would fade
+    // toward a blank map instead of the teal — a uniform that moves and changes
+    // no pixels, which this file has already been caught by twice.
+    uniforms.current.uLabelTeal.value = labelTealMap;
   });
 
   const onBeforeCompile = useCallback((shader: THREE.WebGLProgramParametersWithUniforms) => {
@@ -383,6 +422,8 @@ function FaceMaterial({
     shader.fragmentShader = `
       uniform float uAmber;
       uniform vec3  uGlassFilter;
+      uniform float uHover;
+      uniform sampler2D uLabelTeal;
 
       /**
        * ⚠ THE SEAM. Today the filter is uniform across the face; the filament is
@@ -411,6 +452,30 @@ function FaceMaterial({
        radiance *= pow(max(uGlassFilter, vec3(0.001)), vec3(uAmber * cardPerimeterWeight()));
        #include <lights_fragment_end>
       `,
+    ).replace(
+      "#include <map_fragment>",
+      `#include <map_fragment>
+       #ifdef USE_MAP
+       {
+         /**
+          * ⚠ THE HOVER TEAL, MIXED INTO THE ALBEDO. Both textures carry the
+          * whole face — body colour, relief and glyphs — so mixing them is a
+          * straight cross-fade between two finished images. Only the glyph
+          * pixels differ between the two, so the body and the relief are
+          * unchanged by the blend and only the TEXT changes colour.
+          *
+          * ⚠ AFTER map_fragment, NOT BEFORE. That chunk is what samples the
+          * map into diffuseColor in the first place; injecting ahead of it
+          * would be overwritten on the next line.
+          *
+          * ⚠ NO BACKTICKS IN THIS COMMENT. It lives inside a JS template
+          * literal, so a backtick here closes the string and the file stops
+          * compiling — which is exactly what happened on the first write.
+          */
+         vec4 tealTexel = texture2D(uLabelTeal, vMapUv);
+         diffuseColor = mix(diffuseColor, tealTexel * vec4(diffuse, opacity), uHover);
+       }
+       #endif`,
     );
   }, []);
 
@@ -431,6 +496,21 @@ function FaceMaterial({
        * 23.8° crown could not disclose itself no matter how it was lit —
        * measured flat before the change (`verify/crown-disclosure.mjs`).
        */
+      /**
+       * ⚠⚠ WITHOUT THIS THE HOVER TEAL SILENTLY NEVER RENDERS. three.js caches
+       * compiled programs, and `onBeforeCompile` is NOT part of the default
+       * cache key — so a material whose injected source changed can be handed a
+       * previously compiled program that lacks the new sampler entirely. The
+       * uniform then animates every frame against a shader that never reads it.
+       *
+       * ⚠ MEASURED, NOT ASSUMED: `verify/hover-teal.mjs` reported a
+       * green-minus-blue shift of **1.04 against an expected 13**, and the
+       * captured frames showed plain white text on hover. No GLSL error, no
+       * warning — the blend simply was not in the program being run. **This is
+       * the "moving value that changes no pixels" failure this file has now hit
+       * three times.**
+       */
+      customProgramCacheKey={() => "satin-face-hover-teal-v1"}
       transmission={0}
       /**
        * ⚠ THE SMEAR. This is what makes the surface satin rather than a shiny
@@ -919,7 +999,41 @@ function roundedRectHalfWidthAt(y: number, halfW: number, halfH: number, r: numb
 const LABEL_TEX_W = 2048;
 const LABEL_TEX_H = 512;
 
-function buildLabelTexture(text: string, bodyColor: string): THREE.CanvasTexture {
+/**
+ * The label's resting colour — the approved cool near-white from `.enquiry-card`.
+ */
+const LABEL_INK_REST = "rgb(238, 241, 252)";
+
+/**
+ * ⚠ THE HOVER TEAL, TAKEN FROM THE RAIL AND NOT INVENTED. Carl: *"answer text
+ * turns teal slowly when hovered. This echoes the rail system"*, and when asked
+ * which teal: *"the same teal that is in the text in the rail system... It is
+ * the first teal, the answers lose their opacity as more questions are
+ * answered."*
+ *
+ * Read from `app/globals.css` — `.enquiry-pdepth-1` through `-5`
+ * `.enquiry-phrase-answers` all set `color: rgb(160, 220, 218)`. **The depth
+ * fade is opacity, applied separately**, so this is the single teal the rail
+ * uses at every depth. Echoing it means matching this value exactly; a teal
+ * picked by eye would undercut the entire point of the change.
+ */
+const LABEL_INK_HOVER = "rgb(160, 220, 218)";
+
+/**
+ * How slowly the teal arrives, as an exponential time constant in seconds.
+ *
+ * ⚠ *"SLOWLY"* IS CARL'S WORD AND THIS IS THE DIAL FOR IT. 0.42s reaches ~63%
+ * of the way in that time and settles around a second — a deliberate colour
+ * change rather than a state flip, and slower than the 300ms a UI transition
+ * would normally take. To be moved by his eye, not defended by argument.
+ */
+const LABEL_HOVER_TAU = 0.42;
+
+function buildLabelTexture(
+  text: string,
+  bodyColor: string,
+  ink: string = LABEL_INK_REST,
+): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = LABEL_TEX_W;
   canvas.height = LABEL_TEX_H;
@@ -953,19 +1067,62 @@ function buildLabelTexture(text: string, bodyColor: string): THREE.CanvasTexture
   ctx.font = `500 ${fontPx}px Geist, system-ui, -apple-system, "Segoe UI", sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  // The approved label colour from `.enquiry-card` — a cool near-white that
-  // belongs to the corridor rather than a plain #fff, which reads warmer than
-  // everything around it.
-  ctx.fillStyle = "rgb(238, 241, 252)";
+  const cx = LABEL_TEX_W / 2;
+  const cy = LABEL_TEX_H / 2;
+  const maxW = LABEL_TEX_W * 0.86;
 
-  // ⚠ A SOFT DARK SHADOW, AS THE DOM LABEL CARRIED. The satin bloom runs
-  // brightest across the middle of the face, which is where the text sits; the
-  // shadow keeps it legible across that band without a scrim over the material.
+  /**
+   * ⚠⚠ THE EXTRUSION IS FAKED, ON CARL'S CALL. He asked *"Can the teal text be
+   * extruded slightly?"* and then ruled out the expensive answer himself: *"the
+   * text is so small doing it with real geometry would be a waste and too
+   * expensive."*
+   *
+   * ⚠ HE IS RIGHT AND THE PROJECT HAS ALREADY PAID TO LEARN IT. The face is
+   * ~104px tall on screen, so the glyphs are ~12–14px — the same scale at which
+   * five per-card point lights failed: *"it looks ok zoomed in but not at this
+   * scale."* Extruded glyph meshes would spend real geometry on detail that
+   * cannot resolve, per card, per label change.
+   *
+   * ⚠ THE LIGHT DIRECTION IS NOT A CHOICE. The key rakes from `[-160, 120, 40]`
+   * — upper-left — so the raised edge catches upper-left and the shadow falls
+   * lower-right. Faking it from any other angle would put the text's implied
+   * light source at odds with the card's actual one, which reads as wrong even
+   * when nobody can say why.
+   *
+   * ⚠ AND THE FAKE CANNOT RESPOND TO THE TRAVELLER. These highlights are baked
+   * at a fixed angle, so as the ring sweeps past they stay lit from the same
+   * side. At 12px that is invisible; it would not be at a larger size, and it
+   * is the honest cost of not using geometry.
+   */
+  const relief = Math.max(1, Math.round(fontPx * 0.035));
+
+  // 1. The drop shadow, as the DOM label carried it. The satin bloom runs
+  //    brightest across the middle of the face, which is where the text sits;
+  //    this keeps it legible across that band without a scrim over the material.
+  ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
   ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
   ctx.shadowBlur = Math.round(fontPx * 0.22);
   ctx.shadowOffsetY = Math.round(fontPx * 0.06);
+  ctx.fillText(text, cx, cy, maxW);
 
-  ctx.fillText(text, LABEL_TEX_W / 2, LABEL_TEX_H / 2, LABEL_TEX_W * 0.86);
+  // ⚠ THE SHADOW IS CLEARED BEFORE THE RELIEF PASSES. Left on, it would blur
+  // the very edges that are meant to read as a crisp lip, and the letters would
+  // come out muddy rather than raised.
+  ctx.shadowColor = "transparent";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
+  // 2. The dark side, offset lower-right — the face the light cannot reach.
+  ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+  ctx.fillText(text, cx + relief, cy + relief, maxW);
+
+  // 3. The lit lip, offset upper-left toward the key.
+  ctx.fillStyle = "rgba(255, 255, 255, 0.38)";
+  ctx.fillText(text, cx - relief, cy - relief, maxW);
+
+  // 4. The glyph itself, on top and centred — rest white or the rail's teal.
+  ctx.fillStyle = ink;
+  ctx.fillText(text, cx, cy, maxW);
 
   const texture = new THREE.CanvasTexture(canvas);
   // ⚠ sRGB, BECAUSE THIS IS COLOUR. The field's NORMAL map is tagged
@@ -1236,10 +1393,20 @@ export function AnswerCardMesh({
   filament,
   glassTuning = DEFAULT_GLASS_TUNING,
   label,
+  hovered = false,
   children,
 }: {
   tuning?: AnswerCardTuning;
   groupRef?: React.Ref<THREE.Group>;
+  /**
+   * Whether the pointer is over this card.
+   *
+   * ⚠ THE HOVER PLUMBING ALREADY EXISTED AND HAD NO CONSUMER. It was built for
+   * the lockup's region shift, which went on 5 August; the `hovered` index in
+   * `answer-card-canvas.tsx` has been correct and unused since. This is the
+   * consumer — the answer text turning teal.
+   */
+  hovered?: boolean;
   /**
    * The answer text, drawn INTO the face's albedo rather than laid over it.
    *
@@ -1419,10 +1586,23 @@ export function AnswerCardMesh({
   }, [label]);
 
   /**
-   * ⚠ TEXTURES LEAK IF THEY ARE NOT DISPOSED, and this one is rebuilt whenever
+   * The same label in the rail's teal — the hover target.
+   *
+   * ⚠ BUILT AT MOUNT, NOT ON HOVER. Drawing a 2048x512 canvas at the moment the
+   * pointer arrives would hitch on the frame the user is most attentive to.
+   * Both variants exist from the start and the shader mixes between them.
+   */
+  const labelTealMap = useMemo(() => {
+    if (!label || typeof document === "undefined") return null;
+    return buildLabelTexture(label, SATIN_COLOR, LABEL_INK_HOVER);
+  }, [label]);
+
+  /**
+   * ⚠ TEXTURES LEAK IF THEY ARE NOT DISPOSED, and these are rebuilt whenever
    * the label changes — five cards through five questions is twenty-five
-   * textures over a corridor walk. `useDisposable` covers geometries; a texture
-   * needs the same treatment and does not get it for free.
+   * textures over a corridor walk, and **fifty now that each card carries a
+   * teal variant as well**. `useDisposable` covers geometries; a texture needs
+   * the same treatment and does not get it for free.
    */
   useEffect(() => {
     if (!labelMap) return;
@@ -1430,6 +1610,13 @@ export function AnswerCardMesh({
       labelMap.dispose();
     };
   }, [labelMap]);
+
+  useEffect(() => {
+    if (!labelTealMap) return;
+    return () => {
+      labelTealMap.dispose();
+    };
+  }, [labelTealMap]);
 
   // ── Where the face sits in z ──────────────────────────────────────────────
   //
@@ -1589,6 +1776,8 @@ export function AnswerCardMesh({
              */
             color={labelMap ? "#ffffff" : SATIN_COLOR}
             labelMap={labelMap}
+            labelTealMap={labelTealMap}
+            hovered={hovered}
             roughness={glassTuning.roughness}
             anisotropy={glassTuning.satinAnisotropy}
             anisotropyRotation={glassTuning.satinAnisotropyRotation}
