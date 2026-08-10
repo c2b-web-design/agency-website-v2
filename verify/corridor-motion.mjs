@@ -56,27 +56,75 @@ if (process.argv[2] === "--compare") {
   const A = JSON.parse(readFileSync(pa, "utf8"));
   const B = JSON.parse(readFileSync(pb, "utf8"));
 
+  /**
+   * ⚠⚠ THE MOVING SEGMENT IS EXTRACTED FIRST, AND THE FIRST VERSION OF THIS
+   * FUNCTION DID NOT DO THAT — IT REPORTED 92-100% DEVIATION BETWEEN TWO RUNS
+   * OF IDENTICAL CODE.
+   *
+   * The sample window is ~158 frames but the move occupies only ~18→86 of them;
+   * the rest is idle before and after. Normalising across the WHOLE window meant
+   * a one-frame shift in when the click landed rescaled everything, so two
+   * identical trajectories compared as completely different curves.
+   *
+   * ⚠ AND IT ALMOST SHIPPED AS A FINDING. The first before/after comparison
+   * reported "phraseY 7.9% ⚠ CHANGED" and I was one step from reporting that as
+   * a real effect of the wiring. **The same-build control is what caught it** —
+   * run it, always, exactly as this project has required since
+   * `approved-timings.mjs` reported four false "SHIFTED" rows on unchanged code.
+   *
+   * Endpoints were identical the whole time (393..448, starting and ending at
+   * 444 in both runs). **The data was fine; the comparison was wrong.**
+   */
+  const segment = (vals) => {
+    const v = vals.filter((x) => x !== null);
+    if (v.length < 3) return [];
+    const first = v[0], last = v[v.length - 1];
+    // Trim the idle head and tail: the frames that have not started moving, and
+    // the ones that have already arrived.
+    let s = 0;
+    while (s < v.length - 1 && Math.abs(v[s] - first) <= 0.5) s++;
+    let e = v.length - 1;
+    while (e > s && Math.abs(v[e] - last) <= 0.5) e--;
+    // One frame of lead-in and lead-out, so the curve's ends are included.
+    return v.slice(Math.max(0, s - 1), Math.min(v.length, e + 2));
+  };
+
   const cmp = (key) => {
-    const na = normalise(A.samples.map((s) => s[key]));
-    const nb = normalise(B.samples.map((s) => s[key]));
-    const n = Math.min(na.length, nb.length);
+    const na = normalise(segment(A.samples.map((s) => s[key])));
+    const nb = normalise(segment(B.samples.map((s) => s[key])));
+    if (!na.length || !nb.length) return { worst: 0, at: 0, frames: [na.length, nb.length] };
+    // Resample both onto a common 100-point axis: same FRACTION through the
+    // move, which is what "the same moment in the animation" means when the two
+    // runs have different frame counts.
+    const N = 100;
     let worst = 0, at = 0;
-    for (let i = 0; i < n; i++) {
-      // Compare at the same fraction through the move, not the same frame index.
-      const fa = na[Math.floor((i / n) * na.length)];
-      const fb = nb[Math.floor((i / n) * nb.length)];
+    for (let i = 0; i < N; i++) {
+      const f = i / (N - 1);
+      const fa = na[Math.round(f * (na.length - 1))];
+      const fb = nb[Math.round(f * (nb.length - 1))];
       const d = Math.abs(fa - fb);
-      if (d > worst) { worst = d; at = i / n; }
+      if (d > worst) { worst = d; at = f; }
     }
-    return { worst, at };
+    return { worst, at, frames: [na.length, nb.length] };
   };
 
   console.log(`\n  comparing "${a}" -> "${b}"\n`);
-  console.log(`  channel        worst deviation   at`);
+  console.log(`  channel        worst deviation   at      moving frames`);
   for (const key of ["phraseY", "gridY", "phraseSize"]) {
-    const { worst, at } = cmp(key);
+    const { worst, at, frames } = cmp(key);
+    /**
+     * ⚠ 5% IS ABOVE THE MEASURED NOISE FLOOR, NOT A GUESS. Two runs of the SAME
+     * build differ by 2.6–2.9%, purely from one-frame differences in where the
+     * sampler catches the move. A threshold at or below that would flag every
+     * run as changed; one far above it would miss a real shift.
+     *
+     * ⚠ RE-MEASURE THE FLOOR IF THE SAMPLING CHANGES. It is a property of this
+     * harness, not of the corridor.
+     */
     const flag = worst > 0.05 ? "  ⚠ CHANGED" : "";
-    console.log(`  ${key.padEnd(12)}   ${(worst * 100).toFixed(1).padStart(5)}%           ${(at * 100).toFixed(0)}%${flag}`);
+    console.log(
+      `  ${key.padEnd(12)}   ${(worst * 100).toFixed(1).padStart(5)}%           ${(at * 100).toFixed(0).padStart(3)}%    ${frames[0]} vs ${frames[1]}${flag}`,
+    );
   }
   console.log(`\n  ⚠ >5% ANYWHERE ALONG THE CURVE IS A REAL CHANGE IN THE MOTION, even if`);
   console.log(`    the endpoints match. Carl judges by eye; this says where to look.\n`);

@@ -1013,17 +1013,14 @@ export default function EnquiryOpening() {
     // the stable `questionnaireStarted` boolean exists to prevent.
   }, [questionnaireStarted, canvasWarm, reducedMotion]);
 
-  // ⚠ UNUSED WHILE CHUNK 3 RUNS, AND DELIBERATELY KEPT. The five CSS cards that
-  // called this are removed, so nothing selects anything — but this is working
-  // selection logic that chunk 5 needs when the WebGL grid takes over: "unused"
-  // here means "waiting", not "dead".
+  // ⚠ IT HAS A CALLER AGAIN — 10 August 2026, and it waited since chunk 3.
   //
-  // ⚠ THE OLD CROSS-REFERENCE TO `GRID_REFL` IS GONE — that constant was deleted
-  // on 10 August 2026 (see the tombstone above `EnquiryOpening`). **It is not
-  // precedent for keeping this one.** GRID_REFL was waiting for a surface that
-  // then got replaced; this is waiting for a caller that Stage B supplies. If
-  // Stage B is abandoned, revisit whether this should go the same way.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // The five CSS cards that used to call this were removed on Carl's
+  // instruction (*"just remove the 5 cards that are there now and build"*), and
+  // it was kept on the argument that "unused" meant "waiting, not dead". The
+  // WebGL cards now call it through `AnswerCardCanvas`'s `onToggle`, so the
+  // `no-unused-vars` disable that guarded it is gone. **The argument was
+  // correct; this is what it was waiting for.**
   const toggleOption = useCallback((option: string) => {
     setSelected(prev => {
       const next = new Set(prev);
@@ -1035,6 +1032,32 @@ export default function EnquiryOpening() {
       return next;
     });
   }, []);
+
+  /**
+   * The card grid's index → the corridor's option string.
+   *
+   * ⚠⚠ `useCallback`, AND NOT AS A FORMALITY. Written inline on the JSX this
+   * would be a NEW FUNCTION ON EVERY RENDER — and `toggleOption` writes
+   * `selected`, which re-renders this component, which re-renders
+   * `AnswerCardCanvas`. That component is not memoized, and `onCompiled` /
+   * `onEntranceStart` already sit in effect dependency arrays inside it, so an
+   * unstable callback re-fires those effects.
+   *
+   * ⚠ AND IT WOULD LAND ON THE SAME FRAME AS THE FILAMENT SURGE, which is
+   * approved motion. Architect, 10 August 2026 — flagged before it could be
+   * built, which is the cheapest moment to catch it.
+   *
+   * ⚠ KEYED ON `activeQ`, NOT ON NOTHING. It closes over this question's option
+   * list; a `[]` dependency array would freeze it on Q5's options and silently
+   * select the wrong answers from Q4 onward.
+   */
+  const handleCardToggle = useCallback(
+    (index: number) => {
+      const option = QUESTIONS[activeQ]?.options[index];
+      if (option) toggleOption(option);
+    },
+    [activeQ, toggleOption],
+  );
 
   // One generic corridor step for every question. The answered question is pushed to
   // memory (it becomes the newest = depth-1) and every older memory deepens by one — both
@@ -1230,10 +1253,33 @@ export default function EnquiryOpening() {
                 is what an early-mount restructure would use. This changes the
                 caller, not the contract.
               */}
+              {/*
+                ⚠⚠ THE `qNum === 5` GATE STAYS IN THIS STEP, DELIBERATELY, AND
+                REMOVING IT IS THE WHOLE OF THE NEXT ONE.
+
+                This is step 1a of Stage B: selection is wired, but the cards
+                still render for Q5 only. That is not an oversight — it is the
+                MEASUREMENT CONTROL. With the gate in place, a Q5→Q4 move is a
+                real corridor move on a real path with **no canvas mounting on
+                the far side**; removing the gate makes the same move mount one.
+                The delta between those two is the context-creation cost, and it
+                decides whether the shared-host restructure (D-046) is needed.
+
+                ⚠ AN EARLIER MEASUREMENT OF THIS FORCED THE BUTTON WITH
+                `selected` EMPTY, which the real path never is — the memory chip
+                renders blank where the real move renders text. It reported
+                +126ms and that delta is indicative, not decisive.
+                `verify/transition-cost.mjs` records why. **This step is what
+                makes an honest control possible.**
+
+                ⚠ SO Q4–Q1 HAVE NO CARDS UNTIL 1b. Expected, not a defect.
+              */}
               {qNum === 5 && (
                 <AnswerCardCanvas
                   active={isActive}
                   onEntranceStart={noteCardEntranceStart}
+                  labels={QUESTIONS[qNum].options}
+                  onToggle={handleCardToggle}
                 />
               )}
             </div>
@@ -1554,7 +1600,33 @@ export default function EnquiryOpening() {
               pointerEvents: "none",
             }}
           >
-            <AnswerCardCanvas active={false} warm onCompiled={armOpening} />
+            {/*
+              ⚠⚠ THE WARM-UP GETS LABELS TOO, AND "IT WOULD NOT CRASH" IS THE
+              WRONG TEST. Architect, 10 August 2026.
+
+              Until today the labels were a module constant inside the canvas, so
+              THIS instance built label textures whether anyone thought about it
+              or not. Now they arrive as a prop — and passing nothing here would
+              have been the easy reading, since `labelMap` is null-safe and the
+              warm-up is invisible anyway.
+
+              **But the warm-up exists to PRECOMPILE the shaders the real cards
+              use, and a card with no label texture is a different material
+              variant from one with.** Passing nothing would leave the precompile
+              silently not covering what the entrance actually renders.
+
+              ⚠ THE FAILURE MODE IS A RETURNED STUTTER, ATTRIBUTED TO SOMETHING
+              ELSE — this project's most expensive class of bug, and the reason
+              this comment is longer than the change.
+
+              Q5's options, because Q5 is the question the entrance renders.
+            */}
+            <AnswerCardCanvas
+              active={false}
+              warm
+              onCompiled={armOpening}
+              labels={QUESTIONS[5].options}
+            />
           </div>
         )}
 

@@ -766,36 +766,6 @@ const RIG_PARAMS = [
  * opaque list — the glass would stop seeing it entirely, presenting as "the
  * frost went flat" with every assertion still green.
  */
-/**
- * The five Q5 answers, shown on the prototype cards.
- *
- * ⚠ ADDED 9 August 2026 — Carl: *"Put the answer text in the boxes, we shouldnt
- * judge it in isolation."* The material is being judged as the BACKGROUND TO A
- * LABEL, which is what it will always actually be. A satin bloom that reads well
- * on a blank card can still be the wrong surface to put text on.
- *
- * ⚠⚠ THIS IS A PROTOTYPE DUPLICATE AND IT MUST NOT SURVIVE ROLLOUT. The real
- * source is `QUESTIONS[5].options` in `enquiry-opening.tsx`, which also holds
- * Q1–Q4. Copying it here is exactly the pattern this project has recorded
- * failing four times — a harness or a component holding its own copy of a value
- * that lives somewhere else, which cannot fail when the original moves.
- *
- * ⚠ IT IS DONE ANYWAY, DELIBERATELY AND NARROWLY, because the alternative is
- * worse today: this canvas is mounted by `enquiry-opening.tsx` but does not
- * receive the question, and threading a `labels` prop through the entrance,
- * the warm-up instance and the clay path to show text on a PROTOTYPE would
- * change the component's contract for a study. **When the cards return as real
- * controls they take their labels from the corridor as props, and this constant
- * is deleted.** Recorded here so it reads as a known debt rather than an
- * oversight.
- */
-const CARD_LABELS = [
-  "Premium new website",
-  "Current site feels dated",
-  "Better quality enquiries",
-  "Less manual admin",
-  "Not sure yet",
-] as const;
 
 /**
  * A visible marker for a light that has no body of its own — dev only.
@@ -2764,12 +2734,23 @@ function CardScene({
   onWarm,
   mayCompile,
   gridWidth,
+  labels,
 }: {
   active: boolean;
   reducedMotion: boolean;
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
   litCards: boolean[];
+  /**
+   * The answer text for each card, from the corridor.
+   *
+   * ⚠ OPTIONAL, AND `undefined` IS A REAL CASE: the clay study and any instance
+   * with no question behind it render unlabelled. `buildLabelTexture` is only
+   * called when a label exists (`answer-card-mesh.tsx`), so this stays null-safe
+   * — but see the contract note on `AnswerCardCanvas.labels`: the WARM-UP
+   * instance passing nothing would be a precompile hole, not merely a blank card.
+   */
+  labels?: readonly string[];
   /** Index of the card under the pointer, or null. Drives the label's teal. */
   hovered: number | null;
   onWarm: () => void;
@@ -3231,7 +3212,7 @@ function CardScene({
             lit={litCards[i] ?? false}
             hovered={hovered === i}
             clay={clay}
-            label={CARD_LABELS[i]}
+            label={labels?.[i]}
           />
         </group>
       ))}
@@ -3329,11 +3310,52 @@ export default function AnswerCardCanvas({
    * thread is free, which is the only thing the choreography needs to know.
    */
   onCompiled,
+  /**
+   * The five answer labels for this question, from the corridor.
+   *
+   * ⚠⚠ THIS REPLACES `CARD_LABELS`, WHICH WAS A HARD-CODED COPY OF Q5's ANSWERS
+   * AND IS NOW DELETED. Its own comment committed to exactly this: *"When the
+   * cards return as real controls they take their labels from the corridor as
+   * props, and this constant is deleted."* The single source is
+   * `QUESTIONS[qNum].options` in `enquiry-opening.tsx`.
+   *
+   * ⚠ THE WARM-UP INSTANCE MUST PASS THESE TOO, and it is not obvious why. It
+   * exists to PRECOMPILE the shaders the real cards use — and a card with no
+   * label texture is a *different material variant* from one with. Passing
+   * nothing would leave the precompile silently not covering what the entrance
+   * actually renders, and **the failure mode is a returned stutter attributed
+   * to something else.** Architect, 10 August 2026.
+   */
+  labels,
+  /**
+   * Fired when a card is toggled. The corridor owns what that means.
+   *
+   * ⚠ MUST BE `useCallback`-STABLE. This component is not memoized, and
+   * `onCompiled` / `onEntranceStart` already sit in effect dependency arrays
+   * here — an unstable callback re-fires them. The toggle lands on the same
+   * frame as the filament heat, which is Carl-approved motion.
+   */
+  onToggle,
 }: {
   active: boolean;
   warm?: boolean;
   onEntranceStart?: () => void;
   onCompiled?: () => void;
+  labels?: readonly string[];
+  onToggle?: (index: number) => void;
+  /**
+   * ⚠ `selectedIndices` BELONGS HERE AND IS DELIBERATELY NOT ADDED YET.
+   *
+   * B2 promotes the hit targets to real `<button>`s, and their `aria-pressed`
+   * must come from the CORRIDOR's `selected` — **not from `litCards`**, which is
+   * this canvas's filament state and legitimately disagrees during a corridor
+   * move (the outgoing phrase keeps its cards lit while `selected` is already
+   * cleared). A control reporting `litCards` would announce "pressed" on a
+   * question already answered and left.
+   *
+   * It is not declared now because it would be an unused prop, and an unused
+   * prop is a promise the type system cannot keep. **Add it with its consumer.**
+   */
 }) {
   const [reducedMotion] = useState(
     () =>
@@ -3692,6 +3714,7 @@ export default function AnswerCardCanvas({
           tuning={tuning}
           glassTuning={glassTuning}
           litCards={litCards}
+          labels={labels}
           hovered={hovered}
           onWarm={markWarm}
           mayCompile={warm}
@@ -3751,13 +3774,33 @@ export default function AnswerCardCanvas({
             // releasing fades uniformly. The journey is what says *"I am
             // choosing this"* — replaying it backwards would make taking a
             // choice back look like making one.
-            onPointerDown={() =>
+            /**
+             * ⚠ TWO THINGS HAPPEN, AND THEY ARE DELIBERATELY SEPARATE.
+             *
+             * `setLitCards` drives the FILAMENT — Carl-approved motion with its
+             * own lifetime, including a cool-down that outlives the selection.
+             * `onToggle` tells the CORRIDOR, which owns what "selected" means.
+             *
+             * ⚠ THE FILAMENT IS NOT THE SELECTION. During a corridor move the
+             * outgoing phrase keeps rendering with its `litCards` intact while
+             * the corridor has already cleared `selected` — so a control that
+             * reported its state from `litCards` would announce "pressed" on a
+             * question already answered and left. The two are allowed to
+             * disagree; only one of them is the answer.
+             *
+             * ⚠ FIRING BOTH HERE KEEPS THE FILAMENT INSTANT. Deriving `litCards`
+             * from the corridor's round trip would put a React render between
+             * the mouse-down and the surge, and Carl specified the mouse BUTTON
+             * as the trigger precisely to avoid that kind of delay.
+             */
+            onPointerDown={() => {
               setLitCards((prev) => {
                 const next = prev.slice();
                 next[i] = !prev[i];
                 return next;
-              })
-            }
+              });
+              onToggle?.(i);
+            }}
             style={{
               position: "absolute",
               left: b.x,
