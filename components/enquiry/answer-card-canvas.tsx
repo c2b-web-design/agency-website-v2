@@ -573,6 +573,32 @@ function TravellingLight({
       return;
     }
 
+    /**
+     * ⚠ THIS LOOP WAS SUSPECTED OF THE Q5 STALL AND MEASURED INNOCENT — recorded
+     * so it is not re-suspected on the same reasoning.
+     *
+     * `7b056c2` turned a demand-mode canvas into a continuously rendering one:
+     * the loop below runs unconditionally and calls `invalidate()` every frame
+     * for as long as the corridor is open. That made it the leading suspect for
+     * the Q5 regression — a canvas rendering every frame while the real one
+     * creates its WebGL context is exactly the shape of contended driver work
+     * the profile showed (`(program)` 305ms, no JS hot spot).
+     *
+     * ⚠ MEASURED WITH A TEMPORARY `?parktraveller=1` FLAG, INTERLEAVED: parking
+     * it is worth only ~30-70ms, and the bisect scored this commit at **112ms —
+     * BETTER than the 158ms of the commit before it.** The real cause was the
+     * second label texture added later, at `4c7a20e`.
+     *
+     * ⚠ AND THE FIRST A/B OF THAT FLAG LIED: 740ms vs 388ms in a single ordered
+     * pair, which collapsed to ~30-70ms once interleaved. **Run order, not the
+     * flag.** Variance on identical code here is larger than most effects worth
+     * hunting — never trust one ordered pair on this page.
+     *
+     * The flag is removed; the finding is kept. The continuous loop remains a
+     * real cost for a phone (see the `frameloop` note in the session record) and
+     * throttling it is a visual change that is Carl's call, not a defect fix.
+     */
+
     let raf = 0;
     const start = performance.now();
 

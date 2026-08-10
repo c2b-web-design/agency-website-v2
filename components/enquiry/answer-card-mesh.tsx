@@ -40,7 +40,7 @@
  * text. All values are named constants so later tuning is a value change.
  */
 
-import { useMemo, useEffect, useRef, useCallback, useState } from "react";
+import { useMemo, useEffect, useRef, useCallback } from "react";
 // ⚠ `useThree` FOR `invalidate` — the canvas is `frameloop="demand"`, so an
 // animation that does not request frames is an animation that does not run.
 import { useFrame, useThree } from "@react-three/fiber";
@@ -332,7 +332,6 @@ function FaceMaterial({
   sheenColor,
   sheenRoughness,
   labelMap,
-  labelTealMap,
   hovered,
   filament,
   filterStrength,
@@ -348,10 +347,14 @@ function FaceMaterial({
    */
   color: string;
   roughness: number;
-  /** The answer label, drawn into the face's albedo. Null on the warm-up card. */
+  /**
+   * The answer label, drawn into the face's albedo. Null on the warm-up card.
+   *
+   * ⚠ THERE IS NO SECOND, TEAL VARIANT OF THIS ANY MORE. The hover tints these
+   * glyphs in the shader; a `labelTealMap` prop was removed on 10 August 2026
+   * because building it was the Q5 stall. See `buildLabelTexture`.
+   */
   labelMap: THREE.Texture | null;
-  /** The same label in the rail's teal — the hover target. Blended, not swapped. */
-  labelTealMap: THREE.Texture | null;
   /** Whether the pointer is over this card. Drives `uHover` through an ease. */
   hovered: boolean;
   /** Satin's smear along the tangent. Inert without a `tangent` attribute. */
@@ -371,17 +374,37 @@ function FaceMaterial({
     uAmber: { value: 0 },
     uGlassFilter: { value: new THREE.Color(GLASS_FILTER_TRANSMITTANCE) },
     /**
-     * ⚠ THE HOVER BLEND, 0 → 1. Two label textures exist — resting white and
-     * rail teal — and this mixes between them on the GPU.
+     * ⚠ THE HOVER BLEND, 0 → 1. Drives a TINT of the one label texture.
      *
-     * ⚠ WHY A BLEND AND NOT A REDRAW. The label lives in a 2048x512 canvas, so
-     * fading its colour by rebuilding would mean redrawing that canvas several
-     * times per hover — visibly stepped, and a cost paid on the main thread at
-     * exactly the moment the user is interacting. Building both textures once
-     * and mixing them costs one extra sampler.
+     * ⚠ THERE WAS A SECOND TEXTURE HERE AND IT WAS THE Q5 STALL. `uLabelTeal`
+     * used to be a `THREE.Texture` — a whole second 2048x512 canvas per card,
+     * built client-side for ten cards, cross-faded against the first. Measured
+     * at +157ms of frame gap inside the reveal; the bisect put the +217ms step
+     * at `4c7a20e`, the commit that added it. See `buildLabelTexture`.
+     *
+     * ⚠ WHY A TINT AND NOT A REDRAW. Redrawing the canvas per hover frame would
+     * be visibly stepped and would pay 2048x512 of main-thread work at exactly
+     * the moment the user is interacting. The tint is a few instructions in the
+     * fragment shader and costs nothing per frame.
      */
     uHover: { value: 0 },
-    uLabelTeal: { value: null as THREE.Texture | null },
+    /**
+     * The rail's teal as a linear-space colour, tinted onto the glyphs.
+     *
+     * ⚠ CONVERTED, NOT PASSED RAW. `LABEL_INK_HOVER` is an sRGB string; the
+     * fragment shader works in linear space, so handing it the sRGB triple
+     * would land a noticeably lighter, flatter teal than the rail's. THREE's
+     * `Color` does the conversion when told the working space.
+     */
+    uLabelTealInk: { value: new THREE.Color().setStyle(LABEL_INK_HOVER, THREE.SRGBColorSpace) },
+    /**
+     * The two ACES-correction dials. Read once at construction — a URL door
+     * that had to be re-read per frame would be a knob that appears to work and
+     * changes nothing, which this file has already been caught by twice.
+     */
+    uInkLift: { value: urlNumber("inklift", LABEL_INK_LIFT) },
+    uTealStrength: { value: urlNumber("tealstrength", LABEL_TEAL_STRENGTH) },
+    uInkNeutral: { value: urlNumber("inkneutral", LABEL_INK_NEUTRAL) },
   });
 
   const invalidate = useThree((s) => s.invalidate);
@@ -398,12 +421,11 @@ function FaceMaterial({
       Math.max(0, filament.intensity.current * filterStrength),
     );
 
-    // ⚠ THE SAMPLER IS REFRESHED HERE BECAUSE THE TEXTURE IS REBUILT WHENEVER
-    // THE LABEL CHANGES. `onBeforeCompile` runs once per program; a texture
-    // created after that would never reach the shader, and the hover would fade
-    // toward a blank map instead of the teal — a uniform that moves and changes
-    // no pixels, which this file has already been caught by twice.
-    uniforms.current.uLabelTeal.value = labelTealMap;
+    // ⚠ NOTHING TO REFRESH FOR THE TEAL ANY MORE. This used to reassign
+    // `uLabelTeal` every frame because the second texture was rebuilt whenever
+    // the label changed and a texture created after `onBeforeCompile` would
+    // never reach the shader. The teal is now a constant colour uniform set at
+    // construction, so there is no late-arriving resource to chase.
   });
 
   /**
@@ -489,7 +511,21 @@ function FaceMaterial({
       uniform float uAmber;
       uniform vec3  uGlassFilter;
       uniform float uHover;
-      uniform sampler2D uLabelTeal;
+      uniform vec3 uLabelTealInk;
+      uniform float uInkLift;
+      uniform float uTealStrength;
+      uniform float uInkNeutral;
+
+      /**
+       * ⚠ THE GLYPH MASK, CARRIED FROM map_fragment TO THE END OF THE CHAIN.
+       *
+       * It is computed from the ALBEDO (where ink and body are cleanly
+       * separable) but has to be applied AFTER LIGHTING, because the blue cast
+       * Carl reported is put there by the light rather than by the texture. A
+       * module-scope global is how a GLSL chunk hands a value to a later chunk;
+       * there is no varying to add and nothing per-vertex about it.
+       */
+      float gGlyphMask = 0.0;
 
       /**
        * ⚠ THE SEAM. Today the filter is uniform across the face; the filament is
@@ -524,22 +560,141 @@ function FaceMaterial({
        #ifdef USE_MAP
        {
          /**
-          * ⚠ THE HOVER TEAL, MIXED INTO THE ALBEDO. Both textures carry the
-          * whole face — body colour, relief and glyphs — so mixing them is a
-          * straight cross-fade between two finished images. Only the glyph
-          * pixels differ between the two, so the body and the relief are
-          * unchanged by the blend and only the TEXT changes colour.
+          * ⚠⚠ THE HOVER TEAL, TINTED FROM ONE TEXTURE — NOT CROSS-FADED FROM
+          * TWO. This is the Q5 stall fix, 10 August 2026.
           *
-          * ⚠ AFTER map_fragment, NOT BEFORE. That chunk is what samples the
-          * map into diffuseColor in the first place; injecting ahead of it
-          * would be overwritten on the next line.
+          * The old version sampled a SECOND full 2048x512 texture per card and
+          * cross-faded the two finished images. Building that second canvas for
+          * ten cards was measured at +157ms of frame gap inside the Q5 reveal
+          * (304ms with, 147ms without), and the interleaved bisect put the same
+          * +217ms step at 4c7a20e, the commit that introduced it.
+          *
+          * ⚠ IT IS ONLY POSSIBLE BECAUSE THE FAKE EXTRUSION WAS DISCARDED.
+          * Carl, 10 August: the relief *"can be discarded... It is important
+          * that the text in the resting state is white, then teal in the hover
+          * state."* The relief was identical in both textures; with it gone the
+          * two images differ ONLY in the glyph colour, which is a tint.
+          *
+          * ⚠ THE GLYPH MASK COMES FROM LUMINANCE, AND THE SEPARATION IS WIDE
+          * BY CONSTRUCTION. The satin body is #0b1f4d (luminance ~0.06 linear)
+          * and the ink is rgb(238,241,252) (~0.86). The smoothstep band sits
+          * well clear of both, so the drop shadow — which is DARKER than the
+          * body — is pushed to 0 and never tints. Nothing but the glyphs moves.
+          *
+          * ⚠ AND THE TINT IS A HUE SWAP AT CONSTANT LUMINANCE, not a multiply.
+          * Multiplying the white glyph by the teal would also DARKEN it, so the
+          * text would dim as it warmed. Only its colour changes.
+          *
+          * ══════════════════════════════════════════════════════════════════
+          * ⚠⚠ THE GLYPHS ARE LIFTED AGAINST ACES, AND THIS IS WHY
+          * ══════════════════════════════════════════════════════════════════
+          *
+          * Carl, 10 August: *"The answer text in the resting state isnt white
+          * enough. it seems to be a shade of blue. The teal colour isnt strong
+          * enough."* Both are the same defect and it is measurable:
+          *
+          *     texture ink   rgb(238, 241, 252)
+          *     on screen     rgb(146, 155, 170)      <- 61% of it
+          *
+          * ⚠ AND RED IS HIT HARDEST: 146/238 = 0.61 against blue 170/252 =
+          * 0.67. **That differential IS the blue cast.** The white is not a
+          * shade of blue by design; it is white being filtered blue.
+          *
+          * ⚠ THE CAUSE IS TONE MAPPING, NOT THIS TEXTURE. @react-three/fiber
+          * sets **ACES filmic** on the canvas (see useScenePrecompile). ACES
+          * is a FILM curve: it rolls highlights off toward the shoulder and
+          * desaturates them on the way. That flatters a lit glass surface,
+          * which is why the card reads well, and it is exactly wrong for text
+          * that is supposed to be a literal colour.
+          *
+          * ⚠ IT ALSO ANSWERS CARL'S FIRST POINT — *"it doesnt seem to flow in
+          * conparison to the text and subtext on the start page."* The start
+          * page's heading is DOM text at its literal CSS colour. This is a lit
+          * texture through a film curve. **They cannot match while that is
+          * true**, so the ink is pre-compensated here to land where the CSS
+          * lands.
+          *
+          * ⚠ WHY NOT toneMapped = false ON THE MATERIAL: the face must stay
+          * tone-mapped or the satin stops matching the rest of the card. The
+          * ground plane and the env panels DO opt out (answer-card-backdrop,
+          * useLocalEnvMap) precisely because a literal colour matters there
+          * and they are not lit. The face is lit, so it is compensated instead.
+          *
+          * ⚠ THE TEAL IS APPLIED AT FULL SATURATION, NOT SCALED BY THE CRUSHED
+          * LUMINANCE. The previous version multiplied the teal by the glyph's
+          * measured brightness — which ACES had already reduced to 0.61 — so
+          * the hover arrived at roughly a quarter of its intended shift
+          * (red moved 22 of a target 78). It is now driven from the LIFTED
+          * value, so the teal is as saturated as the white is white.
+          *
+          * ⚠ BOTH DIALS ARE CONSTANTS AND BOTH ARE CARL'S TO MOVE BY EYE —
+          * see LABEL_INK_LIFT and LABEL_TEAL_STRENGTH.
+          *
+          * ⚠ AFTER map_fragment, NOT BEFORE. That chunk samples the map into
+          * diffuseColor; injecting ahead of it would be overwritten.
           *
           * ⚠ NO BACKTICKS IN THIS COMMENT. It lives inside a JS template
           * literal, so a backtick here closes the string and the file stops
           * compiling — which is exactly what happened on the first write.
           */
-         vec4 tealTexel = texture2D(uLabelTeal, vMapUv);
-         diffuseColor = mix(diffuseColor, tealTexel * vec4(diffuse, opacity), uHover);
+         float inkLum = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+         gGlyphMask = smoothstep(0.22, 0.55, inkLum);
+
+         diffuseColor.rgb *= 1.0 + (uInkLift - 1.0) * gGlyphMask;
+
+         // The teal, at the glyph's own brightness. uTealStrength scales how
+         // far it travels.
+         float liftedLum = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+         vec3 tealInk = uLabelTealInk * liftedLum;
+         diffuseColor.rgb = mix(diffuseColor.rgb, tealInk, uHover * gGlyphMask * uTealStrength);
+       }
+       #endif`,
+    ).replace(
+      "#include <dithering_fragment>",
+      `#include <dithering_fragment>
+       #ifdef USE_MAP
+       {
+         /**
+          * ⚠⚠ THE GLYPHS ARE NEUTRALISED AFTER LIGHTING. THIS IS THE FIX FOR
+          * THE BLUE CAST, AND THE EARLIER ATTEMPTS MISSED BECAUSE THEY ACTED
+          * ON THE ALBEDO.
+          *
+          * Carl, 10 August: *"The Q5 white text is the reference here... It
+          * should be white though, not this cast of blue."*
+          *
+          * ⚠ THE TEXTURE IS ALREADY PURE WHITE (see LABEL_INK_REST) AND THE
+          * TEXT STILL READ BLUE. That is the proof the cast is not in the
+          * albedo: the face is lit by a BLUE-TINTED RIG — sheen #5b9ede plus a
+          * blue environment map — and light MULTIPLIES albedo. White ink under
+          * blue light is blue, no matter how white the ink is.
+          *
+          * ⚠ SO IT CANNOT BE FIXED BEFORE LIGHTING, WHICH IS WHERE TWO EARLIER
+          * ATTEMPTS ACTED. Whitening the texture and lifting the albedo both
+          * happen upstream of the multiply that creates the cast.
+          *
+          * ⚠ AND THE CARD MUST KEEP ITS BLUE LIGHT. The satin body, the sheen
+          * and the traveller are approved. This pulls ONLY the glyphs back
+          * toward neutral, through gGlyphMask, so the material is untouched
+          * everywhere else — including the drop shadow beneath the text.
+          *
+          * ⚠ IT DESATURATES, IT DOES NOT BRIGHTEN. Each glyph pixel is mixed
+          * toward its own LUMINANCE, so the letters keep exactly the brightness
+          * the light gave them and lose only the hue. That is precisely the
+          * distinction Carl drew: *"when white light moves over the text it may
+          * appear brighter... that is ok"* — brightness is free, a colour cast
+          * is not.
+          *
+          * ⚠ THE HOVER TEAL IS PROTECTED. Neutralising at full strength would
+          * cancel the teal too, so the amount is scaled by (1.0 - uHover): a
+          * resting glyph is fully neutralised, a hovered one keeps its teal.
+          *
+          * ⚠ AFTER dithering_fragment — the LAST chunk in the fragment chain,
+          * so this sees the final lit, tone-mapped, colour-space-encoded pixel.
+          * Anything earlier would be re-tinted by a stage further down.
+          */
+         float litLum = dot(gl_FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+         float neutralise = uInkNeutral * gGlyphMask * (1.0 - uHover);
+         gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(litLum), neutralise);
        }
        #endif`,
     );
@@ -1075,9 +1230,30 @@ const LABEL_TEX_W = 2048;
 const LABEL_TEX_H = 512;
 
 /**
- * The label's resting colour — the approved cool near-white from `.enquiry-card`.
+ * The label's resting colour — PURE WHITE, matching the Q5 phrase text.
+ *
+ * ⚠⚠ CARL SET THE REFERENCE, 10 August 2026: *"The Q5 white text is the
+ * reference here... It should be white though, not this cast of blue."*
+ *
+ * `.enquiry-pdepth-0 .enquiry-phrase-question` in `globals.css` is
+ * `rgba(255, 255, 255, 1)` — a NEUTRAL white with no tilt in any channel. That
+ * is the value this must read as.
+ *
+ * ⚠ IT WAS rgb(238, 241, 252) AND THAT WAS PART OF THE PROBLEM. Blue 252
+ * against red 238 is a **14-point tilt toward blue baked into the texture
+ * itself**, before the material does anything. Described as *"the approved cool
+ * near-white from `.enquiry-card`"*, which was true of the DOM card it came
+ * from — but that card sat on a dark page, not on a #0b1f4d satin body that
+ * bleeds blue through every anti-aliased glyph edge. **The two contributions
+ * push the same way and compound.**
+ *
+ * ⚠ AND CARL ACCEPTED THE PART THAT CANNOT BE FIXED HERE: *"I accept that when
+ * white light moves over the text it may appear brighter... before the text is
+ * lit it may not exactly match the Q5 text colour."* The label is a lit
+ * surface, so its BRIGHTNESS will move with the traveller. **The brief is the
+ * HUE: white, never blue.** Brightness is free; a colour cast is not.
  */
-const LABEL_INK_REST = "rgb(238, 241, 252)";
+const LABEL_INK_REST = "rgb(255, 255, 255)";
 
 /**
  * ⚠ THE HOVER TEAL, TAKEN FROM THE RAIL AND NOT INVENTED. Carl: *"answer text
@@ -1103,6 +1279,110 @@ const LABEL_INK_HOVER = "rgb(160, 220, 218)";
  * would normally take. To be moved by his eye, not defended by argument.
  */
 const LABEL_HOVER_TAU = 0.42;
+
+/**
+ * How far the glyphs are lifted in the shader — `?inklift=`.
+ *
+ * ⚠ THE GLYPH CORE MEASURED 204 AT PEAK, NOT 255. The label is a lit surface,
+ * so the light attenuates it to roughly 76% of the texture's white. Carl's
+ * reference is the Q5 phrase text at `rgba(255,255,255,1)`, so the gap is real
+ * and this closes it.
+ *
+ * ⚠ 2.0 IS FROM A SWEEP, NOT FROM THE RATIO — and the ratio would have been
+ * wrong. 255/204 suggests ~1.25; measured, that reaches only 201. The response
+ * is heavily compressed by ACES:
+ *
+ *     inklift 1.25   core 201   peak 214
+ *     inklift 2.0    core 221   peak 229     <- chosen
+ *     inklift 3.0    core 233   peak 239
+ *     inklift 4.5    core 241   peak 245
+ *
+ * ⚠ AND THE FLATTENING IS WHY 2.0 RATHER THAN 4.5. Past 2.0 each doubling buys
+ * ~10 points and spends the headroom the traveller needs — Carl asked to KEEP
+ * that: *"when white light moves over the text it may appear brighter... that
+ * is ok."* A glyph already at 245 has nowhere to brighten to, so the light
+ * would stop reading on the text at exactly the moment it should.
+ *
+ * ⚠⚠ AND THIS CONSTANT WAS SET TO 1.0 (INERT) ON A BAD MEASUREMENT — recorded
+ * because the mistake is instructive and cost a round.
+ *
+ * A histogram of the whole card showed pixels at **rgb(245-249)**, which was
+ * read as *"the glyph cores are already at ceiling, so a lift can do nothing"*.
+ * **Those pixels were the card's SPECULAR EDGE, not the text.** A tight crop on
+ * the text row alone put the glyph peak at 204.
+ *
+ * ⚠ THE LESSON IS THE PROJECT'S STANDING ONE: the crop decides the answer. A
+ * measurement of "the card" was used to conclude something about "the text",
+ * and the two differ by 45 points. **Measure the thing named in the claim.**
+ *
+ * ⚠ IT IS APPLIED TO THE ALBEDO, SO IT SCALES WITH THE LIGHT rather than
+ * overriding it — the text still brightens as the traveller passes, which Carl
+ * explicitly accepted: *"when white light moves over the text it may appear
+ * brighter... that is ok."*
+ */
+const LABEL_INK_LIFT = 2.0;
+
+/**
+ * The glyph's font weight — `?inkweight=`.
+ *
+ * ⚠ THE REAL LEVER FOR *"IT SEEMS TO BE A SHADE OF BLUE"*. At ~12px on screen a
+ * 500-weight glyph is mostly anti-aliased edge, and each edge pixel is part ink
+ * and part **#0b1f4d satin body**. The letters therefore read as a blue-tinted
+ * average even when their cores are pure white. A heavier stroke is
+ * proportionally more solid core and less contaminated edge, so the same colour
+ * reads whiter without touching the exposure or the material.
+ *
+ * ⚠ 600 IS ONE STEP, DELIBERATELY. Carl's brief is a colour correction, not a
+ * restyle — the label should not start shouting. `?inkweight=700` is available
+ * if his eye wants more; `?inkweight=500` restores the original.
+ */
+const LABEL_INK_WEIGHT = 600;
+
+/**
+ * How far the resting glyphs are pulled back to neutral after lighting —
+ * `?inkneutral=`. **This is the dial that answers Carl's brief.**
+ *
+ * ⚠ 1.0 MEANS FULLY NEUTRAL: each glyph pixel keeps its lit BRIGHTNESS and
+ * loses its HUE, so the text reads as the Q5 phrase's `rgba(255,255,255,1)`
+ * rather than as blue-grey. Carl set that reference explicitly: *"The Q5 white
+ * text is the reference here."*
+ *
+ * ⚠ AND HE PRE-AUTHORISED THE SIDE EFFECT: *"I accept that when white light
+ * moves over the text it may appear brighter. In this instance if that
+ * brightness matches the Q5 text colour that is ok."* Brightness still moves
+ * with the traveller; only the cast is removed.
+ *
+ * ⚠ 1.0 IS FULL CORRECTION AND MAY BE MORE THAN HIS EYE WANTS — a fully
+ * neutral glyph sits slightly apart from a card whose every other surface
+ * carries the blue light. `?inkneutral=0.6` leaves a trace of the rig in the
+ * text; `?inkneutral=0` restores the uncorrected blue-grey for comparison.
+ * **His call, not a value to defend.**
+ */
+const LABEL_INK_NEUTRAL = 1.0;
+
+/**
+ * How far the hover travels toward the rail's teal — `?tealstrength=`.
+ *
+ * ⚠ 1.0 MEANS "ALL THE WAY TO THE RAIL COLOUR" and that is the default,
+ * because the teal is a QUOTATION of the rail rather than a decorative tint —
+ * Carl: *"the same teal that is in the text in the rail system."* Anything
+ * below 1.0 is a deliberate softening.
+ *
+ * ⚠ IT EXISTS BECAUSE THE FIRST VERSION UNDERSHOT BADLY. The teal was scaled by
+ * the glyph's ACES-crushed luminance, so it arrived at about a quarter of its
+ * intended shift — red moved 22 against a target of 78, and Carl saw it: *"The
+ * teal colour isnt strong enough."* It is now driven from the LIFTED value.
+ */
+const LABEL_TEAL_STRENGTH = 1.0;
+
+/** Read a positive number from the query string, for the two dials above. */
+function urlNumber(key: string, fallback: number): number {
+  if (typeof window === "undefined") return fallback;
+  const raw = new URLSearchParams(window.location.search).get(key);
+  if (raw === null) return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
 
 function buildLabelTexture(
   text: string,
@@ -1139,7 +1419,10 @@ function buildLabelTexture(
    * with resolution rather than left to chance.
    */
   const fontPx = Math.round(LABEL_TEX_H * 0.30);
-  ctx.font = `500 ${fontPx}px Geist, system-ui, -apple-system, "Segoe UI", sans-serif`;
+  // ⚠ WEIGHT IS A COLOUR CONTROL AT THIS SCALE, not a styling choice — see
+  // `LABEL_INK_WEIGHT`. A ~12px glyph is mostly anti-aliased edge, and every
+  // edge pixel is part ink and part blue satin body.
+  ctx.font = `${urlNumber("inkweight", LABEL_INK_WEIGHT)} ${fontPx}px Geist, system-ui, -apple-system, "Segoe UI", sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   const cx = LABEL_TEX_W / 2;
@@ -1147,68 +1430,63 @@ function buildLabelTexture(
   const maxW = LABEL_TEX_W * 0.86;
 
   /**
-   * ⚠⚠ THE EXTRUSION IS FAKED, ON CARL'S CALL. He asked *"Can the teal text be
-   * extruded slightly?"* and then ruled out the expensive answer himself: *"the
-   * text is so small doing it with real geometry would be a waste and too
-   * expensive."*
+   * ⚠⚠ THE FAKE EXTRUSION IS GONE — CARL, 10 AUGUST 2026.
    *
-   * ⚠ HE IS RIGHT AND THE PROJECT HAS ALREADY PAID TO LEARN IT. The face is
-   * ~104px tall on screen, so the glyphs are ~12–14px — the same scale at which
-   * five per-card point lights failed: *"it looks ok zoomed in but not at this
-   * scale."* Extruded glyph meshes would spend real geometry on detail that
-   * cannot resolve, per card, per label change.
+   * > *"The fake extrusion can be discarded. It is important that the text in
+   * > the resting state is white, then teal in the hover state."*
    *
-   * ⚠ THE LIGHT DIRECTION IS NOT A CHOICE. The key rakes from `[-160, 120, 40]`
-   * — upper-left — so the raised edge catches upper-left and the shadow falls
-   * lower-right. Faking it from any other angle would put the text's implied
-   * light source at odds with the card's actual one, which reads as wrong even
-   * when nobody can say why.
+   * It was two extra `fillText` passes — a dark side offset lower-right and a
+   * lit lip offset upper-left — faking a raised edge lit from the key at
+   * `[-160, 120, 40]`. He had asked *"Can the teal text be extruded slightly?"*,
+   * ruled out real geometry himself as *"a waste and too expensive"* at ~12px,
+   * and has now ruled out the fake too: *"At the human scale this is not so
+   * important. It is hardly noticable to the eye anyway."*
    *
-   * ⚠ AND THE FAKE CANNOT RESPOND TO THE TRAVELLER. These highlights are baked
-   * at a fixed angle, so as the ring sweeps past they stay lit from the same
-   * side. At 12px that is invisible; it would not be at a larger size, and it
-   * is the honest cost of not using geometry.
+   * ⚠⚠ AND ITS REMOVAL IS WHAT MAKES ONE TEXTURE ENOUGH — THIS IS THE Q5 FIX.
+   * The relief was IDENTICAL in the rest and hover textures; only the glyph
+   * differed. That is why a second full 2048x512 canvas per card existed at all,
+   * and why the old hover harness was fooled — it sampled the brightest pixels,
+   * which were the relief halo, the same in both images.
+   *
+   * With the relief gone the two images differ ONLY in the glyph's colour, so
+   * the hover is a tint of one texture rather than a cross-fade between two.
+   *
+   * Measured cost of the second texture (`verify/reveal-cost.mjs`, interleaved):
+   *
+   *     with the teal texture     304ms worst frame gap in the reveal
+   *     without it (?noteal=1)    147ms
+   *
+   * The bisect put the same +217ms step at `4c7a20e`, the commit that added it.
+   *
+   * ⚠ THE DROP SHADOW STAYS, AND IT IS NOT PART OF THE EXTRUSION. It is
+   * legibility: the satin bloom runs brightest across the middle of the face,
+   * which is exactly where the text sits. Carl kept it deliberately when the
+   * relief was dropped.
    */
-  const relief = Math.max(1, Math.round(fontPx * 0.035));
 
-  // 1. The drop shadow, as the DOM label carried it. The satin bloom runs
-  //    brightest across the middle of the face, which is where the text sits;
-  //    this keeps it legible across that band without a scrim over the material.
+  // 1. The drop shadow, as the DOM label carried it. Keeps the text legible
+  //    across the satin bloom without a scrim over the material.
   ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
   ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
   ctx.shadowBlur = Math.round(fontPx * 0.22);
   ctx.shadowOffsetY = Math.round(fontPx * 0.06);
   ctx.fillText(text, cx, cy, maxW);
 
-  // ⚠ THE SHADOW IS CLEARED BEFORE THE RELIEF PASSES. Left on, it would blur
-  // the very edges that are meant to read as a crisp lip, and the letters would
-  // come out muddy rather than raised.
   ctx.shadowColor = "transparent";
   ctx.shadowBlur = 0;
   ctx.shadowOffsetY = 0;
 
   /**
-   * ⚠ THE RELIEF ALPHAS WERE LOWERED TO 0.28/0.24 ON 10 AUGUST AND PUT BACK.
-   * Carl reported *"the resting state text doesnt seem as white"* and the halo
-   * was the obvious suspect. **It is not the cause** — measured on the real GPU,
-   * the glyph core reads rgb(210,214,221) at 0.45/0.38 and rgb(210,213,221) at
-   * 0.28/0.24. **A 0.5-point difference.**
-   *
    * ⚠ THE ~0.88 ATTENUATION FROM THE TEXTURE'S rgb(238,241,252) IS THE LIGHTING,
-   * NOT THE HALO. The label is part of a lit surface, so it is shaded like one.
-   * Anything that wants the glyphs closer to their texture value has to change
-   * the exposure on the face, not the ink or the relief around it.
+   * NOT ANYTHING IN THIS CANVAS. The label is part of a lit surface, so it is
+   * shaded like one. Carl reported *"the resting state text doesnt seem as
+   * white"* and the relief halo was the obvious suspect; it was measured and
+   * cleared — the glyph core moved 0.5 of a point when the halo alphas were
+   * halved. Anything that wants the glyphs closer to their texture value has to
+   * change the exposure on the face, not this file.
    */
 
-  // 2. The dark side, offset lower-right — the face the light cannot reach.
-  ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
-  ctx.fillText(text, cx + relief, cy + relief, maxW);
-
-  // 3. The lit lip, offset upper-left toward the key.
-  ctx.fillStyle = "rgba(255, 255, 255, 0.38)";
-  ctx.fillText(text, cx - relief, cy - relief, maxW);
-
-  // 4. The glyph itself, on top and centred — rest white or the rail's teal.
+  // 2. The glyph itself, centred — the resting ink.
   ctx.fillStyle = ink;
   ctx.fillText(text, cx, cy, maxW);
 
@@ -1674,72 +1952,48 @@ export function AnswerCardMesh({
   }, [label]);
 
   /**
-   * The same label in the rail's teal — the hover target.
+   * ⚠⚠ THE SECOND, TEAL LABEL TEXTURE IS GONE — 10 AUGUST 2026, AND ITS REMOVAL
+   * IS THE Q5 STALL FIX.
    *
-   * ⚠⚠ BUILT DURING AN IDLE GAP, NOT AT MOUNT AND NOT ON HOVER. Both of the
-   * obvious timings are wrong and the middle one is the answer:
+   * What stood here: a `useState` holding a second 2048x512 `CanvasTexture` per
+   * card in the rail's teal, built through `requestIdleCallback` with a 2000ms
+   * fallback, plus its own disposal effect. Ten cards, ten extra canvases.
    *
-   *   - **At mount** it drew a second 2048x512 canvas per card, ten times, inside
-   *     the Q5 reveal. Measured: the worst frame gap went 161ms → 312ms the
-   *     moment this texture was added (`4c7a20e`). **Carl saw it: *"Q5 stalls"*.**
-   *   - **On hover** it would hitch on the exact frame the pointer arrives — the
-   *     one the user is most attentive to.
+   * ⚠ THE BISECT NAMED IT. 7 arms x 3 rounds, production build per arm, real
+   * GPU, arms interleaved — worst frame gap inside the 1300ms reveal:
    *
-   * ⚠ SO IT WAITS FOR THE THREAD TO BE FREE. `requestIdleCallback` yields until
-   * after the reveal has finished; the fallback covers Safari, which has none.
-   * The hover blend simply mixes toward `null` until it lands, which the shader
-   * already tolerates — `uHover` is 0 for that whole period anyway.
+   *     3a7cf1f   82ms   D-046, approved by Carl's eye
+   *     1c9b8d7  158ms
+   *     7b056c2  112ms
+   *     4c7a20e  329ms   <- +217ms, the commit that added this texture
+   *     eb827f0  317ms   HEAD
    *
-   * ⚠ AND THE 2000ms FALLBACK IS NOT ARBITRARY. It is long enough to clear the
-   * 1300ms reveal with margin, which is the same reasoning the pre-warm's own
-   * idle scheduling uses. A shorter one would fire back inside the window this
-   * change exists to protect.
+   * Confirmed by A/B on one build: 304ms with the texture, 147ms without.
+   *
+   * ⚠⚠ AND THE `requestIdleCallback` DEFERRAL DID NOT SAVE IT — `f96b600` still
+   * measured 258ms. Two reasons, both recorded so this is not retried:
+   *
+   *   1. **The 2000ms fallback did not start before the reveal.** Its comment
+   *      claimed it was *"long enough to clear the 1300ms reveal with margin"*,
+   *      but the effect runs when the card mesh MOUNTS — and the canvas creates
+   *      its context at +78-105ms INSIDE the reveal. The timer began inside the
+   *      window it was meant to clear.
+   *   2. **There is no idle gap to find.** `enquiry-opening.tsx` records it as
+   *      settled: the opening animates without a break from 600ms to 12400ms,
+   *      so `requestIdleCallback` never finds genuine idle and its timeout is
+   *      the only path — the same failure that defeated four earlier scheduling
+   *      attempts on this page. *A moved symptom is not a fixed symptom.*
+   *
+   * The hover now tints the ONE label texture in the fragment shader, which is
+   * possible only because Carl discarded the fake extrusion — see
+   * `buildLabelTexture` and the `map_fragment` injection above.
    */
-  const [labelTealMap, setLabelTealMap] = useState<THREE.CanvasTexture | null>(null);
-
-  useEffect(() => {
-    // ⚠ NO SYNCHRONOUS `setState` HERE. Clearing the texture in this branch
-    // would be a cascading render on every mount of a label-less card (the
-    // warm-up instance and the clay study), which lint correctly rejects. The
-    // state is already null for those, and the cleanup below handles a label
-    // CHANGING — so there is nothing to clear.
-    if (!label || typeof document === "undefined") return;
-
-    let cancelled = false;
-    const build = () => {
-      if (cancelled) return;
-      setLabelTealMap(buildLabelTexture(label, SATIN_COLOR, LABEL_INK_HOVER));
-    };
-    const w = window as unknown as {
-      requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
-      cancelIdleCallback?: (h: number) => void;
-    };
-    if (typeof w.requestIdleCallback === "function") {
-      const h = w.requestIdleCallback(build, { timeout: 2000 });
-      return () => {
-        cancelled = true;
-        w.cancelIdleCallback?.(h);
-        // ⚠ CLEARED ON THE WAY OUT, NOT ON THE WAY IN. When the label changes,
-        // the texture built for the OLD one must not stay bound — the card
-        // would hover to the previous answer's teal. This is a cleanup, so it
-        // is not the cascading-render pattern lint objects to.
-        setLabelTealMap(null);
-      };
-    }
-    const t = window.setTimeout(build, 2000);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(t);
-      setLabelTealMap(null);
-    };
-  }, [label]);
 
   /**
-   * ⚠ TEXTURES LEAK IF THEY ARE NOT DISPOSED, and these are rebuilt whenever
+   * ⚠ TEXTURES LEAK IF THEY ARE NOT DISPOSED, and this one is rebuilt whenever
    * the label changes — five cards through five questions is twenty-five
-   * textures over a corridor walk, and **fifty now that each card carries a
-   * teal variant as well**. `useDisposable` covers geometries; a texture needs
-   * the same treatment and does not get it for free.
+   * textures over a corridor walk. `useDisposable` covers geometries; a texture
+   * needs the same treatment and does not get it for free.
    */
   useEffect(() => {
     if (!labelMap) return;
@@ -1747,13 +2001,6 @@ export function AnswerCardMesh({
       labelMap.dispose();
     };
   }, [labelMap]);
-
-  useEffect(() => {
-    if (!labelTealMap) return;
-    return () => {
-      labelTealMap.dispose();
-    };
-  }, [labelTealMap]);
 
   // ── Where the face sits in z ──────────────────────────────────────────────
   //
@@ -1913,7 +2160,6 @@ export function AnswerCardMesh({
              */
             color={labelMap ? "#ffffff" : SATIN_COLOR}
             labelMap={labelMap}
-            labelTealMap={labelTealMap}
             hovered={hovered}
             roughness={glassTuning.roughness}
             anisotropy={glassTuning.satinAnisotropy}
