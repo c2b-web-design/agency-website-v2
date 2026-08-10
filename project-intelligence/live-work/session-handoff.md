@@ -1,4 +1,4 @@
-# Session Handoff — 10 August 2026 (hover teal / Q5 stall)
+# Session Handoff — 10 August 2026 (Q5 stall fixed, label colour, filament, next-step mesh)
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -16,134 +16,189 @@ say so.** It was not broken this session.
 
 ## STATE OF THE TREE
 
-**Clean, committed and pushed.** Head is `f96b600`.
+**Branch `fix/q5-stall-and-label-colour`, pushed.** Two commits on top of `eb827f0`:
+
+    303a826  fix(enquiry): one label texture, and the white is white again
+    181f8bc  feat(enquiry): the filament is the half-pipe, and it surges
+
+**Uncommitted and untracked — the next-step button prototype, unfinished:**
+
+    components/enquiry/nextstep-geometry.ts
+    components/enquiry/nextstep-canvas.tsx
+    app/proto/nextstep/page.tsx        the bench
+    app/proto/minimal/page.tsx         an isolation test, DELETE when done
 
 `npx tsc --noEmit` clean. Lint at the recorded baseline: **1 problem (1 error, 0 warnings)** —
-the known `enquiry-opening.tsx` reduced-motion effect, untouched. **The dev server was stopped
-at the end of the session; a production build exists in `.next/`.**
+the known `enquiry-opening.tsx` reduced-motion effect, untouched. **Dev server was left running
+on :3000.**
 
 ---
 
-## 🔴 START HERE — Q5 STALLS. OPEN, MEASURED, NOT DIAGNOSED
+## ✅ APPROVED AND COMMITTED THIS SESSION
 
-**Carl: *"Q5 stalls"*. He is right. Full record: `live-work/q5-stall-10-august.md` — read it
-before touching anything, it will save a round.**
+### The Q5 stall — CAUSE FOUND AND FIXED
 
-    production build, head e3a5b7c   596ms worst frame gap
-    visible threshold                 ~50ms
-    for scale — 9 Aug, after 3a7cf1f   86ms, and Carl approved it by eye
+An interleaved bisect (7 arms × 3 rounds, **production build per arm**) named `4c7a20e`: it added
+a **second 2048×512 canvas texture per card** for the hover teal. Worst frame gap in the reveal:
 
-⚠⚠ **IT IS NOT THE HOVER WORK.** Both components were reverted to `7b056c2` (before any hover
-teal existed) with everything else left current: **626ms**. That ground is covered — do not
-start by suspecting the teal, the second texture or the rAF loops.
+    3a7cf1f    82ms   D-046, approved — the control, reproduced
+    4c7a20e   329ms   <- +217ms
+    eb827f0   317ms   HEAD before the fix
+    after the fix     167ms
 
-⚠ **THREE FIXES WERE TRIED AND ALL THREE MISSED** (rAF guard, deferred texture, cache-key
-removal — 624/624/619ms). They are committed at `f96b600` because each is right in isolation,
-and the code comments say explicitly that none is a remedy.
+⚠ **THE FIX WAS CARL'S DESIGN CALL, NOT A WORKAROUND.** He discarded the fake extrusion; the
+relief was identical in both textures, so with it gone the two differ only in glyph hue — a
+**tint**, needing one texture instead of two.
 
-**The one piece of positive evidence** — CPU profile across the reveal:
+⚠ **167ms IS NOT D-046's 82ms.** A separate +76ms step at `1c9b8d7` is unexamined, and the
+structural cause stands: the canvas creates its WebGL context INSIDE the reveal because two mount
+sites sit either side of a ternary. That is the shared-host restructure D-046 declined to
+authorise. **Carl: "We will come back to the Q5."**
 
-    (program)                763.8ms
-    getProgramParameter       74.6ms   <- shader link query
-    forceContextLoss          35.0ms   <- a context being DESTROYED in the window
-    getProgramInfoLog         16.5ms   <- shader link log
+### The label colour — Carl: *"That looks a lot better"*
 
-**Shader compilation during the reveal, which is exactly what `3a7cf1f` fixed** by keeping the
-warm-up context alive 900ms past Begin. `forceContextLoss` at 35ms suggests something now tears
-that context down early.
+Three causes of the blue cast, all fixed: the texture was `rgb(238,241,252)` (a 14-point tilt),
+the **light** is blue and multiplies albedo, and the glyphs were dim. Neutralised at
+`dithering_fragment` — the last chunk — mixing each glyph pixel toward its own luminance so hue
+moves and brightness does not. Glyph core went 146/155/170 → 221/221/221.
 
-**Where to start:** bisect from `3a7cf1f` forward, **production build per arm**.
+### The filament — Carl: *"Looks good"*
 
-⚠⚠ **AND THIS IS THE PROCESS LESSON OF THE SESSION: A BISECT THAT CHANGES FILES ON A LIVE DEV
-SERVER IS MEASURING THE SERVER.** An early bisect showed a convincing staircase (161 → 312 →
-620ms) that appeared to convict the hover commits. It was Turbopack recompiling after each
-`git checkout`. **Restart the server per arm, or build per arm.**
-
----
-
-## ✅ THE HOVER TEAL IS DONE — and it was never broken
-
-**`e3a5b7c`.** The answer text turns teal on hover, `rgb(160, 220, 218)`, read from
-`.enquiry-pdepth-*` `.enquiry-phrase-answers` — the rail's own colour, because a card turning
-teal is a promise about where that answer is going. Eases over ~1s (`LABEL_HOVER_TAU` 0.42).
-
-Verified on the real GPU:
-
-    motion enabled   red drop 9.6  (green 8.9, blue 8.0)
-    reduced motion   red drop 39.0 (green 7.2, blue 12.0)
-
-⚠ **NOT YET JUDGED BY CARL'S EYE.** He asked to see it and the session went to the Q5 stall
-instead.
-
-### ⚠⚠ THE FEATURE WORKED ALL ALONG. THE HARNESS WAS WRONG, TWICE.
-
-An Architect question was raised over what turned out to be an instrument fault
-(`architect-question-hover-teal.md`, `architect-answer-hover-teal.md`).
-
-| the fault | why it lied |
-|---|---|
-| sampled the **brightest 6%** of pixels | that is the white relief halo from the faked extrusion, which is **identical in both textures** — only the glyph core takes the ink |
-| ran at **deviceScaleFactor 2** | a ~12px glyph is too anti-aliased to resolve; at 6 the same crop is unmistakably teal |
-
-⚠ **AND THE CROSS-CHECK FAILED THE SAME WAY** — the frames that "confirmed" white text were
-captured at scale 2. **A visual check at a resolution where the effect cannot resolve is not a
-cross-check.**
-
-**The Architect's answer still earned its keep**: it killed the Builder's shared-uniform theory
-by reading installed source, showed that **three of five "eliminations" in the question were
-unsound** (two worthless — "no compile error" was silence configured by
-`checkShaderErrors = false` at line 3563), and found the reduced-motion defect below.
-
-### The real defect it found, now fixed
-
-The hover ease ran in `useFrame`, which only ticks while something invalidates the canvas — the
-traveller's rAF loop was doing that **by accident**. Under `prefers-reduced-motion` the traveller
-parks, **so the teal would never have arrived**. Silently, for the users most likely to need a
-clear affordance, and invisible to every existing harness because they all run with motion on.
-It now has its own rAF that stops when settled. `verify/hover-reduced-motion.mjs` covers it.
+Most of the half-pipe rim is now the incandescent body (he redirected from a thin strand: *"more
+real estate and pixels to work with"*), and it **surges** — flares hot, settles back. The
+reflection is quenched as the metal heats, because emissive added to `metalness: 1` metal read
+pink at every ramp setting.
 
 ---
 
-## ⚠ THE `frameloop` REGRESSION — recorded, not fixed, and it is Carl's call
+## 🔴 START HERE — THE NEXT STEP BUTTON MESH, AND AN INSTRUMENT FAULT THAT COST FIVE FIXES
 
-**`7b056c2` — the approved resting light — turned a demand-mode canvas into a continuous 60fps
-one.** `TravellingLight` runs an unconditional rAF loop calling `invalidate()` every frame.
+### ⚠⚠ THE CANVAS RENDERS. EVERY "ALPHA 0" READING WAS FALSE.
 
-**The file's own header at line 18 still claims** *"`frameloop="demand"` AND IT STAYS THAT WAY…
-nothing needs a continuous rAF loop."* **That is now false.** A phone renders WebGL for as long
-as the corridor is open.
+**`preserveDrawingBuffer: false` means `readPixels` AND `toDataURL` return an EMPTY BUFFER on a
+static canvas.** The corridor's canvases only read non-zero because the traveller's rAF keeps
+them drawing. Mine had nothing animating, so both instruments reported a blank canvas that was
+in fact rendering correctly — **confirmed by `page.screenshot()`, which shows the mesh.**
 
-**Not fixed because throttling the traveller is a visual change Carl has not seen.** It needs to
-be his decision, not the Builder's.
+⚠ **USE `page.screenshot()` ON A STATIC CANVAS. NEVER `readPixels` OR `toDataURL`.**
+
+**It sent five wrong fixes**, all recorded in the code so they are not repeated: deepening the
+crown 2.4 → 8.5, rescaling the env panels, adding `invalidate()`, flipping the winding, and
+`DoubleSide`. Two of those were REAL bugs found on the way (see below) but none was the cause,
+because there was no cause — it was drawing all along.
+
+**Ruled out by measurement before the screenshot settled it:** geometry (18,017 verts, correct
+bounds), camera (frustum ±72×±34.5 vs a ±58×±20.5 pill), scene graph (mesh present, `visible`,
+106,248 indices), culling, lighting, and `frameloop="always"`.
+
+### Two real bugs fixed on the way, both worth keeping
+
+1. **The first geometry folded through itself.** Offsetting a closed pill inward by its own
+   half-height collapses it to a line and then inverts. Rebuilt as a **height field over the
+   pill's interior** — z as a function of distance from the edge, nothing to fold.
+   ⚠ `sweptBand` in `answer-card-mesh.tsx` avoids this only by luck of scale (inset 2 on a 576px
+   card).
+2. **Triangle winding was clockwise**, so faces were back-facing. Found with a cross product in
+   plain node, no browser.
+
+### WHERE IT STANDS
+
+Geometry built and verified. Material approach settled and the Architect confirmed it:
+**chrome is `metalness: 1`, roughness 0.08, and NO body colour — the blue comes from the
+environment.** Carl's reference set proves it: across six logo renders *the material never
+changes, the SCENE changes.* Plus the Satriani "Chrome Boy", which reads grey only because it is
+photographed against grey.
+
+**NEXT ACTION: screenshot `/proto/nextstep` and look at it.** It has never been seen.
+
+---
+
+## THE ARCHITECT'S REVIEW OF THE MESH — received, NOT yet acted on
+
+Ranked by leverage. ⚠ It was written against code believed not to render; **re-read it once the
+button has actually been looked at**, because points 1-3 assume a working image.
+
+1. **The shell is black; in the reference the darks are BLUE.** `nextstep-canvas.tsx` builds the
+   surround as `0x000000`, so a mirror returns black wherever the key panels miss — neutral
+   chrome in a dark room rather than blue platinum. Try `#0b1a2e`, or a vertical gradient shell.
+   **"The single change that moves chrome → platinum-blue."**
+2. **ACES will grey out the blue.** It desaturates as values approach white, exactly the band
+   where the reference is bluest. `THREE.NeutralToneMapping` holds hue far better. ⚠ Safe here
+   because `NextStepCanvas` is its own `<Canvas>` with its own renderer — it cannot touch the
+   approved card material.
+3. **The double highlight band is GEOMETRY, not material.** `crownHeight()` is a single smooth
+   dome and gives one band; the reference has a bright core, a groove, and a second parallel
+   line. Needs a shallow inflection near the edge. **Flagged so nobody tunes material params for
+   a geometry feature.**
+4. **Bloom in CSS, not postprocessing** — `filter: drop-shadow(...)` on the wrapper. Given what
+   frame cost has already cost on Q5, an UnrealBloom pass on a CTA is the wrong trade.
+5. Smaller: a faint roughness map (0.06-0.14) reads as platinum rather than chrome; **do NOT
+   reach for anisotropy** (inert without a tangent attribute — already recorded at
+   `answer-card-canvas.tsx:1142`); keep `#ffffff` F0, `#eef4ff` at the very most.
+
+⚠ **AND A TRADE THAT IS CARL'S TO DECIDE:** `ENV_KEY_COLOR` / `ENV_FILL_COLOR` are imported from
+`answer-card-glass.ts` deliberately so the button and cards share a room. **Pushing the shell blue
+puts the button in a bluer room than the cards.** Probably invisible at 116×41 under the grid,
+but it is a real trade against the "same world" principle — decide it, do not discover it.
+
+---
+
+## THE BRIEF, IN CARL'S WORDS
+
+- **Geometry** from the CSS button's shadow stack — a domed pill, measured **116.3 × 41**.
+  ⚠ *"Even though the CSS next step button was blue, it was not opal... trying to be frosted
+  glass."* **The CSS button is the thing being REPLACED, not the material reference.**
+- **Ivory** = Begin, start page. **Opal** = client info section. Both real materials, both taken.
+- *"only the next step button wont be frosted glass."*
+- **Material: chrome blue metal.** *"its chrome blue metal."*
+- **Amber is parked.** *"It's something that may or may not be implemented with the cards...
+  This is something i will return to."* Build the material so it stands with no amber at all.
+- **If real filament light cannot reach the button, simulate it.** *"putting an amber light next
+  to the button and activating it when certain cards are pressed. Belonging in the same world is
+  what counts."* `AmberSource` exists for this, off by default.
+- ⚠ **THE ROLLOUT.** *"When this next step button is built all the Q5 components will be cloned
+  and rolled out to the other Qs."* Nothing may hard-code Q5's position or the "Next step" label
+  width — Send is a different width.
+
+### ⚠ AND THE HARDEST-WON LESSON, FROM THE OPAL RIG
+
+`contact-field-light-rig.tsx` **built, measured and REJECTED** true proximity driving: closest
+approach fell at phase 0.953 inside the hidden half, and the range was a 1.3× swing — too flat to
+see. The shine follows the visible front pass instead. Carl's bar: *"The user won't know about
+the ellipse, all they will see is its effects."* **Belonging, not accuracy.**
+
+So *"chrome plus real lights and the physics does it for free"* is NOT a safe assumption. **The
+swing must be measured, not assumed.**
+
+Also from that file, and it applies directly to chrome's temptation to move everything:
+*"a single specular catch responding reads as a material; the whole button animating reads as a
+light show."*
 
 ---
 
 ## Still open, unchanged
 
-- **The floating faces / black edges.** Carl established it is a REGRESSION: *"the card in
-  general was approved. If it had dark edges i would of flagged it."* Measured: with the whole
-  static rig at zero the face still reads 44 of 58, so ~77% is baked albedo plus an unscaled
-  sheen lobe. ⚠ **`verify/card-edge.mjs` does NOT detect it** — approved-HEAD and current both
-  read face 56, cliff 5px. Do not use it to certify a fix.
-- **Card 2 is the weakest card** at swing 9.9 — centre-row, never gets a close corner pass.
-- **`GLASS_CLEARCOAT` = 0, inert.** The grid that dismissed it ran on the OLD geometry.
-- **The ground plane** — stashed as `ground-gradient-attempt-7aug`.
-- **~2.4MB of three + fiber loads eagerly.** `next/dynamic` flagged, not done.
-- ⚠ **SHADOW.** Seventh session parked.
-- ⚠ **ACCESSIBILITY DEBT:** the answer text is a texture, not in the a11y tree. Mandatory when
+- **Q5: 167ms, not 82ms.** The `1c9b8d7` step and the shared-host restructure both untouched.
+- ⚠ **`verify/hover-teal.mjs` SORTS CANVASES BY AREA AND PICKS THE WRONG ONE** — the contact
+  field (576×184) over the answer grid (576×104), so its crop lands on the page heading. **Do not
+  trust its numbers.** `verify/teal-core.mjs` anchors to `.enquiry-answer-grid` and is correct.
+- **The `frameloop` regression** — the traveller's unconditional rAF keeps the canvas at 60fps
+  while the corridor is open. Measured minor for the stall (~30-70ms) but real on a phone;
+  throttling is a visual change and Carl's call.
+- **The floating faces / black edges**, **card 2 the weakest at swing 9.9**, **`GLASS_CLEARCOAT`
+  inert**, **the ground plane stash**, **~2.4MB of three loading eagerly**, **SHADOW**, and
+  ⚠ **ACCESSIBILITY DEBT: the answer text is a texture, not in the a11y tree** — mandatory when
   these become real controls.
-- **`chunk-scope.json` is absent and that is its resting state** — never committed, fail-open is
-  the hook's documented design. Nothing to restore.
 
 ---
 
-## The three states
+## THE THREE CARD STATES — ALL APPROVED
 
 | state | status |
 |---|---|
-| **Resting** | ✅ approved `7b056c2` — *"thats a lot better"* |
-| **Hover** | ✅ built and verified `e3a5b7c` — **awaiting Carl's eye** |
-| **Selected** | filament warms off → amber → stops halfway between amber and red. **Next.** |
+| **Resting** | ✅ `7b056c2` — *"thats a lot better"* |
+| **Hover** | ✅ teal, approved today |
+| **Selected** | ✅ filament surge, approved today — *"Looks good"* |
 
 ---
 
@@ -151,23 +206,29 @@ be his decision, not the Builder's.
 
 ```
 npm run dev
-http://localhost:3000/start                  press Begin, hover a card
-node verify/q5-stutter.mjs                   the stall, 3 runs
-node verify/hover-teal.mjs                   the teal, motion enabled
-node verify/hover-reduced-motion.mjs         the teal under reduced motion
+http://localhost:3000/proto/nextstep     the button bench  <- START HERE
+http://localhost:3000/start              the corridor
+node verify/teal-core.mjs                white -> teal, grid-anchored
+node verify/reveal-cost.mjs              the Q5 profile
+bash verify/run-bisect.sh 3              the repaired interleaved bisect
 ```
 
-⚠ **MEASURE HEADED, WITH `--enable-gpu`.** Headless substitutes SwiftShader and this project has
-already published numbers that never touched a GPU. Every harness prints the renderer and aborts
-on a software rasteriser.
+Button dials: `?chromerough= ?chromeenv= ?amber= ?flat=1 ?always=1`
+⚠ `?flat=1` and `?always=1` are leftover diagnostics — **remove them** once the button renders.
 
-⚠ **AND `verify/hover-teal.mjs` MUST STAY AT deviceScaleFactor 6.** At 2 it returns a false
-negative on a working feature — the reason this session lost a round.
+⚠ **MEASURE HEADED, WITH `--enable-gpu`.** Every harness prints the renderer and aborts on a
+software rasteriser.
 
 ---
 
-*10 August 2026. The hover teal is built and verified but unjudged; the Q5 stall is the open
-subject and the record for it is `q5-stall-10-august.md`. The transferable lesson from today is
-that two separate stretches went to instruments that lied — a harness sampling the wrong pixels,
-and a bisect measuring a recompiling dev server. **Check the instrument before believing the
-result**, and reach for the wholesale revert before the targeted fix.*
+*10 August 2026. Q5's cause was found and fixed, the label reads white, and the filament is
+approved. The open subject is the next-step button mesh, which is built but has never been LOOKED
+AT — the instrument said it was blank and the instrument was wrong.*
+
+***The transferable lesson of the day, seven times over: the instrument answered a question
+adjacent to the one asked, and the adjacency was invisible in the output.*** A harness sampling
+the relief halo; a bisect measuring Turbopack; a probe comparing a duration from one GL context
+to a timestamp from another; a bisect measuring a zombie server; an A/B measuring run order; a
+histogram of the CARD used to claim something about the TEXT; and `readPixels` on a canvas with
+`preserveDrawingBuffer: false`. **Confirm the instrument can see the thing before believing what
+it reports.**
