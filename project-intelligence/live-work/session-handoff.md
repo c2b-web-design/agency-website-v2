@@ -155,6 +155,21 @@ as **D-047**, which also records the reflection deletion.
 
 ---
 
+## ⚠ THE AGREED ORDER — Carl, end of session
+
+> *"we will fix Q5 issue and then continue with B2"*
+
+1. 🔴 **The stutter.** Top of this file.
+2. **B2 — the accessibility layer.** Below.
+
+⚠ **AND THE ORDER IS LOAD-BEARING, NOT ARBITRARY.** If the shared-host restructure is authorised,
+the canvas stops mounting per question — and **B2's `tabIndex` gating is written against entrance
+completion**, which is a per-mount event today. Doing B2 first would build the control layer
+against a lifecycle that job 1 then changes. **Fix the stutter, then wire the controls to whatever
+lifecycle survives it.**
+
+---
+
 ## ⚠ OPEN, AND UNRESOLVED
 
 - 🔴 **THE STUTTER — see the top of this file. First job.**
