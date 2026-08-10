@@ -1187,6 +1187,19 @@ function buildLabelTexture(
   ctx.shadowBlur = 0;
   ctx.shadowOffsetY = 0;
 
+  /**
+   * ⚠ THE RELIEF ALPHAS WERE LOWERED TO 0.28/0.24 ON 10 AUGUST AND PUT BACK.
+   * Carl reported *"the resting state text doesnt seem as white"* and the halo
+   * was the obvious suspect. **It is not the cause** — measured on the real GPU,
+   * the glyph core reads rgb(210,214,221) at 0.45/0.38 and rgb(210,213,221) at
+   * 0.28/0.24. **A 0.5-point difference.**
+   *
+   * ⚠ THE ~0.88 ATTENUATION FROM THE TEXTURE'S rgb(238,241,252) IS THE LIGHTING,
+   * NOT THE HALO. The label is part of a lit surface, so it is shaded like one.
+   * Anything that wants the glyphs closer to their texture value has to change
+   * the exposure on the face, not the ink or the relief around it.
+   */
+
   // 2. The dark side, offset lower-right — the face the light cannot reach.
   ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
   ctx.fillText(text, cx + relief, cy + relief, maxW);
