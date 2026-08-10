@@ -58,6 +58,8 @@ Before significant work, read:
 
 If a task requires changing an approved foundation layer: stop, explain why, state the risk, and ask before editing.
 
+**But amending the RECORD of approved work is not the same as changing the work.** When new work lands on an element an approved file describes, amend that file in the same chunk — Carl, 11 August 2026. A decision can be intact, uncontradicted and still unsafe to act on, because a fact it relied on has moved. Rule and worked case: `ai-system/context-rules.md` → *Approved work is amendable*, and D-046/D-048.
+
 ## Workflow
 
 1. Prototype at the smallest useful scope first.

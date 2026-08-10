@@ -137,6 +137,26 @@ Before writing an entry, verify it does not conflict with existing entries in th
 ### No retroactive rewriting
 When a decision is superseded: mark the original DEPRECATED, create a new entry. Never edit or delete the original. History is preserved, not rewritten.
 
+### ⚠ Approved work is amendable — record the change where the approval lives
+**Carl, 11 August 2026:** *"any file that is to do with approved work should be subject to amendments should new work on a particular element or section be recorded in said files."*
+
+**When work lands on an element or section that an approved record describes, amend that record in the same chunk.** Not afterwards, not "when someone notices".
+
+**This is distinct from supersession above.** A superseded decision was *replaced*. An **overtaken** decision still stands — but a fact it relied on, or a cost it weighed, has moved underneath it. Both need recording; only supersession had a rule.
+
+**Where the amendment goes:**
+- **A decision's reasoning is overtaken** → a **new** `decisions.md` entry that names what moved and why, plus a forward-pointer on the original. Do not silently edit the original's argument.
+- **A code comment asserts something no longer true** → correct it *in place*, keep the original claim as history, and state what is still true. ⚠ **A reader reaches the comment before the governance file.**
+- **A rejection is revisited** → say explicitly whether the amendment *reopens* the question or *decides* it. They are different, and only Carl decides.
+
+⚠ **A DECISION IS NOT WRONG BECAUSE IT HAS BEEN OVERTAKEN, AND THE RECORD MUST SAY SO.** D-046 correctly declined the shared-canvas host on 9 August; two of its three grounds were then removed by unrelated work. **A cost/benefit judgement expires when either side moves.** Writing this up as "D-046 was mistaken" would be both false and corrosive — the next author would learn that records are attacked rather than updated. See **D-048**.
+
+⚠ **SWEEP FOR EVERY COPY OF THE CLAIM, NOT JUST THE ONE IN FRONT OF YOU.** Stale assertions cluster: three comments asserting a removed viewport gate were corrected on 10 August, and the partial sweep left a **fourth** and then a **fifth** — the fifth *half* true, its true clause making the false one read as verified. `grep` the whole file for the claim.
+
+⚠ **A STALE COMMENT IS AN INSTRUMENT.** It is what the next reader measures the code by, and it lies exactly as a bad harness lies — one misled a plan into asking the Architect to rule on a gate that no longer existed.
+
+**What this rule does not license:** amending an approved record does not amend the approval. Changing what a file *says* about approved work is a Builder's job; changing the approved work itself needs Carl.
+
 ### Formatting consistency
 Use the established schema for every entry type. Do not add new fields. Do not omit mandatory fields. Schema deviations require a governance update to the relevant file.
 
@@ -210,4 +230,4 @@ Carl hears about it; the repo is not the place it waits.
 
 ---
 
-*Last updated: 2026-07-22 - Active-task context refresh and re-entry rules cross-referenced to `live-work-protocol.md`.*
+*Last updated: 2026-08-11 — "Approved work is amendable" added to File Integrity Rules on Carl's instruction: a record describing an element must be amended when new work lands on it. Distinct from supersession, which was already covered. Worked case: D-046/D-048.*

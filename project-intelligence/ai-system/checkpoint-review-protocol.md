@@ -187,6 +187,34 @@ left its provisional scope or contradicts an APPROVED decision. This guard exist
 two separate reviews (the 24 July architect review, and a 25 July repo pass) each spent a
 finding on the same PROVISIONAL layer, reading correct-but-untuned as missing-approval.
 
+#### ⚠ 5.3a Overtaking — a decision left intact but no longer safe to act on
+
+**"Conflict" is not the only way an approved record goes wrong, and it is the easier half.**
+A decision can be **untouched, uncontradicted and still misleading**, because a fact it
+relied on — or a cost it weighed — has moved.
+
+**The worked case, and it went unnoticed for two days.** D-046 declined the shared-canvas
+host on 9 August, on three grounds. Later work removed two of them: the fluid-grid change
+anchored the geometry to a `ResizeObserver` (killing the *"a changed measurement path would
+reposition every card"* hazard), and Stage B took the defect it was weighed against from
+~70ms once to **193ms on every question step**. **Nothing contradicted D-046.** Its own
+words still read as current, and *"it is not authorised"* would have been quoted at anyone
+who proposed the restructure. Recorded as **D-048**.
+
+**What the reviewer is looking for:**
+- an approved decision whose **stated reason** cites a mechanism this work changed
+- a **cost/benefit judgement** — those expire when either side moves, and they rarely say so
+- a comment or entry that is **half true**, where the true clause makes the false one read
+  as verified
+
+⚠ **THIS IS NOT AN INVITATION TO ATTACK OLD RECORDS.** D-046 was correctly reasoned on the
+facts of 9 August. **A decision is not wrong because it has been overtaken**, and writing
+it up as an error teaches the next author that records get attacked rather than updated.
+Name what moved; leave the reasoning its dignity.
+
+⚠ **AND AN AMENDMENT IS NOT AN AUTHORISATION.** Removing a stale ground for refusal reopens
+a question. Deciding it is Carl's.
+
 ---
 
 ## 6. Escalation
@@ -266,6 +294,13 @@ names a vendor.
 **Git evidence (DL-7)**
 - <path to raw diff/log artefact in live-work/>
 
+**Approved records this work overtakes**
+<Which APPROVED decisions describe an element or section this work touched, and what
+moved underneath them. "None" is a valid answer — but it must be answered, not omitted.
+See `context-rules.md` → "Approved work is amendable".>
+- <D-0XX> — <the fact it relied on, or the cost it weighed, that has since changed>
+- <path> — <a code comment now asserting something untrue>
+
 **Builder reasoning**
 See `claude-chat-window.md` — kept separate from the evidence above by design.
 
@@ -276,6 +311,9 @@ See `claude-chat-window.md` — kept separate from the evidence above by design.
 2. Visual: does the rendered result match the stated objective?
 3. Governance: does this conflict with any APPROVED decision? (Check PROVISIONAL status
    first — see §5.3.)
+4. ⚠ Overtaking: does this **remove a ground** an approved decision stood on, without
+   contradicting it? A decision can be left intact and still be **wrong to act on** —
+   see the field above, and D-046/D-048 for the worked case.
 
 **Reporting instruction**
 Report findings only. Do not fix code. Do not instruct the Builder. Findings go to Carl,
@@ -284,7 +322,7 @@ who decides whether to pause, redirect, approve, or revise.
 
 ---
 
-*Last updated: 2026-07-25 — rewritten for the Architect/Builder two-instance model. Codex
+*Last updated: 2026-08-11 — §5.3a and the "Approved records this work overtakes" field added: a decision can be intact, uncontradicted and still unsafe to act on. Worked case D-046/D-048, unnoticed for two days because the form had no slot for it. Prior footer: 2026-07-25 — rewritten for the Architect/Builder two-instance model. Codex
 bridge registration void; invocation is file-based and Carl-routed. Review mechanics,
 including the D-031/D-032 coupled-value example, retained from the prior protocol. Git
 evidence, the reasoning/evidence separation, the reduced-motion instance of the
