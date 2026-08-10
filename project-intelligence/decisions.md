@@ -726,7 +726,7 @@ background: single-stop radial + smoked base gradient (pre-chrome); color: rgba(
 Hover remains the same stone — the two focal formations gain local contrast/clarity only (shaping mottle deepens, focal cores tighten); the broad cyan pool is held near idle so central glow does not climb. No new white light source, no hue jump.
 **Design rule (load-bearing):** Internal visibility is carried by LOCAL CONTRAST and FALLOFF SHAPE, not by broad opacity increases or overall brightening. Overall luminance and saturation are held approximately constant between this pass and the prior one, and between idle and hover. The result is intentionally a stylised blue-opal interpretation suited to an ~84×41px text-bearing button — NOT a photographic gemstone reproduction. Reference images were optical inspiration only and were not copied (markings, texture placement, highlights and composition are original). Guiding direction: "Macro lighting from reference 5; micro-character from reference 4 — translated originally, never copied."
 **Scope:** Confined to `.enquiry-send-btn`, `.enquiry-send-btn:hover`, and their adjacent material comment in `app/globals.css`. No React/JSX, no CSS variables, no pseudo-elements, no image assets, no dependency changes. Geometry, dimensions, text styling/colour, the bevel/elevation box-shadow stack, the specular catch, the disabled state, timing, and the completion-state fade are all unchanged. Send remains UNWIRED to a backend (target service/storage still undecided).
-**Relationship to prior decisions:** D-032 / R-017 were correct at the time — Send inherited the shared `.enquiry-nextstep-btn` reflected-amber lighting before its own material was designed. D-033 is the subsequent source of truth for the Send button: Send is now a distinct material on `.enquiry-send-btn` and no longer derives its surface from the Next step CTA. The blue-platinum reflected-amber system (D-030/D-031/D-032) is unchanged and continues to govern `.enquiry-nextstep-btn`.
+**Relationship to prior decisions:** D-032 / R-017 were correct at the time — Send inherited the shared `.enquiry-nextstep-btn` reflected-amber lighting before its own material was designed. D-033 is the subsequent source of truth for the Send button: Send is now a distinct material on `.enquiry-send-btn` and no longer derives its surface from the Next step CTA. ~~The blue-platinum reflected-amber system (D-030/D-031/D-032) is unchanged and continues to govern `.enquiry-nextstep-btn`.~~ **⚠ NO LONGER TRUE — CORRECTED 10 AUGUST 2026.** The Next step button's surface is a Three.js mesh (`NextStepCanvas`), and `.enquiry-nextstep-btn--mesh` clears the painted material. The reflected-amber system it names — `GRID_REFL`, `reflectionVars`, `q5ReflectionVars`, `--refl-*`, `--q5zone-*` and `.enquiry-nextstep-btn--q5proto` — **has been deleted**, on Carl's instruction: *"amber might not return, delete."* See D-047.
 **What is NOT included (reserved for future brief):**
 - Rim/glint surface-polish refinement on the Send button.
 - Contact / details-field design (unresolved, out of scope).
@@ -1380,6 +1380,38 @@ Those comments predated the 7 August entrance fix.
 ~1944ms hold to be written into the Begin path to "preserve" a compile wait **that no longer
 exists** — moving the approved entrance in the name of protecting it. **A recorded timing is a
 claim about the past. Measure the ladder; do not read it off a comment.**
+
+**Authority:** Human Founder
+
+---
+
+## D-047 — The Next Step Button Is A Mesh, And The Painted Reflection Layer Is Deleted
+
+**Date:** 2026-08-10
+**Decision:** The Next step button's surface is a Three.js mesh (`NextStepCanvas`) at every question, sized from its own measured box. The CSS-era **position-aware warm reflection layer is deleted in full** — `GRID_REFL`, `reflectionVars()`, `q5ReflectionVars()`, `Q5_ZONE_INFLUENCE`, `q5ZoneColour()`, the `--refl-*` and `--q5zone-*` variables, and the `.enquiry-nextstep-btn--q5proto` cabochon block. Select arity is **multi-select on all five questions**, superseding D-018's single-select for Q4.
+**Authority:** Human Founder — *"amber might not return, delete"*; and on arity, *"when a single selection is made the next step button is made available. The user then can choose to select more answers or move on to the next section. If the user makes a single selection and changes their mind, the filament fades out, the button should too."*
+**Status:** APPROVED
+
+**What it supersedes.**
+- **D-031 / D-032** — the reflected-amber lighting model, prototype and rollout. The behaviour is now **unimplemented, not rewired**: a selected card no longer warms the button at all.
+- **D-018** — Q4 single-select (`role="radiogroup"` / `role="radio"`). ⚠ **It changes because Carl has changed it, and that is the whole reason.** Do not look for a defect in the old record to justify it; an early draft of the Stage B plan reached for D-018's authority line as though a softer attribution were the argument, and that reasoning would licence overriding any inconvenient decision. `radiogroup` was never implemented, so nothing unwound in code.
+- **D-033's closing sentence** (`decisions.md:729`), which asserted the blue-platinum system "is unchanged and continues to govern `.enquiry-nextstep-btn`". Corrected in place.
+
+**Why the reflection had to go rather than be left parked.** It was **already dead before it was deleted.** `.enquiry-nextstep-btn--mesh` sets `background-image: none`, so those variables were computed into a surface that no longer paints. ⚠ **An approved layer was superseded without being recorded** — the deletion is the correction, not the change. It stayed invisible because `selected` is always empty in this build, so both functions returned `{}` on every render and nothing looked wrong. Restoring selection is the change that would have made them run for the first time, into nothing.
+
+⚠ **AND HALF A DELETION IS WORSE THAN NONE.** The first attempt removed the JS and left ~190 lines of painted cabochon CSS under a `transparent` override — dead weight that still read as authoritative. **Decide a layer all at once.** This entry's own line 763 named the layer as a single unit; it should have been read as the unit it said it was.
+
+**If amber returns, it returns as light, not as gradients.** `AmberSource` on `NextStepCanvas` is the mesh's equivalent, currently `0` and parked — *"something that may or may not be implemented… I will return to this."* ⚠ **`GRID_REFL` was never a specification** and must not be resurrected as one: Carl retired that reading on 5 August, and its numbers were a hand-authored influence table with no falloff behind them. **Direction only: the bottom row receives more than the top row.**
+
+**Measured, on production builds — dev-server numbers are noise here.**
+
+| | |
+|---|---|
+| Q5 reveal, mesh in the corridor | **118–135ms** against a recorded 167ms — no regression |
+| Q5→Q4 move, no canvas mounting | 62 / 67 / 68ms |
+| Q5→Q4 move, canvas mounting | **186 / 188 / 200ms** |
+
+⚠ **THE +126ms IS THE FINDING THAT GOVERNS STAGE B.** Mounting an answer canvas per question puts a visible stutter on every step — the Q5 stall's own mechanism at a new moment. ⚠ **But both arms were measured with `selected` empty, which the real path never is**, so the *delta* is the defensible figure and neither absolute is. An honest control needs selection wired first. **The shared-host question (D-046) is open and unauthorised; it is Carl's call and must be taken on a measurement, not a prediction.**
 
 **Authority:** Human Founder
 

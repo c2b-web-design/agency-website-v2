@@ -16,12 +16,45 @@
 // never been measured. Establishing today's cost first is what makes the
 // after-figure mean anything.
 //
-// ⚠ THE CORRIDOR CANNOT ADVANCE IN THIS BUILD — `toggleOption` has no caller,
-// so `selected` is always empty and `handleNextStep` is unreachable by clicking.
-// This harness therefore drives the transition by calling the corridor's own
-// click handler on the Next step button after forcing its wrapper interactive.
-// **It does not simulate a selection**, and it is not evidence that the flow
-// works.
+// ══════════════════════════════════════════════════════════════════════════
+// ⚠⚠ READ THIS BEFORE CITING ANY NUMBER FROM THIS FILE
+// ══════════════════════════════════════════════════════════════════════════
+//
+// **THE CORRIDOR CANNOT ADVANCE IN THIS BUILD.** `toggleOption` has no caller,
+// so `selected` is always empty and `handleNextStep` is unreachable by a user.
+// This harness forces the wrapper interactive and calls `.click()`, which
+// bypasses `pointer-events: none`.
+//
+// ⚠ WHAT THAT DOES AND DOES NOT INVALIDATE — Architect's review, 10 August 2026,
+// and the correction is finer than "the harness is wrong":
+//
+//   ✅ THE TRANSITION ITSELF IS REAL. `handleNextStep` runs the same
+//      `setCorridorMoving` -> `setActiveQ` sequence however it is invoked, so
+//      the corridor move being measured is the genuine one.
+//
+//   ⚠ BUT THE CONTROL IS MEASURED WITH `selected` EMPTY, AND THE REAL PATH
+//      NEVER IS. `answersSnap` is `Array.from(selected).join(" • ")` — with no
+//      selections it is `""`, so the memory chip renders EMPTY. The real move
+//      renders chip text, which is real work inside the same window.
+//
+// **So the arms differ from the real path in the same direction, and the DELTA
+// is the defensible figure — not either absolute number.** The 65ms control is
+// a floor, not "what a corridor move costs today".
+//
+// ⚠ THE HONEST CONTROL NEEDS SELECTION WIRED FIRST. Sequence the Architect
+// prescribed, and it fails safe:
+//
+//     commit 1a   B1+B3 wiring, `qNum === 5` RETAINED   -> real move, no canvas
+//                 on the far side. THIS is the control.
+//     measure
+//     commit 1b   remove the gate                       -> same move, canvas
+//                 both sides. This is the arm.
+//
+// The delta is then context creation and nothing else, on a path a user can
+// actually take. If the delta is bad you stop at 1a with a corridor that walks.
+//
+// **Until 1a exists, treat the figures below as indicative of the MECHANISM's
+// cost, not as a measurement of the product.**
 //
 // ⚠ PRODUCTION BUILD ONLY. Dev-server numbers are worthless here and this
 // project has the scars: the first Stage A attempt read 231ms with the mesh

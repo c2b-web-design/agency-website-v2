@@ -1288,7 +1288,11 @@ export default function EnquiryOpening() {
                 tabIndex={selected.size > 0 ? 0 : -1}
                 onClick={handleNextStep}
                 active={selected.size > 0 && !reducedMotion}
-                className={`enquiry-nextstep-btn${qNum === 5 ? " enquiry-nextstep-btn--q5proto" : ""} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40`}
+                // ⚠ `--q5proto` REMOVED 10 August 2026 with the CSS it named —
+                // the Q5-only cabochon lens. **There is no Q5-specific button
+                // surface any more:** the mesh is the material at every
+                // question, so a per-question class had nothing left to switch.
+                className={`enquiry-nextstep-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40`}
               >
                 Next step
               </NextStepMeshButton>

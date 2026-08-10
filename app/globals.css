@@ -1012,225 +1012,30 @@
   .enquiry-nextstep-btn { transition: none; }
 }
 
-/* Next step — Q5 PROTOTYPE: neutral blue-platinum plasma glass-lens (Stage 1).
-   Scoped to Q5 only via the conditional .enquiry-nextstep-btn--q5proto class; Q1-Q4 keep
-   the shared .enquiry-nextstep-btn rules above byte-for-byte. Overrides ONLY the material
-   (background + box-shadow); geometry, padding, font, colour, transition and focus inherit
-   from the base class. Goal: a convincing 3D lens BEFORE any amber — crown catch over a
-   darker recession band (the highlight->shadow step that reads as a domed tube, per the
-   gold-logo lighting study), continuous top + lateral rim, calm central face, darker
-   underside, and a deeper grounding/contact shadow.
-   COLOUR: a cleaner, moderately saturated blue-platinum family (wider blue-over-red gap)
-   rather than desaturated slate/steel — low-chroma greys perceptually warm-shift toward
-   olive/champagne beside the amber selected cards, so chroma is deliberately kept blue.
-   Crown catch + rim are tinted platinum-BLUE (not near-white) for the same reason; caps
-   are cool/electric blue; recession band and underside stay deep navy-blue.
-   STAGE 2 (Q5-only, spatial light-FILTERING — C2B logo material target). The reflection
-   GEOMETRY is fixed (it belongs to the lens); only its COLOUR changes with the active
-   environmental light. NEUTRAL (Image 1): a TIGHT platinum-blue specular RIBBON hugging the
-   upper curve (bright core, fast falloff — gloss via a bright->dark step) over a dark,
-   immediately-adjacent recession band; broadened lateral-cap blooms (upper/mid/lower) carry the
-   side modelling; large calm blue body; dark underside. SELECTED IDLE (Image 2): each crown
-   segment's CORE *and* MIDPOINT travel the same neutral->champagne->amber family (no fixed
-   white/blue stop survives under an amber core), filtering the existing reflection — white does
-   not remain beneath the warm shine; uninfluenced zones stay near neutral. HOVER (Image 3):
-   richer/brighter champagne+amber endpoints (saturation+luminosity, not just opacity); same
-   geometry; no white returns; no new highlight. RIM is thin and subordinate: driven by the
-   AVERAGE of the three crown zones (not max) at low alpha (0.30/0.36) so one card cannot warm
-   the whole outline and it never reads as a glowing gold line; the curved-face/cap reflections
-   carry the modelling. All colours are complete rgba() from q5ReflectionVars() via --q5zone-*
-   (idle) / --q5zone-*-h (hover); every var FALLS BACK to the exact approved neutral, so with
-   nothing selected the lens is byte-for-byte the approved baseline. Colour only ever reaches
-   these upper/lateral zones (cards sit above the button) — never the text corridor, belly,
-   underside, or as any floor/contact reflection. None of the shared Q1–Q4 contract is consumed.
-   No opal blooms/mottle/violet/gemstone texture — clean polished lacquered lens only. */
-.enquiry-nextstep-btn--q5proto {
-  background:
-    /* ── STAGE 2 reflection (spatial light-FILTERING) ────────────────────────────────
-       The reflection geometry is the curved lens's own; only its COLOUR changes with the
-       active environmental light. The approved single crown catch is split into LEFT / CENTRE
-       / RIGHT colour-controlled segments at the SAME silhouette/placement (combined they = the
-       original ellipse 46% 16% at 50% 3%), each consuming its zone colour. Lateral caps and the
-       top rim likewise consume their zone colour. Every zone colour falls back to the exact
-       approved neutral platinum-blue, so with nothing selected the lens is byte-for-byte the
-       approved baseline. Zone colour travels neutral→champagne→amber by influence; this is
-       colour REPLACEMENT, not additive overlay. Amber only ever reaches these upper/lateral
-       zones — never the text corridor, belly or underside. Driven by --q5zone-* (q5ReflectionVars). */
-    /* crown shine = a TIGHT specular RIBBON hugging the upper curve (Image 1): narrow ribbon,
-       bright core, fast falloff (gloss via a bright->dark step, not glow). Each segment carries
-       a zone-controlled CORE and MIDPOINT in the SAME neutral->champagne->amber hue family, so
-       under influence no fixed white/blue stop survives beneath an amber core. Combined silhouette
-       = the original crown placement above the text. */
-    /* crown ribbon — left segment */
-    radial-gradient(
-      ellipse 20% 11% at 29% 3%,
-      var(--q5zone-ul, rgba(205, 230, 255, 0.62)) 0%,
-      var(--q5zone-ul-mid, rgba(205, 230, 255, 0.16)) 46%,
-      transparent 84%
-    ),
-    /* crown ribbon — right segment */
-    radial-gradient(
-      ellipse 20% 11% at 71% 3%,
-      var(--q5zone-ur, rgba(205, 230, 255, 0.62)) 0%,
-      var(--q5zone-ur-mid, rgba(205, 230, 255, 0.16)) 46%,
-      transparent 84%
-    ),
-    /* crown ribbon — centre segment */
-    radial-gradient(
-      ellipse 22% 11% at 50% 3%,
-      var(--q5zone-uc, rgba(205, 230, 255, 0.62)) 0%,
-      var(--q5zone-uc-mid, rgba(168, 212, 255, 0.16)) 46%,
-      transparent 84%
-    ),
-    /* lateral cap blooms — broadened to describe upper / middle / lower cap curvature (diffuse
-       side modelling), kept inside the caps/shoulders. Consume cap zone colour; fall back to the
-       approved electric blue. Upper cap (brighter), mid cap, smaller lower cap. */
-    radial-gradient( /* left — upper cap bloom */
-      ellipse 17% 30% at 1% 28%,
-      var(--q5zone-lbloom, rgba(150, 200, 255, 0.20)) 0%,
-      transparent 72%
-    ),
-    radial-gradient( /* left — mid/lower cap bloom (smaller, fainter) */
-      ellipse 13% 26% at 1% 60%,
-      var(--q5zone-lbloom, rgba(150, 200, 255, 0.13)) 0%,
-      transparent 74%
-    ),
-    radial-gradient( /* right — upper cap bloom */
-      ellipse 17% 30% at 99% 28%,
-      var(--q5zone-rbloom, rgba(150, 200, 255, 0.20)) 0%,
-      transparent 72%
-    ),
-    radial-gradient( /* right — mid/lower cap bloom (smaller, fainter) */
-      ellipse 13% 26% at 99% 60%,
-      var(--q5zone-rbloom, rgba(150, 200, 255, 0.13)) 0%,
-      transparent 74%
-    ),
-    /* recession band — DEEP NAVY-BLUE valley DIRECTLY beneath the ribbon. Pulled slightly up
-       (28%) and darker so the bright-ribbon->dark-recession step is tighter. Load-bearing. */
-    radial-gradient(
-      ellipse 72% 24% at 50% 28%,
-      rgba(6, 18, 44, 0.52) 0%,
-      rgba(8, 22, 50, 0.18) 58%,
-      transparent 100%
-    ),
-    /* darker underside — deep navy weight along the lower belly. Locked. */
-    radial-gradient(
-      ellipse 86% 34% at 50% 100%,
-      rgba(4, 12, 34, 0.42) 0%,
-      transparent 78%
-    ),
-    /* blue-platinum body ramp. Locked. */
-    linear-gradient(
-      180deg,
-      #3f72a4  0%,
-      #2f5d8e 18%,
-      #214876 38%,
-      #122f54 56%,
-      #091d38 78%,
-      #051127 100%
-    );
-  box-shadow:
-    /* top rim — consumes accumulated warmth (--q5zone-rim); falls back to platinum-blue */
-    inset 0  1px 0    var(--q5zone-rim, rgba(212, 234, 255, 0.78)),
-    /* thin lateral rim — consumes the SUBORDINATE rim colour (decoupled from the cap bloom) */
-    inset  4px 0 6px  var(--q5zone-lrim, rgba(108, 168, 240, 0.20)),
-    inset -4px 0 6px  var(--q5zone-rrim, rgba(108, 168, 240, 0.20)),
-    /* upper inner shadow — deepens the recession band (deep navy-blue) */
-    inset 0  3px 5px  rgba(  4,  18,  60, 0.40),
-    /* lower inner shadow — darker underside / roundness */
-    inset 0 -3px 4px  rgba(  2,   9,  32, 0.62),
-    /* cool bounce edge along the bottom rim (stays cool — never warm/white) */
-    inset 0 -1px 0    rgba( 56, 108, 184, 0.22),
-    /* grounding / contact shadow — seats the lens (deeper than the base 2px 8px) */
-          0  4px 12px rgba(  0,   0,   0, 0.52);
-}
 
-.enquiry-nextstep-btn--q5proto:hover {
-  /* Same lens, clarified: crown a touch brighter, recession a touch deeper, rim crisper.
-     Stage-2 amber clarifies too — modestly stronger (restrained ×1.18 via the -h vars), no
-     new clean-white source, no brightness flash, no orange takeover. */
-  background:
-    /* Same spatial light-filtering as idle, modestly higher catch alpha via --q5zone-*-h.
-       Hover restores NO clean white in an influenced zone (the colour is the same filtered
-       neutral→champagne→amber, only slightly more legible) and adds no separate highlight. */
-    /* crown ribbon — left segment (richer hover endpoints via -h vars) */
-    radial-gradient(
-      ellipse 20% 11% at 29% 3%,
-      var(--q5zone-ul-h, rgba(212, 234, 255, 0.70)) 0%,
-      var(--q5zone-ul-mid-h, rgba(212, 234, 255, 0.18)) 46%,
-      transparent 84%
-    ),
-    /* crown ribbon — right segment */
-    radial-gradient(
-      ellipse 20% 11% at 71% 3%,
-      var(--q5zone-ur-h, rgba(212, 234, 255, 0.70)) 0%,
-      var(--q5zone-ur-mid-h, rgba(212, 234, 255, 0.18)) 46%,
-      transparent 84%
-    ),
-    /* crown ribbon — centre segment */
-    radial-gradient(
-      ellipse 22% 11% at 50% 3%,
-      var(--q5zone-uc-h, rgba(212, 234, 255, 0.70)) 0%,
-      var(--q5zone-uc-mid-h, rgba(176, 218, 255, 0.18)) 46%,
-      transparent 84%
-    ),
-    /* lateral cap blooms — upper / mid-lower, hover endpoints */
-    radial-gradient( /* left — upper cap bloom */
-      ellipse 17% 30% at 1% 28%,
-      var(--q5zone-lbloom-h, rgba(158, 206, 255, 0.24)) 0%,
-      transparent 72%
-    ),
-    radial-gradient( /* left — mid/lower cap bloom */
-      ellipse 13% 26% at 1% 60%,
-      var(--q5zone-lbloom-h, rgba(158, 206, 255, 0.16)) 0%,
-      transparent 74%
-    ),
-    radial-gradient( /* right — upper cap bloom */
-      ellipse 17% 30% at 99% 28%,
-      var(--q5zone-rbloom-h, rgba(158, 206, 255, 0.24)) 0%,
-      transparent 72%
-    ),
-    radial-gradient( /* right — mid/lower cap bloom */
-      ellipse 13% 26% at 99% 60%,
-      var(--q5zone-rbloom-h, rgba(158, 206, 255, 0.16)) 0%,
-      transparent 74%
-    ),
-    /* recession band — locked (matches idle's tightened position) */
-    radial-gradient(
-      ellipse 72% 24% at 50% 28%,
-      rgba(4, 16, 42, 0.58) 0%,
-      rgba(7, 20, 48, 0.20) 58%,
-      transparent 100%
-    ),
-    /* darker underside — locked */
-    radial-gradient(
-      ellipse 86% 34% at 50% 100%,
-      rgba(3, 10, 30, 0.46) 0%,
-      transparent 78%
-    ),
-    /* body ramp — locked (same blue-platinum family, clarified one notch) */
-    linear-gradient(
-      180deg,
-      #497db0  0%,
-      #366699 18%,
-      #264f80 38%,
-      #15355c 56%,
-      #0b213e 78%,
-      #06142b 100%
-    );
-  box-shadow:
-    inset 0  1px 0    var(--q5zone-rim-h, rgba(218, 238, 255, 0.86)),
-    inset  4px 0 6px  var(--q5zone-lrim-h, rgba(118, 178, 248, 0.24)),
-    inset -4px 0 6px  var(--q5zone-rrim-h, rgba(118, 178, 248, 0.24)),
-    inset 0  3px 5px  rgba(  4,  18,  60, 0.46),
-    inset 0 -3px 4px  rgba(  2,   9,  32, 0.70),
-    inset 0 -1px 0    rgba( 64, 118, 196, 0.24),
-          0  5px 14px rgba(  0,   0,   0, 0.58);
-}
+/* ══════════════════════════════════════════════════════════════════════════
+   ⚠⚠ REMOVED — .enquiry-nextstep-btn--q5proto, the Q5 cabochon lens (D-032)
+   ══════════════════════════════════════════════════════════════════════════
 
-@media (prefers-reduced-motion: reduce) {
-  .enquiry-nextstep-btn--q5proto { transition: none; }
-}
+   219 lines deleted 10 August 2026, completing the deletion Carl authorised
+   (*"amber might not return, delete"*). Recoverable from git at `c426c5f`.
+
+   ⚠⚠ THE FIRST DELETION TOOK THE JS AND LEFT THIS, WHICH THE ARCHITECT NAMED
+   AS THE WORST OF BOTH OUTCOMES — and it was right. `c426c5f` removed
+   `GRID_REFL` / `reflectionVars` / `q5ReflectionVars` but left ~190 lines of
+   painted cabochon CSS sitting under a `background-color: transparent`
+   override: dead weight that still LOOKED authoritative, with every
+   `--q5zone-*` var it consumed now permanently at its fallback.
+
+   ⚠ DECIDE A LAYER ALL AT ONCE. Half a deletion is worse than none, because
+   what survives reads as deliberate. `decisions.md:763` names the layer as one
+   thing — `Q5_ZONE_INFLUENCE`, `q5ZoneColour()`, `q5ReflectionVars()`,
+   `--q5zone-*` AND this block — and it should have been read as the unit it
+   says it is.
+
+   The mesh is the Next step button's material now, at every question. There is
+   no Q5-specific surface any more, so nothing replaces this.
+   ══════════════════════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════════════════════════════════════
    THE MESH TAKES OVER THE SURFACE — .enquiry-nextstep-btn--mesh
