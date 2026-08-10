@@ -41,7 +41,9 @@
  */
 
 import { useMemo, useEffect, useRef, useCallback } from "react";
-import { useFrame } from "@react-three/fiber";
+// ⚠ `useThree` FOR `invalidate` — the canvas is `frameloop="demand"`, so an
+// animation that does not request frames is an animation that does not run.
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import {
   CARD_WIDTH_PX,
@@ -382,7 +384,9 @@ function FaceMaterial({
     uLabelTeal: { value: null as THREE.Texture | null },
   });
 
-  useFrame((_, delta) => {
+  const invalidate = useThree((s) => s.invalidate);
+
+  useFrame(() => {
     // ⚠ DRIVEN BY THE FILAMENT'S OWN INTENSITY, UNNORMALISED — Carl: *"if the
     // intensity of the filament was reduced so would the impact on the
     // reflection, and if it was ramped up."* `intensity.current` already carries
@@ -394,20 +398,6 @@ function FaceMaterial({
       Math.max(0, filament.intensity.current * filterStrength),
     );
 
-    /**
-     * ⚠ THE TEAL ARRIVES SLOWLY — Carl: *"answer text turns teal slowly when
-     * hovered."* An exponential ease toward the target rather than a CSS-style
-     * duration, because the pointer can leave mid-transition and this has to
-     * turn round from wherever it got to without a jump.
-     *
-     * ⚠ AND IT IS FRAME-RATE INDEPENDENT. A fixed step per frame would fade at
-     * half the speed on a 30fps machine; `delta` keeps the timing honest on any
-     * display.
-     */
-    const target = hovered ? 1 : 0;
-    const u = uniforms.current.uHover;
-    u.value += (target - u.value) * Math.min(1, delta / LABEL_HOVER_TAU);
-
     // ⚠ THE SAMPLER IS REFRESHED HERE BECAUSE THE TEXTURE IS REBUILT WHENEVER
     // THE LABEL CHANGES. `onBeforeCompile` runs once per program; a texture
     // created after that would never reach the shader, and the hover would fade
@@ -415,6 +405,59 @@ function FaceMaterial({
     // no pixels, which this file has already been caught by twice.
     uniforms.current.uLabelTeal.value = labelTealMap;
   });
+
+  /**
+   * ⚠⚠ THE HOVER EASE HAS ITS OWN rAF AND CALLS `invalidate()` — IT MUST NOT
+   * LIVE IN `useFrame`.
+   *
+   * It did, and it worked only by accident: `TravellingLight` runs an
+   * unconditional rAF loop, so the canvas was drawing continuously and
+   * `useFrame` happened to tick. **Under `prefers-reduced-motion` the traveller
+   * parks** (`answer-card-canvas.tsx`, the `reducedMotion` branch) **and the
+   * ease loses its frame source entirely — the teal would never arrive at all.**
+   *
+   * ⚠ THIS FILE ALREADY RECORDS THE TRAP TWICE (lines ~315 and ~1855): *"a ref
+   * animated without invalidating produced three repaints across an entire
+   * 2000ms fade."* The canvas is `frameloop="demand"`; anything that animates
+   * must request its own frames.
+   *
+   * ⚠ AND IT STOPS WHEN SETTLED, which is the other half of demand mode. A loop
+   * that runs forever would hold the canvas awake for the life of the page —
+   * the `useFilament` cooldown has exactly this shape and terminates the same
+   * way.
+   */
+  useEffect(() => {
+    const target = hovered ? 1 : 0;
+    const u = uniforms.current.uHover;
+
+    /**
+     * ⚠ EXPONENTIAL, NOT A FIXED DURATION, because the pointer can leave
+     * mid-transition: this turns round from wherever it got to without a jump.
+     * Frame-rate independent via `delta` — a fixed step would fade at half
+     * speed on a 30fps display.
+     */
+    let raf = 0;
+    let last = performance.now();
+    const tick = () => {
+      const now = performance.now();
+      const delta = (now - last) / 1000;
+      last = now;
+
+      u.value += (target - u.value) * Math.min(1, delta / LABEL_HOVER_TAU);
+      invalidate();
+
+      // Settle and stop. The epsilon matters: an exponential never exactly
+      // arrives, so without it this would spin forever a hair from the target.
+      if (Math.abs(target - u.value) > 0.002) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        u.value = target;
+        invalidate();
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [hovered, invalidate]);
 
   const onBeforeCompile = useCallback((shader: THREE.WebGLProgramParametersWithUniforms) => {
     Object.assign(shader.uniforms, uniforms.current);

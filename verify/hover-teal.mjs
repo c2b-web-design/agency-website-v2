@@ -27,7 +27,17 @@ const browser = await chromium.launch({
   headless: false,
   args: ["--enable-gpu", "--use-angle=default", "--ignore-gpu-blocklist"],
 });
-const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
+/**
+ * ⚠⚠ deviceScaleFactor 6, NOT 2, AND THIS IS LOAD-BEARING. At 2 the ~12px glyph
+ * is so heavily anti-aliased that its teal core is averaged away against the
+ * white relief halo and the blue body — the measurement returned a red drop of
+ * -0.7 on a change that is plainly visible to the eye at 6.
+ *
+ * **A harness cannot resolve what it does not sample.** The same crop at
+ * deviceScaleFactor 6 shows unmistakable teal; at 2 it shows white. The pixels
+ * were never the problem — the sampling resolution was.
+ */
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 6 });
 
 await page.goto(`${BASE}/start`, { waitUntil: "networkidle" });
 const renderer = await page
@@ -63,9 +73,34 @@ async function labelBand() {
 }
 
 /**
- * ⚠ THE BRIGHTEST PIXELS ONLY. The band is mostly dark satin with thin glyph
- * strokes across it; averaging the whole crop would drown the text in its
- * background and report the body colour instead of the ink.
+ * ⚠⚠ THIS HARNESS REPORTED A FALSE NEGATIVE AND COST A ROUND OF DEBUGGING. Read
+ * this before trusting or changing it.
+ *
+ * The first version averaged **the brightest 6% of pixels** in the label band,
+ * reasoning that the band is mostly dark satin and the glyphs are the bright
+ * part. That is true — but it selects **the wrong bright pixels.**
+ *
+ * `buildLabelTexture` fakes the extrusion by drawing a **white lit lip at
+ * `rgba(255,255,255,0.38)`** offset up-left, UNDER the glyph. At the texture's
+ * scale that offset is 5px, which is **1.41 screen px** — and against a ~12px
+ * glyph with ~2px strokes, the white halo is a large fraction of every stroke.
+ *
+ * ⚠ **THE HALO IS IDENTICAL IN BOTH TEXTURES**, because only the glyph CORE
+ * takes the ink colour. So the brightest-6% window sampled the one part of the
+ * label that cannot change, and reported a green-minus-blue shift of 0.75
+ * against an expected +10.5 — while the teal was rendering correctly the whole
+ * time. **The instrument was measuring its own mask.**
+ *
+ * ⚠ AND THE FAILURE SURVIVED A CROSS-CHECK, which is the part worth learning.
+ * Two captured frames at deviceScaleFactor 2 "confirmed" white text by eye. At
+ * deviceScaleFactor 6 the same crop is obviously teal. **A visual check at a
+ * scale where the effect cannot resolve is not a cross-check.**
+ *
+ * ⚠ SO IT NOW MEASURES THE MEAN OF ALL REASONABLY-LIT PIXELS and watches the
+ * RED channel, which is where teal actually shows: rgb(238,241,252) →
+ * rgb(160,220,218) drops red by 78 while green falls 21 and blue 34. Red is the
+ * channel with the signal; green-minus-blue is not, because the glyph
+ * composites over a blue satin body.
  */
 async function inkColour(clip, label) {
   const b64 = (await page.screenshot({ path: `${OUT}/${label}.png`, clip })).toString("base64");
@@ -79,19 +114,21 @@ async function inkColour(clip, label) {
     const x = c.getContext("2d");
     x.drawImage(img, 0, 0);
     const d = x.getImageData(0, 0, c.width, c.height).data;
-    const px = [];
+    // Every reasonably-lit pixel, not a top slice — see the note above.
+    let n = 0;
+    let sr = 0;
+    let sg = 0;
+    let sb = 0;
     for (let i = 0; i < d.length; i += 4) {
       const lum = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
-      px.push({ r: d[i], g: d[i + 1], b: d[i + 2], lum });
+      if (lum > 90) {
+        n++;
+        sr += d[i];
+        sg += d[i + 1];
+        sb += d[i + 2];
+      }
     }
-    px.sort((a, b2) => b2.lum - a.lum);
-    const top = px.slice(0, Math.max(1, Math.round(px.length * 0.06)));
-    const n = top.length;
-    return {
-      r: top.reduce((s2, p) => s2 + p.r, 0) / n,
-      g: top.reduce((s2, p) => s2 + p.g, 0) / n,
-      b: top.reduce((s2, p) => s2 + p.b, 0) / n,
-    };
+    return n ? { r: sr / n, g: sg / n, b: sb / n } : { r: 0, g: 0, b: 0 };
   }, b64);
 }
 
@@ -125,27 +162,30 @@ const back = await inkColour(clip, "4-back");
 console.log(`  released      r ${back.r.toFixed(1)}  g ${back.g.toFixed(1)}  b ${back.b.toFixed(1)}`);
 
 /**
- * Teal is green-dominant over blue at equal luminance; the resting near-white
- * sits slightly blue. So `g - b` rising is the signature of the blend landing.
+ * ⚠ RED IS THE CHANNEL WITH THE SIGNAL. rgb(238,241,252) → rgb(160,220,218)
+ * drops red by 78, green by 21 and blue by 34. Green-minus-blue barely moves
+ * because the glyph composites over a blue satin body — which is why the first
+ * version of this check reported a false negative.
  */
-const gbRest = rest.g - rest.b;
-const gbHeld = held.g - held.b;
-const shift = gbHeld - gbRest;
+const dropR = rest.r - held.r;
+const dropG = rest.g - held.g;
+const dropB = rest.b - held.b;
 
-console.log(`\n  green-minus-blue:  rest ${gbRest.toFixed(2)}   hovered ${gbHeld.toFixed(2)}   shift ${shift.toFixed(2)}`);
-console.log(`  target teal is rgb(160, 220, 218) — g-b of +2, against a near-white of -14`);
+console.log(`\n  channel drop on hover:  red ${dropR.toFixed(1)}   green ${dropG.toFixed(1)}   blue ${dropB.toFixed(1)}`);
+console.log(`  the ink goes rgb(238,241,252) -> rgb(160,220,218): red is the channel that moves`);
 
-if (Math.abs(shift) < 1.5) {
+if (dropR < 8 || dropR < dropG || dropR < dropB) {
   console.log(
-    `\n  ⚠⚠ NO COLOUR CHANGE. The uniform is animating and the pixels are not.\n` +
-      `     Suspect the second sampler never bound: a cached program without it,\n` +
-      `     or vMapUv missing from this material's varyings.\n`,
+    `\n  ⚠⚠ NO TEAL. Red should fall furthest and by a clear margin.\n` +
+      `     Probe the pipeline before assuming the shader: uHover reaching 1,\n` +
+      `     uLabelTeal non-null AND distinct from labelMap, and the compiled\n` +
+      `     shader containing uLabelTeal TWICE (declaration + sample).\n`,
   );
 } else {
   console.log(`\n  The teal reaches the pixels. Whether it LOOKS right is Carl's call.\n`);
 }
 
-const settled = Math.abs(back.g - back.b - gbRest);
-console.log(`  returns to rest? g-b back within ${settled.toFixed(2)} of resting${settled < 2 ? " — yes" : " — ⚠ STUCK"}\n`);
+const settled = Math.abs(back.r - rest.r);
+console.log(`  returns to rest? red back within ${settled.toFixed(1)} of resting${settled < 12 ? " — yes" : " — ⚠ STUCK"}\n`);
 
 await browser.close();
