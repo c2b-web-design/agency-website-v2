@@ -16,21 +16,27 @@ say so.** It was not broken this session.
 
 ## STATE OF THE TREE
 
-**Branch `fix/q5-stall-and-label-colour`, pushed.** Two commits on top of `eb827f0`:
+**Branch `fix/q5-stall-and-label-colour`, everything committed and pushed.** On top of `eb827f0`:
 
-    303a826  fix(enquiry): one label texture, and the white is white again
-    181f8bc  feat(enquiry): the filament is the half-pipe, and it surges
+    303a826  fix(enquiry): one label texture, and the white is white again      APPROVED
+    181f8bc  feat(enquiry): the filament is the half-pipe, and it surges        APPROVED
+    eec60d5  docs: the handoff
+    f07b0ab  docs: the button renders — the picture-frame defect
+    aca4fbc  wip(enquiry): the next step button as a chrome mesh                PROTOTYPE
 
-**Uncommitted and untracked — the next-step button prototype, unfinished:**
-
-    components/enquiry/nextstep-geometry.ts
-    components/enquiry/nextstep-canvas.tsx
-    app/proto/nextstep/page.tsx        the bench
-    app/proto/minimal/page.tsx         an isolation test, DELETE when done
+**The working tree is CLEAN.** The button prototype is committed as `wip` deliberately — it is
+inspectable and revertable, and it is **not wired into the corridor**. It lives only on its own
+bench at `/proto/nextstep`.
 
 `npx tsc --noEmit` clean. Lint at the recorded baseline: **1 problem (1 error, 0 warnings)** —
-the known `enquiry-opening.tsx` reduced-motion effect, untouched. **Dev server was left running
-on :3000.**
+the known `enquiry-opening.tsx` reduced-motion effect, untouched. **The dev server was STOPPED at
+the end of the session.**
+
+⚠ `app/proto/minimal/` was an isolation test and has been DELETED — its answer is recorded below
+(the canvas renders; the instrument was lying).
+
+⚠ **THE DIAGNOSTIC SCAFFOLDING IS STRIPPED** — `?flat=1`, `?always=1` and the `__nsDebug` block
+are gone now their questions are answered. `frameloop` is back to plain `"demand"`.
 
 ---
 
@@ -123,10 +129,17 @@ photographed against grey.
    sit on"* — **was false**: the label is a DOM `<span>` layered over the canvas, so nothing sits
    on it. A big plateau also returns one flat colour under an ortho camera.
 
-**Measured** (`verify/nextstep-look.mjs`, and `?axis=0.15` is the best of the sweep so far):
+**Measured** (`verify/nextstep-look.mjs`). **0.15 is now the committed default:**
 
-    axis=0.15   centre lum 115   rim/centre 2.1   blueness 29
-    axis=1.3    centre lum 210   rim/centre 1.2   blueness 46   <- washed out, too pale
+    axis=0.15   centre lum 115   rim/centre 2.1   blueness 29   <- default
+    axis=0.35   centre lum 146   rim/centre 1.7
+    axis=0.60   centre lum 170   rim/centre 1.4
+    axis=1.30   centre lum 210   rim/centre 1.2   blueness 46   washed out, label illegible
+
+⚠ **THE REFERENCE IS PREDOMINANTLY DARK WITH BRIGHT BANDS.** A centre that matches the rim has no
+bands left — the tonal RANGE is the material. That is why the Architect's suggested 1.3, offered
+explicitly as *"a starting point, not a prescription"*, had to come down by an order of magnitude
+against the real render.
 
 ⚠⚠ **TWO STRUCTURAL PROBLEMS REMAIN AND DIALS WILL NOT FIX THEM:**
 
@@ -144,10 +157,11 @@ label barely legible. **A one-sided check passes the over-correction as readily 
 
 ---
 
-## THE ARCHITECT'S REVIEW OF THE MESH — received, NOT yet acted on
+## THE ARCHITECT'S REVIEW OF THE MESH — points 1-3 DONE, 4 and 5 OUTSTANDING
 
-Ranked by leverage. ⚠ It was written against code believed not to render; **re-read it once the
-button has actually been looked at**, because points 1-3 assume a working image.
+Ranked by leverage, and kept in full because the reasoning is worth more than the checklist.
+**Points 1, 2 and 3 are implemented and committed** (shell colour, axis panel + rim source, tone
+mapping, plateau). **Points 4 (CSS bloom) and 5 (the double band) are NOT.**
 
 1. **The shell is black; in the reference the darks are BLUE.** `nextstep-canvas.tsx` builds the
    surround as `0x000000`, so a mirror returns black wherever the key panels miss — neutral
@@ -171,6 +185,29 @@ button has actually been looked at**, because points 1-3 assume a working image.
 `answer-card-glass.ts` deliberately so the button and cards share a room. **Pushing the shell blue
 puts the button in a bluer room than the cards.** Probably invisible at 116×41 under the grid,
 but it is a real trade against the "same world" principle — decide it, do not discover it.
+
+---
+
+## ▶ PICKING UP — THE ORDER I WOULD GO IN
+
+⚠ **NONE OF THIS IS APPROVED AND CARL HAS NOT SEEN THE BUTTON SINCE THE LAST TWO CHANGES.** Show
+him `/proto/nextstep` before building anything on top of it — that is the gate, not this list.
+
+1. **The end caps.** The two dark blobs are the loudest defect. The caps curve away from every
+   source; needs a wrap panel or a second rim source on the far side. Cheap, and it may be the
+   only thing between here and something judgeable.
+2. **The crown profile.** It reads as a wide flat band, not a tube. Lower the plateau further
+   and/or add the inflection that gives the reference's DOUBLE band. ⚠ **Geometry, not material
+   — the Architect flagged it specifically so nobody hunts for it in roughness.**
+3. **CSS bloom** on the wrapper (`filter: drop-shadow(...)`), not a postprocessing pass. Given
+   what frame cost has already cost on Q5, a render pass on a CTA is the wrong trade.
+4. **Then, and only then, the traveller swing and the amber.** ⚠ The opal rig proves *"the physics
+   will do it for free"* is not safe: true proximity was built, measured and REJECTED there.
+   **Measure the swing before assuming it reads.** Carl has pre-authorised a placed amber light
+   if the real filaments do not carry.
+
+⚠ **AND THE ROLLOUT CONSTRAINT APPLIES TO ALL OF IT** — every Q5 component gets cloned to Q4-Q1,
+so nothing may hard-code Q5's position or the "Next step" label width. Send is a different width.
 
 ---
 
@@ -237,17 +274,17 @@ light show."*
 
 ```
 npm run dev
-http://localhost:3000/proto/nextstep?axis=0.15   the button bench  <- START HERE
-node verify/nextstep-look.mjs "?axis=0.15"       centre vs rim, screenshot-based
+http://localhost:3000/proto/nextstep            the button bench  <- START HERE
+node verify/nextstep-look.mjs                   centre vs rim, screenshot-based
 http://localhost:3000/start              the corridor
 node verify/teal-core.mjs                white -> teal, grid-anchored
 node verify/reveal-cost.mjs              the Q5 profile
 bash verify/run-bisect.sh 3              the repaired interleaved bisect
 ```
 
-Button dials: `?axis= ?key= ?shell= ?chromerough= ?chromeenv= ?amber= ?flat=1 ?always=1`
-⚠ `?axis=0.15` is the best of the sweep so far — the default 1.3 is washed out.
-⚠ `?flat=1` and `?always=1` are leftover diagnostics — **remove them** once the button renders.
+Button dials: `?axis= ?key= ?shell= ?chromerough= ?chromeenv= ?amber=`
+⚠ **The measured-best values are now the DEFAULTS** (axis 0.15), so a bare
+`/proto/nextstep` shows the current best. The dials remain for tuning.
 
 ⚠ **MEASURE HEADED, WITH `--enable-gpu`.** Every harness prints the renderer and aborts on a
 software rasteriser.
