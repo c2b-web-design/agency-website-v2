@@ -40,7 +40,7 @@
  * text. All values are named constants so later tuning is a value change.
  */
 
-import { useMemo, useEffect, useRef, useCallback } from "react";
+import { useMemo, useEffect, useRef, useCallback, useState } from "react";
 // ⚠ `useThree` FOR `invalidate` — the canvas is `frameloop="demand"`, so an
 // animation that does not request frames is an animation that does not run.
 import { useFrame, useThree } from "@react-three/fiber";
@@ -431,6 +431,29 @@ function FaceMaterial({
     const u = uniforms.current.uHover;
 
     /**
+     * ⚠⚠ NOTHING TO DO IS THE COMMON CASE, AND STARTING A LOOP FOR IT COST
+     * CARL A VISIBLE Q5 STALL. This effect runs on MOUNT for every card, and
+     * ten card instances exist (five real, five in the warm-up canvas). Without
+     * this guard all ten started an rAF that called `invalidate()` — during the
+     * Q5 reveal, the one window `3a7cf1f` exists to keep clear.
+     *
+     * Measured on the real GPU, worst frame gap inside the reveal:
+     *
+     *     7b056c2  resting light, before any hover work   161ms
+     *     4c7a20e  + the second texture per card          312ms
+     *     e3a5b7c  + ten unguarded rAF loops              620ms
+     *
+     * **Each hover commit roughly doubled it**, back to where the stutter was
+     * before it was ever fixed (584ms). The uniform already equals its target at
+     * mount, so there is genuinely nothing to animate — the loop existed only to
+     * discover that, once per card, at the worst possible moment.
+     */
+    if (Math.abs(target - u.value) <= 0.002) {
+      u.value = target;
+      return;
+    }
+
+    /**
      * ⚠ EXPONENTIAL, NOT A FIXED DURATION, because the pointer can leave
      * mid-transition: this turns round from wherever it got to without a jump.
      * Frame-rate independent via `delta` — a fixed step would fade at half
@@ -540,20 +563,29 @@ function FaceMaterial({
        * measured flat before the change (`verify/crown-disclosure.mjs`).
        */
       /**
-       * ⚠⚠ WITHOUT THIS THE HOVER TEAL SILENTLY NEVER RENDERS. three.js caches
-       * compiled programs, and `onBeforeCompile` is NOT part of the default
-       * cache key — so a material whose injected source changed can be handed a
-       * previously compiled program that lacks the new sampler entirely. The
-       * uniform then animates every frame against a shader that never reads it.
+       * ⚠⚠ THERE IS DELIBERATELY NO `customProgramCacheKey` HERE, AND ADDING ONE
+       * COST CARL A VISIBLE Q5 STALL.
        *
-       * ⚠ MEASURED, NOT ASSUMED: `verify/hover-teal.mjs` reported a
-       * green-minus-blue shift of **1.04 against an expected 13**, and the
-       * captured frames showed plain white text on hover. No GLSL error, no
-       * warning — the blend simply was not in the program being run. **This is
-       * the "moving value that changes no pixels" failure this file has now hit
-       * three times.**
+       * One was added on 10 August to "fix" a hover teal that was never broken —
+       * the evidence was a harness returning a false negative because it sampled
+       * the white relief halo rather than the glyph core. A unique key defeats
+       * three's program cache, so the face material **re-links its shader
+       * instead of reusing the compiled one**, on the main thread, inside the
+       * 1300ms Q5 reveal.
+       *
+       * Profiled on the real GPU during the reveal: `getProgramParameter`
+       * **74.6ms** and `getProgramInfoLog` **16.5ms** of self time — link work,
+       * in the one window `3a7cf1f` exists to keep clear. Carl: *"Q5 stalls"*.
+       *
+       *     7b056c2  before any hover work   132-161ms worst frame gap
+       *     e3a5b7c  with the cache key      617-624ms
+       *
+       * ⚠ THE GENERAL RULE: `onBeforeCompile` changes do NOT need a custom cache
+       * key in this codebase — the three sibling materials in this file inject
+       * shaders without one and always have. A key is only needed when the
+       * injected source varies **between instances of the same material**, which
+       * none of these do.
        */
-      customProgramCacheKey={() => "satin-face-hover-teal-v1"}
       transmission={0}
       /**
        * ⚠ THE SMEAR. This is what makes the surface satin rather than a shiny
@@ -1631,13 +1663,62 @@ export function AnswerCardMesh({
   /**
    * The same label in the rail's teal — the hover target.
    *
-   * ⚠ BUILT AT MOUNT, NOT ON HOVER. Drawing a 2048x512 canvas at the moment the
-   * pointer arrives would hitch on the frame the user is most attentive to.
-   * Both variants exist from the start and the shader mixes between them.
+   * ⚠⚠ BUILT DURING AN IDLE GAP, NOT AT MOUNT AND NOT ON HOVER. Both of the
+   * obvious timings are wrong and the middle one is the answer:
+   *
+   *   - **At mount** it drew a second 2048x512 canvas per card, ten times, inside
+   *     the Q5 reveal. Measured: the worst frame gap went 161ms → 312ms the
+   *     moment this texture was added (`4c7a20e`). **Carl saw it: *"Q5 stalls"*.**
+   *   - **On hover** it would hitch on the exact frame the pointer arrives — the
+   *     one the user is most attentive to.
+   *
+   * ⚠ SO IT WAITS FOR THE THREAD TO BE FREE. `requestIdleCallback` yields until
+   * after the reveal has finished; the fallback covers Safari, which has none.
+   * The hover blend simply mixes toward `null` until it lands, which the shader
+   * already tolerates — `uHover` is 0 for that whole period anyway.
+   *
+   * ⚠ AND THE 2000ms FALLBACK IS NOT ARBITRARY. It is long enough to clear the
+   * 1300ms reveal with margin, which is the same reasoning the pre-warm's own
+   * idle scheduling uses. A shorter one would fire back inside the window this
+   * change exists to protect.
    */
-  const labelTealMap = useMemo(() => {
-    if (!label || typeof document === "undefined") return null;
-    return buildLabelTexture(label, SATIN_COLOR, LABEL_INK_HOVER);
+  const [labelTealMap, setLabelTealMap] = useState<THREE.CanvasTexture | null>(null);
+
+  useEffect(() => {
+    // ⚠ NO SYNCHRONOUS `setState` HERE. Clearing the texture in this branch
+    // would be a cascading render on every mount of a label-less card (the
+    // warm-up instance and the clay study), which lint correctly rejects. The
+    // state is already null for those, and the cleanup below handles a label
+    // CHANGING — so there is nothing to clear.
+    if (!label || typeof document === "undefined") return;
+
+    let cancelled = false;
+    const build = () => {
+      if (cancelled) return;
+      setLabelTealMap(buildLabelTexture(label, SATIN_COLOR, LABEL_INK_HOVER));
+    };
+    const w = window as unknown as {
+      requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number;
+      cancelIdleCallback?: (h: number) => void;
+    };
+    if (typeof w.requestIdleCallback === "function") {
+      const h = w.requestIdleCallback(build, { timeout: 2000 });
+      return () => {
+        cancelled = true;
+        w.cancelIdleCallback?.(h);
+        // ⚠ CLEARED ON THE WAY OUT, NOT ON THE WAY IN. When the label changes,
+        // the texture built for the OLD one must not stay bound — the card
+        // would hover to the previous answer's teal. This is a cleanup, so it
+        // is not the cascading-render pattern lint objects to.
+        setLabelTealMap(null);
+      };
+    }
+    const t = window.setTimeout(build, 2000);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+      setLabelTealMap(null);
+    };
   }, [label]);
 
   /**
