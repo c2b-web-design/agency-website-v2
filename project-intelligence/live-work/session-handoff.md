@@ -235,6 +235,37 @@ against **269ms without** — indistinguishable. `transition-cost.mjs` and `corr
 
 ---
 
+## 📌 PARKED — logos, after the corridor reaches the client info section
+
+**Carl, 11 August 2026:** *"After this section is completed and everything flows into the client
+info section I will turn my attention to logos on the site. Attached is the official logo. There is
+also this flat white 2D logo on a black background. I have DaVinci Resolve. I have to go in there
+and recreate it in Fusion."*
+
+**Not current scope. Do not start it, plan against it, or reach for it.** Recorded so it is not
+rediscovered.
+
+- **Two assets exist:** the official gold hero render, and a **flat white 2D logo with an alpha
+  channel**. ⚠ The flat one is the load-bearing asset for the site — at favicon, header and footer
+  sizes the tube geometry and specular detail vanish, and a flat silhouette is what survives. The
+  gold render is hero-scale.
+- ⚠ **CHECK PREMULTIPLIED vs STRAIGHT ALPHA BEFORE IT GOES ANYWHERE.** Getting it wrong puts a dark
+  fringe on the antialiased edges against dark backgrounds — subtle at hero scale, visible at
+  header size on `#101010`. Fusion's Loader node states it explicitly; Resolve's default is not
+  always what the file actually is. **This is the kind of thing found late and expensively.**
+- **The button's material findings transfer to a Fusion rebuild**, because they are geometry and
+  environment rather than code: the double band is an **inflection in the profile**, not a material
+  setting; the darks are **navy, not black**; the reference is **predominantly dark with bright
+  bands**; and **a hard-edged source reflects as a hard-edged slab**. Same facts in any renderer.
+- ⚠ **THERE IS NO LOGO ASSET IN THE REPO — VERIFIED, NOT ASSUMED.** `public/` contains none, and
+  the `c2b DESIGN` lockup that used to sit behind the answer cards was **removed on 5 August 2026**
+  (`answer-card-canvas.tsx`, several comments record it and the reasoning that died with it). So
+  this work starts from nothing on the site side; it is not a swap.
+  ⚠ **The Builder asserted the opposite from memory while writing this handoff and had to check.**
+  A claim about the repo written into a governance file is read as verified — run the search.
+
+---
+
 ## How to look at it
 
 ```
