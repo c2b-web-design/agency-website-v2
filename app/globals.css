@@ -1232,6 +1232,51 @@
   .enquiry-nextstep-btn--q5proto { transition: none; }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   THE MESH TAKES OVER THE SURFACE — .enquiry-nextstep-btn--mesh
+   ══════════════════════════════════════════════════════════════════════════
+
+   ⚠ APPLIED ONLY WHEN A Three.js MESH IS ACTUALLY RENDERING BEHIND THE BUTTON.
+   `NextStepMeshButton` adds this class only once it has measured the box and
+   mounted the canvas — so a pre-measurement frame, or any path where the canvas
+   is absent, keeps the full CSS material and never shows a transparent hole.
+
+   ⚠ THE CSS BUTTON IS THE THING BEING REPLACED, NOT A FALLBACK STYLE. Carl,
+   10 August 2026: *"only the next step button wont be frosted glass"*, and of
+   the CSS original: *"it was not opal... trying to be frosted glass."* The mesh
+   is the material now; this rule stops the painted one showing through it.
+
+   ⚠ WHAT SURVIVES, AND WHY EACH ONE MATTERS:
+     - the BOX (padding, font, radius) — it is what the mesh is measured FROM,
+       so removing it would collapse the geometry the canvas is sized to
+     - the TEXT and its colour — the label sits above the canvas, as on the bench
+     - the FOCUS RING — `focus-visible:outline` is a Tailwind utility on the same
+       element and is untouched; a mesh must never cost a keyboard user the ring
+     - `cursor: pointer` — it is still a control
+
+   ⚠ NO `background: none` SHORTHAND. That would also drop `background-color`,
+   and on a browser where WebGL fails the button would become invisible rather
+   than merely unstyled. Only the painted image layers are cleared. */
+.enquiry-nextstep-btn--mesh {
+  background-image: none;
+  background-color: transparent;
+  /* ⚠ THE INSET BEVELS MUST GO — they are a LIGHTING MODEL of a dome the mesh
+     now really has. Two domes, one painted and one geometric, read as a seam
+     around the rim. The outer contact shadow stays: it grounds the object
+     against #101010 and the mesh casts none of its own. */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.40);
+}
+
+.enquiry-nextstep-btn--mesh:hover {
+  background-image: none;
+  background-color: transparent;
+  /* ⚠ HOVER STILL ADDS DEPTH, WHICH IS THE APPROVED BEHAVIOUR — the CSS original
+     grew and dropped its contact shadow rather than changing colour, and D-031's
+     locked rule is that hover introduces no new white. Same gesture, shadow
+     only. */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.52);
+}
+
 /* Send trigger — final details form. Separated from the question-flow CTA
    (.enquiry-nextstep-btn). MATERIAL: deep blue-opal cabochon with internal opal
    character. Same domed pill architecture as before (bevel offsets/blurs, footprint,

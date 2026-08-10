@@ -5,6 +5,7 @@ import ContactFieldCanvas, { FIELD_ENTRANCE_END_MS } from "./contact-field-canva
 import ContactFieldInputs, { type FieldStateSnapshot } from "./contact-field-inputs";
 import { FIELD_SLOTS } from "./contact-field-geometry";
 import AnswerCardCanvas from "./answer-card-canvas";
+import { NextStepMeshButton } from "./nextstep-canvas";
 // ⚠ THE CARD CHOREOGRAPHY'S OWN END, DERIVED THERE AND IMPORTED HERE — never
 // retyped. This file's own history records a hand-written end-of-choreography
 // value going stale twice.
@@ -1372,14 +1373,43 @@ export default function EnquiryOpening() {
                   : reflectionVars(QUESTIONS[qNum].options, selected)),
               }}
             >
-              <button
+              {/*
+                ⚠ THE MESH IS THE BUTTON'S SURFACE NOW — D-0xx pending, prototype
+                approved by eye 10 August 2026: *"that is excellent,
+                outstanding."*
+
+                ⚠⚠ ONE EDIT COVERS Q5-Q1. This button is rendered once for every
+                question, so nothing here is cloned per-Q. The rollout constraint
+                Carl set — *"Send is a different width"* — is met by
+                `NextStepMeshButton` MEASURING its own box rather than reading
+                `NEXTSTEP_WIDTH_PX`, so completion's Send needs no new geometry.
+
+                ⚠ `active` IS THE VISIBILITY GATE, NOT A COSMETIC FLAG. This
+                wrapper is `opacity: 0; pointer-events: none` until something is
+                selected. An ungated traveller sweep would render at 60fps behind
+                it from the moment each question mounts — through the card
+                entrance ladder and the Q5 reveal, which is the 167ms window
+                still open. Architect, 10 August 2026.
+
+                ⚠ AND IT CARRIES REDUCED MOTION. `!reducedMotion` leaves a static
+                mesh with the loop stopped; the surface still renders, only the
+                motion stops — the corridor's established pattern.
+
+                ⚠ THE DOM BUTTON IS UNCHANGED AND IS STILL THE CONTROL: same
+                `type`, `tabIndex` gating, `onClick`, classes and focus ring. The
+                canvas is `aria-hidden` and `pointer-events: none`. **A mesh is a
+                surface, never a control** — the distinction the answer cards
+                will have to make when they become real controls.
+              */}
+              <NextStepMeshButton
                 type="button"
                 tabIndex={selected.size > 0 ? 0 : -1}
                 onClick={handleNextStep}
+                active={selected.size > 0 && !reducedMotion}
                 className={`enquiry-nextstep-btn${qNum === 5 ? " enquiry-nextstep-btn--q5proto" : ""} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/40`}
               >
                 Next step
-              </button>
+              </NextStepMeshButton>
             </div>
           </div>
         )}

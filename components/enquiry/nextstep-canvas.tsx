@@ -21,7 +21,7 @@
  *      sanctioned fallback — *"Belonging in the same world is what counts."*
  */
 
-import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -952,5 +952,89 @@ export default function NextStepCanvas({
         <ButtonMesh width={width} height={height} amber={amber} active={active} />
       </Canvas>
     </div>
+  );
+}
+
+/**
+ * The mesh behind a real DOM button, sized from that button's MEASURED box.
+ *
+ * ══════════════════════════════════════════════════════════════════════════
+ * ⚠⚠ THIS EXISTS SO THE ROLLOUT CANNOT HARD-CODE A LABEL WIDTH
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * Carl's standing constraint: *"When this next step button is built all the Q5
+ * components will be cloned and rolled out to the other Qs."* The label is
+ * "Next step" on Q5–Q2 and **"Send"** at completion, which is a different width.
+ *
+ * ⚠ `NEXTSTEP_WIDTH_PX` (116.3) IS A REFERENCE SIZE, NOT THE ONLY SIZE. It was
+ * measured from the live DOM for one label at one weight. Anything that assumes
+ * it is correct for every instance is wrong the moment Send arrives — so this
+ * component never reads it, and measures instead.
+ *
+ * ⚠ A `ResizeObserver`, NOT A ONE-OFF `getBoundingClientRect`. The button's box
+ * depends on font metrics that are not known at first paint: with a webfont the
+ * measured width changes when the font swaps in, and a single measurement taken
+ * before that lands would leave the mesh permanently the wrong size. The
+ * observer simply follows.
+ *
+ * ⚠ THE DOM BUTTON IS THE CONTROL AND STAYS EXACTLY AS IT WAS. It keeps its
+ * accessible name, focus ring, `tabIndex` gating and `onClick`; the canvas is
+ * `aria-hidden` and `pointer-events: none`. **The mesh is a surface, not a
+ * control** — the same division the answer cards will need when they become
+ * real controls, and the reason that debt is recorded rather than repeated here.
+ */
+export function NextStepMeshButton({
+  children,
+  active,
+  className,
+  ...buttonProps
+}: {
+  children: React.ReactNode;
+  /**
+   * Whether the button is visible — drives the traveller sweep.
+   *
+   * ⚠ NOT COSMETIC. The corridor's wrapper is `opacity: 0` until a selection
+   * exists, and an ungated sweep would render at 60fps behind it through the
+   * Q5 reveal. See `TravellingReflection`.
+   */
+  active: boolean;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const hostRef = useRef<HTMLSpanElement | null>(null);
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const r = entries[0]?.contentRect;
+      if (!r || r.width < 1 || r.height < 1) return;
+      setBox((prev) =>
+        prev && Math.abs(prev.w - r.width) < 0.5 && Math.abs(prev.h - r.height) < 0.5
+          ? prev
+          : { w: r.width, h: r.height },
+      );
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <span ref={hostRef} style={{ position: "relative", display: "inline-block" }}>
+      {/*
+        ⚠ THE CANVAS RENDERS ONLY ONCE THE BOX IS MEASURED. Rendering it at the
+        default 116.3 first and correcting afterwards would rebuild the geometry
+        on the second frame — and on Send it would visibly resize.
+      */}
+      {box && <NextStepCanvas width={box.w} height={box.h} active={active} />}
+      <button
+        {...buttonProps}
+        // ⚠ `--mesh` SUPPRESSES THE CSS SURFACE, and only when the mesh is
+        // actually there. Without the `box &&` guard a narrow or pre-measurement
+        // render would show a transparent button with no surface at all.
+        className={`${className ?? ""}${box ? " enquiry-nextstep-btn--mesh" : ""}`}
+      >
+        {children}
+      </button>
+    </span>
   );
 }
