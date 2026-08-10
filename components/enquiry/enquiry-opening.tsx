@@ -172,8 +172,23 @@ const ACK_FADE_OUT_DELAY_MS = FIELD_ENTRANCE_END_MS - ACK_FADE_OUT_DURATION_MS;
  * — check it, do not assume.
  *
  * ⚠⚠ AND THAT WARNING CAME TRUE — IT WAS THE ONLY PATH ON EVERY VIEWPORT UNDER
- * 1280px, ON EVERY LOAD. `AnswerCardCanvas` returns `null` below
- * `PROTO_MIN_VIEWPORT_PX`, so no canvas existed, nothing reported `compiled`,
+ * 1280px, ON EVERY LOAD.
+ *
+ * ⚠ HISTORICAL — THE 1280px GATE NO LONGER EXISTS. Removed 7 August 2026
+ * (`answer-card-canvas.tsx:98`); the cards measure the grid and mount at every
+ * width. **This paragraph describes the fault that PRODUCED this timer, not how
+ * the canvas behaves today.** The timer is still load-bearing for other reasons.
+ *
+ * ⚠⚠ THE FOURTH STALE ASSERTION OF THIS GATE, CORRECTED 10 AUGUST 2026. Three
+ * others were fixed earlier the same day after they misled a rollout plan into
+ * asking the Architect to rule on inheriting a gate that does not exist; this
+ * one was missed in that sweep and was found by the Architect's review of the
+ * NEXT plan. **A stale comment is an instrument — it is what the next reader
+ * measures the code by — and a partial sweep leaves the trap armed.** If a
+ * fifth is found, search the whole file for `1280` rather than fixing it alone.
+ *
+ * Historically: `AnswerCardCanvas` returned `null` below `PROTO_MIN_VIEWPORT_PX`,
+ * so no canvas existed, nothing reported `compiled`,
  * and this timer armed the opening after a 4.2-SECOND BLANK SCREEN. It was
  * caught by an independent audit, not by this project's own harness, because
  * `verify/opening-arm.mjs` only ever ran at 1440px — where the canvas exists and
@@ -193,9 +208,19 @@ const OPENING_ARM_CEILING_MS = 4000;
  * wait for the card entrance to report itself.
  *
  * ⚠ IT EXISTS SO A STATE GATE IS NEVER THE ONLY EXIT. The card canvas does not
- * mount below `PROTO_MIN_VIEWPORT_PX` (1280) and does not animate under
- * `prefers-reduced-motion` — on both paths `onEntranceStart` never fires, and
- * without this the contact field would wait forever.
+ * animate under `prefers-reduced-motion`, so `onEntranceStart` never fires on
+ * that path, and without this the contact field would wait forever.
+ *
+ * ⚠ THE FIFTH STALE 1280 ASSERTION, CORRECTED 10 AUGUST 2026. This also claimed
+ * the canvas "does not mount below `PROTO_MIN_VIEWPORT_PX` (1280)". **That gate
+ * was removed on 7 August** (`answer-card-canvas.tsx:98`) — the cards measure
+ * the grid and mount at every width. The reduced-motion half above is still
+ * true, which is why this one survived two sweeps: a comment can be half stale,
+ * and the true half makes the false half read as verified.
+ *
+ * ⚠ FOUND BY GREPPING `1280` ACROSS THE WHOLE FILE after the fourth was fixed
+ * — the sweep the note at `armOpening` now tells the next reader to run. It
+ * worked; do the same rather than fixing a stale comment where you find it.
  *
  * ⚠ GENEROUS ON PURPOSE. It is a backstop against a path that cannot report,
  * not a schedule — if it is ever the thing that releases the warm-up on a normal
