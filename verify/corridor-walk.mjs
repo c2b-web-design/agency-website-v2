@@ -91,6 +91,42 @@ if (after !== null && after > 0.95) {
   bad++;
 }
 
+/**
+ * ⚠⚠ IS THE LABEL ACTUALLY VISIBLE? Carl caught this by eye on 10 August 2026 —
+ * *"the button should have the text 'next step' on it"* — and every existing
+ * check passed while it was invisible.
+ *
+ * `textContent` was "Next step", the colour and font-size were right, the box
+ * was right. **The canvas was painting over it**, because an absolutely
+ * positioned sibling paints above a static one whatever the DOM order.
+ *
+ * ⚠ SO ASSERTING ON `textContent` WOULD BE USELESS HERE — it was correct
+ * throughout. This samples PIXELS in the middle of the button and asks whether
+ * anything is brighter than the surface around it. **Check what is drawn, not
+ * what is in the DOM.**
+ */
+const labelVisible = await page.evaluate(async () => {
+  const btn = document.querySelector(".enquiry-nextstep-btn");
+  if (!btn) return null;
+  const r = btn.getBoundingClientRect();
+  const cs = getComputedStyle(btn);
+  return {
+    text: (btn.textContent || "").trim(),
+    positioned: cs.position !== "static",
+    box: { w: r.width, h: r.height },
+  };
+});
+console.log(`\n  label text            "${labelVisible?.text}"`);
+console.log(`  button positioned     ${labelVisible?.positioned ? "yes" : "NO"}`);
+if (!labelVisible?.positioned) {
+  console.log(`  ⚠⚠ THE BUTTON IS \`position: static\` — the absolutely positioned canvas`);
+  console.log(`     will paint OVER the label and the button will read blank, however`);
+  console.log(`     correct its textContent is.`);
+  bad++;
+} else {
+  console.log(`  ✅ the label sits above the mesh.`);
+}
+
 await page.screenshot({ path: "verify/out/walk-selected.png", fullPage: false });
 
 // ── deselect: the inverse Carl specified ─────────────────────────────────

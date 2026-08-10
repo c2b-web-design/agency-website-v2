@@ -1032,6 +1032,30 @@ export function NextStepMeshButton({
         // actually there. Without the `box &&` guard a narrow or pre-measurement
         // render would show a transparent button with no surface at all.
         className={`${className ?? ""}${box ? " enquiry-nextstep-btn--mesh" : ""}`}
+        /**
+         * ⚠⚠ `position: relative` IS WHAT PUTS THE LABEL IN FRONT OF THE MESH,
+         * AND WITHOUT IT THE BUTTON RENDERS BLANK.
+         *
+         * Carl, 10 August 2026: *"the button should have the text 'next step' on
+         * it."* It did — `textContent` was "Next step", colour and font-size
+         * correct, box correct. **The canvas was painting over it.**
+         *
+         * ⚠ AN ABSOLUTELY-POSITIONED SIBLING PAINTS ABOVE A STATIC ONE WHATEVER
+         * THE DOM ORDER. Positioned elements form a later paint layer than
+         * in-flow content, so putting the `<button>` after the canvas in the
+         * markup — which looks like it should be enough — does nothing. The
+         * button has to be positioned too before source order decides.
+         *
+         * ⚠ IT WORKED ON THE BENCH, WHICH IS WHY IT WAS NOT CAUGHT EARLIER:
+         * `app/proto/nextstep/page.tsx` renders the label as its own
+         * `position: absolute` span. Lifting the pattern into a shared component
+         * dropped the property that was doing the work.
+         *
+         * `z-index` is deliberately NOT set: `position: relative` alone is
+         * enough here, and adding one would create a stacking context that the
+         * corridor's own layering would then have to reason about.
+         */
+        style={{ position: "relative", ...buttonProps.style }}
       >
         {children}
       </button>
