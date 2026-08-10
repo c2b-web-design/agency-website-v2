@@ -755,6 +755,21 @@ A fourth status, **`PROVISIONAL`**, is added to the schema for work that is **in
 
 **Rationale:** You cannot master a track while still tracking. Tuning one element in isolation means balancing it against a mix that does not exist yet — Q5's lighting cannot be judged finished while its neighbours are unbuilt. Provisional values are therefore **correct at this stage**, not unfinished business.
 
+> ⚠⚠ **AMENDED 11 AUGUST 2026 — THIS ENTRY COVERS *VALUES* BEING PROVISIONAL. IT DOES NOT COVER
+> *ARCHITECTURE* BEING PROVISIONAL, AND THAT GAP HAS COST ONCE.**
+>
+> Carl: *"I might go back and rewrite a whole section like we are doing."* **Re-tracking is part of
+> the method, not a deviation from it** — and a structural decision taken during tracking gets
+> written in the register of a settled thing, then has the section rewritten beneath it.
+>
+> **D-046 is the worked case.** It declined the shared-canvas host on three grounds; later work
+> removed two of them without ever contradicting it, so its *"it is not authorised"* still read as
+> current. See **D-048**, the rule in `context-rules.md` → *Approved work is amendable*, and the
+> full method in `ai-system/working-with-carl.md` → *How Carl builds — the DAW model*.
+>
+> ⚠ **A DECISION MADE DURING TRACKING IS A TAKE, NOT A MASTER.** It was right for the material as
+> it stood. Overtaken is not wrong.
+
 **The governance problem this fixes.** The record previously had no way to say "deliberately untuned", so provisional work read as a **missing approval**. This produced two false positives from two different reviewers in eight days: the 24 July architect review raised the undocumented q5proto Q5 lighting layer as finding **F-1**, and the 25 July CP repo pass raised the same layer again. Both were reading the record correctly; **the record was wrong**. A reviewer that cannot distinguish *undecided* from *deliberately deferred* generates noise on every pass, and noise is what makes a review layer easy to ignore.
 
 **Instruction to reviewers (architect, CP, or any future layer):** the **absence** of an approval entry for a `PROVISIONAL` layer is **expected and correct**. Do not raise it as a governance gap. Raise it only if the work has **left** its provisional scope — grown beyond what was placed, or contradicted an `APPROVED` decision.

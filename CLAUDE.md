@@ -60,6 +60,8 @@ If a task requires changing an approved foundation layer: stop, explain why, sta
 
 **But amending the RECORD of approved work is not the same as changing the work.** When new work lands on an element an approved file describes, amend that file in the same chunk — Carl, 11 August 2026. A decision can be intact, uncontradicted and still unsafe to act on, because a fact it relied on has moved. Rule and worked case: `ai-system/context-rules.md` → *Approved work is amendable*, and D-046/D-048.
 
+**Carl builds the way a record is produced: track, re-track, master.** Core elements go in first; **a whole section may be torn up and rewritten mid-build**; a mastering pass over the whole site comes last (D-035). ⚠ **So "we are rewriting this section" is the method, not alarm — and a decision taken during tracking is a take, not a master.** Do not defend an old arrangement on the grounds that it was approved; approval recorded that it was right *then*. **This does not licence the Builder to overwrite approved work** — re-tracking still needs Carl's word. Full note: `ai-system/working-with-carl.md` → *How Carl builds — the DAW model*.
+
 ## Workflow
 
 1. Prototype at the smallest useful scope first.

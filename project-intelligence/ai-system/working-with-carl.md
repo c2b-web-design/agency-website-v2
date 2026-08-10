@@ -238,6 +238,72 @@ knows the solo is coming — but played, all the same, as verse one.
 
 ---
 
+## ⚠ How Carl builds — the DAW model, and why it collides with the record
+
+**Carl, 11 August 2026, in his own words:**
+
+> *"I am a musician with decades of experience in DAWs. I see the whole site like music
+> production. I like to get core elements in place, I might go back and rewrite a whole section
+> like we are doing. There will be a 'mastering' at the end of building. This process may come
+> into conflict with the files as D-046 demonstrated. This process must be noted."*
+
+**This is the method, not a preference.** D-035 already records production-then-mastering and the
+`PROVISIONAL` status. **This section records the part D-035 does not: that a whole section may be
+torn up and rewritten mid-build, and that the record will fight it.**
+
+### The three phases, and what each means for the files
+
+| phase | what happens | what the record should say |
+|---|---|---|
+| **Tracking** | Core elements go in. Values deliberately untuned. | `PROVISIONAL` (D-035). Absence of approval is **correct**. |
+| **⚠ Re-tracking** | *"I might go back and rewrite a whole section."* A part that was down and working is **replaced**, not adjusted. | ⚠ **THE GAP.** See below. |
+| **Mastering** | Carl and the Builder go through the whole site together, balancing it as one thing. | Values graduate `PROVISIONAL` → `APPROVED`. |
+
+### ⚠⚠ RE-TRACKING IS WHAT BREAKS THE RECORD, AND D-046 IS THE WORKED CASE
+
+**D-035 makes *values* provisional. It does not make *architecture* provisional.** So a decision
+about structure gets written in the register of a settled thing — and then a section is rewritten
+beneath it.
+
+**What happened.** D-046 declined the shared-canvas host on 9 August, correctly, on three grounds.
+Then the section was re-tracked: the fluid-grid work removed its measurement hazard, and Stage B
+took the defect it was weighed against from ~70ms once to 193ms on every question step. **Nothing
+contradicted D-046. Its words still read as current**, and *"it is not authorised"* would have been
+quoted at anyone proposing the restructure. Recorded as **D-048**; the general rule is now in
+`context-rules.md` → *Approved work is amendable*.
+
+**In DAW terms:** the mistake was **treating a bounce as the source**. The overlap fix was a good
+take on 9 August. Writing *"not authorised"* framed a tracking-phase decision as a locked
+arrangement.
+
+### What this means for the Builder, concretely
+
+1. ⚠ **A DECISION MADE DURING TRACKING IS A TAKE, NOT A MASTER.** It was right for the material as
+   it stood. When Carl rewrites the section under it, **the decision has not failed — it has been
+   overtaken.** Say that; do not write it up as an error. See `context-rules.md`.
+2. ⚠ **"WE ARE REWRITING THIS SECTION" IS NORMAL, NOT ALARM.** It is not scope creep, indecision,
+   or a failure of the earlier plan. **Do not defend the old arrangement on the grounds that it was
+   approved.** Approval recorded that it was right *then*.
+3. ⚠ **BUT RE-TRACKING STILL DOES NOT AUTHORISE ITSELF.** Rewriting a section that touches an
+   approved foundation layer needs Carl's word, as `CLAUDE.md` requires. **The DAW model explains
+   why records go stale; it does not licence the Builder to overwrite them.** *"This is
+   non-negotiable"* and *"you may restructure the approved layout"* are two different sentences.
+4. ⚠ **AMEND THE FILES IN THE SAME CHUNK AS THE REWRITE.** The stale record is not a documentation
+   chore to be swept up later — **it is an instrument the next session measures the code by**, and
+   it misleads with the full authority of an APPROVED entry.
+5. **Judge the section against the mix it will live in, not against its own bench.** This is why
+   the button looked different in the corridor than on `/proto/nextstep`, and why *"it looks ok
+   zoomed in but not at this scale"* is a recurring correction.
+
+### ⚠ And the tell to listen for
+
+**A cost/benefit judgement in a governance file is a tracking-phase artefact wearing a master's
+clothes.** *"A bigger change than this defect justifies"* is true only of the defect as it stood.
+**Re-read every such judgement after a section is re-tracked** — both sides of the trade move, and
+neither says so.
+
+---
+
 ## Settled — 29 July 2026
 
 The three questions this section carried since 24 July, and Carl's answers.
