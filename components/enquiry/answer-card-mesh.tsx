@@ -101,6 +101,10 @@ import {
   HEAT_RED,
   HEAT_ORANGE,
   HEAT_WHITE,
+  FILAMENT_STRAND_WIDTH,
+  FILAMENT_BLOOM_WIDTH,
+  FILAMENT_BLOOM_GAIN,
+  FILAMENT_QUENCH,
   BEVEL_GLASS_COLOR,
   BEVEL_ROUGHNESS,
   BEVEL_CLEARCOAT,
@@ -852,6 +856,26 @@ function RimMaterial({
     uRed: { value: new THREE.Color(HEAT_RED) },
     uOrange: { value: new THREE.Color(HEAT_ORANGE) },
     uWhite: { value: new THREE.Color(HEAT_WHITE) },
+    uStrandWidth: { value: urlNumber("strand", FILAMENT_STRAND_WIDTH) },
+    uBloomWidth: { value: urlNumber("bloom", FILAMENT_BLOOM_WIDTH) },
+    uBloomGain: { value: urlNumber("bloomgain", FILAMENT_BLOOM_GAIN) },
+    /**
+     * ⚠ A UNIFORM NOW, NOT A COMPILED-IN LITERAL — and it had to become one.
+     *
+     * `FILAMENT_GLOW` was interpolated into the shader source, so it could not
+     * be tuned without a rebuild. Concentrating the same energy from the whole
+     * tube into a narrow strand multiplied the brightness per pixel and drove
+     * the core to **249/246/246 — effectively white** — which is the exact
+     * saturation the constant's own note warns about, and the wash Carl already
+     * rejected once as *"too bright/white... blown out."*
+     */
+    uGlow: { value: urlNumber("glow", FILAMENT_GLOW) },
+    /**
+     * How much of the rim's reflection is quenched at full heat — `?quench=`.
+     * 1.0 removes it entirely under the lit body; 0 restores the old behaviour
+     * where the filament's colour could not survive the metal's brightness.
+     */
+    uQuench: { value: urlNumber("quench", FILAMENT_QUENCH) },
   });
 
   // Keep the uniforms in step with the live filament state. Refs rather than
@@ -872,24 +896,122 @@ function RimMaterial({
       uniform vec3  uRed;
       uniform vec3  uOrange;
       uniform vec3  uWhite;
+      uniform float uStrandWidth;
+      uniform float uBloomWidth;
+      uniform float uBloomGain;
+      uniform float uGlow;
+      uniform float uQuench;
+
+      /**
+       * ⚠ CARRIED FROM emissivemap_fragment TO lights_fragment_end. The quench
+       * is computed where the core mask is known and applied where
+       * reflectedLight exists; those are different chunks, and a module-scope
+       * global is how a GLSL chunk hands a value to a later one.
+       *
+       * ⚠ NO BACKTICKS IN THIS COMMENT — it lives inside a JS template literal.
+       * This file already carried that warning and it was tripped again here.
+       */
+      float gFilamentQuench = 1.0;
 
       ${shader.fragmentShader}
     `.replace(
       "#include <emissivemap_fragment>",
       `#include <emissivemap_fragment>
        {
-         // THE COLOUR CLIMBS THE BLACK-BODY RAMP as the metal heats: dull red,
-         // through orange, to a settled warm white. Two mixes rather than one,
-         // because the curve is not a straight line between its ends -- the
-         // orange midpoint is where a real filament spends most of its climb.
+         /**
+          * ⚠⚠ MOST OF THE HALF-PIPE IS THE FILAMENT — Carl, 10 August 2026:
+          * *"make most of the half pipe rim the filament. More real estate and
+          * pixels to work with."*
+          *
+          * ⚠ THE PROBLEM THIS SOLVES IS THE ONE BEFORE IT. RimMaterial is
+          * applied to rimGeometry, so originally "the filament lighting up" was
+          * the ENTIRE tube changing colour and Carl reported that *"the filament
+          * must be distinguishable from the rim"*. A thin crest strand fixed
+          * that and introduced a new problem: at ~12px of rim on screen a
+          * hairline has too few pixels to show a black-body ramp at all.
+          *
+          * ⚠ SO THE FALLOFF MOVED RATHER THAN DISAPPEARED. The lit body now
+          * spans most of the pipe and goes dark at the tube's EDGES — where it
+          * turns toward the card face and toward the outside air. Cold metal
+          * survives at those turns, so the rim still reads as metal holding
+          * something incandescent rather than as a glowing outline.
+          *
+          * ⚠ vNormal.z IS THE TUBE'S OWN CROSS-SECTION PARAMETER, FREE. The rim
+          * is a swept half-tube built with nFwd = sin(theta), so the view-facing
+          * component runs 0 at the two edges to 1 at the crest. No UVs, no new
+          * attribute, no geometry change.
+          *
+          * ⚠ NORMALIZED BECAUSE INTERPOLATION SHORTENS IT. Across a triangle the
+          * interpolated normal is not unit length, so a raw .z would read
+          * slightly low mid-face and the lit band would breathe as the card
+          * moved.
+          */
+         float crest = clamp(normalize(vNormal).z, 0.0, 1.0);
+
+         // The incandescent body: most of the pipe, falling off at its turns.
+         float core = 1.0 - smoothstep(0.0, uStrandWidth, 1.0 - crest);
+
+         // The bloom: spill carrying past the lit body into the turn, so the
+         // lit area has no hard edge.
+         float bloom = 1.0 - smoothstep(0.0, uBloomWidth, 1.0 - crest);
+
+         // ⚠ THE COLOUR RAMP IS BLACK-BODY AND ITS ORDER IS NOT INVERTED. Red is
+         // the COOLEST glow; amber (uWhite) is the hot end. The surge drives
+         // uTemp UP to flare and back DOWN to settle, so the metal cools from
+         // amber toward red as it reaches its working point -- which is exactly
+         // what Carl described.
          vec3 heatColor = uTemp < 0.5
            ? mix(uRed, uOrange, smoothstep(0.0, 0.5, uTemp))
            : mix(uOrange, uWhite, smoothstep(0.5, 1.0, uTemp));
 
+         // ⚠ THE BLOOM RUNS COOLER THAN THE CORE. Spill leaving a hot source
+         // drops down the ramp on its way out, so tinting it toward orange is
+         // physical rather than decorative -- and it keeps the core reading as
+         // the source.
+         vec3 bloomColor = mix(heatColor, uOrange, 0.35);
+
          // ADDED, NOT SUBSTITUTED -- the metal keeps reflecting the environment
-         // throughout. The design reference: "The dynamite fuse burns away.
-         // This does not."
-         totalEmissiveRadiance += heatColor * uIntensity * ${FILAMENT_GLOW.toFixed(3)};
+         // throughout, including under the strand. The design reference: "The
+         // dynamite fuse burns away. This does not."
+         totalEmissiveRadiance += heatColor  * uIntensity * uGlow * core;
+         totalEmissiveRadiance += bloomColor * uIntensity * uGlow * uBloomGain * bloom;
+
+         // ⚠ THE REFLECTION IS QUENCHED AFTER LIGHTING, NOT HERE — see the
+         // lights_fragment_end injection below. reflectedLight is not populated
+         // at this point in the chain, so damping it here would be a line of
+         // code that runs and changes nothing.
+         gFilamentQuench = 1.0 - uQuench * uIntensity * core;
+       }`,
+    ).replace(
+      "#include <lights_fragment_end>",
+      `#include <lights_fragment_end>
+       {
+         /**
+          * ⚠⚠ THE REFLECTION GIVES WAY TO THE INCANDESCENCE, AND WITHOUT THIS
+          * THE FILAMENT CANNOT HOLD A COLOUR AT ALL.
+          *
+          * Measured on the hottest 10% of the pixels the filament actually
+          * changes: even at settle=0.10 — nearly pure HEAT_RED #8c1f06 — the rim
+          * read **236/196/192, a pale pink.** The ramp was working; the RESULT
+          * was not, because emissive is ADDED to a rim already bright from
+          * metalness 1 and RIM_ENV_INTENSITY 1.6. **Saturated red added to
+          * bright metal is pink.**
+          *
+          * ⚠ answer-card-glass.ts ALREADY RECORDS THIS ARGUMENT one surface
+          * over, in the glass filter's note: *"Adding amber to an already-bright
+          * band drives it to white"* — the verdict Carl gave once as *"white
+          * looks too blown out."*
+          *
+          * ⚠ AND IT IS PHYSICAL, NOT A CHEAT. A filament at working temperature
+          * emits far more than it reflects, so the environment stops being
+          * readable on it. Hot metal really does lose its mirror.
+          *
+          * ⚠ SCALED BY THE CORE MASK SO ONLY THE LIT BODY LOSES ITS REFLECTION. The
+          * tube's cold turns keep the environment and stay legible as metal —
+          * which is what distinguishes the rim from the filament at all.
+          */
+         reflectedLight.indirectSpecular *= gFilamentQuench;
+         reflectedLight.directSpecular   *= gFilamentQuench;
        }`,
     );
   }, []);

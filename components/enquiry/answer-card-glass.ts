@@ -2352,8 +2352,188 @@ export const BEVEL_GLOW = 0.45;
  *
  * PROVISIONAL under D-035, and the one to reach for FIRST if the filament needs
  * to be brighter — raising it past the clipping point buys nothing.
+ *
+ * ⚠⚠ LOWERED 3.2 → 1.4 ON 10 August 2026, AND THE REASON IS NOT THE ONE ABOVE.
+ * The trail-headroom argument was written when the glow covered the WHOLE tube
+ * and the filament travelled. Neither is true now: the head is gone, and the
+ * emissive is concentrated into the lit body of the half-pipe.
+ *
+ * ⚠ AT 3.2 THE COLOUR COULD NOT SURVIVE. Measured on the pixels the filament
+ * actually changes, the settled rim read **250/228/217 — a pale peach** — and
+ * moving `FILAMENT_SETTLE_TEMP` all the way down to 0.10, nearly pure
+ * `HEAT_RED`, still gave 236/196/192. **The ramp was working and the result was
+ * pink**, because emissive is added to metal already bright from `metalness: 1`
+ * and `RIM_ENV_INTENSITY` 1.6.
+ *
+ * ⚠ IT IS NOW A UNIFORM (`?glow=`), NOT A COMPILED-IN LITERAL, so it can be
+ * tuned without a rebuild. At 1.4 with `FILAMENT_QUENCH` the settled rim
+ * measures **231/160/135** — a warm amber with real channel separation.
+ *
+ * ⚠ AND "IT IS CLIPPING" WAS ASSERTED ONCE HERE ON A BAD MEASUREMENT. The
+ * brightest 0.5% of the CARD was sampled and read 249/246/246, which is the
+ * card's specular highlight, not the rim. Nothing was clipping —
+ * near-white pixel count was ZERO at every glow value. **Measure the pixels the
+ * filament changes** (unlit frame vs lit frame), not the brightest pixels
+ * present.
  */
-export const FILAMENT_GLOW = 3.2;
+export const FILAMENT_GLOW = 1.4;
+
+// ── The strand and its bloom ─────────────────────────────────────────────────
+//
+// ⚠⚠ THE FILAMENT MUST BE DISTINGUISHABLE FROM THE RIM — Carl, 10 August 2026,
+// and it was not, because THEY ARE THE SAME OBJECT. `RimMaterial` is applied to
+// `rimGeometry` and the heat is added to that whole surface, so "the filament
+// lighting up" was the entire rim tube changing colour.
+//
+// ⚠ HE SUPPLIED FOUR REFERENCE PHOTOGRAPHS AND THEY AGREE ON THREE THINGS:
+//
+//   1. THE SOURCE IS THIN. In the unlit bulb the filament is a hairline you
+//      have to look for. Even glowing it stays narrow.
+//   2. COLD METAL REMAINS VISIBLE BESIDE IT. The unlit legs run right up to the
+//      glowing section; the whole element does not light.
+//   3. **THE BLOOM IS WIDER THAN THE WIRE, AND IT IS WHAT READS AS HEAT.**
+//      Carl: *"also notice the light has a bloom"*. In the close-up the wire is
+//      a hairline and the glow around it is many times its width.
+//
+// ⚠ SO A THIN LINE ALONE WOULD BE WRONG — it would read as a drawn stroke. The
+// core plus a soft falloff is what reads as incandescence, and the falloff over
+// cold metal is what makes the strand sit ON the rim rather than BE the rim.
+//
+// ⚠ NO NEW GEOMETRY, AND NO POST-PROCESSING PASS. The rim is a swept half-tube
+// whose profile normal is `nFwd = sin(theta)`, so **`normal.z` already
+// parameterises position around the tube's cross-section** — 0 at the two edges,
+// 1 at the crest facing the viewer. The strand is a band around that crest and
+// costs nothing but arithmetic.
+//
+// ⚠ A REAL BLOOM PASS WAS CONSIDERED AND NOT TAKEN. `@react-three/postprocessing`
+// is installed (and unused). It would look better — true light spill — but it is
+// a full-screen pass on a `frameloop="demand"` canvas, it would bloom the
+// APPROVED resting light and traveller too, and it costs a render target per
+// frame on the canvas this session just took from 304ms to 167ms. In-material
+// falloff touches only the rim and cannot regress anything approved. **If Carl
+// wants true spill later, that is the upgrade path and it needs its own chunk.**
+
+/**
+ * How much of the half-pipe is incandescent, in `normal.z` units — `?strand=`.
+ *
+ * ⚠⚠ MOST OF THE TUBE, NOT A HAIRLINE — CARL, 10 August 2026: *"instead of
+ * having a thin strand of filament running through the rim, make most of the
+ * half pipe rim the filament. More real estate and pixels to work with."*
+ *
+ * ⚠ A THIN STRAND WAS BUILT FIRST AND IT WORKED, WHICH IS WHY THIS IS A CHOICE
+ * RATHER THAN A FIX. It read correctly — a bright line with cold metal either
+ * side, as in the reference photographs — but at ~12px of rim on screen it had
+ * almost no pixels to carry colour, so the black-body ramp had nowhere to show
+ * itself. **The surge's whole point is a colour journey, and a hairline cannot
+ * display one.**
+ *
+ * ⚠ THE RIM IS STILL DISTINGUISHABLE, JUST DIFFERENTLY. The falloff now sits at
+ * the tube's EDGES — where the half-pipe turns away toward the card face and
+ * toward the outside air — rather than either side of a central line. Cold
+ * metal survives at the extremes and the lit body sits between them, which is
+ * closer to Carl's coil reference than to his hairline-in-a-bulb one.
+ *
+ * 0.82 lights most of the pipe and leaves the turn at each edge unlit.
+ */
+export const FILAMENT_STRAND_WIDTH = 0.82;
+
+/**
+ * How far the bloom carries past the lit body, in the same units — `?bloom=`.
+ *
+ * ⚠ IT NOW REACHES INTO THE TUBE'S TURN rather than out from a line. Carl:
+ * *"also notice the light has a bloom"* — the spill has to carry beyond the
+ * incandescent metal or the lit area reads as a painted band with a hard edge.
+ */
+export const FILAMENT_BLOOM_WIDTH = 1.0;
+
+/**
+ * How bright the bloom is relative to the lit body — `?bloomgain=`.
+ *
+ * Below 1 so the body still reads as the source rather than the spill.
+ */
+export const FILAMENT_BLOOM_GAIN = 0.45;
+
+/**
+ * How far the rim's REFLECTION is quenched under the lit body — `?quench=`.
+ *
+ * ⚠⚠ WITHOUT THIS THE FILAMENT CANNOT HOLD A COLOUR. Measured on the pixels the
+ * filament actually changes: even at a settle temperature of 0.10 — nearly pure
+ * `HEAT_RED` #8c1f06 — the rim read **236/196/192, a pale pink**. The ramp was
+ * working correctly; the RESULT was wrong, because emissive is ADDED to a rim
+ * already bright from `metalness: 1` and `RIM_ENV_INTENSITY` 1.6.
+ * **Saturated red added to bright metal is pink.**
+ *
+ * ⚠ THE SAME TRAP IS ALREADY RECORDED ONE SURFACE OVER, in the glass filter's
+ * note: *"Adding amber to an already-bright band drives it to white"* — the
+ * verdict Carl gave once as *"white looks too blown out."*
+ *
+ * ⚠ AND IT IS PHYSICAL. A filament at working temperature emits far more than
+ * it reflects, so the environment stops being readable on it. 0.85 rather than
+ * 1.0 leaves a trace of the scene in the metal, so it still reads as a lit
+ * OBJECT rather than as a flat coloured shape.
+ */
+export const FILAMENT_QUENCH = 1.0;
+
+// ── The surge ────────────────────────────────────────────────────────────────
+//
+// ⚠⚠ THE FILAMENT FLARES AND SETTLES BACK. IT DOES NOT CLIMB AND STOP.
+//
+// Carl, 10 August 2026: *"It is supposed to emulate a real filament. In its off
+// state its just cold metal. When 'juice' is put through it it goes quickly
+// through the stages of light/heat. It would start of amber, intensify to red as
+// it gets 'hotter' and fall back slightly to a region between amber and red."*
+//
+// ⚠ AND THE PHYSICS IS THE SWITCH-ON INRUSH, NOT A CLIMB. A cold tungsten
+// filament has low resistance, so the current spike at switch-on drives it
+// briefly HOTTER than its working temperature; it then settles as resistance
+// rises. **That is a brightness curve that rises and falls**, which is exactly
+// what Carl described and what the previous implementation did not do — it ramped
+// monotonically to `HEAT_WHITE` and stayed there.
+//
+// ⚠ THE COLOUR NAMES ARE A TRAP HERE AND THE ORDER LOOKS INVERTED. On the
+// black-body curve RED IS THE COOLEST GLOW and amber/yellow is hotter. So
+// "amber, intensify to red, fall back between them" is not backwards: the flare
+// is the hot end (amber-yellow), and falling toward red IS the metal settling
+// from its inrush peak to its working temperature. `HEAT_RED` / `HEAT_ORANGE` /
+// `HEAT_WHITE` keep their names — they are ramp POSITIONS, and `HEAT_WHITE` is
+// already documented as amber rather than white.
+
+/**
+ * Where the inrush peak lands, as a fraction of `FILAMENT_HEAT_MS` — `?surge=`.
+ *
+ * Early, because the spike is a rush: the metal reaches its brightest well
+ * before it settles. Carl: *"it goes QUICKLY through the stages."*
+ */
+export const FILAMENT_SURGE_AT = 0.38;
+
+/**
+ * How far above the settled intensity the flare reaches — `?surgepeak=`.
+ *
+ * ⚠ IT MUST NOT CLIP. `FILAMENT_GLOW`'s own note records what saturation cost
+ * once before: at 12.0 the trail pegged at 255 and the head had nowhere brighter
+ * to go, destroying the one relationship the design depends on. The peak has to
+ * stay under that ceiling or the flare and the settle become indistinguishable.
+ */
+export const FILAMENT_SURGE_PEAK = 1.7;
+
+/**
+ * Where the colour settles on the ramp once the flare has passed — `?settle=`.
+ *
+ * ⚠ *"A REGION BETWEEN AMBER AND RED"* IS CARL'S PHRASE AND THIS IS THE DIAL FOR
+ * IT. 0 is `HEAT_RED`, 0.5 is `HEAT_ORANGE`, 1.0 is `HEAT_WHITE` (amber). 0.62
+ * sits between the orange midpoint and amber — warm and clearly alight, without
+ * reaching the top end he already rejected once as *"too bright/white... blown
+ * out."*
+ */
+export const FILAMENT_SETTLE_TEMP = 0.35;
+
+/**
+ * The temperature the flare reaches at its peak — `?peaktemp=`.
+ *
+ * Above the settle point, so the flare is visibly hotter in COLOUR as well as
+ * brighter. Kept below 1.0 so even the peak stays amber rather than white.
+ */
+export const FILAMENT_PEAK_TEMP = 0.70;
 
 // ── The calibration stand-in: DELETED, 3 August 2026 ────────────────────────
 //

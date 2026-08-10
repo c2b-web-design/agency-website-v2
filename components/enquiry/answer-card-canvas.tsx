@@ -47,6 +47,10 @@ import {
   FILAMENT_LIGHT_DISTANCE,
   FILAMENT_COOL_MS,
   FILAMENT_HEAT_MS,
+  FILAMENT_SURGE_AT,
+  FILAMENT_SURGE_PEAK,
+  FILAMENT_PEAK_TEMP,
+  FILAMENT_SETTLE_TEMP,
   REST_KEY_POSITION,
   REST_KEY_INTENSITY,
   REST_FILL_POSITION,
@@ -327,6 +331,21 @@ const CLAY_LIGHT_EXPOSURE = 2.5;
  * ⚠ AND `?lightpos=` PARKS IT. A frozen light at a known stop is what makes two
  * captures comparable; a moving one cannot be screenshotted twice the same way.
  */
+/**
+ * Read a non-negative number from the query string.
+ *
+ * ⚠ THE DIALS EXIST SO CARL TUNES BY EYE RATHER THAN BY ARGUMENT. Every value
+ * the filament's shape depends on has a door over it; the constants are the
+ * defaults, not the interface.
+ */
+function urlFloat(key: string, fallback: number): number {
+  if (typeof window === "undefined") return fallback;
+  const raw = new URLSearchParams(window.location.search).get(key);
+  if (raw === null) return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : fallback;
+}
+
 function ClayFormLight({ centre }: { centre: { x: number; y: number } }) {
   const ref = useRef<THREE.PointLight | null>(null);
   const invalidate = useThree((s) => s.invalidate);
@@ -1781,9 +1800,29 @@ function useCardEntrance(
  */
 function useFilament(lit: boolean, intensityTarget: number): FilamentState {
   const intensity = useRef(0);
-  /** Position on the black-body ramp, 0 = first red glow, 1 = settled. */
+  /**
+   * Position on the black-body ramp. 0 = `HEAT_RED` (the COOLEST glow),
+   * 0.5 = `HEAT_ORANGE`, 1 = `HEAT_WHITE` (amber, the hot end).
+   */
   const temperature = useRef(0);
   const invalidate = useThree((s) => s.invalidate);
+
+  /**
+   * The surge's shape, read once from the constants with URL doors over them.
+   *
+   * ⚠ READ ONCE, NOT PER FRAME. A door re-read inside the tick would be a knob
+   * that appears to work and changes nothing between frames — a failure mode
+   * this file records twice already.
+   */
+  const surge = useMemo(
+    () => ({
+      at: urlFloat("surge", FILAMENT_SURGE_AT),
+      peak: urlFloat("surgepeak", FILAMENT_SURGE_PEAK),
+      peakTemp: urlFloat("peaktemp", FILAMENT_PEAK_TEMP),
+      settleTemp: urlFloat("settle", FILAMENT_SETTLE_TEMP),
+    }),
+    [],
+  );
 
   /**
    * ⚠ THE FIRST RUN IS SKIPPED SO AN UNFIRED CARD DOES NOT PLAY A COOL-DOWN.
@@ -1869,13 +1908,45 @@ function useFilament(lit: boolean, intensityTarget: number): FilamentState {
        * shader's circuit position still works, it simply applies everywhere.
        */
 
-      // ⚠ EASED, NOT LINEAR. A filament does not heat at a constant rate — it
-      // rushes toward temperature and settles. Linear would read as a dimmer.
-      intensity.current = intensityTarget * (1 - Math.pow(1 - t, 3));
+      /**
+       * ⚠⚠ A SURGE, NOT A CLIMB — Carl, 10 August 2026.
+       *
+       * > *"When 'juice' is put through it it goes quickly through the stages of
+       * > light/heat. It would start of amber, intensify to red as it gets
+       * > 'hotter' and fall back slightly to a region between amber and red."*
+       *
+       * ⚠ THE PHYSICS IS THE SWITCH-ON INRUSH. Cold tungsten has low
+       * resistance, so the current spike at switch-on drives the metal briefly
+       * HOTTER than its working point; it settles as resistance rises. The
+       * brightness therefore RISES AND FALLS.
+       *
+       * ⚠ WHAT WAS HERE BEFORE CLIMBED MONOTONICALLY AND STOPPED AT THE TOP —
+       * `intensityTarget * (1 - (1-t)^3)` with `temperature = t`. It could not
+       * express a flare, so the settle Carl describes had nothing to fall back
+       * FROM.
+       *
+       * ⚠ AND THE COLOUR ORDER ONLY LOOKS INVERTED. On the black-body curve RED
+       * IS THE COOLEST GLOW; amber is hotter. Falling from amber toward red is
+       * the metal cooling from its inrush peak to its working temperature —
+       * exactly what he described.
+       */
+      const surgeAt = surge.at;
 
-      // The colour's own journey up the black-body curve, 0 = first red glow,
-      // 1 = the settled warm white. Consumed by the shader.
-      temperature.current = t;
+      if (t < surgeAt) {
+        // The rush up. Eased so it leaves fast and arrives softly at the peak.
+        const u = t / surgeAt;
+        const e = 1 - Math.pow(1 - u, 3);
+        intensity.current = intensityTarget * surge.peak * e;
+        temperature.current = surge.peakTemp * e;
+      } else {
+        // The settle. Falls from the flare to the working point and stays.
+        const u = (t - surgeAt) / (1 - surgeAt);
+        const e = 1 - Math.pow(1 - u, 2);
+        intensity.current =
+          intensityTarget * (surge.peak + (1 - surge.peak) * e);
+        temperature.current =
+          surge.peakTemp + (surge.settleTemp - surge.peakTemp) * e;
+      }
 
 
       // ⚠ WITHOUT THIS THE HEAT-UP RUNS AND NOTHING IS DRAWN. The canvas is
@@ -1888,7 +1959,7 @@ function useFilament(lit: boolean, intensityTarget: number): FilamentState {
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [lit, intensityTarget, invalidate]);
+  }, [lit, intensityTarget, invalidate, surge]);
 
   return { intensity, temperature };
 }
