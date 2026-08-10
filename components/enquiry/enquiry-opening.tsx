@@ -484,10 +484,26 @@ export default function EnquiryOpening() {
    * a single node between the opening branch and the phrase band changes its
    * PARENT, which remounts it in React and destroys the very context the move
    * exists to preserve. The comment on the warm-up block has said so since
-   * 5 August. A true single-canvas fix needs a host that never unmounts, which
-   * means restructuring approved layout; that is a bigger change than this
-   * defect justifies, and Carl's constraint of 9 August is that nothing he has
-   * approved may shift.
+   * 5 August. **A true single-canvas fix needs a host that NEVER unmounts** —
+   * not one that moves less often.
+   *
+   * ⚠⚠ THE "BIGGER CHANGE THAN THIS DEFECT JUSTIFIES" HALF OF THIS ARGUMENT IS
+   * NOW STALE — see D-048, 11 August 2026. It weighed the restructure against
+   * ~70ms of residue in the opening, once. **Stage B put a card grid on all five
+   * questions, and the same mechanism measures 193ms against a 69ms control on
+   * EVERY question step** — +124ms, 2.8x, four times per walk. Carl has ruled
+   * that non-negotiable.
+   *
+   * ⚠ THE MEASUREMENT HAZARD D-046 ALSO CITED IS GONE TOO: the geometry is now
+   * anchored to `.enquiry-answer-grid` through a `ResizeObserver`, so a canvas
+   * that changes parent while measuring the same grid lays out identically.
+   *
+   * ⚠ WHAT STILL BINDS IS CARL'S CONSTRAINT — *"nothing ive approved must
+   * shift"*, restated 10 August as *"the corridors movement is important, there
+   * is easing in there too."* The canvas inherits the phrase's recede motion,
+   * its measurement and its entrance ladder **for free** by being a child; a
+   * shared host must re-supply all three. `verify/corridor-motion.mjs` holds it
+   * to the committed baseline. **The restructure is REOPENED, not authorised.**
    *
    * ⚠ AN OVERLAP, NOT A DELAY ON THE STAGE CHANGE. `stage` flips exactly when it
    * always did, so every consumer of it — the phrase band, the Q5 grid, the card

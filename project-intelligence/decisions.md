@@ -1287,6 +1287,21 @@ Measured off `globals.css` this session. **Every value moves deeper, and the spe
 **Status:** APPROVED by Carl's eye — *"it looks pretty clean"*. Implemented, commit `3a7cf1f`.
 **Supersedes nothing. Constrains D-022/D-023/D-024 only in that it did NOT touch them.**
 
+> ⚠⚠ **PARTLY OVERTAKEN — SEE D-048 (11 August 2026) BEFORE ACTING ON THE "NOT AUTHORISED" BELOW.**
+>
+> **The overlap fix in this entry stands and is unchanged.** What has been overtaken is its
+> *rejection of the shared-canvas host*. Two of the three grounds no longer hold: the measurement
+> hazard was engineered away by the fluid-grid work (the geometry is now anchored to
+> `.enquiry-answer-grid` via `ResizeObserver`, not to the canvas's parent), and the ~70ms residue it
+> was weighed against became a measured **193ms on every question step** once Stage B put cards on
+> all five questions.
+>
+> ⚠ **D-046 WAS NOT WRONG.** It was correctly reasoned on the facts of 9 August. **A cost/benefit
+> judgement expires when either side moves, and both sides moved.**
+>
+> The third ground — *"nothing I have approved may shift"* — **is still binding and is now the
+> whole of the constraint.**
+
 ---
 
 ### The defect
@@ -1412,6 +1427,73 @@ claim about the past. Measure the ladder; do not read it off a comment.**
 | Q5→Q4 move, canvas mounting | **186 / 188 / 200ms** |
 
 ⚠ **THE +126ms IS THE FINDING THAT GOVERNS STAGE B.** Mounting an answer canvas per question puts a visible stutter on every step — the Q5 stall's own mechanism at a new moment. ⚠ **But both arms were measured with `selected` empty, which the real path never is**, so the *delta* is the defensible figure and neither absolute is. An honest control needs selection wired first. **The shared-host question (D-046) is open and unauthorised; it is Carl's call and must be taken on a measurement, not a prediction.**
+
+**Authority:** Human Founder
+
+---
+
+## D-048 — D-046's Rejection Of The Shared Host Is Reopened: The Ground It Stood On Has Moved
+
+**Date:** 2026-08-11
+**Decision:** **D-046's "not authorised" on the shared-canvas host no longer stands on its stated reasons.** Two of the three have been removed by work done since; the third was a scope judgement whose premise has changed. The restructure is **reopened for Carl's decision**, with measured evidence that did not exist on 9 August. ⚠ **This entry does NOT authorise it.** It removes stale grounds for refusal so the decision can be taken on current facts.
+**Authority:** Human Founder — *"we have done some major restructuring and rebuilding, it is only right we make the necessary changes in the files."*
+**Status:** APPROVED as a record. **The restructure itself remains UNAUTHORISED pending Carl's explicit word.**
+
+---
+
+### What D-046 actually said
+
+> *"A true single-canvas fix needs a host that never unmounts — a restructure of approved layout, with a known hazard: the canvas maps one world unit to one CSS pixel from its measured size, so a changed measurement path would reposition every card. **That is the route to the remaining ~70ms, and it is not authorised.**"*
+
+Three grounds, examined one at a time.
+
+### Ground 1 — the measurement hazard. ⚠ REMOVED AT SOURCE, and D-046 did not know it
+
+The hazard was that world units come from a *measured* size, so moving the canvas would move every card.
+
+**That is no longer how it works.** `answer-card-canvas.tsx` now measures `.enquiry-answer-grid` with a `ResizeObserver` and derives **everything** downstream from that one number — `cardBoxesAt(width)`, the world positions, `cardScale`, the canvas box, the pointer targets. Its own comment: *"the cards now track the CSS… everything downstream derives from that one measurement."*
+
+⚠ **SO THE GEOMETRY IS ANCHORED TO THE GRID ELEMENT, NOT TO THE CANVAS'S PARENT.** A canvas that changes parent while still measuring the same grid produces the same layout. **The hazard D-046 named was real when written and has since been engineered away** — by the fluid-grid work, not by anyone thinking about D-046.
+
+### Ground 2 — "a bigger change than this defect justifies". ⚠ THE DEFECT IS NOW FOUR TIMES BIGGER
+
+D-046 was weighing the restructure against **~70ms of residue, once, inside the opening reveal**, which Carl's eye had accepted (*"it looks pretty clean"*).
+
+**The defect it is weighed against today is different in kind:**
+
+| | worst frame gap | when |
+|---|---|---|
+| D-046's residue | ~70ms | once, in the opening |
+| Measured 10 August | **193ms** vs a 69ms control — **+124ms, 2.8×** | **every question step, four times per walk** |
+
+**Carl, 10 August, and this is the operative constraint:**
+
+> *"A stutter or stall reads like a glitch, bad workmanship. For someone aiming to sell premium websites, this is a non negotiable."*
+
+⚠ **A COST/BENEFIT JUDGEMENT IS NOT A PRINCIPLE, AND IT EXPIRES WHEN EITHER SIDE MOVES.** D-046's reasoning was sound for a 70ms residue on a corridor with one card grid. **Stage B put a card grid on all five questions**, so the same mechanism now fires four more times, in a moment nobody had measured.
+
+### Ground 3 — *"nothing I have approved may shift"*. ⚠ STILL BINDING, AND IT IS THE REAL CONSTRAINT
+
+**This one has not weakened and must not be read as weakened.** Carl restated it in substance on 10 August: *"the corridors movement is important, there is easing in there too."*
+
+⚠ **AND THE RISK IS SPECIFIC.** The canvas currently sits INSIDE the phrase and inherits its motion **for free** — measured baseline: the grid travels **435→493px in lockstep with the phrase text, on all 161 frames** of a corridor move. A shared host lifts it out, and that inheritance becomes a **hand-driven animation** that must match `bottom 900ms cubic-bezier(0.37, 0, 0.63, 1)`. Three things are inherited today and would each need re-supplying: **the recede motion, the grid measurement, and the staggered entrance ladder** (which runs on mount, and a canvas that stops mounting per question must be told to re-run it — that ladder is approved choreography).
+
+**✅ THE INSTRUMENT FOR THIS NOW EXISTS, WHICH IT DID NOT ON 9 AUGUST.** `verify/corridor-motion.mjs` samples the phrase and the grid every frame across a move, compares them as normalised curves, and has a **committed baseline** (`motion-before.json`) plus a **measured noise floor of 2.6–2.9%**. Steps 1a and 1b both scored **0.0–0.1%** against it. **A restructure can be held to the motion rather than judged from memory** — and Carl still judges by eye; the harness only says where to look.
+
+### ⚠ WHAT REMAINS TRUE FROM D-046 AND MUST NOT BE LOST
+
+- **Reparenting a live canvas destroys its context.** Moving a node between two branches remounts it in React. **That is why the host must NEVER unmount — not "move less often".** Recorded in `enquiry-opening.tsx` since 5 August; the Builder recommended the move anyway once and found the warning only when opening the file.
+- **The warm-up must not be deleted.** *"The context dies at unmount so the warm-up buys nothing"* is refuted by measurement: 161ms with it, 919ms without. **ANGLE's on-disk binary shader cache survives the context's death and is worth ~758ms.**
+- **Shader compilation is not the cost.** Three-js CPU-side initialisation is. This project has cleared shader compilation of a stutter it looked guilty of **three times**.
+- **Report internal choreography gaps separately from absolute position.** Every beat sliding 14ms together is indistinguishable, in an absolute-only report, from the ladder starting earlier — and only one of those is a corrupted choreography.
+
+### The decision this leaves for Carl
+
+**Authorise the shared host, or accept the stutter.** Both are legitimate; neither is the Builder's to take.
+
+⚠ **AND "NON-NEGOTIABLE" IS NOT THE SAME SENTENCE AS "AUTHORISED".** Carl has ruled the stutter unacceptable. Whether the remedy is *this* restructure — touching approved layout and approved motion — is a second decision, and the Builder must get it explicitly rather than infer it.
+
+⚠ **THE ARCHITECT SHOULD SEE THE MEASUREMENT**, since this reopens a decision that was properly made and correctly reasoned on the facts available at the time. **D-046 was not wrong. It has been overtaken.**
 
 **Authority:** Human Founder
 
