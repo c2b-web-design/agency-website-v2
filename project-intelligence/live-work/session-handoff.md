@@ -1,4 +1,4 @@
-# Session Handoff — 10 August 2026 (Q5 stall fixed, label colour, filament, next-step mesh)
+# Session Handoff — 10 August 2026 (the button shipped into the corridor; selection restored; a stutter found and NOT fixed)
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -8,297 +8,248 @@
 
 ## ⛔ THE STANDING DIRECTIVE
 
-**NEVER comment on how long Carl has been working.** Not the time of day, not the session
-length, not a suggestion to stop or resume later. **Carl decides when a session ends and will
-say so.** It was not broken this session.
+**NEVER comment on how long Carl has been working.** Not the time of day, not the session length,
+not a suggestion to stop or resume later. **Carl decides when a session ends and will say so.**
+It was not broken this session.
+
+---
+
+## 🔴 START HERE — THE CORRIDOR STUTTERS ON EVERY QUESTION STEP. FIX IT FIRST.
+
+**Carl's instruction, and his reasoning, which is the brief:**
+
+> *"A stutter or stall reads like a glitch, bad workmanship. For someone aiming to sell premium
+> websites, this is a non negotiable."*
+
+**Measured, production build, four runs, tight spread — this is not noise:**
+
+| | worst frame gap, Q5→Q4 | |
+|---|---|---|
+| step 1a — no canvas mounts on the far side | 70 / 76 / 62ms | **mean 69ms** |
+| step 1b — a canvas mounts (current HEAD) | 198 / 196 / 189 / 189ms | **mean 193ms** |
+
+**+124ms, 2.8×, on every question step — four times per walk.** The ~50ms visible threshold is
+recorded in `current-sprint.md`. **A visitor sees this.**
+
+### The cause, and why no dial fixes it
+
+**A WebGL context is created and destroyed on every question step**, and **keying cannot avoid
+it**: `renderPhrase` gives each question `key={`phrase-${qNum}`}`, and the answer grid lives inside
+`enquiry-phrase-extras` (gated on `showExtras = isActive || (corridorMoving && depth === 1)`). The
+**phrase structure owns the canvas's lifetime** — nothing about how the canvas itself is keyed
+changes that. A `resetLit` prop saves nothing; that was a false choice I put to the Architect and
+it was correctly rejected.
+
+⚠ **THIS IS THE Q5 STALL'S OWN MECHANISM AT A NEW MOMENT.** Context creation inside an animating
+transition. The reveal costs 118–135ms *because it happens once*; now it happens four more times.
+
+### The fix — and it is CARL'S CALL, NOT THE BUILDER'S
+
+**The shared host: the answer grid outliving the phrase, so no context is created mid-move.**
+
+⚠⚠ **THAT IS THE D-046 RESTRUCTURE, WHICH D-046 DECLINED TO AUTHORISE, AND IT IS APPROVED
+LAYOUT.** `CLAUDE.md`: stop, explain, state the risk, ask. **The difference from when the question
+was first put is that the evidence is now measured rather than predicted.** Carl has said the
+stutter is non-negotiable, which points at the restructure — but *authorising the restructure* is a
+separate sentence he has not yet said. **Get it explicitly.**
+
+⚠ **AND THE ARCHITECT SHOULD SEE THE NUMBER**, since it reopens a declined decision.
+
+### ⚠ THE THING THAT WILL BITE WHOEVER DOES IT — and Carl named it
+
+> **Carl:** *"the corridors movement is important, there is easing in there too."*
+
+The canvas currently sits **inside** the phrase and inherits its motion **for free**. Measured
+baseline: the grid travels **435→493px in lockstep with the phrase text, on all 161 frames**. Lift
+it out and that inheritance is gone — it becomes a hand-driven animation that must match
+`bottom 900ms cubic-bezier(0.37, 0, 0.63, 1)` (`.enquiry-phrase-anim`, `globals.css`).
+
+**Three things the canvas gets free today by being a child:**
+1. **The recede motion** — `bottom` + `opacity`, eased.
+2. **Its size** — a `ResizeObserver` on `.enquiry-answer-grid`, which it currently lives inside.
+3. **The staggered entrance ladder** — it runs on mount, and a canvas that stops mounting per
+   question must be told to re-run it. ⚠ **That is approved choreography.**
+
+**✅ THE HARNESS FOR THIS ALREADY EXISTS AND ITS CONTROL PASSES:**
+
+    node verify/corridor-motion.mjs before          # capture
+    ...change...
+    node verify/corridor-motion.mjs after
+    node verify/corridor-motion.mjs --compare before after
+
+`motion-before.json` is committed. **1a and 1b both measured 0.0–0.1% against it** — the motion is
+currently untouched, so any deviation after the restructure is the restructure's. Noise floor is
+**2.6–2.9%** (measured, same build twice); the flag fires above 5%.
+
+⚠ **CARL JUDGES BY EYE AND HAS SAID SO.** The harness says where to look; it does not approve.
 
 ---
 
 ## STATE OF THE TREE
 
-**Branch `fix/q5-stall-and-label-colour`, everything committed and pushed.** On top of `eb827f0`:
+**Branch `fix/q5-stall-and-label-colour`, working tree CLEAN, nothing pushed.** 12 commits on top
+of `270d5fe`:
 
-    303a826  fix(enquiry): one label texture, and the white is white again      APPROVED
-    181f8bc  feat(enquiry): the filament is the half-pipe, and it surges        APPROVED
-    eec60d5  docs: the handoff
-    f07b0ab  docs: the button renders — the picture-frame defect
-    aca4fbc  wip(enquiry): the next step button as a chrome mesh                PROTOTYPE
+    2aea5ba  feat: cards on every question — step 1b, and the number that decides D-046
+    fa44ee4  fix: the canvas was painting over the button's label
+    08b460e  feat: the corridor selects, and the button arrives — step 1a
+    bc68be1  test: capture the corridor's motion, so a restructure can be held to it
+    af914e7  docs: Stage B plan, second revision
+    e077689  fix: finish the deletion, and stop a governance file asserting a falsehood
+    c426c5f  feat: delete D-031's dead reflection, and measure a corridor move
+    d0cf9f5  docs: Stage B selection plan
+    30c3ca7  docs: the fourth and fifth stale 1280 assertions
+    1611836  feat: the button mesh is the corridor's surface, sized from its own box
+    9937117  fix: gate the sweep on visibility, and correct three comments that lied
+    8435278  feat: the double band is geometry, and now it exists
+    3c4b1aa  feat: the room is continuous, and the traveller sweeps it
 
-**The working tree is CLEAN.** The button prototype is committed as `wip` deliberately — it is
-inspectable and revertable, and it is **not wired into the corridor**. It lives only on its own
-bench at `/proto/nextstep`.
-
-`npx tsc --noEmit` clean. Lint at the recorded baseline: **1 problem (1 error, 0 warnings)** —
-the known `enquiry-opening.tsx` reduced-motion effect, untouched. **The dev server was STOPPED at
-the end of the session.**
-
-⚠ `app/proto/minimal/` was an isolation test and has been DELETED — its answer is recorded below
-(the canvas renders; the instrument was lying).
-
-⚠ **THE DIAGNOSTIC SCAFFOLDING IS STRIPPED** — `?flat=1`, `?always=1` and the `__nsDebug` block
-are gone now their questions are answered. `frameloop` is back to plain `"demand"`.
-
----
-
-## ✅ APPROVED AND COMMITTED THIS SESSION
-
-### The Q5 stall — CAUSE FOUND AND FIXED
-
-An interleaved bisect (7 arms × 3 rounds, **production build per arm**) named `4c7a20e`: it added
-a **second 2048×512 canvas texture per card** for the hover teal. Worst frame gap in the reveal:
-
-    3a7cf1f    82ms   D-046, approved — the control, reproduced
-    4c7a20e   329ms   <- +217ms
-    eb827f0   317ms   HEAD before the fix
-    after the fix     167ms
-
-⚠ **THE FIX WAS CARL'S DESIGN CALL, NOT A WORKAROUND.** He discarded the fake extrusion; the
-relief was identical in both textures, so with it gone the two differ only in glyph hue — a
-**tint**, needing one texture instead of two.
-
-⚠ **167ms IS NOT D-046's 82ms.** A separate +76ms step at `1c9b8d7` is unexamined, and the
-structural cause stands: the canvas creates its WebGL context INSIDE the reveal because two mount
-sites sit either side of a ternary. That is the shared-host restructure D-046 declined to
-authorise. **Carl: "We will come back to the Q5."**
-
-### The label colour — Carl: *"That looks a lot better"*
-
-Three causes of the blue cast, all fixed: the texture was `rgb(238,241,252)` (a 14-point tilt),
-the **light** is blue and multiplies albedo, and the glyphs were dim. Neutralised at
-`dithering_fragment` — the last chunk — mixing each glyph pixel toward its own luminance so hue
-moves and brightness does not. Glyph core went 146/155/170 → 221/221/221.
-
-### The filament — Carl: *"Looks good"*
-
-Most of the half-pipe rim is now the incandescent body (he redirected from a thin strand: *"more
-real estate and pixels to work with"*), and it **surges** — flares hot, settles back. The
-reflection is quenched as the metal heats, because emissive added to `metalness: 1` metal read
-pink at every ramp setting.
+`npx tsc --noEmit` clean. Lint at the recorded baseline: **1 problem (1 error, 0 warnings)** — the
+known `enquiry-opening.tsx` reduced-motion effect, untouched. **Both dev and production servers
+were STOPPED at the end of the session** (ports 3000 and 3100 confirmed free).
 
 ---
 
-## 🔴 START HERE — THE NEXT STEP BUTTON MESH, AND AN INSTRUMENT FAULT THAT COST FIVE FIXES
+## ✅ WHAT LANDED, AND WHAT CARL APPROVED BY EYE
 
-### ⚠⚠ THE CANVAS RENDERS. EVERY "ALPHA 0" READING WAS FALSE.
+### The button mesh — *"that is excellent, outstanding"*
 
-**`preserveDrawingBuffer: false` means `readPixels` AND `toDataURL` return an EMPTY BUFFER on a
-static canvas.** The corridor's canvases only read non-zero because the traveller's rAF keeps
-them drawing. Mine had nothing animating, so both instruments reported a blank canvas that was
-in fact rendering correctly — **confirmed by `page.screenshot()`, which shows the mesh.**
+**Approved on the bench, then shipped into the corridor.** It is the Next step button's surface at
+**every question**, sized from its own measured box (`ResizeObserver`, never `NEXTSTEP_WIDTH_PX`) —
+so completion's **Send**, which is a different width, needs no new geometry.
 
-⚠ **USE `page.screenshot()` ON A STATIC CANVAS. NEVER `readPixels` OR `toDataURL`.**
+Three things got it there, and the reasoning transfers:
 
-**It sent five wrong fixes**, all recorded in the code so they are not repeated: deepening the
-crown 2.4 → 8.5, rescaling the env panels, adding `invalidate()`, flipping the winding, and
-`DoubleSide`. Two of those were REAL bugs found on the way (see below) but none was the cause,
-because there was no cause — it was drawing all along.
+1. **The environment is the material.** `BenchKey` was built on Carl's instruction to test a static
+   light; the answer was *barely* — 5× intensity moved the centre 17 points and **flattened** the
+   crown. `metalness: 1` has no diffuse term. **`BenchKey` now defaults to 0**, kept on a dial
+   because the measurement is worth repeating.
+2. **A continuous room.** Hard-edged panels reflect as hard-edged slabs. **Carl's Chrome Boy
+   photograph was the evidence** — it cannot be cheating, and it shows continuous gradient because
+   the room is continuous. Soft additive panels, a sky/horizon/ground gradient shell, wrap panels
+   at x = ±82 that fixed the black end-cap blobs.
+3. **The traveller as a moving reflection.** Carl: *"the travellers light is paramount here."* The
+   button's canvas cannot see the corridor's traveller, so it is reproduced as `envMapRotation` on
+   the corridor's own asymmetric clock (13500ms slow pass, 2200ms fast return). **A mirror does not
+   get lit by a moving lamp; it shows the lamp moving.**
 
-**Ruled out by measurement before the screenshot settled it:** geometry (18,017 verts, correct
-bounds), camera (frustum ±72×±34.5 vs a ±58×±20.5 pill), scene graph (mesh present, `visible`,
-106,248 indices), culling, lighting, and `frameloop="always"`.
+**The double band is geometry** — a subtracted Gaussian at 0.62 along the fall. A monotonic profile
+gives one band; the reference's bright core → dark groove → thinner line needs an inflection.
+Measured against a control (groove off/on, same session): **travel 40.7% → 66.4%**.
 
-### Two real bugs fixed on the way, both worth keeping
+### Selection restored — the corridor walks
 
-1. **The first geometry folded through itself.** Offsetting a closed pill inward by its own
-   half-height collapses it to a line and then inverts. Rebuilt as a **height field over the
-   pill's interior** — z as a function of distance from the edge, nothing to fold.
-   ⚠ `sweptBand` in `answer-card-mesh.tsx` avoids this only by luck of scale (inset 2 on a 576px
-   card).
-2. **Triangle winding was clockwise**, so faces were back-facing. Found with a cross product in
-   plain node, no browser.
+Carl: *"When the user makes a selection, the button fades in."* **It does:**
 
-### WHERE IT STANDS — IT RENDERS, AND IT HAS BEEN SEEN
+    nothing selected   opacity 0.00
+    one card selected  opacity 1.00   ✅
+    deselected again   opacity 0.00   ✅  (the inverse he specified)
+    Next step          Q5 → Q4        ✅
 
-Geometry built and verified. Material approach settled and the Architect confirmed it:
-**chrome is `metalness: 1`, roughness 0.08, and NO body colour — the blue comes from the
-environment.** Carl's reference set proves it: across six logo renders *the material never
-changes, the SCENE changes.* Plus the Satriani "Chrome Boy", which reads grey only because it is
-photographed against grey.
+**The fade-in needed no new code** — it was already there on a 600ms transition, waiting for
+something to write to `selected`. `toggleOption` had no caller since chunk 3; the argument for
+keeping it ("unused means waiting, not dead") was correct.
 
-**Three of the Architect's points are now IN**, and the first two transformed it:
-
-1. **Shell `0x000000` → `#0b1a2e`** (`?shell=`). The darks are navy, as the reference has them.
-2. **An AXIS PANEL at [0,0,34]** (`?axis=`). ⚠ **This was the whole "picture frame" defect and
-   it is geometry, not lighting weakness:** under an orthographic camera the view direction is
-   (0,0,-1) and the plateau's normal is (0,0,1), so **the flat top reflects straight back along
-   +Z**, past every panel offset in x/y, into the shell. Plus a rim source behind-and-side for
-   the silhouette hairline. The reference is a light tent with a SEPARATE black backdrop; this
-   code had collapsed the two into one black sphere.
-3. **`NeutralToneMapping`** instead of ACES — safe because this canvas owns its renderer.
-4. **`NEXTSTEP_PLATEAU` 0.35 → 0.15.** Its stated justification — *"a small flat for the label to
-   sit on"* — **was false**: the label is a DOM `<span>` layered over the canvas, so nothing sits
-   on it. A big plateau also returns one flat colour under an ortho camera.
-
-**Measured** (`verify/nextstep-look.mjs`). **0.15 is now the committed default:**
-
-    axis=0.15   centre lum 115   rim/centre 2.1   blueness 29   <- default
-    axis=0.35   centre lum 146   rim/centre 1.7
-    axis=0.60   centre lum 170   rim/centre 1.4
-    axis=1.30   centre lum 210   rim/centre 1.2   blueness 46   washed out, label illegible
-
-⚠ **THE REFERENCE IS PREDOMINANTLY DARK WITH BRIGHT BANDS.** A centre that matches the rim has no
-bands left — the tonal RANGE is the material. That is why the Architect's suggested 1.3, offered
-explicitly as *"a starting point, not a prescription"*, had to come down by an order of magnitude
-against the real render.
-
-⚠⚠ **TWO STRUCTURAL PROBLEMS REMAIN AND DIALS WILL NOT FIX THEM:**
-
-- **Dark blobs at both end caps.** They curve away and find no source; the rim panel does not
-  reach around. Needs panel placement, probably a wrap or a second rim source on the far side.
-- **The crown reads as a wide flat band, not a tube.** The highlight is a broad sheen where the
-  reference has a tight travelling hairline. Plateau may need to go lower still, and see the
-  Architect's point 5 below — **the reference's DOUBLE band (bright core, dark groove, thinner
-  parallel line) is a geometry feature and needs an inflection in `crownHeight()`. Nobody should
-  hunt for it in material params.**
-
-⚠ **AND A HARNESS CAUTION FROM MY OWN MISS:** `nextstep-look.mjs` passed the `axis=1.3` build
-because it only asked *"is the centre lit"*. It was lit — to 210, a pale ice lozenge with the
-label barely legible. **A one-sided check passes the over-correction as readily as the fix.**
+**Multi-select on all five questions** — Carl, superseding D-018's single-select for Q4. Recorded
+as **D-047**, which also records the reflection deletion.
 
 ---
 
-## THE ARCHITECT'S REVIEW OF THE MESH — points 1-3 DONE, 4 and 5 OUTSTANDING
+## ⚠ OPEN, AND UNRESOLVED
 
-Ranked by leverage, and kept in full because the reasoning is worth more than the checklist.
-**Points 1, 2 and 3 are implemented and committed** (shell colour, axis panel + rim source, tone
-mapping, plateau). **Points 4 (CSS bloom) and 5 (the double band) are NOT.**
-
-1. **The shell is black; in the reference the darks are BLUE.** `nextstep-canvas.tsx` builds the
-   surround as `0x000000`, so a mirror returns black wherever the key panels miss — neutral
-   chrome in a dark room rather than blue platinum. Try `#0b1a2e`, or a vertical gradient shell.
-   **"The single change that moves chrome → platinum-blue."**
-2. **ACES will grey out the blue.** It desaturates as values approach white, exactly the band
-   where the reference is bluest. `THREE.NeutralToneMapping` holds hue far better. ⚠ Safe here
-   because `NextStepCanvas` is its own `<Canvas>` with its own renderer — it cannot touch the
-   approved card material.
-3. **The double highlight band is GEOMETRY, not material.** `crownHeight()` is a single smooth
-   dome and gives one band; the reference has a bright core, a groove, and a second parallel
-   line. Needs a shallow inflection near the edge. **Flagged so nobody tunes material params for
-   a geometry feature.**
-4. **Bloom in CSS, not postprocessing** — `filter: drop-shadow(...)` on the wrapper. Given what
-   frame cost has already cost on Q5, an UnrealBloom pass on a CTA is the wrong trade.
-5. Smaller: a faint roughness map (0.06-0.14) reads as platinum rather than chrome; **do NOT
-   reach for anisotropy** (inert without a tangent attribute — already recorded at
-   `answer-card-canvas.tsx:1142`); keep `#ffffff` F0, `#eef4ff` at the very most.
-
-⚠ **AND A TRADE THAT IS CARL'S TO DECIDE:** `ENV_KEY_COLOR` / `ENV_FILL_COLOR` are imported from
-`answer-card-glass.ts` deliberately so the button and cards share a room. **Pushing the shell blue
-puts the button in a bluer room than the cards.** Probably invisible at 116×41 under the grid,
-but it is a real trade against the "same world" principle — decide it, do not discover it.
+- 🔴 **THE STUTTER — see the top of this file. First job.**
+- **B2, THE ACCESSIBILITY LAYER, IS NOT DONE AND THE CHUNK IS NOT COMPLETE WITHOUT IT.** The cards
+  are now real controls, and **the hit targets are still `aria-hidden` non-focusable divs**. The
+  corridor is **unusable by keyboard and unreadable by a screen reader**.
+  `answer-card-mesh.tsx` already records that the visible text being a texture makes a correct DOM
+  label *"mandatory at that point, not optional"*. **That point has arrived.** Full spec in
+  `live-work/stage-b-selection-plan.md` §B2, including:
+  - ⚠ `aria-pressed` must come from **`selected`**, NOT `litCards` — they legitimately diverge
+    during a move (the outgoing phrase keeps its cards lit while `selected` is already cleared), so
+    a control reading `litCards` would announce "pressed" on a question already answered and left.
+    A `selectedIndices` prop is noted in `answer-card-canvas.tsx` where it should go, deliberately
+    not added until it has a consumer.
+  - the double-fire discriminator: `onPointerDown` → toggle; `onClick` → toggle **only if
+    `event.detail === 0`** (a synthesised keyboard click carries 0, a mouse click 1+).
+  - the focus ring must be on the DOM control — **the mesh cannot show focus**.
+  - `tabIndex` gated on entrance completion, so cards that have not arrived are not tabbable.
+- **The button reads dark against the cards.** On the bench it had the frame to itself; in the
+  corridor the cards are the bright objects. **Carl has not judged this.**
+- **Amber is untouched and undecided** — `AmberSource` exists, `0` by default.
+- **Q5's reveal is 118–135ms**, against D-046's approved 82ms. Separate from the transition
+  stutter, and unexamined since.
+- Still open from before: **`verify/hover-teal.mjs` picks the wrong canvas** (use `teal-core.mjs`),
+  the **`frameloop` regression**, **floating faces / black edges**, **`GLASS_CLEARCOAT` inert**,
+  **~2.4MB of three loading eagerly**, **SHADOW**.
 
 ---
 
-## ▶ PICKING UP — THE ORDER I WOULD GO IN
+## ⚠⚠ THE INSTRUMENTS LIED ELEVEN TIMES THIS SESSION. READ THIS BEFORE TRUSTING ANY HARNESS.
 
-⚠ **NONE OF THIS IS APPROVED AND CARL HAS NOT SEEN THE BUTTON SINCE THE LAST TWO CHANGES.** Show
-him `/proto/nextstep` before building anything on top of it — that is the gate, not this list.
+The count was seven at the start of the day. **Every one was caught by a control or by Carl's eye,
+never by inspection.** Four new ones, and two are new *shapes*:
 
-1. **The end caps.** The two dark blobs are the loudest defect. The caps curve away from every
-   source; needs a wrap panel or a second rim source on the far side. Cheap, and it may be the
-   only thing between here and something judgeable.
-2. **The crown profile.** It reads as a wide flat band, not a tube. Lower the plateau further
-   and/or add the inflection that gives the reference's DOUBLE band. ⚠ **Geometry, not material
-   — the Architect flagged it specifically so nobody hunts for it in roughness.**
-3. **CSS bloom** on the wrapper (`filter: drop-shadow(...)`), not a postprocessing pass. Given
-   what frame cost has already cost on Q5, a render pass on a CTA is the wrong trade.
-4. **Then, and only then, the traveller swing and the amber.** ⚠ The opal rig proves *"the physics
-   will do it for free"* is not safe: true proximity was built, measured and REJECTED there.
-   **Measure the swing before assuming it reads.** Carl has pre-authorised a placed amber light
-   if the real filaments do not carry.
-
-⚠ **AND THE ROLLOUT CONSTRAINT APPLIES TO ALL OF IT** — every Q5 component gets cloned to Q4-Q1,
-so nothing may hard-code Q5's position or the "Next step" label width. Send is a different width.
-
----
-
-## THE BRIEF, IN CARL'S WORDS
-
-- **Geometry** from the CSS button's shadow stack — a domed pill, measured **116.3 × 41**.
-  ⚠ *"Even though the CSS next step button was blue, it was not opal... trying to be frosted
-  glass."* **The CSS button is the thing being REPLACED, not the material reference.**
-- **Ivory** = Begin, start page. **Opal** = client info section. Both real materials, both taken.
-- *"only the next step button wont be frosted glass."*
-- **Material: chrome blue metal.** *"its chrome blue metal."*
-- **Amber is parked.** *"It's something that may or may not be implemented with the cards...
-  This is something i will return to."* Build the material so it stands with no amber at all.
-- **If real filament light cannot reach the button, simulate it.** *"putting an amber light next
-  to the button and activating it when certain cards are pressed. Belonging in the same world is
-  what counts."* `AmberSource` exists for this, off by default.
-- ⚠ **THE ROLLOUT.** *"When this next step button is built all the Q5 components will be cloned
-  and rolled out to the other Qs."* Nothing may hard-code Q5's position or the "Next step" label
-  width — Send is a different width.
-
-### ⚠ AND THE HARDEST-WON LESSON, FROM THE OPAL RIG
-
-`contact-field-light-rig.tsx` **built, measured and REJECTED** true proximity driving: closest
-approach fell at phase 0.953 inside the hidden half, and the range was a 1.3× swing — too flat to
-see. The shine follows the visible front pass instead. Carl's bar: *"The user won't know about
-the ellipse, all they will see is its effects."* **Belonging, not accuracy.**
-
-So *"chrome plus real lights and the physics does it for free"* is NOT a safe assumption. **The
-swing must be measured, not assumed.**
-
-Also from that file, and it applies directly to chrome's temptation to move everything:
-*"a single specular catch responding reads as a material; the whole button animating reads as a
-light show."*
-
----
-
-## Still open, unchanged
-
-- **Q5: 167ms, not 82ms.** The `1c9b8d7` step and the shared-host restructure both untouched.
-- ⚠ **`verify/hover-teal.mjs` SORTS CANVASES BY AREA AND PICKS THE WRONG ONE** — the contact
-  field (576×184) over the answer grid (576×104), so its crop lands on the page heading. **Do not
-  trust its numbers.** `verify/teal-core.mjs` anchors to `.enquiry-answer-grid` and is correct.
-- **The `frameloop` regression** — the traveller's unconditional rAF keeps the canvas at 60fps
-  while the corridor is open. Measured minor for the stall (~30-70ms) but real on a phone;
-  throttling is a visual change and Carl's call.
-- **The floating faces / black edges**, **card 2 the weakest at swing 9.9**, **`GLASS_CLEARCOAT`
-  inert**, **the ground plane stash**, **~2.4MB of three loading eagerly**, **SHADOW**, and
-  ⚠ **ACCESSIBILITY DEBT: the answer text is a texture, not in the a11y tree** — mandatory when
-  these become real controls.
-
----
-
-## THE THREE CARD STATES — ALL APPROVED
-
-| state | status |
+| # | the lie |
 |---|---|
-| **Resting** | ✅ `7b056c2` — *"thats a lot better"* |
-| **Hover** | ✅ teal, approved today |
-| **Selected** | ✅ filament surge, approved today — *"Looks good"* |
+| 8 | **`?zoom=` read during SSR**, so the wrapper never grew and a zoomed render was cropped to the pill's middle — **cutting off the end caps, the very defect under judgement** |
+| 9 | **`ns-shot.mjs` run repeatedly gave three byte-identical "phases"** — each run opens a fresh browser and restarts the animation clock |
+| 10 | **`corridor-motion.mjs` reported "phraseY 7.9% CHANGED"**, then **92–100% between two runs of identical code** — it normalised across the whole 158-frame window when the move occupies only ~18→86. **Endpoints were identical throughout. The data was fine; the comparison was wrong.** |
+| 11 | **`corridor-walk.mjs` reported "the corridor did not advance"** on a corridor that had advanced — it read the first `.enquiry-phrase-cue` in document order, which is a **memory chip** |
+
+⚠ **NEW SHAPE A — A STALE COMMENT IS AN INSTRUMENT.** Three comments asserting a viewport gate
+removed on 7 August misled a plan into asking the Architect to rule on a gate that does not exist.
+Fixing three left the trap armed: the Architect found a **fourth**, and the sweep written into that
+fix immediately found a **fifth** — which was **half true**, and *the true half made the false half
+read as verified*. **Grep the whole file for the claim; do not fix stale comments where you happen
+to find them.**
+
+⚠ **NEW SHAPE B — A CORRECT DOM ASSERTION ABOUT SOMETHING INVISIBLE.** Carl: *"the button should
+have the text 'next step' on it."* `textContent` was `"Next step"`, colour right, font-size right,
+box right — **and the canvas was painting over it**, because an absolutely positioned sibling
+paints above a static one whatever the DOM order. **Nine automated checks passed. Carl caught it in
+one look.** `corridor-walk.mjs` now asserts the button is *positioned* rather than asserting text
+that was never wrong. **Check what is DRAWN, not what is in the DOM.**
+
+⚠ **AND A ZOMBIE SERVER NEARLY DID IT AGAIN** — an `&`-backgrounded `next start` survived a
+TaskStop, held port 3100, and answered 200 to a readiness probe while a newer build sat unserved.
+**Kill by PID on the port and confirm it free before trusting any number off it.**
+
+⚠ **DEV-SERVER FRAME NUMBERS ARE WORTHLESS.** The first Stage A attempt read 231ms with the mesh
+against **269ms without** — indistinguishable. `transition-cost.mjs` and `corridor-motion.mjs` both
+**refuse to run against :3000**.
 
 ---
 
 ## How to look at it
 
 ```
-npm run dev
-http://localhost:3000/proto/nextstep            the button bench  <- START HERE
-node verify/nextstep-look.mjs                   centre vs rim, screenshot-based
-http://localhost:3000/start              the corridor
-node verify/teal-core.mjs                white -> teal, grid-anchored
-node verify/reveal-cost.mjs              the Q5 profile
-bash verify/run-bisect.sh 3              the repaired interleaved bisect
+npm run dev                                     the corridor
+http://localhost:3000/start
+http://localhost:3000/proto/nextstep            the button bench
+
+# frame cost MUST be production:
+npm run build && npx next start -p 3100
+VERIFY_BASE_URL=http://localhost:3100 node verify/transition-cost.mjs 4   <- THE STUTTER
+VERIFY_BASE_URL=http://localhost:3100 node verify/corridor-walk.mjs       selection + button
+VERIFY_BASE_URL=http://localhost:3100 node verify/corridor-motion.mjs after
+node verify/corridor-motion.mjs --compare before after                    <- THE MOTION GATE
+node verify/nextstep-look.mjs                   button tone, two-sided
+node verify/nextstep-swing.mjs                  the traveller's sweep
+node verify/ellipse-reach.mjs                   what light can reach the pill (no browser)
 ```
 
-Button dials: `?axis= ?key= ?shell= ?chromerough= ?chromeenv= ?amber=`
-⚠ **The measured-best values are now the DEFAULTS** (axis 0.15), so a bare
-`/proto/nextstep` shows the current best. The dials remain for tuning.
+Button dials: `?axis= ?key= ?floor= ?wrap= ?shellsky= ?shellground= ?zoom= ?litint= ?travel=`
 
 ⚠ **MEASURE HEADED, WITH `--enable-gpu`.** Every harness prints the renderer and aborts on a
 software rasteriser.
 
 ---
 
-*10 August 2026. Q5's cause was found and fixed, the label reads white, and the filament is
-approved. The open subject is the next-step button mesh, which is built but has never been LOOKED
-AT — the instrument said it was blank and the instrument was wrong.*
+*10 August 2026. The button was approved, shipped and labelled; selection came back after being
+gone since chunk 3; and the corridor now walks Q5→Q4 with real cards on every question. The cost of
+that last step is a 193ms stutter, which Carl has ruled non-negotiable.*
 
-***The transferable lesson of the day, seven times over: the instrument answered a question
-adjacent to the one asked, and the adjacency was invisible in the output.*** A harness sampling
-the relief halo; a bisect measuring Turbopack; a probe comparing a duration from one GL context
-to a timestamp from another; a bisect measuring a zombie server; an A/B measuring run order; a
-histogram of the CARD used to claim something about the TEXT; and `readPixels` on a canvas with
-`preserveDrawingBuffer: false`. **Confirm the instrument can see the thing before believing what
-it reports.**
+***The transferable lesson, now eleven times over: the instrument answers a question ADJACENT to
+the one asked, and the adjacency is invisible in the output.*** Today it broadened twice — a stale
+comment lies exactly as a bad harness does, and a DOM assertion can be perfectly true about
+something no user can see. **Run the control. Then look at the pixels.**
