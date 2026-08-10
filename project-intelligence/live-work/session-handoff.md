@@ -257,12 +257,22 @@ rediscovered.
   environment rather than code: the double band is an **inflection in the profile**, not a material
   setting; the darks are **navy, not black**; the reference is **predominantly dark with bright
   bands**; and **a hard-edged source reflects as a hard-edged slab**. Same facts in any renderer.
-- ⚠ **THERE IS NO LOGO ASSET IN THE REPO — VERIFIED, NOT ASSUMED.** `public/` contains none, and
-  the `c2b DESIGN` lockup that used to sit behind the answer cards was **removed on 5 August 2026**
-  (`answer-card-canvas.tsx`, several comments record it and the reasoning that died with it). So
-  this work starts from nothing on the site side; it is not a swap.
-  ⚠ **The Builder asserted the opposite from memory while writing this handoff and had to check.**
-  A claim about the repo written into a governance file is read as verified — run the search.
+- ⚠⚠ **THE ASSETS ARE IN `brand-assets/logo/`, WITH THEIR OWN README. READ IT FIRST.** It is the
+  **sole source of truth** — the external tool they were salvaged from was destroyed on 25 July
+  2026, so **there is nothing to re-export from and nothing to re-check against.**
+  - `c2b-flat-white-alpha-cleaned-1x.png` — 1301×768, **zero partial-alpha pixels**, hard edges
+    only. That is what makes it usable as a mask and as **a trace source for vector work**. Appears
+    blank in most viewers, which composite white on white. **It is not empty.**
+  - ⚠ **`c2b-logo-gold-hero.svg` IS NOT VECTOR** — a base64 PNG in an SVG wrapper, zero `<path>`
+    elements. The README called it the *"vector master"*; **corrected 11 August 2026.** So **there
+    is no true vector form of the logo in this repo**, and producing one is a redraw.
+  - `LogoLOTR.png` — the distressed/antique direction, **explicitly REJECTED for the brand**.
+  - `c2b-logo-specular-sweep-4s.mp4` — a **motion study**, reference only: light travels across a
+    fixed object rather than the object changing colour. Directly relevant to the hero transition.
+  ⚠ **THE BUILDER ASSERTED TWICE, FROM MEMORY, THAT NO LOGO ASSET EXISTED** — once claiming the
+  logo was refracted through the card glass, once that `public/` had nothing. Both false; there is
+  a whole `brand-assets/` tree. **A claim about the repo written into a governance file is read as
+  verified. Search before writing.**
 
 ---
 

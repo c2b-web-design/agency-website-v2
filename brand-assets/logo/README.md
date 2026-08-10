@@ -15,7 +15,20 @@ added 27 July 2026. Its provenance is recorded with it below.
 
 ## Contents
 
-- `c2b-logo-gold-hero.svg` — **vector master**; the most reusable asset here.
+- `c2b-logo-gold-hero.svg` — ⚠⚠ **NOT VECTOR. IT IS A PNG IN AN SVG WRAPPER.**
+
+  **Corrected 11 August 2026.** This line read *"vector master; the most reusable asset here"*,
+  and that is false. The file contains **zero `<path>` elements** and one base64-encoded raster.
+  Its own `<desc>` says so: *"This SVG embeds a raster PNG to retain the metallic 3D finish."*
+  The 1.2 MB filesize is the tell — a real vector of this mark would be a few KB.
+
+  **So it scales exactly as badly as the PNG**, cannot be recoloured with `fill`, and gains
+  nothing but the extension. ⚠ **Do not reach for it expecting vector behaviour**, and do not
+  treat "we already have an SVG" as meaning the vector question is settled. **It is not.**
+
+  **There is no true vector form of the logo in this repo.** Producing one means redrawing the
+  mark as curves — from the flat white silhouette below, which exists for exactly that purpose
+  (*"a trace source for vector work"*).
 - `c2b-logo-gold-hero-transparent.png` — transparent-background raster.
 - `c2b-logo-gold-hero-checker-preview.png` — transparency preview (checkerboard).
 - `Logo2.1.png`, `Logo 2.2.png`, `Logo2.3.png` — iteration versions.
