@@ -21,7 +21,7 @@
  *      sanctioned fallback — *"Belonging in the same world is what counts."*
  */
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -226,17 +226,60 @@ function useChromeEnv(): THREE.Texture | null {
     const studio = new THREE.Scene();
     const disposables: Array<THREE.BufferGeometry | THREE.Material> = [];
 
+    /**
+     * ⚠⚠ SOFT-EDGED PANELS. A HARD-EDGED SOURCE REFLECTS AS A HARD-EDGED SLAB.
+     *
+     * The first version used `MeshBasicMaterial` on a plain plane, so each panel
+     * was a rectangle of uniform colour with a step to nothing at its border.
+     * **A mirror reports the SHAPE of its sources**, so at 5x zoom the button
+     * rendered as three or four flat tones with abrupt boundaries and a hard
+     * horizontal seam across the middle — posterised, not metal.
+     *
+     * ⚠ CARL'S CHROME BOY PHOTOGRAPH IS THE EVIDENCE, and it is a photograph so
+     * it cannot be cheating: the chrome there shows *continuous gradient*
+     * because the room is continuous — cloth wrapping round, a broad source
+     * above, the body bouncing back. Neighbouring surface directions find
+     * *similar* things, so the reflection ramps instead of stepping.
+     *
+     * So each panel fades radially to nothing at its edge. Cheap — a shader with
+     * one smoothstep — and it removes the step that the mirror was reporting.
+     */
     const panel = (
       color: string,
       intensity: number,
       position: [number, number, number],
       size: [number, number],
     ) => {
-      const geometry = new THREE.PlaneGeometry(size[0], size[1]);
-      const material = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(color).multiplyScalar(intensity),
+      const geometry = new THREE.PlaneGeometry(size[0], size[1], 1, 1);
+      const material = new THREE.ShaderMaterial({
+        uniforms: { uColor: { value: new THREE.Color(color).multiplyScalar(intensity) } },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        // ⚠ THE FALLOFF IS ELLIPTICAL IN UV, so a long thin key fades along both
+        // axes rather than only across its width. `pow(...,1.6)` keeps the core
+        // bright and puts the fade in the outer third — a broad linear ramp
+        // would dim the source's middle and cost the highlight its intensity.
+        fragmentShader: `
+          uniform vec3 uColor;
+          varying vec2 vUv;
+          void main() {
+            vec2 d = (vUv - 0.5) * 2.0;
+            float r = clamp(length(d), 0.0, 1.0);
+            float a = pow(1.0 - r, 1.6);
+            gl_FragColor = vec4(uColor * a, 1.0);
+          }
+        `,
         side: THREE.DoubleSide,
         toneMapped: false,
+        // ⚠ ADDITIVE, NOT ALPHA-BLENDED. These are light sources being baked into
+        // a PMREM; two overlapping sources should SUM, not occlude one another.
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
       });
       const mesh = new THREE.Mesh(geometry, material);
       mesh.position.set(...position);
@@ -245,7 +288,10 @@ function useChromeEnv(): THREE.Texture | null {
       disposables.push(geometry, material);
     };
 
-    const shellGeometry = new THREE.SphereGeometry(ENV_SHELL_RADIUS, 16, 16);
+    // ⚠ 48x32, NOT 16x16. The gradient is evaluated per-fragment so the segment
+    // count does not band it, but a 16-segment sphere is visibly faceted at the
+    // silhouette once the shell is no longer a single flat colour.
+    const shellGeometry = new THREE.SphereGeometry(ENV_SHELL_RADIUS, 48, 32);
     /**
      * ⚠⚠ THE SHELL IS DEEP NAVY, NOT BLACK — AND THIS IS THE SINGLE CHANGE THAT
      * MOVES CHROME TOWARD BLUE PLATINUM. Architect, 10 August 2026.
@@ -270,8 +316,60 @@ function useChromeEnv(): THREE.Texture | null {
      * probably invisible — but it is a real trade against the "same world"
      * principle this file is built on.
      */
-    const shellMaterial = new THREE.MeshBasicMaterial({
-      color: new THREE.Color("#0b1a2e").multiplyScalar(urlFloat("shell", 0.9)),
+    /**
+     * ⚠⚠ A VERTICAL GRADIENT, NOT ONE FLAT NAVY — and this is what turns the
+     * banded slabs into the reference's continuous ramps.
+     *
+     * A uniform shell gives every camera-facing normal the SAME colour, so the
+     * plateau returns one flat tone and the only variation left in the picture
+     * comes from the panels' hard edges. **That is why the 5x render read as
+     * three posterised bands with a seam across the middle.**
+     *
+     * ⚠ IN CARL'S REFERENCE THE TONE RAMPS CONTINUOUSLY ALONG EVERY STROKE —
+     * navy in the deep interiors, mid-blue through the shoulders, near-white at
+     * the crown. That is a graded room, read back by a mirror. The gradient
+     * swatch sheets he supplied say the same thing from the other direction:
+     * every one of them is a smooth ramp with a bright band, and none has a hard
+     * edge in it.
+     *
+     * ⚠ AND IT IS STILL THE ROOM, NOT THE MATERIAL. `CHROME_COLOR` stays white.
+     * The moment a tint goes on the body it becomes painted metal and stops
+     * reporting the scene — the whole finding from the reference set, and the
+     * reason the Chrome Boy reads grey against grey.
+     *
+     * Sky (`?shellsky=`) is the cool bright top; horizon is the mid; ground
+     * (`?shellground=`) is the deep navy the underside returns.
+     */
+    const shellMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        uSky: { value: new THREE.Color("#2c4c7c").multiplyScalar(urlFloat("shellsky", 1.0)) },
+        uHorizon: { value: new THREE.Color("#12253f").multiplyScalar(urlFloat("shell", 0.9)) },
+        uGround: { value: new THREE.Color("#050c17").multiplyScalar(urlFloat("shellground", 1.0)) },
+      },
+      vertexShader: `
+        varying vec3 vPos;
+        void main() {
+          vPos = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      // ⚠ TWO RAMPS, NOT ONE. A single sky→ground lerp puts the mid-tone exactly
+      // at the equator and makes the horizon a hard tonal centre. Splitting at
+      // y=0 lets the bright half fall off faster than the dark half, which is
+      // what a light tent above a dark floor actually does.
+      fragmentShader: `
+        uniform vec3 uSky;
+        uniform vec3 uHorizon;
+        uniform vec3 uGround;
+        varying vec3 vPos;
+        void main() {
+          float h = clamp(normalize(vPos).y, -1.0, 1.0);
+          vec3 c = h > 0.0
+            ? mix(uHorizon, uSky, pow(h, 0.7))
+            : mix(uHorizon, uGround, pow(-h, 0.5));
+          gl_FragColor = vec4(c, 1.0);
+        }
+      `,
       side: THREE.BackSide,
       toneMapped: false,
     });
@@ -335,19 +433,64 @@ function useChromeEnv(): THREE.Texture | null {
      */
     panel(ENV_FILL_COLOR, ENV_FILL_INTENSITY * urlFloat("axis", 0.15), [0, 0, 34], [90, 90]);
 
-    // The key: narrow and bright, above and slightly left. This is what becomes
-    // the travelling hairline along the crown in Carl's references.
-    panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY * urlFloat("key", 1.6), [-6, 14, 12], [10, 60]);
-    panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY * 0.7, [10, 11, 14], [8, 46]);
+    /**
+     * ⚠⚠ THE KEY IS A LONG SOFT STRIP RUNNING THE PILL'S FULL LENGTH — this is
+     * what makes the crown's highlight a continuous hairline rather than two
+     * bright patches with a gap.
+     *
+     * It was two short panels at x=-6 and x=+10, both well inside a pill that
+     * runs to x=±58. Between and beyond them the crown found nothing, so the
+     * highlight broke up. Length 150 overhangs both ends deliberately: the
+     * source must extend PAST the geometry it lights, or its own falloff lands
+     * on the object as a dark patch.
+     */
+    panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY * urlFloat("key", 3.2), [-4, 15, 16], [150, 13]);
 
-    // A wide dim floor so the underside of the crown has something to return
-    // other than the shell, and the object keeps its bottom edge against #101010.
-    panel(ENV_FILL_COLOR, ENV_FILL_INTENSITY * 2.2, [4, -13, 12], [70, 22]);
+    /**
+     * ⚠⚠ THE END-CAP WRAP — THE FIX FOR THE TWO DARK BLOBS.
+     *
+     * The caps are semicircles turning through a full 180° in x, so their
+     * normals sweep outboard to ±x where no source existed: every panel sat at
+     * |x| <= 14 on a pill running to ±58. At 5x zoom they rendered as hard-edged
+     * kidney-shaped holes eating a third of each cap.
+     *
+     * ⚠ IT IS NOT A DIAL AND IT WAS NEVER GOING TO BE. No intensity on a panel
+     * the caps cannot see will light them — the surface has to have something to
+     * reflect in the direction it actually faces. Carl's Chrome Boy point is the
+     * principle: in a real room every direction finds *something*.
+     *
+     * ⚠ AND THEY ARE ANGLED INWARD BY `lookAt(0,0,0)`, so they read as the
+     * continuation of a wraparound tent rather than as two extra lamps.
+     */
+    const capX = 82;
+    panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY * urlFloat("wrap", 0.55), [-capX, 6, 20], [26, 46]);
+    panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY * urlFloat("wrap", 0.55), [capX, 6, 20], [26, 46]);
+
+    /**
+     * A dim floor so the underside of the crown has something to return other
+     * than the shell, and the object keeps its bottom edge against #101010.
+     * ⚠ ALSO OVERHANGING (140 across a 116px pill) for the reason above.
+     *
+     * ⚠⚠ 2.2 -> 0.5 BECAUSE THE FIRST CONTINUOUS RENDER CAME OUT LIT FROM BELOW.
+     * The old value was tuned against HARD-EDGED, SMALLER panels under alpha
+     * blending. Softening the edges, widening it to 140 and switching to
+     * additive blending each raised its total contribution, and together they
+     * made the floor out-power the key: the top half went dark navy and the
+     * bottom half became a pale bright mass — **the reference's tonal structure
+     * exactly inverted**, since there the crown is bright and the interiors are
+     * dark.
+     *
+     * ⚠ THE GENERAL LESSON, AND IT COST A RENDER: **an intensity is calibrated
+     * against a panel's SIZE, EDGE PROFILE AND BLEND MODE.** Change any of the
+     * three and every intensity in the rig is stale. They are not independent
+     * dials.
+     */
+    panel(ENV_FILL_COLOR, ENV_FILL_INTENSITY * urlFloat("floor", 0.5), [0, -15, 14], [140, 26]);
 
     // ⚠ A RIM SOURCE BEHIND AND TO THE SIDE, for the silhouette hairline. The
     // reference's strokes carry a bright edge where the surface turns away; with
     // sources only in front, that edge dies against the shell.
-    panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY * 0.8, [14, 4, -6], [6, 40]);
+    panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY * 0.8, [14, 4, -6], [8, 44]);
 
     const pmrem = new THREE.PMREMGenerator(gl);
     const built = pmrem.fromScene(studio, 0, 0.1, 200);
@@ -358,6 +501,112 @@ function useChromeEnv(): THREE.Texture | null {
   }, [gl]);
 
   return target ? target.texture : null;
+}
+
+/**
+ * ⚠⚠ THE TRAVELLER, AS A MOVING REFLECTION.
+ *
+ * ══════════════════════════════════════════════════════════════════════════
+ * WHY A ROTATING ENVIRONMENT AND NOT A MOVING LIGHT
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠ CARL, 10 August 2026: *"the traveller's light is paramount here. That has
+ * the most effect on the card faces and so the pill. The amber secondary
+ * effects, if implemented, will be the icing on the cake."* So this is the
+ * PRIMARY illuminant, and the amber is neither built nor assumed.
+ *
+ * ⚠ THE BUTTON'S CANVAS CANNOT SEE THE CORRIDOR'S TRAVELLER. They are separate
+ * `<Canvas>` elements with separate renderers and separate scenes, and **a WebGL
+ * scene only lights objects inside it**. The canvases are separate for reasons
+ * that predate this work. So the traveller has to be reproduced here — same
+ * path, same clock, same phase.
+ *
+ * ⚠⚠ AND IT IS REPRODUCED AS A ROTATING ENV MAP, NOT AS A `spotLight`, BECAUSE
+ * THAT IS WHAT THE MEASUREMENT SAID. `BenchKey` was added specifically to test
+ * how this material responds to a direct light, and the answer was: **barely.**
+ *
+ *     litint   0     centre lum 115   rim/centre 2.1
+ *     litint   2.4   centre lum 125   rim/centre 2.0
+ *     litint   5.0   centre lum 132   rim/centre 1.9
+ *
+ * A 5x light moved the centre 17 points and FLATTENED the ratio. On a
+ * `metalness: 1` surface there is no diffuse term at all — a direct light
+ * contributes only a specular lobe, which under an orthographic camera on a
+ * shallow crown lands almost nowhere. **The environment is doing essentially all
+ * the work, so the environment is what must move.**
+ *
+ * ⚠ THIS IS MORE PHYSICALLY TRUE, NOT LESS. A mirror does not "get lit" by a
+ * moving lamp; it SHOWS the lamp moving. Rotating the reflected room is what
+ * chrome actually does.
+ *
+ * ⚠ AND IT IS CHEAP, WHICH DECIDED THE MECHANISM. Re-baking the PMREM per frame
+ * would be ruinous — Q5's frame cost is a live wound at 167ms. `envMapRotation`
+ * is a uniform on the existing material: the room is baked ONCE and turned.
+ *
+ * ── THE PATH ─────────────────────────────────────────────────────────────
+ *
+ * ⚠ THE ANGLE IS DERIVED FROM THE REAL ELLIPSE, not invented. `verify/
+ * ellipse-reach.mjs` measured what the pill actually receives:
+ *
+ *     upper shoulder   peak 1.17   lit for 80% of the orbit
+ *     crown centre     peak 1.00   lit for 48%
+ *     lower shoulder   peak 0.42   lit for 30%
+ *     underside        NOTHING, at any phase
+ *
+ * The orbit's lowest point is y = -22 and the button sits at y = -93, so **the
+ * traveller is always 71+ units ABOVE the pill and always rakes downward.** That
+ * is why the rotation is about Z (sweeping the reflected key across the crown
+ * left-to-right) and never lifts the light below the horizon.
+ *
+ * ⚠ THE ENVIRONMENT STILL CARRIES THE PILL'S LOWER HALF, and must. The traveller
+ * reaches the underside at no phase of the orbit, so the floor panel and the
+ * shell's ground colour are not decoration — they are the only illumination the
+ * bottom of this object will ever have.
+ */
+const TRAVEL_MS = 13500;
+const RETURN_MS = 2200;
+
+function TravellingReflection({
+  material,
+}: {
+  material: React.RefObject<THREE.MeshPhysicalMaterial | null>;
+}) {
+  const invalidate = useThree((s) => s.invalidate);
+  const enabled = urlFloat("travel", 1) > 0;
+  /** How far the reflected room swings, in radians. `?travelarc=` */
+  const arc = urlFloat("travelarc", 0.85);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let raf = 0;
+    const t0 = performance.now();
+    const total = TRAVEL_MS + RETURN_MS;
+
+    const tick = () => {
+      const m = material.current;
+      if (m) {
+        /**
+         * ⚠ THE VISIBLE PASS IS SLOW AND THE RETURN IS FAST — the corridor's own
+         * asymmetry, from Carl's annotated diagram: the lower arc is *"front =
+         * slower"* and the upper is *"back = speed up"*. A symmetric sweep would
+         * put the button out of step with the cards it sits under.
+         */
+        const e = ((performance.now() - t0) % total) / total;
+        const visible = TRAVEL_MS / total;
+        // phase runs -1 .. +1 across the visible pass, then races back.
+        const phase = e < visible ? (e / visible) * 2 - 1 : 1 - ((e - visible) / (1 - visible)) * 2;
+
+        m.envMapRotation.set(0, 0, phase * arc);
+        m.needsUpdate = false;
+        invalidate();
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [enabled, arc, invalidate, material]);
+
+  return null;
 }
 
 /**
@@ -385,10 +634,72 @@ function AmberSource({ strength }: { strength: number }) {
   );
 }
 
+/**
+ * A STATIC key light on the bench.
+ *
+ * ⚠⚠ UNTIL THIS EXISTED THE SCENE HAD NO LIGHT SOURCE AT ALL. Every pixel of
+ * the button was a REFLECTION of the PMREM env map — which is why the surface
+ * read flat and evenly lit however the panels were tuned. **A mirror with no
+ * direct source has no highlight of its own; it only shows a picture of the
+ * room.** Carl's references all have a real source making the hot core.
+ *
+ * ⚠ IT IS A BENCH INSTRUMENT, NOT THE CORRIDOR'S RIG. Carl, 10 August 2026:
+ * *"the light rig and the filament are the light variables. If we can get a
+ * material close to the examples, the blue c2b, we can tweak when put in place.
+ * It might be wise to light the proto up with a static light though, just to see
+ * how the material initially responds to light."*
+ *
+ * **So the material is the constant and the lighting is deliberately NOT being
+ * solved here.** In the corridor the real answer is the traveller — a spotlight
+ * on a 13.5s elliptical orbit (`REST_TRAVEL_*` in `answer-card-glass.ts`) — plus
+ * the filament when cards are selected. This light exists only so the material
+ * can be judged responding to *something* before it meets those.
+ *
+ * ⚠ STATIC ON PURPOSE. A moving light on the bench would confound the question:
+ * a material that only looks right at one phase of a sweep is not a material
+ * that is right. Hold the light still, judge the surface, then let the corridor
+ * move it.
+ *
+ * ⚠⚠ DEFAULT 0 — OFF — BECAUSE THE EXPERIMENT IT EXISTS FOR IS FINISHED AND ITS
+ * ANSWER WAS "THIS MATERIAL BARELY RESPONDS TO A DIRECT LIGHT".
+ *
+ *     litint 0 -> 2.4 -> 5.0     centre lum 115 -> 125 -> 132, ratio 2.1 -> 1.9
+ *
+ * A 5x light moved the centre 17 points and FLATTENED the crown against the
+ * plateau. `metalness: 1` has no diffuse term, so a direct light contributes
+ * only a specular lobe, and under an orthographic camera on a shallow crown that
+ * lobe lands almost nowhere. **The environment is the lever; a light is not.**
+ *
+ * ⚠ IT STAYS, ON A DIAL, BECAUSE THE MEASUREMENT IS WORTH REPEATING. Leaving it
+ * ON by default would add a source the corridor does not have and quietly
+ * confound the traveller's sweep — the thing that actually shapes this surface.
+ *
+ * Dials: `?litint=` brightness, `?litx= ?lity= ?litz=` direction.
+ */
+function BenchKey() {
+  const intensity = urlFloat("litint", 0);
+  if (intensity <= 0) return null;
+  return (
+    <directionalLight
+      // ⚠ A DIRECTIONAL LIGHT'S POSITION IS A DIRECTION, NOT A PLACE — three
+      // aims it at its target (the origin), so only the VECTOR matters. This is
+      // recorded at `answer-card-canvas.tsx:3134` after being misread there.
+      // Above, slightly left, and well forward: the reference's key.
+      position={[urlFloat("litx", -30), urlFloat("lity", 60), urlFloat("litz", 90)]}
+      intensity={intensity}
+      color="#eaf2ff"
+    />
+  );
+}
+
 function ButtonMesh({ width, height, amber }: { width: number; height: number; amber: number }) {
   const geometry = usePillGeometry(width, height);
   const envMap = useChromeEnv();
   const invalidate = useThree((s) => s.invalidate);
+  // ⚠ THE MATERIAL IS DRIVEN BY REF, NOT BY STATE. `envMapRotation` changes every
+  // frame; routing that through React would re-render the tree 60 times a second
+  // to mutate one uniform.
+  const materialRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
 
   /**
    * ⚠⚠ WITHOUT THIS THE CANVAS NEVER DRAWS A SINGLE FRAME.
@@ -412,9 +723,12 @@ function ButtonMesh({ width, height, amber }: { width: number; height: number; a
 
   return (
     <group>
+      <BenchKey />
+      <TravellingReflection material={materialRef} />
       <AmberSource strength={amber} />
       <mesh geometry={geometry}>
         <meshPhysicalMaterial
+          ref={materialRef}
           color={CHROME_COLOR}
           metalness={1}
           roughness={urlFloat("chromerough", CHROME_ROUGHNESS)}
@@ -452,21 +766,80 @@ export default function NextStepCanvas({
   amber?: number;
 }) {
   const pad = NEXTSTEP_CANVAS_PAD_PX;
+  /**
+   * ⚠ THE WRAPPER MUST GROW WITH `?zoom=`, OR ZOOM CROPS INSTEAD OF MAGNIFYING.
+   *
+   * The canvas is sized to the button, so an orthographic zoom of 4 draws the
+   * pill 4x larger into a box still 116x41 — showing the middle of the button
+   * and cutting off both end caps. **Which are one of the two defects being
+   * judged**, so the instrument would have hidden the thing it was built to
+   * show. Growing the box keeps the whole pill in frame.
+   *
+   * At the default zoom of 1 this is exactly the old expression, so the
+   * corridor's layout is untouched.
+   */
+  /**
+   * ⚠⚠ READ AFTER MOUNT, NOT IN THE COMPONENT BODY. `urlFloat` returns its
+   * fallback when `window` is undefined, so on the server this is always 1 —
+   * and the wrapper rendered at 144x69 while the camera (constructed inside the
+   * Canvas, client-side only) really did zoom. **The render was magnified into a
+   * box that had not grown, so it was clipped to the middle of the pill and both
+   * end caps were outside the frame.**
+   *
+   * ⚠ AND THAT IS THE DEFECT UNDER JUDGEMENT. A crop that silently removes the
+   * end caps would have shown a clean button and hidden the fault. Same class as
+   * the seven instrument failures recorded on 10 August 2026: the instrument
+   * answered a question adjacent to the one asked.
+   *
+   * ⚠ `useSyncExternalStore`, NOT `useState` + `useEffect`. The effect version
+   * tripped `react-hooks/set-state-in-effect` — a NEW lint error against this
+   * repo's recorded baseline of exactly one (the `enquiry-opening.tsx`
+   * reduced-motion effect). This hook exists precisely for "read a value the
+   * server cannot see": it takes a server snapshot and a client snapshot and
+   * needs no state write at all.
+   *
+   * The empty subscribe is deliberate — the querystring does not change without
+   * a navigation, and a navigation remounts this.
+   */
+  const zoom = useSyncExternalStore(
+    () => () => {},
+    () => urlFloat("zoom", 1),
+    () => 1,
+  );
+  const boxW = width * zoom + pad * 2;
+  const boxH = height * zoom + pad * 2;
   return (
     <div
       aria-hidden="true"
       style={{
         position: "absolute",
-        left: -pad,
-        top: -pad,
-        width: width + pad * 2,
-        height: height + pad * 2,
+        // Keep the (possibly enlarged) box centred on the button's own footprint
+        // so the label overlay still lands on the middle of the pill.
+        left: (width - boxW) / 2,
+        top: (height - boxH) / 2,
+        width: boxW,
+        height: boxH,
         pointerEvents: "none",
       }}
     >
       <Canvas
         orthographic
-        camera={{ zoom: 1, position: [0, 0, 1000], near: 0.1, far: 4000 }}
+        /**
+         * ⚠ `?zoom=` IS A BENCH INSTRUMENT AND MUST STAY 1 IN THE CORRIDOR.
+         *
+         * At its real 116x41 the material cannot be judged — Carl's references
+         * are all large, and a defect that decides the material (the double
+         * band, the end caps) is a few pixels here. Zoom magnifies the RENDER,
+         * not the geometry: same mesh, same env, same light, more pixels.
+         *
+         * ⚠ IT DOES NOT PROVE THE BUTTON AT SIZE. Carl has already ruled once
+         * on exactly this, about the traveller: *"it looks ok zoomed in but not
+         * at this scale"* (`answer-card-canvas.tsx:478`). **Judge the material
+         * zoomed; judge the BUTTON at 1.**
+         */
+        // ⚠ THE SAME `zoom` THE WRAPPER USES, so the box and the render can never
+        // disagree. Reading the URL separately here would reintroduce the crop.
+        camera={{ zoom, position: [0, 0, 1000], near: 0.1, far: 4000 }}
         dpr={[1, 2]}
         /**
          * ⚠ NEUTRAL TONE MAPPING, NOT ACES — Architect, 10 August 2026.

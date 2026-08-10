@@ -154,16 +154,58 @@ console.log();
 console.log(`  rim / centre  ${Number.isFinite(ratio) ? ratio.toFixed(1) : "inf"}     blueness (b - r)  ${blueness.toFixed(1)}`);
 console.log();
 
+/**
+ * ⚠⚠ TWO-SIDED, AND THE SECOND SIDE WAS ADDED AFTER THIS HARNESS PASSED A BUILD
+ * CARL WOULD HAVE REJECTED.
+ *
+ * On 10 August 2026 it reported ✅ on `axis=1.3`: centre luminance 210, rim only
+ * 1.2x. Both original checks passed. The render was **a pale ice lozenge with
+ * the label barely legible** — an over-correction of the picture-frame defect it
+ * was written to catch.
+ *
+ * **A one-sided check passes the over-correction as readily as the fix.** It
+ * asked "is the centre lit" and 210 is emphatically lit. It never asked "is the
+ * centre TOO lit", so the failure mode on the other side of the target was
+ * invisible to it.
+ *
+ * ⚠ THE TONAL RANGE IS THE MATERIAL. Carl's reference is predominantly dark with
+ * bright bands; a centre that matches the rim has no bands left. So the pass
+ * band is a WINDOW — lit enough to be a solid, dark enough to keep the bands —
+ * and the rim/centre ratio has a FLOOR as well as a ceiling.
+ *
+ * ⚠ THE NUMBERS ARE MEASURED, NOT DERIVED. 115/2.1 is the swept best (axis 0.15)
+ * and 210/1.2 is the rejected over-correction; the window is drawn to include
+ * the first and exclude the second. **If Carl approves a look outside this
+ * window, the window is wrong and moves — this encodes a measurement, not a
+ * standard.**
+ */
+const CENTRE_MIN = 40;
+const CENTRE_MAX = 175;
+const RATIO_MIN = 1.5;
+const RATIO_MAX = 4;
+
 if (cLum < 12) {
   console.log(`  ⚠⚠ THE CENTRE IS BLACK. The plateau is reflecting the shell — there is`);
   console.log(`     no source on the camera axis. This reads as a picture frame, not a`);
   console.log(`     button. Raise ?axis= before touching anything else.`);
-} else if (ratio > 4) {
+} else if (cLum < CENTRE_MIN) {
+  console.log(`  ⚠ THE CENTRE IS DARK (${cLum.toFixed(1)}, want ${CENTRE_MIN}-${CENTRE_MAX}). Not black, but the`);
+  console.log(`    button is reading as an outline rather than a solid.`);
+} else if (cLum > CENTRE_MAX) {
+  console.log(`  ⚠⚠ THE CENTRE IS BLOWN OUT (${cLum.toFixed(1)}, want ${CENTRE_MIN}-${CENTRE_MAX}) — A PALE LOZENGE.`);
+  console.log(`     This is the OVER-CORRECTION, and it is what an earlier version of this`);
+  console.log(`     harness passed. The reference is mostly dark with bright BANDS; at this`);
+  console.log(`     level there are no bands left and the label loses contrast. Lower ?axis=.`);
+} else if (ratio > RATIO_MAX) {
   console.log(`  ⚠ RIM ${ratio.toFixed(1)}x THE CENTRE — still frame-like. The axis panel is`);
   console.log(`    working but too dim relative to the key.`);
+} else if (ratio < RATIO_MIN) {
+  console.log(`  ⚠ RIM ONLY ${ratio.toFixed(1)}x THE CENTRE — the tonal range has collapsed. The`);
+  console.log(`    crown is not standing out from the plateau, so there is no travelling`);
+  console.log(`    band. Flat, not chrome.`);
 } else {
-  console.log(`  ✅ the centre is lit and the rim is within ${ratio.toFixed(1)}x of it — a solid`);
-  console.log(`     object rather than an outline.`);
+  console.log(`  ✅ centre ${cLum.toFixed(1)} (in ${CENTRE_MIN}-${CENTRE_MAX}), rim ${ratio.toFixed(1)}x (in ${RATIO_MIN}-${RATIO_MAX}) — a solid`);
+  console.log(`     object that still has bright bands against dark.`);
 }
 
 if (blueness < 6) {
