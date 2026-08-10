@@ -770,6 +770,12 @@ export default function EnquiryOpening() {
    */
   const cardEntranceStartedAtRef = useRef<number | null>(null);
   const noteCardEntranceStart = useCallback(() => {
+    // ⚠ THE NULL GUARD IS WHAT MAKES THIS SAFE FOR FIVE CANVASES, and it was
+    // written when there was only one. Since 1b every question mounts its own
+    // `AnswerCardCanvas`, so this fires again at Q4, Q3, Q2 and Q1 — but it
+    // records the FIRST entrance only, which is the one the opening's timing is
+    // anchored to. Without the guard, Q1's entrance would overwrite Q5's and the
+    // recorded anchor would drift later on every step.
     if (cardEntranceStartedAtRef.current === null) {
       cardEntranceStartedAtRef.current = Date.now();
     }
@@ -1254,34 +1260,31 @@ export default function EnquiryOpening() {
                 caller, not the contract.
               */}
               {/*
-                ⚠⚠ THE `qNum === 5` GATE STAYS IN THIS STEP, DELIBERATELY, AND
-                REMOVING IT IS THE WHOLE OF THE NEXT ONE.
+                ⚠⚠ EVERY QUESTION HAS CARDS NOW — the `qNum === 5` gate is gone,
+                and that removal IS step 1b.
 
-                This is step 1a of Stage B: selection is wired, but the cards
-                still render for Q5 only. That is not an oversight — it is the
-                MEASUREMENT CONTROL. With the gate in place, a Q5→Q4 move is a
-                real corridor move on a real path with **no canvas mounting on
-                the far side**; removing the gate makes the same move mount one.
-                The delta between those two is the context-creation cost, and it
+                Step 1a wired selection with the gate still in place, so a Q5→Q4
+                move happened with **no canvas mounting on the far side**. That
+                was the measurement control (mean 69ms). This step makes the same
+                move mount one, and the delta is the context-creation cost that
                 decides whether the shared-host restructure (D-046) is needed.
 
-                ⚠ AN EARLIER MEASUREMENT OF THIS FORCED THE BUTTON WITH
-                `selected` EMPTY, which the real path never is — the memory chip
-                renders blank where the real move renders text. It reported
-                +126ms and that delta is indicative, not decisive.
-                `verify/transition-cost.mjs` records why. **This step is what
-                makes an honest control possible.**
+                ⚠ A CANVAS IS CREATED AND DESTROYED ON EVERY QUESTION STEP, and
+                keying cannot avoid it: `renderPhrase` gives each question its own
+                `key`, and the grid lives inside `enquiry-phrase-extras`. The
+                phrase structure owns the lifetime, not this line.
 
-                ⚠ SO Q4–Q1 HAVE NO CARDS UNTIL 1b. Expected, not a defect.
+                ⚠ WEBGL CONTEXT CREATION INSIDE AN ANIMATING TRANSITION IS THE Q5
+                STALL'S OWN MECHANISM. If the measured delta puts the move past
+                the ~50ms visible threshold, **the honest answer is the shared
+                host, not a dial** — and that is Carl's call, not a Builder's.
               */}
-              {qNum === 5 && (
-                <AnswerCardCanvas
-                  active={isActive}
-                  onEntranceStart={noteCardEntranceStart}
-                  labels={QUESTIONS[qNum].options}
-                  onToggle={handleCardToggle}
-                />
-              )}
+              <AnswerCardCanvas
+                active={isActive}
+                onEntranceStart={noteCardEntranceStart}
+                labels={QUESTIONS[qNum].options}
+                onToggle={handleCardToggle}
+              />
             </div>
 
             <div
