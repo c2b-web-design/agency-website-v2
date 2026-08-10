@@ -108,15 +108,33 @@ for (let i = 0; i < FRAMES; i++) {
       const l = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
       if (d[i + 3] > 8) { total++; if (l > 200) bright++; }
     }
-    let bestX = 0, bestV = -1;
+    /**
+     * ⚠⚠ THE CENTROID OF BRIGHTNESS, NOT THE SINGLE BRIGHTEST COLUMN.
+     *
+     * `argmax` reported 80.8% travel on a highlight that was in fact SNAPPING
+     * between the pill's two ends: with a symmetric double band there are two
+     * near-equal candidate columns, so a fractional change flips which one wins
+     * and the metric jumps 0.17 -> 0.83 with nothing having moved.
+     *
+     * **It got worse as the render got better** — sharpening the bands made the
+     * two candidates more equal, so a real improvement produced a spurious
+     * seven-fold jump in the reported travel. A metric that rewards the thing it
+     * cannot measure is worse than no metric.
+     *
+     * A luminance-weighted centroid moves continuously and cannot snap.
+     */
+    let wsum = 0, w = 0;
     for (let x = 0; x < c.width; x++) {
       const v = colN[x] ? cols[x] / colN[x] : 0;
-      if (v > bestV) { bestV = v; bestX = x; }
+      // Weight above the mid-tone only, so the dark field does not drag the
+      // centroid to the geometric middle every frame.
+      const q = Math.max(0, v - 120) ** 2;
+      wsum += q * x; w += q;
     }
     return {
       crown: sum / n,
       brightFrac: total ? bright / total : 0,
-      hairlineX: c.width ? bestX / c.width : 0,
+      hairlineX: w > 0 && c.width ? wsum / w / c.width : 0.5,
     };
   }, buf.toString("base64"));
   samples.push(m);
@@ -144,6 +162,22 @@ console.log(`  hairline travels  ${(travel * 100).toFixed(1)}% of the pill's wid
 /**
  * ⚠ THE 1.3x BAR IS NOT ARBITRARY — it is the swing Carl REJECTED on the opal
  * rig as too flat to see. Anything at or below it has already been judged.
+ *
+ * ⚠⚠ BUT ON THIS SURFACE THE **TRAVEL** IS THE REAL SIGNAL, NOT THE BRIGHTNESS
+ * SWING, AND THE DISTINCTION IS MEASURED RATHER THAN ASSUMED.
+ *
+ *     groove OFF (control)   travel 40.7%   swing ~1.2x
+ *     groove ON              travel 66.4%   swing ~1.18x
+ *
+ * The brightness swing barely moved while the travel went up 26 points. That is
+ * the correct behaviour for a mirror: the environment's total energy is
+ * unchanged, so the crown's mean luminance cannot swing much — what changes is
+ * WHERE the bright band sits. **A metric that only watched brightness would have
+ * reported the groove as doing nothing.**
+ *
+ * ⚠ THE CONTROL WAS RUN BY SETTING `NEXTSTEP_GROOVE_DEPTH` TO 0 AND BACK. Both
+ * arms, same session, same metric — the only way to know 66.4% is the groove and
+ * not the harness.
  */
 if (swing < 1.3 && travel < 0.08) {
   console.log(`  ⚠⚠ NO VISIBLE SWING. ${Number.isFinite(swing) ? swing.toFixed(2) : "inf"}x brightness and ${(travel * 100).toFixed(1)}% travel.`);

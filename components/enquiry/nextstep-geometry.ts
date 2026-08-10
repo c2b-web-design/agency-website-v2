@@ -194,6 +194,36 @@ export const NEXTSTEP_CROWN_SEGMENTS = 24;
 export const NEXTSTEP_CANVAS_PAD_PX = 14;
 
 /**
+ * Where the groove sits, as a fraction of the way from plateau edge to rim.
+ *
+ * ⚠⚠ THE DOUBLE BAND IS GEOMETRY, NOT MATERIAL — flagged by the Architect
+ * specifically so nobody hunts for it in roughness, and confirmed by Carl's
+ * reference: along every stroke there is a **bright core, a dark groove, and a
+ * thinner parallel line** below it.
+ *
+ * ⚠ A MONOTONIC PROFILE CANNOT PRODUCE IT. A raised cosine falls steadily from
+ * plateau to rim, so its normal turns steadily away from the key and gives ONE
+ * band. A dark line BETWEEN two bright ones requires the surface to turn away
+ * and then back — an inflection. No material parameter creates a second band,
+ * because there is no second place where the normal faces the light.
+ *
+ * 0.62 puts it in the outer third, where the reference has it: the core occupies
+ * the top half of the crown and the second line is a narrow rim catch.
+ */
+export const NEXTSTEP_GROOVE_AT = 0.62;
+
+/**
+ * How deep the groove cuts, as a fraction of the local height.
+ *
+ * ⚠ SMALL BY DESIGN. This is a shoulder in a tube, not a channel. Too deep and
+ * the pill reads as two concentric rings — the "picture frame" failure in a new
+ * costume. The band is made by the change in NORMAL, not by the depth of the
+ * cut, and a normal only has to turn a few degrees to swing a mirror from key to
+ * shell.
+ */
+export const NEXTSTEP_GROOVE_DEPTH = 0.13;
+
+/**
  * The crown's height profile across the pill's short axis.
  *
  * ⚠ A RAISED COSINE WITH A PLATEAU, matching the card face's `crownZ`. Copied in
@@ -201,13 +231,31 @@ export const NEXTSTEP_CANVAS_PAD_PX = 14;
  * travelling light, and two different curvature models would catch that light
  * differently enough to read as two different worlds.
  *
+ * ⚠⚠ PLUS A GROOVE, WHICH IS THE ONE DELIBERATE DEPARTURE FROM THE CARD'S
+ * PROFILE. The card is a flat face with a bevel; this is a tube, and Carl's
+ * reference tubes carry a double highlight the card has no reason to have. The
+ * shared-shape principle above still governs the CURVATURE — the groove is a
+ * local perturbation of it, not a different model.
+ *
+ * ⚠ IMPLEMENTED AS A SUBTRACTED GAUSSIAN so the profile stays C1-continuous. A
+ * piecewise cut would put a crease in the surface, and a crease in a mirror is a
+ * hard line — the very artefact the continuous environment work removed.
+ *
  * @param t  -1 at one edge of the short axis, 0 at the centre, +1 at the other.
  */
 export function crownHeight(t: number): number {
   const a = Math.abs(t);
   if (a <= NEXTSTEP_PLATEAU) return NEXTSTEP_CROWN_PX;
   const u = (a - NEXTSTEP_PLATEAU) / (1 - NEXTSTEP_PLATEAU);
-  return NEXTSTEP_CROWN_PX * ((1 + Math.cos(u * Math.PI)) / 2);
+  const base = (1 + Math.cos(u * Math.PI)) / 2;
+
+  // The groove: a narrow dip centred at NEXTSTEP_GROOVE_AT along that fall.
+  // ⚠ WIDTH 0.13 IS NARROW ON PURPOSE — the reference's groove is a fine dark
+  // line, not a valley. Widen it and the two bands merge back into one.
+  const d = (u - NEXTSTEP_GROOVE_AT) / 0.13;
+  const groove = NEXTSTEP_GROOVE_DEPTH * Math.exp(-d * d);
+
+  return NEXTSTEP_CROWN_PX * Math.max(0, base - groove);
 }
 
 /**

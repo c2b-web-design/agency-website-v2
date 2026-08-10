@@ -101,10 +101,22 @@ function usePillGeometry(w: number, h: number) {
     const r = h / 2;
     const cx = w / 2 - r; // the centre-line runs from (-cx,0) to (+cx,0)
 
-    // Grid resolution. Dense enough that a mirror does not show its faceting —
-    // the specular travels across this surface and steps would be visible.
+    /**
+     * Grid resolution. Dense enough that a mirror does not show its faceting —
+     * the specular travels across this surface and steps would be visible.
+     *
+     * ⚠⚠ ny 88 -> 240 FOR THE GROOVE. At 88 rows across a 41px pill each row is
+     * ~0.47px, so the ~2.3px groove spanned about five rows — enough to exist in
+     * the buffer but not enough to render its two slopes as distinct bands
+     * rather than one soft dip. The short axis is where all the profile detail
+     * lives; nx is unchanged because nothing varies along the pill's length.
+     *
+     * ⚠ THE COST IS PAID ONCE. This geometry is built in a `useMemo` and never
+     * rebuilt — it is not per-frame work, and the traveller's sweep measured
+     * 0.00ms against a static canvas.
+     */
     const nx = 220;
-    const ny = 88;
+    const ny = 240;
 
     /** Inset from the boundary: 0 on the outline, r at the centre-line. */
     const insetAt = (x: number, y: number) => {
@@ -136,10 +148,24 @@ function usePillGeometry(w: number, h: number) {
 
         const z = zAt(x, y);
 
-        // Central differences for the normal. The gradient of a height field is
-        // exact here and needs no reasoning about path frames — which is what
-        // the swept version got wrong.
-        const e = 0.35;
+        /**
+         * Central differences for the normal. The gradient of a height field is
+         * exact here and needs no reasoning about path frames — which is what
+         * the swept version got wrong.
+         *
+         * ⚠⚠ 0.35 -> 0.06 BECAUSE THE GROOVE IS ONLY ~2.3px WIDE. A central
+         * difference is a low-pass filter: sampling +/-0.35px across a feature
+         * whose half-width is 2.27px averages the groove's two opposing slopes
+         * together and returns something close to the ungrooved normal.
+         * **The geometry would have been correct and the shading would have
+         * shown no second band** — and the obvious next move would have been to
+         * deepen the groove, chasing a sampling artefact with real geometry.
+         *
+         * ⚠ IT MUST STAY WELL BELOW THE GROOVE'S HALF-WIDTH. If
+         * `NEXTSTEP_GROOVE_DEPTH`'s companion width (0.13 in `crownHeight`) is
+         * ever narrowed, this has to come down with it.
+         */
+        const e = 0.06;
         const dzdx = (zAt(x + e, y) - zAt(x - e, y)) / (2 * e);
         const dzdy = (zAt(x, y + e) - zAt(x, y - e)) / (2 * e);
         const n = new THREE.Vector3(-dzdx, -dzdy, 1).normalize();
