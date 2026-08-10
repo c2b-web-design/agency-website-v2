@@ -101,7 +101,7 @@ bounds), camera (frustum ±72×±34.5 vs a ±58×±20.5 pill), scene graph (mesh
 2. **Triangle winding was clockwise**, so faces were back-facing. Found with a cross product in
    plain node, no browser.
 
-### WHERE IT STANDS
+### WHERE IT STANDS — IT RENDERS, AND IT HAS BEEN SEEN
 
 Geometry built and verified. Material approach settled and the Architect confirmed it:
 **chrome is `metalness: 1`, roughness 0.08, and NO body colour — the blue comes from the
@@ -109,7 +109,38 @@ environment.** Carl's reference set proves it: across six logo renders *the mate
 changes, the SCENE changes.* Plus the Satriani "Chrome Boy", which reads grey only because it is
 photographed against grey.
 
-**NEXT ACTION: screenshot `/proto/nextstep` and look at it.** It has never been seen.
+**Three of the Architect's points are now IN**, and the first two transformed it:
+
+1. **Shell `0x000000` → `#0b1a2e`** (`?shell=`). The darks are navy, as the reference has them.
+2. **An AXIS PANEL at [0,0,34]** (`?axis=`). ⚠ **This was the whole "picture frame" defect and
+   it is geometry, not lighting weakness:** under an orthographic camera the view direction is
+   (0,0,-1) and the plateau's normal is (0,0,1), so **the flat top reflects straight back along
+   +Z**, past every panel offset in x/y, into the shell. Plus a rim source behind-and-side for
+   the silhouette hairline. The reference is a light tent with a SEPARATE black backdrop; this
+   code had collapsed the two into one black sphere.
+3. **`NeutralToneMapping`** instead of ACES — safe because this canvas owns its renderer.
+4. **`NEXTSTEP_PLATEAU` 0.35 → 0.15.** Its stated justification — *"a small flat for the label to
+   sit on"* — **was false**: the label is a DOM `<span>` layered over the canvas, so nothing sits
+   on it. A big plateau also returns one flat colour under an ortho camera.
+
+**Measured** (`verify/nextstep-look.mjs`, and `?axis=0.15` is the best of the sweep so far):
+
+    axis=0.15   centre lum 115   rim/centre 2.1   blueness 29
+    axis=1.3    centre lum 210   rim/centre 1.2   blueness 46   <- washed out, too pale
+
+⚠⚠ **TWO STRUCTURAL PROBLEMS REMAIN AND DIALS WILL NOT FIX THEM:**
+
+- **Dark blobs at both end caps.** They curve away and find no source; the rim panel does not
+  reach around. Needs panel placement, probably a wrap or a second rim source on the far side.
+- **The crown reads as a wide flat band, not a tube.** The highlight is a broad sheen where the
+  reference has a tight travelling hairline. Plateau may need to go lower still, and see the
+  Architect's point 5 below — **the reference's DOUBLE band (bright core, dark groove, thinner
+  parallel line) is a geometry feature and needs an inflection in `crownHeight()`. Nobody should
+  hunt for it in material params.**
+
+⚠ **AND A HARNESS CAUTION FROM MY OWN MISS:** `nextstep-look.mjs` passed the `axis=1.3` build
+because it only asked *"is the centre lit"*. It was lit — to 210, a pale ice lozenge with the
+label barely legible. **A one-sided check passes the over-correction as readily as the fix.**
 
 ---
 
@@ -206,14 +237,16 @@ light show."*
 
 ```
 npm run dev
-http://localhost:3000/proto/nextstep     the button bench  <- START HERE
+http://localhost:3000/proto/nextstep?axis=0.15   the button bench  <- START HERE
+node verify/nextstep-look.mjs "?axis=0.15"       centre vs rim, screenshot-based
 http://localhost:3000/start              the corridor
 node verify/teal-core.mjs                white -> teal, grid-anchored
 node verify/reveal-cost.mjs              the Q5 profile
 bash verify/run-bisect.sh 3              the repaired interleaved bisect
 ```
 
-Button dials: `?chromerough= ?chromeenv= ?amber= ?flat=1 ?always=1`
+Button dials: `?axis= ?key= ?shell= ?chromerough= ?chromeenv= ?amber= ?flat=1 ?always=1`
+⚠ `?axis=0.15` is the best of the sweep so far — the default 1.3 is washed out.
 ⚠ `?flat=1` and `?always=1` are leftover diagnostics — **remove them** once the button renders.
 
 ⚠ **MEASURE HEADED, WITH `--enable-gpu`.** Every harness prints the renderer and aborts on a
