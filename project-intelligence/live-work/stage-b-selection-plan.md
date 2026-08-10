@@ -2,8 +2,14 @@
 
 **Author:** Builder, 10 August 2026
 **For:** Carl, then the Architect (`handoff-protocol.md` §2.5)
-**Branch:** `fix/q5-stall-and-label-colour` @ `30c3ca7`
-**Status:** revised after the Architect's review; four amendments folded in
+**Branch:** `fix/q5-stall-and-label-colour` @ `e077689`
+**Status:** revised twice. The Architect's **second** review is folded in below.
+
+> ⚠ **CITE SYMBOLS, NOT LINE NUMBERS.** An earlier revision carried references from `1611836`
+> under a `30c3ca7` header, and the tree had already moved ~25 lines beneath them — the
+> `qNum === 5` gate cited at line 1352 was at 1377. **Any line number in this file is a hint that
+> decays; the symbol name is the durable reference.** This project already omits line numbers from
+> the lint baseline for exactly this reason (`CLAUDE.md`).
 
 > **Stage A is DONE** — the button mesh is the corridor's surface at `1611836`, sized from its own
 > measured box, reveal measured on a production build at **118–135ms** against a recorded 167ms.
@@ -27,14 +33,14 @@ to advance atm"*), not a regression.
 | half | state | where |
 |---|---|---|
 | **Pointer targets that toggle** | ✅ `pointerdown` toggles `litCards`, filament heats; toggling off runs a real cool-down | `answer-card-canvas.tsx:3736-3770`, `useFilament` `:1835-1876` |
-| **Selection state + the fade-in Carl wants** | ✅ `toggleOption` is complete; every gate keys off `selected.size > 0` | `enquiry-opening.tsx:1153-1163`, gates `:1363`, `:1406`, `:1408` |
-| **The bridge between them** | ❌ **does not exist** — `litCards` never leaves the canvas; no selection callback | contract at `:3332-3336` |
+| **Selection state + the fade-in Carl wants** | ✅ `toggleOption` is complete; the button wrapper, its `tabIndex` and the mesh's `active` all gate on `selected.size > 0` | `enquiry-opening.tsx` — `toggleOption`, and the wrapper around `NextStepMeshButton` |
+| **The bridge between them** | ❌ **does not exist** — `litCards` never leaves the canvas; no selection callback | `AnswerCardCanvas`'s prop contract |
 
-The fade-in is already implemented and waiting: `enquiry-opening.tsx:1363` is
+The fade-in is already implemented and waiting: the button's wrapper is
 `opacity: selected.size > 0 ? 1 : 0` on a 600ms linear transition — **exactly what Carl
 described.** Nothing writes to `selected`, so it never fires.
 
-### ⚠ Three mismatches the wiring must resolve, not paper over
+### ⚠ Four mismatches the wiring must resolve, not paper over
 
 1. **Keyed by index vs keyed by string.** `litCards` is `boolean[]` by position; `selected` is a
    `Set<string>` of option text. The bridge maps index → `QUESTIONS[qNum].options[i]`, which means
@@ -46,6 +52,24 @@ described.** Nothing writes to `selected`, so it never fires.
    with a pointer handler must not start impersonating a control in the accessibility tree."*
    **Making them selectable without roles and keyboard access would turn a documented safeguard
    into the exact defect it was written to prevent.**
+4. ⚠⚠ **`litCards` AND `selected` DIVERGE DURING THE CORRIDOR MOVE — and it is a lie told to a
+   screen reader, not a cosmetic drift.** Architect's finding, verified on disk.
+
+   `handleNextStep` calls `setSelected(new Set())` **immediately**, but `showExtras =
+   isActive || (corridorMoving && depth === 1)` keeps the **outgoing** phrase's grid rendered
+   through the whole move, with its `litCards` intact until unmount. So for the length of that
+   transition the old question's cards would report **`aria-pressed="true"` on a question already
+   answered and left**.
+
+   ⚠ **THIS IS MISMATCH 1's CLASS, NOT A NEW ONE**: two sources of truth for the same fact, keyed
+   differently. `litCards` is canvas-local and positional; `selected` is the application's
+   selection truth and is keyed by option string.
+
+   **It must be a decision in the plan, not an emergent property.** Two options — derive
+   `aria-pressed` from `selected` (one truth, canvas keeps `litCards` purely as filament state), or
+   derive `selected` from `litCards` (one truth, but the canvas becomes the owner of application
+   state). **Recommendation: the former** — the filament is a visual effect with its own lifetime
+   including a cool-down, and it should not become the application's memory. See B2.
 
 ---
 
@@ -53,9 +77,9 @@ described.** Nothing writes to `selected`, so it never fires.
 
 **This is the decision that should be made before any wiring. Architect's finding, verified.**
 
-`renderPhrase` gives each question `key={`phrase-${qNum}`}` (`:1219`), and the grid lives inside
-`enquiry-phrase-extras`, gated on `showExtras = isActive || (corridorMoving && depth === 1)`
-(`:1216`). Therefore:
+`renderPhrase` gives each question `key={`phrase-${qNum}`}`, and the grid lives inside
+`enquiry-phrase-extras`, gated on `showExtras = isActive || (corridorMoving && depth === 1)`.
+Therefore:
 
 - **A canvas mounts and an old one is destroyed on EVERY question step, however the canvas is
   keyed.** The phrase structure already costs the context. *"Remount vs reset"* was a false choice
@@ -73,9 +97,39 @@ corridor move** — a different, untested moment.
 > **Accept a context creation per question step and measure the transition, or take the shared-host
 > restructure (D-046) now so the grid outlives the phrase?**
 
-⚠ **MEASURE BEFORE CHOOSING.** The transition cost is unknown and this project does not choose
-restructures on prediction. `verify/transition-cost.mjs` runs **first, on the current build**, to
-establish what a corridor move costs today.
+⚠ **MEASURE BEFORE CHOOSING.** This project does not choose restructures on prediction.
+
+### ⚠⚠ THE CONTROL CANNOT BE TAKEN ON THE CURRENT BUILD — corrected 10 August 2026
+
+**An earlier revision made "run `transition-cost.mjs` first, on the current build" the plan's first
+action. That action is not available, and the Architect was right to call it blocking.**
+
+**There is no corridor move on the current build.** `handleNextStep` is reachable only through the
+Next step button, which is `pointer-events: none` / `tabIndex: -1` whenever `selected` is empty —
+which is always. A harness can force it with a programmatic `.click()`, and I did.
+
+**What that measurement is and is not** — I ran it, so this is a correction to my own reported
+number, not a hypothetical:
+
+- ✅ **The transition itself is real.** `handleNextStep` runs the same
+  `setCorridorMoving` → `setActiveQ` sequence however it is invoked.
+- ⚠ **But the control ran with `selected` empty, and the real path never is.** `answersSnap` is
+  `Array.from(selected).join(" • ")` — with nothing selected the memory chip renders **empty**, so
+  the real move does work mine did not.
+
+**Both arms shared the flaw, so the delta (+126ms) is defensible and neither absolute is.** The
+65ms control is a **floor**, not "what a corridor move costs today".
+
+**The sequencing that produces an honest control, and it fails safe:**
+
+| step | what | why |
+|---|---|---|
+| **1a** | B1 + B3 wiring, **`qNum === 5` retained** | selection works, the button fades in, the corridor advances into a Q4 with an empty grid. **A real move on a real path, no canvas on the far side — this is the control.** |
+| — | **measure** | |
+| **1b** | remove the `qNum === 5` gate | same move, canvas both sides. **This is the arm.** |
+
+The delta is then context creation and nothing else. ⚠ **And if the delta is bad you stop at 1a
+with a corridor that already walks** — which is the outcome Carl asked for either way.
 
 ---
 
@@ -112,26 +166,34 @@ heat/cool pair already renders.
 
 ---
 
-## B0b — D-031's REFLECTION IS ALREADY DEAD, AND STAGE B IS WHEN IT SHOWS
+## B0b — ✅ DONE. The dead reflection layer is deleted (`c426c5f`, `e077689`, D-047)
 
-**Architect's finding, verified. A governance matter, not a cleanup.**
+**No longer a plan item. Kept because Stage B would otherwise re-encounter it, and because how it
+was found matters more than what it was.**
 
-`reflectionVars` / `q5ReflectionVars` (`enquiry-opening.tsx:272`, `:396`) still compute CSS custom
-properties onto the button wrapper (`:1371`). Those vars feed the **painted** material's gradients
-— and `globals.css:1260` now sets `background-image: none; background-color: transparent` under
-`--mesh`.
+The Architect found that `reflectionVars` / `q5ReflectionVars` were still computing CSS custom
+properties into the button's wrapper — feeding the **painted** material's gradients, which
+`.enquiry-nextstep-btn--mesh` had already cleared with `background-image: none`.
 
-⚠ **SO STAGE A SUPERSEDED AN APPROVED LAYER (D-031/D-032) WITHOUT RECORDING IT.** That is the
-Builder's omission. Nobody noticed because `selected` is always empty, so both functions return
-`{}` on every render. **Stage B is the change that makes them run for the first time — into a
+⚠ **STAGE A SUPERSEDED AN APPROVED LAYER (D-030/D-031/D-032) WITHOUT RECORDING IT** — the Builder's
+omission. It stayed invisible because `selected` is always empty, so both functions returned `{}`
+on every render. **Stage B is the change that would have made them run for the first time, into a
 surface that no longer exists.**
 
-The mesh's equivalent of *"selected cards warm the button"* is amber on `NextStepCanvas`, currently
-`0` and **parked by Carl's own instruction** (*"may or may not be implemented… I will return to
-this"*). So the honest position: **the behaviour is currently unimplemented, not merely rewired.**
+**Deleted on Carl's instruction** — *"amber might not return, delete."* Recorded as **D-047**.
 
-Recorded in decisions.md alongside the D-018 supersession. Disposition of the functions themselves
-is Open Question 2.
+⚠⚠ **AND THE FIRST DELETION WAS HALF A DELETION**, which the Architect correctly called the worst
+of both outcomes: `c426c5f` removed the JS and left 219 lines of painted cabochon CSS
+(`.enquiry-nextstep-btn--q5proto`) under a `transparent` override — dead weight that still read as
+authoritative. Completed in `e077689`, together with a false sentence in `decisions.md` asserting
+the system *"is unchanged and continues to govern `.enquiry-nextstep-btn`"*.
+
+**The lesson Stage B should carry:** `decisions.md` named that layer as *one thing* — functions,
+constants, CSS block. **Decide a layer all at once; what survives a partial deletion reads as
+deliberate.**
+
+If amber returns it returns as light — `AmberSource` on `NextStepCanvas`, currently `0` and parked
+— **not as gradients on a painted button.**
 
 ---
 
@@ -151,7 +213,7 @@ The canvas stays a surface; a sibling layer carries the controls.
 
 - Add `labels?: string[]` and `onToggle?: (index: number) => void` to the contract (`:3332`).
 - ⚠ **GUARD THE FIVE-OPTION ASSUMPTION.** All five questions carry exactly five options
-  (`:226-242`) and `CARD_BOXES` has exactly five slots — **which is what makes the index→label
+  and `CARD_BOXES` has exactly five slots — **which is what makes the index→label
   bridge total, and nothing enforces it.** A sixth option would silently vanish: no card, no
   control, no error. A dev-time assert (or a typed 5-tuple) turns a silent disappearance into a
   loud one.
@@ -169,16 +231,22 @@ The canvas stays a surface; a sibling layer carries the controls.
 
   ⚠ **THE FAILURE MODE IS A RETURNED STUTTER, ATTRIBUTED TO SOMETHING ELSE** — this project's most
   expensive class of bug. One line keeps the precompile honest.
-- `litCards` stays internal and keeps owning the filament — `onToggle` fires *alongside* it, so the
-  visual behaviour Carl approved is untouched.
+- `litCards` stays internal and keeps owning **the filament and nothing else** — `onToggle` fires
+  *alongside* it, so the visual behaviour Carl approved is untouched. ⚠ **But it is no longer the
+  source of truth for "is this selected"** — see mismatch 4 and B2. It is a visual effect with its
+  own lifetime, including a cool-down that outlives the selection.
 
 ### B2 — real controls, replacing the hover-only divs
 
 `answer-card-canvas.tsx:3731-3771`
 
-- The wrapper loses `aria-hidden`; each target becomes
-  `<button type="button" aria-pressed={litCards[i]}>` with the option text as its accessible name
-  (visually hidden — the visible text is a GPU texture).
+- The wrapper loses `aria-hidden`; each target becomes a real `<button type="button">` with the
+  option text as its accessible name (visually hidden — the visible text is a GPU texture).
+- ⚠⚠ **`aria-pressed` COMES FROM `selected`, NOT FROM `litCards`** — mismatch 4 above. The canvas
+  must be told which options are selected (a `selectedIndices` prop, or `labels` plus the corridor's
+  `selected`) rather than reporting its own filament state. **`litCards` stays what it is: a visual
+  effect with its own lifetime, including a cool-down that outlives the selection.** A surface's
+  animation state is not the application's answer to "is this pressed".
 - Keyboard falls out of using a real `<button>`: Enter/Space, focus ring, tab order.
 - ⚠ **THE DOUBLE-FIRE MECHANISM, SPECIFIED RATHER THAN LEFT AS A REQUIREMENT.** A `<button>` with
   `onPointerDown` fires **both** `pointerdown` and `click` on every mouse press:
@@ -202,12 +270,23 @@ The canvas stays a surface; a sibling layer carries the controls.
 
 `components/enquiry/enquiry-opening.tsx`
 
-- Render the canvas for **every** `qNum`, not `qNum === 5` (`:1352`).
-- Pass `labels={QUESTIONS[qNum].options}` and
-  `onToggle={(i) => toggleOption(QUESTIONS[qNum].options[i])}`.
-- Remove the `eslint-disable` on `toggleOption` (`:1152`) — it has a caller now.
+- ⚠ **THE `qNum === 5` GATE STAYS IN 1a AND IS REMOVED IN 1b.** That split is the whole measurement
+  design — see the corrected sequencing above. Removing it in 1a would destroy the control.
+- Pass `labels={QUESTIONS[qNum].options}` and an `onToggle` mapping index → option string.
+- ⚠⚠ **`onToggle` MUST BE `useCallback`-STABLE, KEYED ON `qNum`.** Architect's finding. Written
+  inline it is a **new closure on every render** — and `toggleOption` writes `selected`, which
+  re-renders the corridor, which re-renders `AnswerCardCanvas`. That component is a plain export
+  with no `memo`, **and this happens on the same frame as the filament heat Carl approved.**
+
+  ⚠ **THE PRECEDENT IS IN THAT FILE ALREADY**: `onCompiled` and `onEntranceStart` sit in effect
+  dependency arrays, which is the demonstration that unstable callbacks matter here — an unstable
+  one would re-fire those effects. **None of this happens today, because nothing writes to
+  `selected`.** Stage B is what makes it possible.
+- **Verification must include a click-cost check** — frame cost at the moment of selection, not
+  only at the transition.
+- Remove the `@typescript-eslint/no-unused-vars` disable above `toggleOption` — it has a caller now.
 - ⚠ **`litCards` resets for free, and NOT because of anything this plan does.** `handleNextStep`
-  already calls `setSelected(new Set())` (`:1173`), and the phrase's own `key` makes each question
+  already calls `setSelected(new Set())`, and the phrase's own `key` makes each question
   a distinct element — so the canvas unmounts and `litCards` goes with it. **An earlier draft
   proposed "key the canvas by question" as the mechanism; that was redundant** (see the structural
   question above — the phrase structure already remounts it). No reset protocol is needed, and no
@@ -219,24 +298,30 @@ The canvas stays a surface; a sibling layer carries the controls.
 
 | file | change |
 |---|---|
-| `components/enquiry/answer-card-canvas.tsx` | `labels` + `onToggle` props; delete `CARD_LABELS`; five-option guard; promote hit targets to real buttons (B2) |
-| `components/enquiry/enquiry-opening.tsx` | render for all `qNum`; pass labels + onToggle; labels to the warm-up instance; un-disable `toggleOption` |
-| `components/enquiry/enquiry-opening.tsx` (`:272`, `:396`, `:1371`) | ⚠ **`reflectionVars` / `q5ReflectionVars`** — dead since Stage A. **Disposition is Open Question 2.** Not to be silently left running |
-| `components/enquiry/answer-card-mesh.tsx` | none expected — `label` already optional |
-| `project-intelligence/decisions.md` | **new entry** superseding D-018 (B0) **and** recording D-031/D-032's reflection as unimplemented (B0b). Drafted in this chunk, approved by Carl |
-| `verify/transition-cost.mjs` | **new** — Q5→Q4 frame cost. ⚠ Run on the CURRENT build first, as the control |
-| `verify/corridor-walk.mjs` | **new** — walks Q5→Q1→completion by clicking real controls |
+| file | change | step |
+|---|---|---|
+| `answer-card-canvas.tsx` | `labels` + `onToggle` + `selectedIndices` props; delete `CARD_LABELS`; five-option guard | 1a |
+| `enquiry-opening.tsx` | pass labels + a `useCallback`-stable `onToggle`; labels to the **warm-up** instance too; un-disable `toggleOption` | 1a |
+| `enquiry-opening.tsx` | remove the `qNum === 5` gate | **1b only** |
+| `answer-card-canvas.tsx` | promote hit targets to real `<button>`s; `aria-pressed` from `selected`; focus ring; entrance-gated `tabIndex` | B2 |
+| `answer-card-mesh.tsx` | none expected — `label` already optional | — |
+| `verify/transition-cost.mjs` | ✅ **exists** (`c426c5f`). ⚠ Its header records that its current numbers are a floor, not a product measurement — re-run against 1a/1b | 1a→1b |
+| `verify/corridor-walk.mjs` | **new** — walks Q5→Q1→completion, and asserts the button fades back **out** on deselect | 1a |
+| `project-intelligence/decisions.md` | ✅ **D-047 written** (`e077689`) — supersedes D-018 and records the reflection deletion | done |
 
 ---
 
 ## Verification
 
 - `npx tsc --noEmit` clean; `npm run lint` at the recorded baseline of **1**
-- ⚠⚠ **`verify/transition-cost.mjs` FIRST, BEFORE ANY WIRING.** The Q5→Q4 move is where Stage B
-  creates a context, and it is untested. Establish today's cost as a control, then measure again
-  after. Production, interleaved, real GPU.
-  ⚠ An earlier draft said *"reveal cost, five canvases mount instead of one"* — **that measured the
-  wrong thing.** The reveal is not where the new cost lands, and there are never five canvases.
+- ⚠⚠ **`verify/transition-cost.mjs` AFTER 1a, NOT BEFORE THE WIRING.** See the corrected
+  sequencing above: there is no reachable corridor move until selection exists, so the control has
+  to be taken on 1a (real move, no canvas on the far side) and the arm on 1b. Production, real GPU.
+  ⚠ Two earlier drafts got this wrong in different ways — one said *"reveal cost, five canvases
+  mount instead of one"* (**wrong window, and there are never five canvases**), the next said *"run
+  it first on the current build"* (**no such move exists**).
+- **Click cost** — frame cost at the moment of selection, since `onToggle` re-renders the corridor
+  and the canvas on the same frame as the filament heat. New, and it belongs with 1a.
 - **`verify/corridor-walk.mjs`** — the point of the chunk: select an answer, assert the button
   fades in, click through Q5→Q1, reach completion. Screenshot each question.
   ⚠ It must also assert the **inverse Carl specified**: deselect the last answer and the button
@@ -254,34 +339,61 @@ The canvas stays a surface; a sibling layer carries the controls.
 
 ## Order of work — Carl's call, 10 August 2026
 
-**Two commits in this chunk:**
+**Three commits, and the split of the first one is what makes the measurement honest:**
 
-1. **B0 + B1 + B3 — selection wired, corridor walkable.** Carl sees the fade-in he described and
-   can walk Q5→Q1 by mouse.
-2. **B2 — the accessibility layer**, immediately after, as its own reviewable commit.
+1. **1a — B0 + B1 + B3 wiring, `qNum === 5` RETAINED.** Selection works, the button fades in, the
+   corridor advances into a Q4 with an empty grid. **Carl sees the fade-in he described**, and this
+   is the measurement control. ⚠ Q4–Q1 have no cards yet; that is expected, not a defect.
+2. **1b — remove the `qNum === 5` gate**, after measuring 1a. Cards at every question. ⚠ **If the
+   transition delta is bad, STOP HERE AND DO NOT SHIP 1b** — 1a is a corridor that already walks,
+   and the structural question then goes to Carl with a real number behind it.
+3. **B2 — the accessibility layer**, as its own reviewable commit.
 
 Carl chose *"same chunk, separate commit"*: B2 is the accessibility work and deserves to be judged
 on its own rather than buried in a wiring change.
 
 ⚠ **B2 IS NOT OPTIONAL, ONLY SEPARABLE, AND THE CHUNK IS NOT DONE UNTIL IT LANDS.** The moment the
-cards select they are controls, and `answer-card-mesh.tsx:1345-1349` already records that the
-visible text being a texture makes a correct DOM label **mandatory at that point, not optional.**
-Between the two commits the corridor is unusable by keyboard and unreadable by a screen reader —
-acceptable for one step inside a chunk, not as a resting state.
+cards select they are controls, and `answer-card-mesh.tsx` already records that the visible text
+being a texture makes a correct DOM label **mandatory at that point, not optional.** Between the
+commits the corridor is unusable by keyboard and unreadable by a screen reader — acceptable for one
+step inside a chunk, not as a resting state.
 
 ---
 
 ## Open questions
 
-1. **The structural question above** — accept a context creation per question step and measure, or
-   take the shared-host restructure (D-046) now? **Carl's call, after the measurement.**
-2. **D-031's disposition** — delete `reflectionVars` / `q5ReflectionVars`, or keep them as the
-   marker for where amber returns?
+**One remains.**
 
-**Answered and folded in, no longer open:** the D-018 supersession is recorded as a *new*
-decisions.md entry rather than an edit to D-018 (Architect); select arity is multi-select
-throughout (Carl); the B1+B3 / B2 split is two commits in one chunk (Carl).
+1. **The structural question** — accept a WebGL context creation per question step, or take the
+   shared-host restructure (D-046) so the grid outlives the phrase? ⚠ **Carl's call, and it should
+   be taken on the 1a/1b delta rather than on the +126ms already measured, which came from a forced
+   path with `selected` empty.** If the delta is bad, stop at 1a: a corridor that walks, with a real
+   number to take the restructure on.
+
+**Answered, and already executed:**
+
+- **D-031/D-032's reflection** — deleted, Carl: *"amber might not return, delete."* D-047 written.
+- **D-018's single-select** — superseded by multi-select throughout, Carl.
+- **The D-018 record** — a *new* decisions.md entry, not an edit to D-018 (Architect).
+- **The B1+B3 / B2 split** — same chunk, separate commits (Carl); now three, because the
+  measurement needs 1a and 1b apart.
 
 **Withdrawn as mis-framed:** *remount vs reset* (keying is not what costs the context — the phrase
 structure is); *five canvases or one* (at most two exist, only during a move); *`aria-pressed` vs
 `role="checkbox"` by arity* (B0 removes the variation).
+
+---
+
+## ⚠ How this plan has gone wrong, twice — read before executing it
+
+Both revisions were caught by review, not by the plan checking itself:
+
+1. **It cited a viewport gate that had been removed on 7 August**, because three stale comments in
+   `enquiry-opening.tsx` still asserted it. Fixing those found a fourth and then a **fifth** — the
+   fifth *half* true, which is why it survived two sweeps.
+2. **It made its own first action impossible** — "measure the corridor move on the current build",
+   when no reachable corridor move exists.
+
+⚠ **THE COMMON SHAPE: the plan asserted things about the code that were true when someone wrote
+them down and false when they were read.** The same class as the seven instrument failures recorded
+on 9–10 August. **Verify each claim against the code at execution time, not against this file.**
