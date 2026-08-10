@@ -20,6 +20,34 @@
 // much as it measures the change — thermal state, driver caches and background
 // load all drift across a run. Alternating cancels it.
 //
+// ══════════════════════════════════════════════════════════════════════════
+// ⚠⚠ ITS NULL RESULT IS WEAK EVIDENCE AND MUST NOT BE CITED AS "FREE"
+// ══════════════════════════════════════════════════════════════════════════
+//
+// On 10 August 2026 this reported **+0.00ms** — 16.7ms median on both arms.
+// The Architect flagged the reading the same day, and the objection is correct:
+//
+// **This samples rAF gaps FROM INSIDE THE PAGE, and the page's rAF is scheduled
+// by the same vsync as the render loop.** So both arms report ~16.7ms whether
+// the GPU is working hard or idling. The instrument cannot distinguish "the
+// sweep is cheap" from "the sweep is invisible to this measurement" — a null
+// result is equally consistent with both.
+//
+// ⚠ SAME ADJACENCY CLASS AS THE SEVEN RECORDED ON 9-10 AUGUST: the instrument
+// answered a question next to the one asked. Here the question asked was "does
+// this cost GPU time" and the question answered was "is the compositor still
+// hitting vsync".
+//
+// ⚠ WHAT WOULD ACTUALLY ANSWER IT: GPU frame timings from the trace
+// (`Profiler`/`chrome://tracing` categories, or `EXT_disjoint_timer_query`), or
+// a proxy that saturates — many canvases, or a deliberately heavy scene — so
+// that a real cost has somewhere to show. **Until then, treat the sweep's cost
+// as UNMEASURED rather than as zero.**
+//
+// ⚠ AND THE MITIGATION NO LONGER DEPENDS ON THE ANSWER. `TravellingReflection`
+// is now gated on `active`, so in the corridor the loop does not run while the
+// button is invisible. That removes the risk this harness was built to size.
+//
 // ⚠ HEADED, --enable-gpu, ABORTS ON A SOFTWARE RASTERISER.
 
 import { chromium } from "@playwright/test";

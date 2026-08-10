@@ -716,10 +716,23 @@ export default function EnquiryOpening() {
      * ⚠⚠ THE READY GATE — AND IT EXISTS BECAUSE THE BACKSTOP WAS THE ONLY PATH
      * ON EVERY VIEWPORT UNDER 1280px.
      *
-     * `AnswerCardCanvas` returns `null` below `PROTO_MIN_VIEWPORT_PX` (1280).
-     * No canvas means nothing ever reports `compiled`, so `armOpening` was
-     * reached ONLY by the 4000ms ceiling below — and the visitor watched a blank
-     * screen for 4.2 seconds before the heading began. Measured across widths
+     * ⚠ HISTORICAL: THE 1280px GATE NO LONGER EXISTS. It was removed on
+     * 7 August 2026 — `answer-card-canvas.tsx:98` records it, and the cards now
+     * measure the grid instead. **This paragraph describes why the ready gate
+     * was BUILT, not how the canvas behaves today.** The gate is still correct
+     * and still load-bearing: `compiled` can be late for other reasons.
+     *
+     * ⚠⚠ CORRECTED 10 AUGUST 2026 BECAUSE THIS COMMENT MISLED A PLAN. Three
+     * stale assertions of the 1280 gate in this file (here, the ceiling below,
+     * and the canvas mount) were read as current, and produced a plan that asked
+     * the Architect to rule on inheriting a gate that does not exist. **A stale
+     * comment is an instrument: it is what the next reader measures the code by,
+     * and it lies in exactly the way a bad harness lies.**
+     *
+     * Historically: no canvas meant nothing ever reported `compiled`, so
+     * `armOpening` was reached ONLY by the 4000ms ceiling below — and the
+     * visitor watched a blank screen for 4.2 seconds before the heading began.
+     * Measured across widths
      * (`verify/arm-by-width.mjs`):
      *
      *     1440   canvas present   armed by the compile     heading at 2349ms
@@ -1033,10 +1046,18 @@ export default function EnquiryOpening() {
       }
 
       if (!reducedMotion && activated !== null) {
-        // ⚠ THE OUTER CEILING, AND IT IS LOAD-BEARING. The card canvas does not
-        // mount below `PROTO_MIN_VIEWPORT_PX`, so on narrow viewports
-        // `onEntranceStart` never fires. Without this the contact field would
-        // wait forever — a state gate must never be the only exit.
+        // ⚠ THE OUTER CEILING, AND IT IS LOAD-BEARING — but NOT for the reason
+        // this comment used to give.
+        //
+        // ⚠ CORRECTED 10 AUGUST 2026. It said "the card canvas does not mount
+        // below `PROTO_MIN_VIEWPORT_PX`, so on narrow viewports
+        // `onEntranceStart` never fires". **That gate was removed on 7 August**
+        // (`answer-card-canvas.tsx:98`) — the cards measure the grid instead and
+        // mount at every width.
+        //
+        // The ceiling still stands on its own merit: `onEntranceStart` can fail
+        // to fire for other reasons (the canvas not yet measured, precompile
+        // pending), and **a state gate must never be the only exit.**
         const sinceBegin = Date.now() - activated;
         const pastCeiling = sinceBegin >= ENTRANCE_ANCHOR_CEILING_MS;
 
@@ -1291,7 +1312,12 @@ export default function EnquiryOpening() {
                 ~1330ms late. See `Q5_REVEAL_CLEAR_MS` in
                 `answer-card-canvas.tsx`.
 
-                Renders only at >= 1280px and only for Q5; absent otherwise.
+                ⚠ CORRECTED 10 AUGUST 2026 — this said "Renders only at >= 1280px
+                and only for Q5". **The 1280px half is false**: that gate was
+                removed on 7 August (`answer-card-canvas.tsx:98`) and the cards
+                measure the grid instead, so this mounts at every width.
+
+                Renders only for Q5; absent for Q4-Q1.
               */}
               {/*
                 ⚠ `warm` IS DELIBERATELY NOT PASSED. It defaults to `true`.

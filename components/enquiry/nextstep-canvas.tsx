@@ -594,16 +594,43 @@ const RETURN_MS = 2200;
 
 function TravellingReflection({
   material,
+  active,
 }: {
   material: React.RefObject<THREE.MeshPhysicalMaterial | null>;
+  /**
+   * Whether the button is actually on screen and worth animating.
+   *
+   * ⚠ THE BENCH PASSES `true`; THE CORRIDOR MUST PASS ITS VISIBILITY. See the
+   * effect below — an ungated loop renders invisibly through the Q5 reveal.
+   */
+  active: boolean;
 }) {
   const invalidate = useThree((s) => s.invalidate);
   const enabled = urlFloat("travel", 1) > 0;
   /** How far the reflected room swings, in radians. `?travelarc=` */
   const arc = urlFloat("travelarc", 0.85);
 
+  /**
+   * ⚠⚠ THE LOOP MUST NOT RUN WHILE THE BUTTON IS INVISIBLE — Architect, 10
+   * August 2026, and this was a real defect rather than a tuning point.
+   *
+   * In the corridor the button's wrapper is `opacity: 0; pointer-events: none`
+   * until something is selected (`enquiry-opening.tsx:1336`). Without this gate
+   * an unconditional rAF would call `invalidate()` at 60fps **from the moment
+   * each question mounts** — invisibly, straight through the card entrance
+   * ladder and the Q5 reveal. **That is precisely the 167ms window that is still
+   * open**, and the plan proposed to MEASURE the risk rather than remove it.
+   *
+   * ⚠ NOTHING IS LOST BY GATING IT. The button cannot be seen or clicked before
+   * a selection exists, so a sweep during that time has no viewer. It turns a
+   * possible regression into a non-question.
+   *
+   * ⚠ AND IT MAKES REDUCED MOTION FALL OUT FOR FREE: `active={false}` leaves a
+   * static mesh with the loop stopped, which is already the correct behaviour
+   * there — the surface still renders, only the motion stops.
+   */
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !active) return;
     let raf = 0;
     const t0 = performance.now();
     const total = TRAVEL_MS + RETURN_MS;
@@ -630,7 +657,12 @@ function TravellingReflection({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [enabled, arc, invalidate, material]);
+    // ⚠ `active` IS IN THE DEPS DELIBERATELY, NOT JUST TO SATISFY THE RULE. It
+    // is what STARTS the loop as well as what stops it: omit it and the sweep
+    // would never begin when a selection arrives, because the effect would not
+    // re-run. The gate would have read as "the traveller is broken in the
+    // corridor" rather than as a missing dependency.
+  }, [enabled, active, arc, invalidate, material]);
 
   return null;
 }
@@ -718,7 +750,17 @@ function BenchKey() {
   );
 }
 
-function ButtonMesh({ width, height, amber }: { width: number; height: number; amber: number }) {
+function ButtonMesh({
+  width,
+  height,
+  amber,
+  active,
+}: {
+  width: number;
+  height: number;
+  amber: number;
+  active: boolean;
+}) {
   const geometry = usePillGeometry(width, height);
   const envMap = useChromeEnv();
   const invalidate = useThree((s) => s.invalidate);
@@ -750,7 +792,7 @@ function ButtonMesh({ width, height, amber }: { width: number; height: number; a
   return (
     <group>
       <BenchKey />
-      <TravellingReflection material={materialRef} />
+      <TravellingReflection material={materialRef} active={active} />
       <AmberSource strength={amber} />
       <mesh geometry={geometry}>
         <meshPhysicalMaterial
@@ -786,10 +828,21 @@ export default function NextStepCanvas({
   width = NEXTSTEP_WIDTH_PX,
   height = NEXTSTEP_HEIGHT_PX,
   amber = 0,
+  active = true,
 }: {
   width?: number;
   height?: number;
   amber?: number;
+  /**
+   * Whether the button is visible and worth animating.
+   *
+   * ⚠⚠ THE CORRIDOR MUST PASS `selected.size > 0`. Its button wrapper is
+   * `opacity: 0; pointer-events: none` until something is selected, and an
+   * ungated sweep would render at 60fps behind that — through the card entrance
+   * and the Q5 reveal, which is the 167ms window still open. Architect,
+   * 10 August 2026. Defaults to `true` for the bench, where it is always shown.
+   */
+  active?: boolean;
 }) {
   const pad = NEXTSTEP_CANVAS_PAD_PX;
   /**
@@ -896,7 +949,7 @@ export default function NextStepCanvas({
           gl.debug.checkShaderErrors = false;
         }}
       >
-        <ButtonMesh width={width} height={height} amber={amber} />
+        <ButtonMesh width={width} height={height} amber={amber} active={active} />
       </Canvas>
     </div>
   );
