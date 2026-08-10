@@ -274,199 +274,43 @@ type MemoryItem = {
   answers: string;
 };
 
-// Position-aware warm reflection contributions, keyed by a card's INDEX in the
-// shared 3+2 answer grid (same layout for every question, so the model is purely
-// positional — not tied to answer text). Index → grid slot:
-//   0 top-left  1 top-middle  2 top-right  3 bottom-left  4 bottom-right
-// The Next step button sits centred below the grid, so bottom-row cards (3,4) are
-// the closest/strongest sources; the distant top-middle card (1) only feeds a faint
-// central catch. Vector: [leftRim, rightRim, upperLeft, upperRight, lowerLeft,
-// lowerRight, upperCentre]. This is the Q5-approved baseline (D-031) generalised.
-const GRID_REFL: ReadonlyArray<readonly [number, number, number, number, number, number, number]> = [
-  [0.16, 0.00, 0.14, 0.00, 0.10, 0.00, 0.00], // 0 top-left
-  [0.00, 0.00, 0.04, 0.04, 0.05, 0.05, 0.13], // 1 top-middle (distant → central)
-  [0.00, 0.16, 0.00, 0.14, 0.00, 0.10, 0.00], // 2 top-right
-  [0.26, 0.00, 0.28, 0.00, 0.30, 0.00, 0.00], // 3 bottom-left (closest)
-  [0.00, 0.26, 0.00, 0.28, 0.00, 0.30, 0.00], // 4 bottom-right (closest)
-];
-
-// Build the reflection CSS custom properties for the Next step button from the
-// currently selected answers of the active question. Returns {} when nothing is
-// selected (so no-card hover keeps normal blue-platinum behaviour, and stale
-// variables never persist between questions because this recomputes each render).
-function reflectionVars(options: string[], selected: Set<string>): React.CSSProperties {
-  if (selected.size === 0) return {};
-
-  let rL = 0, rR = 0, rUL = 0, rUR = 0, rLoL = 0, rLoR = 0, rUC = 0;
-  options.forEach((option, idx) => {
-    if (!selected.has(option)) return;
-    const c = GRID_REFL[idx];
-    if (!c) return;
-    rL += c[0]; rR += c[1]; rUL += c[2]; rUR += c[3]; rLoL += c[4]; rLoR += c[5]; rUC += c[6];
-  });
-
-  rUL = Math.min(rUL, 0.40);
-  rUR = Math.min(rUR, 0.40);
-  rUC = Math.min(rUC, 0.16);
-
-  // Hover crown/rim "white" must become amber/champagne when reflection is active.
-  // Each white hover highlight is emitted as a COMPLETE colour string (no in-CSS
-  // calc, which proved fragile in rgba()). Champagne base rgb(255,226,165); per-zone
-  // opacity frozen at idle level, then dropped below idle where that zone's amber
-  // light directly filters it.
-  const champ = (idleAlpha: number, zoneAmber: number) =>
-    `rgba(255, 226, 165, ${(idleAlpha * Math.max(0, 1 - 2.0 * zoneAmber)).toFixed(3)})`;
-
-  return {
-    "--refl-active":       "1",
-    "--refl-left":         Math.min(rL,   0.38).toFixed(3),
-    "--refl-right":        Math.min(rR,   0.38).toFixed(3),
-    "--refl-upper-left":   rUL.toFixed(3),
-    "--refl-upper-right":  rUR.toFixed(3),
-    "--refl-lower-left":   Math.min(rLoL, 0.42).toFixed(3),
-    "--refl-lower-right":  Math.min(rLoR, 0.42).toFixed(3),
-    "--refl-upper-centre": rUC.toFixed(3),
-    // crown specular halves + centre core (idle opacities 0.55 / 0.55 / 0.55)
-    "--crown-left":        champ(0.55, rUL),
-    "--crown-left-mid":    champ(0.14, rUL),
-    "--crown-right":       champ(0.55, rUR),
-    "--crown-right-mid":   champ(0.14, rUR),
-    "--crown-centre":      champ(0.55, rUC),
-    // top rim (idle opacity 0.72) — full-width, uses max side amber
-    "--crown-rim":         champ(0.72, Math.max(rUL, rUR, rUC)),
-    // lower env reflection — softer champagne, frozen at idle opacity 0.14
-    "--crown-env":         `rgba(232, 205, 158, ${(0.14).toFixed(3)})`,
-    // lower bounce underside edge — frozen to idle cool value (no hover lift)
-    "--bounce-edge":       `rgba(70, 110, 170, ${(0.18).toFixed(3)})`,
-  } as React.CSSProperties;
-}
-
-// ── Q5 PROTOTYPE reflection (Stage 2 — spatial light-FILTERING model) ────────
-// Q5-only model for the approved blue-platinum plasma-glass lens
-// (.enquiry-nextstep-btn--q5proto). Independent of GRID_REFL / reflectionVars(), which stay
-// byte-for-byte for Q1–Q4.
-//
-// CONCEPT (corrected): the reflection GEOMETRY belongs to the curved lens and never moves;
-// only its COLOUR changes with the active environmental light. The visible reflection is five
-// connected zones — [0] left cap, [1] upper-left crown, [2] upper-centre crown, [3] upper-right
-// crown, [4] right cap. Each zone accumulates an INFLUENCE value (0..1) from selected cards
-// (primary direction + restrained cross-surface spill so the field reads connected). That
-// influence interpolates the zone's catch COLOUR through three endpoints — cool platinum-blue
-// → champagne → amber — REPLACING the platinum, not painting amber on top of it. No additive
-// overlay; an uninfluenced zone stays exactly platinum-blue. Cards sit above the button, so
-// only these upper/lateral zones are ever coloured — never the text corridor, belly or
-// underside. Complete rgba() strings are computed here (never fragile in-CSS rgba(calc())).
-//
-// Per-card zone influence vector: [leftCap, ulCrown, ucCrown, urCrown, rightCap].
-// Index → grid slot: 0 TL, 1 TM, 2 TR, 3 BL, 4 BR.
-const Q5_ZONE_INFLUENCE: ReadonlyArray<readonly [number, number, number, number, number]> = [
-  [0.34, 0.30, 0.06, 0.00, 0.00], // 0 top-left    — weak-ish left + ul crown, faint centre spill
-  [0.04, 0.20, 0.40, 0.20, 0.04], // 1 top-middle  — centre, softly reaching both adjacent crowns
-  [0.00, 0.00, 0.07, 0.34, 0.40], // 2 top-right    — right cap + ur crown, slightly > card 1
-  [0.78, 0.74, 0.26, 0.04, 0.02], // 3 bottom-left  — STRONGEST left+ul, moderate centre, faint R
-  [0.02, 0.04, 0.26, 0.74, 0.78], // 4 bottom-right — STRONGEST right+ur, moderate centre, faint L
-];
-
-// Colour endpoints for the interpolation. Neutral = the approved platinum-blue crown core.
-// IDLE travels neutral → champagne → amber (Image-2 relationship). HOVER uses RICHER, brighter
-// endpoints (Image-3 relationship), so hover gains saturation/luminosity — not merely opacity.
-const Q5_NEUTRAL: readonly [number, number, number] = [205, 230, 255]; // cool platinum-blue (Image 1)
-const Q5_CHAMPAGNE: readonly [number, number, number] = [245, 208, 138];
-const Q5_AMBER: readonly [number, number, number] = [234, 154, 58];
-// Hover: clearly brighter, more saturated, more luminous (wider separation from idle).
-const Q5_CHAMPAGNE_H: readonly [number, number, number] = [255, 216, 132];
-const Q5_AMBER_H: readonly [number, number, number] = [255, 168, 48];
-
-function q5Mix(
-  a: readonly [number, number, number],
-  b: readonly [number, number, number],
-  k: number,
-): readonly [number, number, number] {
-  return [
-    Math.round(a[0] + (b[0] - a[0]) * k),
-    Math.round(a[1] + (b[1] - a[1]) * k),
-    Math.round(a[2] + (b[2] - a[2]) * k),
-  ] as const;
-}
-
-// Interpolate neutral→champagne→amber by influence t (0..1) → complete rgba string at `alpha`.
-// `hover` selects the richer endpoints. Two-segment lerp keeps a controlled champagne midpoint
-// so weak influence reads "lightly warmed platinum" before it ever looks amber. Every crown
-// segment uses this for BOTH its core and its midpoint, so no fixed white/blue stop survives
-// under an amber-filtered core.
-function q5ZoneColour(t: number, alpha: number, hover = false): string {
-  const clamped = Math.max(0, Math.min(1, t));
-  const champ = hover ? Q5_CHAMPAGNE_H : Q5_CHAMPAGNE;
-  const amber = hover ? Q5_AMBER_H : Q5_AMBER;
-  const rgb =
-    clamped <= 0.5
-      ? q5Mix(Q5_NEUTRAL, champ, clamped / 0.5)
-      : q5Mix(champ, amber, (clamped - 0.5) / 0.5);
-  return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha.toFixed(3)})`;
-}
-
-// Per-zone catch alphas. Selected-state warmth is now clearly visible at UI scale and hover is
-// decisively stronger than idle (Image-2 → Image-3). The diffuse CAP BLOOM is decoupled from the
-// thin LATERAL RIM so the bloom can be strong while the rim stays subordinate.
-//   NOTE: the *neutral fallback* alphas in CSS stay at the approved baseline (crown 0.62, mid
-//   0.16, cap 0.20) so an unselected button is byte-for-byte unchanged. These constants drive
-//   only the SELECTED colour strings.
-const A_CROWN = 0.75, A_CROWN_H = 0.92;   // crown ribbon core
-const A_MID = 0.27,  A_MID_H = 0.38;      // crown ribbon midpoint
-const A_BLOOM = 0.31, A_BLOOM_H = 0.44;   // diffuse curved-face / cap bloom (stronger)
-const A_RIM = 0.19,  A_RIM_H = 0.25;      // thin lateral rim — subordinate, far below the bloom
-
-// Build the Q5-prototype zone colour variables. Returns {} when nothing is selected, so the
-// locked neutral lens shows through unchanged. Emits its OWN namespaced vars (--q5zone-*).
-function q5ReflectionVars(options: string[], selected: Set<string>): React.CSSProperties {
-  if (selected.size === 0) return {};
-
-  // Accumulate influence per zone, bound to 1.0. Bottom-row cards (3,4) reach full warmth on
-  // their own side; spill keeps the field connected.
-  const z = [0, 0, 0, 0, 0];
-  options.forEach((option, idx) => {
-    if (!selected.has(option)) return;
-    const c = Q5_ZONE_INFLUENCE[idx];
-    if (!c) return;
-    for (let i = 0; i < 5; i++) z[i] += c[i];
-  });
-  for (let i = 0; i < 5; i++) z[i] = Math.min(z[i], 1);
-
-  // RIM — restrained and subordinate. Driven by the AVERAGE of the three crown zones (not
-  // Math.max), so one strong side cannot warm the whole outline; the far side stays mostly cool
-  // on a single selection. 4+5 → connected champagne; all-five → predominantly warm, no clean
-  // white. Rim alpha is substantially lower than before (0.78 → 0.30) so it reads as a thin cue,
-  // letting the curved-face/cap reflections carry the modelling.
-  const rimT = (z[1] + z[2] + z[3]) / 3;
-
-  return {
-    "--q5zone-active": "1",
-    // ── idle: crown core + midpoint; cap BLOOM and lateral RIM decoupled ──
-    "--q5zone-lbloom":   q5ZoneColour(z[0], A_BLOOM),  // diffuse left-cap bloom (strong)
-    "--q5zone-lrim":     q5ZoneColour(z[0], A_RIM),    // thin left lateral rim (subordinate)
-    "--q5zone-ul":       q5ZoneColour(z[1], A_CROWN),
-    "--q5zone-ul-mid":   q5ZoneColour(z[1], A_MID),
-    "--q5zone-uc":       q5ZoneColour(z[2], A_CROWN),
-    "--q5zone-uc-mid":   q5ZoneColour(z[2], A_MID),
-    "--q5zone-ur":       q5ZoneColour(z[3], A_CROWN),
-    "--q5zone-ur-mid":   q5ZoneColour(z[3], A_MID),
-    "--q5zone-rbloom":   q5ZoneColour(z[4], A_BLOOM),  // diffuse right-cap bloom (strong)
-    "--q5zone-rrim":     q5ZoneColour(z[4], A_RIM),    // thin right lateral rim (subordinate)
-    "--q5zone-rim":      q5ZoneColour(rimT, 0.30),     // top rim — preserved restrained response
-    // ── hover: richer endpoints (saturation/luminosity) AND clearly higher alpha ──
-    "--q5zone-lbloom-h": q5ZoneColour(z[0], A_BLOOM_H, true),
-    "--q5zone-lrim-h":   q5ZoneColour(z[0], A_RIM_H, true),
-    "--q5zone-ul-h":     q5ZoneColour(z[1], A_CROWN_H, true),
-    "--q5zone-ul-mid-h": q5ZoneColour(z[1], A_MID_H, true),
-    "--q5zone-uc-h":     q5ZoneColour(z[2], A_CROWN_H, true),
-    "--q5zone-uc-mid-h": q5ZoneColour(z[2], A_MID_H, true),
-    "--q5zone-ur-h":     q5ZoneColour(z[3], A_CROWN_H, true),
-    "--q5zone-ur-mid-h": q5ZoneColour(z[3], A_MID_H, true),
-    "--q5zone-rbloom-h": q5ZoneColour(z[4], A_BLOOM_H, true),
-    "--q5zone-rrim-h":   q5ZoneColour(z[4], A_RIM_H, true),
-    "--q5zone-rim-h":    q5ZoneColour(rimT, 0.36, true), // top rim — only a modest increase
-  } as React.CSSProperties;
-}
+/**
+ * ══════════════════════════════════════════════════════════════════════════
+ * ⚠⚠ REMOVED — `GRID_REFL`, `reflectionVars`, `q5ReflectionVars` (D-031/D-032)
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * ~194 lines deleted 10 August 2026 on Carl's instruction: *"amber might not
+ * return, delete."* Recovered from git at `d0cf9f5` if ever needed.
+ *
+ * **What they did.** Position-aware warm reflection: a selected card warmed the
+ * Next step button from its own grid position, as CSS custom properties
+ * (`--refl-*`, `--q5zone-*`) consumed by the button's painted gradients.
+ * Approved as D-031 (Q5 prototype) and D-032 (Q1–Q5 rollout).
+ *
+ * ⚠⚠ THEY WERE ALREADY DEAD BEFORE THIS DELETION, AND THAT IS THE PART WORTH
+ * KEEPING. Stage A made the mesh the button's surface, and
+ * `.enquiry-nextstep-btn--mesh` sets `background-image: none` — so these vars
+ * were being computed into a surface that no longer paints. **An approved layer
+ * was superseded without being recorded**; the deletion is the correction, not
+ * the change.
+ *
+ * ⚠ IT WAS INVISIBLE BECAUSE `selected` IS ALWAYS EMPTY in this build, so both
+ * functions returned `{}` on every render and nothing looked wrong. Stage B —
+ * restoring selection — is the change that would have made them run for the
+ * first time, into nothing. Found by the Architect reviewing the Stage B plan.
+ *
+ * ⚠ THE BEHAVIOUR IS NOW UNIMPLEMENTED, NOT REWIRED. The mesh's equivalent is
+ * amber on `NextStepCanvas` (`AmberSource`), which is `0` and parked by Carl's
+ * own instruction — *"It's something that may or may not be implemented with
+ * the cards. This is something i will return to."* If it does return, it
+ * returns there, in the environment, not as CSS gradients on a painted button.
+ *
+ * ⚠ `GRID_REFL` WAS NOT A SPECIFICATION and must not be treated as one if this
+ * is ever revisited. Carl retired that reading on 5 August: it was a CSS-era
+ * hand-authored influence table, *"approved only within the constraints of
+ * CSS"*, with no falloff behind it. **Direction only: the bottom row receives
+ * more than the top row.**
+ */
 
 export default function EnquiryOpening() {
   /**
@@ -1171,9 +1015,14 @@ export default function EnquiryOpening() {
 
   // ⚠ UNUSED WHILE CHUNK 3 RUNS, AND DELIBERATELY KEPT. The five CSS cards that
   // called this are removed, so nothing selects anything — but this is working
-  // selection logic that chunk 5 needs when the WebGL grid takes over, and the
-  // same reasoning that protects GRID_REFL protects it: "unused" here means
-  // "waiting", not "dead".
+  // selection logic that chunk 5 needs when the WebGL grid takes over: "unused"
+  // here means "waiting", not "dead".
+  //
+  // ⚠ THE OLD CROSS-REFERENCE TO `GRID_REFL` IS GONE — that constant was deleted
+  // on 10 August 2026 (see the tombstone above `EnquiryOpening`). **It is not
+  // precedent for keeping this one.** GRID_REFL was waiting for a surface that
+  // then got replaced; this is waiting for a caller that Stage B supplies. If
+  // Stage B is abandoned, revisit whether this should go the same way.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const toggleOption = useCallback((option: string) => {
     setSelected(prev => {
@@ -1280,10 +1129,17 @@ export default function EnquiryOpening() {
 
               ⚠ THE MARKUP IS NOT LOST — it is in git at commit c7afca3 and
               earlier, and chunk 5 rebuilds the grid in WebGL rather than
-              restoring this. `GRID_REFL` in this file is now dead code but must
-              not be deleted as unused; see the correction directly below.
+              restoring this.
 
-              ⚠ CORRECTED 5 AUGUST — `GRID_REFL` IS NOT A SPECIFICATION. This
+              ⚠⚠ `GRID_REFL` HAS SINCE BEEN DELETED — 10 August 2026, on Carl's
+              instruction, along with `reflectionVars` / `q5ReflectionVars`. This
+              comment used to say it "must not be deleted as unused"; that was
+              true while the button was a painted surface and stopped being true
+              when the mesh replaced it in Stage A. See the tombstone above
+              `EnquiryOpening`. The paragraphs below are kept because their
+              REASONING outlived the constant.
+
+              ⚠ CORRECTED 5 AUGUST — `GRID_REFL` WAS NOT A SPECIFICATION. This
               comment used to call it *"the specification the chunk-5 physics has
               to reproduce — bottom row 0.26–0.30 against top row 0.04–0.16."*
               **Carl retired that reading:** it was a CSS-era simulation of the
@@ -1387,15 +1243,16 @@ export default function EnquiryOpening() {
               style={{
                 opacity: selected.size > 0 ? 1 : 0,
                 pointerEvents: selected.size > 0 ? undefined : "none",
+                // ⚠ THE 600ms FADE IS THE BEHAVIOUR CARL DESCRIBED — *"when the
+                // user makes a selection, the button fades in"* — and the same
+                // gate takes it away again when the last selection is released.
+                // It is already correct; Stage B only has to make `selected`
+                // actually change.
                 transition: "opacity 600ms linear",
-                // Position-aware warm reflection. Q1–Q4 use the shared GRID_REFL model
-                // (D-031 generalised). Q5 uses its own Stage-2 spatial light-filtering model
-                // (q5ReflectionVars → --q5zone-*), which recolours the fixed crown/cap
-                // reflection zones neutral→champagne→amber for the new lens. Both return {}
-                // when nothing is selected and recompute each render, so no stale vars persist.
-                ...(qNum === 5
-                  ? q5ReflectionVars(QUESTIONS[qNum].options, selected)
-                  : reflectionVars(QUESTIONS[qNum].options, selected)),
+                // ⚠ THE POSITION-AWARE WARM REFLECTION SPREAD WAS HERE AND IS
+                // GONE — see the tombstone above `EnquiryOpening`. It fed the
+                // PAINTED button's gradients, and the mesh replaced that surface
+                // in Stage A. Deleted on Carl's instruction, 10 August 2026.
               }}
             >
               {/*
