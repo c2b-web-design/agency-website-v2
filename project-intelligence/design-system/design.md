@@ -1,5 +1,47 @@
 # Design System
 
+> ## ⚠⚠ OUTDATED — Carl, 11 August 2026. DO NOT REASON FROM THE COLOUR SECTION.
+>
+> **This file describes the greyscale scaffold the site began as.** The build has moved a long way
+> past it and the file was never re-tracked.
+>
+> **What is stale:** the **Colour** section below is near-black, greys and white, with no blue and
+> no gold. **The `/start` corridor is built almost entirely from blues and a gold, and the brand
+> colours were chosen BEFORE the site — the logos were designed around them.** Carl: *"these logos
+> were not created randomly but had in mind what brand colours I was going to use on the site."*
+>
+> **⚠ THE PALETTE *IS* RECORDED — IN `decisions.md` D-025, NOT HERE.** *"Near-black base,
+> gold/amber as premium accent light, teal/duck-egg/deep blue as modern intelligence accent"*,
+> 14 June 2026, APPROVED as direction. **This file's Colour section contradicts it and is the one
+> that is wrong.** D-025 even anticipated this: it was written *"so future agents do not treat the
+> current neutral-only palette as the permanent final state"* — and an agent did exactly that on
+> 11 August, because it read this file and not that entry.
+>
+> **The measured values live in component files**, each derived with its own local reasoning:
+> `#f2bf61` (the field's champagne, **sampled from the logo's own gold**, 149,431 pixels, 75th
+> percentile) in `contact-field-mesh.tsx`; the glass, opal and environment constants in
+> `answer-card-glass.ts`. **D-025 gives the direction; those give the numbers; nothing joins them.**
+>
+> ⚠ **AND THIS FILE MISLED THE BUILDER THE SAME DAY IT WAS FLAGGED.** Reading a greyscale palette
+> as current, it treated the corridor's colour as local implementation choices and the logos as
+> candidates being tested against a settled site — **exactly backwards.** The palette came first.
+> A file that describes an earlier phase with full authority is an instrument, and it lies like one.
+>
+> **What is still good:** the Principles above, typography, spacing and motion sections have not
+> been contradicted by the build. **The Colour section is the part that has been overtaken.**
+>
+> **What it needs:** this file's Colour section reconciled with D-025, and the measured values
+> joined to the direction they came from — so a reader finds one answer rather than two that
+> disagree. ⚠ **The Builder must not invent the join**: D-025 gives words, the components give
+> numbers, and deciding which number expresses which word is Carl's, not an inference from renders.
+>
+> ⚠ **AND IT MATTERS BEYOND THIS SITE.** `current-sprint.md` records that this repo becomes the
+> workshop template and every client build clones it. **An unrecorded palette does not survive
+> that** — the greyscale table would go forward as though it were the whole story.
+>
+> See `ai-system/working-with-carl.md` → *How Carl builds — the DAW model* (track, re-track,
+> master) and `context-rules.md` → *Approved work is amendable*.
+
 The visual identity for C2B Web Design. These principles govern every decision — colour, typography, spacing, and motion. All implementation must align with this document.
 
 ---
@@ -15,6 +57,12 @@ When in doubt: remove, do not add.
 ---
 
 ## Colour
+
+> ⚠⚠ **THIS SECTION IS OUTDATED — see the banner at the top of the file.** It describes the
+> greyscale scaffold, not the brand. **The brand colours came first and the logos were designed
+> around them**; the corridor is blue with gold from the logo's own sampled `#f2bf61`. The table
+> below is still accurate for the **homepage's structural greys**, and wrong as a statement about
+> the palette.
 
 The palette is near-black with neutral grey tones and white as the primary contrast.
 
@@ -131,4 +179,4 @@ Components built on shadcn/ui must:
 
 ---
 
-*Last updated: 2026-06-14 — Brand colour direction and enquiry future colour pass added (D-025, D-024).*
+*Last updated: 2026-08-11 — ⚠ FLAGGED OUTDATED by Carl. The Colour section describes the greyscale scaffold and contradicts D-025, which records the real brand direction. Principles, typography, spacing and motion are unaffected. Prior footer: 2026-06-14 — Brand colour direction and enquiry future colour pass added (D-025, D-024).*
