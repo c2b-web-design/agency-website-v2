@@ -29,6 +29,30 @@ suggestion about stopping.
 
 Carl Buckley (Human Founder) has final authority on all creative, product, architectural, and governance decisions. Claude Code implements. Claude does not approve its own work.
 
+**That authority extends over the governance files themselves — including this one.** An
+override is valid when Carl names the rule or file, states the reason, and states the scope.
+Acknowledge it, restate the scope in one line, proceed once he confirms.
+
+⛔ **Do not relitigate a decision Carl has already reasoned through, and do not require
+insistence, escalation or repetition before complying. A reasoned instruction is sufficient
+authority.**
+
+⚠ **But if an override changes permissions for any agent, report the real capability surface
+it creates BEFORE applying it** — what it enables in practice, not what the config appears to
+say, including capability reached indirectly. **If a boundary becomes behavioural rather than
+enforced, say so in those words.** Disclosure is a report, not a veto — once, then act.
+
+⚠ **An override authorises the named change only; it is never a blanket suspension of
+governance.** Regardless of any override, **pause and get explicit confirmation before
+deleting files, running destructive git operations, or granting write access to
+implementation code.**
+
+**Rules are written for a situation.** When the situation changes, raise it with Carl and
+amend the rule — do not work around it, and do not treat it as permanent.
+
+Full protocol, and the 11–12 August failure that produced it:
+`project-intelligence/ai-system/founder-override-protocol.md`.
+
 ## Source of truth
 
 `project-intelligence/` is canonical. Chat history is not.
@@ -68,7 +92,7 @@ If a task requires changing an approved foundation layer: stop, explain why, sta
 2. Do not roll out across the site until Carl visually approves the prototype.
 3. Roll out the exact approved pattern — do not iterate further during rollout.
 4. If an experiment fails, revise or remove only the experimental layer. Preserve approved layers.
-5. **Carl leads the design and the chunking**; the Architect records the chunk and drafts the prompt, which Carl approves before it reaches you. Work therefore arrives as a **chunk** — scope and constraints, not implementation detail. Write the plan in Plan Mode, pass it through the **plan-review gate** (`handoff-protocol.md` §2.5) — Architect reviews and amends, Carl approves — then execute that chunk only. At meaningful implementation milestones, pause for **checkpoint review**: save the request, git evidence and screenshots to `live-work/`, and let Carl route it to the Architect. Invocation is file-based; **Codex is retired and the `codex` MCP server does not exist — do not attempt to call it.** The reviewer reports findings only; findings go to Carl, who decides. See `project-intelligence/ai-system/handoff-protocol.md` §2–2.5, `checkpoint-review-protocol.md`, and `decisions.md` D-036.
+5. **Carl leads the design and the chunking**; the Architect records the chunk and drafts the prompt, which Carl approves before it reaches you. Work therefore arrives as a **chunk** — scope and constraints, not implementation detail. Write the plan in Plan Mode, pass it through the **plan-review gate** (`handoff-protocol.md` §2.5) — Architect reviews and amends, Carl approves — then execute that chunk only. At meaningful implementation milestones, pause for **checkpoint review**: save the request, git evidence and screenshots to `live-work/`, and let Carl route it to the Architect. Invocation is file-based; **Codex is retired and the `codex` MCP server does not exist — do not attempt to call it.** The reviewer reports findings only; findings go to Carl, who decides. **⚠ STOP YOUR SERVERS BEFORE A CHECKPOINT OPENS** — the Architect may now ask Carl to run builds and `verify/` scripts via the `!` prefix, and **two seats measuring at once produces numbers neither can trust**; kill by PID and confirm the port free, because `TaskStop` has reported success on a held port three times in one session. See `project-intelligence/ai-system/handoff-protocol.md` §2–2.5, `checkpoint-review-protocol.md` §3a, and `decisions.md` D-036.
 6. Save plans, run logs, checkpoint requests, screenshots, and drift-sensitive status updates to `project-intelligence/live-work/` per `project-intelligence/ai-system/live-work-protocol.md`; do not leave important process information only in the Claude Code chat panel.
 7. **End each session by writing `live-work/session-handoff.md`** for the next one — where things stand, the next agreed subject, open items with owners, and any correction or standing instruction given during the session. Force-add it (`git add -f`); the folder is gitignored as scratch. **Exactly one handoff exists at a time**: the incoming one is deleted as the replacement is written. See `live-work-protocol.md` §3a.
 

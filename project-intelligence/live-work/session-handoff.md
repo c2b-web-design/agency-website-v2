@@ -1,4 +1,60 @@
-# Session Handoff — 10 August 2026 (the button shipped into the corridor; selection restored; a stutter found and NOT fixed)
+# Session Handoff — 11–12 August 2026 (FINAL: the next session deletes the project)
+
+---
+
+## ⛔⛔ THE NEXT SESSION HAS ONE TASK: DELETE THIS PROJECT
+
+**Carl, 12 August 2026:** *"Next session is the last one. One task — to delete the project and
+all files associated with it both externally and internally. Im done."*
+
+⚠ **THIS IS DESTRUCTIVE AND IRREVERSIBLE. Confirm with Carl before executing each item**, then
+execute it. Do not argue the decision, do not propose alternatives, do not offer to preserve
+anything unless he asks. **It is his project and his call.**
+
+⚠ **NOTHING IS COMMITTED.** The working tree holds a full day of uncommitted work. If Carl wants
+any of it preserved he must say so **before** the delete — after it, there is no recovery.
+
+### The inventory, verified from disk on 12 August 2026
+
+**Local:**
+
+    C:\Users\Carl Buckley\agency-website-v2\                    the repository
+    C:\Users\Carl Buckley\.claude-architect\                    the Architect seat
+      └─ settings.json, settings.json.bak-2026-08-12,
+         launch-architect.cmd, .credentials.json, plugins/
+    C:\Users\Carl Buckley\.claude\projects\c--Users-Carl-Buckley-agency-website-v2\
+                                                                per-project Claude state + memory
+
+**Remote — `origin` is a real GitHub remote with three pushed branches:**
+
+    https://github.com/c2b-web-design/agency-website-v2.git
+      main
+      fix/q5-stall-and-label-colour
+      feat/q5-reflected-amber-lighting
+
+⚠ **DELETING THE LOCAL CLONE DOES NOT DELETE THE REMOTE.** The GitHub repository must be deleted
+separately, through GitHub's own settings — `gh repo delete` requires the `delete_repo` scope and
+**Carl must confirm it explicitly.** ⚠ **And the `c2b-web-design` ORGANISATION may hold other
+repositories** — check before assuming the org itself should go.
+
+⚠ **`.claude-architect/.credentials.json` CONTAINS A LIVE CREDENTIAL.** Deleting the folder
+removes the local copy; **revoking the token is a separate action on Carl's account** and is his
+to do.
+
+**Not part of this project and must NOT be touched:** `C:\Users\Carl Buckley\.claude\`
+(the Builder's own global config, used by every other project), and anything under
+`brand-assets/` that Carl wants to keep — ⚠ **the logo work is PARKED, not abandoned, and the
+external tool those assets were salvaged from was destroyed on 25 July 2026, so there is
+nothing to re-export from. Ask before deleting `brand-assets/`.**
+
+---
+
+*Everything below is the record of the session that ended. It is retained only in case Carl
+changes his mind before the delete runs.*
+
+---
+
+# Session Handoff — 11–12 August 2026 (the misstep was found; the fix worked and broke the layout)
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -14,298 +70,219 @@ It was not broken this session.
 
 ---
 
-## 🔴 START HERE — THE CORRIDOR STUTTERS ON EVERY QUESTION STEP. FIX IT FIRST.
+## 🔴 READ THIS BEFORE YOU MEASURE ANYTHING
 
-**Carl's instruction, and his reasoning, which is the brief:**
+**Carl's judgement of this session, in his words:**
 
-> *"A stutter or stall reads like a glitch, bad workmanship. For someone aiming to sell premium
-> websites, this is a non negotiable."*
+> *"This is what i hear. i know the problem, oh its not that. Wait, its definately this, oh, the
+> tool i built is wrong. Ah, now ive got it. Do you know what happens in the real world if an
+> employee works like that."*
 
-**Measured, production build, four runs, tight spread — this is not noise:**
+**And the standing correction that came out of it:**
 
-| | worst frame gap, Q5→Q4 | |
+> **The pattern is that the Builder trusted numbers over Carl's eye.** Every time they
+> disagreed this session, **Carl was right.** Including when he tested `:3100` and found the
+> numbers meaningless, and when he looked at the shared host and saw a broken layout that three
+> green instruments had just passed.
+
+⚠ **WHEN CARL REPORTS SOMETHING VISUAL, THAT IS THE SPECIFICATION — NOT A HYPOTHESIS TO TEST.**
+The measurement's only job after that is to find the cause of *the thing he named*. **If a
+harness says "nothing is wrong", the harness is finished and wrong.** That inversion happened
+repeatedly today and it is the single most expensive habit in this project.
+
+⚠ **AND MARK GUESSES AS GUESSES OUT LOUD.** Four hypotheses were presented with the same
+confidence as the eventual finding, so Carl had no way to tell knowing from guessing.
+
+---
+
+## 🔴 THE DEFECT, LOCATED — AND THE FIX THAT ALMOST WORKED
+
+### What Carl sees
+
+> *"Q5 reveals. i chose card 1. Pressed next step and then Q5 as it moved up into position
+> stuttered."* … *"its not a noticeable stutter, it doesnt look smooth in comparison to the text
+> and subtext at the beginning of the start page."* … *"a noticable pause after the first word.
+> Not as bad as a stutter, but its there. After this pause the rest of the reveal is even. Its
+> like watching a runner who makes a misstep."* … **and on every question, not just Q5.**
+
+### The cause, measured by the Architect (12 August)
+
+Q5's phrase is 310px wiped over 1300ms linear — **~78 frames at 60Hz. Measured 60, 70, 69.**
+
+    word edges:   What 17%   brought 45%   you 59%   here 75%   today? 100%
+    run 1  canvas created +170ms (13%) → compiled +526ms (40%)  → 117ms freeze at 41%
+    run 2  canvas created  +96ms  (7%) → compiled +288ms (22%)  → 117ms freeze at 24%
+    run 3  canvas created  +93ms  (7%) → compiled +289ms (22%)  → 117ms freeze at 26%
+
+⚠⚠ **THE FREEZE TRACKS THE SHADER COMPILE.** Not a fixed point in the wipe — wherever the card
+canvas finishes. It always lands between "What" and "brought", **exactly one word in**, because
+the compile finishes 290–530ms into a wipe whose first word clears at 221ms.
+
+⚠ **AND IT IS IN THE GPU PROCESS, NOT THE MAIN THREAD.** CDP trace:
+`CommandBuffer::Flush` / `GpuChannel::ExecuteDeferredRequest`, four blocks ~164ms, **renderer
+idle.** That is why every main-thread instrument called the page healthy — and why moving the
+wipe to a composited property was the wrong target twice.
+
+**The control clears the technique:** the heading and subtext use the SAME
+`enquiry-mask-reveal-horizontal` keyframes on the same page and deliver 112–251 frames cleanly.
+**The moment is guilty, not the mechanism.**
+
+Full analysis: `live-work/architect-analysis-wipe-misstep.md`.
+
+### ✅ THE SHARED HOST WORKED — AND WAS REVERTED
+
+**Built, measured, reverted in the same hour. The mechanism is proven; the implementation is not.**
+
+| | before | with the host |
 |---|---|---|
-| step 1a — no canvas mounts on the far side | 70 / 76 / 62ms | **mean 69ms** |
-| step 1b — a canvas mounts (current HEAD) | 198 / 196 / 189 / 189ms | **mean 193ms** |
+| Q5 wipe frames of ~78 | 60 / 70 / 69 | **75 / 80 / 80 / 80** |
+| ~120ms freeze at 22–41% | every run | **gone — nothing past 13% in 3 of 4 runs** |
+| `card-canvas-created` | once per question | **once, at Q5, never again** |
 
-**+124ms, 2.8×, on every question step — four times per walk.** The ~50ms visible threshold is
-recorded in `current-sprint.md`. **A visitor sees this.**
+⚠⚠ **AND CARL LOOKED AT IT AND THE CARDS WERE ABOVE THE QUESTION TEXT.** Five cards ~230px too
+high, sitting over the corridor. Screenshot at `?modetrace=1`.
 
-### The cause, and why no dial fixes it
+**The cause:** the canvas positions `absolute` from `box.left/top`, which were grid-relative only
+because it rendered INSIDE `.enquiry-answer-grid`. From a zero-size host the offset must be
+measured, and it resolved against a different `offsetParent`. **Exactly the hazard D-046 named.**
 
-**A WebGL context is created and destroyed on every question step**, and **keying cannot avoid
-it**: `renderPhrase` gives each question `key={`phrase-${qNum}`}`, and the answer grid lives inside
-`enquiry-phrase-extras` (gated on `showExtras = isActive || (corridorMoving && depth === 1)`). The
-**phrase structure owns the canvas's lifetime** — nothing about how the canvas itself is keyed
-changes that. A `resetLit` prop saves nothing; that was a false choice I put to the Architect and
-it was correctly rejected.
+⚠⚠ **THREE GREEN INSTRUMENTS, ONE BROKEN SCREEN.** `active-grid-fixed.mjs` passed (it measures
+the grid `<div>`, which never moved). The wipe harness passed (frames genuinely were delivered).
+A canvas-vs-grid box check passed at 432/493/576 on both — **because it compared two
+`getBoundingClientRect` calls in viewport space while the CSS `left/top` resolved against
+something else.** Carl caught it in one look.
 
-⚠ **THIS IS THE Q5 STALL'S OWN MECHANISM AT A NEW MOMENT.** Context creation inside an animating
-transition. The reveal costs 118–135ms *because it happens once*; now it happens four more times.
+**What a correct version needs:** the canvas must derive position from the grid's rect **in the
+same coordinate space it renders in**, verified by a pixel check that the cards sit BELOW the
+phrase — never by comparing two rects. A tombstone in `enquiry-opening.tsx` below
+`.enquiry-phrase-band` records this in full.
 
-### The fix — and it is CARL'S CALL, NOT THE BUILDER'S
+### ⚠ TWO MOUNT SITES REMAIN, AND ONE IS THE NEXT JOB
 
-**The shared host: the answer grid outliving the phrase, so no context is created mid-move.**
+`NextStepMeshButton` (`enquiry-opening.tsx:1493`) is **still inside the keyed phrase**, so it
+creates a context per step — contexts still climbed 4→8 across a walk with the card host in
+place. The card canvas was fixed; the button was not.
 
-⚠⚠ **THAT IS THE D-046 RESTRUCTURE, WHICH D-046 DECLINED TO AUTHORISE, AND IT IS APPROVED
-LAYOUT.** `CLAUDE.md`: stop, explain, state the risk, ask. **The difference from when the question
-was first put is that the evidence is now measured rather than predicted.** Carl has said the
-stutter is non-negotiable, which points at the restructure — but *authorising the restructure* is a
-separate sentence he has not yet said. **Get it explicitly.**
+---
 
-⚠ **AND THE ARCHITECT SHOULD SEE THE NUMBER**, since it reopens a declined decision.
+## ⚠ THE FIXED-POSITION FINDING — LOAD-BEARING, AND ALREADY PROVEN
 
-### ⚠ THE THING THAT WILL BITE WHOEVER DOES IT — and Carl named it
+**The constraint that blocked D-048 for three days does not apply.** `verify/active-grid-fixed.mjs`,
+**25 samples across 5 runs**, every question:
 
-> **Carl:** *"the corridors movement is important, there is easing in there too."*
+    Q5..Q1   top 492.78   left 432.22   576 x 104
 
-The canvas currently sits **inside** the phrase and inherits its motion **for free**. Measured
-baseline: the grid travels **435→493px in lockstep with the phrase text, on all 161 frames**. Lift
-it out and that inheritance is gone — it becomes a hand-driven animation that must match
-`bottom 900ms cubic-bezier(0.37, 0, 0.63, 1)` (`.enquiry-phrase-anim`, `globals.css`).
+Identical to the hundredth of a pixel. The 435→493px travel belongs to the **receding** copy —
+`enquiry-opening.tsx` withholds the active phrase entirely while `corridorMoving`. **A canvas
+hosted at the active position sits still for the whole corridor; there is no easing to reproduce.**
 
-**Three things the canvas gets free today by being a child:**
-1. **The recede motion** — `bottom` + `opacity`, eased.
-2. **Its size** — a `ResizeObserver` on `.enquiry-answer-grid`, which it currently lives inside.
-3. **The staggered entrance ladder** — it runs on mount, and a canvas that stops mounting per
-   question must be told to re-run it. ⚠ **That is approved choreography.**
+⚠ **THE ARCHITECT'S 12 AUGUST ANALYSIS SAYS THIS HARNESS "HAS NEVER BEEN RUN". IT HAS** — twice,
+02:46 and 03:30. Do not re-open it as an unknown.
 
-**✅ THE HARNESS FOR THIS ALREADY EXISTS AND ITS CONTROL PASSES:**
+---
 
-    node verify/corridor-motion.mjs before          # capture
-    ...change...
-    node verify/corridor-motion.mjs after
-    node verify/corridor-motion.mjs --compare before after
+## ✅ WHAT LANDED AND VERIFIED (all uncommitted)
 
-`motion-before.json` is committed. **1a and 1b both measured 0.0–0.1% against it** — the motion is
-currently untouched, so any deviation after the restructure is the restructure's. Noise floor is
-**2.6–2.9%** (measured, same build twice); the flag fires above 5%.
+- **Traveller gated on `animating`** — five glass cards were rendering at 60fps inside a
+  `visibility: hidden` box for the entire ~12s opening, and two canvases rendered through every
+  move. Ladder and motion gates held.
+- **`prewarmLabelCanvases`** — paints the next question's labels during the corridor dwell.
+- **Ladder anchor decoupled** from the CSS animation name (`onAnimationStart` publishes
+  `__revealStart`). Verified 0% Mode B across 90 samples on its own.
+- **Per-question compile marks**, `?modetrace=1`, `?labeltex=`, `?pmrem=`, `?riseease=` — all
+  defaults unchanged.
+- **Stale comments corrected**: the 2048 oversample justification (it measured the grid, not the
+  face), the `frameloop="demand"` claim, the PMREM "open defect" heading.
 
-⚠ **CARL JUDGES BY EYE AND HAS SAID SO.** The harness says where to look; it does not approve.
+### D-049 — the Architect now has `Bash`
+
+Carl's decision, after four requests. `Bash`, `Monitor`, `TaskOutput`, `TaskStop` removed from
+deny; twelve measurement commands pre-approved. **`Edit`/`Write`/`NotebookEdit` still denied —
+and with a shell that is cosmetic**, so the write boundary is now discipline
+(`architect-role.md` §2). Live file backed up, reference reconciled, no drift.
+**⚠ THE ARCHITECT MUST RESTART TO PICK IT UP.**
+
+---
+
+## ⚠⚠ FOURTEEN INSTRUMENT FAULTS. FOUR ARE NEW TODAY.
+
+| # | the lie |
+|---|---|
+| 12 | **A correct harness, correctly run, at TOO FEW ROUNDS.** The canvas-cache arm read **−22ms** over 4 interleaved rounds — clean, decisive, would have shipped as a fix. Repeated: **+1ms**, then **+13ms**. It is noise. **Interleaving removes order effects; it does not remove variance.** Caught the Builder three times in one day. |
+| 13 | `wipe-evenness.mjs` divides Δclip by Δ`animation.currentTime`. Under `linear` timing that ratio is **constant by construction** — it would report a perfectly even wipe **on a frozen page.** |
+| 14 | `wipe-screencast.mjs` measured **the opening**, at t=3.2s, before Begin was clicked — an 88px "travel" at x≈1281 for a phrase 310px wide at x=589. Its rightmost-bright-pixel heuristic locks onto the wrong element, and `Page.startScreencast` is ack-throttled to ~15fps so it cannot resolve a dropped frame anyway. |
+| — | **`q5-recede.mjs` is broken and known-broken.** `querySelector(".enquiry-phrase-anim")` returns the FIRST phrase in document order; during a move both exist. Instrument fault #11 repeating. |
+
+⚠ **13, 14 AND `q5-recede.mjs` ARE STILL ON DISK PRESENTING AS WORKING HARNESSES.**
+
+⚠ **AND `corridor-motion.mjs --compare` CANNOT BE TRUSTED ACROSS RUNS OF DIFFERING SPAN** — it
+normalises over the whole sample window. It reported 2.9% on a change that was 0.83px when
+aligned on the move itself. Instrument fault #10 recurring in the same harness.
+
+---
+
+## ⚠ WHAT WAS TRIED AND FAILED — DO NOT REPEAT
+
+1. **`will-change: clip-path`** — no effect. **Chrome cannot composite `clip-path` at all.**
+2. **Transform-based wipe, attempt 1** — production Mode B **0% → 60%.** Reverted.
+3. **Transform-based wipe, attempt 2**, after decoupling the anchor — **0% → 90%.** Reverted.
+   ⚠ The anchor fix verified clean on its own first, so **the diagnosis of attempt 1's failure
+   was also wrong.**
+4. **Contact-field pre-warm as the walk-spike cause** — falsified. Created at Begin+~5340ms
+   deterministically; spikes land at +10046 to +14978ms.
+5. **GC from texture churn** — cleared. Forcing collection made it slightly worse.
+6. **Walk-depth correlation** — broken by a 794ms spike on Q4→Q3.
+
+⚠ **AND PROMOTING THE WIPE TO A COMPOSITED PROPERTY CANNOT FULLY FIX THIS** — the freeze is
+GPU-process work and the display compositor queues behind the same scheduler.
 
 ---
 
 ## STATE OF THE TREE
 
-**Branch `fix/q5-stall-and-label-colour`, working tree CLEAN, nothing pushed.** 12 commits on top
-of `270d5fe`:
+**Branch `fix/q5-stall-and-label-colour`, head `0f2d4d0`, NOTHING COMMITTED.**
 
-    2aea5ba  feat: cards on every question — step 1b, and the number that decides D-046
-    fa44ee4  fix: the canvas was painting over the button's label
-    08b460e  feat: the corridor selects, and the button arrives — step 1a
-    bc68be1  test: capture the corridor's motion, so a restructure can be held to it
-    af914e7  docs: Stage B plan, second revision
-    e077689  fix: finish the deletion, and stop a governance file asserting a falsehood
-    c426c5f  feat: delete D-031's dead reflection, and measure a corridor move
-    d0cf9f5  docs: Stage B selection plan
-    30c3ca7  docs: the fourth and fifth stale 1280 assertions
-    1611836  feat: the button mesh is the corridor's surface, sized from its own box
-    9937117  fix: gate the sweep on visibility, and correct three comments that lied
-    8435278  feat: the double band is geometry, and now it exists
-    3c4b1aa  feat: the room is continuous, and the traveller sweeps it
+Modified: `CLAUDE.md`, `app/globals.css`, `answer-card-canvas.tsx`, `answer-card-mesh.tsx`,
+`contact-field-canvas.tsx`, `enquiry-opening.tsx`, `verify/transition-cost.mjs`, and six
+governance files.
 
-`npx tsc --noEmit` clean. Lint at the recorded baseline: **1 problem (1 error, 0 warnings)** — the
-known `enquiry-opening.tsx` reduced-motion effect, untouched. **Both dev and production servers
-were STOPPED at the end of the session** (ports 3000 and 3100 confirmed free).
+⚠ **`app/globals.css` HAS ONLY THE `.enquiry-card-host` RULE ADDED** — both failed wipe rewrites
+were reverted with `git checkout`. The rule is now unused; harmless, and left as the tombstone's
+companion.
+
+`npx tsc --noEmit` **clean**. `npm run lint` **1 problem (1 error, 0 warnings)** — the known
+`enquiry-opening.tsx` baseline error, untouched.
+
+**All servers stopped; ports 3000, 3001 and 3100 confirmed free.**
+
+⚠ **ZOMBIE SERVERS CAUGHT FOUR TIMES TODAY.** `TaskStop` reports success while the port stays
+held. **Kill by PID and confirm free.**
 
 ---
 
-## ✅ WHAT LANDED, AND WHAT CARL APPROVED BY EYE
+## 📌 WAITING FOR CARL'S EYE (nothing shipped on any of these)
 
-### The button mesh — *"that is excellent, outstanding"*
-
-**Approved on the bench, then shipped into the corridor.** It is the Next step button's surface at
-**every question**, sized from its own measured box (`ResizeObserver`, never `NEXTSTEP_WIDTH_PX`) —
-so completion's **Send**, which is a different width, needs no new geometry.
-
-Three things got it there, and the reasoning transfers:
-
-1. **The environment is the material.** `BenchKey` was built on Carl's instruction to test a static
-   light; the answer was *barely* — 5× intensity moved the centre 17 points and **flattened** the
-   crown. `metalness: 1` has no diffuse term. **`BenchKey` now defaults to 0**, kept on a dial
-   because the measurement is worth repeating.
-2. **A continuous room.** Hard-edged panels reflect as hard-edged slabs. **Carl's Chrome Boy
-   photograph was the evidence** — it cannot be cheating, and it shows continuous gradient because
-   the room is continuous. Soft additive panels, a sky/horizon/ground gradient shell, wrap panels
-   at x = ±82 that fixed the black end-cap blobs.
-3. **The traveller as a moving reflection.** Carl: *"the travellers light is paramount here."* The
-   button's canvas cannot see the corridor's traveller, so it is reproduced as `envMapRotation` on
-   the corridor's own asymmetric clock (13500ms slow pass, 2200ms fast return). **A mirror does not
-   get lit by a moving lamp; it shows the lamp moving.**
-
-**The double band is geometry** — a subtracted Gaussian at 0.62 along the fall. A monotonic profile
-gives one band; the reference's bright core → dark groove → thinner line needs an inflection.
-Measured against a control (groove off/on, same session): **travel 40.7% → 66.4%**.
-
-### Selection restored — the corridor walks
-
-Carl: *"When the user makes a selection, the button fades in."* **It does:**
-
-    nothing selected   opacity 0.00
-    one card selected  opacity 1.00   ✅
-    deselected again   opacity 0.00   ✅  (the inverse he specified)
-    Next step          Q5 → Q4        ✅
-
-**The fade-in needed no new code** — it was already there on a 600ms transition, waiting for
-something to write to `selected`. `toggleOption` had no caller since chunk 3; the argument for
-keeping it ("unused means waiting, not dead") was correct.
-
-**Multi-select on all five questions** — Carl, superseding D-018's single-select for Q4. Recorded
-as **D-047**, which also records the reflection deletion.
+    ?labeltex=1024 / 512     45-78ms off the reveal; default still 2048 (≥11x oversampled)
+    ?pmrem=128 / 64          inside the per-question cost; changes reflections
+    ?riseease=inout / quad / linear    the card rise curve; default cubic
 
 ---
 
-## ⚠ THE AGREED ORDER — Carl, end of session
+## ⚠ THE AGREED NEXT STEP
 
-> *"we will fix Q5 issue and then continue with B2"*
+**Rebuild the shared host with correct positioning.** The mechanism is proven — 75–80 frames of
+78, freeze gone. What failed was one coordinate-space error, and the tombstone in
+`enquiry-opening.tsx` says what a correct version needs.
 
-1. 🔴 **The stutter.** Top of this file.
-2. **B2 — the accessibility layer.** Below.
+⚠ **VERIFY IT WITH A PIXEL CHECK — CARDS BELOW THE PHRASE — BEFORE QUOTING ANY FRAME NUMBER.**
+Three green instruments passed a visibly broken layout today. **Screenshot it and look.**
 
-⚠ **AND THE ORDER IS LOAD-BEARING, NOT ARBITRARY.** If the shared-host restructure is authorised,
-the canvas stops mounting per question — and **B2's `tabIndex` gating is written against entrance
-completion**, which is a per-mount event today. Doing B2 first would build the control layer
-against a lifecycle that job 1 then changes. **Fix the stutter, then wire the controls to whatever
-lifecycle survives it.**
-
----
-
-## ⚠ OPEN, AND UNRESOLVED
-
-- 🔴 **THE STUTTER — see the top of this file. First job.**
-- **B2, THE ACCESSIBILITY LAYER, IS NOT DONE AND THE CHUNK IS NOT COMPLETE WITHOUT IT.** The cards
-  are now real controls, and **the hit targets are still `aria-hidden` non-focusable divs**. The
-  corridor is **unusable by keyboard and unreadable by a screen reader**.
-  `answer-card-mesh.tsx` already records that the visible text being a texture makes a correct DOM
-  label *"mandatory at that point, not optional"*. **That point has arrived.** Full spec in
-  `live-work/stage-b-selection-plan.md` §B2, including:
-  - ⚠ `aria-pressed` must come from **`selected`**, NOT `litCards` — they legitimately diverge
-    during a move (the outgoing phrase keeps its cards lit while `selected` is already cleared), so
-    a control reading `litCards` would announce "pressed" on a question already answered and left.
-    A `selectedIndices` prop is noted in `answer-card-canvas.tsx` where it should go, deliberately
-    not added until it has a consumer.
-  - the double-fire discriminator: `onPointerDown` → toggle; `onClick` → toggle **only if
-    `event.detail === 0`** (a synthesised keyboard click carries 0, a mouse click 1+).
-  - the focus ring must be on the DOM control — **the mesh cannot show focus**.
-  - `tabIndex` gated on entrance completion, so cards that have not arrived are not tabbable.
-- **The button reads dark against the cards.** On the bench it had the frame to itself; in the
-  corridor the cards are the bright objects. **Carl has not judged this.**
-- **Amber is untouched and undecided** — `AmberSource` exists, `0` by default.
-- **Q5's reveal is 118–135ms**, against D-046's approved 82ms. Separate from the transition
-  stutter, and unexamined since.
-- Still open from before: **`verify/hover-teal.mjs` picks the wrong canvas** (use `teal-core.mjs`),
-  the **`frameloop` regression**, **floating faces / black edges**, **`GLASS_CLEARCOAT` inert**,
-  **~2.4MB of three loading eagerly**, **SHADOW**.
+Then: the `NextStepMeshButton` host, and `?nowarmup=1` to test whether the warm-up is redundant
+once a host that never unmounts exists (**verify after, never delete on reasoning** — D-046
+records that the obvious reading was refuted by measurement).
 
 ---
 
-## ⚠⚠ THE INSTRUMENTS LIED ELEVEN TIMES THIS SESSION. READ THIS BEFORE TRUSTING ANY HARNESS.
-
-The count was seven at the start of the day. **Every one was caught by a control or by Carl's eye,
-never by inspection.** Four new ones, and two are new *shapes*:
-
-| # | the lie |
-|---|---|
-| 8 | **`?zoom=` read during SSR**, so the wrapper never grew and a zoomed render was cropped to the pill's middle — **cutting off the end caps, the very defect under judgement** |
-| 9 | **`ns-shot.mjs` run repeatedly gave three byte-identical "phases"** — each run opens a fresh browser and restarts the animation clock |
-| 10 | **`corridor-motion.mjs` reported "phraseY 7.9% CHANGED"**, then **92–100% between two runs of identical code** — it normalised across the whole 158-frame window when the move occupies only ~18→86. **Endpoints were identical throughout. The data was fine; the comparison was wrong.** |
-| 11 | **`corridor-walk.mjs` reported "the corridor did not advance"** on a corridor that had advanced — it read the first `.enquiry-phrase-cue` in document order, which is a **memory chip** |
-
-⚠ **NEW SHAPE A — A STALE COMMENT IS AN INSTRUMENT.** Three comments asserting a viewport gate
-removed on 7 August misled a plan into asking the Architect to rule on a gate that does not exist.
-Fixing three left the trap armed: the Architect found a **fourth**, and the sweep written into that
-fix immediately found a **fifth** — which was **half true**, and *the true half made the false half
-read as verified*. **Grep the whole file for the claim; do not fix stale comments where you happen
-to find them.**
-
-⚠ **NEW SHAPE B — A CORRECT DOM ASSERTION ABOUT SOMETHING INVISIBLE.** Carl: *"the button should
-have the text 'next step' on it."* `textContent` was `"Next step"`, colour right, font-size right,
-box right — **and the canvas was painting over it**, because an absolutely positioned sibling
-paints above a static one whatever the DOM order. **Nine automated checks passed. Carl caught it in
-one look.** `corridor-walk.mjs` now asserts the button is *positioned* rather than asserting text
-that was never wrong. **Check what is DRAWN, not what is in the DOM.**
-
-⚠ **AND A ZOMBIE SERVER NEARLY DID IT AGAIN** — an `&`-backgrounded `next start` survived a
-TaskStop, held port 3100, and answered 200 to a readiness probe while a newer build sat unserved.
-**Kill by PID on the port and confirm it free before trusting any number off it.**
-
-⚠ **DEV-SERVER FRAME NUMBERS ARE WORTHLESS.** The first Stage A attempt read 231ms with the mesh
-against **269ms without** — indistinguishable. `transition-cost.mjs` and `corridor-motion.mjs` both
-**refuse to run against :3000**.
-
----
-
-## 📌 PARKED — logos, after the corridor reaches the client info section
-
-**Carl, 11 August 2026:** *"After this section is completed and everything flows into the client
-info section I will turn my attention to logos on the site. Attached is the official logo. There is
-also this flat white 2D logo on a black background. I have DaVinci Resolve. I have to go in there
-and recreate it in Fusion."*
-
-**Not current scope. Do not start it, plan against it, or reach for it.** Recorded so it is not
-rediscovered.
-
-- **Two assets exist:** the official gold hero render, and a **flat white 2D logo with an alpha
-  channel**. ⚠ The flat one is the load-bearing asset for the site — at favicon, header and footer
-  sizes the tube geometry and specular detail vanish, and a flat silhouette is what survives. The
-  gold render is hero-scale.
-- ⚠ **CHECK PREMULTIPLIED vs STRAIGHT ALPHA BEFORE IT GOES ANYWHERE.** Getting it wrong puts a dark
-  fringe on the antialiased edges against dark backgrounds — subtle at hero scale, visible at
-  header size on `#101010`. Fusion's Loader node states it explicitly; Resolve's default is not
-  always what the file actually is. **This is the kind of thing found late and expensively.**
-- **The button's material findings transfer to a Fusion rebuild**, because they are geometry and
-  environment rather than code: the double band is an **inflection in the profile**, not a material
-  setting; the darks are **navy, not black**; the reference is **predominantly dark with bright
-  bands**; and **a hard-edged source reflects as a hard-edged slab**. Same facts in any renderer.
-- ⚠⚠ **THE ASSETS ARE IN `brand-assets/logo/`, WITH THEIR OWN README. READ IT FIRST.** It is the
-  **sole source of truth** — the external tool they were salvaged from was destroyed on 25 July
-  2026, so **there is nothing to re-export from and nothing to re-check against.**
-  - `c2b-flat-white-alpha-cleaned-1x.png` — 1301×768, **zero partial-alpha pixels**, hard edges
-    only. That is what makes it usable as a mask and as **a trace source for vector work**. Appears
-    blank in most viewers, which composite white on white. **It is not empty.**
-  - ⚠ **`c2b-logo-gold-hero.svg` IS NOT VECTOR** — a base64 PNG in an SVG wrapper, zero `<path>`
-    elements. The README called it the *"vector master"*; **corrected 11 August 2026.** So **there
-    is no true vector form of the logo in this repo**, and producing one is a redraw.
-  - `LogoLOTR.png` — the distressed/antique direction, **explicitly REJECTED for the brand**.
-  - `c2b-logo-specular-sweep-4s.mp4` — a **motion study**, reference only: light travels across a
-    fixed object rather than the object changing colour. Directly relevant to the hero transition.
-  ⚠ **THE BUILDER ASSERTED TWICE, FROM MEMORY, THAT NO LOGO ASSET EXISTED** — once claiming the
-  logo was refracted through the card glass, once that `public/` had nothing. Both false; there is
-  a whole `brand-assets/` tree. **A claim about the repo written into a governance file is read as
-  verified. Search before writing.**
-
----
-
-## How to look at it
-
-```
-npm run dev                                     the corridor
-http://localhost:3000/start
-http://localhost:3000/proto/nextstep            the button bench
-
-# frame cost MUST be production:
-npm run build && npx next start -p 3100
-VERIFY_BASE_URL=http://localhost:3100 node verify/transition-cost.mjs 4   <- THE STUTTER
-VERIFY_BASE_URL=http://localhost:3100 node verify/corridor-walk.mjs       selection + button
-VERIFY_BASE_URL=http://localhost:3100 node verify/corridor-motion.mjs after
-node verify/corridor-motion.mjs --compare before after                    <- THE MOTION GATE
-node verify/nextstep-look.mjs                   button tone, two-sided
-node verify/nextstep-swing.mjs                  the traveller's sweep
-node verify/ellipse-reach.mjs                   what light can reach the pill (no browser)
-```
-
-Button dials: `?axis= ?key= ?floor= ?wrap= ?shellsky= ?shellground= ?zoom= ?litint= ?travel=`
-
-⚠ **MEASURE HEADED, WITH `--enable-gpu`.** Every harness prints the renderer and aborts on a
-software rasteriser.
-
----
-
-*10 August 2026. The button was approved, shipped and labelled; selection came back after being
-gone since chunk 3; and the corridor now walks Q5→Q4 with real cards on every question. The cost of
-that last step is a 193ms stutter, which Carl has ruled non-negotiable.*
-
-***The transferable lesson, now eleven times over: the instrument answers a question ADJACENT to
-the one asked, and the adjacency is invisible in the output.*** Today it broadened twice — a stale
-comment lies exactly as a bad harness does, and a DOM assertion can be perfectly true about
-something no user can see. **Run the control. Then look at the pixels.**
+*12 August 2026. The defect is located and the fix is proven in principle. It has not landed.
+Carl's decision on whether this project continues is open, and the honest summary is that a
+correct diagnosis arrived from outside and the Builder broke the layout implementing it.*

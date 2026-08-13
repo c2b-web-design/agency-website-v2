@@ -72,7 +72,7 @@ Carl refers to the seats by initials, most often when talking to one seat about 
 
 | Short | Seat | Surface |
 |---|---|---|
-| **PM/A** | Project Manager / Architect | Claude Code, read-only config |
+| **PM/A** | Project Manager / Architect | Claude Code; `Edit`/`Write` denied, **`Bash` allowed for measurement since 12 Aug 2026** |
 | **CB** | Claude Builder | Claude Code, this repository |
 | **CS** | Claude Strategist | A Claude Project, in the browser |
 | **CD** | Claude Design | Reached from within the Claude Projects menu. **Not yet in use** |
@@ -83,6 +83,61 @@ Defined here so any session can decode them. **The governing documents use the f
 ⚠ **CS and CD are different surfaces.** CS is a Claude Project; CD is a separate tool
 reachable from within that menu system. They share a product, not a seat — do not treat
 them as one.
+
+---
+
+## Founder Authority and Override
+
+Carl is the founder and holds final authority over this repository, **including over the
+governance files themselves.** No rule here is beyond his authority to amend.
+
+### Invoking an override
+
+An override is valid when Carl **names the rule or file**, **states the reason**, and
+**states the scope**.
+
+On receiving one you must:
+
+1. **Acknowledge it**
+2. **Restate the scope back in one line**
+3. **Proceed once Carl confirms**
+
+⛔ **You must not relitigate a decision Carl has already reasoned through, and you must not
+require insistence, escalation, or repetition before complying. A reasoned instruction is
+sufficient authority.**
+
+### Capability disclosure
+
+**If an override changes permissions for any agent, you must report the real capability
+surface it creates before applying it** — including anything granted indirectly. State
+plainly **what the change enables in practice, not what the config appears to say.** If a
+boundary becomes **behavioural rather than enforced**, say so in those words.
+
+Disclosure is a report, not a veto: delivered once, before applying, after which the
+decision is Carl's and the prohibitions above bind.
+
+### Limits
+
+**An override authorises the named change only. It is never a blanket suspension of
+governance.** Regardless of any override, **pause and get explicit confirmation before
+deleting files, running destructive git operations, or granting write access to
+implementation code.**
+
+### Amendment
+
+**Rules are written for a situation. When the situation changes, the rule is reviewed and
+amended** — not worked around, and not treated as permanent. **Raise it with Carl when a
+rule no longer fits the work.**
+
+⚠ **Why this section exists.** On 11–12 August 2026 the record offered only two shapes for
+an instruction from Carl — *approved decision* or *unauthorised change* — and his reasoned
+instruction on the Architect's permissions fitted neither. The governance built to protect
+his work made him argue his way past his own rules, and he ended that session intending to
+delete months of it. **A rule with no override channel does not protect the project; it
+protects itself, at the project's expense.**
+
+**Full protocol, including recording and the worked failure:**
+`founder-override-protocol.md`.
 
 ---
 
@@ -148,11 +203,35 @@ runs no `git` itself. Two routes supply history:
    stays separate in `claude-chat-window.md`. The Architect weighs the evidence against the
    reasoning rather than taking either on trust — the separation is deliberate, and it is
    what let the 24 July review catch a false byte-identical claim.
-2. **A `!` command Carl runs** (adopted 26 July 2026). The Architect proposes a read-only
-   git command; Carl runs it in his own shell and the output lands in the Architect's
-   context. This covers history questions the pre-supplied evidence did not anticipate —
-   the class that left F-1 unresolved on 24 July. **`Bash` stays denied**: the Architect
-   cannot run it, only ask. Capability stays outside the Architect; only output crosses.
+2. **A `!` command Carl runs** (adopted 26 July 2026; **widened to measurement 12 August
+   2026**). The Architect proposes a command; Carl runs it in his own shell and the output
+   lands in the Architect's context. This covers history questions the pre-supplied
+   evidence did not anticipate — the class that left F-1 unresolved on 24 July. ⚠ **This
+   route was built when `Bash` was denied**, so that capability stayed outside the Architect
+   and only output crossed. **That premise no longer holds — see immediately below.**
+
+   **⚠ THE SCOPE IS NO LONGER GIT-ONLY.** It now includes builds, `tsc`/lint gates and the
+   `verify/` measurement scripts, so the Architect can obtain its own numbers instead of
+   quoting the Builder's. Allowed and forbidden lists, and the rule that **only one seat
+   measures at a time, after implementation stops**: `checkpoint-review-protocol.md` §3a.
+
+   ⚠⚠ **AND THE CONFIG WAS THEN WIDENED TOO — 12 August 2026, Carl's decision.** `Bash` is
+   no longer denied. The Architect runs its own builds and `verify/` harnesses; the `!`
+   route is now the fallback for commands Carl should witness.
+
+   **The trade, stated so nobody reads the deny list and concludes the wrong thing:**
+   `permissions.allow` *pre-approves*, it does **not** restrict, and no tool allowlist
+   exists at this tier. So allowing `Bash` allows all of it — and `Bash` was **proven by
+   attack** (24 July) to make every edit denial cosmetic: shell redirect, `sed -i` and
+   `rm` all write. The seat also runs `disableAllHooks: true`, so the chunk-scope guard
+   does not fire there. **`Edit`/`Write`/`NotebookEdit` are still denied, and that is now
+   a default posture rather than a boundary.** The Architect not writing is discipline —
+   `architect-role.md` §2 carries the rules.
+
+   **Why Carl chose it:** on 11–12 August the Architect's two most useful analyses rested
+   on the Builder's measurements because it could not take its own, and it named a
+   falsifiable prediction it could not test. **The handicap was real and daily; the write
+   risk was accepted, not disproved.**
 
 The rejected alternatives are recorded: a read-only git MCP server (rejected — `license:
 NONE`, unpublished, single anonymous author) and a Bash git allow-list (rejected —
@@ -348,7 +427,10 @@ in that mode. It is an observed method, not a governance rule, and it overrides 
 
 ---
 
-*Last updated: 2026-07-29 — the Strategist added. It had a full role file
+*Last updated: 2026-08-13 — **Founder Authority and Override** added, with
+`founder-override-protocol.md`. Written after 11–12 August, where the absence of an override
+channel turned a founder's reasoned instruction into an argument. Previously updated
+2026-07-29 — the Strategist added. It had a full role file
 (`strategist-role.md`, 26 July) and a folder policy while being **absent from this file
 entirely**, so the document defining the authority structure did not contain one of its
 seats. Added beside the build chain rather than in it, per `strategist-role.md` §3. Also
