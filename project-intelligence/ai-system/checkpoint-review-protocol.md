@@ -66,6 +66,87 @@ an immediately preceding review.
 
 ---
 
+## 3a. Measurement at checkpoints — and only one seat measures at a time
+
+**Added 12 August 2026, on Carl's instruction.**
+
+### The rule
+
+**Measurement happens at checkpoints, after implementation stops.** The Builder finishes
+its work, stops any dev or production server it started, and *then* the checkpoint opens.
+
+⚠ **NEVER TWO BUILDS OR TWO SERVERS AT ONCE.** Both seats measuring simultaneously
+produces numbers neither can trust: they contend for the same GPU, the same CPU and the
+same ports. This project has already lost a day to variance smaller than that
+— *"measured variance on IDENTICAL code was 399-750ms: larger than the regression being
+hunted"* — and a second build running underneath would swamp it entirely.
+
+⚠ **AND A ZOMBIE SERVER IS THE COMMON WAY THIS GOES WRONG.** `TaskStop` has reported
+success on a port that stayed held **three times in one session** (11 August 2026). **Kill
+by PID and confirm the port free** before declaring implementation stopped. A newer build
+sitting unserved behind an older one answering `200` is the failure mode, and it is
+invisible in the numbers.
+
+### How the Architect gets a measurement
+
+⚠⚠ **IT RUNS THEM ITSELF, AS OF 12 AUGUST 2026.** `Bash` was removed from the Architect's
+deny list on Carl's instruction, together with `Monitor`, `TaskOutput` and `TaskStop`.
+Builds, `npx tsc --noEmit`, `npm run lint`, the `verify/` harnesses, read-only git and
+search are pre-approved so they do not prompt him.
+
+**Why:** on 11–12 August the Architect's two best analyses of the corridor were built on
+the Builder's numbers because it could not take its own, and it named a falsifiable
+prediction it could not run the test for. **The review handicap was real and daily.**
+
+⚠ **AND UNDERSTAND WHAT THAT COSTS, BECAUSE THE DENY LIST NO LONGER SHOWS IT.** `Edit`,
+`Write` and `NotebookEdit` remain denied — **and with a shell present that is cosmetic**;
+a redirect, `sed -i` or `rm` writes just as well (verified by attack, 24 July 2026). The
+`allow` list pre-approves, it does **not** restrict: anything not on it still runs, it
+merely prompts. The seat also has `disableAllHooks: true`, so the chunk-scope guard does
+not fire there. **The Architect not writing to the repository is now discipline, not
+mechanism** — `architect-role.md` §2 carries the rules it must hold.
+
+**The `!` prefix remains available** (`live-work-protocol.md` §5a) and is the right choice
+when Carl should witness the command and its output — a contested number, or anything
+touching state. For ordinary measurement the Architect now simply runs it.
+
+**What the Architect runs, or proposes via `!`:**
+
+| Category | Examples |
+|---|---|
+| Builds and type/lint gates | `! npm run build`, `! npx tsc --noEmit`, `! npm run lint` |
+| Measurement scripts in this repo | `! VERIFY_BASE_URL=http://localhost:3100 node verify/<name>.mjs` |
+| Read-only git | `! git log --oneline -10`, `! git diff --stat`, `! git status --short` |
+| Search and inspection | `! grep -rn "<pattern>" components/`, `! ls verify/` |
+
+**What it must never run or propose** — ⚠ **and since 12 August this is a rule it keeps
+rather than a wall that stops it**, so it is restated in full here and in
+`architect-role.md` §2:
+
+- Anything with `--fix`, `--write`, `-i`, or an output redirect (`>`, `>>`, `tee`)
+- `git commit`, `checkout`, `reset`, `restore`, `push`, `clean`, `stash`
+- Package installs or removals
+- Anything writing into `app/`, `components/`, `lib/`, `public/` or `verify/`
+- Starting a long-lived server while the Builder still has one running
+
+⚠ **CARL READS THE COMMAND BEFORE HE RUNS IT, AND THAT IS THE ACTUAL CONTROL.** The list
+above is guidance for the proposer, not a mechanism. Nothing enforces it. **A proposed
+command is a request, not an instruction** — the same standing that every other Architect
+finding has.
+
+### Where measurement output goes
+
+**`project-intelligence/live-work/`**, which is already gitignored as scratch
+(`live-work-protocol.md` §Gitignore) and already holds run logs and evidence files.
+Harness output that is worth keeping goes to `verify/out/`, which is where the existing
+harnesses already write.
+
+⚠ **THE ARCHITECT STILL WRITES NOTHING.** It reads the output and reports findings in
+chat; **the Builder files them**, as it did for `architect-answer-q5-reveal-residue.md`
+and `architect-analysis-corridor-choreography.md`. That division is unchanged.
+
+---
+
 ## 4. What the Builder Sends
 
 Every checkpoint request includes:
@@ -256,11 +337,22 @@ Invocation is **file-based and Carl-routed**:
 | Request | `checkpoint-request.md` + git evidence + screenshots |
 | Response | `architect-review-response.md` |
 | Routing | Carl, manually. There is no agent-to-agent channel |
-| Architect session | Separate `CLAUDE_CONFIG_DIR`; `Edit`, `Write`, `NotebookEdit` and `Bash` denied (`workflow-redesign/` DL-1) |
+| Architect session | Separate `CLAUDE_CONFIG_DIR`; `Edit`, `Write`, `NotebookEdit` denied. ⚠ **`Bash` ALLOWED since 12 August 2026** (`workflow-redesign/` DL-1 is superseded on this point) |
 
-`Bash` is denied because it is a **proven** bypass: with a writable shell available,
-denying the edit tools is cosmetic — overwrite, `sed -i`, create and delete all still
-succeeded in testing. The boundary was verified by attack, not by reading configuration.
+⚠⚠ **`Bash` WAS DENIED BECAUSE IT IS A PROVEN BYPASS, AND IT IS NOW ALLOWED ANYWAY.** The
+finding is unchanged and was verified by attack rather than by reading configuration: with a
+writable shell available, **denying the edit tools is cosmetic** — overwrite, `sed -i`,
+create and delete all succeeded in testing.
+
+**Carl removed it on 12 August 2026 so the Architect can measure**, after two sessions in
+which its analyses rested on the Builder's numbers because it could not take its own.
+**The write risk was not disproved; it was accepted in exchange for a working reviewer.**
+
+**What follows for this protocol:** the Architect not writing to the repository is now a
+rule it keeps, not a wall that stops it — §3a and `architect-role.md` §2 carry the rules.
+**And the evidence file stays mandatory.** A reviewer that can run its own `git` is still
+not a substitute for evidence the Builder prepared and separated from its own reasoning;
+that separation is what caught a false "byte-identical" claim in D-032.
 
 No agent-to-agent channel exists or is required. The file surface plus Carl's routing is
 the entire mechanism — which is also why it survives a change of harness: nothing here

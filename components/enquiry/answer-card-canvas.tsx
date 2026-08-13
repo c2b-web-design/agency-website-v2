@@ -15,11 +15,29 @@
  * the contact field uses, and it is why the measured 186.66 x 48 can be used
  * directly as geometry dimensions with no scale factor.
  *
- * ⚠ `frameloop="demand"` AND IT STAYS THAT WAY. The light here is STATIC —
- * Carl: *"There would be no animated light"* — so nothing needs a continuous
- * rAF loop. The entrance invalidates while it runs and then stops. The orbiting
- * light rig's continuous loop is the thing that cannot ship to production; this
- * chunk deliberately does not inherit that cost.
+ * ⚠⚠ THIS PARAGRAPH SAID THE LIGHT IS STATIC AND THAT NOTHING RUNS A
+ * CONTINUOUS rAF LOOP. **THAT STOPPED BEING TRUE AT `7b056c2`** and the comment
+ * was not amended — corrected 11 August 2026, on the Architect's audit.
+ *
+ * What it said: *"`frameloop="demand"` AND IT STAYS THAT WAY. The light here is
+ * STATIC — Carl: 'There would be no animated light' — so nothing needs a
+ * continuous rAF loop."*
+ *
+ * **`TravellingLight` (below) runs a `requestAnimationFrame` loop calling
+ * `invalidate()` every frame**, which makes a demand-mode canvas render
+ * continuously. Carl later approved a MOVING traveller — *"the travellers light
+ * is paramount here"* — so the feature is right and the comment went stale
+ * behind it.
+ *
+ * ⚠ WHAT STILL STANDS: `frameloop="demand"` IS still the mode, and it still
+ * matters. The canvas does not render unless something asks it to. **The loop is
+ * now gated on `animating` (see `TravellingLight`), so only the visible, active
+ * instance drives frames** — the warm-up and the outgoing phrase's canvas are
+ * parked. Before that gate, five glass cards rendered at 60fps inside a
+ * `visibility: hidden` box for the entire ~12s opening.
+ *
+ * ⚠ AND THE ORIGINAL WARNING'S POINT SURVIVES ITS OWN OBSOLESCENCE: a continuous
+ * loop is a real cost on a phone. It is now paid only where it is seen.
  *
  * GEOMETRY PROOF ONLY: no glass, no transmission, no environment map, no
  * filament, no text.
@@ -500,6 +518,7 @@ function ClayFormLight({ centre }: { centre: { x: number; y: number } }) {
  */
 function TravellingLight({
   reducedMotion,
+  animating,
   level,
   showHelper,
   sag,
@@ -510,6 +529,34 @@ function TravellingLight({
 }: {
   reducedMotion: boolean;
   level: number;
+  /**
+   * ⚠⚠ WHETHER THIS CANVAS IS THE VISIBLE, ACTIVE ONE — AND THE TRAVELLER MUST
+   * NOT MOVE WHEN IT IS NOT. Architect, 11 August 2026.
+   *
+   * The loop below calls `invalidate()` every frame, which turns a
+   * `frameloop="demand"` canvas into a continuously rendering one. Until now it
+   * ran **unconditionally**, so:
+   *
+   *   1. **The WARM-UP canvas ran it too.** `enquiry-opening.tsx` mounts an
+   *      instance with `active={false} warm` inside a `visibility: hidden` box
+   *      for the whole opening — so five satin/transmissive cards rendered at
+   *      60fps, invisibly, behind the heading, subtext and Begin reveals, for
+   *      **~12 seconds**.
+   *   2. **Two canvases rendered during every corridor move.** `showExtras`
+   *      keeps the outgoing phrase's canvas mounted for one beat, so the 900ms
+   *      morph had two full scenes rendering at once.
+   *
+   * ⚠ **A LIGHT RENDERING INTO A HIDDEN BOX CANNOT BE PART OF AN APPROVED
+   * LOOK.** The resting light and the traveller's sweep on the ACTIVE canvas
+   * are approved motion and are untouched by this — what stops is the loop on
+   * instances nobody can see.
+   *
+   * ⚠ THE STATIC PLACEMENT STILL HAPPENS WHEN PARKED. The light is positioned
+   * once and `invalidate()` called once, exactly as the reduced-motion branch
+   * does — so a parked canvas still renders a correctly-lit frame if something
+   * else asks it to draw. **Parking the loop is not parking the light.**
+   */
+  animating: boolean;
   /** How far the curve dips below the straight line. `?sag=` */
   sag: number;
   /** How far it comes forward of the card plane. `?fwd=` */
@@ -586,7 +633,12 @@ function TravellingLight({
 
     // REDUCED MOTION: park it at the belly — in front, beneath the row, the most
     // even position and the one that asserts least about direction.
-    if (reducedMotion) {
+    //
+    // ⚠ `!animating` TAKES THE SAME PARKED PATH — 11 August 2026. An inactive or
+    // warm-up canvas gets a correctly-placed light and ONE render, then no loop.
+    // The two conditions want identical behaviour, so they share the branch
+    // rather than growing a second, subtly-different park.
+    if (reducedMotion || !animating) {
       place(0.25);
       invalidate();
       return;
@@ -635,7 +687,11 @@ function TravellingLight({
     // loop closes over them, so without these the effect would keep running with
     // whatever values it started with — a knob that appears to work and changes
     // nothing, which is worse than no knob.
-  }, [reducedMotion, invalidate, sag, forward, travelMs, returnMs]);
+    // ⚠ `animating` IS A DEPENDENCY FOR THE SAME REASON — the effect must re-run
+    // when a canvas becomes active so the loop actually starts, and tear the
+    // loop down when it stops being active. Omitting it would leave a warm-up
+    // canvas parked forever and, worse, leave the real one parked too.
+  }, [reducedMotion, animating, invalidate, sag, forward, travelMs, returnMs]);
 
   /**
    * ⚠ THE PATH, DRAWN — dev only, `?lighthelpers=1`, and it draws the WHOLE
@@ -1371,6 +1427,33 @@ function useCardRig(): {
  * card 1 is disabled there too. A WebGL card that animated while its neighbour
  * did not would be a defect the CSS explicitly avoids.
  */
+/**
+ * The card rise's easing curves, selectable with `?riseease=` — see the long
+ * note at the call site for why this exists and what Carl is comparing against.
+ *
+ * ⚠ `inout` IS THE HEADING'S OWN CURVE, not an approximation of it.
+ * `cubic-bezier(0.37, 0, 0.63, 1)` is very close to a symmetric
+ * smoothstep-style ease, and that is what is implemented here: the point of the
+ * arm is to give the cards the same MOTION CHARACTER as the text beside them.
+ */
+function easeRise(r: number, mode: string): number {
+  switch (mode) {
+    case "linear":
+      // What the CSS cards did — and Carl approved those.
+      return r;
+    case "quad":
+      return 1 - Math.pow(1 - r, 2);
+    case "inout":
+      // Symmetric ease-in-out: slow from rest, quick through the middle, slow
+      // into place. ⚠ The key difference from ease-out is that it does NOT
+      // spend its final half-second covering a fraction of a pixel.
+      return r < 0.5 ? 4 * r * r * r : 1 - Math.pow(-2 * r + 2, 3) / 2;
+    case "cubic":
+    default:
+      return 1 - Math.pow(1 - r, 3);
+  }
+}
+
 function useCardEntrance(
   active: boolean,
   reducedMotion: boolean,
@@ -1532,6 +1615,18 @@ function useCardEntrance(
       new URLSearchParams(window.location.search).get("beattrace") === "1";
 
     /**
+     * ⚠ READ HERE, NOT AT MODULE SCOPE. A module-level read runs once at import
+     * — on the server during SSR, where `window` is undefined — so the dial
+     * would bake in at its default and the URL would silently do nothing. This
+     * project has already shipped that exact bug once (`?zoom=` read during SSR,
+     * instrument fault #8), and again read once per frame would be wasteful.
+     */
+    const riseEase =
+      typeof window === "undefined"
+        ? "cubic"
+        : new URLSearchParams(window.location.search).get("riseease") || "cubic";
+
+    /**
      * ⚠ THE LADDER'S ZERO IS THE PHRASE REVEAL'S OWN CLOCK, NOT THIS EFFECT'S.
      *
      * Carl, 6 August: *"the entrance of card 1 should happen halfway between the
@@ -1603,12 +1698,52 @@ function useCardEntrance(
      * the current timing, never to a collapsed ladder.**
      */
     const nowMs = performance.now();
+    /**
+     * ⚠⚠ THE LADDER'S CLOCK ZERO — AND IT NO LONGER DEPENDS ON HOW THE WIPE IS
+     * DRAWN. Decoupled 12 August 2026, and the reason is a regression I caused.
+     *
+     * **What went wrong.** This lookup used to be the ONLY source of the anchor:
+     * find the CSS animation named `enquiry-mask-reveal-horizontal` on
+     * `.enquiry-q-text-reveal` and read its `startTime`. That made the card
+     * choreography depend on a *rendering technique*. When the wipe was rewritten
+     * to use `transform` instead of `clip-path` — a purely visual change — the
+     * lookup stopped resolving reliably and **production Mode B went from 0% to
+     * 60% on every question.** The cards lost their relationship to the text
+     * because a CSS animation was renamed underneath them.
+     *
+     * ⚠ THE WIPE IS A VISUAL DETAIL. THE ANCHOR IS A CONTRACT. Tying one to the
+     * other meant no one could change the reveal's mechanism without silently
+     * rewiring the choreography — which is exactly what `clip-path` being
+     * un-compositable now requires us to do.
+     *
+     * **The fix: prefer an explicit signal the phrase publishes for this purpose,
+     * and keep the animation lookup only as a fallback.**
+     * `enquiry-opening.tsx` records `performance.now()` on the phrase's own
+     * `animationstart`, under a name this file owns. That value is what the
+     * reveal actually began at, whatever property is being animated to draw it.
+     *
+     * ⚠ THE FALLBACK CHAIN IS DELIBERATE AND ORDERED, and every rung fails safe:
+     *
+     *   1. the published reveal start   — mechanism-independent, preferred
+     *   2. the CSS animation's own `startTime` — today's behaviour, still correct
+     *      while the wipe remains a single named animation
+     *   3. `nowMs` — the ladder runs from here, which the clamp below already
+     *      handles. **Fail to the current timing, never to a collapsed ladder.**
+     *
+     * ⚠ MATCHED BY NAME, NOT BY INDEX, in rung 2. `getAnimations()[0]` is
+     * order-dependent, so a second animation or a transition on this element
+     * would silently hand the ladder the wrong clock.
+     */
     const anchor = (() => {
       if (typeof document === "undefined") return nowMs;
+
+      const published = (window as unknown as { __revealStart?: number }).__revealStart;
+      // ⚠ GUARDED ON BEING A NUMBER AND ON BEING IN THE PAST. A stale value from
+      // a previous question is handled by the clamp below; a garbage value is
+      // not, so it is rejected here rather than trusted.
+      if (typeof published === "number" && published <= nowMs) return published;
+
       const el = document.querySelector(".enquiry-q-text-reveal");
-      // ⚠ MATCHED BY NAME, NOT BY INDEX. `getAnimations()[0]` is order-dependent,
-      // so a second animation or a transition on this element would silently
-      // hand the ladder the wrong clock.
       const anim = el
         ?.getAnimations?.()
         .find((a) => (a as CSSAnimation).animationName === "enquiry-mask-reveal-horizontal");
@@ -1618,8 +1753,59 @@ function useCardEntrance(
       return nowMs;
     })();
 
-    const revealStart =
-      nowMs - anchor > CARD_FIRST_ENTRANCE_MS ? nowMs - CARD_FIRST_ENTRANCE_MS : anchor;
+    const overrun = nowMs - anchor;
+    const clamped = overrun > CARD_FIRST_ENTRANCE_MS;
+    const revealStart = clamped ? nowMs - CARD_FIRST_ENTRANCE_MS : anchor;
+
+    /**
+     * ⚠⚠ WHICH MODE DID THIS QUESTION GET? `?modetrace=1`. Added 11 August 2026
+     * on the Architect's audit, and it is step 2 of that audit's order —
+     * **instrument before fixing.**
+     *
+     * The line above has two modes and switches between them **silently**:
+     *
+     *   MODE A (anchored)  the entrance effect started within 650ms of the
+     *                      wipe, so card 1 lands at exactly 50% of the 1300ms
+     *                      reveal. **This is Carl's spec, honoured.**
+     *   MODE B (clamped)   it started later, so the ladder re-bases to `now`
+     *                      and card 1 appears on the first available frame.
+     *                      The relationship to the TEXT is then whatever the
+     *                      race produced.
+     *
+     * ⚠ THE EFFECT IS GATED ON `compiled`, AN ASYNCHRONOUS GPU PRECOMPILE, so
+     * the mode is decided by a race — **independently, on each of the five
+     * questions.** A single walk can be anchored/anchored/clamped/anchored/
+     * clamped, varying between loads on the same machine. That is the
+     * "some reveals don't feel smooth" symptom, and it is bimodal by
+     * construction rather than a gradual degradation.
+     *
+     * ⚠ AND IT IS INVISIBLE IN A STILL FRAME — see the note above about three
+     * cards at three brightnesses. **Only this trace can tell the modes apart.**
+     *
+     * ⚠ THE CLAMP ITSELF IS NOT THE BUG AND MUST NOT BE "FIXED" BY REMOVING IT.
+     * It is the safety net against a collapsed ladder (all rungs consumed in one
+     * frame). What is missing is any record of how often it fires — which is
+     * what this provides, and nothing more.
+     */
+    if (
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("modetrace") === "1"
+    ) {
+      const w = window as unknown as { __modeTrace?: unknown[] };
+      w.__modeTrace ??= [];
+      w.__modeTrace.push({
+        t: Math.round(performance.now()),
+        mode: clamped ? "B-clamped" : "A-anchored",
+        // How far past the wipe's start the entrance actually began. Under
+        // CARD_FIRST_ENTRANCE_MS (650) is Mode A; over it is Mode B, and the
+        // margin says whether it was a near miss or a rout.
+        overrunMs: Math.round(overrun),
+        // Which question this canvas belongs to, read from the active phrase —
+        // ⚠ `.enquiry-pdepth-0`, NEVER the first cue in document order, which is
+        // a memory chip (instrument fault #11).
+        q: (document.querySelector(".enquiry-pdepth-0 .enquiry-phrase-cue")?.textContent || "?").trim(),
+      });
+    }
 
     const tick = () => {
       const elapsed = performance.now() - revealStart;
@@ -1703,7 +1889,47 @@ function useCardEntrance(
        * rise is what makes the card *"catch more of the light as it fades in"* —
        * the light is static, so movement through it is the whole mechanism.
        */
-      const t = 1 - Math.pow(1 - raw, 3);
+      /**
+       * ⚠⚠ `?riseease=` — THE CARD'S EASING CURVE, AND IT IS FOR CARL'S EYE.
+       * Added 11 August 2026, against his report: *"its not a noticeable
+       * stutter, it doesnt look smooth in comparison to the text and subtext at
+       * the beginning of the start page."*
+       *
+       * ⚠ THE FRAME TIMING IS CLEAN AND THIS IS NOT A TIMING FIX. Production
+       * measures 0/175 Mode B, the ladder anchored, no dropped frames — and Carl
+       * still sees it on `:3100`. **So the defect is the CHARACTER of the
+       * motion, not its delivery**, and no harness in `verify/` can see that.
+       *
+       * **What the comparison actually is:**
+       *
+       *     the heading he compares against   cubic-bezier(0.37, 0, 0.63, 1)
+       *                                       symmetric ease-in-out, 2100ms
+       *     the CSS cards that looked good    LINEAR, 700ms, 6px
+       *     these cards                       cubic ease-out, 2000ms, 10px
+       *
+       * ⚠ A 2000ms CUBIC EASE-OUT SPENDS MOST OF ITS LIFE ALMOST STOPPED:
+       * 87.5% of the distance is covered in the first second, and **the last
+       * 500ms covers 1.6% — about 0.16px of a 10px rise, held across ~30
+       * frames.** The compositor interpolates sub-pixel and glides; a WebGL mesh
+       * at `zoom: 1` maps one world unit to one CSS pixel, so those frames land
+       * on and around the same pixel — stick, twitch, stick. **That is what
+       * reads as "not smooth" next to text that cannot do it.**
+       *
+       * ⚠⚠ THE DURATION IS NOT A DIAL AND MUST NOT BECOME ONE.
+       * `CARD_RISE_DURATION_MS` feeds `CARD_RISE_GAP_MS` and `ENTRANCE_END_MS` —
+       * **the approved ladder gaps and the entrance's end.** Changing it moves
+       * approved choreography. **This dial changes only the CURVE**, so every
+       * beat lands exactly where Carl approved it and only the travel between
+       * beats differs.
+       *
+       *   ?riseease=cubic   (default, unchanged)  1-(1-r)³
+       *   ?riseease=inout                          the heading's own character
+       *   ?riseease=quad                           gentler ease-out, 1-(1-r)²
+       *   ?riseease=linear                         what the CSS cards did
+       *
+       * ⚠ NOTHING SHIPS ON THIS WITHOUT CARL'S EYE. The default is untouched.
+       */
+      const t = easeRise(raw, riseEase);
 
       // World +y is UP and the CSS translate is DOWN, hence the negation.
       group.position.y = -CARD_RISE_TRANSLATE_PX * (1 - t);
@@ -2328,19 +2554,33 @@ function CardLighting({
  * sampled), and `invalidate()` because the canvas runs `frameloop="demand"`.
  */
 /**
- * ⚠ THIS RUNS OUTSIDE THE WARM GATE, AND THAT IS AN OPEN DEFECT.
+ * ⚠⚠ THIS PARAGRAPH SAID "RUNS OUTSIDE THE WARM GATE, AND THAT IS AN OPEN
+ * DEFECT" — **AND IT WAS FIXED TWENTY LINES BELOW WHILE THE HEADING STILL
+ * ANNOUNCED THE BUG.** Corrected 11 August 2026, on the Architect's audit.
  *
- * The `useMemo` below executes during `CardScene`'s first React render.
- * `mayCompile` / `warm` gate `useScenePrecompile` ONLY — so in the Q5 canvas this
- * ~572ms of PMREM work is not deferred by anything, and in the warm-up canvas it
- * runs a second time in its own GL context.
+ * What it said: *"The `useMemo` below executes during `CardScene`'s first React
+ * render. `mayCompile` / `warm` gate `useScenePrecompile` ONLY — so in the Q5
+ * canvas this ~572ms of PMREM work is not deferred by anything."*
  *
- * Caught by the Architect, 4 August, after the Builder had gated the wrong
- * thing: `live-work/architect-answer-opening-stutter.md`.
+ * **The memo IS gated now** — it returns `null` until `ready`, and the comment
+ * inside it describes that gate as the fix. The two paragraphs contradicted each
+ * other in the same function, and the outer one is the one a reader meets first.
  *
- * ⚠ IT IS NOW THE LARGEST REMAINING COST IN THE OPENING. Two routes, neither
- * taken yet: move the allocation behind the gate, or pass `{ size: 64 }` to
- * `fromScene` — the second is a VISUAL change and Carl's call.
+ * ⚠ THE HISTORY IS KEPT BECAUSE IT IS LOAD-BEARING: the Architect caught this on
+ * 4 August after the Builder had gated the wrong thing
+ * (`live-work/architect-answer-opening-stutter.md`). **What is corrected is the
+ * tense, not the record.**
+ *
+ * ⚠ WHAT REMAINS TRUE AND IS STILL NOT DONE: PMREM generation is real work that
+ * happens **once per canvas**, and since Stage 1b that is **once per question** —
+ * inside the ladder's 650ms budget, every step. Being behind the gate moves it
+ * out of the OPENING; it does not remove it from Q4–Q1.
+ *
+ * ⚠ `{ size: 64 }` PASSED TO `fromScene` WOULD SHRINK IT AND IS STILL NOT TAKEN.
+ * It is a **visual change to the reflections** and therefore Carl's call by eye,
+ * not a defect fix the Builder can make alone. ⚠ **And a PMREM cannot be shared
+ * between canvases** — it is a GPU texture and dies with its context — so
+ * shrinking is the only lever short of a host that never unmounts (D-048).
  */
 function useLocalEnvMap(ready: boolean): THREE.Texture | null {
   const gl = useThree((state) => state.gl);
@@ -2433,8 +2673,37 @@ function useLocalEnvMap(ready: boolean): THREE.Texture | null {
      * Left at the default until he has seen 256/128/64 side by side at the
      * approved roughness.
      */
+    /**
+     * ⚠ `?pmrem=` — THE DIAL THE COMMENT ABOVE ASKED FOR. Added 12 August 2026.
+     *
+     * The note says *"Left at the default until he has seen 256/128/64 side by
+     * side at the approved roughness."* This is how he sees them. **The default
+     * is unchanged at three's own 256** — passing nothing keeps today's
+     * behaviour exactly, because `size` is only added to `options` when the
+     * parameter is present.
+     *
+     * ⚠ IT IS INSIDE THE PER-QUESTION COST. PMREM generation runs once per
+     * canvas, and since Stage 1b that is once per question, inside the ladder's
+     * 650ms budget. 256 → 64 is ~9x fewer pixels and two fewer LOD passes,
+     * against a 256-tap GGX loop per fragment per LOD.
+     *
+     * ⚠ AND IT IS A VISUAL CHANGE, SO IT IS CARL'S CALL BY EYE — the cards are
+     * glass and this is what they reflect. Not a free optimisation.
+     */
+    const pmremSize = (() => {
+      if (typeof window === "undefined") return null;
+      const raw = new URLSearchParams(window.location.search).get("pmrem");
+      if (raw === null) return null;
+      const n = Number(raw);
+      // Powers of two only — a PMREM target of an odd size is not a smaller
+      // env map, it is a broken one.
+      return Number.isFinite(n) && n >= 16 && (n & (n - 1)) === 0 ? n : null;
+    })();
+
     const pmrem = new THREE.PMREMGenerator(gl);
-    const built = pmrem.fromScene(studio, 0, 0.1, 200);
+    const built = pmremSize === null
+      ? pmrem.fromScene(studio, 0, 0.1, 200)
+      : pmrem.fromScene(studio, 0, 0.1, 200, { size: pmremSize });
     pmrem.dispose();
     disposables.forEach((d) => d.dispose());
     studio.clear();
@@ -3092,6 +3361,10 @@ function CardScene({
               viewer between. One light across the whole grid, not one per card. */}
           <TravellingLight
             reducedMotion={reducedMotion}
+            // ⚠ THE GATE. `active` is false on the warm-up instance and on the
+            // outgoing phrase's canvas during a move — the two cases that were
+            // rendering at 60fps unseen.
+            animating={active}
             level={sceneLight}
             showHelper={lightHelpers}
             sag={travelDials.sag}
@@ -3475,29 +3748,121 @@ export default function AnswerCardCanvas({
    */
   const [gridEl, setGridEl] = useState<HTMLDivElement | null>(null);
   const [gridWidth, setGridWidth] = useState<number | null>(null);
+  /**
+   * ⚠⚠ WHERE THE GRID IS, RELATIVE TO THIS CANVAS'S OFFSET PARENT — added
+   * 12 August 2026 for the shared host (D-048).
+   *
+   * When the canvas rendered INSIDE `.enquiry-answer-grid`, `left: 0, top: 0`
+   * put it exactly over the grid for free. **The host is now a zero-size anchor
+   * outside the keyed phrase**, so that inheritance is gone and the offset has
+   * to be measured.
+   *
+   * ⚠ THIS IS THE ONE PIECE OF "HAND-DRIVEN POSITIONING" THE RESTRUCTURE ADDS,
+   * AND IT IS NOT ANIMATION. `verify/active-grid-fixed.mjs` measured the active
+   * grid at `top 492.78, left 432.22` on ALL FIVE questions, 25 samples —
+   * identical to the hundredth of a pixel. So this resolves to the same value
+   * every time and never moves mid-corridor. **There is no easing to reproduce**,
+   * which is precisely the finding that unblocked D-048.
+   *
+   * `null` until measured, and null means render nothing — a guessed offset for
+   * one frame would place the whole grid wrongly and then snap.
+   */
+  const [gridOffset, setGridOffset] = useState<{ left: number; top: number } | null>(null);
+  /**
+   * Bumped whenever the active phrase changes, to re-resolve the grid element.
+   * ⚠ THE GRID `<div>` IS DESTROYED AND RECREATED ON EVERY QUESTION STEP — it
+   * lives inside the keyed phrase — while this canvas is not. Without this the
+   * observer would stay attached to a detached node from Q5 forever.
+   */
+  const [gridNonce, setGridNonce] = useState(0);
   useEffect(() => {
     if (!gridEl) return;
     /**
-     * ⚠ THE PARENT IS MEASURED, NOT THIS ELEMENT.
+     * ⚠ THE GRID IS MEASURED, NOT THIS ELEMENT.
      *
      * The host's own width comes from `box`, which is derived from `gridWidth` —
      * so observing itself would be a feedback loop: measure, resize, measure the
-     * resize. The parent is `.enquiry-answer-grid`, whose width is set by the
-     * CSS layout and is the thing the cards must actually track.
+     * resize. `.enquiry-answer-grid`'s width is set by the CSS layout and is the
+     * thing the cards must actually track.
+     *
+     * ⚠⚠ FOUND BY SELECTOR, NOT BY `parentElement` — CHANGED 12 AUGUST 2026 FOR
+     * THE SHARED HOST (D-048).
+     *
+     * This read `gridEl.parentElement`, which silently encoded *"this canvas is
+     * mounted inside `.enquiry-answer-grid`"*. **That is exactly the coupling
+     * D-046 named as the hazard blocking the shared host** — *"the canvas maps
+     * one world unit to one CSS pixel from its measured size, so a changed
+     * measurement path would reposition every card."*
+     *
+     * The host is now a zero-size anchor outside the keyed phrase, so
+     * `parentElement` would be that anchor: **width 0, every card collapsed to a
+     * point.** The `w > 0` guard below would suppress it, leaving the cards
+     * frozen at their last good width — a defect that looks like a hang, not
+     * like a measurement bug.
+     *
+     * ⚠ AND THE ELEMENT IS RE-RESOLVED PER QUESTION. The grid `<div>` lives
+     * inside the keyed phrase and IS destroyed and recreated on every step; the
+     * canvas is not. So the observer is re-attached whenever the active phrase
+     * changes — that is what `gridNonce` in the deps is for.
      */
-    const target = gridEl.parentElement;
+    const target =
+      (typeof document === "undefined"
+        ? null
+        : document.querySelector<HTMLElement>(".enquiry-pdepth-0 .enquiry-answer-grid")) ??
+      gridEl.parentElement;
     if (!target) return;
     const apply = () => {
-      const w = target.getBoundingClientRect().width;
+      const r = target.getBoundingClientRect();
       // Ignore a zero width — it means the element is display:none or not yet
       // laid out, and committing it would collapse every card to a point.
-      if (w > 0) setGridWidth((prev) => (prev !== null && Math.abs(prev - w) < 0.5 ? prev : w));
+      if (r.width > 0) {
+        setGridWidth((prev) => (prev !== null && Math.abs(prev - r.width) < 0.5 ? prev : r.width));
+
+        /**
+         * ⚠ THE OFFSET IS MEASURED AGAINST THIS CANVAS'S OWN OFFSET PARENT, not
+         * against the viewport — `getBoundingClientRect` is viewport-relative
+         * and the host sits inside a positioned shell, so using it raw would
+         * place the cards wrong by the shell's own offset AND move them when
+         * the page scrolls.
+         */
+        const host = gridEl.offsetParent as HTMLElement | null;
+        const hr = host?.getBoundingClientRect();
+        const left = r.left - (hr?.left ?? 0);
+        const top = r.top - (hr?.top ?? 0);
+        setGridOffset((prev) =>
+          prev && Math.abs(prev.left - left) < 0.5 && Math.abs(prev.top - top) < 0.5
+            ? prev
+            : { left, top },
+        );
+      }
     };
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(target);
-    return () => ro.disconnect();
-  }, [gridEl]);
+    // ⚠ THE GRID MOVES WITHOUT RESIZING when the corridor steps, so a
+    // `ResizeObserver` alone is not enough — its box is the same 576x104 at a
+    // new position. A scroll/resize listener covers the rest.
+    window.addEventListener("resize", apply);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", apply);
+    };
+  }, [gridEl, gridNonce]);
+
+  /**
+   * Re-resolve the grid element when the active question changes.
+   * ⚠ POLLED ON A `MutationObserver`, NOT ON A PROP. This component does not
+   * receive the question number, and threading one in would add a second source
+   * of truth for "which question is active" — the corridor already owns that.
+   */
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const band = document.querySelector(".enquiry-phrase-band");
+    if (!band) return;
+    const mo = new MutationObserver(() => setGridNonce((n) => n + 1));
+    mo.observe(band, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+    return () => mo.disconnect();
+  }, []);
 
   const { tuning, glassTuning } = useCardRig();
 
@@ -3584,7 +3949,23 @@ export default function AnswerCardCanvas({
     // instance compiles ~6-7s BEFORE Begin, so a shared mark name made the
     // harness read "reveal start" off the wrong canvas and report negative
     // times. `warm && !active` is the warm-up; the real Q5 canvas is the other.
-    try { performance.mark(warm && !active ? "warmup-canvas-compiled" : "card-canvas-compiled"); } catch {}
+    // ⚠⚠ A SECOND, QUESTION-SPECIFIC MARK — 11 August 2026, Architect's Anomaly 6.
+    //
+    // The shared name below fires on EVERY question's canvas, and readers take
+    // `getEntriesByName(...)[0]` — the FIRST. So every mount→compiled figure on
+    // record (161ms, 919ms, the 758ms warm-up benefit) is **Q5's canvas only**,
+    // and the compile durations for Q4–Q1 have never been measured. Those are
+    // precisely what decides Mode A vs Mode B on four of the five reveals.
+    //
+    // ⚠ THE ORIGINAL NAME IS KEPT AND FIRES UNCHANGED. Renaming it would break
+    // `warmup-value.mjs` and every recorded comparison; this ADDS a suffixed
+    // twin rather than moving the goalposts under the existing figures.
+    try {
+      const base = warm && !active ? "warmup-canvas-compiled" : "card-canvas-compiled";
+      performance.mark(base);
+      const q = (document.querySelector(".enquiry-pdepth-0 .enquiry-phrase-cue")?.textContent || "").trim();
+      if (q) performance.mark(`${base}-${q}`);
+    } catch {}
     setCompiled(true);
     onCompiled?.();
   }, [onCompiled, warm, active]);
@@ -3634,8 +4015,14 @@ export default function AnswerCardCanvas({
         // exactly GRID_WIDTH_PX x GRID_HEIGHT_PX; inside a canvas 12px larger on
         // each side it would no longer reach the edges, leaving a visible gutter
         // where the logo used to run out to the grid boundary.
-        left: box.left,
-        top: box.top,
+        // ⚠ `gridOffset` IS ADDED FOR THE SHARED HOST (D-048). When this canvas
+        // rendered inside `.enquiry-answer-grid`, `box.left/top` were already
+        // grid-relative. From the zero-size host outside the keyed phrase they
+        // are not, so the measured offset carries it back over the grid.
+        // Falls back to 0 before the first measurement — paired with the
+        // `gridOffset === null` guard below, which renders nothing until then.
+        left: box.left + (gridOffset?.left ?? 0),
+        top: box.top + (gridOffset?.top ?? 0),
         width: box.width,
         height: box.height,
         pointerEvents: "none",
@@ -3701,7 +4088,13 @@ export default function AnswerCardCanvas({
           // at `markWarm`, including why the warm-up and the real canvas must
           // NOT share a mark name.
           try {
-            performance.mark(warm && !active ? "warmup-canvas-created" : "card-canvas-created");
+            const base = warm && !active ? "warmup-canvas-created" : "card-canvas-created";
+            performance.mark(base);
+            // ⚠ THE QUESTION-SUFFIXED TWIN — see the note at the `-compiled`
+            // mark. Without it, `created`→`compiled` can only ever be computed
+            // for Q5, because both ends of the pair collide across questions.
+            const q = (document.querySelector(".enquiry-pdepth-0 .enquiry-phrase-cue")?.textContent || "").trim();
+            if (q) performance.mark(`${base}-${q}`);
           } catch {}
         }}
       >

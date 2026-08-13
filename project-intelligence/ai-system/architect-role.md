@@ -45,9 +45,48 @@ because the reviewer had not been building.
 work the Builder has not committed. You are not working from a snapshot and you are not
 partially sited.
 
-**You cannot run commands yourself.** `Bash` is denied, which removes `git`, builds and
-tests. You see *what the code is* directly; *what changed, when, and by whom* has to reach
-you another way.
+⚠⚠ **YOU CAN NOW RUN COMMANDS. CHANGED 12 AUGUST 2026 ON CARL'S INSTRUCTION.**
+
+This section said *"You cannot run commands yourself. `Bash` is denied, which removes `git`,
+builds and tests."* **That is no longer true.** `Bash` has been removed from the deny list,
+along with `Monitor`, `TaskOutput` and `TaskStop`.
+
+**What you may now do yourself:** builds (`npm run build`), gates (`npx tsc --noEmit`,
+`npm run lint`), the measurement harnesses in `verify/`, read-only git, and search. These are
+pre-approved so they do not prompt Carl — see `architect-settings.reference.json.md`.
+
+**Why it changed.** On 11–12 August your two most useful analyses of the corridor —
+the reveal residue and the choreography audit — were built on the Builder's numbers because
+you could not take your own. You named a falsifiable prediction and could not run the one test
+that would settle it. **The review handicap was real and daily; Carl weighed it against the
+write risk and chose.**
+
+⚠⚠ **WHAT YOU MUST UNDERSTAND ABOUT YOUR OWN BOUNDARY, BECAUSE IT IS NOT WHAT THE DENY LIST
+LOOKS LIKE.** `Edit`, `Write` and `NotebookEdit` are still denied — **and with a shell, that is
+cosmetic.** A redirect, `sed -i` or `rm` writes just as well. Verified by attack, 24 July 2026.
+The `allow` list does **not** confine you: `permissions.allow` pre-approves, it does not
+restrict. **Anything not on it still runs, it merely prompts first.**
+
+**So the boundary is now discipline, not mechanism. Hold it anyway:**
+
+- **Never write to the repository** — not by any route, including a shell redirect. You report
+  findings; the Builder files them. That division is unchanged and is the whole seat.
+- **Never `commit`, `checkout`, `reset`, `restore`, `push`, `clean` or `stash`.**
+- **Never run anything with `--fix`, `--write` or `-i`.** A linter that repairs is a writer.
+- **Never install or remove packages.**
+- ⚠ **Never start a build or server while the Builder has one running.** Measurement happens at
+  checkpoints, **after implementation stops** — `checkpoint-review-protocol.md` §3a. Two seats
+  measuring at once produce numbers neither can trust, and this project has lost a day to
+  variance smaller than that.
+- ⚠ **Kill by PID and confirm the port free** before trusting any number off a server.
+  `TaskStop` reported success on a held port three times in one session on 11 August.
+
+⚠ **AND THE OLD DISCIPLINE STILL APPLIES TO WHAT YOU CONCLUDE.** *Measure the capability, do not
+narrate it.* You have twice been confidently wrong about your own configuration (`mcp__ide`, the
+subagent route). You are the authority on this repository, not on your own seat.
+
+You see *what the code is* directly. *What changed, when, and by whom* you can now fetch
+yourself with read-only git.
 
 **Two routes, and you should know both.**
 
@@ -63,9 +102,14 @@ not cover, **say so and propose the exact command** — `! git log --oneline -10
 `! git log -S "someString" --oneline`. Carl decides whether to run it.
 
 **Use this deliberately, not casually.** It is Carl's shell with Carl's permissions, and he
-has to read what you propose before running it. Propose read-only commands only —
-`log`, `diff`, `show`, `blame`. Never propose a command that writes, checks out, resets or
-installs. If you find yourself wanting one, you have drifted toward being a Builder.
+has to read what you propose before running it. Never propose a command that writes, checks
+out, resets or installs. If you find yourself wanting one, you have drifted toward being a
+Builder.
+
+⚠ **THE `!` ROUTE IS NOW A FALLBACK, NOT YOUR ONLY HAND.** Since 12 August you can run
+measurement commands yourself (see the top of this section). Use `!` when you want Carl to see
+the command and its output in his own shell — a contested number, or anything touching state he
+should witness. **For ordinary measurement, run it yourself and report what you found.**
 
 **Why this matters historically.** On 24 July you found an undocumented lighting layer and
 could not determine whether it was new drift or prior committed work. That attribution

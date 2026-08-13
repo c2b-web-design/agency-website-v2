@@ -1348,8 +1348,55 @@ function roundedRectHalfWidthAt(y: number, halfW: number, halfH: number, r: numb
  * accessible names — the visible text being a texture makes a correct DOM label
  * MANDATORY at that point, not optional. Recorded as a known debt.
  */
-const LABEL_TEX_W = 2048;
-const LABEL_TEX_H = 512;
+/**
+ * ⚠⚠ THE JUSTIFICATION ABOVE MEASURED THE WRONG RECTANGLE — CORRECTED 11 AUGUST 2026.
+ *
+ * The comment at the top of `buildLabelTexture` says *"THE FACE IS ~576 x 104
+ * CSS px"*. **576 x 104 is the answer GRID** (`.enquiry-answer-grid`, the box the
+ * `ResizeObserver` measures). **One card's face is under 186.66 x 48** —
+ * `CARD_WIDTH_PX` and `CARD_HEIGHT_PX` in `answer-card-geometry.ts`, less twice
+ * the inset, via `cardBudget()`.
+ *
+ * ⚠ THE TEXTURE'S OWN ASPECT SETTLES IT WITHOUT TRUSTING EITHER COMMENT:
+ * 2048/512 = 4.00; one card is 3.89; the grid is 5.54. **It was built for one
+ * card's face and says so in its dimensions.**
+ *
+ * So the real oversample is **≥11x linear at DPR 1, ~5.5x at DPR 2** — not the
+ * ~3.5x claimed, and **≥121x by area**. Worse below 640px, where cards scale down.
+ *
+ * ⚠ WHY THIS MATTERS RATHER THAN BEING A PEDANTIC CORRECTION: at 2048x512 each
+ * card's label is **4 MiB of RGBA, five per question, ~27 MiB with mip chains**,
+ * painted and uploaded SYNCHRONOUSLY in the commit that mounts the canvas — the
+ * commit `verify/reveal-cost.mjs` puts at +108ms INSIDE the 1300ms reveal. It is
+ * the largest single allocation in that window and its only recorded
+ * justification was wrong by ~3x, in the direction that made it look reasonable.
+ *
+ * ⚠ AND IT EXPLAINS WHY NO JS HOT SPOT WAS EVER FOUND. Canvas2D paint appears
+ * under its JS caller; a 20 MiB upload with mip generation is native work with
+ * **nothing on the stack** — the recorded 305ms `(program)` signature.
+ *
+ * `?labeltex=` is the dial for measuring the alternatives. **The default is
+ * unchanged at 2048**: nothing ships on this dial without Carl's eye on the
+ * crispness, because crispness was the stated cost of moving text into WebGL.
+ * Everything below derives proportionally (`fontPx`, `maxW`, the shadow), so a
+ * resolution change needs no re-tuning — only judging.
+ *
+ * ⚠⚠ READ INSIDE THE BUILD, NOT AT MODULE SCOPE — AND THAT IS NOT A STYLE
+ * CHOICE. A module-level `const` evaluates ONCE at import, which during SSR is
+ * on the server where `window` is undefined. The dial would bake in at 2048 and
+ * a `?labeltex=1024` client render would silently disagree with it.
+ *
+ * ⚠ THIS PROJECT HAS ALREADY SHIPPED THAT EXACT BUG: `?zoom=` READ DURING SSR,
+ * so the wrapper never grew and a zoomed render was cropped to the pill's
+ * middle — **cutting off the very defect under judgement**. Recorded as
+ * instrument fault #8. `buildLabelTexture` only ever runs client-side (it is
+ * guarded on `document` at the `useMemo`), so reading it here is both correct
+ * and cheap.
+ */
+const LABEL_TEX_DEFAULT_W = 2048;
+/** Face aspect is ~3.89; the texture has always been 4.00. Kept at 4.00 so a
+ *  resolution change is a pure scale and nothing reflows. */
+const LABEL_TEX_ASPECT = 4;
 
 /**
  * The label's resting colour — PURE WHITE, matching the Q5 phrase text.
@@ -1506,11 +1553,68 @@ function urlNumber(key: string, fallback: number): number {
   return Number.isFinite(n) && n >= 0 ? n : fallback;
 }
 
+/**
+ * ⚠⚠ THE PAINTED CANVASES, CACHED BY WHAT THEY DEPEND ON — 11 AUGUST 2026.
+ *
+ * **The warm-up and the real Q5 cards paint BYTE-IDENTICAL images.**
+ * `enquiry-opening.tsx:1647` passes `QUESTIONS[5].options` to the warm-up and
+ * `:1301` passes `QUESTIONS[qNum].options` to the real cards — and the reveal is
+ * `qNum === 5`. So five 2048x512 canvases were painted during the opening,
+ * discarded, and **painted again inside the reveal**, for the same pixels.
+ *
+ * ⚠⚠ THE CACHE HOLDS `HTMLCanvasElement`, **NEVER** `THREE.CanvasTexture`, AND
+ * THAT DISTINCTION IS THE WHOLE SAFETY OF THIS CHANGE. Each mesh disposes its
+ * own `labelMap` on unmount (see the disposal effect below). A shared *Texture*
+ * would let the warm-up's unmount dispose a GPU resource the real cards are
+ * still sampling — **a black card face, appearing at a stage change, which
+ * would be blamed on whatever restructure shipped near it.** A shared *canvas*
+ * has no GPU resource to dispose: each `CanvasTexture` wrapping it is its own
+ * object with its own lifetime, and uploads its own copy.
+ *
+ * ⚠ SO THIS SAVES THE PAINT, NOT THE UPLOAD. That is the intended split: the
+ * A/B (`verify/label-tex-ab.mjs`) showed resolution buys ~60-78ms and then
+ * FLATTENS — 1024 and 512 measured the same — which says the residue below that
+ * floor is not proportional to pixels. **The paint is the candidate for the
+ * floor, and this is the arm that tests it.**
+ *
+ * ⚠ THE KEY MUST CARRY EVERY INPUT THAT CHANGES THE PIXELS, and `?inkweight=`
+ * is read INSIDE the build (`ctx.font`), so it belongs in the key even though it
+ * is not a parameter. **A key that omits it serves a stale image to the very
+ * sweep Carl tunes the label's weight by** — the dial would appear dead.
+ *
+ * Unbounded by design: five labels per question, five questions, one texture
+ * size in normal use. It is bounded by the corridor's own content.
+ */
+const labelCanvasCache = new Map<string, HTMLCanvasElement>();
+
 function buildLabelTexture(
   text: string,
   bodyColor: string,
   ink: string = LABEL_INK_REST,
 ): THREE.CanvasTexture {
+  // ⚠ THE DIAL IS READ HERE, PER BUILD — see `LABEL_TEX_DEFAULT_W` for why not
+  // at module scope. Default unchanged; nothing ships on this without Carl's eye.
+  const LABEL_TEX_W = urlNumber("labeltex", LABEL_TEX_DEFAULT_W);
+  const LABEL_TEX_H = LABEL_TEX_W / LABEL_TEX_ASPECT;
+
+  const inkWeight = urlNumber("inkweight", LABEL_INK_WEIGHT);
+  const cacheKey = `${LABEL_TEX_W}|${bodyColor}|${ink}|${inkWeight}|${text}`;
+  const cacheOff = urlNumber("nolabelcache", 0) === 1;
+  const cached = cacheOff ? undefined : labelCanvasCache.get(cacheKey);
+  if (cached) {
+    // ⚠ A FRESH TEXTURE OVER A SHARED CANVAS. The texture is per-mesh so
+    // disposal stays per-mesh; only the painting is shared.
+    // ⚠ THESE THREE MUST MATCH THE FRESH PATH AT THE FOOT OF THIS FUNCTION
+    // EXACTLY. A reused texture that differs in colour space would render the
+    // label at a different brightness depending on whether it happened to be a
+    // cache hit — a bug that would come and go with mount order.
+    const reused = new THREE.CanvasTexture(cached);
+    reused.colorSpace = THREE.SRGBColorSpace;
+    reused.anisotropy = 8;
+    reused.needsUpdate = true;
+    return reused;
+  }
+
   const canvas = document.createElement("canvas");
   canvas.width = LABEL_TEX_W;
   canvas.height = LABEL_TEX_H;
@@ -1534,11 +1638,19 @@ function buildLabelTexture(
   ctx.fillRect(0, 0, LABEL_TEX_W, LABEL_TEX_H);
 
   /**
-   * ⚠ THE FACE IS ~576 x 104 CSS px AT THE REFERENCE WIDTH and this texture is
-   * 2048 x 512, so the label is drawn at ~3.5x device density before any DPR
-   * scaling — comfortably above what a 0.75rem label needs to stay crisp.
-   * Crispness was the stated cost of moving text into WebGL; it is paid here
-   * with resolution rather than left to chance.
+   * ⚠⚠ THIS COMMENT SAID "THE FACE IS ~576 x 104 CSS px … ~3.5x device density"
+   * AND IT MEASURED THE WRONG RECTANGLE. Corrected 11 August 2026.
+   *
+   * **576 x 104 is the answer GRID, not one card's face.** The face is under
+   * 186.66 x 48 (`cardBudget()`). The true oversample at 2048 wide is **≥11x
+   * linear at DPR 1, ~5.5x at DPR 2 — ≥121x by area**, not 3.5x. Full working
+   * and the cost it justified: see `LABEL_TEX_DEFAULT_W`.
+   *
+   * ⚠ THE CRISPNESS ARGUMENT ITSELF STANDS AND IS NOT BEING DISCARDED —
+   * crispness was the stated cost of moving text into WebGL and it is paid with
+   * resolution rather than left to chance. **What was wrong was the arithmetic
+   * saying how much resolution that takes.** `?labeltex=` exists to put real
+   * alternatives in front of Carl's eye; the default has not moved.
    */
   const fontPx = Math.round(LABEL_TEX_H * 0.30);
   // ⚠ WEIGHT IS A COLOUR CONTROL AT THIS SCALE, not a styling choice — see
@@ -1612,14 +1724,94 @@ function buildLabelTexture(
   ctx.fillStyle = ink;
   ctx.fillText(text, cx, cy, maxW);
 
+  // ⚠ CACHED AFTER PAINTING, NOT BEFORE — an early `set` would publish a blank
+  // canvas to any concurrent caller. There is no concurrency here today (the
+  // five meshes build in one synchronous commit), and this ordering means there
+  // never can be.
+  //
+  // ⚠ `?nolabelcache=1` DISABLES THE CACHE, and it exists so the arm can be
+  // measured against itself on ONE build. Removing it would make the A/B a
+  // two-build comparison, which on this page measures the build.
+  if (!cacheOff) {
+    labelCanvasCache.set(cacheKey, canvas);
+  }
+
   const texture = new THREE.CanvasTexture(canvas);
   // ⚠ sRGB, BECAUSE THIS IS COLOUR. The field's NORMAL map is tagged
   // `NoColorSpace` for the opposite reason; getting this wrong would darken the
   // text against the surface it has to stay legible on.
+  // (see `prewarmLabelCanvases` below for why the paint may already be done)
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 8;
   texture.needsUpdate = true;
   return texture;
+}
+
+/**
+ * ⚠⚠ PAINT A QUESTION'S LABEL CANVASES BEFORE ITS CARDS MOUNT.
+ *
+ * **This is the fix for the ladder's Mode A / Mode B race** (Architect's
+ * Anomaly 1, 11 August 2026), and it is aimed at a MEASURED term rather than a
+ * suspected one.
+ *
+ * The entrance effect is gated `active && compiled && warm`, and it has a 650ms
+ * budget — `CARD_FIRST_ENTRANCE_MS`, the wipe's midpoint — before the clamp
+ * fires and the ladder loses its relationship to the text. Measured on dev,
+ * `verify/overrun-breakdown.mjs`, per question:
+ *
+ *     wipe → canvas created      ~135ms      React commit
+ *     created → compiled      256-420ms      ⚠ THE DOMINANT TERM
+ *     compiled → entrance         ~7ms       effect dispatch
+ *     ────────────────────────────────────
+ *     typical overrun         400-580ms      against a 650ms budget
+ *
+ * ⚠ **THERE IS ONLY 70-250ms OF HEADROOM, SO ANY JITTER IN THE COMPILE TIPS IT
+ * INTO MODE B.** The observed failure was compile 371ms + a 177ms dispatch delay
+ * = 682ms, just past the line. **The budget is not blown by one big stall; it is
+ * consumed by a term that is nearly always too large.**
+ *
+ * ⚠ AND THE COMPILE IS NOT SHADER COMPILATION. Cleared three times on this page
+ * (0.2-0.5ms). `useScenePrecompile` runs two `compileAsync` passes and a full
+ * render — for materials that are **identical across all five questions**. What
+ * actually differs per question, and what the `?labeltex=` A/B measured at
+ * 45-78ms of the reveal, is **the label textures: five 2048x512 canvases,
+ * painted and uploaded synchronously in the mounting commit.**
+ *
+ * **So this moves the PAINT off the critical path.** Called during the corridor's
+ * dwell — after a question's cards have settled, while the visitor is reading —
+ * it fills `labelCanvasCache` for the question that is about to arrive. When
+ * those cards mount, `buildLabelTexture` is a cache hit and the paint is already
+ * done.
+ *
+ * ⚠⚠ THIS IS NOT A FIFTH DEFERRAL, AND THE DISTINCTION IS THE WHOLE ARGUMENT.
+ * Four scheduling attempts have failed on this page (900ms stuttered the
+ * heading, 5200ms the subtext, `beginActive` the Begin reveal, `animationend`
+ * removed the cards) and the standing rule is *a moved symptom is not a fixed
+ * symptom*. **Those attempts moved work into a window that was still animating.**
+ * The corridor's dwell is genuinely idle — the ladder has finished and nothing
+ * moves until the visitor clicks — and this makes the work **absent** from the
+ * mounting commit rather than merely later. That is the one category this page
+ * has ever accepted.
+ *
+ * ⚠ IT CANNOT MOVE AN APPROVED BEAT. It paints into a detached canvas and writes
+ * a cache. It touches no timer, no state, and nothing in the scene graph; if it
+ * never ran, every timing would be exactly what it is today.
+ *
+ * ⚠ AND IT IS SAFE TO CALL REDUNDANTLY — a cache hit returns immediately, so a
+ * double call, a re-render, or a visitor going back costs nothing.
+ */
+export function prewarmLabelCanvases(labels: readonly string[] | undefined): void {
+  if (!labels || typeof document === "undefined") return;
+  for (const label of labels) {
+    if (!label) continue;
+    // ⚠ THE RETURNED TEXTURE IS DELIBERATELY DISCARDED. What is being warmed is
+    // `labelCanvasCache`, which holds the painted HTMLCanvasElement — never a
+    // `THREE.CanvasTexture`, because textures are disposed per-mesh and a shared
+    // one would be disposed out from under a live card. Building a throwaway
+    // texture here is the cost of reusing the one painting path; duplicating the
+    // paint would be a second place for the two to drift apart.
+    buildLabelTexture(label, SATIN_COLOR);
+  }
 }
 
 function crownZ(u: number, v: number, crownHeight: number, plateauU: number): number {

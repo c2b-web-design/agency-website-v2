@@ -5,6 +5,7 @@ import ContactFieldCanvas, { FIELD_ENTRANCE_END_MS } from "./contact-field-canva
 import ContactFieldInputs, { type FieldStateSnapshot } from "./contact-field-inputs";
 import { FIELD_SLOTS } from "./contact-field-geometry";
 import AnswerCardCanvas from "./answer-card-canvas";
+import { prewarmLabelCanvases } from "./answer-card-mesh";
 import { NextStepMeshButton } from "./nextstep-canvas";
 // ⚠ THE CARD CHOREOGRAPHY'S OWN END, DERIVED THERE AND IMPORTED HERE — never
 // retyped. This file's own history records a hand-written end-of-choreography
@@ -785,6 +786,27 @@ export default function EnquiryOpening() {
    * removed on Carl's instruction, 5 August; see `ENTRANCE_END_MS`.
    */
   const cardEntranceStartedAtRef = useRef<number | null>(null);
+  /**
+   * ⚠ THE LIVE `activeQ`, FOR CALLBACKS THAT MUST NOT BE REBUILT.
+   *
+   * `noteCardEntranceStart` is passed to `AnswerCardCanvas` as `onEntranceStart`
+   * and is deliberately `useCallback([])` — a fresh identity would land in the
+   * canvas's effect dependencies and restart the entrance whenever anything
+   * re-rendered. So it cannot close over `activeQ` directly; it reads it here.
+   */
+  const activeQRef = useRef(activeQ);
+  useEffect(() => {
+    activeQRef.current = activeQ;
+  }, [activeQ]);
+  /**
+   * Which question's entrance has begun — the trigger for prewarming the NEXT
+   * question's label canvases. Declared here rather than beside its effect
+   * because `noteCardEntranceStart` below writes it, and a `useState` declared
+   * after its writer is a lint error (`react-hooks/immutability`) with a real
+   * hazard behind it: the earlier access would not track the value over time.
+   * The full reasoning for the prewarm lives on the effect that consumes this.
+   */
+  const [entranceRunningFor, setEntranceRunningFor] = useState<number | null>(null);
   const noteCardEntranceStart = useCallback(() => {
     // ⚠ THE NULL GUARD IS WHAT MAKES THIS SAFE FOR FIVE CANVASES, and it was
     // written when there was only one. Since 1b every question mounts its own
@@ -795,7 +817,74 @@ export default function EnquiryOpening() {
     if (cardEntranceStartedAtRef.current === null) {
       cardEntranceStartedAtRef.current = Date.now();
     }
+    // ⚠ OUTSIDE THE NULL GUARD, DELIBERATELY. The guard above protects the
+    // OPENING's anchor, which must stay pinned to the first entrance. The
+    // prewarm wants the opposite — the CURRENT question, every time — so it
+    // reads the live value rather than the recorded one. Putting this inside the
+    // guard would prewarm once, for Q4, and never again.
+    setEntranceRunningFor(activeQRef.current);
   }, []);
+
+  /**
+   * ⚠⚠ PAINT THE NEXT QUESTION'S LABELS DURING THE DWELL — the fix for the
+   * ladder's Mode A / Mode B race. Architect's Anomaly 1, 11 August 2026.
+   *
+   * **The measured problem** (`verify/overrun-breakdown.mjs`, dev, per question):
+   * the entrance has a 650ms budget from the wipe's start before the clamp fires
+   * and the ladder loses its relationship to the text. `created → compiled`
+   * eats **256-420ms** of it, leaving 70-250ms of headroom — so the budget is
+   * not blown by one big stall, it is **consumed by a term that is nearly always
+   * too large**, and any jitter tips it over. Mode B measured at **18% on dev**
+   * (`verify/ladder-mode.mjs`), with overruns to 2246ms.
+   *
+   * The per-question part of that term is the label textures — five 2048x512
+   * canvases painted and uploaded in the mounting commit. `prewarmLabelCanvases`
+   * paints them into `labelCanvasCache` ahead of time, so the mount is a cache
+   * hit.
+   *
+   * ⚠ WHY THE DWELL AND NOT AN IDLE CALLBACK. This page **has no idle** — the
+   * opening animates without a break from 600ms to 12400ms and
+   * `requestIdleCallback` only ever fires on its timeout here, which has defeated
+   * four scheduling attempts. **The corridor's dwell is different and is a real
+   * window:** the ladder has finished, nothing is animating, and nothing moves
+   * until the visitor clicks. This waits for that state rather than guessing at
+   * a duration — *the guard must wait for a STATE, not a duration*, which this
+   * file has now learned four times.
+   *
+   * ⚠ KEYED ON `cardsSettledAt`, WHICH IS SET WHEN THE LADDER COMPLETES, NOT ON
+   * `activeQ`. Keying on the question number would fire this **during the
+   * corridor move**, which is the busiest moment there is — putting the work
+   * back exactly where it must not be.
+   *
+   * ⚠ IT CANNOT MOVE AN APPROVED BEAT. It paints into a detached canvas and
+   * writes a cache; no timer, no state, nothing in the scene graph. If it never
+   * ran, every timing would be what it is today — the cards would simply pay for
+   * the paint at mount, as they do now.
+   */
+  useEffect(() => {
+    if (entranceRunningFor === null) return;
+    // The NEXT question, and the corridor counts DOWN — Q5 → Q4 → … → Q1.
+    const next = QUESTIONS[entranceRunningFor - 1];
+    if (!next) return;
+    /**
+     * ⚠ `ENTRANCE_END_MS` IS DERIVED, NOT TYPED — it is the last rung plus the
+     * rise duration (`answer-card-geometry.ts`), so it tracks the ladder if the
+     * ladder ever changes. **A hand-written duration here would go stale**, which
+     * this file has recorded happening twice.
+     *
+     * ⚠ AND THIS IS A DELAY MEASURED FROM A STATE, NOT A GUESS AT ONE. The state
+     * is "this question's entrance has begun" (`onEntranceStart`, which fires
+     * when `active && compiled && warm` first goes true); the offset from there
+     * to the ladder finishing is a known constant. Waiting for the state is what
+     * keeps this out of the animating window; the constant only says how much of
+     * that window is left.
+     */
+    const id = window.setTimeout(
+      () => prewarmLabelCanvases(next.options),
+      ENTRANCE_END_MS,
+    );
+    return () => window.clearTimeout(id);
+  }, [entranceRunningFor]);
 
   // The single, shared entry point into the completion stage. Every route into
   // `complete` — reduced motion and the animated corridor alike — goes through
@@ -1140,9 +1229,49 @@ export default function EnquiryOpening() {
       >
         <div className="enquiry-phrase-qrow">
           <span className="enquiry-phrase-cue" aria-hidden="true">Q{qNum}</span>
+          {/*
+            ⚠⚠ `onAnimationStart` PUBLISHES THE REVEAL'S CLOCK ZERO, and it is a
+            CONTRACT with `answer-card-canvas.tsx`, not a diagnostic.
+            Added 12 August 2026.
+
+            The card ladder needs to know when this question's reveal began, so
+            card 1 can land at its midpoint (`CARD_FIRST_ENTRANCE_MS`, 650ms).
+            It used to discover that by searching this element's CSS animations
+            **by name** for `enquiry-mask-reveal-horizontal`.
+
+            ⚠ THAT COUPLED THE CHOREOGRAPHY TO A RENDERING TECHNIQUE. When the
+            wipe was rewritten from `clip-path` to `transform` — because Chrome
+            cannot composite `clip-path`, so a blocked main thread freezes the
+            reveal outright — the lookup stopped resolving and **production Mode B
+            went from 0% to 60% on every question.** A visual change silently
+            broke the timing contract.
+
+            ⚠ `animationstart` FIRES FOR WHATEVER ANIMATION DRAWS THE REVEAL, so
+            this signal survives the mechanism changing. That is the whole point:
+            the wipe is free to be re-implemented, and the ladder keeps its clock.
+
+            ⚠ ONLY THE ACTIVE PHRASE PUBLISHES. Every phrase in the corridor
+            carries animations as it morphs between depths; a receding memory rung
+            firing this would hand the ladder a clock from the wrong question.
+          */}
           <span
             className={`enquiry-phrase-question${reducedMotion || !isActive ? "" : " enquiry-q-text-reveal"}`}
             id={isActive ? "active-q-label" : undefined}
+            onAnimationStart={
+              isActive && !reducedMotion
+                ? (e) => {
+                    // ⚠ THE REVEAL ONLY — not the depth-morph transitions, and
+                    // not a future sibling animation on this element. Matching
+                    // the name here is safe in a way the ladder's own lookup was
+                    // not: if this never fires, the ladder falls back to reading
+                    // the animation directly and behaves exactly as it does today.
+                    if (e.animationName.startsWith("enquiry-mask-reveal")) {
+                      (window as unknown as { __revealStart?: number }).__revealStart =
+                        performance.now();
+                    }
+                  }
+                : undefined
+            }
           >
             {QUESTIONS[qNum].question}
           </span>
@@ -1294,6 +1423,17 @@ export default function EnquiryOpening() {
                 STALL'S OWN MECHANISM. If the measured delta puts the move past
                 the ~50ms visible threshold, **the honest answer is the shared
                 host, not a dial** — and that is Carl's call, not a Builder's.
+              */}
+              {/*
+                ⚠ THE CANVAS RENDERS HERE, INSIDE THE KEYED PHRASE, AND THAT IS
+                THE DEFECT — NOT AN OVERSIGHT. Every question step destroys a
+                WebGL context and creates another; the compile lands inside the
+                1300ms wipe and freezes it ~120ms in the GPU process.
+
+                **The shared host that fixes it was built and reverted on
+                12 August** — it fixed the frames and broke the layout. See the
+                tombstone below `.enquiry-phrase-band` for what it achieved,
+                exactly why it failed, and what a correct version needs.
               */}
               <AnswerCardCanvas
                 active={isActive}
@@ -1472,6 +1612,119 @@ export default function EnquiryOpening() {
             {phraseList.map(p => renderPhrase(p.qNum, p.depth, p.isActive))}
           </div>
         )}
+
+        {/*
+          ⚠⚠ THE SHARED HOST — ONE CANVAS, CREATED ONCE, NEVER UNMOUNTED.
+          D-048, authorised by Carl 12 August 2026. This is the fix for the
+          reveal misstep he reported on every question.
+
+          **The measured defect.** Q5's 1300ms wipe should deliver ~78 frames at
+          60Hz; it delivers **60-70**. The missing frames cluster in a ~120ms
+          freeze that **tracks the shader compile** — compile ends at 40% of the
+          wipe, freeze at 41%; compile ends at 22%, freeze at 24%. In every run
+          that lands between "What" (17%) and "brought" (45%), which is why Carl
+          always described it as *"a noticable pause after the first word."*
+
+          ⚠ AND THE FREEZE IS IN THE GPU PROCESS, NOT THE MAIN THREAD. A CDP
+          trace names it: `CommandBuffer::Flush` / `GpuChannel::
+          ExecuteDeferredRequest`, four blocks totalling ~164ms, with the
+          renderer idle. **That is why every main-thread instrument reported the
+          page healthy** — and why moving the wipe to a composited property was
+          the wrong target twice today: compositing queues behind the same GPU
+          scheduler.
+
+          **The control proves the technique is innocent.** The heading and
+          subtext use the SAME `enquiry-mask-reveal-horizontal` keyframes on the
+          same page and deliver 112-251 frames cleanly. Same wipe, quiet page,
+          no misstep. **The moment is guilty, not the mechanism.**
+
+          ⚠⚠ WHY THIS IS SAFE, AND IT IS THE MEASUREMENT THAT UNBLOCKED IT.
+          The recorded hazard was that lifting the canvas out makes its motion
+          hand-driven, matching `bottom 900ms cubic-bezier(0.37, 0, 0.63, 1)`.
+          **That travel belongs to the RECEDING copy.** `verify/active-grid-
+          fixed.mjs`, 25 samples across 5 runs: the ACTIVE grid sits at
+          `top 492.78, left 432.22, 576x104` at Q5, Q4, Q3, Q2 and Q1 —
+          **identical to the hundredth of a pixel.** And `phraseList` above
+          withholds the active phrase entirely while `corridorMoving`, so the
+          only grid on screen mid-move is the outgoing one at depth 1.
+          **A canvas hosted here sits still for the whole corridor. There is no
+          easing to reproduce.**
+
+          ⚠ THE GEOMETRY STILL COMES FROM `.enquiry-answer-grid` VIA ITS
+          `ResizeObserver`, not from this wrapper — D-048 established that the
+          measurement path is anchored to the grid element. The per-phrase grid
+          `<div>` therefore stays exactly where it is, as the thing being
+          measured; only the CANVAS moved out.
+
+          ⚠ `pointer-events: none` ON THE WRAPPER. The DOM hit targets live in
+          the phrase's own grid; a full-width transparent host over the corridor
+          would swallow them.
+        */}
+        {/*
+          ⚠⚠ MOUNTED FROM THE OPENING, NOT FROM `stage !== "opening"` — AND THIS
+          IS THE HALF THAT ACTUALLY FIXES Q5.
+
+          The first version of this host gated on `stage !== "opening"`, which
+          stopped the per-question churn on Q4–Q1 (measured: `card-canvas-created`
+          fires once, at Q5, never again) **and changed Q5's wipe not at all** —
+          64/69/72 frames of ~78, against 60/70/69 before. The reason, measured:
+          the context was still created **117–128ms INTO the wipe** and compiled
+          at **323–482ms**, which is exactly where the freeze was traced.
+
+          **A host that mounts after Begin has moved the churn off four questions
+          and left the first one untouched.** The whole defect is a context being
+          created inside an animating window; mounting during the opening is what
+          takes it out of one.
+
+          ⚠ THE OPENING IS NOT IDLE, AND THAT IS FINE HERE. `enquiry-opening.tsx`
+          records it animating without a break from 600ms to 12400ms — which is
+          why four scheduling attempts failed. **This is not a deferral into a
+          gap that does not exist.** It is the same trick D-046 already uses for
+          the warm-up canvas: mount early, stay mounted, let the choreography
+          wait on `openingArmed` rather than race it. The warm-up's own marks
+          confirm the timing works — created ~7.4s BEFORE the wipe, compiled
+          ~7.25s before.
+
+          ⚠ `active` STAYS FALSE UNTIL THE CORRIDOR IS SHOWING. The cards must
+          not enter during the opening; `stage` gates the entrance while the
+          CONTEXT is created early. That separation — early mount, late
+          entrance — is exactly what `warm` vs `active` was built for.
+        */}
+        {/*
+          ⚠⚠ THE HOST WAS BUILT, MEASURED AND REVERTED — 12 August 2026.
+          **It fixed the frame delivery and broke the layout**, and the second
+          fact is why it is not here.
+
+          **What it achieved, measured:** Q5's wipe went from 60-72 frames of ~78
+          to **75-80**, and the ~120ms compile freeze at 22-41% disappeared
+          entirely. `card-canvas-created` fired **once**, at Q5, never again —
+          the per-question context churn was genuinely gone. The mechanism is
+          right and D-048's premise held.
+
+          ⚠⚠ AND CARL LOOKED AT IT AND THE CARDS WERE ABOVE THE QUESTION TEXT.
+          Screenshot, `?modetrace=1`, Q5: five cards rendered ~230px too high,
+          sitting over the corridor instead of under the phrase.
+
+          **The cause, and it is the hazard D-046 named exactly.** The canvas
+          positions itself `absolute` from `box.left/top`, which were
+          grid-relative only because it rendered INSIDE `.enquiry-answer-grid`.
+          From a zero-size host outside the keyed phrase they are not, so the
+          offset has to be measured — and the measurement resolved against a
+          different `offsetParent` than the grid's, putting every card wrong.
+
+          ⚠⚠ AND EVERY NUMBER SAID IT WAS FINE. `active-grid-fixed.mjs` passed
+          because it measures the grid `<div>`, which never moved. The wipe
+          harness passed because frames were genuinely being delivered. **A
+          canvas-vs-grid box check also passed — 432/493/576 on both — because
+          it compared the two rects in viewport space while the CSS `left/top`
+          resolved against something else.** Three green instruments, one broken
+          screen, caught in one look.
+
+          **What a correct version needs**, and it is not a tweak: the canvas
+          must derive its position from the grid's rect in the SAME coordinate
+          space it renders in, verified by a pixel check that the cards sit below
+          the phrase — not by comparing two `getBoundingClientRect` calls.
+        */}
 
         {/* Contact layer — mounting region for the Three.js contact field. The */}
         {/* four provisional CSS fields (Name, Business name, Website URL, Email) */}

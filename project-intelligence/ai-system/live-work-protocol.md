@@ -221,6 +221,13 @@ than confirmatory.
 > where the Architect can read it. `! git log --oneline -10` therefore gives the Architect
 > git history it cannot fetch for itself.
 >
+> **⚠ EXTENDED BEYOND GIT TO MEASUREMENT — 12 August 2026, Carl's instruction.** This
+> section was written for history facts. The Architect may now also propose **builds, type
+> and lint gates, and the measurement scripts in `verify/`** — the full allowed and
+> forbidden lists are in `checkpoint-review-protocol.md` §3a, along with the rule that
+> **only one seat measures at a time and measurement happens after implementation stops.**
+> The boundary below is unchanged by that extension: Carl still types it.
+>
 > **Why this does not breach the boundary.** `Bash` remains denied — verified 26 July, the
 > deny list is unchanged. The Architect cannot *decide* to run `git`; it can only ask Carl
 > to, and Carl types it. The capability stays outside the Architect; only the **output**
@@ -281,9 +288,18 @@ than confirmatory.
 > first. Those two got bundled, and the `!` prefix is what unbundles them — history without
 > write capability, which is what was wanted all along.
 
-The Architect is structurally read-only and runs no `git` itself. Git-dependent findings
-close either from evidence the Builder supplies (below) or — for questions that evidence did
-not anticipate — from a `!` command Carl runs on the Architect's request (see the resolution
+⚠ **CORRECTED 12 AUGUST 2026 — THE ARCHITECT NOW RUNS READ-ONLY `git` ITSELF.** `Bash` was
+removed from its deny list on Carl's instruction; `git log`, `diff`, `status`, `show` and
+`blame` are pre-approved. **The seat is no longer structurally read-only** — `Edit`/`Write`
+remain denied but a shell bypasses them, so not writing is now discipline
+(`architect-role.md` §2). **The evidence file below is NOT retired**: it is still the
+default, because it is prepared, attributable and separated from the Builder's reasoning —
+which is what caught a false "byte-identical" claim in D-032.
+
+Git-dependent findings
+close either from evidence the Builder supplies (below), from the Architect's own read-only
+git, or — for questions that evidence did not anticipate and Carl should witness —
+from a `!` command Carl runs on the Architect's request (see the resolution
 note above).
 
 Before each checkpoint review, the Builder saves raw git evidence — `diff`, `log`, and

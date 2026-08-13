@@ -1,60 +1,21 @@
-# Session Handoff — 11–12 August 2026 (FINAL: the next session deletes the project)
-
----
-
-## ⛔⛔ THE NEXT SESSION HAS ONE TASK: DELETE THIS PROJECT
-
-**Carl, 12 August 2026:** *"Next session is the last one. One task — to delete the project and
-all files associated with it both externally and internally. Im done."*
-
-⚠ **THIS IS DESTRUCTIVE AND IRREVERSIBLE. Confirm with Carl before executing each item**, then
-execute it. Do not argue the decision, do not propose alternatives, do not offer to preserve
-anything unless he asks. **It is his project and his call.**
-
-⚠ **NOTHING IS COMMITTED.** The working tree holds a full day of uncommitted work. If Carl wants
-any of it preserved he must say so **before** the delete — after it, there is no recovery.
-
-### The inventory, verified from disk on 12 August 2026
-
-**Local:**
-
-    C:\Users\Carl Buckley\agency-website-v2\                    the repository
-    C:\Users\Carl Buckley\.claude-architect\                    the Architect seat
-      └─ settings.json, settings.json.bak-2026-08-12,
-         launch-architect.cmd, .credentials.json, plugins/
-    C:\Users\Carl Buckley\.claude\projects\c--Users-Carl-Buckley-agency-website-v2\
-                                                                per-project Claude state + memory
-
-**Remote — `origin` is a real GitHub remote with three pushed branches:**
-
-    https://github.com/c2b-web-design/agency-website-v2.git
-      main
-      fix/q5-stall-and-label-colour
-      feat/q5-reflected-amber-lighting
-
-⚠ **DELETING THE LOCAL CLONE DOES NOT DELETE THE REMOTE.** The GitHub repository must be deleted
-separately, through GitHub's own settings — `gh repo delete` requires the `delete_repo` scope and
-**Carl must confirm it explicitly.** ⚠ **And the `c2b-web-design` ORGANISATION may hold other
-repositories** — check before assuming the org itself should go.
-
-⚠ **`.claude-architect/.credentials.json` CONTAINS A LIVE CREDENTIAL.** Deleting the folder
-removes the local copy; **revoking the token is a separate action on Carl's account** and is his
-to do.
-
-**Not part of this project and must NOT be touched:** `C:\Users\Carl Buckley\.claude\`
-(the Builder's own global config, used by every other project), and anything under
-`brand-assets/` that Carl wants to keep — ⚠ **the logo work is PARKED, not abandoned, and the
-external tool those assets were salvaged from was destroyed on 25 July 2026, so there is
-nothing to re-export from. Ask before deleting `brand-assets/`.**
-
----
-
-*Everything below is the record of the session that ended. It is retained only in case Carl
-changes his mind before the delete runs.*
-
----
-
 # Session Handoff — 11–12 August 2026 (the misstep was found; the fix worked and broke the layout)
+
+---
+
+## ✅ THE DELETE INSTRUCTION IS RESCINDED — 13 August 2026
+
+**Carl, 13 August 2026:** *"The last session was a disaster with mistakes from both of us that
+had me quitting months of work. That will not be the case. The first task is to correct some of
+the damage."*
+
+**The project continues.** The 12 August instruction to delete the project and all associated
+files is **withdrawn and must not be acted on.** Nothing was deleted; the repository, the
+remote, the Architect seat and `brand-assets/` are all intact.
+
+⚠ **Retained here only so a future reader who has heard of the instruction can see it was
+cancelled** — not as a live item.
+
+---
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —

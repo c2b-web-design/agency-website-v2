@@ -1513,3 +1513,68 @@ D-046 was weighing the restructure against **~70ms of residue, once, inside the 
 **Authority:** Human Founder
 
 ---
+
+## D-049 — The Architect Gets A Shell: Measurement Bought With The Write Boundary
+
+**Date:** 2026-08-12
+**Status:** APPLIED to the live file. **Carl's decision, given four times and executed on the fourth.**
+**Supersedes:** D-036's read-only premise in part; `workflow-redesign/` DL-1 on the `Bash` denial.
+
+### The decision
+
+**`Bash` is removed from the Architect's deny list**, along with `Monitor`, `TaskOutput` and
+`TaskStop`. Twelve measurement commands are pre-approved so they do not prompt: `npm run build`,
+`npm run lint`, `npx tsc --noEmit`, `node verify/*`, read-only git, `grep`, `ls`, `netstat`.
+
+**`Edit`, `Write` and `NotebookEdit` remain denied.** So do `mcp__codex`, `mcp__ide`,
+`DesignSync`, `CronCreate`, `EnterWorktree`, `RemoteTrigger`, `ScheduleWakeup`, `TaskCreate`.
+
+### ⚠⚠ WHAT THIS COSTS, STATED PLAINLY
+
+**The Architect can now write to the repository.** Not through `Write`, which is denied, but
+through the shell. **Verified by attack on 24 July 2026:** with `Bash` available, denying the
+edit tools is cosmetic — shell redirect, `sed -i` and `rm` all still write.
+
+**And the `allow` list does not confine it.** `permissions.allow` *pre-approves* actions that
+would otherwise prompt; it does **not** restrict a session to what it names, and no tool
+allowlist exists at this tier. The seat also runs `disableAllHooks: true`, so the Builder's
+`chunk-scope-guard.js` does not fire there.
+
+⚠ **SO A READER WHO SEES `Write` ON THE DENY LIST AND CONCLUDES THE SEAT CANNOT WRITE IS WRONG.**
+That is why this entry exists.
+
+**The write boundary is now discipline, not mechanism.** `architect-role.md` §2 carries the rules
+the Architect must hold: never write by any route, never `commit`/`checkout`/`reset`/`push`,
+never `--fix`/`--write`/`-i`, never install, never build while the Builder has a server running.
+
+### Why Carl chose it
+
+On 11–12 August the Architect produced the two most useful analyses of the corridor work — the
+reveal residue and the choreography audit — and **both rested on the Builder's numbers because it
+could not take its own.** It named a falsifiable prediction (the contact pre-warm at
+Begin+2949ms) and could not run the one test that would settle it; the Builder ran it and the
+prediction failed.
+
+**The review handicap was real, daily, and had just cost a day.** The write risk was **accepted,
+not disproved.**
+
+### ⚠ WHAT DID NOT CHANGE
+
+- **The evidence file stays mandatory** (`checkpoint-review-protocol.md` §4). A reviewer that can
+  run `git` is not a substitute for evidence the Builder prepared and kept separate from its own
+  reasoning — that separation caught a false "byte-identical" claim in D-032.
+- **The Architect still writes no repository files.** It reports; the Builder files. Unchanged.
+- **Findings still go to Carl, who decides.** No approval authority was granted here.
+- **Serialisation:** measurement happens at checkpoints, **after implementation stops**, one seat
+  at a time (`checkpoint-review-protocol.md` §3a). Two seats measuring at once produce numbers
+  neither can trust.
+
+### Files updated in the same change
+
+`architect-settings.reference.json.md` (reference + reconciliation date), `architect-role.md` §2,
+`checkpoint-review-protocol.md` §3a and §7, `live-work-protocol.md` §5a, `ai-roles.md`, `CLAUDE.md`.
+Live file backed up to `settings.json.bak-2026-08-12` before editing; JSON validated after.
+
+⚠ **THE ARCHITECT MUST RESTART** for this to take effect — settings load at startup.
+
+**Authority:** Human Founder

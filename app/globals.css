@@ -1349,6 +1349,37 @@
   top: 11.5rem;
 }
 
+/*
+  ⚠⚠ THE SHARED CARD HOST — D-048, 12 August 2026.
+
+  The answer canvas used to render inside the keyed phrase, so every question
+  step destroyed a WebGL context and created another. The compile lands inside
+  the 1300ms wipe and freezes it ~120ms **in the GPU process** (`CommandBuffer::
+  Flush`, renderer idle) — the misstep Carl reported on every question, and the
+  reason main-thread instruments all called the page healthy.
+
+  This wrapper sits OUTSIDE every phrase key, so the context is created once.
+
+  ⚠ IT IS DELIBERATELY A ZERO-SIZE ANCHOR, NOT A SIZED BOX. The canvas inside
+  positions itself from `.enquiry-answer-grid`'s MEASURED rect at runtime
+  (`AnswerCardCanvas` → `ResizeObserver`), which is the geometry path D-048
+  established. Giving this wrapper its own dimensions would introduce a SECOND
+  source of truth for where the cards are — the exact coupling that made the
+  old `CARD_BOXES` table wrong at every width below 576px.
+
+  ⚠ AND IT MUST NOT AFFECT LAYOUT. `position: absolute` with zero size and
+  `pointer-events: none`: it adds no height, displaces nothing, and cannot
+  swallow the hit targets that live in the phrase's own grid.
+*/
+.enquiry-card-host {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
 /* (Old memory-rail band, slots, mem-item typography, and .enquiry-memory-complete */
 /* removed — replaced by the unified .enquiry-phrase / .enquiry-pdepth-* corridor.) */
 

@@ -2141,6 +2141,21 @@ export default function ContactFieldCanvas({
          */
         onCreated={({ gl }) => {
           gl.debug.checkShaderErrors = false;
+          // ⚠ THE MARK THAT WAS MISSING, AND ITS ABSENCE BLINDED AN INSTRUMENT.
+          //
+          // `answer-card-canvas.tsx:3704` marks `card-canvas-created` and
+          // `warmup-canvas-created` and deliberately keeps them DISTINCT. This
+          // file had no mark at all, so a harness hooking
+          // `HTMLCanvasElement.getContext` saw every context as an identical
+          // unsized `300x150` with no class — **it could not tell this canvas
+          // from the answer cards'**, and reported a confident "every spike
+          // coincides with a context creation" that was compatible with either.
+          //
+          // ⚠ A MARK IS THE RIGHT DISCRIMINATOR, NOT DOM ANCESTRY: it is
+          // attached at creation, needs no attachment to the document, and
+          // cannot be defeated by a hidden or detached node — and this layer
+          // mounts hidden (`visibility: hidden` until `complete`).
+          try { performance.mark("contact-field-canvas-created"); } catch {}
         }}
         style={{ pointerEvents: "none" }}
       >

@@ -68,6 +68,11 @@ import { chromium } from "@playwright/test";
 
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3100";
 const RUNS = Number(process.argv[2] ?? 3);
+// ⚠ ADDED 11 AUGUST 2026 — a query string, so the label-texture dials can be
+// tested ON THE MOVE and not only in the reveal. `?labeltex=` cut the reveal by
+// 45-78ms; whether any of that reaches the transition is a separate measurement,
+// because the reveal mounts a canvas ONCE and the move does it every step.
+const QUERY = process.argv[3] ?? "";
 
 if (/:3000(\/|$)/.test(BASE)) {
   console.error(`\n⚠⚠ REFUSING TO RUN AGAINST :3000 — that is the dev server.`);
@@ -86,7 +91,7 @@ const results = [];
 
 for (let run = 0; run < RUNS; run++) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  await page.goto(`${BASE}/start`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/start${QUERY}`, { waitUntil: "networkidle" });
 
   if (run === 0) {
     const r = await page.evaluate(() => {
