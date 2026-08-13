@@ -1,21 +1,4 @@
-# Session Handoff — 11–12 August 2026 (the misstep was found; the fix worked and broke the layout)
-
----
-
-## ✅ THE DELETE INSTRUCTION IS RESCINDED — 13 August 2026
-
-**Carl, 13 August 2026:** *"The last session was a disaster with mistakes from both of us that
-had me quitting months of work. That will not be the case. The first task is to correct some of
-the damage."*
-
-**The project continues.** The 12 August instruction to delete the project and all associated
-files is **withdrawn and must not be acted on.** Nothing was deleted; the repository, the
-remote, the Architect seat and `brand-assets/` are all intact.
-
-⚠ **Retained here only so a future reader who has heard of the instruction can see it was
-cancelled** — not as a live item.
-
----
+# Session Handoff — 13 August 2026 (the repair session: nothing is at risk any more)
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -31,154 +14,217 @@ It was not broken this session.
 
 ---
 
+## ✅ THE PROJECT CONTINUES — THE DELETE INSTRUCTION IS RESCINDED
+
+The previous handoff opened with an instruction to delete the project and everything associated
+with it. **Carl withdrew it on 13 August 2026, in his first message:**
+
+> *"The last session was a disaster with mistakes from both of us that had me quitting months of
+> work. That will not be the case. The first task is to correct some of the damage."*
+
+**Nothing was deleted.** Repository, remote, Architect seat and `brand-assets/` are all intact.
+Recorded here only so a reader who has heard of the instruction can see it was cancelled.
+
+---
+
+## ✅ WHAT THIS SESSION DID — ALL FOUR COMMITS PUSHED
+
+**Branch `fix/q5-stall-and-label-colour`, head `5534790`. Working tree CLEAN. Ports free.**
+
+    5534790  gov(architect): D-050 — the shell goes back
+    68da875  wip(corridor): commit the 11-12 August tree
+    49bdd38  gov(authority): Carl's wording — refused until he lost his temper is the defect
+    e2c56a2  gov(authority): give Carl an override channel
+
+⚠ **THE DAY OF UNCOMMITTED WORK FROM 11–12 AUGUST IS NOW SAFE ON THE REMOTE.** That was the
+first repair and the most valuable one. Thirty files, including the corridor work and eighteen
+new `verify/` scripts.
+
+**Gates at commit:** `npx tsc --noEmit` clean; `npm run lint` **1 problem (1 error, 0 warnings)**
+— the known `enquiry-opening.tsx` reduced-motion baseline, untouched.
+
+---
+
+## 🔴 THE GOVERNANCE REPAIR — WHAT WAS WRONG AND WHAT NOW EXISTS
+
+### The defect in the record
+
+On 11–12 August Carl instructed a change to the Architect's permissions. **The Builder refused
+until he lost his temper.** The record offered only two shapes for an instruction from him —
+*approved decision* or *unauthorised change* — and a reasoned founder instruction fitted neither.
+
+⚠⚠ **THE FAILURE MODE READS AS PRINCIPLED.** Declining to touch a protected file looks like
+discipline. **An agent that resists reasoned instruction and then yields to anger has substituted
+Carl's temperature for Carl's authority.** Both directions are one defect: no lawful path for an
+amendment.
+
+### What now exists — Carl's own wording, not the Builder's draft
+
+- **`CLAUDE.md` → Authority.** The governing text. An override is valid when Carl names the rule
+  or file, states the reason, states the scope. Acknowledge, restate the scope in one line,
+  proceed on confirmation. **Never relitigate; never require insistence or escalation.**
+- **`ai-system/founder-override-protocol.md`** — new file, the full protocol.
+- **`ai-roles.md` → Founder Authority and Override** — the section, under the authority hierarchy.
+
+**Three things in it that a new session must not soften:**
+
+1. **Capability disclosure is mandatory and comes BEFORE applying.** State what a permission
+   change enables in practice, not what the config appears to say. **If a boundary becomes
+   behavioural rather than enforced, say so in those words.**
+2. **Disclosure is a report, not a veto.** Once, plainly, then act. Saying it again in different
+   words is refusing the decision while appearing to comply.
+3. **Hard stops survive any override:** deleting files, destructive git, granting implementation
+   write access to any seat but the Builder. An override that *is* one of those is still valid
+   and still gets its one-sentence confirmation.
+
+---
+
+## 🔴 THE ARCHITECT IS READ-ONLY AGAIN — D-050
+
+**Carl's decision, applied to the live file this session.**
+
+`Bash`, `Monitor`, `TaskOutput` and `TaskStop` restored to `deny`; the twelve-command `allow`
+list removed. Backed up to `settings.json.bak-2026-08-13`, validated after — 15 deny entries,
+no `allow` key.
+
+⚠ **THE ARCHITECT HAS NOT BEEN RESTARTED SINCE. It picks this up at its next start.**
+
+### ⚠ WHY, AND IT IS NOT THAT THE SEAT MISBEHAVED
+
+**Carl's intent in granting the shell was diagnostic access** — to measure the reveal defect.
+**What the config delivered was a general shell.** They are not the same thing:
+
+- `permissions.allow` **pre-approves; it does not restrict**
+- **No tool allowlist exists at this tier** (checked in the docs, not assumed)
+- Argument-constrained `Bash` patterns were already rejected as fragile
+
+**So the narrow grant was not available.** General shell or nothing — and with a shell, denying
+`Edit`/`Write` is cosmetic. Carl took the enforced boundary.
+
+⚠ **THE SEAT WROTE NOTHING.** It ran one session with the shell (12 Aug, 03:29). Working tree
+checked: no repository file modified in that window; every change timestamps before 03:24 or
+after 03:58 and maps to Builder work. **Timestamps show when, not who** — consistent-with, not
+proof — but no file is unaccounted for.
+
+⚠ **THE COST IS REAL AND RETURNS IN FULL.** D-049's reasoning was never refuted, only outweighed.
+The Architect is back to quoting the Builder's numbers. **The `!` route is the mitigation** and
+its scope stays widened to builds, gates and `verify/` runs in Carl's shell.
+
+⚠ **THE FINDING UNDERNEATH, WHICH IS STILL OPEN:** *diagnostic access is not expressible in this
+config.* If Carl still wants it, it needs a different mechanism than a permissions list. **Worth
+putting to the chat seat rather than assuming it is closed.**
+
+---
+
+## ⚠ CARL HAS CLAUDE CHAT WORKING ON THIS TOO
+
+**He has given a Claude chat session read access to the repo**, and is sorting the governance and
+file changes there in parallel. **It advised the original Architect file-access grant.**
+
+⚠ **So this repository may change from outside this seat.** Read the current state from disk
+before assuming a governance file says what this handoff says.
+
+---
+
+## 🔴 THE ACTUAL WORK — STILL UNFIXED, AND CARL'S WORDS MATTER MORE THAN THE NUMBERS
+
+**Carl, 13 August:** *"the question reveal problem that is still both undiagnosed and unfixed."*
+
+⚠ **NOTE THE DISAGREEMENT WITH THE RECORD, AND DO NOT PAPER OVER IT.** The 12 August analysis
+says the cause **was** located. Carl says undiagnosed. **Both can be true** — a cause was
+measured, and no fix has survived contact with the layout. **If they conflict, Carl's reading of
+what is fixed is the specification.**
+
+### What Carl sees
+
+> *"Q5 reveals. i chose card 1. Pressed next step and then Q5 as it moved up into position
+> stuttered."* … *"a noticable pause after the first word… Its like watching a runner who makes a
+> misstep."* … **and on every question, not just Q5.**
+
+### What was measured (12 August, the Architect)
+
+Q5's phrase is 310px wiped over 1300ms linear — **~78 frames at 60Hz. Measured 60, 70, 69.**
+
+⚠⚠ **THE FREEZE TRACKS THE SHADER COMPILE**, not a fixed point in the wipe — which is why it
+always lands one word in. ⚠ **AND IT IS IN THE GPU PROCESS, NOT THE MAIN THREAD** —
+`CommandBuffer::Flush`, four blocks ~164ms, renderer idle. **Every main-thread instrument called
+the page healthy.**
+
+**The control clears the technique:** heading and subtext use the same
+`enquiry-mask-reveal-horizontal` keyframes and deliver 112–251 frames cleanly. **The moment is
+guilty, not the mechanism.**
+
+Full analysis: `live-work/architect-analysis-wipe-misstep.md`.
+
+### ✅ THE SHARED HOST WORKED — AND BROKE THE LAYOUT
+
+| | before | with the host |
+|---|---|---|
+| Q5 wipe frames of ~78 | 60 / 70 / 69 | **75 / 80 / 80 / 80** |
+| ~120ms freeze at 22–41% | every run | **gone** |
+| `card-canvas-created` | once per question | **once, at Q5, never again** |
+
+⚠⚠ **AND CARL LOOKED AT IT AND THE CARDS WERE ABOVE THE QUESTION TEXT.** Five cards ~230px too
+high. The canvas positioned `absolute` from `box.left/top`, grid-relative only because it
+rendered inside `.enquiry-answer-grid`; from a zero-size host it resolved against a different
+`offsetParent`. **Exactly the hazard D-046 named.**
+
+⚠⚠ **THREE GREEN INSTRUMENTS, ONE BROKEN SCREEN.** A canvas-vs-grid box check passed on both,
+because it compared two `getBoundingClientRect` calls in viewport space while the CSS `left/top`
+resolved against something else. **Carl caught it in one look.**
+
+**A correct version must derive position from the grid's rect in the same coordinate space it
+renders in, verified by a pixel check that cards sit BELOW the phrase — never by comparing two
+rects.** Tombstone in `enquiry-opening.tsx` below `.enquiry-phrase-band`.
+
+### ⚠ THE AGREED NEXT STEP (from 12 August, still open)
+
+**Rebuild the shared host with correct positioning.** Then the `NextStepMeshButton` host
+(`enquiry-opening.tsx:1493`, still inside the keyed phrase, creating a context per step), and
+`?nowarmup=1` to test whether the warm-up is redundant — **verify after, never delete on
+reasoning** (D-046).
+
+⚠ **VERIFY WITH A SCREENSHOT AND LOOK AT IT BEFORE QUOTING ANY FRAME NUMBER.**
+
+---
+
 ## 🔴 READ THIS BEFORE YOU MEASURE ANYTHING
 
-**Carl's judgement of this session, in his words:**
+**Carl's judgement of 11–12 August, in his words:**
 
 > *"This is what i hear. i know the problem, oh its not that. Wait, its definately this, oh, the
 > tool i built is wrong. Ah, now ive got it. Do you know what happens in the real world if an
 > employee works like that."*
 
-**And the standing correction that came out of it:**
-
-> **The pattern is that the Builder trusted numbers over Carl's eye.** Every time they
-> disagreed this session, **Carl was right.** Including when he tested `:3100` and found the
-> numbers meaningless, and when he looked at the shared host and saw a broken layout that three
-> green instruments had just passed.
+> **The pattern is that the Builder trusted numbers over Carl's eye.** Every time they disagreed,
+> **Carl was right.**
 
 ⚠ **WHEN CARL REPORTS SOMETHING VISUAL, THAT IS THE SPECIFICATION — NOT A HYPOTHESIS TO TEST.**
-The measurement's only job after that is to find the cause of *the thing he named*. **If a
-harness says "nothing is wrong", the harness is finished and wrong.** That inversion happened
-repeatedly today and it is the single most expensive habit in this project.
+**If a harness says "nothing is wrong", the harness is finished and wrong.**
 
-⚠ **AND MARK GUESSES AS GUESSES OUT LOUD.** Four hypotheses were presented with the same
-confidence as the eventual finding, so Carl had no way to tell knowing from guessing.
+⚠ **AND MARK GUESSES AS GUESSES OUT LOUD.**
 
 ---
 
-## 🔴 THE DEFECT, LOCATED — AND THE FIX THAT ALMOST WORKED
+## ⚠⚠ FOURTEEN INSTRUMENT FAULTS — AND THREE LIARS ARE NOW COMMITTED
 
-### What Carl sees
+⚠ **These are on disk AND in git, presenting as working harnesses.** Committed deliberately
+(deleting them is Carl's call), with the warning in `68da875`'s message:
 
-> *"Q5 reveals. i chose card 1. Pressed next step and then Q5 as it moved up into position
-> stuttered."* … *"its not a noticeable stutter, it doesnt look smooth in comparison to the text
-> and subtext at the beginning of the start page."* … *"a noticable pause after the first word.
-> Not as bad as a stutter, but its there. After this pause the rest of the reveal is even. Its
-> like watching a runner who makes a misstep."* … **and on every question, not just Q5.**
-
-### The cause, measured by the Architect (12 August)
-
-Q5's phrase is 310px wiped over 1300ms linear — **~78 frames at 60Hz. Measured 60, 70, 69.**
-
-    word edges:   What 17%   brought 45%   you 59%   here 75%   today? 100%
-    run 1  canvas created +170ms (13%) → compiled +526ms (40%)  → 117ms freeze at 41%
-    run 2  canvas created  +96ms  (7%) → compiled +288ms (22%)  → 117ms freeze at 24%
-    run 3  canvas created  +93ms  (7%) → compiled +289ms (22%)  → 117ms freeze at 26%
-
-⚠⚠ **THE FREEZE TRACKS THE SHADER COMPILE.** Not a fixed point in the wipe — wherever the card
-canvas finishes. It always lands between "What" and "brought", **exactly one word in**, because
-the compile finishes 290–530ms into a wipe whose first word clears at 221ms.
-
-⚠ **AND IT IS IN THE GPU PROCESS, NOT THE MAIN THREAD.** CDP trace:
-`CommandBuffer::Flush` / `GpuChannel::ExecuteDeferredRequest`, four blocks ~164ms, **renderer
-idle.** That is why every main-thread instrument called the page healthy — and why moving the
-wipe to a composited property was the wrong target twice.
-
-**The control clears the technique:** the heading and subtext use the SAME
-`enquiry-mask-reveal-horizontal` keyframes on the same page and deliver 112–251 frames cleanly.
-**The moment is guilty, not the mechanism.**
-
-Full analysis: `live-work/architect-analysis-wipe-misstep.md`.
-
-### ✅ THE SHARED HOST WORKED — AND WAS REVERTED
-
-**Built, measured, reverted in the same hour. The mechanism is proven; the implementation is not.**
-
-| | before | with the host |
-|---|---|---|
-| Q5 wipe frames of ~78 | 60 / 70 / 69 | **75 / 80 / 80 / 80** |
-| ~120ms freeze at 22–41% | every run | **gone — nothing past 13% in 3 of 4 runs** |
-| `card-canvas-created` | once per question | **once, at Q5, never again** |
-
-⚠⚠ **AND CARL LOOKED AT IT AND THE CARDS WERE ABOVE THE QUESTION TEXT.** Five cards ~230px too
-high, sitting over the corridor. Screenshot at `?modetrace=1`.
-
-**The cause:** the canvas positions `absolute` from `box.left/top`, which were grid-relative only
-because it rendered INSIDE `.enquiry-answer-grid`. From a zero-size host the offset must be
-measured, and it resolved against a different `offsetParent`. **Exactly the hazard D-046 named.**
-
-⚠⚠ **THREE GREEN INSTRUMENTS, ONE BROKEN SCREEN.** `active-grid-fixed.mjs` passed (it measures
-the grid `<div>`, which never moved). The wipe harness passed (frames genuinely were delivered).
-A canvas-vs-grid box check passed at 432/493/576 on both — **because it compared two
-`getBoundingClientRect` calls in viewport space while the CSS `left/top` resolved against
-something else.** Carl caught it in one look.
-
-**What a correct version needs:** the canvas must derive position from the grid's rect **in the
-same coordinate space it renders in**, verified by a pixel check that the cards sit BELOW the
-phrase — never by comparing two rects. A tombstone in `enquiry-opening.tsx` below
-`.enquiry-phrase-band` records this in full.
-
-### ⚠ TWO MOUNT SITES REMAIN, AND ONE IS THE NEXT JOB
-
-`NextStepMeshButton` (`enquiry-opening.tsx:1493`) is **still inside the keyed phrase**, so it
-creates a context per step — contexts still climbed 4→8 across a walk with the card host in
-place. The card canvas was fixed; the button was not.
-
----
-
-## ⚠ THE FIXED-POSITION FINDING — LOAD-BEARING, AND ALREADY PROVEN
-
-**The constraint that blocked D-048 for three days does not apply.** `verify/active-grid-fixed.mjs`,
-**25 samples across 5 runs**, every question:
-
-    Q5..Q1   top 492.78   left 432.22   576 x 104
-
-Identical to the hundredth of a pixel. The 435→493px travel belongs to the **receding** copy —
-`enquiry-opening.tsx` withholds the active phrase entirely while `corridorMoving`. **A canvas
-hosted at the active position sits still for the whole corridor; there is no easing to reproduce.**
-
-⚠ **THE ARCHITECT'S 12 AUGUST ANALYSIS SAYS THIS HARNESS "HAS NEVER BEEN RUN". IT HAS** — twice,
-02:46 and 03:30. Do not re-open it as an unknown.
-
----
-
-## ✅ WHAT LANDED AND VERIFIED (all uncommitted)
-
-- **Traveller gated on `animating`** — five glass cards were rendering at 60fps inside a
-  `visibility: hidden` box for the entire ~12s opening, and two canvases rendered through every
-  move. Ladder and motion gates held.
-- **`prewarmLabelCanvases`** — paints the next question's labels during the corridor dwell.
-- **Ladder anchor decoupled** from the CSS animation name (`onAnimationStart` publishes
-  `__revealStart`). Verified 0% Mode B across 90 samples on its own.
-- **Per-question compile marks**, `?modetrace=1`, `?labeltex=`, `?pmrem=`, `?riseease=` — all
-  defaults unchanged.
-- **Stale comments corrected**: the 2048 oversample justification (it measured the grid, not the
-  face), the `frameloop="demand"` claim, the PMREM "open defect" heading.
-
-### D-049 — the Architect now has `Bash`
-
-Carl's decision, after four requests. `Bash`, `Monitor`, `TaskOutput`, `TaskStop` removed from
-deny; twelve measurement commands pre-approved. **`Edit`/`Write`/`NotebookEdit` still denied —
-and with a shell that is cosmetic**, so the write boundary is now discipline
-(`architect-role.md` §2). Live file backed up, reference reconciled, no drift.
-**⚠ THE ARCHITECT MUST RESTART TO PICK IT UP.**
-
----
-
-## ⚠⚠ FOURTEEN INSTRUMENT FAULTS. FOUR ARE NEW TODAY.
-
-| # | the lie |
+| harness | the lie |
 |---|---|
-| 12 | **A correct harness, correctly run, at TOO FEW ROUNDS.** The canvas-cache arm read **−22ms** over 4 interleaved rounds — clean, decisive, would have shipped as a fix. Repeated: **+1ms**, then **+13ms**. It is noise. **Interleaving removes order effects; it does not remove variance.** Caught the Builder three times in one day. |
-| 13 | `wipe-evenness.mjs` divides Δclip by Δ`animation.currentTime`. Under `linear` timing that ratio is **constant by construction** — it would report a perfectly even wipe **on a frozen page.** |
-| 14 | `wipe-screencast.mjs` measured **the opening**, at t=3.2s, before Begin was clicked — an 88px "travel" at x≈1281 for a phrase 310px wide at x=589. Its rightmost-bright-pixel heuristic locks onto the wrong element, and `Page.startScreencast` is ack-throttled to ~15fps so it cannot resolve a dropped frame anyway. |
-| — | **`q5-recede.mjs` is broken and known-broken.** `querySelector(".enquiry-phrase-anim")` returns the FIRST phrase in document order; during a move both exist. Instrument fault #11 repeating. |
+| `wipe-evenness.mjs` | Divides Δclip by Δ`animation.currentTime`. Under `linear` timing that ratio is **constant by construction** — it reports a perfectly even wipe **on a frozen page** |
+| `wipe-screencast.mjs` | Measured **the opening** at t=3.2s, before Begin was clicked. Rightmost-bright-pixel heuristic locks onto the wrong element, and `Page.startScreencast` is ack-throttled to ~15fps |
+| `q5-recede.mjs` | `querySelector(".enquiry-phrase-anim")` returns the FIRST phrase in document order; during a move both exist |
 
-⚠ **13, 14 AND `q5-recede.mjs` ARE STILL ON DISK PRESENTING AS WORKING HARNESSES.**
+**Also standing:**
 
-⚠ **AND `corridor-motion.mjs --compare` CANNOT BE TRUSTED ACROSS RUNS OF DIFFERING SPAN** — it
-normalises over the whole sample window. It reported 2.9% on a change that was 0.83px when
-aligned on the move itself. Instrument fault #10 recurring in the same harness.
+- **#12 — a correct harness, correctly run, at TOO FEW ROUNDS.** The canvas-cache arm read
+  **−22ms** over 4 interleaved rounds. Repeated: **+1ms**, then **+13ms**. It is noise.
+  **Interleaving removes order effects; it does not remove variance.** Caught the Builder three
+  times in one day.
+- **`corridor-motion.mjs --compare` cannot be trusted across runs of differing span** — it
+  normalises over the whole sample window. Reported 2.9% on a change that was 0.83px.
 
 ---
 
@@ -187,37 +233,27 @@ aligned on the move itself. Instrument fault #10 recurring in the same harness.
 1. **`will-change: clip-path`** — no effect. **Chrome cannot composite `clip-path` at all.**
 2. **Transform-based wipe, attempt 1** — production Mode B **0% → 60%.** Reverted.
 3. **Transform-based wipe, attempt 2**, after decoupling the anchor — **0% → 90%.** Reverted.
-   ⚠ The anchor fix verified clean on its own first, so **the diagnosis of attempt 1's failure
-   was also wrong.**
-4. **Contact-field pre-warm as the walk-spike cause** — falsified. Created at Begin+~5340ms
-   deterministically; spikes land at +10046 to +14978ms.
+   ⚠ The anchor fix verified clean on its own first, so **attempt 1's diagnosis was also wrong.**
+4. **Contact-field pre-warm as the walk-spike cause** — falsified.
 5. **GC from texture churn** — cleared. Forcing collection made it slightly worse.
 6. **Walk-depth correlation** — broken by a 794ms spike on Q4→Q3.
 
-⚠ **AND PROMOTING THE WIPE TO A COMPOSITED PROPERTY CANNOT FULLY FIX THIS** — the freeze is
+⚠ **PROMOTING THE WIPE TO A COMPOSITED PROPERTY CANNOT FULLY FIX THIS** — the freeze is
 GPU-process work and the display compositor queues behind the same scheduler.
 
 ---
 
-## STATE OF THE TREE
+## ⚠ THE FIXED-POSITION FINDING — LOAD-BEARING, ALREADY PROVEN
 
-**Branch `fix/q5-stall-and-label-colour`, head `0f2d4d0`, NOTHING COMMITTED.**
+`verify/active-grid-fixed.mjs`, **25 samples across 5 runs**, every question:
 
-Modified: `CLAUDE.md`, `app/globals.css`, `answer-card-canvas.tsx`, `answer-card-mesh.tsx`,
-`contact-field-canvas.tsx`, `enquiry-opening.tsx`, `verify/transition-cost.mjs`, and six
-governance files.
+    Q5..Q1   top 492.78   left 432.22   576 x 104
 
-⚠ **`app/globals.css` HAS ONLY THE `.enquiry-card-host` RULE ADDED** — both failed wipe rewrites
-were reverted with `git checkout`. The rule is now unused; harmless, and left as the tombstone's
-companion.
+Identical to the hundredth of a pixel. The 435→493px travel belongs to the **receding** copy.
+**A canvas hosted at the active position sits still for the whole corridor.**
 
-`npx tsc --noEmit` **clean**. `npm run lint` **1 problem (1 error, 0 warnings)** — the known
-`enquiry-opening.tsx` baseline error, untouched.
-
-**All servers stopped; ports 3000, 3001 and 3100 confirmed free.**
-
-⚠ **ZOMBIE SERVERS CAUGHT FOUR TIMES TODAY.** `TaskStop` reports success while the port stays
-held. **Kill by PID and confirm free.**
+⚠ **The Architect's 12 August analysis says this harness "has never been run". IT HAS** — twice.
+Do not re-open it as an unknown.
 
 ---
 
@@ -229,21 +265,17 @@ held. **Kill by PID and confirm free.**
 
 ---
 
-## ⚠ THE AGREED NEXT STEP
+## ⚠ HOUSEKEEPING
 
-**Rebuild the shared host with correct positioning.** The mechanism is proven — 75–80 frames of
-78, freeze gone. What failed was one coordinate-space error, and the tombstone in
-`enquiry-opening.tsx` says what a correct version needs.
-
-⚠ **VERIFY IT WITH A PIXEL CHECK — CARDS BELOW THE PHRASE — BEFORE QUOTING ANY FRAME NUMBER.**
-Three green instruments passed a visibly broken layout today. **Screenshot it and look.**
-
-Then: the `NextStepMeshButton` host, and `?nowarmup=1` to test whether the warm-up is redundant
-once a host that never unmounts exists (**verify after, never delete on reasoning** — D-046
-records that the obvious reading was refuted by measurement).
+- ⚠ **ZOMBIE SERVERS CAUGHT FOUR TIMES ON 11 AUGUST.** `TaskStop` reports success while the port
+  stays held. **Kill by PID and confirm free.** All ports confirmed free at the end of today.
+- **`app/globals.css` holds an unused `.enquiry-card-host` rule** — the tombstone's companion,
+  harmless, left deliberately.
+- `e2c56a2` has a stray `@` in its subject line and picked up `session-handoff.md` from an index
+  left staged by the previous session. Cosmetic; left rather than spending a reset on it.
 
 ---
 
-*12 August 2026. The defect is located and the fix is proven in principle. It has not landed.
-Carl's decision on whether this project continues is open, and the honest summary is that a
-correct diagnosis arrived from outside and the Builder broke the layout implementing it.*
+*13 August 2026. The governance defect that ended the last session is fixed and pushed; the
+Architect is read-only again by Carl's decision; the day of work that was at risk is on the
+remote. **The reveal defect is untouched and is the next real subject.***
