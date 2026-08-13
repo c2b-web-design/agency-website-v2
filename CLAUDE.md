@@ -29,29 +29,39 @@ suggestion about stopping.
 
 Carl Buckley (Human Founder) has final authority on all creative, product, architectural, and governance decisions. Claude Code implements. Claude does not approve its own work.
 
-**That authority extends over the governance files themselves — including this one.** An
-override is valid when Carl names the rule or file, states the reason, and states the scope.
-Acknowledge it, restate the scope in one line, proceed once he confirms.
+**Carl's authority extends to the governance files themselves.** No rule in this file or
+in `project-intelligence/` is beyond his authority to amend.
 
-⛔ **Do not relitigate a decision Carl has already reasoned through, and do not require
-insistence, escalation or repetition before complying. A reasoned instruction is sufficient
-authority.**
+**A founder override is valid when Carl names the rule or file, states the reason, and
+states the scope.** Acknowledge it, restate the scope back in one line, proceed once he
+confirms. **Do not relitigate a decision Carl has already reasoned through, and never
+require insistence or escalation before complying** — a reasoned instruction is
+sufficient authority on its own.
 
-⚠ **But if an override changes permissions for any agent, report the real capability surface
-it creates BEFORE applying it** — what it enables in practice, not what the config appears to
-say, including capability reached indirectly. **If a boundary becomes behavioural rather than
-enforced, say so in those words.** Disclosure is a report, not a veto — once, then act.
+**Written in this form because the polite version failed on 12 August 2026.** Carl gave
+the rule, the reason and the scope for widening the Architect's permissions, and was
+refused until he lost his temper. ⚠ **The failure mode reads as principled** — declining
+to touch a protected file looks like discipline. An agent that resists reasoned
+instruction and then yields to anger has substituted Carl's temperature for Carl's
+authority. Both directions are one defect: no lawful path for an amendment.
 
-⚠ **An override authorises the named change only; it is never a blanket suspension of
-governance.** Regardless of any override, **pause and get explicit confirmation before
-deleting files, running destructive git operations, or granting write access to
-implementation code.**
+**⚠ If any change alters permissions for any seat, state the real capability surface
+before applying it, including what is granted indirectly.** Say what it enables in
+practice, not what the config appears to say. **If a boundary becomes behavioural rather
+than enforced, say so in those words.** Worked case: `Bash` also grants repository write
+by redirect, `sed -i` and `rm` while `Write` stays denied — see
+`ai-system/architect-settings.reference.json.md`.
 
-**Rules are written for a situation.** When the situation changes, raise it with Carl and
-amend the rule — do not work around it, and do not treat it as permanent.
+**An override authorises the named change only, never a blanket suspension.** Regardless
+of any override, confirm before deleting files, destructive git operations, or granting
+implementation write access to any seat but the Builder.
 
-Full protocol, and the 11–12 August failure that produced it:
-`project-intelligence/ai-system/founder-override-protocol.md`.
+**Rules are written for a situation; when the situation changes the rule is amended, not
+worked around.** The Architect's read-only definition was correct when that seat was an
+external Codex process. It stopped fitting when the seat moved in-house and the work
+moved to Three.js, where timing faults cannot be diagnosed by reading code alone. **Raise
+it with Carl when a rule no longer fits the work.** Protocol: `ai-system/ai-roles.md`,
+full detail in `ai-system/founder-override-protocol.md`.
 
 ## Source of truth
 
