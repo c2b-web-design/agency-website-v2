@@ -1,5 +1,18 @@
 # Program-count probe — 13 August 2026
 
+> ## ⚠⚠ CORRECTED SAME DAY BY THE GPU TRACE — READ `q5-gpu-trace-13-august.md`
+> **The numbers below are right. The conclusion drawn from them is wrong.**
+> This probe read **14 programs at warm-up resolve and 14 after the reveal** and called it
+> *"no growth — the warm-up is not compiling variants the reveal doesn't use."*
+>
+> ⚠ **THOSE WERE TWO DIFFERENT WEBGL CONTEXTS, each holding its own 14.** The trace shows
+> `DoLinkProgram` firing **34 times — 17 before Begin and 17 after** — and the warm-up context
+> (`…001b9600`) and card canvas (`…0099bc00`) are **different addresses.**
+> **The probe never checked context identity, so it could not have seen this.**
+>
+> **The real finding is the opposite of "the architecture is fine": the precompile warms a
+> context the cards never use.**
+
 **Temporary probe, four arms, production build per arm, three cold runs each. No permanent code
 changed; the tree was restored with `git checkout --` after every arm and is clean.**
 
@@ -43,10 +56,16 @@ dramatic cache flush. It was a bug in the probe.** Fixed by keying per context a
 `growth +0` on all four arms, all twelve runs. The live card context holds **14 programs at the
 moment the warm-up resolves and 14 after the reveal finishes.**
 
-**So there is no cache-key mismatch.** The warm-up is not compiling variants the reveal then
-fails to use — the reveal compiles nothing new at all. The two-state `compileAsync` already
+~~**So there is no cache-key mismatch.** The warm-up is not compiling variants the reveal then
+fails to use — the reveal compiles nothing new at all.~~ The two-state `compileAsync` already
 documented in the code (canvas variant + transmission variant, *"16 programs is 8 materials seen
 twice"*) is covering the set correctly.
+
+> ⚠⚠ **THE STRUCK SENTENCE IS WRONG.** "No growth" was read as "the warmed programs are being
+> reused". They are not. **The 14 at resolve and the 14 after the reveal live in DIFFERENT
+> CONTEXTS** — the warm-up canvas and the card canvas — and the card canvas compiled its
+> seventeen from scratch after Begin. A per-context count cannot show that; only comparing
+> context identity can. See `q5-gpu-trace-13-august.md`.
 
 ## ⚠ QUESTION 2 — DOES THE COUNT STEP UP AT `1c9b8d7` AND `4c7a20e`? **NO.**
 
@@ -93,6 +112,11 @@ unchanged by any of this.
 answer is that it is neither, and the next question is what makes the same fourteen programs
 cost three times as much — which is a different measurement (per-program link time), not a
 change to the code.
+
+> ⚠ **SUPERSEDED.** Per-program link timing was NOT the right next step and was not run.
+> The GPU trace answered it first: **total link time inside the reveal is 2.7–2.9ms**, so
+> per-program link cost was never the story. The 207ms is `CommandBufferService:PutChanged`
+> self time on a **freshly created card context**. See `q5-gpu-trace-13-august.md`.
 
 ---
 
