@@ -6,39 +6,65 @@ The live file is `C:\Users\Carl Buckley\.claude-architect\settings.json`, outsid
 repository and therefore outside git. This copy exists so the *intended* state of the
 Architect's security boundary is versioned, auditable and readable by the Architect itself.
 
-**Last reconciled with the live file: 12 August 2026** — `Bash` and four execution-class tools
-removed from `deny`, an `allow` list added, **on Carl's explicit and repeated instruction**. He
-has authority over this file and does not need the Builder's agreement; this entry records what
-changed and what it costs, not an objection.
+**Last reconciled with the live file: 13 August 2026** — ⚠ **`Bash`, `Monitor`, `TaskOutput`
+and `TaskStop` RESTORED to `deny`, and the `allow` list removed. The Architect is read-only
+again.** Carl's decision; the Builder made the edit at his instruction. Live file backed up as
+`settings.json.bak-2026-08-13` before the change, and the new file validated as JSON after.
 
-⚠⚠ **THE BOUNDARY HAS MOVED AND THIS FILE'S OWN ARGUMENT SAYS WHAT THAT MEANS.** The 24 July
-attack finding stands unaltered: **with `Bash` available, denying `Edit`/`Write`/`NotebookEdit`
-is cosmetic** — shell redirect, `sed -i` and `rm` all still write. And the 27 July finding stands
-too: **`permissions.allow` pre-approves, it does not restrict.** The `allow` list below removes
-prompts for the named measurement commands; **it does not confine the seat to them.**
+**The seat's capability, stated plainly: the Architect cannot write to this repository, and now
+cannot run commands at all.** `Edit`/`Write`/`NotebookEdit` were already denied; **restoring
+`Bash` is what makes those denials real** rather than cosmetic. The boundary is mechanism again,
+not discipline.
 
-**So state the seat's actual capability plainly: the Architect can now write to the repository.**
-Not by `Write`, which is still denied, but through the shell. The reason to record it in these
-terms is that a future reader will otherwise read the deny list, see `Write` on it, and conclude
-something that is not true.
+### The round trip, 12–13 August 2026 — and why it matters more than either end of it
 
-**What Carl gets in exchange, which is what he asked for four times:** the Architect can run
-builds, `npx tsc --noEmit`, `npm run lint` and the `verify/` harnesses itself, instead of quoting
-the Builder's numbers or waiting on a `!` command. During the 11–12 August corridor work it had
-to do exactly that, and its two most useful analyses were built on measurements it could not take.
+**12 August:** `Bash` and three execution-class tools removed from `deny`, an `allow` list of
+twelve measurement commands added, on Carl's explicit and repeated instruction.
+
+**13 August:** reverted in full.
+
+⚠⚠ **THE REASON FOR THE REVERT IS THE USEFUL PART.** Carl's stated intent had been to give the
+Architect **diagnostic access** — the ability to measure the question-reveal defect, which is a
+timing fault that cannot be diagnosed by reading code. **What the config actually delivered was
+a general shell.** Those are not the same thing, and the gap between them is the whole finding:
+
+- **`permissions.allow` pre-approves; it does not restrict.** The twelve-command list removed
+  prompts. It never confined the seat to those commands.
+- **No tool allowlist exists at this tier.** Checked in the documentation, not assumed. `deny`
+  is the only restricting mechanism and it is an enumeration by design.
+- **Argument-constrained `Bash` patterns were already rejected** as fragile, on Anthropic's own
+  documentation — see `ai-roles.md`, rejected alternatives.
+
+**So the narrow thing Carl wanted could not be built out of the available parts.** The choice
+was a general shell or nothing, and with a shell the write denials are cosmetic: redirect,
+`sed -i` and `rm` all write (verified by attack, 24 July 2026). **Carl chose the enforced
+boundary.**
+
+⚠ **What the seat did with the shell while it had it: nothing.** It ran one session (12 August,
+03:29). The working tree was checked on 13 August and no repository file was modified in that
+window — every change timestamps before 03:24 or after 03:58 and maps to Builder work.
+**Timestamps show when, not who**, so this is consistent-with rather than proof; but there is no
+unaccounted file. **The revert is not a response to a breach.**
+
+⚠ **AND THE COST IS REAL AND RETURNS IN FULL.** The Architect goes back to quoting the Builder's
+numbers. On 11–12 August its two most useful corridor analyses rested on measurements it could
+not take, and it named a falsifiable prediction it could not test. **That was the reason for the
+grant and it has not gone away** — the `!` route (`architect-role.md` §2) is the mitigation, and
+its scope stays widened to builds, gates and `verify/` harnesses run in Carl's shell.
+
+⚠ **IF THIS IS EVER REOPENED, THE PARTIAL VERSION DOES NOT EXIST.** `Monitor` takes an arbitrary
+command in the same shell environment, so denying `Bash` alone closes a name and not a
+capability. Read-only means all four stay denied.
 
 ⚠ **THE `!` ROUTE AND `checkpoint-review-protocol.md` §3a ARE NOT SUPERSEDED.** The serialisation
 rule in particular still binds: **only one seat measures at a time, after implementation stops.**
 Two seats building at once produce numbers neither can trust.
 
-⚠ **WHAT REMAINS DENIED, AND WHY EACH SURVIVED:** `Edit`, `Write`, `NotebookEdit` — the direct
-write tools, kept so the *default* posture is still read-only even though the shell bypasses them.
-`mcp__codex`, `mcp__ide`, `DesignSync` — outward/cloud write surfaces, unrelated to measurement.
-`CronCreate`, `EnterWorktree`, `RemoteTrigger`, `ScheduleWakeup`, `TaskCreate` — deferred
-execution and budget-consuming work after the session ends, which measurement does not need.
-`Monitor`, `TaskOutput`, `TaskStop` were **removed** from deny: they are how a long-running build
-or harness is watched and stopped, and with `Bash` present denying them closed a name, not a
-capability.
+⚠ **WHAT IS DENIED, AND WHY:** `Edit`, `Write`, `NotebookEdit` — the direct write tools.
+`Bash`, `Monitor`, `TaskOutput`, `TaskStop` — the execution class; a shell, and the tools that
+watch and control what a shell starts. `mcp__codex`, `mcp__ide`, `DesignSync` — outward and
+cloud write surfaces. `CronCreate`, `EnterWorktree`, `RemoteTrigger`, `ScheduleWakeup`,
+`TaskCreate` — deferred execution and budget-consuming work after the session ends.
 
 **Previously reconciled 27 July 2026** — re-verified key by key against the live file after the
 `DesignSync`, `allowedMcpServers` and `disableAllHooks` additions.
@@ -78,6 +104,10 @@ file is what is actually in force, regardless of what this one says.
       "Edit",
       "Write",
       "NotebookEdit",
+      "Bash",
+      "Monitor",
+      "TaskOutput",
+      "TaskStop",
       "mcp__codex",
       "mcp__ide",
       "DesignSync",
@@ -86,20 +116,6 @@ file is what is actually in force, regardless of what this one says.
       "RemoteTrigger",
       "ScheduleWakeup",
       "TaskCreate"
-    ],
-    "allow": [
-      "Bash(npm run build)",
-      "Bash(npm run lint)",
-      "Bash(npx tsc --noEmit)",
-      "Bash(node verify/*)",
-      "Bash(git log *)",
-      "Bash(git diff *)",
-      "Bash(git status *)",
-      "Bash(git show *)",
-      "Bash(git blame *)",
-      "Bash(grep *)",
-      "Bash(ls *)",
-      "Bash(netstat *)"
     ]
   },
   "allowedMcpServers": [],
@@ -111,10 +127,11 @@ file is what is actually in force, regardless of what this one says.
 }
 ```
 
-⚠ **THE `allow` LIST IS PROMPT-SUPPRESSION, NOT A SANDBOX.** It exists so the twelve commands
-the Architect actually needs run without interrupting Carl. **Anything not listed still runs —
-it just prompts first.** Read it as a convenience list and as a statement of intended use, never
-as the boundary. The boundary is the `deny` list plus the fact that Carl is at the keyboard.
+⚠ **THERE IS NO `allow` KEY, AND THAT IS DELIBERATE.** The twelve-command list added on
+12 August was removed with the shell it existed for. Recorded because a reader may find it in
+`settings.json.bak-2026-08-13` and wonder whether its absence is an omission: **it is not.**
+`permissions.allow` only ever suppressed prompts — it never confined the seat, and with `Bash`
+denied there is nothing left for it to pre-approve.
 
 ⚠ **`model` and `effortLevel` are requests, not guarantees.** DL-6 records `opus[1m]`
 requested and `claude-opus-4-8` actually running for 35 turns, caught in the Architect's own
@@ -132,11 +149,11 @@ are cosmetic. Changing either of the first two is a change to the boundary.
 | Entry | Reason |
 |---|---|
 | `Edit`, `Write`, `NotebookEdit` | The direct write tools. The Architect never writes repository files — `architect-role.md` §1. |
-| ~~`Bash`~~ | ⚠⚠ **REMOVED 12 AUGUST 2026 ON CARL'S INSTRUCTION.** The finding that put it here is unchanged and still true: *"A proven bypass, not a precaution. With `Bash` available, denying the edit tools is cosmetic: shell redirect, `sed -i` and `rm` all still write. Verified by attack, 24 July 2026."* **What changed is the trade, not the fact.** The cost it bought — no builds, no tests, no `verify/` runs — was paid daily and came due on 11–12 August, when the Architect's best analyses had to be built on the Builder's numbers because it could not take its own. Carl weighed a real write risk against a real review handicap and chose. ⚠ **Read the deny list accordingly: `Write` on it no longer means the seat cannot write.** |
+| `Bash` | **A proven bypass, not a precaution. With `Bash` available, denying the edit tools is cosmetic: shell redirect, `sed -i` and `rm` all still write. Verified by attack, 24 July 2026.** ⚠ **Removed 12 August 2026 on Carl's instruction; RESTORED 13 August 2026, also his.** The finding never changed — what moved was the trade. It bought no builds, no tests, no `verify/` runs, a cost paid daily and come due on 11–12 August when the Architect's best analyses rested on the Builder's numbers. Carl granted it, then found that a **general shell** was not what he had intended to give: he wanted **diagnostic** access, and no configuration at this tier can express that (`permissions.allow` pre-approves rather than restricts; no tool allowlist exists). **He chose the enforced boundary over the useful one.** |
 | `mcp__codex` | The Codex MCP bridge. Codex is retired (D-036); the app is scheduled for removal ~14 August 2026. **This entry may come out once the app is gone** — until then it stays. |
 | `mcp__ide` | The IDE MCP server, whose `executeCode` tool runs arbitrary code — the same failure class as `Bash`. **Added 27 July 2026.** See below. |
 | `DesignSync` | A **built-in**, not MCP — so no `mcp__*` entry and no MCP allowlist ever touched it. Reads and writes the user's claude.ai design-system projects: `write_files`, `delete_files`, `create_project`. **Added 27 July 2026.** See below. |
-| `CronCreate`, `EnterWorktree`, `RemoteTrigger`, `ScheduleWakeup`, `TaskCreate` — ⚠ **and `Monitor`, `TaskOutput`, `TaskStop` REMOVED 12 August 2026** | ⚠ **THE FIVE THAT REMAIN ARE DEFERRED EXECUTION AND BUDGET-CONSUMING WORK AFTER THE SESSION ENDS**, which measurement does not need. **The three removed are how a long-running build or harness is watched and stopped** — and with `Bash` now present, denying them closed a name rather than a capability, which is the error this very section warns against. The original reasoning follows, and its logic is why the removal is consistent rather than a relaxation: **The execution class.** `Monitor` takes an arbitrary `command` and, per its own schema, *"runs in the same shell environment as Bash"* — the capability `Bash` was denied for, under another name. The rest schedule work, spawn processes, or write to the filesystem via the harness. **Added 27 July 2026**; the last two after the Architect pointed out that denying `CronCreate` without `ScheduleWakeup` closed a name and not a capability. `Agent` is deliberately absent — F-2 measured that subagents inherit this deny list. See below, including why this closes the instances and **not** the class. |
+| `Monitor`, `TaskOutput`, `TaskStop`, `CronCreate`, `EnterWorktree`, `RemoteTrigger`, `ScheduleWakeup`, `TaskCreate` | **The execution class.** `Monitor` takes an arbitrary `command` and, per its own schema, *"runs in the same shell environment as Bash"* — the capability `Bash` was denied for, under another name. `TaskOutput`/`TaskStop` watch and control what a shell starts. The rest schedule work, spawn processes, or write to the filesystem via the harness. **Added 27 July 2026**; the last two after the Architect pointed out that denying `CronCreate` without `ScheduleWakeup` closed a name and not a capability. ⚠ **`Monitor`, `TaskOutput` and `TaskStop` were removed 12 August 2026 alongside `Bash`, and RESTORED 13 August with it** — they are how a long-running build or harness is watched, so they went out with the shell and came back with it. **The round trip proves the section's own point: there is no partial version.** Leaving `Monitor` off the deny list while denying `Bash` would reopen the whole capability under a different name. `Agent` is deliberately absent — F-2 measured that subagents inherit this deny list. See below, including why this closes the instances and **not** the class. |
 
 | Non-deny key | Purpose |
 |---|---|

@@ -72,7 +72,7 @@ Carl refers to the seats by initials, most often when talking to one seat about 
 
 | Short | Seat | Surface |
 |---|---|---|
-| **PM/A** | Project Manager / Architect | Claude Code; `Edit`/`Write` denied, **`Bash` allowed for measurement since 12 Aug 2026** |
+| **PM/A** | Project Manager / Architect | Claude Code, read-only config. **`Bash` was allowed 12 Aug 2026 and denied again 13 Aug** |
 | **CB** | Claude Builder | Claude Code, this repository |
 | **CS** | Claude Strategist | A Claude Project, in the browser |
 | **CD** | Claude Design | Reached from within the Claude Projects menu. **Not yet in use** |
@@ -216,32 +216,33 @@ runs no `git` itself. Two routes supply history:
 2. **A `!` command Carl runs** (adopted 26 July 2026; **widened to measurement 12 August
    2026**). The Architect proposes a command; Carl runs it in his own shell and the output
    lands in the Architect's context. This covers history questions the pre-supplied
-   evidence did not anticipate — the class that left F-1 unresolved on 24 July. ⚠ **This
-   route was built when `Bash` was denied**, so that capability stayed outside the Architect
-   and only output crossed. **That premise no longer holds — see immediately below.**
+   evidence did not anticipate — the class that left F-1 unresolved on 24 July. **`Bash` is
+   denied**: the Architect cannot run it, only ask. Capability stays outside the Architect;
+   only output crosses.
 
    **⚠ THE SCOPE IS NO LONGER GIT-ONLY.** It now includes builds, `tsc`/lint gates and the
-   `verify/` measurement scripts, so the Architect can obtain its own numbers instead of
-   quoting the Builder's. Allowed and forbidden lists, and the rule that **only one seat
-   measures at a time, after implementation stops**: `checkpoint-review-protocol.md` §3a.
+   `verify/` measurement scripts, so the Architect can obtain its own numbers — **through
+   Carl's shell** — instead of quoting the Builder's. Allowed and forbidden lists, and the
+   rule that **only one seat measures at a time, after implementation stops**:
+   `checkpoint-review-protocol.md` §3a.
 
-   ⚠⚠ **AND THE CONFIG WAS THEN WIDENED TOO — 12 August 2026, Carl's decision.** `Bash` is
-   no longer denied. The Architect runs its own builds and `verify/` harnesses; the `!`
-   route is now the fallback for commands Carl should witness.
+   ⚠⚠ **THE CONFIG WAS WIDENED ON 12 AUGUST 2026 AND REVERTED ON 13 AUGUST.** For one
+   session the Architect had `Bash` and ran its own harnesses. **Carl reverted it; the seat
+   is read-only again.** It wrote nothing while it had the shell — the working tree was
+   checked afterwards.
 
-   **The trade, stated so nobody reads the deny list and concludes the wrong thing:**
-   `permissions.allow` *pre-approves*, it does **not** restrict, and no tool allowlist
-   exists at this tier. So allowing `Bash` allows all of it — and `Bash` was **proven by
-   attack** (24 July) to make every edit denial cosmetic: shell redirect, `sed -i` and
-   `rm` all write. The seat also runs `disableAllHooks: true`, so the chunk-scope guard
-   does not fire there. **`Edit`/`Write`/`NotebookEdit` are still denied, and that is now
-   a default posture rather than a boundary.** The Architect not writing is discipline —
-   `architect-role.md` §2 carries the rules.
-
-   **Why Carl chose it:** on 11–12 August the Architect's two most useful analyses rested
+   **Why it was granted:** on 11–12 August the Architect's two most useful analyses rested
    on the Builder's measurements because it could not take its own, and it named a
-   falsifiable prediction it could not test. **The handicap was real and daily; the write
-   risk was accepted, not disproved.**
+   falsifiable prediction it could not test. **The handicap was real and daily.**
+
+   **Why it was reverted, and this is the part to carry forward:** Carl's intent was
+   *diagnostic* access for one defect. **The config could only deliver a general shell.**
+   `permissions.allow` pre-approves, it does **not** restrict; no tool allowlist exists at
+   this tier; and argument-constrained `Bash` patterns were already rejected as fragile
+   (see the rejected alternatives below). With a shell, every edit denial is cosmetic —
+   proven by attack, 24 July. **The narrow grant was not available, so Carl took the
+   enforced boundary over the useful one.** Full detail:
+   `architect-settings.reference.json.md`.
 
 The rejected alternatives are recorded: a read-only git MCP server (rejected — `license:
 NONE`, unpublished, single anonymous author) and a Bash git allow-list (rejected —

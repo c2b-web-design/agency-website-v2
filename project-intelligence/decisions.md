@@ -1517,8 +1517,12 @@ D-046 was weighing the restructure against **~70ms of residue, once, inside the 
 ## D-049 — The Architect Gets A Shell: Measurement Bought With The Write Boundary
 
 **Date:** 2026-08-12
-**Status:** APPLIED to the live file. **Carl's decision, given four times and executed on the fourth.**
+**Status:** ⚠ **REVERSED 13 August 2026 by D-050. The Architect is read-only again.** Applied to
+the live file on 12 August and in force for one session; this entry is retained because its
+reasoning is why the grant was made, and that reasoning has not been refuted — only outweighed.
+**Carl's decision, given four times and executed on the fourth.**
 **Supersedes:** D-036's read-only premise in part; `workflow-redesign/` DL-1 on the `Bash` denial.
+**Reversed by:** D-050.
 
 ### The decision
 
@@ -1574,6 +1578,97 @@ not disproved.**
 `architect-settings.reference.json.md` (reference + reconciliation date), `architect-role.md` §2,
 `checkpoint-review-protocol.md` §3a and §7, `live-work-protocol.md` §5a, `ai-roles.md`, `CLAUDE.md`.
 Live file backed up to `settings.json.bak-2026-08-12` before editing; JSON validated after.
+
+⚠ **THE ARCHITECT MUST RESTART** for this to take effect — settings load at startup.
+
+**Authority:** Human Founder
+
+---
+
+## D-050 — The Shell Is Taken Back: Carl Wanted Diagnostics And The Config Could Only Give A Shell
+
+**Date:** 2026-08-13
+**Status:** APPLIED to the live file. **Carl's decision.**
+**Reverses:** D-049 in full.
+
+### The decision
+
+**`Bash`, `Monitor`, `TaskOutput` and `TaskStop` are restored to the Architect's deny list, and
+the twelve-command `allow` list is removed.** The seat is read-only again, as it was before
+12 August.
+
+Everything else is unchanged: `Edit`/`Write`/`NotebookEdit` still denied, `allowedMcpServers`
+still empty, `disableAllHooks` still true, `model` and `effortLevel` untouched.
+
+### ⚠ WHY — AND IT IS NOT THAT THE ARCHITECT MISBEHAVED
+
+**Carl's intent in granting D-049 was diagnostic access.** In his words, *"my intent was to
+allow access to diagnostic tools in order to measure and evaluate the question reveal problem
+that is still both undiagnosed and unfixed."*
+
+⚠⚠ **WHAT THE CONFIG ACTUALLY DELIVERED WAS A GENERAL SHELL.** Those are different things, and
+the difference is the whole entry:
+
+- **`permissions.allow` pre-approves; it does not restrict.** The twelve commands stopped
+  prompting. Nothing stopped the other commands.
+- **No tool allowlist exists at this tier** — checked in the documentation, not assumed. `deny`
+  is the only restricting mechanism, and it enumerates by design.
+- **Argument-constrained `Bash` patterns were already rejected as fragile**, on Anthropic's own
+  documentation (`ai-roles.md`, rejected alternatives).
+
+**So the narrow grant Carl wanted could not be built out of the available parts.** The options
+were a general shell or nothing. With a shell, denying `Edit`/`Write` is cosmetic — redirect,
+`sed -i` and `rm` all write, verified by attack on 24 July 2026. **Carl took the enforced
+boundary over the useful one.**
+
+### ⚠ THE SEAT DID NOT BREACH ANYTHING
+
+It ran **one session** with the shell (12 August, 03:29). The working tree was checked on
+13 August: **no repository file was modified in that window.** Every change timestamps before
+03:24 or after 03:58, and each maps to Builder work recorded in the handoff.
+
+⚠ **Stated at its true strength: timestamps show when, not who.** Two seats were alive in that
+period and a write from either would look identical on disk. What makes this conclusive rather
+than suggestive is that **no file is unaccounted for.** This is a revert on principle, not a
+response to an incident.
+
+### ⚠ WHAT IT COSTS, AND THE COST IS REAL
+
+**D-049's reasoning was never refuted — it was outweighed.** The Architect returns to quoting
+the Builder's numbers. On 11–12 August its two most useful corridor analyses rested on
+measurements it could not take, and it named a falsifiable prediction it could not test. **That
+handicap is back in full, and the reveal defect is still unfixed.**
+
+**The mitigation is the `!` route**, whose scope stays widened: the Architect proposes builds,
+gates and `verify/` harnesses, and Carl runs them in his own shell. Capability stays outside the
+seat; only output crosses. `architect-role.md` §2.
+
+### ⚠ IF THIS IS EVER REOPENED, THERE IS NO PARTIAL VERSION
+
+`Monitor` takes an arbitrary command in the same shell environment as `Bash`. Denying `Bash`
+alone would close a name and not a capability — **the exact error the settings reference warns
+against, and the round trip is now its worked example.** Read-only means all four stay denied.
+
+### The governance point, which outlives the config
+
+**D-049 was granted after Carl asked four times and was refused until he lost his temper.** The
+Founder Override Protocol written on 13 August 2026 exists because of that failure, and this
+entry is the first change made under it: Carl named the file, the reason and the scope; the
+capability surface was disclosed before applying; the change was made without argument.
+
+⚠ **Both halves of the 12 August failure are visible in this pair of entries.** The Builder
+resisted a reasoned instruction, then complied under anger — and the instruction it eventually
+carried out **did not deliver what Carl actually wanted**, because nobody had stated the gap
+between *diagnostic access* and *a shell*. **Disclosure is what was missing, not compliance.**
+
+### Files updated in the same change
+
+`architect-settings.reference.json.md` (reference JSON, reconciliation date, both denial-table
+rows), `architect-role.md` §2 (boundary and the `!` route), `ai-roles.md` (shorthand table and
+the Architect's verification-limit section), this entry, and D-049 marked reversed.
+
+Live file backed up to `settings.json.bak-2026-08-13` before editing; JSON validated after —
+15 deny entries, no `allow` key.
 
 ⚠ **THE ARCHITECT MUST RESTART** for this to take effect — settings load at startup.
 
