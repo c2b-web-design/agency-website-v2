@@ -2,6 +2,14 @@
 
 **Written 10 August 2026 by the Builder. OPEN — not diagnosed, not fixed.**
 
+> ## ⚠⚠ CORRECTED 13 AUGUST 2026 — THE 626ms EXONERATION BELOW IS NOT VALID
+> **The section *"IT IS NOT THE HOVER WORK"* rests on a measurement of a tree that never
+> existed as a commit.** The revert command reverted **two** files and left a third current.
+> A proper bisect on 13 August measures that same commit at **117ms, not 626ms**, and finds the
+> hover arm `4c7a20e` to be the largest single step in the range (+175ms).
+> **Read the correction at the foot of this file before using anything in it.**
+> Full run log: `q5-stall-bisect-13-august.md`.
+
 Carl, looking at localhost: ***"Q5 stalls"***. He is right, and the measurement is worse than
 the symptom suggests.
 
@@ -25,7 +33,8 @@ out. The visible threshold is ~50ms; this is twelve times it.
 
 ---
 
-## ⚠⚠ IT IS *NOT* THE HOVER WORK — THIS IS THE MOST USEFUL FACT HERE
+## ~~⚠⚠ IT IS *NOT* THE HOVER WORK — THIS IS THE MOST USEFUL FACT HERE~~
+## ⚠⚠ WITHDRAWN 13 AUGUST 2026 — THIS SECTION IS WRONG
 
 **Both components were reverted to `7b056c2`** — the approved resting-light commit, before any
 hover teal existed — with everything else left current:
@@ -37,6 +46,32 @@ hover teal existed — with everything else left current:
 
 ⚠ **SO DO NOT START BY SUSPECTING THE TEAL, THE SECOND TEXTURE, OR THE rAF LOOPS.** That ground
 is covered.
+
+> ### ⚠⚠ THE ABOVE IS WITHDRAWN. THE COMMAND REVERTED TWO FILES OUT OF THREE.
+>
+> `1c9b8d7` changed **`answer-card-canvas.tsx`, `answer-card-mesh.tsx` AND
+> `answer-card-glass.ts`**. The revert names only the first two, so
+> **`answer-card-glass.ts` stayed at its current version** — and `7b056c2` had changed that file
+> by 946 lines.
+>
+> **The measured tree was therefore current glass against older canvas and mesh: a combination
+> that never existed as a commit and that nobody ever intended to ship.** Its 626ms describes
+> that hybrid, not `7b056c2`.
+>
+> **A whole-commit checkout of `7b056c2`, production build, three cold samples, 13 August:
+> 117 / 125 / 103ms — median 117ms.** Not 626ms.
+>
+> ⚠ **AND THE CONCLUSION INVERTS.** The hover WIP arm `4c7a20e` is the **largest single step in
+> the range**: 117ms → 294ms, **+175ms**. The teal is not exonerated; on this evidence it is the
+> biggest contributor.
+>
+> ⚠ **THE LESSON IS THE ONE THIS FILE ALREADY TEACHES, APPLIED TO ITSELF.** The section directly
+> below warns that *"a bisect that changes files on a live dev server is measuring the server."*
+> The same discipline was not applied to the file LIST: **a partial revert measures a tree that
+> was never built.** When reverting to a commit, revert to the commit — `git checkout <sha> --
+> .` or a whole-tree checkout — or name every file that commit touched.
+>
+> **Corrected by whole-commit bisect, 13 August 2026: `q5-stall-bisect-13-august.md`.**
 
 ---
 
@@ -95,13 +130,37 @@ path.** That points at programs being built during the reveal — which is preci
 window. `3a7cf1f`'s whole mechanism is keeping the warm context alive across Begin; if something
 now tears it down early, the fix is being undone rather than broken.
 
+> ### ⚠ FOLLOWED UP 13 AUGUST — THE TEARDOWN IS REAL, PRESENT ON EVERY ARM, AND NOT THE CAUSE
+>
+> A program-count probe at the `useScenePrecompile` resolve point, four arms, three runs each:
+>
+> - **The warm-up context IS destroyed inside the reveal**, at a remarkably fixed time —
+>   its program count empties at **+1306–1314ms** and `isContextLost()` flips at
+>   **+1460–1548ms**. So the lead was a real event, correctly spotted.
+> - ⚠ **BUT IT HAPPENS IDENTICALLY ON THE GOOD ARM.** `3a7cf1f` — the 81ms commit Carl approved
+>   — tears the same context down at +1497/+1548/+1510ms. **A behaviour present on the fast arm
+>   and the slow arm alike does not explain the difference between them.**
+> - **`3a7cf1f`'s mechanism is intact on every arm**: the warm-up resolves **~5.2–5.9 SECONDS
+>   before Begin**, nowhere near the reveal. The 900ms overlap is not being undone.
+>
+> **`forceContextLoss` is closed as the cause.** It is a normal unmount of the warm-up canvas
+> after its job is done, and it happens after the reveal window in any case.
+
 ---
 
 ## WHERE TO START NEXT SESSION
 
-1. **Bisect properly, production build per arm**, from `3a7cf1f` (86ms, approved) forward. The
+1. ~~**Bisect properly, production build per arm**, from `3a7cf1f` (86ms, approved) forward. The
    candidates in between are `5a694a3`, `e429fc2`, `d8dd1a8`, `26f6981`, `9957465`, `2e71e5c`,
-   `1c9b8d7`, `7b056c2`.
+   `1c9b8d7`, `7b056c2`.~~ **DONE 13 August — and the candidate list was wrong.**
+
+   ⚠ **FIVE OF THOSE EIGHT COMMITS PREDATE THE GOOD ARM.** `3a7cf1f` is 9 Aug 14:35;
+   `5a694a3`, `e429fc2`, `d8dd1a8`, `26f6981` and `9957465` are all **7 August**. A bisect
+   walking that list in the order written walks backwards through history.
+
+   **The true first-parent path `3a7cf1f..e3a5b7c` is seven commits, two of them docs-only:**
+   `2e71e5c`, `1c9b8d7`, `7b056c2`, `071923c` (docs), `4c7a20e`, `8bd2d0f` (docs), `e3a5b7c`.
+   Results in `q5-stall-bisect-13-august.md`.
 2. **Check the warm-up overlap still holds.** `3a7cf1f` gave the warm node a 900ms lifetime past
    Begin. `verify/warmup-value.mjs` measures what it is worth (161ms with, 919ms without).
 3. **Follow `forceContextLoss`** — find what calls it and when.
