@@ -3923,6 +3923,43 @@ export default function AnswerCardCanvas({
     new Array(CARD_BOXES.length).fill(false),
   );
 
+  /**
+   * ⚠⚠ CLEAR THE FILAMENTS WHEN THE QUESTION CHANGES — 14 August 2026.
+   *
+   * **This used to happen for free and stopped.** Before the shared host, this
+   * component lived inside the keyed phrase (`phrase-${qNum}`), so every
+   * corridor step DESTROYED it and rebuilt it — and `litCards`, being local
+   * state, died with the instance. The host never unmounts, so the state now
+   * outlives the question it belongs to.
+   *
+   * ⚠ THE SYMPTOM CARL SAW: arriving at Q4 with the Q5 answer still lit, on a
+   * question he had chosen nothing on. Measured across a real walk before the
+   * fix: `00000`, `01000`, `10000`, `01000`, `10000` — whichever card was
+   * pressed last, carried forward for the rest of the enquiry.
+   *
+   * ⚠ WHY `labels` IS THE KEY. It is the ONLY per-question signal this
+   * component receives; there is no question number, no step index and — since
+   * the host stopped unmounting — no mount to observe. Its identity changes
+   * exactly when the corridor moves to a new question. Compared by VALUE, not
+   * by reference: the array is rebuilt from `QUESTIONS[activeQ].options` on
+   * every render of the host, so a reference check would fire on every commit
+   * and clear the filament mid-press.
+   *
+   * ⚠ THIS IS A LIFETIME PATCH, NOT THE STRUCTURAL ANSWER. It restores one
+   * behaviour that DOM nesting used to provide. **Everything else in this
+   * component that assumed a fresh mount per question is still surviving, and
+   * has not been enumerated** — see `live-work/structural-decision-note-card-
+   * host-lifetime.md` §3, which records that as an open finding rather than
+   * leaving it silent.
+   */
+  const labelsKey = labels ? labels.join(" ") : "";
+  const prevLabelsKey = useRef(labelsKey);
+  useEffect(() => {
+    if (prevLabelsKey.current === labelsKey) return;
+    prevLabelsKey.current = labelsKey;
+    setLitCards((prev) => (prev.some(Boolean) ? new Array(CARD_BOXES.length).fill(false) : prev));
+  }, [labelsKey]);
+
 
   /**
    * Whether the renderer has finished compiling this scene's shaders.

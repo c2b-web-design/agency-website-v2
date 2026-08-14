@@ -269,8 +269,21 @@ if (!walkBroke) {
     if (completion.hostVisibility === "visible" && completion.cardsPresent) {
       note(`completion — the answer cards are still VISIBLE over the contact field (host top=${completion.hostTop})`);
     }
-    if (completion.lit && completion.lit.includes("1")) {
-      note(`completion — a card is still lit (${completion.lit}) after the enquiry ended`);
+    /**
+     * ⚠ LIT STATE AT COMPLETION IS ONLY A FAULT IF IT CAN BE SEEN.
+     *
+     * The first version of this assertion flagged ANY lit card at completion
+     * and was WRONG. The last question's answer is legitimately still selected
+     * — nothing has cleared it and nothing should, because the visitor has left
+     * that screen. The host is `visibility: hidden` at `stage === "complete"`
+     * by design (`hostCardsVisible`), so the state is residual, not visible.
+     *
+     * **A harness must not report invisible state as a visual defect.** What
+     * would be a real fault is lit cards PAINTING over the contact field, and
+     * that is what the visibility check above already covers.
+     */
+    if (completion.lit && completion.lit.includes("1") && completion.hostVisibility === "visible") {
+      note(`completion — a card is still lit (${completion.lit}) AND the host is visible over the contact field`);
     }
   } catch (e) {
     note(`completion — could not answer ${finalQ}: ${String(e).split("\n")[0].slice(0, 70)}`);
