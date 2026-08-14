@@ -724,9 +724,41 @@ export default function EnquiryOpening() {
     const ro = new ResizeObserver(apply);
     ro.observe(el);
     window.addEventListener("resize", apply);
+
+    /**
+     * ⚠⚠ PER-FRAME TRACKING WHILE THE CORRIDOR MOVES — 14 August 2026.
+     *
+     * `ResizeObserver` does not fire for a MOVE: the grid keeps its 576x104 box
+     * and only its position changes, so without this the host would jump from
+     * the start rect to the end rect and the cards would not travel.
+     *
+     * ⚠ THIS FOLLOWS, IT DOES NOT ANIMATE. Every frame it asks the browser
+     * where the element it is already animating currently is. No easing
+     * function, no duration, no curve — nothing that could drift out of step
+     * with the CSS, because nothing here knows what the CSS does. **That is the
+     * distinction D-046 draws:** the hazard it names is *"the easing becomes a
+     * hand-driven animation matching `bottom 900ms cubic-bezier(0.37, 0, 0.63,
+     * 1)`"* — reproducing the curve. Reading the animated element's rect is the
+     * opposite: it cannot disagree with the browser because it IS the browser's
+     * answer.
+     *
+     * ⚠ ONLY WHILE MOVING. At rest the ResizeObserver and the corridor-step
+     * re-measure are sufficient, and an rAF loop that never stops would keep a
+     * React setState scheduled on every frame of an idle page.
+     */
+    let raf = 0;
+    if (corridorMoving) {
+      const track = () => {
+        apply();
+        raf = requestAnimationFrame(track);
+      };
+      raf = requestAnimationFrame(track);
+    }
+
     return () => {
       ro.disconnect();
       window.removeEventListener("resize", apply);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, [gridTick, stage, corridorMoving]);
   useEffect(() => {
@@ -1479,7 +1511,30 @@ export default function EnquiryOpening() {
               against; only the buttons are gone.
             */}
             <div
-              ref={isActive ? setActiveGrid : undefined}
+              /*
+                ⚠⚠ THE HOST FOLLOWS WHICHEVER GRID IS ON SCREEN, NOT ONLY THE
+                ACTIVE ONE — 14 August 2026, Carl's route.
+
+                `ref={isActive ? … : undefined}` alone detached the ref for the
+                whole 900ms corridor move, because `phraseList` withholds the
+                active phrase entirely while `corridorMoving`. `hostRect` went
+                null, the documented guard fired, and **the cards vanished for
+                ~900ms on all four moves** — measured as 48 changed probe points
+                against the approved pre-host paint order.
+
+                During a move the RECEDING copy at depth 1 keeps its grid mounted
+                (`showExtras` above), and that copy is the element the browser is
+                animating. Following it is what keeps the cards on screen and
+                travelling with the phrase.
+
+                ⚠ THIS IS NOT THE HAND-DRIVEN EASING D-046 WARNS AGAINST. No
+                timing curve is reimplemented here. The host READS the rect the
+                browser has already computed for its own animation, every frame,
+                below. Duplicating the curve would mean re-authoring
+                `bottom 900ms cubic-bezier(0.37, 0, 0.63, 1)`; following the
+                element means never knowing what the curve is.
+              */
+              ref={isActive || (corridorMoving && depth === 1) ? setActiveGrid : undefined}
               className="enquiry-answer-grid"
               role="group"
               aria-labelledby="active-q-label"
@@ -1685,7 +1740,34 @@ export default function EnquiryOpening() {
    * cards must not ENTER then. That separation — early mount, late entrance —
    * is what `warm` (compile) vs `active` (entrance) exists for.
    */
-  const activeCardsVisible = !corridorMoving && stage !== "complete" && stage !== "opening";
+  /**
+   * ⚠⚠ THE HOST STAYS ON SCREEN THROUGH THE CORRIDOR MOVE — 14 August 2026.
+   *
+   * **This replaces `activeCardsVisible`**, which carried `!corridorMoving`.
+   * That term is correct for the PHRASE LIST (the incoming active phrase really
+   * is withheld mid-move, just below) and **was wrong for the HOST**: with the
+   * host gated on it the cards left the screen for the whole ~900ms move, four
+   * times per walk — measured as 48 changed probe points against the approved
+   * pre-host paint order, where the cards are present throughout.
+   *
+   * ⚠ THE OLD NOTE HERE SAID "ONE CONDITION, TWO CONSUMERS", to stop the host's
+   * entrance gate disagreeing with the phrase list. That instinct was right and
+   * the shared condition was still wrong, because the two ask different
+   * questions:
+   *
+   *     phrase list  "is the incoming active phrase renderable yet?"   NO mid-move
+   *     the host     "should the cards be on screen at all?"           YES mid-move
+   *
+   * They are now separate expressions rather than one that is only correct for
+   * one caller. Pre-host the cards were a CHILD of the receding phrase and
+   * stayed up without anything having to say so; a `fixed` host outside the
+   * shell has to say so explicitly, and this is that statement.
+   *
+   * ⚠ `stage !== "opening"` AND `!== "complete"` ARE UNCHANGED. Early mount /
+   * late entrance is untouched: the cards still must not enter during the
+   * opening.
+   */
+  const hostCardsVisible = stage !== "complete" && stage !== "opening";
   if (!corridorMoving && stage !== "complete") {
     phraseList.push({ qNum: activeQ, depth: 0, isActive: true });
   }
@@ -1747,10 +1829,36 @@ export default function EnquiryOpening() {
           height: hostRect ? `${hostRect.height}px` : GRID_HEIGHT_PX,
           visibility: hostRect ? "visible" : "hidden",
           pointerEvents: "none",
+          /**
+           * ⚠⚠ WITHOUT THIS THE CARDS CANNOT BE CLICKED AT ALL — 14 August 2026.
+           *
+           * The host is a `position: fixed` sibling that appears BEFORE the
+           * shell in DOM order, and both sat at `z-index: auto`. So the shell's
+           * contents painted on top: `.enquiry-answer-grid` — an empty box kept
+           * only as a measurement target, at the identical rect — took every
+           * pointer event. **All five cards were dead on `1e031cd`**, while the
+           * position check passed to 0.5px at three widths, because the geometry
+           * was never wrong.
+           *
+           * ⚠ IT IS PAINT ORDER, NOT `pointer-events`. The three ancestors
+           * carrying `pointer-events: none` look like the cause and are not:
+           * clearing all three changes nothing, because a descendant's `auto`
+           * already overrides an ancestor's `none`. Raising this alone fixes it
+           * with every `none` left in place. Measured, four scenarios.
+           *
+           * ⚠⚠ THE VALUE IS 1 BECAUSE 1 IS SUFFICIENT, NOT BY EYE. Carl's
+           * instruction: *"Do not pick a z-index by eye. Reproduce the paint
+           * order the canvas already had."* `verify/paint-order.mjs` records the
+           * pre-host stack at 16 points x 21 moments and diffs against it:
+           * z = 1, 2 and 3 give BYTE-IDENTICAL results (288/336 reproduced;
+           * control 84/336). There is no evidence for anything larger, so
+           * anything larger would be the guess this value exists to avoid.
+           */
+          zIndex: 1,
         }}
       >
         <AnswerCardCanvas
-          active={activeCardsVisible}
+          active={hostCardsVisible}
           onEntranceStart={noteCardEntranceStart}
           labels={QUESTIONS[activeQ].options}
           onToggle={handleCardToggle}
