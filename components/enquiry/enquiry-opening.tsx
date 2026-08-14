@@ -11,6 +11,10 @@ import { NextStepMeshButton } from "./nextstep-canvas";
 // retyped. This file's own history records a hand-written end-of-choreography
 // value going stale twice.
 import { ENTRANCE_END_MS } from "./answer-card-geometry";
+// The host's pre-measurement fallback box. ⚠ It must be non-zero: the canvas
+// maps one world unit to one CSS pixel from its measured size, so a zero box
+// would destroy that mapping before the first real rect arrives.
+import { GRID_WIDTH_PX, GRID_HEIGHT_PX } from "./answer-card-backdrop-geometry";
 
 // How long after entering `complete` the ENTIRE completion choreography has
 // cleared — acknowledgement, all four boxes, AND the opal.
@@ -559,8 +563,95 @@ export default function EnquiryOpening() {
    * never the only exit; `ENTRANCE_ANCHOR_CEILING_MS` is why the 4 August
    * failure cost only the cards and not the contact field too.
    */
-  const [openingArmed, setOpeningArmed] = useState(false);
-  const armOpening = useCallback(() => setOpeningArmed(true), []);
+  /**
+   * ⚠⚠ THE SHARED HOST'S RECT — THE ONE THING THAT SANK THE 12 AUGUST BUILD.
+   *
+   * **Where the measurement comes from:** `.enquiry-answer-grid` of the ACTIVE
+   * question — the same element that already feeds `gridWidth` inside
+   * `AnswerCardCanvas`. One element, one measurement.
+   *
+   * **What is read:** `getBoundingClientRect()` — left/top/width/height, in
+   * VIEWPORT coordinates.
+   *
+   * **What consumes it:** the host div's `position: fixed` left/top/width/
+   * height. `fixed` resolves against the viewport, which is the same space
+   * `getBoundingClientRect()` reports in, so the two agree BY CONSTRUCTION.
+   * There is no conversion, no `offsetParent`, and no arithmetic correction
+   * anywhere in the path.
+   *
+   * ⚠ WHY THAT MATTERS. `protoCanvasBox()` returns `left: 0, top: 0` — literal
+   * zeros meaning *"fill my host"*. Those zeros were correct only because the
+   * canvas happened to render inside `.enquiry-answer-grid`, which is
+   * `position: relative`. **Nothing in the code ever said "the grid is at
+   * 0,0", so nothing could detect that it had stopped being true** — the
+   * canvas moved out, the zeros silently started meaning "the shell", and the
+   * cards rendered ~230px high while three instruments stayed green.
+   *
+   * Now the host's box IS the grid's box, so the invariant holds by
+   * measurement rather than by accident of DOM nesting.
+   *
+   * ⚠ `null` UNTIL MEASURED, AND THAT IS LOAD-BEARING. The 12 August code
+   * promised a `gridOffset === null` guard and never implemented one; its
+   * `?? 0` fallback rendered the first frame at the shell origin. Here `null`
+   * means the host is `visibility: hidden` — mounted, sized, compiling, and
+   * painting nothing.
+   */
+  const [hostRect, setHostRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
+  const activeGridRef = useRef<HTMLDivElement | null>(null);
+  const [gridTick, setGridTick] = useState(0);
+
+  /**
+   * Callback ref on the ACTIVE question's grid.
+   *
+   * ⚠ A CALLBACK REF, NOT A `MutationObserver`. The 12 August machinery watched
+   * `.enquiry-phrase-band` with `subtree: true, attributes: true` and bumped a
+   * nonce on EVERY mutation — which includes every corridor step's depth-class
+   * morph, firing re-renders on a WebGL component for no benefit. React already
+   * tells us exactly when this element is attached and detached; that is the
+   * signal, and it has no false positives.
+   */
+  const setActiveGrid = useCallback((el: HTMLDivElement | null) => {
+    activeGridRef.current = el;
+    setGridTick((n) => n + 1);
+  }, []);
+
+  /**
+   * ⚠ THE ARMING PATH IS RECORDED BY NAME, AND THAT IS A DIAGNOSTIC REQUIREMENT
+   * RATHER THAN A NICETY.
+   *
+   * There are THREE exits — the compile (`onCompiled`), the ready gate
+   * (`document.fonts.ready` + a committed frame), and the 4000ms ceiling — and
+   * they are indistinguishable on screen. `verify/opening-arm.mjs` previously
+   * had to INFER which one fired, by comparing the heading's start against the
+   * `warmup-canvas-compiled` mark. That inference has already produced one
+   * false verdict ("0/3 armed by COMPILE" on a gate that was working), and it
+   * breaks entirely once the warm-up canvas is gone, because the mark it keys
+   * off no longer exists.
+   *
+   * ⚠ A BACKSTOP THAT FIRES ROUTINELY IS NOT A BACKSTOP. That is exactly how
+   * the previous design failed for two sessions: `requestIdleCallback`'s
+   * timeout became the only path and nothing reported it. So the name is
+   * written down at the moment of arming, and the harness reads it instead of
+   * deducing it.
+   *
+   * ⚠ FIRST WRITE WINS. Later callers are no-ops for `openingArmed`, so
+   * recording their name would misreport which exit actually armed the page.
+   */
+  const [openingArmed, setOpeningArmedInternal] = useState(false);
+  const armedByRef = useRef<string | null>(null);
+  const armOpening = useCallback((source: string) => {
+    if (armedByRef.current === null) {
+      armedByRef.current = source;
+      // Read by `verify/opening-arm.mjs`. A `performance.mark` rather than a
+      // bare global so it carries a timestamp on the same clock as the
+      // animation events the harness already reads.
+      try {
+        performance.mark(`opening-armed-by-${source}`);
+        (window as unknown as { __armedBy?: string }).__armedBy = source;
+      } catch {}
+    }
+    setOpeningArmedInternal(true);
+  }, []);
 
   /**
    * A mask class once the opening is armed; the HELD state until then.
@@ -590,12 +681,63 @@ export default function EnquiryOpening() {
     },
     [stage, openingArmed, reducedMotion],
   );
+
+  /**
+   * Keep the shared host over the active grid.
+   *
+   * ⚠ NO SCROLL LISTENER, AND THAT IS A MEASURED DECISION RATHER THAN AN
+   * OMISSION. `verify/`-style check, 14 August, all three widths and both
+   * motion modes: `document.documentElement.scrollHeight === innerHeight`
+   * (900 vs 900) before AND after Begin. **The corridor cannot scroll.** A
+   * listener for an event that cannot fire is an unexercised path — and
+   * `answer-card-canvas.tsx` already carries a comment claiming a
+   * "scroll/resize listener" while binding only `resize`. If the page ever
+   * becomes scrollable, the honest fix is to sample in the render loop's rAF,
+   * not to add a listener here.
+   *
+   * ⚠ A `ResizeObserver` IS NOT ENOUGH ON ITS OWN: the grid MOVES between
+   * questions without changing size — same 576x104 box at a new position — so
+   * the corridor step must also re-measure. `gridTick` is that signal.
+   */
+  useEffect(() => {
+    const el = activeGridRef.current;
+    if (!el) {
+      setHostRect(null);
+      return;
+    }
+    const apply = () => {
+      const r = el.getBoundingClientRect();
+      // A zero box means the element is not laid out yet. Committing it would
+      // collapse the canvas and destroy the 1-world-unit-to-1-CSS-px mapping.
+      if (r.width <= 0 || r.height <= 0) return;
+      setHostRect((prev) =>
+        prev &&
+        Math.abs(prev.left - r.left) < 0.5 &&
+        Math.abs(prev.top - r.top) < 0.5 &&
+        Math.abs(prev.width - r.width) < 0.5 &&
+        Math.abs(prev.height - r.height) < 0.5
+          ? prev
+          : { left: r.left, top: r.top, width: r.width, height: r.height },
+      );
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    window.addEventListener("resize", apply);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", apply);
+    };
+  }, [gridTick, stage, corridorMoving]);
   useEffect(() => {
     if (openingArmed) return;
     // Reduced motion has no animations to protect — arm immediately so the
     // opening is never gated on WebGL for a visitor who will not see a reveal.
     if (reducedMotion) {
-      const id = window.setTimeout(armOpening, 0);
+      // ⚠ WRAPPED, NOT PASSED DIRECTLY. `setTimeout(armOpening, 0)` hands the
+      // callback the timer id as its first argument, which would record the
+      // source as a number.
+      const id = window.setTimeout(() => armOpening("reduced-motion"), 0);
       return () => window.clearTimeout(id);
     }
 
@@ -657,7 +799,7 @@ export default function EnquiryOpening() {
     const armWhenPainted = () => {
       raf1 = requestAnimationFrame(() => {
         raf2 = requestAnimationFrame(() => {
-          if (!cancelled) armOpening();
+          if (!cancelled) armOpening("ready-gate");
         });
       });
     };
@@ -667,7 +809,9 @@ export default function EnquiryOpening() {
       armWhenPainted();
     }
 
-    const id = window.setTimeout(armOpening, OPENING_ARM_CEILING_MS);
+    // ⚠ WRAPPED for the same reason as the reduced-motion timer above: a bare
+    // `armOpening` here would receive the timer id as its `source`.
+    const id = window.setTimeout(() => armOpening("backstop"), OPENING_ARM_CEILING_MS);
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf1);
@@ -1335,6 +1479,7 @@ export default function EnquiryOpening() {
               against; only the buttons are gone.
             */}
             <div
+              ref={isActive ? setActiveGrid : undefined}
               className="enquiry-answer-grid"
               role="group"
               aria-labelledby="active-q-label"
@@ -1425,22 +1570,25 @@ export default function EnquiryOpening() {
                 host, not a dial** — and that is Carl's call, not a Builder's.
               */}
               {/*
-                ⚠ THE CANVAS RENDERS HERE, INSIDE THE KEYED PHRASE, AND THAT IS
-                THE DEFECT — NOT AN OVERSIGHT. Every question step destroys a
-                WebGL context and creates another; the compile lands inside the
-                1300ms wipe and freezes it ~120ms in the GPU process.
+                ⚠⚠ THE CANVAS NO LONGER RENDERS HERE — 14 August 2026, Stage 2.
+                It moved to the shared host outside the shell, so ONE WebGL
+                context serves all five questions instead of one being destroyed
+                and recreated on every step.
 
-                **The shared host that fixes it was built and reverted on
-                12 August** — it fixed the frames and broke the layout. See the
-                tombstone below `.enquiry-phrase-band` for what it achieved,
-                exactly why it failed, and what a correct version needs.
+                **This grid element stays, and it is now the MEASUREMENT
+                SOURCE.** `ref={setActiveGrid}` on the active copy publishes its
+                `getBoundingClientRect()` to the host, which positions itself
+                over it. The DOM hit targets also still live here — the host is
+                `pointer-events: none` precisely so it cannot swallow them.
+
+                ⚠ DO NOT PUT THE CANVAS BACK HERE TO "FIX" A LAYOUT PROBLEM.
+                That reinstates the per-question context churn this whole stage
+                exists to remove. If the cards are mis-positioned, the fault is
+                in the host's rect, and `verify/` has a screenshot harness that
+                measures card centroids in viewport pixels — use it rather than
+                comparing two `getBoundingClientRect` calls, which is the check
+                that passed on the visibly broken 12 August build.
               */}
-              <AnswerCardCanvas
-                active={isActive}
-                onEntranceStart={noteCardEntranceStart}
-                labels={QUESTIONS[qNum].options}
-                onToggle={handleCardToggle}
-              />
             </div>
 
             <div
@@ -1526,6 +1674,18 @@ export default function EnquiryOpening() {
     depth: memory.length - i, // newest answered = depth-1
     isActive: false,
   }));
+  /**
+   * ⚠ ONE CONDITION, TWO CONSUMERS — the active phrase and the shared host's
+   * `active` prop. Written once rather than duplicated, because a host whose
+   * entrance gate disagreed with the phrase list would either enter cards for
+   * a question that is not on screen, or withhold them for one that is.
+   *
+   * ⚠ `stage !== "opening"` IS PART OF IT AND MATTERS FOR THIS STAGE. The host
+   * mounts in the first commit so it can COMPILE during the opening, but the
+   * cards must not ENTER then. That separation — early mount, late entrance —
+   * is what `warm` (compile) vs `active` (entrance) exists for.
+   */
+  const activeCardsVisible = !corridorMoving && stage !== "complete" && stage !== "opening";
   if (!corridorMoving && stage !== "complete") {
     phraseList.push({ qNum: activeQ, depth: 0, isActive: true });
   }
@@ -1535,6 +1695,68 @@ export default function EnquiryOpening() {
       className="min-h-screen flex flex-col items-center px-6"
       style={{ background: "radial-gradient(ellipse at 50% 40%, #141414 0%, #080808 100%)" }}
     >
+      {/*
+        ⚠⚠ THE SHARED CARD HOST — ONE CONTEXT, CREATED ONCE, NEVER UNMOUNTED.
+        Rebuilt 14 August 2026 after the 12 August version was reverted for a
+        positioning bug. D-048.
+
+        ⚠⚠ IT IS A SIBLING OF THE SHELL, NOT A CHILD OF IT, AND THAT PLACEMENT
+        IS LOAD-BEARING. **A transformed ancestor becomes the containing block
+        for `position: fixed`.** Both shells carry
+        `transform: translateY(calc(38vh - 5rem))` (`globals.css`), so a host
+        placed inside one would resolve `fixed` against the SHELL rather than
+        the viewport — silently reintroducing the exact class of bug that sank
+        12 August, where two literal zeros quietly changed what they were
+        relative to. This outer `min-h-screen` div has no transform.
+
+        ⚠ SO DO NOT ADD `transform`, `filter`, `perspective`, `contain` OR
+        `will-change` TO THIS ELEMENT OR TO ANY ANCESTOR BETWEEN IT AND THE
+        ROOT. Each of those creates a containing block and would break the
+        positioning from a distance, with nothing in the DOM looking wrong.
+        `verify/` asserts `offsetParent === null` on this node for exactly that
+        reason — a `fixed` element whose containing block is the viewport
+        reports null, and that assertion flips the moment someone adds one.
+
+        ⚠ MOUNTED UNCONDITIONALLY — no `stage` gate. It is in the FIRST COMMIT,
+        so the context is created and compiled while the opening runs, and it
+        survives every question step. The cards do not enter during the
+        opening: `active` stays false until the corridor is showing, which is
+        exactly the early-mount / late-entrance seam `warm` vs `active` was
+        built for.
+
+        ⚠ HIDDEN UNTIL MEASURED. `hostRect` is null until the active grid has
+        been measured, and while it is null this renders `visibility: hidden`
+        at the constant 576x104 box — a valid, non-zero size, so the canvas
+        mounts and compiles normally while painting nothing. **`display: none`
+        would zero the box and destroy the 1-world-unit-to-1-CSS-px mapping.**
+        The 12 August build promised this guard and never implemented it; its
+        `?? 0` fallback painted the first frame at the shell origin.
+
+        ⚠ `pointer-events: none`. The DOM hit targets live in the phrase's own
+        grid; a full-width transparent host over the corridor would swallow
+        them.
+      */}
+      <div
+        aria-hidden="true"
+        data-testid="answer-card-host"
+        style={{
+          position: "fixed",
+          left: hostRect ? `${hostRect.left}px` : 0,
+          top: hostRect ? `${hostRect.top}px` : 0,
+          width: hostRect ? `${hostRect.width}px` : GRID_WIDTH_PX,
+          height: hostRect ? `${hostRect.height}px` : GRID_HEIGHT_PX,
+          visibility: hostRect ? "visible" : "hidden",
+          pointerEvents: "none",
+        }}
+      >
+        <AnswerCardCanvas
+          active={activeCardsVisible}
+          onEntranceStart={noteCardEntranceStart}
+          labels={QUESTIONS[activeQ].options}
+          onToggle={handleCardToggle}
+        />
+      </div>
+
       {/* Shared shell — the heading lives here in BOTH states, anchored identically. */}
       {/* Only the content beneath the heading swaps, so the heading never shifts on Begin. */}
       <div className={`${stage === "opening" ? "enquiry-shell-opening" : "enquiry-shell-active"} text-center max-w-xl w-full`}>
@@ -1896,7 +2118,7 @@ export default function EnquiryOpening() {
             <AnswerCardCanvas
               active={false}
               warm
-              onCompiled={armOpening}
+              onCompiled={() => armOpening("compile")}
               labels={QUESTIONS[5].options}
             />
           </div>

@@ -100,9 +100,20 @@ for (let run = 1; run <= RUNS; run++) {
         const e = performance.getEntriesByName(n, "mark");
         return e.length ? Math.round(e[0].startTime - nav) : null;
       };
+      // ⚠ THE ARMING PATH IS NOW REPORTED BY NAME, NOT INFERRED. See the
+      // classifier note below for why the old inference had to go.
+      const armedMark = performance
+        .getEntriesByType("mark")
+        .filter((e) => e.name.startsWith("opening-armed-by-"))
+        .sort((a, b) => a.startTime - b.startTime)[0];
+
       return {
         warmupCreated: m("warmup-canvas-created"),
         warmupCompiled: m("warmup-canvas-compiled"),
+        cardCreated: m("card-canvas-created"),
+        cardCompiled: m("card-canvas-compiled"),
+        armedByName: armedMark ? armedMark.name.replace("opening-armed-by-", "") : null,
+        armedByAt: armedMark ? Math.round(armedMark.startTime - nav) : null,
         headingAt:
           window.__oa.headingAnimStart === null
             ? null
@@ -140,30 +151,51 @@ for (let run = 1; run <= RUNS; run++) {
     //
     // The ready gate is the EXPECTED path now: it fires on fonts + one frame,
     // which lands in the low hundreds of ms, well before either other exit.
+    /**
+     * ⚠⚠ THE INFERENCE CLASSIFIER IS GONE — 14 August 2026. It read:
+     *
+     *     if (|armedAt - ARM_CEILING_MS| < 400)              "BACKSTOP"
+     *     else if (armedAt < 900)                            "READY GATE"
+     *     else if (|armedAt - warmupCompiled| < 250)         "COMPILE"
+     *
+     * **Two independent faults, and the second is fatal to this restructure.**
+     *
+     * 1. It keyed COMPILE off `warmup-canvas-compiled`. The shared-host work
+     *    deletes the warm-up canvas, so that mark stops existing and every run
+     *    would fall through to "neither cleanly".
+     * 2. `armedAt < 900` was tested BEFORE the compile branch. Once the CARD
+     *    canvas arms the opening, a fast compile lands inside that window and
+     *    is silently misfiled as READY GATE — a different page reported as the
+     *    expected one.
+     *
+     * ⚠ AND IT HAD ALREADY PRODUCED ONE FALSE VERDICT: "0/3 armed by COMPILE"
+     * on a gate that was working perfectly, because the heading starts
+     * HEADING_DELAY_MS after arming and the raw comparison never matched.
+     *
+     * `enquiry-opening.tsx` now records the name at the moment of arming
+     * (`performance.mark("opening-armed-by-<source>")`, first write wins), so
+     * this reads a fact instead of deducing one.
+     */
     let armedBy = "unknown";
-    if (armedAt !== null) {
-      if (Math.abs(armedAt - ARM_CEILING_MS) < 400) {
-        // Checked FIRST: the ceiling is the only genuinely bad answer, and it
-        // must not be shadowed by a coincidental match against a slow compile.
-        armedBy = "BACKSTOP";
-      } else if (armedAt < 900) {
-        armedBy = "READY GATE";
-      } else if (d.warmupCompiled !== null && Math.abs(armedAt - d.warmupCompiled) < 250) {
-        armedBy = "COMPILE";
-      } else {
-        armedBy = "neither cleanly — investigate";
-      }
+    if (d.armedByName) {
+      armedBy = { compile: "COMPILE", "ready-gate": "READY GATE", backstop: "BACKSTOP", "reduced-motion": "REDUCED MOTION" }[d.armedByName] ?? d.armedByName;
+    } else if (armedAt !== null) {
+      // No mark: an older build, or the mark failed. Say so rather than guess.
+      armedBy = "⚠ NO NAME RECORDED — build predates the named arming mark";
     }
 
     results.push({ ...d, armedBy, armedAt });
 
     console.log(`\n─── RUN ${run} of ${RUNS}${run === 1 ? "  (cold GPU profile)" : "  (warm)"} ${"─".repeat(20)}`);
     console.log(`  Renderer                 ${renderer}`);
-    console.log(`  warm-up canvas created   ${d.warmupCreated === null ? "NEVER ⚠" : `+${d.warmupCreated}ms`}`);
-    console.log(`  warm-up canvas compiled  ${d.warmupCompiled === null ? "NEVER ⚠" : `+${d.warmupCompiled}ms`}`);
+    console.log(`  warm-up canvas created   ${d.warmupCreated === null ? "absent" : `+${d.warmupCreated}ms`}`);
+    console.log(`  warm-up canvas compiled  ${d.warmupCompiled === null ? "absent" : `+${d.warmupCompiled}ms`}`);
+    console.log(`  card canvas created      ${d.cardCreated === null ? "absent" : `+${d.cardCreated}ms`}`);
+    console.log(`  card canvas compiled     ${d.cardCompiled === null ? "absent" : `+${d.cardCompiled}ms`}`);
+    console.log(`  ARMED-BY MARK            ${d.armedByName === null ? "⚠ NONE" : `"${d.armedByName}" at +${d.armedByAt}ms`}   ← recorded, not inferred`);
     console.log(`  opening ARMED at         ${armedAt === null ? "?" : `+${armedAt}ms`}   (heading start minus its own 600ms delay)`);
     console.log(`  heading reveal starts    ${d.headingAt === null ? "NEVER ⚠" : `+${d.headingAt}ms`}   ← the visitor's wait`);
-    console.log(`  armed by                 ${d.armedBy}${d.armedBy === "BACKSTOP" ? "   ⚠ THE GATE IS NOT WORKING — see header" : ""}`);
+    console.log(`  armed by                 ${armedBy}${armedBy === "BACKSTOP" ? "   ⚠ THE GATE IS NOT WORKING — see header" : ""}`);
   } finally {
     await context.close();
   }
@@ -179,6 +211,12 @@ const med = (xs) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.floor(xs.len
 const byBackstop = results.filter((r) => r.armedBy === "BACKSTOP").length;
 const byReady = results.filter((r) => r.armedBy === "READY GATE").length;
 const byCompile = results.filter((r) => r.armedBy === "COMPILE").length;
+const byReduced = results.filter((r) => r.armedBy === "REDUCED MOTION").length;
+// ⚠ COUNTED AND PRINTED, NOT SILENTLY DROPPED. The previous tally summed only
+// three categories, so any run that fell outside them vanished from the
+// verdict while still appearing in the per-run rows — a discrepancy nobody
+// would notice until the totals stopped adding up.
+const unnamed = results.filter((r) => r.armedByName == null).length;
 
 console.log(`\n${"═".repeat(62)}`);
 console.log(`VERDICT — ${RUNS} run(s)`);
@@ -186,6 +224,11 @@ console.log(`${"═".repeat(62)}`);
 console.log(`  Cold wait before the opening starts:  ${results[0]?.headingAt ?? "?"}ms`);
 console.log(`  Median wait across runs:              ${med(waits) ?? "?"}ms`);
 console.log(`  Armed by the READY GATE: ${byReady}/${RUNS}   by the COMPILE: ${byCompile}/${RUNS}   ⚠ by the BACKSTOP: ${byBackstop}/${RUNS}`);
+if (byReduced) console.log(`  Armed by REDUCED MOTION: ${byReduced}/${RUNS}   (expected only under prefers-reduced-motion)`);
+if (unnamed) console.log(`  ⚠ NO NAME RECORDED: ${unnamed}/${RUNS} — the build predates the arming mark, or it failed to fire.`);
+if (byReady + byCompile + byBackstop + byReduced + unnamed !== RUNS) {
+  console.log(`  ⚠ CATEGORIES DO NOT SUM TO ${RUNS} — a run fell outside every bucket. Investigate.`);
+}
 
 if (byBackstop > 0) {
   console.log(`

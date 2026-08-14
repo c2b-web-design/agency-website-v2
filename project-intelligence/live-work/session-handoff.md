@@ -1,4 +1,4 @@
-# Session Handoff — 13 August 2026 (the repair session: nothing is at risk any more)
+# Session Handoff — 14 August 2026 (Stage 2: the shared host is built, positioning proven)
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -8,274 +8,206 @@
 
 ## ⛔ THE STANDING DIRECTIVE
 
-**NEVER comment on how long Carl has been working.** Not the time of day, not the session length,
-not a suggestion to stop or resume later. **Carl decides when a session ends and will say so.**
-It was not broken this session.
+**NEVER comment on how long Carl has been working.** Not the time of day, not the session
+length, not a suggestion to stop or resume later. **Carl decides when a session ends and will
+say so.** It was not broken this session.
 
 ---
 
-## ✅ THE PROJECT CONTINUES — THE DELETE INSTRUCTION IS RESCINDED
+## WHERE THE WORK IS
 
-The previous handoff opened with an instruction to delete the project and everything associated
-with it. **Carl withdrew it on 13 August 2026, in his first message:**
+**Branch `fix/q5-stall-and-label-colour`.** Stage 2 steps 1–3 are complete. **Step 4 is
+part-done: the host is BUILT and positioning is PROVEN; the remaining step-4 measurements are
+outstanding.** The warm-up canvas is **untouched and still mounts** — deleting it is step 5.
 
-> *"The last session was a disaster with mistakes from both of us that had me quitting months of
-> work. That will not be the case. The first task is to correct some of the damage."*
+Full detail: **`live-work/q5-stage2-progress-14-august.md`** — read it before acting.
 
-**Nothing was deleted.** Repository, remote, Architect seat and `brand-assets/` are all intact.
-Recorded here only so a reader who has heard of the instruction can see it was cancelled.
+### The plan being executed
 
----
-
-## ✅ WHAT THIS SESSION DID — ALL FOUR COMMITS PUSHED
-
-**Branch `fix/q5-stall-and-label-colour`, head `5534790`. Working tree CLEAN. Ports free.**
-
-    5534790  gov(architect): D-050 — the shell goes back
-    68da875  wip(corridor): commit the 11-12 August tree
-    49bdd38  gov(authority): Carl's wording — refused until he lost his temper is the defect
-    e2c56a2  gov(authority): give Carl an override channel
-
-⚠ **THE DAY OF UNCOMMITTED WORK FROM 11–12 AUGUST IS NOW SAFE ON THE REMOTE.** That was the
-first repair and the most valuable one. Thirty files, including the corridor work and eighteen
-new `verify/` scripts.
-
-**Gates at commit:** `npx tsc --noEmit` clean; `npm run lint` **1 problem (1 error, 0 warnings)**
-— the known `enquiry-opening.tsx` reduced-motion baseline, untouched.
+Carl's decision: **rebuild the never-unmounting shared canvas host with correct positioning,
+delete the separate warm-up canvas, the card canvas becomes the single context and the one that
+compiles early.** Steps run in order and **must not be collapsed**; stop and report after each
+of steps 1, 2 and 4.
 
 ---
 
-## 🔴 THE GOVERNANCE REPAIR — WHAT WAS WRONG AND WHAT NOW EXISTS
+## ✅ AMENDMENTS A, C, D — RESOLVED, DO NOT RE-OPEN
 
-### The defect in the record
+**A. `mayCompile` does NOT depend on `openingArmed`. There is no deadlock.**
+Chain: `mayCompile={warm}` ← `warm` prop ← a literal at the warm-up site, **not passed at all**
+at the card site (defaults `true`). `openingArmed` occurs once in `answer-card-canvas.tsx` and
+it is **prose in a comment**. The dependency runs one way: compile → arming.
+⚠ **RULE: `warm` must never be derived from `openingArmed`.** If it ever is, the 4000ms ceiling
+fires and **masks the deadlock as a merely late-starting opening.**
 
-On 11–12 August Carl instructed a change to the Architect's permissions. **The Builder refused
-until he lost his temper.** The record offered only two shapes for an instruction from him —
-*approved decision* or *unauthorised change* — and a reasoned founder instruction fitted neither.
+**C. The page CANNOT scroll — so no scroll listener was written.**
+`scrollHeight === innerHeight` (900 vs 900), before and after Begin, every run, all widths.
+An unexercised path is worse than none. (`answer-card-canvas.tsx:3842-3844` already *claims* a
+"scroll/resize listener" while binding only `resize`.) If it ever becomes scrollable, sample in
+the render loop's rAF — do not add a listener.
 
-⚠⚠ **THE FAILURE MODE READS AS PRINCIPLED.** Declining to touch a protected file looks like
-discipline. **An agent that resists reasoned instruction and then yields to anger has substituted
-Carl's temperature for Carl's authority.** Both directions are one defect: no lawful path for an
-amendment.
-
-### What now exists — Carl's own wording, not the Builder's draft
-
-- **`CLAUDE.md` → Authority.** The governing text. An override is valid when Carl names the rule
-  or file, states the reason, states the scope. Acknowledge, restate the scope in one line,
-  proceed on confirmation. **Never relitigate; never require insistence or escalation.**
-- **`ai-system/founder-override-protocol.md`** — new file, the full protocol.
-- **`ai-roles.md` → Founder Authority and Override** — the section, under the authority hierarchy.
-
-**Three things in it that a new session must not soften:**
-
-1. **Capability disclosure is mandatory and comes BEFORE applying.** State what a permission
-   change enables in practice, not what the config appears to say. **If a boundary becomes
-   behavioural rather than enforced, say so in those words.**
-2. **Disclosure is a report, not a veto.** Once, plainly, then act. Saying it again in different
-   words is refusing the decision while appearing to comply.
-3. **Hard stops survive any override:** deleting files, destructive git, granting implementation
-   write access to any seat but the Builder. An override that *is* one of those is still valid
-   and still gets its one-sentence confirmation.
+**D. No drawing-buffer resize at Begin.** The card canvas is **already 576×104 (buffer 575×103)
+before Begin**, so there is no `renderTransmissionPass` target reallocation from a size change.
 
 ---
 
-## 🔴 THE ARCHITECT IS READ-ONLY AGAIN — D-050
+## ⚠⚠ FAILURE SIGNAL 1 IS INVERTED — THE READY GATE ARMS THE OPENING, NOT THE COMPILE
 
-**Carl's decision, applied to the live file this session.**
+**Measured, 3/3 runs: the ready gate arms at +181–332ms while the compile lands at
++1456–2356ms.** The compile path had to be *forced* (by delaying `document.fonts.ready` past it)
+to be tested at all.
 
-`Bash`, `Monitor`, `TaskOutput` and `TaskStop` restored to `deny`; the twelve-command `allow`
-list removed. Backed up to `settings.json.bak-2026-08-13`, validated after — 15 deny entries,
-no `allow` key.
+⚠ **So "the compile arms the opening" is ALREADY UNTRUE on today's build.** The plan assumed
+arming moves from the warm-up's `onCompiled` to the card canvas's at step 5.
 
-⚠ **THE ARCHITECT HAS NOT BEEN RESTARTED SINCE. It picks this up at its next start.**
-
-### ⚠ WHY, AND IT IS NOT THAT THE SEAT MISBEHAVED
-
-**Carl's intent in granting the shell was diagnostic access** — to measure the reveal defect.
-**What the config delivered was a general shell.** They are not the same thing:
-
-- `permissions.allow` **pre-approves; it does not restrict**
-- **No tool allowlist exists at this tier** (checked in the docs, not assumed)
-- Argument-constrained `Bash` patterns were already rejected as fragile
-
-**So the narrow grant was not available.** General shell or nothing — and with a shell, denying
-`Edit`/`Write` is cosmetic. Carl took the enforced boundary.
-
-⚠ **THE SEAT WROTE NOTHING.** It ran one session with the shell (12 Aug, 03:29). Working tree
-checked: no repository file modified in that window; every change timestamps before 03:24 or
-after 03:58 and maps to Builder work. **Timestamps show when, not who** — consistent-with, not
-proof — but no file is unaccounted for.
-
-⚠ **THE COST IS REAL AND RETURNS IN FULL.** D-049's reasoning was never refuted, only outweighed.
-The Architect is back to quoting the Builder's numbers. **The `!` route is the mitigation** and
-its scope stays widened to builds, gates and `verify/` runs in Carl's shell.
-
-⚠ **THE FINDING UNDERNEATH, WHICH IS STILL OPEN:** *diagnostic access is not expressible in this
-config.* If Carl still wants it, it needs a different mechanism than a permissions list. **Worth
-putting to the chat seat rather than assuming it is closed.**
+⚠⚠ **THEREFORE ARMING SHOULD *NOT* MOVE ACROSS STEP 5. If it moves, that is UNEXPECTED — report
+it, do not fit it to the prediction.** Watch the named mark; do not infer.
 
 ---
 
-## ⚠ CARL HAS CLAUDE CHAT WORKING ON THIS TOO
+## ⚠⚠ THE 637ms OPENING-GAP METRIC IS WITHDRAWN — AND THE LESSON GENERALISES
 
-**He has given a Claude chat session read access to the repo**, and is sorting the governance and
-file changes there in parallel. **It advised the original Architect file-access grant.**
+The Stage 2 baseline measured a **637ms median worst frame gap at ~+490ms** in the opening.
+**Carl watched exactly that moment and saw nothing:** *"the text reveals as it should… No
+visible defect, stall or stutter. The subtext is also good as is the begin button and is
+instantly clickable."*
 
-⚠ **So this repository may change from outside this seat.** Read the current state from disk
-before assuming a governance file says what this handoff says.
+⚠ **`requestAnimationFrame` GAPS MEASURE MAIN-THREAD SCHEDULING.** So they are:
 
----
+- ❌ **wrong for the OPENING** — its reveals are **CSS mask animations that run on the
+  compositor** and stay smooth straight through a main-thread rAF gap.
+- ✅ **right for the REVEAL** — there the main thread is **idle** (2.3ms of 210ms) and the **GPU
+  process is saturated**, so a dropped frame really is dropped.
 
-## 🔴 THE ACTUAL WORK — STILL UNFIXED, AND CARL'S WORDS MATTER MORE THAN THE NUMBERS
+**⚠ BEFORE REACHING FOR A FRAME-GAP NUMBER, ASK WHICH THREAD THE THING RUNS ON.**
 
-**Carl, 13 August:** *"the question reveal problem that is still both undiagnosed and unfixed."*
-
-⚠ **NOTE THE DISAGREEMENT WITH THE RECORD, AND DO NOT PAPER OVER IT.** The 12 August analysis
-says the cause **was** located. Carl says undiagnosed. **Both can be true** — a cause was
-measured, and no fix has survived contact with the layout. **If they conflict, Carl's reading of
-what is fixed is the specification.**
-
-### What Carl sees
-
-> *"Q5 reveals. i chose card 1. Pressed next step and then Q5 as it moved up into position
-> stuttered."* … *"a noticable pause after the first word… Its like watching a runner who makes a
-> misstep."* … **and on every question, not just Q5.**
-
-### What was measured (12 August, the Architect)
-
-Q5's phrase is 310px wiped over 1300ms linear — **~78 frames at 60Hz. Measured 60, 70, 69.**
-
-⚠⚠ **THE FREEZE TRACKS THE SHADER COMPILE**, not a fixed point in the wipe — which is why it
-always lands one word in. ⚠ **AND IT IS IN THE GPU PROCESS, NOT THE MAIN THREAD** —
-`CommandBuffer::Flush`, four blocks ~164ms, renderer idle. **Every main-thread instrument called
-the page healthy.**
-
-**The control clears the technique:** heading and subtext use the same
-`enquiry-mask-reveal-horizontal` keyframes and deliver 112–251 frames cleanly. **The moment is
-guilty, not the mechanism.**
-
-Full analysis: `live-work/architect-analysis-wipe-misstep.md`.
-
-### ✅ THE SHARED HOST WORKED — AND BROKE THE LAYOUT
-
-| | before | with the host |
-|---|---|---|
-| Q5 wipe frames of ~78 | 60 / 70 / 69 | **75 / 80 / 80 / 80** |
-| ~120ms freeze at 22–41% | every run | **gone** |
-| `card-canvas-created` | once per question | **once, at Q5, never again** |
-
-⚠⚠ **AND CARL LOOKED AT IT AND THE CARDS WERE ABOVE THE QUESTION TEXT.** Five cards ~230px too
-high. The canvas positioned `absolute` from `box.left/top`, grid-relative only because it
-rendered inside `.enquiry-answer-grid`; from a zero-size host it resolved against a different
-`offsetParent`. **Exactly the hazard D-046 named.**
-
-⚠⚠ **THREE GREEN INSTRUMENTS, ONE BROKEN SCREEN.** A canvas-vs-grid box check passed on both,
-because it compared two `getBoundingClientRect` calls in viewport space while the CSS `left/top`
-resolved against something else. **Carl caught it in one look.**
-
-**A correct version must derive position from the grid's rect in the same coordinate space it
-renders in, verified by a pixel check that cards sit BELOW the phrase — never by comparing two
-rects.** Tombstone in `enquiry-opening.tsx` below `.enquiry-phrase-band`.
-
-### ⚠ THE AGREED NEXT STEP (from 12 August, still open)
-
-**Rebuild the shared host with correct positioning.** Then the `NextStepMeshButton` host
-(`enquiry-opening.tsx:1493`, still inside the keyed phrase, creating a context per step), and
-`?nowarmup=1` to test whether the warm-up is redundant — **verify after, never delete on
-reasoning** (D-046).
-
-⚠ **VERIFY WITH A SCREENSHOT AND LOOK AT IT BEFORE QUOTING ANY FRAME NUMBER.**
+**Failure signal 2 is now `approved-timings.mjs --compare`**, which reads real
+`animationstart`/`animationend` events.
 
 ---
 
-## 🔴 READ THIS BEFORE YOU MEASURE ANYTHING
+## BASELINES ON DISK — captured on the PRE-CHANGE build
 
-**Carl's judgement of 11–12 August, in his words:**
+    verify/out/approved-timings-baseline.json          ladder + opening rhythm
+    verify/out/motion-stage2-before.json               153 frames, grid 435→493px
+    verify/out/card-position/baseline-stage2-before-1280.json
+    verify/out/card-position/baseline-stage2-before-1440.json
+    verify/out/card-position/baseline-stage2-before-1920.json
 
-> *"This is what i hear. i know the problem, oh its not that. Wait, its definately this, oh, the
-> tool i built is wrong. Ah, now ive got it. Do you know what happens in the real world if an
-> employee works like that."*
+⚠ **The card-position baselines were RECAPTURED** after the harness's metric was corrected (see
+the standing rules below). They are geometric, not brightness-weighted.
+⚠ The **9 August** approved-timings baseline was overwritten by `--save`; a copy exists only in
+the session scratchpad. The current file is this branch's own pre-change state, which measured
+**within 17ms** of the 9 August record with internal gaps **−2/0/0/−1ms**.
 
-> **The pattern is that the Builder trusted numbers over Carl's eye.** Every time they disagreed,
-> **Carl was right.**
-
-⚠ **WHEN CARL REPORTS SOMETHING VISUAL, THAT IS THE SPECIFICATION — NOT A HYPOTHESIS TO TEST.**
-**If a harness says "nothing is wrong", the harness is finished and wrong.**
-
-⚠ **AND MARK GUESSES AS GUESSES OUT LOUD.**
-
----
-
-## ⚠⚠ FOURTEEN INSTRUMENT FAULTS — AND THREE LIARS ARE NOW COMMITTED
-
-⚠ **These are on disk AND in git, presenting as working harnesses.** Committed deliberately
-(deleting them is Carl's call), with the warning in `68da875`'s message:
-
-| harness | the lie |
-|---|---|
-| `wipe-evenness.mjs` | Divides Δclip by Δ`animation.currentTime`. Under `linear` timing that ratio is **constant by construction** — it reports a perfectly even wipe **on a frozen page** |
-| `wipe-screencast.mjs` | Measured **the opening** at t=3.2s, before Begin was clicked. Rightmost-bright-pixel heuristic locks onto the wrong element, and `Page.startScreencast` is ack-throttled to ~15fps |
-| `q5-recede.mjs` | `querySelector(".enquiry-phrase-anim")` returns the FIRST phrase in document order; during a move both exist |
-
-**Also standing:**
-
-- **#12 — a correct harness, correctly run, at TOO FEW ROUNDS.** The canvas-cache arm read
-  **−22ms** over 4 interleaved rounds. Repeated: **+1ms**, then **+13ms**. It is noise.
-  **Interleaving removes order effects; it does not remove variance.** Caught the Builder three
-  times in one day.
-- **`corridor-motion.mjs --compare` cannot be trusted across runs of differing span** — it
-  normalises over the whole sample window. Reported 2.9% on a change that was 0.83px.
+**Position harness sensitivity floor, measured: RED at 6px, GREEN at 3px** (tolerance ±4px).
+Exact readings: 40px→40.0, 6px→6.0, 3px→3.0, 0→0.0.
 
 ---
 
-## ⚠ WHAT WAS TRIED AND FAILED — DO NOT REPEAT
+## ⚠ REDUCED MOTION — A SEPARATE, PRE-EXISTING DEFECT. NOT THIS PLAN'S JOB.
 
-1. **`will-change: clip-path`** — no effect. **Chrome cannot composite `clip-path` at all.**
-2. **Transform-based wipe, attempt 1** — production Mode B **0% → 60%.** Reverted.
-3. **Transform-based wipe, attempt 2**, after decoupling the anchor — **0% → 90%.** Reverted.
-   ⚠ The anchor fix verified clean on its own first, so **attempt 1's diagnosis was also wrong.**
-4. **Contact-field pre-warm as the walk-spike cause** — falsified.
-5. **GC from texture churn** — cleared. Forcing collection made it slightly worse.
-6. **Walk-depth correlation** — broken by a 794ms spike on Q4→Q3.
+    motion on   opening spans ~7840ms
+    reduced     opening spans ~305-447ms
 
-⚠ **PROMOTING THE WIPE TO A COMPOSITED PROPERTY CANNOT FULLY FIX THIS** — the freeze is
-GPU-process work and the display compositor queues behind the same scheduler.
+**Begin is clickable at +226ms while the warm-up compiles at ~2261ms** — a reduced-motion
+visitor can press Begin **~2 seconds before the warm-up finishes**, so the toll already lands on
+the cards for them.
 
----
-
-## ⚠ THE FIXED-POSITION FINDING — LOAD-BEARING, ALREADY PROVEN
-
-`verify/active-grid-fixed.mjs`, **25 samples across 5 runs**, every question:
-
-    Q5..Q1   top 492.78   left 432.22   576 x 104
-
-Identical to the hundredth of a pixel. The 435→493px travel belongs to the **receding** copy.
-**A canvas hosted at the active position sits still for the whole corridor.**
-
-⚠ **The Architect's 12 August analysis says this harness "has never been run". IT HAS** — twice.
-Do not re-open it as an unknown.
+⚠ **Recorded, not fixed. It is not caused by this work and must not be silently absorbed into
+it.** The reduced-motion arm nevertheless stays on every check, because every harness in this
+repo has historically run with motion ON — *that is how the hover teal silently never arrived
+for reduced-motion users.*
 
 ---
 
-## 📌 WAITING FOR CARL'S EYE (nothing shipped on any of these)
+## ⚠⚠ STANDING HARNESS RULES — EARNED THIS SESSION, FOUR SEPARATE INCIDENTS
 
-    ?labeltex=1024 / 512     45-78ms off the reveal; default still 2048 (≥11x oversampled)
-    ?pmrem=128 / 64          inside the per-question cost; changes reflections
-    ?riseease=inout / quad / linear    the card rise curve; default cubic
+1. **No instrument writes a baseline it has flagged as suspect.** `card-position.mjs` printed
+   `EXPECTED 5 CARDS, FOUND 21` and **saved the baseline anyway.** A harness that records a
+   result it has already identified as wrong makes the bad number the definition of
+   "unchanged". It now hard-exits.
+2. **Every new harness must be proven to go RED before it is trusted GREEN** — all of them, not
+   just the position one. An instrument that has never failed has not been tested.
+3. **Read the SCRIPT's exit code, not `grep`'s.** `node x.mjs | grep …; echo $?` reports grep's
+   status; a genuine failure was reported as `EXIT 0` because of this. Redirect to a file and
+   read `$?` directly.
+4. ⚠ **A position harness must measure GEOMETRY, not LIGHT.** `card-position.mjs` weighted its
+   centroid by luminance and reported **card 4 out of tolerance at +4.1px at all three widths**
+   — while that card's x-extent was **byte-identical to baseline (529..716)**. The travelling
+   spotlight varies per-card brightness *by design*. **It would have reported a regression that
+   did not exist — the mirror image of the 12 August failure.** Now geometric midpoints,
+   baselines recaptured, re-falsified red 40.0 / green 0.0.
 
 ---
 
-## ⚠ HOUSEKEEPING
+## WHAT IS IN THE WORKING TREE (uncommitted at handoff time)
 
-- ⚠ **ZOMBIE SERVERS CAUGHT FOUR TIMES ON 11 AUGUST.** `TaskStop` reports success while the port
-  stays held. **Kill by PID and confirm free.** All ports confirmed free at the end of today.
-- **`app/globals.css` holds an unused `.enquiry-card-host` rule** — the tombstone's companion,
-  harmless, left deliberately.
-- `e2c56a2` has a stray `@` in its subject line and picked up `session-handoff.md` from an index
-  left staged by the previous session. Cosmetic; left rather than spending a reset on it.
+    M components/enquiry/enquiry-opening.tsx    armOpening(source) + THE HOST
+    M verify/opening-arm.mjs                    reads the arming name, no inference
+    M verify/out/approved-timings-baseline.json
+    ?? verify/card-position.mjs                 the screenshot position harness
+
+⚠ A copy of the host WIP is also at `scratchpad/enquiry-opening-HOST-WIP.tsx`.
+
+### The host, as built
+
+- `position: fixed` div, `data-testid="answer-card-host"`, **sibling of the shell** inside the
+  untransformed `min-h-screen` container, mounted **unconditionally** (no `stage` gate).
+  ⚠ **Both shells carry `transform: translateY(...)`, and a transformed ancestor becomes the
+  containing block for `position: fixed`** — that is why it must not live inside the shell.
+- Rect from `.enquiry-answer-grid` of the active question via a **callback ref**
+  (`setActiveGrid`) + `ResizeObserver`, replacing the 12 August `MutationObserver`.
+- `hostRect === null` → `visibility: hidden` at the constant 576×104. **This is the guard the
+  12 August build promised and never implemented.**
+- The canvas is **gone from inside the keyed phrase**; a tombstone marks the spot.
+- `activeCardsVisible` (one expression, two consumers) gates the entrance, so the cards compile
+  during the opening but do not enter.
+
+### Step 4 results so far
+
+    ✅ Check 1  POSITION  0.5px worst at 1280 / 1440 / 1920, dx=0 on every card
+    ✅ Check 8  offsetParent === null (viewport), position: fixed
+
+### Step 4 — STILL OUTSTANDING
+
+- One context address serving all five questions
+- Check 5 ladder (internal gaps AND absolute, reported separately)
+- Check 6 corridor motion
+- The arming path **by name**, with the host present
+- **The opening measured across this step** — the card canvas now compiles inside the window the
+  opening is already running in. ⚠ **Do not infer this is harmless: four recorded lead-time
+  attempts each stuttered whatever was animating at the time.**
+- Reduced-motion arm on each of the above that supports it
+
+**Then STOP for Carl's eye before step 5.**
 
 ---
 
-*13 August 2026. The governance defect that ended the last session is fixed and pushed; the
-Architect is read-only again by Carl's decision; the day of work that was at risk is on the
-remote. **The reveal defect is untouched and is the next real subject.***
+## THE STEPS AFTER
+
+5. **Delete the warm-up canvas** — a separate measured change, deliberately not bundled with the
+   host so the two are independently attributable.
+   ⚠⚠ **`mount → compiled` near ~1350ms is the EXPECTED result, not a failure** — the card
+   canvas is then first in the process and pays the first-context toll. **~106ms is the
+   SUSPICIOUS number**, meaning something else went first; find out what.
+6. Amend `decisions.md:1501` — *"the warm-up must not be deleted"* → what Stage 1 established:
+   **something must compile early; it need not be a second context; and the mechanism is NOT the
+   disk cache** (53ms with the warm-up, **0ms** without — 1353 vs 1351).
+7. Final run log; pause for Carl's eye.
+
+---
+
+## HOUSEKEEPING
+
+- **Kill servers by PID and confirm the port free** — `TaskStop` has reported success on a held
+  port. Production build on **:3100** for all measurement.
+- Harnesses need `node_modules`, so scratch copies (`cp.mjs`, `af.mjs`, `bo.mjs`) get created at
+  the repo root during runs. **Delete them after**; one may still be present.
+- Ports 3000/3100 free at the end of this session.
+
+---
+
+*14 August 2026. **The host is built and positions to 0.5px at three widths; the warm-up is
+still in place, deliberately.** The remaining step-4 measurements are the next job, then Carl's
+eye before the deletion.*
