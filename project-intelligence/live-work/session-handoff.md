@@ -90,6 +90,40 @@ dependency: the coupling is already proven by the CSS arithmetic.**
 
 ---
 
+## ✅ THE RAIL SYSTEM LOOKS CORRECT — CARL'S EYE, 14 August 2026
+
+**Carl: *"the rail system by eye looks as it should"*** — and specifically: *"in the rail system
+theres timings when things should move. Easing in/out. Opacity to get the perspective look. It
+looks ok."*
+
+⚠⚠ **THIS MAKES THE COUPLING SELECTIVE, AND THAT IS THE KEY INSIGHT FOR THE FIX.**
+
+**The SAME `.enquiry-phrase` element carries both:**
+
+    the Q+A rung        <- RECEDES. Approved. Timings, easing in/out, opacity for perspective. CORRECT.
+    .enquiry-phrase-extras  <- the cards and the button. Pinned beneath it. SHOULD NOT MOVE.
+
+**The recession is not the defect. Its SCOPE is.** The rung is meant to travel; the passengers
+pinned under it are not. **So the fix must reach into `.enquiry-phrase-extras` WITHOUT touching
+the element that animates `bottom`** — the rung's motion, easing and opacity ramp must come
+through untouched.
+
+⚠ **AND THAT IS EXACTLY WHERE AN INHERITED BEHAVIOUR WOULD BITE A THIRD TIME.** Decoupling the
+extras from a wrapper the rungs also depend on is the same shape as the two faults already found
+this week. **Treat the rail as a thing the fix can break, not as a thing already proven safe.**
+
+**Carl's instruction: *"When we get to the bottom of the fix for the q+a section we will take a
+look just to be sure."* — the rail gets a deliberate re-check AFTER the decoupling lands. It is
+not signed off; it is "looks right, verify later".**
+
+⚠ **NOTHING ABOUT THE RAIL HAS BEEN MEASURED OR FILMED.** Every probe this week sampled the ACTIVE
+question's grid and the button. **The depth-1..5 rungs were never sampled at all.** Carl's eye is
+the only evidence they are correct, and the cards were also "fine by eye" for weeks because a
+300ms fade masked a 900ms move. **Film the rail and the cards in the SAME frames**, so they are
+judged together rather than separately.
+
+---
+
 ## 4. WHAT BECOMES MOOT — Carl predicted most of it, and he is right
 
 `live-work/structural-decision-note-question-boundary.md` options **(a), (b) and (c) all exist to
@@ -208,6 +242,10 @@ future revert must take the tracking only.
 3. **Write the decoupling plan in PLAN MODE. NO CODE.** Carl routes it to the Architect.
 4. Add the scope declaration to `corridor-motion.mjs`.
 5. Falsify `corridor-filmstrip.mjs` before any filmed verification is trusted.
+6. ⚠ **AFTER the decoupling lands: re-check the rail with Carl** — timings, easing in/out, the
+   opacity ramp that gives the perspective. **His instruction, not an optional extra.** It reads
+   correct today; the fix reaches into the wrapper its rungs share, so it is the most likely thing
+   to be broken by the change. **Film the rail and the cards in the same frames.**
 
 *14 August 2026. ⚠⚠ **THE CARDS' MOVEMENT IS A DEFECT, NOT A FEATURE, AND HAS NEVER BEEN
 APPROVED. The coupling is CSS inheritance via `.enquiry-phrase-extras` and it is proven to the
