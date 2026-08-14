@@ -79,6 +79,7 @@ Four, and they are the ones worth knowing cold.
 | I am CS — what is my remit, and where does output go? | `strategist-role.md` |
 | How is a chunk defined and handed over? | `handoff-protocol.md` |
 | How does a checkpoint review work? | `checkpoint-review-protocol.md` |
+| Am I about to decide how the system is SHAPED, not just implement it? | `structural-decision-gate.md` |
 | What status does this work have? What may I write down? | `context-rules.md` |
 | What goes in `live-work/`, and what is the scope guard? | `live-work-protocol.md` |
 | What has already been decided, and why? | `../decisions.md` |

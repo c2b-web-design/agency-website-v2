@@ -103,6 +103,28 @@ If a task requires changing an approved foundation layer: stop, explain why, sta
 3. Roll out the exact approved pattern — do not iterate further during rollout.
 4. If an experiment fails, revise or remove only the experimental layer. Preserve approved layers.
 5. **Carl leads the design and the chunking**; the Architect records the chunk and drafts the prompt, which Carl approves before it reaches you. Work therefore arrives as a **chunk** — scope and constraints, not implementation detail. Write the plan in Plan Mode, pass it through the **plan-review gate** (`handoff-protocol.md` §2.5) — Architect reviews and amends, Carl approves — then execute that chunk only. At meaningful implementation milestones, pause for **checkpoint review**: save the request, git evidence and screenshots to `live-work/`, and let Carl route it to the Architect. Invocation is file-based; **Codex is retired and the `codex` MCP server does not exist — do not attempt to call it.** The reviewer reports findings only; findings go to Carl, who decides. **⚠ STOP YOUR SERVERS BEFORE A CHECKPOINT OPENS** — the Architect may now ask Carl to run builds and `verify/` scripts via the `!` prefix, and **two seats measuring at once produces numbers neither can trust**; kill by PID and confirm the port free, because `TaskStop` has reported success on a held port three times in one session. See `project-intelligence/ai-system/handoff-protocol.md` §2–2.5, `checkpoint-review-protocol.md` §3a, and `decisions.md` D-036.
+5a. ⚠ **STRUCTURAL DECISIONS STOP FOR REVIEW BEFORE THEY ARE BUILT.**
+
+   A chunk gives you scope and constraints. It does not authorise you to decide how the system is **shaped**. The test: *am I implementing this chunk, or am I deciding something a future reader will have to live with?* If a reader would ask **"why is there a second X?"** — that is structural.
+
+   **Structural, non-exhaustive:**
+   - A second instance of an expensive or unique resource — a context, a canvas, a renderer, a scheduler, an observer
+   - A change to what owns, keys, mounts or destroys a component — its **lifetime**
+   - A second source of truth for any measurement
+   - Moving a node between parents in the React tree
+   - State that now survives a boundary it previously died at
+   - A new mechanism where an existing one could have served
+
+   **On reaching one: STOP. Do not build it and report afterwards.** Write the decision, the alternatives you rejected and why, and what it couples to. It goes to Carl, who routes it to the Architect. **Carl's approval of a chunk is not approval of a structure you invented while implementing it.**
+
+   ⚠ **Worked case — the warm-up canvas.** A second WebGL canvas was introduced to pre-compile shaders. It warmed a context the cards never use: 17 programs linked twice, 833ms of GPU work delivering 0.0ms to the reveal, and a stall on every question. **It was never reviewed because it arrived inside a chunk about performance.** Diagnosis took four sessions; unwinding it took a week. The build cost an hour.
+
+5b. ⚠ **BEFORE CHANGING A STRUCTURE, ENUMERATE WHAT DEPENDS ON IT.**
+
+   List every behaviour the current structure provides — including what it provides **by accident of where it sits** — and state for each how it is preserved, or why it does not matter. **Silence is not an answer.** If you cannot enumerate them, say so; that is the finding.
+
+   ⚠ **Worked cases, both 14 August 2026.** Moving the canvas out of the grid changed paint order, and **all five cards became unclickable** — geometry byte-identical, every instrument green, no harness asserted a card could be clicked. The same move gave the canvas an unbounded lifetime, so `litCards` survived a question boundary it used to die at, and **the previous answer stayed highlighted.** Neither was predicted. Both were provided by DOM nesting nobody had written down.
+
 6. Save plans, run logs, checkpoint requests, screenshots, and drift-sensitive status updates to `project-intelligence/live-work/` per `project-intelligence/ai-system/live-work-protocol.md`; do not leave important process information only in the Claude Code chat panel.
 7. **End each session by writing `live-work/session-handoff.md`** for the next one — where things stand, the next agreed subject, open items with owners, and any correction or standing instruction given during the session. Force-add it (`git add -f`); the folder is gitignored as scratch. **Exactly one handoff exists at a time**: the incoming one is deleted as the replacement is written. See `live-work-protocol.md` §3a.
 
