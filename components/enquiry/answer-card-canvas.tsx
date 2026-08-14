@@ -3952,7 +3952,7 @@ export default function AnswerCardCanvas({
    * host-lifetime.md` §3, which records that as an open finding rather than
    * leaving it silent.
    */
-  const labelsKey = labels ? labels.join(" ") : "";
+  const labelsKey = labels ? labels.join(" ") : "";
   const prevLabelsKey = useRef(labelsKey);
   useEffect(() => {
     if (prevLabelsKey.current === labelsKey) return;
