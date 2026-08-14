@@ -117,7 +117,11 @@ If a task requires changing an approved foundation layer: stop, explain why, sta
 
    **On reaching one: STOP. Do not build it and report afterwards.** Write the decision, the alternatives you rejected and why, and what it couples to. It goes to Carl, who routes it to the Architect. **Carl's approval of a chunk is not approval of a structure you invented while implementing it.**
 
-   ⚠ **Worked case — the warm-up canvas.** A second WebGL canvas was introduced to pre-compile shaders. It warmed a context the cards never use: 17 programs linked twice, 833ms of GPU work delivering 0.0ms to the reveal, and a stall on every question. **It was never reviewed because it arrived inside a chunk about performance.** Diagnosis took four sessions; unwinding it took a week. The build cost an hour.
+   ⚠ **Worked case 1 — the warm-up canvas.** A second WebGL canvas was introduced to pre-compile shaders. It warmed a context the cards never use: 17 programs linked twice, 833ms of GPU work delivering 0.0ms to the reveal, and a stall on every question. **It was never reviewed because it arrived inside a chunk about performance.** Diagnosis took four sessions; unwinding it took a week. The build cost an hour.
+
+   ⚠⚠ **Worked case 2 — the Next step button. THE SAME MISTAKE, FOUND 14 August 2026.** `NextStepMeshButton` is a second WebGL surface, placed inside the keyed phrase `phrase-${qNum}`, so it is destroyed and rebuilt on every question step and **creates a fresh WebGL context each time** — 67ms of blocked main thread in `CommandBufferProxyImpl::Initialize`, inside a ~180ms gap, resolution-independent, on every one of the four steps. **Eight WebGL contexts across a five-question walk.**
+
+   **Two instances of one pattern, and that is the point of recording both.** Each was a second expensive GPU resource introduced without structural review; each was invisible for weeks; each was found only by chasing a symptom backwards. **Neither was a coding error — both worked exactly as written.** The warm-up took four sessions to diagnose. The button was measured by `verify/one-context.mjs`, which reported ✅ 2/2 throughout, because it watched the card canvas and the button was never in scope. ⚠ **The shared-host restructure was built, measured and shipped against that green verdict while the button paid the cost the restructure existed to remove.**
 
 5b. ⚠ **BEFORE CHANGING A STRUCTURE, ENUMERATE WHAT DEPENDS ON IT.**
 

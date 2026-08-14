@@ -395,7 +395,28 @@ for (const r of runs) {
   }
 }
 
-console.log(`\n  ${RUNS - bad}/${RUNS} runs held ONE context across all five questions.`);
+console.log(`\n  ${RUNS - bad}/${RUNS} runs: the CARD HOST held one context across all five questions.`);
+
+/**
+ * ⚠⚠ THE SCOPE CAVEAT IS PRINTED WITH THE VERDICT, NOT ONLY IN THE HEADER.
+ *
+ * This harness printed "✅ ONE CONTEXT — 2/2 runs" on a build creating a new
+ * WebGL context on EVERY question step. Every word was true of the card host
+ * and false of the page, and nothing in the output said which was meant.
+ *
+ * A caveat in a header is read once, by whoever opens the file. The verdict is
+ * read every run, by whoever is deciding something. **The limit has to appear
+ * next to the number it qualifies.**
+ */
+console.log(`
+  ⚠ WHAT THIS DOES NOT WATCH — read before citing the verdict above.
+    This counts contexts on ONE canvas: [data-testid="answer-card-host"].
+    It says NOTHING about any other canvas on the page — the warm-up, the
+    contact field, or NextStepMeshButton, which lives inside the keyed phrase
+    and creates a FRESH CONTEXT ON EVERY QUESTION STEP (67ms of blocked main
+    thread, traced 14 August 2026). A five-question walk created EIGHT contexts
+    while this harness reported 2/2.
+    ⛔ THIS IS NOT A PAGE-WIDE CONTEXT COUNT AND MUST NOT BE CITED AS ONE.`);
 
 if (FALSIFY) {
   console.log(`

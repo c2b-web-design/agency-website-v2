@@ -157,6 +157,41 @@ When a decision is superseded: mark the original DEPRECATED, create a new entry.
 
 **What this rule does not license:** amending an approved record does not amend the approval. Changing what a file *says* about approved work is a Builder's job; changing the approved work itself needs Carl.
 
+### ⚠⚠ AN INSTRUMENT THAT NAMES A GLOBAL PROPERTY WHILE CHECKING A LOCAL ONE LIES BY IMPLICATION
+
+**Worked case, 14 August 2026 — `verify/one-context.mjs`.** It is called *one-context*, it prints
+**"✅ ONE CONTEXT"** and **"2/2 runs held ONE context across all five questions"**, and every word
+of that is **true of the thing it checks**: the card host's canvas is created once, never lost,
+same element at Q1.
+
+⚠ **And the page was creating a NEW WebGL CONTEXT ON EVERY QUESTION STEP** — eight across a
+five-question walk — because `NextStepMeshButton` sits inside the keyed phrase and is rebuilt each
+time. **The harness never looked at any canvas but the host.** The shared-host restructure was
+built, measured and shipped against that green verdict while a second canvas paid the exact cost
+the restructure existed to remove.
+
+**The defect is not a wrong answer. It is a true answer to a narrower question than its name
+implies.** A reader — including its author — reads "one context" as a claim about the *page*.
+Nothing in the output said otherwise, so nothing prompted anyone to check.
+
+⚠ **THE RULE: every harness must declare what it does NOT watch, IN ITS OUTPUT — not only in its
+header.** A scope caveat in a comment is read once, by whoever opens the file; the verdict is read
+every run, by whoever is deciding something. **The place a limit has to appear is next to the
+number it qualifies.**
+
+    ⛔ VERDICT — 2/2 runs held ONE context across all five questions
+    ✅ VERDICT — 2/2 runs: the CARD HOST held one context across all five questions.
+                 ⚠ NOT WATCHED: every other canvas on the page (the warm-up, the
+                   contact field, NextStepMeshButton). This is not a page-wide count.
+
+**Applies to every instrument in `verify/`, not just this one.** Before trusting a green verdict,
+ask what the harness would have to be watching for that verdict to mean what its name says — and
+if the answer is "more than it watches", the output must say so.
+
+⚠ **This is the same family as the harness rules already recorded** — sharing a constant with the
+fix, keying on a property the design varies, never having gone red. **All four are ways an
+instrument can be working perfectly and still mislead.**
+
 ### ⚠⚠ NO GATE ASSERTS SOURCE-FILE SANITY — a control character passed all four
 
 **Worked case, 14 August 2026, commit `b17eac4`.** A literal **NUL byte (0x00)** was written into

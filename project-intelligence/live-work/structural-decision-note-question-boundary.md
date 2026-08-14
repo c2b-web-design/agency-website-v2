@@ -9,6 +9,47 @@ grid for the next.
 
 ---
 
+# ⛔⛔ READ THIS FIRST — THE ~240ms IS THE **NEXT STEP BUTTON**, AND IT IS NOT WHAT THIS NOTE'S OPTIONS ARE ABOUT
+
+**`NextStepMeshButton` creates a fresh WebGL context on every question step.** It lives inside the
+keyed phrase `phrase-${qNum}`, so each question destroys and rebuilds it. Traced Q4 → Q3, mid-walk,
+production, GPU categories on, from page load:
+
+    CommandBufferProxyImpl::Initialize   67.2ms   1x   [CrRendererMain]   ← main thread BLOCKED
+    gl::init::CreateGLContext at +7621, +12489, +15757, +23420ms         ← one per step
+    EIGHT WebGL contexts across a five-question walk
+
+**⚠ THE OPTIONS (a), (b) AND (c) BELOW ALL CONCERN THE CARD HOST AND THE CORRIDOR. NONE OF THEM
+TOUCHES THIS. Choosing between them will not move the ~240ms by one millisecond.**
+
+## ⚠⚠ AND FIXING THE BUTTON IS **NOT ESTABLISHED** TO REMOVE THE GAP
+
+**Stated plainly, because the temptation to read this as a solution is exactly how the last week
+went:**
+
+    the gap                          179.8ms
+    attributed to context creation    67.2ms   ← named, traced, resolution-independent
+    ────────────────────────────────────────
+    NOT ATTRIBUTED                   ~112ms   ← inside CommandBufferService:PutChanged (133.0ms self)
+
+⚠ **`PutChanged` IS OPAQUE AT THESE TRACE CATEGORIES.** The 13 August reveal trace recorded the
+same limit and it has not changed. **~110ms of this gap has a name that explains nothing**, and no
+capture in this project has yet opened it.
+
+**EXPECT IMPROVEMENT, NOT RESOLUTION.** Removing the per-step context creation should remove the
+67ms main-thread block; **it is not evidence that the remaining ~112ms goes with it.** Some of that
+residue may be work the new context causes, and some may be work that would happen regardless.
+**Nothing measured here separates the two.**
+
+⚠ **A build that fixes the button and still stalls ~110ms per step is the EXPECTED outcome on this
+evidence, not a failed fix.** If that is not said now, it will be read as a regression later.
+
+**The button's lifetime is a §5a structural decision — the same class as the warm-up canvas, and
+recorded in `CLAUDE.md` as its second worked case. It is REPORTED HERE, NOT PROPOSED. Carl
+decides.**
+
+---
+
 ## THE PROBLEM, STATED ONCE
 
 Measured on pre-host, nodes stamped and tracked (`isConnected` confirmed):
@@ -279,9 +320,17 @@ step button.** On this evidence:
   that survives the question step, exactly as the cards were given one. ⚠ **That is a structural
   decision under §5a and is NOT proposed here — it is named as the finding, for Carl.**
 
-⚠ **STATED AS A LIMIT: `PutChanged` remains opaque at these categories, as the 13 August trace
-recorded.** 133ms of it sits in this gap and is not attributed further. What is newly attributed
-is the 67ms main-thread block beside it, and the context creation that causes it.
+⚠⚠ **STATED AS A LIMIT, AND IT BOUNDS EVERYTHING ABOVE: `PutChanged` remains opaque at these
+categories**, as the 13 August trace recorded. **133.0ms of self time sits in this gap under a
+name that explains nothing.**
+
+    gap 179.8ms  =  67.2ms context creation (named)  +  ~112ms unattributed
+
+**So 37% of the gap is explained and ~63% is not.** What is newly attributed is the 67ms
+main-thread block and the context creation causing it. **Removing that is expected to improve the
+step, not to resolve it** — and no measurement here shows whether the residue is caused by the new
+context or merely coincident with it. **A build that fixes the button and still stalls ~110ms is
+the predicted result.**
 
 ---
 
