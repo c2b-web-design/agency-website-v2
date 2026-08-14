@@ -4004,6 +4004,27 @@ export default function AnswerCardCanvas({
       ref={setGridEl}
       aria-hidden="true"
       data-testid="answer-card-proto"
+      /**
+       * ⚠ TEST-ONLY STATE SIGNAL — `litCards` is React state driving a Three.js
+       * mesh, so it has no DOM representation and cannot be read by a harness.
+       *
+       * **Added 14 August 2026 on Carl's instruction:** *"For the highlight:
+       * assert STATE, not pixels… If none exists, add a test-only attribute. Do
+       * not build a brightness probe for a state question."*
+       *
+       * ⚠⚠ AND THE REASON IS A MEASURED FAILURE, NOT A PREFERENCE. A brightness
+       * probe was tried first and produced a CONTRADICTION: pressing a card
+       * LOWERED its mean luminance (75.35 → 72.35), because the travelling
+       * spotlight varies per-card brightness **by design**. That is the same
+       * trap that made `card-position.mjs` report a 4.1px regression which did
+       * not exist. **An instrument must not key on a property the design
+       * deliberately varies.**
+       *
+       * Renders as e.g. `data-lit-cards="10000"` — one digit per card, index 0
+       * first. Reading it costs nothing and it cannot disagree with the mesh,
+       * because it is serialised from the same array the mesh is given.
+       */
+      data-lit-cards={litCards.map((b) => (b ? "1" : "0")).join("")}
       style={{
         position: "absolute",
         // ⚠ NO PADDING NOW, AND THE PAD CONSTANT IS GONE WITH IT. It existed

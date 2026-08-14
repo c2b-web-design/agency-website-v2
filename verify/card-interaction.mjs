@@ -23,6 +23,21 @@
  *      reachable at Q5 but not at Q2 is still a broken page, and only walking
  *      finds that.
  *
+ *   3. ⚠⚠ THE COMPLETION STATE, PAST Q1 — added 14 August 2026, because its
+ *      ABSENCE hid a defect. This harness previously asserted reachability at
+ *      Q1 and exited, so everything after answering the last question was
+ *      outside every instrument in this repo. Carl found a fault there by eye.
+ *      **`stage === "complete"` is a condition the host's visibility gate reads
+ *      directly, and it was edited with no check that reaches it.**
+ *
+ *   4. ⚠ SELECTION STATE, FROM `data-lit-cards` — NOT FROM PIXELS. `litCards`
+ *      is React state driving a Three.js mesh, so it has no natural DOM
+ *      representation; `answer-card-canvas.tsx` carries a test-only attribute
+ *      for exactly this. **A brightness probe was tried first and produced a
+ *      contradiction — pressing a card LOWERED its mean luminance, because the
+ *      travelling spotlight varies per-card brightness by design.** An
+ *      instrument must not key on a property the design deliberately varies.
+ *
  * ⚠ REAL CLICKS, NOT `dispatchEvent`. `page.dispatchEvent("pointerdown")`
  * bypasses hit-testing entirely and would have passed on the dead build — it is
  * how the other harnesses walk the questions, and it is exactly why they never
@@ -140,6 +155,16 @@ const injectOverlay = async () => {
 };
 await injectOverlay();
 
+/**
+ * The lit-card state, read from the test-only attribute rather than pixels.
+ * Returns e.g. "10000", or null if the attribute is absent (an older build).
+ */
+const litState = () =>
+  page.evaluate(() => {
+    const n = document.querySelector("[data-lit-cards]");
+    return n ? n.getAttribute("data-lit-cards") : null;
+  });
+
 let walked = 0;
 let walkBroke = null;
 
@@ -150,6 +175,22 @@ for (let step = 0; step < 5; step++) {
   console.log(`\n── ${q} ──`);
   const rows = await reachability();
   report(`${q} reachability`, rows);
+
+  /**
+   * ⚠ A QUESTION MUST NOT ARRIVE WITH A CARD ALREADY LIT. The visitor has
+   * chosen nothing here yet. Pre-host this held for free because the canvas was
+   * destroyed and rebuilt per question, taking its state with it; a host that
+   * never unmounts must clear it deliberately.
+   */
+  const litOnArrival = await litState();
+  if (litOnArrival === null) {
+    console.log(`     ⚠ no [data-lit-cards] on this build — selection state NOT asserted`);
+  } else {
+    console.log(`  ${`${q} litCards on arrival`.padEnd(22)} ${litOnArrival}`);
+    if (litOnArrival.includes("1")) {
+      note(`${q} — arrived with a card ALREADY LIT (${litOnArrival}); nothing was chosen here`);
+    }
+  }
 
   if (step === 4) break;
 
@@ -180,6 +221,65 @@ const finalQ = await page.evaluate(() =>
   (document.querySelector(".enquiry-pdepth-0 .enquiry-phrase-cue")?.textContent || "?").trim(),
 );
 
+/**
+ * ⚠⚠ PAST Q1 — THE COMPLETION STATE. This is the leg whose ABSENCE hid a
+ * defect, so it runs even when the walk failed earlier; a harness that only
+ * checks completion on a perfect run cannot report completion faults.
+ */
+let completion = { reached: false, contact: null, cardsGone: null, lit: null };
+if (!walkBroke) {
+  console.log(`\n── COMPLETION (answering ${finalQ}) ──`);
+  try {
+    await page.getByTestId("answer-card-hover-0").click({ timeout: 8000 });
+    await page.waitForTimeout(700);
+    await page.getByRole("button", { name: /next step/i }).click({ timeout: 8000 });
+    await page.waitForTimeout(7000);
+
+    completion = await page.evaluate(() => {
+      const host = document.querySelector('[data-testid="answer-card-host"]');
+      const hostCs = host ? getComputedStyle(host) : null;
+      const hostRect = host ? host.getBoundingClientRect() : null;
+      const litNode = document.querySelector("[data-lit-cards]");
+      return {
+        reached: true,
+        // The contact field is what completion is FOR.
+        contact: !!document.querySelector(".enquiry-contact-layer"),
+        contactVisible: (() => {
+          const c = document.querySelector(".enquiry-contact-layer");
+          return c ? getComputedStyle(c).visibility : null;
+        })(),
+        // The cards must not still be sitting on the completion screen.
+        cardsPresent: !!document.querySelector('[data-testid^="answer-card-hover-"]'),
+        hostVisibility: hostCs ? hostCs.visibility : null,
+        hostTop: hostRect ? Math.round(hostRect.top) : null,
+        lit: litNode ? litNode.getAttribute("data-lit-cards") : null,
+        stillHasActiveQuestion: !!document.querySelector(".enquiry-pdepth-0 .enquiry-phrase-cue"),
+      };
+    });
+
+    console.log(`  contact layer present    ${completion.contact ? "yes" : "⛔ NO"}   visibility=${completion.contactVisible ?? "-"}`);
+    console.log(`  answer cards present     ${completion.cardsPresent ? "yes" : "no"}`);
+    console.log(`  host visibility          ${completion.hostVisibility ?? "-"}   top=${completion.hostTop ?? "-"}`);
+    console.log(`  litCards at completion   ${completion.lit ?? "(no attribute)"}`);
+
+    if (!completion.contact) note("completion — the contact layer never appeared");
+    // ⚠ The host is `visibility: hidden` at completion BY DESIGN
+    // (`hostCardsVisible` excludes "complete"). What must NOT happen is the
+    // cards remaining VISIBLE over the contact field.
+    if (completion.hostVisibility === "visible" && completion.cardsPresent) {
+      note(`completion — the answer cards are still VISIBLE over the contact field (host top=${completion.hostTop})`);
+    }
+    if (completion.lit && completion.lit.includes("1")) {
+      note(`completion — a card is still lit (${completion.lit}) after the enquiry ended`);
+    }
+  } catch (e) {
+    note(`completion — could not answer ${finalQ}: ${String(e).split("\n")[0].slice(0, 70)}`);
+  }
+} else {
+  console.log(`\n── COMPLETION — NOT REACHED (the walk broke at ${walkBroke}) ──`);
+  note(`completion was never exercised: the walk broke at ${walkBroke}`);
+}
+
 await browser.close();
 
 console.log(`\n${"═".repeat(62)}`);
@@ -187,6 +287,7 @@ console.log(`VERDICT${FALSIFY ? "   ⚠ FALSIFY MODE: ⛔ IS THE PASS" : ""}`);
 console.log(`${"═".repeat(62)}`);
 console.log(`  Walk: ${walked}/4 steps   final question: ${finalQ}`);
 if (walked < 4 && !walkBroke) console.log(`  ⚠ the walk ended early without a click failure — investigate.`);
+console.log(`  Completion reached: ${completion.reached ? "yes" : "NO"}`);
 console.log(`  Failures: ${failures.length}`);
 
 if (FALSIFY) {
@@ -201,9 +302,20 @@ if (FALSIFY) {
 }
 
 if (failures.length > 0) {
-  console.log(`\n  ⛔ THE CARDS CANNOT BE USED. A visitor cannot complete the enquiry.`);
-  console.log(`     ⚠ Position and containing-block checks do NOT cover this — the`);
-  console.log(`       ${"1e031cd"} build passed both while every card was dead.`);
+  // ⚠ SAY WHICH KIND OF FAILURE IT IS. The first version printed "THE CARDS
+  // CANNOT BE USED" for any failure at all, which became untrue the moment this
+  // harness grew assertions about selection STATE — the cards were fully
+  // clickable and the message said otherwise.
+  const unreachable = failures.some((f) => /COVERED|MISSING|NO-RECT|HIDDEN|CLICK/.test(f));
+  if (unreachable) {
+    console.log(`\n  ⛔ THE CARDS CANNOT BE USED. A visitor cannot complete the enquiry.`);
+    console.log(`     ⚠ Position and containing-block checks do NOT cover this — the`);
+    console.log(`       1e031cd build passed both while every card was dead.`);
+  } else {
+    console.log(`\n  ⛔ The cards are reachable, but the enquiry misbehaves — see the failures`);
+    console.log(`     above. Selection state and the completion screen are asserted here;`);
+    console.log(`     neither is covered by any position, motion or timing harness.`);
+  }
   process.exit(1);
 }
 

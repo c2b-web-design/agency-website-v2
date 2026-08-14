@@ -239,7 +239,9 @@ for (let run = 1; run <= RUNS; run++) {
             const fresh = document.createElement("canvas");
             fresh.width = 575;
             fresh.height = 103;
-            fresh.getContext("webgl2") || fresh.getContext("webgl");
+            // Acquire a real context so the count genuinely grows.
+            const ctx = fresh.getContext("webgl2") || fresh.getContext("webgl");
+            if (!ctx) throw new Error("falsification could not acquire a context");
             host.appendChild(fresh);
             try { performance.mark("card-canvas-created"); } catch {}
           }
