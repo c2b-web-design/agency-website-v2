@@ -1,4 +1,4 @@
-# Session Handoff — 14 August 2026 (Stage 2: the shared host is built, positioning proven)
+# Session Handoff — 14 August 2026 (Step 4: the cards are UNCLICKABLE; z-index found by measurement)
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -6,36 +6,23 @@
 
 ---
 
-# ⛔⛔ STOP — DO NOT "START STEP 4". THE HOST IS ALREADY BUILT.
+# ⛔⛔ THE HOST BUILD SHIPS A DEAD PAGE. A VISITOR CANNOT ANSWER A QUESTION.
 
-**Branch `fix/q5-stall-and-label-colour`, head `1e031cd`, pushed. Working tree clean.**
+**Branch `fix/q5-stall-and-label-colour`, head `66fda24`. Working tree: 3 new harnesses,
+UNTRACKED. NO SOURCE FILE HAS BEEN EDITED.**
 
-⚠⚠ **STEP 4 IS PART-DONE, NOT PENDING.** The shared canvas host **exists, is committed, and
-positions correctly**. Rebuilding it would throw away proven work and re-run a positioning
-problem that is already solved.
+`1e031cd` renders all five cards in exactly the right place — **position 0.5px at three widths,
+containing block verified, both checks right to pass** — and **not one card can receive a pointer
+event.** The walk cannot start.
 
-    ✅ ALREADY DONE — do not repeat
-       The host is built                    enquiry-opening.tsx, committed in 1e031cd
-       Check 1  POSITION                    0.5px worst at 1280 / 1440 / 1920, dx=0 every card
-       Check 8  containing block            offsetParent === null (viewport), position: fixed
-       armOpening(source) + opening-arm.mjs reads the name  (step 3)
-       verify/card-position.mjs             written AND falsified (red 6px / green 3px)
-       All baselines captured on the pre-change build
+    ⛔ THE DEFECT      .enquiry-answer-grid paints ON TOP of the cards and eats every click
+    ✅ THE CAUSE       PAINT ORDER, not pointer-events. Measured, not reasoned.
+    ✅ THE FIX         z-index: 1 on the host. NOT YET APPLIED — Carl's call.
+    ⛔ THE BLOCKER     mid-corridor cannot be fixed by ANY z-index. See below.
 
-    ⏳ THE SIX OUTSTANDING STEP-4 CHECKS — this is the next job
-       1. One context address serving ALL FIVE questions
-       2. Check 5  the ladder — internal gaps AND absolute position, reported SEPARATELY
-       3. Check 6  corridor motion vs motion-stage2-before.json
-       4. The arming path BY NAME, with the host present
-       5. The OPENING measured across this step ⚠ four recorded lead-time attempts each
-          stuttered whatever was animating — do not infer this is harmless
-       6. The reduced-motion arm of each of the above that supports one
-
-**Then STOP for Carl's eye before step 5.** The warm-up canvas is **untouched and still
-mounts** — deleting it is step 5, deliberately separate so the host and the deletion are
-independently attributable.
-
-**Before doing anything, read `live-work/q5-stage2-progress-14-august.md`.**
+**Two live-work files carry the detail. Read both before touching anything:**
+- `live-work/q5-step4-pointer-events-defect.md` — the defect, attribution, 4 scenarios
+- `live-work/q5-step4-paint-order-conflict.md` — the approved order, the sweep, the conflict
 
 ---
 
@@ -47,184 +34,175 @@ say so.** It was not broken this session.
 
 ---
 
-## The plan being executed
+## WHAT CARL INSTRUCTED, AND WHERE EACH PART STANDS
 
-Carl's decision: **rebuild the never-unmounting shared canvas host with correct positioning,
-delete the separate warm-up canvas, the card canvas becomes the single context and the one that
-compiles early.** Steps run in order and **must not be collapsed**; stop and report after each
-of steps 1, 2 and 4.
+Carl, this session: *"Do not pick a z-index by eye. Reproduce the paint order the canvas already
+had."* Five numbered instructions:
 
-Steps 1–3 are complete. Step 4 is part-done — see the box above.
+| # | instruction | state |
+|---|---|---|
+| 1 | Record the approved paint order on `f0ff41e` | ✅ **DONE** — 336 samples on disk |
+| 2 | Find the z-index that reproduces it | ✅ **DONE** — `z-index: 1`, 288/336 points |
+| 3 | If ONE value works: apply + screenshot-diff | ⛔ **N/A — no single value works** |
+| 4 | If NO value works: **stop**, name the conflict | ✅ **THIS IS THE ROUTE TAKEN** |
+| 5 | Write `verify/card-interaction.mjs`, falsify first | ✅ **DONE, fully falsified** |
+| — | Falsify `one-context.mjs`, then use it | ✅ **DONE — check 1 PASSES 2/2** |
 
----
-
-## ✅ AMENDMENTS A, C, D — RESOLVED, DO NOT RE-OPEN
-
-**A. `mayCompile` does NOT depend on `openingArmed`. There is no deadlock.**
-Chain: `mayCompile={warm}` ← `warm` prop ← a literal at the warm-up site, **not passed at all**
-at the card site (defaults `true`). `openingArmed` occurs once in `answer-card-canvas.tsx` and
-it is **prose in a comment**. The dependency runs one way: compile → arming.
-⚠ **RULE: `warm` must never be derived from `openingArmed`.** If it ever is, the 4000ms ceiling
-fires and **masks the deadlock as a merely late-starting opening.**
-
-**C. The page CANNOT scroll — so no scroll listener was written.**
-`scrollHeight === innerHeight` (900 vs 900), before and after Begin, every run, all widths.
-An unexercised path is worse than none. (`answer-card-canvas.tsx:3842-3844` already *claims* a
-"scroll/resize listener" while binding only `resize`.) If it ever becomes scrollable, sample in
-the render loop's rAF — do not add a listener.
-
-**D. No drawing-buffer resize at Begin.** The card canvas is **already 576×104 (buffer 575×103)
-before Begin**, so there is no `renderTransmissionPass` target reallocation from a size change.
+⚠ **Route 4 was taken, so nothing was applied and nothing was screenshotted.** That is the
+instruction being followed, not work left undone.
 
 ---
 
-## ⚠⚠ FAILURE SIGNAL 1 IS INVERTED — THE READY GATE ARMS THE OPENING, NOT THE COMPILE
+## 1. THE APPROVED PAINT ORDER — captured, on disk
 
-**Measured, 3/3 runs: the ready gate arms at +181–332ms while the compile lands at
-+1456–2356ms.** The compile path had to be *forced* (by delaying `document.fonts.ready` past it)
-to be tested at all.
+`verify/out/paint-order/pre-host.json` — **21 moments x 16 probe points = 336 samples**, from
+`f0ff41e`, production `:3100`, 1440x900.
 
-⚠ **So "the compile arms the opening" is ALREADY UNTRUE on today's build.** The plan assumed
-arming moves from the warm-up's `onCompiled` to the card canvas's at step 5.
+    at-rest / card-selected / next-visible / post-corridor
+        CARD-HIT > .enquiry-answer-grid > .enquiry-phrase-extras
+    mid-corridor
+        CARD-HIT                          ← alone; the grid has moved away
 
-⚠⚠ **THEREFORE ARMING SHOULD *NOT* MOVE ACROSS STEP 5. If it moves, that is UNEXPECTED — report
-it, do not fit it to the prediction.** Watch the named mark; do not infer.
+⚠ **There is NO memory-rail element.** The "memory" is the receding phrase stack
+(`.enquiry-pdepth-1/2/3`) at y≈345-436 — **above the card band at y=493, never overlapping it.**
+My first sampler reported "memory elements: 0"; that was a wrong selector, confirmed against the
+DOM rather than assumed.
 
----
+## 2. THE SWEEP
 
-## ⚠⚠ THE 637ms OPENING-GAP METRIC IS WITHDRAWN — AND THE LESSON GENERALISES
+| host z-index | identical | changed | what still differs |
+|---|---:|---:|---|
+| none (control) | 84/336 | **252** | everything except mid-corridor |
+| **1** | 288/336 | **48** | **mid-corridor only** |
+| 2 | 288/336 | 48 | identical to z=1 |
+| 3 | 288/336 | 48 | identical to z=1 |
 
-The Stage 2 baseline measured a **637ms median worst frame gap at ~+490ms** in the opening.
-**Carl watched exactly that moment and saw nothing:** *"the text reveals as it should… No
-visible defect, stall or stutter. The subtext is also good as is the begin button and is
-instantly clickable."*
+**z = 1, 2, 3 are byte-identical. `1` is sufficient; there is no evidence for anything larger,
+and a larger number would be picking by eye.**
 
-⚠ **`requestAnimationFrame` GAPS MEASURE MAIN-THREAD SCHEDULING.** So they are:
+## ⛔ 3. THE CONFLICT — mid-corridor, and NO z-index can fix it
 
-- ❌ **wrong for the OPENING** — its reveals are **CSS mask animations that run on the
-  compositor** and stay smooth straight through a main-thread rAF gap.
-- ✅ **right for the REVEAL** — there the main thread is **idle** (2.3ms of 210ms) and the **GPU
-  process is saturated**, so a dropped frame really is dropped.
+All 48 remaining differences: `was: CARD-HIT` → `now: (empty)`. **Pre-host the cards were on
+screen during the move; the host build's cards are not.**
 
-**⚠ BEFORE REACHING FOR A FRAME-GAP NUMBER, ASK WHICH THREAD THE THING RUNS ON.**
+Measured through the move — **the context SURVIVES, this is a visibility question:**
 
-**Failure signal 2 is now `approved-timings.mjs --compare`**, which reads real
-`animationstart`/`animationend` events.
+| moment | host | canvas | hits | rect | visibility |
+|---|---|---|---|---|---|
+| at rest | mounted | 575x103 | 5 | 432,493 | **visible** |
+| +150→+900ms | mounted | 575x103 | 5 | **0,0** | **hidden** |
+| +1400ms | mounted | 575x103 | 5 | 432,493 | **visible** |
 
----
+**Two causes, both by design:** `activeCardsVisible = !corridorMoving && …`
+(`enquiry-opening.tsx:1688`), and `hostRect → null → visibility:hidden` because the active
+phrase is not rendered while `corridorMoving` so `setActiveGrid` detaches.
 
-## BASELINES ON DISK — captured on the PRE-CHANGE build
+⚠⚠ **`z-index` orders things that are PAINTED. Nothing is painted here.** The old nesting gave
+the cards a mid-move presence by being a CHILD of the receding phrase — inheriting its motion for
+free. A `fixed` host outside the shell has nothing to inherit from.
 
-    verify/out/approved-timings-baseline.json          ladder + opening rhythm
-    verify/out/motion-stage2-before.json               153 frames, grid 435→493px
-    verify/out/card-position/baseline-stage2-before-1280.json
-    verify/out/card-position/baseline-stage2-before-1440.json
-    verify/out/card-position/baseline-stage2-before-1920.json
+### THE DECISION CARL FACES
 
-⚠ **The card-position baselines were RECAPTURED** after the harness's metric was corrected (see
-the standing rules below). They are geometric, not brightness-weighted.
-⚠ The **9 August** approved-timings baseline was overwritten by `--save`; a copy exists only in
-the session scratchpad. The current file is this branch's own pre-change state, which measured
-**within 17ms** of the 9 August record with internal gaps **−2/0/0/−1ms**.
+- **A.** Accept it — cards vanish ~900ms x 4 per walk. ⚠ **A visible change to approved corridor
+  motion (D-046).** A regression unless Carl accepts it.
+- **B.** Give the host a mid-move rect from the OUTGOING grid (it exists, moves 493→480).
+  ⚠ **Re-opens the hand-driven easing D-046 warned about** — the thing the restructure exists to
+  avoid.
+- **C.** Something Carl sees that I do not.
 
-**Position harness sensitivity floor, measured: RED at 6px, GREEN at 3px** (tolerance ±4px).
-Exact readings: 40px→40.0, 6px→6.0, 3px→3.0, 0→0.0.
-
----
-
-## ⚠ REDUCED MOTION — A SEPARATE, PRE-EXISTING DEFECT. NOT THIS PLAN'S JOB.
-
-    motion on   opening spans ~7840ms
-    reduced     opening spans ~305-447ms
-
-**Begin is clickable at +226ms while the warm-up compiles at ~2261ms** — a reduced-motion
-visitor can press Begin **~2 seconds before the warm-up finishes**, so the toll already lands on
-the cards for them.
-
-⚠ **Recorded, not fixed. It is not caused by this work and must not be silently absorbed into
-it.** The reduced-motion arm nevertheless stays on every check, because every harness in this
-repo has historically run with motion ON — *that is how the hover teal silently never arrived
-for reduced-motion users.*
+**I am not choosing between these. That trade is Carl's.**
 
 ---
 
-## ⚠⚠ STANDING HARNESS RULES — EARNED THIS SESSION, FOUR SEPARATE INCIDENTS
+## THE THREE NEW HARNESSES — all falsified, all UNTRACKED
 
-1. **No instrument writes a baseline it has flagged as suspect.** `card-position.mjs` printed
-   `EXPECTED 5 CARDS, FOUND 21` and **saved the baseline anyway.** A harness that records a
-   result it has already identified as wrong makes the bad number the definition of
-   "unchanged". It now hard-exits.
-2. **Every new harness must be proven to go RED before it is trusted GREEN** — all of them, not
-   just the position one. An instrument that has never failed has not been tested.
-3. **Read the SCRIPT's exit code, not `grep`'s.** `node x.mjs | grep …; echo $?` reports grep's
-   status; a genuine failure was reported as `EXIT 0` because of this. Redirect to a file and
-   read `$?` directly.
-4. ⚠ **A position harness must measure GEOMETRY, not LIGHT.** `card-position.mjs` weighted its
-   centroid by luminance and reported **card 4 out of tolerance at +4.1px at all three widths**
-   — while that card's x-extent was **byte-identical to baseline (529..716)**. The travelling
-   spotlight varies per-card brightness *by design*. **It would have reported a regression that
-   did not exist — the mirror image of the 12 August failure.** Now geometric midpoints,
-   baselines recaptured, re-falsified red 40.0 / green 0.0.
+    verify/paint-order.mjs        records + diffs the full elementsFromPoint stack
+    verify/card-interaction.mjs   ⚠ THE ONE THAT WAS MISSING — clickability
+    verify/one-context.mjs        check 1: one context across five questions
+
+### ✅ CHECK 1 PASSES — 2/2 runs, one context across all five questions
+
+    creation marks 2 → 2 (no growth)   host context lost: 0   same element at Q1: yes
+
+⚠ **`verify/card-interaction.mjs` is the harness whose absence let a dead page pass everything.**
+It uses a **real `.click()`**, not `dispatchEvent` — every other walk harness in `verify/` uses
+`dispatchEvent`, **which bypasses hit-testing and is exactly why none of them caught this.**
+Falsified three ways: ⛔ on the real defect, ⛔ on an injected overlay, **✅ green with
+`z-index:1` (4/4 walk, all five cards, all five questions).**
 
 ---
 
-## WHAT IS COMMITTED — `1e031cd`, pushed. Working tree CLEAN.
+## ⚠⚠ FOUR INSTRUMENT FAULTS FOUND IN MY OWN HARNESSES THIS SESSION
 
-    components/enquiry/enquiry-opening.tsx    armOpening(source) + THE HOST
-    verify/opening-arm.mjs                    reads the arming name, no inference
-    verify/card-position.mjs                  the screenshot position harness (NEW)
-    verify/out/approved-timings-baseline.json
-    verify/out/motion-stage2-before.json
-    verify/out/card-position/baseline-stage2-before-{1280,1440,1920}.json
+**Every one was caught by reading the OUTPUT, never by the exit code.** This is the session's
+transferable lesson and it cost four separate corrections.
 
-⚠ **Nothing is uncommitted and nothing is at risk.** The work is on the remote.
+1. **`paint-order.mjs` anchored only to `.enquiry-answer-grid` — which does not exist
+   mid-corridor.** It sampled the outgoing copy at a different position, printed the page root,
+   and **exited 0 with meaningless samples.** Now samples a FIXED band as well.
+2. **`one-context.mjs` counted `card-canvas-created` — a mark the host build never emits.**
+   The host's canvas marks itself **`warmup-canvas-created`**, because the name is chosen by
+   `warm && !active` (`answer-card-canvas.tsx:4091`) and `active` is false during the opening.
+   It read **0 on a live context.**
+3. **`webglcontextlost` DOES NOT BUBBLE.** A window capture listener saw nothing through a real
+   `loseContext()`. The witness printed a reassuring `✅ never torn down` **and could not have
+   reported a teardown.** Now patched onto each canvas via `getContext`.
+4. ⚠⚠ **THE WORST: that listener then reported `lost=5` on a build whose host context was never
+   lost.** The events belonged to the **separate warm-up canvas**. I nearly wrote up "the context
+   is destroyed every corridor move" as a finding. **Checked independently with a plain listener
+   and no patch: `sameEl: true, isContextLost(): false`, one event, on a non-host canvas.**
+   **The witness was measuring a real thing and attributing it to the wrong object.**
 
-### The host, as built — READ THIS BEFORE TOUCHING IT
-
-- `position: fixed` div, `data-testid="answer-card-host"`, **sibling of the shell** inside the
-  untransformed `min-h-screen` container, mounted **unconditionally** (no `stage` gate).
-  ⚠ **Both shells carry `transform: translateY(...)`, and a transformed ancestor becomes the
-  containing block for `position: fixed`** — that is why it must not live inside the shell.
-- Rect from `.enquiry-answer-grid` of the active question via a **callback ref**
-  (`setActiveGrid`) + `ResizeObserver`, replacing the 12 August `MutationObserver`.
-- `hostRect === null` → `visibility: hidden` at the constant 576×104. **This is the guard the
-  12 August build promised and never implemented.**
-- The canvas is **gone from inside the keyed phrase**; a tombstone marks the spot.
-- `activeCardsVisible` (one expression, two consumers) gates the entrance, so the cards compile
-  during the opening but do not enter.
-
-### Step 4 — what is done and what is left
-
-**See the box at the top of this file.** Two checks pass (position at three widths,
-containing block); **six remain**. They are listed once, at the top, deliberately — a second
-copy here would be the thing that goes stale.
+⚠ **The harness's own "THE WITNESSES DISAGREE" rule is what caught #4.** Three witnesses that
+must agree, with disagreement printed rather than resolved in favour of the expectation.
 
 ---
 
-## THE STEPS AFTER
+## ⚠ TWO FACTS ABOUT THE BUILD, FOUND EN ROUTE
 
-5. **Delete the warm-up canvas** — a separate measured change, deliberately not bundled with the
-   host so the two are independently attributable.
-   ⚠⚠ **`mount → compiled` near ~1350ms is the EXPECTED result, not a failure** — the card
-   canvas is then first in the process and pays the first-context toll. **~106ms is the
-   SUSPICIOUS number**, meaning something else went first; find out what.
-6. Amend `decisions.md:1501` — *"the warm-up must not be deleted"* → what Stage 1 established:
-   **something must compile early; it need not be a second context; and the mechanism is NOT the
-   disk cache** (53ms with the warm-up, **0ms** without — 1353 vs 1351).
+1. **TWO card-sized canvases exist before Begin** — the host's AND the separate warm-up, both
+   575x103, both compiling. **This is the duplicate step 5 deletes.** Confirms the plan.
+2. **The host's canvas mislabels itself as the warm-up** in `performance.mark` (fault 2 above).
+   ⚠ **This will confuse step 5's before/after comparison**, which reads exactly these mark
+   names. Deleting the warm-up leaves the host still marking itself `warmup-canvas-created`.
+   **Decide how to handle that BEFORE running step 5's measurement.**
+
+---
+
+## THE SIX OUTSTANDING STEP-4 CHECKS
+
+    ✅ 1. One context serving ALL FIVE questions        PASSES 2/2 (verify/one-context.mjs)
+    ⏳ 2. Check 5 — the ladder, gaps AND absolute, reported SEPARATELY
+    ⏳ 3. Check 6 — corridor motion vs motion-stage2-before.json
+    ⏳ 4. The arming path BY NAME, with the host present
+    ⏳ 5. The OPENING measured across this step
+    ⏳ 6. The reduced-motion arm of each of the above
+
+⚠ **2-6 are ALL blocked behind Carl's mid-corridor decision** — they measure motion and timing
+through a walk that currently cannot be performed by a real user, and the fix will change what
+they measure. **Do not run them against the current build and record the numbers as a baseline.**
+
+---
+
+## STATE
+
+- **Working tree:** 3 untracked harnesses. **`enquiry-opening.tsx` is UNTOUCHED.**
+- Gates: `npx tsc --noEmit` **clean**. Lint not re-run — no source changed.
+- Baseline on disk: `verify/out/paint-order/pre-host.json`.
+- **Ports: production build of the HOST commit on `:3100`.** ⚠ The build directory currently
+  holds the host build; the pre-host baseline is already captured, so no rebuild is needed to
+  proceed.
+- Scratch copies at the repo root: **none left** (checked).
+
+---
+
+## THE STEPS AFTER (unchanged from the previous handoff)
+
+5. **Delete the warm-up canvas** — separate, measured. ⚠ `mount → compiled` near ~1350ms is
+   EXPECTED; **~106ms is the SUSPICIOUS number.** ⚠ See "two facts" above re: mark names.
+6. Amend `decisions.md:1501` — the warm-up need not be a second context; the mechanism is NOT
+   the disk cache (53ms with, **0ms** without).
 7. Final run log; pause for Carl's eye.
 
----
-
-## HOUSEKEEPING
-
-- **Kill servers by PID and confirm the port free** — `TaskStop` has reported success on a held
-  port. Production build on **:3100** for all measurement.
-- Harnesses need `node_modules`, so scratch copies (`cp.mjs`, `af.mjs`, `bo.mjs`) get created at
-  the repo root during runs. **Delete them after**; one may still be present.
-- Ports 3000/3100 free at the end of this session.
-
----
-
-*14 August 2026. ⚠ **THE HOST IS BUILT, COMMITTED AND POSITIONS TO 0.5px AT THREE WIDTHS. Do not
-rebuild it.** The warm-up is still in place, deliberately. **The six outstanding step-4 checks
-listed at the top of this file are the next job**, then Carl's eye before the deletion.*
+*14 August 2026. ⚠⚠ **THE PAGE IS DEAD AND THE FIX IS ONE PROPERTY, BUT MID-CORRIDOR NEEDS
+CARL'S DECISION FIRST — route 4 of his own instruction. Nothing has been applied.***

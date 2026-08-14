@@ -1,0 +1,1685 @@
+{
+  "Q5|at-rest": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q5|card-selected": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q5|next-visible": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q5|mid-corridor": {
+    "gridRect": {
+      "l": 432,
+      "t": 478,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": false,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT"
+      ],
+      "fix-card1": [
+        "CARD-HIT"
+      ],
+      "fix-card2": [
+        "CARD-HIT"
+      ],
+      "fix-card3": [
+        "CARD-HIT"
+      ],
+      "fix-card4": [
+        "CARD-HIT"
+      ],
+      "fix-tl": [
+        "CARD-HIT"
+      ],
+      "fix-br": [],
+      "fix-mid": [],
+      "grid-card0": [
+        "CARD-HIT"
+      ],
+      "grid-card1": [
+        "CARD-HIT"
+      ],
+      "grid-card2": [
+        "CARD-HIT"
+      ],
+      "grid-card3": [
+        "CARD-HIT"
+      ],
+      "grid-card4": [
+        "CARD-HIT"
+      ],
+      "grid-tl": [
+        "CARD-HIT"
+      ],
+      "grid-br": [],
+      "grid-mid": []
+    }
+  },
+  "Q5|post-corridor": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q4|at-rest": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q4|card-selected": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q4|next-visible": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q4|mid-corridor": {
+    "gridRect": {
+      "l": 432,
+      "t": 480,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": false,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT"
+      ],
+      "fix-card1": [
+        "CARD-HIT"
+      ],
+      "fix-card2": [
+        "CARD-HIT"
+      ],
+      "fix-card3": [
+        "CARD-HIT"
+      ],
+      "fix-card4": [
+        "CARD-HIT"
+      ],
+      "fix-tl": [
+        "CARD-HIT"
+      ],
+      "fix-br": [],
+      "fix-mid": [],
+      "grid-card0": [
+        "CARD-HIT"
+      ],
+      "grid-card1": [
+        "CARD-HIT"
+      ],
+      "grid-card2": [
+        "CARD-HIT"
+      ],
+      "grid-card3": [
+        "CARD-HIT"
+      ],
+      "grid-card4": [
+        "CARD-HIT"
+      ],
+      "grid-tl": [
+        "CARD-HIT"
+      ],
+      "grid-br": [],
+      "grid-mid": []
+    }
+  },
+  "Q4|post-corridor": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q3|at-rest": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q3|card-selected": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q3|next-visible": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q3|mid-corridor": {
+    "gridRect": {
+      "l": 432,
+      "t": 480,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": false,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT"
+      ],
+      "fix-card1": [
+        "CARD-HIT"
+      ],
+      "fix-card2": [
+        "CARD-HIT"
+      ],
+      "fix-card3": [
+        "CARD-HIT"
+      ],
+      "fix-card4": [
+        "CARD-HIT"
+      ],
+      "fix-tl": [
+        "CARD-HIT"
+      ],
+      "fix-br": [],
+      "fix-mid": [],
+      "grid-card0": [
+        "CARD-HIT"
+      ],
+      "grid-card1": [
+        "CARD-HIT"
+      ],
+      "grid-card2": [
+        "CARD-HIT"
+      ],
+      "grid-card3": [
+        "CARD-HIT"
+      ],
+      "grid-card4": [
+        "CARD-HIT"
+      ],
+      "grid-tl": [
+        "CARD-HIT"
+      ],
+      "grid-br": [],
+      "grid-mid": []
+    }
+  },
+  "Q3|post-corridor": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q2|at-rest": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q2|card-selected": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q2|next-visible": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q2|mid-corridor": {
+    "gridRect": {
+      "l": 432,
+      "t": 480,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": false,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT"
+      ],
+      "fix-card1": [
+        "CARD-HIT"
+      ],
+      "fix-card2": [
+        "CARD-HIT"
+      ],
+      "fix-card3": [
+        "CARD-HIT"
+      ],
+      "fix-card4": [
+        "CARD-HIT"
+      ],
+      "fix-tl": [
+        "CARD-HIT"
+      ],
+      "fix-br": [],
+      "fix-mid": [],
+      "grid-card0": [
+        "CARD-HIT"
+      ],
+      "grid-card1": [
+        "CARD-HIT"
+      ],
+      "grid-card2": [
+        "CARD-HIT"
+      ],
+      "grid-card3": [
+        "CARD-HIT"
+      ],
+      "grid-card4": [
+        "CARD-HIT"
+      ],
+      "grid-tl": [
+        "CARD-HIT"
+      ],
+      "grid-br": [],
+      "grid-mid": []
+    }
+  },
+  "Q2|post-corridor": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  },
+  "Q1|at-rest": {
+    "gridRect": {
+      "l": 432,
+      "t": 493,
+      "w": 576,
+      "h": 104
+    },
+    "gridIsActive": true,
+    "stacks": {
+      "fix-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "fix-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card0": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card1": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card2": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card3": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-card4": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-tl": [
+        "CARD-HIT",
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-br": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ],
+      "grid-mid": [
+        ".enquiry-answer-grid",
+        ".enquiry-phrase-extras"
+      ]
+    }
+  }
+}
