@@ -1,4 +1,28 @@
 /**
+ * ⚠⚠ SCOPE WARNING — THIS WATCHES THE CARD HOST ONLY, AND THAT IS NOT THE WHOLE
+ * PAGE. 14 August 2026.
+ *
+ * **This harness passed 2/2 on a build creating a NEW WebGL CONTEXT ON EVERY
+ * QUESTION STEP.** Both facts are true at once and the reason is scope: it
+ * asserts that `[data-testid="answer-card-host"] canvas` holds one context,
+ * which it does — created once at +414ms, never lost, same element at Q1.
+ *
+ * ⚠ **A GPU trace of one question step found 8 contexts across a five-question
+ * walk.** The per-step one belongs to `NextStepMeshButton` (`.mt-5`), which
+ * lives inside the keyed phrase and is destroyed and rebuilt every question,
+ * costing 67ms of BLOCKED main thread in `CommandBufferProxyImpl::Initialize`.
+ * **This script never looks at it.**
+ *
+ * ⚠⚠ **SO A GREEN VERDICT HERE MEANS "THE CARD HOST HOLDS ONE CONTEXT". IT DOES
+ * NOT MEAN "THE PAGE CREATES ONE CONTEXT".** Do not cite it for the second
+ * claim — the shared-host work was measured against exactly this harness and
+ * the per-step cost was untouched, because the restructure was aimed at one of
+ * two canvases and nothing counted the other.
+ *
+ * Full trace: `live-work/structural-decision-note-question-boundary.md`.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ *
  * ⚠ IS THERE ONE WebGL CONTEXT SERVING ALL FIVE QUESTIONS?
  *
  * Step 4, check 1. The shared host was built so the card canvas mounts ONCE, in

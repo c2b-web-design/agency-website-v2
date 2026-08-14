@@ -157,6 +157,42 @@ When a decision is superseded: mark the original DEPRECATED, create a new entry.
 
 **What this rule does not license:** amending an approved record does not amend the approval. Changing what a file *says* about approved work is a Builder's job; changing the approved work itself needs Carl.
 
+### ⚠⚠ NO GATE ASSERTS SOURCE-FILE SANITY — a control character passed all four
+
+**Worked case, 14 August 2026, commit `b17eac4`.** A literal **NUL byte (0x00)** was written into
+`answer-card-canvas.tsx` in place of a space — `labels.join("\0")` instead of `labels.join(" ")`.
+It was committed and pushed.
+
+⚠ **IT PASSED EVERYTHING:**
+
+    npx tsc --noEmit        clean
+    npm run lint            1 problem (1 error, 0 warnings) — the known baseline, unchanged
+    npm run build           compiled successfully
+    the behavioural walk    00000 across all five arrivals — the CORRECT result
+
+**And it passed because it worked.** NUL is a legal string separator, so the key computed
+correctly and the feature behaved exactly as intended. **No gate in this project asserts that a
+source file contains only sane characters**, and none of them noticed.
+
+⚠ **WHAT ACTUALLY CAUGHT IT: `grep` refused to search the file.** Git and ripgrep classify a file
+containing NUL as **binary**, so `Grep` returned *"binary file matches"* instead of results. The
+defect surfaced as a **tool failing to work**, not as any check failing.
+
+**The consequences, which are worse than the byte:**
+- **`git diff` degrades to "Binary files differ"** — the file becomes unreviewable in every diff
+  view, so a reviewer sees nothing at all rather than something wrong.
+- **Search tools skip it silently.** Any later `grep` for a symbol in that file returns nothing,
+  and "no matches" reads as "not present" — the exact inference that produces a wrong conclusion.
+
+**The rule:** ⚠ **if a search tool reports a source file as binary, stop and find out why.** Do not
+work around it by switching tools. That message is not noise about encodings; on a `.ts`/`.tsx`/
+`.mjs` file it means the file contains something that does not belong in source.
+
+⚠ **AND THE GENERAL LESSON, WHICH IS THE POINT OF RECORDING IT HERE: a green gate proves the thing
+it tests, and nothing else.** Four gates agreed the file was fine. None of them was asked whether
+the file was *well-formed*, because nobody had thought to ask. **The failure mode is not a gate
+being wrong — it is a gate being absent and its absence looking identical to a pass.**
+
 ### Formatting consistency
 Use the established schema for every entry type. Do not add new fields. Do not omit mandatory fields. Schema deviations require a governance update to the relevant file.
 

@@ -91,17 +91,17 @@ build**:
 THROUGHOUT.** `verify/one-context.mjs` passes 2/2: one context, never lost, same canvas element
 at Q1. **And the per-step cost is unchanged.**
 
-**This reframes the whole note.** The premise under (c) — *the expensive resource is the context,
-so preserving it preserves the warmth* — **is not supported by this measurement.** Something
-re-pays ~240ms per question with the context intact, and 5 program links + 10 shader compiles per
-step (sub-millisecond client-side, but that is exactly where Stage 1 says the client-side clock
-lies) are the visible candidates. **What is re-paying it has NOT been identified**, and I am not
-going to name a cause I have not measured.
+⚠⚠ **CORRECTED BY THE TRACE ABOVE — READ THAT SECTION, NOT THIS PARAGRAPH, FOR THE CAUSE.**
+The observation is correct: the cost IS still paid with the card host holding one context. **The
+inference I drew from it was wrong.** I wrote that "preserving the context does not preserve the
+warmth", which treats the card host's context as the only one that matters. **The trace shows the
+cost belongs to a DIFFERENT canvas — `NextStepMeshButton` — which is rebuilt per question and
+creates a fresh context each time, at 67ms of blocked main thread.**
 
-⚠ **CONSEQUENCE FOR THE DECISION: (c)'s benefit is currently unevidenced.** If a preserved
-context does not preserve the warmth today, then a re-rendering node over a preserved context has
-no measured saving to offer, and (c) reduces to "the bugs dissolve" — which is still a real
-argument, but a different and weaker one than the one it was proposed on.
+**Preserving a context DOES preserve its warmth. The card host proves it. The button never had
+that treatment.** Left in place with the correction attached, per the no-retroactive-rewriting
+rule: the reasoning is instructive precisely because a true measurement supported a false
+conclusion when only one canvas was in view.
 
 ## MEASUREMENT 2 — can the renderer be hoisted above the remount boundary in R3F?
 
@@ -153,6 +153,135 @@ page**, apart from the stall.
 
 **Feasible: yes. Cheap: no.** Route 3 — dropping `<Canvas>` for this surface — is the only one of
 the three that is honest, and it is a substantial rewrite of a ~4200-line component's host.
+
+---
+
+# ⛔⛔ THE ~240ms IS LOCATED. IT IS THE **NEXT STEP BUTTON**, NOT THE CARDS.
+
+**14 August 2026. CDP `Tracing`, GPU categories, from page load, production `:3100`.
+Traced step: Q4 → Q3 — MID-WALK, not the first step. Same method and vocabulary as
+`q5-gpu-trace-13-august.md`: self time, not nested totals.**
+
+⚠ **This section was written before the options below and should be read first. Every option in
+this note was previously being weighed against a cost nobody had located.**
+
+## 1. Main thread — ⛔ BLOCKED (and this is the opposite of the reveal)
+
+    gap 179.8ms at +23309ms      main thread busy 123.9ms of 179.8ms   => BLOCKED
+      70.4ms  single task at +23418ms
+      25.5ms  single task at +23339ms
+
+⚠⚠ **THE REVEAL'S GAP HAD THE MAIN THREAD IDLE AT 2.3ms OF 210ms.** This one is **blocked for
+69% of the gap.** They are not the same fault and must not be treated as one.
+
+**The task, by name and self time — `CommandBufferProxyImpl::Initialize`, 67.2ms, ×1, on
+`CrRendererMain`.** That is a **new GPU command buffer being created inside the question step.**
+
+## 2. GPU track — BUSY (325.7ms of work across a 179.8ms window, i.e. parallel threads)
+
+Both are busy. The renderer is not waiting on an idle GPU; it is blocked creating a context while
+the GPU works.
+
+## 3. Self-time leaves inside the gap — unfiltered, top events
+
+    178.8ms self   12x  ThreadControllerImpl::RunTask          [GpuVSyncThread]   (idle wait, not work)
+    133.0ms self   17x  CommandBufferService:PutChanged        [CrGpuMain]
+     73.6ms self   82x  ThreadPool_RunTask                     [ThreadPoolForeground]
+     67.2ms self    1x  CommandBufferProxyImpl::Initialize     [CrRendererMain]   ← THE BLOCKING TASK
+     26.2ms self    4x  RasterImplementation::RasterCHROMIUM   [CrRendererMain]
+     19.4ms self   43x  ThreadControllerImpl::RunTask          [CrRendererMain]
+     13.5ms self   37x  FunctionCall                           [CrRendererMain]
+     11.8ms self   11x  RasterDecoderImpl::DoEndRasterCHROMIUM::Flush [CrGpuMain]
+      7.2ms self    2x  D3DCompile                             [ThreadPoolForeground]
+      4.3ms self    1x  Program::MainLinkLoadEvent::wait       [CrGpuMain]
+
+`PutChanged` is present as in the reveal, but here it shares the window with a **67ms
+main-thread block that the reveal did not have.**
+
+## 4. Programs and shaders — NOT the cost, and the client-side count reconciled
+
+    28 shader/program events in the whole step,  15.66ms total,  4 inside the gap
+       13.39ms  12x  ShaderTranslateTaskD3D::run        (2 in gap)
+        0.56ms   5x  GLES2DecoderPassthroughImpl::DoLinkProgram   (0 in gap)
+        0.03ms   1x  GrShaderCache::load / store
+
+⚠ **RECONCILING MY OWN CLIENT-SIDE COUNT: I measured 5 `linkProgram` and 10 `compileShader` per
+step at ~0.3ms, and warned that the client clock is the wrong one. The GPU process confirms both
+halves — the driver really does see 5 `DoLinkProgram` per step, and they really are cheap
+(0.56ms total, none in the gap).** The client-side reading was right and the caution was still
+correct to state: the expensive thing was elsewhere and no call-return timing would have found it.
+
+**Texture uploads inside the gap: 0 events.** The label-texture path is confirmed irrelevant.
+
+## ⛔ 5. WHAT IS ACTUALLY HAPPENING — a new WebGL context on every question step
+
+`gl::init::CreateGLContext` in the traced session:
+
+    +76ms      +146ms      (page load — the host and the warm-up)
+    +7621ms    +12489ms    +15757ms    +23420ms   ← ONE PER QUESTION STEP
+
+Each preceded by `CommandBufferProxyImpl::Initialize` at **67.1ms and 67.2ms** for the two walk
+steps in the capture. **Six distinct WebGL context addresses in one session**, three of them
+created and abandoned during the walk.
+
+### ⚠⚠ WHICH CANVAS — AND IT IS NOT THE CARDS
+
+Context creations tagged by DOM path:
+
+    +309ms   #answer-card-proto < #answer-card-host        ← the card host, ONCE
+    +328ms   #answer-card-proto < #answer-card-warmup      ← the warm-up, ONCE
+    +8106ms  CANVAS < DIV < DIV < DIV < SPAN < .mt-5       ← ⛔ per step
+    +13032ms .enquiry-contact-layer                        ← the contact field, ONCE
+    +16337ms CANVAS < ... < SPAN < .mt-5                   ← ⛔ per step
+    +24007ms CANVAS < ... < SPAN < .mt-5                   ← ⛔ per step
+    +31587ms CANVAS < ... < SPAN < .mt-5                   ← ⛔ per step
+
+**`.mt-5` is `NextStepMeshButton`** (`enquiry-opening.tsx:1650`, `1694`) — the Three.js Next step
+button. **It lives INSIDE `renderPhrase`, keyed `phrase-${qNum}`, so every question destroys and
+rebuilds it, and it creates a fresh WebGL context each time.**
+
+### ⚠⚠ AND THIS IS WHY `one-context.mjs` PASSES 2/2 WHILE THE COST IS PAID
+
+**The harness is right about what it measures and blind to what matters.** It watches the host's
+canvas: created once, never lost, same element at Q1 — **all true.** It never looks at any other
+canvas, because the question it was given was "does the HOST hold one context".
+
+    host contexts:  1   (created +414ms, never recreated)   ✅ as reported
+    total contexts: 8 across a five-question walk           ⛔ never counted
+
+**The shared host removed the per-question card context and left a per-question BUTTON context
+doing the same damage.** The restructure worked; it was aimed at one of two canvases.
+
+## 6. Resolution independence — CONFIRMED, same as Stage 1
+
+| viewport | pixels | largest gap | `CommandBufferProxyImpl::Initialize` |
+|---|---:|---:|---:|
+| 1440×900 | 1.30M | **179.8ms** | **67.2ms** |
+| 2560×1440 | 3.69M | **166.5ms** | **50.9ms** |
+
+**A ~2.8× pixel increase produces no increase** — if anything marginally lower, within noise.
+Same finding as Stage 1 for the reveal, and it points the same way: **context/program
+instantiation, not fragment cost.**
+
+---
+
+## ⚠ WHAT THIS DOES TO THE OPTIONS BELOW
+
+**(a), (b) and (c) are all about the CARD host and the corridor. None of them touches the Next
+step button.** On this evidence:
+
+- **The ~240ms per step is not evidence for or against any of them.** It is a different canvas.
+- **(c)'s premise is not merely unevidenced — it was measured against the wrong thing.** The
+  earlier reading in this note ("240ms still paid with one context, so preserving the context
+  does not preserve the warmth") was **correct as an observation and wrong as an inference**: the
+  context being preserved was the card host's, while the cost was the button's.
+- **The cheapest available win is not in this note at all**: give `NextStepMeshButton` a lifetime
+  that survives the question step, exactly as the cards were given one. ⚠ **That is a structural
+  decision under §5a and is NOT proposed here — it is named as the finding, for Carl.**
+
+⚠ **STATED AS A LIMIT: `PutChanged` remains opaque at these categories, as the 13 August trace
+recorded.** 133ms of it sits in this gap and is not attributed further. What is newly attributed
+is the 67ms main-thread block beside it, and the context creation that causes it.
 
 ---
 
@@ -291,33 +420,34 @@ and it belongs with the rest of this note.
 |---|---|---|---|---|---|
 | (a) hold last rect | ⚠ relocates it | no | no | no effect | mechanism understood |
 | (b) both grids alive | yes | no | ⛔ **yes — the corridor** | no effect | not measured |
-| (c) context persists, node re-renders | yes, by construction | yes, by construction | no | ⛔ **benefit UNEVIDENCED — 240ms already paid per step WITH one context** | ⛔ **needs a rewrite, not a tweak** |
+| (c) context persists, node re-renders | yes, by construction | yes, by construction | no | ⚠ **irrelevant — the 240ms is the BUTTON's context, not the cards'** | ⛔ **needs a rewrite, not a tweak** |
 | (d) explicit boundary event | no, enables (a) | ✅ **replaces the heuristic properly** | no | no effect | — |
+| **— the button's lifetime —** | **no** | **no** | **no** | ⛔ **THIS is the ~240ms** | ✅ **located, traced, resolution-independent** |
 
-**I am not recommending between (a), (b) and (c).** ⚠ **But the two measurements have changed
-what they are worth, and the note would be misleading if the summary did not say so:**
+**I am not recommending between (a), (b) and (c).** ⚠ **But the trace has changed what they are
+about, and the summary would be misleading if it did not say so:**
 
-- **(c) was proposed as "keep the context, drop the node". Both halves are now in doubt.** R3F
-  9.6.1 calls `forceContextLoss()` on unmount on a renderer you own, with no opt-out, so the
-  remount kills the hoisted context unless `<Canvas>` is abandoned for this surface. **And the
-  ~240ms is already being paid on every step of the CURRENT one-context build** (211/236/242/239),
-  so a preserved context is not currently buying the warmth the option assumes. **(c) is now the
-  most expensive option with the least evidenced benefit** — which is the opposite of how it read
-  before it was measured.
+- ⛔⛔ **THE ~240ms IS NOT ABOUT ANY OF THEM.** It is `NextStepMeshButton` creating a fresh WebGL
+  context on every question step — 67ms of blocked main thread inside a 180ms gap, confirmed at
+  two resolutions. (a), (b) and (c) all concern the CARD host and the corridor. **Choosing
+  between them will not move that number by one millisecond.**
+- **(c) was proposed as "keep the context, drop the node", and my earlier reading called its
+  benefit unevidenced. That reading was wrong** — see the correction above. Preserving a context
+  does preserve its warmth; the card host demonstrates it. **(c)'s real obstacle is R3F 9.6.1
+  calling `forceContextLoss()` on unmount with no opt-out**, which makes it a rewrite rather than
+  a tweak. That stands.
 - **(b) remains the one needing the strongest justification**, because it changes approved
   corridor behaviour to serve an implementation detail of the host.
 - **(a) is unchanged**: cheapest, and relocates the discontinuity rather than removing it.
 
-**I DO recommend (d)'s mechanism**, per the section above: a real boundary signal from the
-corridor, replacing the `labels` heuristic including my own `litCards` clear. That is a
-recommendation about how the boundary is *known*, and it stands whichever of (a)/(b)/(c) is
+**I DO recommend (d)'s mechanism**: a real boundary signal from the corridor, replacing the
+`labels` heuristic including my own `litCards` clear. It stands whichever of (a)/(b)/(c) is
 chosen.
 
-⚠⚠ **THE OPEN QUESTION THE MEASUREMENTS CREATED, AND THE ONE I WOULD ANSWER NEXT:
-WHAT IS RE-PAYING ~240ms PER QUESTION ON A BUILD THAT HOLDS ONE CONTEXT?** The shared host was
-built to remove exactly that cost; `one-context.mjs` passes 2/2 and the cost is unchanged. Five
-`linkProgram` and ten `compileShader` calls per step are the visible candidates — sub-millisecond
-on the client clock, which is precisely where Stage 1 proved the client clock lies. **Until that
-is identified, every option here is being weighed against a cost nobody has located.**
+⚠⚠ **AND THE FINDING THAT SITS OUTSIDE ALL FOUR OPTIONS: `NextStepMeshButton` has the lifetime
+the cards used to have.** It is inside the keyed phrase, rebuilt per question, paying full
+context creation each time. **Giving it a lifetime that survives the step is a structural decision
+under §5a — it is NOT proposed here, it is reported.** It is also, on this evidence, the largest
+per-step cost in the walk and the one nobody was looking at.
 
 *Verification is not approval. Carl decides; the Architect reports findings.*
