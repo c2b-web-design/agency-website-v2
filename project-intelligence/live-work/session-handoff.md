@@ -6,6 +6,39 @@
 
 ---
 
+# ⛔⛔ STOP — DO NOT "START STEP 4". THE HOST IS ALREADY BUILT.
+
+**Branch `fix/q5-stall-and-label-colour`, head `1e031cd`, pushed. Working tree clean.**
+
+⚠⚠ **STEP 4 IS PART-DONE, NOT PENDING.** The shared canvas host **exists, is committed, and
+positions correctly**. Rebuilding it would throw away proven work and re-run a positioning
+problem that is already solved.
+
+    ✅ ALREADY DONE — do not repeat
+       The host is built                    enquiry-opening.tsx, committed in 1e031cd
+       Check 1  POSITION                    0.5px worst at 1280 / 1440 / 1920, dx=0 every card
+       Check 8  containing block            offsetParent === null (viewport), position: fixed
+       armOpening(source) + opening-arm.mjs reads the name  (step 3)
+       verify/card-position.mjs             written AND falsified (red 6px / green 3px)
+       All baselines captured on the pre-change build
+
+    ⏳ THE SIX OUTSTANDING STEP-4 CHECKS — this is the next job
+       1. One context address serving ALL FIVE questions
+       2. Check 5  the ladder — internal gaps AND absolute position, reported SEPARATELY
+       3. Check 6  corridor motion vs motion-stage2-before.json
+       4. The arming path BY NAME, with the host present
+       5. The OPENING measured across this step ⚠ four recorded lead-time attempts each
+          stuttered whatever was animating — do not infer this is harmless
+       6. The reduced-motion arm of each of the above that supports one
+
+**Then STOP for Carl's eye before step 5.** The warm-up canvas is **untouched and still
+mounts** — deleting it is step 5, deliberately separate so the host and the deletion are
+independently attributable.
+
+**Before doing anything, read `live-work/q5-stage2-progress-14-august.md`.**
+
+---
+
 ## ⛔ THE STANDING DIRECTIVE
 
 **NEVER comment on how long Carl has been working.** Not the time of day, not the session
@@ -14,20 +47,14 @@ say so.** It was not broken this session.
 
 ---
 
-## WHERE THE WORK IS
-
-**Branch `fix/q5-stall-and-label-colour`.** Stage 2 steps 1–3 are complete. **Step 4 is
-part-done: the host is BUILT and positioning is PROVEN; the remaining step-4 measurements are
-outstanding.** The warm-up canvas is **untouched and still mounts** — deleting it is step 5.
-
-Full detail: **`live-work/q5-stage2-progress-14-august.md`** — read it before acting.
-
-### The plan being executed
+## The plan being executed
 
 Carl's decision: **rebuild the never-unmounting shared canvas host with correct positioning,
 delete the separate warm-up canvas, the card canvas becomes the single context and the one that
 compiles early.** Steps run in order and **must not be collapsed**; stop and report after each
 of steps 1, 2 and 4.
+
+Steps 1–3 are complete. Step 4 is part-done — see the box above.
 
 ---
 
@@ -141,16 +168,18 @@ for reduced-motion users.*
 
 ---
 
-## WHAT IS IN THE WORKING TREE (uncommitted at handoff time)
+## WHAT IS COMMITTED — `1e031cd`, pushed. Working tree CLEAN.
 
-    M components/enquiry/enquiry-opening.tsx    armOpening(source) + THE HOST
-    M verify/opening-arm.mjs                    reads the arming name, no inference
-    M verify/out/approved-timings-baseline.json
-    ?? verify/card-position.mjs                 the screenshot position harness
+    components/enquiry/enquiry-opening.tsx    armOpening(source) + THE HOST
+    verify/opening-arm.mjs                    reads the arming name, no inference
+    verify/card-position.mjs                  the screenshot position harness (NEW)
+    verify/out/approved-timings-baseline.json
+    verify/out/motion-stage2-before.json
+    verify/out/card-position/baseline-stage2-before-{1280,1440,1920}.json
 
-⚠ A copy of the host WIP is also at `scratchpad/enquiry-opening-HOST-WIP.tsx`.
+⚠ **Nothing is uncommitted and nothing is at risk.** The work is on the remote.
 
-### The host, as built
+### The host, as built — READ THIS BEFORE TOUCHING IT
 
 - `position: fixed` div, `data-testid="answer-card-host"`, **sibling of the shell** inside the
   untransformed `min-h-screen` container, mounted **unconditionally** (no `stage` gate).
@@ -164,23 +193,11 @@ for reduced-motion users.*
 - `activeCardsVisible` (one expression, two consumers) gates the entrance, so the cards compile
   during the opening but do not enter.
 
-### Step 4 results so far
+### Step 4 — what is done and what is left
 
-    ✅ Check 1  POSITION  0.5px worst at 1280 / 1440 / 1920, dx=0 on every card
-    ✅ Check 8  offsetParent === null (viewport), position: fixed
-
-### Step 4 — STILL OUTSTANDING
-
-- One context address serving all five questions
-- Check 5 ladder (internal gaps AND absolute, reported separately)
-- Check 6 corridor motion
-- The arming path **by name**, with the host present
-- **The opening measured across this step** — the card canvas now compiles inside the window the
-  opening is already running in. ⚠ **Do not infer this is harmless: four recorded lead-time
-  attempts each stuttered whatever was animating at the time.**
-- Reduced-motion arm on each of the above that supports it
-
-**Then STOP for Carl's eye before step 5.**
+**See the box at the top of this file.** Two checks pass (position at three widths,
+containing block); **six remain**. They are listed once, at the top, deliberately — a second
+copy here would be the thing that goes stale.
 
 ---
 
@@ -208,6 +225,6 @@ for reduced-motion users.*
 
 ---
 
-*14 August 2026. **The host is built and positions to 0.5px at three widths; the warm-up is
-still in place, deliberately.** The remaining step-4 measurements are the next job, then Carl's
-eye before the deletion.*
+*14 August 2026. ⚠ **THE HOST IS BUILT, COMMITTED AND POSITIONS TO 0.5px AT THREE WIDTHS. Do not
+rebuild it.** The warm-up is still in place, deliberately. **The six outstanding step-4 checks
+listed at the top of this file are the next job**, then Carl's eye before the deletion.*
