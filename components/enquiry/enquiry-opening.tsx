@@ -1403,6 +1403,28 @@ export default function EnquiryOpening() {
         key={`phrase-${qNum}`}
         className={`enquiry-phrase enquiry-pdepth-${depth}${reducedMotion ? "" : " enquiry-phrase-anim"}`}
       >
+        {/*
+          ⚠⚠ THE TRAVELLING RUNG — AND IT IS THE WHOLE POINT OF THIS WRAPPER.
+          15 August 2026, Carl's ruling: *"ONLY the question text and its selected
+          answer travel. The cards and the Next step button fade in and out IN
+          PLACE and never move."*
+
+          ⚠ `bottom`/`opacity` ANIMATE HERE, NOT ON `.enquiry-phrase`. The phrase
+          root is now static, so `.enquiry-phrase-extras` — anchored to it at
+          `top: calc(100% + 1rem)` — no longer inherits the recession. Previously
+          the extras rode 3.625rem (58.0px desktop, 4.675rem / ~74.8px mobile) as
+          PASSENGERS, by nesting, with nothing in the code saying "move the cards".
+
+          ⚠ THE QROW AND THE ANSWERS SUMMARY TRAVEL TOGETHER, AS ONE RUNG —
+          Carl's call, 15 August: the summary rides this wrapper so a question and
+          its selected answer never separate on the way into the rail.
+
+          ⚠ DO NOT ADD `transform`, `filter`, `perspective`, `contain` OR
+          `will-change` HERE. The grid inside `.enquiry-phrase-extras` is the
+          shared host's measurement target; a containing block or stacking context
+          introduced on this branch changes what its rect is relative to.
+        */}
+        <div className="enquiry-phrase-travel">
         <div className="enquiry-phrase-qrow">
           <span className="enquiry-phrase-cue" aria-hidden="true">Q{qNum}</span>
           {/*
@@ -1458,6 +1480,10 @@ export default function EnquiryOpening() {
             {answersSummary(qNum)}
           </div>
         )}
+        </div>
+        {/* ⚠ EVERYTHING BELOW IS OUTSIDE `.enquiry-phrase-travel` AND MUST STAY
+            OUTSIDE IT. The extras are anchored to the STATIC phrase root; moving
+            this inside the travel wrapper reinstates the 58px passenger ride. */}
 
         {showExtras && (
           <div className={`enquiry-phrase-extras${isActive ? "" : " enquiry-phrase-extras-out"}`}>

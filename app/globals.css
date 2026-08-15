@@ -1605,15 +1605,57 @@
   height: 11.5rem;
 }
 
+/* ⚠⚠ THIS ELEMENT IS DELIBERATELY STATIC. IT IS NOT THE THING THAT MOVES.
+   15 August 2026 — Carl's ruling: *"ONLY the question text and its selected
+   answer travel. The cards and the Next step button fade in and out IN PLACE
+   and never move."*
+
+   ⚠ WHY THAT REQUIRES THIS SPLIT. `.enquiry-phrase-extras` (the cards + the
+   Next step button) is anchored `top: calc(100% + 1rem)` off THIS box. While
+   this element animated `bottom` from -1.925rem to 1.7rem, the extras inherited
+   every pixel of it — 3.625rem = 58.0px desktop, measured 57.98px — as
+   PASSENGERS, by nesting, with nothing in the code saying "move the cards" and
+   nothing to grep for. That was the defect.
+
+   ⚠ SO THE TRAVEL MOVED INWARD, NOT THE EXTRAS OUTWARD. `.enquiry-phrase-travel`
+   below carries `bottom`/`opacity`; this box stays put at the depth-0 anchor, so
+   `calc(100% + 1rem)` now resolves against a box that never moves. Hoisting the
+   extras out instead would have broken the `.enquiry-pdepth-0 .enquiry-answer-grid`
+   production contract (`answer-card-canvas.tsx:3811`), whose documented failure is
+   width 0 -> suppressed by the `w > 0` guard -> cards frozen at last good width,
+   "a defect that looks like a hang".
+
+   ⚠ THE DEPTH CLASS STAYS ON THIS ROOT. `.enquiry-pdepth-N` drives the descendant
+   typography, the grid selector contract, and `verify/paint-order.mjs:166`
+   (`grid.closest(".enquiry-pdepth-0")`). Moving it inward would silently flip all
+   three. */
 .enquiry-phrase {
   position: absolute;
   left: 0;
   right: 0;
+  bottom: -1.925rem;
   text-align: center;
 }
 
-/* Morph driver — bottom/opacity on the wrapper, size/colour/weight on the spans. */
-.enquiry-phrase-anim {
+/* ⚠ THE TRAVELLING RUNG — the question row AND its selected answer, as ONE unit.
+   Carl, 15 August 2026: the answers summary rides this wrapper, matching the
+   ruling's *"the question text and its selected answer recede into the rail"*.
+
+   ⚠ `bottom` HERE IS RELATIVE TO `.enquiry-phrase`, WHICH NOW SITS AT THE DEPTH-0
+   ANCHOR. So depth 0 is `bottom: 0` (no offset from its own static parent) and the
+   deeper rungs carry the SAME TRAVEL DISTANCES AS BEFORE, verbatim:
+   d1 = 1.7 - (-1.925) = 3.625rem, d2 = 6.425rem, d3 = 8.575rem, d4 = 10.125rem,
+   d5 = 11.075rem. The recession's distances, easing and opacity ramp are
+   UNCHANGED — only the element carrying them has changed. */
+.enquiry-phrase-travel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Morph driver — bottom/opacity on the travel wrapper, size/colour/weight on the spans. */
+.enquiry-phrase-anim .enquiry-phrase-travel {
   transition: bottom 900ms cubic-bezier(0.37, 0, 0.63, 1),
               opacity 900ms linear;
 }
@@ -1640,8 +1682,12 @@
 
 /* depth 0 — active appearance (matches the current active question exactly).    */
 /* bottom: -1.925rem drops the qrow so its top sits on the active line (11.5rem). */
-.enquiry-pdepth-0 {
-  bottom: -1.925rem;
+/* ⚠ `bottom` AND `opacity` ARE ON `.enquiry-phrase-travel`, NOT ON THE DEPTH ROOT
+   — 15 August 2026. The root is static so the cards do not ride the recession;
+   see the block-comment on `.enquiry-phrase` above. Values are REBASED against the
+   root's own -1.925rem anchor, so every travel DISTANCE is unchanged. */
+.enquiry-pdepth-0 .enquiry-phrase-travel {
+  bottom: 0;
   opacity: 1;
 }
 .enquiry-pdepth-0 .enquiry-phrase-qrow {
@@ -1686,26 +1732,32 @@
 .enquiry-pdepth-4 .enquiry-phrase-question,
 .enquiry-pdepth-5 .enquiry-phrase-question { font-weight: 400; color: rgba(255, 255, 255, 0.65); line-height: 1.3; }
 
-.enquiry-pdepth-1 { bottom: 1.7rem; opacity: 0.78; }
+/* Rebased: was `bottom: 1.7rem` on the root, against a root anchored at -1.925rem.
+   1.7 - (-1.925) = 3.625rem travel — identical, now expressed from the static root. */
+.enquiry-pdepth-1 .enquiry-phrase-travel { bottom: 3.625rem; opacity: 0.78; }
 .enquiry-pdepth-1 .enquiry-phrase-cue,
 .enquiry-pdepth-1 .enquiry-phrase-question { font-size: 20px; }
 
-.enquiry-pdepth-2 { bottom: 4.5rem; opacity: 0.42; }
+/* Rebased: 4.5 - (-1.925) = 6.425rem. */
+.enquiry-pdepth-2 .enquiry-phrase-travel { bottom: 6.425rem; opacity: 0.42; }
 .enquiry-pdepth-2 .enquiry-phrase-cue,
 .enquiry-pdepth-2 .enquiry-phrase-question { font-size: 17px; }
 .enquiry-pdepth-2 .enquiry-phrase-answers { font-size: 12px; }
 
-.enquiry-pdepth-3 { bottom: 6.65rem; opacity: 0.22; }
+/* Rebased: 6.65 - (-1.925) = 8.575rem. */
+.enquiry-pdepth-3 .enquiry-phrase-travel { bottom: 8.575rem; opacity: 0.22; }
 .enquiry-pdepth-3 .enquiry-phrase-cue,
 .enquiry-pdepth-3 .enquiry-phrase-question { font-size: 14px; }
 .enquiry-pdepth-3 .enquiry-phrase-answers { font-size: 10px; }
 
-.enquiry-pdepth-4 { bottom: 8.2rem; opacity: 0.10; }
+/* Rebased: 8.2 - (-1.925) = 10.125rem. */
+.enquiry-pdepth-4 .enquiry-phrase-travel { bottom: 10.125rem; opacity: 0.10; }
 .enquiry-pdepth-4 .enquiry-phrase-cue,
 .enquiry-pdepth-4 .enquiry-phrase-question { font-size: 12px; }
 .enquiry-pdepth-4 .enquiry-phrase-answers { font-size: 9px; }
 
-.enquiry-pdepth-5 { bottom: 9.15rem; opacity: 0.045; }
+/* Rebased: 9.15 - (-1.925) = 11.075rem. */
+.enquiry-pdepth-5 .enquiry-phrase-travel { bottom: 11.075rem; opacity: 0.045; }
 .enquiry-pdepth-5 .enquiry-phrase-cue,
 .enquiry-pdepth-5 .enquiry-phrase-question { font-size: 10px; }
 .enquiry-pdepth-5 .enquiry-phrase-answers { font-size: 8px; }
@@ -1764,9 +1816,74 @@
   left: 0;
   right: 0;
 }
-.enquiry-phrase-extras-out {
+/* ⚠⚠ THE OUTGOING SET STARTS ITS FADE AT 0.78, AND THAT NUMBER IS NOW STATED
+   RATHER THAN INHERITED — 15 August 2026.
+
+   ⚠ WHERE 0.78 CAME FROM: `.enquiry-pdepth-1 { opacity: 0.78 }`. Before the
+   decoupling split, `opacity` sat on the phrase ROOT, so this element was inside
+   the receding rung's opacity group and was dimmed to 0.78 by inheritance as the
+   phrase went to depth 1. The split moved `opacity` onto `.enquiry-phrase-travel`
+   (so the cards would stop riding the recession), which took the extras OUT of
+   that group — and they would otherwise now depart at 1.0.
+
+   ⚠ CARL'S CONSTRAINT: the button's look must not change. So the value is
+   restored EXPLICITLY, as a declaration that can be grepped for, rather than left
+   to re-emerge from a nesting relationship. **The whole fault this week was a
+   correct number that nothing in the code stated** — 58px of card travel that no
+   line of code asked for. A second silent number in the same subtree would be the
+   same mistake with a different value.
+
+   ⚠ THIS IS THE FADE'S STARTING POINT ONLY. The 300ms duration below and the
+   button's own 600ms are UNTOUCHED and deliberately so: whether that fade is too
+   fast is a SEPARATE question Carl has parked until he can judge it against cards
+   that hold still. Do not fold the two together.
+
+   ⚠ HOW THE 0.78 IS APPLIED, AND WHY NOT `@starting-style`. This element is NOT
+   newly mounted when it starts fading — the receding phrase keeps its extras
+   mounted for one beat (`showExtras`), and the class is added to an element that
+   already exists. `@starting-style` only supplies a first-style-application value,
+   so it would never fire here. The depth class is the correct hook instead: the
+   phrase root is already `.enquiry-pdepth-1` during the outgoing beat, so scoping
+   the value to that depth dims the outgoing set WITHOUT touching the active
+   question's cards at depth 0. */
+   ⚠⚠ SPECIFICITY IS LOAD-BEARING BETWEEN THESE TWO RULES AND THEY MUST NOT BE
+   REORDERED OR RE-SCOPED CASUALLY. The 0.78 rule is `.enquiry-pdepth-1
+   .enquiry-phrase-extras` (0,2,0). The fade target is written as
+   `.enquiry-phrase-extras.enquiry-phrase-extras-out` — a COMPOUND selector, also
+   (0,2,0), and later in the file, so it wins the cascade and the fade reaches 0.
+   **Written as the bare `.enquiry-phrase-extras-out` (0,1,0) it would LOSE to the
+   0.78 rule, the element would be pinned at 0.78, and the outgoing cards would
+   never fade out at all.** */
+.enquiry-pdepth-1 .enquiry-phrase-extras {
+  opacity: 0.78;
+}
+/* ⚠⚠ 900ms IS DERIVED FROM THE RECESSION, NOT PICKED — Carl, 15 August 2026.
+   It is the same 900ms as `bottom 900ms cubic-bezier(0.37, 0, 0.63, 1)` on
+   `.enquiry-phrase-travel`, so the extras fade across PRECISELY the span the
+   question travels, and are gone as the space vacates. **The two numbers are the
+   same number and must move together** — a shorter fade leaves the cards hanging
+   in a vacated space; a longer one leaves them over the next question.
+
+   ⚠ WAS 300ms, AND THAT NUMBER WAS TRUNCATING THE BUTTON. Measured 15 August,
+   per frame: this parent reached opacity 0 at **~328ms** while the button's own
+   600ms wrapper transition was still at **~0.50**. Opacity multiplies, so the
+   button was gone at ~328ms and **the last ~300ms of its declared 600ms ran
+   invisibly.** Its real fade-out was 300ms, not the 600ms written at its wrapper.
+   At 900ms the parent no longer truncates the child.
+
+   ⚠ THIS RULE IS SHARED — it governs the FIVE ANSWER CARDS as well as the Next
+   step button. That is intended for this look: Carl is judging both together and
+   will split them if the cards read wrong. **Do not give the button its own rule
+   pre-emptively.**
+
+   ⚠ TWO FADES STILL COMPOUND, AND THE SHORTER ONE NOW GOVERNS THE BUTTON. With
+   this parent at 900ms and the button's wrapper at 600ms, the CHILD is now the
+   shorter of the two: the button completes its exit at ~600ms while the cards
+   continue to 900ms. That is a real difference between the two elements, measured
+   rather than assumed — see the per-frame figures in the session record. */
+.enquiry-phrase-extras.enquiry-phrase-extras-out {
   opacity: 0;
-  transition: opacity 300ms linear;
+  transition: opacity 900ms linear;
   pointer-events: none;
 }
 
@@ -1814,8 +1931,13 @@
   /* Depth-1: 20px → 14px guarantees single-line for all 5 questions at mobile width.
      bottom 1.7rem → 2.75rem places qrow bottom at 8.75rem; 1.65rem above depth-0 top.
      Note: if 14px feels too small on device, nudge to 15px before widening the ladder. */
-  .enquiry-pdepth-1 {
-    bottom: 2.75rem;
+  /* ⚠ REBASED ONTO `.enquiry-phrase-travel` — 15 August 2026, same split as desktop.
+     Mobile depth-0 is UNCHANGED at -1.925rem, so every mobile value rebases by the
+     same +1.925rem and every mobile travel distance is preserved verbatim.
+     ⚠ MOBILE TRAVEL IS NOT 58px: 2.75 - (-1.925) = 4.675rem ~= 74.8px, ~29% larger
+     than desktop. This block is why the defect was worse where nobody had measured. */
+  .enquiry-pdepth-1 .enquiry-phrase-travel {
+    bottom: 4.675rem;
   }
   .enquiry-pdepth-1 .enquiry-phrase-cue,
   .enquiry-pdepth-1 .enquiry-phrase-question {
@@ -1826,8 +1948,9 @@
   }
 
   /* Depth-2: 17px → 12px, single-line. bottom 4.5rem → 5.25rem. */
-  .enquiry-pdepth-2 {
-    bottom: 5.25rem;
+  /* Rebased: 5.25 - (-1.925) = 7.175rem. */
+  .enquiry-pdepth-2 .enquiry-phrase-travel {
+    bottom: 7.175rem;
   }
   .enquiry-pdepth-2 .enquiry-phrase-cue,
   .enquiry-pdepth-2 .enquiry-phrase-question {
@@ -1838,8 +1961,9 @@
   }
 
   /* Depth-3: 14px → 10px. bottom 6.65rem → 7.2rem. Atmospheric (opacity 0.34). */
-  .enquiry-pdepth-3 {
-    bottom: 7.2rem;
+  /* Rebased: 7.2 - (-1.925) = 9.125rem. */
+  .enquiry-pdepth-3 .enquiry-phrase-travel {
+    bottom: 9.125rem;
   }
   .enquiry-pdepth-3 .enquiry-phrase-cue,
   .enquiry-pdepth-3 .enquiry-phrase-question {
@@ -1850,8 +1974,9 @@
   }
 
   /* Depth-4: 12px → 9px. bottom 8.2rem → 8.45rem. Deep atmosphere (opacity 0.22). */
-  .enquiry-pdepth-4 {
-    bottom: 8.45rem;
+  /* Rebased: 8.45 - (-1.925) = 10.375rem. */
+  .enquiry-pdepth-4 .enquiry-phrase-travel {
+    bottom: 10.375rem;
   }
   .enquiry-pdepth-4 .enquiry-phrase-cue,
   .enquiry-pdepth-4 .enquiry-phrase-question {
@@ -1862,8 +1987,9 @@
   }
 
   /* Depth-5: 10px → 8px. bottom 9.15rem → 9.35rem. Vanishing (opacity 0.14). */
-  .enquiry-pdepth-5 {
-    bottom: 9.35rem;
+  /* Rebased: 9.35 - (-1.925) = 11.275rem. */
+  .enquiry-pdepth-5 .enquiry-phrase-travel {
+    bottom: 11.275rem;
   }
   .enquiry-pdepth-5 .enquiry-phrase-cue,
   .enquiry-pdepth-5 .enquiry-phrase-question {
