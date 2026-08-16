@@ -111,6 +111,11 @@ it** — the code comment at that site says so, and this lead does not change th
 
 **Only the 1→2 gap moves.**
 
+> ⚠ **SUPERSEDED BY THE CORRECTION AT THE TOP OF THIS FILE.** "Only the 1→2 gap moves" is
+> the wrong frame. Cards 3–5 hold their absolute schedule; card 1's entrance is
+> intermittently delayed and the 1→2 gap absorbs it. **The statement above stands as what
+> was believed on the evidence then available.**
+
 In **every** compressed run, gaps **2→3, 3→4 and 4→5 sit within ±11ms of nominal** —
 indistinguishable from a clean run. The 1→2 gap ranges **264–388ms against 560ms
 specified**.
@@ -347,3 +352,7 @@ instrument's framing suggested. **Twice the reasoning over-attributed to a mecha
 
 *16 August 2026. The fault is real, localised to the 1→2 gap, and did not appear in the*
 *last twenty runs. Both statements are true and neither cancels the other.*
+
+> ⚠ **SUPERSEDED — see the correction at the top of this file.** The name is wrong
+> (**"the card-1 entrance delay"**), and "the last twenty runs" here means the **SECOND of
+> three samples**, not the cold sample. **Three samples now: 40%, 0%, 10%.**
