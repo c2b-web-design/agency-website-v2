@@ -1845,7 +1845,8 @@
    so it would never fire here. The depth class is the correct hook instead: the
    phrase root is already `.enquiry-pdepth-1` during the outgoing beat, so scoping
    the value to that depth dims the outgoing set WITHOUT touching the active
-   question's cards at depth 0. */
+   question's cards at depth 0.
+
    ⚠⚠ SPECIFICITY IS LOAD-BEARING BETWEEN THESE TWO RULES AND THEY MUST NOT BE
    REORDERED OR RE-SCOPED CASUALLY. The 0.78 rule is `.enquiry-pdepth-1
    .enquiry-phrase-extras` (0,2,0). The fade target is written as

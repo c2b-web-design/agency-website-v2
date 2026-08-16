@@ -1603,6 +1603,29 @@ function useCardEntrance(
     // again: it is the sequence Carl asked for — *"The cards come on in
     // sequential order. 1,2,3,4 and then 5."*
     //
+    // ⚠⚠ BUT `220/350/480/610/740` IS NOT THE LADDER, AND NEVER WAS THE THREE.js
+    // ONE. That is the CSS-era ladder, quoted from a prediction written before
+    // this entrance existed, and leaving it here described the running code
+    // wrongly for weeks. **Corrected 16 August 2026, read from source.**
+    //
+    // The real ladder is DERIVED, in `answer-card-geometry.ts`, and is
+    // **650 / 1210 / 1770 / 2330 / 2890** — `CARD_FIRST_ENTRANCE_MS`
+    // (`Q5_REVEAL_MS / 2`, Carl: *"card 1 can begin its appearance half way
+    // through the text reveal"*) plus `i * CARD_RISE_GAP_MS`, where the gap is
+    // 560ms, derived as `CARD_RISE_DURATION_MS * (1 - CARD_OVERLAP)`.
+    //
+    // ⚠ THE GAP (560ms) IS SHORTER THAN EACH CARD'S OWN RISE
+    // (`CARD_RISE_DURATION_MS` = 2000ms), SO **FOUR CARDS ARE MID-ENTRANCE AT
+    // ONCE.** Do not reason about this sequence as five discrete beats — the
+    // overlap is the approved behaviour, and `CARD_OVERLAP` records that a
+    // non-overlapping version was rejected on sight.
+    //
+    // ⚠ `CARD_RISE_DELAY_MS` (220) NO LONGER FEEDS ANY OF THIS. It still exists
+    // as an export; it is not what staggers the cards. `delayMs` here comes from
+    // `CARD_RISE_LADDER_MS`. **Every one of these numbers is PROVISIONAL under
+    // D-035** — Carl tunes them by eye. They are not "approved" in the sense that
+    // word carries elsewhere in this repo.
+    //
     // ⚠ THE HIDDEN→VISIBLE FLASH THE OLD COMMENT WARNED ABOUT IS STILL REAL, and
     // it is handled rather than avoided: the group is hidden at attach (see
     // `attachGroup`) and the tick loop below only shows it once its own rung has
