@@ -39,17 +39,60 @@
 // cold/warm difference is itself part of the finding.
 
 import { chromium } from "@playwright/test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 const RUNS = Number(process.argv[2] ?? 3);
 
-// Straight off `answer-card-geometry.ts` — not retyped from memory.
-const Q5_REVEAL_MS = 1300;
-const CARD_FIRST_ENTRANCE_MS = 650;
+// ⚠⚠ IMPORTED, NOT RETYPED — 16 August 2026. These were hand-copied literals
+// with the comment "straight off `answer-card-geometry.ts`", which is exactly
+// the claim a stale copy also makes. They are now read from the module itself,
+// so they cannot drift from the code under test.
+//
+// ⚠ THIS IS NOT THE CIRCULARITY FIX. Importing the constant is the SAFE
+// direction: it keeps the harness's EXPECTATION in step with the source. The
+// circularity was reading the mark's NAME — a constant-derived label — as
+// evidence of its TIMING. That is fixed by the ordering/identity assertions
+// below, not by this import. See `beattrace-falsified-16-august.md`.
+// ⚠ READ FROM SOURCE, NOT IMPORTED. `answer-card-geometry.ts` imports a sibling
+// without a file extension, which Node's ESM loader rejects, so the module
+// cannot be imported from a plain `.mjs` harness. The text is parsed instead —
+// the same technique `cross-section.mjs` uses, and for the same reason.
+//
+// ⚠ IT THROWS RATHER THAN DEFAULTING. If a name is renamed or stops being a
+// plain literal, this fails loudly with the name. A fallback here would
+// reintroduce exactly the staleness the read exists to prevent.
+const GEOM_SRC = readFileSync("components/enquiry/answer-card-geometry.ts", "utf8");
+function geomNum(name) {
+  const m = GEOM_SRC.match(new RegExp(`^export const ${name} = ([-\\d.]+);`, "m"));
+  if (!m) {
+    throw new Error(
+      `card-1-anchor.mjs: could not read '${name}' from answer-card-geometry.ts.\n` +
+        `It was renamed, removed, or is no longer a plain numeric literal.\n` +
+        `⚠ DO NOT hardcode a value here to get past this — a hand-copied 650 is ` +
+        `the exact defect this read replaced (16 August 2026).`,
+    );
+  }
+  return Number(m[1]);
+}
+
+const Q5_REVEAL_MS = geomNum("Q5_REVEAL_MS");
+const CARD_RISE_DURATION_MS = geomNum("CARD_RISE_DURATION_MS");
+const CARD_OVERLAP = geomNum("CARD_OVERLAP");
+
+// Derived exactly as the module derives them — see `answer-card-geometry.ts`.
+const CARD_FIRST_ENTRANCE_MS = Math.round(Q5_REVEAL_MS / 2);
+const CARD_RISE_GAP_MS = Math.round(CARD_RISE_DURATION_MS * (1 - CARD_OVERLAP));
+const CARD_RISE_LADDER_MS = [0, 1, 2, 3, 4].map(
+  (i) => CARD_FIRST_ENTRANCE_MS + i * CARD_RISE_GAP_MS,
+);
+
 const WATCH_MS = 22000;
+
+/** How far a beat may sit from its expected rung before the ladder is wrong. */
+const GAP_TOLERANCE_MS = 120;
 
 // One profile for the whole session: run 1 is cold, the rest warm.
 const profile = mkdtempSync(join(tmpdir(), "card1-anchor-"));
@@ -126,13 +169,70 @@ for (let run = 1; run <= RUNS; run++) {
 
     const revealStart = data.canvasCreated;
     const card1 = data.beats.find((b) => b.rung === CARD_FIRST_ENTRANCE_MS)?.at ?? null;
+
+    /**
+     * ⚠⚠ THE LADDER'S INTEGRITY — ADDED 16 AUGUST 2026, AND IT IS THE POINT.
+     *
+     * `entranceZero` below subtracts `CARD_FIRST_ENTRANCE_MS` from a beat this
+     * harness SELECTED because its NAME contains that same constant. The mark
+     * name comes from `delayMs` (a constant); only the TIMESTAMP is observed.
+     * **So the subtraction is circular unless something independently confirms
+     * that this beat really is the first rung.**
+     *
+     * ⚠ PROVEN NECESSARY BY EXPERIMENT, NOT ARGUED. Injection A (16 August)
+     * delayed card 3 by +800ms while leaving `CARD_RISE_LADDER_MS` untouched.
+     * `card-beat-1770` then fired AFTER `card-beat-2330` — the ladder visibly
+     * scrambled — and **this harness passed clean**, because card 1 was
+     * unaffected and nothing here looked at the other four.
+     *
+     * Three checks, all reading data the instrument already published and
+     * NOBODY consumed:
+     *   1. COUNT     — five beats, not four (a suppressed card is invisible to
+     *                  a presence-only check; see injection B)
+     *   2. ORDERING  — beats must fire in rung order; injection A broke exactly
+     *                  this and nothing noticed
+     *   3. GAPS      — each beat within tolerance of its own rung, so a beat
+     *                  cannot be late and still counted as its rung
+     */
+    const ladder = (() => {
+      const expected = CARD_RISE_LADDER_MS;
+      const faults = [];
+
+      if (data.beats.length !== expected.length) {
+        faults.push(`COUNT: ${data.beats.length} beats, expected ${expected.length}` +
+          ` (missing rungs: ${expected.filter((r) => !data.beats.some((b) => b.rung === r)).join(", ") || "none"})`);
+      }
+
+      const byTime = [...data.beats].sort((a, b) => a.at - b.at);
+      const outOfOrder = byTime.filter((b, i) => i > 0 && b.rung < byTime[i - 1].rung);
+      if (outOfOrder.length) {
+        faults.push(`ORDERING: fired ${byTime.map((b) => b.rung).join(" → ")}` +
+          `, expected ascending`);
+      }
+
+      // Each beat's offset from card 1, against the rung it claims to be.
+      if (card1 !== null) {
+        for (const b of data.beats) {
+          const expectedOffset = b.rung - CARD_FIRST_ENTRANCE_MS;
+          const actualOffset = b.at - card1;
+          const drift = actualOffset - expectedOffset;
+          if (Math.abs(drift) > GAP_TOLERANCE_MS) {
+            faults.push(`GAP: rung ${b.rung} sits ${actualOffset}ms after card 1,` +
+              ` expected ${expectedOffset}ms (drift ${drift >= 0 ? "+" : ""}${drift}ms)`);
+          }
+        }
+      }
+
+      return { ok: faults.length === 0, faults };
+    })();
+
     const entranceZero = card1 === null ? null : card1 - CARD_FIRST_ENTRANCE_MS;
     const target = revealStart === null ? null : revealStart + CARD_FIRST_ENTRANCE_MS;
     const revealEnd = revealStart === null ? null : revealStart + Q5_REVEAL_MS;
     const lateBy = card1 !== null && target !== null ? card1 - target : null;
     const precompileGap = entranceZero !== null && revealStart !== null ? entranceZero - revealStart : null;
 
-    results.push({ run, revealStart, revealEnd, target, card1, entranceZero, lateBy, precompileGap, ...data });
+    results.push({ run, revealStart, revealEnd, target, card1, entranceZero, lateBy, precompileGap, ladder, ...data });
 
     console.log(`\n─── RUN ${run} of ${RUNS}${run === 1 ? "  (cold GPU profile)" : "  (warm)"} ${"─".repeat(22)}`);
     console.log(`  Renderer                    ${renderer}`);
@@ -146,8 +246,14 @@ for (let run = 1; run <= RUNS; run++) {
     console.log(`  CARD 1 ACTUALLY ENTERS      +${card1 ?? "NEVER"}ms`);
     console.log(`  → late by                   ${lateBy === null ? "?" : `${lateBy >= 0 ? "+" : ""}${lateBy}ms`}` +
       (lateBy !== null && revealEnd !== null && card1 > revealEnd ? `   ⚠ AFTER THE REVEAL HAS FINISHED` : ""));
-    console.log(`  full ladder                 ${data.beats.map((b) => `+${b.at}`).join(", ")}` +
+    console.log(`  full ladder                 ${data.beats.map((b) => `${b.rung}@+${b.at}`).join(", ")}` +
       (data.lockup !== null ? `  lockup +${data.lockup}` : ""));
+    if (ladder.ok) {
+      console.log(`  ladder integrity            ✅ ${data.beats.length} beats, in order, gaps within ±${GAP_TOLERANCE_MS}ms`);
+    } else {
+      console.log(`  ladder integrity            ⛔ BROKEN`);
+      for (const f of ladder.faults) console.log(`                              · ${f}`);
+    }
   } finally {
     await context.close();
   }
@@ -184,9 +290,43 @@ if (ml !== null && Math.abs(ml) <= 120) {
   → CARD 1 IS EARLY by ${Math.abs(ml)}ms — it now precedes the midpoint.`);
 }
 
+/**
+ * ⚠⚠ THE LADDER VERDICT — ADDED 16 AUGUST 2026, AND IT CAN FAIL THE RUN.
+ *
+ * Until now this script had NO exit code at all: it printed its findings and
+ * exited 0 regardless of what it found. A harness that cannot fail is a report,
+ * not a check.
+ */
+const broken = results.filter((r) => r.ladder && !r.ladder.ok);
+console.log(`${"═".repeat(62)}`);
+if (!broken.length) {
+  console.log(`  ✅ LADDER INTEGRITY — all ${results.length} run(s): five beats, in rung order,`);
+  console.log(`     each within ±${GAP_TOLERANCE_MS}ms of its own rung.`);
+} else {
+  console.log(`  ⛔ LADDER INTEGRITY FAILED in ${broken.length} of ${results.length} run(s):`);
+  for (const r of broken) {
+    console.log(`     run ${r.run}:`);
+    for (const f of r.ladder.faults) console.log(`       · ${f}`);
+  }
+  console.log(`
+  ⚠ THE CARD-1 FIGURES ABOVE ARE UNSAFE TO READ. \`entranceZero\` subtracts
+    CARD_FIRST_ENTRANCE_MS from a beat selected by its NAME. When the ladder is
+    broken, the beat named ${CARD_FIRST_ENTRANCE_MS} may not be the rung that actually fired
+    first — which is precisely the circularity injection A exposed.`);
+}
+console.log(`${"═".repeat(62)}`);
+
 console.log(`
   ⚠ This answers "where does card 1 land", not "does it look right". The overlap
     is a feel judgement and Carl's alone.
 
   ⚠ Verification is not approval.
+
+  ⚠ SCOPE — WHAT THIS DOES NOT WATCH: it reads marks and timings, never pixels;
+    it says nothing about whether a card was DRAWN, about opacity, the fade, the
+    corridor step, or any question but Q5. ⚠ AND NEITHER CHANNEL CARRIES A
+    QUESTION IDENTITY — after a step the trace still holds Q5's data. Do not run
+    this past the first question and believe the result.
 `);
+
+process.exit(broken.length ? 1 : 0);
