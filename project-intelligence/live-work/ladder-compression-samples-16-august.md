@@ -128,6 +128,11 @@ card 2 propagates as **four equal-looking drifts** — the −230ms reading of t
 one displacement seen four times, not four displacements. The morning's other sighting
 (cards 1 and 2 in the same millisecond) is the same fault at its extreme.
 
+> ⚠ **SUPERSEDED — see the correction at the top of this file. Card 2 is not the moving
+> element.** Card 1's entrance is intermittently delayed; card 2 holds its schedule until
+> the delay exceeds 560ms, at which point the gap has closed to zero and card 2 is displaced
+> too. **The paragraph above stands as what was believed on the evidence then available.**
+
 **The fault is localised and always was. The frame of reference made it look global for a
 week.**
 
