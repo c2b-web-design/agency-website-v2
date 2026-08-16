@@ -1,8 +1,13 @@
 # `?beattrace=1` — FALSIFIED. The instrument is sound; the dependents are not.
 
 **16 August 2026.** First falsification of the instrument ten `verify/` harnesses depend on.
-Three injections plus a cost measurement. **Nothing fixed, nothing diagnosed, nothing
-committed beyond this record** — every injection reverted, tree clean.
+**Four injections (A–D) plus the live defect observed with no injection (E), and a cost
+measurement.** **Nothing fixed, nothing diagnosed, nothing committed beyond this record** —
+every injection reverted, tree clean and byte-identical to HEAD.
+
+⚠ **D AND E WERE ADDED AFTER THE FIRST WRITING OF THIS FILE**, which recorded the
+total-absence case as *reasoned about, not injected*. **That gap is now closed by
+experiment.** E is the more serious result and it required no injection at all.
 
 ---
 
@@ -169,6 +174,9 @@ this one; corrected forward, not rewritten.**
 > is four, not five — **and nothing reads it that way.** The harnesses' shared
 > `"⚠ NO TRACE — ?beattrace=1 published nothing"` still cannot separate total absence from
 > a disabled flag, and the Q4–Q1 case IS total absence, so it holds there.
+> **⚠ CONFIRMED BY INJECTION D below — no longer an inference.** ⚠ **But see E: the live
+> Q4 case does NOT present as total absence. It presents as a full healthy ladder carrying
+> Q5's data.**
 
 ✅ **WHERE THE INSTRUMENT LOOKED CORRECT — AND WAS:** it published exactly the evidence
 needed to catch this. **The information was there. Nobody consumes it.**
@@ -272,24 +280,143 @@ review:
    subtracting the very constant it selected on; `q5-card1-halfway` waiting on a name that
    verifies nothing (this file).
 
-⚠ **THE SHAPE IS THE SAME EACH TIME: the instrument and the thing under test draw on one
+⚠ **THE SHAPE IS THE SAME IN 1–3: the instrument and the thing under test draw on one
 declaration, so the check cannot fail in the direction that matters.** Instance 3 is
 distinct from 1 and 2 in one respect worth keeping: **the instrument itself was clean.**
 The circularity lived entirely in the consumers. **A sound instrument does not make a sound
 check.**
 
-Existing reference: *a harness sharing a constant with the fix*.
+### ⚠⚠ INSTANCE 4 — AND IT IS A DIFFERENT SHAPE ENTIRELY
+
+4. **A MEASUREMENT WITH NO IDENTITY** (injection E, above). `__cardTrace` and the beat
+   marks record *when* and *which rung* — **never which QUESTION.** So the data is
+   **silently reattributed to whatever question is active when someone reads it.**
+
+⚠ **THIS IS NOT THE 1–3 SHAPE.** Those are circularity: a check that cannot fail because it
+shares an assumption with its subject. **This one has no shared assumption — it has a
+MISSING DIMENSION.** The measurement is accurate about everything it records and simply
+does not record what it is about.
+
+⚠ **STALE DATA THAT LOOKS FRESH IS WORSE THAN NO DATA, BECAUSE NO DATA PROMPTS A
+QUESTION.** D produces silence, and silence at least invites "why is there nothing here?"
+E produces a full healthy ladder at a question where **no card entered at all**, and
+invites nothing.
+
+**Collected for Carl's governance review.** Existing reference: *a harness sharing a
+constant with the fix* — which covers 1–3 and **does not cover 4.**
+
+---
+
+## INJECTION D — TOTAL ABSENCE, FLAG ON vs FLAG OFF
+
+⚠ **ADDED 16 AUGUST 2026. This case was previously recorded here as REASONED ABOUT, NOT
+INJECTED. It is now injected**, because reasoning had already been wrong three times the
+same day (the `clip-path`/`transform` comment, the over-broad ambiguous-silence claim, and
+the byte-plateau bound). **The reasoning turned out to be correct — and that was not
+knowable without the injection.**
+
+**Defect:** every card returns before its `tick` loop. No card runs its entrance at all —
+the Q4–Q1 shape, injected rather than argued.
+
+**All five suppressed, FLAG ON:**
+```
+MARKS (name @ absolute ms):
+  (none)
+
+__cardTrace: 0 samples, cards []
+__cardTrace is undefined: true
+grid in DOM: true   card hit-targets: 5
+```
+
+**All five suppressed, FLAG OFF:**
+```
+MARKS (name @ absolute ms):
+  (none)
+
+__cardTrace: 0 samples, cards []
+__cardTrace is undefined: true
+grid in DOM: true   card hit-targets: 5
+```
+
+### ⚠⚠ CONFIRMED IDENTICAL — BYTE FOR BYTE
+
+**There is no distinguishing signal.** An `undefined` check was added specifically to hunt
+for one: **`__cardTrace` is never created in either case**, because `w.__cardTrace ??= []`
+only runs **inside the tick loop that never executes.** The flag being on leaves no trace
+of itself whatsoever.
+
+⚠ **AN INSTRUMENT WITH TEN DEPENDENTS CANNOT DISTINGUISH "NO CARDS ENTERED" FROM "FLAG
+OFF" — IN THE EXACT CASE THIS TREE EXHIBITS TODAY.**
+
+**Reverted. Confirmed green:** `650@9402  1210@9743  1770@10310  2330@10861  2890@11428`,
+592 samples, `undefined=false`.
+
+---
+
+## ⚠⚠ INJECTION E — THE LIVE DEFECT, NO INJECTION AT ALL. WORSE THAN D.
+
+**No defect introduced. This is the tree as it stands**, walked Q5 → Q4 with the flag on.
+
+```
+──── Q5 — after Begin  (active Q5) ────
+  MARKS: 650@9058  1210@9625  1770@10192  2330@10742  2890@11309
+  __cardTrace: 605 samples, cards [650, 1210, 1770, 2330, 2890], undefined=false
+  card hit-targets in DOM: 5
+
+──── Q4 — after Next step  (active Q4) ────
+  MARKS: 650@9058  1210@9625  1770@10192  2330@10742  2890@11309
+  __cardTrace: 605 samples, cards [650, 1210, 1770, 2330, 2890], undefined=false
+  card hit-targets in DOM: 5
+
+════ DELTA Q5 -> Q4 ════
+  new marks at Q4: 0
+  new __cardTrace samples at Q4: 0
+```
+
+### ⚠⚠ ZERO NEW MARKS, ZERO NEW SAMPLES — AND THE OUTPUT LOOKS HEALTHY
+
+**The Q4 snapshot is Q5's data, unchanged.** Same five marks, same timestamps, same 605
+samples.
+
+| Compared against | Distinguishable? |
+|---|---|
+| A **healthy** run | ⛔ **NO** |
+| A **flag-off** run | ✅ yes — flag-off gives nothing; Q4 gives five marks |
+
+⚠ **AT Q4 THE INSTRUMENT DOES NOT GO SILENT. IT PUBLISHES A FULL, CORRECT-LOOKING LADDER**
+— five cards on a 567/567/550/567 ladder. **The data is real. It belongs to Q5.**
+
+⚠ **NEITHER CHANNEL CARRIES A QUESTION IDENTITY.** Channel A's mark name is the rung
+constant; Channel B's `card` field is the same constant. Nothing anywhere records *which
+question* a beat belongs to. **So every harness reading the trace after a step inherits
+Q5's timings as the current question's**, with no signal that anything is wrong.
+
+### ⚠ D AND E ARE OPPOSITE FAILURES
+
+> **D is silence that looks like being switched off.**
+> **E is a confident wrong answer.**
+
+E is the more dangerous of the two, and it is the one **live in the tree right now**.
+
+### ⚠ UNTESTED — RECORDED AS UNTESTED
+
+**Whether a harness that RESET `__cardTrace` between steps would then see D's silence at
+Q4 is NOT KNOWN.** That is the link between the two failures — E may simply be D wearing
+stale data.
+
+⚠ **IT WAS NOT INJECTED AND IT IS NOT REASONED ABOUT HERE.** Given the day's record,
+reasoning about it would be a fourth guess. **It is an open experiment, not a conclusion.**
 
 ---
 
 ## WHAT THIS FALSIFICATION DID NOT COVER
 
 - **Desktop only, 1440x900.** No mobile.
-- **One question (Q5).** The Q4–Q1 total-absence case was NOT exercised — it was reasoned
-  about, not injected.
+- **Q5 and one step to Q4.** Q3–Q1 not walked.
 - **No reduced-motion path.**
 - **Channel A's `performance.mark` cost was not isolated** from Channel B's; the flag gates
   both.
+- **The `__cardTrace` reset experiment** (above) — untested.
 - ⚠ **Nothing was fixed.** Every weakness recorded here is still live in the tree.
 
 ---
