@@ -1,4 +1,4 @@
-# Session Handoff — 15 August 2026 (the cards HOLD POSITION; the split is unverified by harness)
+# Session Handoff — 16 August 2026 (the split is CLOSED; the instruments are the work now)
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -8,128 +8,177 @@
 
 ## STATE
 
-**Branch `fix/q5-stall-and-label-colour`, base `9ec3201`. Last commit `cbd7ad3` (the filmed
-stall — docs and a `.webm` only, no code).**
+**Branch `fix/q5-stall-and-label-colour`, HEAD `8fb20c6`. TREE CLEAN — nothing uncommitted.**
 
-⚠⚠ **TWO FILES ARE MODIFIED AND UNSTAGED. NOTHING OF THE FIX IS COMMITTED.**
+⚠ **The previous handoff was twelve commits stale.** It described two uncommitted files and
+listed *"Carl commits the split"* as pending; that had already happened at `664085a`, before
+this session began. **Do not carry forward anything from it.**
 
-    M  app/globals.css
-    M  components/enquiry/enquiry-opening.tsx
+### ✅ THE SPLIT IS COMMITTED, VERIFIED AND CLOSED
 
-- **`npx tsc --noEmit` — clean, exit 0.**
-- **`npm run lint` — `1 problem (1 error, 0 warnings)`, exit 1.** The known baseline
-  (`react-hooks/set-state-in-effect`, the reduced-motion effect). Exit 1 is expected.
-- **`:3100` is serving the current tree**, build `lBKQwXyLv8qIEha6IENIf`.
+The cards hold position through the recession. Evidence, four independent kinds:
 
-### What is in the tree
+- **Carl by eye**
+- **`paint-order.mjs` 336/336** probe points identical vs the `pre-host` baseline
+- **Easing confirmed off COMPUTED style** — `cubic-bezier(0.37, 0, 0.63, 1)`, quarter-points
+  11.9 / 47.0 / 84.5%
+- ⚠ **A FALSIFIED INSTRUMENT AT BOTH WIDTHS** — `verify/extras-hold-position.mjs` (`bea8257`).
+  0px drift clean; 88.79px desktop / 105.58px mobile under injected defect. **This is the
+  item the last handoff listed as its number-one outstanding gap. It is closed.**
 
-1. **The CSS split.** `.enquiry-phrase` is now STATIC at `bottom: -1.925rem`; a new inner
-   `.enquiry-phrase-travel` carries `bottom`/`opacity`. **Eleven rung offsets rebased by
-   +1.925rem — desktop AND mobile — so every travel DISTANCE is unchanged.** The qrow and the
-   answers summary travel together as one rung (Carl's call); `.enquiry-phrase-extras` stays on
-   the static root and no longer rides the recession.
-2. **The 0.78 extras dimming**, restored as a STATED value (`.enquiry-pdepth-1
-   .enquiry-phrase-extras`) because the split took the extras out of the rung's opacity group.
-   ⚠ **Its compound selector is LOAD-BEARING:** the fade rule is written
-   `.enquiry-phrase-extras.enquiry-phrase-extras-out` (0,2,0) so it outranks the 0.78 rule.
-   **Written bare (0,1,0) it LOSES and the outgoing cards never fade at all.**
-3. **The 900ms extras fade** (was 300ms), derived from the recession's own 900ms so the fade
-   spans exactly the question's travel.
+**This subject does not need reopening.** The open work below is elsewhere.
 
 ---
 
-## ✅ VERIFIED — Carl by eye, and measured
+## THIS SESSION — 13 commits, in order
 
-- **THE CARDS HOLD POSITION.** Carl confirmed by eye. **All five clickable at every question**,
-  full Q5→Q1 walk, `card-interaction.mjs` 0 failures.
-- **The rail reads right** — Carl's eye.
-- **The easing SURVIVED the split.** `cubic-bezier(0.37, 0, 0.63, 1)` confirmed in the
-  element's COMPUTED style (not just the source). Quarter-points **11.9 / 47.0 / 84.5 %** —
-  a straight line would give 25 / 50 / 75.
-- **`paint-order.mjs` 336/336 probe points identical** vs the `pre-host` baseline, and the
-  PRIMARY selector branch was proven to resolve (not the fallback) at rest.
-- ⚠⚠ **THE PASSENGER TRAVEL IS GONE, MEASURED:** mid-corridor the outgoing grid sits at
-  **top 493 — its rest position.** Pre-split it moved **493 → 480** at that same moment.
-- **Carl approved the Next step button's gentler exit** (the 900ms).
-
----
-
-## ⛔ OUTSTANDING — NOT DONE
-
-1. ⚠⚠ **NO HARNESS ASSERTS THE CARDS HOLD POSITION MID-RECESSION** — *the property this whole
-   fix exists to guarantee.* The 493-vs-493 figure above came from a throwaway probe that was
-   **deleted rather than left behind as an unfalsified instrument.**
-   **`verify/extras-hold-position.mjs` IS SPECIFIED BUT NOT WRITTEN.** Spec:
-   - assert the extras' rect is UNCHANGED from press through to the boundary, **sampled
-     MID-RECESSION, not at rest**
-   - ⚠ **FALSIFY IT FIRST** — the pre-fix build is gone, so introduce a deliberate defect
-     locally (put `bottom` back on the phrase root), confirm RED, revert
-   - ⚠ **declare in its OUTPUT what it does NOT watch**
-   - run at **1440x900 AND ≤639px**
-   - ⚠ its header must say **`active-grid-fixed.mjs` samples AT REST and passed green all week
-     while the cards rose** — so nobody reads the two as redundant
-2. ⚠ **`answer-card-canvas.tsx:1600` still calls `220/350/480/610/740` "approved".** It is the
-   **CSS-era** ladder. **The real one is derived: 650 / 1210 / 1770 / 2330 / 2890, with
-   `CARD_RISE_DURATION_MS = 2000` (each card's OWN fade) and `CARD_RISE_GAP_MS = 560`.**
-   The gap is shorter than the fade, so **four cards are mid-entrance at once**.
-   ⚠ **That stale line sent every calculation in this session wrong.** A correction was drafted
-   and **NOT applied** — the session ended first.
-3. **Nothing has been filmed against the fix.** Every verification above is rects and stacks.
-4. ⚠ **MOBILE HAS NEVER BEEN CHECKED AT ALL.** Mobile travel was **74.8px**, ~29% larger than
-   desktop. The rebased mobile offsets are arithmetic, unobserved.
-5. **Q4–Q1 STILL HAVE NO CARD ENTRANCE.** The epoch work was written and unwound today —
-   deliberately, so the split could be judged alone. Mechanism and reasoning:
-   `live-work/entrance-work-written-and-unwound-15-august.md`. It returns as its own gated step.
+```
+a8cee4b  stray */ + :1600 ladder correction
+52b2c2c  CSS parse error record + the gate hole
+bea8257  extras-hold-position.mjs, falsified
+314169d  mobile falsified against its own ladder
+81e04b2  card exit spec (§5a, SPEC ONLY)
+f41f967  reveal stall reproduces + 15 Aug amendment
+5cee470  the reveal has no instrument
+58aa840  reveal instrument spec (§5a, SPEC ONLY)
+0919589  beattrace falsified — injections A/B/C
+904824c  beattrace D/E — the live defect
+859bb8f  the two circular harnesses fixed
+853c5b3  spec correction + clean-tree RED
+8fb20c6  ladder compression samples
+```
 
 ---
 
-## 🎥 THE FILMED STALL — the session's other result
+## ⚠⚠ THE 0.78 NEVER REACHED A STYLESHEET UNTIL `a8cee4b`
 
-- **Q5's reveal stalls ~720ms (BOUNDED ~680–760 by 40ms sampling — not exact) at "Wh"**, inside
-  the first word. **Eighteen consecutive static frames.** Matches Carl's report by eye.
-- Record: **`live-work/q5-reveal-stall-filmed-15-august.md`**.
-- ✅ **THE `.webm` IS PERMANENT — CHECKED.** It is at
-  `live-work/screenshots/q5-reveal-stall-prefix-build-15-august.webm` and is **COMMITTED at
-  `cbd7ad3`**, so it is in git history and does not depend on `verify/out/` surviving.
-  **This item is closed; it does not need re-checking.**
-- ⚠ **METHOD LESSON:** found on `corridor-filmstrip.mjs`'s VIDEO track — a harness never run,
-  whose recording nobody had looked at, capturing **out-of-process**. `page.screenshot()` could
-  not have shown it: ~84ms/capture on the same main thread the stall lives on.
-- ⛔ **OPEN AND UNRECONCILED: the ~720ms REVEAL against the ~240ms/step, ~180ms gap, 67.2ms
-  button and ~112ms `PutChanged` figures — all from the corridor STEP, an order of magnitude
-  smaller.** Whether these are two faults, or whether the step probes were never measuring what
-  Carl was seeing, **is not answered.** Do not reconcile them by assumption.
+A stray `*/` at `globals.css:1848` closed a comment early, so its own prose parsed as a
+selector and **consumed the rule that followed it** —
+`.enquiry-pdepth-1 .enquiry-phrase-extras { opacity: 0.78 }`. Confirmed absent from the
+built CSS at `664085a`: the only `.78` present was on `.enquiry-phrase-travel`.
+
+⚠ **NEITHER GATE CATCHES IT.** `tsc` and `lint` do not parse CSS; both passed clean on
+15 August over a file that could not serve in dev and silently lost a declaration in
+production.
+
+⚠ **THE BUILD DID WARN — AND IT SCROLLED PAST.** `npm run build` prints
+*"Found 1 warning while optimizing generated CSS"*, drops the rule, and **exits 0**. So a
+green build was never evidence here. **That is the actual miss: an instrument that spoke
+and nobody read it.**
+
+⚠ **`664085a`'s claim *"extras dimming restored explicitly at 0.78"* is VERIFIED-FALSE.**
+Recorded and corrected forward in `css-parse-error-15-august.md`; history not rewritten.
+
+⚠ **CONSEQUENCE STILL LIVE: the 0.78 dimming has never actually run.** It reached a
+stylesheet for the first time at `a8cee4b` and **has not been seen by eye.** It changes how
+the outgoing cards depart (from 1.0 previously, 0.78 now).
 
 ---
 
-## NEXT, IN ORDER
+## OPEN — LARGEST FIRST
 
-1. **Write + falsify `verify/extras-hold-position.mjs`**, both widths (spec above).
-2. **Fix the `:1600` comment.**
-3. **Carl commits the split.**
-4. **THEN the card exit — §5a, its own gated step, PLAN MODE.**
-   ⚠ **`live-work/card-exit-spec-15-august.md` DOES NOT EXIST — it was never written.** The
-   exit spec must be authored from scratch. What was gathered toward it this session, verified
-   from source:
-   - the entrance is **rAF-driven in Three.js, NOT CSS** — `mat.opacity` written per frame by
-     `CardLighting`, plus `group.position.y` and `group.scale`
-   - **three strands on two curves:** opacity = smoothstep `p²(3−2p)`; position (10px rise) and
-     scale (0.94→1) = cubic ease-out `1−(1−r)³`
-   - `group.visible` steps false→true at the rung — a waiting card is ABSENT, not transparent
-   - **a mirrored exit must mirror three strands on two curves in rAF**, whereas today's
-     fade-out is a single CSS opacity transition on a DOM ancestor governing all five cards as
-     one block. **Those are not the same mechanism.**
+### 1. ⚠⚠ `?beattrace=1` HAS NO QUESTION IDENTITY — TEN DEPENDENTS
+
+**At Q4 it republishes Q5's data.** Measured, no injection, live tree:
+
+```
+Q5: MARKS 650@9058 1210@9625 1770@10192 2330@10742 2890@11309   605 samples
+Q4: MARKS 650@9058 1210@9625 1770@10192 2330@10742 2890@11309   605 samples
+    new marks at Q4: 0      new samples at Q4: 0
+```
+
+**Indistinguishable from a healthy run** — a full, correct-looking ladder at a question
+where **no card entered at all.** Distinguishable from flag-off only.
+
+Neither channel records which question a beat belongs to: Channel A's name is the rung
+constant, Channel B's `card` field is the same constant. **Every harness reading the trace
+after a step inherits Q5's timings as the current question's.**
+
+⚠ **NOT FIXED. Its own gated step** — introducing an identity touches what the trace is
+keyed by, and ten harnesses read it. Record: `beattrace-falsified-16-august.md` (injection E).
+
+### 2. Q4–Q1 have no card entrance
+
+Diagnosed, unwound, recorded. `hostCardsVisible` is stage-derived and `stage` does not
+change per step; `entranceAnnounced` is a once-only ref; cards are `key={i}` so labels swap
+without remounting. ⚠ **Shares its missing boundary signal with the card exit — scope them
+together.** Mechanism: `entrance-work-written-and-unwound-15-august.md`.
+
+### 3. The reveal is UNPROFILED and has no instrument
+
+`?beattrace=1` covers the **card entrance** — a third thing, sharing only clock zero. It
+records nothing about what the reveal does after that point.
+
+⚠ **This RESOLVES the last handoff's "unreconciled gap"**: the ~720ms/~400ms reveal figures
+and the ~240ms step figures were **never comparable and never in competition** — different
+phases. **Not a contradiction to resolve; an absence to fill.**
+
+**Spec written, NOT built** — `reveal-instrument-spec-16-august.md`, §5a. Its first rule:
+the window must be derived from the animation via `getAnimations()`, never typed.
+
+**The stall still reproduces** on the current tree at the **same character** — `W` at f196,
+`Wh` frozen f197–f206, `Wha` at f207. ⚠ **Do not compare its ~400ms with the 14 August
+~720ms**: different days, single runs, and both figures come from a byte-plateau method now
+known to under-report.
+
+### 4. The card exit
+
+Spec written with **seven open items**, §5a — `card-exit-spec-16-august.md`. Carl's
+decisions are recorded (compressed echo preserving `CARD_OVERLAP` 0.72, card 5 first, all
+three strands reversed, button leaves first). ⚠ **The trap is in the file:**
+`.enquiry-phrase-extras-out` (900ms CSS) **never touches the WebGL cards.**
+
+### 5. The ladder's 1→2 gap compresses intermittently
+
+**Real. Measured eight times** on an unmodified tree with no injection, 264–388ms against
+560ms. ⚠ **Gaps 2→3, 3→4, 4→5 stay within ±11ms — it is the 1→2 gap ALONE.**
+
+**Rate unestablished.** 8/20 desktop in one sample, 0/20 in a later interleaved sample.
+⚠ **Both samples are confounded** — sample 1 confuses width with ordering, sample 2
+confuses interleaving with elapsed session time (desktop alone went 8/20 → 0/10).
+⚠ **The 0/20 does NOT retire it.**
+
+**OUTSTANDING TEST: A COLD RUN — fresh server, fresh browser process.** Not run. Until one
+exists, neither the 40% nor the 0% is characteristic.
+Record: `ladder-compression-samples-16-august.md`.
+
+### 6. Mobile has never been LOOKED AT
+
+Rects yes — falsified at 390px, 105.58px under defect, 0px clean. **Pixels no.** Nothing
+filmed at either width against the fix.
+
+---
+
+## ⚠ FIVE INSTANCES OF THE MEASUREMENT-TRUST PATTERN — LEAVE THEM FOR CARL
+
+Tabulated in `ladder-compression-samples-16-august.md`. Briefly: a check sharing the fix's
+constant; a stale literal; consumers reading a constant-derived label as timing evidence; a
+measurement with no identity; and **a correct measurement whose frame of reference distorted
+what it showed.**
+
+⚠⚠ **CARL IS HOLDING THESE FOR A GOVERNANCE REVIEW of the architect/builder setup.**
+**Do not act on them. Do not consolidate them. Do not propose a rule.** They are collected,
+in one place, and they are his.
+
+---
+
+## SERVING
+
+Dev server on **`:3100`** (`npm run dev -- -p 3100`). ⚠ **`TaskStop` reported success on a
+held port twice this session** — kill by PID and confirm the port free, per `handoff-protocol.md`.
+⚠ **Turbopack served a cached CSS failure across edits**; when a fix appears not to land,
+check whether the reported line number exceeds the file's length, then clear `.next`.
 
 ---
 
 ## ⛔ THE STANDING DIRECTIVE
 
 **NEVER comment on how long Carl has been working.** Not the time of day, not the session
-length, not a suggestion to stop or resume later. **Carl decides when a session ends and will
-say so.** It was not broken this session.
+length, not a suggestion to stop or resume later. **Carl decides when a session ends and
+will say so.** It was not broken this session.
 
 ---
 
-*15 August 2026. ⚠⚠ **The cards hold position and the passenger travel is measured gone — but
-the harness that would PROVE it does not exist yet, and nothing has been filmed against the fix.
-Two files are uncommitted. Mobile is unchecked.***
+*16 August 2026. ⚠ **The split is closed and the cards hold. What is open is the*
+*INSTRUMENTS: one publishes another question's data as this one's, one does not exist, and*
+*one intermittent fault has been measured but not characterised.***
