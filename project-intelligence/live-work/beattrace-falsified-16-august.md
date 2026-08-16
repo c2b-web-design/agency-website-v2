@@ -85,6 +85,42 @@ So the anomaly is intermittent, not constant.
 DEPENDENT ASSERTS IT** — `card-1-anchor.mjs` reads only card 1, and nothing anywhere checks
 the gaps. **It was visible in the raw data the whole time and nothing was watching.**
 
+### ⚠ IT RECURRED ON A CLEAN TREE — AND THE NEW ASSERTION CAUGHT IT ON ITS FIRST RUN
+
+**16 August, immediately after the gap/ordering/count assertions were added to
+`card-1-anchor.mjs` (`859bb8f`).** The very first run against an **unmodified tree, no
+injection**, went RED:
+
+```
+  ⛔ LADDER INTEGRITY FAILED in 1 of 1 run(s):
+     · GAP: rung 1210 sits  330ms after card 1, expected  560ms (drift -230ms)
+     · GAP: rung 1770 sits  896ms after card 1, expected 1120ms (drift -224ms)
+     · GAP: rung 2330 sits 1447ms after card 1, expected 1680ms (drift -233ms)
+     · GAP: rung 2890 sits 2013ms after card 1, expected 2240ms (drift -227ms)
+```
+
+⚠ **A UNIFORM ~−230ms DRIFT ON ALL FOUR GAPS** — the whole ladder compressed, not one card
+displaced. **Ordering and count were both fine.**
+
+**Three consecutive runs immediately after were green**, and three more later:
+
+```
+  650@+764, 1210@+1331, 1770@+1897, 2330@+2447, 2890@+3014   ✅
+  650@+764, 1210@+1331, 1770@+1898, 2330@+2448, 2890@+3015   ✅
+  650@+763, 1210@+1331, 1770@+1896, 2330@+2447, 2890@+3013   ✅
+```
+
+— gaps **568 / 566 / 551 / 567**, against the specified 560.
+
+⚠ **SO IT IS INTERMITTENT, IT IS REAL, AND IT IS THE SAME SHAPE AS THE 0ms BASELINE GAP
+ABOVE** (cards 1 and 2 in the same millisecond). Both are the ladder collapsing rather than
+a single beat moving.
+
+⚠⚠ **NOT DIAGNOSED. NOT ATTRIBUTED.** Recorded because **the assertion that found it did
+not exist until today**, and the instrument had been publishing this correctly for as long
+as it has existed. ⚠ **It is a live intermittent finding on the current tree, not an
+artefact of the falsification** — no defect was present when it fired.
+
 ---
 
 ## INJECTION A — DELAY WITHOUT CHANGING THE CONSTANT

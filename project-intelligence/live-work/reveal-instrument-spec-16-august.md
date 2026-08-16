@@ -56,6 +56,58 @@ same keyframes at **1500 / 1550 / 1700 / 1450 / 2800 / 2400ms** at mobile widths
 different delays. **A literal cannot be right at both widths simultaneously.** Anyone
 typing one number has already failed at ≤639px.
 
+> ## ⚠⚠ THE PARAGRAPH ABOVE IS WRONG. CORRECTED 16 AUGUST 2026, SAME DAY.
+>
+> **The reveal's duration DOES NOT vary by width.** `Q5_REVEAL_MS = 1300` is a plain TS
+> constant in `answer-card-geometry.ts` with **no media query, no `matchMedia`, no
+> `innerWidth` branch** — verified in source, and verified live:
+>
+> ```
+> ── desktop 1440x900 ──          ── mobile 390x844 ──
+>   reveal duration: 1300ms         reveal duration: 1300ms
+>   card-beat-650 present: YES      card-beat-650 present: YES
+>   ladder: 650 1210 1770 2330 2890 ladder: 650 1210 1770 2330 2890
+> ```
+>
+> ⚠ **THE 1500 / 1550 / 1700 / 1450 / 2800 / 2400ms FIGURES ARE A DIFFERENT ANIMATION.**
+> They are the **OPENING sequence's** keyframes — the same
+> `enquiry-mask-reveal-horizontal` NAME reused on other elements with other timings.
+> **Sharing a keyframe name is not sharing a duration**, and this file read one as the
+> other.
+>
+> **So a typed `1300` is NOT "already wrong at ≤639px today". It is correct at both widths
+> today.**
+>
+> ### ⚠ THE DERIVE-DON'T-TYPE RULE STANDS — ON THE WEAKER, HONEST JUSTIFICATION
+>
+> **The rule survives, but its reason is smaller than §2 claimed.** The true version:
+>
+> > A typed `1300` is correct **today**, at every width. That is **a fact about the current
+> > CSS and the current TS constant, NOT a guarantee.** `Q5_REVEAL_MS` is marked
+> > PROVISIONAL under D-035 and Carl tunes by eye; the moment it moves, a typed literal
+> > silently stops matching and the harness reports a broken PAGE rather than a stale
+> > harness. **Derive it because it is cheap and cannot go stale — not because it is
+> > already broken.**
+>
+> ⚠ **THE STRONGER ARGUMENT — `q5-stutter.mjs` — IS UNAFFECTED AND REMAINS THE REASON THIS
+> SECTION EXISTS.** That harness took its window from the FIX'S OWN CONSTANT, which is
+> circularity, not staleness. Nothing in this correction weakens it.
+>
+> ### WHO WAS WRONG, AND HOW IT WAS CAUGHT
+>
+> **I wrote it**, in this file, while specifying the reveal instrument — inferring from
+> `globals.css:2014-2031` that the mobile block retimed *this* reveal, without checking
+> which elements those rules apply to.
+>
+> **It was caught by Carl instructing me to check the mobile ladder** before fixing
+> `q5-card1-halfway.mjs`, on the suspicion that `card-beat-650` might not exist at ≤639px.
+> It does. **The check was ordered for a different reason and found this instead.**
+>
+> ⚠ **THIS IS THE FOURTH WRONG REASONED CLAIM OF THE DAY** — after the `clip-path`/
+> `transform` comment, the over-broad ambiguous-silence claim, and the byte-plateau bound.
+> **All four were plausible readings of real text that nobody had tested.** The pattern is
+> recorded in `beattrace-falsified-16-august.md`.
+
 **The harness must state, in its output, which animation it read its window off and what
 duration that animation reported.**
 
@@ -156,9 +208,11 @@ effect. The verdict was right and the element it named was wrong. **Run green-fi
 that ships silently.**
 
 Requirements carried from that instrument:
-- **Falsify at BOTH widths** — and note that the mobile durations differ (§2), so a
-  width-scoped defect is the sharper test: it forces the harness to **discriminate**, not
-  merely react.
+- **Falsify at BOTH widths.** ⚠ **CORRECTED 16 AUGUST:** this said *"the mobile durations
+  differ (§2)"* — **they do not**; see the correction block in §2. A width-scoped defect is
+  still the sharper test, because it forces the harness to **discriminate** rather than
+  merely react (that is how `extras-hold-position.mjs` was falsified), but it must be
+  **constructed** as width-scoped rather than assumed to arise from the CSS.
 - **Declare in the OUTPUT what it does not watch**, not only in the header.
 - **Report what it resolved** — which animation, which element, what duration — every run.
 - **Fail loudly on resolving nothing.** A harness that finds no animation must not pass
@@ -206,7 +260,10 @@ would be diagnosis, and diagnosis is out of scope for this spec.
    what — ⚠ **not from a literal, per §2.**
 3. **Whether the poll perturbs the measurement** (§6). **Unknown, and blocking.**
 4. **How the poll and the video track are reconciled** when they disagree (§4).
-5. **Mobile**, where the durations differ per question and per width.
+5. **Mobile.** ⚠ **CORRECTED 16 AUGUST:** this said *"where the durations differ per
+   question and per width"* — **they do not.** The reveal is 1300ms at both widths and the
+   ladder is identical. Mobile is still unsettled for this instrument, but for the ordinary
+   reason (it has not been exercised), not because the timings diverge.
 6. **Whether this instrument or `?beattrace=1` should be falsified first** — the latter has
    ten dependents and is also unfalsified.
 
