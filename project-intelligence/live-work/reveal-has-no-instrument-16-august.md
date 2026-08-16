@@ -86,6 +86,13 @@ instrument. It remains the only class of evidence the reveal has ever had.
 
 ## ⚠ `?beattrace=1` IS UNFALSIFIED, WITH TEN DEPENDENTS — AN OPEN RISK
 
+> ⚠⚠ **SUPERSEDED 16 AUGUST 2026 — IT HAS NOW BEEN FALSIFIED.** Three injections plus a
+> cost measurement: `beattrace-falsified-16-august.md`. **The verdict inverts the suspicion
+> below** — the timestamps moved correctly under every injection, so the instrument is
+> sound. **The circularity is real but lives in the CONSUMERS**, two of which read the
+> constant-derived mark NAME as evidence of timing. The section below is kept as written;
+> read it as the question that was asked, not the answer that came back.
+
 **It has never produced a known-wrong reading.** There is no falsification record for it.
 It is another instrument that has **only ever been read as true**, and ten harnesses rest
 on it.
@@ -121,6 +128,38 @@ defect, in a way it cannot distinguish from not being asked.
 
 **An instrument whose failure signal and whose off-state are the same signal cannot report
 that failure.**
+
+### ⚠⚠ AMENDMENT, 16 AUGUST 2026 — THE CLAIM ABOVE IS TOO BROAD. CORRECTED FORWARD.
+
+**Falsified the same day** (`beattrace-falsified-16-august.md`, injection B). The section
+above is **only true for TOTAL absence.** Under **partial** failure the instrument
+discriminates cleanly, and it was tested:
+
+```
+card 3 suppressed, FLAG ON:   __cardTrace: 472 samples, cards [650, 1210, 2330, 2890]
+same defect,       FLAG OFF:  __cardTrace: 0 samples,   cards []
+```
+
+**Four cards present is plainly distinguishable from nothing at all.** ⚠ **So "an
+instrument that cannot distinguish a defect from being switched off" OVERSTATES IT** — it
+cannot make that distinction only when *every* card is missing.
+
+**THE NARROWER TRUE VERSION, which survives the falsification:**
+
+> ⚠ **NO HARNESS CHECKS WHICH CARDS ARE PRESENT AGAINST AN EXPECTED FIVE.** The instrument
+> publishes exactly what is needed to catch a missing card — `cards [650, 1210, 2330,
+> 2890]` is four — **and nothing consumes it that way.** The shared
+> `"⚠ NO TRACE — ?beattrace=1 published nothing"` message still cannot separate total
+> absence from a disabled flag.
+
+⚠ **THE Q4–Q1 CASE IS STILL COVERED BY THIS FILE'S ORIGINAL POINT**, because that case *is*
+total absence: no mount, no tick, no trace at all. **The claim was right about Q4–Q1 and
+wrong as a general property of the instrument.**
+
+⚠ **AND THE HEADLINE OF THE FALSIFICATION INVERTS THIS FILE'S EMPHASIS:** the instrument's
+**timestamps moved correctly under every injection.** The weakness is in the ten
+dependents, not in the instrument. Read that file before acting on this one's framing of
+`?beattrace=1` as suspect.
 
 ---
 
