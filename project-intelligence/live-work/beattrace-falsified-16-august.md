@@ -116,6 +116,26 @@ displaced. **Ordering and count were both fine.**
 ABOVE** (cards 1 and 2 in the same millisecond). Both are the ladder collapsing rather than
 a single beat moving.
 
+> ## ⚠⚠ CORRECTED 16 AUGUST — "THE LADDER COLLAPSING" IS WRONG. IT IS THE 1→2 GAP ALONE.
+>
+> **Characterised over 30 further runs** — `ladder-compression-samples-16-august.md`.
+>
+> **Gaps 2→3, 3→4 and 4→5 sit within ±11ms of nominal in EVERY compressed run.** Only the
+> **1→2 gap** moves, ranging **264–388ms against 560ms**.
+>
+> ⚠ **THE UNIFORM APPEARANCE IS AN ARTEFACT OF THIS HARNESS.** `card-1-anchor.mjs`
+> measures each beat's offset **FROM CARD 1**, so one early displacement of card 2
+> propagates as four equal-looking drifts. The `-230ms × 4` figure above is **one fault
+> seen four times, not four faults.**
+>
+> **Both statements above stand as written** — the runs happened, the numbers are real,
+> the anomaly is genuine. ⚠ **Only the SHAPE was misread**, and it was misread because the
+> instrument's frame of reference put the origin before the displacement.
+>
+> **Rate:** 8/20 desktop in one sample, **0/20 in a later interleaved sample.** Neither
+> sample separates width from ordering; a cold run is outstanding. ⚠ **The 0/20 does not
+> retire it.**
+
 ⚠⚠ **NOT DIAGNOSED. NOT ATTRIBUTED.** Recorded because **the assertion that found it did
 not exist until today**, and the instrument had been publishing this correctly for as long
 as it has existed. ⚠ **It is a live intermittent finding on the current tree, not an
