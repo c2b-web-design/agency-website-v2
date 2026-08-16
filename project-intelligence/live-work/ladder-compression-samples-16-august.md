@@ -1,8 +1,109 @@
-# The intermittent ladder compression — two samples
+# The card-1 entrance delay — three samples
+
+*Filed as "the intermittent ladder compression". ⚠ **That name is the wrong frame** — see the*
+*correction immediately below. The original title is kept here because the misread is part of*
+*the record.*
 
 **16 August 2026. OBSERVATION ONLY.** No diagnosis, no attribution, no trace opened. Two
 samples of the card entrance ladder, taken with `card-1-anchor.mjs`'s new gap assertion
 (`859bb8f`). **Nothing was fixed and nothing is explained here.**
+
+---
+
+# ⚠⚠⚠ READ THIS FIRST — THE NAME BELOW IS THE WRONG FRAME
+
+**Added 16 August 2026, after a cold sample of twenty runs. Everything below this section
+STANDS AS WRITTEN and nothing in it has been deleted** — the misread and its cause are both
+part of the record, and a clean file would hide both.
+
+## 1. THE CORRECTED NAME
+
+> **Card 1's entrance is intermittently delayed; cards 3–5 hold their absolute schedule.
+> The 1→2 gap absorbs the delay and closes to zero once the delay exceeds 560ms.**
+
+Short form: **the card-1 entrance delay.**
+
+⚠ **"The 1→2 gap compresses" describes the far end closing. It is the near end that moves.**
+Card 1 arrives late, card 2 arrives on time, and the gap between them is simply what is left.
+The old name points diagnosis at the wrong end of the ladder, and it did so for a week.
+
+## 2. THE EVIDENCE — cold sample, absolute offsets from the Begin click
+
+⚠ **From BEGIN, not from reveal start.** `card-1-anchor.mjs` sets `t0` immediately before
+`begin.click()`, so these figures include the canvas mount and the async precompile.
+
+| | card 1 | card 3 | card 5 |
+|---|---|---|---|
+| **Clean runs** (18 of 20) | +745–782 | +1880–1900 | +2997–3017 |
+| **Run 20** — the clean failure | **+958** (194ms late) | +1901 | +3019 |
+| **Run 1** — contaminated | **+1599** | +1945 | +3062 |
+
+**Run 20 is the load-bearing instance.** Card 1 is 194ms late while card 3 sits **1ms** and
+card 5 **2ms** outside the clean band. The tail does not move.
+
+⚠ **RUN 1 IS NOT LOAD-BEARING.** It carried Next's first-request compile, and its whole tail
+runs **~46ms late** (card 3 +1945, card 5 +3062) — not the ~2ms of run 20. A second, smaller
+displacement is present in run 1 that is absent from run 20. **Do not cite run 1 as a second
+instance of the same fault.**
+
+⚠ **A span from card 3 to card 5 is 1117ms in run 1, 1118 in run 20 and 1117 clean — and
+that identity CONCEALS run 1's 46ms shift,** because both endpoints moved together and the
+difference cancels it. Spans are the wrong frame for this fault too.
+
+**Cold rate: 2/20 including run 1, 1/19 excluding it. ⚠ Do not average them — they are not
+the same fault.**
+
+## 3. ⚠⚠ WHY THE WRONG NAME SURVIVED A WEEK — THE INSTRUMENT'S FRAME OF REFERENCE
+
+`card-1-anchor.mjs` measures **every beat's offset FROM CARD 1**. The origin sits on the one
+thing that moves. **A displacement of card 1 can therefore only ever present as a gap** —
+the instrument is incapable of showing it any other way. **The name came from the frame of
+reference, not from the fault.**
+
+⚠ **THIS IS THE SECOND TIME THIS HARNESS'S FRAME HAS CHANGED THE APPARENT SHAPE OF THIS
+SAME FAULT.**
+
+| | Reading it produced | What was actually there |
+|---|---|---|
+| **First** | "the whole ladder compresses — −230ms × 4, a uniform drift" | One displacement of card 2, seen four times over |
+| **Second** | "it is the 1→2 gap ALONE" | One displacement of **card 1**, seen as the gap beneath it |
+
+The first is corrected in `beattrace-falsified-16-august.md` and in the section immediately
+below this one. **Both misreads have the same cause: offsets measured from a moving origin.**
+
+**Recorded, not generalised. No rule is proposed here — Carl is holding the pattern for the
+governance review** (the five-instance table below is his; this is a second occurrence of
+instance 5, not a sixth instance).
+
+## 4. OPEN LEAD — UNTESTED, AND IT IS A LEAD AND NOTHING MORE
+
+The **Mode B clamp** at [answer-card-canvas.tsx:1781](components/enquiry/answer-card-canvas.tsx#L1781)
+rebases a card's `revealStart` to `nowMs - CARD_FIRST_ENTRANCE_MS` when its entrance effect
+starts more than 650ms after the anchor. **A single card clamping while its siblings stay
+anchored would produce exactly this signature.**
+
+⚠ **UNVERIFIED.** It requires that card 1's effect can run meaningfully later than its
+siblings', **which has not been established.** No measurement here supports it.
+
+⚠ **`?modetrace=1` cannot settle it as it stands.** Its entries carry `t`, `mode`,
+`overrunMs` and `q` — **`q` is a QUESTION identity, and there is no card field.** It cannot
+say *which* card clamped without inferring from array order.
+
+⚠ **The clamp is a safety net against a collapsed ladder and must not be "fixed" by removing
+it** — the code comment at that site says so, and this lead does not change that.
+
+## 5. WHAT IS STILL NOT ESTABLISHED
+
+- **No mechanism.** Neither the clamp lead nor anything else here identifies a cause.
+- **No rate.** Three samples gave **40%, 0%, 10%**.
+- **Cold is NOT the trigger.** 18 consecutive runs with the on-disk GPU shader cache created
+  and destroyed per run produced textbook-clean ladders.
+- ⚠ **The from-Begin frame does not separate "card 1 fired late" from "the reveal started
+  late and card 1 was on schedule relative to it."** Both produce +958. The harness prints
+  the field that would separate them (`precompileGap` / `revealStart`); it was not captured
+  in this sample.
+- **A fresh cold sample predicting card 1 at ~+950 BEFORE it runs has not been taken.** The
+  correction above is two readings of one dataset agreeing, not independent confirmation.
 
 ---
 
