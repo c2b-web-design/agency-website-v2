@@ -364,6 +364,78 @@ function urlFloat(key: string, fallback: number): number {
   return Number.isFinite(n) && n >= 0 ? n : fallback;
 }
 
+/**
+ * ⚠⚠ THE ONE PLACE THE CURRENT QUESTION'S IDENTITY IS READ. 16 August 2026.
+ *
+ * Returns `"Q5"`, `"Q4"`, … or `""` when no question is addressable.
+ *
+ * **Four call sites share this**: the two dev traces below, and the two
+ * question-suffixed canvas marks (`card-canvas-created-<q>` / `-compiled-<q>`)
+ * added 11 August for the Architect's Anomaly 6. Those two previously carried
+ * this query inline, byte-identically; they now call this instead.
+ *
+ * ⚠ IT CARRIES ITS OWN try/catch AND MUST NEVER THROW TO ITS CALLER. This is
+ * not defensive habit — it is the condition under which the two precedent sites
+ * could be substituted at all. `:4026` and `:4177` sit INSIDE a `try {} catch {}`;
+ * the beat-trace site in `useCardEntrance` DOES NOT, and it runs on the
+ * animation's hot path. A shared accessor that threw would silently move a
+ * caught failure into an uncaught one on the very path the traces exist to
+ * measure.
+ *
+ * ⚠ BEHAVIOUR IS PRESERVED EXACTLY: the `?? ""` fallback when the node is
+ * absent, and the `.trim()`. Both precedent marks are load-bearing for recorded
+ * figures (`warmup-value.mjs`, every mount→compiled comparison), so this had to
+ * be like-for-like or not happen at all.
+ *
+ * ⚠⚠ IT RETURNS `""` MORE OFTEN THAN IS OBVIOUS — AND THAT IS NOT A BUG HERE.
+ * `enquiry-opening.tsx` only pushes the `depth: 0` phrase when `!corridorMoving`,
+ * so **for the whole corridor move there is no `.enquiry-pdepth-0` in the DOM at
+ * all** and this returns `""`. Callers must keep their `if (q)` guard: an
+ * unlabelled entry is recoverable, a MISLABELLED one is not.
+ *
+ * ⚠ THE IDENTITY IS A DISPLAY STRING. The cue's text is `Q{qNum}`
+ * (`enquiry-opening.tsx:1429`). Change that copy and every suffixed mark
+ * silently changes key. A real per-question boundary signal is the honest fix
+ * and is deliberately NOT built here — it is scoped with the missing card
+ * entrance and the card exit, which need the same signal.
+ */
+function questionIdentity(): string {
+  try {
+    if (typeof document === "undefined") return "";
+    const el = document.querySelector(".enquiry-pdepth-0 .enquiry-phrase-cue");
+    return (el?.textContent ?? "").trim();
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * ⚠⚠ HOW OFTEN DID THE READ ABOVE COME BACK EMPTY? Dev-flag only.
+ *
+ * **The guard that keeps the data honest also makes its own failure rate
+ * invisible.** `if (q)` correctly refuses to emit a mislabelled entry — and then
+ * the skipped entry leaves no trace whatsoever, so a consumer filtering by
+ * question silently drops it and reports a confident, INCOMPLETE answer.
+ *
+ * This counter is what turns that silence into data. A count is enough; no
+ * timestamps. Any consumer can now ask *"did anything go unlabelled?"* before
+ * trusting a per-question filter.
+ *
+ * ⚠ IT IS ALSO THE EVIDENCE FOR THE BOUNDARY SIGNAL. The decision to take the
+ * DOM read now and a real signal later is only falsifiable if the DOM read's
+ * misses are counted. Without this the decision would have been recorded and
+ * made unmeasurable in the same change.
+ */
+function noteIdentitySkip(): void {
+  try {
+    if (typeof window === "undefined") return;
+    const w = window as unknown as { __traceIdentitySkips?: number };
+    w.__traceIdentitySkips = (w.__traceIdentitySkips ?? 0) + 1;
+  } catch {
+    /* a diagnostic must never break the thing it measures */
+  }
+}
+
 function ClayFormLight({ centre }: { centre: { x: number; y: number } }) {
   const ref = useRef<THREE.PointLight | null>(null);
   const invalidate = useThree((s) => s.invalidate);
@@ -1638,6 +1710,22 @@ function useCardEntrance(
       new URLSearchParams(window.location.search).get("beattrace") === "1";
 
     /**
+     * ⚠ THE QUESTION THIS ENTRANCE BELONGS TO — READ ONCE, FOR THE SAME REASON
+     * `tracing` IS. `__cardTrace` pushes one sample PER CARD PER FRAME (605 in a
+     * measured Q5 run), and a `querySelector` on each would put DOM work on the
+     * animation's hot path to answer a question whose answer cannot change
+     * mid-entrance.
+     *
+     * ⚠ AND READING IT ONCE IS THE MORE CORRECT READING, not just the cheaper
+     * one: every sample of one entrance belongs to the question that was active
+     * when the entrance began. A per-frame read would let a corridor move
+     * starting mid-rise relabel the tail of a run — the exact reattribution this
+     * whole change exists to prevent.
+     */
+    const traceQ = tracing ? questionIdentity() : "";
+    if (tracing && !traceQ) noteIdentitySkip();
+
+    /**
      * ⚠ READ HERE, NOT AT MODULE SCOPE. A module-level read runs once at import
      * — on the server during SSR, where `window` is undefined — so the dial
      * would bake in at its default and the URL would silently do nothing. This
@@ -1816,6 +1904,8 @@ function useCardEntrance(
     ) {
       const w = window as unknown as { __modeTrace?: unknown[] };
       w.__modeTrace ??= [];
+      const modeQ = questionIdentity();
+      if (!modeQ) noteIdentitySkip();
       w.__modeTrace.push({
         t: Math.round(performance.now()),
         mode: clamped ? "B-clamped" : "A-anchored",
@@ -1826,7 +1916,32 @@ function useCardEntrance(
         // Which question this canvas belongs to, read from the active phrase —
         // ⚠ `.enquiry-pdepth-0`, NEVER the first cue in document order, which is
         // a memory chip (instrument fault #11).
-        q: (document.querySelector(".enquiry-pdepth-0 .enquiry-phrase-cue")?.textContent || "?").trim(),
+        //
+        // ⚠⚠ THE `"?"` SENTINEL IS DELIBERATELY PRESERVED, 16 August 2026. This
+        // site has ALWAYS emitted `"?"` for an unaddressable question, where the
+        // two canvas marks emit `""` and skip. `ladder-mode.mjs` and
+        // `overrun-breakdown.mjs` both key on `t.q`, and `overrun-breakdown`
+        // de-duplicates on it — handing them `""` instead of `"?"` would be a
+        // silent behaviour change in a consumer this chunk is not scoped to
+        // touch. The shared accessor supplies the read; the sentinel stays here.
+        q: modeQ || "?",
+        /**
+         * ⚠⚠ THE MISSING CARD IDENTITY — ADDED 16 August 2026, AND IT IS THE
+         * MIRROR OF `__cardTrace`'s MISSING QUESTION.
+         *
+         * FIVE CARDS PUSH PER QUESTION and, until now, were separable only by
+         * order and timestamp. So the trace could say a question clamped but
+         * never WHICH CARD clamped — which is exactly what the card-1 entrance
+         * delay needs it to answer, since a single card clamping while its
+         * siblings stay anchored produces that fault's signature.
+         *
+         * ⚠ AND A CONSUMER IS ALREADY LOSING THIS DATA TODAY:
+         * `verify/overrun-breakdown.mjs` de-duplicates on `q` and keeps the
+         * FIRST entry per question, discarding the other four — reporting one
+         * card's mode as the whole question's. **Flagged, deliberately NOT fixed
+         * here: it is a `verify/` file and out of this chunk's scope.**
+         */
+        card: delayMs,
       });
     }
 
@@ -1863,6 +1978,42 @@ function useCardEntrance(
         if (typeof window !== "undefined" &&
             new URLSearchParams(window.location.search).get("beattrace") === "1") {
           performance.mark(`card-beat-${delayMs}`);
+          /**
+           * ⚠⚠ THE QUESTION-SUFFIXED TWIN — 16 August 2026.
+           *
+           * The bare mark above FIRES UNCHANGED. Ten harnesses read it and every
+           * recorded beat figure is keyed to that name; renaming it would move
+           * the goalposts under all of them. This ADDS a name beside it.
+           *
+           * ⚠ WITHOUT IT THE TRACE CANNOT SAY WHICH QUESTION A BEAT BELONGS TO.
+           * Measured 16 August: at Q4 the trace republished Q5's five marks and
+           * 605 samples — a full, correct-looking ladder at a question where NO
+           * CARD ENTERED. Indistinguishable from a healthy run; distinguishable
+           * from the flag being off only.
+           *
+           * ⚠ THIS DOES NOT MAKE A BEAT FIRE AT Q4, AND IS NOT MEANT TO.
+           * `shownRef` is reset only in the `!active` branch, and `active` here
+           * is `entranceRunning = active && compiled && warm` — `compiled` and
+           * `warm` latch, and `active` is stage-derived, so the reset never runs
+           * at a question step. The missing entrance is a separate defect.
+           * **What this delivers is that Q4's SILENCE is now legible as silence.**
+           *
+           * ⚠⚠ THE PREFIX IS `card-qbeat-`, NOT `card-beat-`, AND THAT IS NOT
+           * COSMETIC. Written first as `card-beat-${delayMs}-${q}` and CAUGHT BY
+           * REGRESSION: five of the ten dependents select with
+           * `startsWith("card-beat-")` and then `Number(name.replace("card-beat-", ""))`.
+           * A suffixed twin under the same prefix is picked up by that filter and
+           * parses to **NaN** — `card-1-anchor.mjs` reported a ten-rung ladder,
+           * `650@+761, NaN@+761, …`, and went ⛔ BROKEN on a healthy run.
+           *
+           * ⚠ "ADDITIVE" IS A CLAIM ABOUT THE CONSUMERS, NOT ABOUT THE CODE. A
+           * new name that EXTENDS an existing prefix is not additive to anything
+           * matching on that prefix. A distinct prefix is what makes the twin
+           * genuinely invisible to every existing reader.
+           */
+          const q = questionIdentity();
+          if (q) performance.mark(`card-qbeat-${delayMs}-${q}`);
+          else noteIdentitySkip();
         }
       }
 
@@ -1888,10 +2039,22 @@ function useCardEntrance(
        */
       if (tracing) {
         const w = window as unknown as {
-          __cardTrace?: Array<{ t: number; card: number; raw: number }>;
+          __cardTrace?: Array<{ t: number; card: number; raw: number; q: string }>;
         };
         w.__cardTrace ??= [];
-        w.__cardTrace.push({ t: Math.round(performance.now()), card: delayMs, raw });
+        /**
+         * ⚠ `q` ADDED 16 August 2026 — the missing dimension. The array is NEVER
+         * reset (no reset exists anywhere in the tree, harnesses included), so
+         * without a question key a multi-question walk reads Q5's samples as the
+         * current question's. ADDITIVE: the existing `card` field and every
+         * consumer that groups by it are untouched.
+         *
+         * ⚠ `q` MAY BE `""` — see `questionIdentity`. A blank is NOT silently
+         * benign: `window.__traceIdentitySkips` counts every one, and a consumer
+         * filtering by question must check that counter before trusting a
+         * per-question total.
+         */
+        w.__cardTrace.push({ t: Math.round(performance.now()), card: delayMs, raw, q: traceQ });
       }
 
       /**
@@ -4023,8 +4186,12 @@ export default function AnswerCardCanvas({
     try {
       const base = warm && !active ? "warmup-canvas-compiled" : "card-canvas-compiled";
       performance.mark(base);
-      const q = (document.querySelector(".enquiry-pdepth-0 .enquiry-phrase-cue")?.textContent || "").trim();
+      // ⚠ SUBSTITUTED 16 August 2026 — was this exact query inline. Verified
+      // like-for-like: same `?? ""` fallback, same `.trim()`, and the accessor
+      // carries its own try/catch so it cannot throw where this one caught.
+      const q = questionIdentity();
       if (q) performance.mark(`${base}-${q}`);
+      else noteIdentitySkip();
     } catch {}
     setCompiled(true);
     onCompiled?.();
@@ -4174,8 +4341,10 @@ export default function AnswerCardCanvas({
             // ⚠ THE QUESTION-SUFFIXED TWIN — see the note at the `-compiled`
             // mark. Without it, `created`→`compiled` can only ever be computed
             // for Q5, because both ends of the pair collide across questions.
-            const q = (document.querySelector(".enquiry-pdepth-0 .enquiry-phrase-cue")?.textContent || "").trim();
+            // ⚠ SUBSTITUTED 16 August 2026 — see the twin at `-compiled`.
+            const q = questionIdentity();
             if (q) performance.mark(`${base}-${q}`);
+            else noteIdentitySkip();
           } catch {}
         }}
       >
