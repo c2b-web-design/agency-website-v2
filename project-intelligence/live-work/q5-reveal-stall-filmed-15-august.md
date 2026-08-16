@@ -1,10 +1,23 @@
 # Q5's reveal stall — FILMED, 15 August 2026
 
 **First visual record of a defect chased for four sessions and never captured.**
-Recorded against the pre-fix build, which is the last build where it exists.
+Recorded against the pre-fix build.
 
 ⛔ **THIS IS A RECORD, NOT A DIAGNOSIS.** No attribution, no trace, no cause. What follows is
 what the frames show and how they were obtained. Nothing here says why.
+
+> ⚠⚠ **AMENDED 16 AUGUST 2026 — READ BEFORE CITING ANY FIGURE FROM THIS FILE.**
+>
+> 1. **The ~720ms is a FLOOR, not a centre, and 680–760 is not a bound.** The byte plateau
+>    under-reports; the frames either side of 204–221 were never read. Full amendment at the
+>    end of *THE METHOD* below.
+> 2. **"The last build where it exists" — struck.** ⚠ **THE STALL STILL REPRODUCES** on the
+>    post-fix tree, at the **same character** (`Wh`, mid-word, "What" incomplete). That line
+>    was written before anyone had looked. See
+>    `q5-reveal-stall-reobserved-16-august.md`.
+> 3. ⚠ **Do NOT compare that file's duration with this one's.** Different days, different
+>    machine state, single runs, and both figures come from an instrument now known to
+>    under-report. **Neither file supports a claim of improvement.**
 
 ---
 
@@ -129,6 +142,46 @@ identical `Q5  Wh`.** Frames f222 and beyond were viewed and show the text resum
 about bytes, not a statement about what is on screen — this project has a documented history of
 byte-level and rect-level checks passing on visibly broken builds. Looking at the pictures is
 what converts "the file sizes stopped changing" into "the text stopped moving."
+
+---
+
+## ⚠⚠ AMENDMENT, 16 AUGUST 2026 — THE BYTE PLATEAU UNDER-REPORTS. ~720ms IS A **FLOOR**, NOT A CENTRE.
+
+**Corrected forward; nothing above is rewritten.** The finding, the frames and the film all
+stand. What changes is **what the ~720ms figure means.**
+
+**Found while re-observing the stall on the current tree**
+(`q5-reveal-stall-reobserved-16-august.md`). In that capture the byte plateau ran f199–f206,
+and **f197 and f198 were VISUALLY IDENTICAL to f199 but sat OUTSIDE the plateau.** Eight
+frames by bytes; **ten frames by eye.**
+
+⚠ **SO THE METHOD LOCATES THE WINDOW BUT DOES NOT BOUND IT.** A byte plateau marks where the
+encoder is *certain* nothing moved. Frames at the edges can be visually static while still
+differing by tens or hundreds of bytes — the encoder is responding to sub-perceptual
+differences, and the plateau ends before the stall does.
+
+⚠ **APPLIED TO THE FIGURE ABOVE: the ~720ms (f204–f221) is a FLOOR.** The true stall is that
+long **or longer**. Specifically — **the frames either side of 204–221 were NEVER READ.** Part
+2 above viewed f207, f209, f210, f211, f214 (all interior) and f222+ (resumed). **f195–f203
+were characterised from BYTE DELTAS ALONE** — described above as "climb 21316 -> 21465" — and
+on the evidence of 16 August, a byte climb of that size **does not establish that the text was
+moving.** Those frames may be static. Nobody looked.
+
+⚠ **THE BOUND REQUIRES READING FRAMES OUTWARD FROM THE PLATEAU UNTIL MOTION VISIBLY RESUMES**
+— in both directions, by eye, one frame at a time. Not by bytes. The plateau tells you where
+to start looking; it does not tell you where to stop.
+
+**Consequences, stated plainly:**
+
+- **~680–760ms is NOT a bounded range for the 14 August stall.** It is the width of the byte
+  plateau, which is a lower bound on the true width.
+- **The `.webm` at `cbd7ad3` is unaffected and still authoritative** — the footage is intact
+  and the outward frames can be read from it at any time. **This amendment costs nothing to
+  resolve; it simply has not been done.**
+- ⚠ **Any comparison between the 14 August figure and a later one is comparing a floor to a
+  floor**, and both floors were measured by an instrument now known to under-report. The 16
+  August record already refuses the duration comparison on independent grounds; **this is a
+  second, separate reason not to make it.**
 
 ---
 
