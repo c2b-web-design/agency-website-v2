@@ -836,6 +836,46 @@ export const CARD_RISE_GAP_MS = Math.round(CARD_RISE_DURATION_MS * (1 - CARD_OVE
 export const Q5_REVEAL_MS = 1300;
 export const CARD_FIRST_ENTRANCE_MS = Math.round(Q5_REVEAL_MS / 2);
 
+/**
+ * ⚠⚠ HOW LONG AFTER THE ARRIVING EDGE THE REVEAL ACTUALLY STARTS — MEASURED,
+ * NOT CHOSEN. Candidate 3, 17 August 2026.
+ *
+ * **The entrance runs before the incoming question's reveal exists.** It re-arms
+ * on the `arriving` edge, which fires in the same React batch as `setActiveQ`;
+ * the new phrase has not painted, so neither `__revealStart` nor the CSS
+ * animation carries this question's clock yet. The anchor fell through to `now`,
+ * and the ladder ran correctly against a clock unrelated to the text — which
+ * destroys the only thing `CARD_FIRST_ENTRANCE_MS` means.
+ *
+ * **So the entrance PREDICTS the reveal's start instead of reading it.**
+ *
+ * ⚠ THE VALUE IS THE MIDPOINT OF A MEASURED RANGE, AND THE RANGE IS ONE FRAME.
+ * Measured on production, 40 question-steps across 10 walks:
+ *
+ *     min -1.50ms   max 14.40ms   range 15.90ms   midpoint 6.45ms
+ *
+ * Every observed offset fell inside a single frame interval (16.70ms measured),
+ * and the reveal's `startTime` lands exactly on a frame boundary (30 of 32
+ * samples). **The spread is QUANTISATION — which side of a frame tick the edge
+ * fell on — not uncertainty about behaviour.**
+ *
+ * ⚠ THE MIDPOINT IS CHOSEN TO BOUND THE ERROR, not to be typical. Predicting 0
+ * would be ~14ms early on the runs that land high; predicting 14 would be
+ * ~14ms late on those that land low. **The midpoint bounds the worst case at
+ * ±7.95ms**, against Carl's stated ±30ms tolerance.
+ *
+ * ⚠ IT IS NOT A DIAL AND MUST NOT BE TUNED BY EYE. It describes the browser's
+ * frame scheduling, not a piece of choreography. If it needs to change, the
+ * reason is that the measurement changed — re-measure it, do not adjust it.
+ * `verify/anchor-freshness.mjs` publishes the live prediction error every run.
+ *
+ * ⚠ PROVISIONAL under D-035 only in the sense that the MEASUREMENT may move on
+ * other hardware. It was measured at 60Hz; a 120Hz display halves the frame
+ * interval and would halve this. **The self-check is what would reveal that** —
+ * see `__anchorTrace`'s `deltaMs`.
+ */
+export const REVEAL_START_OFFSET_MS = 6.45;
+
 export const CARD_RISE_LADDER_MS = [0, 1, 2, 3, 4].map(
   (i) => CARD_FIRST_ENTRANCE_MS + i * CARD_RISE_GAP_MS,
 );

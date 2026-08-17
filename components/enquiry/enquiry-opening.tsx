@@ -1555,6 +1555,33 @@ export default function EnquiryOpening() {
        * STATES DIVERGE. It is deliberate, it is why `enterCorridorPhase` takes
        * an explicit `store` argument, and it is asserted by `phase-trace.mjs`.
        */
+      /**
+       * ⚠⚠ THE ARRIVING EDGE'S TIMESTAMP, PUBLISHED UNGATED — candidate 3,
+       * 17 August 2026, Carl's decision.
+       *
+       * **The entrance cannot see `__phaseTrace`**: that is gated on
+       * `?phasetrace=1` and does not exist in production. The prediction needs
+       * this moment in production, so it is published as its own value — the
+       * same shape and the same reasoning as `__activeQ` above, which is ungated
+       * for exactly the same reason.
+       *
+       * ⚠ WHAT THE ENTRANCE DOES WITH IT: the reveal starts on the first frame
+       * tick at or after this edge (measured: 32/32 offsets inside one frame
+       * interval), so the entrance predicts `edge + REVEAL_START_OFFSET_MS`
+       * rather than waiting for `animationstart` to publish a value it arrives
+       * too early to read.
+       *
+       * ⚠ WRITTEN BEFORE `setActiveQ`, so the entrance effect — which re-runs on
+       * the epoch that `setActiveQ` drives — can never observe the new question
+       * with the PREVIOUS question's edge still in place. The ordering is the
+       * same guarantee `__revealStartQ` gets from being written before
+       * `__revealStart`.
+       */
+      if (typeof window !== "undefined") {
+        const w = window as unknown as { __arrivingEdgeAt?: number; __arrivingEdgeQ?: number };
+        w.__arrivingEdgeQ = fromQ - 1;
+        w.__arrivingEdgeAt = performance.now();
+      }
       publishPhaseEdge("arriving", fromQ - 1);
       setActiveQ(fromQ - 1);
       enterCorridorPhase("settled", fromQ - 1);

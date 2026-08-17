@@ -113,6 +113,10 @@ import {
   // ⚠ IMPORTED FOR THE ANCHOR'S OVERRUN CLAMP, not for the ladder itself —
   // see `revealStart` in `useCardEntrance`.
   CARD_FIRST_ENTRANCE_MS,
+  // ⚠ THE PREDICTED REVEAL START (candidate 3) and the bound on how stale an
+  // arriving edge may be before it stops being a valid basis for one.
+  REVEAL_START_OFFSET_MS,
+  Q5_REVEAL_MS,
   // ⚠ `PROTO_MIN_VIEWPORT_PX` IS NO LONGER IMPORTED. The 1280px gate it drove
   // was removed on 7 August — the cards now measure the grid instead. The
   // constant still exists because `ENTRANCE_ANCHOR_CEILING_MS` cites it; see the
@@ -1922,7 +1926,17 @@ function useCardEntrance(
         __revealStart?: number;
         __revealStartQ?: number;
         __activeQ?: number;
-        __anchorTrace?: { q: number | null; stamp: number | null; rung: string; t: number }[];
+        __arrivingEdgeAt?: number;
+        __arrivingEdgeQ?: number;
+        __anchorTrace?: {
+          q: number | null;
+          stamp: number | null;
+          rung: string;
+          t: number;
+          predicted: number | null;
+          observed: number | null;
+          deltaMs: number | null;
+        }[];
       };
       const published = w.__revealStart;
       const stamp = w.__revealStartQ;
@@ -1964,6 +1978,50 @@ function useCardEntrance(
       const rung2 = anim && typeof anim.startTime === "number" ? anim.startTime : null;
 
       /**
+       * ⚠⚠ THE PREDICTION — candidate 3, Carl's decision, 17 August 2026.
+       *
+       * The reveal starts on the first frame tick at or after the `arriving`
+       * edge, so the entrance predicts `edge + REVEAL_START_OFFSET_MS` rather
+       * than reading a value it arrives too early to see.
+       *
+       * ⚠ IT IS GUARDED BY QUESTION, exactly as rung 1 is. An edge from the
+       * PREVIOUS question is precisely the fault this whole thread exists to
+       * remove, and a prediction built on one would reproduce it with a better
+       * number attached.
+       *
+       * ⚠ AND BY A BOUNDED AGE. The edge is only a valid basis for a prediction
+       * while the reveal it predicts has not long since started. A stale edge —
+       * one whose question never changed because the walk stalled — must not
+       * anchor a ladder minutes later. One reveal's duration is the natural
+       * bound: past that, the reveal being predicted is over.
+       */
+      const edgeAt = w.__arrivingEdgeAt;
+      const edgeQ = w.__arrivingEdgeQ;
+      const predicted =
+        typeof edgeAt === "number" &&
+        typeof edgeQ === "number" &&
+        typeof liveQ === "number" &&
+        edgeQ === liveQ &&
+        nowMs - edgeAt <= Q5_REVEAL_MS
+          ? edgeAt + REVEAL_START_OFFSET_MS
+          : null;
+
+      /**
+       * ⚠⚠ THE PREDICTION REPORTS ITS OWN DRIFT — §B of the plan, and it was the
+       * CONDITION of choosing prediction over waiting.
+       *
+       * **A prediction's failure mode is silence.** When rung 2 resolves, the
+       * real start is in hand at zero extra cost, so the two are compared and
+       * the delta published. Without this the constant could drift with a
+       * browser update, a refresh rate, or a machine, and nothing would say so.
+       *
+       * ⚠ REPORTED, NOT ASSERTED. Its own distribution has to be established
+       * before any threshold is set on it — the floor is measured, never
+       * inherited.
+       */
+      const drift = predicted !== null && rung2 !== null ? predicted - rung2 : null;
+
+      /**
        * ⚠ WHICH RUNG ANSWERED, RECORDED — `?anchortrace=1`, dev only, costs
        * nothing without the flag.
        *
@@ -1983,8 +2041,20 @@ function useCardEntrance(
           (w.__anchorTrace ??= []).push({
             q: liveQ ?? null,
             stamp: stamp ?? null,
-            rung: usable ? "1-published" : rung2 !== null ? "2-cssanim" : "3-now",
+            rung: usable
+              ? "1-published"
+              : rung2 !== null
+                ? "2-cssanim"
+                : predicted !== null
+                  ? "2b-predicted"
+                  : "3-now",
             t: Math.round(nowMs),
+            // ⚠ THE SELF-CHECK. `null` when rung 2 did not resolve — which is
+            // most of the time at a boundary, and is exactly why the prediction
+            // exists. A null here is "not comparable", never "no drift".
+            predicted: predicted === null ? null : Math.round(predicted * 10) / 10,
+            observed: rung2 === null ? null : Math.round(rung2 * 10) / 10,
+            deltaMs: drift === null ? null : Math.round(drift * 10) / 10,
           });
         }
       } catch {
@@ -2000,6 +2070,12 @@ function useCardEntrance(
        * previous question's clock the way the bare published value could.
        */
       if (rung2 !== null) return rung2;
+      /**
+       * ⚠ THE PREDICTION SITS BELOW RUNG 2 AND ABOVE `now`. A real observation
+       * beats a predicted one whenever it exists — that ordering is also what
+       * keeps the self-check above supplied with data to compare against.
+       */
+      if (predicted !== null) return predicted;
       return nowMs;
     })();
 
