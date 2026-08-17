@@ -384,11 +384,53 @@ export default function EnquiryOpening() {
   // (set true at the mask's `animationstart`). Under reduced motion there is no
   // reveal animation, so it is activated immediately in the effect below.
   const [beginActive, setBeginActive] = useState(false);
-  // True while the corridor is shifting one depth deeper: the answered question recedes
-  // (depth-0 -> depth-1), every older memory deepens by one, the heading recedes, and the
-  // next active question is gated out of depth-0 until the morph settles. Drives the heading
-  // recede + the receding phrase's card fade-out.
-  const [corridorMoving, setCorridorMoving] = useState(false);
+  /**
+   * ⚠⚠ THE QUESTION-BOUNDARY PHASE — THE SIGNAL THE SYSTEM NEVER HAD.
+   *
+   * Two open items shared one absence: Q4-Q1 have no card entrance (item 2) and
+   * the cards have no exit at all (item 4). **Neither can be built without
+   * something that says "this question is ending" and "a new question has
+   * begun"** — and until this landed, nothing in the running system said either.
+   * `handleNextStep` expressed the boundary as two bare `setTimeout`s, which
+   * cannot be asserted against by any instrument.
+   *
+   * | Phase | Begins | Means |
+   * |---|---|---|
+   * | `settled`  | t = 1150 (and at Begin) | a question is up and interactive |
+   * | `leaving`  | **t = 0**, at the Next-step click | this question's cards are departing |
+   * | `arriving` | **t = 1150**, with `setActiveQ` | the next question's cards are entering |
+   *
+   * ⚠ NAMED FOR WHAT IS HAPPENING, NOT FOR A BOOLEAN'S DIRECTION. An earlier
+   * dialog called one edge "rising" in its title and "falling" in its body; that
+   * ambiguity dies here.
+   *
+   * **Two edges, one owner.** `leaving` will drive the exit; `arriving` will
+   * re-arm the entrance. ⚠ Two edges is the correct model and is not a
+   * compromise — the choreography genuinely has two events with an ordering
+   * constraint between them. **The §5a hazard would be two edges with two
+   * OWNERS**, which is how you get signals that agree by coincidence until they
+   * don't.
+   *
+   * ⚠⚠ NOTHING ANIMATES OFF THIS YET. Step 1 lands the machine and its
+   * instrument only. The exit and the entrance re-arm are Steps 2 and 3, and the
+   * walk must look and behave exactly as it did before this commit.
+   */
+  const [corridorPhase, setCorridorPhase] = useState<"settled" | "leaving" | "arriving">("settled");
+  /**
+   * ⚠⚠ DERIVED, NEVER STORED — THE LOAD-BEARING CONSTRAINT OF THE WHOLE DESIGN.
+   *
+   * This was `useState<boolean>` with 5 writes and 8 reads. It is now computed
+   * from the phase, so **there is no second source of truth** and the 8 reads
+   * keep working unchanged. A stored copy could disagree with the phase for a
+   * commit; a derived one cannot disagree at all.
+   *
+   * ⚠ THE SEMANTICS ARE PRESERVED EXACTLY. It was true from the Next-step click
+   * until the step timeout fired, and both non-`settled` phases sit inside that
+   * window — `leaving` from t=0 and `arriving` at t=1150, which ends in the same
+   * React batch that returns the machine to `settled`. **Reduced motion never
+   * set it and still never does**: that path leaves the phase at `settled`.
+   */
+  const corridorMoving = corridorPhase !== "settled";
   // WebGL PRE-WARM. The contact canvas used to mount at `complete`, so creating
   // its context, compiling shaders and generating the PMREM environment all ran
   // on the main thread exactly while "Understood." was revealing. Measured: the
@@ -985,11 +1027,23 @@ export default function EnquiryOpening() {
   const [entranceRunningFor, setEntranceRunningFor] = useState<number | null>(null);
   const noteCardEntranceStart = useCallback(() => {
     // ⚠ THE NULL GUARD IS WHAT MAKES THIS SAFE FOR FIVE CANVASES, and it was
-    // written when there was only one. Since 1b every question mounts its own
-    // `AnswerCardCanvas`, so this fires again at Q4, Q3, Q2 and Q1 — but it
-    // records the FIRST entrance only, which is the one the opening's timing is
-    // anchored to. Without the guard, Q1's entrance would overwrite Q5's and the
-    // recorded anchor would drift later on every step.
+    // written when there was only one. It records the FIRST entrance only, which
+    // is the one the opening's timing is anchored to. Without the guard, Q1's
+    // entrance would overwrite Q5's and the recorded anchor would drift later on
+    // every step.
+    //
+    // ⚠⚠ THE CLAIM THAT THIS "FIRES AGAIN AT Q4, Q3, Q2 AND Q1" WAS FALSE, and
+    // stood here until 17 August 2026. It was true when every question mounted
+    // its own `AnswerCardCanvas`; the shared host does not unmount, so
+    // `entranceAnnounced` (`answer-card-canvas.tsx`) never resets and
+    // **`onEntranceStart` fires ONCE PER PAGE LOAD, at Q5.**
+    //
+    // ⚠ THE SECOND CONSEQUENCE, WHICH IS THE EXPENSIVE ONE: the label-prewarm
+    // effect below is keyed on this, so it prewarms Q4 only and **never prewarms
+    // Q3, Q2 or Q1.** Step 2 (the entrance re-arm) incidentally fixes that,
+    // which means Step 2 changes *when GPU work happens for three questions* —
+    // a performance change riding inside an animation fix. It is named here
+    // rather than discovered afterwards.
     if (cardEntranceStartedAtRef.current === null) {
       cardEntranceStartedAtRef.current = Date.now();
     }
@@ -1346,11 +1400,97 @@ export default function EnquiryOpening() {
     [activeQ, toggleOption],
   );
 
+  /**
+   * ⚠⚠ THE PHASE TRACE — AND IT LANDS WITH THE RESTRUCTURE, NOT AFTER IT.
+   *
+   * **This is the condition of doing the restructure at all.** As things stood,
+   * *nothing in the system could show a restructured `handleNextStep` getting
+   * the ordering wrong*: the exit has never been profiled, the reveal instrument
+   * is not built, and `?beattrace=1` watches the entrance only. **Two
+   * `setTimeout`s cannot be asserted against; three named phases with timestamps
+   * can.** A restructure shipped without this is the thing the gated ordering
+   * exists to avoid.
+   *
+   * ⚠ IT PUBLISHES THE QUESTION TOO. A phase without a question number cannot
+   * distinguish "Q5 left and Q4 arrived" from "the same edge fired twice" — the
+   * exact class of defect `?beattrace=1` had until 16 August, when it
+   * republished Q5's ladder at Q4 and was indistinguishable from a healthy run.
+   *
+   * ⚠ GATED ON `?phasetrace=1` AND COSTS NOTHING WITHOUT IT — one array push per
+   * edge, four edges per walk. Same idiom as `?beattrace=1` / `?warmtrace=1`.
+   *
+   * ⚠ `q` IS THE QUESTION THE EDGE IS ABOUT, PASSED EXPLICITLY, NOT READ FROM
+   * THE DOM. `questionIdentity()` in the canvas reads `.enquiry-pdepth-0`, which
+   * is absent for the whole corridor move — the defect Option B below fixes by
+   * consuming what this publishes. A publisher that read the DOM would inherit
+   * the very blindness it exists to cure.
+   */
+  const publishPhaseEdge = useCallback((phase: string, q: number) => {
+    try {
+      if (typeof window === "undefined") return;
+      if (new URLSearchParams(window.location.search).get("phasetrace") !== "1") return;
+      const w = window as unknown as {
+        __phaseTrace?: { phase: string; q: number; t: number }[];
+      };
+      (w.__phaseTrace ??= []).push({ phase, q, t: performance.now() });
+    } catch {
+      /* a diagnostic must never break the thing it measures */
+    }
+  }, []);
+
+  /**
+   * ⚠ THE ONE ACCESSOR BOTH EDGES GO THROUGH — never `setCorridorPhase` direct.
+   *
+   * Question identity has been read through a single accessor since `a8996b7`
+   * for the same reason: two call sites that each do the work independently is
+   * how you get two owners that agree by coincidence. **Every stored transition
+   * publishes**, so the trace cannot silently miss one that the machine took.
+   *
+   * ⚠ `publishPhaseEdge` IS ALSO CALLED DIRECTLY, once, for `arriving` — the
+   * edge that is deliberately not a stored state. See the call site.
+   */
+  const enterCorridorPhase = useCallback(
+    (phase: "settled" | "leaving" | "arriving", q: number) => {
+      publishPhaseEdge(phase, q);
+      setCorridorPhase(phase);
+    },
+    [publishPhaseEdge],
+  );
+
+  /**
+   * ⚠⚠ WHAT THE SYSTEM USES TO KNOW WHICH QUESTION IT IS ON — OPTION B.
+   *
+   * `answer-card-canvas.tsx`'s `questionIdentity()` reads
+   * `.enquiry-pdepth-0 .enquiry-phrase-cue` from the DOM, and `:1797` withholds
+   * that node for the entire corridor move. **The skip counter reads 4 on every
+   * page load, flag off included** — the read fails in normal operation, not
+   * only at the boundary.
+   *
+   * This publishes the live question so the canvas can read a value instead of a
+   * node. ⚠ **`corridorPhase` IS IN THE DEPENDENCY LIST DELIBERATELY**: the
+   * whole point is that this stays correct *during* the move, which is exactly
+   * when the DOM read fails.
+   *
+   * ⚠ IT IS NOT GATED ON A DEV FLAG. The two canvas marks that call
+   * `questionIdentity()` are not flag-gated either, which is why the skip
+   * counter reads 4 with no flags at all. A gated publisher would leave the
+   * unflagged path reading the DOM and failing exactly as before.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    (window as unknown as { __activeQ?: number }).__activeQ = activeQ;
+  }, [activeQ, corridorPhase]);
+
   // One generic corridor step for every question. The answered question is pushed to
   // memory (it becomes the newest = depth-1) and every older memory deepens by one — both
   // happen as a single setMemory because depth is derived from position in memory[]. The
   // answered question's phrase persists by key, so it morphs depth-0 -> depth-1 rather than
   // being torn down. The next active question is gated out of depth-0 until the morph settles.
+  //
+  // ⚠⚠ THE TWO `setTimeout`s ARE NOW A PHASE MACHINE — 17 August 2026. They were
+  // REPLACED, not wrapped: two timers that imply an ordering are exactly what
+  // makes today's ordering unassertable, so leaving them beside a phase would
+  // have created the second source of truth this design exists to prevent.
   function handleNextStep() {
     const fromQ = activeQ;
     const answersSnap = Array.from(selected).join(" • ");
@@ -1367,22 +1507,57 @@ export default function EnquiryOpening() {
         enterComplete();
         return;
       }
-      setCorridorMoving(true);
-      setTimeout(() => { enterComplete(); setCorridorMoving(false); }, 900);
+      // ⚠ THE COMPLETION EDGE GOES `leaving` AND STOPS — NOTHING ARRIVES.
+      // Q1 -> complete is a different code path (900ms, `enterComplete`, no
+      // `setActiveQ`) and it is the one that would strand the machine mid-cycle
+      // if it were forgotten. It returns to `settled` because the corridor is no
+      // longer moving; there is no `arriving` because no question is entering.
+      enterCorridorPhase("leaving", fromQ);
+      setTimeout(() => {
+        enterComplete();
+        enterCorridorPhase("settled", fromQ);
+      }, 900);
       return;
     }
 
     if (reducedMotion) {
+      // ⚠⚠ PRESERVED EXACTLY — SYNCHRONOUS, AND IT ACQUIRES NO PHASES.
+      // This is a no-animation branch. It never touched `corridorMoving` and it
+      // still does not: the phase stays `settled`, so the derived
+      // `corridorMoving` stays false exactly as before. **A phase it then had to
+      // wait through would be a behaviour change disguised as a refactor** —
+      // §B.4 names this as the way this design breaks.
       setActiveQ(fromQ - 1);
       return;
     }
 
     // Vacate depth-0, recede the heading + deepen the stack, then admit the next question
     // once the ~900ms morph has settled and the active field is clearly empty (~250ms beat).
-    setCorridorMoving(true);
+    enterCorridorPhase("leaving", fromQ);
     setTimeout(() => {
+      /**
+       * ⚠⚠ `arriving` IS AN EDGE, NOT A RENDERED STATE — AND THE DIFFERENCE IS
+       * THE WHOLE OF THIS STEP'S "NOTHING CHANGES" CLAIM.
+       *
+       * The pre-restructure code did `setActiveQ` and `setCorridorMoving(false)`
+       * in ONE React batch, so `corridorMoving` went true -> false with no
+       * intermediate commit. **Storing `arriving` as a phase would either be
+       * coalesced away by React — publishing a transition the system never held,
+       * which is an instrument that lies — or produce a commit that the old code
+       * never produced, which is a behaviour change.**
+       *
+       * So the stored phase goes `leaving` -> `settled` in that same single
+       * batch, and `arriving` is published to the trace as the EDGE it is. Step
+       * 2 re-arms the entrance from this edge; it does not need `arriving` to be
+       * a state the renderer sees, only a moment the system can name.
+       *
+       * ⚠ THIS IS THE ONE PLACE THE MACHINE'S THREE NAMES AND ITS TWO STORED
+       * STATES DIVERGE. It is deliberate, it is why `enterCorridorPhase` takes
+       * an explicit `store` argument, and it is asserted by `phase-trace.mjs`.
+       */
+      publishPhaseEdge("arriving", fromQ - 1);
       setActiveQ(fromQ - 1);
-      setCorridorMoving(false);
+      enterCorridorPhase("settled", fromQ - 1);
     }, 1150);
   }
 

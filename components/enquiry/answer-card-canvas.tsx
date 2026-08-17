@@ -387,20 +387,37 @@ function urlFloat(key: string, fallback: number): number {
  * figures (`warmup-value.mjs`, every mount→compiled comparison), so this had to
  * be like-for-like or not happen at all.
  *
- * ⚠⚠ IT RETURNS `""` MORE OFTEN THAN IS OBVIOUS — AND THAT IS NOT A BUG HERE.
- * `enquiry-opening.tsx` only pushes the `depth: 0` phrase when `!corridorMoving`,
- * so **for the whole corridor move there is no `.enquiry-pdepth-0` in the DOM at
- * all** and this returns `""`. Callers must keep their `if (q)` guard: an
- * unlabelled entry is recoverable, a MISLABELLED one is not.
+ * ⚠⚠ THE DOM READ IS NOW A FALLBACK — OPTION B LANDED 17 August 2026.
  *
- * ⚠ THE IDENTITY IS A DISPLAY STRING. The cue's text is `Q{qNum}`
- * (`enquiry-opening.tsx:1429`). Change that copy and every suffixed mark
- * silently changes key. A real per-question boundary signal is the honest fix
- * and is deliberately NOT built here — it is scoped with the missing card
- * entrance and the card exit, which need the same signal.
+ * **The read below used to be the only source, and it failed in normal
+ * operation.** `enquiry-opening.tsx` only pushes the `depth: 0` phrase when
+ * `!corridorMoving`, so for the whole corridor move there was no
+ * `.enquiry-pdepth-0` in the DOM at all and this returned `""`. Measured: the
+ * skip counter read **4 on every page load, with no flags set**, because the two
+ * canvas marks that call this are not flag-gated.
+ *
+ * The phase machine now publishes the live question number (`window.__activeQ`),
+ * which stays correct **during** the move — precisely when the DOM read fails.
+ * That is preferred; the DOM read remains as the fallback so this cannot become
+ * newly blind if the publisher is ever absent.
+ *
+ * ⚠ THE `""` CONTRACT IS UNCHANGED, AND SO ARE ALL FOUR `if (q)` GUARDS. **The
+ * accessor got more reliable; its contract did not change.** A caller that
+ * stopped guarding because "it always resolves now" would be trusting a claim
+ * this function does not make — it still returns `""` before the corridor
+ * starts, and on any page without an enquiry.
+ *
+ * ⚠ THE IDENTITY IS STILL A DISPLAY STRING, `Q{n}`. The published number is
+ * formatted to the SAME shape the DOM read produced, because ten harnesses and
+ * every recorded mark name key on `Q5`/`Q4`. Publishing a bare integer here
+ * would have changed every suffixed mark in the repo.
  */
 function questionIdentity(): string {
   try {
+    if (typeof window !== "undefined") {
+      const n = (window as unknown as { __activeQ?: number }).__activeQ;
+      if (typeof n === "number" && Number.isFinite(n)) return `Q${n}`;
+    }
     if (typeof document === "undefined") return "";
     const el = document.querySelector(".enquiry-pdepth-0 .enquiry-phrase-cue");
     return (el?.textContent ?? "").trim();
@@ -4132,11 +4149,29 @@ export default function AnswerCardCanvas({
    * and clear the filament mid-press.
    *
    * ⚠ THIS IS A LIFETIME PATCH, NOT THE STRUCTURAL ANSWER. It restores one
-   * behaviour that DOM nesting used to provide. **Everything else in this
-   * component that assumed a fresh mount per question is still surviving, and
-   * has not been enumerated** — see `live-work/structural-decision-note-card-
-   * host-lifetime.md` §3, which records that as an open finding rather than
-   * leaving it silent.
+   * behaviour that DOM nesting used to provide.
+   *
+   * ⚠⚠ "HAS NOT BEEN ENUMERATED" WAS TRUE UNTIL 16 AUGUST 2026 AND IS NOW FALSE.
+   * The enumeration exists — §A of the question-boundary plan lists all six refs
+   * inside this never-unmounting component (`entranceAnnounced`, `playedRef`,
+   * `shownRef`, `hasFired`, `prevLabelsKey`, `compiled`) and what each one
+   * survives. `live-work/structural-decision-note-card-host-lifetime.md` §3 is
+   * the older record.
+   *
+   * ⚠⚠ THE RESIDUAL GAP IS OPEN AND OWNED, NOT INHERITED BY DEFAULT — Carl,
+   * 17 August 2026. **This compares label CONTENT, so two questions with
+   * identical option lists would not clear `litCards`.** The structural answer
+   * is to key on the question-boundary phase instead of on text.
+   *
+   * ⚠ IT IS NOT DONE IN STEP 1, AND THE REASON IS STRUCTURAL RATHER THAN
+   * CONVENIENCE. This component receives `labels` and `active`; **it does not
+   * receive `activeQ` or any question identity.** Re-keying on the phase means
+   * threading a new prop into the canvas — a second structural decision, not a
+   * follow-on. Step 1's contract is that the walk behaves exactly as it did, and
+   * re-keying changes *when user-visible state clears*, which is the one thing a
+   * no-op step must not do. **Step 2 opens this same prop surface anyway** to
+   * re-arm `playedRef` / `shownRef` / `entranceAnnounced` from the phase, so the
+   * re-key costs one enumeration there instead of two.
    */
   const labelsKey = labels ? labels.join(" ") : "";
   const prevLabelsKey = useRef(labelsKey);
