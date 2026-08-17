@@ -1,4 +1,4 @@
-# Session Handoff — 16 August 2026 (the boundary signal is PLANNED, not built)
+# Session Handoff — 17 August 2026 (the boundary is BUILT; the cards are choreographed)
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -6,189 +6,146 @@
 
 ---
 
-## ⚠⚠ FIRST THING NEXT SESSION
-
-**Carl has a prompt saved with TWO AMENDMENTS to the boundary-signal plan.** He will paste it
-at the start of the session. **Do not start building from the plan file until that prompt
-arrives** — the amendments change it.
-
-**The plan is at `C:\Users\Carl Buckley\.claude\plans\composed-sprouting-raccoon.md`.**
-⚠ It is in the Claude plans directory, **not** in the repo — it is not committed and not
-gitignored-scratch; it simply lives outside the tree. Read it before the amendments land.
-
----
-
 ## STATE
 
-**Branch `fix/q5-stall-and-label-colour`. TREE CLEAN.**
+**Branch `fix/q5-stall-and-label-colour`. TREE CLEAN.** Servers: none. Ports 3000/3100 free.
 
-**Remote and local level at `a8996b7`** — verified by `git ls-remote`, not by trusting push:
+**Local and remote level** — verified by `git ls-remote`, not by trusting push. SHA at the
+foot of this file.
+
+---
+
+## WHAT LANDED TODAY — SEVEN COMMITS
 
 ```
-a8996b79ed53d41b01074307e25d58e6c9b1c4e8	refs/heads/fix/q5-stall-and-label-colour
+b2aaf05  corridor-motion was measuring a static element        (harness only)
+cbedda1  the question boundary is a phase machine              (Step 1)
+41d429a  Q4-Q1 get a card entrance — the epoch re-arms it      (Step 2)
+06d527c  the reveal anchor is stamped with its question        (+ rung trace)
+190ff1f  the reveal finally has a column — card 1's ratio      (item 3)
+a20a19d  the entrance predicts the reveal's start              (candidate 3)
+ede6eb0  the text jump is PRE-EXISTING                         (docs only)
 ```
 
-⚠ **The plan file is NOT in that commit.** Nothing from the last planning turn is committed.
-
-**Servers: none running.** Ports 3000 and 3100 both confirmed free, no node processes.
-
----
-
-## THIS SESSION — 4 commits
-
-```
-1f720b6  the fault is the CARD-1 ENTRANCE DELAY, not a 1→2 gap compression
-bcde727  two inline SUPERSEDED pointers beside the old name
-96421ea  SUPERSEDED pointer on the card-2 mechanism paragraph
-a8996b7  both dev traces carry per-card AND per-question identity
-```
+**Where it got to:** the ratio is **50.2% at every question** on production, **zero
+fall-throughs to `now`**, and the rung is asserted alongside the ratio. Q4–Q1 have a card
+entrance for the first time; the boundary has a name the system can read.
 
 ---
 
-## ✅ CLOSED THIS SESSION
+## ⚠ WHAT IS STILL OPEN
 
-### 1. The cold run — cold is NOT the trigger
+### 1. The text jump — characterised, NOT fixed. **The fix is Carl's.**
 
-20 invocations, fresh server, **fresh browser AND fresh on-disk GPU profile per run** (the
-harness `mkdtemp`s and `rmSync`s a profile per invocation, so 20 separate calls = 20 destroyed
-shader caches). **2/20 compressed, or 1/19 excluding a compile-contaminated run 1.**
+`text-jump-17-august.md` (`ede6eb0`). **Pre-existing**, identical to the digit on `a8996b7`
+and `a20a19d`, stylesheet byte-identical. `gap` and `letter-spacing` snap at the pdepth flip
+and are **not in the transition list**; `font-size`/`font-weight` do not change on that frame.
+**Whether they should ease, and on what curve, is a design question — Carl's.**
 
-Three samples now: **40%, 0%, 10%.** ⚠ **Rate still unestablished.** 18 consecutive
-cache-destroyed runs produced textbook-clean ladders.
+### 2. Item 4 / Step 3 — the card exit. **CARL SETTLES THE SEVEN.**
 
-### 2. ⚠ THE FAULT WAS MISNAMED FOR A WEEK — corrected in the record
+`card-exit-spec-16-august.md`. ⚠ **Today the cards have NO exit at all** — only the DOM box
+fades. A replacement, not a retiming.
 
-**"The 1→2 gap compresses" is the wrong frame.** The NEAR end moves: card 1 arrives late,
-card 2 arrives on time, and the gap is what is left. **Short form: the card-1 entrance delay.**
+### 3. ⚠⚠ THREE OF THE SEVEN ARE BLOCKED ON CARL SEEING THE 0.78 DIMMING
 
-Run 20 (the clean failure): card 1 **+958** (194ms late) while card 3 (+1901) and card 5
-(+3019) sit **1ms and 2ms** outside the clean band. **The tail does not move.**
+**It has still never been viewed by eye.** It first reached a stylesheet at `a8cee4b`.
+Outgoing cards depart at **0.78 now, 1.0 before**. It blocks **#6** (does it fight the WebGL
+exit), **#1** (curves) and **#3** (compression). **Items 2, 4, 5 and 7 do not depend on it.**
+**Costs one walk.**
 
-⚠ **Why it survived a week: `card-1-anchor.mjs` measures every beat's offset FROM CARD 1.**
-The origin sits on the thing that moves, so a displacement of card 1 can only ever present as
-a gap. **SECOND time this harness's frame changed the apparent shape of this same fault.**
+### 4. Item 5 — the card-1 entrance delay. Characterised and correctly named, NOT explained.
 
-Record: `ladder-compression-samples-16-august.md`, corrected at the top with four inline
-SUPERSEDED pointers below. ⚠ **Nothing was deleted** — the misread is part of the record.
+**Still live:** `card-1-anchor.mjs` fails **1 run in 3, on the cold run, ~450ms drift** —
+**verified identical on the stashed pre-change build**, so not caused by this week's work.
 
-### 3. Both dev traces now carry per-card AND per-question identity (`a8996b7`)
+### 5. Item 6 — mobile. **Never looked at.** Rects yes, pixels no.
 
-- **One shared accessor** `questionIdentity()`, called from four sites. ⚠ **It carries its own
-  try/catch** — `:4026`/`:4177` sit inside try/catch, the beat site does not and is on the
-  animation's hot path.
-- **Substituted at both precedent sites**, verified like-for-like.
-- ⚠ **NOT substituted at the modetrace `q` field** — that site emits the sentinel `"?"`, not
-  `""`, and two consumers key on it. The accessor supplies the read; the sentinel stays.
-- **Blank-key counter** `window.__traceIdentitySkips`.
-- **All four injections shown RED before the green was accepted.**
+### 6. The stall poller — deferred from item 3 to its own chunk, on Carl's decision.
 
-⚠⚠ **A REGRESSION I CAUSED AND CAUGHT MID-BUILD.** The twin was first written as
-`card-beat-${delayMs}-${q}`. Five dependents select with `startsWith("card-beat-")` then
-`Number(name.replace(...))` — it parsed to **NaN** and `card-1-anchor.mjs` went ⛔ BROKEN on a
-healthy run. **Prefix is now `card-qbeat-`.** *"Additive" is a claim about the CONSUMERS, not
-the code.*
+**Nothing measures whether the reveal STALLS.** A mid-wipe freeze produces no event and no
+value change in any instrument that exists.
+
+### 7. The ~18ms floor observation — **recorded, NOT established, not chased.**
+
+The ratio instrument's floor is close to one frame interval. It *may* be the same
+quantisation. **Not investigated, deliberately.**
 
 ---
 
-## ⚠⚠ OPTION B IS NO LONGER HYPOTHETICAL
+## ⚠⚠ THINGS A FRESH SESSION WOULD OTHERWISE REPEAT
 
-**The skip counter reads 4 on EVERY page load — flag off included.** The two canvas marks are
-not flag-gated, so the accessor runs regardless. **The DOM read is failing in normal
-operation, not just at the corridor boundary.**
-
-`questionIdentity()` returns `""` for the whole corridor move because
-`enquiry-opening.tsx:1797` only pushes the `depth: 0` phrase when `!corridorMoving` — **during
-a move `.enquiry-pdepth-0` is not in the DOM at all.**
-
-**Option B lands inside the boundary-signal plan as one function body change**, exactly as the
-`a8996b7` plan predicted.
-
----
-
-## THE PLAN AWAITING AMENDMENTS — items 2 + 4, one decision, three landings
-
-**Carl chose option 3: restructure `handleNextStep` into an explicit phase machine.**
-
-**Three phases:** `settled` / `leaving` (t=0, drives the exit) / `arriving` (t=1150, re-arms
-the entrance). **`corridorMoving` derived from the phase, not stored separately** — so its 8
-reads keep working and there is no second source of truth. **One accessor, both edges.**
-
-**Three gated steps:** ① phase machine + its instrument, **nothing animates**; ② entrance
-re-arm (item 2); ③ the exit (item 4).
-
-⚠ **Amendments already given in the rejected turn (carry them forward):** the phase machine
-**publishes its transitions and is falsified in the same chunk**; **one accessor for both
-edges**; and **three things to establish before any number becomes a comment.**
-
-### ⚠ THE ARITHMETIC WAS WRONG IN MY OWN DIALOG — corrected
-
-I wrote that a ~1060ms exit "finishes just as the space vacates." **It does not.** From source:
-recession **900ms** (`globals.css:1659`), extras fade **900ms** (`:1887`), step timeout
-**1150ms** (`enquiry-opening.tsx:1386`), exit ladder **~1060ms candidate**.
-
-**A 1060ms exit from t=0 ends at t=1060 — 160ms AFTER the space vacates, 90ms before the
-entrance.** ⚠ **The margin is 90ms, not zero.** None of these is a measurement; **no number
-here goes into a comment or a harness constant before it is measured on a real run.**
+- ⚠ **Q5 IS NOT A CLEAN CONTROL for the anchor fault.** It fell through **1 run in 3**. The
+  fault is **probabilistic per question, not positional** — one run had only Q2 fall through.
+  "Q4–Q1 broken, Q5 fine" is too neat a description.
+- ⚠⚠ **~50% BY ARITHMETIC AND ~50% BY CHOREOGRAPHY ARE INDISTINGUISHABLE ON THE RATIO
+  ALONE.** When the anchor falls through, `revealStart` is synthesised as
+  `now - CARD_FIRST_ENTRANCE_MS`, so card 1 lands one rung later **by construction** and the
+  ratio reads ~50% however untethered the cards are. **THE RUNG IS WHAT SEPARATES THEM.
+  ASSERT BOTH.** This tautology was found *inside* the instrument built to detect it.
+- ⚠ **`published <= nowMs` guards RUNG 1 ONLY.** The prediction is its own rung and bypasses
+  it. It looked like a precondition for the whole candidate and **resolved by not applying** —
+  the guard was never changed and is still correct.
+- ⚠ **THE ~1000ms `animationstart` LATENESS WAS WITHDRAWN.** n=1 reported as a property; it
+  did not reproduce (17–18ms on every fresh-browser run). **Do not resurrect it.**
+- ⚠ **THE COMPUTED-BOUNDARY OPTION WAS REJECTED, and the reason matters:** arithmetically
+  excellent (0.1ms median) but **wrong by a full frame 30–37% of the time** when the last
+  frame boundary is stale — precise in the easy case, wrong in the busy case the anchor exists
+  for. It also needed cached frame-interval state (`document.timeline` exposes only
+  `currentTime`; `screen.refreshRate` does not exist).
+- ⚠ **CARL'S TOLERANCE IS ±30ms on the 650 mark. The measurement floor is ~18ms**, so the
+  tolerance **discriminates poorly at this resolution.** ⚠ **That is a FINDING, not a number
+  to widen.**
+- ⚠ **CARD 2 IS CUED AT 28% INTO CARD 1's 2000ms ENVELOPE**, leaving **72% as tail**
+  (`CARD_RISE_GAP_MS` 560 against `CARD_RISE_DURATION_MS` 2000). ⚠ `CARD_RISE_DURATION_MS` is
+  **PROVISIONAL under D-035** — Carl tunes it by eye.
+- ⚠⚠ **THE REVEAL IS A SINGLE FIXED 1300ms FOR EVERY QUESTION** (`globals.css:1314`), and
+  `CARD_FIRST_ENTRANCE_MS` is `Q5_REVEAL_MS / 2` from that one number. **Carl's design intent
+  was durations set against average reading speed** — so "halfway" is only halfway *in a
+  reading sense* at whichever question 1300 was derived for. **Recorded as a design finding.
+  Carl's to decide.**
 
 ---
 
-## ⚠ OPEN ITEMS, LARGEST FIRST
+## THE CONSTANT, AND WHY IT IS NOT A DIAL
 
-### 1. The boundary signal — PLANNED, NOT BUILT. Awaiting Carl's two amendments.
+`REVEAL_START_OFFSET_MS = 6.45` (`answer-card-geometry.ts`). **Measured, not chosen:** 40
+question-steps across 10 production walks, min −1.50ms, max 14.40ms. **The midpoint bounds
+worst-case error at ±7.95ms.**
 
-### 2. ⚠ `verify/trace-identity.mjs` ENCODES THE CURRENT DEFECT
+⚠ **The spread is QUANTISATION, not uncertainty.** Every offset fell inside one frame
+interval (16.70ms measured) and the reveal's `startTime` lands exactly on a frame boundary
+(30/32). ⚠ **It describes frame scheduling, not choreography — if it needs to change, the
+reason is that the MEASUREMENT moved. Re-measure it; do not tune it by eye.**
 
-**It asserts Q4 entries are ABSENT. Correct today; WRONG the moment item 2 lands.**
-**The assertion INVERTS in the same commit that makes Q4 produce beats** — it is not deleted.
-The negative control ("Q5 survives the step intact") carries over unchanged. ⚠ **Its header
-sentence "Q4 having no beat is the correct result" must not survive that change silently.**
-
-### 3. ⚠ THE 0.78 DIMMING HAS STILL NEVER BEEN SEEN BY EYE
-
-It reached a stylesheet first at `a8cee4b`. Outgoing cards depart at **0.78 now, 1.0 before.**
-⚠ **It blocks three of the seven exit items** — #6 (does it fight the WebGL exit), #1 (curves),
-#3 (compression). **Items 2, 4, 5, 7 do not depend on it.** Costs one walk.
-
-### 4. Carl settles the seven open items in `card-exit-spec-16-august.md`
-
-Recommendations are in the plan file. ⚠ **The trap stands: `.enquiry-phrase-extras-out`
-(900ms CSS) NEVER touches the WebGL cards.** Today the cards have **no exit at all** — only
-the DOM box fades. **A replacement, not a retiming.**
-
-### 5. ⚠ A CONSEQUENCE CARL HAS NOT BEEN OFFERED
-
-`entranceAnnounced` never resetting means the **label prewarm never runs for Q3, Q2 or Q1**.
-**Step 2 would incidentally fix it** — so Step 2 changes *when GPU work happens for three
-questions*, a performance change riding inside an animation fix. **Name it before it lands.**
-This is the shape of §5a worked case 1.
-
-### 6. The reveal is UNPROFILED (item 3) — independent, untouched
-
-Spec written, not built: `reveal-instrument-spec-16-august.md`. The stall still reproduces.
-
-### 7. Mobile has never been LOOKED AT. Rects yes, pixels no.
+**The self-check publishes drift every run** (`__anchorTrace.deltaMs`), asserted at one frame
+by `anchor-freshness.mjs`. Honest: n=30, 0.8–7.0ms, median 6.4.
 
 ---
 
-## ⚠ FIVE INSTANCES OF THE MEASUREMENT-TRUST PATTERN — STILL CARL'S
+## ⚠⚠ SEVEN INSTRUMENT DEFECTS IN THREE DAYS — STILL CARL'S
 
-Tabulated in `ladder-compression-samples-16-august.md`. ⚠ **A SECOND OCCURRENCE OF INSTANCE 5
-was found this session** (the card-1 frame-of-reference misread) and is recorded there as a
-second occurrence, **not a sixth instance.**
+Several were found **inside instruments built to catch the fault they then reproduced.** They
+are recorded individually where they were found:
+`instrument-defects-17-august.md`, `reveal-ratio-instrument-17-august.md`,
+`anchor-stamp-17-august.md`, `mode-ab-finding-17-august.md`, `text-jump-17-august.md`.
 
-⚠⚠ **CARL IS HOLDING THESE FOR A GOVERNANCE REVIEW. Do not act on them, do not consolidate
-them, do not propose a rule.**
+⚠⚠ **DO NOT CONSOLIDATE THEM AND DO NOT DRAW A RULE FROM THEM. Carl is holding that pattern
+and will lead it himself.**
 
 ---
 
 ## SERVING
 
-`npm run dev -- -p 3100`. ⚠ **Next 16 refuses a second dev server for the same directory** —
-it reports the holding PID and exits 1. Kill by PID and confirm the port free.
-⚠ **`entrance-fade.mjs` and `label-with-card.mjs` hardcode `:3000`** and ignore
-`VERIFY_BASE_URL`. ⚠ **`entrance-fade.mjs` currently fails on a PRE-EXISTING strict-mode
-selector ambiguity** — confirmed identical on a stashed pre-change tree, not caused by
-`a8996b7`.
+`npm run build && npx next start -p 3100` for anything measuring pacing, mode, or the ratio —
+**production is the verdict.** ⚠ **Dev and production DISAGREE on the anchor fault** (0/75
+fall-throughs on dev, 25 on production); **dev alone reported it fixed.**
+
+`?phasetrace=1` boundary edges · `?beattrace=1` the ladder · `?modetrace=1` Mode A/B ·
+`?anchortrace=1` which rung answered **and the prediction's drift**.
+
+⚠ Kill servers **by PID** and confirm the port free — `TaskStop` has reported success on a
+held port.
 
 ---
 
@@ -200,6 +157,6 @@ say so.** It was not broken this session.
 
 ---
 
-*16 August 2026. ⚠ **The instruments now say which question they are talking about. What is***
-*⚠ **still missing is the thing the SYSTEM uses to know — and that is planned, amended twice,***
-*⚠ **and awaiting Carl's saved prompt.***
+*17 August 2026. ⚠ **The cards now arrive in a fixed relationship to the text at every***
+*⚠ **question. What no instrument can yet see is whether the text arrives smoothly — and***
+*⚠ **the one fault Carl can see by eye has no harness at all.***
