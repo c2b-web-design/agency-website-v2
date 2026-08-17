@@ -1543,11 +1543,40 @@ function easeRise(r: number, mode: string): number {
   }
 }
 
+/**
+ * ⚠⚠ `entranceEpoch` IS HOW A NEVER-UNMOUNTING CANVAS GETS A PER-QUESTION
+ * LIFETIME — item 2, 17 August 2026.
+ *
+ * **The entrance ran ONCE per page load, at Q5.** `active` here is
+ * `entranceRunning = active && compiled && warm`: `compiled` and `warm` latch,
+ * and `active` is stage-derived, so **the `!active` branch below never runs at a
+ * question step** and `playedRef` is never cleared. Q4-Q1's cards were simply
+ * already on screen, persisting from Q5 with new label textures.
+ *
+ * ⚠ IT WAS PROVIDED BY ACCIDENT AND D-048 REMOVED IT. Pre-12 August the canvas
+ * lived inside the keyed phrase, so a question step destroyed and rebuilt it and
+ * the entrance re-ran for free. Removing the per-question WebGL context was
+ * correct; the entrance was one of the behaviours that remount silently
+ * provided. Same shape as the other faults found that week — nothing coded
+ * wrong, something stopped being provided by where it sat.
+ *
+ * ⚠ AN EPOCH, NOT A TOGGLE, AND THE DIFFERENCE IS VISIBLE. Forcing `active`
+ * false for a frame to trigger the existing reset would run
+ * `group.visible = false` on cards that are on screen — a flash at every
+ * boundary, which is the exact defect `attachGroup` and the tick-loop
+ * visibility rules exist to prevent. The epoch resets the REFS without touching
+ * visibility, so the tick loop stays the only owner of what is on screen.
+ *
+ * ⚠ THE RESET IS THE ONE THAT ALREADY EXISTED. `playedRef`/`shownRef` are
+ * cleared exactly as the `!active` branch clears them; this is not a new
+ * lifecycle, it is an existing condition made to go false at the right moment.
+ */
 function useCardEntrance(
   active: boolean,
   reducedMotion: boolean,
   delayMs: number,
   onProgress: (p: number) => void = () => {},
+  entranceEpoch: number = 0,
 ) {
   const groupRef = useRef<THREE.Group | null>(null);
   const invalidate = useThree((s) => s.invalidate);
@@ -1646,6 +1675,14 @@ function useCardEntrance(
   const playedRef = useRef(false);
   /** Whether this card's rung has been reached; drives the dev beat trace. */
   const shownRef = useRef(false);
+  /**
+   * ⚠ WHICH EPOCH `playedRef` WAS LAST ARMED FOR. Compared by VALUE, and the
+   * comparison is what makes this safe to run on every commit: the effect below
+   * re-runs whenever any dependency changes, and without this it could not tell
+   * "a new question arrived" from "something unrelated re-rendered" — which is
+   * the exact churn `playedRef` exists to absorb.
+   */
+  const playedEpochRef = useRef(entranceEpoch);
 
   useEffect(() => {
     const group = groupRef.current;
@@ -1657,6 +1694,22 @@ function useCardEntrance(
       shownRef.current = false;
       invalidate();
       return;
+    }
+
+    /**
+     * ⚠⚠ THE RE-ARM — AND IT DELIBERATELY DOES NOT TOUCH `group.visible`.
+     *
+     * The `!active` branch above sets `visible = false` because the cards are
+     * genuinely leaving. Here they are not: this is a question boundary on a
+     * canvas that never unmounts, and the outgoing cards are still on screen.
+     * **Hiding them for a frame is Carl's "it appears, flashes and moves up"
+     * report** — the tick loop below owns visibility and is left to do so, with
+     * the same guarantee `attachGroup` gives on a fresh mount.
+     */
+    if (playedEpochRef.current !== entranceEpoch) {
+      playedEpochRef.current = entranceEpoch;
+      playedRef.current = false;
+      shownRef.current = false;
     }
 
     if (playedRef.current) return;
@@ -2176,7 +2229,11 @@ function useCardEntrance(
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [active, reducedMotion, delayMs, invalidate]);
+    // ⚠ `entranceEpoch` IS A DEPENDENCY, NOT A REF READ. The effect must RE-RUN
+    // when the question changes; reading the epoch from a ref would leave the
+    // effect asleep and the re-arm would never fire. `playedEpochRef` above is
+    // what stops the re-run from replaying the entrance on unrelated commits.
+  }, [active, reducedMotion, delayMs, invalidate, entranceEpoch]);
 
   return attachGroup;
 }
@@ -2382,11 +2439,14 @@ function AnswerCard({
   hovered,
   clay,
   label,
+  entranceEpoch,
 }: {
   slot: { x: number; y: number };
   delayMs: number;
   /** The answer text, drawn into this card's face. See `AnswerCardMesh`. */
   label?: string;
+  /** Bumped per question so the entrance re-arms — see `useCardEntrance`. */
+  entranceEpoch: number;
   /** Whether the pointer is over THIS card. Turns its label teal. */
   hovered: boolean;
   active: boolean;
@@ -2481,9 +2541,15 @@ function AnswerCard({
   const filament = useFilament(lit, glassTuning.filamentIntensity);
 
   const litRef = useRef<number>(0);
-  const groupRef = useCardEntrance(active, reducedMotion, delayMs, (p) => {
-    litRef.current = p;
-  });
+  const groupRef = useCardEntrance(
+    active,
+    reducedMotion,
+    delayMs,
+    (p) => {
+      litRef.current = p;
+    },
+    entranceEpoch,
+  );
 
   return (
     <group position={[slot.x, slot.y, 0]}>
@@ -3207,9 +3273,12 @@ function CardScene({
   mayCompile,
   gridWidth,
   labels,
+  entranceEpoch,
 }: {
   active: boolean;
   reducedMotion: boolean;
+  /** Bumped per question so the entrance re-arms — see `useCardEntrance`. */
+  entranceEpoch: number;
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
   litCards: boolean[];
@@ -3689,6 +3758,7 @@ function CardScene({
             hovered={hovered === i}
             clay={clay}
             label={labels?.[i]}
+            entranceEpoch={entranceEpoch}
           />
         </group>
       ))}
@@ -3812,12 +3882,26 @@ export default function AnswerCardCanvas({
    * frame as the filament heat, which is Carl-approved motion.
    */
   onToggle,
+  /**
+   * ⚠⚠ THE PER-QUESTION LIFETIME THIS CANVAS DOES NOT GET FROM MOUNTING.
+   *
+   * The host never unmounts (D-048), so every ref inside it outlives the
+   * question it belongs to. Bumping this at a question boundary re-arms the
+   * entrance — and NOTHING ELSE. See `useCardEntrance` for why it is an epoch
+   * rather than a forced `active` toggle.
+   *
+   * ⚠ DEFAULTS TO 0 SO EVERY OTHER CALLER IS UNAFFECTED — the warm-up instance
+   * and the clay study pass nothing and keep exactly one entrance, which is
+   * correct for both: neither has a corridor behind it.
+   */
+  entranceEpoch = 0,
 }: {
   active: boolean;
   warm?: boolean;
   onEntranceStart?: () => void;
   onCompiled?: () => void;
   labels?: readonly string[];
+  entranceEpoch?: number;
   onToggle?: (index: number) => void;
   /**
    * ⚠ `selectedIndices` BELONGS HERE AND IS DELIBERATELY NOT ADDED YET.
@@ -4233,18 +4317,37 @@ export default function AnswerCardCanvas({
   }, [onCompiled, warm, active]);
 
   /**
-   * Announce the entrance's real start, once.
+   * Announce the entrance's real start, once PER QUESTION.
    *
    * ⚠ IN AN EFFECT, NOT AT THE `active` PROP, so it fires after commit — when
    * the beats genuinely begin rather than when React decides they will.
+   *
+   * ⚠⚠ IT USED TO FIRE ONCE PER PAGE LOAD, AND THAT HAD A SECOND, EXPENSIVE
+   * CONSEQUENCE — 17 August 2026. `entranceAnnounced` was a bare boolean on a
+   * canvas that never unmounts, so `onEntranceStart` announced Q5 and never
+   * again. The label-prewarm effect in `enquiry-opening.tsx` is keyed on that
+   * announcement, so it prewarmed **Q4 only and never Q3, Q2 or Q1** — three
+   * questions paying for their label textures at mount instead of during the
+   * dwell.
+   *
+   * ⚠⚠ SO THIS LINE CHANGES WHEN GPU WORK HAPPENS FOR THREE QUESTIONS. That is
+   * a PERFORMANCE change riding inside an animation fix, and it is named here
+   * rather than discovered later — it is the shape of §5a worked case 1.
+   * `verify/ladder-mode.mjs` was run before and after this commit for exactly
+   * that reason; the figures are in the commit message and the step's record.
+   *
+   * ⚠ KEYED BY EPOCH, NOT RESET TO `false`. A boolean reset would need something
+   * to own the resetting; comparing the epoch it last announced for makes the
+   * question itself the owner, and there is no window in which it is armed for
+   * nobody.
    */
-  const entranceAnnounced = useRef(false);
+  const announcedEpochRef = useRef<number | null>(null);
   const entranceRunning = active && compiled && warm;
   useEffect(() => {
-    if (!entranceRunning || entranceAnnounced.current) return;
-    entranceAnnounced.current = true;
+    if (!entranceRunning || announcedEpochRef.current === entranceEpoch) return;
+    announcedEpochRef.current = entranceEpoch;
     onEntranceStart?.();
-  }, [entranceRunning, onEntranceStart]);
+  }, [entranceRunning, onEntranceStart, entranceEpoch]);
 
   /**
    * ⚠ THE HOST ALWAYS RENDERS; ONLY THE CANVAS WAITS FOR ITS MEASUREMENT.
@@ -4396,6 +4499,7 @@ export default function AnswerCardCanvas({
           hovered={hovered}
           onWarm={markWarm}
           mayCompile={warm}
+          entranceEpoch={entranceEpoch}
           // Falls back to the 576px reference for the frames before the first
           // measurement lands — the canvas is not yet visible then, and the
           // effect below commits the real width on the same frame it observes.

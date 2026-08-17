@@ -2063,6 +2063,24 @@ export default function EnquiryOpening() {
           onEntranceStart={noteCardEntranceStart}
           labels={QUESTIONS[activeQ].options}
           onToggle={handleCardToggle}
+          /*
+            ⚠⚠ THE ENTRANCE'S PER-QUESTION LIFETIME — item 2, 17 August 2026.
+            The host never unmounts (D-048), so without this the entrance ran
+            ONCE, at Q5, and Q4-Q1's cards were simply already on screen.
+
+            ⚠ `activeQ` IS THE EPOCH, AND THAT IS READING THE `arriving` EDGE,
+            not a substitute for it. `arriving` is published in the SAME React
+            batch as `setActiveQ` (`handleNextStep`), and `phase-trace.mjs`
+            asserts that ordering, so a change in `activeQ` IS the arriving edge
+            made observable. The edge itself is not a rendered state — it cannot
+            be subscribed to through React state — so the epoch is how a
+            component consumes it.
+
+            ⚠ IT IS NOT A COUNTER. The corridor counts DOWN 5->1 and never
+            revisits a question, so the value is unique per boundary within a
+            walk; `useCardEntrance` compares it by VALUE, never by ordering.
+          */
+          entranceEpoch={activeQ}
         />
       </div>
 

@@ -15,17 +15,28 @@
 // off only. Ten harnesses read that trace and every one inherited Q5's timings
 // as the current question's.
 //
-// ⚠⚠ WHAT A PASS HERE MEANS — READ THIS BEFORE READING A RESULT.
+// ⚠⚠ THE ASSERTION INVERTED ON 17 AUGUST 2026, IN THE COMMIT THAT MADE ABSENCE
+// WRONG. READ THIS BEFORE READING A RESULT.
 //
-// **It does NOT mean a card enters at Q4. It cannot, and this harness is not
-// asking it to.** `shownRef` is reset only in the `!active` branch, and `active`
-// is `entranceRunning = active && compiled && warm`, whose terms all latch or
-// are stage-derived — so no beat can fire at a question step. That is a separate
-// defect (the missing card entrance) and is out of scope here.
+// **Until Step 2 this harness asserted Q4 entries were ABSENT, and that was
+// correct.** Its header said, in these words: *"Q4 having no beat is the correct
+// result, not a failure."* It was true because `shownRef` was reset only in the
+// `!active` branch, and `active` (`entranceRunning = active && compiled && warm`)
+// never went false at a question step — so no beat could fire at Q4.
 //
-// **What a pass means is that Q4's SILENCE IS NOW LEGIBLE AS SILENCE** rather
-// than wearing Q5's numbers. A trace that correctly reports nothing happened at
-// Q4 is SUCCESS.
+// ⚠ **THAT SENTENCE IS GONE ON PURPOSE AND MUST NOT COME BACK.** It encoded the
+// defect as the expected state. The entrance re-arm (item 2) makes Q4 produce a
+// real ladder, so a harness still asserting absence would go RED on the correct
+// fix — the trap this file was warned about in its own plan.
+//
+// **What a pass NOW means:** Q4 produces five beats of its own, keyed `Q4`, AND
+// Q5's five are still present and unchanged. The harness was inverted, never
+// deleted and never weakened in advance.
+//
+// ⚠⚠ THE NEGATIVE CONTROL IS WHAT CARRIED OVER, AND IT IS WHY THIS INVERSION IS
+// SAFE. "Q5 survives the step intact" is what distinguishes IDENTITY from
+// DELETION, and it is true both before and after item 2. Without it, "Q4 now has
+// beats" would also pass against a trace that had simply been rewritten.
 //
 // ⚠ IT ASSERTS WITHOUT READING A SINGLE TIMESTAMP. The old trace was wrong in a
 // way timestamps could not expose — Q4's entries WERE Q5's entries, so every
@@ -59,7 +70,7 @@ const WATCH_MS = 6000;
  */
 const INJECTIONS = {
   strip: "remove the q suffix and q field from every entry",
-  forge: "fabricate a Q4-keyed entry that no card produced",
+  suppress: "swallow Q4's beat marks — the re-arm appearing not to have happened",
   noflag: "load without ?beattrace=1 so no trace exists",
   blankkey: "make the identity read return empty",
 };
@@ -86,10 +97,25 @@ if (!res || !res.ok()) {
   process.exit(1);
 }
 
-// ⚠ INJECTION 4 BREAKS THE IDENTITY READ AT ITS SOURCE, by renaming the class
-// the accessor looks for. The cards still enter; the question becomes
-// unaddressable — which is exactly the corridor-move case in production, where
-// `.enquiry-pdepth-0` is not in the DOM at all.
+/**
+ * ⚠ INJECTION 4 BREAKS THE IDENTITY READ AT ITS SOURCE, by renaming the class
+ * the accessor looks for.
+ *
+ * ⚠⚠ IT NO LONGER REACHES THE PRIMARY READ — MEASURED 17 August 2026, AND THIS
+ * IS A FINDING, NOT A REASON TO CHANGE ANYTHING.
+ *
+ * Option B (Step 1) made `questionIdentity()` read `window.__activeQ` FIRST and
+ * fall back to the DOM. This injection strips `.enquiry-pdepth-0`, which is now
+ * only the fallback — so the accessor still resolves, the skip counter stays at
+ * 0, and this injection reports "THE COUNTER DID NOT MOVE".
+ *
+ * **That is the correct behaviour of the fixed code, and the injection is now
+ * stale rather than the counter being broken.** To exercise the blank-key path
+ * today an injection would have to delete `window.__activeQ` AND the DOM node.
+ * ⚠ Recorded rather than rewritten: the counter is still the only thing that
+ * makes a blank key visible, and it must not be deleted to make a run look
+ * clean.
+ */
 if (INJECT === "blankkey") {
   await page.addStyleTag({ content: "/* injection 4 */" });
   await page.evaluate(() => {
@@ -137,13 +163,28 @@ const snapshot = async () =>
 
 const atQ5 = await snapshot();
 
-// ⚠ INJECTION 2 FABRICATES A Q4 KEY. If the "Q4 absent" assertion is vacuous —
-// never actually evaluated — this will not turn it RED and the assertion is
-// worthless.
-if (INJECT === "forge") {
+/**
+ * ⚠⚠ INJECTION 2 — RE-TARGETED WITH THE ASSERTION, 17 August 2026.
+ *
+ * It used to FABRICATE a Q4 key, because the assertion was "Q4 is absent" and
+ * the risk was that the assertion never actually evaluated. **The assertion is
+ * now "Q4 has five beats", so its mirror is suppression:** make it look as
+ * though the re-arm never happened, and the harness must go RED.
+ *
+ * ⚠ IT SUPPRESSES AT THE MARK, NOT AT THE SOURCE. Injecting into the component
+ * would need a build; swallowing the marks as they are recorded reproduces
+ * exactly what a failed re-arm looks like to every consumer of this trace.
+ */
+if (INJECT === "suppress") {
   await page.evaluate(() => {
-    performance.mark("card-qbeat-650-Q4");
-    (window.__cardTrace ??= []).push({ t: 0, card: 650, raw: 0.5, q: "Q4" });
+    const realMark = performance.mark.bind(performance);
+    performance.mark = (name, ...rest) =>
+      /^card-qbeat-\d+-Q4$/.test(String(name)) ? undefined : realMark(name, ...rest);
+    const realPush = Array.prototype.push;
+    const t = (window.__cardTrace ??= []);
+    t.push = function (...items) {
+      return realPush.apply(this, items.filter((e) => e?.q !== "Q4"));
+    };
   });
 }
 
@@ -159,14 +200,31 @@ if (INJECT === "strip") {
   });
 }
 
-// ── step to Q4 ────────────────────────────────────────────────────────────────
-// Select an answer, then advance. The cards must be given longer than a full
-// ladder to enter, so that "no beat at Q4" is a measurement and not impatience.
-const card = page.locator("canvas").first();
-await card.click({ position: { x: 200, y: 450 } }).catch(() => {});
-await page.waitForTimeout(400);
-const next = page.getByRole("button", { name: /next step|send/i }).first();
-await next.click({ timeout: 5000 }).catch(() => {});
+/**
+ * ── step to Q4 ──────────────────────────────────────────────────────────────
+ *
+ * ⚠⚠ THIS BLOCK SWALLOWED ITS OWN FAILURES AND NEVER STEPPED — FOUND 17 August
+ * 2026, AND ITS OLD PASS WAS VACUOUS.
+ *
+ * It clicked `page.locator("canvas")` at a hardcoded `{x:200, y:450}` and
+ * wrapped BOTH clicks in `.catch(() => {})`. Under the shared host the canvas is
+ * `pointer-events: none` — the hit targets are DOM siblings — so the card click
+ * silently failed, `selected` stayed empty, the Next-step wrapper stayed
+ * `opacity: 0; pointer-events: none`, and its click failed too. **Both failures
+ * were caught and discarded.**
+ *
+ * ⚠ SO THE HARNESS REPORTED "Q4 CORRECTLY HAS NO BEATS" WHILE NEVER LEAVING Q5.
+ * The assertion it was proudest of was satisfied by a step that did not happen.
+ * Measured against a throwaway probe on the same build: real user actions
+ * produced five Q4 marks and 605 new samples; this block produced zero.
+ *
+ * ⚠ NO `.catch()` HERE, DELIBERATELY. A step that cannot happen must fail the
+ * run, not be absorbed into the measurement. `card-interaction.mjs` is the
+ * precedent for the hit-target route.
+ */
+await page.getByTestId("answer-card-hover-0").dispatchEvent("pointerdown");
+await page.waitForTimeout(500);
+await page.getByRole("button", { name: /next step|send/i }).first().click({ timeout: 10000 });
 await page.waitForTimeout(WATCH_MS);
 
 const atQ4 = await snapshot();
@@ -202,14 +260,31 @@ if (!faults.length && !q5Keys.length) {
   );
 }
 
-// 2. Q4 produced nothing — asserted by KEY, never by time.
-if (q4KeysAfter.length) {
+/**
+ * ⚠⚠ 2. Q4 PRODUCES ITS OWN LADDER — INVERTED 17 AUGUST 2026 (item 2).
+ *
+ * **This asserted ABSENCE until the commit that made absence wrong.** The
+ * entrance now re-arms at the `arriving` edge, so Q4 runs a real five-rung
+ * ladder of its own. Asserted by KEY, never by time — the original defect was
+ * invisible to timestamps, because Q4's entries WERE Q5's entries and every time
+ * was internally consistent.
+ *
+ * ⚠ FIVE, NOT "SOME". A partial ladder is a real failure mode: the epoch could
+ * re-arm `playedRef` while something else left `shownRef` set, and three beats
+ * would look healthy in a log.
+ */
+const EXPECTED_RUNGS = 5;
+if (!faults.length && q4KeysAfter.length !== EXPECTED_RUNGS) {
   faults.push(
-    `Q4 ENTRIES PRESENT (${q4KeysAfter.join(", ")}) — no card enters at Q4, so no beat should carry a Q4 key.`,
+    `Q4 PRODUCED ${q4KeysAfter.length} IDENTIFIED BEAT(S), EXPECTED ${EXPECTED_RUNGS}` +
+      (q4KeysAfter.length ? ` (${q4KeysAfter.join(", ")})` : "") +
+      ". The entrance re-arm should give Q4 a ladder of its own.",
   );
 }
-if (atQ4.traceKeys.includes("Q4")) {
-  faults.push(`__cardTrace CARRIES Q4 SAMPLES — same fault on channel B.`);
+if (!faults.length && !atQ4.traceKeys.includes("Q4")) {
+  faults.push(
+    `__cardTrace CARRIES NO Q4 SAMPLES — the beat marks fired but channel B saw nothing.`,
+  );
 }
 
 /**
@@ -262,13 +337,19 @@ if (INJECT === "blankkey") {
 }
 
 if (!faults.length) {
-  console.log(`  ✅ IDENTITY HOLDS.`);
-  console.log(`     Q5's beats are present and keyed; Q4 carries no beat of its own;`);
-  console.log(`     the two are separable BY KEY ALONE, with no timestamp consulted.`);
+  console.log(`  ✅ IDENTITY HOLDS, AND Q4 HAS A LADDER OF ITS OWN.`);
+  console.log(`     Q4 produced ${q4KeysAfter.length} keyed beats; Q5's ${q5KeysAfter.length} are still present and`);
+  console.log(`     unchanged. The two are separable BY KEY ALONE, no timestamp consulted.`);
   console.log(`
-  ⚠ Q4 HAVING NO BEAT IS THE CORRECT RESULT, NOT A FAILURE. No card enters at
-    Q4 — a separate defect. What is fixed here is that its silence now READS as
-    silence instead of wearing Q5's numbers.
+  ⚠ THE NEGATIVE CONTROL IS WHAT MAKES THIS MEAN ANYTHING. "Q4 now has beats"
+    would also pass against a trace that had simply been rewritten. Q5 surviving
+    the step INTACT is what separates identity from deletion, and it is asserted
+    both before and after item 2.
+
+  ⚠ THIS SAYS THE BEATS FIRED, NOT THAT THE ENTRANCE LOOKS RIGHT. It reads marks
+    and keys, never pixels. Whether Q4's cards actually fade in as Carl asked —
+    *"once the space is vacated, the next question reveals and its cards fade
+    in"* — is his eye, not this harness.
 
   ⚠ Skips: ${atQ4.skips}. Any consumer filtering by question must check this
     before trusting a per-question total — a blank key is dropped, not counted.
