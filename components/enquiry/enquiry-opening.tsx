@@ -1639,8 +1639,28 @@ export default function EnquiryOpening() {
                     // not: if this never fires, the ladder falls back to reading
                     // the animation directly and behaves exactly as it does today.
                     if (e.animationName.startsWith("enquiry-mask-reveal")) {
-                      (window as unknown as { __revealStart?: number }).__revealStart =
-                        performance.now();
+                      const w = window as unknown as {
+                        __revealStart?: number;
+                        __revealStartQ?: number;
+                      };
+                      /**
+                       * ⚠⚠ STAMPED WITH THE QUESTION IT BELONGS TO — 17 August
+                       * 2026, and the stamp is the whole point.
+                       *
+                       * This value used to be published bare, and the ladder's
+                       * only guards were "is a number" and "is in the past"
+                       * (`answer-card-canvas.tsx`). **A reveal start from the
+                       * PREVIOUS question satisfies both.** Measured: Q4's
+                       * entrance read Q5's anchor from 8.2 seconds earlier and
+                       * clamped, on 4 of 6 runs.
+                       *
+                       * ⚠ WRITTEN BEFORE THE VALUE, so a reader can never see a
+                       * fresh timestamp still carrying the old question's stamp.
+                       * The reverse order has a window — one statement wide, but
+                       * this is exactly the class of race being fixed.
+                       */
+                      w.__revealStartQ = qNum;
+                      w.__revealStart = performance.now();
                     }
                   }
                 : undefined

@@ -1918,11 +1918,42 @@ function useCardEntrance(
     const anchor = (() => {
       if (typeof document === "undefined") return nowMs;
 
-      const published = (window as unknown as { __revealStart?: number }).__revealStart;
-      // ⚠ GUARDED ON BEING A NUMBER AND ON BEING IN THE PAST. A stale value from
-      // a previous question is handled by the clamp below; a garbage value is
-      // not, so it is rejected here rather than trusted.
-      if (typeof published === "number" && published <= nowMs) return published;
+      const w = window as unknown as {
+        __revealStart?: number;
+        __revealStartQ?: number;
+        __activeQ?: number;
+        __anchorTrace?: { q: number | null; stamp: number | null; rung: string; t: number }[];
+      };
+      const published = w.__revealStart;
+      const stamp = w.__revealStartQ;
+      const liveQ = w.__activeQ;
+
+      /**
+       * ⚠⚠ THE STAMP MUST MATCH THE QUESTION BEING ENTERED — 17 August 2026.
+       *
+       * **"Is a number" and "is in the past" were not enough**, and this is the
+       * measured reason: a reveal start from the PREVIOUS question satisfies
+       * both. Q4's entrance read Q5's anchor from 8.2s earlier, the clamp fired,
+       * and the ladder ran correctly against the wrong clock — 100% Mode B at
+       * Q4-Q1 on the first production capture, 4 of 6 runs on dev.
+       *
+       * ⚠ `CARD_FIRST_ENTRANCE_MS` IS A RELATIONSHIP, NOT A DELAY. 650 is
+       * `Q5_REVEAL_MS / 2` — Carl's instruction is that card 1 arrives HALFWAY
+       * THROUGH THE REVEAL. An anchor from another question keeps the ladder's
+       * internal spacing and destroys the only thing the number means.
+       *
+       * ⚠ THE STAMP IS COMPARED TO `__activeQ`, WHICH ITEM 1 ALREADY PUBLISHES.
+       * No new signal was invented for this: the phase machine publishes the
+       * live question and `questionIdentity()` already reads it.
+       */
+      const usable =
+        typeof published === "number" &&
+        published <= nowMs &&
+        // ⚠ BOTH SIDES MUST BE PRESENT. A missing stamp is not a match — an
+        // unstamped value is exactly the pre-fix case and must not be trusted.
+        typeof stamp === "number" &&
+        typeof liveQ === "number" &&
+        stamp === liveQ;
 
       const el = document.querySelector(".enquiry-q-text-reveal");
       const anim = el
@@ -1930,7 +1961,45 @@ function useCardEntrance(
         .find((a) => (a as CSSAnimation).animationName === "enquiry-mask-reveal-horizontal");
       // `startTime` is `CSSNumberish`; on a document timeline it is a number, and
       // this guard is what keeps that true rather than assumed.
-      if (anim && typeof anim.startTime === "number") return anim.startTime;
+      const rung2 = anim && typeof anim.startTime === "number" ? anim.startTime : null;
+
+      /**
+       * ⚠ WHICH RUNG ANSWERED, RECORDED — `?anchortrace=1`, dev only, costs
+       * nothing without the flag.
+       *
+       * **A guard that turns a wrong answer into no answer is not automatically
+       * better**, and without this that failure would be invisible: rejecting
+       * the stale anchor and silently falling through to `nowMs` produces
+       * `overrun 0`, which reads as Mode A in the modetrace while the cards are
+       * just as untethered from the text as before. **Mode A by arithmetic is
+       * not Mode A by choreography.** This is what makes the two
+       * distinguishable.
+       */
+      try {
+        if (
+          typeof window !== "undefined" &&
+          new URLSearchParams(window.location.search).get("anchortrace") === "1"
+        ) {
+          (w.__anchorTrace ??= []).push({
+            q: liveQ ?? null,
+            stamp: stamp ?? null,
+            rung: usable ? "1-published" : rung2 !== null ? "2-cssanim" : "3-now",
+            t: Math.round(nowMs),
+          });
+        }
+      } catch {
+        /* a diagnostic must never break the thing it measures */
+      }
+
+      if (usable) return published;
+      /**
+       * ⚠ RUNG 2 IS QUESTION-CORRECT BY CONSTRUCTION, which is why rejecting
+       * rung 1 is safe. `.enquiry-q-text-reveal` is only ever on the ACTIVE
+       * phrase (`isActive && !reducedMotion`, `enquiry-opening.tsx`), so its
+       * animation is this question's reveal or there is none. It cannot serve a
+       * previous question's clock the way the bare published value could.
+       */
+      if (rung2 !== null) return rung2;
       return nowMs;
     })();
 
