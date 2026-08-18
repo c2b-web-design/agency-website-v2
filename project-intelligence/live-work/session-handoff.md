@@ -21,7 +21,7 @@ Screenshots are at `live-work/shots/commit2-0{1..4}-*.png`.
 
 ## STATE
 
-**Branch `fix/q5-stall-and-label-colour`, head `PENDING`. TREE CLEAN. Pushed and verified by
+**Branch `fix/q5-stall-and-label-colour`, head `a7261d3`. TREE CLEAN. Pushed and verified by
 `git ls-remote`.** Servers: none. Ports 3000/3100 free.
 
 ```
@@ -30,7 +30,7 @@ Screenshots are at `live-work/shots/commit2-0{1..4}-*.png`.
 3d6c671  verify — the appearance gate and the reachability gate
 264cfc8  verify — the per-frame opacity curve + context-rules.md's new rule
 7811be0  docs   — the session records
-PENDING  docs   — this handoff
+a7261d3  docs   — this handoff
 ```
 
 ---
