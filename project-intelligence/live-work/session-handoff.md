@@ -1,4 +1,4 @@
-# Session Handoff — 17 August 2026 (the boundary is BUILT; the cards are choreographed)
+# Session Handoff — 18 August 2026 (the text jump is closed; the cards now leave)
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -8,155 +8,163 @@
 
 ## STATE
 
-**Branch `fix/q5-stall-and-label-colour`. TREE CLEAN.** Servers: none. Ports 3000/3100 free.
+**Branch `fix/q5-stall-and-label-colour`, head `5ed68ac`. TREE CLEAN.**
+Servers: none. Ports 3000/3100 free.
 
-**Local and remote level** — verified by `git ls-remote`, not by trusting push. SHA at the
-foot of this file.
+**Local and remote level** — verified by `git ls-remote`, not by trusting push.
 
----
-
-## WHAT LANDED TODAY — SEVEN COMMITS
+## WHAT LANDED TODAY — FOUR COMMITS, OLDEST FIRST
 
 ```
-b2aaf05  corridor-motion was measuring a static element        (harness only)
-cbedda1  the question boundary is a phase machine              (Step 1)
-41d429a  Q4-Q1 get a card entrance — the epoch re-arms it      (Step 2)
-06d527c  the reveal anchor is stamped with its question        (+ rung trace)
-190ff1f  the reveal finally has a column — card 1's ratio      (item 3)
-a20a19d  the entrance predicts the reveal's start              (candidate 3)
-ede6eb0  the text jump is PRE-EXISTING                         (docs only)
+387653a  chunk A  — horizontal half of the text jump (gap, letter-spacing)
+d008b4d  exit (a) — the exit's derived arithmetic, no behaviour change
+c831bf9  exit (b) — the card exit
+5ed68ac  chunk B  — vertical half of the text jump (line-height)
 ```
 
-**Where it got to:** the ratio is **50.2% at every question** on production, **zero
-fall-throughs to `now`**, and the rung is asserted alongside the ratio. Q4–Q1 have a card
-entrance for the first time; the boundary has a name the system can read.
+---
+
+## ⛔ CLOSED TODAY — DO NOT REOPEN
+
+### The text jump — fixed in BOTH axes
+
+`gap`, `letter-spacing` and `line-height` now ease on the existing
+**900ms `cubic-bezier(0.37, 0, 0.63, 1)`**, which was already the design for `font-size`.
+**All four elements measure dx 0.00 / dy 0.00** against the 17 August baseline.
+
+⚠ **The cue INHERITS the line-height change**, so **three** elements move on it, not the two
+the rule names.
+
+### The card exit — BUILT, MEASURED, AND APPROVED BY CARL'S EYE
+
+> *"noticeably faster than the entrance, flow and choreography are sound."*
+
+**425ms per card, 119ms derived gap, `CARD_OVERLAP` held at 0.72**, ladder **5→4→3→2→1**,
+fall-through on cubic ease-in. Last card dark at **~876ms**; the label swap at ~1150ms
+**clears by 274ms**.
+
+### Everything on the previous closed list
+
+Trace identity (`a8996b7`), the phase machine (`cbedda1`), the entrance re-arm (`41d429a`),
+the anchor stamp (`06d527c`), the reveal instrument (`190ff1f`), the predicted anchor
+(`a20a19d`), and the card decoupling.
 
 ---
 
-## ⚠ WHAT IS STILL OPEN
+## ⚠ `CARD_EXIT_HEADROOM_MS` IS A DESIGN FIGURE, NOT SLACK
 
-### 1. The text jump — characterised, NOT fixed. **The fix is Carl's.**
+The **~252ms** between the exit completing and the next reveal beginning is deliberate —
+Carl: **thinking and breathing time for the reader**. **Do not reclaim it as tuning budget.**
 
-`text-jump-17-august.md` (`ede6eb0`). **Pre-existing**, identical to the digit on `a8996b7`
-and `a20a19d`, stylesheet byte-identical. `gap` and `letter-spacing` snap at the pdepth flip
-and are **not in the transition list**; `font-size`/`font-weight` do not change on that frame.
-**Whether they should ease, and on what curve, is a design question — Carl's.**
+### The substantive finding behind that decision — KEEP IT
 
-### 2. Item 4 / Step 3 — the card exit. **CARL SETTLES THE SEVEN.**
+⚠⚠ **The exit does not merely replace a cut with a fade. It MOVES THE DEPARTURE TO BEFORE
+THE ARRIVAL.** Measured pre-change, the cards extinguished at **~1341ms — 188ms AFTER the
+reveal began at 1153ms.**
 
-`card-exit-spec-16-august.md`. ⚠ **Today the cards have NO exit at all** — only the DOM box
-fades. A replacement, not a retiming.
-
-### 3. ⚠⚠ THREE OF THE SEVEN ARE BLOCKED ON CARL SEEING THE 0.78 DIMMING
-
-**It has still never been viewed by eye.** It first reached a stylesheet at `a8cee4b`.
-Outgoing cards depart at **0.78 now, 1.0 before**. It blocks **#6** (does it fight the WebGL
-exit), **#1** (curves) and **#3** (compression). **Items 2, 4, 5 and 7 do not depend on it.**
-**Costs one walk.**
-
-### 4. Item 5 — the card-1 entrance delay. Characterised and correctly named, NOT explained.
-
-**Still live:** `card-1-anchor.mjs` fails **1 run in 3, on the cold run, ~450ms drift** —
-**verified identical on the stashed pre-change build**, so not caused by this week's work.
-
-### 5. Item 6 — mobile. **Never looked at.** Rects yes, pixels no.
-
-### 6. The stall poller — deferred from item 3 to its own chunk, on Carl's decision.
-
-**Nothing measures whether the reveal STALLS.** A mid-wipe freeze produces no event and no
-value change in any instrument that exists.
-
-### 7. The ~18ms floor observation — **recorded, NOT established, not chased.**
-
-The ratio instrument's floor is close to one frame interval. It *may* be the same
-quantisation. **Not investigated, deliberately.**
+⚠ **Vacate-before-arrive is FUNCTIONAL in this corridor, not aesthetic.**
 
 ---
 
-## ⚠⚠ THINGS A FRESH SESSION WOULD OTHERWISE REPEAT
+## OPEN — ⚠ CARL DECIDES WHAT IS NEXT. DO NOT CHOOSE FOR HIM.
 
-- ⚠ **Q5 IS NOT A CLEAN CONTROL for the anchor fault.** It fell through **1 run in 3**. The
-  fault is **probabilistic per question, not positional** — one run had only Q2 fall through.
-  "Q4–Q1 broken, Q5 fine" is too neat a description.
-- ⚠⚠ **~50% BY ARITHMETIC AND ~50% BY CHOREOGRAPHY ARE INDISTINGUISHABLE ON THE RATIO
-  ALONE.** When the anchor falls through, `revealStart` is synthesised as
-  `now - CARD_FIRST_ENTRANCE_MS`, so card 1 lands one rung later **by construction** and the
-  ratio reads ~50% however untethered the cards are. **THE RUNG IS WHAT SEPARATES THEM.
-  ASSERT BOTH.** This tautology was found *inside* the instrument built to detect it.
-- ⚠ **`published <= nowMs` guards RUNG 1 ONLY.** The prediction is its own rung and bypasses
-  it. It looked like a precondition for the whole candidate and **resolved by not applying** —
-  the guard was never changed and is still correct.
-- ⚠ **THE ~1000ms `animationstart` LATENESS WAS WITHDRAWN.** n=1 reported as a property; it
-  did not reproduce (17–18ms on every fresh-browser run). **Do not resurrect it.**
-- ⚠ **THE COMPUTED-BOUNDARY OPTION WAS REJECTED, and the reason matters:** arithmetically
-  excellent (0.1ms median) but **wrong by a full frame 30–37% of the time** when the last
-  frame boundary is stale — precise in the easy case, wrong in the busy case the anchor exists
-  for. It also needed cached frame-interval state (`document.timeline` exposes only
-  `currentTime`; `screen.refreshRate` does not exist).
-- ⚠ **CARL'S TOLERANCE IS ±30ms on the 650 mark. The measurement floor is ~18ms**, so the
-  tolerance **discriminates poorly at this resolution.** ⚠ **That is a FINDING, not a number
-  to widen.**
-- ⚠ **CARD 2 IS CUED AT 28% INTO CARD 1's 2000ms ENVELOPE**, leaving **72% as tail**
-  (`CARD_RISE_GAP_MS` 560 against `CARD_RISE_DURATION_MS` 2000). ⚠ `CARD_RISE_DURATION_MS` is
-  **PROVISIONAL under D-035** — Carl tunes it by eye.
-- ⚠⚠ **THE REVEAL IS A SINGLE FIXED 1300ms FOR EVERY QUESTION** (`globals.css:1314`), and
-  `CARD_FIRST_ENTRANCE_MS` is `Q5_REVEAL_MS / 2` from that one number. **Carl's design intent
-  was durations set against average reading speed** — so "halfway" is only halfway *in a
-  reading sense* at whichever question 1300 was derived for. **Recorded as a design finding.
-  Carl's to decide.**
+1. ⚠ **ITEM 7 — the selected card now departs STILL LIT**, filament fading across 425ms.
+   **An UNAPPROVED VISUAL CHANGE awaiting Carl's eye.** If he rejects it, clear `litCards`
+   on the leaving edge — **a one-line change to a different owner, not a change to the
+   exit.**
+2. **The two films at `verify/out/card-exit-film/` are UNWATCHED**, including the
+   **390×844 narrow** one. ⚠ **That is the first mobile look this work has ever had.**
+3. **Commit (c)** — the `useCardEntrance` → `useCardChoreography` rename. ⚠ **LAST AND
+   ALONE**, so it does not bury structural diffs in mechanical noise.
+4. **Still unsettled from the exit spec:** Q1 → complete, reduced-motion behaviour, mobile.
+5. **The 1300ms reveal is a single fixed duration for every question**
+   (`globals.css:1314`) while Carl's design intent was durations set against reading speed.
+   ⚠ **A DESIGN FINDING AND HIS — do not act.**
+6. **The stall poller**, deferred to its own chunk. **Nothing currently measures whether the
+   reveal STALLS**; a mid-wipe freeze produces no event in any instrument that exists.
 
 ---
 
-## THE CONSTANT, AND WHY IT IS NOT A DIAL
+## ⚠⚠ INSTRUMENT CAVEATS — CARRY THESE, THEY COST REAL TIME TO REDISCOVER
 
-`REVEAL_START_OFFSET_MS = 6.45` (`answer-card-geometry.ts`). **Measured, not chosen:** 40
-question-steps across 10 production walks, min −1.50ms, max 14.40ms. **The midpoint bounds
-worst-case error at ±7.95ms.**
-
-⚠ **The spread is QUANTISATION, not uncertainty.** Every offset fell inside one frame
-interval (16.70ms measured) and the reveal's `startTime` lands exactly on a frame boundary
-(30/32). ⚠ **It describes frame scheduling, not choreography — if it needs to change, the
-reason is that the MEASUREMENT moved. Re-measure it; do not tune it by eye.**
-
-**The self-check publishes drift every run** (`__anchorTrace.deltaMs`), asserted at one frame
-by `anchor-freshness.mjs`. Honest: n=30, 0.8–7.0ms, median 6.4.
-
----
-
-## ⚠⚠ SEVEN INSTRUMENT DEFECTS IN THREE DAYS — STILL CARL'S
-
-Several were found **inside instruments built to catch the fault they then reproduced.** They
-are recorded individually where they were found:
-`instrument-defects-17-august.md`, `reveal-ratio-instrument-17-august.md`,
-`anchor-stamp-17-august.md`, `mode-ab-finding-17-august.md`, `text-jump-17-august.md`.
-
-⚠⚠ **DO NOT CONSOLIDATE THEM AND DO NOT DRAW A RULE FROM THEM. Carl is holding that pattern
-and will lead it himself.**
+- ⚠ **`canvas.__r3f` IS UNDEFINED ON PRODUCTION BUILDS.** Scene-walking instruments report
+  **⛔ BROKEN on a healthy page.** `satin-anisotropy-live.mjs` uses that route and **works
+  only in dev.**
+- ⚠⚠ **`__cardTrace` IS SILENT ACROSS THE QUESTION BOUNDARY** — the tick loop
+  self-terminates at `t >= 1`, so there are **no samples in the window the departure
+  occupies.** The exit plan named it *"the right precedent"* and **THAT WAS WRONG.**
+  `verify/card-exit.mjs` reads **rendered pixels** instead. **Do not revert it to the trace
+  channel.**
+- ⚠ **`verify/card-exit.mjs` measures a 151.8ms mean gap against the derived 119ms.** The
+  offered explanation — a **50% LUMINANCE** threshold, and glass over dark ground does not
+  fall linearly as alpha falls — is **CONSISTENT WITH THE DATA BUT UNVERIFIED.** **Settle it
+  by reading alpha directly before trusting this harness as regression cover.**
+  `CARD_EXIT_DURATION_MS` is untouched at **425**.
+- ⚠ **`verify/text-jump-rects.mjs`: its dy channel was falsified against a live fault. ITS
+  dx CHANNEL HAS NEVER BEEN SEEN RED.** **Do not treat it as full regression cover.**
 
 ---
 
-## SERVING
+## ⚠ THE VARIANCE THREAD — three sightings of one shape, worth pulling when there is room
 
-`npm run build && npx next start -p 3100` for anything measuring pacing, mode, or the ratio —
-**production is the verdict.** ⚠ **Dev and production DISAGREE on the anchor fault** (0/75
-fall-throughs on dev, 25 on production); **dev alone reported it fixed.**
+- `card-1-anchor` fails **1 cold run in 3, ~450ms drift**, verified identical pre-change
+- the **extinguish path lagged React commit by ~190ms** while the incoming entrance was on
+  time
+- the exit's **last-card-dark measured 751ms and 876ms on the same build**
 
+**All three are commit-to-pixel timing on the same canvas.**
+⚠ **Record as a LEAD, not a finding.**
+
+---
+
+## ENVIRONMENT TRAPS
+
+- **Production is the verdict**; dev and production disagree on anchor behaviour.
+- **Turbopack serves cached CSS failures.** Tell: **a reported line number exceeding the
+  file's length.** `rm -rf .next`.
+- ⚠ **`TaskStop` reports success on a held port. Kill by PID, confirm free.**
+- `corridor-motion.mjs` **REFUSES :3000** — production build only, and it is **vertical-only
+  and normalises 0..1**, which removes a displaced origin by construction.
+
+**Serving:** `npm run build && npx next start -p 3100`.
 `?phasetrace=1` boundary edges · `?beattrace=1` the ladder · `?modetrace=1` Mode A/B ·
-`?anchortrace=1` which rung answered **and the prediction's drift**.
+`?anchortrace=1` which rung answered and the prediction's drift.
 
-⚠ Kill servers **by PID** and confirm the port free — `TaskStop` has reported success on a
-held port.
+---
+
+## METHOD — ALL OF IT EARNED FROM REAL FAILURES
+
+- **Falsify every instrument before trusting a green.** Where a defect is live, a correct
+  instrument **must go RED today**; a green means the instrument is wrong.
+- **State predictions before measuring. The misses are the useful part.**
+- **Measure floors, never inherit thresholds. Correct forward; supersede in place, never
+  rewrite.**
+- **One task per prompt. Ask before instructing. Report, then STOP.**
+- ⚠⚠ **NEVER explain away a defect Carl reports by eye as pre-existing, or as something he
+  did not previously notice. Computed rects are not evidence about visibility. HIS EYE IS
+  THE VERDICT.**
+- ⚠ **Seven instrument defects in three days remain recorded individually and
+  UNCONSOLIDATED. Do not propose a rule from them unless Carl asks — he is leading that.**
+
+---
+
+## CARL'S PREFERENCES
+
+**Plain language, no jargon. Millisecond precision over vague description. He decides; do
+not decide for him.** He builds in chunks and will say when to split one. **Where he mostly
+agrees with a plan he pastes amendments into the "Tell Claude what to do instead" box**
+rather than sending a fresh prompt.
 
 ---
 
 ## ⛔ THE STANDING DIRECTIVE
 
 **NEVER comment on how long Carl has been working.** Not the time of day, not the session
-length, not a suggestion to stop or resume later. **Carl decides when a session ends and will
-say so.** It was not broken this session.
+length, not a suggestion to stop or resume later. **Carl decides when a session ends and
+will say so.** It was not broken this session.
 
 ---
 
-*17 August 2026. ⚠ **The cards now arrive in a fixed relationship to the text at every***
-*⚠ **question. What no instrument can yet see is whether the text arrives smoothly — and***
-*⚠ **the one fault Carl can see by eye has no harness at all.***
+*18 August 2026. ⚠ **The cards now vacate before the next question arrives — the first time***
+*⚠ **that ordering has held in this corridor. What no one has yet looked at is the film,***
+*⚠ **and the narrow width in it has never been seen at all.***
