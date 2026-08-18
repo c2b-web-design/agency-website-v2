@@ -22,6 +22,20 @@
  *   node verify/entrance-now.mjs
  */
 
+
+// ⚠⚠ MARK NAMING CORRECTED 18 August 2026 — READ IF A FIGURE HERE LOOKS ODD.
+//
+// `answer-card-canvas.tsx` used to name its marks from `warm && !active`, and
+// `warm` DEFAULTS TO TRUE. On the shared-host builds (14–18 August) the REAL
+// canvas therefore emitted `warmup-canvas-*` and `card-canvas-*` never fired.
+// **The marks are now named unconditionally: `card-canvas-created` /
+// `card-canvas-compiled`, because there is exactly one canvas and it is the real
+// one.**
+//
+// ⚠ CONSEQUENCE FOR THIS SCRIPT: on a build from 14–18 August it may resolve
+// nothing, or resolve the wrong canvas. On the current build it is correct.
+// ⚠ FIGURES RECORDED FROM THOSE BUILDS SHOULD BE TREATED AS NAME-AMBIGUOUS.
+
 import { chromium } from "playwright";
 import sharp from "sharp";
 

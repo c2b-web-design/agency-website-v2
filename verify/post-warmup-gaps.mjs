@@ -76,6 +76,19 @@
 //
 // The fix in this harness: judge the deletion on **DOM NODES**, and read
 // mount→compiled from **either mark family**.
+//
+// ⚠⚠ UPDATE, 18 August 2026 — THE PRODUCT SIDE IS NOW FIXED. The marks are named
+// unconditionally (`card-canvas-*`), so the `?? warmupCreated` fallbacks below
+// are **belt-and-braces for OLD BUILDS ONLY** and should resolve via
+// `card-canvas-*` on anything current. ⚠ **If a run reports `marks: warmup-*`,
+// it is serving a build from 14–18 August and its figures are name-ambiguous.**
+//
+// ⚠ AND THE COLLISION WAS NOT NEW WHEN THIS HARNESS FOUND IT. It was measured on
+// **14 August** and written into `verify/one-context.mjs`'s header — *"there is
+// no `card-canvas-created` mark at all, and there are TWO `warmup-canvas-created`
+// marks"*. That harness worked around it locally by counting both names. **The
+// finding sat in one instrument's header for four days while every other reader
+// kept inheriting the defect.** A workaround in one consumer is not a fix.
 
 import { chromium } from "playwright";
 import { mkdtempSync, rmSync } from "node:fs";

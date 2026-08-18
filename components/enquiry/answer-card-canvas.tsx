@@ -4661,7 +4661,12 @@ export default function AnswerCardCanvas({
     // `warmup-value.mjs` and every recorded comparison; this ADDS a suffixed
     // twin rather than moving the goalposts under the existing figures.
     try {
-      const base = warm && !active ? "warmup-canvas-compiled" : "card-canvas-compiled";
+      // ⚠⚠ NAMED FROM WHAT THIS CANVAS IS, NOT FROM A FLAG. Corrected 18 August
+      // 2026. This was `warm && !active ? "warmup-canvas-compiled" : ...`, and
+      // that condition had stopped describing reality — see the note at the
+      // `-created` twin below for the full account. **There is now exactly ONE
+      // AnswerCardCanvas on the page and it is the real one, so it says so.**
+      const base = "card-canvas-compiled";
       performance.mark(base);
       // ⚠ SUBSTITUTED 16 August 2026 — was this exact query inline. Verified
       // like-for-like: same `?? ""` fallback, same `.trim()`, and the accessor
@@ -4672,7 +4677,11 @@ export default function AnswerCardCanvas({
     } catch {}
     setCompiled(true);
     onCompiled?.();
-  }, [onCompiled, warm, active]);
+    // ⚠ `warm` and `active` DROPPED 18 August 2026 — they were here only because
+    // the mark name was computed from `warm && !active`. The name is now
+    // unconditional, so this callback no longer reads either, and keeping them
+    // would give it a new identity on every `active` flip for no reason.
+  }, [onCompiled]);
 
   /**
    * Announce the entrance's real start, once PER QUESTION.
@@ -4832,7 +4841,40 @@ export default function AnswerCardCanvas({
           // at `markWarm`, including why the warm-up and the real canvas must
           // NOT share a mark name.
           try {
-            const base = warm && !active ? "warmup-canvas-created" : "card-canvas-created";
+            /*
+              ⚠⚠ NAMED FROM WHAT THIS CANVAS IS, NOT FROM A DEFAULT-TRUE FLAG.
+              Corrected 18 August 2026. It read:
+
+                  warm && !active ? "warmup-canvas-created" : "card-canvas-created"
+
+              ⚠ `warm` DEFAULTS TO TRUE (`warm = true` in the props, since
+              `b25fb5f`), and the shared host renders `active={hostCardsVisible}`,
+              which is FALSE during the opening. So the condition was true for the
+              REAL canvas and **the one surviving canvas labelled itself
+              `warmup-canvas-*` while `card-canvas-*` never fired at all.**
+
+              ⚠⚠ AND BEFORE THE WARM-UP WAS DELETED IT WAS WORSE: BOTH canvases
+              satisfied the condition during the opening, so both wrote the SAME
+              NAME. Readers take `getEntriesByName(...)[0]` — the earliest — so on
+              the shared-host builds a `mount → compiled` pair could describe
+              whichever canvas mounted first rather than the one intended.
+
+              ⚠ THIS WAS FIRST OBSERVED ON 14 AUGUST and written into
+              `verify/one-context.mjs`'s header — *"there is no `card-canvas-created`
+              mark at all, and there are TWO `warmup-canvas-created` marks"*. That
+              harness worked around it by counting both names. **The defect was
+              recorded in one instrument's header and left in the product for four
+              days**, where every other reader kept inheriting it.
+
+              ⚠ STAGE 1'S ARMS (13 August, `4c7a20e`) ARE UNAFFECTED — verified,
+              not assumed: at that commit the two canvases were mutually exclusive
+              in time (warm-up gated on `stage === "opening"`, real canvas on
+              `stage !== "opening"`) and the real one was mounted `active={isActive}`
+              with `isActive` TRUE, so it correctly emitted `card-canvas-*`.
+
+              **One canvas now. It says what it is.**
+            */
+            const base = "card-canvas-created";
             performance.mark(base);
             // ⚠ THE QUESTION-SUFFIXED TWIN — see the note at the `-compiled`
             // mark. Without it, `created`→`compiled` can only ever be computed

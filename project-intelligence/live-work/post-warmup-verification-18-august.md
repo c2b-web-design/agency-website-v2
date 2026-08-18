@@ -100,6 +100,26 @@ to characterise its timing. The two-second exposure noted above is the open item
 
 ---
 
+> # ⛔⛔ TWO CORRECTIONS TO THIS FILE — 18 August 2026, same day
+>
+> **1. THE COLLISION BELOW WAS NOT AN UNEXPECTED NEW FINDING.** It was measured on
+> **14 August** and written into `verify/one-context.mjs`'s header — *"there is no
+> `card-canvas-created` mark at all, and there are TWO `warmup-canvas-created`
+> marks"*. That harness worked around it by counting both names. **The framing
+> below — discovery — is wrong; this pass REDISCOVERED a recorded defect that had
+> been left in the product for four days.**
+>
+> **2. THE "WITHIN 8%" CLAIM IS WITHDRAWN AS STATED.** Stage 1's 1353ms was ONE
+> ARM; this pass measured six runs. ⚠ **A single number landing inside a
+> distribution is not two measurements agreeing.**
+>
+> ⚠⚠ **AND THE 1252ms FIGURE ITSELF DOES NOT HOLD BETWEEN SESSIONS.** The same
+> commit (`f058854`), rebuilt and re-measured hours later, reads **1450ms**. The
+> ~200ms is between-session machine drift. **Arms compared across sessions need the
+> baseline re-measured in the new session; a stored baseline is not a control.**
+>
+> Full account, and the fix: `mark-collision-fixed-18-august.md`.
+
 ## ⚠⚠ AN UNEXPECTED FINDING — A PRE-EXISTING MARK-NAME COLLISION
 
 **Not what this pass went looking for. Found because the harness reported nonsense
@@ -130,6 +150,21 @@ Readers take `getEntriesByName(...)[0]` — **the first.**
 > ⚠⚠ **EVERY `mount → compiled` FIGURE ON RECORD MAY THEREFORE DESCRIBE WHICHEVER
 > CANVAS MOUNTED FIRST, NOT THE ONE THE READER INTENDED** — including the 106ms /
 > 1353ms Stage 1 arms and the 758ms "warm-up benefit".
+
+> ⚠⚠ **SUPERSEDED — STAGE 1 IS NOW VERIFIED CLEAN, 18 August 2026.** The paragraph
+> below reasons from mount ORDER and honestly calls itself untested. **The real
+> answer is stronger and does not depend on ordering at all:**
+>
+> **Stage 1 ran on `4c7a20e` (13 August). The shared host landed `1e031cd`
+> (14 August) — the day AFTER.** At `4c7a20e` the two canvases were **mutually
+> exclusive in time** (warm-up gated on `stage === "opening"`, real canvas on
+> `stage !== "opening"`) **and emitted DIFFERENT names**: the real one was mounted
+> `active={isActive}` with `isActive` TRUE, so `warm && !active` was FALSE and it
+> correctly wrote `card-canvas-*`.
+>
+> ⚠ **There was no competing entry under that name, so the `[0]` read was
+> unambiguous. The collision spans 14–18 August ONLY.** Full account:
+> `mark-collision-fixed-18-august.md` §3.
 
 ⚠ **This does NOT overturn those figures.** The warm-up mounted first and is the
 likelier owner of a `[0]` read, so they are probably what they claim. **But nothing
