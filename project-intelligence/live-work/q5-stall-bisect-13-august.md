@@ -1,5 +1,35 @@
 # Q5 stall bisect — 13 August 2026
 
+> # ⛔⛔ NOT SAFE — SUPERSEDED IN PLACE, 18 August 2026
+>
+> **This bisect ran THREE COLD SAMPLES PER ARM. That is not enough to distinguish
+> an arm that raises the stall from one that does not.**
+>
+> ⚠⚠ **On 18 August the reveal freeze was measured across repeated runs on ONE
+> build in ONE session, and it varies 40ms to 640ms — A 16x SPREAD, with nothing
+> changed between runs.** See `reveal-stall-instrument-18-august.md`.
+>
+> **The arms below report 81/80, 119/117 and 294/303ms. Every one of those figures
+> sits inside the range a single UNCHANGED build produces.** Three samples cannot
+> separate them.
+>
+> ⚠ **THE STAIRCASE MAY WELL BE REAL. THE EVIDENCE BELOW CANNOT CARRY IT.** This is
+> a statement about the sample size, **not** a claim that the conclusion is wrong.
+>
+> ⚠ **NOTHING BELOW IS REWRITTEN OR DELETED** — corrected forward, per the standing
+> rule. **Anyone citing this bisect must cite this banner alongside it.**
+>
+> **What it would take to settle it:** eight runs minimum per arm, same session,
+> same machine, production, reported as a distribution — the floor established on
+> 18 August.
+>
+> ### ⚠ AND ONE DOWNSTREAM CLAIM IS NOW OPEN AGAIN
+>
+> The **10-vs-13 August contradiction** about the hover work was attributed to a
+> **mixed-tree artefact**. ⚠ **That guess was never tested. It is now ONE OF TWO
+> candidate explanations** — the other being that the two readings are simply **two
+> draws from this distribution.** Neither is established.
+
 **Production build per arm, three cold samples per arm. No code changed.**
 Method set by Carl: *"Bisect from 3a7cf1f forward. Production build per arm — a bisect on a
 live dev server measures Turbopack, which already cost a round."*
