@@ -910,3 +910,105 @@ export const CARD_RISE_LADDER_MS = [0, 1, 2, 3, 4].map(
  */
 export const ENTRANCE_END_MS =
   CARD_RISE_LADDER_MS[CARD_RISE_LADDER_MS.length - 1] + CARD_RISE_DURATION_MS;
+
+/* ────────────────────────────────────────────────────────────────────────────
+   THE CARD EXIT — Carl's decisions, 18 August 2026.
+
+   ⚠ NOTHING READS THESE YET. They land on their own, ahead of the exit itself,
+   so the arithmetic can be reviewed without the mechanism in the diff.
+
+   ⚠⚠ THE EXIT IS NOT "THE ENTRANCE, RUSHED" — and a reader who takes it that way
+   will tune it in the wrong direction. Carl's reasoning: on entry the user is
+   reading and assessing five options; on exit that is done — they have chosen and
+   they are moving on. Clearing the cards faster readies a calm arrival for the
+   next set. **The asymmetry follows from what the moment is for.** The budget
+   merely happens to agree.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * The corridor step — how long the move takes from the Next-step click to the
+ * next question being admitted.
+ *
+ * ⚠ IT LIVED AS A BARE LITERAL IN `enquiry-opening.tsx` UNTIL 18 August 2026,
+ * where it was the `setTimeout` delay and nothing else. It is named here so the
+ * exit's headroom can be DERIVED against it rather than asserted in a comment —
+ * this file's own record has comments going stale twice.
+ *
+ * ⚠ MEASURED, NOT ASSUMED: `verify/card-exit.mjs` reads the phase edges as
+ * `leaving@0ms -> arriving@1153ms`, so the stored value is right within 3ms.
+ */
+export const CORRIDOR_STEP_MS = 1150;
+
+/**
+ * The Q1 -> complete hold. That path is different in kind: 900ms, `enterComplete`,
+ * and NO `setActiveQ` — no question is arriving.
+ *
+ * ⚠ NAMED FOR THE GUARD BELOW, not for its own sake. See `CARD_EXIT_Q1_HEADROOM_MS`.
+ */
+export const COMPLETE_HOLD_MS = 900;
+
+/**
+ * Each card's own departure. ⚠ THE ONE CHOSEN NUMBER IN THE EXIT — everything
+ * else here is derived from it and from `CARD_OVERLAP`.
+ *
+ * ⚠ PROVISIONAL UNDER D-035 — Carl tunes it by eye. If the gesture reads wrong,
+ * the correction belongs in this value or in the overlap. **Do not hand-type a
+ * ladder to compensate.**
+ */
+export const CARD_EXIT_DURATION_MS = 425;
+
+/**
+ * ⚠ THE SAME `CARD_OVERLAP` THE ENTRANCE USES, AND THAT IS THE POINT. Preserving
+ * 0.72 is what makes the departure read as the same gesture as the arrival,
+ * played faster. The shape is being kept; the duration is not.
+ */
+export const CARD_EXIT_GAP_MS = Math.round(
+  CARD_EXIT_DURATION_MS * (1 - CARD_OVERLAP),
+);
+
+/**
+ * The exit ladder, indexed by GRID INDEX — `CARD_EXIT_LADDER_MS[i]` is the rung
+ * for the card in slot `i`, the same access shape as `CARD_RISE_LADDER_MS[i]`.
+ *
+ * ⚠⚠ THE REVERSAL LIVES HERE, NOT IN THE CONSUMER. The cards leave 5 -> 4 -> 3
+ * -> 2 -> 1: last to arrive, first to leave. Writing `(4 - i)` in the ladder makes
+ * that a property anyone can read at a glance; burying the subtraction in a tick
+ * loop is how it gets silently inverted.
+ *
+ * So card 5 (index 4) leaves at 0ms and card 1 (index 0) leaves last, at 476ms.
+ */
+export const CARD_EXIT_LADDER_MS = [0, 1, 2, 3, 4].map(
+  (i) => (4 - i) * CARD_EXIT_GAP_MS,
+);
+
+/** When the last card has finished leaving, measured from the Next-step click. */
+export const CARD_EXIT_END_MS =
+  Math.max(...CARD_EXIT_LADDER_MS) + CARD_EXIT_DURATION_MS;
+
+/**
+ * What is left of the corridor step once every card has gone.
+ *
+ * ⚠⚠ THIS IS A DESIGN FIGURE, NOT SLACK — Carl, 18 August 2026. It gives the
+ * user time to prepare for the next set. **A later reader must not reclaim it as
+ * spare budget**, and that is the entire reason it is named rather than left as
+ * the difference between two other numbers.
+ */
+export const CARD_EXIT_HEADROOM_MS = CORRIDOR_STEP_MS - CARD_EXIT_END_MS;
+
+/**
+ * ⚠⚠ THE Q1 CLIFF — GUARDED HERE BECAUSE D-035 TUNES TOWARD IT.
+ *
+ * On the Q1 -> complete path the exit gets only `COMPLETE_HOLD_MS` before `stage`
+ * flips, `hostCardsVisible` goes false, and the `!active` branch hides the cards
+ * outright. Exceed it and the last card is TRUNCATED MID-FADE.
+ *
+ * ⚠ IT IS NEGATIVE (-1ms) AT THE APPROVED VALUES, AND THAT IS CORRECT, NOT A
+ * FAILURE. 1ms is far below one frame and cannot be seen. **So a harness must
+ * assert against a FRAME (~16.7ms), not against zero** — the overrun only becomes
+ * visible once it exceeds one frame interval.
+ *
+ * ⚠ The cliff is real and would otherwise be unguarded: `CARD_EXIT_DURATION_MS` is
+ * tuned BY EYE under D-035, so it will be walked toward, not away from. Adding the
+ * check later means adding it after someone has already fallen off.
+ */
+export const CARD_EXIT_Q1_HEADROOM_MS = COMPLETE_HOLD_MS - CARD_EXIT_END_MS;

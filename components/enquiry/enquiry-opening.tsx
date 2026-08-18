@@ -10,7 +10,15 @@ import { NextStepMeshButton } from "./nextstep-canvas";
 // ⚠ THE CARD CHOREOGRAPHY'S OWN END, DERIVED THERE AND IMPORTED HERE — never
 // retyped. This file's own history records a hand-written end-of-choreography
 // value going stale twice.
-import { ENTRANCE_END_MS } from "./answer-card-geometry";
+// ⚠ `CORRIDOR_STEP_MS` and `COMPLETE_HOLD_MS` WERE BARE LITERALS HERE (1150 and
+// 900) until 18 August 2026. They moved to the geometry file so the card exit's
+// headroom can be DERIVED against them rather than asserted in a comment. The
+// values are unchanged — this is a naming change, not a retiming.
+import {
+  ENTRANCE_END_MS,
+  CORRIDOR_STEP_MS,
+  COMPLETE_HOLD_MS,
+} from "./answer-card-geometry";
 // The host's pre-measurement fallback box. ⚠ It must be non-zero: the canvas
 // maps one world unit to one CSS pixel from its measured size, so a zero box
 // would destroy that mapping before the first real rect arrives.
@@ -1516,7 +1524,7 @@ export default function EnquiryOpening() {
       setTimeout(() => {
         enterComplete();
         enterCorridorPhase("settled", fromQ);
-      }, 900);
+      }, COMPLETE_HOLD_MS);
       return;
     }
 
@@ -1585,7 +1593,7 @@ export default function EnquiryOpening() {
       publishPhaseEdge("arriving", fromQ - 1);
       setActiveQ(fromQ - 1);
       enterCorridorPhase("settled", fromQ - 1);
-    }, 1150);
+    }, CORRIDOR_STEP_MS);
   }
 
   // The joined answer summary for a question once it has been answered (read from memory[]).
