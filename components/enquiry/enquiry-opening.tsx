@@ -488,31 +488,16 @@ export default function EnquiryOpening() {
    * be scheduled onto an animation.
    */
 
-  /**
-   * ⚠ DIAGNOSTIC ONLY — `?nowarmup=1` suppresses the hidden warm-up canvas.
-   *
-   * Arm B of `verify/warmup-value.mjs`, which measures whether that canvas buys
-   * the REAL one anything (Architect, 5 August, Step 2).
-   *
-   * ⚠ LAZY INITIALISER, NOT AN EFFECT, AND DELIBERATELY. Reading this in an
-   * effect and calling `setState` adds a SECOND `react-hooks/set-state-in-effect`
-   * error to a file whose recorded baseline is exactly one — and the standing
-   * rule is that known errors are not to be increased. The initialiser runs once
-   * before first paint, so there is no cascading render to avoid in the first
-   * place.
-   *
-   * SSR-safe via the `typeof window` guard: the server renders `false`, and
-   * hydration agrees on every URL that lacks the flag — which is every URL a
-   * visitor ever sees.
-   *
-   * ⚠ IT MUST NEVER GATE THE REAL CANVAS. Suppressing the warm-up is a
-   * measurement; suppressing the entrance is the 4 August failure.
-   */
-  const [suppressWarmup] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("nowarmup") === "1",
-  );
+  /*
+    ⚰️ `suppressWarmup` / `?nowarmup=1` REMOVED 18 August 2026 with the warm-up
+    canvas it gated. It was arm B of `verify/warmup-value.mjs` — the switch that
+    measured whether the warm-up bought the real canvas anything.
+
+    ⚠ THAT QUESTION IS NOW ANSWERED BY DELETION RATHER THAN BY A FLAG, so the
+    flag has nothing left to suppress. `verify/warmup-value.mjs` is stale as a
+    result; it is left in place rather than edited here, because the deletion and
+    a harness rewrite are separately attributable changes.
+  */
 
   /**
    * ⚠ THE WARM-UP CANVAS OUTLIVES THE STAGE CHANGE BY A SHORT OVERLAP.
@@ -587,8 +572,15 @@ export default function EnquiryOpening() {
    * SHARED-HOST RESTRUCTURE IS THE RIGHT ONE. A number that has to grow to keep
    * working is hiding a lifecycle problem rather than solving it.
    */
-  const [warmupHeldOver, setWarmupHeldOver] = useState(false);
-  const WARMUP_OVERLAP_MS = 900;
+  /*
+    ⚰️ `warmupHeldOver` / `WARMUP_OVERLAP_MS` REMOVED 18 August 2026 with the
+    warm-up canvas. The overlap existed for exactly one reason: without it, the
+    warm node and the real Q5 canvas were mutually exclusive, so Begin destroyed
+    the warm context in the same commit that created the real one.
+
+    ⚠ WITH NO WARM NODE THERE IS NOTHING TO HOLD OVER. The comment above is left
+    standing as the record of why the overlap existed and what it measured.
+  */
 
   /**
    * ⚠ STEP 4 — THE ORDERING INVERSION. The opening's animated classes are held
@@ -1149,28 +1141,19 @@ export default function EnquiryOpening() {
   // transition is RECORDED; when it happens is untouched.
   const enterActive = useCallback(() => {
     if (activatedAtRef.current === null) activatedAtRef.current = Date.now();
-    // ⚠ SET BEFORE `setStage`, IN THE SAME EVENT. React batches both into one
-    // commit, so the warm node is already marked held-over in the render that
-    // creates the real canvas. Setting it afterwards — or from an effect —
-    // would allow a commit in which the warm node had gone and the real canvas
-    // had arrived, which is the exact gap this closes.
-    setWarmupHeldOver(true);
+    // ⚰️ `setWarmupHeldOver(true)` STOOD HERE until 18 August 2026, set before
+    // `setStage` in the same event so React batched both into one commit and the
+    // warm node was already marked held-over in the render that created the real
+    // canvas. With the warm-up deleted there is no node to hold over.
     setStage("active");
   }, []);
 
-  /**
-   * Ends the overlap. Nothing visible depends on this timer: the node it
-   * removes is invisible and never drew, so a late or early fire changes only
-   * how long an idle context lingers.
-   *
-   * ⚠ CLEARED ON UNMOUNT — a `setState` after teardown is the lint error this
-   * file already carries one of, and one is enough.
-   */
-  useEffect(() => {
-    if (!warmupHeldOver) return;
-    const id = window.setTimeout(() => setWarmupHeldOver(false), WARMUP_OVERLAP_MS);
-    return () => window.clearTimeout(id);
-  }, [warmupHeldOver]);
+  /*
+    ⚰️ THE OVERLAP TIMER STOOD HERE until 18 August 2026. It ended the warm-up's
+    hold-over after `WARMUP_OVERLAP_MS`, and nothing visible depended on it — the
+    node it removed was invisible and never drew, so a late or early fire changed
+    only how long an idle context lingered. Deleted with the canvas it served.
+  */
 
   useEffect(() => {
     if (!questionnaireStarted || canvasWarm) return;
@@ -2544,49 +2527,36 @@ export default function EnquiryOpening() {
           See `warmupHeldOver` for the measurements and for why one shared canvas
           is NOT the smaller fix it appears to be.
         */}
-        {(stage === "opening" || warmupHeldOver) && !suppressWarmup && (
-          <div
-            aria-hidden="true"
-            data-testid="answer-card-warmup"
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              width: 576,
-              height: 104,
-              visibility: "hidden",
-              pointerEvents: "none",
-            }}
-          >
-            {/*
-              ⚠⚠ THE WARM-UP GETS LABELS TOO, AND "IT WOULD NOT CRASH" IS THE
-              WRONG TEST. Architect, 10 August 2026.
+        {/*
+          ⚰️ TOMBSTONE — THE WARM-UP CANVAS WAS DELETED HERE, 18 August 2026.
+          Stage 2 step 5, run as a MEASURED EXPERIMENT, not as a fix.
 
-              Until today the labels were a module constant inside the canvas, so
-              THIS instance built label textures whether anyone thought about it
-              or not. Now they arrive as a prop — and passing nothing here would
-              have been the easy reading, since `labelMap` is null-safe and the
-              warm-up is invisible anyway.
+          It rendered a second, hidden `AnswerCardCanvas` (576x104, visibility
+          hidden) during the opening, held over past the stage change by
+          `warmupHeldOver`, to precompile the labelled card material before Begin.
 
-              **But the warm-up exists to PRECOMPILE the shaders the real cards
-              use, and a card with no label texture is a different material
-              variant from one with.** Passing nothing would leave the precompile
-              silently not covering what the entrance actually renders.
+          ⚠ WHAT IT COST: a SECOND WebGL CONTEXT. Stage 1 measured 17 programs
+          linked TWICE — 17 before Begin and 17 after, on every one of 21 runs,
+          confirmed by two independent instruments (a CDP trace of
+          `DoLinkProgram` and a patched `WebGLRenderingContext.linkProgram`).
 
-              ⚠ THE FAILURE MODE IS A RETURNED STUTTER, ATTRIBUTED TO SOMETHING
-              ELSE — this project's most expensive class of bug, and the reason
-              this comment is longer than the change.
+          ⚠ WHAT IT BOUGHT: `mount → compiled` of 106ms with it against 1353ms
+          without (Stage 1, four arms). **That is a real effect on CANVAS COMPILE
+          TIME — it is NOT the same quantity as the mid-wipe reveal freeze**, and
+          conflating the two is what this deletion was run to test.
 
-              Q5's options, because Q5 is the question the entrance renders.
-            */}
-            <AnswerCardCanvas
-              active={false}
-              warm
-              onCompiled={() => armOpening("compile")}
-              labels={QUESTIONS[5].options}
-            />
-          </div>
-        )}
+          ⚠ THE ARMING PATH IT OWNED — `armOpening("compile")` — is one of four.
+          It is not load-bearing on a normal run: Stage 2 step 3 measured the
+          READY GATE winning 3/3 at +181-332ms while the compile landed at
+          +1456-2356ms. The compile path had to be FORCED, by delaying
+          `document.fonts.ready` past it, to be observed at all.
+
+          Result and distribution: `live-work/step5-warmup-deletion-18-august.md`.
+          Prediction was written BEFORE the measurement, in that same file.
+
+          ⚠ TO RESTORE IT: `git show 7f15345:components/enquiry/enquiry-opening.tsx`
+          holds the block immediately before this deletion.
+        */}
 
         {stage === "opening" ? (
           <>
