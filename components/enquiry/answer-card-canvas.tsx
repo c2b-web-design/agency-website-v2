@@ -4820,6 +4820,45 @@ export default function AnswerCardCanvas({
          */
         onCreated={({ gl }) => {
           gl.debug.checkShaderErrors = false;
+
+          /**
+           * ⚠⚠ DIAGNOSTIC ONLY — `?hosttrace=1` times THIS renderer's own draws.
+           * Added 18 August 2026 to test the CONTENTION candidate: does removing
+           * the button's canvas free GPU capacity that this host then uses?
+           * ⛔ NOTHING SHIPS FROM IT.
+           *
+           * ⚠⚠ IT WRAPS THIS RENDERER'S `render` BY IDENTITY, NOT BY CANVAS
+           * LOOKUP, AND THAT IS THE WHOLE POINT. The two arms differ in canvas
+           * COUNT (3 contexts vs 2), so an instrument that keyed on "the WebGL
+           * canvas" would read a DIFFERENT OBJECT on each arm and manufacture a
+           * difference that is pure artefact. Wrapping the card host's own
+           * renderer here means both arms measure the same object.
+           *
+           * ⚠ OFF BY DEFAULT AND FREE WHEN OFF — the wrapper is never installed
+           * unless the flag is present, so a normal load keeps the original
+           * method with no added call frame.
+           *
+           * ⚠ TIMES SUBMISSION, NOT COMPLETION, exactly as the mount tracer does.
+           * A per-frame `gl.finish()` would serialise the pipeline every frame —
+           * the 84ms-sampler trap — so it is deliberately NOT done here.
+           */
+          if (
+            typeof window !== "undefined" &&
+            new URLSearchParams(window.location.search).get("hosttrace") === "1"
+          ) {
+            const w = window as unknown as {
+              __hostFrames?: Array<{ ms: number; t: number }>;
+            };
+            w.__hostFrames ??= [];
+            const orig = gl.render.bind(gl);
+            // ⚠ FLOOR: the wrapper's own cost is measured by the `__hostFloor`
+            // no-op bracket below, taken through the same code path.
+            gl.render = ((scene: THREE.Scene, camera: THREE.Camera) => {
+              const t0 = performance.now();
+              orig(scene, camera);
+              w.__hostFrames!.push({ ms: performance.now() - t0, t: Math.round(t0) });
+            }) as typeof gl.render;
+          }
           // ⚠ SHADOWS ARE FOR THE CLAY FORM STUDY ONLY (`?clay=1`), and they are
           // enabled here rather than as a `<Canvas shadows>` prop so the shipped
           // card never pays for them. Carl, 5 August 2026: *"Enable shadows and

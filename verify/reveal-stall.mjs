@@ -64,6 +64,51 @@ if (/:3000(\/|$)/.test(BASE)) {
 }
 
 const RUNS = Number(process.argv[2] ?? 5);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ⚠⚠ INSTRUMENT DEFECT #11 — 18 August 2026. THE ARM COULD NOT BE SELECTED.
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Until this was added, the page load below was hardcoded to `${BASE}/start`
+// with NO querystring and no way to pass one. **So an A/B experiment run on this
+// harness would have filmed the BASELINE TWICE** and reported the two arms as
+// indistinguishable.
+//
+// ⚠⚠ AND IT FAILS TOWARD A PASS, like the expensive ones before it. Against a
+// freeze that varies 40–640ms on one build, two baseline batches would overlap
+// heavily and read as a clean, plausible negative: "the button is not the
+// cause." **A false alarm gets investigated; a false pass gets believed.** This
+// is the same class as `one-context.mjs` reporting ✅ 2/2 while a WebGL context
+// was created per question step, and as the reveal window's version 3 reporting
+// 0ms on a live, filmed freeze.
+//
+// ⛔ RECORDED AS ITS OWN DEFECT, NOT FOLDED INTO THE RUNNING TALLY. The tally is
+// Carl's to draw a rule from; the individual failures are the evidence and are
+// kept separate on his instruction.
+//
+// Found by READING the harness before trusting it, which is the recorded method.
+const QUERY = process.env.REVEAL_STALL_QUERY ?? "";
+const URL_START = `${BASE}/start${QUERY ? (QUERY.startsWith("?") ? QUERY : `?${QUERY}`) : ""}`;
+
+// ⚠⚠ THE ARM IS FALSIFIED BY CONTEXT COUNT, NEVER BY THE FLAG APPEARING IN THE URL.
+//
+// Carl's instruction, 18 August 2026: *"a flag that arrives but does not take is
+// precisely the failure this harness would hide."* Asserting on `location.search`
+// would confirm only that the string survived the navigation — not that the
+// component read it, not that React kept it through hydration, and not that the
+// canvas was actually suppressed. **The observable that matters is how many WebGL
+// contexts exist.**
+//
+//   BASELINE   expected 3  [other, BUTTON, other]
+//   TREATMENT  expected 2  [other, other]
+//
+// Counted by patching `getContext` in an init script — BEFORE any page script
+// runs — so every context creation is seen, including ones created and released
+// before we could enumerate canvases. Counting `document.querySelectorAll`
+// afterwards would miss exactly the per-question churn this experiment is about.
+const EXPECT_CONTEXTS = process.env.REVEAL_STALL_EXPECT_CONTEXTS
+  ? Number(process.env.REVEAL_STALL_EXPECT_CONTEXTS)
+  : null;
 // ⚠⚠ EVERY BATCH GETS ITS OWN DIRECTORY. BATCHES ACCUMULATE. THEY ARE NEVER
 // DELETED. Read the reason before "tidying" this.
 //
@@ -102,7 +147,9 @@ const POST_BEGIN_MS = 16000;
 console.log(`\n⚠ Q5 REVEAL STALL — ${RUNS} runs, one build, one session.`);
 console.log(`   channel: VIDEO TRACK (out-of-process). NOT computed style — the`);
 console.log(`   freeze is GPU-side with the renderer idle, and intent stays clean.`);
-console.log(`   base: ${BASE}   viewport: 1440x900   fps: 25 (40ms quantisation)\n`);
+console.log(`   base: ${BASE}   viewport: 1440x900   fps: 25 (40ms quantisation)`);
+console.log(`   url:  ${URL_START}`);
+console.log(`   arm:  ${QUERY ? QUERY : "(baseline, no query)"}   expect contexts: ${EXPECT_CONTEXTS ?? "(unasserted)"}\n`);
 
 let buildId = null;
 
@@ -116,7 +163,32 @@ for (let run = 1; run <= RUNS; run++) {
     recordVideo: { dir: OUT, size: { width: 1440, height: 900 } },
   });
   const page = await context.newPage();
-  await page.goto(`${BASE}/start`, { waitUntil: "networkidle" });
+
+  // ⚠ PATCH BEFORE ANY PAGE SCRIPT RUNS — see the EXPECT_CONTEXTS note above.
+  // Counts every WebGL context creation for the life of the page, which is what
+  // distinguishes the arms; enumerating canvases later would miss churn.
+  await page.addInitScript(() => {
+    window.__webglContexts = 0;
+    const orig = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, ...rest) {
+      const ctx = orig.call(this, type, ...rest);
+      // ⚠⚠ ONLY COUNT CANVASES ATTACHED TO THE DOCUMENT — the instrument counted
+      // ITSELF otherwise. The renderer check below (`createElement("canvas")` +
+      // `WEBGL_debug_renderer_info`) makes a DETACHED throwaway context, and this
+      // patch runs before it, so the first falsification read 4 where the page
+      // creates 3. **An instrument that measures its own footprint reports a
+      // difference that is not in the product.**
+      // ⚠ Caught only because the count was falsified against a known expectation
+      // instead of being trusted on first output — the count disagreed with the
+      // recorded 3 and the disagreement was chased rather than adopted.
+      if (ctx && /webgl/i.test(String(type)) && document.contains(this)) {
+        window.__webglContexts++;
+      }
+      return ctx;
+    };
+  });
+
+  await page.goto(URL_START, { waitUntil: "networkidle" });
 
   // ⚠ A software rasteriser cannot reproduce a GPU-scheduler freeze. Abort rather
   // than record a clean run that means nothing.
@@ -183,8 +255,21 @@ for (let run = 1; run <= RUNS; run++) {
     return {
       text: el ? (el.textContent || "").trim().slice(0, 48) : null,
       revealStart: typeof w.__revealStart === "number" ? w.__revealStart : null,
+      webglContexts: typeof w.__webglContexts === "number" ? w.__webglContexts : null,
     };
   });
+
+  // ⚠⚠ THE ARM ASSERTION — read AFTER the reveal, so the button canvas has had
+  // its chance to mount. ⛔ A run whose arm cannot be confirmed is NOT filed as a
+  // data point: a mislabelled run is worse than a missing one, because it enters
+  // the distribution silently and cannot be found afterwards.
+  if (EXPECT_CONTEXTS !== null && after.webglContexts !== EXPECT_CONTEXTS) {
+    console.error(`\n⛔ run ${run}: ARM NOT CONFIRMED — webgl contexts ${after.webglContexts}, expected ${EXPECT_CONTEXTS}.`);
+    console.error(`   URL: ${URL_START}`);
+    console.error(`   The flag may have arrived without taking effect. Aborting rather`);
+    console.error(`   than file runs under an arm label that was never verified.\n`);
+    await context.close(); await browser.close(); process.exit(1);
+  }
 
   await context.close();
   await browser.close();
