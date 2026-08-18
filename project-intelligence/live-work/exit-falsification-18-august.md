@@ -153,8 +153,49 @@ INCREASE IN EMPTY STAGE                                440ms
 this makes that window 915ms.
 
 ⚠ **The increase is 440ms, not the 249ms of headroom.** They are no longer the same number
-seen from two ends, because the current cut lags the epoch. **Carl is deciding whether the
-915ms empty window is acceptable before the exit is built.**
+seen from two ends, because the current cut lags the epoch.
+
+---
+
+## 4a. ⚠⚠ THE SUBSTANTIVE FINDING — THE EXIT MOVES THE DEPARTURE TO BEFORE THE ARRIVAL
+
+**Corrected forward, 18 August 2026. This is the finding that produced Carl's decision, and
+it is more important than the empty-window arithmetic above.**
+
+⚠ **The exit does not merely replace a cut with a fade. It restores vacate-before-arrive
+ordering to the cards for the first time.**
+
+Measured today, from the same run:
+
+```
+next question's reveal BEGINS      1153ms   (the arriving edge)
+cards extinguish TODAY             1341ms   =  188ms AFTER the reveal has begun
+cards extinguish WITH THE EXIT      901ms   =  252ms BEFORE the reveal begins
+```
+
+⚠⚠ **So the departure currently happens ON TOP OF THE ARRIVING TEXT.** The outgoing cards
+are still lit for 188ms while the next question is already revealing. The exit moves the
+whole departure to before the arrival.
+
+⚠ **THAT ORDERING IS FUNCTIONAL IN THIS CORRIDOR, NOT AESTHETIC.** The corridor's whole
+premise is that one thing vacates and the next arrives into the space it left; a departure
+overlapping an arrival is the one thing the choreography is built to prevent. This is why
+the exit is worth building beyond fixing a hard cut.
+
+### Carl's decision — the 252ms quiet stretch, APPROVED ON FIGURES
+
+**Recorded as thinking and breathing time for the user, at the position it occurs.**
+
+⚠ **APPROVED ON THE NUMBERS ONLY. His eye still judges it on film and may return it.**
+
+⚠ Note the two numbers that are nearly but not quite the same, and do not collapse them:
+
+- **252ms** is measured, from the exit's end (901) to the reveal's actual edge (**1153**).
+- **249ms** is `CARD_EXIT_HEADROOM_MS` as coded, against the nominal `CORRIDOR_STEP_MS`
+  (**1150**).
+
+The 3ms is the boundary's own measured overshoot. **The constant is not wrong** — it is
+derived from the stored value, which is the right thing for it to be derived from.
 
 ---
 

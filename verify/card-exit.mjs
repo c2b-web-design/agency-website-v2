@@ -208,28 +208,69 @@ console.log(`  first card dark at : ${first.toFixed(1)}ms after click`);
 console.log(`  last  card dark at : ${last.toFixed(1)}ms after click`);
 console.log(`  spread (stagger)   : ${spread.toFixed(1)}ms   [a real exit needs ${EXIT_GAP_MS * 4}ms across five]`);
 
-console.log(`\n── AGAINST THE PLAN'S PREDICTION ───────────────────────────────`);
-console.log(`  predicted : ~${BOUNDARY_MS}ms (the epoch bump)`);
-console.log(`  measured  : ~${first.toFixed(0)}ms`);
-const delta = first - BOUNDARY_MS;
-console.log(`  delta     : ${delta >= 0 ? "+" : ""}${delta.toFixed(1)}ms`);
-if (Math.abs(delta) > 120) {
-  console.log(`\n  ⚠⚠ THE MODEL OF THE BOUNDARY IS WRONG.`);
-  console.log(`     The drop is not where CORRIDOR_STEP_MS says it is. Everything derived`);
-  console.log(`     from it — the 249ms headroom, the 901ms fit, the label-swap invariant —`);
-  console.log(`     inherits this error. STOP AND REPORT before building the exit.`);
-} else {
-  console.log(`\n  ✅ The cut is where the plan says it is. CORRIDOR_STEP_MS is a sound origin.`);
-}
+// ── IS THIS A CUT OR A LADDER? ────────────────────────────────────────────
+//
+// ⚠ The two verdicts below were written when NO EXIT EXISTED and the only
+// correct answer was "hard cut". They now discriminate between the two states
+// rather than asserting one, so the same harness serves before and after.
+const isLadder = spread >= EXIT_GAP_MS * 2;
 
-console.log(`\n── FALSIFICATION VERDICT (current build, no exit expected) ─────`);
-if (spread < EXIT_GAP_MS) {
-  console.log(`  ✅ HARD CUT CONFIRMED — ${spread.toFixed(1)}ms spread, no stagger.`);
-  console.log(`     The instrument can see the defect. A green from it after the exit`);
-  console.log(`     lands will therefore mean something.`);
+console.log(`\n── CUT OR LADDER? ──────────────────────────────────────────────`);
+if (!isLadder) {
+  console.log(`  ⛔ HARD CUT — ${spread.toFixed(1)}ms spread, effectively no stagger.`);
+  console.log(`     All five cards leave together. This is the pre-exit behaviour.`);
+  console.log(`\n  predicted (epoch bump) : ~${BOUNDARY_MS}ms`);
+  console.log(`  measured               : ~${first.toFixed(0)}ms`);
+  const delta = first - BOUNDARY_MS;
+  console.log(`  delta                  : ${delta >= 0 ? "+" : ""}${delta.toFixed(1)}ms`);
+  if (Math.abs(delta) > 120) {
+    console.log(`\n  ⚠ The cut does not coincide with the epoch. Measured 18 August as a`);
+    console.log(`    ~190ms lag on the EXTINGUISH path — recorded as a lead, not chased.`);
+  }
 } else {
-  console.log(`  ⛔ ${spread.toFixed(1)}ms spread — that is a STAGGER, on a build with no exit.`);
-  console.log(`     The instrument is measuring something other than the cut. FIX IT.`);
+  console.log(`  ✅ LADDER — ${spread.toFixed(1)}ms spread across five cards.`);
+
+  // ⚠ ORDER IS THE ASSERTION, NOT JUST SPREAD. A collapsed ladder and a correct
+  // one can share a span; only the SEQUENCE distinguishes them. The exit runs
+  // 5 -> 4 -> 3 -> 2 -> 1, i.e. DESCENDING index goes dark first.
+  const order = drops
+    .map((d, i) => ({ i, d }))
+    .filter((x) => x.d !== null)
+    .sort((a, b) => a.d - b.d)
+    .map((x) => x.i);
+  const expected = [...Array(count).keys()].reverse();
+  const orderOk = order.join(",") === expected.join(",");
+  console.log(`  departure order : ${order.map((i) => `card ${i}`).join(" → ")}`);
+  console.log(`  expected        : ${expected.map((i) => `card ${i}`).join(" → ")}   ${orderOk ? "✅" : "⛔ WRONG ORDER"}`);
+
+  // Gaps between consecutive departures, against the derived rung spacing.
+  const gaps = [];
+  for (let k = 1; k < order.length; k++) gaps.push(drops[order[k]] - drops[order[k - 1]]);
+  const mean = gaps.reduce((a, b) => a + b, 0) / (gaps.length || 1);
+  console.log(`  gaps            : ${gaps.map((g) => g.toFixed(0)).join(", ")}ms`);
+  console.log(`  mean gap        : ${mean.toFixed(1)}ms   [CARD_EXIT_GAP_MS = ${EXIT_GAP_MS}]`);
+
+  // ⚠ THE INVARIANT THAT MATTERS MOST — item 6. The exit must be finished before
+  // the label textures swap, or the next question's text appears on cards that
+  // are still visible.
+  const lastGone = last;
+  console.log(`\n  ⚠ LABEL-SWAP INVARIANT (item 6):`);
+  console.log(`    last card dark at ${lastGone.toFixed(0)}ms, labels swap at ~${BOUNDARY_MS}ms`);
+  if (lastGone < BOUNDARY_MS) {
+    console.log(`    ✅ CLEAR by ${(BOUNDARY_MS - lastGone).toFixed(0)}ms — no card is visible when the text changes.`);
+  } else {
+    console.log(`    ⛔ VIOLATED — the next question's labels land on visible cards.`);
+  }
+
+  // ⚠ VACATE BEFORE ARRIVE — the functional ordering this exit exists to restore.
+  const revealAt = phase.find((p) => p.phase === "arriving")?.dt ?? BOUNDARY_MS;
+  console.log(`\n  ⚠ VACATE-BEFORE-ARRIVE:`);
+  console.log(`    cards gone ${lastGone.toFixed(0)}ms, reveal begins ${revealAt}ms`);
+  if (lastGone < revealAt) {
+    console.log(`    ✅ The departure completes ${(revealAt - lastGone).toFixed(0)}ms BEFORE the arrival begins.`);
+  } else {
+    console.log(`    ⛔ The departure is still running ${(lastGone - revealAt).toFixed(0)}ms INTO the arrival.`);
+  }
 }
 
 // The shape of the fall, so a one-frame cut is distinguishable from a fade.

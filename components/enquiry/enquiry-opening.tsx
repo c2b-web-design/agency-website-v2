@@ -425,6 +425,16 @@ export default function EnquiryOpening() {
    */
   const [corridorPhase, setCorridorPhase] = useState<"settled" | "leaving" | "arriving">("settled");
   /**
+   * ⚠ A COUNTER, NOT A QUESTION NUMBER — and that is the difference from
+   * `entranceEpoch`, which is `activeQ`. The exit fires at t=0 while `activeQ` is
+   * still the OUTGOING question, so the question number has not changed yet and
+   * could not signal anything. A monotonic bump can.
+   *
+   * ⚠ IT CARRIES NO TIME. Its only job is to make the cards' effect re-run at the
+   * leaving edge; the clock comes from `__leavingEdgeAt`. See `publishLeavingEdge`.
+   */
+  const [exitEpoch, setExitEpoch] = useState(0);
+  /**
    * ⚠⚠ DERIVED, NEVER STORED — THE LOAD-BEARING CONSTRAINT OF THE WHOLE DESIGN.
    *
    * This was `useState<boolean>` with 5 writes and 8 reads. It is now computed
@@ -1466,6 +1476,39 @@ export default function EnquiryOpening() {
   );
 
   /**
+   * ⚠⚠ THE LEAVING EDGE'S TIMESTAMP — PUBLISHED UNGATED, and the third member of
+   * a family, not a new idea. `__arrivingEdgeAt`/`__arrivingEdgeQ` below and
+   * `__activeQ` above are ungated for exactly the same reason: **the cards cannot
+   * see `__phaseTrace`**, which is gated on `?phasetrace=1` and does not exist in
+   * production, and the exit needs this moment IN PRODUCTION.
+   *
+   * ⚠ WHAT THE EXIT DOES WITH IT: it is the clock zero for a five-rung ladder
+   * (`CARD_EXIT_LADDER_MS`). A prop would deliver React's COMMIT time instead —
+   * one or more frames later — and `CARD_FIRST_ENTRANCE_MS` has already been
+   * correct-with-a-wrong-origin once, running at 71% of the reveal instead of 50%.
+   *
+   * ⚠ THE STAMP IS WRITTEN FIRST, deliberately, so a reader can never observe a
+   * fresh timestamp against a stale question. Same ordering guarantee as
+   * `__revealStartQ` before `__revealStart`, and `__arrivingEdgeQ` before
+   * `setActiveQ`.
+   *
+   * ⚠ AND IT IS BUMPED WITH `exitEpoch` AS ONE ACT, through this one accessor —
+   * two call sites doing it independently is how you get two owners that agree by
+   * coincidence, which is the fault `enterCorridorPhase` exists to prevent.
+   */
+  const publishLeavingEdge = useCallback((q: number) => {
+    if (typeof window !== "undefined") {
+      const w = window as unknown as {
+        __leavingEdgeAt?: number;
+        __leavingEdgeQ?: number;
+      };
+      w.__leavingEdgeQ = q;
+      w.__leavingEdgeAt = performance.now();
+    }
+    setExitEpoch((n) => n + 1);
+  }, []);
+
+  /**
    * ⚠⚠ WHAT THE SYSTEM USES TO KNOW WHICH QUESTION IT IS ON — OPTION B.
    *
    * `answer-card-canvas.tsx`'s `questionIdentity()` reads
@@ -1515,6 +1558,11 @@ export default function EnquiryOpening() {
         enterComplete();
         return;
       }
+      // ⚠⚠ THE Q1 PATH PUBLISHES THE LEAVING EDGE TOO, and this is the call site
+      // that strands the machine if it is forgotten — it is a different code
+      // path (900ms, `enterComplete`, no `setActiveQ`), so nothing downstream
+      // would re-arm the cards and they would simply blink out at `complete`.
+      publishLeavingEdge(fromQ);
       // ⚠ THE COMPLETION EDGE GOES `leaving` AND STOPS — NOTHING ARRIVES.
       // Q1 -> complete is a different code path (900ms, `enterComplete`, no
       // `setActiveQ`) and it is the one that would strand the machine mid-cycle
@@ -1541,6 +1589,7 @@ export default function EnquiryOpening() {
 
     // Vacate depth-0, recede the heading + deepen the stack, then admit the next question
     // once the ~900ms morph has settled and the active field is clearly empty (~250ms beat).
+    publishLeavingEdge(fromQ);
     enterCorridorPhase("leaving", fromQ);
     setTimeout(() => {
       /**
@@ -2136,6 +2185,11 @@ export default function EnquiryOpening() {
             walk; `useCardEntrance` compares it by VALUE, never by ordering.
           */
           entranceEpoch={activeQ}
+          // ⚠ THE OTHER EDGE. `entranceEpoch` above is bumped at t=1150 by
+          // `setActiveQ`; this is bumped at t=0 by `publishLeavingEdge`. Two
+          // edges, two epochs, one owner — and note this one IS a counter,
+          // because `activeQ` has not changed yet when the exit must fire.
+          exitEpoch={exitEpoch}
         />
       </div>
 

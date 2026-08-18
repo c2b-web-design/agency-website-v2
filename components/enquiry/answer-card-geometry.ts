@@ -986,12 +986,31 @@ export const CARD_EXIT_END_MS =
   Math.max(...CARD_EXIT_LADDER_MS) + CARD_EXIT_DURATION_MS;
 
 /**
- * What is left of the corridor step once every card has gone.
+ * **The interval between the exit completing and the next question's reveal
+ * beginning, held deliberately empty to give the reader a beat before the next
+ * question arrives.**
  *
- * ⚠⚠ THIS IS A DESIGN FIGURE, NOT SLACK — Carl, 18 August 2026. It gives the
- * user time to prepare for the next set. **A later reader must not reclaim it as
- * spare budget**, and that is the entire reason it is named rather than left as
- * the difference between two other numbers.
+ * ⚠⚠ THIS IS A DESIGN FIGURE WITH A STATED PURPOSE, NOT SLACK — Carl, 18 August
+ * 2026. It is thinking and breathing time for the user, at the position it
+ * occurs. **A later reader must not reclaim it, and must not treat it as tuning
+ * slack.** That is the entire reason it is named rather than left as the
+ * difference between two other numbers.
+ *
+ * ⚠ APPROVED ON THE FIGURES ONLY. Carl's eye judges it on film and may return it.
+ *
+ * ⚠⚠ WHAT THE INTERVAL IS ACTUALLY BUYING — and it is not just a pause. Measured
+ * 18 August: the next question's reveal begins at 1153ms, and the cards today
+ * extinguish at ~1341ms — **188ms AFTER the reveal has already begun, so the
+ * departure currently happens on top of the arriving text.** The exit moves the
+ * whole departure to 901ms, **252ms BEFORE the reveal begins**, restoring
+ * vacate-before-arrive ordering to the cards for the first time.
+ *
+ * ⚠ THAT ORDERING IS FUNCTIONAL IN THIS CORRIDOR, NOT AESTHETIC. The corridor's
+ * premise is that one thing vacates and the next arrives into the space it left.
+ *
+ * ⚠ 249 HERE vs 252 MEASURED: this derives from the stored `CORRIDOR_STEP_MS`
+ * (1150); the measured edge lands at 1153. The 3ms is the boundary's own
+ * overshoot. Deriving from the stored value is correct — do not "fix" it to 252.
  */
 export const CARD_EXIT_HEADROOM_MS = CORRIDOR_STEP_MS - CARD_EXIT_END_MS;
 

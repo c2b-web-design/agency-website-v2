@@ -110,6 +110,10 @@ import {
   CARD_RISE_TRANSLATE_PX,
   CARD_RISE_LADDER_MS,
   CARD_RISE_SCALE_FROM,
+  // ⚠ THE EXIT'S LADDER IS INDEX-REVERSED IN THE GEOMETRY FILE, not here —
+  // `CARD_EXIT_LADDER_MS[i]` is already the rung for the card in slot `i`.
+  CARD_EXIT_LADDER_MS,
+  CARD_EXIT_DURATION_MS,
   // ⚠ IMPORTED FOR THE ANCHOR'S OVERRUN CLAMP, not for the ladder itself —
   // see `revealStart` in `useCardEntrance`.
   CARD_FIRST_ENTRANCE_MS,
@@ -1548,6 +1552,28 @@ function easeRise(r: number, mode: string): number {
 }
 
 /**
+ * The card exit's easing — **cubic ease-IN**. The card holds, then accelerates
+ * away.
+ *
+ * ⚠⚠ DELIBERATELY NOT THE MIRROR OF `easeRise` — Carl, 18 August 2026:
+ * *"reversed in spirit only."* A reversed ease-out decelerates INTO the
+ * departure, which reads as the card being set down rather than leaving. The
+ * entrance eases out because it is arriving somewhere; the exit eases in because
+ * it is going.
+ *
+ * ⚠ AND IT TAKES NO `?riseease=` ARM. That dial is scoped to the entrance's
+ * curve and to what Carl is comparing there; wiring the exit into it would let a
+ * probe of one silently retime the other.
+ *
+ * ⚠ ONLY THE POSITION AND SCALE STRANDS USE THIS. Opacity keeps the entrance's
+ * smoothstep, which is symmetric — running it backwards IS the requested
+ * 1 -> 0 curve, so alpha reverses for free while these two must not.
+ */
+function easeExit(r: number): number {
+  return r * r * r;
+}
+
+/**
  * ⚠⚠ `entranceEpoch` IS HOW A NEVER-UNMOUNTING CANVAS GETS A PER-QUESTION
  * LIFETIME — item 2, 17 August 2026.
  *
@@ -1581,6 +1607,19 @@ function useCardEntrance(
   delayMs: number,
   onProgress: (p: number) => void = () => {},
   entranceEpoch: number = 0,
+  /**
+   * ⚠ THE LEAVING EDGE'S OWN EPOCH — bumped at t=0 on the Next-step click, where
+   * `entranceEpoch` is bumped at t=1150. **Two edges, two epochs, one owner**
+   * (`handleNextStep` publishes both). Its only job is to make this effect re-run
+   * at the click; the CLOCK comes from `__leavingEdgeAt`, not from this number.
+   */
+  exitEpoch: number = 0,
+  /**
+   * The card's grid index. ⚠ NEEDED BECAUSE THE EXIT LADDER IS INDEX-REVERSED and
+   * cannot be derived from `delayMs` without inverting the entrance ladder.
+   * `delayMs` stays as it is — ten harnesses key on `card-beat-${delayMs}`.
+   */
+  index: number = 0,
 ) {
   const groupRef = useRef<THREE.Group | null>(null);
   const invalidate = useThree((s) => s.invalidate);
@@ -1687,6 +1726,19 @@ function useCardEntrance(
    * the exact churn `playedRef` exists to absorb.
    */
   const playedEpochRef = useRef(entranceEpoch);
+  /**
+   * ⚠ THE EXIT'S CLOCK ZERO — `performance.now()` at the Next-step click, taken
+   * from `__leavingEdgeAt` and NOT from this effect's own commit time.
+   *
+   * `null` means no exit is armed, which is both the resting state and what the
+   * arriving edge restores. **A timestamp, never accumulated progress:** a second
+   * `leaving` edge overwrites it cleanly and every card restarts its exit from a
+   * known state, where stored progress would resume from an arbitrary value and
+   * shred the ladder.
+   */
+  const exitStartRef = useRef<number | null>(null);
+  /** Which exit epoch `exitStartRef` was last armed for. Compared by VALUE. */
+  const exitEpochRef = useRef(exitEpoch);
 
   useEffect(() => {
     const group = groupRef.current;
@@ -1714,7 +1766,61 @@ function useCardEntrance(
       playedEpochRef.current = entranceEpoch;
       playedRef.current = false;
       shownRef.current = false;
+      /**
+       * ⚠⚠ THE ARRIVING EDGE SUPERSEDES THE LEAVING ONE, UNAMBIGUOUSLY. Clearing
+       * the exit arming here is what stops a half-finished exit from continuing
+       * to drive the group after a new question has begun. It is cleared in the
+       * SAME block as `playedRef` because it has the same lifetime: one question.
+       *
+       * ⚠ AND IT STILL DOES NOT TOUCH `group.visible` — see the note above. The
+       * tick loop remains the only owner of what is on screen, in both directions.
+       */
+      exitStartRef.current = null;
+      exitEpochRef.current = exitEpoch;
     }
+
+    /**
+     * ⚠⚠ THE LEAVING EDGE — READ ONCE PER EFFECT RUN, NEVER PER FRAME, and
+     * STAMPED. This is the same discipline `tracing` and `traceQ` follow above,
+     * and the same stamp check the reveal anchor's `usable` predicate makes.
+     *
+     * ⚠ THE STAMP IS NOT OPTIONAL. `__leavingEdgeQ` must match the question this
+     * card is currently showing, or a card could run its exit against an edge
+     * from a previous step and look entirely plausible while doing it. That is
+     * the fault the anchor's stamp caught: Q4 reading Q5's reveal from 8.2
+     * seconds earlier.
+     *
+     * ⚠ WHY A PUBLISHED VALUE AND NOT A PROP: a prop's arrival is React's commit
+     * time, one or more frames after the click, and the exit ladder needs the
+     * CLICK's instant to fire five rungs from. `CARD_FIRST_ENTRANCE_MS` was
+     * correct while its ORIGIN was wrong once already; that ladder ran at 71% of
+     * the reveal instead of 50%. `exitEpoch` says WHEN TO LOOK; this says WHAT
+     * THE CLOCK IS.
+     */
+    if (exitEpochRef.current !== exitEpoch) {
+      exitEpochRef.current = exitEpoch;
+      exitStartRef.current = null;
+      if (typeof window !== "undefined") {
+        const w = window as unknown as {
+          __leavingEdgeAt?: number;
+          __leavingEdgeQ?: number;
+          __activeQ?: number;
+        };
+        const at = w.__leavingEdgeAt;
+        const stamp = w.__leavingEdgeQ;
+        // The outgoing question IS the one still active — `setActiveQ` does not
+        // run until the arriving edge, 1150ms later.
+        if (typeof at === "number" && stamp === w.__activeQ) {
+          exitStartRef.current = at;
+          // ⚠ The exit re-arms the loop, so `playedRef` must not short-circuit it
+          // below. The entrance has already played for this epoch; the exit is a
+          // second, later reason for the same loop to be running.
+          playedRef.current = false;
+        }
+      }
+    }
+
+    const exitStart = exitStartRef.current;
 
     if (playedRef.current) return;
     playedRef.current = true;
@@ -2161,6 +2267,73 @@ function useCardEntrance(
     }
 
     const tick = () => {
+      /**
+       * ⚠⚠ THE EXIT BRANCH — AND IT ADDS NO NEW WRITER.
+       *
+       * This is the whole structural claim. `group.visible`, `position.y` and
+       * `scale` are still written by exactly one function; alpha is still written
+       * by `CardLighting`, one hop away through `onProgressRef`. The exit
+       * publishes 1 -> 0 through the SAME channel the entrance publishes 0 -> 1
+       * through, so there is still exactly one place that decides what is on
+       * screen and exactly one that decides what reaches alpha.
+       *
+       * ⚠ WHAT IT REPLACES. Before this branch existed, the boundary bumped the
+       * epoch, restarted this loop, and the first frame took the `elapsed <
+       * delayMs` early return below — calling `onProgress(0)` and dropping alpha
+       * to zero on the NEXT frame while the group was still visible at its landed
+       * transform. **That one-frame drop was the hard cut.** Measured 18 August:
+       * all five cards dark within 0.0ms of each other.
+       *
+       * ⚠ AND THE HOLD BELOW IS THE REPAIR, not an optimisation. Card 1 must sit
+       * fully present and lit for 476ms while its neighbours leave — that is what
+       * a 5 -> 4 -> 3 -> 2 -> 1 stagger MEANS.
+       */
+      if (exitStart !== null) {
+        const sinceLeave = performance.now() - exitStart;
+        const rung = CARD_EXIT_LADDER_MS[index] ?? 0;
+
+        if (sinceLeave < rung) {
+          // HOLD — this card's rung has not arrived. It stays landed and lit.
+          // ⚠ NO `invalidate()` HERE. `CardLighting` already guards on
+          // `p !== last`, and five cards held across a 476ms stagger would
+          // otherwise drive continuous redraws for nothing.
+          raf = requestAnimationFrame(tick);
+          return;
+        }
+
+        const rawExit = Math.min(1, (sinceLeave - rung) / CARD_EXIT_DURATION_MS);
+        // ⚠ The SAME smoothstep the entrance uses, run backwards. It is symmetric,
+        // so `1 - rawExit` through `CardLighting` IS the requested 1 -> 0 curve.
+        onProgressRef.current(1 - rawExit);
+
+        const te = easeExit(rawExit);
+        /**
+         * ⚠⚠ IT FALLS THROUGH, IT DOES NOT RETRACE. The entrance writes
+         * `-TRANSLATE * (1 - t)`, rising from -10px to 0. This writes
+         * `-TRANSLATE * te`, falling from 0 PAST the resting position to -10px —
+         * continuing the direction of travel rather than reversing back up to
+         * where it came from. Carl, 18 August: retracing reads as undoing a
+         * choice; falling reads as departing.
+         */
+        group.position.y = -CARD_RISE_TRANSLATE_PX * te;
+        const se = 1 - (1 - CARD_RISE_SCALE_FROM) * te;
+        group.scale.set(se, se, 1);
+        invalidate();
+
+        if (rawExit < 1) {
+          raf = requestAnimationFrame(tick);
+        }
+        /**
+         * ⚠ THE LOOP STOPS HERE WHEN THE EXIT COMPLETES, and the state it leaves
+         * behind is `y = -10px, scale 0.94, alpha 0` — **numerically identical to
+         * the entrance's frame 0.** The handover at the arriving edge is therefore
+         * a no-op in every channel, and cannot flash even if a frame is dropped
+         * across it. That is by construction, not by luck: the exit's targets were
+         * chosen to be the entrance's start state.
+         */
+        return;
+      }
+
       const elapsed = performance.now() - revealStart;
 
       // ⚠ STILL HIDDEN UNTIL THIS CARD'S RUNG. The group was hidden at attach and
@@ -2378,7 +2551,12 @@ function useCardEntrance(
     // when the question changes; reading the epoch from a ref would leave the
     // effect asleep and the re-arm would never fire. `playedEpochRef` above is
     // what stops the re-run from replaying the entrance on unrelated commits.
-  }, [active, reducedMotion, delayMs, invalidate, entranceEpoch]);
+    // ⚠ `exitEpoch` IS A DEPENDENCY FOR THE SAME REASON `entranceEpoch` IS: the
+    // effect must RE-RUN at the leaving edge, or the loop — which has already
+    // self-terminated at `t >= 1` — would never restart to run the exit.
+    // `exitEpochRef` above is what stops that re-run from re-arming on unrelated
+    // commits.
+  }, [active, reducedMotion, delayMs, invalidate, entranceEpoch, exitEpoch, index]);
 
   return attachGroup;
 }
@@ -2585,6 +2763,8 @@ function AnswerCard({
   clay,
   label,
   entranceEpoch,
+  exitEpoch,
+  index,
 }: {
   slot: { x: number; y: number };
   delayMs: number;
@@ -2592,6 +2772,13 @@ function AnswerCard({
   label?: string;
   /** Bumped per question so the entrance re-arms — see `useCardEntrance`. */
   entranceEpoch: number;
+  /** Bumped at the leaving edge so the exit arms — see `useCardEntrance`. */
+  exitEpoch: number;
+  /**
+   * This card's grid index. ⚠ The exit ladder is index-REVERSED, so it cannot be
+   * derived from `delayMs` without inverting the entrance ladder.
+   */
+  index: number;
   /** Whether the pointer is over THIS card. Turns its label teal. */
   hovered: boolean;
   active: boolean;
@@ -2694,6 +2881,8 @@ function AnswerCard({
       litRef.current = p;
     },
     entranceEpoch,
+    exitEpoch,
+    index,
   );
 
   return (
@@ -3419,11 +3608,14 @@ function CardScene({
   gridWidth,
   labels,
   entranceEpoch,
+  exitEpoch,
 }: {
   active: boolean;
   reducedMotion: boolean;
   /** Bumped per question so the entrance re-arms — see `useCardEntrance`. */
   entranceEpoch: number;
+  /** Bumped at the leaving edge so the exit arms — see `useCardEntrance`. */
+  exitEpoch: number;
   tuning: AnswerCardTuning;
   glassTuning: GlassTuning;
   litCards: boolean[];
@@ -3904,6 +4096,8 @@ function CardScene({
             clay={clay}
             label={labels?.[i]}
             entranceEpoch={entranceEpoch}
+            exitEpoch={exitEpoch}
+            index={i}
           />
         </group>
       ))}
@@ -4040,6 +4234,24 @@ export default function AnswerCardCanvas({
    * correct for both: neither has a corridor behind it.
    */
   entranceEpoch = 0,
+  /**
+   * ⚠⚠ THE LEAVING EDGE'S EPOCH — the OTHER half of the per-question lifetime.
+   *
+   * `entranceEpoch` changes at t=1150, when the next question arrives.
+   * **The exit needs t=0, when the current one starts leaving**, so it cannot
+   * reuse that number: two edges, two epochs. Both are published by the same
+   * owner (`handleNextStep`), which is what keeps this from becoming two sources
+   * of truth for one boundary.
+   *
+   * ⚠ IT SAYS *WHEN TO LOOK*, NOT *WHAT THE CLOCK IS*. The exit's actual clock
+   * zero is read from `window.__leavingEdgeAt`, because a prop's arrival is
+   * React's commit time — one or more frames after the click — and a five-rung
+   * ladder fired from the wrong instant is wrong, not merely less precise.
+   *
+   * ⚠ DEFAULTS TO 0 SO EVERY OTHER CALLER IS UNAFFECTED — the warm-up instance
+   * and the clay study pass nothing and never exit, which is correct for both.
+   */
+  exitEpoch = 0,
 }: {
   active: boolean;
   warm?: boolean;
@@ -4047,6 +4259,7 @@ export default function AnswerCardCanvas({
   onCompiled?: () => void;
   labels?: readonly string[];
   entranceEpoch?: number;
+  exitEpoch?: number;
   onToggle?: (index: number) => void;
   /**
    * ⚠ `selectedIndices` BELONGS HERE AND IS DELIBERATELY NOT ADDED YET.
@@ -4645,6 +4858,7 @@ export default function AnswerCardCanvas({
           onWarm={markWarm}
           mayCompile={warm}
           entranceEpoch={entranceEpoch}
+          exitEpoch={exitEpoch}
           // Falls back to the 576px reference for the frames before the first
           // measurement lands — the canvas is not yet visible then, and the
           // effect below commits the real width on the same frame it observes.
