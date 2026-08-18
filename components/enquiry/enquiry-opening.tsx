@@ -6,7 +6,7 @@ import ContactFieldInputs, { type FieldStateSnapshot } from "./contact-field-inp
 import { FIELD_SLOTS } from "./contact-field-geometry";
 import AnswerCardCanvas from "./answer-card-canvas";
 import { prewarmLabelCanvases } from "./answer-card-mesh";
-import { NextStepMeshButton } from "./nextstep-canvas";
+import { NextStepMeshButton, NextStepSurfaceHost } from "./nextstep-canvas";
 // ⚠ THE CARD CHOREOGRAPHY'S OWN END, DERIVED THERE AND IMPORTED HERE — never
 // retyped. This file's own history records a hand-written end-of-choreography
 // value going stale twice.
@@ -651,6 +651,42 @@ export default function EnquiryOpening() {
   const [hostRect, setHostRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null);
   const activeGridRef = useRef<HTMLDivElement | null>(null);
   const [gridTick, setGridTick] = useState(0);
+
+  /**
+   * ⚠⚠ THE NEXT-STEP BUTTON'S RECT — commit 1 of the Q5 freeze repair,
+   * 18 August 2026.
+   *
+   * The button's mesh is drawn by `NextStepSurfaceHost`, mounted ONCE below,
+   * instead of by a canvas inside the keyed phrase. The active
+   * `NextStepMeshButton` publishes its viewport rect here and the host draws
+   * there. **Viewport coordinates on both sides, `position: fixed` on the host,
+   * so they agree with no arithmetic.**
+   *
+   * ⚠ `null` MEANS DRAW NOTHING — no button on screen, or not yet measured.
+   * ⛔ Never coerce to zero.
+   *
+   * ⚠ A STABLE CALLBACK IDENTITY IS LOAD-BEARING. `NextStepMeshButton` publishes
+   * from an effect keyed on `[onRect, box, suppressMesh]`; an inline arrow here
+   * would change identity every render and re-fire that effect on every parent
+   * render, including the ones the corridor produces at 60fps while moving.
+   */
+  const [btnRect, setBtnRect] = useState<{ left: number; top: number; w: number; h: number } | null>(null);
+  const handleBtnRect = useCallback(
+    (r: { left: number; top: number; w: number; h: number } | null) => {
+      setBtnRect((prev) =>
+        prev === r ||
+        (prev &&
+          r &&
+          Math.abs(prev.left - r.left) < 0.5 &&
+          Math.abs(prev.top - r.top) < 0.5 &&
+          Math.abs(prev.w - r.w) < 0.5 &&
+          Math.abs(prev.h - r.h) < 0.5)
+          ? prev
+          : r,
+      );
+    },
+    [],
+  );
 
   /**
    * Callback ref on the ACTIVE question's grid.
@@ -2011,7 +2047,19 @@ export default function EnquiryOpening() {
                 type="button"
                 tabIndex={selected.size > 0 ? 0 : -1}
                 onClick={handleNextStep}
-                active={selected.size > 0 && !reducedMotion}
+                // ⚠ `active` MOVED TO `NextStepSurfaceHost` — 18 August 2026.
+                // It gates the traveller sweep, which now lives in the host
+                // alongside the canvas it drives. The same expression
+                // (`selected.size > 0 && !reducedMotion`) is passed there, so
+                // the gate is unchanged; only its address moved.
+                // ⚠ AND IT STILL CARRIES REDUCED MOTION: `active={false}` leaves
+                // a static mesh with the loop stopped — the surface renders, the
+                // motion does not.
+                // ⚠ PUBLISHES THIS BUTTON'S VIEWPORT RECT to the persistent
+                // surface host below. The mesh is no longer a child of this
+                // element — a canvas here is a new WebGL context per question,
+                // which is the measured cause of the Q5 reveal freeze.
+                onRect={handleBtnRect}
                 // ⚠ `--q5proto` REMOVED 10 August 2026 with the CSS it named —
                 // the Q5-only cabochon lens. **There is no Q5-specific button
                 // surface any more:** the mesh is the material at every
@@ -2203,6 +2251,129 @@ export default function EnquiryOpening() {
           exitEpoch={exitEpoch}
         />
       </div>
+
+      {/*
+        ⚠⚠ THE NEXT-STEP BUTTON'S SURFACE HOST — ONE CONTEXT, CREATED ONCE.
+        Commit 1 of the Q5 reveal freeze repair, 18 August 2026.
+
+        **The measured defect.** `NextStepMeshButton` rendered its own canvas
+        inside the keyed phrase (`phrase-${qNum}`), so a WebGL context was
+        created and destroyed on every question — 8 across a five-question walk —
+        and Q5's context was created +54 to +65ms AFTER the reveal began, inside
+        the 1300ms wipe.
+
+            baseline        freeze median 140ms   5/8 runs   range 80-160
+            ?nobtnmesh=1    freeze median   0ms   0/8 runs   range  0-40
+
+        Non-overlapping, confirmed by eye in the films.
+
+        ⚠⚠ A SIBLING OF THE SHELL, NOT A CHILD OF IT — AND THE FIRST VERSION GOT
+        THIS WRONG, WHICH IS WHY IT IS SPELLED OUT.
+
+        **A transformed ancestor becomes the containing block for
+        `position: fixed`.** Both shells carry `transform: translateY(calc(38vh -
+        5rem))`. The first version of this host was mounted INSIDE the shell, so
+        its `fixed` coordinates resolved against the shell instead of the
+        viewport: computed `left/top` read **654.7 / 616.8** — correct — while it
+        painted at **1080 / 879**. **Carl saw a flat white DOM pill with the
+        chrome mesh sitting in the lower-right corner.**
+
+        ⚠ AND A CONTEXT-COUNT CHECK WAS ONE COMMAND FROM CERTIFYING THAT BUILD AS
+        FIXED. 2 contexts is exactly what a build renders when the mesh never
+        mounts. **Appearance is confirmed before any number from an arm is
+        trusted** — `verify/mesh-appearance.mjs`.
+
+        ⛔ NO ARITHMETIC COMPENSATION. Subtracting the shell's origin would be
+        correct today and silently wrong the moment anyone adds `transform`,
+        `filter`, `perspective`, `contain` or `will-change` upstream — invisible
+        until someone looked at the screen, which is the failure just had.
+        **The fix is the mount point; the guard is the assertion below.**
+
+        ⚠ SO DO NOT ADD ANY OF THOSE PROPERTIES TO THIS ELEMENT OR TO ANY
+        ANCESTOR BETWEEN IT AND THE ROOT. The card host above carries the same
+        warning for the same reason; this is now the second host depending on it.
+
+        ⚠ MOUNTED UNCONDITIONALLY — no `stage` gate. The context is created and
+        the PMREM baked while the OPENING runs, when nothing is animating, rather
+        than inside Q5's wipe. The card host records what gating on `stage` costs:
+        it stopped the churn on Q4-Q1 and **changed Q5's wipe not at all**,
+        because the context was still created inside the wipe.
+
+        ⚠ HIDDEN UNTIL MEASURED, via `visibility` and never `display: none` —
+        the canvas must keep a real box or the 1-world-unit-to-1-CSS-px mapping
+        is destroyed. `NextStepSurfaceHost` owns that.
+
+        ⛔ VISIBILITY IS STILL THE CALLER'S UNTIL COMMIT 4. `btnRect` is null
+        whenever no button is mounted, which is what currently keeps this off the
+        contact form. Commit 4 adds the explicit stage gate — split from the depth
+        gate on Carl's instruction because a persistent host painting a chrome
+        pill over `.enquiry-send-btn` is the worst visible failure in this plan.
+      */}
+      {/*
+        ⚠⚠ THE REPRODUCED OPACITY — commit 2, brought forward on Carl's ruling
+        18 August 2026 because commit 1 alone has no valid appearance state.
+
+        **The three sources the hoist lost, and where each went:**
+
+          wrapper   opacity: selected.size > 0 ? 1 : 0   600ms   -> reproduced here
+          depth-1   .enquiry-pdepth-1 .enquiry-phrase-extras 0.78 -> see below
+          exit      .enquiry-phrase-extras-out  opacity 0  900ms  -> see below
+
+        ⚠ THE BUTTON BELONGS TO THE ACTIVE PHRASE, WHICH IS AT DEPTH 0. The 0.78
+        rule is scoped to `.enquiry-pdepth-1` — the OUTGOING beat — so while the
+        question is live the parent contributes 1.0 and the product is just the
+        wrapper's own value. **Absent until selected, then 600ms in.**
+
+        ⚠⚠ ON THE EXIT THE CHILD GOVERNS, MEASURED NOT ASSUMED. Parent 900ms vs
+        wrapper 600ms: the button completes its exit at ~600ms while the cards
+        continue to 900ms (`globals.css`, per-frame figures from 15 August). So
+        the exit is reproduced as the wrapper's own 600ms to 0, driven by
+        `corridorMoving` — the same signal that adds `-out` to the real extras.
+
+        ⛔ THE 0.78 IS DELIBERATELY NOT MODELLED. It is the parent's starting
+        point on the outgoing beat, and the button's own fade reaches 0 first, so
+        it never becomes visible on this element. **That is a claim the per-frame
+        comparison must CONFIRM, not an assumption** — `verify/button-opacity-
+        curve.mjs` compares against the pre-hoist build frame by frame. If it is
+        wrong, the curve will show it and A1 fails the appearance constraint.
+
+        ⚠ REDUCED MOTION KEEPS ITS OWN PATH. `corridorMoving` is never true under
+        reduced motion (that branch leaves the phase at `settled`), so the exit
+        term cannot fire — exactly as today, where the outgoing button unmounts
+        rather than fading.
+      */}
+      <NextStepSurfaceHost
+        rect={btnRect}
+        active={selected.size > 0 && !reducedMotion}
+        opacity={selected.size > 0 && !corridorMoving ? 1 : 0}
+        /**
+         * ⚠⚠ 600ms IN, 375ms OUT — AND THE 375 IS DERIVED, NOT PICKED.
+         *
+         * ⛔ MY FIRST VERSION USED 600ms BOTH WAYS AND THE PER-FRAME CURVE
+         * FALSIFIED IT: A1 ran up to **0.186 brighter** than pre-hoist through
+         * the middle of the exit. The comment claimed *"the 0.78 never becomes
+         * visible, the button's own fade dominates"* — **that was wrong.**
+         *
+         * ⚠ WHAT THE MEASUREMENT SHOWED. The pre-hoist exit is the PRODUCT of
+         * BOTH transitions running together — wrapper 1->0 over 600ms multiplied
+         * by the parent's own ramp over 900ms, both linear, both starting ~60ms
+         * after the click. Modelled that way it fits the measured curve to a
+         * worst delta of 0.048. **The parent's 0.78 START value is indeed never
+         * seen — but its RAMP is, and the ramp is what I dropped.**
+         *
+         * A single linear transition cannot reproduce a product of two linears
+         * (the product is quadratic). ⚠ But it can match it closely, and the
+         * honest fit is what the curve says rather than what the CSS says: the
+         * product crosses 0.5 at ~285ms and reaches 0 at 600ms. A 375ms linear
+         * tracks it to within ~0.05 across the span — the same order as the
+         * measurement's own frame-to-frame noise.
+         *
+         * ⛔ THIS IS A FIT TO THE MEASURED CURVE, NOT A REPRODUCTION OF THE CSS,
+         * AND IT MUST BE READ AS SUCH. The per-frame comparison is the
+         * acceptance test, not the source. `verify/button-opacity-curve.mjs`.
+         */
+        transitionMs={600}
+      />
 
       {/* Shared shell — the heading lives here in BOTH states, anchored identically. */}
       {/* Only the content beneath the heading swaps, so the heading never shifts on Begin. */}

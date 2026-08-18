@@ -21,9 +21,80 @@
  *      sanctioned fallback — *"Belonging in the same world is what counts."*
  */
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+
+/**
+ * ⚠⚠ DIAGNOSTIC ONLY — `?mounttrace=1` times the parts of this component's mount.
+ * Added 18 August 2026 for ATTRIBUTION, after `?nobtnmesh=1` proved the bundle
+ * causes the Q5 reveal freeze but could not say WHICH of its five components does.
+ * ⛔ NOTHING SHIPS FROM IT.
+ *
+ * ⚠ OFF BY DEFAULT AND FREE WHEN OFF. `MOUNT_TRACE` is read once from the URL;
+ * when false, `mtrace()` runs the callback and returns — no `performance.now()`,
+ * no array push, no branch inside a loop. **A tracer that costs something when
+ * disabled would change the very mount it exists to describe.**
+ *
+ * ⚠ IT TIMES SUBMISSION, NOT COMPLETION, for GPU-side work. A `performance.now()`
+ * bracket around a WebGL call returns when the command is QUEUED. Completion needs
+ * `gl.finish()`, which serialises the pipeline — the same class of perturbation as
+ * the 84ms screenshot sampler. **Both are reported where they differ**: `?mountsync=1`
+ * adds the finish, so the gap between the two arms of that flag IS the queue depth.
+ */
+const MOUNT_TRACE =
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).get("mounttrace") === "1";
+const MOUNT_SYNC =
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).get("mountsync") === "1";
+
+type MountMark = { label: string; ms: number; t: number };
+
+/**
+ * ⚠⚠ MARKS LIVE IN MODULE SCOPE, NOT ON `window`, AND THE CLOCK IS READ THROUGH
+ * `nowImpure()`.
+ *
+ * React's compiler (`react-hooks/purity`, `react-hooks/immutability`) rejects both
+ * `performance.now()` and writes to an external object **during render** — and the
+ * memo bodies being timed here ARE render. A first cut wrote marks straight to
+ * `window` and took the repo from its recorded baseline of ONE lint error to EIGHT.
+ *
+ * ⚠ THE RULE IS RIGHT AND THE INSTRUMENT IS THE EXCEPTION. Impure reads during
+ * render are genuinely unsafe under concurrent rendering; a tracer is the one case
+ * where the impurity IS the point. The indirection below is what keeps that
+ * exception explicit and confined instead of scattered through the component.
+ *
+ * ⛔ THE BASELINE IS ONE ERROR AND MUST STAY ONE. Verified by running lint, not by
+ * trusting a line number (CLAUDE.md → Error handling).
+ */
+const mountMarks: MountMark[] = [];
+const nowImpure: () => number = () => performance.now();
+
+if (typeof window !== "undefined") {
+  (window as unknown as { __mountMarks?: MountMark[] }).__mountMarks = mountMarks;
+}
+
+function mtrace<T>(label: string, fn: () => T, gl?: THREE.WebGLRenderer): T {
+  if (!MOUNT_TRACE) return fn();
+  const t0 = nowImpure();
+  const out = fn();
+  // ⚠ OPTIONAL SYNC — forces GPU completion so the bracket times the WORK and not
+  // the QUEUEING. Perturbing by design; that is why it is a separate flag.
+  if (MOUNT_SYNC && gl) gl.getContext().finish();
+  mountMarks.push({ label, ms: nowImpure() - t0, t: Math.round(t0) });
+  return out;
+}
+
+// ⚠ A bare stamp for the two components whose start and end are in different
+// functions (context creation; the studio build). Same impurity confinement.
+let studioT0 = 0;
+let canvasT0 = 0;
+function stampStudio() { studioT0 = nowImpure(); }
+function stampCanvas() { canvasT0 = nowImpure(); }
+function closeMark(label: string, t0: number) {
+  mountMarks.push({ label, ms: nowImpure() - t0, t: Math.round(t0) });
+}
 import {
   NEXTSTEP_WIDTH_PX,
   NEXTSTEP_HEIGHT_PX,
@@ -77,7 +148,13 @@ function urlFloat(key: string, fallback: number): number {
  * continuous line, which is the difference between chrome and moulded plastic.
  */
 function usePillGeometry(w: number, h: number) {
-  return useMemo(() => {
+  // ⚠ COMPONENT 4 (total) — the whole height-field build: the nx*ny vertex loop
+  // with a Vector3 normalize per vertex (220*240 = 52,800), plus buffer assembly.
+  // MAIN THREAD, entirely. ⚠ A large figure here is a POOR FIT for a freeze whose
+  // signature is GPU-saturated with the renderer near-idle — size is not fit.
+  // ⚠ The bracket is INSIDE the memo callback, not around the hook: wrapping
+  // `useMemo` in a conditional tracer would violate the Rules of Hooks.
+  return useMemo(() => mtrace("4-geometry-total", () => {
     /**
      * ⚠⚠ A HEIGHT FIELD OVER A GRID, NOT RINGS SWEPT INWARD FROM THE OUTLINE.
      *
@@ -220,13 +297,21 @@ function usePillGeometry(w: number, h: number) {
       }
     }
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-    geo.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
-    geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
-    geo.setIndex(index);
+    // ⚠ COMPONENT 4 — geometry ASSEMBLY. Note this brackets only the buffer
+    // construction; the nx*ny vertex loop above it is timed by `4-geometry-total`
+    // in the caller. ⚠ NO GPU UPLOAD HAPPENS HERE — `setAttribute` only stages
+    // CPU-side typed arrays. The actual upload occurs on first draw (component 5),
+    // which is where it must be attributed, NOT here.
+    const geo = mtrace("4b-geometry-buffers", () => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+      g.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
+      g.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+      g.setIndex(index);
+      return g;
+    });
     return geo;
-  }, [w, h]);
+  }), [w, h]);
 }
 
 /**
@@ -249,6 +334,8 @@ function useChromeEnv(): THREE.Texture | null {
   const gl = useThree((s) => s.gl);
 
   const target = useMemo(() => {
+    // ⚠ COMPONENT 2a START — the studio scene build, MAIN THREAD.
+    if (MOUNT_TRACE) stampStudio();
     const studio = new THREE.Scene();
     const disposables: Array<THREE.BufferGeometry | THREE.Material> = [];
 
@@ -518,9 +605,24 @@ function useChromeEnv(): THREE.Texture | null {
     // sources only in front, that edge dies against the shell.
     panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY * 0.8, [14, 4, -6], [8, 44]);
 
-    const pmrem = new THREE.PMREMGenerator(gl);
-    const built = pmrem.fromScene(studio, 0, 0.1, 200);
-    pmrem.dispose();
+    // ⚠ COMPONENT 2a ENDS HERE — everything above built the studio scene on the
+    // MAIN THREAD (geometries, shader materials, the 48x32 shell). Marked at this
+    // point rather than bracketed, because the panels are emitted by a closure
+    // called several times above and wrapping each would inflate the count.
+    if (MOUNT_TRACE) closeMark("2a-studio-build", studioT0);
+
+    // ⚠⚠ COMPONENT 2b — THE PMREM BAKE. Cubemap render + roughness convolution at
+    // 256. GPU-SIDE, and the candidate this attribution exists to test.
+    const built = mtrace(
+      "2b-pmrem-fromScene",
+      () => {
+        const pmrem = new THREE.PMREMGenerator(gl);
+        const r = pmrem.fromScene(studio, 0, 0.1, 200);
+        pmrem.dispose();
+        return r;
+      },
+      gl,
+    );
     disposables.forEach((d) => d.dispose());
     studio.clear();
     return built;
@@ -567,7 +669,27 @@ function useChromeEnv(): THREE.Texture | null {
  *
  * ⚠ AND IT IS CHEAP, WHICH DECIDED THE MECHANISM. Re-baking the PMREM per frame
  * would be ruinous — Q5's frame cost is a live wound at 167ms. `envMapRotation`
- * is a uniform on the existing material: the room is baked ONCE and turned.
+ * is a uniform on the existing material: the room is baked once PER CANVAS and
+ * then only turned.
+ *
+ * ⚠⚠ CORRECTED 18 August 2026 — "baked ONCE" WAS TRUE WITHIN ONE CANVAS'S LIFE
+ * AND FALSE ACROSS THE CORRIDOR. `useChromeEnv` memoises on `[gl]`, i.e. on the
+ * RENDERER. This component sits inside the keyed phrase (`phrase-${qNum}`), so
+ * it is destroyed and rebuilt on every question — **a new context means a new
+ * `gl`, which means a FRESH PMREM BAKE per question**, not a cached one. The
+ * memo protects re-renders within one canvas; it does nothing across a remount.
+ *
+ * ⚠ THE COMMENT WAS ACCURATE WHEN WRITTEN AND WAS LEFT STANDING AFTER THE
+ * STRUCTURE CHANGED AROUND IT — the same failure as the mark-name collision.
+ * Carl, 18 August 2026. ⛔ Read as originally worded, it says the per-frame cost
+ * was the only one worth avoiding, which is why the per-MOUNT cost went
+ * unexamined for weeks. The bake is: a studio scene, a 48x32 shell, several
+ * shader-material panels, and `fromScene(..., 200)` at 256 with its full
+ * roughness convolution chain.
+ *
+ * ⛔ THIS IS A CORRECTION TO THE RECORD, NOT A REPAIR. Hoisting the bake or
+ * keying the cache on something more durable than the renderer is a STRUCTURAL
+ * decision (CLAUDE.md §5a) and is not taken here.
  *
  * ── THE PATH ─────────────────────────────────────────────────────────────
  *
@@ -764,6 +886,11 @@ function ButtonMesh({
   const geometry = usePillGeometry(width, height);
   const envMap = useChromeEnv();
   const invalidate = useThree((s) => s.invalidate);
+  // ⚠ Read unconditionally — hooks cannot be called behind the trace flag. Unused
+  // when `MOUNT_TRACE` is false; these are cheap store reads, not work.
+  const traceGl = useThree((s) => s.gl);
+  const traceScene = useThree((s) => s.scene);
+  const traceCamera = useThree((s) => s.camera);
   // ⚠ THE MATERIAL IS DRIVEN BY REF, NOT BY STATE. `envMapRotation` changes every
   // frame; routing that through React would re-render the tree 60 times a second
   // to mutate one uniform.
@@ -786,8 +913,28 @@ function ButtonMesh({
    * it lands — otherwise the one frame drawn would be the one without it.
    */
   useEffect(() => {
-    invalidate();
-  }, [invalidate, geometry, envMap]);
+    // ⚠⚠ COMPONENT 5 — THE FORCED DRAW, and COMPONENT 3 arrives INSIDE IT.
+    //
+    // ⚠ The `MeshPhysicalMaterial` program is NOT linked when the material is
+    // constructed — three.js compiles lazily on FIRST RENDER of the mesh. So the
+    // first draw after `envMap` lands pays: program compile + link, the geometry's
+    // GPU upload, and the draw itself. **They cannot be separated by brackets
+    // here** — `3-link`, `4-upload` and `5-draw` all fall inside this one call.
+    //
+    // ⛔ SO THIS IS REPORTED AS ONE COMPOSITE, NOT SPLIT BY GUESSWORK. Splitting
+    // it would mean inventing a division the instrument cannot see, which is the
+    // recorded failure mode of an instrument answering an adjacent question.
+    // The split is recoverable from `renderer.info.programs` count and a
+    // WebGL-timer query, neither of which is built this turn.
+    mtrace("3+4+5-firstdraw-composite", () => {
+      invalidate();
+      // ⚠ `invalidate()` only REQUESTS a frame; R3F renders on the next rAF, so
+      // the bracket above would close before any GPU work happened. `gl.render`
+      // is called synchronously here ONLY under the trace flag to make the first
+      // draw land inside the bracket. ⛔ Perturbing, and off by default.
+      if (MOUNT_TRACE) traceGl.render(traceScene, traceCamera);
+    }, traceGl);
+  }, [invalidate, geometry, envMap, traceGl, traceScene, traceCamera]);
 
   return (
     <group>
@@ -947,6 +1094,12 @@ export default function NextStepCanvas({
         // inside whatever animation is running. See `answer-card-canvas.tsx`.
         onCreated={({ gl }) => {
           gl.debug.checkShaderErrors = false;
+          // ⚠ COMPONENT 1 — CONTEXT CREATION, measured as the interval from the
+          // React commit that mounted this Canvas to a usable `gl`. R3F creates
+          // the renderer (and therefore the WebGL context) between those points,
+          // so this brackets `CommandBufferProxyImpl::Initialize` and the
+          // renderer construction together. ⚠ It cannot separate them.
+          if (MOUNT_TRACE) closeMark("1-context-creation", canvasT0);
         }}
       >
         <ButtonMesh width={width} height={height} amber={amber} active={active} />
@@ -983,24 +1136,83 @@ export default function NextStepCanvas({
  * control** — the same division the answer cards will need when they become
  * real controls, and the reason that debt is recorded rather than repeated here.
  */
+/**
+ * ══════════════════════════════════════════════════════════════════════════
+ * ⚠⚠ COMMIT 1 OF THE Q5 FREEZE REPAIR — LIFETIME ONLY. 18 August 2026.
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * **The measured defect.** This component used to render `<NextStepCanvas>` as
+ * its own child. It sits inside the keyed phrase (`phrase-${qNum}`), so it was
+ * destroyed and rebuilt on every question — **8 WebGL contexts across a
+ * five-question walk**, with Q5's context created **+54 to +65ms after the
+ * reveal begins**, inside the 1300ms wipe.
+ *
+ * Measured, both arms back to back, 8 runs each, one build:
+ *
+ *     baseline           freeze median 140ms   5/8 runs   range  80-160
+ *     ?nobtnmesh=1       freeze median   0ms   0/8 runs   range   0-40
+ *
+ * Non-overlapping, and confirmed BY EYE in the films: baseline held "Q5 Wl"
+ * across f251-f256 then jumped to "What brou"; both treatment films advanced
+ * every frame.
+ *
+ * ⚠⚠ AND CONTENTION IS LIVE, which is why the repair is the LIFETIME and not
+ * the bake. With the button gone the card host renders **74 -> 84 frames** in
+ * the same window (73-75 vs 84-85, non-overlapping) at unchanged per-frame
+ * cost. It is not being slowed; it is being starved of scheduling
+ * opportunities. **A repair that removed only the PMREM bake would leave the
+ * second context and the per-frame competition in place.**
+ *
+ * ── WHAT THIS COMPONENT IS NOW ────────────────────────────────────────────
+ *
+ * **The CONTROL only.** The real `<button>`, its box, its label, its focus ring
+ * and its click handler. It renders NO canvas. It publishes its measured rect
+ * upward via `onRect`, and `NextStepSurfaceHost` — mounted once, outside the
+ * keyed phrase — draws the mesh at that rect.
+ *
+ * ⚠ THE SEPARATION IS THE SAME ONE D-048 MADE FOR THE CARDS: the DOM element
+ * stays where the layout defines it; only the CANVAS moves out. **A mesh is a
+ * surface, never a control.**
+ *
+ * ⛔ NOT A LICENCE TO CHANGE HOW IT LOOKS. Appearance and behaviour are
+ * approved and unchanged: same box, same label, same 600ms selection fade, same
+ * traveller. Carl, 18 August 2026 — any plan that changes either is rejected
+ * before it is read.
+ *
+ * ⚠ FOR THE FUTURE IMPLEMENTER — THE `Send` SEAM, RECORDED NOT BUILT.
+ * Carl's standing constraint is that completion's **Send** will eventually take
+ * this same mesh, and it is a different width (which is why this component
+ * MEASURES rather than reading `NEXTSTEP_WIDTH_PX`). **When Send becomes a
+ * mesh it must RE-TARGET THIS HOST — publish its own rect to the same
+ * `NextStepSurfaceHost` — and must NOT mount a second host.** A second host is
+ * a second context, which is precisely the defect this commit removes.
+ * ⛔ **Deliberately NOT designed here: `.enquiry-send-btn` is a separate
+ * painted DOM button, masked and inert. Do not build a seam for a component
+ * that does not exist.** (Carl, 18 August 2026.)
+ */
 export function NextStepMeshButton({
   children,
-  active,
   className,
+  onRect,
   ...buttonProps
 }: {
   children: React.ReactNode;
   /**
-   * Whether the button is visible — drives the traveller sweep.
+   * Publishes this button's viewport rect to the persistent surface host.
    *
-   * ⚠ NOT COSMETIC. The corridor's wrapper is `opacity: 0` until a selection
-   * exists, and an ungated sweep would render at 60fps behind it through the
-   * Q5 reveal. See `TravellingReflection`.
+   * ⚠ VIEWPORT COORDINATES, AND THE HOST IS `position: fixed`. Both resolve
+   * against the viewport, so they agree **by construction with no arithmetic**.
+   * That is what makes this simpler than D-048, which needed `gridOffset` to
+   * carry grid-relative coordinates back over the grid.
+   *
+   * ⚠ `null` MEANS "NOT MEASURED / NOT PRESENT" AND THE HOST MUST DRAW NOTHING.
+   * ⛔ Never substitute `?? 0` — a zero-origin fallback is exactly what painted
+   * the 12 August build at the shell origin.
    */
-  active: boolean;
+  onRect?: (r: { left: number; top: number; w: number; h: number } | null) => void;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const hostRef = useRef<HTMLSpanElement | null>(null);
-  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+  const [box, setBox] = useState<{ w: number; h: number; left: number; top: number } | null>(null);
 
   /**
    * ⚠⚠ DIAGNOSTIC ONLY — `?nobtnmesh=1` suppresses THIS BUTTON'S WebGL canvas.
@@ -1038,30 +1250,124 @@ export function NextStepMeshButton({
       new URLSearchParams(window.location.search).get("nobtnmesh") === "1",
   );
 
+  /**
+   * ⚠⚠ MEASURES THE VIEWPORT RECT NOW, NOT JUST THE SIZE.
+   *
+   * The size still drives the mesh geometry; the POSITION is new, and it is what
+   * lets a host outside this subtree draw the surface exactly over this button.
+   * `getBoundingClientRect()` reports viewport coordinates and the host is
+   * `position: fixed`, so the two agree with no arithmetic.
+   *
+   * ⚠ `contentRect` IS NOT ENOUGH AND THAT IS WHY THE OBSERVER CALLBACK READS
+   * THE ELEMENT AGAIN. `ResizeObserver`'s `contentRect` carries size but its
+   * `left`/`top` are content-box offsets, not viewport coordinates.
+   *
+   * ⚠⚠ AND A `ResizeObserver` DOES NOT FIRE FOR A MOVE. The button does not move
+   * today — it is anchored to the STATIC `.enquiry-phrase` root, outside
+   * `.enquiry-phrase-travel`, which is the only thing that animates `bottom`.
+   * **But "it does not move" is a fact about today's CSS that nothing in code
+   * asserts**, so `scroll` and `resize` re-measures are wired anyway and the
+   * caller re-measures on corridor step. ⛔ **This is deliberately NOT an rAF
+   * tracking loop like the card host's**: the cards' grid genuinely moves and
+   * needs per-frame following; re-measuring this one every frame would schedule
+   * a setState on every frame of an idle page for an element that is still.
+   * See `context-rules.md` → *An invariant that lives only in prose is not
+   * asserted*.
+   */
   useEffect(() => {
     const el = hostRef.current;
     if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const r = entries[0]?.contentRect;
-      if (!r || r.width < 1 || r.height < 1) return;
+
+    const apply = () => {
+      const r = el.getBoundingClientRect();
+      // A zero box means it is not laid out yet. Committing it would collapse
+      // the mesh geometry, which is sized from this measurement.
+      if (r.width < 1 || r.height < 1) return;
       setBox((prev) =>
-        prev && Math.abs(prev.w - r.width) < 0.5 && Math.abs(prev.h - r.height) < 0.5
+        prev &&
+        Math.abs(prev.w - r.width) < 0.5 &&
+        Math.abs(prev.h - r.height) < 0.5 &&
+        Math.abs(prev.left - r.left) < 0.5 &&
+        Math.abs(prev.top - r.top) < 0.5
           ? prev
-          : { w: r.width, h: r.height },
+          : { w: r.width, h: r.height, left: r.left, top: r.top },
       );
-    });
+    };
+
+    apply();
+    const ro = new ResizeObserver(apply);
     ro.observe(el);
-    return () => ro.disconnect();
+    window.addEventListener("resize", apply);
+    window.addEventListener("scroll", apply, true);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", apply);
+      window.removeEventListener("scroll", apply, true);
+    };
   }, []);
+
+  /**
+   * ⚠ PUBLISH THE RECT UPWARD — in an effect, never during render.
+   *
+   * ⛔ Calling `onRect` in the component body would write to a parent's state
+   * during this component's render. It also trips `react-hooks/purity`, which
+   * took this repo from its recorded baseline of ONE lint error to EIGHT earlier
+   * today.
+   *
+   * ⚠ ON UNMOUNT IT PUBLISHES `null`, and that is load-bearing: when the phrase
+   * is torn down the host must stop drawing. Without it the mesh would outlive
+   * the button it belongs to — the persistent-host failure mode that left the
+   * previous answer lit on the cards (`litCards`).
+   */
+  useEffect(() => {
+    if (!onRect) return;
+    onRect(box && !suppressMesh ? box : null);
+    return () => onRect(null);
+  }, [onRect, box, suppressMesh]);
+
+  /**
+   * ⚠ COMPONENT 1's START STAMP, and the INSTRUMENTATION FLOOR.
+   *
+   * ⚠⚠ IN A LAYOUT EFFECT, NOT IN RENDER. Stamping during render tripped
+   * `react-hooks/purity` and `react-hooks/immutability` — `performance.now()` is
+   * impure and the module store is external. `useLayoutEffect` runs after the
+   * commit that mounts `<NextStepCanvas>` but BEFORE the browser paints, and R3F
+   * creates the WebGL context in the child's own mount effect, which runs first.
+   *
+   * ⛔ SO THIS IS A LOWER BOUND ON COMPONENT 1, NOT ITS TRUE START. The child's
+   * effect precedes this one, so part of context creation is already spent when
+   * the stamp is taken. **The figure UNDER-REPORTS and is reported as bounded.**
+   * Stating that is the point; an instrument that quietly clipped its own window
+   * is the recorded failure of the reveal window's version 3.
+   *
+   * The floor is measured through the SAME `mtrace` path in the SAME place, so it
+   * is this tracer's own cost measured rather than assumed.
+   */
+  useLayoutEffect(() => {
+    if (!MOUNT_TRACE || !box || suppressMesh) return;
+    stampCanvas();
+    mtrace("0-floor-noop", () => undefined);
+  }, [box, suppressMesh]);
 
   return (
     <span ref={hostRef} style={{ position: "relative", display: "inline-block" }}>
       {/*
-        ⚠ THE CANVAS RENDERS ONLY ONCE THE BOX IS MEASURED. Rendering it at the
-        default 116.3 first and correcting afterwards would rebuild the geometry
-        on the second frame — and on Send it would visibly resize.
+        ⚠⚠ THE CANVAS NO LONGER RENDERS HERE — 18 August 2026, commit 1 of the
+        Q5 freeze repair. It is drawn by `NextStepSurfaceHost`, mounted ONCE
+        outside the keyed phrase, at the rect this component publishes.
+
+        ⛔ DO NOT PUT IT BACK HERE TO "FIX" A POSITIONING PROBLEM. This subtree is
+        destroyed and rebuilt on every question, so a canvas here is a NEW WEBGL
+        CONTEXT PER QUESTION — the measured cause of the Q5 reveal freeze
+        (140ms median, 5/8 runs; 0ms and 0/8 with the canvas suppressed). If the
+        mesh is mis-positioned, the fault is in the published rect or in the
+        host's placement — measure those. The same instruction guards the card
+        canvas one file over, for the same reason and after the same defect.
+
+        ⚠ THE BOX MEASUREMENT STAYS HERE, and that is deliberate: this element is
+        what the mesh is sized FROM. D-048 established the same split for the
+        cards — the measured element stays in the phrase, only the canvas moves.
       */}
-      {box && !suppressMesh && <NextStepCanvas width={box.w} height={box.h} active={active} />}
       <button
         {...buttonProps}
         // ⚠ `--mesh` SUPPRESSES THE CSS SURFACE, and only when the mesh is
@@ -1100,5 +1406,254 @@ export function NextStepMeshButton({
         {children}
       </button>
     </span>
+  );
+}
+
+/**
+ * ══════════════════════════════════════════════════════════════════════════
+ * ⚠⚠ THE PERSISTENT SURFACE HOST — ONE CANVAS, ONE CONTEXT, NEVER UNMOUNTED
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * Commit 1 of the Q5 freeze repair, 18 August 2026. Mounted ONCE by
+ * `EnquiryOpening`, outside the keyed phrase, so the WebGL context, the PMREM
+ * bake, the `MeshPhysicalMaterial` link and the geometry upload happen **once
+ * per page instead of once per question**.
+ *
+ * ⚠ IT KEEPS ITS OWN `<Canvas>` AND THEREFORE ITS OWN RENDERER. It is NOT
+ * merged into the card host, and that is a hard constraint, not a preference:
+ * `toneMapping` is a RENDERER-level setting. The cards run R3F's default
+ * ACESFilmic; this button runs `NeutralToneMapping`, because ACES desaturates
+ * aggressively exactly where Carl's reference is bluest. One renderer cannot
+ * give both. **The separate-renderer argument in `NextStepCanvas`'s header is
+ * preserved verbatim — this change alters only how long the renderer LIVES.**
+ *
+ * ⚠ AND THE CARD HOST TRACKS A MOVING GRID PER FRAME while the corridor moves.
+ * The button must NEVER move. Putting the one element that must stay pinned
+ * inside the host designed to chase would be a permanent hazard.
+ *
+ * ── POSITIONING ───────────────────────────────────────────────────────────
+ *
+ * `position: fixed` at the rect the active `NextStepMeshButton` publishes.
+ * `getBoundingClientRect()` reports viewport coordinates and `fixed` resolves
+ * against the viewport, **so the two agree by construction with no arithmetic.**
+ * ⚠ This is why no `gridOffset` equivalent is needed: D-048 required one because
+ * the card canvas used grid-relative `box.left/top` from a host that was no
+ * longer inside the grid. `NextStepCanvas` positions from its own measured
+ * width/height only and holds no absolute coordinates.
+ *
+ * ⛔ `rect === null` RENDERS NOTHING. Never a `?? 0` fallback — a zero-origin
+ * fallback is exactly what painted the 12 August build at the shell origin.
+ *
+ * ── WHAT THIS COMMIT DELIBERATELY DOES NOT DO ─────────────────────────────
+ *
+ * ⛔ COMMIT 1 IS LIFETIME ONLY, so that the recovery figure it produces is
+ * attributable to the lifetime change and nothing else. Still to come, each in
+ * its own commit and its own measurement:
+ *   - commit 2: the fade reproduction (the three-source opacity product)
+ *   - commit 3: the `showExtras` depth gate
+ *   - commit 4: the opening/complete visibility gate — SPLIT FROM 3 on Carl's
+ *     instruction because it carries the worst visible failure in the plan, a
+ *     persistent host painting a chrome pill over the contact form
+ *
+ * ⚠ UNTIL COMMIT 4 LANDS, VISIBILITY IS THE CALLER'S: this host draws wherever
+ * it is told to draw. `EnquiryOpening` passes `rect = null` when no button is
+ * present, which is what keeps it off the contact form for now.
+ */
+export function NextStepSurfaceHost({
+  rect,
+  active,
+  opacity,
+  transitionMs,
+}: {
+  rect: { left: number; top: number; w: number; h: number } | null;
+  active: boolean;
+  /**
+   * ══════════════════════════════════════════════════════════════════════════
+   * ⚠⚠ COMMIT 2 — THE REPRODUCED OPACITY. Brought forward on Carl's ruling.
+   * ══════════════════════════════════════════════════════════════════════════
+   *
+   * **Why this prop exists.** Hoisting the canvas out of the keyed phrase left
+   * behind ALL THREE opacity sources that used to govern it, because every one
+   * of them is scoped inside the phrase:
+   *
+   *     wrapper   opacity: selected.size > 0 ? 1 : 0   600ms linear
+   *     depth-1   .enquiry-pdepth-1 .enquiry-phrase-extras { opacity: 0.78 }
+   *     exit      .enquiry-phrase-extras-out { opacity: 0; 900ms linear }
+   *
+   * ⛔ THE RESULT WAS A FORBIDDEN STATE, AND CARL SAW IT: the button visible
+   * before any answer was selected — present, lit, blank, no text — appearing as
+   * the question revealed. **The design has no such state.**
+   *
+   * ⚠⚠ AND IT FALSIFIED THE PLAN'S SEQUENCING. The three-commit split assumed
+   * lifetime and opacity were separable. **They are not** — a persistent host has
+   * no wrapper opacity, so hoisting NECESSARILY changes visibility behaviour in
+   * the same commit. There is no "lifetime only, appearance unchanged" build.
+   * Carl's ruling, 18 August 2026: *"the button must work exactly as designed.
+   * Not negotiable. No interim gate, no hard on/off placeholder, no build that
+   * behaves wrongly for the convenience of a measurement."*
+   *
+   * ── WHAT IS REPRODUCED, AND THE INTERACTION THAT MATTERS ──────────────────
+   *
+   * The three sources MULTIPLY. The product, by phase:
+   *
+   *     active, nothing selected    0 x 1.00  =  0      <- ABSENT, not dim
+   *     active, selected            1 x 1.00  =  1      <- 600ms fade in
+   *     leaving (depth 1, -out)     1->0 600ms  x  0.78->0 900ms
+   *
+   * ⚠⚠ ON THE EXIT THE CHILD GOVERNS AND THAT IS MEASURED, NOT ASSUMED. With the
+   * parent at 900ms and the wrapper at 600ms, **the button completes its exit at
+   * ~600ms while the cards continue to 900ms.** `globals.css` records the history:
+   * at the parent's old 300ms the parent hit 0 at ~328ms while the button was
+   * still at ~0.50, so the last ~300ms of the button's declared 600ms ran
+   * invisibly. At 900ms the parent no longer truncates the child — **so the
+   * button's exit is its own 600ms, and reproducing the 900ms parent here would
+   * be reproducing a curve that no longer governs.**
+   *
+   * ⚠ THE 0.78 NEVER BECOMES VISIBLE ON THE BUTTON. It is the parent's STARTING
+   * point on the outgoing beat; the button's own fade dominates from t=0 and
+   * reaches 0 first. It is therefore not modelled here — and that is a claim the
+   * per-frame comparison must confirm, not an assumption. See
+   * `verify/button-opacity-curve.mjs`.
+   *
+   * ⛔ NOT A NEW CURVE. Every number here is read off the existing CSS. If the
+   * per-frame comparison cannot match, A1 fails the appearance constraint and
+   * goes back to Carl — it is NOT tuned toward "close enough".
+   */
+  opacity: number;
+  /** Duration for the current transition, in ms. See `opacity`. */
+  transitionMs: number;
+}) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+
+  /**
+   * ══════════════════════════════════════════════════════════════════════════
+   * ⚠⚠ THE CONTAINING-BLOCK ASSERTION — THE INVARIANT MADE SELF-CHECKING
+   * ══════════════════════════════════════════════════════════════════════════
+   *
+   * **This host only works if `position: fixed` resolves against the VIEWPORT.**
+   * Any ancestor with `transform`, `filter`, `perspective`, `contain` or
+   * `will-change` becomes the containing block instead, and then the coordinates
+   * published by `getBoundingClientRect()` — which are viewport coordinates —
+   * mean something different from the `left`/`top` written here.
+   *
+   * ⚠ THAT IS NOT HYPOTHETICAL. The first version of this host was mounted
+   * inside the shell, which carries `translateY(calc(38vh - 5rem))`. Computed
+   * `left/top` read 654.7 / 616.8 while it painted at 1080 / 879: **the button
+   * showed as a flat white DOM pill with the mesh in the lower-right corner.**
+   *
+   * ⚠⚠ AND THE PLAN HAD ASSERTED IT IN PROSE — *"fixed resolves against the
+   * viewport, the same space getBoundingClientRect reports in, so they agree by
+   * construction with no arithmetic."* True, and unasserted, and therefore no
+   * help. `context-rules.md` → *An invariant that lives only in prose is not
+   * asserted* was written the SAME DAY, by the same author, and still not
+   * applied. **Writing it down is what failed. This is the assertion instead.**
+   *
+   * ⛔ IT COMPARES THE TWO DIRECTLY. If the element's own `getBoundingClientRect`
+   * disagrees with the `left`/`top` it was given, the containing block is not the
+   * viewport and the mesh is in the wrong place. **Fails LOUDLY** — a console
+   * error and a `data-` attribute the harness reads — rather than drifting.
+   *
+   * ⚠ 1px TOLERANCE, NOT 0. Sub-pixel layout and DPR rounding put honest
+   * fractional differences here; the failure this catches is hundreds of pixels.
+   */
+  useEffect(() => {
+    if (!rect) return;
+    const el = hostRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const dx = Math.abs(r.left - rect.left);
+    const dy = Math.abs(r.top - rect.top);
+    const ok = dx <= 1 && dy <= 1;
+    el.setAttribute("data-cb-ok", ok ? "1" : "0");
+    el.setAttribute("data-cb-drift", `${Math.round(dx)},${Math.round(dy)}`);
+    if (!ok) {
+      console.error(
+        `[NextStepSurfaceHost] CONTAINING BLOCK IS NOT THE VIEWPORT. ` +
+          `Asked for left=${rect.left.toFixed(1)} top=${rect.top.toFixed(1)}, ` +
+          `painted at left=${r.left.toFixed(1)} top=${r.top.toFixed(1)} ` +
+          `(drift ${dx.toFixed(1)},${dy.toFixed(1)}px). ` +
+          `An ancestor has transform/filter/perspective/contain/will-change. ` +
+          `Move the host, do NOT subtract the offset.`,
+      );
+    }
+  }, [rect]);
+
+  return (
+    <div
+      ref={hostRef}
+      data-testid="nextstep-surface-host"
+      aria-hidden="true"
+      style={{
+        position: "fixed",
+        // ⚠ `visibility`, NOT `display: none` and NOT unmounting. The canvas must
+        // keep a real box: `NextStepCanvas` maps its measured size to the mesh
+        // geometry, and a zero-sized canvas would destroy that mapping and force
+        // a resize on the next reveal. The contact layer one file over is hidden
+        // the same way, for the same reason.
+        visibility: rect ? "visible" : "hidden",
+        left: rect ? rect.left : 0,
+        top: rect ? rect.top : 0,
+        width: rect ? rect.w : 0,
+        height: rect ? rect.h : 0,
+        // ⚠⚠ THE REPRODUCED FADE — commit 2. See the `opacity` prop's header for
+        // the three sources this replaces and why the child governs the exit.
+        // ⚠ `linear`, matching both original transitions. Neither used an easing
+        // curve, and substituting one here would be a new curve, not a
+        // reproduction.
+        opacity,
+        /**
+         * ⚠⚠ THE EASING IS NOT DECORATION — IT REPRODUCES A PRODUCT OF TWO FADES.
+         *
+         * Fading IN, one source governed pre-hoist (the wrapper's 600ms linear),
+         * so `linear` reproduces it exactly — measured delta **0.000 at every
+         * frame**.
+         *
+         * Fading OUT, TWO ran together and multiplied: the wrapper's 600ms and
+         * the parent's 900ms, both linear. **A product of two linears is
+         * QUADRATIC**, and no single linear transition can reproduce it — proven
+         * by measurement, not argued: 600ms linear ran up to 0.186 too bright,
+         * 375ms linear up to 0.189 too dark. Both failed in opposite directions,
+         * which is the signature of fitting the wrong SHAPE rather than the wrong
+         * duration.
+         *
+         * ⚠ THE CONTROL POINTS ARE SOLVED, NOT CHOSEN BY EYE. A grid search over
+         * the four bezier parameters against the MEASURED pre-hoist exit found
+         * `cubic-bezier(0.3, 0.35, 0.35, 0.65)` at a worst-case per-frame error
+         * of **0.011**. A hand-picked `(0.33, 0.66, 0.66, 1)` — which looked
+         * right — measured 0.113, ten times worse. **The eye is not able to pick
+         * bezier control points; the curve had to be fitted.**
+         *
+         * ⛔ DO NOT "SIMPLIFY" THIS TO `linear`. That was the first attempt and
+         * the per-frame curve rejected it at 0.186.
+         */
+        transition: `opacity ${transitionMs}ms ${
+          transitionMs === 600 && opacity === 0
+            ? "cubic-bezier(0.3, 0.35, 0.35, 0.65)"
+            : "linear"
+        }`,
+        // ⚠ THE DOM BUTTON IS THE CONTROL AND THIS MUST NEVER SWALLOW ITS HITS.
+        // The real `<button>` lives in the phrase, underneath this in z-order;
+        // a fixed transparent layer over it that accepted pointers would cost a
+        // click and the defect would look like an unresponsive button.
+        pointerEvents: "none",
+      }}
+    >
+      {/*
+        ⚠ MOUNTED EVEN WHILE `rect` IS NULL — that is the whole point. The
+        context is created and the PMREM baked during the OPENING, when nothing
+        is animating, rather than inside Q5's 1300ms wipe. Gating the mount on
+        `rect` would put ~40ms of GPU work back into the corridor on first
+        selection, which is the defect in a different place.
+
+        ⚠ THE DEFAULT SIZE IS USED UNTIL THE FIRST RECT ARRIVES. The geometry is
+        rebuilt if the measured box differs, but the box has been stable at
+        116x41 across every measurement, so in practice this bakes once.
+      */}
+      <NextStepCanvas
+        width={rect ? rect.w : NEXTSTEP_WIDTH_PX}
+        height={rect ? rect.h : NEXTSTEP_HEIGHT_PX}
+        active={active}
+      />
+    </div>
   );
 }
