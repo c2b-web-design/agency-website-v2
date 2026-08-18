@@ -1,0 +1,5103 @@
+{
+ "label": "PRE-HOIST",
+ "when": "2026-08-18T21:31:13.694Z",
+ "reveal": {
+  "n": 581,
+  "peak": 0,
+  "min": 0,
+  "reach1": null,
+  "reach0": null
+ },
+ "select": {
+  "n": 175,
+  "peak": 1,
+  "min": 0,
+  "reach1": 637,
+  "reach0": 2071
+ },
+ "exit": {
+  "n": 90,
+  "peak": 1,
+  "min": 0,
+  "reach1": 4,
+  "reach0": 655
+ },
+ "samples": [
+  {
+   "phase": "reveal",
+   "t": 15,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 31,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 48,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 68,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 227,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 229,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 234,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 247,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 264,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 281,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 297,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 315,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 331,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 348,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 364,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 381,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 398,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 414,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 431,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 447,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 464,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 481,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 497,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 514,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 531,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 547,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 565,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 581,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 598,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 614,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 631,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 649,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 665,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 681,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 698,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 715,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 732,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 748,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 765,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 781,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 798,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 815,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 832,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 849,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 865,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 881,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 899,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 915,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 932,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 948,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 966,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 982,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 998,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1015,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1032,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1049,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1065,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1082,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1099,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1115,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1132,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1149,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1165,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1182,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1199,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1216,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1233,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1249,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1266,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1283,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1298,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1316,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1333,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1349,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1365,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1382,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1399,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1416,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1432,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1449,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1465,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1482,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1499,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1516,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1533,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1549,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1567,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1583,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1598,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1616,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1632,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1648,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1665,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1682,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1699,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1716,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1732,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1748,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1766,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1782,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1799,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1816,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1832,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1849,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1865,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1882,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1899,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1916,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1932,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1949,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1965,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1982,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 1999,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2016,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2032,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2048,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2065,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2082,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2099,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2116,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2132,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2149,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2166,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2182,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2200,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2216,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2232,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2249,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2265,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2282,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2298,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2316,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2334,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2349,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2366,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2382,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2399,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2416,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2433,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2449,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2465,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2482,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2500,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2516,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2533,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2548,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2567,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2583,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2599,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2616,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2632,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2649,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2666,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2682,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2699,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2715,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2732,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2749,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2766,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2782,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2799,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2815,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2832,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2849,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2866,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2882,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2899,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2916,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2932,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2949,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2966,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 2983,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3000,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3016,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3032,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3049,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3065,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3082,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3099,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3116,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3132,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3149,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3166,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3183,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3199,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3217,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3233,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3248,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3265,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3282,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3298,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3315,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3332,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3349,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3366,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3382,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3399,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3416,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3433,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3449,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3465,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3482,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3499,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3515,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3533,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3549,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3565,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3582,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3598,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3615,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3632,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3648,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3665,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3682,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3699,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3716,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3732,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3748,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3765,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3783,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3799,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3815,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3832,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3849,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3865,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3882,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3898,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3915,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3932,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3948,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3965,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3982,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 3999,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4015,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4032,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4049,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4067,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4082,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4099,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4116,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4133,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4149,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4166,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4183,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4200,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4215,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4232,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4249,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4266,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4282,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4298,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4316,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4332,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4349,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4366,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4382,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4399,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4415,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4432,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4449,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4465,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4482,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4498,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4516,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4532,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4548,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4566,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4583,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4599,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4615,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4632,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4648,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4665,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4682,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4698,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4715,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4732,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4749,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4766,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4782,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4798,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4815,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4833,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4849,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4865,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4882,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4909,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4918,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4932,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4949,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 4965,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5011,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5135,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5680,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5685,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5700,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5716,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5734,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5812,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5831,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5841,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5850,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5867,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5884,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5900,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5917,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5934,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5950,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5966,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 5983,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6000,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6017,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6034,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6050,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6067,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6083,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6099,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6116,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6133,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6150,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6167,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6183,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6200,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6217,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6233,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6250,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6267,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6283,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6300,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6316,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6333,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6350,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6366,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6383,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6400,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6416,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6433,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6450,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6466,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6483,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6500,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6517,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6533,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6550,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6566,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6583,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6600,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6617,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6634,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6650,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6667,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6683,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6700,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6717,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6734,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6750,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6767,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6783,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6799,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6817,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6833,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6850,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6867,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6883,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6900,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6917,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6933,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6950,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6966,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 6983,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7000,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7016,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7033,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7050,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7066,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7083,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7099,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7117,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7133,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7150,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7167,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7184,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7200,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7217,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7233,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7249,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7267,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7283,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7300,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7318,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7334,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7350,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7366,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7383,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7400,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7417,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7434,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7450,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7466,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7483,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7500,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7517,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7533,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7550,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7566,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7584,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7600,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7617,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7633,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7650,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7667,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7683,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7700,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7717,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7733,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7750,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7767,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7783,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7800,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7817,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7833,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7850,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7867,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7883,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7900,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7916,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7933,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7950,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7966,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 7983,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8000,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8016,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8034,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8050,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8066,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8083,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8101,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8117,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8133,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8150,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8166,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8183,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8200,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8217,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8234,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8250,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8267,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8283,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8300,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8317,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8334,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8350,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8367,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8384,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8400,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8416,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8433,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8450,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8467,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8483,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8500,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8517,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8533,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8550,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8567,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8583,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8600,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8617,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8634,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8649,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8667,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8683,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8700,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8717,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8733,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8750,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8767,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8784,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8800,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8816,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8833,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8850,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8866,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8883,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8900,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8917,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8933,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8950,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8967,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 8983,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9000,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9017,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9033,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9050,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9067,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9084,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9100,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9116,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9134,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9149,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9167,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9184,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9199,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9217,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9233,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9250,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9267,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9284,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9300,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9317,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9333,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9350,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9367,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9383,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9400,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9416,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9433,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9450,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9467,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9484,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9500,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9517,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9533,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9550,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9566,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9583,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9600,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9616,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9633,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9650,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9666,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9683,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9700,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9717,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9733,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9750,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9767,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9784,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9799,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9817,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9834,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9850,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9867,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9883,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9900,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9917,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9933,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9950,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9967,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 9983,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10000,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10017,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10033,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10050,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10066,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10083,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10100,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10117,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10134,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10150,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10168,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10184,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10200,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10217,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10233,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10249,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10267,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10283,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10300,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10317,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10334,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10350,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10367,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10384,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10399,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10417,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10433,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10450,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10467,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10483,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "reveal",
+   "t": 10500,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 3,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 21,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 37,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 54,
+   "label": 0.0277,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 71,
+   "label": 0.0555,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 87,
+   "label": 0.0832,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 103,
+   "label": 0.111,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 121,
+   "label": 0.1388,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 137,
+   "label": 0.1667,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 154,
+   "label": 0.1943,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 171,
+   "label": 0.2222,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 187,
+   "label": 0.2502,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 204,
+   "label": 0.2778,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 221,
+   "label": 0.3055,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 237,
+   "label": 0.3333,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 254,
+   "label": 0.3612,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 271,
+   "label": 0.389,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 287,
+   "label": 0.4167,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 304,
+   "label": 0.4443,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 320,
+   "label": 0.4722,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 338,
+   "label": 0.5,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 355,
+   "label": 0.5277,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 370,
+   "label": 0.5555,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 387,
+   "label": 0.5833,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 404,
+   "label": 0.611,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 421,
+   "label": 0.6388,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 437,
+   "label": 0.6667,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 454,
+   "label": 0.6943,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 470,
+   "label": 0.7222,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 487,
+   "label": 0.75,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 504,
+   "label": 0.7778,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 521,
+   "label": 0.8055,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 538,
+   "label": 0.8333,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 554,
+   "label": 0.8612,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 571,
+   "label": 0.8888,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 587,
+   "label": 0.9167,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 604,
+   "label": 0.9445,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 621,
+   "label": 0.9723,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 637,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 654,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 671,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 687,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 704,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 721,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 737,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 754,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 771,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 787,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 804,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 821,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 837,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 854,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 870,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 887,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 904,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 921,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 937,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 954,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 971,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 988,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1004,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1021,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1037,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1054,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1070,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1087,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1104,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1121,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1137,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1154,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1171,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1187,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1204,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1221,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1237,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1255,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1271,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1287,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1304,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1321,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1337,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1354,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1371,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1388,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1404,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1420,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 4,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1438,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 22,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1454,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 38,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1471,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 55,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1487,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 71,
+   "label": 1,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1504,
+   "label": 0.9542,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 88,
+   "label": 0.9542,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1521,
+   "label": 0.9093,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 105,
+   "label": 0.9093,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1538,
+   "label": 0.8655,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 122,
+   "label": 0.8655,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1555,
+   "label": 0.823,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 139,
+   "label": 0.823,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1571,
+   "label": 0.7813,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 155,
+   "label": 0.7813,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1588,
+   "label": 0.7406,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 172,
+   "label": 0.7406,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1604,
+   "label": 0.7009,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 188,
+   "label": 0.7009,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1621,
+   "label": 0.6625,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 205,
+   "label": 0.6625,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1637,
+   "label": 0.6248,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 222,
+   "label": 0.6248,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1654,
+   "label": 0.5885,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 238,
+   "label": 0.5885,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1671,
+   "label": 0.5529,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 255,
+   "label": 0.5529,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1687,
+   "label": 0.5186,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 272,
+   "label": 0.5186,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1704,
+   "label": 0.4851,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 288,
+   "label": 0.4851,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1721,
+   "label": 0.4526,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 305,
+   "label": 0.4526,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1737,
+   "label": 0.4213,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 322,
+   "label": 0.4213,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1754,
+   "label": 0.3907,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 338,
+   "label": 0.3907,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1771,
+   "label": 0.3614,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 356,
+   "label": 0.3614,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1787,
+   "label": 0.3332,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 372,
+   "label": 0.3332,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1804,
+   "label": 0.3061,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 388,
+   "label": 0.3061,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1821,
+   "label": 0.2798,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 406,
+   "label": 0.2798,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1837,
+   "label": 0.2545,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 422,
+   "label": 0.2545,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1854,
+   "label": 0.2304,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 439,
+   "label": 0.2304,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1871,
+   "label": 0.2072,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 455,
+   "label": 0.2072,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1887,
+   "label": 0.1851,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 472,
+   "label": 0.1851,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1904,
+   "label": 0.1641,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 489,
+   "label": 0.1641,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1921,
+   "label": 0.144,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 505,
+   "label": 0.144,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1938,
+   "label": 0.1249,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 522,
+   "label": 0.1249,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1954,
+   "label": 0.1069,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 539,
+   "label": 0.1069,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1970,
+   "label": 0.09,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 555,
+   "label": 0.09,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 1987,
+   "label": 0.074,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 572,
+   "label": 0.074,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2005,
+   "label": 0.0591,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 589,
+   "label": 0.0591,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2020,
+   "label": 0.0452,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 605,
+   "label": 0.0452,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2038,
+   "label": 0.0324,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 622,
+   "label": 0.0324,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2054,
+   "label": 0.0206,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 639,
+   "label": 0.0206,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2071,
+   "label": 0.0097,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 655,
+   "label": 0.0097,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2088,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 672,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2104,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 689,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2121,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 705,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2138,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 722,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2154,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 739,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2171,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 755,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2188,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 772,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2204,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 788,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2221,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 805,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2237,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 822,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2254,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 838,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2272,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 856,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2287,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 872,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2304,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 888,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2321,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 905,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2338,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 922,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2354,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 938,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2371,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 955,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2388,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 972,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2407,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 991,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2421,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1005,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2438,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1022,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2454,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1038,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2470,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1054,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2487,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1071,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2503,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1087,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2520,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1104,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2537,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1121,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2554,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1138,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2570,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1154,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2587,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1171,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2603,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1187,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2624,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1208,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2638,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1222,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2655,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1239,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2671,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1255,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2849,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1433,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2915,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1499,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2918,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1502,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2920,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1504,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2939,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1523,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2954,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1538,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2970,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1554,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 2987,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1571,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 3003,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1587,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 3020,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1604,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 3036,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1620,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 3053,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1637,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 3069,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1654,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "select",
+   "t": 3087,
+   "label": 0,
+   "mesh": null
+  },
+  {
+   "phase": "exit",
+   "t": 1671,
+   "label": 0,
+   "mesh": null
+  }
+ ]
+}
