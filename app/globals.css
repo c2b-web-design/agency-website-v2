@@ -1663,11 +1663,13 @@
 .enquiry-phrase-anim .enquiry-phrase-question {
   transition: font-size 900ms cubic-bezier(0.37, 0, 0.63, 1),
               letter-spacing 900ms cubic-bezier(0.37, 0, 0.63, 1),
+              line-height 900ms cubic-bezier(0.37, 0, 0.63, 1),
               font-weight 900ms linear,
               color 900ms linear;
 }
 .enquiry-phrase-anim .enquiry-phrase-qrow {
-  transition: gap 900ms cubic-bezier(0.37, 0, 0.63, 1);
+  transition: gap 900ms cubic-bezier(0.37, 0, 0.63, 1),
+              line-height 900ms cubic-bezier(0.37, 0, 0.63, 1);
 }
 .enquiry-phrase-anim .enquiry-phrase-answers {
   transition: font-size 900ms cubic-bezier(0.37, 0, 0.63, 1);
