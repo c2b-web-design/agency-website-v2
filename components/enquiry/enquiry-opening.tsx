@@ -1697,11 +1697,39 @@ export default function EnquiryOpening() {
             **by name** for `enquiry-mask-reveal-horizontal`.
 
             ⚠ THAT COUPLED THE CHOREOGRAPHY TO A RENDERING TECHNIQUE. When the
-            wipe was rewritten from `clip-path` to `transform` — because Chrome
-            cannot composite `clip-path`, so a blocked main thread freezes the
-            reveal outright — the lookup stopped resolving and **production Mode B
-            went from 0% to 60% on every question.** A visual change silently
-            broke the timing contract.
+            wipe was briefly rewritten to `transform`, the lookup stopped
+            resolving and **production Mode B went from 0% to 60% on every
+            question.** A visual change silently broke the timing contract.
+
+            ⚠⚠ CORRECTED 18 August 2026 — THIS COMMENT'S ORIGINAL WORDING WAS
+            WRONG IN BOTH HALVES, AND IT HAD ALREADY PRODUCED ONE WRONG ANSWER.
+            It read: *"when the wipe was rewritten from `clip-path` to
+            `transform` — because Chrome cannot composite `clip-path`, so a
+            blocked main thread freezes the reveal outright"*.
+
+              1. ⚠ THE RULE ON DISK IS `clip-path`, AND ALWAYS IS NOW. All three
+                 reveal keyframes (`-horizontal`, `-downward`, `-radial`,
+                 `globals.css:132-164`) animate `clip-path`, and NO transform-based
+                 reveal exists anywhere in the stylesheet. The `transform` rewrite
+                 was real but was REVERTED; the comment described it in the present
+                 tense and outlived it. The coupling lesson above still stands —
+                 that is why the paragraph is kept rather than deleted.
+
+              2. ⚠⚠ "A BLOCKED MAIN THREAD FREEZES THE REVEAL" NAMES THE WRONG
+                 THREAD. A CDP trace puts the freeze in the GPU PROCESS with the
+                 RENDERER IDLE — `CommandBuffer::Flush` / `GpuChannel::
+                 ExecuteDeferredRequest`, ~164ms in four blocks (see the shared-host
+                 comment below, which had this right all along). Stage 1 measured
+                 the main thread at 2.3ms busy of 210ms while the GPU saturated.
+                 **Moving the wipe to a composited property was the wrong target
+                 twice, because compositing queues behind the same GPU scheduler.**
+
+            ⚠ WHY THIS MATTERS TO ANYONE INSTRUMENTING THE REVEAL: a reader who
+            trusts the old wording concludes the freeze is main-thread and reaches
+            for a `getComputedStyle` poller — which reads INTENT and stays green
+            straight through a GPU-side freeze. `verify/reveal-stall.mjs` is built
+            on the video track for exactly this reason; its header carries the
+            argument in full.
 
             ⚠ `animationstart` FIRES FOR WHATEVER ANIMATION DRAWS THE REVEAL, so
             this signal survives the mechanism changing. That is the whole point:
