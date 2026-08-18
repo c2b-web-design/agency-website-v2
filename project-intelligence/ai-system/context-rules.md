@@ -157,6 +157,68 @@ When a decision is superseded: mark the original DEPRECATED, create a new entry.
 
 **What this rule does not license:** amending an approved record does not amend the approval. Changing what a file *says* about approved work is a Builder's job; changing the approved work itself needs Carl.
 
+### ⚠⚠ AN INVARIANT THAT LIVES ONLY IN PROSE IS NOT ASSERTED — GATE IT OR EXPECT IT TO ROT
+
+**Carl, 18 August 2026.** A comment that states an invariant records that it *was* true. It does
+not detect the day it stops being true. **The distinction between a comment and a gate is who
+finds out when the fact moves — a future reader, or the build.**
+
+**The test:** *am I relying on a fact that nothing in code checks?* If yes, either assert it
+(a measurement, a guard, a harness) or say plainly in the comment that it is unasserted.
+
+⚠ **THE COST IS NOT THE STALE COMMENT — IT IS THE WORK BUILT ON IT.** A reader cannot tell a
+verified invariant from a remembered one, because both are prose.
+
+**Worked case, and the reason the rule is written now.** The Q5 button repair re-measures the
+button's rect on every corridor step *even though the button does not move* —
+**not because it moves, but because "it does not move" is a fact about today's CSS that nothing
+in code asserts.** Re-measuring is cheap and makes the invariant self-checking rather than
+remembered.
+
+⚠⚠ **THIS IS THE GENERAL FORM OF THREE FAILURES ALREADY ON THE RECORD. All three were true when
+written; none was asserted anywhere:**
+
+| the prose | what it stopped being | how it was found |
+|---|---|---|
+| the **mark-name** collision — a mark named the canvas by a `[0]` read nothing guaranteed | ambiguous once a second canvas existed | chased backwards from a suspect figure, **four days after being found and worked around in one consumer** |
+| the **`clip-path` / transform** comment | wrong property *and* wrong thread | only when an instrument built on it read green through a filmed freeze |
+| the **58px passenger ride** premise | a fixed defect, not current behaviour | caught in plan review — **it had already been carried into a task brief as fact** |
+
+**None of these was a coding error. Each was a true sentence that outlived its subject**, and each
+cost days because the thing built on top inherited the claim without re-checking it.
+
+⛔ **Do not "fix" this by deleting invariant comments.** The comment is the only place the *reason*
+survives. Add the assertion, or add the words **"unasserted — verify before relying on this."**
+
+#### ⚠⚠ THE RULE WAS WRITTEN AND THEN BROKEN TWICE THE SAME DAY — 18 August 2026
+
+**Recording this is more useful than recording either fault.** Both happened within hours of the
+rule above being added, by the author who added it.
+
+**1. The `position: fixed` containing block.** The Q5 repair plan asserted:
+
+> *"`fixed` resolves against the viewport, the same space `getBoundingClientRect()` reports in —
+> **they agree by construction with no arithmetic**."*
+
+⚠ **True only when no ancestor establishes a containing block.** Any ancestor with `transform`,
+`filter`, `perspective`, `contain` or `will-change` makes `fixed` resolve against *that ancestor*.
+The host was mounted inside the corridor subtree; its computed `left/top` read **654.7 / 616.8** —
+correct — while it painted at **1080 / 879**. **The button rendered with no chrome and the mesh sat
+in the lower-right corner.** ⛔ Caught by Carl looking at the screen, not by any instrument.
+
+**2. "The corridor cannot advance past Q5."** Inferred from a walk harness returning zero hit
+targets, reported as *"confirmed and pre-existing"*, and **turned into a design decision put to
+Carl about deferring a verification.** The corridor advances fine; the harness queried DOM buttons
+for hit targets that are bare divs firing on `pointerdown`. See
+`live-work/instrument-defect-12-false-constraint-18-august.md`.
+
+> ### ⛔ THE LESSON IS NOT "TRY HARDER TO REMEMBER THE RULE."
+> Both faults were **stated in prose in the same document that relied on them** — one in the plan's
+> own justification, one in the paragraph directly above the wrong conclusion. **Writing the
+> invariant down is what failed.** The assertion is the fix: compare computed `left/top` against
+> `getBoundingClientRect()` and fail loudly; make a zero-hit-target walk fail loudly rather than
+> report a quiet zero.
+
 ### ⚠⚠ AN INSTRUMENT THAT NAMES A GLOBAL PROPERTY WHILE CHECKING A LOCAL ONE LIES BY IMPLICATION
 
 **Worked case, 14 August 2026 — `verify/one-context.mjs`.** It is called *one-context*, it prints
