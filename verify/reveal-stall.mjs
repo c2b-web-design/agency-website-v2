@@ -54,7 +54,7 @@
 // already happened once (`q5-reveal-stall-reobserved-16-august.md`, method note).
 
 import { chromium } from "playwright";
-import { mkdirSync, rmSync, readdirSync, renameSync } from "node:fs";
+import { mkdirSync, readdirSync, renameSync } from "node:fs";
 import { join } from "node:path";
 
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3100";
@@ -64,12 +64,33 @@ if (/:3000(\/|$)/.test(BASE)) {
 }
 
 const RUNS = Number(process.argv[2] ?? 5);
-const OUT = "verify/out/reveal-stall";
+// ⚠⚠ EVERY BATCH GETS ITS OWN DIRECTORY. BATCHES ACCUMULATE. THEY ARE NEVER
+// DELETED. Read the reason before "tidying" this.
+//
+// ⛔ THIS HARNESS USED TO CALL `rmSync(OUT)` AT STARTUP, AND IT DESTROYED THE
+// EVIDENCE FOR ITS OWN HEADLINE FINDING. On 18 August a six-run batch produced
+// the widest freeze ever measured — 640ms — and a later eight-run batch, filmed
+// on the SAME build to raise the sample count, deleted it. **The 640ms film
+// cannot be recovered: a fresh capture is a different run on a different day,
+// which is precisely the problem this instrument exists to describe.**
+//
+// ⚠ THE DEFECT IS SPECIFIC TO WHAT THIS HARNESS MEASURES. A harness whose
+// subject is RUN-TO-RUN VARIANCE must not delete previous runs — the prior runs
+// are not stale output, they ARE the measurement. The old comment here boasted
+// that it "clears only its OWN directory", which is exactly the wrong instinct:
+// its own directory was the one holding the irreplaceable data.
+//
+// ⚠ AND IT BLOCKS THE NEXT EXPERIMENT. Comparing two arms means holding both
+// arms' films at once. Under the old behaviour, filming arm B destroyed arm A.
+//
+// Batches are named by ISO timestamp so they sort chronologically, with the
+// build id recorded inside each. Nothing is ever removed automatically; pruning
+// is a human decision.
+const OUT_ROOT = "verify/out/reveal-stall";
+const BATCH = process.env.REVEAL_STALL_BATCH ??
+  new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+const OUT = `${OUT_ROOT}/${BATCH}`;
 
-// ⚠ NOT verify/out/card-exit-film — that holds the two UNWATCHED films from the
-// exit work and `corridor-filmstrip.mjs` rmSync's directories it records into.
-// This clears only its OWN directory.
-rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
 // ⚠ The Begin click is at ~9s (the opening's own span); Q5's reveal begins ~7.8s

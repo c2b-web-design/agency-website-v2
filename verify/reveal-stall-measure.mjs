@@ -48,8 +48,33 @@ import { readdirSync, existsSync, readFileSync, mkdtempSync, rmSync } from "node
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { inflateSync } from "node:zlib";
+import { statSync } from "node:fs";
 
-const DIR = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : "verify/out/reveal-stall";
+// Newest batch directory containing run films. ⚠ Falls back to ROOT itself so a
+// pre-batch layout (films sitting directly in the root) still measures rather
+// than reporting an empty run.
+function latestBatch(root) {
+  let entries = [];
+  try {
+    entries = readdirSync(root)
+      .map((n) => `${root}/${n}`)
+      .filter((d) => {
+        try { return statSync(d).isDirectory(); } catch { return false; }
+      })
+      .filter((d) => readdirSync(d).some((f) => /^run-\d+\.webm$/.test(f)));
+  } catch { return root; }
+  if (entries.length === 0) return root;
+  return entries.sort()[entries.length - 1];
+}
+
+// ⚠ BATCHES ACCUMULATE — `reveal-stall.mjs` writes each run into its own
+// timestamped directory under `verify/out/reveal-stall/` and never deletes one.
+// With no argument this measures the MOST RECENT batch; pass a path to measure a
+// specific one, which is how two arms get compared without refilming either.
+const ROOT = "verify/out/reveal-stall";
+const DIR = process.argv[2] && !process.argv[2].startsWith("--")
+  ? process.argv[2]
+  : latestBatch(ROOT);
 const CALIBRATE = process.argv.includes("--calibrate");
 
 const FFMPEG = join(
