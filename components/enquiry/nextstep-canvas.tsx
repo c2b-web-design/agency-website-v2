@@ -1002,6 +1002,42 @@ export function NextStepMeshButton({
   const hostRef = useRef<HTMLSpanElement | null>(null);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
 
+  /**
+   * ⚠⚠ DIAGNOSTIC ONLY — `?nobtnmesh=1` suppresses THIS BUTTON'S WebGL canvas.
+   * Added 18 August 2026 as the treatment arm of a MEASUREMENT, not as a fix.
+   * ⛔ NOTHING SHIPS FROM IT. If the arm is not being run, delete the flag.
+   *
+   * **What it is for.** This component sits inside the keyed phrase
+   * (`renderPhrase` → `key={\`phrase-${qNum}\`}`), so it is destroyed and rebuilt
+   * on every question — and the canvas below mounts on `box &&`, i.e. once the
+   * `ResizeObserver` has measured, INDEPENDENTLY of `active`. A GPU trace found
+   * 8 contexts across a five-question walk and ~67ms of blocked main thread in
+   * `CommandBufferProxyImpl::Initialize`.
+   *
+   * ⚠ AND IT IS NOT ONLY A PER-STEP COST. Measured 18 August: the context for
+   * Q5's button is created **+54 to +65ms after Q5's reveal begins** — inside the
+   * 1300ms wipe, on all four runs. Q5 follows the Begin click rather than a
+   * corridor step, but `renderPhrase` builds a button for Q5 too.
+   *
+   * ⚠ WHAT THIS FLAG DOES NOT TOUCH: the DOM `<button>` — the real control — is
+   * unchanged (`type`, `tabIndex`, `onClick`, focus ring, box). `--mesh` is
+   * dropped with the canvas, so the CSS surface returns; that rule sets only
+   * `background-image`, `background-color` and `box-shadow`, **no layout
+   * properties**, so nothing reflows. The reveal is a different element and has
+   * no coupling to this component in either direction.
+   *
+   * ⚠ LAZY INITIALISER, NOT AN EFFECT, AND DELIBERATELY — reading this in an
+   * effect and calling `setState` would add a SECOND `react-hooks/
+   * set-state-in-effect` error to a baseline that is exactly one. SSR-safe via
+   * the `typeof window` guard: the server renders `false` and hydration agrees
+   * on every URL without the flag, which is every URL a visitor sees.
+   */
+  const [suppressMesh] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("nobtnmesh") === "1",
+  );
+
   useEffect(() => {
     const el = hostRef.current;
     if (!el) return;
@@ -1025,13 +1061,17 @@ export function NextStepMeshButton({
         default 116.3 first and correcting afterwards would rebuild the geometry
         on the second frame — and on Send it would visibly resize.
       */}
-      {box && <NextStepCanvas width={box.w} height={box.h} active={active} />}
+      {box && !suppressMesh && <NextStepCanvas width={box.w} height={box.h} active={active} />}
       <button
         {...buttonProps}
         // ⚠ `--mesh` SUPPRESSES THE CSS SURFACE, and only when the mesh is
         // actually there. Without the `box &&` guard a narrow or pre-measurement
         // render would show a transparent button with no surface at all.
-        className={`${className ?? ""}${box ? " enquiry-nextstep-btn--mesh" : ""}`}
+        // ⚠ `&& !suppressMesh` — THE CLASS MUST TRACK THE CANVAS, NOT THE BOX.
+        // Without it the diagnostic arm would strip the CSS surface while
+        // rendering no mesh behind it: a transparent button, which is exactly
+        // the "transparent hole" the guard above was written to prevent.
+        className={`${className ?? ""}${box && !suppressMesh ? " enquiry-nextstep-btn--mesh" : ""}`}
         /**
          * ⚠⚠ `position: relative` IS WHAT PUTS THE LABEL IN FRONT OF THE MESH,
          * AND WITHOUT IT THE BUTTON RENDERS BLANK.
