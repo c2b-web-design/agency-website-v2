@@ -181,6 +181,17 @@ if (argv[0] === "--list") {
           : "⛔ NONE RECORDED"
       }`
     );
+    console.log(
+      `      stability   : ${
+        e.stability && e.stability.subject
+          ? e.stability.subject === "varies"
+            ? e.stability.observedSpread
+              ? `varies — ${e.stability.observedSpread.min}-${e.stability.observedSpread.max}ms over ${e.stability.observedSpread.runs} runs`
+              : "varies — ⛔ NO OBSERVED SPREAD RECORDED"
+            : "deterministic"
+          : "⛔ NONE DECLARED"
+      }`
+    );
     console.log(`      record      : ${e.record}`);
     if (!onDisk) console.log(`      ⚠ LISTED BUT NOT ON DISK`);
     if (gap) {
@@ -221,6 +232,64 @@ function missingRequirement(e) {
   if (!e.redRun) return "redRun";
   const c = e.emptyInput;
   if (!c || !c.pointedAt || !c.reported) return "emptyInput";
+  // ⚠ THE THIRD REQUIREMENT — does the SUBJECT hold still? An entry declaring
+  // neither value is unproven, exactly like a missing empty-input control.
+  const st = e.stability;
+  if (!st || (st.subject !== "varies" && st.subject !== "deterministic")) return "stability";
+  // A "varies" entry must record what was ACTUALLY OBSERVED. A declaration with
+  // no spread behind it is a claim, not a measurement — and the whole point of
+  // this requirement is that claims about variance were never measured.
+  if (st.subject === "varies") {
+    const sp = st.observedSpread;
+    if (!sp || typeof sp.min !== "number" || typeof sp.max !== "number" || typeof sp.runs !== "number") {
+      return "observedSpread";
+    }
+  }
+  return null;
+}
+
+// ── THE SINGLE-RUN RULE ─────────────────────────────────────────────────────
+// ⚠⚠ THE RULE IS ABOUT THE SAMPLE COUNT BEHIND THE NUMBER, NOT HOW MANY TIMES
+// THE COMMAND WAS TYPED. The brief that created this rule said "run the script
+// three times", written without knowing reveal-stall.mjs ALREADY TAKES FIVE
+// SAMPLES PER INVOCATION.
+//
+// ⚠ RE-INVOKING WOULD HAVE BEEN WORSE THAN WASTEFUL. Three invocations are
+// three separate batches, and reveal-stall.mjs REFUSES to merge across builds
+// internally — it aborts on a build-id change, because "runs across two builds
+// are not one distribution". A runner stitching three batches together would
+// have MANUFACTURED A WIDER SPREAD THAN THE SUBJECT HAS, out of output text it
+// cannot verify came from one build.
+//
+// So the runner does not re-invoke. It reads the sample count the script itself
+// declares and prints, and suppresses the verdict when that count is under
+// three.
+//
+// ⚠ THREE IS ARBITRARY AND DELIBERATELY NOT PER-ENTRY. It is the smallest count
+// that can show a spread at all. A per-entry minimum would invite arguing an
+// expensive script deserves fewer, and that argument is always available to
+// someone in a hurry.
+const MIN_SAMPLES = 3;
+
+// ⚠ TEXTUAL, LIKE THE VERDICT DETECTION — and it fails CLOSED. A script whose
+// sample count cannot be found reports null, and a null count SUPPRESSES a
+// "varies" verdict rather than passing it. An unreadable count and a count of
+// one must not be told apart in favour of the pass.
+//
+// Anchored patterns only, matching how the harnesses actually report:
+//   "── DISTRIBUTION, 5 runs, ONE build, ONE session ──"   (the measure pass)
+//   "⚠ Q5 REVEAL STALL — 5 runs, one build, one session."  (the filming pass)
+const SAMPLE_PATTERNS = [
+  /DISTRIBUTION,\s*(\d+)\s+runs?\b/i,
+  /\b(\d+)\s+runs?,\s*ONE\s+build/i,
+  /\b(\d+)\s+films?\b/i,
+];
+
+function sampleCount(text) {
+  for (const re of SAMPLE_PATTERNS) {
+    const m = re.exec(text);
+    if (m) return Number(m[1]);
+  }
   return null;
 }
 
@@ -268,6 +337,10 @@ console.log(
     ? `  status: LISTED BUT NOT PROVEN — no empty-input control`
     : unmet === "redRun"
     ? `  status: LISTED BUT NOT PROVEN — no recorded red run`
+    : unmet === "stability"
+    ? `  status: LISTED BUT NOT PROVEN — no subject-stability declaration`
+    : unmet === "observedSpread"
+    ? `  status: LISTED BUT NOT PROVEN — declared "varies" with no observed spread`
     : `  status: NO RECORDED RED RUN`
 );
 console.log(BAR);
@@ -294,9 +367,66 @@ child.on("close", (code) => {
   const verdict = classify(exitCode, combined);
 
   if (entry) {
+    // ── THE SINGLE-RUN RULE ────────────────────────────────────────────────
+    // A "varies" subject needs at least MIN_SAMPLES behind its number. Checked
+    // ONLY on a PASS: a failure passes through untouched, exactly as an unproven
+    // failure does. Suppressing a red because it came from one run would be the
+    // false-negative this gate exists to prevent — one sample is enough to show
+    // a defect EXISTS, just never enough to show it is ABSENT.
+    const varies = entry.stability && entry.stability.subject === "varies";
+    const samples = varies ? sampleCount(combined) : null;
+
+    if (varies && verdict === "pass" && !(samples >= MIN_SAMPLES)) {
+      const sp = entry.stability.observedSpread;
+      banner([
+        `⚠ NO VERDICT — A SINGLE RUN IS NOT A MEASUREMENT.`,
+        ``,
+        `  ${scriptName} is proven, and its subject is declared \"varies\". This`,
+        `  run reports ${samples === null ? "NO READABLE SAMPLE COUNT" : "only " + samples + " sample(s)"},`,
+        `  and ${MIN_SAMPLES} are required. Its numbers are above; its PASS IS SUPPRESSED.`,
+        ``,
+        `  ⛔ WHY: the quantity this script measures MOVES RUN TO RUN on one`,
+        `  build in one session with nothing changed${sp ? " — observed " + sp.min + "-" + sp.max + "ms" : ""}.`,
+        ...(sp ? [`  across ${sp.runs} runs${sp.date ? " on " + sp.date : ""}${sp.build ? " (build " + sp.build + ")" : ""}.`] : []),
+        ``,
+        `  Every prior figure for this subject — 720ms, 400ms, 626ms, and the`,
+        `  13 August bisect's whole staircase — was a single run or three cold`,
+        `  samples. THAT BISECT NOW CARRIES A NOT SAFE BANNER. A pass from one`,
+        `  draw of a distribution nobody characterised is a FALSE PASS WITH A`,
+        `  PROOF ATTACHED: redRun and emptyInput both hold, so the entry reads`,
+        `  fully proven while the number underneath it means nothing.`,
+        ``,
+        ...(samples === null
+          ? [
+              `  ⚠ THE COUNT COULD NOT BE READ, and this rule FAILS CLOSED. An`,
+              `  unreadable count and a count of one are not told apart in favour`,
+              `  of the pass. Have the script print its sample count in a form the`,
+              `  runner recognises: 'N runs, ONE build' or 'DISTRIBUTION, N runs'.`,
+            ]
+          : [
+              `  TO GET A VERDICT: run it with at least ${MIN_SAMPLES} samples IN ONE`,
+              `  INVOCATION — e.g.  npm run verify -- ${scriptName} ${MIN_SAMPLES}`,
+              `  ⛔ DO NOT run the command three times instead. Separate invocations`,
+              `  are separate batches, possibly across builds, and this script itself`,
+              `  aborts on a build change because 'runs across two builds are not one`,
+              `  distribution'.`,
+            ]),
+      ]);
+      process.exit(3);
+    }
+
     // Proven: the verdict stands as the script reported it.
     banner([
       `✓ VERDICT STANDS — ${scriptName} has a recorded red run (${entry.redRun}).`,
+      ...(entry.stability && entry.stability.subject === "varies"
+        ? [
+            `  SAMPLES: ${samples} in ONE invocation (minimum ${MIN_SAMPLES}). Subject declared`,
+            `  \"varies\"${entry.stability.observedSpread ? " — observed " + entry.stability.observedSpread.min + "-" + entry.stability.observedSpread.max + "ms over " + entry.stability.observedSpread.runs + " runs" : ""}.`,
+            `  ⚠ Read the SPREAD above, not a single figure from it.`,
+          ]
+        : entry.stability && entry.stability.subject === "deterministic"
+        ? [`  Subject declared \"deterministic\" — one run is sufficient.`]
+        : []),
       ``,
       `  ⚠ WHAT THIS SCRIPT DOES NOT WATCH:`,
       ...(entry.blindSpots || ["    (none declared — treat the scope as unknown)"]).map(
@@ -351,6 +481,45 @@ child.on("close", (code) => {
         `  in project-intelligence/ and add an "emptyInput" block to its entry.`,
         ``,
         `  Worked example: verify/proven.json → reveal-stall.mjs.`,
+      ]);
+      process.exit(3);
+    }
+
+    // ⚠ A STABILITY GAP GETS ITS OWN MESSAGE. This entry HAS a red run and an
+    // empty-input control — saying "no recorded red run" here would send
+    // someone to redo a proof that is already on record. Name what is actually
+    // unmet, because each gap needs a different run to close it.
+    if (unmet === "stability" || unmet === "observedSpread") {
+      banner([
+        `⚠ NO VERDICT — ${scriptName} is listed in proven.json but does not`,
+        `  declare its SUBJECT STABILITY. Its numbers are above; its pass is`,
+        `  not admissible as evidence.`,
+        ``,
+        `  ⛔ THE PASS ABOVE HAS BEEN SUPPRESSED. This script HAS a recorded red`,
+        `  run${listed && listed.redRun ? " (" + listed.redRun + ")" : ""} and an empty-input control. What is missing is whether the`,
+        `  QUANTITY IT MEASURES HOLDS STILL.`,
+        ``,
+        ...(unmet === "observedSpread"
+          ? [
+              `  It declares \"varies\" with NO OBSERVED SPREAD. A declaration with no`,
+              `  measurement behind it is a claim, and the whole point of this`,
+              `  requirement is that claims about variance were never measured.`,
+            ]
+          : [
+              `  ⚠ A SINGLE RUN IS NOT A MEASUREMENT. The Q5 freeze moves by hundreds`,
+              `  of milliseconds on ONE build in ONE session with nothing changed, and`,
+              `  every prior figure for it was a single run or three cold samples. A`,
+              `  pass from one draw of an uncharacterised distribution is a FALSE PASS`,
+              `  WITH A PROOF ATTACHED.`,
+            ]),
+        ``,
+        `  TO MAKE IT ADMISSIBLE: add a \"stability\" block to its entry.`,
+        `    \"varies\"        — plus \"observedSpread\" {min, max, runs, date, build}`,
+        `                      from a run YOU ACTUALLY PERFORMED. ⛔ Do not copy a`,
+        `                      figure from the record: a stored baseline standing`,
+        `                      in for a fresh measurement is already on this`,
+        `                      project's list of binding faults.`,
+        `    \"deterministic\" — plus \"why\", in one line.`,
       ]);
       process.exit(3);
     }
