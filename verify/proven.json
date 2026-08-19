@@ -16,11 +16,47 @@
     "mode is a capability, a run is evidence. Only a run that was actually",
     "performed and recorded in project-intelligence/ belongs here.",
     "",
+    "TWO REQUIREMENTS, BOTH MANDATORY — an entry missing EITHER is treated as",
+    "unproven by run.mjs, exactly as if it were not listed at all:",
+    "",
+    "  1. \"redRun\"      — it was shown to go RED. It CAN fail.",
+    "  2. \"emptyInput\"  — it was pointed at NOTHING and reported an ABSENCE.",
+    "",
+    "⚠⚠ WHY THE SECOND ONE EXISTS — INSTRUMENT DEFECT #12, THE QUIET ZERO.",
+    "",
+    "A harness reported a zero. The zero read as a finding. It manufactured a",
+    "design decision out of nothing — and that decision is INVISIBLE AFTERWARDS,",
+    "because the thing avoided never gets tried again. A false pass gets",
+    "believed; A FALSE CONSTRAINT GETS DESIGNED AROUND.",
+    "",
+    "⚠ A zero meaning 'I looked and saw nothing happen' and a zero meaning 'I",
+    "never measured anything' ARE THE SAME CHARACTERS ON SCREEN. Going red",
+    "proves an instrument can move. It does NOT prove the instrument was ever",
+    "looking at anything.",
+    "",
+    "⚠ THIS CANNOT BE CHECKED IN run.mjs. The runner sees only output text and",
+    "an exit code, and those two zeros are textually identical. A textual",
+    "detector was tried once and failed: a classifier keyed on DRIFT/STALL",
+    "matched an ordinary measurement line, because those words are this",
+    "codebase's SUBJECT MATTER. So the gate goes on the PROOF, not the output.",
+    "",
+    "WHAT QUALIFIES AS AN EMPTY-INPUT CONTROL: the script is pointed at",
+    "something that genuinely contains nothing, and it REPORTS THE ABSENCE —",
+    "'NO REVEAL FOUND', 'NOTHING RESOLVED', 'no samples'. A ZERO VALUE DOES NOT",
+    "QUALIFY. '0ms' from an empty crop is the exact defect, not the control.",
+    "",
+    "WORKED EXAMPLE — reveal-stall.mjs, 2026-08-18. Its crop was moved to empty",
+    "sky (y=200), where nothing happens by construction. It reported 'NO REVEAL",
+    "FOUND' on all 8 runs. Had it reported 0ms there, it would have been",
+    "indistinguishable from a clean run on a real crop, and every future 0ms",
+    "would have been unfalsifiable.",
+    "",
     "TO ADD AN ENTRY: run the script against a build carrying a real or injected",
     "defect, confirm it goes RED, revert the injection, confirm it goes green",
-    "again, and write the run up in project-intelligence/. Then add it here with",
-    "the record it came from. Do not add a script on the strength of a summary",
-    "sentence in another document — the run itself must be recorded.",
+    "again. THEN point it at nothing and confirm it says so. Write both runs up",
+    "in project-intelligence/ and add the entry with the records they came from.",
+    "Do not add a script on the strength of a summary sentence in another",
+    "document — the runs themselves must be recorded.",
     "",
     "\"blindSpots\" is what the script does NOT watch, taken from its own declared",
     "scope. run.mjs prints these after a proven script's verdict, because a",
@@ -29,22 +65,17 @@
 
   "proven": [
     {
-      "script": "extras-hold-position.mjs",
-      "redRun": "2026-08-16",
-      "record": "project-intelligence/live-work/mobile-falsification-16-august.md",
-      "injected": "A width-scoped defect read from app/globals.css:1940 — inside @media (max-width: 639px), .enquiry-pdepth-1 { bottom: 4.675rem } plus a 900ms bottom transition on .enquiry-phrase-anim. Result: mobile 390x844 RED at 105.58px drift (tolerance 1.5px), desktop 1440x900 GREEN at 0px, exit 1. Injection reverted; re-run confirmed green at both widths, tree byte-identical to bea8257.",
-      "whyItCounts": "The defect was width-scoped, so the harness had to DISCRIMINATE rather than merely react — an instrument that responds to any injected change would have failed both widths. It did not. A first, desktop-scoped falsification was rejected by Carl because its 88.78px red was the injected desktop constant, not mobile's own ladder.",
-      "blindSpots": [
-        "Reads RECTS, NOT PIXELS. It would pass on a page rendering nothing at all. It is not a substitute for looking.",
-        "Says NOTHING about the fade, the 0.78 dimming, opacity of any kind, clickability, the rail's rungs, or the card entrance ladder.",
-        "Watches ONE box: .enquiry-phrase-extras. If the cards move INSIDE that box, this harness is blind to it."
-      ]
-    },
-    {
       "script": "reveal-stall.mjs",
       "redRun": "2026-08-18",
       "record": "project-intelligence/live-work/reveal-stall-instrument-18-august.md",
       "injected": "NO INJECTION NEEDED — the honest production run goes RED on today's build, 7/8 runs, exit 1. Two further falsifications confirmed it fails the right way: the crop moved to empty sky (y=200) reported 'NO REVEAL FOUND' on all 8 rather than a misleading 0ms, and a run below the floor reported 'NO FREEZE FOUND — a finding ABOUT THIS INSTRUMENT'. Reveal window measured 1280–1320ms against the declared 1300ms, 8/8.",
+      "emptyInput": {
+        "date": "2026-08-18",
+        "pointedAt": "The measurement crop moved to empty sky at y=200 — a region of the page where no reveal happens by construction, so any reveal reported there is the instrument talking to itself.",
+        "reported": "NO REVEAL FOUND — on all 8 runs.",
+        "record": "project-intelligence/live-work/reveal-stall-instrument-18-august.md",
+        "whyItQualifies": "It reported an ABSENCE, not a zero. Had it printed '0ms' from the empty crop it would have been character-for-character identical to a clean run on a real crop, and every future 0ms from this harness would have been unfalsifiable. This is the worked example the requirement is written from."
+      },
       "whyItCounts": "Version 3 of the window anchored on the last frame below 25% of settled brightness — an anchor that excluded the thing it measured. ⚠ WITHOUT THE REQUIRED RED ON TODAY'S BUILD IT WOULD HAVE SHIPPED AS 'THE STALL IS FIXED'. The red was the only thing that caught it.",
       "blindSpots": [
         "Desktop 1440x900 only. Mobile is unexercised — a coverage gap, not a timing one.",
@@ -52,6 +83,19 @@
         "⚠ 40ms QUANTISATION. 25fps is a FLOOR on resolution: a freeze shorter than 40ms is invisible here, and every duration is bounded, not exact.",
         "NO ATTRIBUTION. It says a freeze happened, where, and for how long. It says NOTHING about why — diagnosis is out of scope."
       ]
+    }
+  ],
+
+  "_demoted": [
+    {
+      "script": "extras-hold-position.mjs",
+      "demotedOn": "2026-08-19",
+      "wasProvenFrom": "2026-08-16",
+      "redRun": "2026-08-16",
+      "record": "project-intelligence/live-work/mobile-falsification-16-august.md",
+      "reason": "NO EMPTY-INPUT CONTROL ON RECORD. Its red run is genuine and still stands — a width-scoped defect at app/globals.css:1940 took mobile 390x844 RED at 105.58px drift while desktop 1440x900 stayed GREEN at 0px, so the harness DISCRIMINATED rather than merely reacting. But every arm of that proof measured a REAL element. The script was never pointed at nothing, so nothing shows what it says when there is nothing to see.",
+      "⚠ notInventedOnPurpose": "A control was NOT manufactured to keep this entry, and the requirement was NOT weakened to fit it. Demotion is the honest result: the proven list goes 2 → 1.",
+      "howToRestore": "The capability is already there — extras-hold-position.mjs:181 prints '⚠⚠ NOTHING RESOLVED ... A pass here would be VACUOUS — treating it as a failure.' ⚠ BUT A CAPABILITY IS NOT A RUN, which is the rule this file already applies to falsify flags. Point it at a page with no `.enquiry-phrase-extras` (or a selector that matches nothing), confirm it reports the absence rather than a 0px drift, write the run up in project-intelligence/, and move this entry back into \"proven\" with an emptyInput block."
     }
   ]
 }

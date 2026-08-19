@@ -22,14 +22,34 @@
  *
  * WHAT IT DOES
  * ------------
- *   - Script IS in proven.json: output passes through unchanged, and the
- *     script's declared blind spots are printed after the verdict. A proven
- *     instrument is still a narrow one.
- *   - Script is NOT in proven.json: output passes through, but a PASS is
- *     SUPPRESSED and replaced with a NO VERDICT notice. The numbers still print.
+ *   - Script's entry carries BOTH requirements: output passes through
+ *     unchanged, and the script's declared blind spots are printed after the
+ *     verdict. A proven instrument is still a narrow one.
+ *   - Script is NOT in proven.json, OR is listed but MISSING EITHER
+ *     REQUIREMENT: output passes through, but a PASS is SUPPRESSED and replaced
+ *     with a NO VERDICT notice. The numbers still print.
  *   - A FAILURE from an unproven script passes through UNCHANGED. A red from an
  *     unproven instrument still means go and look — suppressing it would be the
  *     false-negative this gate exists to prevent.
+ *
+ * THE TWO REQUIREMENTS — being listed is NOT sufficient
+ * ----------------------------------------------------
+ *   1. "redRun"     — it was shown to go RED. It CAN fail.
+ *   2. "emptyInput" — it was pointed at NOTHING and reported an ABSENCE.
+ *
+ * ⚠ THE SECOND IS INSTRUMENT DEFECT #12, THE QUIET ZERO. A harness reported a
+ * zero, the zero read as a finding, and it manufactured a design decision out
+ * of nothing — a decision INVISIBLE AFTERWARDS, because the thing avoided never
+ * gets tried again. A false pass gets believed; A FALSE CONSTRAINT GETS
+ * DESIGNED AROUND. Going red proves an instrument CAN MOVE; it does not prove
+ * it was ever LOOKING AT ANYTHING.
+ *
+ * ⚠ AND IT CANNOT BE CHECKED HERE. This runner sees output text and an exit
+ * code, and "0ms because nothing happened" is textually identical to "0ms
+ * because I never measured anything". A textual detector was tried and failed
+ * (see the classify() note below). So the requirement is enforced on the PROOF,
+ * where it is a recorded fact — never on the output, where it is unknowable.
+ * Full reasoning and the qualifying bar: verify/proven.json.
  *
  * ⛔ NOTHING IS BLOCKED. Every script still runs, and its raw output is still
  * shown. This gate governs what may be called EVIDENCE, not what may be run.
@@ -40,8 +60,15 @@
  *     red once, against one build, on one date. The code under it has moved
  *     since. A stale proof reads exactly like a fresh one.
  *   - ⚠ IT DOES NOT STOP ANYONE RUNNING A SCRIPT DIRECTLY. `node verify/foo.mjs`
- *     bypasses this file completely and prints the raw verdict. This is a
- *     convention with a reminder attached, not a mechanism.
+ *     bypasses this file completely and prints the raw verdict. As of
+ *     923295b a PreToolUse hook (.claude/hooks/verify-front-door.js) denies
+ *     that form on the Bash TOOL — but only there. A terminal, a CI step or a
+ *     process spawned by another process still reaches the script directly.
+ *   - ⚠ WHETHER AN EMPTY-INPUT CONTROL IS STILL VALID, OR WAS EVER HONEST. The
+ *     entry records that someone pointed the script at nothing on one date and
+ *     it said so. It cannot check that the input really was empty, that the
+ *     absence report still fires, or that the run happened at all. Like the red
+ *     run, it is a recorded claim — and it decays the same way.
  *   - ⚠ IT SAYS NOTHING ABOUT WHETHER A HARNESS MEASURES THE RIGHT THING. A
  *     script can go red on an injected defect and still watch the wrong
  *     channel: `q5-stutter.mjs` shared a wrong 700ms constant with the fix it
@@ -126,8 +153,11 @@ verify/run.mjs — the verdict gate
   npm run verify -- <script.mjs> [args...]
   node verify/run.mjs --list
 
-A script with no recorded RED run still RUNS and still prints its numbers,
-but its PASS is not admissible as evidence. A FAILURE always passes through.
+A script still RUNS and still prints its numbers whatever its status. Its PASS
+is admissible only if its proven.json entry carries BOTH:
+  redRun     — it was shown to go RED (it CAN fail)
+  emptyInput — it was pointed at NOTHING and reported an ABSENCE
+A FAILURE always passes through, proven or not.
 `);
   process.exit(0);
 }
@@ -137,13 +167,25 @@ if (argv[0] === "--list") {
     console.log(`⚠ proven.json could not be read (${proven.why}) — nothing is proven.`);
     process.exit(1);
   }
-  console.log(`PROVEN INSTRUMENTS (${proven.entries.length}):\n`);
+  const fully = proven.entries.filter((e) => !missingRequirement(e));
+  console.log(`PROVEN INSTRUMENTS (${fully.length} of ${proven.entries.length} listed):\n`);
   for (const e of proven.entries) {
     const onDisk = existsSync(path.join(HERE, e.script));
-    console.log(`  ${onDisk ? " " : "⚠"} ${e.script}`);
-    console.log(`      red run : ${e.redRun}`);
-    console.log(`      record  : ${e.record}`);
+    const gap = missingRequirement(e);
+    console.log(`  ${!onDisk ? "⚠" : gap ? "⛔" : " "} ${e.script}`);
+    console.log(`      red run     : ${e.redRun || "⛔ NONE RECORDED"}`);
+    console.log(
+      `      empty input : ${
+        e.emptyInput && e.emptyInput.reported
+          ? `${e.emptyInput.reported}${e.emptyInput.date ? ` (${e.emptyInput.date})` : ""}`
+          : "⛔ NONE RECORDED"
+      }`
+    );
+    console.log(`      record      : ${e.record}`);
     if (!onDisk) console.log(`      ⚠ LISTED BUT NOT ON DISK`);
+    if (gap) {
+      console.log(`      ⛔ NOT PROVEN — missing '${gap}'. Its pass is suppressed.`);
+    }
   }
   process.exit(0);
 }
@@ -157,9 +199,35 @@ if (!existsSync(scriptPath)) {
   process.exit(2);
 }
 
-const entry = proven.ok
+const listed = proven.ok
   ? proven.entries.find((e) => e.script === scriptName)
   : undefined;
+
+// ── THE TWO REQUIREMENTS ─────────────────────────────────────────────────────
+// An entry must carry BOTH to count as proven. Missing either is treated
+// exactly as if the script were not listed at all — same suppression — but the
+// message names WHICH requirement is unmet, because "unproven" and "proven for
+// one thing and not the other" need different fixes.
+//
+// ⚠ THE EMPTY-INPUT CONTROL CANNOT BE CHECKED FROM OUTPUT. This runner sees
+// text and an exit code, and "0ms because nothing happened" is textually
+// identical to "0ms because I never measured anything". A textual detector was
+// tried and failed — a classifier keyed on DRIFT/STALL matched an ordinary
+// measurement line, because those words are this codebase's subject matter. So
+// the requirement is enforced on the PROOF, where it is a recorded fact, not on
+// the output, where it is unknowable.
+function missingRequirement(e) {
+  if (!e) return null;
+  if (!e.redRun) return "redRun";
+  const c = e.emptyInput;
+  if (!c || !c.pointedAt || !c.reported) return "emptyInput";
+  return null;
+}
+
+const unmet = missingRequirement(listed);
+// A listed-but-incomplete entry is NOT proven. `entry` stays undefined so every
+// downstream check follows the unproven path with no special-casing.
+const entry = listed && !unmet ? listed : undefined;
 
 // ⚠ A LIST ENTRY NAMING A SCRIPT THAT IS NOT ON DISK IS REPORTED, NOT SKIPPED.
 // A proof pointing at nothing is a defect in the proof, and silence about it
@@ -195,7 +263,11 @@ if (!proven.ok) {
 console.log(`▶ verify/${scriptName}${scriptArgs.length ? " " + scriptArgs.join(" ") : ""}`);
 console.log(
   entry
-    ? `  status: PROVEN — went red ${entry.redRun} (${entry.record})`
+    ? `  status: PROVEN — red ${entry.redRun}, empty-input ${entry.emptyInput.date || "recorded"} (${entry.record})`
+    : unmet === "emptyInput"
+    ? `  status: LISTED BUT NOT PROVEN — no empty-input control`
+    : unmet === "redRun"
+    ? `  status: LISTED BUT NOT PROVEN — no recorded red run`
     : `  status: NO RECORDED RED RUN`
 );
 console.log(BAR);
@@ -251,6 +323,38 @@ child.on("close", (code) => {
   }
 
   if (verdict === "pass") {
+    // ⚠ A LISTED ENTRY MISSING THE EMPTY-INPUT CONTROL GETS ITS OWN MESSAGE.
+    // "never shown to fail" and "shown to fail, never shown to be looking at
+    // anything" are different defects and need different runs to fix.
+    if (unmet === "emptyInput") {
+      banner([
+        `⚠ NO VERDICT — ${scriptName} is listed in proven.json but has NO`,
+        `  EMPTY-INPUT CONTROL. Its numbers are below; its pass is not`,
+        `  admissible as evidence.`,
+        ``,
+        `  ⛔ THE PASS ABOVE HAS BEEN SUPPRESSED. This script HAS a recorded red`,
+        `  run${listed && listed.redRun ? ` (${listed.redRun})` : ``}, so it can fail. Nothing on record shows what it says`,
+        `  when there is NOTHING TO SEE.`,
+        ``,
+        `  ⚠ THE QUIET ZERO — instrument defect #12. A zero meaning "I looked`,
+        `  and saw nothing happen" and a zero meaning "I never measured`,
+        `  anything" are THE SAME CHARACTERS ON SCREEN. A false pass gets`,
+        `  believed; a FALSE CONSTRAINT GETS DESIGNED AROUND, and that decision`,
+        `  is invisible afterwards, because the thing avoided never gets tried`,
+        `  again.`,
+        ``,
+        `  TO MAKE IT ADMISSIBLE: point this script at something that genuinely`,
+        `  contains nothing — an empty crop, a selector matching no element, a`,
+        `  run with no samples. It must report an ABSENCE ("NO REVEAL FOUND",`,
+        `  "NOTHING RESOLVED"). ⛔ A ZERO VALUE DOES NOT QUALIFY: "0ms" from an`,
+        `  empty input is the defect itself, not the control. Write the run up`,
+        `  in project-intelligence/ and add an "emptyInput" block to its entry.`,
+        ``,
+        `  Worked example: verify/proven.json → reveal-stall.mjs.`,
+      ]);
+      process.exit(3);
+    }
+
     banner([
       `⚠ NO VERDICT — this script has no recorded red run. Its numbers are`,
       `  below; its pass is not admissible as evidence.`,
@@ -262,7 +366,9 @@ child.on("close", (code) => {
       `  TO MAKE IT ADMISSIBLE: run it against a build carrying the defect it`,
       `  claims to catch, confirm it goes RED, revert, confirm it goes green,`,
       `  write the run up in project-intelligence/, and add it to`,
-      `  verify/proven.json with that record.`,
+      `  verify/proven.json with that record — INCLUDING an "emptyInput" block.`,
+      `  Both are required: that it CAN fail, and that it knows when it is`,
+      `  looking at nothing.`,
     ]);
     // ⚠ Exit non-zero so a suppressed pass cannot be consumed as a pass by
     // anything reading the exit code (CI, a chained &&, a wrapper script).
