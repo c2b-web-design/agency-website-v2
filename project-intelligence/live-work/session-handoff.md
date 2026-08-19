@@ -1,4 +1,4 @@
-# Session Handoff — 19 August 2026 (evening). Two controls now block by default.
+# Session Handoff — 19 August 2026 (late). Zero admissible harnesses, honestly.
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -6,19 +6,21 @@
 
 ---
 
-# ⛔⛔ TWO THINGS WILL STOP YOU. BOTH ARE THE CONTROL WORKING.
+# ⛔⛔ TWO CONTROLS BLOCK BY DEFAULT. BOTH ARE THE CONTROL WORKING.
 
 > ## 1. EDITS — `SCOPE GUARD: '<path>' is PERMANENTLY PROTECTED`
 >
-> **23 paths** in `.claude/protected-files.json`, locked on every `Edit`/`Write`/`NotebookEdit`.
-> ⚠ **`CLAUDE.md` IS NOW ONE OF THEM**, so **changing any rule needs Carl naming that exact path**
-> under `"unlocked"` in `live-work/chunk-scope.json`. Never a folder, never a glob. Remove the
-> unlock when done.
+> **25 paths** in `.claude/protected-files.json`, locked on every `Edit`/`Write`/`NotebookEdit`.
+> ⚠ **`CLAUDE.md`, `verify/proven.json` and `verify/run.mjs` are among them.** Changing any needs
+> Carl naming that exact path under `"unlocked"` in `live-work/chunk-scope.json`. Never a folder,
+> never a glob. **Remove the unlock when done and re-verify the path locks again** — `chunk-scope.json`
+> is gitignored, so a session ending with unlocks live leaves the next one with protected files
+> quietly writable and no denial to reveal it.
 >
 > ## 2. VERIFY — `VERIFY FRONT DOOR: ... skips the verdict gate`
 >
 > **`node verify/x.mjs` is DENIED on the Bash tool.** Use **`npm run verify -- <script.mjs>`**.
-> Habit reaches for the first one. Reading is untouched — `cat`/`grep`/`ls` on `verify/` are fine.
+> ⚠ It also catches `node --check verify/…`. Reading is untouched — `cat`/`grep`/`ls` are fine.
 
 ⛔ **A denial is not a bug. Do not diagnose it, and DO NOT ROUTE AROUND IT WITH A SHELL.** Both
 hooks run on tool calls only; `sed -i`, redirect, `mv`, `cp`, `rm` bypass them entirely. **What
@@ -26,111 +28,125 @@ catches a shell write is the diff — a reviewer, not a mechanism.** Stop and as
 
 ---
 
-## THIS SESSION'S COMMITS — SIX, on `fix/q5-stall-and-label-colour`
+# ⚠⚠ THE PROJECT HAS ZERO ADMISSIBLE HARNESSES. 0 OF 130.
 
-**Head `aa84584` at the time of writing. Tree clean, pushed, verified by `git ls-remote`.**
-No product code touched in any of them. Servers: none. Ports 3000/3100 free.
+**`reveal-stall.mjs` was the one, and is now UNPROVEN** — its `observedSpread` is **deliberately
+null**. A verdict now needs THREE things: a recorded **red run**, an **empty-input control**, and a
+declared **subject stability** — with an observed spread for anything that varies.
+
+⚠ **`⚠ NO VERDICT` on everything is the HONEST STATE, not a fault.** Nothing in `verify/` can
+currently be cited as evidence. Do not read a green line as a pass.
+
+## THE OPEN FAULT THAT CAUSED IT — a lead, not a mystery
+
+**5 films on build `2026-08-19T21-37-45` reported 0ms on ALL FIVE runs.** The films are good: the
+reveal resolved at **1240–1280ms against a declared 1300ms**, so the window found the reveal. ⚠ **It
+is the FREEZE INSIDE that window that does not resolve.**
+
+⛔ **The batch-sort defect was fixed (`e140743`) and did NOT cause it.** Re-measuring the SAME films
+after the fix gives an identical result, and the stale directory reports 0ms too — both agree, and
+neither explains the other. **So `reveal-stall.mjs`'s band, tolerance or window is a SEPARATE open
+fault, untouched by this session** — and it is what stands between the project and its first
+admissible harness. ⚠ Recording `0-0ms` as a spread would be the quiet zero requirement 2 exists to
+prevent, which is why the entry stays unproven.
+
+---
+
+## THIS SESSION'S COMMITS — FOUR, on `fix/q5-stall-and-label-colour`
+
+**Head `302b05d` at the time of writing. Tree clean, pushed, verified by `git ls-remote`.**
 
 > ⚠ **THE HEAD SHA HERE IS ALWAYS AT LEAST ONE BEHIND** — a file cannot name the commit that
 > contains it. **Run `git log --oneline -6`. Do not trust this line.**
 
 ```
-923295b  feat  the verify front door, and a guard that cannot fail quietly open
-1c6c5a1  fix   the scope guard failed open, measured — and now fails closed
-2f43d63  docs  two read lists, because seven equal items is a list nobody finishes
-e899645  docs  remove the session-length directive
-e913266  feat  CLAUDE.md joins the protected list — the rules file was the open door
-aa84584  feat  the empty-input control — a zero is not a finding until it can say "nothing"
+5f43f15  feat  the single-run rule — a sample count, not a command typed twice
+e140743  fix   pick the batch by when the films were shot, and say which
+959ea69  feat  the evidence machinery joins the protected list — both halves
+302b05d  fix   reveal-stall.mjs pointed at a door the front door denies
 ```
 
-⚠ **`72aabc1` and earlier are from the PREVIOUS session** (13:02 vs this session's 17:54–18:54),
-already covered by the handoff this one replaces. Six, not seven.
+⚠ **`8ff107f` and earlier are from the PREVIOUS session**, already covered by the handoff this one
+replaces. **Four, not six.**
 
 ---
 
-## ⚠⚠ BOTH HOOKS FAILED OPEN UNTIL TODAY. MEASURED, NOT INFERRED.
+## THE SINGLE-RUN RULE — what it actually requires
 
-**The scope guard was corrupted with a syntax error, and an Edit to `lib/utils.ts` — a protected
-path DENIED ninety seconds earlier — LANDED ON DISK.** All 19 paths were writable while the guard
-still appeared installed.
+**Three samples in ONE INVOCATION**, read from the count the script itself declares and prints.
 
-**THE MECHANISM. It applies to every hook this project will ever add:**
+⛔ **NOT three invocations.** `reveal-stall.mjs` already takes five samples per run, and separate
+invocations are separate batches — the script *aborts on a build-id change* because "runs across two
+builds are not one distribution". A runner stitching three together would **manufacture a wider
+spread than the subject has**. ⚠ **The rule is about the sample count behind the number, not how
+many times the command was typed.**
 
-| hook exits | harness behaviour |
-|---|---|
-| `0` + deny JSON | DENIED |
-| `0`, no JSON | **ALLOWED** |
-| `2` | **BLOCKED**, stderr shown |
-| `1`, or any crash | **ALLOWED** — reported, not blocking |
+**Three is fixed and deliberately NOT per-entry** — a per-entry minimum invites arguing an expensive
+script deserves fewer, and that argument is always available to someone in a hurry.
 
-⚠ **A syntax error exits 1.** And **a file cannot catch its own parse error** — node dies in the
-module loader before line 1 runs, so wrapping the body in `try/catch` does nothing. Both were
-tried and falsified.
-
-**Both hooks are now launcher + matcher pairs.** A parse error in the matcher is a catchable
-runtime error in the launcher, which exits 2. Edits belong in the matcher.
-
-⚠ **EACH LAUNCHER IS STILL A SINGLE POINT THAT FAILS OPEN IF IT IS MALFORMED.** Nothing can catch
-the outermost frame. **Their whole defence is being short enough to review by eye — and they are
-241 and 282 lines.** ⛔ **If either grows, that defence stops being true.** Keep logic in the
-matchers.
-
-**Fail-closed scope differs, deliberately:** the scope guard denies EVERY edit (the shell still
-works, so `git checkout .claude/hooks/` is a real escape hatch); the front door denies verify
-commands ONLY (a total Bash block would need an unlock in a session where nothing can run — a
-trap, not a stop).
+**Cost of one verdict: ~2m 35s** (143s filming + 12s measuring).
 
 ---
 
-## ⚠ ONE HARNESS OF 130 CAN NOW PRODUCE AN ADMISSIBLE PASS
+## ⚠ PROVING A SCRIPT NOW NEEDS AN UNLOCK FROM CARL
 
-**Two requirements, both mandatory** — an entry missing either is treated as unproven:
+`verify/proven.json` is protected, so adding an entry, fixing a stale `redRun` or filling in an
+`observedSpread` is a stop-and-ask. **Cheap today** — one entry, currently unproven, proofs rare.
 
-1. **`redRun`** — shown to go RED. It CAN fail.
-2. **`emptyInput`** — pointed at NOTHING, and it **reported an ABSENCE**. ⛔ A zero value does not
-   qualify; `0ms` from an empty crop is the defect, not the control.
-
-**`reveal-stall.mjs` is the only proven script.** **`extras-hold-position.mjs` was DEMOTED** — its
-red run is genuine, but every arm of it measured a real element. ⚠ **A control was not invented for
-it and the requirement was not weakened to keep it.** Its capability exists at line 181, but **a
-capability is not a run.**
-
-⚠ **So `⚠ NO VERDICT` is the normal, honest result — 129 scripts.** Not a fault. **Almost nothing
-in `verify/` can currently be cited as evidence.**
+⚠ **THE TEST IS FREQUENCY.** If proofs become routine, the failure mode is **not a bad proof getting
+in — it is PROOFS QUIETLY STOPPING**, which looks identical to a project with no instruments worth
+proving. At that point the right instrument is a review gate on the diff, not a block on the edit.
 
 ---
 
-## THE READ LIST IS NOW TWO LISTS (CLAUDE.md)
+## ⚠ 155 HEADER COMMENTS STILL NAME THE BLOCKED ROUTE
 
-**Read-first: 8,837 words** — handoff, `open-defects.md`, `current-sprint.md`, `context-rules.md`.
-**Consult on demand** — `decisions.md`, `review-log.md`, component docs, files to be touched.
+Across **129 of 130 scripts**. A reader following a script's own header hits a denial and has to work
+out that **the file is wrong, not the hook**. We created that contradiction when the front door
+landed. The two **printed** cases are fixed; **`corridor-motion.mjs:388` is a third** (`fix-mojibake.mjs:25`
+is a usage line on a repair utility — a separate question).
 
-⚠ **`decisions.md` is CHEAPER TO SKIP, NOT SAFE TO IGNORE.** The approved layers are named in
-CLAUDE.md and 23 paths are guarded, so you will be *stopped* without it — but **only
-`decisions.md` carries the reasoning.** Before touching an approved layer, read the decision.
+⛔ **NOT A SWEEP. Carl's direction stands: a hook that checks text AS IT IS WRITTEN, not the 155 as
+they stand.** They shrink as files are touched.
+
+### The doc-route hook was STARTED AND STOPPED mid-falsification
+
+**Reverted entirely and deliberately — nothing is on disk, nothing is registered.** Both hook files
+deleted, the `settings.json` registration reverted, the two unlocks closed and re-verified.
+
+⚠ **WHY REVERTED RATHER THAN PARKED:** cases (e) and (f) never ran, so there is **no evidence it
+fails closed on a malformed matcher, and none that it leaves the other two hooks undisturbed.** A
+hook registered but unfalsified is a control that looks installed and isn't — the exact defect
+measured in `1c6c5a1`. What it did prove: cases (a)–(d) passed, including the one that decides
+usability — **an unrelated edit to a file that already contains the direct form is ALLOWED**, because
+it inspects only the text being written. A whole-file check would deny every edit to 129 scripts.
 
 ---
 
-# STILL OPEN — NONE OF IT IS GOVERNANCE WORK
+## ⚠ TOOLING FAULT — TWICE, AND IT WILL HAPPEN AGAIN
 
-## Waiting on Carl's eye, third session running
+**Bash heredoc patches have silently no-opped, and have stripped regex backslashes** (`\d` → `d`,
+which broke a live file-discovery regex). **Both were caught only by GREPPING THE RESULT.**
+
+⛔ **A patch's success message is not evidence it applied.** Grep the file after every scripted edit.
+
+---
+
+# STILL OPEN
+
+## Waiting on Carl's eye — FOURTH session running
 
 - **Commit 3 — the opening/complete visibility gate.** ⚠ Carries **a chrome pill painted over the
   contact form.** Walk Q1 → complete, by eye AND by capture. ⛔ Do not bundle it.
-- **The Next step button appearance verdict.** Landed but unapproved. Shots at
-  `live-work/shots/commit2-0{1..4}-*.png`.
+- **The Next step button appearance verdict.** Shots at `live-work/shots/commit2-0{1..4}-*.png`.
 - **The corridor fix remains ON HOLD by Carl's decision.**
 
 ## Loose ends
 
-- ⚠ **`reveal-stall.mjs` still prints `node verify/reveal-stall-measure.mjs`** on completion — a
-  route the front door now DENIES. Its own instructions point at the blocked door. One line, in a
-  `verify/` file, not yet authorised.
-- ⚠ **`verify/proven.json` is NOT protected.** The file that decides what counts as evidence is not
-  on the list.
-- **Open from the governance split, untouched:** a single run still counts as a measurement; a
-  stored baseline still passes as a control; nothing counts contexts or canvases on a walk; only 9
-  of 130 harnesses declare what they do not watch.
+- ⚠ **`reveal-stall.mjs`'s band/tolerance/window** — the open fault above. Report-only so far.
+- **`verify/proven.json` is now protected**; `reveal-stall-measure.mjs` is not.
+- **Open from the governance split:** a stored baseline still passes as a control; nothing counts
+  contexts or canvases on a walk; only 9 of 130 harnesses declare what they do not watch.
 - **`open-defects.md`** holds four live faults — the a11y fault, Q4–Q1 having no card entrance, the
   7.4s/10.1s opening delay (Carl's standing decision: first job when building resumes), and the
   stale anchor at `answer-card-canvas.tsx:1925`.
@@ -139,16 +155,14 @@ CLAUDE.md and 23 paths are guarded, so you will be *stopped* without it — but 
 
 ## ENVIRONMENT TRAPS
 
-- **Production is the verdict**; dev and production disagree.
-- **Turbopack serves cached CSS failures.** Tell: a line number exceeding the file's length.
-  `rm -rf .next`.
-- ⚠ **`TaskStop` reports success on a held port. Kill by PID, confirm free.**
-- **Serving:** `npm run build && npx next start -p 3100`.
+- **Production is the verdict**; dev and production disagree. `npm run build && npx next start -p 3100`.
+- **Turbopack serves cached CSS failures.** Tell: a line number exceeding the file's length. `rm -rf .next`.
+- ⚠ **`TaskStop` reports success on a held port. Kill by PID, confirm free** — and check for a
+  **LISTENING** socket specifically; `TIME_WAIT` entries are closed connections, not a held port.
 - ⛔ **`canvas.__r3f` IS UNDEFINED ON PRODUCTION BUILDS.**
 - ⚠ **Q5's reveal begins ~7.8s AFTER Begin**, not ~2.5s.
 
 ---
 
-*19 August 2026, evening. **Two controls that looked installed and were not are now measured and***
-*⚠ **fixed. Both were found only because a brief demanded the FAILURE path be falsified —***
-*⚠⚠ **every case that exercised the healthy path passed against a broken guard.***
+*19 August 2026, late. **The gate now reports what is true: almost nothing here is evidence yet.***
+*⚠ **That is the instrument working. The next session's job is the freeze that will not resolve.***
