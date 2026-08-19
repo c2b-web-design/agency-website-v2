@@ -1,4 +1,4 @@
-# Session Handoff — 19 August 2026 (the repo now blocks edits by default)
+# Session Handoff — 19 August 2026 (evening). Two controls now block by default.
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -6,165 +6,134 @@
 
 ---
 
-# ⛔⛔ READ THIS BEFORE YOUR FIRST EDIT
+# ⛔⛔ TWO THINGS WILL STOP YOU. BOTH ARE THE CONTROL WORKING.
 
-> ## **EDITS ARE NOW BLOCKED BY DEFAULT. A DENIAL IS THE CONTROL WORKING, NOT A BUG.**
+> ## 1. EDITS — `SCOPE GUARD: '<path>' is PERMANENTLY PROTECTED`
 >
-> If an `Edit`/`Write` comes back **`SCOPE GUARD: '<path>' is PERMANENTLY PROTECTED`**,
-> nothing is broken. **Do not diagnose it. Do not route around it. STOP AND ASK CARL.**
+> **23 paths** in `.claude/protected-files.json`, locked on every `Edit`/`Write`/`NotebookEdit`.
+> ⚠ **`CLAUDE.md` IS NOW ONE OF THEM**, so **changing any rule needs Carl naming that exact path**
+> under `"unlocked"` in `live-work/chunk-scope.json`. Never a folder, never a glob. Remove the
+> unlock when done.
+>
+> ## 2. VERIFY — `VERIFY FRONT DOOR: ... skips the verdict gate`
+>
+> **`node verify/x.mjs` is DENIED on the Bash tool.** Use **`npm run verify -- <script.mjs>`**.
+> Habit reaches for the first one. Reading is untouched — `cat`/`grep`/`ls` on `verify/` are fine.
 
-**19 paths in `.claude/protected-files.json` are locked on every `Edit`/`Write`/`NotebookEdit`**,
-whether or not a chunk scope file exists. This is new as of today and the first time this repo has
-had a control that blocks by default.
-
-**The only route through:** Carl names **one specific path** under `"unlocked"` in
-`project-intelligence/live-work/chunk-scope.json`. **Never a folder. Never a glob. Never
-`"active": false`** — all three were tested and all three still DENY. Remove the unlock when the
-edit is done.
-
-⚠ **If `.claude/protected-files.json` is missing or malformed, EVERY edit is denied**, including
-unlisted files. That is deliberate. Fix: `git checkout .claude/protected-files.json`.
-
-## ⚠ WHAT THE GUARD DOES NOT DO — do not trust it further than this
-
-- **It is not tamper-proofing.** The hook runs on `Edit`/`Write`/`NotebookEdit` **only**. `Bash`
-  redirect, `sed -i`, `mv`, `cp` and `rm` **never reach it** — every protected file can still be
-  rewritten or deleted from a shell. ⛔ **Do not use a shell to get past a denial.** What catches a
-  shell write is the diff, because the files are tracked: **a reviewer, not a mechanism.**
-- **A file nobody listed is unprotected** — including a renamed one.
-- **Adding a path is itself an edit to a locked file**, so it needs an unlock first.
-
-## ⚠ WHY THESE 19 AND NOT OTHERS — the omissions are deliberate
-
-**The list is SETTLED GROUND: files not edited in the last week.**
-
-**Files under active repair are DELIBERATELY NOT LOCKED** — `enquiry-opening.tsx`,
-`answer-card-canvas.tsx`, `answer-card-geometry.ts`, `nextstep-canvas.tsx`, `globals.css`.
-⚠ **A lock that gets unlocked every session becomes a form to fill in rather than a stop**, and
-then the whole mechanism reads as noise.
-
-**The Next step button is deliberately not locked either.** Carl's constraint on it is about
-**appearance and behaviour**, and **a file lock cannot tell a repair from a redesign.** What
-protects it is the appearance gate and **Carl's eye** — not a path list.
+⛔ **A denial is not a bug. Do not diagnose it, and DO NOT ROUTE AROUND IT WITH A SHELL.** Both
+hooks run on tool calls only; `sed -i`, redirect, `mv`, `cp`, `rm` bypass them entirely. **What
+catches a shell write is the diff — a reviewer, not a mechanism.** Stop and ask Carl.
 
 ---
 
-## THIS SESSION'S COMMITS
+## THIS SESSION'S COMMITS — SIX, on `fix/q5-stall-and-label-colour`
 
-**Branch `fix/q5-stall-and-label-colour`, head `ec0f173` at the time of writing** (session started
-at `498630a`). **Tree clean, pushed, verified by `git ls-remote`.** No product code touched in any
-of them. Servers: none. Ports 3000/3100 free.
+**Head `aa84584` at the time of writing. Tree clean, pushed, verified by `git ls-remote`.**
+No product code touched in any of them. Servers: none. Ports 3000/3100 free.
 
 > ⚠ **THE HEAD SHA HERE IS ALWAYS AT LEAST ONE BEHIND** — a file cannot name the commit that
-> contains it, and the commit carrying this handoff comes after it. **Run `git log --oneline -5`.
-> Do not trust this line.**
+> contains it. **Run `git log --oneline -6`. Do not trust this line.**
 
 ```
-f531d9d  docs  the card face is satin, not glass — D-051
-65b89fe  feat  the permanent list, fail-loud when missing or malformed
-f5647b4  feat  the list protects itself on the edit path
-f2a1710  docs  this handoff
-4d4d534  feat  the verify verdict gate
-334ed1e  docs  the verify front door, added here
-47d5372  docs  open-defects.md — a drawer for live faults
-ec0f173  docs  three defects admitted; the limit corrected
+923295b  feat  the verify front door, and a guard that cannot fail quietly open
+1c6c5a1  fix   the scope guard failed open, measured — and now fails closed
+2f43d63  docs  two read lists, because seven equal items is a list nobody finishes
+e899645  docs  remove the session-length directive
+e913266  feat  CLAUDE.md joins the protected list — the rules file was the open door
+aa84584  feat  the empty-input control — a zero is not a finding until it can say "nothing"
 ```
 
-- **`f531d9d`** — the material changed on **9 August (`1c9b8d7`)** and **the record was ten days
-  behind.** D-051 records what is built (`MeshPhysicalMaterial`, `transmission: 0`, anisotropy 0.86,
-  separate sheen lobe); D-028 superseded **in part** — its wording untouched (P4), its
-  selected-state provisions still stand; CLAUDE.md's approved-layers line corrected.
-  ⚠ `answer-card-glass.ts` still carries the old material in its **name** — recorded as a known
-  mismatch, deliberately not renamed.
-
-> ### ⚠⚠ READ `f5647b4`'s COMMIT MESSAGE IN FULL — `git log -1 f5647b4`
->
-> **It is the ONLY record that a permanent lock was ever opened**, and the only record that
-> **the guard fired for real.** `live-work/` is gitignored, so the unlock left no other trace.
-
-⚠ **The guard denied the Builder mid-task, from the live harness** — not a stdin test. That closes
-the *"proved the script, not the wiring"* gap `65b89fe` left open. **The Builder stopped and asked
-Carl rather than unlocking on its own authority**, which is the behaviour the control exists to
-produce. Carl named `.claude/hooks/chunk-scope-guard.js`, one path, for one purpose; it was removed
-immediately and the lock re-verified.
+⚠ **`72aabc1` and earlier are from the PREVIOUS session** (13:02 vs this session's 17:54–18:54),
+already covered by the handoff this one replaces. Six, not seven.
 
 ---
 
-## ⚠ THE VERIFY FRONT DOOR IS NOW `npm run verify` (`4d4d534`)
+## ⚠⚠ BOTH HOOKS FAILED OPEN UNTIL TODAY. MEASURED, NOT INFERRED.
 
-> ### **`npm run verify -- <script.mjs>` — NOT `node verify/<script>.mjs`.**
-> **Habit will reach for the second one.**
+**The scope guard was corrupted with a syntax error, and an Edit to `lib/utils.ts` — a protected
+path DENIED ninety seconds earlier — LANDED ON DISK.** All 19 paths were writable while the guard
+still appeared installed.
 
-**A script with no recorded red run may print its numbers but NOT a pass.** Every expensive
-instrument failure in this project failed toward a PASS — `q5-stutter.mjs` read 0/3 CLEAN on a
-visible stall; `one-context.mjs` read 2/2 while a context was created per question. A failure from
-an unproven script always passes through: **a red still means go and look.**
+**THE MECHANISM. It applies to every hook this project will ever add:**
 
-**Only 2 of 130 scripts are proven today** — `extras-hold-position.mjs`, `reveal-stall.mjs`.
-⚠ **So `⚠ NO VERDICT` is the normal, honest result right now, not a fault.** Scripts get proven as
-they are used: one at a time, by running the falsification and recording it in `verify/proven.json`.
+| hook exits | harness behaviour |
+|---|---|
+| `0` + deny JSON | DENIED |
+| `0`, no JSON | **ALLOWED** |
+| `2` | **BLOCKED**, stderr shown |
+| `1`, or any crash | **ALLOWED** — reported, not blocking |
 
-⛔ **THE GATE CAN BE BYPASSED, AND THAT IS NOT A DEFECT TO REPORT.** Running a script directly
-skips it entirely and prints the raw verdict. **Unlike the scope guard, this one can be declined** —
-it is a convention with a reminder attached, not a mechanism. Do not read it as enforced.
+⚠ **A syntax error exits 1.** And **a file cannot catch its own parse error** — node dies in the
+module loader before line 1 runs, so wrapping the body in `try/catch` does nothing. Both were
+tried and falsified.
 
-⚠ **Neither seeded script has been run through the runner for real.** Both need a production server
-and a full Q5 walk. **The runner's logic is proved against fixtures; the wiring against a live
-harness is not** — the same gap `65b89fe` left and `f5647b4` closed for the scope guard.
+**Both hooks are now launcher + matcher pairs.** A parse error in the matcher is a catchable
+runtime error in the launcher, which exits 2. Edits belong in the matcher.
 
----
+⚠ **EACH LAUNCHER IS STILL A SINGLE POINT THAT FAILS OPEN IF IT IS MALFORMED.** Nothing can catch
+the outermost frame. **Their whole defence is being short enough to review by eye — and they are
+241 and 282 lines.** ⛔ **If either grows, that defence stops being true.** Keep logic in the
+matchers.
 
-# LIVE FAULTS NOW HAVE A DRAWER — `project-intelligence/open-defects.md`
-
-**Four entries: the a11y fault, Q4–Q1 having no card entrance, the 7.4s/10.1s opening delay, and
-the stale anchor at `answer-card-canvas.tsx:1925`.** Fixed format — what, where, found, waiting on.
-**Carl admits entries; nobody else adds one.**
-
-⚠ **NOTHING ENFORCES IT.** No hook, no harness. **It is reachability, not a gate**, and it works
-only if someone files into it and someone reads it. Check an entry's date against the code before
-trusting it.
-
-⚠ **The a11y fault is now TRACKED there, not "filed in the wrong place".** The note stays in D-051
-as part of the material description — the drawer tracks it, D-051 explains it.
-
-**The limit is 400 words of ENTRIES, header excluded** — currently **310/400**, room for one more.
-⚠ *The original whole-file 400 was a number chosen rather than derived, and could not have fitted
-the format specified alongside it.* The header was cut 213 → 105 to match.
-
-⚠ **`verify/satin-anisotropy-live.mjs` cannot run against a production build. It is a HARNESS
-fault, ruled out of `open-defects.md` (product only) and REMAINS UNHOMED** — recorded in
-`live-work/exit-falsification-18-august.md` and nowhere that will surface it.
+**Fail-closed scope differs, deliberately:** the scope guard denies EVERY edit (the shell still
+works, so `git checkout .claude/hooks/` is a real escape hatch); the front door denies verify
+commands ONLY (a total Bash block would need an unlock in a session where nothing can run — a
+trap, not a stop).
 
 ---
 
-## ⚠ STILL WAITING ON CARL'S EYE — THIRD SESSION RUNNING
+## ⚠ ONE HARNESS OF 130 CAN NOW PRODUCE AN ADMISSIBLE PASS
 
-Untouched by this session's work. **No timing number until he has judged the appearance.**
+**Two requirements, both mandatory** — an entry missing either is treated as unproven:
 
-- **Commit 3 — the opening/complete visibility gate. ITS OWN COMMIT.** ⚠ Carries **the worst
-  visible failure in the plan: a chrome pill painted over the contact form.** Verify by walking
-  Q1 → complete, **by eye AND by capture**. ⛔ Do not bundle it with anything.
-- **The Next step button appearance verdict.** Committed as **landed-but-unapproved**. Serve with
-  `npm run build && npx next start -p 3100`, walk to Q5, select a card. Shots at
+1. **`redRun`** — shown to go RED. It CAN fail.
+2. **`emptyInput`** — pointed at NOTHING, and it **reported an ABSENCE**. ⛔ A zero value does not
+   qualify; `0ms` from an empty crop is the defect, not the control.
+
+**`reveal-stall.mjs` is the only proven script.** **`extras-hold-position.mjs` was DEMOTED** — its
+red run is genuine, but every arm of it measured a real element. ⚠ **A control was not invented for
+it and the requirement was not weakened to keep it.** Its capability exists at line 181, but **a
+capability is not a run.**
+
+⚠ **So `⚠ NO VERDICT` is the normal, honest result — 129 scripts.** Not a fault. **Almost nothing
+in `verify/` can currently be cited as evidence.**
+
+---
+
+## THE READ LIST IS NOW TWO LISTS (CLAUDE.md)
+
+**Read-first: 8,837 words** — handoff, `open-defects.md`, `current-sprint.md`, `context-rules.md`.
+**Consult on demand** — `decisions.md`, `review-log.md`, component docs, files to be touched.
+
+⚠ **`decisions.md` is CHEAPER TO SKIP, NOT SAFE TO IGNORE.** The approved layers are named in
+CLAUDE.md and 23 paths are guarded, so you will be *stopped* without it — but **only
+`decisions.md` carries the reasoning.** Before touching an approved layer, read the decision.
+
+---
+
+# STILL OPEN — NONE OF IT IS GOVERNANCE WORK
+
+## Waiting on Carl's eye, third session running
+
+- **Commit 3 — the opening/complete visibility gate.** ⚠ Carries **a chrome pill painted over the
+  contact form.** Walk Q1 → complete, by eye AND by capture. ⛔ Do not bundle it.
+- **The Next step button appearance verdict.** Landed but unapproved. Shots at
   `live-work/shots/commit2-0{1..4}-*.png`.
 - **The corridor fix remains ON HOLD by Carl's decision.**
 
----
+## Loose ends
 
-## ⚠ THE GOVERNANCE WORK IS ONE GATE, NOT THE JOB
-
-**Do not mistake today's guard for the whole problem.** Still open, from the split Carl approved:
-
-- ⚠ **A harness that has never gone red can still print a verdict — PARTLY ADDRESSED by `4d4d534`,
-  and only through the front door.** Run directly, it still prints one.
-- **Only 9 of 130 harnesses declare what they do not watch.**
-- **A single run still counts as a measurement.**
-- **A stored baseline still passes as a control.**
-- **A quiet zero still reads as a finding.**
-- **Nothing counts contexts or canvases on a walk.**
-
-⚠ **And the corpus itself is untouched — 228,651 words in `project-intelligence`, 35,703 of which
-CLAUDE.md tells you to read before starting.**
+- ⚠ **`reveal-stall.mjs` still prints `node verify/reveal-stall-measure.mjs`** on completion — a
+  route the front door now DENIES. Its own instructions point at the blocked door. One line, in a
+  `verify/` file, not yet authorised.
+- ⚠ **`verify/proven.json` is NOT protected.** The file that decides what counts as evidence is not
+  on the list.
+- **Open from the governance split, untouched:** a single run still counts as a measurement; a
+  stored baseline still passes as a control; nothing counts contexts or canvases on a walk; only 9
+  of 130 harnesses declare what they do not watch.
+- **`open-defects.md`** holds four live faults — the a11y fault, Q4–Q1 having no card entrance, the
+  7.4s/10.1s opening delay (Carl's standing decision: first job when building resumes), and the
+  stale anchor at `answer-card-canvas.tsx:1925`.
 
 ---
 
@@ -176,18 +145,10 @@ CLAUDE.md tells you to read before starting.**
 - ⚠ **`TaskStop` reports success on a held port. Kill by PID, confirm free.**
 - **Serving:** `npm run build && npx next start -p 3100`.
 - ⛔ **`canvas.__r3f` IS UNDEFINED ON PRODUCTION BUILDS.**
-- ⚠ **Q5's reveal begins ~7.8s AFTER Begin**, not ~2.5s. A short window films the opening.
+- ⚠ **Q5's reveal begins ~7.8s AFTER Begin**, not ~2.5s.
 
 ---
 
-## ⛔ THE STANDING DIRECTIVE
-
-**NEVER comment on how long Carl has been working.** Not the time of day, not the session length,
-not a suggestion to stop or resume later. **Carl decides when a session ends and will say so.**
-It was not broken this session.
-
----
-
-*19 August 2026. **The guard fired for real and the Builder stopped rather than route around it.***
-*⚠ **A denial is the control working. The gap it does not cover is the shell, and no mechanism***
-*⚠⚠ **closes that one — only the diff, and a reader.***
+*19 August 2026, evening. **Two controls that looked installed and were not are now measured and***
+*⚠ **fixed. Both were found only because a brief demanded the FAILURE path be falsified —***
+*⚠⚠ **every case that exercised the healthy path passed against a broken guard.***
