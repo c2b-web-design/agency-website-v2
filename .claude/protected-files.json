@@ -21,10 +21,30 @@
     "Repo-root-relative, forward slashes.",
     "",
     "⚠ IF THIS FILE IS MISSING, UNREADABLE OR MALFORMED THE HOOK DENIES EVERY EDIT.",
-    "That is deliberate. A silent allow is what this file exists to remove."
+    "That is deliberate. A silent allow is what this file exists to remove.",
+    "",
+    "⚠ THIS LIST NOW PROTECTS ITSELF — ON THE ORDINARY EDIT PATH ONLY.",
+    "'.claude/protected-files.json' is listed in its own \"protected\" array, so",
+    "Edit/Write/NotebookEdit against it is DENIED like any other locked file. An",
+    "unlock naming this exact file is the only way to change it through that path.",
+    "Removing an entry to reach the file it defended is no longer a legal edit,",
+    "because removing it requires editing this file, which is itself denied.",
+    "",
+    "⚠ BUT THE HOOK RUNS ON Edit/Write/NotebookEdit AND NOTHING ELSE. Bash writes",
+    "by redirect, sed -i, mv, cp and rm never reach it, so this file — and every",
+    "path it lists — can still be rewritten or deleted from a shell. The",
+    "self-protection closes the ordinary edit path, not the shell. What catches a",
+    "shell write is the diff, because this file is tracked: a reviewer, not a",
+    "mechanism. Do not read the lock as tamper-proofing.",
+    "",
+    "⚠ EDITING THIS FILE LEGITIMATELY: ask Carl to name it, add",
+    "'.claude/protected-files.json' to \"unlocked\" in live-work/chunk-scope.json,",
+    "make the change, then remove the unlock. Adding a NEW path to the list is",
+    "itself a change to this file and needs that same unlock."
   ],
 
   "protected": [
+    ".claude/protected-files.json",
     ".claude/hooks/chunk-scope-guard.js",
     ".claude/settings.json",
 

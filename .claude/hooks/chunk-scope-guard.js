@@ -56,10 +56,18 @@
  *     boundary recorded for the Architect seat in
  *     ai-system/architect-settings.reference.json.md. A protected file can
  *     still be overwritten from a shell.
- *   - ⚠ ITS OWN LIST. .claude/protected-files.json is NOT self-protecting: an
- *     agent can remove an entry and then edit the file that entry defended,
- *     and the removal is a legal edit. What catches that is the diff, because
- *     the file is tracked — a reviewer, not a mechanism.
+ *   - ⚠ A SHELL WRITE, INCLUDING ONE TO ITS OWN LIST. The hook is registered on
+ *     Edit/Write/NotebookEdit only, so .claude/protected-files.json now
+ *     protects itself on that path — it lists itself, and changing it requires
+ *     an unlock naming that exact file, so removing an entry to reach the file
+ *     it defended is no longer a legal edit. That closes the ordinary edit
+ *     path and NOT the shell: `Bash` redirect, `sed -i`, `mv`, `cp` and `rm`
+ *     bypass the hook entirely and can still rewrite or delete the list and
+ *     everything on it. The same behavioural-not-enforced boundary recorded
+ *     for the Architect seat in
+ *     ai-system/architect-settings.reference.json.md. What catches a shell
+ *     write is the diff, because the file is tracked — a reviewer, not a
+ *     mechanism. Do not read the lock as tamper-proofing.
  *   - ⚠ A FILE NOBODY ADDED. Protection is per named path. A new file, or a
  *     renamed one, is unprotected until someone lists it.
  * Those need judgement and stay with checkpoint review and with Carl.
