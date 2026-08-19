@@ -1,0 +1,50 @@
+{
+  "_comment": [
+    "PERMANENTLY PROTECTED FILES — C2B Web Design.",
+    "",
+    "Read by .claude/hooks/chunk-scope-guard.js on EVERY invocation. A path listed",
+    "here is DENIED to Edit/Write/NotebookEdit at all times, independent of any",
+    "chunk scope file. This list does not expire and is not opt-in.",
+    "",
+    "WHY THIS FILE IS TRACKED AND live-work/chunk-scope.json IS NOT: live-work/ is",
+    "gitignored scratch, so nothing in it can be a permanent record. Protection that",
+    "depended on someone remembering to write a scope file at the start of every",
+    "chunk was a remembered step — the exact failure mode this project removes.",
+    "This file is committed and reviewable; changing it shows up in a diff.",
+    "",
+    "THE ONLY WAY PAST A LOCK: Carl names the specific file, and it is added to",
+    "\"unlocked\" in project-intelligence/live-work/chunk-scope.json for that chunk.",
+    "NEVER a folder, never a glob — the unlock is per file, by name, every time.",
+    "",
+    "PATHS ONLY. No globs, no trailing-slash folder prefixes. A folder pattern would",
+    "lock files nobody has reviewed and would grow silently as the folder grows.",
+    "Repo-root-relative, forward slashes.",
+    "",
+    "⚠ IF THIS FILE IS MISSING, UNREADABLE OR MALFORMED THE HOOK DENIES EVERY EDIT.",
+    "That is deliberate. A silent allow is what this file exists to remove."
+  ],
+
+  "protected": [
+    ".claude/hooks/chunk-scope-guard.js",
+    ".claude/settings.json",
+
+    "components/enquiry/contact-field-canvas.tsx",
+    "components/enquiry/contact-field-geometry.ts",
+    "components/enquiry/contact-field-inputs.tsx",
+    "components/enquiry/contact-field-light-rig.tsx",
+    "components/enquiry/contact-field-mesh.tsx",
+
+    "components/enquiry/answer-card-glass.ts",
+    "components/enquiry/answer-card-mesh.tsx",
+    "components/enquiry/answer-card-backdrop.tsx",
+    "components/enquiry/answer-card-backdrop-geometry.ts",
+    "components/enquiry/nextstep-geometry.ts",
+
+    "app/page.tsx",
+    "app/layout.tsx",
+    "components/layout/container.tsx",
+    "components/layout/site-header.tsx",
+    "components/ui/button.tsx",
+    "lib/utils.ts"
+  ]
+}
