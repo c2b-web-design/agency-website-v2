@@ -49,15 +49,17 @@ protects it is the appearance gate and **Carl's eye** — not a path list.
 
 ---
 
-## THIS SESSION'S THREE COMMITS
+## THIS SESSION'S FIVE COMMITS
 
-**Branch `fix/q5-stall-and-label-colour`, head `f5647b4`. Tree clean, pushed, verified by
-`git ls-remote`.** No product code touched in any of the three. Servers: none. Ports 3000/3100 free.
+**Branch `fix/q5-stall-and-label-colour`, head `4d4d534`. Tree clean, pushed, verified by
+`git ls-remote`.** No product code touched in any of the five. Servers: none. Ports 3000/3100 free.
 
 ```
 f531d9d  docs  the card face is satin, not glass — D-051
 65b89fe  feat  the permanent list, fail-loud when missing or malformed
 f5647b4  feat  the list protects itself on the edit path
+f2a1710  docs  this handoff
+4d4d534  feat  the verify verdict gate
 ```
 
 - **`f531d9d`** — the material changed on **9 August (`1c9b8d7`)** and **the record was ten days
@@ -77,6 +79,30 @@ the *"proved the script, not the wiring"* gap `65b89fe` left open. **The Builder
 Carl rather than unlocking on its own authority**, which is the behaviour the control exists to
 produce. Carl named `.claude/hooks/chunk-scope-guard.js`, one path, for one purpose; it was removed
 immediately and the lock re-verified.
+
+---
+
+## ⚠ THE VERIFY FRONT DOOR IS NOW `npm run verify` (`4d4d534`)
+
+> ### **`npm run verify -- <script.mjs>` — NOT `node verify/<script>.mjs`.**
+> **Habit will reach for the second one.**
+
+**A script with no recorded red run may print its numbers but NOT a pass.** Every expensive
+instrument failure in this project failed toward a PASS — `q5-stutter.mjs` read 0/3 CLEAN on a
+visible stall; `one-context.mjs` read 2/2 while a context was created per question. A failure from
+an unproven script always passes through: **a red still means go and look.**
+
+**Only 2 of 130 scripts are proven today** — `extras-hold-position.mjs`, `reveal-stall.mjs`.
+⚠ **So `⚠ NO VERDICT` is the normal, honest result right now, not a fault.** Scripts get proven as
+they are used: one at a time, by running the falsification and recording it in `verify/proven.json`.
+
+⛔ **THE GATE CAN BE BYPASSED, AND THAT IS NOT A DEFECT TO REPORT.** Running a script directly
+skips it entirely and prints the raw verdict. **Unlike the scope guard, this one can be declined** —
+it is a convention with a reminder attached, not a mechanism. Do not read it as enforced.
+
+⚠ **Neither seeded script has been run through the runner for real.** Both need a production server
+and a full Q5 walk. **The runner's logic is proved against fixtures; the wiring against a live
+harness is not** — the same gap `65b89fe` left and `f5647b4` closed for the scope guard.
 
 ---
 
@@ -111,7 +137,8 @@ Untouched by this session's work. **No timing number until he has judged the app
 
 **Do not mistake today's guard for the whole problem.** Still open, from the split Carl approved:
 
-- **A harness that has never gone red can still print a verdict.**
+- ⚠ **A harness that has never gone red can still print a verdict — PARTLY ADDRESSED by `4d4d534`,
+  and only through the front door.** Run directly, it still prints one.
 - **Only 9 of 130 harnesses declare what they do not watch.**
 - **A single run still counts as a measurement.**
 - **A stored baseline still passes as a control.**
