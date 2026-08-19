@@ -139,7 +139,32 @@ which broke a live file-discovery regex). **Both were caught only by GREPPING TH
 - **Commit 3 — the opening/complete visibility gate.** ⚠ Carries **a chrome pill painted over the
   contact form.** Walk Q1 → complete, by eye AND by capture. ⛔ Do not bundle it.
 - **The Next step button appearance verdict.** Shots at `live-work/shots/commit2-0{1..4}-*.png`.
+  ⚠ **STILL NOT GIVEN.** Carl walked the build live on 19 August but did **not** state an
+  appearance verdict. Do not read the observations below as one.
 - **The corridor fix remains ON HOLD by Carl's decision.**
+
+## ⚠ CARL'S LIVE WALK, 19 August, build `8527f17` — OBSERVATIONS, NOT APPROVALS
+
+⛔ **NONE OF THIS IS AUTHORISED WORK. Nothing here is to be fixed.** Recorded so it is not lost;
+Carl decides what becomes a chunk. No cause or fix is recorded, because none was asked for.
+
+1. **No visible stall on the text reveal, by eye, on a current build.**
+   ⚠ **This is an OBSERVATION, NOT the freeze being resolved.** It varies **40–640ms** on the
+   record, so **one clean walk is not proof.** The band/tolerance/window fault above still stands.
+
+2. **HOVER STATE, COSMETIC.** At rest the answer text is white and brightens as the light passes
+   over — **as expected.** On hover the text turns **teal, but not strongly enough: only just
+   distinguishable from the white.**
+
+3. **TIMING, after Q1.** "Understood" and its subtext reveal and stay on screen while the q+a fades
+   out; the four client-info cards then reveal sequentially in four beats. **"Understood" fades out
+   a little late.** ⚠ **Carl's stated ideal: a FIFTH beat, on which "Understood" begins its fade,
+   with the send button fading in after that.**
+
+4. ⚠⚠ **THE ONE TO CARRY FORWARD.** After several walks, some questions' reveal **"didn't feel
+   right — not a stall, just wasn't looking as smooth."** **Intermittent** — present on some walks,
+   not others. ⛔ **Carl is DEFERRING judgement to a fresh morning session** rather than deciding it
+   late at night.
 
 ## Loose ends
 
