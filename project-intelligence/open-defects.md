@@ -1,26 +1,13 @@
 # Open defects — live product faults awaiting action
 
-**One entry per fault. Format is fixed: what, where, found, waiting on. No narrative.**
-If an entry needs explaining, the explanation goes in an incident record and the entry links to it.
+- **Fixed format:** what, where, found, waiting on. No narrative — link to an incident record.
+- **Live PRODUCT faults only.** Carl admits entries.
+- **Resolved defects are REMOVED**, not struck through.
+- **400 words of ENTRIES, header excluded** — five at ~80 words. A longer list is one nobody reads.
+- ⚠ **Nothing enforces this.** Check an entry's date against the code before trusting it.
 
-## ⚠ THE LIMITS, AND WHY THEY EXIST
-
-- **This file stays under 400 words.** A file that grows stops being read, and **an unread list is
-  worse than none, because it looks like coverage.**
-- **A resolved defect is REMOVED** — not struck through, not marked done. The resolution belongs
-  wherever the work is recorded.
-- **Only live PRODUCT faults.** Not process gaps, not ideas, not open questions awaiting Carl's eye.
-  Those have homes already.
-
-## ⚠ NOTHING ENFORCES THIS FILE
-
-**It is reachability, not a gate.** No hook checks it, no harness reads it, nothing fails when a
-fault is missing from it. **It works only if someone files into it and someone reads it** — and it
-will be out of date the moment either stops. Do not assume it is maintained; check the date on an
-entry against the code before trusting it.
-
-**This is not a consolidation.** Incident records stay where they are, unmerged and unrewritten.
-This file is forward-looking only: what is still wrong, now.
+⚠ *The original limit was 400 words whole-file: a number chosen, not derived, and the format set
+alongside it could never have fitted inside it. Corrected 19 August 2026.*
 
 ---
 

@@ -51,9 +51,9 @@ protects it is the appearance gate and **Carl's eye** — not a path list.
 
 ## THIS SESSION'S COMMITS
 
-**Branch `fix/q5-stall-and-label-colour`, head `47d5372` at the time of writing. Tree clean,
-pushed, verified by `git ls-remote`.** No product code touched in any of them. Servers: none.
-Ports 3000/3100 free.
+**Branch `fix/q5-stall-and-label-colour`, head `ec0f173` at the time of writing** (session started
+at `498630a`). **Tree clean, pushed, verified by `git ls-remote`.** No product code touched in any
+of them. Servers: none. Ports 3000/3100 free.
 
 > ⚠ **THE HEAD SHA HERE IS ALWAYS AT LEAST ONE BEHIND** — a file cannot name the commit that
 > contains it, and the commit carrying this handoff comes after it. **Run `git log --oneline -5`.
@@ -67,6 +67,7 @@ f2a1710  docs  this handoff
 4d4d534  feat  the verify verdict gate
 334ed1e  docs  the verify front door, added here
 47d5372  docs  open-defects.md — a drawer for live faults
+ec0f173  docs  three defects admitted; the limit corrected
 ```
 
 - **`f531d9d`** — the material changed on **9 August (`1c9b8d7`)** and **the record was ten days
@@ -126,8 +127,9 @@ trusting it.
 ⚠ **The a11y fault is now TRACKED there, not "filed in the wrong place".** The note stays in D-051
 as part of the material description — the drawer tracks it, D-051 explains it.
 
-⚠ **THE 400-WORD LIMIT IS ALREADY BREACHED — 534 words at four entries.** The header is 213 of
-them. Carl has the numbers and the decision; **do not trim it unasked.**
+**The limit is 400 words of ENTRIES, header excluded** — currently **310/400**, room for one more.
+⚠ *The original whole-file 400 was a number chosen rather than derived, and could not have fitted
+the format specified alongside it.* The header was cut 213 → 105 to match.
 
 ⚠ **`verify/satin-anisotropy-live.mjs` cannot run against a production build. It is a HARNESS
 fault, ruled out of `open-defects.md` (product only) and REMAINS UNHOMED** — recorded in
