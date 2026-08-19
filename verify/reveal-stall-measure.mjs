@@ -53,6 +53,25 @@ import { statSync } from "node:fs";
 // Newest batch directory containing run films. ⚠ Falls back to ROOT itself so a
 // pre-batch layout (films sitting directly in the root) still measures rather
 // than reporting an empty run.
+//
+// ⚠⚠ SORTS ON MTIME — THE NEWEST FILM IN EACH BATCH — NOT ON THE DIRECTORY NAME.
+//
+// ⛔ THE NAME SORT WAS WRONG AND FAILED SILENTLY, 19 August 2026. It returned
+// `entries.sort()` — a LEXICOGRAPHIC comparison — so a batch called
+// 'falsify-treatment' sorted after EVERY '2026-…' timestamp, because 'f' > '2'.
+// A fresh 5-film run was measured and the measure pass read a stale ONE-FILM
+// falsification directory instead, reporting a clean, plausible distribution
+// from the wrong films while saying nothing about which ones.
+//
+// ⚠ THE NAME SORT ONLY EVER WORKED BY COINCIDENCE — it relied on every batch
+// being named with a sortable ISO timestamp. The moment one was named for what
+// it was ('falsify-baseline', 'commit1-CONTROL', 'step5-post-deletion' — all of
+// which exist here), recency and alphabetical order stopped agreeing. mtime is
+// the quantity that was meant all along: WHEN THE FILMS WERE SHOT.
+//
+// ⚠ Dated from the newest run-NN.webm INSIDE the batch, not the directory's own
+// mtime, which moves when anything is written near it and is the less direct
+// fact. The films are the thing being dated.
 function latestBatch(root) {
   let entries = [];
   try {
@@ -61,10 +80,51 @@ function latestBatch(root) {
       .filter((d) => {
         try { return statSync(d).isDirectory(); } catch { return false; }
       })
-      .filter((d) => readdirSync(d).some((f) => /^run-\d+\.webm$/.test(f)));
+      .map((d) => {
+        let films = [];
+        try { films = readdirSync(d).filter((f) => /^run-\d+\.webm$/.test(f)); } catch { return null; }
+        if (films.length === 0) return null;
+        let newest = 0;
+        for (const f of films) {
+          try { newest = Math.max(newest, statSync(`${d}/${f}`).mtimeMs); } catch {}
+        }
+        return { dir: d, mtime: newest };
+      })
+      .filter(Boolean);
   } catch { return root; }
   if (entries.length === 0) return root;
-  return entries.sort()[entries.length - 1];
+  entries.sort((a, b) => a.mtime - b.mtime);
+  return entries[entries.length - 1].dir;
+}
+
+// Counts batches that actually contain films — the denominator for 'selected
+// automatically', so a reader can see how many candidates the sort chose from.
+function batchCount(root) {
+  try {
+    return readdirSync(root)
+      .map((n) => `${root}/${n}`)
+      .filter((d) => {
+        try { return statSync(d).isDirectory(); } catch { return false; }
+      })
+      .filter((d) => {
+        try { return readdirSync(d).some((f) => /^run-\d+\.webm$/.test(f)); } catch { return false; }
+      }).length;
+  } catch { return 0; }
+}
+
+// ⚠ SAY WHICH FILMS THE NUMBER CAME FROM, EVERY RUN — the general fix, of which
+// the sort was only the specific one. A reader must never have to INFER which
+// batch a distribution was computed from: that inference is what let the
+// wrong-directory read pass unnoticed.
+function batchStamp(dir) {
+  try {
+    const films = readdirSync(dir).filter((f) => /^run-\d+\.webm$/.test(f));
+    let newest = 0;
+    for (const f of films) {
+      try { newest = Math.max(newest, statSync(`${dir}/${f}`).mtimeMs); } catch {}
+    }
+    return newest ? new Date(newest).toISOString().replace("T", " ").slice(0, 19) + " (newest film)" : "unknown";
+  } catch { return "unknown"; }
 }
 
 // ⚠ BATCHES ACCUMULATE — `reveal-stall.mjs` writes each run into its own
@@ -229,16 +289,41 @@ function diff(a, b) {
   return { changed, maxDelta };
 }
 
+// ⚠⚠ WHICH FILMS? SAY IT BEFORE ANYTHING ELSE, INCLUDING ON THE FAILURE PATH.
+// The batch line used to print AFTER discovery, so the one case where the reader
+// most needed to know which directory was read — the empty one — printed the
+// least. A number whose provenance is only inferable is how the wrong-directory
+// read of 19 August went unnoticed.
+const EXPLICIT = Boolean(process.argv[2] && !process.argv[2].startsWith("--"));
+console.error(`
+⚠ REVEAL FREEZE — BATCH: ${DIR}`);
+console.error(`   filmed:   ${batchStamp(DIR)}`);
+console.error(`   selected: ${EXPLICIT ? "EXPLICITLY, from the command line" : "AUTOMATICALLY — newest films by mtime, of " + batchCount(ROOT) + " batches in " + ROOT}`);
+
 const files = readdirSync(DIR).filter((f) => /^run-\d+\.webm$/.test(f)).sort();
+
+// ⚠ AN ABSENCE IS REPORTED AS AN ABSENCE — never as a zero, never as an empty
+// distribution. The quiet-zero rule (verify/proven.json, requirement 2) applied
+// to this script: '0ms because nothing happened' and '0ms because I measured
+// nothing' are the same characters on screen, so this path must not produce a
+// number at all.
 if (files.length === 0) {
-  console.error(`\n⛔ no run-NN.webm in ${DIR} — run verify/reveal-stall.mjs first.\n`);
+  console.error(`
+⛔ NO FILMS FOUND — NOTHING WAS MEASURED. This is an ABSENCE, not a`);
+  console.error(`   result: no distribution is reported, and no 0ms is printed, because`);
+  console.error(`   a zero here would be indistinguishable from a clean run.`);
+  console.error(``);
+  console.error(`   looked in : ${DIR}`);
+  console.error(`   for       : run-NN.webm`);
+  console.error(`   batches   : ${batchCount(ROOT)} directory(ies) containing films under ${ROOT}`);
+  console.error(``);
+  console.error(`   Run verify/reveal-stall.mjs first, or pass a batch path explicitly.
+`);
   process.exit(1);
 }
 
-console.log(`\n⚠ REVEAL FREEZE — measuring ${files.length} films from ${DIR}`);
+console.log(`   films:    ${files.length} (${files[0]} … ${files[files.length - 1]})`);
 console.log(`   channel: decoded PIXELS of the question band (crop ${CROP.w}x${CROP.h} @ ${CROP.x},${CROP.y})`);
-console.log(`   ⚠ NOT hashes (every static frame hashes differently) and NOT file size`);
-console.log(`     (the byte plateau under-reports — it is a floor, not a bound).`);
 console.log(`   ⚠ 40ms quantisation: durations are BOUNDED, not exact.\n`);
 
 if (CALIBRATE) {
