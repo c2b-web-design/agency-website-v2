@@ -46,6 +46,8 @@
   "protected": [
     ".claude/protected-files.json",
     ".claude/hooks/chunk-scope-guard.js",
+    ".claude/hooks/verify-front-door.js",
+    ".claude/hooks/verify-front-door-match.js",
     ".claude/settings.json",
 
     "components/enquiry/contact-field-canvas.tsx",
