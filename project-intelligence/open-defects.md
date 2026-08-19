@@ -31,9 +31,43 @@ This file is forward-looking only: what is still wrong, now.
 - **Where:** `components/enquiry/answer-card-mesh.tsx` (`buildLabelTexture`, the face `map`).
 - **Found:** 2026-08-09, landed in `1c9b8d7`. Recorded in **D-051** (`decisions.md`), which
   describes the material and keeps the note as part of that description.
-- **Waiting on:** Mandatory before these become real controls. Not scheduled. No owner assigned.
+- **Waiting on:** Carl — whether the answer text moves out of the baked texture. A design question,
+  not a bug fix. Not scheduled, no owner.
 
 ---
 
-*Seeded 19 August 2026 with one entry. Candidates for this file exist in the record and are*
-*Carl's to admit — the list was put to him separately, not added here.*
+## ENTRANCE-Q4Q1 — only Q5 gets the card entrance
+
+- **What:** Q4–Q1 have no card entrance. `hostCardsVisible` is stage-derived, and `stage` does not
+  change across a question step, so the entrance gate never flips between Q5 and Q1.
+- **Where:** `components/enquiry/answer-card-canvas.tsx`.
+- **Found:** Predates 2026-08-15. Recorded in
+  `live-work/entrance-work-written-and-unwound-15-august.md` (mechanism already diagnosed there —
+  do not re-derive it).
+- **Waiting on:** Unfixed on purpose for this look. Must not be quietly compensated for.
+
+---
+
+## OPENING-DELAY — Begin is unusable for 7.4s / 10.1s
+
+- **What:** The opening animation runs 7400ms desktop, 10100ms mobile before the Begin button is
+  usable. A CSS delay — measured, not Three.js. Reduced motion is unaffected.
+- **Where:** `components/enquiry/enquiry-opening.tsx`, `app/globals.css`.
+- **Found:** 2026-07-27. Recorded in `live-work/enquiry-opening-timing-reference.md`.
+- **Waiting on:** Carl's standing decision, 27 July — **the first job when building resumes.**
+  Desktop and mobile are separate values and both need an answer.
+
+---
+
+## ANCHOR-STALE — the entrance ladder is unrelated to the text
+
+- **What:** A stale reveal anchor is accepted because the only guards are "is a number" and "is in
+  the past" — a value 8 seconds old satisfies both. Cards enter correctly staggered but unrelated
+  to the text.
+- **Where:** `components/enquiry/answer-card-canvas.tsx:1925`.
+- **Found:** 2026-08-17. Recorded in `live-work/mode-ab-finding-17-august.md`.
+- **Waiting on:** Carl's instruction — **report, do not fix.**
+
+---
+
+*Seeded 19 August 2026. Entries are admitted by Carl only.*

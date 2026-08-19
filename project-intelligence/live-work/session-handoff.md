@@ -49,10 +49,15 @@ protects it is the appearance gate and **Carl's eye** — not a path list.
 
 ---
 
-## THIS SESSION'S FIVE COMMITS
+## THIS SESSION'S COMMITS
 
-**Branch `fix/q5-stall-and-label-colour`, head `4d4d534`. Tree clean, pushed, verified by
-`git ls-remote`.** No product code touched in any of the five. Servers: none. Ports 3000/3100 free.
+**Branch `fix/q5-stall-and-label-colour`, head `47d5372` at the time of writing. Tree clean,
+pushed, verified by `git ls-remote`.** No product code touched in any of them. Servers: none.
+Ports 3000/3100 free.
+
+> ⚠ **THE HEAD SHA HERE IS ALWAYS AT LEAST ONE BEHIND** — a file cannot name the commit that
+> contains it, and the commit carrying this handoff comes after it. **Run `git log --oneline -5`.
+> Do not trust this line.**
 
 ```
 f531d9d  docs  the card face is satin, not glass — D-051
@@ -60,6 +65,8 @@ f531d9d  docs  the card face is satin, not glass — D-051
 f5647b4  feat  the list protects itself on the edit path
 f2a1710  docs  this handoff
 4d4d534  feat  the verify verdict gate
+334ed1e  docs  the verify front door, added here
+47d5372  docs  open-defects.md — a drawer for live faults
 ```
 
 - **`f531d9d`** — the material changed on **9 August (`1c9b8d7`)** and **the record was ten days
@@ -106,16 +113,25 @@ harness is not** — the same gap `65b89fe` left and `f5647b4` closed for the sc
 
 ---
 
-# ⚠⚠ AN OPEN DEFECT IS FILED IN THE WRONG PLACE — CARL DECIDES WHERE IT GOES
+# LIVE FAULTS NOW HAVE A DRAWER — `project-intelligence/open-defects.md`
 
-**The answer card labels are baked into a texture, so the answer text is NOT in the accessibility
-tree.** Real defect, recorded not hidden.
+**Four entries: the a11y fault, Q4–Q1 having no card entrance, the 7.4s/10.1s opening delay, and
+the stale anchor at `answer-card-canvas.tsx:1925`.** Fixed format — what, where, found, waiting on.
+**Carl admits entries; nobody else adds one.**
 
-⛔ **It currently lives inside D-051 — an entry about MATERIAL.** A live defect filed alongside the
-story of something else is **exactly the pattern this session set out to stop.** It needs to become
-a tracked open item somewhere Carl will see it.
+⚠ **NOTHING ENFORCES IT.** No hook, no harness. **It is reachability, not a gate**, and it works
+only if someone files into it and someone reads it. Check an entry's date against the code before
+trusting it.
 
-⛔ **DO NOT FIX IT. DO NOT DECIDE WHERE IT GOES. PUT IT TO CARL.**
+⚠ **The a11y fault is now TRACKED there, not "filed in the wrong place".** The note stays in D-051
+as part of the material description — the drawer tracks it, D-051 explains it.
+
+⚠ **THE 400-WORD LIMIT IS ALREADY BREACHED — 534 words at four entries.** The header is 213 of
+them. Carl has the numbers and the decision; **do not trim it unasked.**
+
+⚠ **`verify/satin-anisotropy-live.mjs` cannot run against a production build. It is a HARNESS
+fault, ruled out of `open-defects.md` (product only) and REMAINS UNHOMED** — recorded in
+`live-work/exit-falsification-18-august.md` and nowhere that will surface it.
 
 ---
 
