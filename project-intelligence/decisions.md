@@ -557,6 +557,20 @@ traceable. **Nothing here is pending, blocked, or awaiting action.**
 **Authority:** Human Founder  
 **Status:** APPROVED — commit 3621997.
 
+> ### ⚠⚠ SUPERSEDED IN PART BY D-051 — THE FACE MATERIAL IS SATIN, NOT GLASS
+>
+> **The face material specified above was discarded on 9 August 2026, commit `1c9b8d7`, on
+> Carl's decision.** The card face is now a satin `MeshPhysicalMaterial` — `transmission: 0`,
+> carried by anisotropy 0.86 and a separate sheen lobe. **See D-051 for what is actually built.**
+>
+> ⚠ **This entry's wording is deliberately unchanged (P4 — dated entries keep their wording).** It
+> remains the correct record of what was approved on 15 June 2026, when the card was a **CSS**
+> element. **Its selected-state provisions are NOT superseded** — the amber top-edge hairline
+> lineage and the filament border (D-029) stand.
+>
+> ⚠ **The record carried the stale material for ten days.** That gap, and why it matters, is the
+> subject of D-051's closing section.
+
 ---
 
 **Amber circuit — attempted and removed (record of previous work):**
@@ -1673,3 +1687,142 @@ Live file backed up to `settings.json.bak-2026-08-13` before editing; JSON valid
 ⚠ **THE ARCHITECT MUST RESTART** for this to take effect — settings load at startup.
 
 **Authority:** Human Founder
+
+---
+
+## D-051 — The Answer Card Face Is Satin, Not Glass — The Record Catches Up
+
+**Date recorded:** 2026-08-19
+**Date the change landed:** 2026-08-09, commit `1c9b8d7`
+**Status:** APPROVED
+**Authority:** Human Founder
+**Supersedes:** D-028's face-material specification. **Resolves D-045 §8**, which put glass under
+review and was never closed in the record.
+
+### The decision
+
+**The enquiry answer card FACE is a satin material.** Carl's reasoning, quoted in the commit that
+made the change and authored by him: *"Glass has been discarded. Reason — it needs a background to
+become truly effective and it could be seen as cliched in 2026."*
+
+**The first half is the load-bearing one: glass is a LENS, and the lockup it refracted went on
+5 August.** With nothing behind it to bend, transmission bought a measured near-nothing — see the
+refraction table at the head of `answer-card-glass.ts`: sub-pixel displacement at the steepest
+point on the face, zero across the whole crown centre under an orthographic camera.
+
+### ⚠ WHAT IS ACTUALLY BUILT — read from the code, 19 August 2026
+
+**Material type: `MeshPhysicalMaterial`** (`FaceMaterial`, `answer-card-mesh.tsx`), one instance
+for the face, with sibling materials for rim, bevel and backdrop. The satin response comes from
+**several lobes working together**, not from one parameter:
+
+| parameter | value | constant | what it does |
+|---|---|---|---|
+| `transmission` | **0** | — | ⚠ **the change itself.** Passed as 0 rather than removed, so the prop's contract is unchanged for the clay/diagnostic path |
+| `metalness` | 0 | — | dielectric, not metal |
+| `roughness` | **0.26** | `SATIN_ROUGHNESS` | the specular tightness |
+| `anisotropy` | **0.86** | `SATIN_ANISOTROPY` | ⚠ **the smear — what makes it satin rather than shiny blue plastic** |
+| `anisotropyRotation` | 0 | `SATIN_ANISOTROPY_ROTATION` | along the card's long axis |
+| `sheen` | **1** | — | enabled outright |
+| `sheenRoughness` | 0.62 | `SATIN_SHEEN_ROUGHNESS` | |
+| `sheenColor` | `#5b9ede` | `SATIN_SHEEN_COLOR` | the near-white peak while the body stays deep blue |
+| `envMapIntensity` | **0.22** × `lightLevel` | `SATIN_ENV_INTENSITY` | low but deliberately not zero — the same rig lights the Next step button under D-045 §10 |
+| body colour | `#0b1f4d` | `SATIN_COLOR` | ⚠ see the albedo note below |
+
+**The two that carry the material:**
+
+⚠ **THE ANISOTROPY IS THE SATIN.** It stretches the specular lobe along the tangent, which
+`convexFaceGeometry` builds along the card's LONG axis — the axis the cylindrical crown does not
+curve on. The result is a band running the card's width, disclosing the curve across its height.
+⚠ **It is INERT without the `tangent` vertex attribute.**
+
+⚠ **THE SHEEN IS A SEPARATE LOBE FROM THE SPECULAR**, and it is what carries the near-white peak
+while the body stays deep blue. `sheenColor` is the light the surface returns at grazing angles —
+the fabric behaviour — where `color` is the albedo underneath it.
+
+⚠ **THE BODY COLOUR IS NOT ON THE MATERIAL WHEN A LABEL IS PRESENT.** `MeshPhysicalMaterial`
+computes albedo as `color * map`. The answer label is the face's `map`, so the satin blue is
+painted as that texture's BACKGROUND and `color` is left at pure white
+(`color={labelMap ? "#ffffff" : SATIN_COLOR}`). A deep-blue `color` would drag near-white glyphs
+down to a dim blue; a white `color` would throw away the body colour everywhere else. One albedo,
+no compromise at either end.
+
+**Reached through `DEFAULT_GLASS_TUNING`** (`answer-card-mesh.tsx`), whose `roughness` key now
+holds `SATIN_ROUGHNESS`. ⚠ **The key was reused rather than renamed so the rig binding, the
+`?roughness=` harness door and every existing sweep keep working — the dial's MEANING changed with
+the material, its identity did not.**
+
+### What else landed in the same commit
+
+Recorded because they are not separable from the material and a reader will meet them together:
+
+- **`LIGHT_LEVEL` 0.35 → 1.1.** ⚠ **This was the real fix for "flat at normal scale."** 0.35 was a
+  GLASS value, tuned when the surface returned almost nothing; on satin it left mean luminance at
+  21.6/255. Carl's symptom was **under-EXPOSURE, not under-resolution.**
+- **The label became part of the face** — drawn into the albedo and mapped onto the UVs added for
+  the anisotropy, after three DOM versions failed. ⚠ **ACCESSIBILITY DEBT, recorded not hidden:
+  the visible answer text is a texture and is not in the a11y tree. Mandatory to fix when these
+  become real controls.**
+- **`FILAMENT_LIGHT_HEIGHT`** is now derived from `CROWN_HEIGHT` rather than typed.
+
+### ⚠ MEASURED BEFORE AND AFTER, NOT ASSERTED
+
+`verify/crown-disclosure.mjs`, quoted from the commit body. **Before:** the short-axis profile was
+a flat 69.5 plateau, a cliff, then flat ~15 — two flat regions with a step, which is the RIM
+against a dead FACE. **The 23.8° crown disclosed NOTHING, because `transmission: 0.97` mixes away
+97% of the diffuse.** After: a smooth arc, `bothSidesFall` yes.
+
+### ⚠⚠ KNOWN MISMATCH — THE FILENAME STILL SAYS GLASS
+
+**`components/enquiry/answer-card-glass.ts` carries the old material in its name and holds the
+satin constants.** So do the `GLASS_*`-prefixed keys inside it and the `glassTuning` /
+`DEFAULT_GLASS_TUNING` identifiers, plus the `glass` boolean that selects the real material over
+the clay diagnostic path.
+
+⛔ **DELIBERATELY NOT RENAMED, and this entry exists so the name does not mislead the next
+reader.** The file is imported by seven modules (`answer-card-canvas.tsx`, `answer-card-mesh.tsx`,
+`nextstep-canvas.tsx`, and four `verify/` harnesses). **A rename is a mechanical change with no
+behavioural payoff.**
+
+⚠ **The `GLASS_*` constants are not all dead** — `GLASS_FILTER_TRANSMITTANCE`,
+`GLASS_FILTER_STRENGTH`, `GLASS_CLEARCOAT` and `GLASS_CLEARCOAT_ROUGHNESS` are still consumed by
+the face; the transmission set (`GLASS_TRANSMISSION`, `GLASS_THICKNESS`, `GLASS_IOR`) no longer
+reaches it. **The name is wrong; the file is not dead.**
+
+### ⚠⚠ WHY THIS ENTRY EXISTS AT ALL — the failure class, not the fact
+
+**The material changed on 9 August. The record did not, for ten days.** D-028 stayed APPROVED with
+no supersede note; CLAUDE.md's approved-layers list kept reading *"Frosted blue glass card material
+(D-028)"*; and the only mention of satin anywhere in `decisions.md` recorded it as a *"leading
+candidate at the close of the session, not chosen."* **All three were true when written. All three
+were false by the time they were next read.**
+
+⚠ **THIS IS THE SAME FAILURE CLASS ALREADY RECORDED IN `context-rules.md` → *Approved work is
+amendable*:** a sentence that was true when written, outliving its subject, then **carried forward
+as fact by the next reader.** D-046/D-048 are the worked case — a decision intact, uncontradicted,
+and unsafe to act on because a fact it relied on had moved.
+
+⚠⚠ **AND IT WAS ABOUT TO BE CARRIED FURTHER.** The approved-layers text was being used to build a
+protected-file list. **The stale sentence would have become a protected description of a material
+that no longer exists** — at which point the error stops being a stale note and starts enforcing
+itself.
+
+⚠ **THE COMPOUNDING DETAIL, worth keeping:** D-045 §8 records that in this codebase **the labels
+name the CSS TECHNIQUE and the shadow stacks describe the OBJECT** — *"the WebGL card went
+transmissive because a Builder read the label."* **`.enquiry-card` was never really describing
+glass.** So "frosted blue glass" was an imprecise name for the CSS card, was then read literally
+into a transmissive WebGL material, and survived in the record for ten days after that material was
+discarded. **The same three words caused a wrong build and then a wrong record.**
+
+### What D-028 keeps
+
+⚠ **D-028's original wording is NOT rewritten** (P4 — dated entries keep their wording). It remains
+the correct record of what was approved on **15 June 2026**, when the card was a **CSS** element:
+gradients, inset shadows and an SVG filament border. **The face material it specifies is superseded
+here. Its selected-state provisions are not** — the amber top-edge hairline lineage and the
+filament border (D-029) are untouched by this entry.
+
+### Files updated in the same change
+
+`decisions.md` (this entry, and a supersede note on D-028), `CLAUDE.md` (the approved-layers line).
+**No product code was changed and no file was renamed.**

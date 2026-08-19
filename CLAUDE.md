@@ -83,7 +83,8 @@ Before significant work, read:
 
 ## Approved layers — locked unless Carl explicitly reopens
 
-- Frosted blue glass card material (D-028)
+- Satin answer-card face material (D-051 — supersedes D-028's frosted blue glass). ⚠ The
+  constants still live in `answer-card-glass.ts`; **the filename is stale, not the file.**
 - Selected-card filament border pattern (D-029)
 - Enquiry corridor and memory rail (D-022, D-023, D-024)
 - Question flow and completion state
