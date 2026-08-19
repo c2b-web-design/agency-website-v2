@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * chunk-scope-guard — PreToolUse hook, C2B Web Design
+ * chunk-scope-guard — PreToolUse hook, C2B Web Design.
+ * THE LAUNCHER. The logic lives in ./chunk-scope-guard-match.js.
  *
  * Denies file edits that fall outside the current chunk's declared scope.
  *
@@ -43,6 +44,58 @@
  * scope file keeps its original fail-open: absent means no chunk is scoped,
  * which is a normal state, not a broken one.
  *
+ * ⚠⚠ WHY THERE ARE TWO FILES — MEASURED, 19 August 2026
+ * ------------------------------------------------------
+ * This guard was ONE file and FAILED OPEN. Measured, not inferred: with a
+ * syntax error appended, an Edit to `lib/utils.ts` — a permanently protected
+ * path DENIED ninety seconds earlier in the same session — LANDED ON DISK.
+ * All 19 protected paths were writable while the guard still appeared
+ * installed, printing a stack trace nobody had to read.
+ *
+ * ⚠ A HOOK BLOCKS ONLY BY EXITING 2. Proved by test, not assumed:
+ *     exit 0 + deny JSON on stdout  → denied, with the reason shown
+ *     exit 0 + no JSON              → ALLOWED
+ *     exit 2                        → BLOCKED, stderr shown as the reason
+ *     any other non-zero (1, crash) → ALLOWED, error reported but not blocking
+ *
+ * A syntax error exits 1. And a try/catch around the body does NOT fix it:
+ * A FILE CANNOT CATCH ITS OWN PARSE ERROR — node dies in the module loader
+ * (`wrapSafe`) before the first line executes. That was tried on the verify
+ * front door and falsified.
+ *
+ * So the matcher is a SEPARATE module, loaded here inside a try/catch. A parse
+ * error there is a runtime error here, and this file exits 2. This file stays
+ * small and stable; edits belong in the matcher.
+ *
+ * ⚠⚠ FAIL-CLOSED HERE IS TOTAL, NOT NARROW — AND THAT DIFFERS FROM THE VERIFY
+ * FRONT DOOR ON PURPOSE
+ * ---------------------------------------------------------------------------
+ * On ANY internal error this hook denies EVERY edit, not just edits to
+ * protected paths.
+ *
+ * The verify front door fails closed NARROWLY, because it guards `Bash`: a
+ * total block there would stop every shell command, and the only repair route
+ * would be the Edit tool against a file on the permanent protected list —
+ * needing an unlock in a session where nothing can run. That is a trap, and a
+ * control that traps people gets switched off.
+ *
+ * ⚠ THIS HOOK HAS NO SUCH TRAP. It guards Edit/Write/NotebookEdit and NOT Bash.
+ * If it breaks, editing stops but THE SHELL STILL WORKS, so recovery is one
+ * ordinary command — `git checkout .claude/hooks/` — with no unlock and no
+ * permission needed. The escape hatch is outside the thing that broke.
+ *
+ * So there is no reason to be clever about which edits to deny. A guard that
+ * cannot read its own rules does not know which paths are protected, and
+ * guessing is exactly the failure that lets a protected file through. It denies
+ * everything and says how to fix it.
+ *
+ * ⚠ WHAT STILL FAILS OPEN, UNAVOIDABLY:
+ *   - ⛔ A SYNTAX ERROR IN *THIS* FILE. It is the outermost frame; nothing can
+ *     catch it. Mitigation is that it is short enough to read at a glance, on
+ *     the permanent protected list, and tracked — a reviewer, not a mechanism.
+ *   - If this file is DELETED, or settings.json stops registering it, nothing
+ *     runs and nothing blocks. A hook cannot defend its own existence.
+ *
  * WHAT IT CANNOT ENFORCE — stated so the gap is not mistaken for covered
  * ------------------------------------------------------------------------
  *   - a coupled value implemented as an independent overlay
@@ -73,19 +126,27 @@
  * Those need judgement and stay with checkpoint review and with Carl.
  */
 
-const fs = require("fs");
-const path = require("path");
+const MATCHER = "./chunk-scope-guard-match.js";
 
-const SCOPE_FILE = path.join(
-  __dirname, "..", "..",
-  "project-intelligence", "live-work", "chunk-scope.json"
-);
+/**
+ * Deny the edit, stating the reason.
+ * ⚠ Exit 2 is the ONLY code the harness treats as blocking — exit 1 and any
+ * crash are NON-BLOCKING and let the edit through. That is the whole reason
+ * this launcher exists.
+ */
+function block(reason) {
+  try {
+    process.stderr.write(reason + "\n");
+  } catch {
+    /* stderr itself failed; the exit code still blocks */
+  }
+  process.exit(2);
+}
 
-// The permanent list. Tracked, committed, always in force.
-const PROTECTED_FILE = path.join(__dirname, "..", "protected-files.json");
-
-const ALLOW = () => process.exit(0);
-
+/**
+ * The ordinary, well-formed denial: a deny decision on a ZERO exit. Used when
+ * the guard is working and has decided the edit is not allowed.
+ */
 function deny(reason) {
   process.stdout.write(JSON.stringify({
     hookSpecificOutput: {
@@ -97,127 +158,84 @@ function deny(reason) {
   process.exit(0);
 }
 
+const ALLOW = () => process.exit(0);
+
+function fixHint(err) {
+  return (
+    `Error: ${err && err.message ? err.message : String(err)}\n\n` +
+    `⚠ THIS GUARD FAILS CLOSED — EVERY edit is denied while it is broken, not ` +
+    `just edits to protected paths. A guard that cannot read its own rules ` +
+    `does not know which paths are protected, and guessing is the failure that ` +
+    `lets a protected file through.\n\n` +
+    `THE SHELL STILL WORKS — this hook guards Edit/Write only, so recovery is ` +
+    `one ordinary command and needs no unlock:\n` +
+    `  git checkout .claude/hooks/chunk-scope-guard.js\n` +
+    `  git checkout .claude/hooks/chunk-scope-guard-match.js\n` +
+    `Check both parse (\`node --check <file>\`) and that .claude/settings.json ` +
+    `still registers the launcher on the Edit|Write|NotebookEdit matcher. ` +
+    `Then tell Carl.`
+  );
+}
+
 let raw = "";
+
+process.stdin.on("error", (err) =>
+  block(
+    `SCOPE GUARD: could not read the hook payload from stdin, so this edit ` +
+      `could not be checked and is BLOCKED.\n\n` + fixHint(err)
+  )
+);
+
 process.stdin.on("data", (c) => (raw += c));
+
 process.stdin.on("end", () => {
-  let input;
   try {
-    input = JSON.parse(raw);
-  } catch {
-    ALLOW(); // unreadable payload is not the Builder's fault
-  }
+    // ⚠ THE POINT OF THE SPLIT: a parse error in the matcher lands HERE, as a
+    // catchable runtime error, instead of killing the process at exit 1.
+    const matcher = require(MATCHER);
 
-  const filePath = input?.tool_input?.file_path;
-  if (!filePath) ALLOW(); // not a file edit
-
-  const repoRoot = path.join(__dirname, "..", "..");
-  const rel = path.relative(repoRoot, filePath).split(path.sep).join("/");
-
-  // Never police files outside the repo, or the scope file itself.
-  if (rel.startsWith("..")) ALLOW();
-  if (rel === "project-intelligence/live-work/chunk-scope.json") ALLOW();
-
-  const matches = (patterns) =>
-    (patterns || []).some((p) => {
-      if (p.endsWith("/")) return rel.startsWith(p);
-      if (p.includes("*")) {
-        const re = new RegExp(
-          "^" + p.split("*").map((s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join(".*") + "$"
-        );
-        return re.test(rel);
-      }
-      return rel === p;
-    });
-
-  // ── THE CHUNK SCOPE, loaded early so an "unlocked" entry can be honoured
-  // against the PERMANENT list below. Absent or malformed leaves `scope` empty,
-  // which is the original fail-open: no chunk scoped is a normal state.
-  let scope = {};
-  try {
-    if (fs.existsSync(SCOPE_FILE)) {
-      scope = JSON.parse(fs.readFileSync(SCOPE_FILE, "utf8")) || {};
+    if (!matcher || typeof matcher.decide !== "function") {
+      block(
+        `SCOPE GUARD: the matcher module did not export decide(), so this edit ` +
+          `could not be checked and is BLOCKED.\n\n` +
+          fixHint(new Error(`${MATCHER} exports were missing or malformed`))
+      );
+      return;
     }
-  } catch {
-    scope = {}; // a malformed scope file must not block all work
-  }
 
-  // ── THE PERMANENT LIST — checked on EVERY invocation, scoped chunk or not.
-  //
-  // ⚠ THIS RUNS BEFORE ANY `scope.active === false` OR ABSENT-SCOPE EXIT.
-  // Both of those are fail-open paths, and reaching one first would let the
-  // permanent list be bypassed by deleting a gitignored scratch file or by
-  // flipping one boolean inside it. Permanent means it does not depend on
-  // live-work/ existing or saying anything in particular.
-  let permanent;
-  try {
-    const parsed = JSON.parse(fs.readFileSync(PROTECTED_FILE, "utf8"));
-    permanent = parsed && parsed.protected;
-    if (!Array.isArray(permanent)) throw new Error("no 'protected' array");
+    let input;
+    try {
+      input = JSON.parse(raw);
+    } catch {
+      // ⚠ ORIGINAL FAIL-OPEN, CARRIED OVER DELIBERATELY: an unreadable payload
+      // is not the Builder's fault, and this predates the split. It is a real
+      // gap — recorded here rather than quietly changed, because widening the
+      // guard's behaviour is not what this chunk was authorised to do.
+      ALLOW();
+      return;
+    }
+
+    const verdict = matcher.decide(input);
+
+    if (verdict && verdict.action === "allow") ALLOW();
+
+    if (verdict && verdict.action === "deny" && typeof verdict.reason === "string") {
+      deny(verdict.reason);
+      return;
+    }
+
+    // The matcher returned something unrecognised. Do not guess.
+    block(
+      `SCOPE GUARD: the matcher returned an unrecognised result, so this edit ` +
+        `could not be checked and is BLOCKED.\n\n` +
+        fixHint(new Error("decide() returned an unexpected value"))
+    );
   } catch (err) {
-    // ⚠ FAIL LOUD. A silent allow here is the exact defect this list removes:
-    // the hook would go on running, reporting nothing, protecting nothing.
-    deny(
-      `SCOPE GUARD: the permanent protected-files list could not be read, so ` +
-      `NO edit can be allowed.\n\n` +
-      `Expected: .claude/protected-files.json\n` +
-      `Error:    ${err && err.message ? err.message : String(err)}\n\n` +
-      `This hook denies every edit while that file is missing, unreadable or ` +
-      `malformed. That is deliberate — a guard that silently stops guarding ` +
-      `still reads as protection, which is worse than having none.\n\n` +
-      `TO FIX: restore .claude/protected-files.json (it is tracked — ` +
-      `\`git checkout .claude/protected-files.json\` recovers it) and check it ` +
-      `parses as JSON with a "protected" array of paths. Then retry the edit.`
+    // ⚠ ANY failure — including a SYNTAX ERROR in the matcher module — blocks
+    // EVERY edit. This is the fix for the fail-open measured on 19 August 2026.
+    block(
+      `SCOPE GUARD: the guard itself failed, so this edit could not be checked ` +
+        `and is BLOCKED.\n\n` + fixHint(err)
     );
   }
-
-  // An explicit per-file unlock is the ONLY way past a permanent lock, and the
-  // "unlocked" list is matched by exact path — never a folder, never a glob.
-  const unlockedByName = (scope.unlocked || []).includes(rel);
-
-  if (permanent.includes(rel) && !unlockedByName) {
-    deny(
-      `SCOPE GUARD: '${rel}' is PERMANENTLY PROTECTED.\n\n` +
-      `It is listed in .claude/protected-files.json, which is in force at all ` +
-      `times — independent of any chunk scope file, and whether or not a chunk ` +
-      `is currently scoped.\n\n` +
-      `Unlocking it requires CARL naming this specific file: ` +
-      `'${rel}'. Never a folder, never a pattern, never "the enquiry files" — ` +
-      `one named path, for one chunk.\n\n` +
-      `Stop. Explain why the change is needed, state the risk, and ask Carl ` +
-      `before editing (CLAUDE.md, "Approved layers").\n\n` +
-      `If Carl authorises it, add exactly '${rel}' to "unlocked" in ` +
-      `project-intelligence/live-work/chunk-scope.json.`
-    );
-  }
-
-  // ── BELOW HERE: the original per-chunk behaviour, unchanged.
-  if (scope.active === false) ALLOW();
-
-  // Explicitly named approved-foundation files the chunk unlocked.
-  if (matches(scope.unlocked)) ALLOW();
-
-  if (matches(scope.protected)) {
-    deny(
-      `SCOPE GUARD: '${rel}' is an approved foundation layer and this chunk ` +
-      `(${scope.chunk || "unnamed"}) did not unlock it.\n\n` +
-      `Approved layers are locked unless Carl explicitly reopens them ` +
-      `(CLAUDE.md). Stop, explain why the change is needed, state the risk, ` +
-      `and ask Carl before editing.\n\n` +
-      `If Carl authorises it, add the path to "unlocked" in ` +
-      `live-work/chunk-scope.json.`
-    );
-  }
-
-  if (Array.isArray(scope.files) && scope.files.length > 0 && !matches(scope.files)) {
-    deny(
-      `SCOPE GUARD: '${rel}' is outside the declared scope of chunk ` +
-      `'${scope.chunk || "unnamed"}'.\n\n` +
-      `In scope: ${scope.files.join(", ")}\n\n` +
-      `A new need is a new chunk (handoff-protocol.md §2.5). Either finish ` +
-      `this chunk first, or ask Carl to widen the scope — do not widen it ` +
-      `yourself.`
-    );
-  }
-
-  ALLOW();
 });

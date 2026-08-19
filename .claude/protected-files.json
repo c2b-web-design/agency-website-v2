@@ -46,6 +46,7 @@
   "protected": [
     ".claude/protected-files.json",
     ".claude/hooks/chunk-scope-guard.js",
+    ".claude/hooks/chunk-scope-guard-match.js",
     ".claude/hooks/verify-front-door.js",
     ".claude/hooks/verify-front-door-match.js",
     ".claude/settings.json",
