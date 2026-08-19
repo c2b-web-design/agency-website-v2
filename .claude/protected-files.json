@@ -53,6 +53,9 @@
     ".claude/hooks/verify-front-door-match.js",
     ".claude/settings.json",
 
+    "verify/proven.json",
+    "verify/run.mjs",
+
     "components/enquiry/contact-field-canvas.tsx",
     "components/enquiry/contact-field-geometry.ts",
     "components/enquiry/contact-field-inputs.tsx",
