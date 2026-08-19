@@ -44,6 +44,8 @@
   ],
 
   "protected": [
+    "CLAUDE.md",
+
     ".claude/protected-files.json",
     ".claude/hooks/chunk-scope-guard.js",
     ".claude/hooks/chunk-scope-guard-match.js",
