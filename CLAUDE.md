@@ -73,14 +73,45 @@ of its own — it points.
 
 **At the start of every session, check whether `project-intelligence/live-work/session-handoff.md` exists. If it does, read it before anything else** — it carries what the previous session decided, parked and corrected, which the canonical files do not record. **Delete it at the end of the session, once its replacement is written.** It is single-use by design: a stale handoff misleads with confidence, and two handoffs are worse than one. See `ai-system/live-work-protocol.md` §3a.
 
-Before significant work, read:
+**TWO LISTS, NOT ONE — Carl's ruling, 19 August 2026.** The old list was seven items with no
+distinction between them, so everything read as equally mandatory: **35,703 words, of which
+`decisions.md` alone was 20,730.** ⚠ **A list that long is one people either complete once or
+quietly stop completing** — and a rule nobody completes is not a rule, it is a fiction that makes
+the record look safer than it is.
+
+### Read before touching anything — 8,837 words
+
+- `project-intelligence/live-work/session-handoff.md` — **if it exists, read it FIRST.** What the
+  last session decided, parked and corrected. Delete it at the end of the session, once its
+  replacement is written.
+- `project-intelligence/open-defects.md` — live product faults awaiting action
 - `project-intelligence/active-sprints/current-sprint.md` — current scope and blockers
-- `project-intelligence/decisions.md` — approved decisions, implementation patterns, rejected approaches
-- `project-intelligence/open-defects.md` — live product faults awaiting action (under 400 words; nothing enforces it)
-- `project-intelligence/reviews/review-log.md` — visual QA approvals
-- `project-intelligence/ai-system/context-rules.md` — governance rules
-- Relevant component, design, and architecture docs
-- Files to be touched
+- `project-intelligence/ai-system/context-rules.md` — **the RULES.** Rules 1–9, the status system,
+  compression, file integrity, session protocol. ⚠ **Three ⚠⚠ sections (L160–292, 37% of the file)
+  are one-line rules followed by long worked cases.** Read the rule; the case is there for when you
+  need to know why, or when you hit it.
+
+### Consult when the question arises
+
+- `project-intelligence/decisions.md` — **before touching an approved layer, or when you need the
+  reasoning behind one.**
+- `project-intelligence/reviews/review-log.md` — **when you need to know what Carl has approved by
+  eye.**
+- Component, design, and architecture docs — **when working in that component.**
+- Files to be touched — **before touching them.**
+
+⚠ **WHY `decisions.md` NO LONGER NEEDS READING UP FRONT — two mechanisms that did not exist a week
+ago.** Its up-front job was to stop you editing approved work unawares. That job now has holders:
+
+- **CLAUDE.md names the approved layers directly** (the section below), so the list you must not
+  touch is on the page you are already reading.
+- **22 paths are blocked outright by the scope guard**, which denies the edit rather than trusting
+  you to have read about it.
+
+⚠ **This makes it CHEAPER TO SKIP, not safe to ignore.** Neither mechanism carries the *reasoning* —
+why a decision was taken, what was rejected, what it depends on. **The trigger stands: before
+touching an approved layer, read the decision.** The guard tells you to stop; only `decisions.md`
+tells you why, and D-046/D-048 exist because reasoning that was intact still went stale.
 
 ## Approved layers — locked unless Carl explicitly reopens
 
