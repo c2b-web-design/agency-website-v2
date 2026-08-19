@@ -76,6 +76,7 @@ of its own — it points.
 Before significant work, read:
 - `project-intelligence/active-sprints/current-sprint.md` — current scope and blockers
 - `project-intelligence/decisions.md` — approved decisions, implementation patterns, rejected approaches
+- `project-intelligence/open-defects.md` — live product faults awaiting action (under 400 words; nothing enforces it)
 - `project-intelligence/reviews/review-log.md` — visual QA approvals
 - `project-intelligence/ai-system/context-rules.md` — governance rules
 - Relevant component, design, and architecture docs
