@@ -294,4 +294,4 @@ for (let run = 1; run <= RUNS; run++) {
 }
 
 console.log(`\n✅ ${RUNS} films → ${OUT}/run-NN.webm`);
-console.log(`   Now measure them:  node verify/reveal-stall-measure.mjs\n`);
+console.log(`   Now measure them:  npm run verify -- reveal-stall-measure.mjs\n`);
