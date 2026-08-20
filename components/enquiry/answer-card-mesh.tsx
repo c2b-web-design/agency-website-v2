@@ -395,6 +395,11 @@ function FaceMaterial({
     /**
      * The rail's teal as a linear-space colour, tinted onto the glyphs.
      *
+     * ⚠ THIS UNIFORM IS THE RAIL'S TEAL; THE RENDERED GLYPH IS NOT. The mix
+     * below runs at `uTealStrength` 1.7 (Carl, 20 August 2026), which
+     * extrapolates PAST this colour rather than stopping at it. See
+     * `LABEL_TEAL_STRENGTH`.
+     *
      * ⚠ CONVERTED, NOT PASSED RAW. `LABEL_INK_HOVER` is an sRGB string; the
      * fragment shader works in linear space, so handing it the sRGB triple
      * would land a noticeably lighter, flatter teal than the rail's. THREE's
@@ -647,7 +652,9 @@ function FaceMaterial({
          diffuseColor.rgb *= 1.0 + (uInkLift - 1.0) * gGlyphMask;
 
          // The teal, at the glyph's own brightness. uTealStrength scales how
-         // far it travels.
+         // far it travels — and ⚠ IT IS 1.7, SO THIS OVERSHOOTS tealInk rather
+         // than landing on it. mix() does not clamp above 1.0.
+         // ⚠ NO BACKTICKS IN THIS COMMENT — see the block-comment above.
          float liftedLum = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
          vec3 tealInk = uLabelTealInk * liftedLum;
          diffuseColor.rgb = mix(diffuseColor.rgb, tealInk, uHover * gGlyphMask * uTealStrength);
@@ -1434,8 +1441,25 @@ const LABEL_INK_REST = "rgb(255, 255, 255)";
  * Read from `app/globals.css` — `.enquiry-pdepth-1` through `-5`
  * `.enquiry-phrase-answers` all set `color: rgb(160, 220, 218)`. **The depth
  * fade is opacity, applied separately**, so this is the single teal the rail
- * uses at every depth. Echoing it means matching this value exactly; a teal
- * picked by eye would undercut the entire point of the change.
+ * uses at every depth.
+ *
+ * ⚠⚠ THE RENDERED HOVER IS NO LONGER A QUOTATION OF THE RAIL — CARL'S DECISION,
+ * 20 AUGUST 2026. The paragraph above described the intent when this constant
+ * was written, and the sentence that used to follow it — *"echoing it means
+ * matching this value exactly; a teal picked by eye would undercut the entire
+ * point"* — is now FALSE and has been removed rather than left to mislead.
+ *
+ * **This value is still the rail's teal. What reaches the screen is not.**
+ * `LABEL_TEAL_STRENGTH` is 1.7, so the shader extrapolates 70% PAST this colour
+ * (see that constant). Measured settled hover: **79.4% saturation** against the
+ * rail's own 46.2%. Carl judged 1.7 by eye across all five cards, with the light
+ * passing over and after it had moved on, and chose it over the quotation.
+ *
+ * ⚠ SO DO NOT "RESTORE THE MATCH" BY RAISING THIS CONSTANT — it cannot be done.
+ * At strength 1.0 no representable colour reproduces what 1.7 renders: the
+ * equivalent ink needs a NEGATIVE red channel (-0.1024 linear, at every albedo).
+ * Measured, not argued — the closest clamped ink `rgb(0,190,186)` reaches 68.1%
+ * and a maximal `rgb(0,255,250)` only 47.9%, both short of 79.4%.
  */
 const LABEL_INK_HOVER = "rgb(160, 220, 218)";
 
@@ -1532,17 +1556,38 @@ const LABEL_INK_NEUTRAL = 1.0;
 /**
  * How far the hover travels toward the rail's teal — `?tealstrength=`.
  *
- * ⚠ 1.0 MEANS "ALL THE WAY TO THE RAIL COLOUR" and that is the default,
- * because the teal is a QUOTATION of the rail rather than a decorative tint —
- * Carl: *"the same teal that is in the text in the rail system."* Anything
- * below 1.0 is a deliberate softening.
+ * ⚠⚠ 1.7 — CARL'S VALUE, SET BY EYE ON 20 AUGUST 2026. Tested across all five
+ * cards, with the light passing over the text and after it had moved on.
+ *
+ * ⚠ THIS IS AN EXTRAPOLATION, NOT A BLEND, AND THE OLD COMMENT HERE WAS MADE
+ * FALSE BY IT. It used to read *"1.0 MEANS ALL THE WAY TO THE RAIL COLOUR ...
+ * anything below 1.0 is a deliberate softening"* — true of a value that was
+ * capped at 1.0, and misleading the moment it was not. `mix(a, b, t)` is
+ * `a + (b - a) * t`, which does not stop at `b`: at 1.7 it travels **70% BEYOND**
+ * the rail's teal, away from the white it started at.
+ *
+ * ⚠ WHY THE DIAL AND NOT A CORRECTED INK — Carl asked for the ink first, and it
+ * cannot carry this. The equivalent colour at strength 1.0 needs a NEGATIVE red
+ * channel (-0.1024 linear, at every albedo), which no colour can encode.
+ * Measured on the real GPU with a frozen-mask sampler, 402-455 glyph px:
+ *
+ *     strength 1.0, rail teal          27.4%   rgb(122,155,169)
+ *     strength 1.7, rail teal          79.4%   rgb( 31,138,149)   ← Carl's
+ *     strength 1.0, ink rgb(0,190,186) 68.1%   — the clamped equivalent
+ *     strength 1.0, ink rgb(0,255,250) 47.9%   — a maximal cyan
+ *
+ * **Neither ink reaches 79.4%, so the dial is the only route.** See
+ * `LABEL_INK_HOVER` for why the rendered hover is no longer a rail quotation.
+ *
+ * ⚠ VALUES BELOW 1.0 STILL SOFTEN; 1.0 IS NO LONGER A CEILING, ONLY THE POINT
+ * WHERE THE INK ARRIVES EXACTLY AT `LABEL_INK_HOVER`.
  *
  * ⚠ IT EXISTS BECAUSE THE FIRST VERSION UNDERSHOT BADLY. The teal was scaled by
  * the glyph's ACES-crushed luminance, so it arrived at about a quarter of its
  * intended shift — red moved 22 against a target of 78, and Carl saw it: *"The
  * teal colour isnt strong enough."* It is now driven from the LIFTED value.
  */
-const LABEL_TEAL_STRENGTH = 1.0;
+const LABEL_TEAL_STRENGTH = 1.7;
 
 /** Read a positive number from the query string, for the two dials above. */
 function urlNumber(key: string, fallback: number): number {
