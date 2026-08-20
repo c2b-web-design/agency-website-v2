@@ -1932,3 +1932,126 @@ when written and remain true; they do not speak to this.
 ### Files updated in the same change
 
 `decisions.md` (this entry). **No product code was changed.**
+
+---
+
+## D-053 — The Hover Teal Is A Legible State Change, Not A Colour Match
+
+**Date recorded:** 2026-08-20
+**Date the change landed:** 2026-08-20, commit `eba1287`
+**Status:** APPROVED
+**Authority:** Human Founder — **judged by eye**, on all five cards, with the light
+passing over the text and after it had moved on, then re-judged on the baked default.
+
+### The decision
+
+**`LABEL_TEAL_STRENGTH = 1.7`** (`answer-card-mesh.tsx`), raised from 1.0.
+
+⚠ **CARL'S EYE IS THE AUTHORITY FOR THIS VALUE, NOT THE ARITHMETIC.** No measurement
+selected 1.7; he set it with `?tealstrength=` and approved what it looks like. The figures
+below describe what that value renders — they do not justify it.
+
+### ⚠⚠ WHAT THIS SUPERSEDES — the rail quotation, and it was Carl's own instruction
+
+**The hover teal is NO LONGER a quotation of the rail's answer-line teal.**
+
+The original instruction, quoted in place rather than rewritten — Carl, asked which teal:
+
+> *"the same teal that is in the text in the rail system... It is the first teal, the answers
+> lose their opacity as more questions are answered."*
+
+and recorded at the time as *"the exact value is not negotiable: `rgb(160, 220, 218)`"*
+(`live-work/architect-question-hover-teal.md`).
+
+**Carl has now ruled the other way. The goal is a LEGIBLE STATE CHANGE, not a colour match.**
+
+⚠ **BOTH STAND ON THE RECORD AND THE LATER RULING GOVERNS.** This is the *overtaken* case in
+`context-rules.md`, not supersession by error: the earlier instruction was right for what it
+was asked to do, and **is not being called mistaken.** ⛔ **No retrospective entry is written
+for it** — it is quoted here as history, per the no-retroactive-rewriting rule.
+
+⚠ **THE CONSTANT IS STILL THE RAIL'S TEAL. WHAT REACHES THE SCREEN IS NOT.**
+`LABEL_INK_HOVER` remains `rgb(160, 220, 218)`; the shader extrapolates past it.
+
+### Measured — before and after
+
+Frozen-mask sampler, real GPU, production build, pixel count stable within each arm:
+
+| | settled hovered | rendered RGB | px |
+|---|---:|---|---:|
+| **strength 1.0** (the quotation) | **27.4%** | `rgb(122,155,169)` | 402 |
+| **strength 1.7** (Carl's value) | **79.4%** | `rgb(31,138,149)` | 455 |
+
+The rail's own teal is 46.2% saturation, for reference. **The shipped default measures
+identically to `?tealstrength=1.7` — 79.4%, `rgb(31,138,149)`, to the decimal** — so what
+was approved by eye is what is baked in.
+
+### ⚠⚠ WHY THE INK-COLOUR ROUTE IS CLOSED — recorded because it WILL be asked again
+
+**Carl asked for the ink to be corrected instead of the dial raised**, so the file would not
+enforce one value while describing another. **It was tried first and it cannot carry this.**
+
+**`mix(a, b, t)` is `a + (b - a) * t`, and it does not stop at `b`.** At `t = 1.7` the shader
+travels **70% BEYOND** the teal, away from the white it started at. **That is an
+extrapolation, not a blend.**
+
+⛔ **The equivalent ink at strength 1.0 needs a NEGATIVE RED CHANNEL** — `-0.1024` linear, at
+every albedo tested from 0.3 to 2.0. **No colour can encode a negative channel.** Measured,
+not argued:
+
+| ink at strength 1.0 | settled hovered |
+|---|---:|
+| `rgb(0,190,186)` — the clamped equivalent | 68.1% |
+| `rgb(0,255,250)` — a maximal cyan | **47.9% — still 31 points short** |
+
+**So the dial is the only route, and raising the ink cannot restore the match.**
+
+### ⚠ MEASURED CONSEQUENCE — the widened swing, recorded as a fact, NOT a defect
+
+**The saturation swing as the light crosses the label widened from 8.7 points
+(18.7–27.4%) to 21.5 points (57.9–79.4%).** The label changes appearance more as the light
+passes over it than it did before.
+
+⚠ **CARL APPROVED THE LOOK AT 1.7 WITH THE LIGHT MOVING**, so this is a known and accepted
+property, not an open fault. It is recorded so a future reader does not rediscover it as a
+regression.
+
+### ⚠⚠ THE INSTRUMENT HISTORY — the most reusable thing here
+
+**Three instruments measured this hover teal. Two produced confident, plausible, wrong
+numbers.**
+
+| # | what it did | why it was wrong |
+|---|---|---|
+| 1 | sampled the brightest 4% of a crop | it found the **card's RIM**, not the glyphs — near-white, no teal |
+| 2 | gated on **luminance > 120** | as the card brightened, non-teal pixels **crossed the gate** and diluted the mean |
+| 3 | **froze the glyph mask as fixed pixel POSITIONS** | trustworthy — see below |
+
+⚠ **INSTRUMENT 2 IS THE INSTRUCTIVE ONE. It invented a phenomenon.** It reported a settled
+**7.4%** and a "transient that decays within a second" — **neither existed.** The pixel count
+rose 399 → 458 across the frames as the sample grew to include things that were never teal.
+**A true number about the wrong pixels.**
+
+⚠⚠ **AND A FOUR-WAY ATTRIBUTION WAS COMMISSIONED AGAINST THAT FALSE NUMBER.** It was stopped
+**at its control**, which failed to reproduce 7.4% and measured 26.8% twice instead.
+**THE CONTROL INSTRUCTION IS WHAT CAUGHT IT** — without "reproduce the figure before you
+disable anything", four stages would have been disabled to explain a collapse that never
+happened, and one of them would have looked like the answer.
+
+**What makes instrument 3 admissible**, and the pattern worth reusing:
+
+- **The mask is a fixed list of pixel INDICES, computed once and never recomputed.** Membership
+  cannot change when the lighting does. It is also **eroded** to glyph cores, because
+  antialiased rims carry the CARD's colour and made rest and hover read identically.
+- **Negative control** — pointed at an empty region it reports **"NO GLYPHS FOUND ... an
+  ABSENCE, not a zero"** and exits non-zero, with a floor of 100 px.
+- **Red run, both directions** — `?tealstrength=0` collapses the teal, `?tealstrength=4` drives
+  the glyph magenta at G−R **−106**, and the sampler reports each.
+- **Stability** — 402 px identical across 60 frames while luminance swings 29 points.
+
+⛔ **It lives in the scratchpad and is NOT in `verify/`.** It is not a proven instrument under
+`verify/proven.json` and must not be cited as one.
+
+### Files updated in the same change
+
+`decisions.md` (this entry). **No product code was changed** — the code landed in `eba1287`.
