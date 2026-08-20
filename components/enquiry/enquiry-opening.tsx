@@ -119,14 +119,55 @@ const Q5_REVEAL_CLEAR_MS = 1300;
 // beat before it arrives, this number moves on its own and nothing follows it.
 const OPAL_MASKED = false;
 const OPAL_FADE_IN_DURATION_MS = 3000;
-const OPAL_FADE_IN_DELAY_MS = 8600;
 
-// The acknowledgement still tracks the last VISIBLE box, so "Understood." never
-// vanishes underneath something still arriving. This is a genuine constraint
-// rather than a rhythm choice — it is about occlusion, not feel — so it stays
-// derived while the feel-carrying values are hand-entered.
+/**
+ * ⚠⚠ HOW MUCH EARLIER THE COMPLETION TAIL BEGINS — `?acklead=`.
+ *
+ * **A FEEL VALUE, HAND-ENTERED, JUDGED BY EYE. It is not a grid position.**
+ * Carl, 20 August 2026: on screen he sees cards 1 2 3 4 and then the fade
+ * begins, and the fade starts *"roughly 200-300ms later than it should"*.
+ *
+ * ⛔ **NOT A FIFTH BEAT AND NOT A STAGGER CONSTANT.** Carl's instruction of
+ * 30 July still governs — *"break them apart and not have them so reliant on
+ * proportion and ratios... We will judge it by eye and input the numbers."*
+ * This is one number to be moved by his eye, and nothing derives a rhythm
+ * from it.
+ *
+ * ⚠ **250 IS A FIRST PASS, NOT A PROPOSAL** — the midpoint of the range Carl
+ * described, put on screen so he has something to react to. Find the value with
+ * `?acklead=` on a running build (pair it with `?skip=1`, which mounts the
+ * completion state directly), then hand-enter what his eye settles on.
+ */
+const ACK_LEAD_MS = 250;
+
+/**
+ * ⚠ THE 500ms GAP IS EMERGENT AND NOTHING HOLDS IT — so the opal carries the
+ * SAME lead, or the gap widens on its own.
+ *
+ * Between "Understood." finishing and the opal arriving there is a small piece
+ * of dead space. **Carl wants that gap EXACTLY as it is** (20 August 2026). It
+ * is not a constant: it is the difference between two independently entered
+ * numbers, and moving only the acknowledgement would silently stretch it.
+ *
+ * ⚠ **SUBTRACTING THE LEAD HERE IS WHAT KEEPS IT FIXED**, and it is the whole
+ * reason this constant is no longer the bare 8600 it was. The gap stays 500ms
+ * at every value of `ACK_LEAD_MS`.
+ */
+const OPAL_FADE_IN_DELAY_MS = 8600 - ACK_LEAD_MS;
+
+// The acknowledgement tracked the last VISIBLE box so "Understood." never
+// vanishes underneath something still arriving — occlusion, not feel, which is
+// why it is derived while the feel-carrying values are hand-entered.
+//
+// ⚠ IT STILL TRACKS THAT BOX; IT NOW LEADS IT BY `ACK_LEAD_MS`. The occlusion
+// property is UNCHANGED IN KIND, because the guard was never "no box is still
+// fading in" — at the original 0ms lead, boxes 2, 3 and 4 were still arriving
+// when the fade began (86.7% / 70.0% / 53.3% in). What it guarantees is that
+// "Understood." is GONE by the time the last box SETTLES. That still holds:
+// the fade ends at 7850ms, box 4 settles at 8100ms.
 const ACK_FADE_OUT_DURATION_MS = 1400;
-const ACK_FADE_OUT_DELAY_MS = FIELD_ENTRANCE_END_MS - ACK_FADE_OUT_DURATION_MS;
+const ACK_FADE_OUT_DELAY_MS =
+  FIELD_ENTRANCE_END_MS - ACK_FADE_OUT_DURATION_MS - ACK_LEAD_MS;
 
 /**
  * When the ENTIRE completion choreography has cleared — the pre-warm guard's
@@ -360,6 +401,29 @@ export default function EnquiryOpening() {
     const q = new URLSearchParams(window.location.search).get("skip");
     const skip = q !== null && q !== "" && q !== "0" && q !== "false";
     return skip ? "complete" : "opening";
+  });
+  /**
+   * ⚠ THE `?acklead=` DOOR — so Carl can find this value by EYE on a running
+   * build rather than through a rebuild per attempt, the way `?tealstrength=`
+   * was used to settle the hover teal (D-053).
+   *
+   * Pair it with `?skip=1`, which mounts the completion state directly:
+   *   /start?skip=1&acklead=250   ← the shipped default
+   *   /start?skip=1&acklead=0     ← the original, for comparison
+   *
+   * ⚠ READ ONCE, IN STATE. A value re-read per render would be a knob that
+   * appears to work and changes nothing once the animation has started — the
+   * class of fault `answer-card-mesh.tsx` has already been caught by twice.
+   *
+   * ⚠ BOTH TAIL ELEMENTS READ IT, so the 500ms dead-space gap is preserved at
+   * every value. The door is a tuning aid; `ACK_LEAD_MS` is what ships.
+   */
+  const [ackLead] = useState(() => {
+    if (typeof window === "undefined") return ACK_LEAD_MS;
+    const raw = new URLSearchParams(window.location.search).get("acklead");
+    if (raw === null) return ACK_LEAD_MS;
+    const n = Number(raw);
+    return Number.isFinite(n) && n >= 0 ? n : ACK_LEAD_MS;
   });
   const [activeQ, setActiveQ] = useState(5);
   const [memory, setMemory] = useState<MemoryItem[]>([]);
@@ -2786,7 +2850,7 @@ export default function EnquiryOpening() {
                 ...(reducedMotion
                   ? undefined
                   : {
-                      animation: `eq-understood-fade-out ${ACK_FADE_OUT_DURATION_MS}ms linear ${ACK_FADE_OUT_DELAY_MS}ms forwards`,
+                      animation: `eq-understood-fade-out ${ACK_FADE_OUT_DURATION_MS}ms linear ${ACK_FADE_OUT_DELAY_MS + ACK_LEAD_MS - ackLead}ms forwards`,
                     }),
               }}
             >
@@ -2816,7 +2880,7 @@ export default function EnquiryOpening() {
                   : reducedMotion
                     ? undefined
                     : {
-                        animation: `eq-completion-item-in ${OPAL_FADE_IN_DURATION_MS}ms linear ${OPAL_FADE_IN_DELAY_MS}ms both`,
+                        animation: `eq-completion-item-in ${OPAL_FADE_IN_DURATION_MS}ms linear ${OPAL_FADE_IN_DELAY_MS + ACK_LEAD_MS - ackLead}ms both`,
                       }
               }
             >
