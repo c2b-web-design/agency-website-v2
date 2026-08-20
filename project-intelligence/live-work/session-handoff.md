@@ -166,6 +166,37 @@ Carl decides what becomes a chunk. No cause or fix is recorded, because none was
    not others. ⛔ **Carl is DEFERRING judgement to a fresh morning session** rather than deciding it
    late at night.
 
+## ⚠ CARL'S FRAME-BY-FRAME REVIEW, 20 August — OBSERVATION, NOT A VERDICT
+
+⛔ **NOT AUTHORISED WORK. No cause is recorded, no fix proposed — none was asked for.**
+Carl reviewed the `2026-08-19T21-37-45` films frame by frame.
+
+5. ⚠⚠ **"Q5" IS ALREADY FULLY PRESENT ON PRESSING BEGIN.** There is no visible wipe across the
+   Q or the 5. **The wipe appears to begin AFTER "Q5", on the question text.**
+
+   ⚠ **THE CONTROL IS WHAT MAKES THIS SOLID.** On the start page, the heading *"Let's understand
+   what your business needs to become."* wipes visibly character by character — the L is fast, but
+   **the travel of the E, T and S is clearly visible**. **Same film, same capture rate, same
+   build.** So the absence of a wipe on "Q5" is **NOT an artefact of the 25fps sampling**: a
+   like-for-like comparison on the same frames shows the wipe where it exists.
+
+## ⚠⚠ INSTRUMENT LIMIT FOUND THIS MORNING — THE FILMS CANNOT ANSWER SMOOTHNESS
+
+**The site paints at the monitor refresh rate (~60fps, ~16.7ms per frame). The reveal-stall films
+capture at 25.04fps (~39.9ms).** The films sample roughly **two frames in five**, and the clocks do
+not align.
+
+- ✅ **CAN show:** whether an element is wiping **at all**, and roughly **where**.
+- ⛔ **CANNOT show:** the **smoothness** of motion. **A wipe that is smooth at 60 will look stepped
+  at 25.**
+
+⚠ **THIS MATTERS BEYOND TODAY: `reveal-stall.mjs`'s 0ms verdicts were drawn from these films, and
+a 25fps film was never able to answer a question about smoothness.**
+
+⚠ **Carl's observation from last night — some questions' reveal "didn't feel right, not a stall,
+just not as smooth" (item 4 above) — is NEITHER CONFIRMED NOR REFUTED by this.** It remains open
+and **needs a 60fps capture to be evidence either way.**
+
 ## Loose ends
 
 - ⚠ **`reveal-stall.mjs`'s band/tolerance/window** — the open fault above. Report-only so far.
