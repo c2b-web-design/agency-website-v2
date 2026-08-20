@@ -1826,3 +1826,109 @@ filament border (D-029) are untouched by this entry.
 
 `decisions.md` (this entry, and a supersede note on D-028), `CLAUDE.md` (the approved-layers line).
 **No product code was changed and no file was renamed.**
+
+---
+
+## D-052 — The Question Number And Its Text Reveal As One Phrase
+
+**Date recorded:** 2026-08-20
+**Status:** APPROVED
+**Authority:** Human Founder
+
+### The decision
+
+**The reveal wipe must cover the question NUMBER and the question TEXT as one phrase.**
+Carl's terms: **one phrase, one wipe.**
+
+*"Q5 What brought you here today?"* reveals as a **single left-to-right wipe** — not a number that
+appears followed by text that wipes.
+
+### ⚠ WHAT WAS FOUND — stated as fact, from the code and the history
+
+**The number has NEVER been inside the wipe.**
+
+`.enquiry-phrase-cue` is a **sibling span**, outside the `clip-path`'s scope
+(`enquiry-opening.tsx`, the `.enquiry-phrase-qrow` block). The wipe is
+`enquiry-mask-reveal-horizontal` — a `clip-path: inset()` animation carried by
+`.enquiry-q-text-reveal`, applied **only** to `.enquiry-phrase-question`
+(`globals.css`). `clip-path` clips the element it is set on and its descendants; a sibling is
+outside its scope by construction. The cue carries **no `animation`, `clip-path` or `mask`**, and
+no ancestor clips either — it simply appears.
+
+⚠ **This has been true since the wipe was written.** At `0a1b04a`, the commit that introduced
+`.enquiry-q-text-reveal`, the number was already a separate sibling outside the revealed element.
+**No commit moved it out** — a search across the last 60 commits to `enquiry-opening.tsx` found no
+version in which the number sat inside the reveal-classed element.
+
+⛔ **THIS IS NOT A REGRESSION. It was never specified, and nothing in the record decided it either
+way.** The behaviour is original, not drifted.
+
+### How it was found
+
+**Frame-by-frame review of the 25fps films** (`verify/out/reveal-stall/2026-08-19T21-37-45`), by
+Carl, 20 August 2026.
+
+⚠ **The control is what makes it solid.** On the same frames, the start-page heading *"Let's
+understand what your business needs to become."* wipes visibly character by character — the L is
+fast, but the travel of the E, T and S is clearly visible. **Same film, same capture rate, same
+build.** So the absence of a wipe on "Qn" is **not an artefact of the 25fps sampling**: a
+like-for-like comparison shows the wipe where it exists.
+
+### ⚠ THE COUNTER-ARGUMENT — recorded because it is Carl's own, and overruled by him
+
+**Commit `b233024` (28 July 2026), authored by Carl, states the opposite rationale:**
+
+> *"Deliberately not full white. **The label is a locator, not content**, and the three-layer
+> hierarchy from D-019 depends on it sitting under the question."*
+
+**Carl has now ruled the other way: the number is part of the phrase, and reveals with it.**
+
+⚠ **Both are recorded, and THE LATER RULING GOVERNS.** The July reasoning was sound when written
+and is not being called mistaken — a design judgement is entitled to change. This is the
+*overtaken*, not *superseded*, case in `context-rules.md`: the earlier statement is not withdrawn,
+it is outranked. ⚠ **Note the two claims are about different properties** — `b233024` argues about
+COLOUR and visual hierarchy; this entry decides REVEAL BEHAVIOUR. They are not in direct
+contradiction, but the "locator, not content" premise points away from this decision, so it is
+recorded rather than left for a future reader to rediscover as an apparent conflict.
+
+### ⚠⚠ CONSTRAINTS THE IMPLEMENTATION MUST NOT BREAK — findings, not instructions
+
+⛔ **The HOW is a separate chunk. No approach is proposed or endorsed here.** These are the
+behaviours the current structure provides, enumerated per CLAUDE.md §5b so that whatever is built
+states how each is preserved.
+
+**1. `aria-hidden="true"` on the cue must survive.**
+The cue span carries `aria-hidden="true"`. **"Q5" read aloud before the question is noise.**
+
+**2. The cue's own colour and letter-spacing rules across SIX corridor depths must survive.**
+`.enquiry-phrase-cue` has distinct `color` and `letter-spacing` at depths 0–5, including
+**`rgb(214, 166, 77)` — the amber at receding depths.** ⚠ The white→gold transition at depth 1+ is
+what marks a question as answered, and **D-029 derives the filament border colour from that gold
+family** — an APPROVED layer.
+
+**3. ⚠⚠ THE CLOCK-ZERO CONTRACT IS THE HIGHEST-RISK ONE.**
+The question span's **`onAnimationStart` publishes the reveal's CLOCK ZERO** (`__revealStart`,
+`__revealStartQ`) and is **a CONTRACT with `answer-card-canvas.tsx`, not a diagnostic** — its own
+comment says so. It fires on `animationName.startsWith("enquiry-mask-reveal")`, and **only the
+active phrase publishes.**
+
+⚠ **Anything that moves where the animation fires puts that contract at risk.** **This is the same
+failure class as the anchor-and-clock defects already on record** — the stale reveal anchor
+(`ANCHOR-STALE`, `open-defects.md`) and the cross-question anchor bleed that made Q4's entrance
+read Q5's clock from 8.2 seconds earlier on 4 of 6 runs.
+
+### Observation — the colour change has no record entry
+
+⚠ **`b233024` is recorded nowhere in `project-intelligence/`.** No `decisions.md` entry, no
+`review-log.md` entry. It lives only in its **commit message and a CSS comment**.
+
+⛔ **Stated as an observation only. No retrospective entry is created for it** — that is Carl's
+call, not a gap to be filled by the Builder.
+
+⚠ The nearest record entries — `decisions.md` D-024 and `review-log.md`, both **2026-06-14** —
+concern **Q label SIZE, not colour**, and predate the colour change by six weeks. They were true
+when written and remain true; they do not speak to this.
+
+### Files updated in the same change
+
+`decisions.md` (this entry). **No product code was changed.**
