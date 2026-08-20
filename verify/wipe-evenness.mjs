@@ -147,6 +147,18 @@ for (let run = 1; run <= RUNS; run++) {
 await browser.close();
 
 console.log("\n══════════════════════════════════════════════════");
+// ⚠⚠ WHICH BOX THIS MEASURED — D-052, 20 August 2026. Declared in the OUTPUT,
+// not only in the header: a scope caveat in a comment is read once by whoever
+// opens the file; the verdict is read every run by whoever is deciding
+// something. `context-rules.md` — "every harness must declare what it does NOT
+// watch, IN ITS OUTPUT".
+console.log("  SUBJECT: `.enquiry-q-text-reveal` now resolves to the ROW");
+console.log("           (.enquiry-phrase-qrow = cue + gap + question), NOT the");
+console.log("           question span. clipPath and width below are the ROW's.");
+console.log("  ⛔ FIGURES FROM BEFORE THIS COMMIT ARE NOT COMPARABLE — they");
+console.log("     measured a narrower box. This is not a re-scaling: a % of a");
+console.log("     different box is a different quantity.");
+console.log("──────────────────────────────────────────────────");
 if (!allDips.length) {
   console.log("  No velocity dip found. ⚠ THAT DOES NOT CLEAR THE DEFECT —");
   console.log("  Carl can see it, and a harness that disagrees with his eye is");

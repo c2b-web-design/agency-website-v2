@@ -75,6 +75,13 @@ if (!box) {
 }
 
 console.log(`phrase band: ${Math.round(box.width)}x${Math.round(box.height)} at (${Math.round(box.x)}, ${Math.round(box.y)})`);
+// ⚠⚠ WHICH BOX THIS CROP IS — D-052, 20 August 2026. The crop is DERIVED from
+// `.enquiry-q-text-reveal`, which now resolves to the ROW, so the band shot
+// below is wider than it was before that commit.
+console.log("  SUBJECT: the band above is `.enquiry-phrase-qrow` (cue + gap +");
+console.log("           question) — `.enquiry-q-text-reveal` moved to the row.");
+console.log("  ⛔ FILMSTRIPS FROM BEFORE THIS COMMIT FRAMED A NARROWER BAND and");
+console.log("     are NOT comparable frame-for-frame.");
 console.log("\nshooting the wipe…");
 
 const shots = [];

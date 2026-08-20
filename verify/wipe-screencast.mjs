@@ -91,7 +91,14 @@ if (!box) {
   await browser.close();
   process.exit(1);
 }
-console.log(`phrase band: ${Math.round(box.width)}x${Math.round(box.height)} at (${Math.round(box.x)}, ${Math.round(box.y)})\n`);
+console.log(`phrase band: ${Math.round(box.width)}x${Math.round(box.height)} at (${Math.round(box.x)}, ${Math.round(box.y)})`);
+// ⚠⚠ WHICH BOX THIS CROP IS — D-052, 20 August 2026. The crop is DERIVED from
+// `.enquiry-q-text-reveal`, which now resolves to the ROW, so the band cast
+// below is wider than it was before that commit.
+console.log("  SUBJECT: the band above is `.enquiry-phrase-qrow` (cue + gap +");
+console.log("           question) — `.enquiry-q-text-reveal` moved to the row.");
+console.log("  ⛔ CASTS FROM BEFORE THIS COMMIT FRAMED A NARROWER BAND and are");
+console.log("     NOT comparable frame-for-frame.\n");
 
 // ⚠ CAST FIRST, THEN CLICK. Nothing awaited in between.
 await cdp.send("Page.startScreencast", { format: "png", everyNthFrame: 1 });

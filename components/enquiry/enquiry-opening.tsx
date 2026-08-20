@@ -1703,99 +1703,83 @@ export default function EnquiryOpening() {
           introduced on this branch changes what its rect is relative to.
         */}
         <div className="enquiry-phrase-travel">
-        <div className="enquiry-phrase-qrow">
+        {/*
+          ⚠⚠ THE WIPE COVERS THE NUMBER AND THE TEXT AS ONE PHRASE — D-052,
+          20 August 2026, Carl's ruling: *"one phrase, one wipe."*
+
+          `.enquiry-q-text-reveal` and its `onAnimationStart` were on the
+          QUESTION SPAN until this change. `clip-path` clips the element it is
+          set on and its descendants, so the cue — a SIBLING — was outside the
+          wipe's scope and simply appeared. ⚠ THAT WAS NEVER A REGRESSION: it
+          had been so since the wipe was written (`0a1b04a`) and no commit ever
+          moved it out. It was never specified either way. See D-052.
+
+          ⚠ THE HANDLER MOVES WITH THE ANIMATION, DELIBERATELY. React's
+          synthetic `onAnimationStart` bubbles, so a handler left on the
+          question span WOULD still receive this row's event and `animationName`
+          would still match — and it would be publishing a clock for an
+          animation on a different element. That is the mark-name collision
+          class in `context-rules.md`; the handler goes where the animation is.
+
+          ⚠ THE SWEEP IS FASTER AND THAT IS ACCEPTED. `clip-path: inset()` is a
+          percentage of the clipped box, and this box is now cue + gap +
+          question. Same 1300ms across a wider box = more px/sec. Carl's ruling,
+          20 August: 1300ms STAYS and he judges the speed by eye. ⛔ DO NOT
+          "compensate" by changing the duration — `Q5_REVEAL_CLEAR_MS` and the
+          pre-warm guard are derived from 1300 and are NOT part of this change.
+        */}
+        <div
+          className={`enquiry-phrase-qrow${reducedMotion || !isActive ? "" : " enquiry-q-text-reveal"}`}
+          onAnimationStart={
+            isActive && !reducedMotion
+              ? (e) => {
+                  // ⚠ THE REVEAL ONLY — not the depth-morph transitions, and not
+                  // a future sibling animation on this row. Matching the name
+                  // here is safe in a way the ladder's own lookup was not: if
+                  // this never fires, the ladder falls back to reading the
+                  // animation directly and behaves exactly as it does today.
+                  if (e.animationName.startsWith("enquiry-mask-reveal")) {
+                    const w = window as unknown as {
+                      __revealStart?: number;
+                      __revealStartQ?: number;
+                    };
+                    /**
+                     * ⚠⚠ STAMPED WITH THE QUESTION IT BELONGS TO — 17 August
+                     * 2026, and the stamp is the whole point.
+                     *
+                     * This value used to be published bare, and the ladder's
+                     * only guards were "is a number" and "is in the past"
+                     * (`answer-card-canvas.tsx`). **A reveal start from the
+                     * PREVIOUS question satisfies both.** Measured: Q4's
+                     * entrance read Q5's anchor from 8.2 seconds earlier and
+                     * clamped, on 4 of 6 runs.
+                     *
+                     * ⚠ WRITTEN BEFORE THE VALUE, so a reader can never see a
+                     * fresh timestamp still carrying the old question's stamp.
+                     * The reverse order has a window — one statement wide, but
+                     * this is exactly the class of race being fixed.
+                     */
+                    w.__revealStartQ = qNum;
+                    w.__revealStart = performance.now();
+                  }
+                }
+              : undefined
+          }
+        >
           <span className="enquiry-phrase-cue" aria-hidden="true">Q{qNum}</span>
           {/*
-            ⚠⚠ `onAnimationStart` PUBLISHES THE REVEAL'S CLOCK ZERO, and it is a
-            CONTRACT with `answer-card-canvas.tsx`, not a diagnostic.
-            Added 12 August 2026.
+            ⚠ THE REVEAL CLASS AND THE CLOCK HANDLER MOVED TO THE ROW — D-052,
+            20 August 2026. They were on this span; see the block-comment on
+            `.enquiry-phrase-qrow` above for why, and for what must not follow.
 
-            The card ladder needs to know when this question's reveal began, so
-            card 1 can land at its midpoint (`CARD_FIRST_ENTRANCE_MS`, 650ms).
-            It used to discover that by searching this element's CSS animations
-            **by name** for `enquiry-mask-reveal-horizontal`.
-
-            ⚠ THAT COUPLED THE CHOREOGRAPHY TO A RENDERING TECHNIQUE. When the
-            wipe was briefly rewritten to `transform`, the lookup stopped
-            resolving and **production Mode B went from 0% to 60% on every
-            question.** A visual change silently broke the timing contract.
-
-            ⚠⚠ CORRECTED 18 August 2026 — THIS COMMENT'S ORIGINAL WORDING WAS
-            WRONG IN BOTH HALVES, AND IT HAD ALREADY PRODUCED ONE WRONG ANSWER.
-            It read: *"when the wipe was rewritten from `clip-path` to
-            `transform` — because Chrome cannot composite `clip-path`, so a
-            blocked main thread freezes the reveal outright"*.
-
-              1. ⚠ THE RULE ON DISK IS `clip-path`, AND ALWAYS IS NOW. All three
-                 reveal keyframes (`-horizontal`, `-downward`, `-radial`,
-                 `globals.css:132-164`) animate `clip-path`, and NO transform-based
-                 reveal exists anywhere in the stylesheet. The `transform` rewrite
-                 was real but was REVERTED; the comment described it in the present
-                 tense and outlived it. The coupling lesson above still stands —
-                 that is why the paragraph is kept rather than deleted.
-
-              2. ⚠⚠ "A BLOCKED MAIN THREAD FREEZES THE REVEAL" NAMES THE WRONG
-                 THREAD. A CDP trace puts the freeze in the GPU PROCESS with the
-                 RENDERER IDLE — `CommandBuffer::Flush` / `GpuChannel::
-                 ExecuteDeferredRequest`, ~164ms in four blocks (see the shared-host
-                 comment below, which had this right all along). Stage 1 measured
-                 the main thread at 2.3ms busy of 210ms while the GPU saturated.
-                 **Moving the wipe to a composited property was the wrong target
-                 twice, because compositing queues behind the same GPU scheduler.**
-
-            ⚠ WHY THIS MATTERS TO ANYONE INSTRUMENTING THE REVEAL: a reader who
-            trusts the old wording concludes the freeze is main-thread and reaches
-            for a `getComputedStyle` poller — which reads INTENT and stays green
-            straight through a GPU-side freeze. `verify/reveal-stall.mjs` is built
-            on the video track for exactly this reason; its header carries the
-            argument in full.
-
-            ⚠ `animationstart` FIRES FOR WHATEVER ANIMATION DRAWS THE REVEAL, so
-            this signal survives the mechanism changing. That is the whole point:
-            the wipe is free to be re-implemented, and the ladder keeps its clock.
-
-            ⚠ ONLY THE ACTIVE PHRASE PUBLISHES. Every phrase in the corridor
-            carries animations as it morphs between depths; a receding memory rung
-            firing this would hand the ladder a clock from the wrong question.
+            ⚠ `id="active-q-label"` STAYS HERE. It labels the QUESTION TEXT for
+            assistive technology, and the cue is `aria-hidden`. Moving it to the
+            row would pull "Q5" into the accessible name — the exact noise the
+            `aria-hidden` exists to prevent.
           */}
           <span
-            className={`enquiry-phrase-question${reducedMotion || !isActive ? "" : " enquiry-q-text-reveal"}`}
+            className="enquiry-phrase-question"
             id={isActive ? "active-q-label" : undefined}
-            onAnimationStart={
-              isActive && !reducedMotion
-                ? (e) => {
-                    // ⚠ THE REVEAL ONLY — not the depth-morph transitions, and
-                    // not a future sibling animation on this element. Matching
-                    // the name here is safe in a way the ladder's own lookup was
-                    // not: if this never fires, the ladder falls back to reading
-                    // the animation directly and behaves exactly as it does today.
-                    if (e.animationName.startsWith("enquiry-mask-reveal")) {
-                      const w = window as unknown as {
-                        __revealStart?: number;
-                        __revealStartQ?: number;
-                      };
-                      /**
-                       * ⚠⚠ STAMPED WITH THE QUESTION IT BELONGS TO — 17 August
-                       * 2026, and the stamp is the whole point.
-                       *
-                       * This value used to be published bare, and the ladder's
-                       * only guards were "is a number" and "is in the past"
-                       * (`answer-card-canvas.tsx`). **A reveal start from the
-                       * PREVIOUS question satisfies both.** Measured: Q4's
-                       * entrance read Q5's anchor from 8.2 seconds earlier and
-                       * clamped, on 4 of 6 runs.
-                       *
-                       * ⚠ WRITTEN BEFORE THE VALUE, so a reader can never see a
-                       * fresh timestamp still carrying the old question's stamp.
-                       * The reverse order has a window — one statement wide, but
-                       * this is exactly the class of race being fixed.
-                       */
-                      w.__revealStartQ = qNum;
-                      w.__revealStart = performance.now();
-                    }
-                  }
-                : undefined
-            }
           >
             {QUESTIONS[qNum].question}
           </span>
