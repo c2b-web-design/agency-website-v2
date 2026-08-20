@@ -2055,3 +2055,86 @@ happened, and one of them would have looked like the answer.
 ### Files updated in the same change
 
 `decisions.md` (this entry). **No product code was changed** — the code landed in `eba1287`.
+
+---
+
+## D-054 — Measurement For The Derived, Judgement For The Felt
+
+**Date recorded:** 2026-08-20
+**Date the change landed:** 2026-08-20, commit `87919f8`
+**Status:** APPROVED
+**Authority:** Human Founder — **judged by eye.** No measurement selected 250.
+
+### The decision
+
+**`ACK_LEAD_MS = 250`** (`enquiry-opening.tsx`). The "Understood." fade and the send
+button both begin **250ms earlier**.
+
+**What Carl saw:** cards 1 2 3 4, then a small *wait* before the fade began. **That wait
+is gone; the sequence flows.** Arithmetic is in `87919f8` and not repeated here.
+
+**`?acklead=` remains a live tuning door**, so the value can be re-judged on a running
+build without a rebuild.
+
+### The ripple — the gap is now structurally held
+
+Both tail elements carry the **same** lead, so the **500ms of dead space** between
+"Understood." leaving and the send button arriving is preserved at every value of
+`ACK_LEAD_MS`.
+
+⚠ **THIS IS AN IMPROVEMENT ON WHAT WAS THERE, NOT JUST A PRESERVATION.** The gap was
+previously **emergent** — the difference between two independently hand-entered numbers,
+with nothing holding it. **It could have widened without anyone touching it**, simply by
+one of the two moving. It is now a consequence of one constant.
+
+### ⚠ CORRECTION — the occlusion guard never did what its comment implied
+
+The comment on `ACK_FADE_OUT_DELAY_MS` read as though the fade **waited for the boxes**.
+
+⛔ **IT NEVER DID.** At the original timing the fade began at 6700ms with **boxes 2, 3 and
+4 still arriving** — 86.7%, 70.0% and 53.3% faded in. Only box 1 had settled.
+
+**What it actually guarantees is that "Understood." is GONE before the LAST box SETTLES.**
+That still holds at 250: the fade ends at **7850ms**, box 4 settles at **8100ms** — a
+250ms margin where there was previously none. ⚠ **The move is EARLIER, which is the safer
+direction for occlusion**, not a relaxation of it.
+
+⛔ **The original comment's history is not rewritten.** It was true about the *intent* and
+imprecise about the *mechanism*; the correction is recorded here and in place.
+
+### ⚠⚠ THE PRINCIPLE — the reusable part, and the reason behind Carl's 30 July instruction
+
+**Some values must be EXACT because something is derived from them. Some only need to be
+in the PERCEPTIBLE VICINITY.**
+
+**Carl's framing, from quantisation:** at 120BPM, a request to drop to **118** is
+pointless — *the ear cannot perceive it*, and believing it can **costs hours on a change
+that isn't there.** So a feel value is hand-entered and judged by eye, and **measuring it
+below the resolution of the judgement is wasted work.**
+
+⚠ **AND THE COUNTERPART, WHICH IS THE OTHER HALF OF THE RULE: THE EYE CANNOT PICK BEZIER
+CONTROL POINTS.** Hand-chosen control points measured **0.113** against a reference; a
+fitted curve measured **0.011** — an order of magnitude better, and not recoverable by
+looking harder.
+
+> ### MEASUREMENT FOR THE DERIVED. JUDGEMENT FOR THE FELT.
+> ⚠ **The error is using either where the other belongs** — and both directions cost. Eye
+> on a derived value is imprecision that compounds downstream; instrumentation on a felt
+> value is hours spent resolving a difference nobody can see.
+
+⚠ **THIS IS THE REASON BEHIND CARL'S 30 JULY 2026 INSTRUCTION, NOT A NEW RULE.** That
+instruction — *"break them apart and not have them so reliant on proportion and ratios...
+We will judge it by eye and input the numbers"* — is recorded in
+`contact-field-canvas.tsx`. **It is this principle applied to the completion tail**, and
+the tail's values are hand-entered because they are felt, not because derivation failed.
+
+⛔ **SO DO NOT "IMPROVE" `ACK_LEAD_MS` BY DERIVING IT** — from a fifth beat, a stagger
+constant, or the box interval. Its correctness is Carl's eye, and a derivation would move
+it out of reach of the only instrument that can judge it.
+
+⚠ *The bezier figures above are from the working session, not from a prior
+`project-intelligence/` entry — recorded here for the first time.*
+
+### Files updated in the same change
+
+`decisions.md` (this entry). **No product code was changed** — the code landed in `87919f8`.
