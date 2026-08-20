@@ -161,10 +161,34 @@ Carl decides what becomes a chunk. No cause or fix is recorded, because none was
    a little late.** ⚠ **Carl's stated ideal: a FIFTH beat, on which "Understood" begins its fade,
    with the send button fading in after that.**
 
-4. ⚠⚠ **THE ONE TO CARRY FORWARD.** After several walks, some questions' reveal **"didn't feel
+4. ~~⚠⚠ **THE ONE TO CARRY FORWARD.**~~ After several walks, some questions' reveal **"didn't feel
    right — not a stall, just wasn't looking as smooth."** **Intermittent** — present on some walks,
    not others. ⛔ **Carl is DEFERRING judgement to a fresh morning session** rather than deciding it
    late at night.
+
+   > ### ✅ CLOSED 20 August 2026 — DIAGNOSED AND FIXED, and the reason is the useful part.
+   >
+   > ⛔ **NOT "could not be reproduced." NOT "went away."** It was **never a smoothness fault and
+   > never a performance fault.** It was the symptom of a specific STRUCTURAL one:
+   > **"Q5" was not being wiped at all.**
+   >
+   > **How it resolved:** Carl's frame-by-frame review of the 25fps films, **with the start-page
+   > heading on the same frames as a control** — that heading wipes character by character, so the
+   > absence on "Qn" could not be a sampling artefact. Recorded as **D-052**, implemented in
+   > `d731c1c`. **Carl's verdict on the current build: it now *"feels like one phrase."***
+   >
+   > ⚠⚠ **A VAGUE OBSERVATION RESOLVED INTO A SPECIFIC CAUSE.** "Some walks don't feel as smooth"
+   > was the only description available before anyone knew what to look for; it named a *feeling*,
+   > and the fault was a *missing wipe*. **That is why it read as intermittent** — it depended on
+   > whether the eye happened to land on the number.
+   >
+   > ⛔ **THE 60fps CAPTURE IS NO LONGER NEEDED FOR THIS.** It was proposed to turn a vague
+   > observation into evidence. **The observation resolved without it.** Do not commission it for
+   > this question — the question no longer exists.
+   >
+   > ⚠ **BUT THE 25fps INSTRUMENT LIMIT STANDS ON ITS OWN** and is NOT retired with this item.
+   > Those films still cannot answer a smoothness question. See the section below, which is an
+   > independent finding about the instrument, not about this observation.
 
 ## ⚠ CARL'S FRAME-BY-FRAME REVIEW, 20 August — OBSERVATION, NOT A VERDICT
 
@@ -193,9 +217,23 @@ not align.
 ⚠ **THIS MATTERS BEYOND TODAY: `reveal-stall.mjs`'s 0ms verdicts were drawn from these films, and
 a 25fps film was never able to answer a question about smoothness.**
 
-⚠ **Carl's observation from last night — some questions' reveal "didn't feel right, not a stall,
+~~⚠ **Carl's observation from last night — some questions' reveal "didn't feel right, not a stall,
 just not as smooth" (item 4 above) — is NEITHER CONFIRMED NOR REFUTED by this.** It remains open
-and **needs a 60fps capture to be evidence either way.**
+and **needs a 60fps capture to be evidence either way.**~~
+
+> ### ⚠ SUPERSEDED THE SAME DAY — the observation CLOSED without a 60fps capture.
+>
+> **The paragraph above was true when written and is now wrong on both counts.** The observation
+> was neither left open nor settled by a faster camera: **it was diagnosed as D-052 — "Q5" was not
+> being wiped at all — fixed in `d731c1c`, and confirmed by Carl's eye on the current build.**
+> Full closure recorded at item 4 above.
+>
+> ⛔ **DO NOT COMMISSION A 60fps CAPTURE ON THE STRENGTH OF THIS PARAGRAPH.**
+>
+> ⚠⚠ **THE INSTRUMENT LIMIT ABOVE IS UNAFFECTED AND STILL STANDS.** The films sample two frames in
+> five and **cannot answer a smoothness question** — that is a fact about the instrument, true
+> independently of whether any particular observation needed it. **It is not retired by this
+> closure**, and `reveal-stall.mjs`'s 0ms verdicts were still drawn from these films.
 
 ## Loose ends
 

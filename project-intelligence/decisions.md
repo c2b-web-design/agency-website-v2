@@ -1906,6 +1906,17 @@ The cue span carries `aria-hidden="true"`. **"Q5" read aloud before the question
 what marks a question as answered, and **D-029 derives the filament border colour from that gold
 family** — an APPROVED layer.
 
+> ### ✅ OBSERVED AND GOOD — 20 August 2026. This constraint is CLOSED.
+>
+> **Carl walked the current build and looked at the receding-depth amber directly. It is
+> correct.**
+>
+> ⚠ **This closes the "structurally safe but unobserved" caveat** carried at implementation.
+> The implementation commit (`d731c1c`) recorded the amber as verified only by reasoning —
+> `globals.css` untouched, the depth rules being descendant selectors on an unmoved element —
+> because the probe failed to advance the corridor and never saw it. **It has now been seen on
+> the running build. Reasoning and observation agree.**
+
 **3. ⚠⚠ THE CLOCK-ZERO CONTRACT IS THE HIGHEST-RISK ONE.**
 The question span's **`onAnimationStart` publishes the reveal's CLOCK ZERO** (`__revealStart`,
 `__revealStartQ`) and is **a CONTRACT with `answer-card-canvas.tsx`, not a diagnostic** — its own
