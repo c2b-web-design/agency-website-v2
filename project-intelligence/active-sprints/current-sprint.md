@@ -70,10 +70,11 @@ explicit.**
 - documentation corrections
 - fixes to existing faults
 
-⚠ **RECENT COMMITS ARE NOT EVIDENCE THAT THE PAUSE HAS LAPSED.** Eleven commits landed on 20
-and 21 August 2026 under approved decisions and **none of them contradicted the pause** — every
-one was governance, documentation or a fix to an existing fault. **This file's former silence
-on scope is what made that look like a conflict.** Do not read commit activity as a restart.
+⚠ **RECENT COMMITS ARE NOT EVIDENCE THAT THE PAUSE HAS LAPSED.** Commits have continued to
+land under approved decisions without contradicting it, because **the work they carry is
+governance, documentation, tooling or fixes to existing faults — none of which the pause
+covers.** **This file's former silence on scope is what made that look like a conflict.** Do
+not read commit activity as a restart.
 
 **The exit condition, in sequence:** the remaining governance work → a session on how Carl's
 working process with the Architect and the Builder can be improved → **Carl explicitly restarts
