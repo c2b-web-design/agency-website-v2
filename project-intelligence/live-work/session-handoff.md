@@ -1,4 +1,4 @@
-# Session Handoff — 20 August 2026. Three decisions, and three instruments that lied.
+# Session Handoff — 21 August 2026. A defect that was never a defect, and an instrument with no green.
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -10,26 +10,25 @@
 
 > ## 1. EDITS — `SCOPE GUARD: '<path>' is PERMANENTLY PROTECTED`
 >
-> **25 paths** in `.claude/protected-files.json`, locked on every `Edit`/`Write`/`NotebookEdit`.
+> Paths in `.claude/protected-files.json`, locked on every `Edit`/`Write`/`NotebookEdit`.
 > ⚠ **`CLAUDE.md`, `verify/proven.json` and `verify/run.mjs` are among them.** Unlocking needs Carl
 > naming that exact path under `"unlocked"` in `live-work/chunk-scope.json`. Never a folder, never a
-> glob. **Remove the unlock when done and re-verify the path locks again** — `chunk-scope.json` is
-> gitignored, so a session ending with unlocks live leaves the next one with protected files quietly
-> writable and no denial to reveal it.
+> glob. **Remove the unlock when done and re-verify the path locks again.**
+>
+> ⚠ **`chunk-scope.json` DOES NOT CURRENTLY EXIST — no unlocks are live.** Verified at session end.
 >
 > ## 2. VERIFY — `VERIFY FRONT DOOR: ... skips the verdict gate`
 >
-> **`node verify/x.mjs` is DENIED on the Bash tool.** Use **`npm run verify -- <script.mjs>`**.
-> ⚠ It also fires on a `grep` whose *search string* contains `verify/` — a false positive, not a
-> bug. Reword the search; do not route around it.
+> **Calling a harness directly with `node` is DENIED on the Bash tool.** Use
+> **`npm run verify -- <script.mjs>`**. ⚠ It also fires on a `grep` whose *search string* contains
+> the verify path — a false positive, not a bug. Reword the search; do not route around it.
 
 ⛔ **A denial is not a bug. Do not diagnose it, and DO NOT ROUTE AROUND IT WITH A SHELL.** Both hooks
 run on tool calls only; `sed -i`, redirect, `mv`, `cp`, `rm` bypass them entirely. **What catches a
 shell write is the diff — a reviewer, not a mechanism.** Stop and ask Carl.
 
-**It worked twice today.** Two unlocks were granted for `answer-card-mesh.tsx`, both used for
-temporary probes, both reverted, and **the lock was re-verified each time with an actual denial** —
-not an assertion.
+⚠ **THE FRONT DOOR STOPPED AN EXPERIMENT TODAY AND THAT WAS THE RIGHT OUTCOME** — see the before-arm
+section. The Builder hit the denial, stopped, and reported rather than reaching for bare `node`.
 
 ---
 
@@ -38,133 +37,196 @@ not an assertion.
 **`⚠ NO VERDICT` on everything is the HONEST STATE, not a fault.** Nothing in `verify/` can be cited
 as evidence. Do not read a green line as a pass.
 
-⚠ **`reveal-stall.mjs`'s band/tolerance/window fault is what stands between the project and its
-first admissible harness — and it was NOT touched today.** Its `observedSpread` is deliberately
-`null`: 5 films resolved the reveal correctly (1240–1280ms against a declared 1300ms) but reported
-**0ms freeze on all five**. The films are good; it is the freeze inside the window that does not
-resolve.
-
-*(The count is 131, not the 130 the last three handoffs said. Verified by `git ls-tree`; it was 131
-at yesterday's head too, so the old figure was simply wrong.)*
+*(131 verified by `git ls-tree`: 132 `.mjs` files under `verify/`, minus `run.mjs`, which is the
+gate itself and not a harness.)*
 
 ---
 
-## TODAY — EIGHT COMMITS. Head `7a13724`, tree clean, pushed.
+## TODAY — SIX COMMITS. Head `141f67d`, tree clean, pushed and confirmed by `git ls-remote`.
 
 > ⚠ **THE HEAD SHA HERE IS ALWAYS AT LEAST ONE BEHIND** — a file cannot name the commit that
-> contains it. **Run `git log --oneline -9`. Do not trust this line.**
+> contains it. **Run `git log --oneline -7`. Do not trust this line.**
 
 ```
-b3d305b  docs   the frame-by-frame observation + the 25fps instrument limit
-ee9e5e0  docs   D-052
-d731c1c  feat   D-052 implemented — one phrase, one wipe
-eba1287  feat   the hover teal at 1.7
-bcd0e74  docs   D-053
-87919f8  feat   the completion tail 250ms earlier
-562b0c0  docs   D-054
-7a13724  docs   two closures
+80cf796  docs   D-055 — the Begin gating is the design, not a defect
+50d908f  docs   the timing reference: classification closed, and nothing was ever fixed
+9b6bf3f  docs   OPENING-DELAY removed from open-defects.md
+9e31801  docs   the sprint's Begin entry said RESOLVED — nothing was ever fixed
+e2238c3  docs   the pause stands — scope, reaffirmation, exit sequence
+141f67d  docs   a live commit count removed from the pause block
 ```
 
-⚠ **`e4255e7` is timestamped 00:54 today but belongs to the PREVIOUS session** — it is the closing
-commit of the handoff this one replaces. **Eight, not nine.**
+⚠ **Six, not five.** The brief for this handoff said five; `80cf796` (D-055 itself, 11:07:20) is
+dated 21 August and belongs to today. Counted from `git log`.
 
 ---
 
-## THREE DECISIONS. Carl's eye is the authority for all three.
+## ⛔ D-055 — THE BEGIN GATING IS THE DESIGN, NOT A DEFECT
 
-**D-052 — the question number and its text reveal as ONE PHRASE.** ⚠ **The number had NEVER been
-inside the wipe** — a sibling span outside the `clip-path`, since the wipe was written. **Not a
-regression, never specified.** Implemented `d731c1c`. Carl: *"feels like one phrase now."*
+**Carl's ruling, 21 August 2026, on a clean running production build.** The Begin button on
+`/start` is **not meant to be immediately clickable.** The radial reveal is correct, and so is its
+gating.
 
-**D-053 — the hover teal is a LEGIBLE STATE CHANGE, not a colour match.**
-`LABEL_TEAL_STRENGTH = 1.7`. It is no longer a quotation of the rail's answer-line teal; that was
-Carl's own earlier instruction, now overtaken by his later one.
+⛔ **THIS CLOSES THE STANDING 27 JULY DECISION** that the opening delay was *"the first job when
+building resumes"* — **closed, not deferred.** Desktop and mobile need no answer at all.
 
-> ⛔ **THE INK-COLOUR ROUTE IS CLOSED. DO NOT RE-PROPOSE IT.** `mix(a,b,t)` at `t>1` **extrapolates
-> past** the target. The equivalent ink at strength 1.0 needs a **negative red channel** (−0.1024
-> linear, at every albedo). Measured: a maximal cyan reaches 47.9% against 79.4% needed.
+⚠ **YOU WILL SEE THE DELAY IF YOU LOAD THE PAGE. THAT IS THE DESIGN WORKING**, not evidence that
+this is stale. Full ruling and the approved measurements: `decisions.md` **D-055**.
 
-**D-054 — `ACK_LEAD_MS = 250`, and the principle behind it:**
+### Four records corrected to match it
 
-> ### MEASUREMENT FOR THE DERIVED. JUDGEMENT FOR THE FELT.
-> Some values must be exact because something is derived from them; some only need to be in the
-> **perceptible vicinity**. At 120BPM, dropping to 118 is pointless — the ear cannot hear it, and
-> believing it can costs hours on a change that isn't there. **The counterpart: the eye cannot pick
-> bezier control points** (hand-chosen 0.113 vs fitted 0.011). ⚠ **The error is using either where
-> the other belongs.**
+- **`live-work/enquiry-opening-timing-reference.md`** — ⚠ **its 28 July "✅ RESOLVED" was ALSO
+  false.** Nothing was ever fixed. What happened on 28 July was **Carl being satisfied with the
+  button, misfiled as a fix.** Measurements retained; only the classification changed.
+- **`open-defects.md`** — OPENING-DELAY **removed**, per the file's own *"Resolved defects are
+  REMOVED, not struck through"* rule. Three entries remain.
+- **`active-sprints/current-sprint.md`** — two edits: the struck-through Begin entry, and the pause
+  block below.
 
----
-
-# ⚠⚠ THREE INSTRUMENT LESSONS — THE MOST REUSABLE PART OF TODAY
-
-**1. Three samplers measured the same hovered glyph. Two produced confident, plausible, wrong
-numbers.**
-
-| | what it did | why it was wrong |
-|---|---|---|
-| 1 | brightest 4% of a crop | found the **card's RIM**, not the glyphs |
-| 2 | gated on **luminance > 120** | a brightening card **diluted its own sample** |
-| 3 | **froze the glyph mask as fixed pixel POSITIONS** | trustworthy |
-
-⚠ **Instrument 2 INVENTED A PHENOMENON** — a settled 7.4% and a "decay within a second", **neither
-of which existed.** Its pixel count rose 399 → 458 as the sample grew to include things that were
-never teal. **A true number about the wrong pixels.**
-
-⛔ **INSTRUMENT 3 LIVES IN THE SCRATCHPAD. It is NOT in `verify/`, NOT in `proven.json`, and MUST
-NOT be cited as a proven instrument.**
-
-**2. A four-way attribution was commissioned against that false number and STOPPED AT ITS CONTROL**,
-which measured 26.8% twice instead of 7.4%. ⚠ **The control instruction — reproduce the figure
-before disabling anything — is what caught it.** Without it, four stages would have been disabled to
-explain a collapse that never happened, and one would have looked like the answer.
-
-**3. ⚠ THE 25fps FILMS CANNOT ANSWER A SMOOTHNESS QUESTION.** The site paints at ~60fps (~16.7ms);
-the films capture at 25.04fps (~39.9ms) — two frames in five, clocks unaligned. They CAN show
-whether an element wipes at all and roughly where. **This finding STANDS even though the
-observation that prompted it has closed**, and `reveal-stall.mjs`'s 0ms verdicts were drawn from
-these films.
+> ### ⚠⚠ A SATISFACTION IS NOT A FIX. FILING ONE AS THE OTHER IS WHY THIS ITEM RETURNED TWICE.
+> **"Fixed" is a claim about the build** — it decays, and anyone refutes it by loading the page.
+> **"Approved" is a design decision** — observing the delay *confirms* it.
 
 ---
 
-## CLOSED TODAY — ⛔ DO NOT REOPEN
+## ⛔ THE PAUSE STANDS — reaffirmed by Carl, 21 August 2026
 
-- **The depth-1+ amber.** Carl walked the current build and looked at it. **Observed, good.** Closes
-  the "structurally safe but unobserved" caveat from `d731c1c`.
-- **The intermittent *"not as smooth"*.** ⚠ **DIAGNOSED AND FIXED — not "went away", not "could not
-  be reproduced".** It was never a smoothness or performance fault: it was the symptom of **"Q5" not
-  being wiped at all**. Found by frame-by-frame review with the start-page heading as a control on
-  the same frames. ⛔ **The 60fps capture is no longer needed for it.**
+**Covers NEW BUILDING ONLY.** Governance, tooling, documentation and fixes to existing faults are
+**not building** and have continued throughout. ⚠ **Commit activity is not a restart.**
+
+**Exit sequence, in order:** remaining governance work → **a session on Carl's working process with
+the Architect and the Builder** → **Carl explicitly restarts building.** Not before.
+
+⛔ **"No chunk is authorised" is the PERMANENT ARRANGEMENT, not a dated pause condition.** It does
+not expire with the pause. Recorded in `current-sprint.md`.
+
+---
+
+# ⚠⚠ THE Q5 REVEAL STALL IS CLOSED BY CARL'S EYE — AND HAS NO DIAGNOSIS
+
+**Carl walked `/start` on 21 August: the stall is gone.** His own words — **not there, or too small
+to see.**
+
+⛔ **NOTHING IN THE RECORD CLAIMS TO HAVE FIXED IT.** `98429af` says explicitly that deleting the
+warm-up canvas did **NOT** remove the freeze.
+
+⚠⚠ **THE CLOSURE AND THE ABSENCE OF A CAUSE ARE RECORDED TOGETHER ON PURPOSE. An unexplained
+closure is weaker than a diagnosed one, and this defect has returned before.** Do not write it up
+as solved.
+
+---
+
+# ⚠⚠ THREE FINDINGS ABOUT `reveal-stall.mjs` — THE MOST REUSABLE PART OF TODAY
+
+**a. ⚠ THE 0ms IS NOT A PROVENANCE ARTEFACT — THE HYPOTHESIS WAS REFUTED BY MEASUREMENT.**
+The Architect predicted it was: `proven.json`'s `observedSpread` note went in at **22:42:59**
+(`5f43f15`), **eleven minutes before** the silent batch-selection fault was fixed at **22:53:15**
+(`e140743`). **Re-measured today** under the repaired script with **explicit** selection — five
+films, provenance printed and confirmed, **0ms on all five, spread 0ms.** ⛔ **Record it as
+refuted, not as open.**
+
+**b. ⛔ THE INSTRUMENT HAS NO GREEN.** Line 484 states the premise outright — *"the instrument must
+go RED on today's build — the stall is live"* — and lines 492–496 fire **unconditionally** when
+nothing is found, printing *"the stall is live and filmed… DO NOT report the stall as fixed"* and
+exiting 1.
+
+> ### ⚠⚠ AN INSTRUMENT THAT ASSERTS ITS SUBJECT EXISTS CANNOT DETERMINE WHETHER IT EXISTS.
+> **There is NO path by which absence is a finding about the subject.** The previous handoff's
+> framing — *"the band/window fault is the path to the first admissible harness"* — **rests on that
+> hardcoded verdict.**
+
+**c. ⚠ THE SENTINEL PRINTS AS DATA. NOT FIXED — open, and next session's first candidate.**
+`best=0` and `bestAt=-1` render as *"freeze 1f ~0ms at f-1 t=-0.04s … ink undefined"*. **`best+1`
+makes zero look like one frame; `inks[-1]` is where the `undefined` comes from.** ⚠ **A null in the
+shape of a measurement.**
+
+⛔ **THE FLOOR IS ~120ms** — three frame intervals at 25fps. **"Gone" and "under 120ms" are the
+same reading, and no band setting changes that.**
+
+---
+
+# ⚠ THE BEFORE-ARM EXPERIMENT — DESIGNED, BLOCKED, REDESIGNED. NOT YET RUN.
+
+**The question:** did **`31e9c3e`** (*one WebGL context for the Next step button*, 18 Aug 22:43)
+remove the stall? It landed **after** the red run that certified the instrument and **before** the
+19 August films that read 0ms. `5af5709` is its direct parent, 37 seconds earlier.
+
+⛔ **`git checkout 5af5709` DOES NOT WORK.** `npm run verify` does not exist at that commit and
+`verify/run.mjs` postdates it — **there is no front door on that arm.** The Architect specified the
+route without checking; the Builder **stopped at the denial rather than routing around it.**
+
+⚠ **AND THE ARM'S OWN `reveal-stall-measure.mjs` IS THE PRE-REPAIR VERSION** — measuring with it
+would reproduce the exact provenance fault refuted in (a).
+
+✅ **THE ROUTE:** a **git worktree** at `5af5709`, built and served on 3100, **measured with HEAD's
+instruments from the main tree.** *The product is the arm; the instrument must be constant.*
+
+⛔ **NEVER `git checkout <sha> -- components/ app/`.** That makes a tree that never existed as a
+commit — which is why the 10 August *"hover work exonerated at 626ms"* figure is disputed.
+
+⚠⚠ **THE BUILDER'S ASYMMETRY, WRITTEN BEFORE MEASURING AND STILL UNANSWERED: if the band fault
+produces zeros, it produces them on this arm too. Only a NON-ZERO result would be strong. The
+experiment is half-powered by construction.**
+
+---
 
 ## STILL OPEN
 
-- ⚠ **`reveal-stall.mjs`'s band/tolerance/window** — above. The path to the first admissible harness.
-- **`open-defects.md`, four entries** — the a11y fault, Q4–Q1 having no card entrance, the stale
-  anchor at `answer-card-canvas.tsx:1925`, and **the 7.4s/10.1s opening delay, which carries Carl's
-  standing decision: FIRST JOB WHEN BUILDING RESUMES.**
-- **Live tuning doors, all still in the build:** `?tealstrength=`, `?inklift=`, `?acklead=`
-  (pair with `?skip=1`, which mounts the completion state directly).
+- **The sentinel** (c above) — next session's first candidate.
+- **The no-green verdict** (b above) — and what it does to the "path to admissibility" framing.
+- **The before-arm experiment** — route agreed, not run.
+- **`open-defects.md`, three entries** — two are design questions for Carl, one is
+  **report-do-not-fix**, and **ANCHOR-STALE carries a line number that shifts with every edit above
+  it.**
+- **Live tuning doors, all still in the build:** `?tealstrength=`, `?inklift=`, `?acklead=` — pair
+  with `?skip=1`, which mounts the completion state directly.
+- **`current-sprint.md` lines 325/329** claim *"83 of this repo's 144 commits"* while the branch is
+  at 367. ⚠ **Left alone deliberately** — it sits inside a decided direction about splitting the
+  repo that nobody has re-read.
+
+⚠ **ONE MORE, AND IT IS THE ARCHITECT'S OWN.** A **live commit count** was written into the pause
+block and removed in `141f67d` — **not because the number was wrong, but because a count decays.**
+⛔ **Record the class of error, not the arithmetic.** Same family as *"RESOLVED before 28 July"*: a
+claim about the present, written as though durable.
 
 ---
 
 ## ENVIRONMENT TRAPS
 
-- **Production is the verdict**; dev and production disagree. `npm run build && npx next start -p 3100`.
-- ⚠ **A SERVER CAN OUTLIVE ITS SOURCE.** A probe-build server was found still serving reverted code
-  after the file was restored and rebuilt. **`rm -rf .next` and rebuild when a probe has been in.**
-- ⚠ **Playwright's pointer stays where the last action left it.** A "rest" reference was captured
-  already hovered, which silently corrupted a mask. **Park it (`mouse.move(10,10)`) before capturing
-  an idle state.**
-- ⚠ **Card hover is DOM divs (`[data-testid="answer-card-hover-N"]`), not the canvas.** Raw mouse
-  moves over the canvas do not fire it.
+- **Production is the verdict**; dev and production disagree.
+  `npm run build && npx next start -p 3100`.
+- ⚠ **A SERVER CAN OUTLIVE ITS SOURCE.** **`rm -rf .next` and rebuild when a probe has been in.**
+- ⚠ **Playwright's pointer stays where the last action left it.** **Park it (`mouse.move(10,10)`)
+  before capturing an idle state.**
+- ⚠ **Card hover is DOM divs (`[data-testid="answer-card-hover-N"]`), not the canvas.**
 - ⚠ **`TaskStop` reports success on a held port. Kill by PID, confirm free** — LISTENING only;
   `TIME_WAIT` is not a held port.
 - ⛔ **`canvas.__r3f` IS UNDEFINED ON PRODUCTION BUILDS.**
 - ⚠ **No backticks in comments inside the shader template literals** — it closes the string and the
-  build stops. Caught once today by `tsc`.
+  build stops.
 - **Bash heredoc patches have silently no-opped and stripped regex backslashes.** ⛔ **Grep the file
   after every scripted edit.**
+- ⚠ **`chunk-scope.json` does not currently exist — no unlocks are live.**
+- ⚠ **Nothing is running on 3100.**
 
 ---
 
-*20 August 2026. **Three decisions landed and recorded, two long-open items closed — and the day's
-most transferable finding is that two of three instruments lied while sounding certain.***
+# ⚠⚠ THE DAY'S BLIND SPOT — READ THIS BEFORE TRUSTING TODAY'S REASONING
+
+**Two Architect hypotheses were put today. Both were refuted — neither by argument, both by
+checking:**
+
+| the hypothesis | how it fell |
+|---|---|
+| the 0ms is a **provenance artefact** | **re-measured** with explicit selection — 0ms held |
+| `git checkout 5af5709` is a **workable arm** | **the front door does not exist there** |
+
+⚠ **Neither was caught by better reasoning. One was caught by an instruction to verify before
+believing; the other by the Builder stopping at a denial instead of complying.** ⛔ **The checking
+step is what worked today. Do not skip it because a hypothesis sounds well-founded — both of these
+did.**
+
+---
+
+*21 August 2026. **A defect that was never a defect, closed by ruling; a stall closed by Carl's eye
+with no diagnosis; and an instrument that cannot report the absence of the thing it looks for.***
