@@ -74,6 +74,7 @@ Four, and they are the ones worth knowing cold.
 | Your question | File |
 |---|---|
 | Who decides what, and what may each seat not do? | `ai-roles.md` |
+| I have told it to do something and it will not — what now? | `founder-override-protocol.md` |
 | I am PM/A — how do I start a session? | `architect-role.md` |
 | I am CB — what is my workflow, stage by stage? | `prompt-protocol.md` |
 | I am CS — what is my remit, and where does output go? | `strategist-role.md` |
