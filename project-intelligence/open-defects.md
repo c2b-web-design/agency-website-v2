@@ -35,17 +35,6 @@ alongside it could never have fitted inside it. Corrected 19 August 2026.*
 
 ---
 
-## OPENING-DELAY — Begin is unusable for 7.4s / 10.1s
-
-- **What:** The opening animation runs 7400ms desktop, 10100ms mobile before the Begin button is
-  usable. A CSS delay — measured, not Three.js. Reduced motion is unaffected.
-- **Where:** `components/enquiry/enquiry-opening.tsx`, `app/globals.css`.
-- **Found:** 2026-07-27. Recorded in `live-work/enquiry-opening-timing-reference.md`.
-- **Waiting on:** Carl's standing decision, 27 July — **the first job when building resumes.**
-  Desktop and mobile are separate values and both need an answer.
-
----
-
 ## ANCHOR-STALE — the entrance ladder is unrelated to the text
 
 - **What:** A stale reveal anchor is accepted because the only guards are "is a number" and "is in
