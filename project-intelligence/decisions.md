@@ -2149,3 +2149,92 @@ it out of reach of the only instrument that can judge it.
 ### Files updated in the same change
 
 `decisions.md` (this entry). **No product code was changed** — the code landed in `87919f8`.
+
+---
+
+## D-055 — The Begin Button Is Gated By The Opening, And That Is The Design
+
+**Date recorded:** 2026-08-21
+**Date the change landed:** No code changed. This entry rules on existing behaviour.
+**Status:** APPROVED
+**Authority:** Human Founder — **judged by eye on the production build, 21 August 2026.**
+
+### The decision
+
+**The Begin button on `/start` is not meant to be immediately clickable.** The radial
+reveal is correct as it is, **and so is its gating of clickability.** Carl walked a clean
+production build today and ruled on it directly.
+
+⛔ **THIS CLOSES THE STANDING DECISION OF 27 JULY 2026** that the opening delay was *"the
+first job when building resumes"*. **Closed, not deferred.** The desktop and mobile values
+do not need separate answers — they do not need an answer at all.
+
+### ⚠⚠ THE MECHANISM IS APPROVED, NOT TOLERATED
+
+The hit target activates on the radial mask's `animationstart`. **That animation is last in
+the sequence, so the button becomes usable at the end of the opening.** Mechanism recorded
+in `live-work/enquiry-opening-timing-reference.md` — cited, not repeated here.
+
+⚠ **A LATER READER WILL FIND THIS GATING AND RECOGNISE IT AS THE "CLICKABILITY IS WELDED TO
+THE VISUAL CLOCK" DEFECT** described at that reference. **It is the same mechanism. It is no
+longer a defect.** The description there is accurate; the classification is what this entry
+changes.
+
+⛔ **DO NOT UNWELD IT. DO NOT DECOUPLE THE HIT TARGET FROM THE MASK. DO NOT SHORTEN THE
+DELAY TO MAKE THE BUTTON AVAILABLE EARLIER.** Any of those is a change to approved work and
+needs Carl.
+
+### The 27 July analysis was not wrong about the facts
+
+**It measured correctly and described the mechanism correctly.** The timings, the
+`animationstart` coupling, and the desktop/mobile split are all accurate as recorded.
+
+⚠ **What it got wrong was calling it a defect** — a judgement about intent, not a
+measurement. **The record is not written off as an error**, and its numbers remain the
+reference for this behaviour.
+
+### ⚠⚠ WHY THIS CLOSURE SHOULD HOLD WHERE THE 28 JULY ONE DID NOT
+
+**The 28 July closure said the button was "fixed".** That is a **claim about the present** —
+it decays, and **anyone could refute it by loading the page and still seeing the delay.**
+That is exactly how the item returned on 19 August.
+
+> ### ⚠ A CLOSURE THAT IS A CLAIM ABOUT THE BUILD CAN BE REFUTED BY THE BUILD.
+> ### A CLOSURE THAT IS A DESIGN DECISION CANNOT.
+
+**This closure is a design decision.** Observing the delay confirms the design; it does not
+contradict it. **Seeing the button gated is not evidence that this entry is stale.**
+
+### The measured state — the shape of the approved design, not a defect report
+
+Observed 21 August 2026 on a clean production build (`rm -rf .next`, rebuilt, `next start`),
+animated path, non-reduced-motion:
+
+| Viewport | Gate lifts | Declared |
+|---|---:|---:|
+| Desktop 1440×900 | **+7711ms** | 7400ms |
+| Mobile 390×844 | **+10259ms** | 10100ms |
+
+At the flip, `pointer-events` → `auto`, `tabindex` → `0`, `aria-disabled` removed, together.
+Before it, the button is **fully opaque and visible** while the hit target is inert.
+
+**Reduced motion is unaffected — the button is usable at once.** That path is not gated and
+this entry does not change it.
+
+⚠ *These figures describe the approved design. They are **not** a defect measurement and
+must not be cited as one.*
+
+### ⚠ WHAT THIS DOES NOT COVER
+
+**This rules on clickability gating only.** It says nothing about:
+
+- the reveal's **appearance**
+- the **reading-speed overlaps** recorded in `live-work/enquiry-opening-timing-reference.md`
+- **anything else** in the opening sequence
+
+⚠ **Silence here is not approval of those.** They are untouched by this decision.
+
+### Files updated in the same change
+
+`decisions.md` (this entry). **No product code changed, and no other record amended** —
+`open-defects.md`, `current-sprint.md` and the timing reference are separate tasks.
