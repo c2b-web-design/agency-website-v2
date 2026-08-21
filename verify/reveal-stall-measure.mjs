@@ -516,9 +516,43 @@ const denominator =
     ? ` — ${dropped} excluded (${notFound.length} no plateau found, ${vacuous.length} vacuous)`
     : ``);
 
+// ⚠⚠ THE THREE LIMITS A NOT-FOUND READING IS CONSISTENT WITH — PRINTED NEXT TO THE
+// NUMBER, NOT LEFT IN A COMMENT. A scope caveat in a header is read once, by whoever
+// opens the file; the verdict is read every run, by whoever is deciding something.
+// Shared by both not-found paths so they cannot drift apart.
+function printNotFoundLimits() {
+  console.log(`\n     ⚠ NOT-FOUND IS CONSISTENT WITH ALL THREE OF THESE. It is not a`);
+  console.log(`       finding that the stall is fixed, and it is not one that this`);
+  console.log(`       instrument is broken. Carl rules; this reports.`);
+  console.log(`         1. THE FLOOR IS ~${Math.round(3 * FRAME_MS)}ms — three frame intervals at ${FPS}fps. On the`);
+  console.log(`            before arm, where the freeze is REAL, run-02 measured 80ms and`);
+  console.log(`            would have been MISSED — one run in five, on a build where the`);
+  console.log(`            defect exists. "Gone" and "under ~${Math.round(3 * FRAME_MS)}ms" are the same reading.`);
+  console.log(`         2. THE DEFECT HAS RELOCATED BEFORE — the stall was once mid-reveal`);
+  console.log(`            and MOVED under an attempted fix. This is contention being`);
+  console.log(`            rescheduled, not a fixed-position fault. A freeze OUTSIDE the`);
+  console.log(`            anchored window would not be seen.`);
+  console.log(`         3. ONE THING IS WATCHED — the question band crop (${CROP.w}x${CROP.h} @ ${CROP.x},${CROP.y}),`);
+  console.log(`            inside the anchored reveal window. Nothing else on the page.\n`);
+}
+
 if (good.length === 0) {
-  console.error(`\n⛔ NOTHING MEASURABLE. Not a clean verdict — a broken one.`);
-  console.error(`   ${denominator}\n`);
+  // ⛔ THIS PATH USED TO READ "NOTHING MEASURABLE. Not a clean verdict — a broken
+  // one." That is the same refuted premise in different words: it calls an
+  // all-not-found result a broken instrument. A run in which every film yielded a
+  // sound window and no plateau is a FINDING, not a malfunction — the two arms of
+  // 21 August 2026 are what distinguish them. A vacuous run still IS a fault, and
+  // the denominator says which is which.
+  console.error(`\n⛔ NO PLATEAU FOUND IN ANY RUN.`);
+  console.error(`   ${denominator}`);
+  if (vacuous.length > 0) {
+    console.error(`   ⚠ ${vacuous.length} run(s) were VACUOUS — nothing filmed, or the window was not a`);
+    console.error(`     reveal. That IS an instrument or filming fault and needs looking at.`);
+  }
+  if (notFound.length > 0 && vacuous.length === 0) {
+    console.error(`   Every window was sound; no static plateau was detected in any of them.`);
+  }
+  printNotFoundLimits();
   process.exit(1);
 }
 
@@ -530,8 +564,27 @@ console.log(`     per run   ${ms.map((m) => Math.round(m)).join("  ")}  ms`);
 console.log(`     median    ${Math.round(median)}ms`);
 console.log(`     range     ${Math.round(ms[0])} - ${Math.round(ms[ms.length - 1])}ms   spread ${Math.round(ms[ms.length - 1] - ms[0])}ms`);
 
-// ⚠ THE VERDICT. The instrument must go RED on today's build — the stall is live.
-// A clean verdict here means the INSTRUMENT is wrong, and says so in those words.
+// ⚠ THE VERDICT. Report what was found and stop.
+//
+// ⛔ THIS BLOCK USED TO ASSERT ITS OWN SUBJECT. It read "the instrument must go RED
+// on today's build — the stall is live", and the not-found branch printed "The stall
+// is live and filmed. A clean verdict means the band, the tolerance or the window is
+// wrong. DO NOT report the stall as fixed."
+//
+// That was true when written on 18 August 2026, and it was never the instrument's to
+// assert. An instrument that hardcodes the existence of its subject cannot report on
+// whether the subject exists — there was no path by which absence was a finding.
+//
+// ⛔ REFUTED BY EXPERIMENT, 21 August 2026. Same instrument at 031c207, same crop,
+// same machine, same session, two arms:
+//     before 5af5709        freeze 80-280ms, median 120ms, 5 of 5 runs
+//     after  31e9c3e onward NO PLATEAU FOUND, 0 of 5, 0 vacuous
+// The detector CAN see this freeze. "The band or the window is wrong" is refuted as
+// the explanation for the after-arm zeros.
+//
+// ⛔ AND THE MIRROR IMAGE IS NOT THE FIX. This must not assert that the stall is
+// fixed, gone or resolved either — that would be the same unevidenced premise
+// pointing the other way. The instrument reports; Carl rules.
 const STALL_FLOOR_MS = 3 * FRAME_MS; // 3 frame intervals — beyond one dropped frame
 const stalled = good.filter((r) => r.ms >= STALL_FLOOR_MS);
 
@@ -539,9 +592,10 @@ console.log(`\n  ⚠ WHAT THIS DOES NOT WATCH: mobile · Q4-Q1 · the corridor s
 console.log(`    anything shorter than ${FRAME_MS}ms · WHY the freeze happens (no attribution).`);
 
 if (stalled.length === 0) {
-  console.log(`\n  ⛔ NO FREEZE FOUND — and that is a finding ABOUT THIS INSTRUMENT.`);
-  console.log(`     The stall is live and filmed. A clean verdict means the band, the`);
-  console.log(`     tolerance or the window is wrong. DO NOT report the stall as fixed.\n`);
+  console.log(`\n  ⛔ NO FREEZE AT OR ABOVE THE ${Math.round(STALL_FLOOR_MS)}ms FLOOR in ${good.length}/${good.length} measured runs.`);
+  console.log(`     Plateaus WERE detected and every one fell below the floor.`);
+  console.log(`     ⚠ THIS IS A FINDING ABOUT THE SUBJECT, NOT A VERDICT ON THE BUILD.`);
+  printNotFoundLimits();
   process.exit(1);
 }
 
