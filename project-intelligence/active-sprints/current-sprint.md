@@ -57,7 +57,33 @@ Sprint 2 is complete. All success criteria met. Milestone commit: **2152e6e** (2
 
 ## Current work
 
-**Building is paused** — Carl's instruction of 25 July 2026. No chunk is authorised.
+**BUILDING IS PAUSED — reaffirmed by Carl on 21 August 2026.** Original instruction
+25 July 2026. ⛔ **New building restarts only when Carl says so explicitly, and he will be
+explicit.**
+
+**What the pause covers: NEW BUILDING ONLY.**
+
+**What it does not cover** — these have continued throughout and do not need the pause lifted:
+
+- governance work
+- tooling
+- documentation corrections
+- fixes to existing faults
+
+⚠ **RECENT COMMITS ARE NOT EVIDENCE THAT THE PAUSE HAS LAPSED.** Eleven commits landed on 20
+and 21 August 2026 under approved decisions and **none of them contradicted the pause** — every
+one was governance, documentation or a fix to an existing fault. **This file's former silence
+on scope is what made that look like a conflict.** Do not read commit activity as a restart.
+
+**The exit condition, in sequence:** the remaining governance work → a session on how Carl's
+working process with the Architect and the Builder can be improved → **Carl explicitly restarts
+building.** Not before, and not in any other order.
+
+---
+
+⛔ **NO CHUNK IS AUTHORISED. This is the permanent arrangement, not a pause condition.** It does
+not expire with the pause and it is not dated. **No chunk is ever authorised until Carl
+authorises one** — this remains true after building restarts.
 
 **When it resumes:**
 
