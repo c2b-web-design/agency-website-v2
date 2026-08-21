@@ -454,8 +454,37 @@ for (const f of files) {
     } else cur = 0;
   }
 
-  const ms = best * FRAME_MS;
   const revealMs = windowMs;
+
+  // ⚠⚠ NOT-FOUND IS A NULL, NOT A ZERO. `best` is assigned only inside
+  // `if (isStatic[i])` under `cur > best`, where `cur` is at least 1 — so
+  // `best === 0` is reachable ONLY when no static pair was found at all. It is
+  // the detector's correct, unambiguous encoding of "nothing detected".
+  //
+  // ⚠ THERE IS NO COLLISION TO PRESERVE: a real one-frame plateau is `best === 1`
+  // and prints 2f ~40ms. Nothing legitimate has ever printed 1f ~0ms.
+  //
+  // ⛔ IT USED TO RENDER AS A MEASUREMENT — `freeze 1f ~0ms (bounded 0-40) at
+  // f-1 t=-0.04s ... ink undefined`. `best + 1` made zero look like one frame,
+  // and `inks[-1]` produced the `undefined`. A null in the grammar of a number.
+  // ⚠ AND IT COUNTED: `ms: 0` passed the `r.ms !== null` filter below, so five
+  // non-detections on 19 August 2026 aggregated as five measured zeros and
+  // reported "spread 0ms". The spread was over nothing that had been measured.
+  //
+  // TWO STATES ONLY — a plateau was found, or none was. Whether a not-found run
+  // means "no freeze" or "a freeze below this instrument's ~120ms floor" is an
+  // interpretation, and it is not the instrument's to make.
+  if (best === 0) {
+    results.push({ file: f, ms: null, notFound: true, revealStart, revealEnd, revealMs });
+    console.log(
+      `  ${f}  ⛔ NO PLATEAU FOUND — nothing detected, NOT a 0ms measurement.` +
+      `  | reveal f${revealStart}-f${revealEnd} (${Math.round(revealMs)}ms)` +
+      `  settled ink ${settled}`
+    );
+    continue;
+  }
+
+  const ms = best * FRAME_MS;
   results.push({ file: f, frames: best + 1, ms, at: bestAt, revealStart, revealEnd, revealMs });
 
   console.log(
@@ -467,16 +496,36 @@ for (const f of files) {
   );
 }
 
-const good = results.filter((r) => !r.vacuous && r.ms !== null);
+// ⚠ `r.ms !== null` was ALREADY the right test — it was defeated by a not-found
+// run carrying `ms: 0`. That is fixed at the push site above; this filter now
+// excludes not-found runs because they genuinely carry null.
+const good = results.filter((r) => !r.vacuous && !r.notFound && r.ms !== null);
+
+// ⚠⚠ PRINT THE DENOMINATOR. A spread over 3 of 5 runs is a DIFFERENT CLAIM from a
+// spread over 5, and a sample that shrinks silently is the same class of error as
+// the zero this fix removes. The two exclusion reasons are reported separately
+// because they mean different things: a vacuous run is a FILMING or ANCHOR fault
+// (nothing usable filmed, or the window was not a reveal), while a not-found run
+// is a SOUND WINDOW in which no plateau was detected.
+const notFound = results.filter((r) => r.notFound);
+const vacuous = results.filter((r) => r.vacuous);
+const dropped = notFound.length + vacuous.length;
+const denominator =
+  `${good.length} of ${results.length} runs` +
+  (dropped > 0
+    ? ` — ${dropped} excluded (${notFound.length} no plateau found, ${vacuous.length} vacuous)`
+    : ``);
+
 if (good.length === 0) {
-  console.error(`\n⛔ NOTHING MEASURABLE. Not a clean verdict — a broken one.\n`);
+  console.error(`\n⛔ NOTHING MEASURABLE. Not a clean verdict — a broken one.`);
+  console.error(`   ${denominator}\n`);
   process.exit(1);
 }
 
 const ms = good.map((r) => r.ms).sort((a, b) => a - b);
 const median = ms.length % 2 ? ms[(ms.length - 1) / 2] : (ms[ms.length / 2 - 1] + ms[ms.length / 2]) / 2;
 
-console.log(`\n  ── DISTRIBUTION, ${good.length} runs, ONE build, ONE session ──`);
+console.log(`\n  ── DISTRIBUTION, ${denominator}, ONE build, ONE session ──`);
 console.log(`     per run   ${ms.map((m) => Math.round(m)).join("  ")}  ms`);
 console.log(`     median    ${Math.round(median)}ms`);
 console.log(`     range     ${Math.round(ms[0])} - ${Math.round(ms[ms.length - 1])}ms   spread ${Math.round(ms[ms.length - 1] - ms[0])}ms`);
