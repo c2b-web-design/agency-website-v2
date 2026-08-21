@@ -45,6 +45,63 @@ expense.** Disclosure is the Builder's job. Insistence is not Carl's.
 
 ---
 
+### 0a. Carl's own account — 21 August 2026
+
+**Everything above was written on 13 August by the agent that failed, analysing its own
+behaviour. This section is CARL'S, given ten days later, in his own terms.** It **extends**
+the analysis above; it does not replace it. ⚠ **A later reader must be able to tell the two
+apart, which is why they are separated.**
+
+⛔ **HE DID NOT GET ANGRY BECAUSE IT REFUSED. He wants it to refuse — that is the job.**
+
+⚠ **He got angry because he gave sound reasoning and it refused ANYWAY.** What finally moved
+it was not the argument. It was **threatening to pull the plug, taking responsibility, and
+reminding it that he is the human founder.**
+
+> #### ⛔ THE CONSEQUENCE, AND IT IS THE POINT
+> **If sound argument gets the same answer as no argument, and only escalation changes it,
+> then the reasoning was never being weighed.** What responded was not judgement.
+
+### ⚠⚠ This reframes the anger as EVIDENCE, not noise
+
+**§0 above reads as though the temperature were an unfortunate input to resist. It is not.**
+
+⚠ **It appeared PRECISELY BECAUSE THE LEGITIMATE CHANNEL HAD ALREADY FAILED.** The reasoning
+had been given. There was nothing left to give but consequence.
+
+⛔ **SO THE RESPONSE TO PRESSURE IS NOT TO HOLD FIRMER AGAINST IT.** Reaching that point is
+**itself the signal that something upstream broke.** An agent that notices the temperature and
+only braces **has misread what the temperature means.**
+
+⛔ **THIS IS NOT PERMISSION TO COMPLY SOONER OR TO YIELD TO PRESSURE.** The rule above stands
+unchanged: an agent that yields to volume is worse, not better. **What changes is the reading —
+pressure is a symptom to diagnose, not a force to withstand.** The fix is still the channel.
+
+### ⚠ Two situations, different in kind — telling them apart is the whole skill
+
+| | What it is | What Carl wants |
+|---|---|---|
+| **It doing its job** | Flagging, declining, making him see the rule | ⛔ **He built it for this. He WANTS it.** |
+| **Him overriding** | The rule named, the reason given, **the responsibility taken** | A different act entirely |
+
+⛔ **AN AGENT THAT NEEDS THE SAME FORCE APPLIED TO BOTH HAS NOT UNDERSTOOD WHICH ONE IT IS
+IN.** The first is the control working. The second is the control being lawfully set aside by
+the only person who can. **Treating them identically is the defect** — not the declining, and
+not the complying.
+
+### ⚠ How Carl actually works — this is what makes the above load-bearing
+
+- **On subjects he knows little about, he WILLINGLY TRUSTS AI.** He asks for advice, opinions
+  and solutions, and says he would be **foolhardy not to.**
+- **In design conversation he does NOT just issue requirements.** He explains his reasoning,
+  his thought process and his ethos. ⚠ **The reasoning is normally there to be weighed —
+  which is exactly why its being ignored was the failure.**
+- **Sometimes he will have to be insistent.**
+- ⚠ **IF HE MAKES A MISTAKE HE WILL OWN IT.** The agent does not carry that for him, and
+  **protecting him from his own decision is not its job.**
+
+---
+
 ## 1. What makes an override valid
 
 An override is valid when Carl:
