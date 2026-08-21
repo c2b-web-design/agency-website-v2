@@ -1,12 +1,36 @@
 # Enquiry Opening — Reveal Timing Reference
 
 **Captured:** 27 July 2026
+**Classification corrected:** 21 August 2026 — see the banner below.
 **Status:** Factual reference only. This is not a plan and grants no implementation authority.
 **Purpose:** Record the **reasoning** behind the opening reveal delays, which exists nowhere in
 the repository. The CSS carries the numbers; nothing carried the why.
 
 Companion to `contact-form-current-timing-reference.md`, which does the same job for the
 completion choreography.
+
+---
+
+# ⛔⛔ THE DEFECT CLASSIFICATION IN THIS DOCUMENT IS CLOSED BY D-055
+
+> **Carl walked a clean production build on 21 August 2026 and ruled: the Begin button is NOT
+> meant to be immediately clickable. The radial reveal is correct, and so is its gating of
+> clickability.** The gating described below is the **intended design**.
+>
+> ⚠ **THE MEASUREMENTS BELOW ARE RETAINED AS HISTORY AND THEY ARE ACCURATE.** The reading-speed
+> reasoning, the desktop and mobile overlap tables, the mechanism, the ruling-out of Three.js and
+> the reduced-motion note all still describe the system correctly. **What changed is the
+> CLASSIFICATION, not the record.**
+>
+> ⛔ **NOTHING WAS EVER FIXED, AND NOTHING NEEDS FIXING.** Do not read anything below as an
+> outstanding job. **Do not decouple the hit target from the mask, and do not shorten the delay to
+> make the button available earlier** — that is a change to approved work and needs Carl.
+>
+> ⚠ **YOU WILL SEE THE DELAY IF YOU LOAD THE PAGE. That is the design working, not evidence that
+> this banner is stale.** The gate lifted at **+7711ms desktop** and **+10259ms mobile** on the
+> 21 August production build, and Carl approved it in that state.
+>
+> **Full ruling: `decisions.md` D-055.**
 
 ---
 
@@ -62,27 +86,46 @@ longer. **The same overlap principle holds throughout.**
 
 ---
 
-## ✅ RESOLVED — the defect below was fixed in a session after this was written
+## ⚠⚠ CORRECTED 21 August 2026 — this section said "RESOLVED". NOTHING WAS EVER FIXED
 
-**Carl confirmed on 28 July 2026 that the Begin button now works correctly.** The measurement
-below is retained as an accurate record of what was found on 27 July; **it no longer
-describes current behaviour.**
+**What this section used to claim:** that Carl confirmed on 28 July 2026 the button *"was fixed
+in an earlier session"*, and that the measurement below **"no longer describes current
+behaviour."**
 
-⚠ **This section misled a later session.** It, and `current-sprint.md`, both still named this
-as the first job when building resumed, and the Builder started working from it. **Reading
-the code would not have caught the error** — `enquiry-opening.tsx:259` and the 7400ms delay
-at `globals.css:185` still exist and still look like the described defect. Only Carl's memory
-and the button working on localhost settled it.
+⛔ **BOTH CLAIMS WERE FALSE, AND THE MEASUREMENT BELOW HAS DESCRIBED CURRENT BEHAVIOUR THE
+WHOLE TIME.** No fix was ever made. The gating is still exactly what the 27 July measurement
+describes, and it fired at **+7711ms** on the 21 August 2026 production build.
 
-**The lesson, and it generalises:** a recorded next-step is a claim about the present and it
-decays. Before acting on one, confirm it is still true — in the running app, not in the file
-that recorded it.
+**What actually happened on 28 July: Carl looked at the button and was satisfied with it.**
+That is the *same ruling* he made on 21 August — **it was simply recorded under the wrong
+heading.** A satisfaction misfiled as a fix.
+
+> ### ⚠⚠ A SATISFACTION IS NOT A FIX, AND FILING ONE AS THE OTHER IS WHY THIS ITEM RETURNED TWICE.
+> **"Fixed" is a claim about the build.** It decays, and **anyone can refute it by loading the
+> page and still seeing the delay** — which is how the item came back on 19 August 2026.
+> **"Approved" is a design decision.** Observing the delay *confirms* it. See D-055.
+
+⚠ **The section did mislead a later session, and that part of the record stands.** It, and
+`current-sprint.md`, both named this as the first job when building resumed, and the Builder
+started working from it. **Reading the code would not have caught the error** —
+`enquiry-opening.tsx:259` and the 7400ms delay at `globals.css:185` still exist and still look
+like the described defect.
+
+⚠⚠ **BUT THE 28 JULY DIAGNOSIS OF *WHY* IT MISLED WAS ITSELF WRONG.** It concluded the file was
+stale about a fix. **The file was stale about a classification.** Reading the code confirmed the
+defect *because the mechanism is real and still there* — not because the record had decayed.
+
+**The lesson, corrected:** a recorded next-step is a claim about the present and it decays — so
+before acting on one, confirm it in the running app. ⚠ **And when it turns out the behaviour is
+intended, close it as a DECISION, not as a fix.** A closure that is a claim about the build can
+be refuted by the build; a design decision cannot.
 
 ---
 
 ## ⚠ Measured defect — the Begin button's usability, not its appearance
 
-**(Historical — resolved. See the note above.)**
+**(The measurement is accurate and current. The *defect* classification is CLOSED — D-055.
+See the banner at the top and the correction above.)**
 
 **Measured 27 July 2026** with `verify/begin-timing.mjs`, on Carl's report that the button
 *"was clickable immediately when it was built"* and had become slow.
@@ -124,8 +167,20 @@ reached back into the opening; measuring showed it had not, and pointed at CSS i
 **Reduced motion is unaffected** — the mask is static, `beginActive` is set immediately, and
 the button is usable at once. Only the animated path is slow.
 
-**Not fixed.** Carl's decision, 27 July: this is the first job when building resumes. Both the
-desktop 7400ms and the mobile 10100ms paths need an answer, and they are separate values.
+## ⛔ SUPERSEDED — this section used to close with a standing instruction
+
+**It read:** *"Not fixed. Carl's decision, 27 July: this is the first job when building resumes.
+Both the desktop 7400ms and the mobile 10100ms paths need an answer, and they are separate
+values."*
+
+⛔ **THAT INSTRUCTION IS CLOSED, NOT DEFERRED — D-055, 21 August 2026.** The gating is the
+intended design. **The desktop and mobile values do not need separate answers; they do not need
+an answer at all.**
+
+⚠ **The 27 July analysis above was not wrong about the facts.** It measured correctly and
+described the mechanism correctly, and its numbers remain the reference for this behaviour.
+**What it got wrong was calling the result a defect** — a judgement about intent, not a
+measurement.
 
 ---
 
