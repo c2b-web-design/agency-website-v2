@@ -66,17 +66,43 @@ build, and where sustained work resumes.
 
 ---
 
-### ~~Begin button, 7.4-second delay~~ — RESOLVED before 28 July 2026
+### Begin button, 7.4-second delay — CLOSED by D-055, 21 August 2026. NOT repaired
 
-**Carl confirmed on 28 July that this was fixed in an earlier session.** The Day 3 handoff
-and this file both still listed it as the first job when building resumed; **that record was
-stale, and the Builder began working from it before Carl caught the error.**
+⛔ **THE GATING IS THE INTENDED DESIGN.** Carl walked a clean production build on 21 August
+2026 and ruled that the Begin button is not meant to be immediately clickable. **Approved —
+do not unweld it, do not decouple the hit target from the mask, and do not shorten the delay
+to make the button available earlier.** Any of those is a change to approved work and needs
+Carl.
 
-**The lesson is the one this project already holds:** a recorded next-step is a claim about
-the present, and it decays. `enquiry-opening.tsx:259` and the 7400ms delay at
-`globals.css:185` still exist and still gate `beginActive` on the mask's `animationstart` —
-so **reading the code alone would have confirmed the stale record rather than corrected it.**
-Only Carl's memory of the fix, and the button working on localhost, settled it.
+⚠ **YOU WILL SEE THE DELAY IF YOU LOAD THE PAGE. That is the design working, not evidence
+that this entry is stale.** The gate lifts at **+7711ms desktop** and **+10259ms mobile**,
+measured 21 August 2026 on a clean production build.
+
+**Ruling: `decisions.md` D-055. Mechanism and measurements:
+`live-work/enquiry-opening-timing-reference.md`.** Not re-argued here.
+
+#### ⚠⚠ CORRECTED 21 August 2026 — this entry said "RESOLVED". NOTHING WAS EVER FIXED
+
+**It read:** *"~~Begin button, 7.4-second delay~~ — RESOLVED before 28 July 2026"*, and below
+it, *"Carl confirmed on 28 July that this was fixed in an earlier session."*
+
+⛔ **NO FIX WAS EVER MADE.** What happened on 28 July was **Carl looking at the button and
+being satisfied with it** — the same ruling he made on 21 August, **misfiled as a fix.**
+
+**The history this entry exists to keep, and it stands:** the Day 3 handoff and this file both
+listed the delay as the first job when building resumed, and **the Builder began working from
+it before Carl caught the error.** `enquiry-opening.tsx:259` and the 7400ms delay at
+`globals.css:185` still exist and still gate `beginActive` on the mask's `animationstart`, so
+**reading the code alone would have confirmed the record rather than corrected it.**
+
+⚠⚠ **BUT THE 28 JULY DIAGNOSIS OF *WHY* WAS ITSELF WRONG.** It concluded the record was stale
+about a **fix**. The record was stale about a **classification** — reading the code confirmed
+the defect *because the mechanism is real and still there*, not because the record had decayed.
+
+> ### ⚠ A SATISFACTION IS NOT A FIX — AND FILING ONE AS THE OTHER IS WHY THIS ITEM RETURNED TWICE.
+> **"Fixed" is a claim about the build.** It decays, and anyone can refute it by loading the
+> page and still seeing the delay — which is how the item came back on 19 August 2026.
+> **"Approved" is a design decision.** Observing the delay *confirms* it.
 
 ### ⚠ Q5 stutter — RETURNED 9 August 2026. Largely fixed again; the 30 July EVIDENCE was void
 
