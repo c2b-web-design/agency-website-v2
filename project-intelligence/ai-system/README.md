@@ -89,6 +89,7 @@ Four, and they are the ones worth knowing cold.
 | How should I actually behave in conversation with him? | `working-with-the-builder.md` |
 | What is the business, and is the site deployed? | `../mission-overview.md` |
 | How is the PM/A seat locked down, and was it tested? | `architect-settings.reference.json.md` |
+| Claude Code has updated — who checks the controls still work? | `governance-review-protocol.md` |
 
 ---
 
