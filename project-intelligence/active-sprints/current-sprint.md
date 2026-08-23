@@ -160,6 +160,30 @@ the defect *because the mechanism is real and still there*, not because the reco
 > each: mount→compiled is **161ms with** the warm-up and **919ms without**. ANGLE's on-disk
 > binary shader cache survives the context's death and is worth ~758ms.
 
+#### ⚠⚠ THE PARAGRAPH ABOVE IS SUPERSEDED — it reads as standing guidance and is not
+
+**Two separate things overtook it, on two different dates, for two different reasons. They
+are recorded apart on purpose.**
+
+**1. The instruction — overtaken 18 August 2026.** ⛔ **The warm-up canvas WAS deleted**, in
+commit **`98429af`**, whose own message reads *"the second context is gone, the freeze is
+not"*. The second WebGL context and the redundant second link of all 17 programs went; **the
+freeze survived the deletion** — median unmoved. It was run as a measured experiment, not as
+a fix. **Full record, including the prediction written before the measurement:
+`live-work/step5-warmup-deletion-18-august.md`.** ⚠ **Nothing here says whether deleting it
+was right.** That is not what this records.
+
+**2. The ~758ms figure — contested since 13 August 2026, and SEPARATELY.** The attribution to
+ANGLE's on-disk cache is disputed by
+`live-work/q5-stage1-resolution-and-cache-13-august.md` **§FINDING 2**, which puts the disk
+cache's actual worth at **~53ms**. ⚠ **Contested, not settled — and not adjudicated here.
+That is Carl's.**
+
+⚠ **THE MEASUREMENT ITSELF STANDS AND IS DELIBERATELY NOT DELETED.** 161ms with / 919ms
+without was really measured, and the reasoning is worth keeping. **What changed is that the
+paragraph reads as a live instruction — "must not be deleted" — to a reader who will never
+reach the commit that deleted it.** `live-work/` is gitignored and no rule requires reading it.
+
 ### ⚠⚠ THE 30 JULY "RESOLVED" ENTRY BELOW CITED EVIDENCE THAT NEVER TOUCHED A GPU
 
 **`verify/q5-stutter.mjs` launched headless until 9 August 2026.** Bare `chromium.launch()`,
