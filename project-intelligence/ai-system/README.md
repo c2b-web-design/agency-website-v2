@@ -84,6 +84,7 @@ Four, and they are the ones worth knowing cold.
 | What status does this work have? What may I write down? | `context-rules.md` |
 | What goes in `live-work/`, and what is the scope guard? | `live-work-protocol.md` |
 | What has already been decided, and why? | `../decisions.md` |
+| Why is a section the way it is — its lineage, reasoning and ethos? | `../sections/README.md` |
 | What has Carl visually approved? | `../reviews/review-log.md` |
 | What is authorised right now? | `../active-sprints/current-sprint.md` |
 | Who is Carl, and how does he transmit intent? | `working-with-carl.md` |

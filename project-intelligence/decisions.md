@@ -2660,3 +2660,95 @@ Per the standing ruling that a rule gets a holder where one is possible and stat
 ⚠ **Nothing in a tool call sees a conversation, an iteration, or a decision to close a section.** A `PreToolUse` hook fires on an edit happening; the three things this entry governs are **a discussion**, **a change of mind while looking at the screen**, and **a declaration Carl alone makes**. **None of them is a file write.**
 
 ⛔ **This rule relies on being read, not on being enforced.** Stated here rather than implied, on the same principle as Rule 7's own amendment.
+
+---
+
+## D-059 — How The Loop Runs: Declared Files, Checked Premises, And Section Records
+
+**Date recorded:** 2026-08-23
+**Status:** APPROVED
+**Authority:** Human Founder — Carl's rulings on the working process, 23 August 2026, in the session that gates the restart of building.
+**Bears on:** **D-058** (how work is authorised, iterated and closed) — this is the operational half of the same subject. **D-009** and **D-057** for where a component record lives. ⛔ **Neither is amended here.**
+
+⚠ **Three rulings, recorded together because they are one thing: how the loop runs.** Splitting them would lose the connection — each one is a place the loop was leaking.
+
+---
+
+### 1. ⚠⚠ THE PLAN DECLARES ITS FILES
+
+⛔ **Every plan names the files it expects to touch, and FLAGS WHICH ARE ON THE PROTECTED LIST.**
+
+⚠ **The point is WHEN the unlock decision arrives: with the plan, while Carl is reading it** — not mid-task with half a change in flight. A denial discovered at the first edit stops work that has already started; a flag in the plan is a decision made calmly, before anything is touched.
+
+**The Architect predicts that list independently.** It reads the working tree, so it can trace where a thing is rendered and what imports it — ⚠ **a grep, not a guess.**
+
+⛔ **THE TWO ARRIVE AT THE LIST DIFFERENTLY, AND THAT IS THE WHOLE VALUE.** The Architect reads **structure, before any work exists**; the Builder plans **the actual edit**. Two independent routes to one answer:
+
+- ⚠ **Agreement is corroboration.**
+- ⛔ **DISAGREEMENT IS THE FINDING.** One of them has misread the structure — and **learning that while reading a plan costs nothing.** Learning it at the first denial, or worse at the first wrong edit, does not.
+
+⚠⚠ **AND THE HONEST LIMIT, WHICH MUST NOT BE INVERTED: THE BUILDER IS THE ONE THAT CAN BE RIGHT.** It is the seat touching the code. ⛔ **The Architect's list is something to CHECK THE PLAN AGAINST, not authority over it.** If a plan names a file the Architect did not predict, the question is **"why does it need that one"** — never *"the Architect said otherwise"*.
+
+⚠ **THE LIVE CASE, and the reason this is recorded now:** the logo work lands in **`app/layout.tsx`** and **`components/layout/site-header.tsx`**. ⛔ **Both are on the protected list.** This rule exists so that is known **before the first edit, not at the first denial.**
+
+---
+
+### 2. ⛔ ARCHITECT FIGURES AND PATHS ARE PREDICTIONS — CHECK THEM AT SOURCE
+
+**Across 21–24 August 2026 the Architect stated SEVEN figures or paths as fact that were wrong:**
+
+| Stated as fact | What it actually was |
+|---|---|
+| The freeze at **680–760ms** | **~120ms** — ⚠ **`31e9c3e`'s own commit message said so** |
+| `project-intelligence/README.md` | **Does not exist** — the table is in `ai-system/README.md` |
+| **One** not-found branch | **Two** — the head batch takes the other |
+| The next review number **R-013** | **R-019** — a `tail` of a reverse-chronological file |
+| The card exit's **500 / 140 / 1060ms** | **425 / 119 / 901** — the spec's candidates, not the built values |
+| **D-044 / D-045** as judged-by-eye evidence | **PROVISIONAL** and **SPECIFIED, NOT BUILT** |
+| Two line ranges | Both wrong |
+
+⛔ **EVERY ONE WAS CAUGHT BY THE BUILDER CHECKING — NOT BY BETTER REASONING.** Reasoning about a figure cannot detect that it is wrong; only going to the source can.
+
+⚠ **This was never written down. It worked because Carl kept asking for verification** — a practice held by one person's habit, which is exactly the shape of thing this project converts into a rule.
+
+⛔ **THE RULE: A PLAN VERIFIES THE ARCHITECT'S PREMISES RATHER THAN INHERITING THEM.** A figure, path, line range or status quoted from a brief is **a prediction to be checked at source before it is built on**, not a fact to be carried forward. ⚠ **Two of the seven were the Builder's own, carried from a summary instead of from the thing itself** — so this is not a rule about one seat being unreliable. It is about what a summary does to a measured detail.
+
+---
+
+### 3. ⛔ SECTION FILES LIVE IN `project-intelligence/sections/`, AND EVERY SECTION IS OPEN
+
+**One file per section** — the home page, `/start` (the Q+A), client info, and the client information page **not yet built**.
+
+**Each file carries:**
+
+- ⚠ **A top-level LINEAGE line** — e.g. *"the client info section is a child of the Q+A section"*. This is the thing D-058 established as safe to share early and useful early: **what the section descends from and what it inherits, and nothing about how the parent was built.**
+- **Then Carl's reasoning, the ethos, and the design consistency running through it.**
+
+⛔ **WRITTEN AS THE SECTION NEARS COMPLETION — NOT PER CHUNK.** Elements get modified as a section expands, and a per-chunk record would be rewriting itself continuously while describing a thing that is still moving.
+
+#### ⚠ TWO VOICES, AND ONE OF THEM CANNOT BE DELEGATED
+
+- **The Architect's account** — what was decided and why.
+- **Carl's account** — the ethos.
+
+⛔ **CARL'S CANNOT BE DELEGATED. D-056 IS THE PROOF:** *"the answers have done their job"* — the reason the card exit is deliberately asymmetric — **existed nowhere in the record until he said it.** No amount of reading the code or the decisions would have produced that sentence. **An agent writing the ethos section would have written something plausible and wrong.**
+
+#### ⛔⛔ EVERY SECTION IS OPEN, AND EVERY FILE WILL SAY SO
+
+⚠ **THE HERO IS THE LAST THING TO BE BUILT.** When it is done, **Carl walks the whole site — a MASTERING SESSION, in the DAW sense (D-035)** — and **sections are declared closed THEN, together.**
+
+⛔ **A SECTION CANNOT BE JUDGED ALONE WHEN IT IS MEANT TO RELATE TO THE OTHERS.** That is why closure is collective and why it comes last.
+
+⚠ **NOTHING IS CLOSED BEFORE THAT WALK.** ⛔ **A file that looks finished is not a closure.** **D-046 is the worked failure** — it recorded a completion while the enquiry corridor was open, and that corridor is open now. This is D-058's *built + approved by eye + recorded ≠ closed*, applied to the section record itself.
+
+---
+
+### ⚠ Where this is reachable from
+
+**`project-intelligence/sections/README.md`** states the folder's purpose, the two voices, the lineage line, and that every section is open until the mastering walk. ⛔ **A routing row was added to `ai-system/README.md` in the same change** — because the sweep mandate lapsed for exactly one reason: **it was filed where nobody looked.**
+
+⚠ **`sections/` is NOT `components/`.** That directory is an **archive** (D-057) — no new files are written there.
+
+### ⛔ No holder
+
+⚠ **Nothing enforces any of the three.** The scope guard denies a protected edit but cannot require a plan to have *declared* it in advance; nothing detects an unchecked premise; nothing detects a section file that was never written or a closure claimed too early. **All three rely on being read.** Stated here rather than implied, on the same principle as Rule 7 and D-058.
