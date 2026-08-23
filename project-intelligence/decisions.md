@@ -2357,3 +2357,107 @@ must not be cited as one.*
 
 `decisions.md` (this entry). **No product code changed, and no other record amended** —
 `open-defects.md`, `current-sprint.md` and the timing reference are separate tasks.
+
+---
+
+## D-056 — The Cards Leave As A Compressed Reversal, Because They Have Done Their Job
+
+**Date recorded:** 2026-08-23
+**Date the change landed:** 2026-08-18 — commits `d008b4d`, `c831bf9`, `387653a`
+**Status:** APPROVED
+**Authority:** Human Founder — **the reversal was Carl's own idea**, and his verdict on the
+built result, given 23 August 2026: *"I am more than happy with how it turned out."* ⚠ **On
+Carl's scale that is the top level — beyond approval, not at it.**
+
+### The decision
+
+**The answer cards leave as a compressed reversal of their arrival.** The departure keeps the
+arrival's *shape* and plays it faster: same `CARD_OVERLAP`, same three strands, reversed
+order, roughly a quarter of the duration.
+
+⚠ **THE ASYMMETRY IS THE DESIGN, NOT A CONCESSION.** In Carl's terms:
+
+> **On arrival the ladder is slower because the user has to examine the questions. On next
+> step the answers have done their job, so it is a better design decision to move on a little
+> faster.**
+
+⛔ **IT IS DERIVED FROM WHAT THE USER IS DOING AT EACH MOMENT.** It is **not** a performance
+concession and **not** a compromise forced by the timings. ⚠ **A future reader seeing ~425ms
+out against 2000ms in could easily try to "correct" it back toward symmetry. Do not.** The
+gap between the two numbers is the decision.
+
+Carl's reasoning at the time, in his words: ⛔ ***"its done its job."***
+
+### ⚠ How it was arrived at — the sequence, because nothing in the repo carried it
+
+1. At one point the cards left **all together, simultaneously and abrupt.**
+2. The original design called for them to **fade out.** That was implemented.
+3. ⚠ **Carl then asked about reversing the effect. The reversal was his idea.**
+4. He was told it would **not be an exact mirror** — the timings would change.
+5. He accepted that: ⛔ **as long as the choreography was there, he was happy.**
+
+### The mechanism
+
+**As built** (`answer-card-geometry.ts`), against the entrance it reverses:
+
+| | Entrance | **Exit** |
+|---|---:|---:|
+| per-card duration | 2000ms | **425ms** (`CARD_EXIT_DURATION_MS`) |
+| gap between cards | 560ms | **119ms** (`CARD_EXIT_GAP_MS`) |
+| total span | 4240ms | **901ms** (`CARD_EXIT_END_MS`) |
+| overlap | 0.72 | **0.72 — preserved** |
+
+⚠ **425ms IS THE ONE CHOSEN NUMBER; EVERYTHING ELSE DERIVES FROM IT AND FROM `CARD_OVERLAP`.**
+The gap is `round(duration × (1 − overlap))`, the ladder is `(4 − i) × gap`. **PROVISIONAL under
+D-035 — Carl tunes by eye.** ⛔ **If the gesture reads wrong the correction belongs in the
+duration or the overlap. Do not hand-type a ladder to compensate.**
+
+⚠ **THE SPEC'S FIGURES WERE CANDIDATES AND WERE TUNED DOWN.**
+`live-work/card-exit-spec-16-august.md` §3.1 proposed ~500ms / ~140ms / ~1060ms and marked them
+*"CANDIDATE, NOT SETTLED"*. **The built values are 425 / 119 / 901.** The proportions are
+unchanged; only the compression factor moved.
+
+- **Stagger — card 5 first.** It unwinds: last to arrive, first to leave, **5 → 4 → 3 → 2 → 1**.
+- **All three strands reversed** — opacity 1 → 0, `position.y` 0 → **−10px**, scale 1.0 → 0.94.
+  ⚠ **The rise becomes a FALL, not a retrace.** The card continues its direction of travel and
+  accelerates away on a cubic ease-**in**; it does not return to +10px.
+- **The button leaves first, then the cards.** The Next step button is not part of the arrival
+  ladder, so it is not mirrored into the departure one.
+
+### ⚠⚠ What it fixed — the substantive change is ORDERING, not smoothness
+
+Measured before: the cards extinguished at **~1341ms** while the next question's reveal began at
+**~1153ms** — ⛔ **the departure was landing on top of the arriving text, 188ms into it.**
+
+Measured after, 1440×900 production:
+
+    departure order   card 5 → 4 → 3 → 2 → 1
+    mean gap          151.8ms
+    last card dark    876ms
+    reveal begins     1152ms          vacates 276ms early
+
+**The premise is that one thing vacates and the next arrives into the space it left.** That
+ordering is functional in this corridor, not aesthetic.
+
+### ⚠ The recording fault, stated plainly
+
+The spec was written 16 August under a header reading **"SPEC. NO CODE. NOT AUTHORISED TO
+BUILD"**; the work went in **two days later**; and **no decision entry and no recorded verdict
+existed for five days** — swept 23 August across `decisions.md`, `reviews/review-log.md`, commit
+messages and `live-work/`, and found nowhere.
+
+⛔ **THE WORK IS FINE. THE RECORD WAS THE FAULT.**
+
+⚠ **This is the second instance of the write-back gap recorded at D-048** — see that entry's
+closure marker. **This entry does not close that gap.** Nothing yet requires an authorisation to
+reach the record when Carl gives one.
+
+⚠ **AND THIS ENTRY IS NOT THE D-048 CASE.** D-048's authorisation was reconstructed as a
+judgement made on 23 August, with no moment anyone could point to. **This one is recalled:**
+Carl remembers the conversation, the reversal was his own idea, and the sequence above is his
+account of it.
+
+### What this entry does not cover
+
+**The card exit only.** It says nothing about the entrance ladder's own timings, the corridor
+step, or the reveal it vacates for.
