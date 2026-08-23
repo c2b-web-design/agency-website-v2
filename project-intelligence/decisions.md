@@ -2461,3 +2461,84 @@ account of it.
 
 **The card exit only.** It says nothing about the entrance ladder's own timings, the corridor
 step, or the reveal it vacates for.
+
+---
+
+## D-057 — "Done" Is Carl's Listen-Back, Not A File On Disk — D-009 Amended
+
+**Date recorded:** 2026-08-23
+**Status:** APPROVED
+**Authority:** Human Founder — ruled 23 August 2026, after a sweep found D-009's schema followed for **two components of sixteen**, both in the project's first month, neither updated since.
+**Amends:** **D-009** (Component Documentation Schema Adopted, 2026-05-23), whose completion condition is replaced. ⚠ **D-009 is not DEPRECATED and its schema is not withdrawn** — what changes is that a component doc is no longer what makes a component complete.
+
+### The decision
+
+⛔ **A component is complete when Carl has looked at the element and visually confirmed it looks correct — and that verdict is recorded.**
+
+**Carl's own terms, and they are the substance of this entry:** *"done" means he has looked at the element and visually confirmed it looks correct — **the same way, in a DAW, he would listen back.*** ⛔ **The listen-back is the completion condition.** Not a file existing. Not a checkbox ticked.
+
+**Where the verdict is recorded:**
+
+- **The reasoning** — a `decisions.md` entry.
+- **The binding constraints** — load-bearing comments in the code, next to what they constrain.
+- **A measurement record in `live-work/`** where one applies.
+
+⛔ **THE COMPONENT-DOCUMENTATION REQUIREMENT IS RETIRED.** A component without a file in `project-intelligence/components/` is **not** incomplete.
+
+⚠ **A REVIEW ENTRY IS ONE PLACE THE VERDICT MAY LIVE — NOT A SEPARATE REQUIREMENT.** The evidence is the record's own: **D-047, D-051, D-052, D-053 and D-055 have no review-log entry**, and every one was judged by Carl's eye. Their verdicts sit in **Authority lines and entry bodies** instead. ⛔ **The log was not the place. The verdicts were still there** — which is the distinction this clause turns on.
+
+### ⚠⚠ RECORD THE VERDICT AT THE LEVEL IT WAS GIVEN — DO NOT PROMOTE IT
+
+**Carl's scale:**
+
+| What he says | What it means |
+|---|---|
+| A vague phrase — *"it looks pretty clean"* | ⚠ **IMPROVED BUT NOT FINISHED** |
+| *"Good"* | **Approved** |
+| Effusive praise | **It exceeded expectation** |
+
+⛔ **D-046 RECORDED *"it looks pretty clean"* AS APPROVED. That promotion is the failure this clause exists to prevent** — the words were Carl's, the status was not what they meant, and the entry's own body said *"NOT ELIMINATED, AND NOT RECORDED AS FIXED"* four paragraphs below it. **Quote the verdict; do not upgrade it.**
+
+⚠ **NEW, NOT YET THE PRACTICE — Carl, 23 August:** where his phrase is vague he will add a fuller explanation of where the work has got to and what *"good"* would look like. **This is a commitment made today, not a description of what has happened, and it is labelled as such.**
+
+### ⚠ THIS IS A DESCRIPTION, AND THAT IS THE POINT
+
+**D-009 and Rule 7 wrote down an intention as though it were a description.** The result: **2 of 16 components documented — about 12% — over three months**, both docs from the first month and neither maintained. **A rule nobody completes is not a rule.**
+
+**Everything in "The decision" above except the labelled clause is already what this project does.** The decision entry, the code comments and the `live-work/` record are how D-046 through D-056 were handled. ⛔ **Nothing here is being introduced.**
+
+### ⛔ THIS ENTRY HAS NO HOLDER, AND SAYS SO ON ITS FACE
+
+Per the standing ruling that a rule gets a holder where one is possible and states plainly where none is:
+
+| | Holdable? |
+|---|---|
+| Does a decision or review entry exist for a given number | ✅ A file read — mechanisable today |
+| Is the next `D-###` / `R-###` correct and non-colliding | ✅ Mechanisable — **and would have caught an R-number error made on 23 August 2026** |
+| ⛔ **Did the verdict get written down at all** | ❌ **NOT MECHANISABLE with the events in use** |
+
+⚠ **The blocker is the trigger, not the check.** Both hooks are `PreToolUse` — they fire on **an edit happening**, and the failure mode here is **an edit that never happens.** A `PreToolUse` hook cannot fire on an absence. Catching *"work landed and no verdict was recorded"* needs a session-end or commit-time event; **only `PreToolUse` is configured.**
+
+⛔ **SO THIS RULE RELIES ON SOMEONE REMEMBERING, AND THAT IS STATED RATHER THAN IMPLIED.** It is the same gap recorded at **D-048** — nothing requires a record to be written back when Carl gives a verdict. **This entry does not close it.**
+
+### ⚠ WHAT THIS ENTRY DOES NOT DO
+
+**It deletes nothing in `project-intelligence/components/`.** `_component-template.md`, `container.md` and `enquiry-opening.md` stand.
+
+⛔ **IT DOES NOT AMEND THE ELEVEN LIVE SITES THAT STILL REQUIRE THE DOC.** They are separate tasks and they follow this one; **this entry is the authority they will point at.** ⚠ **Until each is corrected, it still requires the component doc:**
+
+| File | What still requires it |
+|---|---|
+| `ai-system/context-rules.md` | **Rule 7** (the restatement); Status table rows PROVISIONAL and IMPLEMENTED; File Integrity *"every component doc references the review entry"*; Session Protocol read-list and session-end step |
+| `ai-system/handoff-protocol.md` | Deliverables checkbox; report template line; session-end step 3 |
+| `ai-system/prompt-protocol.md` | *"New component built → `components/{name}.md` (create)"*; two task read-lists |
+| `ai-system/ai-roles.md` | The Builder's duties — *"updates sprint and component docs"* |
+| `ai-system/live-work-protocol.md` | Component docs named as a permanent destination (twice) |
+| `design-system/design.md` | *"Receive a documentation file in `/project-intelligence/components/` upon completion"* |
+| `architecture/system-architecture.md` | The directory tree entry |
+
+⛔ **DO NOT RENUMBER ANY RULE WHEN `context-rules.md` IS AMENDED.** Rules **1, 5, 6, 8 and 9** are cited by number from other files. **Rule 7 is cited by number nowhere** — verified by two independent sweeps on 23 August — so it can be amended in place, but its slot must not be removed.
+
+### ⚠ FLAGGED, NOT FIXED
+
+**`components/enquiry-opening.md` describes the primary component of `/start`, reads as current, and stops at D-033.** The entire **D-046 → D-056** layer is absent, its content was last updated **22 June 2026**, and it carries **two contradicting "Known Issues" sections** disagreeing on F-007. **Reported here; not corrected by this entry.**
