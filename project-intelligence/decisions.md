@@ -2564,3 +2564,67 @@ Per the standing ruling that a rule gets a holder where one is possible and stat
 ### ⚠ FLAGGED, NOT FIXED
 
 **`components/enquiry-opening.md` describes the primary component of `/start`, reads as current, and stops at D-033.** The entire **D-046 → D-056** layer is absent, its content was last updated **22 June 2026**, and it carries **two contradicting "Known Issues" sections** disagreeing on F-007. **Reported here; not corrected by this entry.**
+
+---
+
+## D-058 — How Work Is Authorised, Iterated And Closed — Carl's Account
+
+**Date recorded:** 2026-08-23
+**Status:** APPROVED
+**Authority:** Human Founder — Carl's own account of his working process, given 23 August 2026.
+**Bears on:** **D-048** (the write-back gap) and **D-057** (the listen-back). ⛔ **Neither is amended here.** This entry records the account; propagation to any other file follows separately and is not done by this entry.
+
+### Why this exists — the write-back gap was framed wrongly
+
+**D-048 framed the gap as: *an authorisation from Carl never reaches the record.*** ⛔ **That framing was wrong, and Carl's account is why.** It assumed a moment of authorisation exists to be captured. **It does not.**
+
+⚠ **This is one account in three parts. They are not three decisions and must not be split.**
+
+### 1. ⛔ There is no single moment of authorisation to capture
+
+**Carl's loop, in his terms:** he discusses a feature with the Architect — **implementation and the order of the chunks** — it is planned with the Builder, sent back to the Architect, and **amendments are usually added**.
+
+⛔ **BUT ONCE A PLAN IS AGREED AND DOCUMENTED, HE RESERVES THE RIGHT TO ITERATE AND MODIFY WHILE LOOKING AT THE RESULT.**
+
+**The worked case is the card exit (D-056).** It went from **all cards fading together**, to **a fade**, to **Carl asking about reversing it** — the compressed reversal that shipped. ⚠ **None of that was in the plan.** It happened while looking at the running product.
+
+⛔ **So a rule demanding "the authorisation must reach the record" was aimed at a moment that does not exist.** The plan is a starting position, not a contract. **In Carl's words: it pays to be flexible.**
+
+### 2. ⛔ A verdict on an element is not a closure of its section
+
+**This is the part the record currently cannot say, and it is the substance of this entry.**
+
+**Carl builds like a music composition: the basics first, the nuances later.** ⚠ **EVERY SECTION STAYS OPEN UNTIL HE EXPLICITLY DECLARES IT FINISHED.** ⛔ **That declaration is his alone** — it is not implied by a build, an approval, or a recorded entry.
+
+⚠ **The live example, recorded as UNDECIDED:** the logo goes **top-left in the client info section**, and having the **orbital light glint off it — real or faked — is an open option.** ⛔ **So "logo placed, done" would be false** while that remains open.
+
+⛔ **D-046 IS THE WORKED FAILURE, AND IT WAS WRONG TWICE:**
+
+1. **It promoted *"pretty clean"* to APPROVED** — the verdict-scale error D-057 exists to prevent.
+2. ⛔ **More deeply: it recorded a completion at all.** **The enquiry corridor was open then and is open now.**
+
+⚠ **Built + approved by eye + recorded ≠ closed.** ⛔ **The three are different states and the record must not collapse them.** A `decisions.md` entry records that an element was judged correct **at that point**; it does not close the section the element sits in.
+
+### 3. ⛔ Scope is deliberately limited, and lineage is the exception
+
+**Carl does not want the whole site's implementation revealed at once.** The **Architect stays on one section at most**; the **Builder on the current task.** ⚠ **This is deliberate, not an oversight, and it is not a gap to be closed.**
+
+⚠ **BUT THE CLIENT INFO SECTION PROVED WHAT MUST BE SHARED.** Knowing that it **descends from the Q+A**, which **descends from the Hero**, and **what ethos runs through all three**, is what let the Builder **interpret intent rather than implement instructions literally.**
+
+⛔ **THE RULE: A BRIEF CARRIES WHAT THE SECTION DESCENDS FROM AND WHAT IT INHERITS — AND NOTHING ABOUT HOW THE PARENT WAS BUILT.**
+
+⚠ **Why the split works, and it is the reason this is safe to adopt:** **lineage is one or two sentences and is STABLE.** Implementation is neither — it is long, and it moves. ⛔ **The thing safe to share early is exactly the thing useful early.**
+
+### ⚠ What this means for D-048's write-back gap
+
+**The general form is not a separate rule.** ⛔ **It is D-057 being followed** — because **the record is written when the work is finished, not when it was authorised to begin.** There is no earlier moment to write down. **That half of D-048's framing is answered by this entry.**
+
+⛔ **WHAT REMAINS IS THE PROPAGATION HALF, AND IT IS STILL OPEN.** A correction lands in one file while its source stands unmarked — **four times on 23 August 2026.** ⚠ **This entry does not close it.**
+
+### ⛔ No holder — and this entry says so on its face
+
+**Per Carl's ruling, a rule gets a holder where one is possible and states plainly where none is.** ⛔ **None is possible here.**
+
+⚠ **Nothing in a tool call sees a conversation, an iteration, or a decision to close a section.** A `PreToolUse` hook fires on an edit happening; the three things this entry governs are **a discussion**, **a change of mind while looking at the screen**, and **a declaration Carl alone makes**. **None of them is a file write.**
+
+⛔ **This rule relies on being read, not on being enforced.** Stated here rather than implied, on the same principle as Rule 7's own amendment.
