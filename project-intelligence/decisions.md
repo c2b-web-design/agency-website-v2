@@ -1313,8 +1313,60 @@ Measured off `globals.css` this session. **Every value moves deeper, and the spe
 ## D-046 — The Warm Context Outlives Begin: An Overlap, Not A Shared Canvas
 
 **Date:** 2026-08-09
-**Status:** APPROVED by Carl's eye — *"it looks pretty clean"*. Implemented, commit `3a7cf1f`.
+**Status:** ⛔ **CLOSED 23 August 2026 by Carl — SUPERSEDED, NOT FAILED. The mechanism is gone
+from the build.** This line previously read *"APPROVED by Carl's eye — "it looks pretty clean".
+Implemented, commit `3a7cf1f`"*, and is kept because **the promotion in those words is itself
+part of what was ruled on** — see the closure below. Implemented, commit `3a7cf1f`.
 **Supersedes nothing. Constrains D-022/D-023/D-024 only in that it did NOT touch them.**
+
+> ### ⛔ CLOSED — CARL, 23 AUGUST 2026. Two rulings: the mechanism, and the status word.
+>
+> ⚠ **This supersedes the "the overlap fix in this entry stands and is unchanged" line in the
+> marker below, which was true on 11 August and is not true now.**
+>
+> #### 1. THE MECHANISM IS GONE — ⛔ SUPERSEDED, NOT FAILED
+>
+> `WARMUP_OVERLAP_MS` and `warmupHeldOver` are **removed from the build**. Verified in code, not
+> from documents: no live reference to either remains in `components/enquiry/`; four tombstone
+> comments stand in `enquiry-opening.tsx` as the record of why the overlap existed.
+>
+> ⛔ **IT WAS NOT REMOVED BECAUSE IT DID NOT WORK. The overlap improved the reveal.** What
+> removed it was **D-048's shared host making it unnecessary** — one context that never unmounts
+> leaves nothing to hold over. The tombstone states exactly that: *"WITH NO WARM NODE THERE IS
+> NOTHING TO HOLD OVER."*
+>
+> ⚠ **THE 161ms / 919ms MEASUREMENT IS KEPT AS REFERENCE, DELIBERATELY.** It was a real
+> measurement and may be useful if a similar problem emerges. **Its ANGLE attribution is
+> separately contested — see the marker on D-048.**
+>
+> ⚠ **TRAP: `CARD_OVERLAP = 0.72` (`answer-card-geometry.ts`) IS LIVE AND UNRELATED.** It governs
+> the card ladder's stagger, not the warm-up hold-over. **A reader sweeping for "overlap" will hit
+> it. It is not this.**
+>
+> #### 2. THE STATUS WORD OVERSTATED THE QUOTE — AND THE BODY ALREADY SAID SO
+>
+> The status read **APPROVED**, on the quote *"it looks pretty clean"*. ⛔ **On Carl's own scale,
+> given 23 August 2026: a vague phrase like that means IMPROVED BUT NOT FINISHED. "Good" means
+> approved. Effusive praise means it exceeded expectation.** ⚠ **The words are his; the status was
+> a promotion of them.**
+>
+> ⚠⚠ **AND THIS ENTRY HAS CONTRADICTED ITSELF SINCE 9 AUGUST.** Its own body says *"NOT
+> ELIMINATED, AND NOT RECORDED AS FIXED. ~70ms still lands in the wipe… Carl's eye accepted it;
+> the residue is real."* ⛔ **The status line is the half a reader meets first**, and it said the
+> opposite of the paragraph below it for a fortnight.
+>
+> #### 3. WHERE THE REVEAL ACTUALLY REACHED SATISFACTION — ⚠ AND IT IS NOT RECORDED
+>
+> **D-046 is ONE STEP IN A CHAIN, not the step that settled the reveal.** Carl's account,
+> 23 August: the Q stall exposed several problems, the card overlap being one of them. **The card
+> reveal reached his satisfaction later, improved by a compressed reversal** — the card exit,
+> built **18 August 2026, commit `c831bf9`**; spec at `live-work/card-exit-spec-16-august.md`.
+>
+> ⛔ **NO DECISION ENTRY COVERS THE CARD EXIT, AND NO VERDICT FROM CARL ON IT IS RECORDED
+> ANYWHERE** — not in `decisions.md`, not in `reviews/review-log.md`, not in any commit message or
+> live-work file. **Swept 23 August 2026.** ⚠ **So this pointer names where the work happened, not
+> a documented successor. There is no documented successor.** That gap is known and is its own
+> task.
 
 > ⚠⚠ **PARTLY OVERTAKEN — SEE D-048 (11 August 2026) BEFORE ACTING ON THE "NOT AUTHORISED" BELOW.**
 >
