@@ -1466,7 +1466,44 @@ claim about the past. Measure the ladder; do not read it off a comment.**
 **Date:** 2026-08-11
 **Decision:** **D-046's "not authorised" on the shared-canvas host no longer stands on its stated reasons.** Two of the three have been removed by work done since; the third was a scope judgement whose premise has changed. The restructure is **reopened for Carl's decision**, with measured evidence that did not exist on 9 August. ⚠ **This entry does NOT authorise it.** It removes stale grounds for refusal so the decision can be taken on current facts.
 **Authority:** Human Founder — *"we have done some major restructuring and rebuilding, it is only right we make the necessary changes in the files."*
-**Status:** APPROVED as a record. **The restructure itself remains UNAUTHORISED pending Carl's explicit word.**
+**Status:** APPROVED as a record. ⚠ **THE SHARED HOST IS AUTHORISED AS BUILT — Carl, 23 August
+2026.** This line previously read *"The restructure itself remains UNAUTHORISED pending Carl's
+explicit word"*, and is retained here because it is what the record said while the host was
+built and for nine days afterwards. **Authorised by:** the ruling below.
+
+> ⚠⚠ **THE AUTHORISATION — CARL, 23 AUGUST 2026. Read the second half: this is a judgement
+> made on 23 August, NOT a recovered memory of 12 August.**
+>
+> **The shared card host is authorised as built.** It was built 12–14 August 2026, commit
+> `1e031cd` — *"the shared card host — one context, positioned from the grid's viewport rect"*
+> — and the code cites D-048 as its authority in **17 places** across two files.
+>
+> **Carl's reasoning, in his own words:** the work was technical, so he takes it that it was
+> explained to him and that he gave his authorisation — and if he had wanted to clarify his
+> understanding he would have asked for a simpler explanation. He adds that if the
+> implementation had not worked, or had surfaced new information, he would have given
+> permission for that too. **He takes responsibility for the decision on that basis.**
+>
+> ⛔ **NOBODY CAN POINT TO THE MOMENT OF AUTHORISATION ON 12 AUGUST, AND THIS ENTRY DOES NOT
+> CLAIM ONE.** The ruling is dated 23 August because that is when it was made. **An entry that
+> stated a moment nobody can evidence would be the exact fault this correction exists to
+> repair.**
+>
+> ⛔ **THIS RULES ON AUTHORITY, NOT ON THE IMPLEMENTATION.** It says nothing about whether the
+> shared host works, and nothing about D-046's standing — a separate ruling, still pending.
+
+> ### ⚠⚠ THE DEFECT THIS EXPOSES — LIVE, NOT TIDIED AWAY
+>
+> ⛔ **THE STATUS LINE WAS NOT THE FAULT. THE AUTHORISATION NEVER REACHED THE ENTRY.**
+>
+> The work went ahead, the code recorded D-048 as its authority in 17 places, and **the
+> decision record was never updated.** For nine days the canonical record said UNAUTHORISED
+> while the build said otherwise — and the source of truth is the record, so anyone reading it
+> would have been correctly informed and factually wrong.
+>
+> ⚠ **NOTHING CURRENTLY REQUIRES AN AUTHORISATION TO BE WRITTEN BACK WHEN CARL GIVES IT.** No
+> gate, no checklist step, no harness. **This can happen again tomorrow, and the next instance
+> will look exactly as ordinary as this one did.** Amending this entry does not close it.
 
 > ⚠⚠ **ONE BULLET BELOW IS OVERTAKEN — *"The warm-up must not be deleted"*, in *WHAT REMAINS
 > TRUE FROM D-046 AND MUST NOT BE LOST*.**
