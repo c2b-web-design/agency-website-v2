@@ -1468,6 +1468,36 @@ claim about the past. Measure the ladder; do not read it off a comment.**
 **Authority:** Human Founder — *"we have done some major restructuring and rebuilding, it is only right we make the necessary changes in the files."*
 **Status:** APPROVED as a record. **The restructure itself remains UNAUTHORISED pending Carl's explicit word.**
 
+> ⚠⚠ **ONE BULLET BELOW IS OVERTAKEN — *"The warm-up must not be deleted"*, in *WHAT REMAINS
+> TRUE FROM D-046 AND MUST NOT BE LOST*.**
+>
+> ⛔ **SCOPE: THAT BULLET ONLY.** The rest of this entry is unaffected — Ground 1 and Ground 2
+> stand as written, and **Ground 3 is still binding and still the whole of the constraint.**
+> The other three bullets in that list are untouched.
+>
+> **Three separate things overtook it, on two dates. They are recorded apart because they are
+> not the same objection.**
+>
+> **1. THE INSTRUCTION — overtaken 18 August 2026.** The warm-up canvas **was deleted**, commit
+> `98429af`. **The freeze survived the deletion** — the second context and the redundant second
+> link of all 17 programs went, and the median did not move. Run as a measured experiment, not
+> as a fix. Full record: `live-work/step5-warmup-deletion-18-august.md`.
+>
+> **2. THE MECHANISM — contested since 13 August 2026.** Whether ANGLE's **on-disk** cache is
+> what produces the gap. `live-work/q5-stage1-resolution-and-cache-13-august.md` §FINDING 2
+> reproduces **both halves** (106ms vs 1353ms) and finds disabling the disk cache costs **53ms
+> with** the warm-up and **nothing at all without** it. ⚠ **The gap is real; the attribution to
+> the disk cache is what is disputed.**
+>
+> **3. THE MAGNITUDE — a separate question from 2, and not a smaller number.** ⛔ **This is NOT
+> "758 should read 53".** The ~53ms is what the **disk cache** is worth; the gap that work
+> measured is **~1250ms — larger than ~758ms — and attributed elsewhere** (its own candidate is
+> marked a guess). **The gap outlives its explanation.**
+>
+> ⚠ **CONTESTED, NOT SETTLED, AND NOT ADJUDICATED HERE — that is Carl's.** The 161/919
+> measurement is not withdrawn. **This marker says nothing about whether deleting the warm-up
+> was right**, and nothing about D-046's standing or this entry's Status.
+
 ---
 
 ### What D-046 actually said
