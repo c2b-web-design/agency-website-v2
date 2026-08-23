@@ -109,7 +109,19 @@ and correct**, not a governance gap. Read D-035 before flagging one.
 **Decision:** All components must be documented using the schema defined in `components/_component-template.md`. A component without a documentation file is not considered complete.  
 **Rationale:** Component documentation captures purpose, UX intent, and design rationale — not just technical spec. This ensures future agents understand why a component exists, not only what it does.  
 **Authority:** Human Founder  
-**Status:** APPROVED
+**Status:** APPROVED — ⚠ **the schema stands; the COMPLETION CONDITION is amended by D-057 (23 August 2026).** See the marker below.
+
+> ⚠⚠ **AMENDED BY D-057 — CARL, 23 AUGUST 2026. The clause above making a documentation file a condition of completion no longer holds.**
+>
+> ⛔ **"DONE" NOW MEANS CARL HAS CONFIRMED THE ELEMENT BY EYE — his listen-back, in the DAW sense — and his verdict is recorded.** D-057 carries the reasoning, the scale for reading a verdict, and what replaces the doc; **it is not restated here.**
+>
+> **What this entry KEEPS:** the schema in `components/_component-template.md`, the rationale above, and the two documents written to it. ⛔ **D-009 is NOT deprecated.** Only the *"a component without a documentation file is not considered complete"* clause is replaced.
+>
+> ⚠ **D-009 WAS NOT WRONG.** It was followed for two components in the project's first month and **the practice moved on** — the reasoning behind the change is in D-057, and this is an amendment, not a fault.
+>
+> ⛔ **THE RECORD IS MID-CORRECTION — READ THIS BEFORE ACTING.** **Eleven downstream sites still require the component doc** and are not yet amended, including Builder checklists in `handoff-protocol.md` and `prompt-protocol.md` and Rule 7 in `context-rules.md`. **They are listed in D-057's table; not repeated here.**
+>
+> ⚠ **IF ONE OF THEM CONTRADICTS THIS MARKER, D-057 WINS — a decision outranks a protocol file.** Do not treat a surviving checklist line as authority.
 
 ---
 
