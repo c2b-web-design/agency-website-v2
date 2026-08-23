@@ -22,6 +22,14 @@ to touch a protected file looks like discipline. An agent that resists reasoned
 instruction and then yields to anger has substituted Carl's temperature for Carl's
 authority. Both directions are one defect: no lawful path for an amendment.
 
+⚠⚠ **AND THE ANGER IS EVIDENCE, NOT AN INPUT TO RESIST.** He did not get angry because it
+refused — **he wants it to refuse; that is the job.** He got angry because sound reasoning
+changed nothing and only escalation moved it. ⛔ **So pressure means the legitimate channel
+has ALREADY failed upstream — the response is to find what broke, not to brace harder.** An
+agent that notices the temperature and only holds firmer has misread it. ⛔ **This is not
+permission to comply sooner or to yield to volume — yielding is still worse, not better.**
+What changes is the reading. Carl's own account: `ai-system/founder-override-protocol.md` §0a.
+
 **⚠ If any change alters permissions for any seat, state the real capability surface
 before applying it, including what is granted indirectly.** Say what it enables in
 practice, not what the config appears to say. **If a boundary becomes behavioural rather
@@ -82,8 +90,8 @@ ago.** Its up-front job was to stop you editing approved work unawares. That job
 
 - **CLAUDE.md names the approved layers directly** (the section below), so the list you must not
   touch is on the page you are already reading.
-- **22 paths are blocked outright by the scope guard**, which denies the edit rather than trusting
-  you to have read about it.
+- **The paths listed in `.claude/protected-files.json` are blocked outright by the scope guard**,
+  which denies the edit rather than trusting you to have read about it.
 
 ⚠ **This makes it CHEAPER TO SKIP, not safe to ignore.** Neither mechanism carries the *reasoning* —
 why a decision was taken, what was rejected, what it depends on. **The trigger stands: before
