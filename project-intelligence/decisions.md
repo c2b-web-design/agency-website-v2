@@ -119,9 +119,9 @@ and correct**, not a governance gap. Read D-035 before flagging one.
 >
 > ⚠ **D-009 WAS NOT WRONG.** It was followed for two components in the project's first month and **the practice moved on** — the reasoning behind the change is in D-057, and this is an amendment, not a fault.
 >
-> ⛔ **THE RECORD IS MID-CORRECTION — READ THIS BEFORE ACTING.** **Eleven downstream sites still require the component doc** and are not yet amended, including Builder checklists in `handoff-protocol.md` and `prompt-protocol.md` and Rule 7 in `context-rules.md`. **They are listed in D-057's table; not repeated here.**
+> ⚠ **THE PROPAGATION IS COMPLETE — 23 August 2026, commits `5298916` and `8bee6e9`.** ⛔ **No surviving site requires a component doc**, confirmed by sweep. **The mid-correction warning this marker carried until then no longer applies.**
 >
-> ⚠ **IF ONE OF THEM CONTRADICTS THIS MARKER, D-057 WINS — a decision outranks a protocol file.** Do not treat a surviving checklist line as authority.
+> ⚠ **It read:** *"Eleven downstream sites still require the component doc… if one of them contradicts this marker, D-057 wins."* **True when written; false within hours.** Kept as the record of the interval. D-057 still wins, and now nothing contradicts it.
 
 ---
 
@@ -2537,9 +2537,13 @@ Per the standing ruling that a rule gets a holder where one is possible and stat
 
 **It deletes nothing in `project-intelligence/components/`.** `_component-template.md`, `container.md` and `enquiry-opening.md` stand.
 
-⛔ **IT DOES NOT AMEND THE ELEVEN LIVE SITES THAT STILL REQUIRE THE DOC.** They are separate tasks and they follow this one; **this entry is the authority they will point at.** ⚠ **Until each is corrected, it still requires the component doc:**
+⚠⚠ **AMENDED 23 AUGUST 2026 — THE ELEVEN SITES ARE DONE.** ⛔ **This section read "IT DOES NOT AMEND THE ELEVEN LIVE SITES THAT STILL REQUIRE THE DOC… until each is corrected, it still requires the component doc." That was true when written and false within hours.**
 
-| File | What still requires it |
+**Closed by two commits, both 23 August:** `5298916` — the **five instructing sites** (Rule 7, amended in place with its number kept; two session-end steps; the Deliverables checkbox; the bundled trigger row). `8bee6e9` — the **ten descriptive sites**, ⚠ **two of which proved to be instructions on inspection** (`design.md`'s completion promise and the Builder's duty in `ai-roles.md`) and were handled as such.
+
+⚠ **THE TABLE IS KEPT, NOT DELETED** — it is the record of what had to be reached, and the next propagation job will want its shape.
+
+| File | What required it — ✅ all amended |
 |---|---|
 | `ai-system/context-rules.md` | **Rule 7** (the restatement); Status table rows PROVISIONAL and IMPLEMENTED; File Integrity *"every component doc references the review entry"*; Session Protocol read-list and session-end step |
 | `ai-system/handoff-protocol.md` | Deliverables checkbox; report template line; session-end step 3 |
@@ -2550,6 +2554,12 @@ Per the standing ruling that a rule gets a holder where one is possible and stat
 | `architecture/system-architecture.md` | The directory tree entry |
 
 ⛔ **DO NOT RENUMBER ANY RULE WHEN `context-rules.md` IS AMENDED.** Rules **1, 5, 6, 8 and 9** are cited by number from other files. **Rule 7 is cited by number nowhere** — verified by two independent sweeps on 23 August — so it can be amended in place, but its slot must not be removed.
+
+### ⚠⚠ THE FINDING — EVERY CORRECTION IN THIS SEQUENCE WENT STALE BY THE PASS IT AUTHORISED
+
+**This entry named eleven sites. The pass closed them. D-057 then became the last file in the repo claiming they were open** — and had to be amended by the work it had authorised.
+
+⚠ **Same shape as the warm-up correction**, which landed in `current-sprint.md` while D-046 and D-048 went on asserting the old claim. ⛔ **Four demonstrations in one session** of the gap recorded at **D-048** — not re-explained here. ⛔ **This entry does not close it; it is a fourth instance of it.**
 
 ### ⚠ FLAGGED, NOT FIXED
 
