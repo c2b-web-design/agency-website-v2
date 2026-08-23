@@ -1,4 +1,4 @@
-# Session Handoff — 21 August 2026. The first admissible harness, and governance reviewed from outside.
+# Session Handoff — 23 August 2026. Every correction went stale by the pass it authorised.
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -10,178 +10,136 @@
 
 > ## 1. EDITS — `SCOPE GUARD: '<path>' is PERMANENTLY PROTECTED`
 >
-> Paths in `.claude/protected-files.json`, locked on every `Edit`/`Write`/`NotebookEdit`.
+> Paths in `.claude/protected-files.json` (**25 of them**), locked on every `Edit`/`Write`/`NotebookEdit`.
 > ⚠ **`CLAUDE.md`, `verify/proven.json` and `verify/run.mjs` are among them.** Unlocking needs Carl
 > naming that exact path under `"unlocked"` in `live-work/chunk-scope.json`. Never a folder, never a
 > glob. **Remove the unlock when done and re-verify the path locks again by observing a real denial.**
 >
 > ⚠ **`chunk-scope.json` DOES NOT CURRENTLY EXIST — no unlocks are live.** Verified at session end.
+> **It was opened once today for `CLAUDE.md`, removed, and the lock re-confirmed by a real denial.**
 >
 > ## 2. VERIFY — `VERIFY FRONT DOOR: ... skips the verdict gate`
 >
 > **Calling a harness directly with `node` is DENIED on the Bash tool.** Use
-> **`npm run verify -- <script.mjs>`**. ⚠ It fires on `node --check` too — a syntax check on a
-> harness is still a direct call. It also fires on a `grep` whose *search string* contains the
-> verify path — a false positive, not a bug. Reword the search; do not route around it.
+> **`npm run verify -- <script.mjs>`**. ⚠ It fires on `node --check` too, and on a `grep` whose
+> *search string* contains the verify path — a false positive, not a bug. Reword the search.
 
 ⛔ **A denial is not a bug. Do not diagnose it, and DO NOT ROUTE AROUND IT WITH A SHELL.** Both hooks
 run on tool calls only; `sed -i`, redirect, `mv`, `cp`, `rm` bypass them entirely. **What catches a
 shell write is the diff — a reviewer, not a mechanism.** Stop and ask Carl.
 
-⚠ **MEASURED THIS SESSION: 51 of 61 permission-rule denials were these two hooks firing.** That is
-the system working, not friction to remove.
-
 ---
 
-# ⛔⛔ THE HEADLINE: 1 ADMISSIBLE HARNESS OF 131. IT WAS 0 THIS MORNING.
+# ⛔⛔ THE HEADLINE — ONE FINDING, NOT THIRTEEN COMMITS
 
-**`reveal-stall.mjs` is the first instrument this project has ever been able to cite as evidence.**
-`npm run verify -- --list` reports **`PROVEN INSTRUMENTS (1 of 1 listed)`** with no gap marker.
+## ⚠⚠ EVERY CORRECTION THIS SESSION WENT STALE BY THE PASS IT AUTHORISED.
 
-> ## ⚠⚠ AND THE LIMIT IN THE SAME BREATH — READ BOTH HALVES OR NEITHER
+**D-057 named eleven sites that still required the component doc. The pass closed them. D-057 then
+became the last file in the repo claiming they were open** — and had to be amended by the work it
+had authorised (`024640b`).
+
+**Same shape, earlier the same day:** the warm-up correction landed in `current-sprint.md` while
+**D-046 and D-048 went on asserting the old claim** for three more tasks.
+
+⛔ **FOUR DEMONSTRATIONS IN ONE SESSION of the gap D-048 names** — a fact established in one place
+and never propagated to where a reader arrives. **Nothing requires a record to be written back.**
+
+> ### ⚠ A SECOND SHAPE, DIFFERENT, AND WORTH LOOKING FOR SEPARATELY
 >
-> **`reveal-stall-measure.mjs` produced EVERY FIGURE behind that credential, and is ITSELF
-> UNPROVEN.** It still prints **`NO RECORDED RED RUN`** on every invocation.
+> **D-046's status line said APPROVED while its own body, four paragraphs below, said *"NOT
+> ELIMINATED, AND NOT RECORDED AS FIXED."* For a fortnight.**
 >
-> ⛔ **The script that films is admissible. The script that turns films into numbers is not.**
-
-⚠ **ADMISSIBILITY IS NOT PERMANENT, AND IT IS NOT A PROPERTY OF THE FILE.** A `"varies"` entry needs
-**≥ 3 samples at runtime** (`run.mjs` `MIN_SAMPLES = 3`) or its pass is **suppressed** even while
-fully proven. **Each run earns its own verdict.**
+> ⛔ **NO CROSS-FILE SWEEP CATCHES THAT.** It is a contradiction *inside one entry*. The propagation
+> fault needs a sweep; this one needs reading the entry to its end.
 
 ---
 
-# ⚠⚠ THE EXPERIMENT — THE DAY'S MOST TRANSFERABLE RESULT
+# WHAT WAS RULED — each points at its entry, none re-argued here
 
-**Same instrument at `8f5a259`, same crop, same machine, same session:**
+## ⛔ D-057 — "done" is Carl's listen-back
 
-```
-before  5af5709          freeze 80-280ms, median 120ms   5 of 5 runs, 0 excluded
-after   31e9c3e onward   NO PLATEAU FOUND               0 of 5, 0 vacuous, windows sound
-```
+**A component is complete when Carl has looked at the element and visually confirmed it looks
+correct — his listen-back, in the DAW sense — and the verdict is recorded:** reasoning in a
+`decisions.md` entry, binding constraints in load-bearing code comments, a `live-work/` measurement
+record where one applies.
 
-⛔ **THIS KILLS "THE DETECTOR CANNOT SEE THIS FREEZE" as the explanation for the head-build zeros —
-and with it the band/window fault that THE LAST THREE HANDOFFS called the path to admissibility.**
-**There was never a band fault.**
+⛔ **The component-doc requirement is RETIRED.** ⚠ **A review entry is one place the verdict may
+live, not a separate requirement.**
 
-### ⚠ THE ROUTE, because a checkout does not work
+> ### ⚠⚠ CARL'S SCALE — RECORD THE VERDICT AT THE LEVEL IT WAS GIVEN
+>
+> | what he says | what it means |
+> |---|---|
+> | *"it looks pretty clean"* or any vague phrase | **IMPROVED BUT NOT FINISHED** |
+> | *"good"* | **approved** |
+> | effusive praise | **it exceeded expectation** |
+>
+> ⛔ **D-046 RECORDED *"pretty clean"* AS APPROVED.** That promotion is the failure the clause
+> exists to prevent. **Quote the verdict; do not upgrade it.**
 
-`npm run verify` does not exist at `5af5709` and `verify/run.mjs` postdates it — **a checkout takes
-the front door away along with the product.**
+## D-056 — the card exit, and the principle that existed nowhere
 
-✅ **A DETACHED WORKTREE at `5af5709`**, `npm ci`, built and served on :3100 **there**, measured with
-**HEAD's instruments run from the main tree**. *The product is the arm; the instrument must be
-constant.*
+**The cards leave as a compressed reversal of their arrival.** Built 18 August (`d008b4d`,
+`c831bf9`, `387653a`); approved 23 August — *"I am more than happy with how it turned out."*
+**Review: R-019.**
 
-⛔ **NEVER `git checkout <sha> -- components/ app/`.** That makes a tree that never existed as a
-commit — why the 10 August *"626ms"* figure is disputed.
+⛔ **THE ASYMMETRY IS DELIBERATE.** On arrival the ladder is slower **because the user has to examine
+the questions**; on next step the answers **have done their job**, so it is a better design decision
+to move on faster. ⚠ **A reader seeing ~425ms out against 2000ms in could try to "correct" it toward
+symmetry. Do not.**
 
-⚠ **PROVE THE SERVER IS THE ARM BEFORE FILMING.** Check the PID holding 3100 and read its command
-line; it must resolve inside the worktree path.
+⚠ **425ms (`CARD_EXIT_DURATION_MS`) IS THE ONE CHOSEN NUMBER** — gap 119ms and span 901ms **derive**
+from it and `CARD_OVERLAP`. ⛔ **Do not hand-type a ladder to compensate.**
 
-### ⛔ WHAT THE EXPERIMENT DOES NOT SETTLE — same breath, not a footnote
+## D-046 closed — ⛔ SUPERSEDED, NOT FAILED
 
-- **THE FLOOR IS ~120ms.** **Run-02 came in at 80ms on a build where the freeze is REAL, and would
-  have been MISSED — one run in five.** "Gone" and "under ~120ms" are one reading.
-- ⚠ **CARL: THE STALL WAS ONCE MID-REVEAL AND MOVED UNDER AN ATTEMPTED FIX.** Contention being
-  **rescheduled, not a fixed-position fault** — **a freeze outside the anchored window would not be
-  seen at all.** ⚠⚠ "The stall" may have covered MORE THAN ONE OBSERVATION all along.
-- **THE SUBJECT IS UNSTABLE: a 200ms spread on a 120ms median.** ⛔ **Two figures differing by 200ms
-  are not evidence of a change.**
+The 900ms warm-up overlap is **gone from the build** (`WARMUP_OVERLAP_MS`, `warmupHeldOver` removed;
+four tombstones remain). ⛔ **Not because it did not work — it improved the reveal.** D-048's shared
+host made it unnecessary: one context that never unmounts leaves nothing to hold over.
 
----
+⚠ **TRAP: `CARD_OVERLAP = 0.72` is LIVE and UNRELATED** — the ladder's stagger, not the hold-over.
 
-# THREE INSTRUMENT COMMITS — all one file, `verify/reveal-stall-measure.mjs`
+## D-048 — the shared host is authorised as built
 
-**`031c207` — not-found encodes as a null, not the number zero.**
-`best=0`/`bestAt=-1` printed as `freeze 1f ~0ms at f-1 ... ink undefined` **and passed the
-`r.ms !== null` filter**, so five non-detections aggregated into a reported **"spread 0ms"**.
-⚠ A real one-frame plateau is `best=1` and prints `2f ~40ms` — **there was never a collision.**
+**Carl's ruling, 23 August.** ⛔ **A judgement made on 23 August, NOT a recovered memory of
+12 August** — nobody can point to the moment, and the entry does not claim one.
 
-**`8f5a259` — the verdict reports what was found instead of asserting the stall is live.**
-⚠⚠ **THERE WERE TWO NOT-FOUND PATHS AND THE BRIEF NAMED ONE.** The all-not-found branch
-(`good.length === 0`) said *"NOTHING MEASURABLE — a broken one"* — **the path the head batch actually
-takes.** ⛔ **Found by re-running the FAILURE case, not by reading the diff.**
+## Rule 7 amended in place
 
-**`652d368` — `observedSpread` recorded, with `build: 5af5709` IN THE DATA.**
-One unlock of `verify/proven.json`, **removed**, and **the lock re-confirmed by observing a real
-denial.** ⚠⚠ **`chunk-scope.json` IS GITIGNORED — `git status` CAN NEVER CATCH AN UNLOCK LEFT
-OPEN. Removing it is the only control.**
+⚠ **It now declares what does not enforce it — the only rule in the set that does.** Both hooks are
+`PreToolUse`; they fire on an edit *happening*, and the failure mode is an edit that never happens.
+**A hook cannot fire on an absence.**
 
----
-
-# ⚠⚠ THE GOVERNANCE WORK — THE PREVIOUS HANDOFF HAD NONE OF THIS
-
-## The three-seat review ran and demonstrated itself
-
-**`/doctor` in the Architect seat, then in the Builder seat.**
-
-⛔ **CARL'S RULING: the Builder building its own governance was a mistake. A system audited by the
-tool that wrote it is not audited.**
-
-- **AGREEMENT on independent evidence is corroboration.**
-- ⚠ **DISAGREEMENT IS THE FINDING.**
-- ⚠⚠ **DIFFERENT DENOMINATORS ARE NOT DISAGREEMENT.** The Architect had **44 transcripts** and said
-  plainly it could not read timestamps — a session count, not a window. The Builder dated **38
-  sessions over 30 days**. **The 140 and 128 denial figures are NOT COMPARABLE and the gap is NOT A
-  CHANGE.**
-- ⚠ **THE VERSION FINDING RESOLVED BETWEEN THE RUNS** — `2.1.217` *inferred from a transcript stamp*
-  (no shell), `2.1.238` **measured directly** after Carl updated. Real movement, not a discrepancy.
-
-**`f39db5f`** — the Architect's health report. ⛔ **TEMPORARY — due for deletion or promotion** once
-Carl has ruled. `live-work/references/architect-health-report-21-august.md`.
-**`7a362bf`** — **`governance-review-protocol.md`**, permanent, in `ai-system/`.
-
-> ### ⛔ THE SWEEP IS STILL NOT RUN
-> It is **the control that already failed once** — `Artifact` arrived unswept. **`/doctor` does not
-> substitute for it: it checks the INSTALLATION and knows nothing about this repo.**
-> ⛔ **ONLY CARL RUNS IT. No agent sweeps its own seat.**
-> ⛔ **`Artifact`, `CronDelete` and `TaskUpdate` remain UNRULED.**
-
-## Two routing rows — and the finding behind them
-
-**`9779266`** and **`0068192`**. ⚠⚠ **THE SWEEP MANDATE ALREADY EXISTED**, filed inside
-`architect-settings.reference.json.md` — a document about comparing one seat's settings file.
-⛔ **IT LAPSED BECAUSE A CONTROL NOBODY CAN REACH FROM THE MAP DOES NOT RUN.** The routing table is
-now **14 of 14**.
-
-## `dca2192` — §0a of `founder-override-protocol.md`: CARL'S OWN ACCOUNT
-
-**Dated and marked as his**, alongside the agent's 13 August self-analysis rather than replacing it.
-
-⛔ **HE DID NOT GET ANGRY BECAUSE IT REFUSED. He wants it to refuse — that is the job.**
-⚠ **He got angry because SOUND REASONING CHANGED NOTHING**, and only escalation did.
-
-> ⚠⚠ **If argument and no argument get the same answer, the reasoning was never being weighed.**
-> ⛔ **THE ANGER IS A SIGNAL THE CHANNEL FAILED, NOT A FORCE TO WITHSTAND** — **but yielding to
-> volume is still worse, not better.** The fix is the channel.
+⛔ **DO NOT RENUMBER ANY RULE. Rules 1, 5, 6, 8 and 9 are cited by number from other files.** Rule 7
+is cited by number nowhere — verified by two independent sweeps.
 
 ---
 
-# ⚠⚠ STILL OPEN AND NEEDING CARL'S UNLOCK — `CLAUDE.md`, TWO THINGS, ONE UNLOCK
+# STILL OPEN
 
-1. ⛔ **Lines 18–23 still frame the 11–12 August incident in the ORIGINAL terms** and now
-   **CONTRADICT the protocol they point at** (§0a, `dca2192`). *(Verified this session — the lines
-   are 18–23, not 26–41.)*
-2. **Line 85 says "22 paths"; the array holds 25.** ⚠ **REWORD THE COUNT OUT RATHER THAN RENUMBER
-   IT** — a live count in a governance file decays, **and three names may be added to that list
-   shortly.**
-
-## ALSO OPEN
-
-- **Proving `reveal-stall-measure.mjs`** — ⚠ **a matched pair of batches is on disk** (one with a
-  freeze, one without), which makes a red run straightforward.
-- **`open-defects.md`, three entries** — two awaiting Carl, one **report-do-not-fix**.
-- **Live tuning doors:** `?tealstrength=`, `?inklift=`, `?acklead=` — pair with `?skip=1`.
-- **`current-sprint.md` lines 325/329** — *"83 of this repo's 144 commits"*, long stale. **Left alone
-  deliberately.**
+- ⛔ **THE WRITE-BACK GAP** — D-048, **five citing entries, four demonstrations, no holder.** Nothing
+  requires an authorisation or a verdict to reach the record when Carl gives one.
+- **`components/enquiry-opening.md`** — describes the **primary component of `/start`**, **reads as
+  current**, and stops at **D-033**. The whole D-046 → D-056 layer is absent; content last updated
+  22 June; **two contradicting "Known Issues" sections** disagreeing on F-007.
+- **The 758ms attribution** — contested in `decisions.md` (D-046, D-048) and `current-sprint.md`,
+  adjudicated in neither. ⚠ **The 13 August finding disputes the MECHANISM, not just the magnitude:**
+  both halves reproduce (106ms vs 1353ms) but disabling the disk cache costs 53ms *with* the warm-up
+  and **nothing at all without it**. ⛔ **The gap is real; the explanation is what is disputed.** Not
+  a number swap.
+- **`ai-roles.md:448`** — footer still reads `Last updated: 2026-08-13`.
+- **The exit's cubic ease-in** — the spec left curve assignment open for Plan Mode. **Built, never
+  put to Carl.** Inside what he approved by eye, so not a defect.
+- ⚠ **THE NUMBERING CHECK** — a check that a new `D-###`/`R-###` does not collide and follows the
+  highest existing number is **cheap, buildable, and would have caught this session's R-013 error.**
+  The one holder today's work proved both needed and easy.
 
 ---
 
 ## ENVIRONMENT TRAPS
 
 - **Production is the verdict**; dev and production disagree. `npm run build && npx next start -p 3100`.
-- ⚠ **A SERVER CAN OUTLIVE ITS SOURCE.** **`rm -rf .next` and rebuild when a probe has been in.**
+- ⚠ **A SERVER CAN OUTLIVE ITS SOURCE.** `rm -rf .next` and rebuild when a probe has been in.
 - ⚠ **Playwright's pointer stays where the last action left it.** Park it (`mouse.move(10,10)`).
 - ⚠ **Card hover is DOM divs (`[data-testid="answer-card-hover-N"]`), not the canvas.**
 - ⚠ **`TaskStop` reports success on a held port. Kill by PID, confirm free** — LISTENING only;
@@ -190,68 +148,66 @@ now **14 of 14**.
 - ⚠ **No backticks in comments inside the shader template literals** — it closes the string.
 - **Bash heredoc patches have silently no-opped and stripped regex backslashes.** ⛔ **Grep the file
   after every scripted edit.**
-- ⚠⚠ **`git worktree remove` CAN FAIL ON "Filename too long"** under `node_modules`, **pruning the
-  registration while leaving the directory on disk.** ⛔ **Re-check the disk.** `robocopy /MIR` from
-  an empty directory clears it.
-- ⚠⚠ **`jq` IS NOT INSTALLED. A parse "error" may be that** — re-check with `node -e` before
-  reporting a settings file as broken. **This produced a false "PARSE ERROR" on three files today.**
-- ⚠⚠ **The `before-5af5709` films are under gitignored `verify/out/` and are NOT BACKED UP.** They
-  are half of the matched pair above.
-- ⚠ **`chunk-scope.json` does not currently exist — no unlocks are live.**
+- ⚠⚠ **A HEREDOC APPENDS LF INTO A CRLF FILE.** Every `.md` here is CRLF. Normalise after appending,
+  or the file goes mixed. **Caught this session on `decisions.md`.**
+- ⚠⚠ **`tail` ON A REVERSE-CHRONOLOGICAL FILE SHOWS THE OLDEST ENTRIES.** `review-log.md` runs newest
+  first. **This is how R-012 was read as the highest when the log ran to R-018** — and a duplicate
+  R-013 was nearly written. **Sort, do not tail.**
+- ⚠⚠ **`git worktree remove` CAN FAIL ON "Filename too long"** under `node_modules`, pruning the
+  registration while leaving the directory on disk. ⛔ **Re-check the disk.**
+- ⚠⚠ **`jq` IS NOT INSTALLED, and NEITHER IS `python`.** Use `node -e`. A parse "error" may be that.
+- ⚠⚠ **The `before-5af5709` films are under gitignored `verify/out/` and are NOT BACKED UP.**
 - ⚠ **Nothing is running on 3100.**
 
 ---
 
-# ⚠⚠ THE DAY'S BLIND SPOT
+# ⚠⚠ THE BLIND SPOT — READ THIS BEFORE TRUSTING A NUMBER
 
-**EVERY REAL FINDING TODAY CAME FROM RUNNING THE FAILURE CASE OR CHECKING A SOURCE — NEVER FROM
-REASONING ABOUT IT.**
+## ⛔ THE ARCHITECT'S FIGURES AND PATHS WERE WRONG SIX TIMES IN TWO DAYS.
 
-| what was believed | how it actually fell |
+| the claim | what it actually was |
 |---|---|
-| the head zeros meant a **band/window fault** | **the before arm measured a freeze** with the same detector |
-| the sentinel collapsed (a) and (b) | **traced the loop** — `best=1` prints `2f ~40ms`; they never collided |
-| there was **one** not-found path | **re-ran the failure case** — the head batch takes a different branch |
-| the freeze was near **680–760ms** | **measured** — 120ms |
+| the freeze near **680–760ms** | **120ms** — `31e9c3e`'s own commit message said median 140 |
+| `project-intelligence/README.md` | **does not exist** — the table is in `ai-system/README.md` |
+| **one** not-found branch | **two** — the head batch takes the other one |
+| the review log stops at **R-012** | **R-018** — a `tail` of a reverse-chronological file |
+| the exit's **500 / 140 / 1060ms** | **425 / 119 / 901** — the spec's were candidates, tuned down |
+| **D-044 and D-045** as judged-by-eye evidence | **PROVISIONAL** and **SPECIFIED, NOT BUILT** |
 
-### ⚠ THE ARCHITECT'S OWN ERRORS — one pattern, three instances
+⚠ **EVERY ONE WAS CAUGHT BY CHECKING AT SOURCE — never by reasoning about it.** Two of the six were
+the Builder's own, carried from a summary instead of from the thing itself.
 
-- **Asserted the freeze near 680–760ms.** ⛔ **`31e9c3e`'s OWN COMMIT MESSAGE records median 140ms,
-  range 80–160** — readable before anyone predicted.
-- **Gave a README path that does not exist** (`project-intelligence/README.md`; the table is in
-  `ai-system/README.md`).
-- **Briefed one not-found path when there were two.**
-
-⛔ **TREAT ARCHITECT FIGURES AND PATHS AS PREDICTIONS AND CHECK THEIR SOURCE.** Each was a number or
-a path carried from memory or a summary instead of from the thing itself.
+⛔ **TREAT ARCHITECT FIGURES AND PATHS AS PREDICTIONS AND CHECK THEIR SOURCE.**
 
 ---
 
-## COMMITS — NINE THIS SESSION, SIXTEEN ON THE DAY
+## COMMITS — THIRTEEN THIS SESSION
 
 > ⚠ **THE HEAD SHA BELOW IS ALWAYS AT LEAST ONE BEHIND** — a file cannot name the commit that
-> contains it. **Run `git log --oneline -12`. Do not trust this line.**
+> contains it. **Run `git log --oneline -15`. Do not trust this line.**
 
-**This session's nine**, head at `dca2192`, tree clean, all pushed and confirmed by `git ls-remote`:
+**Head at `024640b`** before this handoff, tree clean, all pushed and confirmed against the remote
+with `git ls-remote`. **Counted with `git log ed86d7d..HEAD`, corroborated by `git log --since`;
+both give 13.** ⚠ **The incoming handoff `ed86d7d` is the PREVIOUS session's and is not counted** —
+it was miscounted as this session's twice during the day.
 
 ```
-031c207  fix    not-found encodes as null, not the number zero
-8f5a259  fix    the verdict reports what was found; it no longer asserts its subject
-652d368  verify observedSpread — measured on 5af5709, not on head
-e7ff3b6  docs   ⚠ THIS FILE'S PREDECESSOR — superseded by the one you are reading
-f39db5f  docs   the CLI Architect's health report (TEMPORARY)
-7a362bf  docs   governance-review-protocol.md
-9779266  docs   route the governance review protocol
-0068192  docs   route the founder override protocol
-dca2192  docs   §0a — Carl's own account of 11-12 August
+ff8293b  docs   CLAUDE.md — the anger is evidence; the path count reworded out
+7899725  docs   ai-roles.md — pointer to founder-override-protocol §0a
+ff6153d  docs   current-sprint.md — the warm-up paragraph is superseded
+cd2c028  docs   D-048's warm-up bullet — a scoped marker
+675e849  docs   D-048 — the shared host authorised as built
+7fa62a0  docs   D-046 CLOSED — superseded, not failed
+67ee543  docs   D-056 — the card exit
+366bb78  docs   R-019 + the sprint entry — one event, two files
+90dd671  docs   D-057 — "done" is Carl's listen-back; D-009 amended
+3925418  docs   D-009 points at D-057
+5298916  docs   the five INSTRUCTING sites match D-057
+8bee6e9  docs   the ten DESCRIPTIVE sites — components/ is an archive
+024640b  docs   the eleven are done — D-057 and D-009 catch up
 ```
-
-⚠ **`git log --since` on 21 August returns SIXTEEN.** The other seven (`80cf796` … `6eb9781`, all
-before 12:12) are the **previous** session's governance work. **Counted from `git log`, not from a
-brief.**
 
 ---
 
-*21 August 2026. **The first admissible harness in this project's history; the instrument behind its
-numbers still unproven; a band fault that three handoffs chased and that never existed; and the
-governance reviewed, for the first time, by something that did not write it.***
+*23 August 2026. **Thirteen commits, one finding: a record without a write-back holder corrects
+itself into staleness, and the correction is the last thing left asserting the error.***
