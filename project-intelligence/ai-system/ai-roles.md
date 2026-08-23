@@ -262,7 +262,7 @@ Anthropic's own docs call argument-constraining Bash patterns fragile).
   plan-review gate before executing (`handoff-protocol.md` §2.5).
 - Implements per the approved plan, architecture, and design-system — in that order of
   authority.
-- Logs decisions, updates sprint and component docs, saves plans, screenshots, git
+- Logs decisions, updates the sprint, saves plans, screenshots, git
   evidence and status to `live-work/` per `live-work-protocol.md`.
 - Flags conflicts and ambiguities before proceeding, not after.
 - Stops at checkpoints and lets Carl route the review.

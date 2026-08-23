@@ -28,12 +28,12 @@ Determine which files are directly relevant to the chunk. Minimum reads by task 
 
 | Task Type | Required Files |
 |---|---|
-| UI component | `design.md`, `system-architecture.md`, existing component docs if related |
+| UI component | `design.md`, `system-architecture.md`, `decisions.md` for the element |
 | Layout change | `design.md`, `system-architecture.md` |
 | New dependency | `system-architecture.md`, `decisions.md` |
 | Design token or CSS change | `design.md`, `app/globals.css`, `decisions.md` |
 | Sprint planning | `current-sprint.md`, `mission-overview.md` |
-| QA review | `review-log.md`, `design.md`, relevant component doc |
+| QA review | `review-log.md`, `design.md`, the element's `decisions.md` entry |
 | Governance or documentation update | All relevant `ai-system/` files |
 
 Reading files outside this list is encouraged when scope is unclear.

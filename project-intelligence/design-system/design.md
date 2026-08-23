@@ -178,7 +178,7 @@ Components built on shadcn/ui must:
 1. Accept a `className` prop for external override
 2. Use the `cn()` utility from `lib/utils.ts` for class composition
 3. Use CSS variable tokens (`bg-background`, `text-foreground`, etc.) for themed surfaces
-4. Receive a documentation file in `/project-intelligence/components/` upon completion
+4. Be confirmed by Carl's eye on completion, with his verdict and the reasoning recorded in a `decisions.md` entry (D-057)
 
 ---
 

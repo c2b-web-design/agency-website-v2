@@ -366,7 +366,6 @@ None / [specific description]
 **Documentation updated:**
 - decisions.md — D-### added
 - current-sprint.md — [tasks moved]
-- components/{name}.md — created / updated
 - review-log.md — R-### filed
 
 **Unresolved concerns:**

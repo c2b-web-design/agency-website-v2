@@ -10,7 +10,7 @@ Cross-references: `ai-roles.md`, `checkpoint-review-protocol.md`, `prompt-protoc
 
 The Builder's chat panel is working memory, not project memory. During active work, important plan, status, screenshot, git-evidence and run-log information must be saved to a shared temporary folder so the Architect can inspect it without Carl copying and pasting chat output.
 
-The live-work folder is a transport surface. It is not the permanent source of truth. Permanent outcomes still belong in `decisions.md`, `review-log.md`, component docs, sprint notes, or other established project-intelligence files (D-006).
+The live-work folder is a transport surface. It is not the permanent source of truth. Permanent outcomes still belong in `decisions.md`, `review-log.md`, sprint notes, or other established project-intelligence files (D-006).
 
 **Capability boundary — why this file exists at all.** A reviewing instance cannot read the Builder's chat panel. This is **not** a Codex-specific limit that retired with Codex: it is true of *any* separate instance, including the Architect, because separate instances have separate context and no shared session (D-006). The Architect sees what the Builder saves into `live-work/`, plus normal repository changes — nothing more. If relevant Builder chat content is not saved there, the Architect cannot see it.
 
@@ -871,7 +871,6 @@ Do not copy raw live-work transcripts into permanent project-intelligence files.
 
 - `decisions.md` for decisions
 - `review-log.md` for actioned review findings
-- component docs for component state
 - `current-sprint.md` for sprint status, open questions, and blockers
 
 ---

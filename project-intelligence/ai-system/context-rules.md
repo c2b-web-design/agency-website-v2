@@ -78,10 +78,10 @@ All decisions, work items, and components carry an explicit status. Statuses are
 | Status | Definition | Used In |
 |---|---|---|
 | PROPOSED | Raised for consideration. Not yet reviewed or approved. | `decisions.md`, `review-log.md` |
-| PROVISIONAL | In place, deliberately untuned, awaiting the mastering pass (D-035). Not "unapproved" and not a gap — reviewers must not raise a missing approval entry for provisional work. | `decisions.md`, `current-sprint.md`, component docs |
+| PROVISIONAL | In place, deliberately untuned, awaiting the mastering pass (D-035). Not "unapproved" and not a gap — reviewers must not raise a missing approval entry for provisional work. | `decisions.md`, `current-sprint.md` |
 | APPROVED | Reviewed and authorised by Carl. | `decisions.md` |
 | IN PROGRESS | Actively being implemented in the current session or sprint. | `current-sprint.md` |
-| IMPLEMENTED | Built and documented. Review may still be pending. | `current-sprint.md`, component docs |
+| IMPLEMENTED | Built, with the reasoning recorded in `decisions.md`. Carl's verdict may still be pending. | `current-sprint.md`, `decisions.md` |
 | REVIEW REQUIRED | Implementation complete. Awaiting QA or PM review. | `review-log.md`, `current-sprint.md` |
 | REJECTED | Considered and declined. Reason is recorded. | `decisions.md`, `review-log.md` |
 | DEPRECATED | Previously APPROVED. Superseded or removed. Retained for record. | `decisions.md` |
@@ -135,7 +135,7 @@ Before writing an entry, verify it does not conflict with existing entries in th
 ### No orphan entries
 - Every `review-log.md` entry references a subject (file, component, or sprint)
 - Every `decisions.md` entry references the authority who made it
-- Every component doc references the review entry that reviewed it
+- Every component doc references the review entry that reviewed it — ⚠ **applies to the two archived docs only; no new ones are written** (D-057)
 
 ### No retroactive rewriting
 When a decision is superseded: mark the original DEPRECATED, create a new entry. Never edit or delete the original. History is preserved, not rewritten.
@@ -305,7 +305,7 @@ Use the established schema for every entry type. Do not add new fields. Do not o
 1. Read `mission-overview.md` — confirm project identity and stage
 2. Read `current-sprint.md` — understand what is authorised now. **It carries no roadmap** (D-038)
 3. Read `decisions.md` — identify APPROVED decisions relevant to the task
-4. Read domain-specific files for the task (architecture, design, component docs)
+4. Read domain-specific files for the task (architecture, design)
 5. Do not ask for context that should already exist in project-intelligence files
 6. Do not rely on chat history from previous sessions
 7. If this is a `/compact`, `/clear`, or automatic-compaction continuation of active work, follow the fresh-context re-entry handshake in `live-work-protocol.md` before editing

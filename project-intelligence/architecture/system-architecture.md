@@ -54,7 +54,7 @@ agency-website-v2/
 ├── project-intelligence/           # AI operational memory and governance
 │   ├── mission-overview.md
 │   ├── decisions.md
-│   ├── components/                 # Per-component documentation
+│   ├── components/                 # ARCHIVE — two docs from May/June 2026. Nothing new goes here (D-057)
 │   ├── architecture/
 │   │   └── system-architecture.md
 │   ├── design-system/
