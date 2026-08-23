@@ -27,11 +27,14 @@ The Architect's design and review direction takes precedence over Builder implem
 ### Rule 6 — QA cannot override architecture or design-system
 Browser Extension findings are observations. They become actionable only after Carl routes and approves them (D-036) — the Architect may frame a finding, but no agent other than Carl moves it to actionable. A finding, however accurate, does not supersede an APPROVED decision.
 
-### Rule 7 — Every component requires documentation before it is considered complete
-A component is not done until:
-- A documentation file exists in `/project-intelligence/components/{name}.md`
-- A review entry has been filed in `review-log.md`
-- Any architectural decisions made during its build are logged in `decisions.md`
+### Rule 7 — A component is complete when Carl has confirmed it by eye and the verdict is recorded
+**Amended 23 August 2026 by D-057.** A component is not done until:
+- **Carl has looked at the element and visually confirmed it looks correct** — his listen-back, in the DAW sense. ⚠ **Record the verdict at the level it was given; do not promote it.**
+- **The verdict is recorded** — the reasoning in a `decisions.md` entry, the binding constraints in load-bearing code comments, and a measurement record in `live-work/` where one applies.
+
+⛔ **The component-documentation requirement is RETIRED.** A component without a file in `/project-intelligence/components/{name}.md` is not incomplete. ⚠ **A review entry in `review-log.md` is one place the verdict may live, not a separate requirement.** Reasoning: **D-057**.
+
+⚠ **NOTHING ENFORCES THIS RULE, AND THAT IS STATED RATHER THAN IMPLIED.** Both hooks are `PreToolUse` — they fire on **an edit happening**, and the failure mode here is **an edit that never happens**. A hook cannot fire on an absence. **This rule relies on someone remembering.** The previous version implied enforcement it did not have for three months, at 12% compliance.
 
 ### Rule 8 — Every visual layer pass must verify all element states before completion
 Layered UI workflow only improves determinism if each layer is verified after it is added. A layer that is technically in scope but fails its basic visual purpose is a regression.
@@ -318,7 +321,7 @@ Use the established schema for every entry type. Do not add new fields. Do not o
 
 1. Log all decisions made during the session in `decisions.md`
 2. Update `current-sprint.md` — completed tasks to Completed. **Do not create an "Up Next" or roadmap section** (D-038); future work is not recorded in this repository. Newly discovered work goes to Carl, who decides whether it becomes a chunk
-3. Create or update component documentation if a component was built or modified
+3. **Carl confirms the element by eye and the verdict is recorded** — reasoning in `decisions.md`, binding constraints in code comments, a `live-work/` measurement record where one applies. ⛔ **No component doc is required** (D-057)
 4. File a review entry in `review-log.md` if a component or significant change was completed
 5. **Raise unresolved questions with Carl** — do not record them as an Open Questions section (D-038)
 

@@ -213,7 +213,7 @@ What the implementation summary must cover.
 
 | Trigger | Files to Update | Detail Level |
 |---|---|---|
-| New component built | `components/{name}.md` (create), `review-log.md`, `current-sprint.md`, `decisions.md` if applicable | Component: full. Review: all fields. Sprint: move to Completed. |
+| New component built | `decisions.md`, `current-sprint.md`, `review-log.md` where the verdict lives there | Decision: full schema, carrying Carl's verdict as given. Sprint: move to Completed. ⛔ **No component doc** (D-057). |
 | Architectural decision made | `decisions.md`, `system-architecture.md` if structural | Decision: full schema. Architecture: current state only, no narrative. |
 | Design system rule changed | `design.md`, `decisions.md` | Design: update the relevant section. Decision: full schema. |
 | New dependency added | `system-architecture.md` Stack table, `decisions.md` | Architecture: add to table. Decision: one-line rationale minimum. |

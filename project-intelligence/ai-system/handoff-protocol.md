@@ -159,7 +159,7 @@ PM/A may propose an unlock but not grant one.
 ## Deliverables
 <!-- Mandatory. Exhaustive. No assumed outputs. -->
 - [ ] Component file: components/...
-- [ ] Component doc: project-intelligence/components/{name}.md
+- [ ] Carl's verdict on the element, recorded (D-057) — no component doc required
 - [ ] Decision entry: decisions.md (if applicable)
 - [ ] Review entry: review-log.md
 - [ ] Sprint update: current-sprint.md
@@ -400,7 +400,7 @@ None / [specific description]
 
 1. All decisions made in the session logged in `decisions.md`
 2. `current-sprint.md` reflects current state — no task left IN PROGRESS if complete
-3. Component documentation created or updated for any component touched
+3. Carl's verdict recorded for any component touched — reasoning in `decisions.md`, binding constraints in code comments, a `live-work/` record where one applies. **No component doc required** (D-057)
 4. Review entry filed for any component or significant change completed
 5. Blockers accurate. **No Open Questions or roadmap section** — future work is not recorded in this repository (D-038)
 6. No unresolved issue silently dropped — every issue is named and **routed to Carl**, who decides whether it becomes a chunk
