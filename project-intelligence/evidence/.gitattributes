@@ -1,0 +1,16 @@
+# ⛔ EVIDENCE FILES ARE BYTE-EXACT ARTEFACTS. DO NOT LET GIT REWRITE THEM.
+#
+# This repo runs with core.autocrlf=true, so a text file checked out on Windows
+# is written back with CRLF line endings. For ordinary source that is harmless.
+# ⚠ For an evidence artefact it is not: it changes the file's bytes and its
+# hash, so the SHA-256 recorded in README.md would no longer match the file on
+# a fresh clone — and the artefact would stop being verifiable by the very
+# record that cites it.
+#
+# `-text` disables all end-of-line conversion. The file round-trips exactly as
+# captured on 27 July 2026: 2,891 bytes, LF endings, SHA-256
+# 7c3c3413671f0fe07e86a12b4feb979dd1033b7f6b9f686a4c290ec948bffa0e
+#
+# ⚠ Applies to the captured artefacts only. README.md is ordinary prose and is
+# left to the repo's normal handling.
+settings-before-gsd-removal-2026-07-27.json -text
