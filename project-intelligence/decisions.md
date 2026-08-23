@@ -877,6 +877,38 @@ A fourth status, **`PROVISIONAL`**, is added to the schema for work that is **in
 
 **Backup:** `C:\Users\Carl Buckley\gsd-removal-backup-2026-07-27` — 267 files, including the original `settings.json` as `settings.json.before-gsd-removal`. Retained until ~3 August 2026, then Carl's to delete.
 
+> ### ⚠⚠ THE BACKUP IS GONE — 23 AUGUST 2026. ONE FILE SURVIVES, IN THIS REPOSITORY
+>
+> **Carl's ruling, 23 August 2026:** GSD belonged to **V1** of the website and turned out not to be the right way to go, so the residual toolkit was deleted. ⛔ **266 of the 267 files were removed — 2,720,154 bytes — and the path above no longer exists.**
+>
+> ⚠ **The line above is deliberately unchanged (P4 — dated entries keep their wording).** It remains the correct record of where the backup stood on **27 July 2026**, which is what the entry was written to attest.
+>
+> ⛔ **THE ONE FILE THAT SURVIVES, BY ITS NEW PATH:**
+>
+> **`project-intelligence/evidence/settings-before-gsd-removal-2026-07-27.json`** — **2,891 bytes**, SHA-256 `7c3c3413671f0fe07e86a12b4feb979dd1033b7f6b9f686a4c290ec948bffa0e`.
+>
+> **It is the source of the nine-registration table above**, and it is the **sole surviving copy** — global settings live at `~/.claude/settings.json`, outside this repository, and were never version-controlled. **Not reconstructible.**
+>
+> ⚠ **Why it moved.** Its previous home was a folder named `gsd-removal-backup-2026-07-27` holding **one file** — a name a future cleanup reads as residue, with nothing at that location saying otherwise. **In the repository it is on the remote, in the diff, and beside the entry that cites it.** ⚠ **`evidence/README.md` records what depends on it.**
+>
+> #### ⛔⛔ WHAT CAN NO LONGER BE CHECKED — AND THIS IS THE POINT OF THE CORRECTION
+>
+> **This entry says its counts were *"verified against the backup, not recalled"*. ⛔ That verification cannot be repeated for four of the five figures.**
+>
+> | Claim | Standing now |
+> |---|---|
+> | **246** files in `get-shit-done/` | ⚠ **assertion** — the files are gone |
+> | **12** hook scripts (9 `.js`, 3 `.sh`) | ⚠ **assertion** — the files are gone |
+> | **6** skills | ⚠ **assertion** — the files are gone |
+> | **267** files total | ⚠ **assertion** — the folder is gone |
+> | **9** hook registrations | ✅ **VERIFIABLE** — the source was kept |
+>
+> ⚠ **Their honest standing is ATTESTED, NOT FALSIFIABLE.** The counts were verified against the backup **twice** — on **27 July 2026** when this entry was written, and again on **23 August 2026** immediately before the deletion — and **matched exactly both times.** ⛔ **But nobody can repeat it a third time.**
+>
+> ⛔ **THE NINE-REGISTRATION TABLE IS THE ONE CLAIM THAT REMAINS VERIFIABLE, AND THAT IS EXACTLY WHY ITS SOURCE WAS THE FILE KEPT.** ⚠ **It is also the claim that most needed keeping:** this entry records the registrations precisely *because the first written account of them was wrong in two places*, and `ai-system/live-work-protocol.md` §3b rests on the same file for a governance rule about deferral — not merely a file count.
+>
+> ⚠ **Stated rather than left implicit, because an entry implying all of it can still be checked would be the overstatement this week has been correcting.**
+
 **Consequence for the record:** the six `/gsd-*` entries in `live-work/references/slash-commands.md` describe commands that no longer exist; that section is corrected in the same change as this entry.
 
 **Authority:** Human Founder

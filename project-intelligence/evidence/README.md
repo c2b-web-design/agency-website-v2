@@ -35,6 +35,13 @@ transcribed from this file. ⚠ **D-037 exists in the form it does because an ea
 account of those registrations was wrong in two places** — it gave the wrong count and
 put two hooks under the wrong event type. This file is what corrected it.
 
+⚠ **D-037 points back.** Its **Backup** line carries a scoped amendment, added
+23 August 2026, naming this file by path, size and SHA-256, and recording which of its
+counts are still verifiable. **The pointer runs both ways on purpose** — a reader
+arriving at D-037 learns this folder exists, and a reader arriving here learns what
+would break. ⛔ **A dependency documented in only one direction does not work:** whoever
+is deleting a file is looking at the file, not at the entry that needs it.
+
 **2. `ai-system/live-work-protocol.md` §3b — the worked example.**
 ⛔ **This is the load-bearing one, and it is not a file count.** §3b holds the rule
 *"record in the same session that makes the change"* — Carl's instruction, 27 July 2026.
