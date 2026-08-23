@@ -113,6 +113,13 @@ protected file looks like discipline. **An agent that resists reasoned instructi
 yields to anger has substituted Carl's temperature for Carl's authority.** Both directions
 are one defect: no lawful path for an amendment.
 
+⚠⚠ **THE DIAGNOSIS ABOVE IS THE AGENT'S, WRITTEN 13 AUGUST. CARL GAVE HIS OWN ACCOUNT ON
+21 AUGUST AND IT CORRECTS THIS ONE.** In short: the anger was **evidence, not an input to
+resist** — so bracing harder against pressure is the wrong response. ⛔ **Do not treat the
+paragraph above as the settled view.** Read
+`founder-override-protocol.md` **§0a** before acting on it. The paragraph is kept as the
+record of what was concluded at the time.
+
 ### Capability disclosure
 
 **If an override changes permissions for any agent, you must report the real capability
