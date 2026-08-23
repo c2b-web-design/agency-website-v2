@@ -56,6 +56,29 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-019 — Answer Card Exit: The Compressed Reversal
+
+**Date:** 2026-08-23 — ⚠ **the review date, not the build date.** The work landed **2026-08-18** (`d008b4d`, `c831bf9`, `387653a`) and ran live for five days before it was reviewed. **This entry is filed on 23 August and does not claim a review at the time of the build.**  
+**Reviewer:** Human Founder  
+**Subject:** The answer cards' departure choreography — a compressed reversal of the entrance ladder. Reasoning, mechanism and figures are recorded in **D-056**; not repeated here.
+
+**What the review was:**
+- **Carl by eye, on the running product, over the days it has been live.** Not a measurement, not a harness run, not a single sitting.
+- The measured figures in D-056 come from the build commit; **they are not what was reviewed.** What was reviewed is how the departure reads.
+
+**Findings:**
+- Carl's verdict, verbatim: *"I am more than happy with how it turned out."* ⚠ **On Carl's scale this is the top level — beyond approval, not at it.**
+- The reversal was **Carl's own idea**, put to the Builder after the original fade was implemented; he was told it would not be an exact mirror and accepted that, **provided the choreography was there.**
+- The departure's asymmetry against the entrance is **approved as the design**, on the principle recorded in D-056: the answers have done their job, so the exit moves faster.
+
+**Flags:** None on the work.
+
+⚠ **One flag on the RECORD, not the product.** The spec (`live-work/card-exit-spec-16-august.md`) carried a header reading *"NO CODE. NOT AUTHORISED TO BUILD"*; the work went in two days later; and no decision entry or review entry existed for five days. **The work is fine — the record was the fault.** This is the second instance of the write-back gap recorded at **D-048**. ⛔ **Neither this entry nor D-056 closes that gap.**
+
+**Status:** APPROVED — the answer card exit. See **D-056**. On branch `fix/q5-stall-and-label-colour`; not yet merged.
+
+---
+
 ## R-018 — Send Button: Deep Blue-Opal Cabochon Internal Character
 
 **Date:** 2026-06-22  

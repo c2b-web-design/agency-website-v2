@@ -93,6 +93,22 @@ build, and where sustained work resumes.
 
 ---
 
+### Answer card exit — DONE. Built 18 August 2026, approved 23 August
+
+**The cards leave as a compressed reversal of their arrival.** Built **2026-08-18** —
+`d008b4d`, `c831bf9`, `387653a`. Live since.
+
+**Approved by Carl on 23 August 2026**, by eye on the running product: *"I am more than happy
+with how it turned out."*
+
+⚠ **Reasoning, mechanism and figures: `decisions.md` D-056. Review: R-019.** Not repeated here.
+
+⚠ **It was built before it was recorded** — the spec said not authorised to build, the work went
+in two days later, and no entry existed for five days. **The work is fine; the record was the
+fault.** Second instance of the write-back gap at **D-048** — ⛔ **not closed by these entries.**
+
+---
+
 ### Begin button, 7.4-second delay — CLOSED by D-055, 21 August 2026. NOT repaired
 
 ⛔ **THE GATING IS THE INTENDED DESIGN.** Carl walked a clean production build on 21 August
