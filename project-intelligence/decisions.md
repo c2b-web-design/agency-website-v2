@@ -2752,3 +2752,51 @@ Per the standing ruling that a rule gets a holder where one is possible and stat
 ### ⛔ No holder
 
 ⚠ **Nothing enforces any of the three.** The scope guard denies a protected edit but cannot require a plan to have *declared* it in advance; nothing detects an unchecked premise; nothing detects a section file that was never written or a closure claimed too early. **All three rely on being read.** Stated here rather than implied, on the same principle as Rule 7 and D-058.
+
+---
+
+## D-060 — The Logo Runs At 40px Tall On Dark Pages
+
+**Date recorded:** 2026-08-25
+**Status:** APPROVED
+**Authority:** Human Founder — Carl, 25 August 2026, judged by eye on a running production build.
+**Bears on:** The site header (`components/layout/site-header.tsx`). ⛔ **The header section is NOT closed** — no section is, until the mastering walk (D-059 §3). This records a decision *inside* an open section.
+
+**40px is the STANDARD SIZE FOR THE LOGO ON PAGES** — not a value for this header alone.
+
+⛔ **40px IS THE HEIGHT. The width follows from the aspect ratio** — 69.9px at 40px tall, from the 951x544 cropped mark. ⚠ **Anyone applying this sets the HEIGHT and lets the width fall out. Never the reverse.**
+
+The nav grows from **61px to 81px** as a result. ⛔ **THAT IS ACCEPTED, NOT A COST TO BE RECOVERED.** Carl let it grow deliberately; the nav was 61px around a 16px line and had the room. **Do not shrink the mark to protect the old height.**
+
+### ⚠⚠ WHY CAP-HEIGHT MATCHING IS THE WRONG TARGET FOR THIS MARK
+
+**Recorded because the arithmetic looks correct and will be "corrected" back otherwise.**
+
+The first placement derived 24px by matching the **cap-height** of the `C2B` text it replaced — a 12px/700 span with a 16px line box and 10px of actual cap-height. ⚠ **Sound arithmetic on the wrong target. It read too small and Carl rejected it by eye.**
+
+⛔ **THE c AND THE b ARE OPEN LOOPS.** Measured on the cropped mark: **only 38.4% of the ink box is ink — the other 61.6% is background showing through the letterforms.** The text it replaced was **solid**. So equal cap-height delivers roughly a third of the visual weight, and the mark must run **larger than the text** to carry the same presence.
+
+⚠ **THE TRANSPARENT MARGIN WAS NOT THE PROBLEM.** Measured before resizing: ink box `(28,28)-(962,555)` inside a 991x584 frame — **5.7% empty width, 9.6% empty height**, with **hard edges** (alpha 0 to 255 in a single pixel at top, left and right; only the bottom carries a faint tail). **Cropping helped a little. The open-loop nature is the reason.**
+
+The shipped asset is `public/c2b-logo-mark.png` — **951x544**, cropped from the 991x584 frame keeping **8px of breathing room on every side** rather than cutting to the ink. ⚠ **Verified non-destructive: opaque (137,956) and partial-alpha (59,500) pixel counts are IDENTICAL before and after the crop.** Only fully-transparent pixels were removed.
+
+### ⛔ THE LIMIT OF THIS STANDARD: 40px ON DARK
+
+**Every page is dark today, and this standard assumes it.**
+
+⛔ **ON A LIGHT BACKGROUND THE GOLD LOSES CONTRAST AND THE WHITE SPECULAR HIGHLIGHTS DISAPPEAR ENTIRELY.** The mark carries **11,219 fully-opaque pixels at luminance 255** — on dark they read as the metal's highlights; on light they are white-on-white and the mark looks washed out. ⚠ **That is what Carl saw in Edge, and it was the background, not the file.**
+
+⛔ **A LIGHT-BACKGROUND TREATMENT IS UNDECIDED AND THIS STANDARD DOES NOT COVER IT.**
+
+### ⚠ Undecided — recorded as open questions, NOT as omissions
+
+- ⛔ **Whether "Web Design" stays beside the mark at all.** ⚠ **And if Carl does implement it, it will almost certainly be a 3D TEXT FONT.** That matters: **extruded type beside an extruded mark is a lockup of two objects in one material world** — not a metal mark beside flat grey text. ⛔ **The current "Web Design" is a PLACEHOLDER. Its awkwardness at 40px is NOT evidence against the size.**
+- **Animation.**
+- **Hover behaviour.**
+- **Whether the orbital light catches the mark.**
+
+### ⚠ Not changed here
+
+The `<img>` element carries one lint warning (`@next/next/no-img-element`, suggesting `next/image`). ⛔ **Left as it is deliberately** — a loader and optimisation behaviour is a conversation for when the logo work continues, not something to slip in with a decision entry. The one known accepted lint error is unchanged.
+
+⚠ **`brand-assets/logo/c2b-logo-gold-hero.svg` IS NOT A VECTOR** — it is a single `<image>` element wrapping a base64 PNG, and its own `<desc>` says so. `hero-logo-transition-concept.md` calls it the vector master and states a Blender/Three.js pipeline depends on having one. ⛔ **There is no vector master in `brand-assets/`. That record is wrong and is NOT corrected here** — a record correction is Carl's.
