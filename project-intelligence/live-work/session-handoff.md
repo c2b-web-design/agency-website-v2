@@ -1,4 +1,4 @@
-# Session Handoff — 23 August 2026. A credential is off the disk and not yet revoked.
+# Session Handoff — 25 August 2026. The first building work landed, inside a paused build.
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -16,249 +16,233 @@
 > glob. **Remove the unlock when done and re-verify the path locks again by observing a real denial.**
 >
 > ⚠ **`chunk-scope.json` DOES NOT EXIST — no unlocks are live.** Verified at session end.
+> ⛔ **IT IS GITIGNORED, SO `git status` CAN NEVER CATCH ONE LEFT OPEN.** The closing denial is the
+> only evidence that the lock came back. **Four unlock cycles ran this session; every one was closed
+> and observed.**
 >
 > ## 2. VERIFY — `VERIFY FRONT DOOR: ... skips the verdict gate`
 >
 > **Calling a harness directly with `node` is DENIED on the Bash tool.** Use
 > **`npm run verify -- <script.mjs>`**. ⚠ It fires on `node --check` too, and on a `grep` whose
 > *search string* contains the verify path — a false positive, not a bug. Reword the search.
-> **It fired on `node --check` this session; the script was not linted that way and was not routed around.**
 
 ⛔ **A denial is not a bug. Do not diagnose it, and DO NOT ROUTE AROUND IT WITH A SHELL.**
 
 ---
 
-# ⛔⛔ FIRST ITEM IS AN ACTION CARL OWES, NOT A FINDING
+# ⛔⛔ TWO ITEMS THE LAST HANDOFF CARRIED ARE CLOSED. DO NOT RE-RAISE THEM.
 
-## ⚠⚠ THE CODEX CREDENTIAL IS OFF THE DISK AND **NOT REVOKED**
+- ⛔ **THE CODEX CREDENTIAL IS RESOLVED.** Carl **signed out of all OpenAI sessions and deleted the
+  Codex desktop app on 23 August 2026**, after that handoff was written. **Nothing is owed. It is not
+  an open item and must not lead a session again.**
+- ⛔ **THE WORKING-PROCESS SESSION HAPPENED — D-059 came out of it.** Carl's stated sequence
+  (governance → the process session → he restarts building) has **its first two steps complete.**
 
-`~/.codex/auth.json` (4,312 bytes) held a live OAuth set — `id_token`, `access_token`, a
-**196-character `refresh_token`** — plus an `OPENAI_API_KEY` entry, in plaintext, for a
-**cancelled** account. **It was deleted 23 August 2026. No backup was taken, deliberately** — a
-copy of a credential is the same exposure in a second place.
-
-⛔ **DELETION IS LOCAL. THE TOKEN IS STILL VALID ON OPENAI'S SERVERS.** The refresh token, and
-anything minted from it, stays live until Carl acts:
-
-1. **Revoke the API key** — OpenAI account → Settings → API keys.
-2. **Sign out of all sessions** — Settings → Security → log out of all devices.
-
-⛔ **CANCELLING A SUBSCRIPTION IS NOT REVOCATION.** ⚠ **IF THIS IS STILL OUTSTANDING, RAISE IT
-AGAIN AT THE TOP OF THE NEXT SESSION. It is the only open item with a clock on it.**
+⚠⚠ **AND BUILDING IS STILL PAUSED ANYWAY. CARL HAS NOT SAID THE WORD.** ⛔ **NO CHUNK IS
+AUTHORISED, and that is the permanent arrangement, not a pause condition.** The gate being satisfied
+is not the restart; only Carl saying so is, and he will be explicit.
 
 ---
 
-# COMMITS — FOUR THIS SESSION
+# ⛔ THE HEADLINE — THE FIRST BUILDING WORK LANDED, INSIDE A PAUSED BUILD
 
-> ⚠ **THE HEAD SHA BELOW IS ALWAYS AT LEAST ONE BEHIND** — a file cannot name the commit that
-> contains it. **Run `git log --oneline -10`. Do not trust this line.**
+**Because Carl authorised the touch specifically.** ⚠ **That is the shape to notice: a named,
+scoped authorisation inside a standing pause — not the pause lifting.** The pause still covers new
+building; this was one element, named by Carl, judged by his eye, and closed off again.
 
-**Head at `4c61517`** before this handoff, tree clean, all four pushed and confirmed against the
-remote with `git ls-remote`. **Counted with `git log 5fd522f..HEAD`, corroborated by `git log
---since`; both give 4.** ⛔ **`5fd522f` is the PREVIOUS session's handoff and is the boundary — it
-is NOT a member of this session's four.** That error was made twice before.
+## D-060 — THE LOGO RUNS AT 40px TALL ON DARK PAGES
 
-### `e938b7b` — `verify/entry-numbering.mjs`
+**Commit `ed8f03d`.** Status **APPROVED** — Carl's verdict on the 40px placement was *"good"*,
+recorded **at that level and no higher.** ⛔ **Not PROVISIONAL, and not promoted.**
 
-Answers *what is the next free D-/R- number* before an entry is written. ⛔ **A LOOKUP, NOT
-EVIDENCE. No red run against a real defect; NOT in `proven.json`; the gate suppresses its PASS and
-prints NO VERDICT. That is correct — do not add it.**
+⛔ **40px IS THE HEIGHT. The width follows from the aspect ratio — 69.9px, from the 951x544 mark.**
+⚠ **SET THE HEIGHT AND LET THE WIDTH FALL OUT. NEVER THE REVERSE.**
 
-⚠ **Three load-bearing choices, each measured:** the end-anchored pattern `^## [DR]-\d{3}(?![-\w])`
-(`open-defects.md` carries `## D-051-A11Y`, which a bare pattern reads as a duplicate of D-051);
-scope to the **two canonical files only** (`session-handoff.md` carries `## D-0xx` headings and is
-rewritten every session — a repo-wide scan would fire every time); and **per-file direction** —
-`decisions.md` ascends, `review-log.md` descends.
+⚠ **It is the STANDARD SIZE FOR THE LOGO ON PAGES**, not a value local to the header.
 
-⚠⚠ **IT FOUND THE DIRECTION BUG IN ITS OWN TEST HARNESS.** The gap injector bumped the last entry
-in *file order*, which in the descending review-log is R-001 → R-003, colliding with the real
-R-003. **The instrument reproduced the exact fault it exists to prevent.** Also caught: its
-empty-input control printed an absence then exited 0 with ✅ PASS — the quiet zero, defect #12.
+### ⚠⚠ WHY, so nobody "corrects" it back
 
-⛔ **IT REPORTS GREEN ON ALL FOUR OF THE 23 AUGUST STALE CORRECTIONS.** Every one was correctly
-numbered. **It holds a clerical convention and nothing more.**
+⛔ **CAP-HEIGHT MATCHING IS THE WRONG TARGET FOR THIS MARK.** The first pass derived **24px** by
+matching the cap-height of the 12px `C2B` text it replaced. **Sound arithmetic on the wrong target**,
+and Carl rejected it by eye as too small.
 
-### `f1ab714` — **D-058. ⛔ THIS IS THE ONE TO READ.**
+⛔ **THE c AND THE b ARE OPEN LOOPS.** Measured: **only 38.4% of the mark's ink box is ink** — the
+other **61.6% is background showing through the letterforms**, where the text it replaced was
+**solid**. Equal cap-height therefore delivers a fraction of the visual weight, so **the mark must
+run LARGER than the text it stands in for.**
 
-Carl's account of how work is authorised, iterated and closed. Three parts, one account.
+⚠ **THE MARGIN WAS NOT THE PROBLEM.** Measured before resizing: **5.7% empty width, 9.6% empty
+height**, with **hard edges** — alpha 0 → 255 in a single pixel on three sides. Cropping helped a
+little; **the open-loop nature is the reason.**
 
-- ⛔ **There is no single moment of authorisation to capture.** Discuss with the Architect → plan
-  with the Builder → back to the Architect → **and then Carl reserves the right to iterate while
-  looking at the result.** The card exit is the worked case: all cards fading together → a fade →
-  reversing it. **None of that was in the plan.** *It pays to be flexible.*
-- ⛔ **"Done" is Carl confirming by eye, and the verdict recorded AT THE LEVEL IT WAS GIVEN.**
-  ⚠ **EVERY SECTION STAYS OPEN UNTIL HE EXPLICITLY DECLARES IT CLOSED.** **Built + approved by eye
-  + recorded ≠ CLOSED.** D-046 was wrong twice: it promoted *"pretty clean"* to APPROVED, **and it
-  recorded a completion at all** while the enquiry corridor was open — and it is open now.
-  ⚠ Recorded as **undecided**: the logo top-left in client info, with the orbital light glinting
-  off it, real or faked.
-- ⛔ **A BRIEF CARRIES WHAT THE SECTION DESCENDS FROM AND WHAT IT INHERITS — AND NOTHING ABOUT HOW
-  THE PARENT WAS BUILT.** Client info descends from the Q+A, which descends from the Hero; knowing
-  that is what let the Builder interpret intent rather than implement literally. ⚠ **Lineage is one
-  or two sentences and is STABLE; implementation is neither. The thing safe to share early is
-  exactly the thing useful early.**
+⛔ **THE NAV GREW 61px → 81px AND THAT IS ACCEPTED.** Carl let it grow deliberately. **Not a cost to
+be recovered. Do not shrink the mark to protect the old height.**
 
-⚠ **What it means for D-048:** the general form is **D-057 being followed** — the record is written
-when the work is **finished**, not when it was authorised to begin. **No holder is possible, and the
-entry says so on its face:** nothing in a tool call sees a conversation, an iteration, or a decision
-to close a section.
+### ⛔ THE LIMIT: 40px ON DARK
 
-### `a70011b` — `project-intelligence/evidence/`
+**Every page is dark today and the standard assumes it.** ⚠ **On a light background the gold loses
+contrast and the white specular highlights vanish entirely** — the mark carries **11,219 fully-opaque
+pixels at luminance 255**, which read as metal on dark and as white-on-white on light.
+⛔ **A LIGHT-BACKGROUND TREATMENT IS UNDECIDED AND D-060 DOES NOT COVER IT.**
 
-The surviving GSD settings file moved into the repo. ⚠ **`.gitattributes` pins it with `-text`:**
-this repo runs `core.autocrlf=true`, which would rewrite its LF endings on checkout — 2,891 bytes
-becoming 3,000 — and **its own recorded SHA-256 would stop verifying on a fresh clone.**
-Round-trip verified through the remote: byte-identical.
+### The asset
 
-### `4c61517` — D-037's backup line corrected
+**`public/c2b-logo-mark.png` — 951x544, 865,999 bytes.** Extracted from
+`brand-assets/logo/c2b-logo-gold-hero.svg`, cropped from its 991x584 frame **keeping 8px of breathing
+room** rather than cutting to the ink. ⚠ **Verified non-destructive: opaque (137,956) and
+partial-alpha (59,500) counts are IDENTICAL before and after** — only fully-transparent pixels went.
+⛔ **ONE asset ships;** the uncropped frame was removed and 404s.
 
-A **scoped blockquote**, not an in-place rewrite (P4 — dated entries keep their wording; matches the
-two D-028 precedents). ⚠ **The hash written into the entry verifies against the artefact** —
-checked on disk and again as stored on the remote.
+### Recorded as undecided, NOT as omissions
+
+- ⛔ **Whether "Web Design" stays beside the mark at all — and if it does, IT WILL ALMOST CERTAINLY
+  BE A 3D TEXT FONT.** That makes it **a lockup of two extruded objects in one material world**, not
+  a metal mark beside flat grey text. ⚠ **THE CURRENT SPAN IS A PLACEHOLDER; its awkwardness at 40px
+  is NOT evidence against the size.**
+- Animation. Hover. Whether the orbital light catches the mark.
 
 ---
 
-# GSD — ⛔ CLOSED
+# ⚠⚠ TWO RECORD FINDINGS IN `hero-logo-transition-concept.md` — BOTH REPORTED, NEITHER FIXED
 
-**266 of 267 files deleted** (2,720,154 bytes); the four `.claude.json` skill counters removed; the
-backup folder gone. **Nothing GSD is registered anywhere.**
+⛔ **A RECORD CORRECTION IS CARL'S.** Both were found by opening the artefacts, not by reading about
+them.
 
-⛔ **THE SURVIVOR IS EVIDENCE, NOT RESIDUE.**
-**`project-intelligence/evidence/settings-before-gsd-removal-2026-07-27.json`** — 2,891 bytes, the
-**SOLE surviving copy** of the nine-registration table. **Not reconstructible** — global settings
-live outside the repo and were never version-controlled. **Two records rest on it:** D-037's table,
-and `live-work-protocol.md` §3b's worked example, **which is the evidence for a governance rule
-about deferral, not a file count.**
-
-⚠ **D-037's 246 / 12 / 6 / 267 counts are now ATTESTED, NOT FALSIFIABLE** — verified twice
-(27 July, and again 23 August immediately before deletion), matched exactly both times, **and
-unrepeatable.** The nine registrations are the one claim that stays checkable, which is why that
-file was the one kept.
-
-⚠ **NOT TOUCHED, and deliberately:** the GSD passthrough inside
-`~/.claude/hooks/c2b-context-statusline.js` — **live, registered, runs every session**, but inert
-(its `existsSync` guard finds nothing). **Editing it is live config and a separate decision.**
+1. ⛔ **THERE IS NO VECTOR MASTER.** `brand-assets/logo/c2b-logo-gold-hero.svg` is **a base64 PNG in
+   an SVG wrapper** — counted directly: **one `<image>`, zero `<path>`, zero gradients**, and its own
+   `<desc>` says so. ⚠ **The file states the Blender/Three.js pipeline depends on having a vector
+   master. IT DOES NOT EXIST.** Any future 3D logo work planned against that record is planned
+   against nothing.
+2. ⛔ **THE PLATINUM-BLUE LOGO EXISTS.** The file states — from an **exhaustive 24 July search** —
+   that none does and one must be created. ⚠ **Carl has it.**
 
 ---
 
-# CODEX — SURVEYED, ONLY THE CREDENTIAL ACTED ON
+# ⛔ CARL'S PLACEMENT RULING, 25 AUGUST 2026
 
-⛔ **Nothing is live in Claude Code:** no MCP entry (all three `mcpServers` blocks empty), no hook,
-nothing read at session start, no `.mcp.json`. ⛔ **Repo and git history are CLEAN of credentials —
-`auth.json` was never committed, no `.codex/` path was ever tracked, and all four `-S` probes
-return zero.** ⚠ Two token-shaped hits were investigated and are false positives: a 77-char base64
-fragment inside `c2b-logo-gold-hero.svg`, and six short `eyJ` fragments in `logs_2.sqlite` (25–102
-chars; a real JWT here would be 700+).
+| Section | Logo |
+|---|---|
+| Landing page | **GOLD** |
+| Start page | **GOLD** — works with the ivory button |
+| Client info page | **GOLD** — the gold rim |
+| **Q+A** | ⛔ **PLATINUM-BLUE** — that section has a strong blue presence |
 
-**~2.8 GB sits inert on disk** — `~/.codex` (953 MB), `~/.cache/codex-runtimes` (1,032 MB),
-`AppData\Local\OpenAI` (776 MB), plus `Documents\Codex`.
+## ⚠ THE PLATINUM-BLUE ASSET IS NOT READY, AND KEYING IT IS NOT A BUILDER TASK
 
-## ⚠ THREE THINGS AWAIT CARL — none touched
+**As supplied: RGB, no alpha, 1448x1086, on a background that is NOT flat black** — **5 at top-left
+rising to 15 at the bottom**, with a floor gradient. ⛔ **A THRESHOLD CUT WOULD LEAVE A VISIBLE
+RECTANGLE.**
 
-- ⛔ **Four PNGs at `~/.codex/generated_images/019fb2e1-…`** — 30 July 2026, ~4.5 MB, **blue/indigo
-  card and button material studies** on near-black. ⛔ **A DIFFERENT SESSION FROM THE 24 JULY
-  SALVAGE AND SIX DAYS LATER — never in its scope.** No hash matches anything in `brand-assets/`.
-  ⚠ **The salvage record's "complete set" claim was true on 24 July and is not now.**
-  ⚠ **Possibly work product, given the logo work ahead.** Not categorised on purpose.
-- **`Documents\Codex`** — **66,526 files, 10 dated session dirs (31 May → 30 July)**: the former
-  Architect's own history. **27,464 of those are a disposable `.pnpm-store`;** the rest is unread.
-- **`codex-pasted-text-archive`** (128 UUID-named `.txt`) and **`memories_1.sqlite`** — unread,
-  **possibly briefs or requirements Carl pasted in.**
+⚠ **IN PROGRESS IN DAVINCI RESOLVE — CARL IS KEYING IT HIMSELF.** ⛔ **Do not attempt it, and do not
+offer to.** State as of this session:
 
-⚠ **The salvage that DID happen is verified:** commit `0c1b802` names it — *"salvage C2B logo assets
-from Codex before removal"*, 14 files from `~/.codex/generated_images/019e7de9-…`, `cmp` 14/14.
-**The prose records only ever say "an external AI image tool"; the git history is what names Codex.**
+- Timeline set to **1448x1086 so nothing scales**.
+- Fusion: **Fusion Clip 1 → LumaKeyer1 → MediaOut1**. **Luminance, Low 0.004, High 0.3.**
+  ⚠ **The mark solidified at those values.**
+- ⛔ **NOT FINISHED: the Alpha view still shows GREY IN THE BACKGROUND** — the key is not clean.
+- ⚠ **The floor reflection is partly keyed and still a faint band.** **Carl has not ruled on keeping
+  or removing it.**
+
+⚠ **WHEN IT IS DONE:** the export **must carry alpha** — **PNG-with-alpha, TIFF or EXR.**
+⛔ **NOT JPEG.** And ⛔ **CHECK IT ON MID-GREY, NOT BLACK** — a fringe or a leftover rectangle is
+invisible on black, which is exactly how a bad key ships.
 
 ---
 
 # STILL OPEN
 
-- ⛔ **D-048's PROPAGATION HALF — NOW AT FIVE RECORDED INSTANCES.** A correction lands in one file
-  while its source stands unmarked. The fifth is D-037's own backup line, stale the moment the
-  files went. **D-058 answers the other half; this half has no holder.**
+- ⛔ **D-048's PROPAGATION HALF — five recorded instances, still no holder.** A correction lands in
+  one file while its source stands unmarked. **D-058 answers the other half; this half does not.**
 - **`components/enquiry-opening.md`** — describes the **primary component of `/start`**, **reads as
-  current**, stops at **D-033**. The whole D-046 → D-056 layer is absent; content last updated
-  22 June; **two contradicting "Known Issues" sections** disagreeing on F-007.
+  current**, stops at **D-033**. The whole D-046 → D-056 layer is absent; **two contradicting "Known
+  Issues" sections** disagreeing on F-007.
 - **The 758ms attribution** — contested in `decisions.md` (D-046, D-048) and `current-sprint.md`,
-  adjudicated in neither. ⚠ **The 13 August finding disputes the MECHANISM, not just the
-  magnitude:** both halves reproduce (106ms vs 1353ms) but disabling the disk cache costs 53ms
-  *with* the warm-up and **nothing at all without it.** ⛔ **The gap is real; the explanation is
-  what is disputed.** Not a number swap.
+  adjudicated in neither. ⚠ **The 13 August finding disputes the MECHANISM, not just the magnitude:**
+  both halves reproduce (106ms vs 1353ms) but disabling the disk cache costs 53ms *with* the warm-up
+  and **nothing at all without it.** ⛔ **The gap is real; the explanation is what is disputed.**
 - **`ai-roles.md:448`** — footer still reads `Last updated: 2026-08-13`.
-- **The exit's cubic ease-in** — the spec left curve assignment open for Plan Mode. **Built, never
-  put to Carl.** Inside what he approved by eye, so not a defect.
-- ⚠ **`live-work-protocol.md` §3b does not name `evidence/`.** It cites the finding, not the path,
-  so nothing is broken — but it is the same one-directional gap in a second place. **Carl's call.**
-
----
-
-# ⛔ NEXT — AND IT IS WHAT GATES BUILDING
-
-**Carl's stated sequence:** the remaining governance work → **a session on how his working process
-with the Architect and the Builder can be improved** → **he explicitly restarts building.** Not
-before, and not in any other order.
-
-⛔ **BUILDING IS PAUSED** — reaffirmed 21 August. **New building only**; governance, tooling,
-documentation corrections and fixes to existing faults have continued throughout and do not need the
-pause lifted. ⚠ **RECENT COMMITS ARE NOT EVIDENCE THE PAUSE HAS LAPSED.**
-⛔ **NO CHUNK IS AUTHORISED, and that is the permanent arrangement, not a pause condition.**
+- ⚠ **`live-work-protocol.md` §3b does not name `evidence/`.** It cites the finding, not the path.
+  **Carl's call.**
+- ⚠ **The `<img>` lint warning, and whether `next/image` is wanted.** `@next/next/no-img-element`,
+  one warning, **deliberately left**. A loader and optimisation behaviour is a conversation for when
+  the logo work continues — **not something to slip in with a decision entry.**
+- **Three unexamined Codex artefacts:** the four PNGs at `~/.codex/generated_images/019fb2e1-…`
+  (30 July, card/button material studies, **never in the 24 July salvage's scope**);
+  `Documents\Codex` (66,526 files, 10 dated session dirs); and `codex-pasted-text-archive` +
+  `memories_1.sqlite`, **possibly briefs Carl pasted in.**
 
 ---
 
 ## ENVIRONMENT TRAPS
 
+- ⚠⚠ **GIT BASH `ls -l` REPORTS WRONG FILE SIZES IN THIS REPO.** It gave **197,609 bytes for a
+  925,545-byte file** — and the same wrong number for a different file, so it is not a one-off.
+  **Node, PowerShell and the HTTP response all agree with each other; `ls -l` does not.**
+  ⛔ **Never take a file size from `ls -l` here.** Use `node -e "...statSync..."`.
+- ⚠⚠ **A LAZY `useState` INITIALISER SILENTLY SERVED THE WRONG VALUE THROUGH HYDRATION.** On a
+  **statically prerendered** page React keeps the server value and discards the initialiser's result.
+  It was **lint-clean and looked right**; the page's own `window.location.search` carried the correct
+  parameter the whole time while the rendered size ignored it. ⛔ **Caught by measuring the rendered
+  output, not by reading the code.** `useSyncExternalStore` is the shape that is both correct and
+  lint-clean.
 - ⚠⚠ **AUTO MODE MAY STEER TOWARD `Bash` FOR FILE EDITS. ⛔ BOTH HOOKS FIRE ON TOOL CALLS ONLY**, so
   `sed -i`, redirects, `mv`, `cp`, `rm` and heredocs **bypass the scope guard entirely on all 25
-  protected paths.** ⛔ **READ through Bash freely; MODIFY through `Edit`/`Write` ONLY.** What
-  catches a shell write is the diff — a reviewer, not a mechanism.
+  protected paths.** ⛔ **READ through Bash freely; MODIFY through `Edit`/`Write` ONLY.**
 - **Production is the verdict**; dev and production disagree. `npm run build && npx next start -p 3100`.
 - ⚠ **A SERVER CAN OUTLIVE ITS SOURCE.** `rm -rf .next` and rebuild when a probe has been in.
+  **Confirm the serving process is YOUNGER than `.next`** — compare process creation time against
+  `stat -c %y .next`. Done four times this session.
 - ⚠ **Playwright's pointer stays where the last action left it.** Park it (`mouse.move(10,10)`).
+- ⚠ **Playwright resolves from the repo, not the scratchpad** — a script written to the scratchpad
+  cannot `import 'playwright'`. Run it with the repo as cwd via `node --input-type=module -e`.
 - ⚠ **Card hover is DOM divs (`[data-testid="answer-card-hover-N"]`), not the canvas.**
 - ⚠ **`TaskStop` reports success on a held port. Kill by PID, confirm free** — LISTENING only;
   `TIME_WAIT` is not a held port.
 - ⛔ **`canvas.__r3f` IS UNDEFINED ON PRODUCTION BUILDS.**
 - ⚠ **No backticks in comments inside the shader template literals** — it closes the string.
+  **And no backticks inside a Bash `grep` pattern** — the shell eats them and the command dies with
+  an unmatched-backtick parse error.
 - **Bash heredoc patches have silently no-opped and stripped regex backslashes.** ⛔ **Grep the file
   after every scripted edit.**
 - ⚠⚠ **A HEREDOC APPENDS LF INTO A CRLF FILE.** Every `.md` here is CRLF. Normalise after appending.
+  **`decisions.md` was 2,754 CRLF / 0 bare LF before this session's entry and 2,802 / 0 after** —
+  check, do not assume.
 - ⚠⚠ **`tail` ON A REVERSE-CHRONOLOGICAL FILE SHOWS THE OLDEST ENTRIES.** `review-log.md` runs newest
   first. **Sort, do not tail** — or run `npm run verify -- entry-numbering.mjs`.
-- ⚠ **`run.mjs` CLASSIFIES ANY LINE STARTING WITH ⛔ AS A FAILURE MARKER, even on exit 0.** An
-  explanatory ⛔ at the head of a line will make a clean run print "⛔ FAILURE". Keep it mid-line.
+- ⚠ **`run.mjs` CLASSIFIES ANY LINE STARTING WITH ⛔ AS A FAILURE MARKER, even on exit 0.** Keep an
+  explanatory ⛔ mid-line.
 - ⚠⚠ **`git worktree remove` CAN FAIL ON "Filename too long"** under `node_modules`. ⛔ **Re-check disk.**
 - ⚠⚠ **`jq` IS NOT INSTALLED, and NEITHER IS `python`.** Use `node -e`. A parse "error" may be that.
-- ⚠ **Node resolves `/tmp` as `C:\tmp`; Bash does not.** A file written by one is not found by the
-  other. Pipe through stdin, or use a Windows path.
+- ⚠ **Node resolves `/tmp` as `C:\tmp`; Bash does not.** Pipe through stdin, or use a Windows path.
+  **`$TMPDIR` is not set in this shell** — write scratch files by absolute path.
 - ⚠⚠ **The `before-5af5709` films are under gitignored `verify/out/` and are NOT BACKED UP.**
-- ⚠ **Nothing is running on 3100.**
+- ⚠ **Nothing is running on 3100.** Killed by PID at session end; no `node.exe` left; connection
+  refused, confirmed by request rather than by the process table.
 
 ---
 
 # ⚠⚠ THE BLIND SPOT — READ THIS BEFORE TRUSTING A NUMBER
 
-## ⛔ ARCHITECT FIGURES AND PATHS HAVE BEEN WRONG SEVEN TIMES IN THREE DAYS.
+## ⛔ EVERY FINDING THIS SESSION CAME FROM MEASURING, NOT FROM READING.
 
-| the claim | what it actually was |
+**Not one came from reasoning about the code or trusting a record:**
+
+| what was believed | what measuring showed |
 |---|---|
-| the freeze near **680–760ms** | **120ms** |
-| `project-intelligence/README.md` | **does not exist** — the table is in `ai-system/README.md` |
-| **one** not-found branch | **two** |
-| the review log stops at **R-012** | **R-018** — a `tail` of a reverse-chronological file |
-| the exit's **500 / 140 / 1060ms** | **425 / 119 / 901** |
-| **D-044 and D-045** as judged-by-eye evidence | **PROVISIONAL** and **SPECIFIED, NOT BUILT** |
-| the surviving evidence file at **4 KB** | **2,891 bytes** — `du` reported disk-allocated size |
+| `app/layout.tsx` renders the site header | **it renders `{children}` and nothing else** — the header is imported by `app/page.tsx` alone, so it is **homepage-only, not site-wide** |
+| the SVG is the vector master | **one `<image>`, zero paths** — a base64 PNG in a wrapper |
+| the transparent margin made the logo read small | **5.7% / 9.6%** — the **open loops (38.4% ink)** were the reason |
+| the `?logo=` switch worked | **`?logo=40` rendered 32px** — lint-clean, looked right, silently wrong |
+| the file was 197,609 bytes | **925,545** — Git Bash `ls -l` lies here |
 
-⚠ **EVERY REAL FINDING IN THREE DAYS CAME FROM CHECKING AT SOURCE — never from reasoning about it.**
-This session: the nine registrations were re-read from the file before anything was deleted; the
-hash was recomputed by two tools before being written into D-037; the commit count was taken from
-`git log` twice by different methods; and the four PNGs were **opened and looked at** rather than
-inferred from their filenames.
+⚠ **The header trace is the one to note: an Architect prediction named two protected paths and both
+WERE protected — but the premise attached to them was wrong at source.** Being right about the
+answer is not being right about the reason. **That disagreement is exactly what D-059 §1 says the
+two independent lists exist to surface.**
 
 ⛔ **TREAT ARCHITECT FIGURES AND PATHS AS PREDICTIONS AND CHECK THEIR SOURCE.**
 
 ---
 
-*23 August 2026. **Four commits. A clerical check that caught its own bug, an account of how work
-actually gets authorised, an artefact given a home, and a credential taken off the disk but not yet
-revoked.***
+*25 August 2026. **Two commits. The working-process rulings, and the first building work — one
+element, named by Carl, judged by his eye, inside a build that is still paused.***
