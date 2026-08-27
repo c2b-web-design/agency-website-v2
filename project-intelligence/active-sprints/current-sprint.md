@@ -57,39 +57,90 @@ Sprint 2 is complete. All success criteria met. Milestone commit: **2152e6e** (2
 
 ## Current work
 
-**BUILDING IS PAUSED — reaffirmed by Carl on 21 August 2026.** Original instruction
-25 July 2026. ⛔ **New building restarts only when Carl says so explicitly, and he will be
-explicit.**
+## ⛔ BUILDING HAS RESTARTED — 27 August 2026. THE PAUSE IS LIFTED
 
-**What the pause covers: NEW BUILDING ONLY.**
+**Carl, 27 August 2026, stated explicitly and confirmed when restated back.** Ruling recorded
+as **D-061**.
 
-**What it does not cover** — these have continued throughout and do not need the pause lifted:
+The pause stood from **25 July 2026** and was reaffirmed on 21 August. It is ended by the only
+thing that could end it: **Carl saying so.** The exit condition ran in its stated sequence and
+completed — governance work, then the working-process session (**D-059** came out of it), then
+the explicit restart.
 
-- governance work
-- tooling
-- documentation corrections
-- fixes to existing faults
+### ⛔⛔ WHAT DID NOT LIFT WITH IT
 
-⚠ **RECENT COMMITS ARE NOT EVIDENCE THAT THE PAUSE HAS LAPSED.** Commits have continued to
-land under approved decisions without contradicting it, because **the work they carry is
-governance, documentation, tooling or fixes to existing faults — none of which the pause
-covers.** **This file's former silence on scope is what made that look like a conflict.** Do
-not read commit activity as a restart.
+⛔ **"NO CHUNK IS AUTHORISED" IS UNCHANGED. It was never part of the pause.**
 
-**The exit condition, in sequence:** the remaining governance work → a session on how Carl's
-working process with the Architect and the Builder can be improved → **Carl explicitly restarts
-building.** Not before, and not in any other order.
+It is **the permanent arrangement, not a pause condition** — it does not expire and it is not
+dated. **No chunk is ever authorised until Carl authorises one**, and that is as true now that
+building has restarted as it was before.
+
+⚠ **THE FAILURE MODE THIS GUARDS AGAINST IS SPECIFIC:** reading *"building has restarted"* as
+*"therefore I may begin building"*. ⛔ **It does not follow.** The pause governed **whether**
+new building could happen at all; the chunk rule governs **what** may be built and **when it
+may start.** **Two separate controls. Only one moved.**
+
+### The next body of work — NAMED, NOT YET AUTHORISED
+
+**Inserting the logos across the site.** Carl, 27 August 2026.
+
+⚠ **This is a statement of what comes next, NOT a chunk.** No scope, no constraints, no
+plan-review gate yet.
+
+- **Already in:** the gold mark, top-left on the landing page — **D-060**, APPROVED.
+- **Placement ruling (25 August, unchanged):** gold on landing, start and client info;
+  **platinum-blue on Q+A.**
+- **The blue asset is ready:** `brand-assets/logo/c2b-logo-blue-mark00086514.png` — 1448x1086
+  RGBA with alpha, keyed by Carl in DaVinci Resolve. ⚠ **Untracked as of 27 August.**
+
+⚠ **Two questions the chunk must answer — recorded so they are not discovered mid-task, full
+reasoning in D-061:**
+
+1. ⛔ **Extending the gold mark beyond the landing page is STRUCTURAL.** The header is imported
+   by `app/page.tsx` alone — **homepage-only, not site-wide.** Site-wide means moving it into
+   the layout, which changes what owns and mounts a component: **CLAUDE.md §5a, stops for
+   review before it is built.**
+2. ⛔ **D-060's 40px does NOT automatically transfer to the blue mark.** It was derived from the
+   gold mark's proportions and ink density. **Carl's eye decides the blue size, not
+   arithmetic.**
+
+⚠ **`app/page.tsx`, `app/layout.tsx` and `components/layout/site-header.tsx` are all PROTECTED
+PATHS.** The chunk cannot touch them until Carl names each exact path under `"unlocked"` in
+`live-work/chunk-scope.json`, and the unlock is removed and re-verified afterwards.
+
+**Also queued:** **four-box geometry in Three.js, on the client info page** — where sustained
+work resumes.
 
 ---
 
-⛔ **NO CHUNK IS AUTHORISED. This is the permanent arrangement, not a pause condition.** It does
-not expire with the pause and it is not dated. **No chunk is ever authorised until Carl
-authorises one** — this remains true after building restarts.
+### Superseded — the pause entry, preserved for its reasoning
 
-**When it resumes:**
+> **BUILDING IS PAUSED — reaffirmed by Carl on 21 August 2026.** Original instruction
+> 25 July 2026. ⛔ **New building restarts only when Carl says so explicitly, and he will be
+> explicit.**
+>
+> **What the pause covers: NEW BUILDING ONLY.**
+>
+> **What it does not cover** — these have continued throughout and do not need the pause lifted:
+>
+> - governance work
+> - tooling
+> - documentation corrections
+> - fixes to existing faults
+>
+> ⚠ **RECENT COMMITS ARE NOT EVIDENCE THAT THE PAUSE HAS LAPSED.** Commits have continued to
+> land under approved decisions without contradicting it, because **the work they carry is
+> governance, documentation, tooling or fixes to existing faults — none of which the pause
+> covers.** **This file's former silence on scope is what made that look like a conflict.** Do
+> not read commit activity as a restart.
+>
+> **The exit condition, in sequence:** the remaining governance work → a session on how Carl's
+> working process with the Architect and the Builder can be improved → **Carl explicitly restarts
+> building.** Not before, and not in any other order.
 
-**Four-box geometry in Three.js, on the client info page.** The current state of the site
-build, and where sustained work resumes.
+⚠ **Kept, not deleted.** The scope distinction it draws — that governance, tooling, docs and
+fixes were never paused — is the reasoning that let work continue lawfully for a month, and it
+is why the commit record does not contradict the pause.
 
 ---
 
@@ -406,5 +457,9 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 ---
 
-*Last updated: 2026-07-28 — future-work items removed on Carl's instruction; next two steps
+*Last updated: 2026-08-27 — **building restarted on Carl's explicit ruling (D-061)**; the pause
+entry is superseded and preserved, not deleted. "No chunk is authorised" is unchanged and did not
+lift with the pause. Logo insertion recorded as the next body of work, not as a chunk.*
+
+*Previously: 2026-07-28 — future-work items removed on Carl's instruction; next two steps
 recorded. Sprint 2 closed at milestone commit 2152e6e.*

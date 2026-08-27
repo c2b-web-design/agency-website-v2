@@ -2800,3 +2800,80 @@ The shipped asset is `public/c2b-logo-mark.png` — **951x544**, cropped from th
 The `<img>` element carries one lint warning (`@next/next/no-img-element`, suggesting `next/image`). ⛔ **Left as it is deliberately** — a loader and optimisation behaviour is a conversation for when the logo work continues, not something to slip in with a decision entry. The one known accepted lint error is unchanged.
 
 ⚠ **`brand-assets/logo/c2b-logo-gold-hero.svg` IS NOT A VECTOR** — it is a single `<image>` element wrapping a base64 PNG, and its own `<desc>` says so. `hero-logo-transition-concept.md` calls it the vector master and states a Blender/Three.js pipeline depends on having one. ⛔ **There is no vector master in `brand-assets/`. That record is wrong and is NOT corrected here** — a record correction is Carl's.
+
+---
+
+## D-061 — Building Officially Restarts. The Pause Is Lifted; "No Chunk Is Authorised" Is NOT
+
+**Date recorded:** 2026-08-27
+**Status:** APPROVED
+**Authority:** Human Founder — Carl, 27 August 2026, stated explicitly and confirmed when restated back.
+**Bears on:** `active-sprints/current-sprint.md` (amended in the same chunk), and every session that reads it.
+
+⛔ **THE BUILDING PAUSE IS LIFTED. New building is authorised again.**
+
+The pause stood from **25 July 2026**, was reaffirmed on 21 August, and is now ended by the only
+thing that could end it: **Carl saying so explicitly.**
+
+**The exit condition ran in its stated sequence and completed:**
+
+| Step | State |
+|---|---|
+| Remaining governance work | complete |
+| A session on the working process with the Architect and Builder | complete — **D-059** came out of it |
+| **Carl explicitly restarts building** | **done, 27 August 2026 — this entry** |
+
+### ⛔⛔ WHAT DOES *NOT* LIFT WITH IT — READ THIS BEFORE STARTING ANYTHING
+
+⛔ **"NO CHUNK IS AUTHORISED" IS UNCHANGED AND IS NOT PART OF THE PAUSE.**
+
+`current-sprint.md` has always stated this as **the permanent arrangement, not a pause condition** —
+it does not expire with the pause and it is not dated. ⚠ **It remains true now that building has
+restarted.** Work still arrives as a **named chunk from Carl**, with scope and constraints, through
+the plan-review gate.
+
+⚠ **THE FAILURE MODE THIS GUARDS AGAINST IS SPECIFIC:** reading "building has restarted" as
+"therefore I may begin building". **It does not follow.** The pause governed *whether* new building
+could happen at all; the chunk rule governs *what* may be built and *when it may start*. **Two
+separate controls. Only one moved.**
+
+### The next body of work — named, not yet authorised
+
+**Inserting the logos across the site.** Carl, 27 August 2026. ⚠ **This is a statement of what comes
+next, NOT a chunk.** It carries no scope, no constraints and no plan-review gate yet.
+
+**What is already in:** the gold mark, top-left on the landing page — **D-060**, APPROVED.
+**Placement ruling (25 August, unchanged):** gold on landing, start and client info; **platinum-blue
+on Q+A**, which carries a strong blue presence.
+
+⚠ **TWO THINGS THE CHUNK WILL HAVE TO ANSWER, recorded so they are not discovered mid-task:**
+
+1. ⛔ **EXTENDING THE GOLD MARK BEYOND THE LANDING PAGE IS STRUCTURAL.** Measured 25 August:
+   `app/layout.tsx` renders `{children}` **and nothing else**; the header is imported by
+   `app/page.tsx` **alone**. So it is **homepage-only, not site-wide.** Putting it on `/start` and the
+   client info page means either two more imports or **moving the header into the layout** — a change
+   to what owns and mounts a component, which is **structural under CLAUDE.md §5a and stops for
+   review before it is built.**
+2. ⛔ **D-060's 40px DOES NOT AUTOMATICALLY TRANSFER TO THE BLUE MARK.** 40px was derived from the
+   **gold** mark's proportions and its open-loop ink density (38.4% ink). The blue mark is a
+   different asset: **1448x1086 frame, solid content at x113–1216, y263–959**. ⚠ **At an equal 40px
+   height the widths differ — gold 69.9px, blue 63.4px on content, 53.3px on the full frame.**
+   **Carl's eye decides the blue size, not arithmetic** — cap-height matching was already wrong once
+   for exactly this reason (D-060).
+
+### ⚠ Three protected paths sit directly in the next chunk's way
+
+`app/page.tsx`, `app/layout.tsx` and `components/layout/site-header.tsx` are **all in
+`.claude/protected-files.json`**. ⚠ **Logo insertion cannot touch any of them until Carl names that
+exact path under `"unlocked"` in `live-work/chunk-scope.json`** — never a folder, never a glob — and
+**the unlock is removed and re-verified by observing a real denial** when the chunk closes.
+
+### Recorded in the same chunk — the branch is merged to `main`
+
+**`fix/q5-stall-and-label-colour` → `main`, fast-forward, pushed 27 August 2026: `eb827f0..334db03`,
+170 commits.** On Carl's explicit instruction.
+
+⚠ **WHY IT MATTERED:** `main` had not moved since **10 August**, so the Vercel deployment was serving
+a faithful build of 17-day-old code — **`public/c2b-logo-mark.png` did not exist on `main` at all.**
+⛔ **The live site was not broken and Vercel was not at fault.** The work was simply never merged.
+**The branch was named for bugfixes and had become the trunk in practice.**
