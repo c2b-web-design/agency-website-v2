@@ -126,6 +126,32 @@
   }
   html {
     @apply font-sans;
+
+    /* ⚠⚠ RESERVE THE SCROLLBAR GUTTER ON EVERY PAGE, SCROLLING OR NOT.
+       Carl's instruction, 27 August 2026: the logo must sit in EXACTLY the same
+       position on the landing page and on /start.
+
+       ⛔ WITHOUT THIS THEY DIFFER BY 7.35px AND THE CAUSE IS NOT THE LOGO.
+       The landing page is 2971px tall and scrolls; /start is exactly 900px and
+       does not. A visible scrollbar takes ~14px out of the client width, and
+       `Container` is `mx-auto`, so the lost width splits evenly — moving
+       centred content half a scrollbar (7.35px measured) between the two pages.
+       Carl saw it as a jump when navigating back and forth.
+
+       `stable` makes the browser reserve the gutter even when no scrollbar is
+       needed, so the content box is the same width on both pages and centred
+       content lands identically.
+
+       ⚠⚠ HEADLESS MEASUREMENT CANNOT SEE THIS DEFECT. Headless Chromium has no
+       scrollbar, so both pages reported x=112 and a 0.00px difference while the
+       real browser showed 7.35px. ⛔ VERIFY SCROLLBAR-SENSITIVE GEOMETRY IN A
+       HEADED BROWSER — a green headless number here is the instrument being
+       blind, not the page being correct. Same class as the headless-GPU defect
+       recorded in `current-sprint.md`.
+
+       ⚠ THIS IS SITE-WIDE ON PURPOSE. Any page that does not scroll would
+       otherwise sit 7px off from every page that does. */
+    scrollbar-gutter: stable;
   }
 }
 

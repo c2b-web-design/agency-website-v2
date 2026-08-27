@@ -2184,6 +2184,26 @@ export default function EnquiryOpening() {
     phraseList.push({ qNum: activeQ, depth: 0, isActive: true });
   }
 
+  /* ⚠⚠ THE BACKGROUND GRADIENT LIVES HERE AND IS BACK WHERE IT STARTED.
+        27 August 2026. It was briefly moved to a wrapper in
+        `app/start/page.tsx` while /start carried a site header, so that one
+        continuous background ran behind both. ⛔ THAT HEADER IS GONE ON CARL'S
+        INSTRUCTION and the wrapper with it, so the gradient returns to this
+        element unchanged.
+
+        ⚠ RECORDED BECAUSE THE ROUND TRIP LOOKS LIKE CHURN AND IS NOT: the move
+        was the correct fix for the problem as it stood (a flat colour cannot
+        match a gradient that runs rgb(20,20,20) at centre to rgb(8,8,8) at the
+        edges, so the header had to JOIN the gradient rather than approximate
+        it). ⛔ THE PROBLEM WAS THEN REMOVED RATHER THAN SOLVED — no header
+        means no seam to match. The anchor point this element establishes is
+        therefore UNCHANGED from the approved work: D-022/D-023/D-024 stand as
+        they were, and nothing about the corridor moved.
+
+        ⚠ THE LOGO ON /start DOES NOT SIT INSIDE THIS ELEMENT. It is absolutely
+        positioned and out of flow in `app/start/page.tsx`, so it adds no
+        vertical space and does not displace the corridor. Do not "tidy" it in
+        here. */
   return (
     <div
       className="min-h-screen flex flex-col items-center px-6"
