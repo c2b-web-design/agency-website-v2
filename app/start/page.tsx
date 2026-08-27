@@ -75,11 +75,38 @@ export default function StartPage() {
      state is exactly what CLAUDE.md §5a calls structural. */
   const [stage, setStage] = useState<"opening" | "active" | "complete">("opening");
 
-  /* Gold through the opening; blue from the moment Begin is pressed and for the
-     rest of the Q+A section. ⚠ THE RETURN TO GOLD FOR THE CLIENT INFO PAGE IS
-     NOT IMPLEMENTED — that page does not exist yet, so there is nothing to
-     attach it to. Recorded as absent on purpose, not overlooked. */
-  const showBlue = stage !== "opening";
+  /* ⚠⚠ GOLD -> BLUE -> GOLD. Blue belongs to the Q+A and NOTHING ELSE.
+     Gold through the opening, blue from the Begin press, and gold again the
+     moment the client info section begins — which is `stage === "complete"`,
+     the four-box contact field.
+
+     ⛔ THE RETURN IS TIED TO THE START OF THE FADE, AND THAT IS CARL'S DESIGN
+     ARGUMENT, NOT AN ARBITRARY BEAT. His reasoning, 27 August 2026:
+
+       - Client info box 1 (Name) ALREADY CARRIES A GOLD RIM, signalling it is
+         the field to fill first. ⛔ THE LOGO MUST BE GOLD BEFORE THAT ARRIVES —
+         "its a much stronger design choice to have the logo already
+         transitioned back to gold by this point."
+       - At the fade, the amber Q-numbers are dissolving. ⚠ THE LOGO IS
+         THEREFORE NOT INTRODUCING A NEW COLOUR — it joins one already on
+         screen and already leaving. "The amber of the Q(n) is close to gold and
+         its fading. Why not at this point change the blue to gold logo."
+
+     ⚠ NO NEW TIMING, AGAIN. `enterComplete()` is called from a
+     `setTimeout(..., COMPLETE_HOLD_MS)` — 900ms, the corridor move in which Q1
+     travels into the rail and the cards leave 5->1. The stage flips at the END
+     of that hold, which is EXACTLY when `.enquiry-phrase-complete` starts its
+     2600ms fade. ⛔ SO THE CALLBACK ALREADY FIRES ON THE RIGHT BEAT and needs
+     no delay of its own. Measured at +966ms from the Q1 Next step click (900ms
+     plus click-to-timer overhead).
+
+     ⚠ THE ARITHMETIC THAT MAKES IT WORK: the cross runs the same 1300ms as
+     gold->blue, so gold is fully established at ~+2266ms. The Name box's
+     entrance does not begin until +3600ms. ⛔ 1334ms OF MARGIN — "thats enough
+     time to become established before card 1 with its gold rim appears."
+     ⚠ UNASSERTED: nothing in code checks that 3600ms field delay against this.
+     If the field cascade is re-timed, verify this margin still holds. */
+  const showBlue = stage === "active";
 
   return (
     <>
