@@ -220,32 +220,85 @@
   }
 }
 
-/* ⚠ THE LOGO CROSSFADE, GOLD -> BLUE — stage 1 of two.
-   Carl's instruction, 27 August 2026: the mark crosses to blue when Begin is
-   pressed, over the SAME 1300ms as the question reveal.
+/* ⚠ THE LOGO'S 1300ms, GOLD -> BLUE -> GOLD.
+   Carl's instruction, 27 August 2026: the mark changes when Begin is pressed,
+   over the SAME 1300ms as the question reveal, and returns to gold at the start
+   of the completion fade.
 
    ⛔ 1300ms IS `Q5_REVEAL_CLEAR_MS` IN `enquiry-opening.tsx` — the duration of
    `.enquiry-q-text-reveal`. NO NEW TIMING IS INTRODUCED. ⚠ UNASSERTED: nothing
    in code checks that the two still agree. Change one, grep for the other.
 
-   ⚠ THE CLASS EXISTS SO REDUCED MOTION CAN REACH IT. An inline `transition`
-   style cannot be overridden by a media query, so the duration lives here
-   rather than in the JSX. `app/start/page.tsx` sets only the opacity.
+   ⚠⚠ CORRECTED 27 August 2026 — THIS BLOCK DESCRIBED A CROSSFADE AND SAID
+   STAGE 2 WAS "not built yet". Both are now false. The opacity crossfade is
+   GONE and stage 2 IS BUILT: the radial mask below is the whole mechanism.
+   Kept rather than deleted because the 1300ms provenance above still stands. */
+/* ⚠⚠ THE LOGO'S RADIAL MASKS — STAGE 2. Carl, 27 August 2026: gold to blue goes
+   OUTSIDE IN, blue to gold goes INSIDE OUT. ⛔ THE TWO DIRECTIONS ARE NOT THE
+   SAME ANIMATION REVERSED IN TIME — they are deliberately opposite gestures:
+   the blue CLOSES IN on the gold entering the Q+A, and the gold OPENS OUT from
+   the centre returning to client info.
 
-   ⛔ STAGE 2 REPLACES THE GOLD LAYER'S FADE WITH AN INVERTED RADIAL MASK —
-   `circle(150% -> 0%)`, gold surviving longest AT THE CENTRE while blue arrives
-   from the edges inward. The button's `enquiry-mask-reveal-radial` runs
-   `circle(0% -> 150%)`; the logo's is its reverse. Not built yet. */
-.enquiry-logo-cross {
-  transition: opacity 1300ms linear;
+   ⚠ THE BUTTON'S `enquiry-mask-reveal-radial` RUNS `circle(0% -> 150%)` —
+   inside out. Carl: *"The crossfade for the button was inside out, maybe switch
+   it up for the logo and go outside in."* So the ENTRY here is its reverse and
+   the RETURN matches it. ⛔ Do not "unify" these with the button's keyframe.
+
+   ⚠⚠ THE CIRCLE IS CENTRED ON THE NAIL, NOT ON EACH BOX, AND THAT IS
+   LOAD-BEARING. The two marks have different box sizes (gold 69.93x40.00, blue
+   69.24x35.94) and the nail sits at a different percentage in each —
+   50.0526%/45.8640% in the gold, 50%/50.7952% in the blue. ⛔ A PLAIN
+   `at 50% 50%` WOULD MAKE THE TWO REVEALS NON-CONCENTRIC, so the circle would
+   visibly drift between the outgoing and incoming mark. The per-mark centres
+   are set inline in `app/start/page.tsx`, from the same constants that place
+   the marks. See the nail note there.
+
+   ⚠ 150% is carried over from the button. Coverage actually needs 72.3% (gold)
+   and 71.0% (blue) to reach the furthest corner from the nail, so 150% is
+   comfortably beyond both — the mask is fully open well before the animation
+   ends, which is why the OPACITY still carries the fade. */
+@keyframes enquiry-logo-radial-in {
+  /* OUTSIDE IN — the arriving mark closes from the rim toward the nail. */
+  from { clip-path: circle(75% at var(--logo-nail-x) var(--logo-nail-y)); }
+  to   { clip-path: circle(0%   at var(--logo-nail-x) var(--logo-nail-y)); }
+}
+
+@keyframes enquiry-logo-radial-out {
+  /* INSIDE OUT — the arriving mark opens from the nail toward the rim. */
+  from { clip-path: circle(0%   at var(--logo-nail-x) var(--logo-nail-y)); }
+  to   { clip-path: circle(75% at var(--logo-nail-x) var(--logo-nail-y)); }
+}
+
+/* ⚠⚠ `.enquiry-logo-cross` IS GONE — 27 August 2026. It carried
+   `transition: opacity 1300ms linear`, the crossfade Carl removed:
+   *"The crossfade can go. If the edge is much sharper so the blue is sitting
+   over the gold all the time, the radial reveals the blue."*
+
+   ⛔ DO NOT REINSTATE AN OPACITY TRANSITION ON EITHER LAYER. The blue now sits
+   permanently underneath at opacity 1 and the gold sits on top at opacity 1;
+   the clip-path alone decides how much gold is showing. A fade running under
+   the mask is precisely what softened the travelling edge and made the radial
+   read as a blend. */
+.enquiry-logo-radial {
+  /* Nothing at rest — the clip and the animation are set inline per stage in
+     `app/start/page.tsx`, because the direction depends on which way the
+     journey is going and CSS cannot see the stage. */
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .enquiry-logo-cross {
+  .enquiry-logo-radial {
     /* ⚠ THE COLOUR STILL CHANGES — it is a state, not decoration. Only the
-       animation between the two states is removed, matching how every other
-       reveal on this page behaves under reduced motion. */
-    transition: none;
+       sweep between the two states is removed, matching how every other reveal
+       on this page behaves under reduced motion.
+
+       ⛔ ONLY THE ANIMATION IS KILLED. THE `clip-path` MUST SURVIVE, and this
+       is the trap: the inline resting clip is what EXPRESSES the state —
+       150% in the opening and at completion (gold showing), 0% during the Q+A
+       (blue showing). ⚠ ADDING `clip-path: none !important` HERE WOULD MAKE THE
+       Q+A RENDER GOLD under reduced motion, because it would unclip the gold in
+       every stage. The colour change is a state, not decoration, and killing
+       the clip kills the state. */
+    animation: none !important;
   }
 }
 

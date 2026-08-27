@@ -108,6 +108,28 @@ export default function StartPage() {
      If the field cascade is re-timed, verify this margin still holds. */
   const showBlue = stage === "active";
 
+  /* ⚠⚠ THE MASK NEEDS THE DIRECTION, NOT JUST THE STATE — the two radials are
+     opposite gestures, so `showBlue` alone cannot choose between them.
+     Carl, 27 August 2026: gold->blue OUTSIDE IN, blue->gold INSIDE OUT.
+
+     ⛔ THE MASK ALWAYS RIDES THE GOLD LAYER, in both directions. Entering the
+     Q+A the gold is clipped 150% -> 0%, so it is the LAST THING TO DISAPPEAR AT
+     THE CENTRE — Carl: *"right at the centre of the logo the gold would be the
+     last thing to disappear."* Returning to client info the gold is clipped
+     0% -> 150%, opening out from the same point. The blue never carries a mask;
+     it simply cross-fades underneath.
+
+     ⚠ `stage` IS ENOUGH TO NAME THE DIRECTION because the journey is one-way:
+     opening -> active -> complete. "active" means the gold is leaving,
+     "complete" means it is returning. ⛔ There is no path back to `active`, so
+     no case where this is ambiguous. */
+  const goldMask =
+    stage === "active"
+      ? "enquiry-logo-radial-in"
+      : stage === "complete"
+        ? "enquiry-logo-radial-out"
+        : "none";
+
   return (
     <>
       {/* ⚠⚠ THE LOGO ONLY — NO HEADER, NO NAV LINKS, NO "Web Design" TEXT.
@@ -157,15 +179,23 @@ export default function StartPage() {
               reveals the centre last, so any residual sits exactly where the
               eye is held longest with no fade to cover it. */}
           <div className="relative" style={{ height: 0 }}>
-            <img
-              src="/c2b-logo-mark.png"
-              alt="C2B"
-              width={951}
-              height={544}
-              className="enquiry-logo-cross absolute max-w-none"
-              style={{ ...GOLD, opacity: showBlue ? 0 : 1 }}
-            />
-            {/* ⚠⚠ THE ONE THING THE NAIL CANNOT FIX, STATED SO NOBODY CHASES IT:
+            {/* ⚠⚠ THE BLUE IS ALWAYS FULLY PRESENT, UNDERNEATH, AND NEVER FADES.
+                Carl, 27 August 2026: *"The crossfade can go. If the edge is much
+                sharper so the blue is sitting over the gold all the time, the
+                radial reveals the blue."*
+
+                ⛔ IT IS RENDERED FIRST SO IT PAINTS BENEATH THE GOLD. Both
+                layers are `absolute` with no z-index, so DOM order IS paint
+                order — moving this element below the gold would invert the
+                effect and the mask would cut into nothing.
+
+                ⚠ opacity 1 AT ALL TIMES, DELIBERATELY. There is no crossfade
+                any more: the gold's clip-path alone decides how much blue shows.
+                ⛔ Do not reintroduce an opacity transition here — a fade running
+                under the mask is exactly what softened the edge and made the
+                radial read as a blend rather than a travelling edge.
+
+                ⚠⚠ THE ONE THING THE NAIL CANNOT FIX, STATED SO NOBODY CHASES IT:
                 the two marks have genuinely different letterform aspect ratios —
                 gold 1.94364, blue 1.92525. With their centres nailed and their
                 letterform HEIGHTS matched, the blue's letterform box is 0.58px
@@ -173,15 +203,54 @@ export default function StartPage() {
                 ⛔ THAT IS A PROPERTY OF THE ARTWORK. Squaring all four edges
                 would mean distorting one mark, and it is not a positioning bug
                 to be fixed. Carl: *"Any movement will be restricted to scale."*
-                This is that residual, and it is the intended trade. */}
+                ⚠ IT MATTERS MORE NOW THAN IT DID UNDER THE CROSSFADE: with the
+                blue permanently underneath, that 0.29px rim is visible around
+                the gold at rest rather than hidden by a fade. */}
             <img
               src="/c2b-logo-blue-mark.png"
               alt=""
               aria-hidden="true"
               width={969}
               height={503}
-              className="enquiry-logo-cross absolute max-w-none"
-              style={{ ...BLUE, opacity: showBlue ? 1 : 0 }}
+              className="absolute max-w-none"
+              style={{ ...BLUE, opacity: 1 }}
+            />
+            {/* ⚠⚠ THE GOLD SITS ON TOP AT FULL OPACITY AND IS THE ONLY MASKED
+                LAYER. The radial clips IT, revealing the blue beneath — which is
+                why the edge is hard: there is no fade running underneath it.
+
+                ⛔ NO `enquiry-logo-cross` CLASS HERE ANY MORE. That class carries
+                `transition: opacity 1300ms`, which is exactly the crossfade Carl
+                removed. Reduced motion is handled by `.enquiry-logo-radial`
+                instead — see globals.css. */}
+            <img
+              src="/c2b-logo-mark.png"
+              alt="C2B"
+              width={951}
+              height={544}
+              className="enquiry-logo-radial absolute max-w-none"
+              style={{
+                ...GOLD,
+                opacity: 1,
+                /* ⚠ THE CIRCLE'S CENTRE IS THE NAIL EXPRESSED AS A PERCENTAGE
+                   OF THIS BOX — not 50% 50%. See the keyframe note in
+                   globals.css: the two marks' boxes differ, so a box-centred
+                   circle would not be concentric between them. */
+                ["--logo-nail-x" as string]: `${MARK.gold.cx * 100}%`,
+                ["--logo-nail-y" as string]: `${MARK.gold.cy * 100}%`,
+                /* ⚠ THE RESTING CLIP MATTERS AS MUCH AS THE ANIMATION. In the
+                   opening the gold must be FULLY VISIBLE (150%); once the Q+A is
+                   running it must be FULLY GONE (0%), or the gold would snap
+                   back the instant the animation's `both` fill released. */
+                clipPath:
+                  stage === "active"
+                    ? "circle(0% at var(--logo-nail-x) var(--logo-nail-y))"
+                    : "circle(75% at var(--logo-nail-x) var(--logo-nail-y))",
+                animation:
+                  goldMask === "none"
+                    ? undefined
+                    : `${goldMask} 1300ms linear both`,
+              }}
             />
           </div>
         </Container>
