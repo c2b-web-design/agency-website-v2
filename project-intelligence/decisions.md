@@ -2877,3 +2877,74 @@ exact path under `"unlocked"` in `live-work/chunk-scope.json`** — never a fold
 a faithful build of 17-day-old code — **`public/c2b-logo-mark.png` did not exist on `main` at all.**
 ⛔ **The live site was not broken and Vercel was not at fault.** The work was simply never merged.
 **The branch was named for bugfixes and had become the trunk in practice.**
+
+---
+
+## D-062 — The Gold Mark Goes On /start As The Logo ALONE, And The Scrollbar Gutter Is Reserved Site-Wide
+
+**Date recorded:** 2026-08-27
+**Status:** APPROVED
+**Authority:** Human Founder — Carl, 27 August 2026, judged by eye on a running production build: *"Confirmed, both occupy the same position."*
+**Bears on:** `app/start/page.tsx`, `app/globals.css`, `components/enquiry/enquiry-opening.tsx` (comment-only). Commit **`79796eb`**. First application of **D-060** to a second page.
+
+⛔ **THE LOGO ALONE. NO HEADER, NO NAV LINKS, NO "Web Design" TEXT.**
+
+The mark is **absolutely positioned and out of flow**, so it occupies **no vertical space** and the
+enquiry corridor sits exactly where it did before. Geometry verified in a real browser:
+**x=92.36, y=19.99, 69.91x39.99 — identical to the landing page on both axes.**
+
+### ⚠⚠ THE INSTRUCTION NARROWED THREE TIMES, AND EACH WRONG ANSWER LOOKED REASONABLE
+
+**Recorded because the failure was not carelessness — it was scope creep that each step justified.**
+
+1. **`SiteHeader` was reused** for guaranteed-identical geometry, and that reasoning was sound: it
+   keeps one source of truth for D-060's site-wide 40px standard. ⛔ **But it brought the nav links
+   and the "Web Design" span with it.** Carl: *"the text on the right side of the header shouldn't
+   be there. i only wanted the logo inserted."*
+2. ⛔ **AND IT BROUGHT AN 81px NAV BAND THAT PUSHED THE QUESTIONS AND ANSWERS DOWN** — the document
+   went from 900px to **981px**. Carl: *"That effectively pushed the questions down."*
+3. **The mark alone, out of flow.** Document back to **900px**, corridor undisplaced.
+
+⚠ **THE LESSON IS ABOUT READING SCOPE LITERALLY.** "Put the logo on the start page" was answered
+with a component that carries a logo. **The furniture came free and unasked for**, and the cost
+landed on approved work — the corridor — rather than on the thing being added.
+
+### ⛔ THE 7.35px OFFSET, AND WHY NO INSTRUMENT SAW IT
+
+Carl, navigating between `/` and `/start`: *"it is not in exactly the same position... a little bit
+to the right."*
+
+**The cause was never the logo.** The landing page is **2971px tall and scrolls**; `/start` is
+**exactly 900px and does not**. A visible scrollbar takes **~14px** out of the client width, and
+`Container` is `mx-auto`, **so the loss splits evenly — 7.35px, exactly half.**
+
+**Fix:** `scrollbar-gutter: stable` on `html` in `app/globals.css`. ⚠ **SITE-WIDE ON PURPOSE** —
+any page that does not scroll would otherwise sit 7px off from every page that does.
+
+⚠⚠ **HEADLESS MEASUREMENT REPORTED 0.00px WHILE THE DEFECT WAS REAL.** Headless Chromium has no
+scrollbar, so both pages measured **x=112** and agreed exactly. The offset appears **only in a
+headed browser**. ⛔ **VERIFY SCROLLBAR-SENSITIVE GEOMETRY HEADED** — a green headless number here
+is the instrument being blind, not the page being correct.
+
+**This is the same family as the headless-GPU defect** (`current-sprint.md`, where
+`q5-stutter.mjs` measured SwiftShader for ten days) and **`one-context.mjs`** naming a global
+property while checking a local one. ⚠ **Three recorded instances of an instrument that is working
+perfectly and still cannot see the defect. Carl's eye found all three classes first.**
+
+### The gradient took a round trip and ends where it started
+
+While the header existed, the enquiry's background gradient was moved to a wrapper spanning both,
+because ⛔ **a flat colour cannot match a gradient** running `rgb(20,20,20)` at centre to
+`rgb(8,8,8)` at the edges — any single value is right at one point and wrong across the width.
+Carl saw `#0a0a0a` as *"a different shade of black"*. **The header had to JOIN the gradient.**
+
+⚠ **Removing the header removed the seam, so the gradient returned to the enquiry root unchanged.**
+`enquiry-opening.tsx` is a **comment-only diff — 20 insertions, 0 deletions.** ⛔ **No code in
+approved work (D-022/D-023/D-024) was changed, and the gradient anchor never moved in the shipped
+result.**
+
+### ⚠ Not changed here
+
+A **second** `@next/next/no-img-element` warning now exists — one per logo. ⛔ **It is another
+instance of the rule D-060 deliberately left open, not a new class of problem.** The `next/image`
+question stays open and is not settled by adding a second `<img>`.
