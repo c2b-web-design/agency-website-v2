@@ -11,6 +11,31 @@
 ⛔ **CARL'S RULING, 27 August: *"At the start of the next session we will fix it."*** ⚠ **This is
 the first item, not a background note.**
 
+## ⛔ THE ORDER AND THE ROUTE, SET BY CARL AT SESSION END
+
+⛔ **VERIFY RUNNER FIRST, THEN THE `/about` SECTION.** Not the other way round.
+
+⚠ **CARL RESEARCHES FIRST — with the Strategist (Claude Projects) and the Architect — and will
+then put the Builder in PLAN MODE.** ⛔ **DO NOT START BUILDING EITHER ITEM ON SESSION OPEN.**
+
+⛔ **THE PLAN MUST NAME EVERY PROTECTED FILE IT TOUCHES.** Carl's explicit expectation: they are
+named **in the plan**, not discovered mid-build. **The plan is then run by the Architect** —
+`handoff-protocol.md` §2.5.
+
+**Known in advance, so the plan can name them rather than find them:**
+
+| item | protected path | why |
+|---|---|---|
+| verify runner | **`verify/run.mjs`** | `FAIL_MARK` / `PASS_MARK` / `classify()` |
+| verify runner | **`verify/proven.json`** | only if harness ADMISSION is in scope |
+| `/about` | **`components/layout/site-header.tsx`** | the one-line `href="#"` → `/about` |
+
+⚠ **`app/about/page.tsx` IS NOT PROTECTED** — the page is free to create; only the nav link is
+gated. ⚠ **And fixing the runner's DETECTION is separable from making `one-context.mjs`
+ADMISSIBLE** — `--falsify`'s NaN blocks the latter regardless, so they may be two chunks.
+
+---
+
 **Full diagnosis, already written up: `live-work/verify-runner-defects-27-august.md`.** Read it
 rather than re-deriving. In short — three defects:
 
