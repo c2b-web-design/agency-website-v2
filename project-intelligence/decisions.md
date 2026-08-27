@@ -2948,3 +2948,116 @@ result.**
 A **second** `@next/next/no-img-element` warning now exists — one per logo. ⛔ **It is another
 instance of the rule D-060 deliberately left open, not a new class of problem.** The `next/image`
 question stays open and is not settled by adding a second `<img>`.
+
+---
+
+## D-063 — The Logo Changes Colour By Section: Gold → Blue → Gold, On A Radial Edge, Nailed To One Point
+
+**Date recorded:** 2026-08-27
+**Status:** APPROVED
+**Authority:** Human Founder — Carl, 27 August 2026, judged by eye on a running production build. On the transition: *"that looks good."* On the radial: *"much better than a crossfade. If I was to describe it in musical terms I would say it has more clarity."*
+**Bears on:** `app/start/page.tsx`, `app/globals.css`, `components/enquiry/enquiry-opening.tsx`. Commits **`47f0ce3`**, **`5ff93c7`**, **`8adf9c8`**. Builds on **D-060** (the 40px standard) and **D-062** (the mark on `/start`).
+
+⛔ **BLUE BELONGS TO THE Q+A AND NOTHING ELSE.**
+
+| Section | Mark | Changes on |
+|---|---|---|
+| Opening | **Gold** | — |
+| Q+A | **Platinum-blue** | the Begin press |
+| Client info | **Gold** | the start of the completion fade |
+
+⚠ **This implements the placement ruling of 25 August** — gold on landing, start and client info; blue on Q+A — **as a transition rather than a static choice**, because `/start` carries all three sections in one page.
+
+---
+
+### ⛔ NO NEW TIMING EXISTS. BOTH CHANGES RIDE BEATS THAT WERE ALREADY THERE
+
+**Carl's constraint, and it shaped the whole design:** *"Any timings will absolutely not change. What you will be doing is matching the gold/blue transition to other timings that are already there."*
+
+- **Duration: 1300ms** — `Q5_REVEAL_CLEAR_MS`, the phrase wipe.
+- **Gold → blue fires in `enterActive()`** — the single entry point the Begin button already calls.
+- **Blue → gold fires in `enterComplete()`** — which is already called from `setTimeout(…, COMPLETE_HOLD_MS)`, **900ms**, the corridor move in which Q1 travels into the rail and the cards leave 5→1. ⚠ **The stage flips at the END of that hold, which is exactly when the completion fade starts.** ⛔ **So the callback already landed on the right beat and needed no delay of its own.**
+
+### ⚠ WHY THE RETURN IS TIED TO THE FADE — Carl's design argument, not an arbitrary beat
+
+1. ⛔ **Client info box 1 (Name) already carries a GOLD RIM**, signalling it is the field to fill first. **The logo must be gold before that arrives** — *"its a much stronger design choice to have the logo already transitioned back to gold by this point."*
+2. ⚠ **At the fade the amber Q-numbers are dissolving, so the logo introduces no new colour** — it joins one already on screen and already leaving. *"The amber of the Q(n) is close to gold and its fading. Why not at this point change the blue to gold logo."*
+
+**Measured on a production build:** gold first appears at **+993ms** (fade starts ~966ms), the change runs **1266ms**, gold is solid at **+2259ms**, and the Name box's entrance does not begin until **+3600ms** — **1341ms of margin.**
+
+---
+
+### ⛔ THE NAIL — CARL'S ARCHITECTURE, AND IT REPLACED A WORSE ONE
+
+*"Pick a point on the page, both pages, that are identical. The exact same spot. Then pick an exact centrepoint for each asset. It will be like driving a nail through all 3. Any movement will be restricted to scale."*
+
+⚠⚠ **POSITION USED TO BE A DERIVED VALUE, AND THE ERRORS COMPOUNDED.** Frame height, then a margin correcting for the two frames disagreeing, then another correcting that. Each step rounded. **The result was a jump visible on a hard cut but hidden by the crossfade.**
+
+**Now one point is DECLARED and both marks are placed from it** — origin the Container's content box, **identical on both pages at 92.363, 19.9908**. ⚠ **The gold's placement computes to `left: 0, top: 0`, independently confirming the nail agrees with the landing page's approved position.**
+
+**Result across all three states — landing gold, `/start` gold, `/start` blue: centre spread 0.0058px horizontal, 0.0064px vertical.**
+
+⚠ **WHAT REMAINS IS SCALE, EXACTLY AS CARL PREDICTED:** ±0.29px on the left and right edges, symmetric about the nail, because **the two marks have genuinely different letterform aspects — gold 1.94364, blue 1.92525.** ⛔ **Squaring all four edges would mean distorting one mark. It is not a positioning bug.**
+
+### ⚠⚠ THREE WRONG ANSWERS PRECEDED THE NAIL, AND EACH LOOKED REASONABLE
+
+**Recorded so none is retried:**
+
+| attempt | why it failed |
+|---|---|
+| **Frame-centring** | The gold's letterforms sit **4.14% ABOVE** its frame centre (heavier shadow below); the blue's sit **0.80% BELOW**. Centring the frames drops the blue ~5% of its height. |
+| **Top-left anchoring** | Every size difference lands entirely on the bottom and right edges, so the smaller mark sinks and slides. |
+| **A tight-cropped pair of assets** | Built on the false premise that the gold frame held *"53px of dead space at the bottom"*. ⛔ **It is the mark's SHADOW FALLOFF.** Padded and tight gold differ by ~1% at 40px and are visually identical. **Cropping would have altered approved work to fix a problem it did not have.** |
+
+---
+
+### ⛔ THE CHANGE IS A RADIAL EDGE, NOT A CROSSFADE
+
+**Carl, on seeing the crossfade version:** *"The crossfade can go. If the edge is much sharper so the blue is sitting over the gold all the time, the radial reveals the blue."*
+
+⚠ **THE MODEL, AND IT IS THE WHOLE MECHANISM:** the blue sits **permanently underneath at opacity 1**; the gold sits **on top at opacity 1**. **Neither ever fades.** The gold's `clip-path` alone decides how much gold shows, so the radial **reveals** the blue rather than dissolving into it.
+
+⛔ **THE TWO DIRECTIONS ARE OPPOSITE GESTURES, NOT ONE ANIMATION REVERSED.** Entering the Q+A the gold clips **75% → 0%**, closing in so it is *"the last thing to disappear"* at the centre. Returning to client info it clips **0% → 75%**, opening out from the same point. ⚠ **The button's `enquiry-mask-reveal-radial` runs inside-out, so the entry here is deliberately its reverse.**
+
+⚠⚠ **THE CIRCLE IS CENTRED ON THE NAIL, NOT ON EACH BOX.** The boxes differ (gold 69.93×40.00, blue 69.24×35.94) and the nail sits at a different percentage in each — **50.0526%/45.8640%** gold, **50%/50.7952%** blue. ⛔ **A plain `at 50% 50%` would make the two reveals non-concentric and the circle would visibly drift between the outgoing and incoming mark.**
+
+### ⚠ 75% REPLACES THE BUTTON'S 150%, AND IT WAS MEASURED
+
+**The gold's ink occupies 5%–61% of the radius range from the nail.** At 150% the circle spent **673ms — 52% of the animation — shrinking through empty space** before touching the mark. **At 75% the edge crosses the letterforms for 976ms of 1300ms.**
+
+### ⚠⚠ EASING WAS REQUESTED, BUILT, MEASURED AND REJECTED
+
+**Carl asked for it, and the reasoning was sound:** fast through the outer band where nothing is visible, slow across the text, and the reverse coming back.
+
+⛔ **EVERY CURVE MADE THE INK CROSSING SHORTER, NOT LONGER:**
+
+| | time crossing the letterforms |
+|---|---|
+| **75% linear (shipped)** | **976ms** |
+| 75% ease-out | 881ms |
+| 110% + hard easing | 692ms |
+| 150% + hard easing | 631ms |
+
+⚠ **The request was aimed at the 150% dead zone, which the radius change had already removed.** Easing can only redistribute time, and at 75% there is no longer a gap to steal from. **Left linear.**
+
+---
+
+### ⚠ How the logo learns the stage — it does NOT own it
+
+`EnquiryOpening` gained **one optional prop, `onStageChange`**. ⛔ **It REPORTS the stage and does not own it:** `stage` stays where it always lived, and the callback fires from **the same two functions that call `setStage`**, so the logo cannot show a state the corridor is not in.
+
+⚠ **A mount effect reports the initial stage too**, because **`?skip=1` mounts straight to `complete` without calling either entry point** — a listener on transitions alone would hear nothing.
+
+### ⛔ Reduced motion: the animation goes, the CLIP STAYS
+
+⚠⚠ **The inline resting `clip-path` is what EXPRESSES the state** — 75% in the opening and at completion, 0% during the Q+A. ⛔ **Adding `clip-path: none` under reduced motion would render the Q+A GOLD**, because it would unclip the gold in every stage. **The colour change is a state, not decoration.**
+
+### ⚠ Unasserted, and stated because nothing checks them
+
+- **1300ms against `Q5_REVEAL_CLEAR_MS`** — if the phrase reveal is re-timed, the logo does not follow.
+- **The 1341ms margin against the field cascade's 3600ms first delay** — if the cascade is re-timed, the logo could still be changing when the gold rim arrives.
+- **The `MARK` letterform fractions** — ⛔ **stale the moment either PNG is re-exported or re-cropped.**
+
+### ⚠ Not changed here
+
+A **third** `@next/next/no-img-element` warning now exists — one per mark. ⛔ **Another instance of the rule D-060 deliberately left open, not a new class of problem.**

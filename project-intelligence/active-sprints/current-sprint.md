@@ -80,33 +80,48 @@ building has restarted as it was before.
 new building could happen at all; the chunk rule governs **what** may be built and **when it
 may start.** **Two separate controls. Only one moved.**
 
-### The next body of work — NAMED, NOT YET AUTHORISED
+### The logo work — DONE on `/start`, 27 August 2026
 
-**Inserting the logos across the site.** Carl, 27 August 2026.
+**The gold mark is top-left on the landing page and on `/start`, and on `/start` it changes
+colour by section: gold → blue → gold.** Approved by Carl's eye on a running production build.
 
-⚠ **This is a statement of what comes next, NOT a chunk.** No scope, no constraints, no
-plan-review gate yet.
+⚠ **Reasoning, measurements and the rejected alternatives: `decisions.md` D-062 and D-063.**
+Not repeated here.
 
-- **Already in:** the gold mark, top-left on the landing page — **D-060**, APPROVED.
-- **Placement ruling (25 August, unchanged):** gold on landing, start and client info;
-  **platinum-blue on Q+A.**
-- **The blue asset is ready:** `brand-assets/logo/c2b-logo-blue-mark00086514.png` — 1448x1086
-  RGBA with alpha, keyed by Carl in DaVinci Resolve. ⚠ **Untracked as of 27 August.**
+| Section | Mark | Changes on |
+|---|---|---|
+| Opening | Gold | — |
+| Q+A | Platinum-blue | the Begin press |
+| Client info | Gold | the start of the completion fade |
 
-⚠ **Two questions the chunk must answer — recorded so they are not discovered mid-task, full
-reasoning in D-061:**
+- **D-062** — the mark alone on `/start` (no header, no nav, no text), and
+  `scrollbar-gutter: stable` site-wide, which is what made the two pages agree.
+- **D-063** — the colour journey, the nail, the radial edge, and the easing that was built and
+  rejected on measurement.
+- **The blue asset shipped:** `public/c2b-logo-blue-mark.png`, cropped from Carl's DaVinci
+  Resolve key with the floor reflection removed. Source committed alongside at
+  `brand-assets/logo/`.
 
-1. ⛔ **Extending the gold mark beyond the landing page is STRUCTURAL.** The header is imported
-   by `app/page.tsx` alone — **homepage-only, not site-wide.** Site-wide means moving it into
-   the layout, which changes what owns and mounts a component: **CLAUDE.md §5a, stops for
-   review before it is built.**
-2. ⛔ **D-060's 40px does NOT automatically transfer to the blue mark.** It was derived from the
-   gold mark's proportions and ink density. **Carl's eye decides the blue size, not
-   arithmetic.**
+⚠ **THE STRUCTURAL QUESTION D-061 FLAGGED NEVER AROSE, AND THAT IS WHY.** Extending
+`SiteHeader` beyond the landing page would have been structural — but ⛔ **the header is not
+used on `/start` at all.** Carl's instruction narrowed to the mark alone, so only
+`app/start/page.tsx` was touched. **No protected path was unlocked and none needed to be.**
 
-⚠ **`app/page.tsx`, `app/layout.tsx` and `components/layout/site-header.tsx` are all PROTECTED
-PATHS.** The chunk cannot touch them until Carl names each exact path under `"unlocked"` in
-`live-work/chunk-scope.json`, and the unlock is removed and re-verified afterwards.
+⛔ **CLIENT INFO IS A SECTION, NOT A PAGE — corrected 27 August.** It is the `complete` stage on
+`/start`: the four-box contact field. ⚠ **The record's "client information page not yet built"
+refers to something else, and reading it as this section produced a wrong answer during the
+session.**
+
+### ⚠ Still open on the logo
+
+- **The return to gold exists only on `/start`.** Whether a standalone client info page ever
+  carries its own logo is undecided.
+- **Three unasserted dependencies**, all stated in code and in D-063: the 1300ms against
+  `Q5_REVEAL_CLEAR_MS`; the 1341ms margin against the field cascade's 3600ms first delay; and
+  the `MARK` letterform fractions, which go stale the moment either PNG is re-exported.
+- ⚠ **`app/page.tsx`, `app/layout.tsx` and `components/layout/site-header.tsx` remain PROTECTED
+  PATHS.** Any future logo work touching the landing page's header still needs Carl to name the
+  exact path under `"unlocked"` in `live-work/chunk-scope.json`.
 
 **Also queued:** **four-box geometry in Three.js, on the client info page** — where sustained
 work resumes.
@@ -457,9 +472,14 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 ---
 
-*Last updated: 2026-08-27 — **building restarted on Carl's explicit ruling (D-061)**; the pause
+*Last updated: 2026-08-27 (second pass) — **the logo work landed and is APPROVED**: D-062 places
+the mark on `/start`, D-063 records the gold → blue → gold journey, the nail, and the radial edge.
+The "next body of work" section is replaced by what was actually built. ⛔ **Client info is a
+SECTION — the `complete` stage on `/start` — not a page.***
+
+*Earlier the same day: **building restarted on Carl's explicit ruling (D-061)**; the pause
 entry is superseded and preserved, not deleted. "No chunk is authorised" is unchanged and did not
-lift with the pause. Logo insertion recorded as the next body of work, not as a chunk.*
+lift with the pause.*
 
 *Previously: 2026-07-28 — future-work items removed on Carl's instruction; next two steps
 recorded. Sprint 2 closed at milestone commit 2152e6e.*
