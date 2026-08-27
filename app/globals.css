@@ -220,6 +220,35 @@
   }
 }
 
+/* ⚠ THE LOGO CROSSFADE, GOLD -> BLUE — stage 1 of two.
+   Carl's instruction, 27 August 2026: the mark crosses to blue when Begin is
+   pressed, over the SAME 1300ms as the question reveal.
+
+   ⛔ 1300ms IS `Q5_REVEAL_CLEAR_MS` IN `enquiry-opening.tsx` — the duration of
+   `.enquiry-q-text-reveal`. NO NEW TIMING IS INTRODUCED. ⚠ UNASSERTED: nothing
+   in code checks that the two still agree. Change one, grep for the other.
+
+   ⚠ THE CLASS EXISTS SO REDUCED MOTION CAN REACH IT. An inline `transition`
+   style cannot be overridden by a media query, so the duration lives here
+   rather than in the JSX. `app/start/page.tsx` sets only the opacity.
+
+   ⛔ STAGE 2 REPLACES THE GOLD LAYER'S FADE WITH AN INVERTED RADIAL MASK —
+   `circle(150% -> 0%)`, gold surviving longest AT THE CENTRE while blue arrives
+   from the edges inward. The button's `enquiry-mask-reveal-radial` runs
+   `circle(0% -> 150%)`; the logo's is its reverse. Not built yet. */
+.enquiry-logo-cross {
+  transition: opacity 1300ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enquiry-logo-cross {
+    /* ⚠ THE COLOUR STILL CHANGES — it is a state, not decoration. Only the
+       animation between the two states is removed, matching how every other
+       reveal on this page behaves under reduced motion. */
+    transition: none;
+  }
+}
+
 /* Opening/start-page anchor — original vertical position (pre-Begin). */
 .enquiry-shell-opening {
   transform: translateY(calc(38vh - 5rem));

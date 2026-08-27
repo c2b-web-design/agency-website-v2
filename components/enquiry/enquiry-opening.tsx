@@ -366,7 +366,23 @@ type MemoryItem = {
  * more than the top row.**
  */
 
-export default function EnquiryOpening() {
+/* ⚠ THE ONLY PROP THIS COMPONENT TAKES, ADDED 27 August 2026 FOR THE LOGO
+   TRANSITION. Carl's instruction: the gold mark crosses to blue for the Q+A
+   section, riding timings that ALREADY EXIST rather than introducing any.
+
+   ⛔ IT REPORTS THE STAGE; IT DOES NOT OWN IT. `stage` stays exactly where it
+   has always lived, set only by `enterActive()` and `enterComplete()`. This
+   callback is fired FROM those same two entry points, so a caller cannot see a
+   stage the component is not in, and no path can flip the logo without also
+   flipping the corridor.
+
+   ⚠ OPTIONAL ON PURPOSE. `/proto/nextstep` and any future mount renders this
+   with no callback and behaves exactly as before. */
+type EnquiryOpeningProps = {
+  onStageChange?: (stage: "opening" | "active" | "complete") => void;
+};
+
+export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = {}) {
   /**
    * ⚠ `?skip=1` — JUMP STRAIGHT TO THE CONTACT FIELD. A DEV DOOR, NOT A FEATURE.
    *
@@ -1233,7 +1249,11 @@ export default function EnquiryOpening() {
   const enterComplete = useCallback(() => {
     if (completedAtRef.current === null) completedAtRef.current = Date.now();
     setStage("complete");
-  }, []);
+    // ⚠ REPORTED FROM THE SAME ENTRY POINT THAT SETS THE STAGE — see the note on
+    // `EnquiryOpeningProps`. Fired AFTER `setStage` so the two can never
+    // disagree about which stage is current.
+    onStageChange?.("complete");
+  }, [onStageChange]);
 
   // The single, shared entry point into the questionnaire — the counterpart to
   // `enterComplete()`. Every route into `active` goes through here so the
@@ -1246,7 +1266,13 @@ export default function EnquiryOpening() {
     // warm node was already marked held-over in the render that created the real
     // canvas. With the warm-up deleted there is no node to hold over.
     setStage("active");
-  }, []);
+    // ⚠ THIS IS THE MOMENT THE LOGO STARTS CROSSING GOLD -> BLUE. Carl's answer
+    // to "when should the transition start?" was "when the Begin button is
+    // pressed", and this is that instant — the same call that moves the corridor
+    // into the questionnaire. ⛔ NO NEW TIMING IS INTRODUCED HERE; the logo reads
+    // an event that already existed.
+    onStageChange?.("active");
+  }, [onStageChange]);
 
   /*
     ⚰️ THE OVERLAP TIMER STOOD HERE until 18 August 2026. It ended the warm-up's
@@ -1254,6 +1280,24 @@ export default function EnquiryOpening() {
     node it removed was invisible and never drew, so a late or early fire changed
     only how long an idle context lingered. Deleted with the canvas it served.
   */
+
+  /* ⚠⚠ REPORT THE STAGE THE COMPONENT MOUNTED IN — NOT ONLY THE TRANSITIONS.
+     ⛔ WITHOUT THIS, `?skip=1` LEAVES THE LOGO GOLD ON A PAGE THAT IS ALREADY
+     AT COMPLETION. The lazy initialiser above can start at "complete" directly,
+     and on that path NEITHER `enterActive()` NOR `enterComplete()` is ever
+     called, so a caller listening only to transitions is told nothing at all.
+
+     ⚠ THE GENERAL FORM: a listener on transitions alone cannot see the state a
+     component STARTED in. The initial value has to be announced separately, or
+     any entry that bypasses the transition is invisible to it.
+
+     ⚠ MOUNT ONLY — the dependency list is deliberately just the callback. Stage
+     CHANGES are reported by `enterActive`/`enterComplete`, and adding `stage`
+     here would double-report every one of them. */
+  useEffect(() => {
+    onStageChange?.(stage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onStageChange]);
 
   useEffect(() => {
     if (!questionnaireStarted || canvasWarm) return;
