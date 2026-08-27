@@ -407,6 +407,22 @@ console.log(`\n  ${RUNS - bad}/${RUNS} runs: the CARD HOST held one context acro
  * A caveat in a header is read once, by whoever opens the file. The verdict is
  * read every run, by whoever is deciding something. **The limit has to appear
  * next to the number it qualifies.**
+ *
+ * ⚠⚠ THE STOP MARKER BELOW IS DELIBERATELY MID-LINE, AND MUST STAY THERE.
+ * ⛔ DO NOT MOVE IT TO THE START OF THE LINE — it will re-break the runner.
+ *
+ * `verify/run.mjs` classifies ANY line that STARTS with the stop marker as a
+ * FAILURE, even when the script exits 0 (`FAIL_MARK`, and `classify()` checks
+ * the printed text after the exit code). This caveat prints on EVERY run,
+ * including clean ones, so with the marker leading the line the runner reported
+ * "⛔ FAILURE — passed through unchanged" on 3/3 ✅ runs. Diagnosed 27 August
+ * 2026; the harness and the product were both fine.
+ *
+ * ⚠ THE IRONY IS THE POINT: `context-rules.md` requires every harness to
+ * declare what it does NOT watch, in its output. Doing that in the clearest way
+ * available was what tripped the failure detector. The marker at line start is
+ * reserved for REAL failures — see the `if (bad > 0)` branch below, which keeps
+ * it leading BECAUSE that branch also exits 1.
  */
 console.log(`
   ⚠ WHAT THIS DOES NOT WATCH — read before citing the verdict above.
@@ -416,7 +432,7 @@ console.log(`
     and creates a FRESH CONTEXT ON EVERY QUESTION STEP (67ms of blocked main
     thread, traced 14 August 2026). A five-question walk created EIGHT contexts
     while this harness reported 2/2.
-    ⛔ THIS IS NOT A PAGE-WIDE CONTEXT COUNT AND MUST NOT BE CITED AS ONE.`);
+    NOT A PAGE-WIDE COUNT ⛔ AND MUST NOT BE CITED AS ONE.`);
 
 if (FALSIFY) {
   console.log(`
@@ -433,9 +449,24 @@ if (bad > 0) {
   process.exit(1);
 }
 
+/* ⚠⚠ THE ✅ ON THE NEXT LINE MUST LEAD THE LINE, AND IT IS LOAD-BEARING.
+ *
+ * `verify/run.mjs`'s `PASS_MARK` only matches ✅ / PASS / CLEAN / GREEN at the
+ * START of a line (after whitespace). Every ✅ this script printed before
+ * 27 August 2026 was MID-LINE — "run 1   ✅ ONE CONTEXT" — so none of them was
+ * ever detected as a pass.
+ *
+ * ⛔ THIS HARNESS THEREFORE HAD NO PASS SIGNAL AT ALL. The only thing the runner
+ * ever matched was the ⛔ opening the scope caveat above, which is why a clean
+ * 3/3 run was reported as "⛔ FAILURE". Moving that marker mid-line removed the
+ * false failure and exposed what was underneath: "NO VERDICT DETECTED", exit 3.
+ *
+ * ⚠ THE FAILURE AND THE MISSING PASS WERE TWO SEPARATE DEFECTS WEARING ONE
+ * SYMPTOM. Fixing only the first moved it rather than resolving it. */
 console.log(`
-  → One context, created once, never lost, same element at Q1. The host holds
-    across the walk.
+✅ VERDICT — one context, created once, never lost, same element at Q1.
+    The CARD HOST holds across the walk. Scope caveat above still applies:
+    this is not a page-wide count.
 
   ⚠ Verification is not approval. Carl's eye decides.
 `);
