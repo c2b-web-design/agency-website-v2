@@ -293,5 +293,20 @@ for (let run = 1; run <= RUNS; run++) {
   }
 }
 
-console.log(`\n✅ ${RUNS} films → ${OUT}/run-NN.webm`);
-console.log(`   Now measure them:  npm run verify -- reveal-stall-measure.mjs\n`);
+console.log(`\n   ${RUNS} films → ${OUT}/run-NN.webm`);
+console.log(`
+  ⚠ THIS SCRIPT REPORTS NO VERDICT. IT FILMS.
+
+    The films above are an INPUT to the measure pass, not evidence about
+    the freeze. Nothing here has been measured, so there is no result to
+    report either way — and a "✅" on this line was read by run.mjs as an
+    admissible verdict for eight days (defect 4, 28 August 2026).
+
+    ⚠ THE WORDING ABOVE IS CONSTRAINED, DELIBERATELY. run.mjs matches
+    verdict words anchored at LINE START, so beginning a line here with
+    the obvious words for success or failure would itself be read as this
+    script's verdict. That is defect 1 — prose mistaken for a result —
+    and it recurred twice while writing this very message.
+
+    Now measure them:  npm run verify -- reveal-stall-measure.mjs
+`);

@@ -44,6 +44,17 @@ alongside it could never have fitted inside it. Corrected 19 August 2026.*
 - **Found:** 2026-08-17. Recorded in `live-work/mode-ab-finding-17-august.md`.
 - **Waiting on:** Carl's instruction — **report, do not fix.**
 
+## VERIFY-UNPROVEN — no harness verdict is admissible as evidence
+
+- **What:** `verify/proven.json`'s `proven` array is **empty**. Its one entry was demoted on
+  28 August 2026 as misattributed — the credential described `reveal-stall.mjs`, which films,
+  while every arm of its proof came from `reveal-stall-measure.mjs`. ⛔ **No pass from any of the
+  131 harnesses is currently admissible.** Reds still pass through unchanged.
+- **Where:** `verify/proven.json`; the demoted entry is preserved in `_demoted` with its evidence.
+- **Found:** 2026-08-28. Reasoning and the restore route: **D-064** (`decisions.md`).
+- **Waiting on:** Two separate entries earned against current HEAD — `reveal-stall-measure.mjs`
+  first. ⚠ **Not a regression; the true state made visible.** Not scheduled.
+
 ---
 
 *Seeded 19 August 2026. Entries are admitted by Carl only.*

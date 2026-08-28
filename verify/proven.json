@@ -110,7 +110,9 @@
     "scope. run.mjs prints these after a proven script's verdict, because a",
     "proven instrument is still a narrow one."
   ],
-  "proven": [
+  "proven": [],
+
+  "_demoted": [
     {
       "script": "reveal-stall.mjs",
       "redRun": "2026-08-18",
@@ -150,10 +152,16 @@
         "Q5 only — the reveal after Begin. Not Q4–Q1, not the corridor step.",
         "⚠ 40ms QUANTISATION. 25fps is a FLOOR on resolution: a freeze shorter than 40ms is invisible here, and every duration is bounded, not exact.",
         "NO ATTRIBUTION. It says a freeze happened, where, and for how long. It says NOTHING about why — diagnosis is out of scope."
-      ]
-    }
-  ],
-  "_demoted": [
+      ],
+      "demotedOn": "2026-08-28",
+      "wasProvenFrom": "2026-08-18",
+      "reason": "MISATTRIBUTED — THE CREDENTIAL DESCRIBES A DIFFERENT SCRIPT. reveal-stall.mjs FILMS. It does not measure and reports no verdict: its last two lines (296-297) are '✅ N films → out/run-NN.webm' and 'Now measure them: npm run verify -- reveal-stall-measure.mjs'. Every arm of the proof was produced by reveal-stall-measure.mjs — the empty-input control's 'NO REVEAL FOUND' is at reveal-stall-measure.mjs:432 and nowhere else in verify/; the sample-count line run.mjs:283 matches is printed at reveal-stall-measure.mjs:562; and this entry's own stability block named reveal-stall-measure.mjs and its two 21 August commits as the source of the figures.",
+      "⚠ theLiveConsequence": "run.mjs matches entries by exact script name (run.mjs:214). 'npm run verify -- reveal-stall.mjs 5' therefore wrote five videos, printed '✅ 5 films', matched PASS_MARK on a line meaning FILES WERE WRITTEN, satisfied the three-sample rule via the /\\b(\\d+)\\s+films?\\b/ pattern, and returned '✓ VERDICT STANDS' — a fully admissible PASS for having recorded some video, with nothing measured. Meanwhile reveal-stall-measure.mjs, which produces the actual verdict, is unlisted and its pass is suppressed. ⛔ Exactly backwards, and it is instrument defect #12 occurring inside the gate built to prevent it.",
+      "⚠ whyItWasNotReFiled": "Moving this entry to reveal-stall-measure.mjs would carry an 18 AUGUST empty-input control onto a script that CHANGED TWICE ON 21 AUGUST (031c207, 8f5a259). This entry already declares the stability figures non-transferable across those commits; the same logic voids transferring the control. Re-filing would have preserved the appearance of a credential while repeating the fault that produced it — attributing runs to a script that did not perform them, in the version that did not perform them.",
+      "⚠ notInventedOnPurpose": "No control was manufactured to keep this entry and no requirement was weakened to fit it. The proven list goes 1 → 0, and no pass from any harness in this project is admissible until an entry is earned. That was already true in substance — this records it.",
+      "⚠ reveal-stall.mjsHasItsOwnRed": "reveal-stall.mjs:290-292 exits 1 on a vacuous film ('⛔ run N DID NOT REVEAL. A verdict from this film would be vacuous.'). That is a real red about a REAL subject — did the film capture a reveal — but it is NOT the subject this entry recorded, and it has no empty-input control and no stability declaration behind it. Do not restore the entry on the strength of it.",
+      "howToRestore": "TWO SEPARATE ENTRIES, each earning all three requirements against CURRENT HEAD — not one entry covering a pipeline. (1) reveal-stall-measure.mjs — the measuring pass, and the one that produces verdicts. Re-run the empty-sky crop control against the post-8f5a259 script, re-observe the spread, write both up. (2) reveal-stall.mjs — the filming pass, IF it is to be listed at all. Its subject is film validity, not freeze duration; its empty-input control is a run with no films to read. ⚠ A script that reports no verdict may not need an entry — see the verdict sentinel work in the defects-1-and-2 chunk, where the honest declaration for this script is '##VERDICT: NONE'."
+    },
     {
       "script": "extras-hold-position.mjs",
       "demotedOn": "2026-08-19",

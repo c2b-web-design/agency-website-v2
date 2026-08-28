@@ -3061,3 +3061,111 @@ question stays open and is not settled by adding a second `<img>`.
 ### ⚠ Not changed here
 
 A **third** `@next/next/no-img-element` warning now exists — one per mark. ⛔ **Another instance of the rule D-060 deliberately left open, not a new class of problem.**
+
+---
+
+## D-064 — The Only Proven Credential Was Filed Against The Wrong Script. It Is DEMOTED, Not Re-Filed
+
+**Status: APPROVED** — Carl, 28 August 2026. Diagnosis by the Architect; implemented in the
+`defect-4-misattributed-credential` chunk.
+
+⛔ **`verify/proven.json` held ONE entry, and it described a script that does not measure
+anything.** `reveal-stall.mjs` **films**. Its last two lines were:
+
+    ✅ N films → out/run-NN.webm
+    Now measure them:  npm run verify -- reveal-stall-measure.mjs
+
+**Every arm of the proof was produced by a DIFFERENT script, `reveal-stall-measure.mjs`:**
+
+| entry field | where the evidence actually came from |
+|---|---|
+| `emptyInput.reported` — *"NO REVEAL FOUND"* | `reveal-stall-measure.mjs:432` — **the only occurrence in `verify/`** |
+| the sample count `run.mjs:283` matches | `reveal-stall-measure.mjs:562` |
+| `stability.observedSpread` | the entry itself named `reveal-stall-measure.mjs` and its two 21 August commits |
+
+### ⛔ The live consequence — a fully admissible pass for recording video
+
+`run.mjs:214` matches entries **by exact script name**. So `npm run verify -- reveal-stall.mjs 5`
+wrote five videos, printed `✅ 5 films`, matched `PASS_MARK` **on a line meaning FILES WERE
+WRITTEN**, satisfied the three-sample rule via the `films?` pattern, and returned
+**`✓ VERDICT STANDS`** — with nothing measured.
+
+⚠ **Meanwhile `reveal-stall-measure.mjs`, which produces the actual verdict, was unlisted and had
+its pass suppressed.** ⛔ **Exactly backwards.**
+
+⚠⚠ **THIS IS INSTRUMENT DEFECT #12 — THE QUIET ZERO — OCCURRING INSIDE THE GATE BUILT TO PREVENT
+IT.** That is why it is recorded as a decision and not merely fixed.
+
+### ⚠ THE DECISION: demotion, not re-filing. This is the part worth keeping
+
+**Moving the entry to `reveal-stall-measure.mjs` looks like the obvious repair. It was rejected.**
+
+The empty-input control was run on **18 August**. The entry itself already declares that
+`reveal-stall-measure.mjs` **changed twice on 21 August** (`031c207`, `8f5a259`) and that the
+stability figures are **not transferable across those commits**. ⛔ **The same logic voids
+transferring an 18 August control onto the post-`8f5a259` script.**
+
+⚠ **Re-filing would have preserved the APPEARANCE of a credential while repeating the exact fault
+that produced it** — attributing runs to a script that did not perform them, in a version that did
+not perform them.
+
+⚠ **`reveal-stall.mjs` does have a genuine red of its own** — `reveal-stall.mjs:290-292` exits 1 on
+a vacuous film. ⛔ **But that is a red about a DIFFERENT SUBJECT** — *did the film capture a
+reveal* — with no empty-input control and no stability declaration behind it. **Do not restore the
+entry on the strength of it.**
+
+**Precedent followed exactly: the `extras-hold-position.mjs` demotion of 19 August.**
+
+### ⚠⚠ THE PROVEN LIST GOES 1 → 0, AND THAT IS THE HONEST NUMBER
+
+⛔ **No pass from any harness in this project is currently admissible as evidence.**
+
+⚠ **That is NOT a regression — it is the true state, made visible.** It was already true in
+substance; the list merely disagreed. **Nothing was weakened to fit, and no control was
+manufactured to keep the entry.**
+
+### ⚠ What was changed in the harness
+
+`reveal-stall.mjs`'s `✅` is removed and replaced with an explicit statement that **the script
+reports no verdict — it films.** Expected result is now **`⚠ NO VERDICT DETECTED`, exit 3**, which
+is correct: there is nothing to report either way. ⛔ **Do not "fix" it back.**
+
+### ⚠⚠ AND THE REPLACEMENT TEXT TRIPPED DEFECT 1 TWICE WHILE BEING WRITTEN
+
+**Recorded because it is the most transferable thing here.** The brief's replacement wording
+wrapped so that the word **`fail` began a line** — `FAIL_MARK` matched it and the script
+classified as **`disagree`**. Rewrapping put **`PASS` at a line start**, which `PASS_MARK` matched,
+classifying it as **`pass` — a false green, worse than the original defect.**
+
+⛔ **Three recurrences of defect 1's shape inside one task, one of them in the fix for it.** The
+wording in the file is now constrained on purpose and says so in its own text: **no verdict word
+may begin a line.** ⚠ **This is the argument for the verdict sentinel** (`##VERDICT:`, D-064's
+sibling work in the defects-1-and-2 chunk): while verdicts are inferred from prose, *writing
+English near a harness is a hazard.* **The honest declaration for this script is
+`##VERDICT: NONE`.**
+
+### ⚠ How to restore — TWO entries, not one
+
+⛔ **Not one entry covering a pipeline.** Each must earn all three requirements **against current
+HEAD**:
+
+1. **`reveal-stall-measure.mjs`** — the measuring pass, the one that produces verdicts. Re-run the
+   empty-sky crop control against the post-`8f5a259` script, re-observe the spread, write both up.
+2. **`reveal-stall.mjs`** — the filming pass, **if it is listed at all.** Its subject is *film
+   validity*, not freeze duration; its empty-input control is a run with no films to read.
+
+### ⚠ Verified
+
+- `--list` → **`PROVEN INSTRUMENTS (0 of 0 listed):`**, no rows, JSON parses.
+- **No orphan banner** — the orphan check reads `proven` only, never `_demoted`.
+- The new `reveal-stall.mjs` output classifies as **`none`** against the real `classify()`.
+- **No `package.json` script and no chained command depends on `reveal-stall.mjs` exiting 0** —
+  checked, because the brief flagged it as unverified.
+- ⚠ **NOT run against a live `:3100` build.** Nothing was listening, and standing up a production
+  server was outside this chunk. **The end-to-end run remains owed.**
+
+### ⚠ The demoted entry keeps its original evidence
+
+`injected`, `emptyInput`, `stability`, `whyItCounts` and `blindSpots` are **preserved intact**
+alongside the demotion reasoning. ⛔ **History is preserved, not rewritten** — `context-rules.md`,
+*No retroactive rewriting*.
