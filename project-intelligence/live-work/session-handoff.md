@@ -1,4 +1,8 @@
-# Session Handoff — 28 August 2026. The verify harness was repaired, and it now reports 0 proven.
+# Session Handoff — 28 August 2026. The verify harness was repaired; the About section found its shape.
+
+⚠ **TWO BODIES OF WORK IN THIS SESSION.** The verify defects (§1–§5 below) are **finished and
+closed**. The About work is **live thinking that continues next session** — jump to *THE NEXT
+SESSION'S AGREED SUBJECT* if that is what you are here for.
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -211,6 +215,60 @@ and that is the bar.
 *"That would mean all the landing page header subjects have functionality and meaning."* ⛔ **The
 point of this half is that no header link is dead — not that the page is finished.**
 
+## ⛔⛔ WHAT CARL SETTLED ON 28 AUGUST — three rulings, all in `about-section-thinking.md`
+
+⚠ **The discussion half has already made real progress. Do not reopen these.**
+
+### 1. ⛔ EVERY EXAMPLE IS OUR OWN WORK (§10a)
+
+*"I discounted using content online. 1. Its not our work. 2. There could be a minefield when it
+comes to copyright."*
+
+⚠⚠ **THE ORDER IS LOAD-BEARING. "It's not our work" outranks copyright** — reduced to a legal
+precaution it looks solvable by finding a permissive licence, **and it is not.** A borrowed example
+is evidence of taste in **selection**; the thing being sold is judgement in **construction**.
+
+⚠ **It admits TWO routes: examples already on the site, AND examples built separately to be
+recorded.** ⛔ **The second collides with §7 (only show what you'd build and maintain), which
+survives — a purpose-built demo is still a promise. Unresolved, and Carl's.**
+
+### 2. ⛔⛔ THE CENTRAL TENSION — and its RESOLUTION. THE BIGGEST THING SETTLED
+
+**The problem:** clients need plain-language explanation *("they may lack the skills to know what
+they want or to articulate it")*, **but a lexicon of design elements on the site dissolves c2b's
+style and ethos.**
+
+**Carl's resolution — a SORTING RULE, not a ratio:**
+
+> **In the c2b ethos → the site.  Not in the ethos → a video example for clients.**
+
+⚠⚠ **IT DISSOLVES THE TENSION RATHER THAN SPLITTING IT.** The lexicon risk was always about **what
+the SITE becomes**, not about whether clients are educated. **Two channels: the client's need is
+met in full and the identity risk goes to zero, because they are met in different places.**
+
+⛔ **THE JUDGEMENT IS CARL'S AND IS NOT DELEGATED** — *"something i DEEM to be in the c2b ethos."*
+⚠⚠ **NO CHECKLIST SUBSTITUTES FOR IT. A Builder who invents one has replaced the ethos with a
+rule.** **When it is unclear which channel something belongs in, ASK.**
+
+### 3. ⛔ THE SECTION IS EDUCATION, A SALES PITCH AND A PHILOSOPHY — AT ONCE
+
+*"things can have multiple meanings and uses."* ⛔ **Do not collapse it into one stated purpose.**
+⚠ **Several sections of the thinking file were written as though one reading must win; they are
+simultaneous, not competing** — which is why the process rule keeps being reached from different
+directions.
+
+---
+
+## ⚠⚠ HOW TO WRITE IN THAT FILE — Carl's instruction, 28 August
+
+⛔ **"DEVELOPED", NOT "CORRECTED".** Carl: *"i would not say that you corrected a file as you may
+have done. i would cite it as you have developed a file."*
+
+⚠ **A later pass sharpening an earlier one is the file WORKING, not the earlier pass having been
+wrong.** ⛔ **"Corrected" imports a fault that did not occur, and at idea stage it makes every entry
+read as provisionally MISTAKEN rather than provisionally EARLY.** **Same logic as the DAW model: a
+take is not wrong for being overtaken.**
+
 ## ⛔ WHAT THE PLAN MUST NAME BEFORE ANY OF IT IS BUILT
 
 ⚠⚠ **THIS IS THE HALF THAT NEEDS AN UNLOCK, AND IT IS ONE LINE OF CODE.**
@@ -267,17 +325,24 @@ commit `7b313e1`. ⛔ **A handoff is the wrong home for durable thinking.**
 
 ## STATE AT SESSION END
 
-- **Working tree clean. `main` = `843eee4`, fully pushed.**
+- **Working tree clean. `main` = `fe585f5`** *(verify work ended at `843eee4`; the commits after it
+  are the record and the About thinking — **no code changed after `843eee4`**).* **Fully pushed.**
 - **Lint: 1 error, 4 warnings — the known baseline, unchanged.** `tsc --noEmit` clean.
 - ⛔ **NO UNLOCK IS LIVE.** `chunk-scope.json` deleted; **both locks re-verified by observing a
   REAL DENIAL**, not by assumption.
-- **Nothing running on :3100.**
+- **Nothing running on :3100** — verified by connecting, after `TaskStop` failed to release it.
+- ⛔ **NOTHING IS OWED.** Every claim in this handoff rests on observation.
 
 ---
 
 *28 August 2026. **Four defects fixed across three commits. The harness that guards every other
 harness was itself reaching both verdicts from zero measurement — and the fix for it tripped the
 defect it was fixing, twice, before it was written correctly.***
+
+*⚠ **Then the About section, across four passes: the DAW framing that says set it up rather than
+write it; the ruling that every example is our own work; the central tension between the client's
+need for plain language and the lexicon that would dissolve the ethos; and Carl's resolution of
+it — the ethos as a sorting rule across two channels, so neither end is sacrificed.***
 
 *⛔ **NEXT SESSION: further discussion on the About section, then create the space to implement
 it — the header link made hot, the page created, placeholders acceptable.** Carl, 28 August.
