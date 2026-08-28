@@ -18,6 +18,22 @@
 > attached so you or the Architect can attack them."* Do not treat a heading here as settled
 > because it is written in the present tense.
 
+> ### ⛔ WHERE THIS GOES NEXT — Carl, 28 August 2026
+>
+> *"Next session. Further discussion on the About section and create the space to implement it. By
+> that i mean making the about link in the landing page Header hot and creating the page and
+> possibly fill it with placeholders or some dedicated content."*
+>
+> **Two halves, in order: DISCUSSION first — this file is refined until it is actionable — THEN
+> the scaffolding.** ⚠⚠ **"Create the space" is SCAFFOLDING, NOT THE SECTION.** ⛔ **It does not
+> authorise building the About content itself** — the argument, the examples, the clips, the
+> variant. **That is what the discussion is for.**
+>
+> ⛔ **The scaffolding half needs ONE unlock:** `components/layout/site-header.tsx`, for the
+> one-line `href="#"` → `/about`. **`app/about/page.tsx` is free.** ⚠ **And the structural
+> question is LIVE** — `/start` never used `SiteHeader`, so a new route that renders it is a
+> structural decision under CLAUDE.md §5a. **Write it up; do not decide it while implementing.**
+
 **Sources, both preserved deliberately:**
 
 1. **Carl's brainstorm, 27 August 2026** — recovered from commit `7b313e1`. ⚠ **It lived only in

@@ -163,14 +163,62 @@ by running the real `classify()` against the real output — do not trust the pr
 
 ---
 
-# ⛔ THE NEXT SUBJECT: THE `/about` PAGE — STILL NOT AUTHORISED
+# ⛔ THE NEXT SESSION'S AGREED SUBJECT — SET BY CARL, 28 August 2026
 
-**Carl's order of 27 August was: verify runner first, THEN `/about`.** ⛔ **The runner is done.**
+**Carl at session end, verbatim:** *"Next session. Further discussion on the About section and
+create the space to implement it. By that i mean making the about link in the landing page Header
+hot and creating the page and possibly fill it with placeholders or some dedicated content."*
 
-⚠⚠ **BUT "NO CHUNK IS AUTHORISED" IS UNCHANGED AND DID NOT LIFT WITH THE PAUSE.** It is the
-permanent arrangement. ⛔ **The runner being finished does not authorise `/about`** — Carl
-authorises it, and he researches with the Strategist and the Architect first, then puts the
-Builder in **PLAN MODE**.
+**So the next session has TWO halves, in this order:**
+
+1. ⛔ **DISCUSSION FIRST.** Further work on `live-work/about-section-thinking.md` — it is idea
+   stage, and Carl has said it becomes actionable only after discussion and refinement.
+2. **THEN "CREATE THE SPACE TO IMPLEMENT IT"** — Carl's phrase, and he defined it himself:
+   - **make the About link in the landing page header HOT** (`href="#"` → `/about`)
+   - **create the page**
+   - **possibly fill it with placeholders or some dedicated content**
+
+⚠⚠ **"CREATE THE SPACE" IS SCAFFOLDING, NOT THE SECTION.** ⛔ **Do not read it as authorisation to
+build the About content itself** — the argument, the examples, the clips, the variant. **That is
+what the discussion in half one is for**, and the principles in `about-section-thinking.md` are
+explicitly *"not decided"*.
+
+⚠ **PLACEHOLDERS ARE EXPLICITLY IN SCOPE, and Carl's 27 August reasoning for them stands:**
+*"That would mean all the landing page header subjects have functionality and meaning."* ⛔ **The
+point of this half is that no header link is dead — not that the page is finished.**
+
+## ⛔ WHAT THE PLAN MUST NAME BEFORE ANY OF IT IS BUILT
+
+⚠⚠ **THIS IS THE HALF THAT NEEDS AN UNLOCK, AND IT IS ONE LINE OF CODE.**
+
+| item | path | standing |
+|---|---|---|
+| the page | **`app/about/page.tsx`** | **free** — the route does not exist |
+| the hot link | ⛔ **`components/layout/site-header.tsx`** | **PROTECTED** — needs Carl to name this exact path under `"unlocked"` |
+
+⛔ **Carl's standing expectation: protected files are named IN THE PLAN, not discovered
+mid-build.** The plan goes through **Plan Mode**, then the **plan-review gate**
+(`handoff-protocol.md` §2.5) — Architect reviews and amends, Carl approves — and only then is it
+executed.
+
+⚠⚠ **AND THE STRUCTURAL QUESTION IS LIVE THIS TIME.** ⛔ **`/start` did NOT use `SiteHeader` — that
+is why the logo work touched no protected path.** An `/about` page is a **new route that will
+almost certainly render the header**, so **how the header is shared across routes is a structural
+decision** under CLAUDE.md §5a. ⛔ **STOP AND WRITE IT UP RATHER THAN DECIDING IT WHILE
+IMPLEMENTING.**
+
+⚠ **AND ENUMERATE WHAT DEPENDS ON THE HEADER BEFORE CHANGING IT** (§5b). The landing page is
+approved work. **Two worked cases on 14 August: moving a node changed paint order and made five
+cards unclickable, and gave a component an unbounded lifetime.** Neither was predicted; both came
+from behaviour provided *by accident of where a node sat.*
+
+---
+
+## ⚠ THE GENERAL RULE THIS SITS UNDER — unchanged
+
+⚠⚠ **"NO CHUNK IS AUTHORISED" IS THE PERMANENT ARRANGEMENT AND DID NOT LIFT WITH THE PAUSE.**
+⛔ **Carl naming the next SUBJECT is not the same as authorising a CHUNK.** He authorises it, and
+the Builder goes through Plan Mode and the review gate first.
 
 ⛔⛔ **ALL THE THINKING NOW LIVES IN `live-work/about-section-thinking.md`.** Carl's 27 August
 brainstorm **plus** his 28 August research pass — the process-not-features rule, the standing
@@ -206,3 +254,8 @@ commit `7b313e1`. ⛔ **A handoff is the wrong home for durable thinking.**
 *28 August 2026. **Four defects fixed across three commits. The harness that guards every other
 harness was itself reaching both verdicts from zero measurement — and the fix for it tripped the
 defect it was fixing, twice, before it was written correctly.***
+
+*⛔ **NEXT SESSION: further discussion on the About section, then create the space to implement
+it — the header link made hot, the page created, placeholders acceptable.** Carl, 28 August.
+⚠ **Read `live-work/about-section-thinking.md` first. Discussion comes before scaffolding, and
+scaffolding is not the section.***
