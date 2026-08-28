@@ -50,6 +50,8 @@
 2. **Carl's research pass, 28 August 2026** — the principles in Parts one to three.
 3. **Carl's framing of 28 August 2026** — the section immediately below, which says **what the
    principles are FOR and when they apply.**
+4. **Carl's ruling on examples, 28 August 2026** — **§10a**. ⛔ **Every example is our own work.**
+   The one content question that is **settled**, not open.
 
 ---
 
@@ -319,6 +321,93 @@ against page weight.**
 ⚠ **This strengthens the recolour route relative to video: two STILLS side by side make the
 parametric point without needing motion to survive compression at all.**
 
+## 10a. ⛔⛔ EVERY EXAMPLE IS OUR OWN WORK — Carl's ruling, 28 August 2026
+
+**This is the strongest thing settled about examples so far, and it supersedes the assumption
+underneath §10.**
+
+**Carl, in his own words:**
+
+> *"I discounted using content online. 1. Its not our work. 2. There could be a minefield when it
+> comes to copyright. It is more personal if we use our own examples whether they be on the site or
+> are built separately so we can record them on video. Someone who just lists content on video
+> maybe showing what can be done. It has validity. But, it is also equally important to show 'why'.
+> Style and ethos are important and that signals bespoke. Templates and slop is not what c2b does.
+> That is a point we have to get accross."*
+
+### ⚠ THE FIRST REASON IS THE LOAD-BEARING ONE, AND THE ORDER MATTERS
+
+⛔ **"It's not our work" comes FIRST. Copyright comes second.** ⚠ **Do not reduce this to a legal
+precaution** — that would make it a problem solvable by finding a permissive licence, and **it is
+not.**
+
+**An MIT-licensed effect is legally safe and still fails**, because the section's whole argument
+(§1, §2) is *this was decided by us*. ⛔ **A borrowed example — however cleanly licensed — is
+evidence of taste in SELECTION, and the thing being sold is judgement in CONSTRUCTION.**
+
+⚠⚠ **THE SELF-DEFEAT IS EXACT: a page arguing "we don't assemble from parts" that is itself
+assembled from parts.** The visitor need never learn the provenance for the argument to be hollow;
+**Carl would know, and the copy would have to be written around it.**
+
+### ⚠ WHAT "OUR OWN" ADMITS — two routes, both allowed
+
+**Carl names both explicitly:**
+
+1. **Examples already on the site** — the corridor, the cards, the button, the light rig.
+2. ⛔ **Examples BUILT SEPARATELY for the purpose, "so we can record them on video."**
+
+⚠⚠ **ROUTE 2 IS A REAL EXPANSION AND SHOULD NOT BE READ PAST.** It means the About section is
+**not limited to demonstrating work that already exists.** ⛔ **But it collides directly with §7 —
+*only show what you'd build and maintain*** — and §7 survives: a purpose-built demo is still a
+promise, and a prospect pointing at it still says *I want that*.
+
+⚠ **The tension is not resolved here and is Carl's to settle when it arises.** Recorded so it is
+not discovered mid-build.
+
+### ⚠ "SHOWING WHAT CAN BE DONE" HAS VALIDITY — Carl grants it, and then outranks it
+
+⛔ **Carl does NOT dismiss the showcase approach:** *"Someone who just lists content on video maybe
+showing what can be done. It has validity."*
+
+⚠⚠ **THIS MATTERS, because it means the position is a CHOICE BETWEEN TWO WORKING APPROACHES, not a
+dismissal of a bad one.** *"But, it is also equally important to show **why**."*
+
+**And that is §1 — process, not features — arriving independently from a different direction.**
+⛔ **Two separate lines of Carl's reasoning converge on the same rule, which is why it is the rule
+least safe to erode.**
+
+### ⛔ THE POINT THAT MUST GET ACROSS
+
+> **"Style and ethos are important and that signals bespoke. Templates and slop is not what c2b
+> does. That is a point we have to get accross."**
+
+⚠ **Note the mechanism Carl names: style and ethos SIGNAL bespoke.** ⛔ **They are not decoration
+on top of the argument — they ARE the argument, and they carry it without being stated.**
+
+⚠⚠ **AND THIS BEARS ON THE UNSETTLED "BUILT WITH AI = SLOP" QUESTION ABOVE.** Carl uses the word
+*slop* himself, here, about **templates** — not about AI. ⛔ **That is consistent with naming the
+category the visitor already distrusts without raising the AI objection**, which the earlier note
+flagged as a risk. **Still Carl's to settle; the vocabulary now points one way.**
+
+### ⚠⚠ WHAT THIS DOES TO §10 — mostly moot, deliberately kept
+
+⛔ **§10's licensing rules were written for third-party assets. This ruling means there should not
+BE any**, so the rules become a **fallback that should never fire.**
+
+⛔ **DO NOT DELETE §10.** Three reasons:
+
+1. ⚠ **The rules still apply to anything that slips in** — a font, an icon set, a shader snippet, a
+   code sample lifted while building. **The ruling covers EXAMPLES; the site has other assets.**
+2. **Carl's staleness note already flags the licence positions as needing re-checking if they ever
+   become load-bearing.** ⚠ **This ruling makes that less likely, not impossible.**
+3. ⛔ **A deleted rule reads as a rule that never existed.** The reasoning for why borrowing is
+   dangerous is exactly what stops someone re-opening the question in six months.
+
+⚠ **§10's asset log is now MORE useful, not less** — a log with nothing third-party in it is
+**evidence the ruling was kept.**
+
+---
+
 ## 10. Downloadable is not licensed
 
 **Standing rules from the licensing session, unchanged:**
@@ -339,6 +428,13 @@ parametric point without needing motion to survive compression at all.**
 
 ⚠ **Recorded so it is not re-derived.** `context-rules.md` normally excludes explored-and-discarded
 approaches; **these are kept because each names the reasoning that makes a tempting option wrong.**
+
+- ⛔⛔ **USING CONTENT FOUND ONLINE AS EXAMPLES — RULED OUT BY CARL, 28 August 2026.** ⚠ **This one
+  is a RULING, not a leaning.** Two reasons, **in Carl's order**: *"1. Its not our work. 2. There
+  could be a minefield when it comes to copyright."* ⛔ **The first is load-bearing — a permissive
+  licence does NOT rescue it**, because a borrowed example is evidence of taste in *selection*
+  while the thing being sold is judgement in *construction*. **Full reasoning and what it admits:
+  §10a.**
 
 - **Feature showcase with Carl's styling applied.** ⛔ **The multiplicity IS the message** —
   consistent presentation of an inconsistent set still says *"many things."*
@@ -363,7 +459,10 @@ does.**
 
 **Two exceptions:**
 
-1. **The licence positions** should be re-checked **if they ever become load-bearing.**
+1. **The licence positions** should be re-checked **if they ever become load-bearing.** ⚠ **Carl's
+   §10a ruling makes that much LESS LIKELY — there should be no third-party examples at all — but
+   not impossible.** ⛔ **The rules still cover fonts, icons, shader snippets and code samples,
+   which are not examples.**
 2. **Any of this needs revising if the visual direction moves** — at which point the copy changes
    anyway.
 
@@ -382,6 +481,10 @@ currently only understood.**
    conclusion.**
 4. ⛔ **Warm/salmon is the SELECTION STATE and is unavailable for other uses.** ⚠⚠ **A system fact
    that is now load-bearing and will otherwise get violated in six months.**
+5. ⛔ **EVERY EXAMPLE IS OUR OWN WORK — and "it's not our work" outranks the copyright reason.**
+   ⚠ **Added 28 August after Carl's ruling (§10a).** ⚠⚠ **The reason must travel with it:** recorded
+   as a legal precaution alone, it looks solvable by finding a permissive licence — **and it is
+   not.**
 
 ⚠ **Item 4 is the one with a mechanism available.** The other three are judgement rules that live
 in prose; **this one is a fact about the design system that code could assert.** See
