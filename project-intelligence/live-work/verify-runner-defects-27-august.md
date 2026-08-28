@@ -1,4 +1,41 @@
-# The verify runner's verdict detection — two defects Carl has parked for next session
+# The verify runner's verdict detection — RESOLVED 28 August 2026
+
+> ## ⛔⛔ ALL THREE DEFECTS BELOW ARE FIXED. A FOURTH WAS FOUND AND FIXED TOO.
+>
+> **Commits: `a374aa2` (defect 3), `301b605` (defects 1 and 2), `843eee4` (defect 4).**
+> **All pushed to `main`. Reasoning for defect 4: D-064 in `decisions.md`.**
+>
+> ⚠ **THIS DOCUMENT IS KEPT FOR ITS DIAGNOSIS, NOT ITS STATUS.** It was written on 27 August
+> as a hand-over to the next session. Everything below describes the state *before* the fix.
+>
+> ### ⛔ ONE THING BELOW IS WRONG, AND IT MATTERED
+>
+> **Defect 3 is filed here as a `run.mjs` problem. It is not.** The cause is a single line in
+> **`verify/one-context.mjs:97`** — `const RUNS = Number(process.argv[2] ?? 3)` — and that file
+> is **not protected**. ⚠ **So defect 3 never needed an unlock at all**, and the two-chunk split
+> this document predicted was cheaper than it says.
+>
+> ### ⚠ AND THE SYMPTOM WAS UNDERSTATED
+>
+> Below, defect 3 reads as a cosmetic `NaN` in a verdict line. ⛔ **It was a SILENT NO-OP.**
+> `1 <= NaN` is false, so the run loop never executed — no browser, no page, nothing measured —
+> and it then reached **both** verdicts wrongly: a **red** in falsify mode (the exact artefact a
+> `proven.json` entry is filed from) and a **green** in normal mode, masked only by the script
+> being unproven.
+>
+> ### ⚠ WHAT WAS DECIDED, NOT JUST FIXED
+>
+> - **Defect 1** now returns a fourth outcome, **`"disagree"`** (exit 4) — a self-contradicting
+>   script is not a product failure, and a red for the wrong reason is a manufactured proof.
+> - **A `##VERDICT:` sentinel** lets a harness declare its result instead of having it inferred.
+>   ⚠ **Defined but not yet emitted by any harness** — adoption rides on admission.
+> - ⛔ **Defect 2 was deliberately NOT fixed.** The 38 harnesses printing `✅` mid-line fail
+>   *closed* (`NO VERDICT`, exit 3), and loosening `PASS_MARK` was rejected on recorded evidence.
+> - ⛔ **Defect 4, found during this work: `proven.json`'s only entry described a script that
+>   FILMS.** Demoted, not re-filed. **The proven list is now 0.**
+
+---
+
 
 **27 August 2026.** ⛔ **CARL'S RULING: noted, NOT fixed now. First item of the next session.**
 

@@ -80,6 +80,55 @@ building has restarted as it was before.
 new building could happen at all; the chunk rule governs **what** may be built and **when it
 may start.** **Two separate controls. Only one moved.**
 
+### The verify runner — FOUR DEFECTS FIXED, 28 August 2026
+
+**The first item of the session on Carl's ruling of 27 August, and the pre-condition for
+trusting anything `verify/` says.** Three commits, all pushed to `main`.
+
+| commit | defect | file |
+|---|---|---|
+| `a374aa2` | **3** — a flag in `argv[2]` made `RUNS` NaN | `verify/lib/args.mjs` (new) + 3 harnesses |
+| `301b605` | **1 and 2** — a prose ⛔ read as a product failure | `verify/run.mjs` |
+| `843eee4` | **4** — the proven credential described the wrong script | `verify/proven.json`, `reveal-stall.mjs` |
+
+⚠ **Reasoning: D-064** (defect 4) and the commit messages. Not repeated here.
+
+**Defect 3 — `Number(process.argv[2] ?? 3)`.** Invoked as `one-context.mjs --falsify`, `argv[2]`
+was the *string* `"--falsify"`, so `??` never reached the default. ⛔ **NaN did not produce a bad
+number — it produced a SILENT NO-OP:** `1 <= NaN` is false, so the loop never ran. No browser, no
+measurement. It then reached **both** verdicts wrongly — a red in falsify mode (the artefact a
+proof is filed from) and a **green** in normal mode. Guard lands before the parse, exits 2.
+
+**Defects 1 and 2 — `FAIL_MARK` matched any line-leading ⛔ even on exit 0.** ⚠⚠ **Complying with
+`context-rules.md` — declare your blind spots IN THE OUTPUT — is what tripped it.** Now returns a
+fourth outcome, **`"disagree"`** (exit 4), which suppresses the pass without manufacturing a red.
+A **`##VERDICT:` sentinel** was added so a harness can declare its result instead of having it
+inferred. ⛔ **Defect 2 deliberately NOT fixed** — the 38 harnesses printing `✅` mid-line fail
+*closed*, and sentinel adoption rides on admission rather than a 131-file sweep.
+
+**Defect 4 — `proven.json`'s one entry named `reveal-stall.mjs`, which FILMS.** Every arm of the
+proof came from `reveal-stall-measure.mjs`. **Demoted, not re-filed** — full reasoning in D-064.
+
+### ⛔⛔ THE PROVEN LIST IS 0. NO HARNESS PASS IS ADMISSIBLE
+
+⚠ **This is the true state made visible, not a regression.** `verify/` can still tell you
+something went **red** — reds always pass through unchanged. ⛔ **It cannot currently certify that
+anything is right.** Restore route: **D-064**, `reveal-stall-measure.mjs` first.
+
+### ⚠ STILL OWED FROM THIS SESSION
+
+- ⛔ **`reveal-stall.mjs` has NOT been run since its output changed.** Nothing was listening on
+  :3100 and standing up a production build was outside the chunk. **Expected: `⚠ NO VERDICT
+  DETECTED`, exit 3.** ⚠ **This is the one claim in the session resting on inference, not
+  observation.**
+- **The `##VERDICT:` sentinel is defined but unemitted** — untested in a real run. The honest
+  one-line follow-up is `##VERDICT: NONE` in `reveal-stall.mjs` (unprotected).
+
+⚠ **Both protected-path unlocks were closed and RE-VERIFIED BY OBSERVING A REAL DENIAL** —
+`verify/run.mjs` and `verify/proven.json`. `chunk-scope.json` is deleted; no unlock is live.
+
+---
+
 ### The logo work — DONE on `/start`, 27 August 2026
 
 **The gold mark is top-left on the landing page and on `/start`, and on `/start` it changes
@@ -472,7 +521,11 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 ---
 
-*Last updated: 2026-08-27 (second pass) — **the logo work landed and is APPROVED**: D-062 places
+*Last updated: 2026-08-28 — **four defects fixed in the verify harness** (`a374aa2`, `301b605`,
+`843eee4`), recorded above and in **D-064**. ⛔ **The proven list is 0 — no harness pass is
+admissible.** One item owed: `reveal-stall.mjs` has not been run since its output changed.*
+
+*Previously: 2026-08-27 (second pass) — **the logo work landed and is APPROVED**: D-062 places
 the mark on `/start`, D-063 records the gold → blue → gold journey, the nail, and the radial edge.
 The "next body of work" section is replaced by what was actually built. ⛔ **Client info is a
 SECTION — the `complete` stage on `/start` — not a page.***
