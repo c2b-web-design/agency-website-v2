@@ -183,6 +183,30 @@ build the About content itself** — the argument, the examples, the clips, the 
 what the discussion in half one is for**, and the principles in `about-section-thinking.md` are
 explicitly *"not decided"*.
 
+## ⛔⛔ CARL'S FRAMING — THE LANDING PAGE IS THE STANDARD, AND IT IS ITSELF SCAFFOLDING
+
+**Carl, 28 August, and this is what "set up" means:**
+
+> *"The landing page can be seen as scaffolding and placeholders... the text wording will be
+> edited, refined and focused... For now, it is serving its purpose. We will come to it soon. In
+> the meantime, we must 'set up' the about page in the same manner... Its the same principles i
+> use when producing music in a DAW. Lets get the bare bones in there and then zero in and focus
+> at the right time."*
+
+⛔ **THE STANDARD TO HIT IS THE LANDING PAGE'S *CURRENT* STATE — bare bones that convey position —
+NOT its finished state, which does not exist either.** ⚠ **The landing page copy is itself
+provisional and Carl says so: *"better language is required."*** ⛔ **KNOWN, ACCEPTED, DEFERRED —
+do not fix it while passing, and `app/page.tsx` is protected anyway.**
+
+⚠⚠ **THIS RESOLVES THE TWO-REGISTERS TENSION FOR NOW: it is a MASTERING problem, and this is
+TRACKING.** ⛔ **None of Parts one to three has to be settled to put the bare bones in.**
+
+⚠⚠ **THE RISK IS OVER-BUILDING, NOT UNDER-BUILDING.** `about-section-thinking.md` is persuasive
+and a Builder who reads it will be tempted to implement the argument. ⛔ **The test: would this
+survive being thrown away when the section is developed?** Scaffolding should. ⚠ **But "bare
+bones" is NOT lorem ipsum either** — the landing page's placeholders *convey positions and ideas*,
+and that is the bar.
+
 ⚠ **PLACEHOLDERS ARE EXPLICITLY IN SCOPE, and Carl's 27 August reasoning for them stands:**
 *"That would mean all the landing page header subjects have functionality and meaning."* ⛔ **The
 point of this half is that no header link is dead — not that the page is finished.**

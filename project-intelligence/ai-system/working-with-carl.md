@@ -259,6 +259,38 @@ torn up and rewritten mid-build, and that the record will fight it.**
 | **⚠ Re-tracking** | *"I might go back and rewrite a whole section."* A part that was down and working is **replaced**, not adjusted. | ⚠ **THE GAP.** See below. |
 | **Mastering** | Carl and the Builder go through the whole site together, balancing it as one thing. | Values graduate `PROVISIONAL` → `APPROVED`. |
 
+### ⚠⚠ COPY IS TRACKED THE SAME WAY, AND NOTHING SAID SO UNTIL 28 AUGUST 2026
+
+**D-035 makes *values* provisional. The 11 August amendment adds *architecture*. ⛔ NEITHER
+COVERS WORDS** — and a reader who found the model here would not learn that **the text on the
+site is tracked, re-tracked and mastered exactly like everything else.**
+
+**Carl, 28 August 2026, describing the landing page:**
+
+> *"The landing page can be seen as scaffolding and placeholders. Although the text, subtext and
+> boring white button can be seen to convey positions and ideas, the text wording will be edited,
+> refined and focused... better language is required. For now, it is serving its purpose. We will
+> come to it soon."*
+
+⛔ **THE LANDING PAGE'S COPY IS A TRACKED TAKE, NOT A MASTER.** It conveys real positions — it is
+doing a job — **but the wording is deliberately unfinished**, and Carl says it has been overtaken:
+*"we are months into building and the idea of c2b has been developed and refined."*
+
+⚠⚠ **THE PRACTICAL CONSEQUENCE, AND IT IS THE REASON THIS IS WRITTEN HERE:**
+
+- ⛔ **PROVISIONAL COPY LOOKS EXACTLY LIKE FINISHED COPY.** A value can be recorded `PROVISIONAL`;
+  a sentence on a page carries no status. **Nothing in the rendered site distinguishes a take
+  from a master.**
+- ⛔ **SO "THE WORDING COULD BE BETTER" IS NOT A FINDING.** It is the known state, on Carl's
+  timing. **Do not fix it while passing, do not raise it as a defect, and do not let a review
+  report it as one.** `app/page.tsx` is protected in any case.
+- ⚠ **AND A NEW PAGE IS SET UP TO THE SAME STANDARD** — bare bones that convey position, not
+  finished argument. Worked case in progress: `live-work/about-section-thinking.md`, where the
+  content thinking is deliberately separated from the setup pass.
+
+**Carl's summary of the method:** *"Lets get the bare bones in there and then zero in and focus at
+the right time."*
+
 ### ⚠⚠ RE-TRACKING IS WHAT BREAKS THE RECORD, AND D-046 IS THE WORKED CASE
 
 **D-035 makes *values* provisional. It does not make *architecture* provisional.** So a decision

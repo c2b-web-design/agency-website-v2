@@ -17,6 +17,13 @@
 > ⚠ **Principles below are stated to be ATTACKED.** Carl's framing: *"a set of principles
 > attached so you or the Architect can attack them."* Do not treat a heading here as settled
 > because it is written in the present tense.
+>
+> ⛔⛔ **ONE THING IN THIS FILE *IS* SETTLED, AND IT IS THE METHOD, NOT THE CONTENT.** Carl,
+> 28 August: the `/about` page is to be **"set up" the way the landing page was set up — bare
+> bones now, developed later.** ⚠ **That is a DAW-model instruction and it governs the next
+> session.** ⛔ **See *CARL'S FRAMING* immediately below, and read it BEFORE Parts one to three —
+> it tells you what those parts are for and, more importantly, WHEN THEY APPLY. They are the
+> development pass, not the setup.**
 
 > ### ⛔ WHERE THIS GOES NEXT — Carl, 28 August 2026
 >
@@ -41,6 +48,91 @@
    (`live-work-protocol.md` §3a). ⛔ **This file exists partly so that never happens again:** a
    handoff is single-use by design and is the wrong home for durable thinking.
 2. **Carl's research pass, 28 August 2026** — the principles in Parts one to three.
+3. **Carl's framing of 28 August 2026** — the section immediately below, which says **what the
+   principles are FOR and when they apply.**
+
+---
+
+# ⛔⛔ CARL'S FRAMING, 28 August 2026 — "SET UP" THE PAGE THE WAY THE LANDING PAGE WAS SET UP
+
+**This is the section that tells you what the next session is actually for. Read it before the
+principles above, because it changes what they are for.**
+
+**Carl, in his own words:**
+
+> *"The landing page can be seen as scaffolding and placeholders. Although the text, subtext and
+> boring white button can be seen to convey positions and ideas, the text wording will be edited,
+> refined and focused. All the moreso seeing as we are months into building and the idea of c2b has
+> been developed and refined. better language is required. For now, it is serving its purpose. We
+> will come to it soon. In the meantime, we must 'set up' the about page in the same manner. Once
+> done, we will return to it in good time to develop it. Its the same principles i use when
+> producing music in a DAW. Lets get the bare bones in there and then zero in and focus at the
+> right time."*
+
+## ⚠⚠ WHAT THIS SETTLES — and it resolves a tension recorded above
+
+**The two-registers tension** (three prose parts vs one wanting live interactive demos) **does not
+have to be resolved to start.** ⛔ **It is a MASTERING problem, and the next session is TRACKING.**
+
+⚠ **Everything in Parts one to three of this file — the process rule, the ethos test, the scene
+finding, the variant principle, the compression warning — is about what the section EVENTUALLY
+ARGUES.** ⛔ **None of it has to be settled to put the bare bones in.** That is the point of Carl's
+framing: **the two are separate passes and they happen at different times.**
+
+## THE LANDING PAGE IS THE WORKED EXAMPLE, AND IT IS ALREADY LIVE
+
+⛔ **THE LANDING PAGE IS ITSELF SCAFFOLDING AND PLACEHOLDERS.** Its text, subtext and *"boring
+white button"* **convey positions and ideas** — they are doing real work — **but the wording is not
+final and was never meant to be.**
+
+⚠⚠ **AND IT IS ALREADY STALE BY CARL'S OWN ACCOUNT:** *"we are months into building and the idea
+of c2b has been developed and refined. better language is required."* ⛔ **The copy has been
+overtaken by the understanding of the business it describes.**
+
+**Carl: *"For now, it is serving its purpose. We will come to it soon."*** ⛔ **THIS IS A KNOWN,
+ACCEPTED, DEFERRED ITEM — not a defect, not an oversight, and NOT something to fix while passing.**
+
+## ⛔ THE INSTRUCTION FOR THE `/about` PAGE
+
+**"Set up the about page in the same manner."** ⛔ **The standard to hit is the landing page's
+CURRENT state — bare bones that convey position — NOT its finished state, which does not exist
+either.**
+
+| phase | `/about` | when |
+|---|---|---|
+| **Tracking** | ⛔ **THIS IS THE NEXT SESSION.** Bare bones in. The link goes hot, the page exists, content conveys position without being final. | now |
+| **Re-tracking / development** | *"we will return to it in good time to develop it"* — the argument, the examples, the variant, the clips. | Carl's call, later |
+| **Mastering** | The whole site balanced as one thing, landing page copy included (D-035). | end of build |
+
+⚠⚠ **SO "PLACEHOLDERS OR SOME DEDICATED CONTENT" IS NOT A HEDGE — IT IS THE METHOD.** Carl's DAW
+model: *"Lets get the bare bones in there and then zero in and focus at the right time."*
+
+## ⛔⛔ WHAT THIS FORBIDS — the failure mode, stated plainly
+
+⚠ **THE RISK IS NOT UNDER-BUILDING. IT IS OVER-BUILDING BECAUSE THIS FILE EXISTS.**
+
+**Parts one to three above are rich, specific and persuasive.** ⛔ **A Builder who reads them and
+then "sets up" the page will be strongly tempted to implement the argument** — the scene example,
+the two-variant specimen, the copy that points before the viewer looks.
+
+⛔ **DO NOT. That is the development pass, and Carl has explicitly deferred it.** ⚠ **This file is
+what the section will EVENTUALLY say. The next session is about making sure there is somewhere for
+it to be said.**
+
+⚠ **The test: would this survive being thrown away when the section is developed?** Scaffolding
+should. **A carefully argued About section built now would not — and the effort would be spent
+twice.**
+
+## ⚠ WHAT THIS DOES NOT LICENSE EITHER
+
+⛔ **"Bare bones" does not mean lorem ipsum or a blank route.** The landing page's placeholders
+**convey positions and ideas** — that is Carl's own description of them, and it is the standard.
+**A page that says nothing fails the comparison as surely as a finished one over-reaches it.**
+
+⚠ **AND IT DOES NOT LICENSE TOUCHING THE LANDING PAGE COPY.** ⛔ *"We will come to it soon"* is
+Carl's, on Carl's timing. **`app/page.tsx` is a PROTECTED PATH.** ⚠ **Noticing the copy is stale is
+not authorisation to improve it** — the staleness is recorded here precisely so it does not need
+re-reporting.
 
 ---
 
