@@ -6,20 +6,36 @@
 
 ---
 
-# ⛔⛔ START HERE: THE ONE THING OWED FROM LAST SESSION
+# ✔ CLOSED: THE ONE ITEM THAT WAS OWED — RUN ON A LIVE BUILD, 28 August 2026
 
-⛔ **`verify/reveal-stall.mjs` HAS NOT BEEN RUN SINCE ITS OUTPUT WAS CHANGED.**
+⛔ **NOTHING IS OWED FROM THIS SESSION.** `verify/reveal-stall.mjs` **was run** against a clean
+production build on :3100. **Every claim in this handoff now rests on observation.**
 
-Nothing was listening on :3100 and standing up a production build was outside that chunk.
+**Result — exactly as predicted:**
 
-- **Expected:** `⚠ NO VERDICT DETECTED`, **exit 3**. ⛔ **That is CORRECT, not a new fault** — the
-  script reports no verdict, it films. **Do not "fix" it back.**
-- **How:** `rm -rf .next && npm run build`, then `npx next start -p 3100`, then
-  `npm run verify -- reveal-stall.mjs 1`.
+    ⚠ NO VERDICT DETECTED, and reveal-stall.mjs has no recorded red run.
+    PIPELINE EXIT: 3
 
-⚠⚠ **THIS IS THE ONLY CLAIM FROM LAST SESSION RESTING ON INFERENCE RATHER THAN OBSERVATION.**
-Everything else was exercised. The verdict was confirmed as `none` by running the real
-`classify()` against the real output literal — but the script itself was never launched.
+⛔ **THAT IS CORRECT, NOT A FAULT.** The script reports no verdict — it films. **Do not "fix" it
+back.** It filmed 1 run, reveal ran, text `"What brought you here today?"`.
+
+⚠ **THE WHOLE CHAIN WAS EXERCISED, NOT JUST THE ONE SCRIPT.** `reveal-stall-measure.mjs` was then
+run on that film and **behaved correctly as the measuring pass**: it reported a real
+`── DISTRIBUTION, 1 of 1 runs ──`, found the freeze (**200ms, bounded 200-240, at f268**), printed
+its blind-spot caveat, and exited **1** — passed through as `⛔ FAILURE — passed through
+unchanged`, because a red from an unproven instrument is never suppressed.
+
+⚠⚠ **AND THAT IS DEFECT 4 SHOWN CORRECTED FROM BOTH ENDS IN ONE RUN.** The script that FILMS now
+yields no verdict; the script that MEASURES produces the real one. **Before the fix it was exactly
+backwards** — the filming pass held the credential and returned `✓ VERDICT STANDS` for writing
+video, while the measuring pass had its verdict suppressed.
+
+**Build:** `iOsmvS1MD1SxA1PjrhCFd`, ANGLE / AMD Radeon, 1440x900, 25fps.
+**Films:** `verify/out/reveal-stall/2026-08-28T12-08-21/`.
+
+⚠⚠ **`TaskStop` REPORTED SUCCESS ON A HELD PORT AGAIN — FOURTH RECORDED INSTANCE.** The server
+survived it and :3100 was still listening. **Killed by PID (8508) via `Get-NetTCPConnection`, then
+re-checked.** ⛔ **Always verify the port is free by connecting to it; never trust the stop.**
 
 ---
 
@@ -123,6 +139,9 @@ by running the real `classify()` against the real output — do not trust the pr
 - ⚠ **The front-door hook blocks `node --check verify/*.mjs`** — it pattern-matches the text, not
   the intent, so there is **no clean way to syntax-check a harness.** It also fires on a `grep`
   whose *pattern string* contains `node verify/...`. **Do not route around it.**
+- ⚠⚠ **`TaskStop` REPORTS SUCCESS ON A HELD PORT — FOURTH RECORDED INSTANCE, 28 August.**
+  The server survived it and :3100 was still listening. ⛔ **Kill by PID** (`Get-NetTCPConnection
+  -LocalPort 3100`) **and re-check by connecting.** Never trust the stop.
 - ⚠ **`chunk-scope.json` narrowing is real and bites.** With a `files` array set, writing a test
   fixture into `verify/` was **denied** — which is the mechanism working.
 

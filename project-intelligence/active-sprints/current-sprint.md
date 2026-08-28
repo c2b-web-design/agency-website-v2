@@ -115,12 +115,21 @@ proof came from `reveal-stall-measure.mjs`. **Demoted, not re-filed** — full r
 something went **red** — reds always pass through unchanged. ⛔ **It cannot currently certify that
 anything is right.** Restore route: **D-064**, `reveal-stall-measure.mjs` first.
 
-### ⚠ STILL OWED FROM THIS SESSION
+### ✔ VERIFIED ON A LIVE BUILD — nothing is owed
 
-- ⛔ **`reveal-stall.mjs` has NOT been run since its output changed.** Nothing was listening on
-  :3100 and standing up a production build was outside the chunk. **Expected: `⚠ NO VERDICT
-  DETECTED`, exit 3.** ⚠ **This is the one claim in the session resting on inference, not
-  observation.**
+⛔ **`reveal-stall.mjs` WAS RUN** against a clean production build on :3100 (build
+`iOsmvS1MD1SxA1PjrhCFd`, ANGLE / AMD Radeon, 1440x900). **Result exactly as predicted:
+`⚠ NO VERDICT DETECTED`, exit 3.** ⛔ **Correct, not a fault — the script films, it does not
+report a verdict. Do not "fix" it back.**
+
+⚠⚠ **THE WHOLE CHAIN WAS EXERCISED.** `reveal-stall-measure.mjs` was then run on that film and
+behaved correctly as the measuring pass — a real `── DISTRIBUTION, 1 of 1 runs ──`, freeze found
+at **200ms (bounded 200-240)**, blind-spot caveat printed, exit **1**, passed through unsuppressed
+as a red from an unproven instrument.
+
+⚠ **That is defect 4 shown corrected from BOTH ENDS in one run.** The filming pass now yields no
+verdict; the measuring pass produces the real one. **Before the fix it was exactly backwards.**
+
 - **The `##VERDICT:` sentinel is defined but unemitted** — untested in a real run. The honest
   one-line follow-up is `##VERDICT: NONE` in `reveal-stall.mjs` (unprotected).
 
@@ -523,7 +532,7 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 *Last updated: 2026-08-28 — **four defects fixed in the verify harness** (`a374aa2`, `301b605`,
 `843eee4`), recorded above and in **D-064**. ⛔ **The proven list is 0 — no harness pass is
-admissible.** One item owed: `reveal-stall.mjs` has not been run since its output changed.*
+admissible.** ✔ **Verified end-to-end on a live production build — nothing is owed.***
 
 *Previously: 2026-08-27 (second pass) — **the logo work landed and is APPROVED**: D-062 places
 the mark on `/start`, D-063 records the gold → blue → gold journey, the nail, and the radial edge.
