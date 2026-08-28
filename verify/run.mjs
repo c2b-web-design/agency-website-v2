@@ -78,9 +78,38 @@
  *   - ⚠ ITS VERDICT DETECTION IS TEXTUAL. It reads exit codes and looks for
  *     pass/fail markers in output. A script that reports a pass in wording it
  *     does not recognise will be treated as having no verdict to suppress.
+ *     ⚠ A HARNESS CAN OPT OUT OF THE GUESSING — see THE VERDICT CONTRACT.
  *   - It cannot tell a coupled value implemented as an overlay, a derived value
  *     that lost its source condition, or visual drift. Those stay with
  *     checkpoint review and with Carl.
+ *
+ * THE VERDICT CONTRACT — how a harness declares its result
+ * --------------------------------------------------------
+ * By default the runner INFERS a verdict from the exit code and from markers
+ * in the output. Inference is unreliable in one specific direction, and two
+ * textual classifiers have already failed here (see classify()).
+ *
+ * A harness may instead DECLARE its verdict on a line of its own:
+ *
+ *     console.log("##VERDICT: PASS");     // or FAIL, or NONE
+ *
+ * ⛔ WHEN PRESENT, THE MARKERS ARE NOT CONSULTED. A declaring harness may print
+ * ⛔ and ✅ anywhere in its prose without affecting the verdict — which is what
+ * makes the context-rules.md requirement (declare your blind spots IN THE
+ * OUTPUT) safe to comply with. Before 28 August 2026 that caveat's leading ⛔
+ * was read as a product failure.
+ *
+ * ⚠ THE EXIT CODE MUST STILL AGREE: PASS with a non-zero exit, or FAIL with
+ * exit 0, is reported as a CONTRADICTION (exit 4) and certifies nothing. The
+ * declaration is not a way to overrule the exit code — it is a second witness,
+ * and disagreement between witnesses is the finding.
+ *
+ * ⚠ NO HARNESS EMITS IT YET, BY DESIGN. Adoption is a precondition of
+ * ADMISSION, not a 131-file sweep: a harness gains the sentinel when someone
+ * is already doing the work of proving it for proven.json. The 38 harnesses
+ * that print ✅ only mid-line are broken toward NO VERDICT (suppressed,
+ * exit 3) — the fail-closed direction — so nothing is urgent and nothing is
+ * silently wrong.
  */
 
 import { spawn } from "node:child_process";
@@ -128,9 +157,71 @@ function loadProven() {
 const PASS_MARK = /(^|\n)\s*(✅|PASS(ED)?\b|CLEAN\b|GREEN\b)/i;
 const FAIL_MARK = /(^|\n)\s*(⛔|❌|FAIL(ED|URE)?\b)/i;
 
+// ⚠ THREE-QUARTERS OF PASS_MARK IS DEAD, AND THE APPEARANCE OF CAPABILITY IS
+// PART OF WHY THIS WENT UNEXAMINED. Surveyed 28 August 2026: PASS, CLEAN and
+// GREEN are NEVER used as line-leading markers by any of the 131 harnesses.
+// The ✅ is the only pass signal in the whole suite. The alternation is kept
+// because removing it changes behaviour for no gain, but do not read it as
+// evidence that harnesses report in several vocabularies. They do not.
+
+// ── THE SENTINEL — the declared verdict ─────────────────────────────────────
+// ⚠⚠ A REGEX CANNOT TELL A VERDICT ⛔ FROM A PROSE ⛔, AND IT NEVER WILL.
+// Two textual classifiers have now failed in this file: the original
+// /DRIFT|STALL|RED|DEFECT/ matcher (above), and FAIL_MARK reading a harness's
+// own scope caveat as a failure (defect 1, below). The header of this file
+// already concedes the method — "its verdict detection is TEXTUAL".
+//
+// So a harness may DECLARE its verdict rather than have it inferred:
+//
+//     ##VERDICT: PASS   |   ##VERDICT: FAIL   |   ##VERDICT: NONE
+//
+// ⛔ THE SENTINEL IS NOT A SECOND OPINION — IT OUTRANKS THE MARKERS ENTIRELY.
+// When present, PASS_MARK and FAIL_MARK are not consulted, so a harness that
+// declares its verdict may print ⛔ and ✅ freely in its prose. That is the
+// point: it makes the governance rule requiring a blind-spot caveat in the
+// output (context-rules.md) safe to comply with.
+//
+// ⚠ THE EXIT CODE REMAINS A CROSS-CHECK, NOT A TIEBREAK. If the declaration
+// and the exit code disagree, that DISAGREEMENT IS THE FINDING — this
+// project's own idiom, from one-context.mjs's three witnesses: "if they
+// disagree, that disagreement IS the finding: report it, do not pick the one
+// that matches the expectation."
+//
+// ⚠ NOT YET EMITTED BY ANY HARNESS. This is deliberate. Adoption is a
+// PRECONDITION OF ADMISSION, not a 131-file sweep: a harness emits the
+// sentinel when someone is already doing the work of proving it. That keeps
+// this fix to one file and makes the migration self-limiting.
+const SENTINEL = /(^|\n)##VERDICT:\s*(PASS|FAIL|NONE)\b/i;
+
+// ⚠⚠ "disagree" IS A FOURTH OUTCOME, ADDED 28 August 2026 — DEFECT 1.
+// This line used to read `if (FAIL_MARK.test(text)) return "fail"`, with the
+// comment "printed a failure but exited 0". That comment describes a harness
+// CONTRADICTING ITSELF, and classifying self-contradiction as a PRODUCT
+// FAILURE is a category error.
+//
+// ⛔ AND IT PUNISHED THE GOVERNANCE RULE. context-rules.md requires every
+// harness to declare what it does NOT watch, IN ITS OUTPUT — a rule written
+// because one-context.mjs printed a green verdict about the card host while
+// NextStepMeshButton created eight WebGL contexts nobody was watching. The
+// clearest way to write that caveat leads the line with ⛔. So complying with
+// the rule added to stop instruments lying is what made this runner call a
+// clean 3/3 run a FAILURE.
+//
+// "disagree" suppresses the pass — fail-safe preserved — WITHOUT manufacturing
+// a red. That distinction is the lesson defect 3 taught three commits ago: a
+// red produced for the wrong reason is not evidence, and this project files
+// proven.json entries FROM reds. A manufactured red is a manufactured proof.
 function classify(exitCode, text) {
+  const declared = SENTINEL.exec(text);
+  if (declared) {
+    const v = declared[2].toUpperCase();
+    // The declaration and the exit code must agree. Neither wins on its own.
+    if (v === "FAIL" && exitCode === 0) return "disagree";
+    if (v === "PASS" && exitCode !== 0) return "disagree";
+    return v === "PASS" ? "pass" : v === "FAIL" ? "fail" : "none";
+  }
   if (exitCode !== 0) return "fail";      // the exit code is the verdict
-  if (FAIL_MARK.test(text)) return "fail"; // printed a failure but exited 0
+  if (FAIL_MARK.test(text)) return "disagree"; // ⚠ defect 1 — was "fail"
   if (PASS_MARK.test(text)) return "pass";
   return "none";
 }
@@ -365,6 +456,53 @@ child.stderr.on("data", (d) => {
 child.on("close", (code) => {
   const exitCode = code === null ? 1 : code;
   const verdict = classify(exitCode, combined);
+
+  // ── THE SCRIPT CONTRADICTS ITSELF ───────────────────────────────────────
+  // ⚠⚠ CHECKED BEFORE THE PROVEN/UNPROVEN SPLIT, AND THAT PLACEMENT IS
+  // LOAD-BEARING. A self-contradicting script is not reporting on the product
+  // at all, so neither branch below can say anything true about it. Being
+  // proven does not repair it — a credential certifies the instrument goes
+  // red, not that this particular run means anything.
+  //
+  // ⛔ THIS IS NOT A PRODUCT FAILURE AND MUST NOT BE READ AS ONE. Exit 4 is
+  // its own code so a caller cannot confuse it with the exit-1 red that a
+  // proven.json entry is filed from. Defect 3 shipped three commits ago on
+  // exactly this: a red produced for the wrong reason is a manufactured proof.
+  if (verdict === "disagree") {
+    banner([
+      `⚠ NO VERDICT — ${scriptName} CONTRADICTS ITSELF.`,
+      ``,
+      `  It exited ${exitCode} while its output says otherwise. The numbers are`,
+      `  above; this run certifies NOTHING, pass or fail.`,
+      ``,
+      `  ⛔ DO NOT FILE A PROOF FROM THIS RUN, and do not read it as a red.`,
+      ``,
+      `  TWO CAUSES, AND THEY NEED DIFFERENT FIXES:`,
+      ``,
+      `  1. A REAL FAULT THE SCRIPT FORGOT TO EXIT ON. It found something,`,
+      `     printed it, and returned 0 anyway. Fix the exit code.`,
+      ``,
+      `  2. PROSE, NOT A VERDICT — much more likely. A line-leading ⛔ in a`,
+      `     scope caveat, a comment, or an explanatory note. context-rules.md`,
+      `     REQUIRES a harness to declare what it does NOT watch in its`,
+      `     output, and that caveat naturally leads with ⛔.`,
+      ``,
+      `  ⚠ UNTIL 28 AUGUST 2026 CASE 2 WAS CLASSIFIED AS A PRODUCT FAILURE.`,
+      `  A clean 3/3 run of one-context.mjs reported as "⛔ FAILURE" because`,
+      `  the only marker matched was its own blind-spot caveat. Complying with`,
+      `  the rule written to stop instruments lying is what tripped the`,
+      `  detector.`,
+      ``,
+      `  THE FIX FOR CASE 2: declare the verdict explicitly and the markers`,
+      `  are not consulted at all —`,
+      ``,
+      `      console.log("##VERDICT: PASS");   // or FAIL, or NONE`,
+      ``,
+      `  A declaring harness may print ⛔ and ✅ freely in its prose. The exit`,
+      `  code must agree with the declaration.`,
+    ]);
+    process.exit(4);
+  }
 
   if (entry) {
     // ── THE SINGLE-RUN RULE ────────────────────────────────────────────────
