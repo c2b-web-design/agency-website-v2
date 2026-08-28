@@ -52,6 +52,8 @@
    principles are FOR and when they apply.**
 4. **Carl's ruling on examples, 28 August 2026** — **§10a**. ⛔ **Every example is our own work.**
    The one content question that is **settled**, not open.
+5. ⛔⛔ **Carl's statement of THE CENTRAL TENSION, 28 August 2026** — the section before Part one.
+   ⚠ **It is the PROBLEM the rest of the file is attempting.** **Read it first;** it amends §2.
 
 ---
 
@@ -170,6 +172,90 @@ games with a material put on it and lit with an invisible orbital light."*
 
 ---
 
+---
+
+# ⛔⛔ THE CENTRAL TENSION — Carl, 28 August 2026. THE PROBLEM THE SECTION HAS TO SOLVE
+
+**This is the design problem. Everything in Parts one to three is an attempt on it, and any
+proposal that does not hold BOTH ENDS has not solved it.**
+
+**Carl, in his own words:**
+
+> *"Here is the problem i faced. I can see the benefit of a client seeing features explained in
+> plain language. That starts as a basis for discussion. They may lack the skills to know what they
+> want or to articulate it. But, filling my site with a lexicon of modern website design elements
+> runs the risk of c2b losing what is essentially our style, our ethos. A balance betwwen the two
+> must be found."*
+
+## ⚠⚠ THE TWO ENDS, AND BOTH ARE REAL
+
+| end | what it is | what it costs if it wins alone |
+|---|---|---|
+| **The client's need** | Plain-language explanation of what is possible. **A basis for discussion.** They *"may lack the skills to know what they want or to articulate it."* | ⛔ A **lexicon** — the site becomes a catalogue and **c2b's style disappears into it.** |
+| **c2b's identity** | Style and ethos, which **signal bespoke** without being stated. | ⛔ A visitor who cannot name what they want **still cannot name it** — admired and unequipped, so the discussion never starts. |
+
+⛔ **CARL'S INSTRUCTION IS NOT "PICK ONE." IT IS *"A balance between the two must be found."***
+
+## ⚠⚠ THIS CORRECTS §2 — READ THAT SECTION THROUGH THIS ONE
+
+**§2 records the client-education case as the competitor's pitch:** *"Look how many things I can
+do" is the template-marketplace pitch.* ⛔ **That is now too blunt and must not be read as the
+whole position.**
+
+⚠ **Carl grants the educational case OUTRIGHT: *"I can see the benefit."*** **So the failure mode
+is NOT explaining things to clients.** ⛔ **The failure mode is VOLUME AND FORM — a *lexicon*, an
+inventory of elements — which is a different thing from explaining one decision clearly.**
+
+⚠⚠ **THE DISTINCTION THAT DOES THE WORK, AND IT IS NOT THE ONE §2 DRAWS:**
+
+- ⛔ **NOT** *explaining* **vs** *not explaining*.
+- ⛔ **BUT** **a CATALOGUE of what exists** **vs** **a WORKED EXAMPLE of how a decision was made.**
+
+**A catalogue teaches vocabulary and costs identity. A worked example teaches the same vocabulary
+AND demonstrates judgement, because the plain-language explanation is attached to a decision c2b
+made** — which is §1 arriving at the same place from a third direction.
+
+## ⚠ WHY THIS IS THE HARD VERSION OF THE PROBLEM
+
+⛔ **The two ends do not trade off cleanly, and that is why Carl calls it a problem rather than a
+preference.**
+
+**The obvious resolutions all fail:**
+
+- **"Explain fewer things."** ⚠ Reduces the lexicon risk **and the client's grip in the same
+  motion.** A visitor with two examples may be no better equipped than one with none.
+- **"Explain everything but in c2b's voice."** ⛔ **Already rejected** — *"consistent presentation
+  of an inconsistent set still says many things."* **Voice does not fix volume.**
+- **"Separate the two — a styled section and a plain reference elsewhere."** ⚠ **NOT rejected, and
+  not proposed either.** It is the obvious structural move and **nobody has thought it through.**
+  ⛔ **Flagged for the discussion pass; it may be the answer or it may just relocate the lexicon.**
+
+## ⚠ WHAT THIS MEANS FOR THE STANDING TEST
+
+**§2's test — *does this express the ethos, or compete with it?* — still stands, but it is now
+INCOMPLETE.** ⛔ **A section that passes it perfectly can still fail Carl's problem** by leaving
+the client unable to articulate what they want.
+
+⚠⚠ **THE TEST NEEDS A SECOND HALF, and this is a candidate rather than a decision:**
+
+> **1. Does this express the ethos, or compete with it?**
+> **2. Does it leave the visitor better able to say what they want?**
+
+⛔ **A candidate. Carl has not ruled on it.** The first half is his; **the second is drafted from
+his problem statement and needs his word.**
+
+## ⛔ WHAT IS SETTLED HERE AND WHAT IS NOT
+
+- ⛔ **SETTLED: both ends are real, and a proposal that sacrifices either has not solved it.**
+  ⚠ **This is the bar every later proposal is measured against.**
+- ⛔ **NOT SETTLED: where the balance sits, or the mechanism that holds it.**
+
+⚠⚠ **AND IT DOES NOT BLOCK THE NEXT SESSION.** ⛔ **This is a DEVELOPMENT-PASS problem.** The
+setup pass — link hot, page exists, bare bones that convey position — **does not require it to be
+solved**, and Carl's DAW framing says so explicitly. ⚠ **Do not let this tension delay the
+scaffolding, and do not try to resolve it IN the scaffolding.**
+
+
 # PART ONE — WHAT THE SECTION IS FOR
 
 ## 1. Process, not features
@@ -197,9 +283,20 @@ seem useful, but your own style gets lost amongst a myriad of different features
 ARGUES THE COMPETITOR'S.** *"Look how many things I can do"* is the template-marketplace pitch.
 This site argues the opposite — **everything here was decided, nothing is accidental.**
 
+⚠⚠ **AMENDED — READ *THE CENTRAL TENSION* ABOVE BEFORE ACTING ON THIS SECTION.** ⛔ **The line
+above is too blunt as it stands.** Carl, 28 August: *"I can see the benefit of a client seeing
+features explained in plain language."* **The failure mode is NOT explaining things to clients —
+it is VOLUME AND FORM, a *lexicon*.** ⚠ **The distinction that does the work is a CATALOGUE of what
+exists vs a WORKED EXAMPLE of how a decision was made.** *(This section's wording is kept, not
+rewritten — `context-rules.md`, no retroactive rewriting.)*
+
 ⛔ **STANDING TEST, applied whenever something spectacular turns up:**
 
 > **Does this feature express the ethos, or compete with it?**
+
+⚠ **AND IT IS NOW KNOWN TO BE INCOMPLETE.** A section can pass this perfectly and still fail
+Carl's problem, by leaving the client unable to say what they want. **A candidate second half is
+drafted in *THE CENTRAL TENSION* — it needs Carl's word.**
 
 ## 3. Restraint has to be shown as a choice
 
@@ -468,7 +565,7 @@ does.**
 
 ---
 
-# ⛔ NEEDS WRITING DOWN — four items, before any of this reaches the Architect
+# ⛔ NEEDS WRITING DOWN — five items, before any of this reaches the Architect
 
 **Carl's list. These are the items most likely to be violated later precisely because they are
 currently only understood.**
@@ -492,9 +589,18 @@ in prose; **this one is a fact about the design system that code could assert.**
 
 ---
 
-# ⚠ THREE QUESTIONS STILL OPEN
+# ⚠ QUESTIONS STILL OPEN
 
-**Asked and overtaken rather than answered. Carl's to settle.**
+⛔⛔ **THE BIGGEST ONE IS NOT IN THIS LIST — IT IS *THE CENTRAL TENSION*, BEFORE PART ONE:** where
+the balance sits between **plain-language explanation the client needs** and **the lexicon that
+would dissolve c2b's style.** ⚠ **Carl states it as a problem to be solved, not a preference**, and
+**it is the bar every later proposal is measured against.**
+
+⚠ **One structural move is flagged there and has NOT been thought through:** separating the two —
+a styled section and a plain reference elsewhere. ⛔ **It may be the answer, or it may just
+relocate the lexicon.**
+
+**The three below were asked and overtaken rather than answered. Carl's to settle.**
 
 1. **Does explanation live IN the video or in TEXT beside it?** Asked in the first session. ⚠ **The
    process framing has effectively answered it — text carries the reasoning, clips illustrate — but
@@ -520,15 +626,23 @@ in prose; **this one is a fact about the design system that code could assert.**
 
 ---
 
-# ⚠ NOTED TENSION, UNRESOLVED
+# ⚠ A SECOND, LESSER TENSION — the two registers
+
+⚠ **Not the central one.** *THE CENTRAL TENSION* before Part one is the problem the section has to
+solve; **this is a delivery question underneath it.**
 
 **One page carries TWO REGISTERS** — three largely prose parts, and one that wants live interactive
 demos. ⛔ **Recorded from 27 August and still not settled.** ⚠ **Part three §9 sharpens it rather
 than resolving it:** the demo register is the one that fights compression, page weight and the
 viewer's attention, while the prose register costs nothing to deliver.
 
+⛔ **AND IT IS A MASTERING PROBLEM, NOT A SETUP ONE** — see *CARL'S FRAMING*. **It does not block
+the next session.**
+
 ---
 
 *Opened 28 August 2026. ⛔ **Idea stage — nothing decided, nothing authorised.** Carl's brainstorm
-of 27 August (recovered from `7b313e1`) plus his research pass of 28 August. **This file is where
-the About thinking lives until it becomes a chunk; it is not itself a plan.***
+of 27 August (recovered from `7b313e1`) plus three passes on 28 August: the DAW framing, the
+own-work ruling (§10a), and **the central tension**, which is the problem the rest of the file is
+attempting. **This file is where the About thinking lives until it becomes a chunk; it is not
+itself a plan.***
