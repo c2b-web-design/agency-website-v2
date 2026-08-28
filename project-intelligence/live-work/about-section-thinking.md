@@ -18,6 +18,14 @@
 > attached so you or the Architect can attack them."* Do not treat a heading here as settled
 > because it is written in the present tense.
 >
+> ⚠⚠ **THIS FILE IS DEVELOPED, NOT CORRECTED — Carl, 28 August 2026:** *"i would not say that you
+> corrected a file as you may have done. i would cite it as you have developed a file."* ⛔ **Use
+> that word.** A later pass that sharpens an earlier one **is the file working as intended**, not
+> the earlier pass having been wrong. ⚠ **"Corrected" imports a fault that did not occur, and in a
+> file explicitly at idea stage it would make every entry read as provisionally mistaken rather
+> than provisionally EARLY.** *(Related: `working-with-carl.md` — a decision taken during tracking
+> is a take, not a master, and being overtaken is not being wrong.)*
+>
 > ⛔⛔ **ONE THING IN THIS FILE *IS* SETTLED, AND IT IS THE METHOD, NOT THE CONTENT.** Carl,
 > 28 August: the `/about` page is to be **"set up" the way the landing page was set up — bare
 > bones now, developed later.** ⚠ **That is a DAW-model instruction and it governs the next
@@ -41,7 +49,7 @@
 > question is LIVE** — `/start` never used `SiteHeader`, so a new route that renders it is a
 > structural decision under CLAUDE.md §5a. **Write it up; do not decide it while implementing.**
 
-**Sources, both preserved deliberately:**
+**Sources, all preserved deliberately — this file is built by successive passes, and each is kept:**
 
 1. **Carl's brainstorm, 27 August 2026** — recovered from commit `7b313e1`. ⚠ **It lived only in
    the 27 August `session-handoff.md`, which was replaced on 28 August** under the single-use rule
@@ -53,7 +61,11 @@
 4. **Carl's ruling on examples, 28 August 2026** — **§10a**. ⛔ **Every example is our own work.**
    The one content question that is **settled**, not open.
 5. ⛔⛔ **Carl's statement of THE CENTRAL TENSION, 28 August 2026** — the section before Part one.
-   ⚠ **It is the PROBLEM the rest of the file is attempting.** **Read it first;** it amends §2.
+   ⚠ **It is the PROBLEM the rest of the file is attempting.** **Read it first;** it develops §2.
+6. ⛔⛔ **Carl's RESOLUTION of it, 28 August 2026** — **the ethos is the sorting rule: in the ethos
+   → the site; not in the ethos → a video example for clients.** ⚠ **Two channels, not a ratio.**
+   **Plus: the section is education, a sales pitch AND a philosophy at once — do not collapse it
+   into one stated purpose.**
 
 ---
 
@@ -244,11 +256,99 @@ the client unable to articulate what they want.
 ⛔ **A candidate. Carl has not ruled on it.** The first half is his; **the second is drafted from
 his problem statement and needs his word.**
 
+## ⛔⛔ THE RESOLUTION — Carl, 28 August 2026. THE ETHOS IS THE SORTING RULE
+
+**Carl, in his own words:**
+
+> *"The balance sits that something i deem to be in the c2b ethos will be open to putting on the
+> site. Something that isnt is open to put as a video example for clients."*
+
+⚠⚠ **THIS IS THE MECHANISM, AND IT IS A SORTING RULE RATHER THAN A RATIO.** ⛔ **The question was
+never "how much of each" — it is "which channel does this belong in."**
+
+| | **ON THE SITE** | **AS A VIDEO EXAMPLE** |
+|---|---|---|
+| **admits** | anything Carl deems **in the c2b ethos** | anything that **is not** |
+| **serves** | ⛔ **identity** — style and ethos, which signal bespoke | ⛔ **the client's need** — plain-language explanation, a basis for discussion |
+| **built from** | our own work (§10a) — **and it lives in the real page** | our own work (§10a) — **built separately and recorded if need be** |
+
+### ⚠⚠ WHY THIS DISSOLVES THE TENSION RATHER THAN SPLITTING THE DIFFERENCE
+
+⛔ **THE LEXICON RISK WAS ALWAYS ABOUT THE SITE, NOT ABOUT THE EXPLAINING.** Carl's problem was
+*"filling my site with a lexicon"* — **the danger is what the SITE becomes**, not whether clients
+are educated.
+
+⚠ **So the client's need is met in full, and the identity risk goes to zero, because they are met
+in DIFFERENT PLACES.** ⛔ **Neither end is sacrificed. That is why this qualifies as the balance
+Carl said must be found rather than a compromise between the two.**
+
+⚠⚠ **AND IT ANSWERS THE STRUCTURAL MOVE FLAGGED ABOVE AS UNEXAMINED** — *"separating the two: a
+styled section and a plain reference elsewhere."* ⛔ **The concern recorded against it was that it
+might merely RELOCATE the lexicon.** ⚠ **It does not, because the second channel is not part of the
+site at all** — it is material shown to a client in conversation. **The site never carries the
+catalogue.**
+
+### ⛔ THE ADMISSION TEST, AND WHO HOLDS IT
+
+> **Is this in the c2b ethos?** → **the site.**
+> **Is it not?** → **a video example for clients.**
+
+⚠⚠ **NOTE THE VERB: *"something i DEEM to be in the c2b ethos."*** ⛔ **The judgement is CARL'S and
+is not delegated.** ⚠ **There is no checklist here and one must not be invented** — the ethos is
+demonstrated by the site, not defined by a rule a Builder can apply alone. **When it is unclear
+which channel something belongs in, that is a question for Carl, not a decision to make while
+building.**
+
+### ⚠ WHAT THIS DOES NOT SETTLE
+
+- ⛔ **It does not authorise building either channel.** Still the development pass; **still not a
+  chunk.**
+- ⚠ **The video channel's FORM is untouched** — where the videos live, how a client receives them,
+  whether they are ever on the site behind something. **§9's compression warning and §7's
+  build-and-maintain rule both still apply to whatever is made.**
+- ⚠ **The candidate second half of the standing test is now LESS pressing but not withdrawn.** With
+  two channels, *"does it leave the visitor better able to say what they want?"* **is a question
+  about the video channel, and the SITE is judged on the ethos test alone.** ⛔ **Still Carl's to
+  rule on.**
+
+---
+
+## ⛔⛔ AND THE SECTION IS NOT ONE THING — Carl, 28 August 2026
+
+> *"It can be seen as education. Also as a sales pitch. Now developing into a philosophy and ethos.
+> things can have multiple meanings and uses."*
+
+⚠⚠ **THIS IS A CORRECTION TO HOW THIS FILE HAS BEEN REASONING, AND IT MATTERS MORE THAN IT LOOKS.**
+
+**Several sections above are written as though the section must be ONE thing and the others are
+failure modes** — *"a feature showcase"* vs *"process"*, education vs identity. ⛔ **Carl's position
+is that these are not competing definitions. They are SIMULTANEOUS ONES.**
+
+| reading | and it is also |
+|---|---|
+| **education** | teaching a client vocabulary they lack |
+| **a sales pitch** | the argument for choosing c2b |
+| **a philosophy and ethos** | ⚠ **what it is "now developing into"** — Carl's own word: *developing* |
+
+⛔ **DO NOT COLLAPSE THESE INTO A SINGLE STATED PURPOSE.** ⚠ **A page that announces itself as one
+of them argues less well as the others**, and Carl's framing is that it does all three at once
+**without declaring which it is doing.**
+
+⚠⚠ **THIS ALSO EXPLAINS WHY THE FILE KEEPS ARRIVING AT THE SAME RULE FROM DIFFERENT DIRECTIONS.**
+§1 (process not features), §10a (our own work) and the sorting rule above **converge because they
+are three views of one thing, not three separate constraints.**
+
+---
+
 ## ⛔ WHAT IS SETTLED HERE AND WHAT IS NOT
 
 - ⛔ **SETTLED: both ends are real, and a proposal that sacrifices either has not solved it.**
   ⚠ **This is the bar every later proposal is measured against.**
-- ⛔ **NOT SETTLED: where the balance sits, or the mechanism that holds it.**
+- ⛔⛔ **SETTLED, 28 August: WHERE THE BALANCE SITS AND THE MECHANISM THAT HOLDS IT.** ⚠ **See
+  *THE RESOLUTION* above — the ethos is the sorting rule, and it is two CHANNELS, not a ratio.**
+  *(This line previously read "NOT SETTLED"; Carl settled it the same day.)*
+- ⚠ **NOT SETTLED: the video channel's FORM** — where it lives, how a client receives it, and
+  whether any of it is ever surfaced on the site.
 
 ⚠⚠ **AND IT DOES NOT BLOCK THE NEXT SESSION.** ⛔ **This is a DEVELOPMENT-PASS problem.** The
 setup pass — link hot, page exists, bare bones that convey position — **does not require it to be
@@ -283,12 +383,14 @@ seem useful, but your own style gets lost amongst a myriad of different features
 ARGUES THE COMPETITOR'S.** *"Look how many things I can do"* is the template-marketplace pitch.
 This site argues the opposite — **everything here was decided, nothing is accidental.**
 
-⚠⚠ **AMENDED — READ *THE CENTRAL TENSION* ABOVE BEFORE ACTING ON THIS SECTION.** ⛔ **The line
-above is too blunt as it stands.** Carl, 28 August: *"I can see the benefit of a client seeing
-features explained in plain language."* **The failure mode is NOT explaining things to clients —
-it is VOLUME AND FORM, a *lexicon*.** ⚠ **The distinction that does the work is a CATALOGUE of what
-exists vs a WORKED EXAMPLE of how a decision was made.** *(This section's wording is kept, not
-rewritten — `context-rules.md`, no retroactive rewriting.)*
+⚠⚠ **DEVELOPED FURTHER — READ *THE CENTRAL TENSION* AND *THE RESOLUTION* ABOVE BEFORE ACTING ON
+THIS SECTION.** ⛔ **The line above is sharper than the finished position.** Carl, 28 August: *"I
+can see the benefit of a client seeing features explained in plain language."* **The failure mode
+is NOT explaining things to clients — it is VOLUME AND FORM ON THE SITE, a *lexicon*.**
+
+⚠ **And the resolution puts the explaining in a SECOND CHANNEL**, so §2's instinct was right about
+what the SITE must not become — **it simply had nowhere else to put the client's need yet.**
+*(Wording kept, not rewritten — `context-rules.md`, no retroactive rewriting.)*
 
 ⛔ **STANDING TEST, applied whenever something spectacular turns up:**
 
@@ -565,7 +667,7 @@ does.**
 
 ---
 
-# ⛔ NEEDS WRITING DOWN — five items, before any of this reaches the Architect
+# ⛔ NEEDS WRITING DOWN — seven items, before any of this reaches the Architect
 
 **Carl's list. These are the items most likely to be violated later precisely because they are
 currently only understood.**
@@ -582,6 +684,13 @@ currently only understood.**
    ⚠ **Added 28 August after Carl's ruling (§10a).** ⚠⚠ **The reason must travel with it:** recorded
    as a legal precaution alone, it looks solvable by finding a permissive licence — **and it is
    not.**
+6. ⛔⛔ **THE SORTING RULE — in the c2b ethos → the site; not in it → a video example for clients.**
+   ⚠ **Carl's, 28 August (*THE RESOLUTION*).** ⚠⚠ **Record that the judgement is CARL'S —
+   *"something i DEEM to be in the c2b ethos"* — and that no checklist substitutes for it.** ⛔ **A
+   Builder who invents one has replaced the ethos with a rule.**
+7. ⛔ **THE SECTION IS EDUCATION, A SALES PITCH AND A PHILOSOPHY SIMULTANEOUSLY.** ⚠ **Carl:
+   *"things can have multiple meanings and uses."*** ⛔ **Do not collapse it into one stated
+   purpose** — several sections in this file were written as though one reading must win.
 
 ⚠ **Item 4 is the one with a mechanism available.** The other three are judgement rules that live
 in prose; **this one is a fact about the design system that code could assert.** See
@@ -591,14 +700,14 @@ in prose; **this one is a fact about the design system that code could assert.**
 
 # ⚠ QUESTIONS STILL OPEN
 
-⛔⛔ **THE BIGGEST ONE IS NOT IN THIS LIST — IT IS *THE CENTRAL TENSION*, BEFORE PART ONE:** where
-the balance sits between **plain-language explanation the client needs** and **the lexicon that
-would dissolve c2b's style.** ⚠ **Carl states it as a problem to be solved, not a preference**, and
-**it is the bar every later proposal is measured against.**
+✔ **THE BIGGEST ONE IS NOW ANSWERED.** *THE CENTRAL TENSION* — plain-language explanation vs the
+lexicon that would dissolve c2b's style — **was settled by Carl on 28 August with a sorting rule:
+in the ethos → the site; not in the ethos → a video example for clients.** ⛔ **See *THE
+RESOLUTION*.**
 
-⚠ **One structural move is flagged there and has NOT been thought through:** separating the two —
-a styled section and a plain reference elsewhere. ⛔ **It may be the answer, or it may just
-relocate the lexicon.**
+⚠ **It also answered the structural move that was flagged as unexamined** — separating the two.
+**The worry was that it might merely relocate the lexicon; it does not, because the second channel
+is not part of the site at all.**
 
 **The three below were asked and overtaken rather than answered. Carl's to settle.**
 
@@ -641,8 +750,10 @@ the next session.**
 
 ---
 
-*Opened 28 August 2026. ⛔ **Idea stage — nothing decided, nothing authorised.** Carl's brainstorm
-of 27 August (recovered from `7b313e1`) plus three passes on 28 August: the DAW framing, the
-own-work ruling (§10a), and **the central tension**, which is the problem the rest of the file is
-attempting. **This file is where the About thinking lives until it becomes a chunk; it is not
-itself a plan.***
+*Opened 28 August 2026. ⛔ **Idea stage — the CONTENT is undecided and nothing is authorised.**
+Carl's brainstorm of 27 August (recovered from `7b313e1`) plus four passes on 28 August: the DAW
+framing, the own-work ruling (§10a), **the central tension**, and **its resolution** — the ethos as
+a sorting rule across two channels.*
+
+*⚠ **The file is DEVELOPED by each pass, not corrected.** ⛔ **It is where the About thinking lives
+until Carl makes it a chunk; it is not itself a plan.***
