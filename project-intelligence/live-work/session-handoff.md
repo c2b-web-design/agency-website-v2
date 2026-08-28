@@ -172,8 +172,19 @@ permanent arrangement. ⛔ **The runner being finished does not authorise `/abou
 authorises it, and he researches with the Strategist and the Architect first, then puts the
 Builder in **PLAN MODE**.
 
-**The brainstorm, the "show don't tell" intent and the four parts are recorded in full in the
-27 August handoff's own record — and the gate is unchanged:**
+⛔⛔ **ALL THE THINKING NOW LIVES IN `live-work/about-section-thinking.md`.** Carl's 27 August
+brainstorm **plus** his 28 August research pass — the process-not-features rule, the standing
+ethos test, the scene-not-the-part finding, the variant principle, the salmon-is-selection
+constraint, what was rejected and why, and three open questions.
+
+⚠⚠ **IT IS IDEA STAGE AND AUTHORISES NOTHING.** ⛔ **Read it before discussing `/about`; do not
+build from it.**
+
+⚠ **WHY A SEPARATE FILE: the 27 August brainstorm lived ONLY in that day's handoff, which was
+replaced on 28 August under the single-use rule.** It survived only because it was recovered from
+commit `7b313e1`. ⛔ **A handoff is the wrong home for durable thinking.**
+
+**The gate is unchanged:**
 
 - **`app/about/page.tsx` — EDITABLE.** The route does not exist; creating it touches nothing.
 - ⛔ **`components/layout/site-header.tsx` — PROTECTED.** Changing `href="#"` → `/about` needs

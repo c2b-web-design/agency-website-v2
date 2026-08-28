@@ -34,6 +34,7 @@ current**, so a reader had to open each one and infer. This index is the fix.
 | `architect-review-findings.md` | **CLOSED.** All four findings routed and actioned 24 July. F-1's outstanding q5proto entry was closed by **D-035** (PROVISIONAL) |
 | `2026-07-27-architect-review-settings-reference.md` | **CLOSED.** Dated in its filename, per the dating discipline |
 | `contact-form-fields-brainstorm.md` | **Exploration.** Thinking, not a decision or a plan |
+| `about-section-thinking.md` | **LIVE — EXPLORATION, IDEA STAGE.** Thinking, not a decision or a plan. ⛔ **Authorises nothing.** Where the `/about` thinking lives until Carl makes it a chunk. ⚠ **Deliberately NOT a handoff section** — a handoff is single-use and the 27 August brainstorm was nearly lost that way |
 | `claude-chat-window.md`, `claude-run-log.md` | **Scratch.** Per-cycle working files |
 | `claude-context-status.json` | **Generated, gitignored.** Telemetry from the status-line script |
 | `chunk-scope.json` | **ABSENT — and that means the scope guard is OFF.** Written when a chunk is authorised; deleted when it closes (`live-work-protocol.md` §8) |
