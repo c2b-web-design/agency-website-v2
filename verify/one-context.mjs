@@ -29,8 +29,11 @@
  * the first commit, and survives every question step. This asserts that claim
  * against the browser rather than against the JSX.
  *
- *   node verify/one-context.mjs [runs]
+ *   node verify/one-context.mjs [runs]              (default 3)
  *   VERIFY_BASE_URL=http://localhost:3100 node verify/one-context.mjs 3
+ *
+ * ⚠ [runs] IS OPTIONAL IN EVERY MODE, INCLUDING --falsify. Until 28 August 2026
+ * omitting it there silently measured NOTHING — see the guard at the parse.
  *
  * ⚠ WHY NOT JUST READ THE COMPONENT TREE. The host is unkeyed and takes labels
  * as a prop, so it *looks* like it survives. It would also look like that if
@@ -80,6 +83,7 @@
  * ══ FALSIFICATION ══ (standing rule: proven RED before trusted GREEN)
  *
  *   node verify/one-context.mjs 1 --falsify
+ *   node verify/one-context.mjs --falsify           (also valid — 3 runs)
  *
  * Forces a remount between questions by removing the host's canvas from the
  * DOM and letting React rebuild it. A working harness must report ⛔ here. This
@@ -92,10 +96,32 @@ import { chromium } from "@playwright/test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { positionals, wholeNumberArg } from "./lib/args.mjs";
 
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3100";
-const RUNS = Number(process.argv[2] ?? 3);
-const FALSIFY = process.argv.includes("--falsify");
+
+// ⚠⚠ THE GUARD FIRES BEFORE ANY MODE LOGIC, AND THAT ORDER IS LOAD-BEARING.
+// This was `Number(process.argv[2] ?? 3)`. Invoked as `one-context.mjs
+// --falsify` — the natural form, and the one this file's own usage block at the
+// top does not forbid — argv[2] was the STRING "--falsify", so `??` never
+// reached the default and RUNS was NaN. `1 <= NaN` is false, so the run loop
+// below never executed: no browser, no page, no measurement.
+//
+// ⛔ AND NaN REACHED BOTH VERDICTS, WRONGLY. In falsify mode `bad === RUNS` is
+// false with bad=0, so it exited 1 — a RED, which is the exact artefact a
+// proven.json entry is filed from. In normal mode the `bad > 0` branch was
+// skipped and it fell through to the line-leading ✅ and exit 0 — a PASS that
+// run.mjs's PASS_MARK matches. Both from a script that opened nothing.
+//
+// ⚠ THE FALSE GREEN IS MASKED ONLY BY THIS SCRIPT BEING UNPROVEN. Filing the
+// proven.json entry removes that mask, so this guard had to land BEFORE the
+// parse fix and before any admission. Reasoning: verify/lib/args.mjs.
+const ARGS = process.argv.slice(2);
+const RUNS = wholeNumberArg(positionals(ARGS)[0], 3, {
+  name: "run count",
+  usage: "node verify/one-context.mjs [runs] [--falsify]",
+});
+const FALSIFY = ARGS.includes("--falsify");
 
 // ⚠⚠ NOT ON THE DEV SERVER. Fourteen harnesses in this folder carry this guard
 // and it is load-bearing here too: dev builds recompile, re-mount under Strict

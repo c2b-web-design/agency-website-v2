@@ -29,12 +29,32 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, mkdirSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import sharp from "sharp";
+import { positionals, wholeNumberArg } from "./lib/args.mjs";
 
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
-const W = Number(process.argv[2] ?? 1440);
-const SAVE = process.argv.includes("--save") ? process.argv[process.argv.indexOf("--save") + 1] : null;
-const COMPARE = process.argv.includes("--compare") ? process.argv[process.argv.indexOf("--compare") + 1] : null;
-const OFFSET = process.argv.includes("--offset") ? Number(process.argv[process.argv.indexOf("--offset") + 1]) : 0;
+
+// ⚠ SAME PARSE DEFECT, THIRD FAILURE MODE. This was `Number(process.argv[2] ??
+// 1440)`, so `card-position.mjs --save baseline` made W = NaN.
+//
+// ⛔ AND HERE NaN IS NOT A LOOP BOUND — IT IS A VIEWPORT DIMENSION. It goes to
+// the browser rather than to a counter, so the failure is neither a quiet
+// no-op nor a throw: the shot is taken at a nonsense width and the centroids
+// are compared against a baseline measured at a real one.
+//
+// ⚠⚠ AND --save/--compare/--offset TAKE VALUES HERE, unlike approved-timings.
+// A naive "drop anything starting with --" filter would read the LABEL as the
+// width: `--save baseline` would give W = Number("baseline") = NaN again, by a
+// different route. That is why the value-taking flags are declared below.
+// Reasoning: verify/lib/args.mjs.
+const ARGS = process.argv.slice(2);
+const W = wholeNumberArg(positionals(ARGS, ["--save", "--compare", "--offset"])[0], 1440, {
+  name: "viewport width",
+  usage: "node verify/card-position.mjs <width> [--save <label>] [--compare <label>] [--offset N]",
+  min: 320,
+});
+const SAVE = ARGS.includes("--save") ? ARGS[ARGS.indexOf("--save") + 1] : null;
+const COMPARE = ARGS.includes("--compare") ? ARGS[ARGS.indexOf("--compare") + 1] : null;
+const OFFSET = ARGS.includes("--offset") ? Number(ARGS[ARGS.indexOf("--offset") + 1]) : 0;
 const TOL = 4; // amendment E
 
 const OUT = "verify/out/card-position";

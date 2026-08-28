@@ -54,11 +54,27 @@ import { chromium } from "@playwright/test";
 import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { positionals, wholeNumberArg } from "./lib/args.mjs";
 
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
-const RUNS = Number(process.argv[2] ?? 3);
-const SAVE = process.argv.includes("--save");
-const COMPARE = process.argv.includes("--compare");
+
+// ⚠ SAME DEFECT AS one-context.mjs, FAILING DIFFERENTLY. This was
+// `Number(process.argv[2] ?? 3)`, and this file's own usage block documents
+// `--save` and `--compare`, so `approved-timings.mjs --save` put the STRING
+// "--save" through Number() and made RUNS NaN.
+//
+// ⚠ IT DID NOT GO QUIET HERE — IT THREW, AND ONLY BY ACCIDENT. The empty run
+// loop left `runs` empty, and the card-ladder section dereferences
+// `runs[0].traceSamples` on that empty array. Loud is better than silent, but
+// a TypeError is not a verdict either, and nothing made it one on purpose.
+// Reasoning: verify/lib/args.mjs.
+const ARGS = process.argv.slice(2);
+const RUNS = wholeNumberArg(positionals(ARGS)[0], 3, {
+  name: "run count",
+  usage: "node verify/approved-timings.mjs [runs] [--save|--compare]",
+});
+const SAVE = ARGS.includes("--save");
+const COMPARE = ARGS.includes("--compare");
 const BASELINE_PATH = "verify/out/approved-timings-baseline.json";
 
 // Begin is pressable at 7400ms while its reveal runs to 12400ms. Waiting for
