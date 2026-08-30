@@ -26,6 +26,30 @@
 > than provisionally EARLY.** *(Related: `working-with-carl.md` — a decision taken during tracking
 > is a take, not a master, and being overtaken is not being wrong.)*
 >
+> ⛔⛔ **AND WHEN CARL SAYS SOMETHING THAT CHANGES, CONTRADICTS OR ADDS TO WHAT THIS FILE HOLDS:
+> ASK. DO NOT RECONCILE IT QUIETLY — Carl, 30 August 2026.**
+>
+> *"In these development files you may come across things i propose that change, contradict or add
+> to that file. This too should not be a problem but an opportunity for you to ask for
+> clarification. By their very nature an idea is being developed. Change is to be expected, but we
+> should also do this with a degree of accuracy."*
+>
+> ⚠⚠ **THE FAILURE MODE IS NOT SILENCE — IT IS RESOLVING THE CONTRADICTION IN THE WRITE-UP WHILE
+> MARKING IT AS TENTATIVE.** ⛔ **It still lands in the file as a settled-looking sentence, and the
+> next reader inherits the Builder's inference instead of Carl's ruling.** ⚠ **Worked case, the same
+> day: section 3 versus the sorting rule was asked about AND THEN half-answered in the file as
+> *"a refinement rather than a conflict."* That was the Builder's reading, not Carl's.**
+>
+> ⛔ **THE PROCEDURE: name what the file says, name what Carl has just said, ask.** ⚠ **Record the
+> resolution as CARL'S, with his reasoning.** ⛔ **Where something genuinely cannot wait, write it
+> as an OPEN CONTRADICTION — both positions stated, neither resolved — rather than picking one and
+> flagging the pick.**
+>
+> ⚠⚠ **AND ACCURACY HERE HAS A MECHANISM: a contradiction is only visible if the EARLIER position
+> is still legible.** ⛔ **Quote what the file actually said; do not paraphrase it into agreement
+> with the new position.** **§2 is the worked example — its blunt original survives, with the
+> development recorded AROUND it rather than over it.**
+>
 > ⛔⛔ **ONE THING IN THIS FILE *IS* SETTLED, AND IT IS THE METHOD, NOT THE CONTENT.** Carl,
 > 28 August: the `/about` page is to be **"set up" the way the landing page was set up — bare
 > bones now, developed later.** ⚠ **That is a DAW-model instruction and it governs the next
@@ -1513,14 +1537,30 @@ the process** — not spread across the page. **Tidier than anything this file h
 
 # ⛔ SECTION 3 — THE VIDEO EXAMPLES, AND THE REPETITION PROBLEM
 
-## ⚠⚠ THIS ANSWERS THE SORTING-RULE QUESTION: video examples ARE on the page
+## ⛔⛔ AN OPEN CONTRADICTION WITH THE SORTING RULE — NOT RESOLVED, AND IT IS CARL'S
 
-⛔ **The 28 August sorting rule sends non-ethos material OFF the site — *"not in the ethos → a video
-example for clients."*** ⚠ **Section 3 puts video examples ON the page.**
+⚠⚠ **BOTH POSITIONS ARE STATED HERE AND NEITHER IS PICKED.** ⛔ **An earlier pass recorded this as
+*"a REFINEMENT of the rule rather than a conflict"* — that was the BUILDER'S reading, not a ruling,
+and it is withdrawn as a resolution.** *(Wording kept above, per the file's own convention; see the
+standing instruction at the top — ask, do not reconcile quietly.)*
 
-⛔ **Carl has ruled section 3 exists, so this is a REFINEMENT of the rule rather than a conflict:**
-**the rule's target was the SITE BECOMING A LEXICON, and one bounded section is not a lexicon.**
-⚠ **Recorded as a refinement rather than asserted as settled — the rule is Carl's.**
+| | |
+|---|---|
+| **The sorting rule, 28 August** | ⛔ *"In the c2b ethos → the site. Not in the ethos → a video example for clients."* **Non-ethos material goes OFF the site.** |
+| **Section 3, 30 August** | ⛔ **Video examples are ON the page**, max four, building on sections 1 and 2. |
+
+⚠ **The candidate reconciliation, offered as a QUESTION and not an answer:** the sorting rule's
+target was **the SITE BECOMING A LEXICON**, and one bounded section of four may not be a lexicon.
+
+⛔⛔ **BUT THE SORTING RULE IS CARL'S, ITS ADMISSION TEST IS EXPLICITLY NOT DELEGATED — *"something
+i DEEM to be in the c2b ethos"* — AND NO CHECKLIST SUBSTITUTES FOR IT.** ⚠⚠ **A Builder deciding
+that four examples do not constitute a lexicon has done exactly what that rule forbids: invented a
+threshold and applied it.**
+
+⛔ **QUESTION FOR CARL: does section 3's existence REFINE the sorting rule, or does the rule still
+hold and section 3's examples all pass the ethos test on their own?** ⚠ **They lead to different
+pages — the first admits non-ethos material to the site in a bounded quantity; the second admits
+none, and the four examples are simply four things that ARE in the ethos.**
 
 ## ⛔ THE CONSTRAINTS
 
@@ -1590,25 +1630,33 @@ colours it ships in.**
    promise than a purpose-built demo, so this may be the version that survives §7 comfortably.**
    ⚠ **Recorded as NARROWED, not settled — §10a left the tension to Carl.**
 
-## ⛔⛔ AND ONE EXAMPLE NEEDS NO VIDEO AT ALL — the immobile mark
+## ⛔⛔ THE FOUR EXAMPLES BUILD ON SECTIONS 1 AND 2 — Carl, 30 August 2026
 
-⚠⚠ **THE STRONGEST DEMONSTRATION AVAILABLE TO SECTION 3 IS NOT A CLIP.** ⛔ **It is the mark that
-does not move** (**D-065**).
+⚠⚠ **A STRUCTURAL RULE, AND IT CONSTRAINS WHAT QUALIFIES AS AN EXAMPLE.** **Carl:** *"The examples
+will build upon sections 1 and 2."*
 
-⚠ **The visitor verifies it BY NAVIGATING.** ⛔ **No clip, no compression, no page weight, no
-five-second frame in which they might see nothing.**
+⛔ **AN EXAMPLE IS NOT CHOSEN FOR BEING IMPRESSIVE. It has to build on the process (§1 of the page)
+and the roles (§2 of the page) already established.** ⚠⚠ **This is the file's §1 rule — *every
+example must have a decision attached* — WITH A LOCATION: the decision is explained in section 1,
+and section 3 shows it.**
 
-⚠⚠ **THIS IS THE ONE CASE THAT ESCAPES §9's TRADE-OFF.** §9 records that subtlety is correct **and
-costs demonstrability** — the effect works because it does not demand attention, and in a small
-frame the viewer may see nothing at all. ⛔ **The immobile mark is subtle AND demonstrable, because
-the demonstration is the site working.**
+⛔ **SO THE FOUR SECTIONS ARE SEQUENTIAL, NOT PARALLEL, AND SECTION 3 CANNOT BE READ IN ISOLATION.**
+⚠ **It rules out the tempting mistake: picking the four best-looking things and putting them in
+section 3.**
 
-⛔ **AND IT COUNTS AGAINST THE FOUR-EXAMPLE CAP ONLY IF IT IS PRESENTED AS AN EXAMPLE.** ⚠ **It may
-belong in section 1 or 2 as a property of the work rather than in section 3 as a specimen.**
-**Carl's call.**
+## ⛔⛔ THE LOGO IS NOT ONE OF THE EXAMPLES — Carl's correction, 30 August 2026
 
-⚠ **It is also a CAPABILITY, not only a c2b design rule** — Carl, 30 August: *"What if a client
-wants the same immobility?"* ⛔ **Full reasoning in D-065; not repeated here.**
+**Carl:** *"The logo has nothing to do with the 4 examples, its totally separate."*
+
+⚠⚠ **RECORDED BECAUSE THE BUILDER GOT THIS WRONG AND THE ERROR IS INSTRUCTIVE.** ⛔ **This section
+previously read *"one example needs no video at all — the immobile mark"*, and asked whether it
+counted against the four-example cap.** ⚠ **It does not, because it is not an example.**
+
+⛔ **THE CONFLATION: *it demonstrates something to a visitor* was treated as *it is one of the four
+examples*.** ⚠⚠ **The mark is a PROPERTY OF THE SITE, present on every route — not a specimen
+placed in a section.** **Its reasoning lives in D-065, not here.**
+
+⛔ **The four-example cap is untouched by the logo, in either direction.**
 
 ---
 
@@ -1751,8 +1799,10 @@ header is DEFERRED with its reason recorded, and is the next body of work.***
 a clients who will possibly have a logo… What if a client wants the same immobility?"* ⛔ **It is a
 TECHNIQUE, not a style choice — declare a point, hang the asset from it, restrict variance to
 scale — and it transfers to any mark.** ⚠⚠ **Which makes it the strongest answer this file has to
-the SAMPLE-OF-ONE problem, and the one section-3 example needing no video at all: the visitor
-verifies it by navigating.** ⛔ **Carl also named a THIRD artefact for the client template — the
+the SAMPLE-OF-ONE problem.** ⛔ **It is NOT one of the four examples — Carl: *"The logo has nothing
+to do with the 4 examples, its totally separate."* A property of the site, not a specimen.**
+⚠ **And the four examples BUILD ON sections 1 and 2, which is what qualifies them.** ⛔ **Carl also
+named a THIRD artefact for the client template — the
 STOREROOM, elements stripped to their mesh state in a separate repo — recorded in
 `references/workshop-template-and-client-delivery.md`, which previously held only the workshop and
 the shipped site.***
