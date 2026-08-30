@@ -82,6 +82,13 @@
    each member knows what they need to know."** ⛔ **Recognition is the mechanism** — a business
    owner already runs this shape. ⚠ **It also CORRECTS a false claim made in discussion (the seats
    are NOT separated) and carries the roster as reference, explicitly not as page content.**
+10. ⛔⛔ **Carl's PAGE STRUCTURE, 30 August 2026** — *THE PAGE STRUCTURE*, *SECTION 3*, *THE LOGO ON
+    `/about`* and *THE HEADER IS DEFERRED*. ⚠⚠ **THE FIRST STRUCTURAL MATERIAL IN THIS FILE: four
+    sections mirroring the landing page.** ⛔ **It resolves the item-12 conflict** — principle in
+    §1, structure in §2 — **settles that video examples ARE on the page (max four), and rules that
+    on-site examples are RECOLOURED before recording rather than filmed as they stand.** ⚠ **The
+    header is DEFERRED with its reason recorded, and the logo rule is promoted to its own decision:
+    **D-065**, PROPOSED.**
 
 ---
 
@@ -788,6 +795,13 @@ is not part of the site at all.**
 
 ⚠ **A two-part job with a gate in the middle** — and the second part is one line.
 
+⚠⚠ **DEVELOPED 30 August: THE GATE IS UNCHANGED, BUT THE SCOPE AROUND IT NARROWED.** ⛔ **The
+`href="#"` → `/about` change still needs the unlock. What is NEW is that the scaffolding must NOT
+also decide whether `/about` RENDERS `SiteHeader`** — Carl has deferred that pending a font
+decision and context not yet shared, and **site headers are the next body of work.** ⚠ **See *THE
+HEADER IS DEFERRED* below.** ⛔ **Making the link hot and giving `/about` a header are two different
+jobs, and only the first is in scope.**
+
 ---
 
 # ⚠ A SECOND, LESSER TENSION — the two registers
@@ -1447,6 +1461,179 @@ page.** ⚠ **Flagged now rather than left to arrive as copy later. Carl's call,
   with defined roles, each knowing what they need to know" IS a position, statable in a sentence.**
   ⚠ **Raised, not decided.**
 
+---
+
+# ⛔⛔ THE PAGE STRUCTURE — Carl, 30 August 2026. FOUR SECTIONS, MIRRORING THE LANDING PAGE
+
+⚠ **This is the first structural material in this file. Everything before it is about what the
+section ARGUES; this is about where the argument sits.**
+
+| # | section | standing |
+|---|---|---|
+| **1** | **The founder and the process** — ⛔ **a top-level view of the file system**, and ⚠ **the counter-argument lives HERE** | named |
+| **2** | **The roles** — *"an explanation of the roles that builds on the process… to show structure and roles"* | named; ⚠ **the TITLE is open** — Carl: *"Does it have to be called 'meet the team?' No."* |
+| **3** | **Video examples and non-technical explanation** | named; **see the recolour method below** |
+| **4** | ⛔ **TBD** | **Carl's, undecided** |
+
+⚠⚠ **"MIRRORING THE LANDING PAGE" IS A STRUCTURAL INSTRUCTION, NOT A VISUAL ONE** — four sections,
+as the landing page has four. ⛔ **It does not authorise copying the landing page's layout, and
+`app/page.tsx` remains protected.**
+
+## ⛔⛔ HOW THIS RESOLVES ITEM 12 — it is a refinement, NOT a reversal
+
+⚠⚠ **A CONFLICT WAS RAISED AND CARL SETTLED IT.** Item 12 says **the set-up is described in
+PRINCIPLE, never by roster** — and section 2 was first stated as *"Meet the Team. CA CB CD and CS"*,
+which reads as the roster item 12 forbids.
+
+**Carl's resolution:** ⛔ **section 1 carries the PRINCIPLE and the counter-argument; section 2
+EXPANDS it into structure and roles.**
+
+> ⚠⚠ **THAT IS NOT A ROSTER REPLACING A PRINCIPLE. It is the principle, then enough structure to
+> make it real.**
+
+⛔ **ITEM 12 STANDS UNCHANGED.** ⚠ **Its target was a page that says nothing but product names.**
+**Section 2 earns its place by ADDING STRUCTURE — Carl's own test: *"its important to expand a
+little on the process. To show structure and roles."*** ⛔ **A section that only listed CA, CB, CD
+and CS would still violate item 12.**
+
+## ⚠ "A TOP LEVEL VIEW OF THE FILE SYSTEM" — the calibration is already on record
+
+⛔ **It is the SAME calibration Carl gave for CD earlier the same day:** *"a top level view of what
+the guy in the preceeding office does. Do you need to know every nuance? No, that would be work
+duplication."*
+
+⚠⚠ **APPLIED TO THE PAGE: the governance system as a TOP-LEVEL VIEW, not a tour.** ⛔ **This is the
+same instruction as *the process must not become the pitch*** — arriving from Carl's side
+independently, which is why it is the safer of the two formulations to trust.
+
+⚠ **AND THE COUNTER-ARGUMENT IS LOCATED, WHICH IT WAS NOT BEFORE.** ⛔ **It sits in section 1, with
+the process** — not spread across the page. **Tidier than anything this file had proposed.**
+
+---
+
+# ⛔ SECTION 3 — THE VIDEO EXAMPLES, AND THE REPETITION PROBLEM
+
+## ⚠⚠ THIS ANSWERS THE SORTING-RULE QUESTION: video examples ARE on the page
+
+⛔ **The 28 August sorting rule sends non-ethos material OFF the site — *"not in the ethos → a video
+example for clients."*** ⚠ **Section 3 puts video examples ON the page.**
+
+⛔ **Carl has ruled section 3 exists, so this is a REFINEMENT of the rule rather than a conflict:**
+**the rule's target was the SITE BECOMING A LEXICON, and one bounded section is not a lexicon.**
+⚠ **Recorded as a refinement rather than asserted as settled — the rule is Carl's.**
+
+## ⛔ THE CONSTRAINTS
+
+- ⛔ **MAXIMUM FOUR EXAMPLES.** ⚠ **The same instinct already recorded against three-or-more colour
+  variants — *"back to demonstrating range instead of a decision"* — applied to the section.**
+- **TWO SOURCES, both admitted by §10a:** things **already on the site**, and things **built
+  specifically** for the purpose.
+- ⚠ **Whether the four are split between the two sources is OPEN.**
+
+## ⛔⛔ ON-SITE EXAMPLES ARE NOT RECORDED AS THEY STAND — Carl's ruling
+
+**Carl, in his own words:**
+
+> *"if from the site and i will use the blue chrome button, we shouldnt just video record it and
+> drop it in. The user has seen that and its repetition. What we could do is temporarily change the
+> colour, record it and then the button goes back to its default blue."*
+
+⚠⚠ **THE PROBLEM IS REPETITION, AND THE FILE ALREADY HALF-KNEW IT.** §6 records that *"an identical
+copy of the live button is WORSE than the live button — video of a thing always loses to the
+thing."* ⛔ **Carl's ruling completes it: the recording must show something the visitor CANNOT see on
+the site.**
+
+### ⚠⚠ THE METHOD — and it is §6's variant principle arriving as PRODUCTION rather than argument
+
+⛔ **Temporarily recolour → record → revert to default blue.**
+
+⚠⚠ **THE VISITOR SUPPLIES THE COMPARISON THEMSELVES, because they have already seen the blue one
+live.** ⛔ **THE SITE IS THE CONTROL; THE CLIP IS THE VARIABLE.** ⚠ **That is a stronger
+demonstration than two clips side by side, because half of it is something the visitor already
+trusts** — and it costs no page weight, because half of it is the page.
+
+**§6's reasoning, unchanged and now load-bearing:** one blue button says *"he made a nice button."*
+**Blue on the page plus another colour in the clip says *"this is a material with parameters, and
+it can be tuned."***
+
+### ⛔⛔ AND THE SECOND ARGUMENT — A CLIENT'S BRAND COLOURS. Carl, 30 August
+
+> *"Another argument for a temp logo recolour for an example is that a clients company may have
+> brand colours."*
+
+⚠⚠ **THIS IS §6 REACHING ITS ACTUAL DESTINATION.** §6 already says a recolour converts a
+demonstration of **craft** into a demonstration of **applicability** — *"this could be mine, in my
+colours."* ⛔ **Carl's addition is that THE MARK ITSELF can carry it.**
+
+⚠⚠ **AND IT CONNECTS SECTION 3 TO SECTION 2, WHICH NOTHING IN THIS FILE PREVIOUSLY DID.** ⛔ **CD's
+role is analysing a client's existing brand — colours and typography — from their site plus their
+brief.** ⚠ **So *"we can put this in your colours"* is not a CLAIM on the About page; it is a
+DESCRIPTION OF A STEP THAT ALREADY EXISTS IN THE PROCESS.** **Section 2 explains the roles;
+section 3 shows the output of one of them.**
+
+⛔ **It is also the one demonstration a template marketplace cannot make — a template ships in the
+colours it ships in.**
+
+### ⚠ THREE FLAGS ON THE METHOD — raised, not resolved
+
+1. ⛔ **THE RECOLOUR COLOUR MUST BE ONE THE SYSTEM HAS NOT ASSIGNED A JOB TO.** ⚠⚠ **§8 is
+   load-bearing here: warm/salmon is the SELECTION STATE**, and a recoloured demo using it would
+   mean *chosen* three clicks from where it means chosen. ⛔ **Which colour is Carl's; that it must
+   be unassigned is settled.**
+2. ⚠⚠ **"TEMPORARILY CHANGE AND REVERT" IS A REPO OPERATION AND NEEDS A SHAPE.** ⛔ **A colour
+   changed for a recording session is a change to APPROVED WORK (D-051, D-029) that must not
+   survive the recording.** ⚠ **The obvious failure: the revert is forgotten, or reverts to a value
+   typed from memory rather than the original.** ⛔ **Handle it as a deliberate procedure with the
+   original constant recorded BEFORE it is touched — not an edit-record-undo done by hand.**
+3. ⚠ **THIS IS ROUTE 2 OF §10a** — examples built for the purpose — **which collides with §7,
+   *only show what you would build and maintain*.** ⛔ **A recoloured button is a much smaller
+   promise than a purpose-built demo, so this may be the version that survives §7 comfortably.**
+   ⚠ **Recorded as NARROWED, not settled — §10a left the tension to Carl.**
+
+---
+
+# ⛔ THE LOGO ON `/about`
+
+- ⛔ **Top left, occupying EXACTLY the same space as on every other route.** ⚠ **The rule is now
+  site-wide and is recorded as its own decision: **D-065**, drafted 30 August, PROPOSED.**
+- ⛔ **GOLD, and PROVISIONAL.** ⚠ **Carl: *"In the about section it is provisionary gold. It may not
+  stay that way."*** **PROVISIONAL is a defined status — in place, deliberately untuned, awaiting
+  the mastering pass (D-035). ⛔ Not "unapproved" and not a gap.**
+
+⚠⚠ **THE FULL REASONING IS IN D-065 AND IS NOT REPEATED HERE** — *no duplication*,
+`context-rules.md`. **The short form: no movement, only change; pin point precision is the signal;
+and the invariant is currently UNASSERTED across two routes that reach the same point by two
+different mechanisms.**
+
+---
+
+# ⛔⛔ THE HEADER IS DEFERRED, AND THE REASON IS RECORDED
+
+**Carl, 30 August:**
+
+> *"The site header will probably be in all sections. Why no decision has been made yet is im
+> thinking about the font. Im thinking about it in context to other things that as of this moment i
+> havent shared with you. I will in time though. After the about section scaffolding, site headers
+> is next."*
+
+| item | standing |
+|---|---|
+| **Header on all routes** | ⚠ **LIKELY, not decided** |
+| **The header's DESIGN** | ⛔ **TBD — Carl's word** |
+| **Why deferred** | ⛔ **A font decision, weighed against context not yet shared with the Builder** |
+| **When** | ⛔ **The NEXT body of work, after the `/about` scaffolding** |
+
+## ⚠⚠ WHAT THIS MEANS FOR THE SCAFFOLDING — and it is a real constraint
+
+⛔⛔ **THE `/about` SCAFFOLDING MUST NOT SETTLE THE HEADER QUESTION BY RENDERING `SiteHeader` AS A
+CONVENIENCE.** ⚠ **That would decide a structure while implementing something else — CLAUDE.md
+§5a.** ⛔ **The link still has to be made hot, and that is `site-header.tsx` either way; what waits
+is HOW `/about` gets a header.**
+
+⚠ **AND THE DEFERRAL IS NOT TO BE WORKED AROUND.** ⛔ **Carl is weighing it against information the
+Builder does not have.** ⚠⚠ **That is need-to-know operating as designed — see *THE SEATS* above —
+and a Builder decision made in that gap would be made blind.**
+
 # ⚠ WHAT THIS PASS ADDS TO THE OPEN QUESTIONS
 
 **Closed by this pass:**
@@ -1526,6 +1713,17 @@ efficient use of AI.** ⛔ **A claim made in discussion — that the seats are S
 and is corrected in place: they are not isolated, access is Carl's decision per context.** ⚠ **The
 roster (CA, CB, CS, CD and Carl as the bridge) is recorded as REFERENCE, not as page content, and
 `ai-roles.md` does not yet know about CS or CD. The list is now TWELVE.***
+
+*⛔⛔ **30 August 2026, fourth pass — THE STRUCTURE, and the file finally has one.** Four sections
+mirroring the landing page: **the founder and process** (carrying the counter-argument and a
+top-level view of the file system), **the roles**, **video examples**, and **one TBD.** ⚠ **The
+item-12 conflict is resolved rather than reversed — principle in §1, structure in §2.** ⛔ **Video
+examples ARE on the page, max four, and on-site examples are RECOLOURED before recording, because
+filming the live button shows the visitor something they have already seen.** ⚠⚠ **The recolour
+carries a second argument Carl added: a client's brand colours — which connects section 3 to CD's
+role and is the one demonstration a template marketplace cannot make.** ⛔ **The logo rule is
+promoted out of this file into **D-065** (PROPOSED): no movement, only change, site-wide.** ⚠ **The
+header is DEFERRED with its reason recorded, and is the next body of work.***
 
 *⚠ **The file is DEVELOPED by each pass, not corrected.** ⛔ **It is where the About thinking lives
 until Carl makes it a chunk; it is not itself a plan.***

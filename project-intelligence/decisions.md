@@ -3169,3 +3169,68 @@ HEAD**:
 `injected`, `emptyInput`, `stability`, `whyItCounts` and `blindSpots` are **preserved intact**
 alongside the demotion reasoning. ⛔ **History is preserved, not rewritten** — `context-rules.md`,
 *No retroactive rewriting*.
+
+---
+
+## D-065 — The Mark Does Not Move. Site-Wide, Every Route, Colour Is The Only Thing Permitted To Change
+
+**Date recorded:** 2026-08-30
+**Status:** ⚠ **PROPOSED** — drafted by the Builder on Carl's instruction, 30 August 2026. ⛔ **Carl has stated the RULE and its reasoning; the entry awaits his ruling to become APPROVED.** *(Status transitions PROPOSED → APPROVED are Carl's alone — `context-rules.md`.)*
+**Authority:** Human Founder — Carl, 30 August 2026: *"a user could be on a page. No matter where the user navigates to, the logo wont move. It might change colour but it will be absolutely constant and accurate, showing no movement, only change."* And on what it signals: *"Think what such a concept says to a user - pin point precision."*
+**Bears on:** every route that renders the mark — currently `app/page.tsx` (via `components/layout/site-header.tsx`) and `app/start/page.tsx`; **prospectively `app/about/page.tsx` and every route after it.** Generalises **D-062** and **D-063**; depends on **D-060** (the 40px standard) and on `components/layout/container.tsx`.
+
+> ## ⛔⛔ **NO MOVEMENT, ONLY CHANGE.**
+
+⚠⚠ **THIS IS A PROMOTION, NOT A NEW MECHANISM.** D-063 established the nail for **two marks on two pages**. ⛔ **Carl has now stated it as a property of THE WHOLE SITE:** wherever the visitor navigates, the mark is the one element that does not move. **Colour may change. Position may not.**
+
+---
+
+### ⛔ THE RULE
+
+1. ⛔ **The mark occupies the same space on every route.** Not "approximately", not "by the same margin token" — **the same declared point.**
+2. ⚠ **Colour is the only permitted variation.** Gold → blue → gold is D-063's journey and is unaffected by this entry.
+3. ⛔ **Scale variation is permitted ONLY as a consequence of two assets having genuinely different letterform aspects**, and only symmetric about the nail. ⚠ **Measured: ±0.29px per side, centre spread 0.0058px horizontal / 0.0064px vertical across all three current states** (D-063). ⛔ **Sub-pixel and symmetric — recorded that way rather than as "invisible to the eye", because the first is checkable and the second is not.**
+4. ⛔ **A new route does not get to reach the position by its own route-local arithmetic.** It hangs from the nail, whose origin is `Container`'s content box.
+
+### ⚠⚠ WHY IT MATTERS — Carl's reasoning, and it is a design argument rather than a tidiness one
+
+⛔ **PIN POINT PRECISION IS THE SIGNAL, and it works because nothing else on the web behaves this way.** ⚠ **On an ordinary site the mark shifts a few pixels between templates** — different header padding, a different container, a scrollbar arriving. **Nobody consciously notices. The eye tracks it anyway, and the accumulated effect is *assembled from parts*.**
+
+⚠⚠ **A MARK THAT IS PROVABLY IDENTICAL ACROSS EVERY ROUTE READS AS ONE THING BUILT DELIBERATELY.** ⛔ **It is D-035's coherence argument and the "show the SCENE, not the part" finding applied ACROSS pages rather than within one** — five elements aware of each other becomes five *pages* aware of each other.
+
+⛔ **AND IT IS DEMONSTRABLE, WHICH ALMOST NO CRAFT CLAIM IS.** ⚠ **A visitor can navigate and watch it not move — a claim they verify themselves, without being told to.**
+
+### ⚠ WHAT THIS DOES TO THE COLOUR JOURNEY (D-063)
+
+⛔ **Constancy of position is WHAT MAKES THE COLOUR CHANGE READ AS A STATE RATHER THAN A JUMP.** ⚠ **The gold → blue → gold journey is not a per-page effect; it is the one element permitted to change BECAUSE it never moves.** **D-063 is unchanged by this entry — it is explained by it.**
+
+---
+
+### ⛔⛔ THE INVARIANT IS CURRENTLY UNASSERTED, AND THAT IS STATED PLAINLY
+
+⚠⚠ **THE TWO EXISTING ROUTES REACH THE SAME POINT BY TWO DIFFERENT MECHANISMS:**
+
+| route | how the mark is placed |
+|---|---|
+| **landing** (`app/page.tsx`) | inside `SiteHeader`, **in normal flow**, in an 81px band |
+| **`/start`** (`app/start/page.tsx`) | **absolutely positioned, out of flow**, at explicit px from the nail — deliberately, so it occupies no vertical space and does not push the corridor down (D-062) |
+
+⛔ **THEY AGREE BECAUSE BOTH RESOLVE THROUGH `Container`, NOT BECAUSE THEY SHARE CODE.**
+
+⚠⚠ **THAT IS AN INVARIANT HELD BY THE COINCIDENCE OF TWO IMPLEMENTATIONS — exactly the failure mode `context-rules.md` names: *an invariant that lives only in prose is not asserted*.** ⛔ **Nothing in code detects the day a third route reaches the point by a third mechanism and misses.**
+
+⛔ **THE HONEST STATUS: UNASSERTED — VERIFY BEFORE RELYING ON THIS.** ⚠ **The assertion is owed when the header work lands**, because that is when the invariant becomes load-bearing across three routes rather than two. **Recorded here so the gap is known rather than discovered.**
+
+⚠ **Candidate form, not designed here:** a harness that loads every route rendering the mark, reads the mark's box, and **fails loudly on any positional delta beyond the recorded sub-pixel scale tolerance.** ⛔ **It must declare what it does NOT watch** — `context-rules.md`, the `one-context.mjs` case.
+
+---
+
+### ⚠ WHAT IS NOT SETTLED BY THIS ENTRY
+
+- ⛔ **The mark's COLOUR on `/about` is PROVISIONAL GOLD.** Carl, 30 August: *"In the about section it is provisionary gold. It may not stay that way."* ⚠ **PROVISIONAL has a defined meaning — in place, deliberately untuned, awaiting the mastering pass (D-035). Not "unapproved" and not a gap; reviewers must not raise a missing approval for it.**
+- ⛔ **Whether `SiteHeader` renders on all routes is NOT decided.** ⚠ **Carl, 30 August: likely, but deferred — he is weighing it against a FONT decision and against context not yet shared with the Builder.** ⛔ **Site headers are the NEXT body of work after the `/about` scaffolding.** ⚠⚠ **So the `/about` scaffolding must NOT settle the header question by rendering `SiteHeader` as a convenience** — that would decide a structure while implementing something else (CLAUDE.md §5a).
+- ⚠ **The header's DESIGN is TBD** — Carl's word, 30 August.
+
+---
+
+*⚠ **Drafted by the Builder, 30 August 2026, on Carl's explicit instruction to draft it now.** ⛔ **The RULE and its reasoning are Carl's, stated verbatim above; the measurements are D-063's, already approved. The Builder authored the write-up, not the decision.** ⚠ **Status stays PROPOSED until Carl rules — the Builder cannot move any item to APPROVED (`context-rules.md`).***
