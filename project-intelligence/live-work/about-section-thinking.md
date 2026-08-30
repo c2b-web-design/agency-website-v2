@@ -77,6 +77,11 @@
    speaks first and personability belongs to CONTACT; the founder is written in the FIRST PERSON;
    and the human is represented AS PART OF THE TEAM, in a small way.** ⛔ **Ruling 2 is the one
    that erodes** — polished copy drifts into third person on its own.
+9. ⛔⛔ **Carl's SEATS RULING, 30 August 2026** — *THE SEATS, AND WHAT THE PAGE SAYS ABOUT THEM*.
+   ⚠⚠ **THE PAGE DESCRIBES THE SET-UP IN PRINCIPLE, NOT BY ROSTER: "a team with defined roles, and
+   each member knows what they need to know."** ⛔ **Recognition is the mechanism** — a business
+   owner already runs this shape. ⚠ **It also CORRECTS a false claim made in discussion (the seats
+   are NOT separated) and carries the roster as reference, explicitly not as page content.**
 
 ---
 
@@ -678,10 +683,10 @@ does.**
 
 ---
 
-# ⛔ NEEDS WRITING DOWN — eleven items, before any of this reaches the Architect
+# ⛔ NEEDS WRITING DOWN — twelve items, before any of this reaches the Architect
 
-*⚠ **Seven at 28 August. Items 8 and 9 added 30 August from the AI pass; items 10 and 11 the same
-day from the founder rulings.***
+*⚠ **Seven at 28 August. Items 8 and 9 added 30 August from the AI pass, 10 and 11 the same day from
+the founder rulings, and 12 from the seats ruling.***
 
 **Carl's list. These are the items most likely to be violated later precisely because they are
 currently only understood.**
@@ -710,10 +715,11 @@ currently only understood.**
 in prose; **this one is a fact about the design system that code could assert.** See
 `context-rules.md` → *an invariant that lives only in prose is not asserted.*
 
-### ⛔ FOUR MORE, ADDED 30 August 2026 — the list is ELEVEN
+### ⛔ FIVE MORE, ADDED 30 August 2026 — the list is TWELVE
 
-⚠ **All four are from 30 August and all four are the kind that erode.** Full reasoning: *WHAT CARL
-SETTLED ON 30 AUGUST* for items 8 and 9, and *THE HUMAN FOUNDER ON THE PAGE* for items 10 and 11.
+⚠ **All five are from 30 August and all five are the kind that erode.** Full reasoning: *WHAT CARL
+SETTLED ON 30 AUGUST* for items 8 and 9, *THE HUMAN FOUNDER ON THE PAGE* for items 10 and 11, and
+*THE SEATS, AND WHAT THE PAGE SAYS ABOUT THEM* for item 12.
 
 8. ⛔⛔ **THE AI COLLABORATION IS CHAMPIONED, NOT DEFENDED.** ⚠⚠ **The register is the ruling.** Carl:
    *"Im not gonna hide it, im gonna celebrate and champion it."* ⛔ **A page written to COUNTER an
@@ -738,6 +744,12 @@ SETTLED ON 30 AUGUST* for items 8 and 9, and *THE HUMAN FOUNDER ON THE PAGE* for
     the human describes **an operation where nobody is answerable** — the visitor's actual fear.
     ⚠⚠ **"Small" is the argument, not a hedge: one seat among five argues the structure better
     than a founder section sitting above it.**
+12. ⛔⛔ **THE SET-UP IS DESCRIBED IN PRINCIPLE, NEVER BY ROSTER.** ⚠ **"A team with defined roles,
+    and each member knows what they need to know."** ⛔ **No product names, no seat count, no
+    diagram, and NEVER the "separated contexts" argument — it is false.** ⚠⚠ **The eroding
+    mechanism: this file holds a large body of reasoning, and a later pass will be tempted to put
+    the interesting parts of it on the page.** ⛔ **Carl: *"dont over complicate things"* — the page
+    gets the conclusion, not the working.**
 
 ---
 
@@ -1248,6 +1260,193 @@ brief, probably concrete, probably followed immediately by the work it produced.
 
 ---
 
+# ⛔⛔ THE SEATS, AND WHAT THE PAGE SAYS ABOUT THEM — 30 August 2026
+
+⚠⚠ **THE CONCLUSION IS ONE SENTENCE AND IT IS AT THE TOP FOR A REASON.** Everything after it is the
+reasoning that produced it. ⛔ **The page gets the conclusion, not the working.**
+
+> ## ⛔⛔ **A TEAM WITH DEFINED ROLES, AND EACH MEMBER KNOWS WHAT THEY NEED TO KNOW.**
+
+⚠ **Carl's instruction, and he said it against a file that had just grown by 600 lines:** *"describe
+the set up in principle and i will say this ironically — dont over complicate things, lol. We will
+be dealing with businesses and you have already alluded to mirroring what happens in the real
+world. Business owners will recognise this, seeing it as an efficient use of AI."*
+
+## ⚠⚠ WHY THE PRINCIPLE BEATS THE ROSTER — recognition is the mechanism
+
+⛔ **A business owner does not need the roster, the product names, or where each seat runs. THEY
+ALREADY KNOW THIS SHAPE — they run it themselves.** Everyone has a job, nobody is copied in on
+everything, and someone decides who needs what.
+
+⚠⚠ **THE RECOGNITION IS THE WHOLE ARGUMENT.** ⛔ **It is not *"here is our clever AI setup"* — it is
+*"they run it like a business."*** **And the implicit comparison finishes the job without being
+stated:** what the visitor is worried about is **one person typing into one box**, and this is
+visibly not that.
+
+⚠ **"EFFICIENT USE OF AI" IS CARL'S FRAME AND IT IS BETTER THAN AN ARGUMENT ABOUT QUALITY** —
+efficiency is a language business owners already think in, and it does not require them to take
+anything on trust.
+
+## ⛔ WHAT THE PRINCIPLE RULES OUT — stated so it is not re-litigated
+
+- ⛔ **The four product names** (CA, CB, CS, CD as branded seats)
+- ⛔ **Where each seat runs** — which products, which application
+- ⛔ **The AI-to-human seat count** as a talking point
+- ⛔ **Anything requiring a diagram**
+- ⛔⛔ **The "separated / disconnected contexts" argument IN ANY FORM** — see the correction below.
+  ⚠ **It was factually wrong AND it was the weaker argument.**
+
+⚠⚠ **MOST OF WHAT THIS FILE HOLDS IS REASONING THAT PRODUCED THE LINE, NOT THE LINE.** ⛔ **That is
+the correct division of labour and Carl has ruled on it explicitly:** *"I would rather have you with
+600 lines of information that you could choose to edit and interpret and present in a logical and
+coherent way than 100 lines of copy. What you will have is a body of information."*
+
+⚠ **This is §9 again — the quiet version is stronger — applied to the argument rather than the
+motion.**
+
+## ⚠ THE ONE THING KEPT FROM THE LONGER VERSION
+
+⛔ **"I am the bridge that connects you all"** — Carl's own words, and it survives because it is
+short, true, and **puts the human in the structure without a founder block.**
+
+⚠⚠ **AND IT ANSWERS THE ACCOUNTABILITY QUESTION WITHOUT RAISING IT.** A cautious buyer wants to know
+someone is answerable; **this says so in passing rather than as a claim.** ⛔ **That is ruling 3 of
+the founder pass arriving at the same place — the human as a seat among the others, described in a
+small way.**
+
+---
+
+## ⛔⛔ THE CORRECTION — "the seats are separated" WAS FALSE, and the error is recorded
+
+⚠⚠ **RECORDED BECAUSE THE MISTAKE IS INSTRUCTIVE, NOT TO FLAG A FAULT.** *(`context-rules.md` —
+approved work is amendable; and this file is DEVELOPED, not corrected.)*
+
+**The claim made in discussion, and it was wrong:** *"none of the four seats can talk to each other
+— CS doesn't know what CA ruled, CD doesn't know what CB built, every transfer happens because Carl
+carries it."*
+
+**Carl's correction, in his own words:**
+
+> *"You are not separated. Both you and CA has access to the repo. CS if i decide can have access to
+> all or just a single file of the repo. It depends on the context... So i wouldnt want a setup
+> where each team member has no idea or connection to the others. The best practice is that each
+> team member 'knows what it needs to know'. Knows their role and that includes me."*
+
+### ⚠⚠ WHERE THE ERROR CAME FROM — the useful part
+
+⛔ **The boundary was inferred from WHERE THE SEATS RUN** — different products, different contexts —
+**and the PRODUCT boundary was treated as an INFORMATION boundary.** ⚠ **It is not. The products
+differ; the access is a decision Carl makes per context.**
+
+⚠⚠ **THIS IS THE SAME SHAPE AS THE HARNESS FAILURES ALREADY ON THE RECORD** — a true observation
+(the seats run in different places) carried to a conclusion it does not support (therefore they
+cannot see each other). ⛔ **`context-rules.md` → *an instrument that names a global property while
+checking a local one lies by implication.***
+
+### ⛔ THE ACTUAL PRINCIPLE, AND WHY IT IS STRONGER
+
+| | **"separated"** — the wrong version | **"knows what it needs to know"** — Carl's |
+|---|---|---|
+| **what it is** | a property of the ARCHITECTURE | ⛔ **a property of the DESIGN** |
+| **who set it** | nobody — an accident of tooling | ⚠ **Carl, per context, and changeable** |
+| **against a sceptic** | invites *prove it* | ⛔ **a description of PRACTICE** |
+
+⚠ **Carl's own example of the right amount:** for CD, ⛔ *"you will need a top level view of what
+'the guy in the preceeding office does'. Do you need to know every nuance? No, that would be work
+duplication but you would need to know the best way to deal with stuff that is imported to you."*
+
+⛔⛔ **THE TEST IS NOT "HOW LITTLE CAN THIS SEAT KNOW" BUT "WHAT DOES THIS SEAT NEED IN ORDER TO DO
+ITS JOB WITH WHAT IT RECEIVES."**
+
+### ⚠ "AND THAT INCLUDES ME"
+
+⛔ **Carl is not the seat that knows everything — he is the seat whose ROLE is deciding what
+moves.** ⚠ **A role with a scope, not an exemption from having one.** **This is consistent with the
+founder rulings and is why the bridge line works: a bridge is a route, not a summit.**
+
+### ⚠⚠ THE COST OF NEED-TO-KNOW, RECORDED HONESTLY
+
+⛔ **A seat can be CONFIDENTLY WRONG about something outside its scope** — and this project has
+already paid for it. ⚠ **`one-context.mjs` answered a narrower question than its name implied, and
+everything built on that verdict inherited the error.**
+
+⛔ **The rule that catches it already exists: `context-rules.md` → *declare what you do not watch*.
+⚠ It applies to SEATS as much as to instruments.** **If CD hands the Builder a mockup and the
+Builder does not know what was decided upstream, the move is to SAY SO, not to infer it** — which
+is exactly the failure made in this session's discussion, at the level of the team rather than a
+harness.
+
+---
+
+## ⚠ THE ROSTER AS IT ACTUALLY STANDS — reference, and NOT page content
+
+⛔⛔ **RECORDED BECAUSE IT IS TRUE ABOUT THE OPERATION, NOT BECAUSE THE PAGE SAYS IT.** ⚠ **The page
+gets the PRINCIPLE (above). This table is for whoever needs to know how the work really moves.**
+
+| seat | where it runs | role | repo access |
+|---|---|---|---|
+| **CA** — Architect | in-house, this repo | reviews, plans, findings; **approves nothing** | yes |
+| **CB** — Builder | this repo | implements the chunk | yes |
+| **CS** — Strategist | **Claude Projects, Desktop app** | brainstorming and subject research — **upstream of a chunk** | ⚠ **Carl's call per context** — all, one file, or none |
+| **CD** — Claude Design | **Claude Design** | brand, colour and typography analysis from a client's existing site plus their brief → initial mock-up | ⚠ **output can be IMPORTED here** |
+| **Carl** | the bridge | ⛔ **decides what moves between seats.** Sole approval authority | — |
+
+⚠⚠ **TWO FACTS IN THIS TABLE ARE NEW TO THE RECORD AND ARE NOT IN `ai-roles.md`:**
+
+1. ⛔ **CS runs upstream of a chunk**, in a different product, and **may be given repo access at
+   Carl's discretion.**
+2. ⛔ **CD's output CROSSES INTO THIS REPO.** ⚠ **It is the only seat other than CA/CB whose work
+   lands in the codebase** — which is why the Builder needs *the top-level view of the preceding
+   office*.
+
+⛔ **`ai-roles.md` DESCRIBES A DIFFERENT ARRANGEMENT AND DOES NOT MENTION CS OR CD AT ALL.** ⚠ **Not
+fixed here — that is a governance change, and Carl has flagged a dedicated CD conversation for
+later which will change what gets written.** **Recorded so the gap is known rather than discovered.**
+
+---
+
+## ⚠ THE TEAM ANALOGY — Carl's, and where it belongs
+
+**Carl, 30 August:** *"that famous team in red are about to play. Every member of that team are
+equally important. Each has a role to play. As someone who has worked in various teams, worked with
+various band members i understand the value of good structure and the importance of every team
+member."*
+
+⚠⚠ **WHAT IT ADDS THAT THE DAW MODEL DOES NOT.** ⛔ **The DAW is SEQUENTIAL — track, re-track,
+master, one pass after another. A TEAM IS SIMULTANEOUS** — different jobs at the same moment, and
+**the structure is what makes them one thing rather than eleven.** ⚠ **That is closer to how the
+seats actually run.**
+
+⛔ **AND IT ANSWERS A QUESTION THE SECTION WOULD OTHERWISE TRIP OVER:** *is the human the important
+one and the AI seats the tools?* ⚠ **Carl's answer is no — everyone has a role, and the structure is
+what makes it work.** **Consistent with founder ruling 3: a seat among five, in a small way, rather
+than above the list.** ⚠ **The band point does the same work from the other side — a rhythm section
+is not a support act.**
+
+### ⛔ BUT THE FOOTBALL REFERENCE IS A LOCAL SIGNAL — reasoning, not copy
+
+⚠ **It reads to people who share it and is invisible or alienating to those who do not.** ⛔ **It
+belongs in the REASONING for why the structure is described as a team — not as an image on the
+page.** ⚠ **Flagged now rather than left to arrive as copy later. Carl's call, as always.**
+
+---
+
+## ⛔ WHAT THIS SETTLES, AND THE ONE QUESTION IT LEAVES
+
+**Settled:**
+
+- ⛔⛔ **The page describes the set-up IN PRINCIPLE, not by roster.** ⚠ **One sentence, aimed at
+  recognition.**
+- ⛔ **The frame is EFFICIENT USE OF AI**, in language a business owner already thinks in.
+- ⛔ **The bridge line survives**; the separation argument does not.
+
+**Open, and Carl's:**
+
+- ⚠ **Whether the principle is SCAFFOLDING-READY or development-pass material.** ⛔ **It may be
+  scaffolding-ready** — Carl's DAW framing asks for *bare bones that convey position*, and **"a team
+  with defined roles, each knowing what they need to know" IS a position, statable in a sentence.**
+  ⚠ **Raised, not decided.**
+
 # ⚠ WHAT THIS PASS ADDS TO THE OPEN QUESTIONS
 
 **Closed by this pass:**
@@ -1318,6 +1517,15 @@ PERSON — "I", never the third**, because a page claiming a human holds the aut
 about that human as though someone else did; and **the human is a seat in the team, in a small
 way**, because naming four AI seats and omitting the human describes an operation where nobody is
 answerable. ⚠ **The needs-writing-down list is now ELEVEN.***
+
+*⛔⛔ **30 August 2026, third pass — THE SEATS, and the answer is ONE SENTENCE.** Carl: *"describe
+the set up in principle… dont over complicate things."* **The page says "a team with defined roles,
+and each member knows what they need to know" — no roster, no product names, no diagram.**
+⚠ **Recognition is the mechanism: a business owner already runs this shape, and reads it as an
+efficient use of AI.** ⛔ **A claim made in discussion — that the seats are SEPARATED — was FALSE
+and is corrected in place: they are not isolated, access is Carl's decision per context.** ⚠ **The
+roster (CA, CB, CS, CD and Carl as the bridge) is recorded as REFERENCE, not as page content, and
+`ai-roles.md` does not yet know about CS or CD. The list is now TWELVE.***
 
 *⚠ **The file is DEVELOPED by each pass, not corrected.** ⛔ **It is where the About thinking lives
 until Carl makes it a chunk; it is not itself a plan.***
