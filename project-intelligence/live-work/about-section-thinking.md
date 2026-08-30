@@ -72,6 +72,11 @@
    — it changes what the arguments are FOR. **It also settles §10a's open question** (AI *is*
    raised on the page) and adds a constraint that governs every line: **no condescension toward
    other agencies, in any form.** ⚠ **Its market-read section is REASONING, NOT COPY, and says so.**
+8. ⛔⛔ **Carl's FOUNDER RULINGS, 30 August 2026** — *THE HUMAN FOUNDER ON THE PAGE*, placed
+   immediately after the four-seats problem **because it answers it.** ⚠ **Three rulings: the work
+   speaks first and personability belongs to CONTACT; the founder is written in the FIRST PERSON;
+   and the human is represented AS PART OF THE TEAM, in a small way.** ⛔ **Ruling 2 is the one
+   that erodes** — polished copy drifts into third person on its own.
 
 ---
 
@@ -673,9 +678,10 @@ does.**
 
 ---
 
-# ⛔ NEEDS WRITING DOWN — nine items, before any of this reaches the Architect
+# ⛔ NEEDS WRITING DOWN — eleven items, before any of this reaches the Architect
 
-*⚠ **Seven at 28 August; items 8 and 9 added 30 August from Carl's AI pass.***
+*⚠ **Seven at 28 August. Items 8 and 9 added 30 August from the AI pass; items 10 and 11 the same
+day from the founder rulings.***
 
 **Carl's list. These are the items most likely to be violated later precisely because they are
 currently only understood.**
@@ -704,10 +710,10 @@ currently only understood.**
 in prose; **this one is a fact about the design system that code could assert.** See
 `context-rules.md` → *an invariant that lives only in prose is not asserted.*
 
-### ⛔ TWO MORE, ADDED 30 August 2026 — the list is NINE
+### ⛔ FOUR MORE, ADDED 30 August 2026 — the list is ELEVEN
 
-⚠ **Both are from Carl's AI pass and both are the kind that erode.** Full reasoning: *WHAT CARL
-SETTLED ON 30 AUGUST*.
+⚠ **All four are from 30 August and all four are the kind that erode.** Full reasoning: *WHAT CARL
+SETTLED ON 30 AUGUST* for items 8 and 9, and *THE HUMAN FOUNDER ON THE PAGE* for items 10 and 11.
 
 8. ⛔⛔ **THE AI COLLABORATION IS CHAMPIONED, NOT DEFENDED.** ⚠⚠ **The register is the ruling.** Carl:
    *"Im not gonna hide it, im gonna celebrate and champion it."* ⛔ **A page written to COUNTER an
@@ -720,6 +726,18 @@ SETTLED ON 30 AUGUST*.
    adapt-or-lose-ground prediction can each be stated as observation or as a sneer, and **the
    difference is register, not content.** ⛔ **The test: does this need the other agency to be
    WRONG in order to land?**
+10. ⛔⛔ **THE FOUNDER IS WRITTEN IN THE FIRST PERSON. "I", NEVER THE THIRD PERSON.** ⚠ **Carl:
+    *"the simple use of the word 'I' will suffice. Not talked about in the third person as if
+    someone else or AI wrote it."*** ⛔ **NOT a style preference** — a site arguing that a human
+    holds the authority, while writing about that human in the third person, **has undercut itself
+    in its own grammar.** ⚠⚠ **THE ERODING MECHANISM IS KNOWN: a later pass writing polished copy
+    drifts into third person NATURALLY, because that is how marketing prose is written — and the
+    drift looks like the copy getting more PROFESSIONAL, not like a mistake.**
+11. ⛔ **THE HUMAN IS REPRESENTED AS PART OF THE TEAM, IN A SMALL WAY.** ⚠ **Carl's word is
+    *"right"*, and it is a COHERENCE requirement, not modesty:** naming four AI seats and omitting
+    the human describes **an operation where nobody is answerable** — the visitor's actual fear.
+    ⚠⚠ **"Small" is the argument, not a hedge: one seat among five argues the structure better
+    than a founder section sitting above it.**
 
 ---
 
@@ -1051,6 +1069,145 @@ separated authority" is stated outright.**
 
 ---
 
+# ⛔⛔ THE HUMAN FOUNDER ON THE PAGE — Carl's rulings, 30 August 2026
+
+**⚠ THIS ANSWERS THE FOUR-SEATS PROBLEM DIRECTLY ABOVE, and it is placed here for that reason.**
+⛔ **A page that names four AI seats and leaves the human blank has described an operation with
+nobody in it** — which is precisely the thing the sceptical visitor is afraid of.
+
+## ⚠ THE QUESTION AS CARL PUT IT
+
+> *"i have to decide whether to put anything about myself on in the about section. Not to name
+> myself, but who the human founder is. Why this agency was set up. Philosophy, principles and
+> ethos."*
+
+⚠⚠ **IT IS TWO QUESTIONS, NOT ONE, AND THEY CARRY DIFFERENT RISK:**
+
+| | standing |
+|---|---|
+| **Why the agency was set up; philosophy, principles, ethos** | ⛔ **NOT OPTIONAL.** The section already *is* *"education, a sales pitch and a philosophy at once"*, and *"style and ethos signal bespoke"* (§10a). **A page arguing everything was decided, which never says by whom or why, has a hole where its foundation should be.** |
+| **Who the human founder is** | ⚠ **The genuinely open one — and Carl settled it below.** |
+
+---
+
+## ⛔ RULING 1 — THE WORK SPEAKS FIRST; PERSONABILITY BELONGS TO CONTACT
+
+**Carl, in his own words:**
+
+> *"I believe the work should speak for itself, first and foremost. But when a client makes contact
+> thats the time to become more personable."*
+
+⚠⚠ **THIS IS A SEQUENCING RULE AND IT RESOLVES WHAT THE PAGE IS FOR.** ⛔ **The About section is not
+where the relationship starts — it is where someone decides whether to start one.** **The warmth
+arrives when there is a person to be warm at.**
+
+⚠ **It is also the answer to the conventional About page's biggest temptation.** The origin story,
+the headshot, the fun fact — all of it is relationship-building performed at someone who has not
+yet decided to have a relationship.
+
+---
+
+## ⛔⛔ RULING 2 — FIRST PERSON. "I", NEVER THE THIRD PERSON
+
+**Carl, in his own words:**
+
+> *"If i do make a small section in about which is me, the simple use of the word 'I' will suffice.
+> Not talked about in the third person as if someone else or AI wrote it."*
+
+⚠⚠ **THIS IS NOT A STYLE PREFERENCE AND MUST NOT BE RECORDED AS ONE.** ⛔ **A site arguing that a
+human holds the authority here, while writing about that human in the third person, has undercut
+itself IN ITS OWN GRAMMAR.**
+
+⚠⚠ **CARL NAMES THE EXACT FAILURE: *"as if someone else or AI wrote it."*** ⛔ **Third person is the
+voice of a company describing an employee — and it is also, precisely, what a generated founder bio
+sounds like.**
+
+> **"Carl brings two decades of experience" is what an AI would write about a founder.**
+> **"I" cannot be delegated in the same way.**
+
+⚠ **The word does the work the sentence would otherwise have to CLAIM** — which is §1's rule
+(a decision with its reasoning attached) arriving in the grammar rather than the content.
+
+### ⚠ AND IT SERVES THE NO-CONDESCENSION RULING
+
+⛔ **First person is harder to be grandiose in.** *"I got tired of watching this done badly"* is a
+person talking. *"Carl founded C2B after recognising a gap in the market"* is a brochure. ⚠ **Ruling
+5 of the AI pass is easier to keep in first person than in third.**
+
+### ⚠⚠ THIS IS THE ITEM MOST LIKELY TO ERODE, AND THE MECHANISM IS KNOWN
+
+⛔ **A later pass writing polished copy will drift into third person NATURALLY, because that is how
+marketing prose is written.** ⚠ **The drift will not look like a mistake — it will look like the
+copy getting more professional.** **On the needs-writing-down list for exactly this reason.**
+
+---
+
+## ⛔⛔ RULING 3 — THE HUMAN IS REPRESENTED AS PART OF THE TEAM
+
+**Carl, in his own words:**
+
+> *"If we are to mention our system its only right i think that the human collaborator should be
+> represented in a small way, as part of the team."*
+
+⚠⚠ **THIS IS THE LOAD-BEARING ONE, AND IT IS A COHERENCE REQUIREMENT RATHER THAN MODESTY.**
+
+⛔ **The whole argument of the AI pass is that separated authority works BECAUSE A HUMAN HOLDS
+APPROVAL.** ⚠ **Name the four AI seats and omit the human, and the page has described exactly the
+configuration the visitor fears: an operation where nobody is answerable.**
+
+### ⚠ "IN A SMALL WAY" IS THE ARGUMENT, NOT A HEDGE
+
+⛔ **Proportionality is itself a claim about how the system works.** **One seat among five, listed
+like the others, argues the structure more convincingly than a founder section sitting above it.**
+⚠ **The restraint is the point** — which is §3 (*restraint has to be shown as a choice*) reaching
+the team block.
+
+---
+
+## ⚠⚠ A CONSEQUENCE WORTH NAMING — the founder section and the collaboration passage may be ONE THING
+
+⛔ **RECOMMENDATION, NOT A RULING. Carl has not decided this and it is a structural call about the
+section.**
+
+⚠ **If the human is a SEAT IN THE TEAM (ruling 3), then "a small section which is me" and the
+collaboration passage are plausibly the SAME PASSAGE** — not a founder bio plus a system diagram,
+but **one place where the five seats are set out and one of them says "I"**, and that one is the one
+holding approval.
+
+**Why it may be better:**
+
+- **More economical** — one block, not two.
+- ⚠ **It puts the human exactly where the argument needs them**, rather than above it.
+- ⛔ **It avoids the conventional About-page founder block** that Carl was right to be wary of.
+- ⚠⚠ **"Small" stops reading as thin.** **A short entry among four others is PROPORTIONATE; a short
+  standalone founder section can read as RETICENCE.**
+
+---
+
+## ⚠ WHAT REMAINS OPEN ON THIS SUBJECT
+
+⛔ **CARL'S "not to name myself" WAS ABOUT SUBJECT MATTER, NOT ANONYMITY** — the section is about
+who the human founder *is* in the operation, not a personal profile. ⚠ **Ruling 2 settles the
+VOICE; it does not settle whether the NAME appears anywhere on the page.**
+
+⚠ **The trust consideration, recorded rather than pressed:** someone spending real money usually
+wants to know who is accountable. ⛔ **It may well resolve OUTSIDE this section** — the contact
+flow, a footer — **rather than in it.** ⚠ **Not urgent, and NOT a setup-pass question.**
+
+**Also unresolved and belonging to the development pass:**
+
+- ⚠ **Whether the philosophy is STATED or only DEMONSTRATED.** ⛔ **§9 warns that explaining a
+  quiet thing can weaken it** — but the file also records that the visitor may lack the vocabulary
+  to see what they are looking at, which is the whole reason the plain-language channel exists.
+  ⚠ **Leaning, not decided: state it briefly and let the site prove it — the statement is what
+  lets someone RECOGNISE what they are seeing.** ⛔ **Carl's to rule.**
+- **What the origin story actually says.** ⚠ **The raw material is in this conversation and in the
+  credibility re-frames** — decades in music technology, the method that turned out to apply, the
+  local survey that found two camps and no practice. ⛔ **Not drafted, and drafting it is the
+  development pass.**
+
+---
+
 # ⚠ THE CLAIM NEEDS EVIDENCE — §1 applied to the AI argument itself
 
 ⛔ **"The problem is how AI is utilised" is an ASSERTION until something demonstrates it.** ⚠ **It
@@ -1108,6 +1265,24 @@ brief, probably concrete, probably followed immediately by the work it produced.
 ⚠ **The three questions carried from 28 August are untouched by this pass** — explanation in video
 or text, whether clients receive code, and the qualifying flow.
 
+### ⛔ AND WHAT THE FOUNDER PASS DID TO THEM, the same day
+
+**Closed:**
+
+- ✔ ⛔ **Whether anything about the human founder appears at all — YES.** *THE HUMAN FOUNDER ON THE
+  PAGE*, rulings 1–3. ⚠ **It also part-answers newly-open question 1 above: the human is a seat in
+  the team, so the seats being named is now the more likely shape.**
+
+**Still open, and narrowed rather than answered:**
+
+- ⚠ **Whether Carl's NAME appears anywhere on the page.** ⛔ **Ruling 2 settles the VOICE, not the
+  name.** **May resolve outside this section — contact flow, footer.** ⚠ **Not a setup-pass
+  question.**
+- ⚠ **Whether the philosophy is STATED or only DEMONSTRATED.** ⛔ **§9 pulls one way, the
+  vocabulary problem the other.** **Leaning recorded, not decided.**
+- ⚠ **Whether the founder passage and the collaboration passage are ONE block or two.**
+  ⛔ **Recommendation only — one block, with the human as a seat that says "I".**
+
 ---
 
 # ⛔ WHAT THIS PASS DOES NOT CHANGE
@@ -1136,6 +1311,13 @@ of local agencies; the three credibility answers re-framed; **five rulings** —
 default, the site is the proof, and **no condescension in any form**. Plus the tractor argument and
 the slop objection it must survive, the four-seats problem, and ⚠ **Carl's market read, recorded
 explicitly as REASONING AND NOT COPY.***
+
+*⛔ **30 August 2026, second pass — THE HUMAN FOUNDER, which answers the four-seats problem.** The
+work speaks first and personability belongs to contact; **the founder is written in the FIRST
+PERSON — "I", never the third**, because a page claiming a human holds the authority cannot write
+about that human as though someone else did; and **the human is a seat in the team, in a small
+way**, because naming four AI seats and omitting the human describes an operation where nobody is
+answerable. ⚠ **The needs-writing-down list is now ELEVEN.***
 
 *⚠ **The file is DEVELOPED by each pass, not corrected.** ⛔ **It is where the About thinking lives
 until Carl makes it a chunk; it is not itself a plan.***
