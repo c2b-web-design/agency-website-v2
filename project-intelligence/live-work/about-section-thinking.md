@@ -88,7 +88,7 @@
     §1, structure in §2 — **settles that video examples ARE on the page (max four), and rules that
     on-site examples are RECOLOURED before recording rather than filmed as they stand.** ⚠ **The
     header is DEFERRED with its reason recorded, and the logo rule is promoted to its own decision:
-    **D-065**, PROPOSED.**
+    **D-065** — the STANDARD is APPROVED, the `/about` insertion approved ON DELIVERY.**
 
 ---
 
@@ -1590,12 +1590,33 @@ colours it ships in.**
    promise than a purpose-built demo, so this may be the version that survives §7 comfortably.**
    ⚠ **Recorded as NARROWED, not settled — §10a left the tension to Carl.**
 
+## ⛔⛔ AND ONE EXAMPLE NEEDS NO VIDEO AT ALL — the immobile mark
+
+⚠⚠ **THE STRONGEST DEMONSTRATION AVAILABLE TO SECTION 3 IS NOT A CLIP.** ⛔ **It is the mark that
+does not move** (**D-065**).
+
+⚠ **The visitor verifies it BY NAVIGATING.** ⛔ **No clip, no compression, no page weight, no
+five-second frame in which they might see nothing.**
+
+⚠⚠ **THIS IS THE ONE CASE THAT ESCAPES §9's TRADE-OFF.** §9 records that subtlety is correct **and
+costs demonstrability** — the effect works because it does not demand attention, and in a small
+frame the viewer may see nothing at all. ⛔ **The immobile mark is subtle AND demonstrable, because
+the demonstration is the site working.**
+
+⛔ **AND IT COUNTS AGAINST THE FOUR-EXAMPLE CAP ONLY IF IT IS PRESENTED AS AN EXAMPLE.** ⚠ **It may
+belong in section 1 or 2 as a property of the work rather than in section 3 as a specimen.**
+**Carl's call.**
+
+⚠ **It is also a CAPABILITY, not only a c2b design rule** — Carl, 30 August: *"What if a client
+wants the same immobility?"* ⛔ **Full reasoning in D-065; not repeated here.**
+
 ---
 
 # ⛔ THE LOGO ON `/about`
 
 - ⛔ **Top left, occupying EXACTLY the same space as on every other route.** ⚠ **The rule is now
-  site-wide and is recorded as its own decision: **D-065**, drafted 30 August, PROPOSED.**
+  site-wide and is recorded as its own decision: **D-065** — the STANDARD is APPROVED, and the
+  `/about` insertion is APPROVED ON DELIVERY against measurement.**
 - ⛔ **GOLD, and PROVISIONAL.** ⚠ **Carl: *"In the about section it is provisionary gold. It may not
   stay that way."*** **PROVISIONAL is a defined status — in place, deliberately untuned, awaiting
   the mastering pass (D-035). ⛔ Not "unapproved" and not a gap.**
@@ -1722,8 +1743,19 @@ examples ARE on the page, max four, and on-site examples are RECOLOURED before r
 filming the live button shows the visitor something they have already seen.** ⚠⚠ **The recolour
 carries a second argument Carl added: a client's brand colours — which connects section 3 to CD's
 role and is the one demonstration a template marketplace cannot make.** ⛔ **The logo rule is
-promoted out of this file into **D-065** (PROPOSED): no movement, only change, site-wide.** ⚠ **The
+promoted out of this file into **D-065**: no movement, only change, site-wide — and Carl then
+widened it to a CAPABILITY a client can buy.** ⚠ **The
 header is DEFERRED with its reason recorded, and is the next body of work.***
+
+*⚠ **Same day, later — the immobile mark reaches past this site.** Carl: *"Think beyond our site to
+a clients who will possibly have a logo… What if a client wants the same immobility?"* ⛔ **It is a
+TECHNIQUE, not a style choice — declare a point, hang the asset from it, restrict variance to
+scale — and it transfers to any mark.** ⚠⚠ **Which makes it the strongest answer this file has to
+the SAMPLE-OF-ONE problem, and the one section-3 example needing no video at all: the visitor
+verifies it by navigating.** ⛔ **Carl also named a THIRD artefact for the client template — the
+STOREROOM, elements stripped to their mesh state in a separate repo — recorded in
+`references/workshop-template-and-client-delivery.md`, which previously held only the workshop and
+the shipped site.***
 
 *⚠ **The file is DEVELOPED by each pass, not corrected.** ⛔ **It is where the About thinking lives
 until Carl makes it a chunk; it is not itself a plan.***

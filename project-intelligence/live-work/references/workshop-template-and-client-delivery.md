@@ -423,3 +423,97 @@ built. The risk is **the wrong asset used by accident**, reaching a client's sta
 reusable scaffolding, the harder the extraction — `globals.css` being the live example. **Not
 a reason to change anything now. It is the reason this record exists now** rather than at
 completion.
+
+---
+
+# ⛔⛔ THE STOREROOM — a THIRD artefact. Carl, 30 August 2026
+
+⚠⚠ **THIS RECORD PREVIOUSLY DESCRIBED TWO THINGS: the workshop, and the shipped site. Carl has
+named a THIRD, and it is not a variant of either.**
+
+**Carl, in his own words:**
+
+> *"When the site is finished im gonna strip out all the c2b website stuff leaving just the system
+> and structure. That will be our client template. It will always be empty because a clone of it
+> will always be used for clients. Another DAW technique. Elements like buttons and cards, which
+> may be a speciality of c2b can be copied and stripped back to their mesh state. Another repo made
+> for them and other elements to call upon. A sort of storeroom."*
+
+⚠ **THE FIRST HALF RESTATES WHAT THIS FILE ALREADY HELD** — strip the site code, what remains is
+the template, always empty because it is always cloned. ⛔ **THE SECOND HALF IS NEW.**
+
+## ⛔ THE THREE ARTEFACTS, AND THEY ARE GENUINELY DIFFERENT
+
+| | what it is | state | how it is used |
+|---|---|---|---|
+| **The workshop** | system and structure — tools, governance, methodology | ⛔ **always empty** | **cloned** per client |
+| **The storeroom** | ⚠ **elements stripped back to their MESH STATE** — buttons, cards, the c2b specialities | **raw material** | ⛔ **called upon** by a workshop |
+| **The shipped site** | a client's finished site code | complete | **packaged and shipped out** |
+
+⚠⚠ **THE STOREROOM IS A SEPARATE REPO — Carl's word: *"Another repo made for them."*** ⛔ **It is
+not a folder in the workshop, and that distinction is the whole point:** a workshop stays empty, and
+**a parts store is not emptiness — it is stock.**
+
+## ⚠⚠ "STRIPPED BACK TO THEIR MESH STATE" — and the DAW parallel is exact
+
+⛔ **IT IS A SAMPLE LIBRARY.** ⚠ **You do not rebuild a kick drum for every track — you keep the raw
+material and load it where it is needed.**
+
+⚠⚠ **"MESH STATE" IS THE UNPROCESSED SAMPLE: strip the c2b-specific finish, KEEP THE GEOMETRY,
+apply the finish per client.** ⛔ **Which is why it is a separate artefact rather than a folder of
+old components — a finished c2b button is a c2b button; a mesh with its parameters exposed is an
+INSTRUMENT.**
+
+⚠ **This is §6's variant principle from `about-section-thinking.md` reaching the tooling:** the
+difference between playing someone the record and **showing them the patch.** ⛔ **The storeroom is
+where the patches live.**
+
+## ⚠ WHAT THIS DEVELOPS, AND IT IS DEVELOPMENT RATHER THAN CORRECTION
+
+⛔ **The 30 July record was not incomplete — it was EARLY.** ⚠ **It described the workshop/site
+split correctly and completely for what was then understood.** **The storeroom is the idea
+developing, and this file is the basis to work from when the time comes — which is what a working
+reference is for.**
+
+⚠⚠ **Carl, 30 August, and it is the same rule as the About file's:** *"you shouldnt see this as a
+problem but as the development of an idea… when the time comes we will have information, a basis
+from which to work from to implement the client template."* ⛔ **Same logic as the DAW model — a
+take is not wrong for being overtaken.**
+
+## ⚠ THE ENTANGLEMENT COST NOW HAS A SECOND CONSUMER
+
+⛔ **This file already flags it:** *"the more entangled the C2B site becomes with reusable
+scaffolding, the harder the extraction — `globals.css` being the live example."*
+
+⚠⚠ **THE STOREROOM SHARPENS IT.** **Elements that would be stripped to mesh state hold their
+constants in dedicated modules** — `answer-card-glass.ts`, `nextstep-geometry.ts`,
+`contact-field-geometry.ts` — ⛔ **but part of their STYLING lives in `app/globals.css`, which is
+2,012 lines of c2b site and reusable scaffolding together.** **Extracting one element later means
+separating those.**
+
+⛔⛔ **THIS IS NOT A REASON TO CHANGE ANYTHING NOW, AND MID-BUILD RESTRUCTURING FOR A FUTURE
+EXTRACTION IS EXACTLY THE OVER-BUILDING THIS PROJECT GUARDS AGAINST.** ⚠ **It is recorded for the
+same reason the original note was: so the cost is known when the extraction is planned, not
+discovered during it.**
+
+## ⛔ WHAT THE STOREROOM MEANS FOR CLIENT-FACING CAPABILITIES — the open question
+
+⚠⚠ **A CAPABILITY OFFERED TO A CLIENT NEEDS ITS PROOF TO TRAVEL WITH IT, AND THE THREE ARTEFACTS
+ANSWER "WHERE DOES IT LIVE" DIFFERENTLY.**
+
+**Worked example — the immobile mark (D-065, 30 August):** *no movement, only change.* ⛔ **Carl
+has framed it as something a CLIENT may want, not only a c2b rule.**
+
+| the thing | plausible home |
+|---|---|
+| **the RULE** — the mark does not move | ⚠ the workshop — every clone inherits it |
+| **the TECHNIQUE** — declare a point, hang assets from it, restrict variance to scale | ⚠ the storeroom |
+| ⛔ **THE PROOF it still holds** | ⚠⚠ **OPEN — and it is the interesting one** |
+
+⛔⛔ **A HARNESS LIVING IN THIS REPO PROVES C2B'S SITE IS RIGHT AND SAYS NOTHING ABOUT A CLIENT
+BUILD.** ⚠ **If immobility is a DELIVERABLE capability, the check is part of what is DELIVERED** —
+which makes it storeroom material rather than workshop material. ⚠⚠ **That is not obvious, and it
+is the difference between *we build it this way* and *here is the tool that proves it stayed that
+way*.**
+
+⛔ **NOT DECIDED. Recorded so the question is on the table when the extraction is planned.**

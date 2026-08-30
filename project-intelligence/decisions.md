@@ -3172,65 +3172,86 @@ alongside the demotion reasoning. ⛔ **History is preserved, not rewritten** �
 
 ---
 
-## D-065 — The Mark Does Not Move. Site-Wide, Every Route, Colour Is The Only Thing Permitted To Change
+## D-065 — The Mark Does Not Move. A Site-Wide Rule, And A Capability A Client Can Buy
 
 **Date recorded:** 2026-08-30
-**Status:** ⚠ **PROPOSED** — drafted by the Builder on Carl's instruction, 30 August 2026. ⛔ **Carl has stated the RULE and its reasoning; the entry awaits his ruling to become APPROVED.** *(Status transitions PROPOSED → APPROVED are Carl's alone — `context-rules.md`.)*
-**Authority:** Human Founder — Carl, 30 August 2026: *"a user could be on a page. No matter where the user navigates to, the logo wont move. It might change colour but it will be absolutely constant and accurate, showing no movement, only change."* And on what it signals: *"Think what such a concept says to a user - pin point precision."*
-**Bears on:** every route that renders the mark — currently `app/page.tsx` (via `components/layout/site-header.tsx`) and `app/start/page.tsx`; **prospectively `app/about/page.tsx` and every route after it.** Generalises **D-062** and **D-063**; depends on **D-060** (the 40px standard) and on `components/layout/container.tsx`.
+**Status:** ⚠ **APPROVED as a STANDARD; the `/about` insertion is APPROVED ON DELIVERY.** ⛔ **Carl, 30 August 2026, ruling on outcome rather than method:** *"This is the last section that will need logo insertion. All others align to my satisfaction and are approved. If, and excuse the pun, you are given instructions to nail the about logo and you do, then approved. By what method? Thats your domain, i care about outcome."*
+**Authority:** Human Founder — Carl, 30 August 2026: *"a user could be on a page. No matter where the user navigates to, the logo wont move. It might change colour but it will be absolutely constant and accurate, showing no movement, only change."* On the signal: *"Think what such a concept says to a user - pin point precision."* On the reach: *"Think beyond our site to a clients who will possibly have a logo… What if a client wants the same immobility?"*
+**Bears on:** every route that renders the mark — `app/page.tsx` (via `components/layout/site-header.tsx`), `app/start/page.tsx`, and prospectively `app/about/page.tsx`. Generalises **D-062** and **D-063**; depends on **D-060**. ⚠ **Also bears on `live-work/references/workshop-template-and-client-delivery.md`** — see *the capability*, below.
 
 > ## ⛔⛔ **NO MOVEMENT, ONLY CHANGE.**
 
-⚠⚠ **THIS IS A PROMOTION, NOT A NEW MECHANISM.** D-063 established the nail for **two marks on two pages**. ⛔ **Carl has now stated it as a property of THE WHOLE SITE:** wherever the visitor navigates, the mark is the one element that does not move. **Colour may change. Position may not.**
+⚠⚠ **THIS IS A PROMOTION, NOT A NEW MECHANISM.** D-063 established the nail for **two marks on two pages**. ⛔ **Carl has stated it as a property of the whole site — and then as something a CLIENT may want.**
 
 ---
 
-### ⛔ THE RULE
+### ⛔ THE RULE — stated as OUTCOME, because that is what Carl ruled on
 
-1. ⛔ **The mark occupies the same space on every route.** Not "approximately", not "by the same margin token" — **the same declared point.**
-2. ⚠ **Colour is the only permitted variation.** Gold → blue → gold is D-063's journey and is unaffected by this entry.
-3. ⛔ **Scale variation is permitted ONLY as a consequence of two assets having genuinely different letterform aspects**, and only symmetric about the nail. ⚠ **Measured: ±0.29px per side, centre spread 0.0058px horizontal / 0.0064px vertical across all three current states** (D-063). ⛔ **Sub-pixel and symmetric — recorded that way rather than as "invisible to the eye", because the first is checkable and the second is not.**
-4. ⛔ **A new route does not get to reach the position by its own route-local arithmetic.** It hangs from the nail, whose origin is `Container`'s content box.
+1. ⛔ **The mark occupies the same point on every route.** Not "approximately", not "the same margin token" — **the same point, verified by measurement.**
+2. ⚠ **Colour is the only permitted variation.** Gold → blue → gold is D-063's journey and is unaffected.
+3. ⛔ **Scale variance is permitted ONLY where two assets have genuinely different letterform aspects, and only symmetric about the centre.** ⚠ **Measured: ±0.29px per side; centre spread 0.0058px horizontal, 0.0064px vertical across all three current states** (D-063). ⛔ **Recorded as *sub-pixel and symmetric* rather than *invisible to the eye* — the first is checkable, the second is not.**
+4. ⛔⛔ **A NEW ROUTE MUST LAND ON THE SAME POINT AS THE APPROVED ROUTES. THE MECHANISM IS THE BUILDER'S.** ⚠⚠ **Carl: *"By what method? Thats your domain, i care about outcome."*** **The nail (D-063) is the method that has worked and is the obvious starting point — it is NOT a requirement of this entry.**
 
-### ⚠⚠ WHY IT MATTERS — Carl's reasoning, and it is a design argument rather than a tidiness one
+⚠ **CLAUSE 4 WAS REDRAFTED ON CARL'S RULING.** ⛔ **It originally required a new route to *"hang from the nail, whose origin is `Container`'s content box"* — a MECHANISM.** ⚠⚠ **That was wrong twice over: it is not what Carl is ruling on, and it mis-describes the landing page, which reaches the same point through `SiteHeader`'s flow layout rather than from the nail.** ⛔ **As originally drafted it would also have obliged the header work to make the nail shared — a structural decision smuggled in through a decision entry.**
+
+### ⚠⚠ WHY IT MATTERS — Carl's reasoning, and it is a design argument
 
 ⛔ **PIN POINT PRECISION IS THE SIGNAL, and it works because nothing else on the web behaves this way.** ⚠ **On an ordinary site the mark shifts a few pixels between templates** — different header padding, a different container, a scrollbar arriving. **Nobody consciously notices. The eye tracks it anyway, and the accumulated effect is *assembled from parts*.**
 
-⚠⚠ **A MARK THAT IS PROVABLY IDENTICAL ACROSS EVERY ROUTE READS AS ONE THING BUILT DELIBERATELY.** ⛔ **It is D-035's coherence argument and the "show the SCENE, not the part" finding applied ACROSS pages rather than within one** — five elements aware of each other becomes five *pages* aware of each other.
+⚠⚠ **A MARK PROVABLY IDENTICAL ACROSS EVERY ROUTE READS AS ONE THING BUILT DELIBERATELY** — the *scene, not the part* finding applied ACROSS pages rather than within one.
 
 ⛔ **AND IT IS DEMONSTRABLE, WHICH ALMOST NO CRAFT CLAIM IS.** ⚠ **A visitor can navigate and watch it not move — a claim they verify themselves, without being told to.**
 
-### ⚠ WHAT THIS DOES TO THE COLOUR JOURNEY (D-063)
+### ⛔ WHY MOST SITES DRIFT — the mechanism, because it is what makes the technique transferable
 
-⛔ **Constancy of position is WHAT MAKES THE COLOUR CHANGE READ AS A STATE RATHER THAN A JUMP.** ⚠ **The gold → blue → gold journey is not a per-page effect; it is the one element permitted to change BECAUSE it never moves.** **D-063 is unchanged by this entry — it is explained by it.**
+⚠ **Sites do not drift because nobody wanted precision. They drift because POSITION IS DERIVED.** A logo sits in a header, the header sits in each page's layout, and the position falls out of padding, container width, and whether a scrollbar appeared. **Each step rounds.**
+
+⛔⛔ **THE INVERSION IS THE TECHNIQUE: DECLARE THE POINT, HANG THE ASSET FROM IT, AND THE ONLY REMAINING VARIABLE IS SCALE.** ⚠ **D-063 records the previous approach here — margins correcting margins — compounding into a jump visible on a hard cut.** ⛔ **The technique is the inversion, not the numbers, and it depends on nothing about c2b's mark.**
 
 ---
 
-### ⛔⛔ THE INVARIANT IS CURRENTLY UNASSERTED, AND THAT IS STATED PLAINLY
+### ⛔⛔ THE CAPABILITY — Carl, 30 August. THIS IS THE PART THAT REACHES BEYOND THIS SITE
 
-⚠⚠ **THE TWO EXISTING ROUTES REACH THE SAME POINT BY TWO DIFFERENT MECHANISMS:**
+> *"Think beyond our site to a clients who will possibly have a logo. You noted yourself, they all move. What if a client wants the same immobility?"*
+
+⚠⚠ **THE IMMOBILE MARK IS NOT ONLY A C2B DESIGN RULE. IT IS A CAPABILITY, AND THIS SITE IS WHERE IT IS DEMONSTRATED.**
+
+⛔ **It is the variant principle in a harder dimension.** ⚠ **The recolour says *your colours*; the nail says *your mark, held to a precision nobody else is offering*.** **Any logo, any client, same method.**
+
+⚠⚠ **AND IT IS THE STRONGEST AVAILABLE ANSWER TO THE SAMPLE-OF-ONE PROBLEM** — a prospect asking *"can you do this for my business?"* can be shown something visibly true on this site and obviously transferable, **because it is a technique rather than a style choice.**
+
+### ⚠⚠ WHAT THE CAPABILITY FRAMING DOES TO THE UNASSERTED PROBLEM — it raises the stakes
+
+⛔ **THE INVARIANT IS CURRENTLY UNASSERTED. Two routes reach the same point by two different mechanisms:**
 
 | route | how the mark is placed |
 |---|---|
-| **landing** (`app/page.tsx`) | inside `SiteHeader`, **in normal flow**, in an 81px band |
-| **`/start`** (`app/start/page.tsx`) | **absolutely positioned, out of flow**, at explicit px from the nail — deliberately, so it occupies no vertical space and does not push the corridor down (D-062) |
+| **landing** | inside `SiteHeader`, **in normal flow**, in an 81px band |
+| **`/start`** | **absolutely positioned, out of flow**, at explicit px from the nail (D-062) |
 
-⛔ **THEY AGREE BECAUSE BOTH RESOLVE THROUGH `Container`, NOT BECAUSE THEY SHARE CODE.**
+⛔ **They agree because both resolve through `Container`, NOT because they share code** — an invariant held by the coincidence of two implementations, which `context-rules.md` names as a failure mode. **Nothing detects the day a third route misses by 2px.**
 
-⚠⚠ **THAT IS AN INVARIANT HELD BY THE COINCIDENCE OF TWO IMPLEMENTATIONS — exactly the failure mode `context-rules.md` names: *an invariant that lives only in prose is not asserted*.** ⛔ **Nothing in code detects the day a third route reaches the point by a third mechanism and misses.**
+⚠⚠ **IF THIS WERE ONLY C2B'S RULE, "UNASSERTED" WOULD MEAN A FUTURE ROUTE MIGHT DRIFT AND WE WOULD NOTICE EVENTUALLY.** ⛔⛔ **AS A CLIENT-FACING CAPABILITY IT IS THE THING THAT MAKES THE CLAIM SAFE TO MAKE.** ⚠ **Selling pinpoint precision on a site where precision is verified by the Builder measuring it once is a promise resting on a coincidence.**
 
-⛔ **THE HONEST STATUS: UNASSERTED — VERIFY BEFORE RELYING ON THIS.** ⚠ **The assertion is owed when the header work lands**, because that is when the invariant becomes load-bearing across three routes rather than two. **Recorded here so the gap is known rather than discovered.**
+⛔ **That is §7 of `about-section-thinking.md` arriving: *only show what you would build and maintain*.** ⚠ **A prospect points at the immobile mark and says *I want that* — it is then built on a deadline and supported for years, on a codebase that is not this one.**
 
-⚠ **Candidate form, not designed here:** a harness that loads every route rendering the mark, reads the mark's box, and **fails loudly on any positional delta beyond the recorded sub-pixel scale tolerance.** ⛔ **It must declare what it does NOT watch** — `context-rules.md`, the `one-context.mjs` case.
+⚠⚠ **SO THE HARNESS IS NOT HOUSEKEEPING — IT IS WHAT MAKES THE TECHNIQUE DELIVERABLE**, and where it lives is an open question the workshop/storeroom split will settle. ⛔ **See `live-work/references/workshop-template-and-client-delivery.md` → *THE STOREROOM*.**
 
----
-
-### ⚠ WHAT IS NOT SETTLED BY THIS ENTRY
-
-- ⛔ **The mark's COLOUR on `/about` is PROVISIONAL GOLD.** Carl, 30 August: *"In the about section it is provisionary gold. It may not stay that way."* ⚠ **PROVISIONAL has a defined meaning — in place, deliberately untuned, awaiting the mastering pass (D-035). Not "unapproved" and not a gap; reviewers must not raise a missing approval for it.**
-- ⛔ **Whether `SiteHeader` renders on all routes is NOT decided.** ⚠ **Carl, 30 August: likely, but deferred — he is weighing it against a FONT decision and against context not yet shared with the Builder.** ⛔ **Site headers are the NEXT body of work after the `/about` scaffolding.** ⚠⚠ **So the `/about` scaffolding must NOT settle the header question by rendering `SiteHeader` as a convenience** — that would decide a structure while implementing something else (CLAUDE.md §5a).
-- ⚠ **The header's DESIGN is TBD** — Carl's word, 30 August.
+⛔ **THE HONEST STATUS TODAY: UNASSERTED — VERIFY BEFORE RELYING ON THIS.** ⚠ **The assertion is owed when the header work lands, because that is when a third route joins.**
 
 ---
 
-*⚠ **Drafted by the Builder, 30 August 2026, on Carl's explicit instruction to draft it now.** ⛔ **The RULE and its reasoning are Carl's, stated verbatim above; the measurements are D-063's, already approved. The Builder authored the write-up, not the decision.** ⚠ **Status stays PROPOSED until Carl rules — the Builder cannot move any item to APPROVED (`context-rules.md`).***
+### ⛔ WHAT IS NOT SETTLED BY THIS ENTRY
+
+- ⛔ **The mark's COLOUR on `/about` is PROVISIONAL GOLD.** Carl: *"In the about section it is provisionary gold. It may not stay that way."* ⚠ **PROVISIONAL is a defined status — in place, deliberately untuned, awaiting the mastering pass (D-035). Not "unapproved" and not a gap.**
+- ⛔ **Whether `SiteHeader` renders on all routes is NOT decided.** ⚠ **Carl, 30 August: likely, but deferred — he is weighing it against a FONT decision and context not yet shared with the Builder.** ⛔ **Site headers are the NEXT body of work after the `/about` scaffolding.** ⚠⚠ **The scaffolding must NOT settle it by rendering `SiteHeader` as a convenience** (CLAUDE.md §5a).
+- ⚠ **The header's DESIGN is TBD** — Carl's word.
+- ⚠ **Where the ASSERTION lives** — this repo, the workshop, or the storeroom. **Open.**
+
+### ⚠ HOW THE `/about` APPROVAL IS DISCHARGED
+
+⛔ **Carl's condition is that the mark lands correctly.** ⚠ **The Builder measures `/about` against the approved routes and reports the figures alongside the visual evidence, as part of the scaffolding chunk's delivery** — **not as a separate later step.** ⛔ **That is what makes "you did it" checkable rather than the Builder's word** (Rule 9: rendered output is the truth for visual work).
+
+---
+
+*⚠ **Drafted by the Builder, 30 August 2026, on Carl's instruction, and REDRAFTED the same day after his outcome ruling.** ⛔ **The rule, its reasoning and the capability framing are Carl's, quoted above; the measurements are D-063's, already approved. The Builder authored the write-up, not the decision.** ⚠ **The STANDARD is approved. The `/about` insertion is approved ON DELIVERY, against measurement.***
