@@ -113,6 +113,11 @@
     on-site examples are RECOLOURED before recording rather than filmed as they stand.** ⚠ **The
     header is DEFERRED with its reason recorded, and the logo rule is promoted to its own decision:
     **D-065** — the STANDARD is APPROVED, the `/about` insertion approved ON DELIVERY.**
+11. ⛔⛔ **C2B TV, 30 August 2026** — *C2B TV*, after the logo section. ⚠⚠ **What plays before an
+    example is selected: an ABSTRACT FIELD, c2b's own, and it is a FIFTH EXAMPLE IN PLAIN SIGHT
+    that never announces itself.** ⛔ **Royalty-free is ruled out, which BROADENS §10a — the rule
+    covers what is ON THE SITE, not only what is labelled an example.** ⚠ **No Three.js: *"all you
+    have to do is organise the pixels."*** ⛔ **IDEA STAGE — a dedicated session is scheduled.**
 
 ---
 
@@ -609,6 +614,24 @@ promise, and a prospect pointing at it still says *I want that*.
 
 ⚠ **The tension is not resolved here and is Carl's to settle when it arises.** Recorded so it is
 not discovered mid-build.
+
+### ⛔⛔ §10a's SCOPE WAS BROADENED ON 30 August — it is not a rule about EXAMPLES
+
+⚠⚠ **THE BUILDER READ THIS SECTION AS GOVERNING THE THINGS PRESENTED AS EXAMPLES. CARL APPLIED IT
+TO SOMETHING PRESENTED AS NOTHING AT ALL.**
+
+**On the C2B TV idle state — a screen playing before any example is chosen:** *"Could we put a
+royalty free video in there? Yes. Are we? No. Why. Because C2B didnt create it."*
+
+⛔ **THE RULE COVERS WHAT IS ON THE SITE, NOT ONLY WHAT IS LABELLED AN EXAMPLE.** ⚠ **A borrowed
+background, texture or loop fails for the same reason a borrowed example does — and the reason is
+still the first one, not the copyright one.**
+
+⚠ **AND THE CONVERSE WAS ALSO CORRECTED, IN THE OTHER DIRECTION:** ⛔ **§10a says nothing about what
+may be STUDIED.** **Carl: *"There is a difference between copying and inspiration. Influence is a
+mark of respect."*** ⚠⚠ **The Builder had over-applied the rule to reference material Carl supplied
+for direction. A rule that forbade influence would make craft impossible.** ⛔ **Full record: *C2B
+TV*.**
 
 ### ⚠ "SHOWING WHAT CAN BE DONE" HAS VALIDITY — Carl grants it, and then outranks it
 
@@ -1660,6 +1683,181 @@ placed in a section.** **Its reasoning lives in D-065, not here.**
 
 ---
 
+# ⛔⛔ C2B TV — WHAT IS PLAYING BEFORE AN EXAMPLE IS SELECTED. Carl, 30 August 2026
+
+> ## ⛔⛔ **IDEA STAGE. Carl: *"This is an idea in the development stage."*** ⚠ **A dedicated session
+> is scheduled — Carl: *"We will spend a session on this in a few days."*** ⛔ **NOTHING HERE IS
+> BUILT FROM.**
+
+⚠ **"C2B TV" is Carl's own name for it, offered in jest and adopted as the working label** — it
+describes the problem better than "video viewer" does.
+
+⛔ **SECTION 3'S LAYOUT AND DESIGN ARE CARL'S — *"i will take care of the design of section 3."***
+⚠ **The Builder was asked to decide ONE thing: what is on the screen before a clip is chosen.**
+
+## ⛔ THE RULING — IT IS A FIFTH EXAMPLE, IN PLAIN SIGHT
+
+**Carl, in his own words:**
+
+> *"So heres the thing. The TV has got to be on, doing something. Could we put a royalty free video
+> in there? Yes. Are we? No. Why. Because C2B didnt create it. Further examples of our capability.
+> Did i say 4 examples? Yes, and another one in plain sight."*
+
+⚠⚠ **THE IDLE STATE IS NOT A BACKGROUND, NOT AMBIENCE, AND NOT A PLACEHOLDER.** ⛔ **It is a
+demonstration of capability in its own right — and it never announces itself as one.**
+
+⛔ **THE FOUR-EXAMPLE CAP IS UNTOUCHED: four in the stack, selectable, each with its explanation.**
+⚠ **The field is a FIFTH piece of capability that is never listed, never subtitled, and never
+counted.** **A visitor watching it is already being shown what c2b can do before choosing
+anything.**
+
+⚠⚠ **SAME INSTINCT AS THE IMMOBILE MARK — the thing that demonstrates without being PRESENTED as a
+demonstration.** ⛔ **§9 says the copy must point before the viewer looks; this one needs no
+pointing, because it is the first thing on the screen.**
+
+## ⛔ THE SHOWROOM FRAME — Carl's, and it is the whole argument
+
+> *"We should treat the TV as if its in a showroom… A few years ago TVs in showrooms would show
+> jungle scenes with parrots or aerial shots of Scandinavia."*
+
+⚠⚠ **THE SHIFT IS FROM CONTENT TO MATERIAL.** ⛔ **Parrots and aerials were CONTENT — the screen
+showed you a nice thing.** ⚠ **What is on a showroom wall now is chroma, gradient, and the panel's
+own capability made visible: THE SUBJECT IS WHAT THE DISPLAY CAN DO.**
+
+⛔ **SO THE IDLE STATE IS NOT DECORATION AND NOT A TEASER — IT IS A DEMONSTRATION OF THE SURFACE.**
+⚠ **A showroom TV does not ask to be watched. It proves what it is, and the proof happens to be
+beautiful.**
+
+## ⛔⛔ WHAT IT IS: ABSTRACT ART. NO SUBJECT
+
+**Carl: *"What im looking for is abstract art."***
+
+⚠⚠ **NO OBJECT, NO HERO FORM, NO NARRATIVE.** ⛔ **A FIELD** — flow, granularity, light moving
+through a medium. ⚠ **It can be looked at for two seconds or forty and it neither starts nor
+finishes.**
+
+⛔⛔ **AND THAT IS THE FUNCTIONAL REASON, NOT ONLY AN AESTHETIC ONE: a clip with a SUBJECT implies
+it should be watched to the end, and would COMPETE with the four items for attention.** ⚠ **A field
+has nothing in it to follow, so it holds the screen without taking the visitor's decision away.**
+
+## ⚠ THE PALETTE IS AN OPEN QUESTION — Carl asked it, and did not answer it
+
+> *"Do you wanna use the logo? The brand colours?"*
+
+⛔ **BOTH ARE QUESTIONS, NOT INSTRUCTIONS. Carl's to settle in the dedicated session.**
+
+⚠ **What is on record and bears on it:**
+
+- ⛔ **Blue and gold are the site's two marks (D-063), and the reference material Carl supplied is
+  deep blue and metallic gold** — the palette appearing in another medium, physically.
+- ⚠⚠ **§8 IS LOAD-BEARING: warm/salmon is the SELECTION STATE** and is unavailable for other jobs.
+  ⛔ **Gold is the LOGO's colour, not salmon — but the proximity is worth checking rather than
+  assuming.**
+- ⚠ **The logo question is separate again:** D-065 makes the mark constant and immobile site-wide.
+  ⛔ **A moving, abstract treatment of the mark inside the TV is a DIFFERENT object from the mark in
+  the corner — but a visitor may not read it that way.** **Flagged for the session.**
+
+## ⛔⛔ WHY NOT ROYALTY-FREE — and it broadens §10a rather than restating it
+
+⚠⚠ **CARL'S REASONING BROADENS THE RULE, AND THE BUILDER HAD IT TOO NARROW.** ⛔ **§10a was being
+read as a rule about THE FOUR EXAMPLES — what is presented as evidence.** ⚠ **Carl applies it to
+the idle state, which is presented as nothing at all: *"Could we put a royalty free video in there?
+Yes. Are we? No. Why. Because C2B didnt create it."***
+
+⛔⛔ **THE RULE IS ABOUT WHAT IS ON THE SITE, NOT ABOUT WHAT IS LABELLED AS AN EXAMPLE.**
+
+⚠ **Royalty-free would be legal, cheap and immediately available. It fails on the reason that
+OUTRANKS copyright: it is not our work** — §10a's order, and the reason a permissive licence does
+not rescue it.
+
+⚠⚠ **AND IT WOULD FAIL WORSE HERE THAN ALMOST ANYWHERE.** ⛔ **The four clips show CONSTRUCTION —
+mesh, material, lights. A borrowed field would be the one thing on the page NOBODY COULD TAKE
+APART.** **A section whose method is *here is how this was made* would contain a piece nobody could
+account for.**
+
+⛔ **The silent argument: anyone can license a beautiful loop. The page that made its own is the
+page that did not need to.**
+
+## ⚠⚠ INFLUENCE IS NOT COPYING — Carl's correction, and the Builder had over-applied §10a
+
+**Carl:** *"There is a difference between copying and inspiration. Influence is a mark of respect."*
+
+⛔ **THE BUILDER TREATED REFERENCE MATERIAL AS IF LOOKING AT IT WERE THE HAZARD.** ⚠⚠ **§10a governs
+what goes ON THE SITE. It says nothing about what may be studied, and a rule that forbade influence
+would make craft impossible.**
+
+⚠ **What Carl supplied as reference:** chrome and glass forms moving through neon environments, and
+**an experimental 8K macro film of ink and metallic pigment — deep blue and gold, flowing,
+granular, no subject.** ⛔ **The second is the closer relative: it is the site's own two colours,
+found in a physical medium.**
+
+⚠ **And its gold behaves the way the filament reference already describes** — hot cores, granular
+bloom, falling off into the dark rather than stopping at an edge. **The kinship is real rather than
+a stretch.**
+
+## ⛔⛔ NO THREE.JS. "ORGANISE THE PIXELS" — Carl, and it resizes the problem
+
+> *"No need for three js. All you have to do is organise the pixels."*
+
+⚠⚠ **THIS IS A SIGNIFICANT NARROWING AND IT ARRIVED LAST.** ⛔ **The Builder had been assuming a
+3D scene — geometry, a camera, a light rig.** ⚠ **Carl's framing removes all of it: there is no
+object, so there is nothing to model, light or move a camera around.**
+
+⛔ **A FIELD IS A 2D PROBLEM.** ⚠ **The reference macro film is physical ink shot close-up; its
+digital equivalent is not a render of a scene — it is pixels organised over time.**
+
+⚠⚠ **CONSEQUENCES WORTH KNOWING BEFORE THE SESSION, NONE OF THEM DECIDED:**
+
+- ⛔ **It avoids the whole class of defect this project has spent months on** — WebGL contexts,
+  shader compilation stalls, canvas lifetime, the structural §5a questions. **A second WebGL
+  surface is exactly what CLAUDE.md §5a's two worked cases are about.**
+- ⚠ **Whether it is FOOTAGE (made once, encoded, played) or GENERATED IN THE BROWSER is open**, and
+  they have completely different costs. ⛔ **Footage inherits §9's compression warning — slow
+  gradients on dark are the worst case for banding, and this material is exactly that.** ⚠ **The
+  §9 note already says: TEST-ENCODE ONE CLIP BEFORE COMMITTING.**
+- ⚠ **"Organise the pixels" does not by itself say which.** ⛔ **Carl's, in the session.**
+
+## ⛔ WHAT IS SETTLED HERE, AND WHAT IS NOT
+
+**Settled:**
+
+- ⛔ **The TV is ON before anything is selected.** ⚠ **An empty or static screen is ruled out —
+  Carl: *"an empty screen is no good to anyone."***
+- ⛔⛔ **It is a FIFTH EXAMPLE in plain sight, and the four-cap is untouched.**
+- ⛔ **It is ABSTRACT — a field, no subject.**
+- ⛔⛔ **It is C2B'S OWN WORK. Royalty-free is ruled out, and §10a is broadened: the rule covers
+  what is on the site, not only what is labelled an example.**
+- ⛔ **No Three.js is required.**
+
+**Open, and Carl's:**
+
+1. ⚠ **The palette — the logo, the brand colours, or neither.** **Carl's own question.**
+2. ⚠ **Footage or generated in the browser.**
+3. ⚠ **Whether it loops, and whether a loop point is perceptible** — a field with no beginning or
+   end argues for imperceptible.
+4. ⚠ **What it does when a clip is playing, and when one ends.** ⛔ **The Builder proposed NO
+   AUTO-ADVANCE — four clips a visitor chose beats four that played at them — but section 3's
+   design is Carl's and this was not ruled on.**
+
+---
+
+## ⚠⚠ A NOTE ON HOW THIS PROPOSAL WAS REACHED — recorded because the correction is the useful part
+
+⛔ **The Builder's first proposal was PASTICHE and Carl named it:** *"Youve looked at the site and
+youve essentially copied whats there already. Have you come up with something new that follows the
+philosophy, ethos and the spirit? In musical terms like listening to the entire catalogue of
+Beethoven and then writing a new piece in his style."*
+
+⚠⚠ **THE FAILURE WAS RE-USING THE VOCABULARY INSTEAD OF COMPOSING IN IT** — the satin face, the
+filament border and the orbiting light reassembled into a new arrangement, which is quotation
+rather than style.
+
+⛔ **A SECOND ERROR, ALSO NAMED: the Builder framed the idle state as a choice between *scene* and
+*invitation*, and recommended restraint.** ⚠ **Carl: *"I have many VSTs in my DAW… Do you know what
+this gives me? Choice! Are TVs in showrooms static?"*** ⚠⚠ **RESTRAINT IS NOT HAVING FEWER OPTIONS —
+IT IS CHOOSING WELL FROM MANY.** ⛔ **Treating a large palette as a risk to guard against misreads
+both the site and how Carl works.**
+
 # ⛔ THE LOGO ON `/about`
 
 - ⛔ **Top left, occupying EXACTLY the same space as on every other route.** ⚠ **The rule is now
@@ -1806,6 +2004,17 @@ named a THIRD artefact for the client template — the
 STOREROOM, elements stripped to their mesh state in a separate repo — recorded in
 `references/workshop-template-and-client-delivery.md`, which previously held only the workshop and
 the shipped site.***
+
+*⛔⛔ **30 August 2026, fifth pass — C2B TV.** Carl asked the Builder to decide one thing: what is on
+the screen before an example is selected. ⚠⚠ **The answer is an ABSTRACT FIELD — c2b's own, blue
+and gold, no subject — and Carl ruled it a FIFTH EXAMPLE IN PLAIN SIGHT that never announces
+itself.** ⛔ **Royalty-free is refused, which BROADENS §10a: the rule covers what is on the site,
+not only what is labelled an example.** ⚠ **The showroom frame is the argument — modern showroom
+TVs show MATERIAL rather than content, and the subject is what the display can do.** ⛔ **No
+Three.js — *"all you have to do is organise the pixels."*** ⚠ **Two Builder failures are recorded
+with it: a first proposal that was PASTICHE (re-using the site's vocabulary rather than composing
+in it), and a false choice between restraint and invitation — *"restraint is not having fewer
+options, it is choosing well from many."*** ⛔ **IDEA STAGE; a dedicated session is scheduled.***
 
 *⚠ **The file is DEVELOPED by each pass, not corrected.** ⛔ **It is where the About thinking lives
 until Carl makes it a chunk; it is not itself a plan.***
