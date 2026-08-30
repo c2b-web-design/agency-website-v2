@@ -1,8 +1,8 @@
-# Session Handoff — 28 August 2026. The verify harness was repaired; the About section found its shape.
+# Session Handoff — 30 August 2026. The About section was discussed, not built. Seven commits, all record.
 
-⚠ **TWO BODIES OF WORK IN THIS SESSION.** The verify defects (§1–§5 below) are **finished and
-closed**. The About work is **live thinking that continues next session** — jump to *THE NEXT
-SESSION'S AGREED SUBJECT* if that is what you are here for.
+⛔⛔ **NO CODE CHANGED THIS SESSION. `app/` and `components/` WERE NOT TOUCHED.** Seven commits,
+every one of them `project-intelligence/`. ⚠ **This was a DISCUSSION session by Carl's design, and
+the next one starts building.**
 
 **Read this first, then `project-intelligence/` as normal.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -10,341 +10,224 @@ SESSION'S AGREED SUBJECT* if that is what you are here for.
 
 ---
 
-# ✔ CLOSED: THE ONE ITEM THAT WAS OWED — RUN ON A LIVE BUILD, 28 August 2026
-
-⛔ **NOTHING IS OWED FROM THIS SESSION.** `verify/reveal-stall.mjs` **was run** against a clean
-production build on :3100. **Every claim in this handoff now rests on observation.**
-
-**Result — exactly as predicted:**
-
-    ⚠ NO VERDICT DETECTED, and reveal-stall.mjs has no recorded red run.
-    PIPELINE EXIT: 3
-
-⛔ **THAT IS CORRECT, NOT A FAULT.** The script reports no verdict — it films. **Do not "fix" it
-back.** It filmed 1 run, reveal ran, text `"What brought you here today?"`.
-
-⚠ **THE WHOLE CHAIN WAS EXERCISED, NOT JUST THE ONE SCRIPT.** `reveal-stall-measure.mjs` was then
-run on that film and **behaved correctly as the measuring pass**: it reported a real
-`── DISTRIBUTION, 1 of 1 runs ──`, found the freeze (**200ms, bounded 200-240, at f268**), printed
-its blind-spot caveat, and exited **1** — passed through as `⛔ FAILURE — passed through
-unchanged`, because a red from an unproven instrument is never suppressed.
-
-⚠⚠ **AND THAT IS DEFECT 4 SHOWN CORRECTED FROM BOTH ENDS IN ONE RUN.** The script that FILMS now
-yields no verdict; the script that MEASURES produces the real one. **Before the fix it was exactly
-backwards** — the filming pass held the credential and returned `✓ VERDICT STANDS` for writing
-video, while the measuring pass had its verdict suppressed.
-
-**Build:** `iOsmvS1MD1SxA1PjrhCFd`, ANGLE / AMD Radeon, 1440x900, 25fps.
-**Films:** `verify/out/reveal-stall/2026-08-28T12-08-21/`.
-
-⚠⚠ **`TaskStop` REPORTED SUCCESS ON A HELD PORT AGAIN — FOURTH RECORDED INSTANCE.** The server
-survived it and :3100 was still listening. **Killed by PID (8508) via `Get-NetTCPConnection`, then
-re-checked.** ⛔ **Always verify the port is free by connecting to it; never trust the stop.**
-
----
-
-# ⛔⛔ THE PROVEN LIST IS 0. NO HARNESS PASS IS ADMISSIBLE
-
-⚠ **Read this before you trust any green from `verify/`.**
-
-`verify/proven.json`'s `proven` array is **empty**. Its single entry was demoted (D-064).
-
-- ⛔ **`verify/` cannot currently certify that anything is RIGHT.**
-- ✅ **It can still tell you something went RED** — reds always pass through unchanged, proven or
-  not. That is deliberate: *"an unproven instrument can still be right when it complains."*
-
-⚠ **THIS IS THE TRUE STATE MADE VISIBLE, NOT A REGRESSION.** It was already true in substance;
-the list merely disagreed. **Restore route: D-064** — two separate entries, `reveal-stall-measure.mjs`
-first, each earned against current HEAD. ⛔ **Do not re-file the old credential.**
-
----
-
-# WHAT LANDED — THREE COMMITS, ALL PUSHED TO `main`
-
-⚠⚠ **EVERY PUSH TO `main` DEPLOYS TO VERCEL.** All three touch `verify/` only, which has no import
-path into the app, so the deploys were no-ops. **That will not be true of the next chunk.**
-
-| commit | what |
-|---|---|
-| `a374aa2` | **defect 3** — a flag in `argv[2]` made `RUNS` NaN |
-| `301b605` | **defects 1 and 2** — a prose ⛔ read as a product failure |
-| `843eee4` | **defect 4** + **D-064** — the credential described the wrong script |
-
-## Defect 3 — the symptom was understated in the 27 August writeup
-
-`Number(process.argv[2] ?? 3)`. Invoked as `one-context.mjs --falsify`, `argv[2]` was the *string*
-`"--falsify"`, so `??` never reached the default.
-
-⛔ **NaN DID NOT PRODUCE A BAD NUMBER — IT PRODUCED A SILENT NO-OP.** `1 <= NaN` is false, so the
-loop never ran. **No browser, no page, nothing measured.** It then reached **both** verdicts:
-
-- **falsify mode** → exit 1. ⛔ **A RED — the exact artefact a `proven.json` entry is filed from.**
-- **normal mode** → fell through to the line-leading `✅` and exit 0. ⛔ **A GREEN**, masked only
-  by the script being unproven. ⚠ **Fixing the parse without the guard would have ARMED it.**
-
-**Fixed in `verify/lib/args.mjs` (new, shared).** ⚠ **`0` is not `NaN`** — the predicate is
-*whole number ≥ 1*, not `Number.isNaN`. **Applied to the 3 acute files; 30 latent ones are fixed
-as each is next touched.**
-
-## Defects 1 and 2 — and what was deliberately NOT done
-
-**`FAIL_MARK` matched any line-leading ⛔ *even on exit 0*.** ⚠⚠ **COMPLYING WITH
-`context-rules.md` — declare your blind spots IN THE OUTPUT — IS WHAT TRIPPED IT.**
-
-- **Defect 1 → `"disagree"`, a fourth outcome, exit 4.** Suppresses the pass **without
-  manufacturing a red.** Checked *before* the proven/unproven split.
-- **A `##VERDICT: PASS|FAIL|NONE` sentinel** was added. When present the markers are not consulted
-  at all. ⚠ **DEFINED BUT UNEMITTED — untested in a real run.**
-- ⛔ **Defect 2 was NOT fixed, and that is a ruling.** 38 harnesses print `✅` only mid-line and
-  report `NO VERDICT` (exit 3) — **the fail-closed direction.** Loosening `PASS_MARK` was rejected
-  on recorded evidence: an earlier looser pattern read a passing fixture as failed on the word
-  *"drift"*. **Sentinel adoption rides on admission, not a 131-file sweep.**
-
----
-
-# ⚠⚠ THE MOST TRANSFERABLE THING THIS SESSION — DEFECT 1 RECURRED THREE TIMES, INSIDE ITS OWN FIX
-
-**Writing the replacement message for `reveal-stall.mjs` tripped the very defect being fixed.**
-
-| attempt | what happened |
-|---|---|
-| the brief's wording | wrapped so **`fail` began a line** → `FAIL_MARK` matched → **`disagree`** |
-| my first rewrap | put **`PASS` at a line start** → `PASS_MARK` matched → ⛔ **`pass`, a FALSE GREEN — worse** |
-| final | no verdict word begins any line; **the file says so in its own text** |
-
-⛔ **WHILE VERDICTS ARE INFERRED FROM PROSE, WRITING ENGLISH NEAR A HARNESS IS A HAZARD.**
-⚠ **This is the strongest argument for the sentinel.** The honest declaration for that script is
-**`##VERDICT: NONE`** — a one-line follow-up, `reveal-stall.mjs` is unprotected.
-
-⚠ **AND IT IS WHY THE BRIEF'S PREDICTED RESULT WAS WRONG.** The Architect's brief said the new
-text would yield `NO VERDICT DETECTED`. **As written it did not.** ⛔ **Verify a predicted verdict
-by running the real `classify()` against the real output — do not trust the prediction.**
-
----
-
-# ⚠ CORRECTIONS MADE TO THE RECORD
-
-- ⛔ **Defect 3 was NOT a `run.mjs` defect.** Both the 27 August handoff and its writeup filed it
-  there. The cause was `one-context.mjs:97`, **which is not protected** — so it needed **no unlock
-  at all.** `verify-runner-defects-27-august.md` now carries a correction header.
-- ⚠ **The 27 August writeup called defect 3 a cosmetic `NaN`.** It was a silent no-op reaching
-  both verdicts. Corrected in the same header.
-
----
-
-# ⚠ ENVIRONMENT — NEW TRAPS FOUND THIS SESSION
-
-- ⚠⚠ **`Edit`/`Write` CONVERT FILES TO CRLF.** `one-context.mjs` and `card-position.mjs` were
-  flipped whole-file. ⛔ **`core.autocrlf=true` normalised it on staging so nothing bad was
-  committed — but that is a CONFIG SETTING, not a check.** Verify staged blobs with
-  `git cat-file blob $(git rev-parse :path)` before committing.
-- ⚠⚠ **NOT EVERY `.md` HERE IS CRLF.** The 27 August handoff said "every `.md` is CRLF".
-  **`verify-runner-defects-27-august.md` is LF.** ⛔ **Check each file individually.**
-- ⚠ **The front-door hook blocks `node --check verify/*.mjs`** — it pattern-matches the text, not
-  the intent, so there is **no clean way to syntax-check a harness.** It also fires on a `grep`
-  whose *pattern string* contains `node verify/...`. **Do not route around it.**
-- ⚠⚠ **`TaskStop` REPORTS SUCCESS ON A HELD PORT — FOURTH RECORDED INSTANCE, 28 August.**
-  The server survived it and :3100 was still listening. ⛔ **Kill by PID** (`Get-NetTCPConnection
-  -LocalPort 3100`) **and re-check by connecting.** Never trust the stop.
-- ⚠ **`chunk-scope.json` narrowing is real and bites.** With a `files` array set, writing a test
-  fixture into `verify/` was **denied** — which is the mechanism working.
-
----
-
-# STILL OPEN — CARRIED, NOT ADDRESSED THIS SESSION
-
-- ⛔ **D-048's PROPAGATION HALF — five recorded instances, still no holder.**
-- **`components/enquiry-opening.md`** — reads as current, stops at **D-033**; the whole
-  D-046 → D-056 layer is absent, with **two contradicting "Known Issues" sections.**
-- **The 758ms attribution** — contested in `decisions.md` (D-046, D-048) and `current-sprint.md`,
-  adjudicated in neither. ⚠ **The dispute is about the MECHANISM, not the magnitude.**
-- **`ai-roles.md:448`** — footer still reads `Last updated: 2026-08-13`.
-- ⚠ **`live-work-protocol.md` §3b does not name `evidence/`.**
-- ⚠ **The `<img>` lint warning — THREE instances, one per mark.** The `next/image` conversation is
-  still not had. **D-060 left it open deliberately.**
-- **Three unexamined Codex artefacts:** four PNGs at `~/.codex/generated_images/019fb2e1-…`;
-  `Documents\Codex` (66,526 files); `codex-pasted-text-archive` + `memories_1.sqlite`.
-
----
-
-# ⛔ THE NEXT SESSION'S AGREED SUBJECT — SET BY CARL, 28 August 2026
-
-**Carl at session end, verbatim:** *"Next session. Further discussion on the About section and
-create the space to implement it. By that i mean making the about link in the landing page Header
-hot and creating the page and possibly fill it with placeholders or some dedicated content."*
-
-**So the next session has TWO halves, in this order:**
-
-1. ⛔ **DISCUSSION FIRST.** Further work on `live-work/about-section-thinking.md` — it is idea
-   stage, and Carl has said it becomes actionable only after discussion and refinement.
-2. **THEN "CREATE THE SPACE TO IMPLEMENT IT"** — Carl's phrase, and he defined it himself:
-   - **make the About link in the landing page header HOT** (`href="#"` → `/about`)
-   - **create the page**
-   - **possibly fill it with placeholders or some dedicated content**
-
-⚠⚠ **"CREATE THE SPACE" IS SCAFFOLDING, NOT THE SECTION.** ⛔ **Do not read it as authorisation to
-build the About content itself** — the argument, the examples, the clips, the variant. **That is
-what the discussion in half one is for**, and the principles in `about-section-thinking.md` are
-explicitly *"not decided"*.
-
-## ⛔⛔ CARL'S FRAMING — THE LANDING PAGE IS THE STANDARD, AND IT IS ITSELF SCAFFOLDING
-
-**Carl, 28 August, and this is what "set up" means:**
-
-> *"The landing page can be seen as scaffolding and placeholders... the text wording will be
-> edited, refined and focused... For now, it is serving its purpose. We will come to it soon. In
-> the meantime, we must 'set up' the about page in the same manner... Its the same principles i
-> use when producing music in a DAW. Lets get the bare bones in there and then zero in and focus
-> at the right time."*
-
-⛔ **THE STANDARD TO HIT IS THE LANDING PAGE'S *CURRENT* STATE — bare bones that convey position —
-NOT its finished state, which does not exist either.** ⚠ **The landing page copy is itself
-provisional and Carl says so: *"better language is required."*** ⛔ **KNOWN, ACCEPTED, DEFERRED —
-do not fix it while passing, and `app/page.tsx` is protected anyway.**
-
-⚠⚠ **THIS RESOLVES THE TWO-REGISTERS TENSION FOR NOW: it is a MASTERING problem, and this is
-TRACKING.** ⛔ **None of Parts one to three has to be settled to put the bare bones in.**
-
-⚠⚠ **THE RISK IS OVER-BUILDING, NOT UNDER-BUILDING.** `about-section-thinking.md` is persuasive
-and a Builder who reads it will be tempted to implement the argument. ⛔ **The test: would this
-survive being thrown away when the section is developed?** Scaffolding should. ⚠ **But "bare
-bones" is NOT lorem ipsum either** — the landing page's placeholders *convey positions and ideas*,
-and that is the bar.
-
-⚠ **PLACEHOLDERS ARE EXPLICITLY IN SCOPE, and Carl's 27 August reasoning for them stands:**
-*"That would mean all the landing page header subjects have functionality and meaning."* ⛔ **The
-point of this half is that no header link is dead — not that the page is finished.**
-
-## ⛔⛔ WHAT CARL SETTLED ON 28 AUGUST — three rulings, all in `about-section-thinking.md`
-
-⚠ **The discussion half has already made real progress. Do not reopen these.**
-
-### 1. ⛔ EVERY EXAMPLE IS OUR OWN WORK (§10a)
-
-*"I discounted using content online. 1. Its not our work. 2. There could be a minefield when it
-comes to copyright."*
-
-⚠⚠ **THE ORDER IS LOAD-BEARING. "It's not our work" outranks copyright** — reduced to a legal
-precaution it looks solvable by finding a permissive licence, **and it is not.** A borrowed example
-is evidence of taste in **selection**; the thing being sold is judgement in **construction**.
-
-⚠ **It admits TWO routes: examples already on the site, AND examples built separately to be
-recorded.** ⛔ **The second collides with §7 (only show what you'd build and maintain), which
-survives — a purpose-built demo is still a promise. Unresolved, and Carl's.**
-
-### 2. ⛔⛔ THE CENTRAL TENSION — and its RESOLUTION. THE BIGGEST THING SETTLED
-
-**The problem:** clients need plain-language explanation *("they may lack the skills to know what
-they want or to articulate it")*, **but a lexicon of design elements on the site dissolves c2b's
-style and ethos.**
-
-**Carl's resolution — a SORTING RULE, not a ratio:**
-
-> **In the c2b ethos → the site.  Not in the ethos → a video example for clients.**
-
-⚠⚠ **IT DISSOLVES THE TENSION RATHER THAN SPLITTING IT.** The lexicon risk was always about **what
-the SITE becomes**, not about whether clients are educated. **Two channels: the client's need is
-met in full and the identity risk goes to zero, because they are met in different places.**
-
-⛔ **THE JUDGEMENT IS CARL'S AND IS NOT DELEGATED** — *"something i DEEM to be in the c2b ethos."*
-⚠⚠ **NO CHECKLIST SUBSTITUTES FOR IT. A Builder who invents one has replaced the ethos with a
-rule.** **When it is unclear which channel something belongs in, ASK.**
-
-### 3. ⛔ THE SECTION IS EDUCATION, A SALES PITCH AND A PHILOSOPHY — AT ONCE
-
-*"things can have multiple meanings and uses."* ⛔ **Do not collapse it into one stated purpose.**
-⚠ **Several sections of the thinking file were written as though one reading must win; they are
-simultaneous, not competing** — which is why the process rule keeps being reached from different
-directions.
-
----
-
-## ⚠⚠ HOW TO WRITE IN THAT FILE — Carl's instruction, 28 August
-
-⛔ **"DEVELOPED", NOT "CORRECTED".** Carl: *"i would not say that you corrected a file as you may
-have done. i would cite it as you have developed a file."*
-
-⚠ **A later pass sharpening an earlier one is the file WORKING, not the earlier pass having been
-wrong.** ⛔ **"Corrected" imports a fault that did not occur, and at idea stage it makes every entry
-read as provisionally MISTAKEN rather than provisionally EARLY.** **Same logic as the DAW model: a
-take is not wrong for being overtaken.**
-
-## ⛔ WHAT THE PLAN MUST NAME BEFORE ANY OF IT IS BUILT
-
-⚠⚠ **THIS IS THE HALF THAT NEEDS AN UNLOCK, AND IT IS ONE LINE OF CODE.**
+# ⛔⛔ WHAT THE NEXT SESSION DOES — CARL'S INSTRUCTION, VERBATIM
+
+> *"the next session. i will ask you for a prompt for the CA and to write a Plan. The prompt should
+> cover what we are trying to achieve, basically a synopsis of this discussion. The Plan is self
+> evident. CA is to review and evaluate the plan with any suggestions it may have. I will review the
+> findings along with CB and we will proceed with construction."*
+
+**FOUR STEPS, IN ORDER:**
+
+1. ⛔ **WRITE A PROMPT FOR CA** — a synopsis of this discussion: what we are trying to achieve.
+   ⚠ **Carl asks for it; do not pre-empt it.**
+2. ⛔ **WRITE THE PLAN** — Plan Mode, per `handoff-protocol.md` §2.5.
+3. ⛔ **CA REVIEWS AND EVALUATES**, with any suggestions. ⚠ **Invocation is FILE-BASED — Codex is
+   retired and the `codex` MCP server DOES NOT EXIST. Do not attempt to call it.**
+4. ⛔ **CARL REVIEWS THE FINDINGS WITH CB, THEN CONSTRUCTION PROCEEDS.**
+
+⚠⚠ **THE SCOPE OF THE BUILD IS THE SCAFFOLDING, NOT THE SECTION.** ⛔ **Everything below in
+*THE THINKING* is DEVELOPMENT-PASS material — what the section eventually argues. The build is:
+the header link made hot, the page created, bare bones that convey position.**
+
+## ⛔ WHAT THE PLAN MUST NAME
 
 | item | path | standing |
 |---|---|---|
-| the page | **`app/about/page.tsx`** | **free** — the route does not exist |
-| the hot link | ⛔ **`components/layout/site-header.tsx`** | **PROTECTED** — needs Carl to name this exact path under `"unlocked"` |
+| the page | **`app/about/page.tsx`** | **FREE** — the route does not exist |
+| the hot link | ⛔ **`components/layout/site-header.tsx`** | **PROTECTED** — needs Carl to name this exact path under `"unlocked"` in `live-work/chunk-scope.json` |
 
-⛔ **Carl's standing expectation: protected files are named IN THE PLAN, not discovered
-mid-build.** The plan goes through **Plan Mode**, then the **plan-review gate**
-(`handoff-protocol.md` §2.5) — Architect reviews and amends, Carl approves — and only then is it
-executed.
+⛔ **NO UNLOCK IS LIVE. `chunk-scope.json` is ABSENT** — verified at session end.
 
-⚠⚠ **AND THE STRUCTURAL QUESTION IS LIVE THIS TIME.** ⛔ **`/start` did NOT use `SiteHeader` — that
-is why the logo work touched no protected path.** An `/about` page is a **new route that will
-almost certainly render the header**, so **how the header is shared across routes is a structural
-decision** under CLAUDE.md §5a. ⛔ **STOP AND WRITE IT UP RATHER THAN DECIDING IT WHILE
-IMPLEMENTING.**
+### ⚠⚠ AND ONE THING THE SCAFFOLDING MUST **NOT** DO
 
-⚠ **AND ENUMERATE WHAT DEPENDS ON THE HEADER BEFORE CHANGING IT** (§5b). The landing page is
-approved work. **Two worked cases on 14 August: moving a node changed paint order and made five
-cards unclickable, and gave a component an unbounded lifetime.** Neither was predicted; both came
-from behaviour provided *by accident of where a node sat.*
+⛔⛔ **DO NOT SETTLE THE HEADER QUESTION BY RENDERING `SiteHeader` ON `/about` AS A CONVENIENCE.**
 
----
+⚠ **Carl has DEFERRED whether the header goes on all routes** — he is weighing it against **a font
+decision and context not yet shared with the Builder.** ⛔ **Site headers are the NEXT body of work
+after this scaffolding.**
 
-## ⚠ THE GENERAL RULE THIS SITS UNDER — unchanged
+⚠⚠ **Making the link hot and giving `/about` a header are TWO DIFFERENT JOBS. Only the first is in
+scope.** ⛔ **Deciding the second while implementing the first is exactly CLAUDE.md §5a.**
 
-⚠⚠ **"NO CHUNK IS AUTHORISED" IS THE PERMANENT ARRANGEMENT AND DID NOT LIFT WITH THE PAUSE.**
-⛔ **Carl naming the next SUBJECT is not the same as authorising a CHUNK.** He authorises it, and
-the Builder goes through Plan Mode and the review gate first.
-
-⛔⛔ **ALL THE THINKING NOW LIVES IN `live-work/about-section-thinking.md`.** Carl's 27 August
-brainstorm **plus** his 28 August research pass — the process-not-features rule, the standing
-ethos test, the scene-not-the-part finding, the variant principle, the salmon-is-selection
-constraint, what was rejected and why, and three open questions.
-
-⚠⚠ **IT IS IDEA STAGE AND AUTHORISES NOTHING.** ⛔ **Read it before discussing `/about`; do not
-build from it.**
-
-⚠ **WHY A SEPARATE FILE: the 27 August brainstorm lived ONLY in that day's handoff, which was
-replaced on 28 August under the single-use rule.** It survived only because it was recovered from
-commit `7b313e1`. ⛔ **A handoff is the wrong home for durable thinking.**
-
-**The gate is unchanged:**
-
-- **`app/about/page.tsx` — EDITABLE.** The route does not exist; creating it touches nothing.
-- ⛔ **`components/layout/site-header.tsx` — PROTECTED.** Changing `href="#"` → `/about` needs
-  Carl to name that exact path under `"unlocked"` in `live-work/chunk-scope.json`.
-- **A two-part job with a gate in the middle.**
+⚠ **AND THE STRUCTURAL QUESTION IS REAL, with evidence the last handoff did not carry:**
+`app/start/page.tsx:134` holds a standing instruction — ⛔ **"DO NOT REINTRODUCE `SiteHeader` ON
+THIS PAGE"** — with a measured cost: nav links, a "Web Design" span, and **an 81px band that pushed
+the questions and answers down (document to 981px). See D-062.** **The header's absence from
+`/start` is a recorded design ruling, not an accident of routing.**
 
 ---
 
-## STATE AT SESSION END
+# ⛔ D-065 — DRAFTED, REDRAFTED, AND APPROVED AS A STANDARD
 
-- **Working tree clean. `main` = `fe585f5`** *(verify work ended at `843eee4`; the commits after it
-  are the record and the About thinking — **no code changed after `843eee4`**).* **Fully pushed.**
-- **Lint: 1 error, 4 warnings — the known baseline, unchanged.** `tsc --noEmit` clean.
-- ⛔ **NO UNLOCK IS LIVE.** `chunk-scope.json` deleted; **both locks re-verified by observing a
-  REAL DENIAL**, not by assumption.
-- **Nothing running on :3100** — verified by connecting, after `TaskStop` failed to release it.
-- ⛔ **NOTHING IS OWED.** Every claim in this handoff rests on observation.
+**The rule, and it is site-wide:** ⛔⛔ **NO MOVEMENT, ONLY CHANGE.** The mark occupies the same
+point on every route; colour may change, position may not.
+
+- ⛔ **The STANDARD is APPROVED.**
+- ⛔ **The `/about` insertion is APPROVED ON DELIVERY** — Carl: *"If, and excuse the pun, you are
+  given instructions to nail the about logo and you do, then approved. By what method? Thats your
+  domain, i care about outcome."*
+- ⚠⚠ **HOW THE APPROVAL IS DISCHARGED: the Builder MEASURES `/about` against the approved routes
+  and reports the figures ALONGSIDE the visual evidence, as part of the scaffolding chunk's
+  delivery — not as a later step.** ⛔ **That is what makes it checkable rather than the Builder's
+  word (Rule 9).**
+- ⛔ **On `/about` the mark is GOLD and PROVISIONAL** — Carl: *"it may not stay that way."*
+  ⚠ **PROVISIONAL is a defined status: in place, deliberately untuned, awaiting the mastering pass
+  (D-035). Not a gap; do not raise a missing approval for it.**
+
+⚠⚠ **CLAUSE 4 WAS REDRAFTED, AND THE REASON MATTERS.** ⛔ **It originally required a new route to
+*"hang from the nail"* — a MECHANISM.** ⚠ **That was wrong twice: it is not what Carl rules on, and
+it mis-describes the landing page, which reaches the same point through `SiteHeader`'s flow layout.**
+⛔⛔ **As drafted it would have obliged the header work to make the nail SHARED — a structural
+decision smuggled in through a decision entry.**
+
+## ⛔ THE INVARIANT IS UNASSERTED, AND THE STAKES WENT UP
+
+⚠ **Two routes reach the same point by two different mechanisms** — the landing page in flow inside
+`SiteHeader`, `/start` absolutely positioned out of flow — **and they agree because both resolve
+through `Container`, NOT because they share code.**
+
+⛔⛔ **AN INVARIANT HELD BY THE COINCIDENCE OF TWO IMPLEMENTATIONS** — the failure mode
+`context-rules.md` names. **Nothing detects the day a third route misses by 2px.**
+
+⚠⚠ **AND CARL WIDENED IT TO A CLIENT-FACING CAPABILITY:** *"Think beyond our site to a clients who
+will possibly have a logo… What if a client wants the same immobility?"* ⛔ **As a c2b rule,
+unasserted means we would notice eventually. As something a client BUYS, the assertion is what makes
+the claim safe to make (§7).** ⚠ **The harness is owed when the header work lands.**
 
 ---
 
-*28 August 2026. **Four defects fixed across three commits. The harness that guards every other
-harness was itself reaching both verdicts from zero measurement — and the fix for it tripped the
-defect it was fixing, twice, before it was written correctly.***
+# ⛔⛔ THE THINKING — ALL OF IT IS IN `live-work/about-section-thinking.md`
 
-*⚠ **Then the About section, across four passes: the DAW framing that says set it up rather than
-write it; the ruling that every example is our own work; the central tension between the client's
-need for plain language and the lexicon that would dissolve the ethos; and Carl's resolution of
-it — the ethos as a sorting rule across two channels, so neither end is sacrificed.***
+⚠⚠ **THAT FILE GREW FROM 759 TO 2,020 LINES TODAY, ACROSS FIVE PASSES.** ⛔ **Read it before the
+next session. It is IDEA STAGE and authorises nothing.**
 
-*⛔ **NEXT SESSION: further discussion on the About section, then create the space to implement
-it — the header link made hot, the page created, placeholders acceptable.** Carl, 28 August.
-⚠ **Read `live-work/about-section-thinking.md` first. Discussion comes before scaffolding, and
-scaffolding is not the section.***
+⚠ **The `NEEDS WRITING DOWN` list went from SEVEN items to TWELVE.** ⛔ **Five added today, and all
+five are the kind that erode quietly rather than break loudly.**
+
+## The rulings, compressed — full reasoning in the file
+
+| | ruling |
+|---|---|
+| **AI** | ⛔ **Raised on the page and CHAMPIONED, not defended.** ⚠ **The register is the ruling.** |
+| | **Frame is COLLABORATION**, not tool use |
+| | **The objection is granted and RELOCATED** — the slop is the vendor default working as sold |
+| | **The site is the proof** |
+| | ⛔⛔ **NO CONDESCENSION toward other agencies, in any form** |
+| **Founder** | **The work speaks first; personability belongs to CONTACT** |
+| | ⛔⛔ **FIRST PERSON. "I", never the third** — *"as if someone else or AI wrote it"* |
+| | **The human is a seat in the team, in a small way** |
+| **Seats** | ⛔⛔ **Described IN PRINCIPLE, never by roster** — *"a team with defined roles, and each member knows what they need to know"* |
+| **Structure** | **Four sections mirroring the landing page** — founder+process, roles, video examples, TBD |
+| | ⛔ **The four examples BUILD ON sections 1 and 2** |
+| **C2B TV** | ⛔⛔ **The idle screen is a FIFTH EXAMPLE in plain sight.** Abstract field, c2b's own, no Three.js |
+
+## ⚠⚠ THREE CORRECTIONS CARL MADE TO THE BUILDER — recorded because they generalise
+
+1. ⛔ **"The seats are separated" was FALSE.** CA and CB share the repo; CS can be given access at
+   Carl's discretion. ⚠ **The Builder inferred an INFORMATION boundary from a PRODUCT boundary** —
+   the same shape as the harness failures on record. **The real principle is *each knows what it
+   needs to know*, and it is stronger: a property of the DESIGN, not the architecture.**
+2. ⛔ **The first C2B TV proposal was PASTICHE** — the site's own vocabulary reassembled. Carl:
+   *"like listening to the entire catalogue of Beethoven and then writing a new piece in his
+   style."* ⚠ **Re-using the vocabulary is quotation, not style.**
+3. ⛔ **A false choice between restraint and invitation.** Carl: *"I have many VSTs in my DAW… Do
+   you know what this gives me? Choice!"* ⚠⚠ **RESTRAINT IS NOT HAVING FEWER OPTIONS — IT IS
+   CHOOSING WELL FROM MANY.** ⛔ **Treating a large palette as a risk misreads both the site and how
+   Carl works.**
+
+---
+
+# ⛔⛔ A STANDING INSTRUCTION FOR ALL DEVELOPMENT FILES — Carl, 30 August
+
+> *"In these development files you may come across things i propose that change, contradict or add
+> to that file. This too should not be a problem but an opportunity for you to ask for
+> clarification. By their very nature an idea is being developed. Change is to be expected, but we
+> should also do this with a degree of accuracy."*
+
+⚠⚠ **THE FAILURE MODE IS NOT SILENCE — IT IS RESOLVING A CONTRADICTION IN THE WRITE-UP WHILE
+MARKING IT TENTATIVE.** ⛔ **It still lands as a settled-looking sentence, and the next reader
+inherits the Builder's inference instead of Carl's ruling.**
+
+**The procedure: name what the file says, name what Carl said, ASK. Record the resolution as HIS.**
+⚠ **Where it cannot wait, write an OPEN CONTRADICTION — both positions, neither picked.**
+
+⛔ **Worked case, the same day: section 3 versus the sorting rule was asked about AND THEN
+half-answered as *"a refinement rather than a conflict."* That was the Builder's reading. It is
+withdrawn as a resolution and now stands as an open question.**
+
+## ⚠ THE OPEN QUESTION IT PRODUCED — Carl's to settle
+
+⛔ **Does section 3's existence REFINE the sorting rule, or does the rule stand and the four
+examples all pass the ethos test on their own?** ⚠ **They lead to different pages.** ⛔ **Not
+blocking the scaffolding.**
+
+---
+
+# ⚠ OTHER RECORDS TOUCHED
+
+- ⛔ **`decisions.md`** — **D-065** added and redrafted. **3,257 lines.**
+- ⛔ **`references/workshop-template-and-client-delivery.md`** — **THE STOREROOM**, a third artefact
+  the record did not have: elements stripped to their MESH STATE in a separate repo, called upon by
+  a workshop. ⚠⚠ **THAT FILE IS LF, NOT CRLF — check each file individually.**
+  ⛔ **Recorded as DEVELOPMENT, not correction, on Carl's instruction: the 30 July record was not
+  incomplete, it was EARLY.**
+- ⚠ **`ai-roles.md` STILL DOES NOT MENTION CS OR CD.** ⛔ **Known gap, deliberately not fixed** —
+  Carl has flagged a dedicated CD conversation which will change what gets written.
+
+---
+
+# ⚠ ENVIRONMENT NOTES FROM THIS SESSION
+
+- ⚠⚠ **HEREDOCS WITH APOSTROPHES IN QUOTED PROSE BREAK `bash -c`.** ⛔ **Use the `Write` tool for
+  large prose blocks, then splice with `head`/`tail`/`cat`.**
+- ⚠ **`sed 's/$/\r/'` DID NOT CONVERT LF→CRLF reliably here.** ⛔ **`perl -pe 's/(?<!\r)\n$/\r\n/'`
+  works.** ⚠ **Always re-check with `tr -cd '\r' | wc -c` against the line count.**
+- ⚠ **`grep -P` IS UNAVAILABLE** (*"-P supports only unibyte and UTF-8 locales"*) — ⛔ **a NUL check
+  written with it silently falls through to the `||` branch and reports CLEAN.** **Use
+  `tr -cd '\000' | wc -c`.**
+- ⚠ **`awk` strips `\r` before pattern tests here**, so `!/\r$/` reports every line as LF-only.
+  **Do not use it to detect line endings.**
+- ⚠ **`core.autocrlf` normalises CRLF→LF on staging** — staged blobs show 0 CR. **Expected, not a
+  fault. Verify with `git cat-file blob :path`.**
+
+---
+
+# STATE AT SESSION END
+
+- **Working tree clean. `main` = `25c6ca2`. Fully pushed.**
+- ⛔ **NO CODE CHANGED. `app/` and `components/` untouched — no lint or `tsc` run needed, and none
+  was run.** ⚠ **The known baseline is unchanged because nothing could have changed it.**
+- ⛔ **NO UNLOCK IS LIVE** — `chunk-scope.json` absent, verified.
+- **Nothing running on :3100** — verified by `netstat`.
+- ⚠ **Every push to `main` deploys to Vercel. All seven commits touched `project-intelligence/`
+  only, so all seven were no-op deploys.** ⛔⛔ **THAT WILL NOT BE TRUE OF THE NEXT CHUNK.**
+
+## The seven commits
+
+| commit | what |
+|---|---|
+| `b4397ce` | the AI pass — championed, not defended |
+| `e32d0d7` | the human founder — first person, a seat in the team |
+| `fb63a0e` | the seats — one sentence, not the roster |
+| `1b7f791` | the structure — four sections, and the mark does not move |
+| `fb403eb` | D-065 approved as a standard; the storeroom |
+| `d4c8c7b` | ask, do not reconcile; the logo is not an example |
+| `25c6ca2` | C2B TV — the fifth example, in plain sight |
+
+---
+
+*30 August 2026. **A full session of discussion and no code — by design.** The About section
+acquired its position, its register, its voice and its structure: AI championed rather than
+defended, the founder in the first person, the set-up described in principle rather than by roster,
+four sections mirroring the landing page, and an idle screen that is a fifth example nobody
+counts.*
+
+*⚠ **D-065 was drafted, redrafted on Carl's outcome ruling, and approved as a standard** — the mark
+does not move, site-wide, and it is now a capability a client can buy rather than only a c2b rule.
+**Its assertion is owed.***
+
+*⛔ **NEXT SESSION: a prompt for CA, then the Plan, then CA's review, then Carl and CB proceed to
+construction.** ⚠ **The build is the SCAFFOLDING — link hot, page created, bare bones. It is not
+the section, and `about-section-thinking.md` is the most persuasive material in the repo for
+talking a Builder into building more than was asked.***
