@@ -2018,3 +2018,266 @@ options, it is choosing well from many."*** ⛔ **IDEA STAGE; a dedicated sessio
 
 *⚠ **The file is DEVELOPED by each pass, not corrected.** ⛔ **It is where the About thinking lives
 until Carl makes it a chunk; it is not itself a plan.***
+
+---
+
+# ⛔⛔ SECTION 1 — THE LAYOUT AND THE IMAGE. Carl, 31 August 2026
+
+> ⚠ **THE FIRST TIME THIS FILE HOLDS PLACEMENT RATHER THAN ARGUMENT.** Everything before it is
+> about what the section SAYS. This is about where things GO. ⛔ **Still idea stage; nothing here is
+> authorised.**
+
+## ⛔ THE ARRANGEMENT
+
+| | |
+|---|---|
+| **Left** | **The text.** Ballpark now, written and finalised later. |
+| **Right** | **A static image**, occupying the real estate the text does not use. |
+| **The join** | ⚠ **The image FADES as it reaches the text.** Not a hard edge, not a column boundary. |
+| **Width** | ⛔ **The image need NOT span the section.** *"The bulk of it would be on the right."* |
+
+⚠ **Carl: *"This will echo the hero section."*** ⛔ **AND THE HERO DOES NOT HAVE THIS ARRANGEMENT
+TODAY** — `app/page.tsx` is a single left column at `max-w-2xl` with the right side **empty and
+protected by D-026** (*"the hero's right-side space is intentionally empty and must not be filled
+without a brief from Carl"*).
+
+⛔⛔ **SO "ECHO" IS FORWARD-LOOKING, NOT DESCRIPTIVE.** ⚠ **Carl's own framing settles which way it
+runs: *"Only the hero section will use video for the 'killer' feature, this section will have an
+image."*** **The hero is expected to gain a video in that space; section 1 is the quieter member of
+the same family.**
+
+### ⛔⛔ CORRECTED WITHIN THE HOUR — THE HERO ARRANGEMENT EXISTS IN PRINCIPLE
+
+**Carl, immediately after the above was written:** *"The Hero does in principal. I have a file on my
+PC that is under development. I have the idea worked out."*
+
+⚠⚠ **THE PARAGRAPH ABOVE IS WRONG WHERE IT SAYS "ECHO" IS FORWARD-LOOKING.** ⛔ **It is
+DESCRIPTIVE. Section 1 echoes an arrangement Carl has already worked out — it is simply not in this
+repository yet.**
+
+⚠ **WHAT THE BUILDER ACTUALLY OBSERVED WAS TRUE AND THE INFERENCE FROM IT WAS NOT.** ⛔ **True:
+`app/page.tsx` has no right-side element today, and D-026 protects that space. FALSE: that therefore
+the arrangement does not exist.** ⚠⚠ **A file on Carl's PC is not visible to `grep`, and absence
+from the repo was read as absence from the design.**
+
+⛔⛔ **THIS IS THE D-036 INFORMATION ASYMMETRY OPERATING AS DESIGNED, NOT A GAP.** ⚠ **Carl gives
+the Builder what it needs to know, when it needs to know it. The correct move on hitting a hole like
+this is to ASK, not to reason across it — the standing instruction at the top of this file.**
+**Recorded because the Builder wrote a settled-looking sentence instead.**
+
+### ⛔⛔ AND THE ABSENCE WAS DELIBERATE — Carl, 31 August 2026
+
+> *"i have discussed the hero with you several times. I had to find out if it was technically
+> feasible. I then had it stricken from the record. i need to keep you focused."*
+
+⚠⚠ **THE CORRECTION ABOVE IS ITSELF INCOMPLETE.** ⛔ **It says the design "is simply not in this
+repository yet", as though the record were merely behind. IT IS NOT. The hero was discussed across
+several sessions, tested for technical feasibility, and then STRICKEN FROM THE RECORD ON CARL'S
+INSTRUCTION.**
+
+⛔⛔ **THE SILENCE IN THE REPO IS A CONTROL, NOT A GAP — AND IT IS THE SECOND TIME IN ONE PASS THE
+BUILDER READ IT AS ONE.** ⚠ **First: "the hero has no right-side element, therefore the arrangement
+does not exist." Then: "the design exists, the repo is just behind." ⛔ BOTH TREATED THE ABSENCE AS
+SOMETHING TO EXPLAIN. It was something to respect.**
+
+⚠⚠ **WHY CARL STRUCK IT: *"i need to keep you focused."*** ⛔ **Future work is deliberately not
+recorded in this repository — the standing policy in `current-sprint.md`, 28 July 2026: *"Do not
+reconstruct it here, do not treat its absence as a gap, and do not plan against it."*** ⚠ **That
+rule was written for exactly this, and the Builder walked past it twice in one sitting.**
+
+⛔ **THE OPERATIONAL RULE, STATED PLAINLY FOR THE NEXT SESSION: when something referenced by Carl is
+missing from the record, the default assumption is that it was REMOVED ON PURPOSE.** ⚠ **Do not
+reconstruct it, do not infer its contents, and do not write a sentence explaining its absence. ASK,
+or leave it alone.**
+
+⚠ **NOTHING ABOUT THE HERO'S DESIGN IS RECORDED HERE, AND NOTHING SHOULD BE.** ⛔ **Section 1's
+arrangement stands on Carl's instruction for SECTION 1 — text left, static image right, video is the
+hero's alone. That is sufficient to develop section 1 and requires knowing nothing further about the
+hero.**
+
+### ⚠ WHAT THIS CHANGES, AND WHAT IT DOES NOT
+
+- ⛔ **The hero's right-side treatment is DESIGNED, under development, and Carl's.** ⚠ **The Builder
+  has not seen it and must not design against a guess at it.**
+- ⛔ **Section 1's arrangement is therefore DERIVED FROM AN EXISTING DESIGN, not a proposal that a
+  future hero might match.** ⚠ **The hierarchy Carl stated stands unchanged: *the hero uses video for
+  the killer feature, section 1 has an image.***
+- ⚠⚠ **D-026 IS STILL LIVE AND STILL UNRESOLVED HERE.** ⛔ **Its right-side space remains protected
+  until Carl briefs the change. Knowing the hero has a design does NOT authorise touching
+  `app/page.tsx`, which is also a permanently protected path.**
+- ⛔ **NOTHING IN THIS FILE IS BUILT FROM.** Unchanged.
+
+⚠⚠ **THIS BEARS ON D-026 AND IS NOT RESOLVED HERE.** ⛔ **A video in the hero's right-side space is
+exactly what D-026 reserves.** **Recorded as a consequence to be handled when the hero is developed
+— NOT decided by this pass, and NOT to be actioned from this file.**
+
+### ⚠ THE HIERARCHY IS DELIBERATE — ONE VIDEO ON THE SITE
+
+⛔ **Video is reserved for the hero's "killer" feature. Section 1 gets a STILL.** ⚠ **That is a
+restraint decision, not a budget one: if every section moves, nothing is the killer feature.**
+**It is §2's argument — *a showcase of many features argues the competitor's position* — applied to
+motion rather than to features.**
+
+---
+
+## ⛔ THE SUBJECT — SETTLED. Carl: *"the details are undecided, subject matter isnt."*
+
+**A representation of Carl at work, BACK TO THE CAMERA. Not a photograph of Carl.** *"Will it be me?
+No, it will be a representation of me at a desk."*
+
+| element | detail |
+|---|---|
+| **desk 1** | two screens — the website work |
+| **desk 2** | ⛔ **at 90°** — two screens, two monitor speakers, MIDI keyboard, audio interface, 19" racks |
+| **the figure** | back to camera |
+| **made in** | **DaVinci Resolve** |
+| **motion** | ⛔ **STATIC** |
+
+### ⚠⚠ WHY THE MUSIC RIG IS IN THE PICTURE, AND IT IS DOING ARGUMENTATIVE WORK
+
+**Carl:** *"Although music is not primarily used in website design its what i do. It also shows
+another technical expertise."*
+
+⛔ **AND IT SAYS SOMETHING THE COPY IS FORBIDDEN FROM SAYING.** ⚠⚠ **Item 12 rules that the set-up
+is described IN PRINCIPLE, NEVER BY ROSTER.** **Two workstations at 90° show a system with more
+than one discipline in it WITHOUT NAMING ANYTHING.** ⛔ **It is the DAW model — already the site's
+governing method (D-035) — made visible rather than explained.**
+
+⚠ **BACK TO CAMERA SERVES RULING 1** — *the work speaks first; personability belongs to CONTACT.*
+**The founder is present without the page becoming a portrait.**
+
+---
+
+## ⛔ THE TREATMENT — TRANSLUCENT, LAYERED COLOUR. NOT A PHOTOGRAPH.
+
+⚠ **Carl considered a standard HQ image and DECLINED IT:** *"Am i favouring an HQ normal image? No i
+like the idea of a translucent single colour image."*
+
+⛔⛔ **AND THIS IS DEVELOPMENT, NOT A REGISTER BREAK — CARL'S CORRECTION TO THE BUILDER.** ⚠ **The
+Builder framed a photographic element as a break from the site's rendered-material vocabulary. Carl:
+*"Not a register break - development, design."*** ⛔ **The vocabulary GROWS because a section needs
+it. Same principle as the DAW model: a new instrument on a track is not a genre change.**
+
+### ⛔ WHY NOT AMBER OR GOLD AS THE FIELD COLOUR — two reasons, and the second is the binding one
+
+**Carl:** *"Using a brand colour like amber or gold would give off an old sepia look."*
+
+⚠⚠ **AND THE SEMANTIC COLLISION IS LARGER THAN THE AESTHETIC ONE.** ⛔ **§8 of this file: WARM IS
+ALREADY SPOKEN FOR.** Gold is **the mark**; warm/salmon is **the selection state**. **A large amber
+image on `/about` would put the brand's most specific colour on something decorative.**
+
+⚠ **Carl on dark blue as the field:** *"at this scale might seem a little cold."*
+
+### ⛔ TEAL IS THE FIELD, AND D-025 ALREADY BACKS IT
+
+⛔ **D-025's approved direction: near-black base, gold/amber as premium accent light, TEAL /
+DUCK-EGG / DEEP BLUE as MODERN INTELLIGENCE ACCENT.** ⚠ **Teal is not an unused colour being
+borrowed — it is the one D-025 assigns to exactly this register.**
+
+⚠⚠ **BUT TEAL CARRIES A JOB ELSEWHERE, AND THE VALUE MATTERS:**
+
+| where | meaning | measured |
+|---|---|---|
+| the memory rail | the answers you have given | 46.2% saturation |
+| card hover | Carl's by-eye tuning at 1.7 | `rgb(31,138,149)`, 79.4% |
+| **an image on `/about`** | ⛔ **new — no collision** | — |
+
+⛔ **BOTH EXISTING TEALS ARE INTERACTIVE STATES ON `/start`** — teal there means *this responded to
+you*. **`/about` has no interaction, so an image in teal does not compete for that meaning the way
+amber would with the mark.**
+
+⚠⚠ **THOSE ARE SATURATED TEALS AT SMALL SCALE — a rim, a line of text.** ⛔ **Filling several hundred
+px with anything near 79% would read as related to the enquiry states.** **The image should sit WELL
+BELOW them in saturation — nearer a duck-egg tint over near-black than the hover colour.** ⚠ **It
+also serves the fade: something already low-contrast fades gracefully; a saturated block would need
+the fade to do all the work.**
+
+### ⛔⛔ THREE COOL TONES, AND THEY ARE A LIGHTING HIERARCHY — NOT A PALETTE
+
+**Carl:** *"If i really wanted to push the boat out, 3 colours that ive mentioned could be used for
+the very reasons youve mentioned."* **And on why layering at all:** *"The image then would not seem
+so one dimensional, and i mean in spirit, not geometry."*
+
+| colour | role | reads as |
+|---|---|---|
+| **teal** | the field — room, desks, figure | the space itself |
+| **lighter blue** | emitting surfaces — screens | *these are on* |
+| **deep blue** | what the emitters CATCH — edges, speaker cones, rack faces | *that light is falling on this* |
+
+⚠⚠ **THE THIRD IS WHAT MAKES IT A SCENE RATHER THAN TINTED OBJECTS.** ⛔ **Without it, screens glow
+and nothing responds. With it, the room acknowledges the light.**
+
+⛔⛔ **AND THAT IS §5 — *SHOW THE SCENE, NOT THE PART* — RENDERED AS A STILL.** ⚠ **§5's argument is
+that c2b's work reads as *one space with one light where everything responds together*, against
+assembled sites that are *parts that happen to sit near one another*.** **The image would be MAKING
+section 1's case, not decorating it.**
+
+⚠ **THREE IS NOT A CONTRADICTION OF THE TWO-VARIANT RULE.** ⛔ **§6 caps VARIANTS at two because
+three demonstrates range instead of a decision. These are not variants — they are three different
+JOBS in one lighting model.**
+
+⚠⚠ **THE RISK, STATED: PROPORTION.** ⛔ **If all three appear in roughly equal measure it stops
+reading as one lit space and becomes a colour scheme.** **The field must dominate heavily; the other
+two are accents on it, not thirds.** ⚠ **A Resolve judgement, deliberately not pre-specified.**
+
+⚠ **DEEP BLUE IS ALSO THE MARK'S JOURNEY COLOUR ON `/start`** (gold → blue → gold, D-063). **Same
+family, different job, different route.** ⛔ **At low saturation the Builder does not expect a
+collision — but the image should be seen against `/start` before any value is fixed.**
+
+---
+
+## ⛔ THE GOLD — THE MARK, IN THE ROOM
+
+**Carl:** *"Maybe as a representation of the Logo somewhere. Maybe on the desk as an object or a
+poster on the wall. Although it would be faded it would still stand out."*
+
+⚠⚠ **THIS IS WHAT MAKES IT *THIS* WORKSPACE.** ⛔ **An anonymous studio in three cool tones says
+*someone works here*. The same room with the mark on the wall says *this is where c2b is made*.**
+**That is section 1's actual subject.**
+
+⚠ **IT ALSO SERVES D-065's ARGUMENT:** the mark's constancy is a claim a visitor verifies for
+themselves. **The mark as a REAL OBJECT IN THE SPACE — faded, at an angle — rather than composited
+on top, reinforces that it is a thing in a room rather than a logo placed on a picture.**
+
+⛔ **RECOMMENDATION: THE POSTER, NOT THE DESK OBJECT.** ⚠ **An object on the desk competes with the
+screens and the rig for attention on a surface already full of things. A poster sits in the negative
+space BEHIND the setup, where nothing else is happening — environment rather than a placed prop.**
+**Carl's choice; both were his suggestions.**
+
+⚠⚠ **AND IT CAN GO QUIETER THAN INSTINCT SUGGESTS.** ⛔ **Warm at low saturation against a cool
+field reads as WARM long before it reads as GOLD — it draws the eye whatever value it is given.**
+**Faded far enough to be DISCOVERED rather than ANNOUNCED is the target.**
+
+⛔ **§8's *warm is already spoken for* IS NOT BREACHED.** ⚠ **That rule protects warm as THE
+SELECTION STATE on an interactive surface. This is the mark, in an image, on a route with no
+selection at all — gold meaning *the mark* is exactly what gold already means.**
+
+---
+
+## ⚠ WHAT IS SETTLED HERE, AND WHAT IS NOT
+
+**Settled by Carl:**
+
+- ⛔ **Text left, static image right, image fading as it meets the text.**
+- ⛔ **The subject matter** — the two desks, the 90°, the music rig, back to camera.
+- ⛔ **Static, made in DaVinci Resolve.**
+- ⛔ **Translucent layered colour, NOT a photograph. Teal-led.**
+- ⛔ **Video is the hero's alone.**
+
+**Open, and Carl's:**
+
+- ⚠ **Two colours or three.** *"If i really wanted to push the boat out"* — a leaning, not a ruling.
+- ⚠ **Whether the gold mark appears at all, and as poster or object.**
+- ⚠ **Exact values, saturations and proportions** — ⛔ **PROVISIONAL by nature; D-035 governs.
+  Not to be fixed before the image is seen at real size on the page.**
+- ⚠ **The image's aspect ratio.** ⛔ **The Builder raised it as worth knowing BEFORE Resolve: a wide
+  L-shaped setup rendered into a tall slot will crop hard or read small.** **Not answered.**
+
+**Raised and explicitly NOT resolved:**
+
+- ⛔⛔ **THE SCROLL-AND-MORPH IDEA.** Carl: *"It could also move down the page with us and morph
+  into something else."* ⚠⚠ **THAT IS NOT A TREATMENT OF AN IMAGE — it is a scroll-driven behaviour
+  spanning sections.** ⛔ **Structural under CLAUDE.md §5a; would need client-side scroll observation
+  on `/about`, which is currently a static prerendered server component; and *"something else"* must
+  exist before it can be morphed into.** **Its own conversation, not part of section 1's layout.**
+- ⚠ **D-026** — the hero's protected right-side space, and what a hero video does to it.
