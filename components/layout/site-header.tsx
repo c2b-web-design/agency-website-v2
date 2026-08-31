@@ -2,13 +2,40 @@
 
 import { useState } from "react";
 import Container from "@/components/layout/container";
+import { NAV_LINKS } from "@/components/layout/nav-links";
 
-const NAV_LINKS = [
-  { label: "Services", href: "#services" },
-  { label: "Work",     href: "#work" },
-  { label: "About",    href: "/about" },
-  { label: "Contact",  href: "#contact" },
-];
+/* ⚠⚠ ROUTE-QUALIFIED, NOT BARE ANCHORS — and the reason is that this list is
+   now read from THREE routes, not one.
+
+   ⛔ `#services` resolves against the CURRENT page. On `/start` it becomes
+   `/start#services`, which has no target and does nothing — the exact
+   dead-link behaviour the `About` fix removed on 31 August. `/#services`
+   navigates home AND scrolls, from anywhere.
+
+   ⚠ Carl's instruction, 31 August 2026: *"Before the word Services we need text
+   saying 'Home'. The user must have the ability to return home at any point."*
+   ⛔ THAT REQUIREMENT IS WHAT MAKES THE QUALIFICATION NECESSARY: a nav that can
+   be reached from a route with no sections on it must not contain links that
+   silently do nothing. */
+/* ⚠ THE LIST NOW LIVES IN `nav-links.ts` — a plain module with no `"use client"`,
+   so SERVER components can import it. It was defined here until 31 August 2026,
+   when `/about` (a server component) failed to build against it. See that file. */
+
+/* ⛔ THE LINKS THIS HEADER RENDERS — `Home` REMOVED. Carl, 31 August 2026:
+   *"lose the Home on the landing page. We are already there, you cant navigate
+   to where you already are."*
+
+   ⚠⚠ FILTERED HERE RATHER THAN REMOVED FROM `NAV_LINKS`, because that list is
+   SHARED: `/start` renders it too and DOES need `Home`. ⛔ Deleting the entry
+   would have taken it off `/start` as well — the opposite of what was asked.
+
+   ⚠ THIS IS CORRECT ONLY WHILE `SiteHeader` RENDERS ON THE LANDING PAGE ALONE,
+   which is true today. ⛔ IF CARL PUTS THIS COMPONENT ON OTHER ROUTES — the
+   header question he has deferred — THIS BECOMES WRONG: `Home` would vanish
+   from every route that uses it. At that point the filter must key on the
+   CURRENT PATH (`usePathname()`), hiding `Home` only where it is redundant.
+   Recorded so the next person does not have to rediscover it. */
+const HEADER_LINKS = NAV_LINKS.filter(({ label }) => label !== "Home");
 
 export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -85,7 +112,7 @@ export default function SiteHeader() {
 
           {/* Desktop nav links — hidden on mobile */}
           <div className="hidden md:flex items-center gap-6">
-            {NAV_LINKS.map(({ label, href }) => (
+            {HEADER_LINKS.map(({ label, href }) => (
               <a
                 key={label}
                 href={href}
@@ -118,7 +145,7 @@ export default function SiteHeader() {
         >
           <Container>
             <div className="flex items-center justify-between py-3">
-              {NAV_LINKS.map(({ label, href }) => (
+              {HEADER_LINKS.map(({ label, href }) => (
                 <a
                   key={label}
                   href={href}

@@ -1,4 +1,8 @@
 import Container from "@/components/layout/container";
+/* ⚠ THE `/about` NAV — a CLIENT component, deliberately kept in its own file so
+   THIS page stays a static prerendered server component. ⛔ NOT `SiteHeader`:
+   that would place the links in flow, at a different point from `/start`. */
+import AboutNav from "@/components/layout/about-nav";
 
 /* ⚠⚠ THIS PAGE IS SCAFFOLDING. IT IS NOT THE ABOUT SECTION.
    Carl's instruction, 28 August 2026: *"we must 'set up' the about page in the
@@ -81,6 +85,39 @@ function place(m: (typeof MARK)[keyof typeof MARK]) {
 
 const GOLD = place(MARK.gold);
 
+/* ⚠⚠ THE NAV LINKS HANG FROM THE SAME NAIL AS THE MARK — identical to
+   `app/start/page.tsx`. Carl, 31 August 2026: *"The Home should be in exactly
+   the same place it is in the start section."*
+
+   ⛔ COMPUTED FROM THE MARK'S FRAME, NOT COPIED AS A LITERAL. If D-060's 40px is
+   ever revisited this follows it; a hardcoded number would go stale silently,
+   and a stale value here is invisible until someone navigates between routes and
+   watches the words move. That is exactly how the `/start` defect was found. */
+const GOLD_TOP = parseFloat(GOLD.top);
+const GOLD_H = parseFloat(GOLD.height);
+
+/* ⚠⚠ THE SAME OPTICAL CORRECTION AS `/start`, AND FOR THE SAME REASON.
+   ⛔ APPROVED THERE BY CARL'S EYE, 31 August 2026 — bisected 0 (*"a smidgeon too
+   high"*) / 1 (*"a smidgeon too low"*) / 0.5 (*"Nailed it"*).
+
+   ⚠ THE CAUSE IS ARITHMETIC, NOT TASTE: `place()` computes the frame as
+   `CORE_H / coreH`, giving 39.984px against the landing page's round 40px.
+   Everything hung off that centre inherits the 0.016px shortfall as a SYSTEMATIC
+   UPWARD BIAS. ⛔ `/about` USES THE SAME `place()`, SO IT CARRIES THE SAME
+   RESIDUE — the correction is required here for the same reason, not copied as
+   a superstition.
+
+   ⛔⛔ THIS IS A CORRECTION, NOT A FIX, AND IT IS NOW IN TWO FILES. The proper
+   fix removes the residue so no correction is needed anywhere. That touches
+   D-060/D-063 approved work and is CARL'S TO AUTHORISE. ⚠ If it is ever done,
+   BOTH copies go — grep `NAV_DROP_PX`.
+
+   ⚠ TUNED TO ONE SETUP: 0.484px rounds consistently at 1920x1080 / 100% scale,
+   Carl's display. It may tip the other way at a different zoom. Unasserted. */
+const NAV_DROP_PX = 0.5;
+
+const NAV_CENTRE_Y = GOLD_TOP + GOLD_H / 2 + NAV_DROP_PX;
+
 export const metadata = {
   title: "About — C2B Web Design",
   description:
@@ -137,6 +174,42 @@ export default function About() {
               className="absolute max-w-none"
               style={GOLD}
             />
+
+            {/* ⚠⚠ THE NAV LINKS — same list, same mechanism, same place as
+                `/start`. Carl, 31 August 2026: the `/about` header carries the
+                SITE-WIDE links, and *"The Home should be in exactly the same
+                place it is in the start section."*
+
+                ⛔ `HEADER_LINKS` IS NOT USED HERE — that filtered list drops
+                `Home`, which is correct on the landing page only, because you
+                cannot navigate to where you already are. On `/about` `Home` is
+                needed, so this renders the full `NAV_LINKS`, exactly as `/start`
+                does.
+
+                ⛔⛔ `SiteHeader` IS NOT RENDERED ON THIS PAGE, AND THE REASON IS
+                NOT D-062. There is no corridor here to push down, so the 81px
+                band would be legal — but the links would then sit at the FLOW
+                position rather than the nail's, which is a THIRD placement
+                mechanism and would put `Home` somewhere other than where it sits
+                on `/start`. ⚠ Carl asked for exactly the same place; this is what
+                delivers it.
+
+                ⚠ `hidden md:flex` matches `/start` and `site-header.tsx`. Below
+                `md` there is no nav and no menu button on this page either —
+                the same KNOWN GAP recorded for `/start`, awaiting the mobile
+                control that belongs to the deferred header design. */}
+            <div
+              className="absolute left-0 right-0 -translate-y-1/2 hidden md:flex items-center justify-end gap-6"
+              style={{ top: `${NAV_CENTRE_Y}px` }}
+            >
+              {/* ⚠ THE LINKS COME FROM A CLIENT COMPONENT, THE ROW DOES NOT.
+                  `AboutNav` needs `useState` for the dropdown; keeping it to its
+                  own file leaves THIS PAGE a static prerendered server component.
+                  ⛔ Inlining that state here would convert the whole page to
+                  client rendering — the same server/client boundary that broke
+                  the build earlier today. */}
+              <AboutNav />
+            </div>
           </div>
         </Container>
       </div>
@@ -226,7 +299,7 @@ export default function About() {
 
           ⚠ THE TITLE IS OPEN. Carl: *"Does it have to be called 'meet the team?'
           No."* */}
-      <section className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
+      <section id="roles" className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
         <Container>
           <div className="max-w-2xl">
             <h2 className="text-3xl font-semibold tracking-tight">
@@ -248,7 +321,7 @@ export default function About() {
 
           ⛔ NO EXAMPLES ARE EMBEDDED YET. Their selection, recolouring and
           recording is development-pass work and is not authorised. */}
-      <section className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
+      <section id="examples" className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
         <Container>
           <div className="max-w-2xl">
             <h2 className="text-3xl font-semibold tracking-tight">
@@ -273,7 +346,7 @@ export default function About() {
           returns HTTP 200 with no authentication (`app/robots.ts` blocks crawlers
           and says of itself that it is NOT access control). The heading was put
           back to Carl with that exposure stated, and he authorised it. */}
-      <section className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
+      <section id="tbd" className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
         <Container>
           <div className="max-w-2xl">
             <h2 className="text-3xl font-semibold tracking-tight text-neutral-500">

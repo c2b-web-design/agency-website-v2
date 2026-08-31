@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Container from "@/components/layout/container";
 import EnquiryOpening from "@/components/enquiry/enquiry-opening";
+/* ⚠ THE LIST ONLY — NOT the `SiteHeader` component. ⛔ Importing the component
+   here would reintroduce D-062's 81px in-flow band. See the wrapper comment. */
+import { NAV_LINKS } from "@/components/layout/nav-links";
 
 /* ⚠⚠ THE NAIL — ONE DECLARED POINT THAT BOTH MARKS HANG FROM.
 
@@ -66,6 +69,75 @@ function place(m: (typeof MARK)[keyof typeof MARK]) {
 
 const GOLD = place(MARK.gold);
 const BLUE = place(MARK.blue);
+
+/* ⚠⚠ THE NAV LINKS HANG FROM THE SAME NAIL — Carl, 31 August 2026:
+   *"The 4 words move upwards when going back and forth between the home page and
+   start page. We need to use the same principle as the logo so that they appear
+   immobile."*
+
+   ⛔ THE DEFECT, MEASURED: the links sat at top 29.986 on `/` and 19.991 here —
+   a 9.995px UPWARD JUMP on navigation. Horizontal was already identical; this
+   was purely vertical.
+
+   ⚠ WHY IT HAPPENED. On the landing page the links are CENTRED IN A FLOW ROW
+   whose height is the mark's own 40px frame: row top 20, height 40, link height
+   20, so 20 + (40-20)/2 = 30. Here they were the first thing in an out-of-flow
+   wrapper and simply started at its top. ⛔ THE POSITION WAS DERIVED ON ONE PAGE
+   AND ARBITRARY ON THE OTHER — the exact shape D-065 names as why marks drift:
+   *"they drift because POSITION IS DERIVED."*
+
+   ⛔⛔ THE FIX IS THE NAIL'S OWN PRINCIPLE: DECLARE THE POINT, HANG THE ELEMENT
+   FROM IT. The links' resting line is the MARK'S VERTICAL CENTRE — a point that
+   already exists and that the landing page independently resolves to.
+
+   ⚠ IT IS COMPUTED FROM THE MARK'S FRAME, NOT COPIED AS 30px. `GOLD.top` and
+   `GOLD.height` are strings ending in "px" from `place()`; parsing them keeps
+   this in step with D-060 automatically. ⛔ IF THE MARK'S SIZE EVER CHANGES,
+   THIS FOLLOWS IT. A literal 30 would silently go stale — and a stale number
+   here is invisible until someone navigates and watches the words move. */
+const GOLD_TOP = parseFloat(GOLD.top);
+const GOLD_H = parseFloat(GOLD.height);
+/* ⚠⚠ AN OPTICAL CORRECTION, SET BY CARL'S EYE — 31 August 2026. APPROVED:
+   *"Nailed it, well done."*
+
+   ⛔ THE VALUE WAS BISECTED AGAINST CARL'S EYE, not derived:
+
+       0    → *"a smidgeon too high"*
+       1    → *"a smidgeon too low"*
+       0.5  → APPROVED
+
+   ⚠ MEASURED RESULT: the nav row on `/start` sits 0.484px BELOW the landing
+   page's, at 1920x1080 / 100% scale — Carl's actual display.
+
+   ⛔⛔ WHY A CORRECTION IS NEEDED AT ALL, AND IT IS A REAL ARITHMETIC RESIDUE,
+   NOT A GUESS. `place()` computes the mark's frame as `CORE_H / coreH`, which
+   yields 39.984px here against the landing page's round 40px. Everything hung
+   off that centre inherits the 0.016px shortfall as a SYSTEMATIC UPWARD BIAS —
+   which is exactly why it read as consistently-slightly-high rather than as
+   noise.
+
+   ⚠⚠ THE INSTRUMENT MISSED THIS AND THE EYE DID NOT. Six measurements at
+   1440x900 — anchor box, text box via Range, over-time sampling, a real click
+   navigation, container edges, and a pixel comparison of identical crops — all
+   reported 0.006px and all were TRUE. They compared the row against the NAIL,
+   which carries the same 0.016px shortfall, so the error was invisible to every
+   one of them. ⛔ A measurement sharing a constant with the thing it checks
+   cannot see that constant's error — the harness-lies class, arriving in a
+   place nobody had thought to look. Rule 9 settled it: Carl looked at the
+   screen.
+
+   ⚠ A FRACTIONAL PIXEL IS ROUNDED WHEN PAINTED. 0.484px rounds consistently at
+   Carl's 1920x1080 at 100% scale; it may tip the other way at a different zoom
+   or on a different display. ⛔ THIS IS TUNED TO ONE SETUP AND IS NOT ASSERTED
+   ANYWHERE.
+
+   ⛔ THE PROPER FIX IS TO REMOVE THE RESIDUE, NOT TO CORRECT IT — the links
+   should hang off the landing page's 40px reference so no correction is needed.
+   That touches D-060/D-063 approved work and is Carl's to authorise. Raised
+   31 August; see the run log. */
+const NAV_DROP_PX = 0.5;
+
+const NAV_CENTRE_Y = GOLD_TOP + GOLD_H / 2 + NAV_DROP_PX;
 
 export default function StartPage() {
   /* ⚠ THE STAGE IS MIRRORED HERE, NOT OWNED HERE. `EnquiryOpening` remains the
@@ -132,11 +204,27 @@ export default function StartPage() {
 
   return (
     <>
-      {/* ⚠⚠ THE LOGO ONLY — NO HEADER, NO NAV LINKS, NO "Web Design" TEXT.
-          Carl's instruction, 27 August 2026, narrowed three times. ⛔ DO NOT
-          REINTRODUCE `SiteHeader` ON THIS PAGE: it brought nav links, a "Web
-          Design" span, and an 81px band that PUSHED THE QUESTIONS AND ANSWERS
-          DOWN (the document went to 981px). See D-062.
+      {/* ⚠⚠ THE MARK AND THE NAV LINKS — BOTH OUT OF FLOW. NO "Web Design" TEXT.
+
+          ⛔ AMENDED 31 August 2026. This comment previously read "THE LOGO ONLY
+          — NO HEADER, NO NAV LINKS", which was Carl's instruction of 27 August
+          and was true until today. ⚠ THE ORIGINAL CLAIM IS KEPT HERE AS HISTORY
+          because a reader reaches this comment before any governance file, and
+          a stale one is an instrument that lies (`context-rules.md`).
+
+          ⚠ WHAT CHANGED: Carl, 31 August 2026 — *"in the start section let us
+          put the site header with the same font for now in exactly the same
+          place, as we have done with the Logo."* ⛔ THE OPERATIVE WORDS ARE
+          "AS WE HAVE DONE WITH THE LOGO": the links hang from this same
+          out-of-flow wrapper.
+
+          ⛔⛔ WHAT HAS *NOT* CHANGED, AND MUST NOT: `SiteHeader` IS STILL NOT
+          RENDERED ON THIS PAGE. It brought a "Web Design" span and an 81px
+          BAND IN FLOW that PUSHED THE QUESTIONS AND ANSWERS DOWN (the document
+          went to 981px). See D-062. ⚠ THE 81px COST IS THE THING D-062 FORBIDS,
+          NOT THE LINKS THEMSELVES — and placing them out of flow does not
+          reincur it. ⛔ THE DOCUMENT MUST STAY 900px. If it reads 981px, the
+          header has gone back into flow and D-062 has been reopened.
 
           ⚠ THE MARK IS ABSOLUTELY POSITIONED AND OUT OF FLOW, so it occupies no
           vertical space and the enquiry corridor sits exactly where it did
@@ -252,6 +340,66 @@ export default function StartPage() {
                     : `${goldMask} 1300ms linear both`,
               }}
             />
+
+          {/* ⚠⚠ THE NAV LINKS — Carl, 31 August 2026: *"put the site header with
+              the same font for now in exactly the same place, as we have done
+              with the Logo. With one addition. Before the word Services we need
+              text saying 'Home'. The user must have the ability to return home
+              at any point."*
+
+              ⛔ "THE SAME FONT FOR NOW" IS PROVISIONAL AND SAYS SO. The classes
+              below are copied from `site-header.tsx` so the two agree today.
+              ⚠ Carl is weighing a FONT DECISION against context not yet shared
+              with the Builder, and the header's DESIGN is TBD — his word. THIS
+              IS THE PLACEHOLDER TREATMENT, NOT AN APPROVED HEADER DESIGN.
+
+              ⛔⛔ THEY ARE IN THE OUT-OF-FLOW WRAPPER ON PURPOSE. Rendering
+              `SiteHeader` here would reintroduce D-062's 81px in-flow band and
+              push the corridor down. ⚠ Sitting inside the ZERO-HEIGHT context
+              above's PARENT — not the `relative` origin itself, which is
+              reserved for the two marks — they cost the document nothing.
+
+              ⚠ `justify-end` puts them opposite the mark, which occupies the
+              left of this same `Container`. The mark is absolutely positioned
+              out of this row, so there is nothing here to space against — hence
+              a plain flex row rather than `justify-between`.
+
+              ⛔⛔ ABSOLUTELY POSITIONED ON `NAV_CENTRE_Y`, WHICH IS THE MARK'S
+              VERTICAL CENTRE. See the constant's derivation above. The row is
+              `top: NAV_CENTRE_Y` with `-translate-y-1/2`, so it CENTRES ON that
+              line rather than starting at it — which is what makes it agree with
+              the landing page, where the links are centred in a 40px flow row.
+              ⚠ `right-0 left-0` keeps `justify-end` meaningful now that the row
+              is out of flow and would otherwise shrink to its content.
+
+              ⛔⛔ HIDDEN BELOW `md`, AND THE REASON IS A MEASURED COLLISION.
+              At 375px the five links ran from x=32.8 while the mark ends at
+              x=85.9 — "Home" printed straight over the mark. ⚠ CAUGHT BY
+              SCREENSHOT AT 375px; the 1440 numbers were clean and said nothing
+              about it.
+
+              ⚠ `md:flex` MATCHES `site-header.tsx`'s OWN BREAKPOINT — that
+              component hides its links below `md` and shows a "Menu" button
+              instead. ⛔ THERE IS NO MENU BUTTON HERE, so below `md` this page
+              has the mark and no nav at all. THAT IS A KNOWN GAP, NOT AN
+              OVERSIGHT: a mobile control is a design decision for the header
+              work Carl has deferred, and inventing one here would settle it.
+              ⚠ A user on a narrow viewport cannot currently leave `/start` by
+              the nav — the corridor is still fully usable. */}
+          <div
+            className="absolute left-0 right-0 -translate-y-1/2 hidden md:flex items-center justify-end gap-6"
+            style={{ top: `${NAV_CENTRE_Y}px` }}
+          >
+            {NAV_LINKS.map(({ label, href }) => (
+              <a
+                key={label}
+                href={href}
+                className="text-sm text-neutral-400 hover:text-neutral-100 transition-colors duration-200"
+              >
+                {label}
+              </a>
+            ))}
+          </div>
           </div>
         </Container>
       </div>
