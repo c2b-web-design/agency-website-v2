@@ -804,8 +804,43 @@ A fourth status, **`PROVISIONAL`**, is added to the schema for work that is **in
 - The **q5proto** Q5 spatial light-filtering layer (`Q5_ZONE_INFLUENCE`, `q5ZoneColour()`, `q5ReflectionVars()`, `--q5zone-*`, `.enquiry-nextstep-btn--q5proto`). This is what F-1 and the CP pass both flagged. **It is not drift.** See the correction inside D-032, which remains accurate about the *code*: Q5 no longer matches the D-031 baseline.
 - **Contact-field geometry and material constants** — crown height, plateau, seam sink, aperture margin, insets, depth stack, `#c08f42`, roughness 0.34, metalness. Already recorded in `live-work/` as "starting values, not a calibration."
 - Any visual value the record describes as provisional, diagnostic, untuned, or a starting point.
+- ⛔ **DEVICE AND VIEWPORT COVERAGE, SITE-WIDE** *(added 31 August 2026 — see the amendment below)*. The site is built in **one medium first** on Carl's instruction; optimising for all devices happens in this pass. ⚠ **A layout that works at 1440 and not at 375 is provisional, not broken.** Known: no nav below `md` on `/start` or `/about`; nothing in this repo has ever been measured above 1920.
 
 **What mastering will involve:** balance, tempo, brightness, contrast, emphasis, breathing room and emotional flow across the whole site — the same list the ethos files already give. **Files will be written to during the pass**, so the record must be clean going in. Values settled in the pass graduate from `PROVISIONAL` to `APPROVED` with an entry.
+
+> ⚠⚠ **AMENDED 31 AUGUST 2026 — MASTERING INCLUDES OPTIMISING FOR ALL DEVICES, AND THE SITE IS
+> BUILT IN ONE MEDIUM FIRST BY DESIGN.**
+>
+> **Carl:** *"At the end of construction there will be a 'mastering' phase where we will fine tune
+> and also optimise for all devices."* And on why not sooner: *"we could of optimised for mobile
+> while building but that would of slowed the process down. Its right that we should get the site
+> built in one medium first before optimising for others."*
+>
+> ⛔ **THE LIST ABOVE STOPS AT EMOTIONAL FLOW AND SAYS NOTHING ABOUT VIEWPORTS.** ⚠ **That silence
+> was read, on 31 August, as mobile being an unscheduled gap — and the Builder began writing it up
+> as a separate "mobile optimisation pass" before Carl corrected it. ⛔ There is no such pass. It is
+> this one.**
+>
+> ⚠⚠ **SO DEVICE COVERAGE IS `PROVISIONAL`, NOT MISSING.** A route that works at 1440 and not at
+> 375 is **in place, deliberately untuned, awaiting this pass** — the same standing as the
+> provisional gold on `/about` or the landing page's stale copy. ⛔ **Reviewers: do not raise it as a
+> defect, and do not "fix it while passing".**
+>
+> **The reasoning, and it is the same argument as the rest of this entry.** ⛔ **Optimising while
+> building means every layout decision is made TWICE — and the second time against placeholders that
+> are going to change.** ⚠ **You cannot balance a mix that does not exist yet; you equally cannot
+> balance it across four widths while its content is still provisional.** **One medium first is
+> tracking; all devices is mastering.**
+>
+> ⚠ **"ALL DEVICES" IS WIDER THAN MOBILE.** ⛔ **This site has been judged at 1440 and 1920 only.**
+> Carl also walks it on a **4K TV** for ballpark spatial decisions — a surface no measurement in
+> this repo has ever covered. `Container` is `max-w-7xl` (1280px), so at 4K the content occupies a
+> third of the screen; that is a mastering question, not a defect.
+>
+> ⛔ **KNOWN AND CARRIED INTO THE PASS, so it is not rediscovered:** below `md` neither `/start` nor
+> `/about` has any nav or menu button — the links are `hidden md:flex` after a measured collision
+> with the mark at 375px. `site-header.tsx` **does** have a mobile route, so the site currently has
+> one mobile nav pattern and two routes with none. See `live-work/run-log-start-header-31-august.md`.
 
 **Downstream constraint — this is why "clean" matters.** When the C2B site is finished, the repo becomes the origin of a **three-tier lineage**, and the stripping happens **exactly once**:
 
