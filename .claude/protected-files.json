@@ -40,7 +40,31 @@
     "⚠ EDITING THIS FILE LEGITIMATELY: ask Carl to name it, add",
     "'.claude/protected-files.json' to \"unlocked\" in live-work/chunk-scope.json,",
     "make the change, then remove the unlock. Adding a NEW path to the list is",
-    "itself a change to this file and needs that same unlock."
+    "itself a change to this file and needs that same unlock.",
+    "",
+    "⚠ THREE PATHS ADDED 31 August 2026, on Carl's instruction after the site-",
+    "headers chunk closed: app/start/page.tsx, components/layout/nav-links.ts and",
+    "components/layout/about-nav.tsx.",
+    "",
+    "WHY, AND IT IS A GAP THAT WAS INVISIBLE UNTIL IT WAS CHECKED: that chunk",
+    "touched five files and only ONE (site-header.tsx) was on this list. The other",
+    "four were protected solely by the chunk's own scope file — which is gitignored",
+    "scratch and was deleted when the chunk closed. Closing the unlock therefore",
+    "left them editable by default, which reads as 'locked' to anyone who assumes",
+    "the chunk's protections persisted. They do not.",
+    "",
+    "  app/start/page.tsx        holds D-062/D-063 approved work AND the nail",
+    "                           constants the mark and nav both hang from",
+    "  components/nav-links.ts   single source of truth for the nav, read by",
+    "                           three routes",
+    "  components/about-nav.tsx  the /about dropdown, whose alignment Carl tuned",
+    "                           by eye across three passes",
+    "",
+    "⚠ app/about/page.tsx WAS DELIBERATELY NOT ADDED. Its content is scaffolding",
+    "that is expected to be rewritten when the About section is developed — locking",
+    "it would obstruct the work it exists for. The nail constants inside it are the",
+    "part worth protecting, and they are a copy; the durable fix is removing the",
+    "duplication, not locking the page."
   ],
 
   "protected": [
@@ -70,8 +94,11 @@
 
     "app/page.tsx",
     "app/layout.tsx",
+    "app/start/page.tsx",
     "components/layout/container.tsx",
     "components/layout/site-header.tsx",
+    "components/layout/nav-links.ts",
+    "components/layout/about-nav.tsx",
     "components/ui/button.tsx",
     "lib/utils.ts"
   ]
