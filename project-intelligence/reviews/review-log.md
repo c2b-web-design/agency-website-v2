@@ -56,6 +56,39 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-020 — `/about` Scaffolding: The Mark Does Not Move Between Pages
+
+**Date:** 2026-08-31
+**Reviewer:** Human Founder
+**Subject:** The gold mark on `app/about/page.tsx`, judged by eye on a running production build against `/` and `/start` — the on-delivery condition of **D-065**, discharged. Records **D-066**.
+
+**Carl's verdict, verbatim:** *"the first thing i did was to check if there is any movement between pages of the Logo. Excuse the pun - nailed it. Great"*
+
+**Findings:**
+- ⛔ **APPROVED: the mark's PLACEMENT on `/about`.** Carl navigated between routes and confirmed by eye that the mark does not move. **That is the D-065 test as Carl defined it** — *"a visitor can navigate and watch it not move"* — performed by the founder rather than reported by the Builder.
+- ⚠⚠ **THE EYE CAME FIRST, AND IT MATTERS THAT IT DID.** The measurement was already recorded (`live-work/about-scaffold-measurement-31-august.md`: `left`/`top` identical across all three routes at 1440 **and** 375). ⛔ **Rule 9 makes rendered output the truth for visual work, and the figures are supporting evidence, not the verdict.**
+- ⛔ **NOT APPROVED, AND DELIBERATELY SO: the mark's COLOUR.** It remains **PROVISIONAL** gold — Carl, 30 August: *"it may not stay that way."* ⚠ **In place, deliberately untuned, awaiting the mastering pass (D-035). Not a gap; no missing approval is to be raised for it.**
+- ⚠ **Confirmed across a FULL DOCUMENT NAVIGATION** — no client-side routing exists on this site (`next/link` is used nowhere; `app/page.tsx:245` already uses a plain `<a>`). **The immobility survived a blank-and-repaint on the founder's own machine.** ⛔ **This does not close the F8 question** — whether a slower repaint elsewhere breaks the *perception* of immobility is untested, and the demonstration is what D-065 sells. **Open, and carried to the header chunk.**
+
+**Findings on the page content — Carl, same session, after looking at the sections:**
+
+- ⛔ **SECTIONS RESIZED TO FULL VIEWPORT** on Carl's instruction: *"make them larger like on the home page. Sections 2,3 and 4 should be the same as 1. If i can see all the real estate that gives a better size canvas to design in. Rather than thinner 'strips'."* ⚠⚠ **The reason is the DEVELOPMENT pass, not this one:** the canvas each section will be designed into must be visible at its real size while it is being designed. **A section sized to placeholder copy would be judged against the wrong dimensions throughout.**
+- ⛔ **THE RULE THROUGH SECTION 1 REMOVED** on Carl's instruction: *"Lose the dividing line that runs through the middle of section 1."* The page title and section 1 were two full-height sections with a border between them, which **cut the opening statement in half.** They are now one section. **Three dividers remain, between the four sections.**
+- ⚠ **The divider treatment is `border-neutral-800`** — the site's existing hairline-rule vocabulary, the same as the landing page's section rules. **Not a new value.**
+
+**⚠⚠ A DEFECT INTRODUCED AND FIXED WITHIN THE SAME PASS — recorded because the diagnosis was wrong three times:**
+
+- ⛔ **Making the sections full-height broke the page's left edge.** The heading rendered at **left 442.5** against the landing page's **104.5** — the text visibly detached from the mark it aligns under. **Caught by looking at the screenshot, not by any number.**
+- ⚠ **The cause is `Container`'s `mx-auto`.** An auto inline margin makes the box size to its CONTENT and centre the shrunken result, **regardless of the parent's alignment** — `align-items` and `justify-items` do not override it. `Container` computed **603.9px instead of 1280px**.
+- ⛔ **THREE FIXES WERE TRIED AND MEASURED FAILING before the cause was found:** `flex items-center`, `flex flex-col items-stretch`, and `grid content-center justify-items-stretch`. ⚠ **The grid track was the full 1425px with `justify-items: stretch` applied and the container still computed 603.9px.** **The layout mode was never the cause.**
+- **Resolved** by giving the child an explicit `w-full`, so the auto margins distribute around a full-width box instead of a shrink-to-fit one. ⚠ **`components/layout/container.tsx` is a PROTECTED path — the fix belongs on the consuming page, not in the shared component.**
+- ⛔ **The reasoning is recorded in a load-bearing comment in `app/about/page.tsx`, including the three failed attempts**, so the class is not "simplified" away by a future reader who sees it as redundant.
+
+**Verified after the fix:** `/` and `/about` both report container left **72.5**, width **1280.0**, heading left **104.5000**.
+
+**Status:** ⛔ **Mark placement APPROVED** (D-066). ⚠ **Mark colour PROVISIONAL.** ⚠ **Page content PROVISIONAL** — scaffolding that conveys position, not the About section. ⛔ **The section itself remains Carl's to develop, and the header question is the next body of work.**
+
+---
 ## R-019 — Answer Card Exit: The Compressed Reversal
 
 **Date:** 2026-08-23 — ⚠ **the review date, not the build date.** The work landed **2026-08-18** (`d008b4d`, `c831bf9`, `387653a`) and ran live for five days before it was reviewed. **This entry is filed on 23 August and does not claim a review at the time of the build.**  
@@ -541,4 +574,6 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-06-22 — R-018 added (D-033 Send deep blue-opal cabochon internal-character pass approved)*
+*Last updated: 2026-08-31 — **R-020 added**: the `/about` scaffolding, Carl confirming by eye that the mark does not move between pages — *"nailed it"*. Placement APPROVED (D-066); colour PROVISIONAL. Also records the sections resized to full viewport, the rule removed from section 1, and a left-edge defect introduced and fixed in the same pass.*
+
+*⚠ **The previous footer read "2026-06-22 — R-018 added" while R-019 was already in the file.** Corrected here rather than only appended to: a footer naming the wrong latest entry is the kind of stale instrument `context-rules.md` warns about, and R-020 was very nearly filed as a duplicate R-019 because of it.*

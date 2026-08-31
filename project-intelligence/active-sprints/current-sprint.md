@@ -38,6 +38,7 @@ Build the homepage to a complete, production-quality state and begin the `/start
 | Mobile nav | `components/layout/header.tsx` | Mobile header navigation and opening reveal refinements approved |
 | Homepage + start flow QA polish | `app/page.tsx`, `components/enquiry/enquiry-opening.tsx` | Milestone commit 2152e6e — all sections and flow mechanics approved |
 | Selected-card filament border | `components/enquiry/enquiry-opening.tsx`, `app/globals.css` | D-029: single SVG rect, pathLength="1", draw on select, hold completed border, fade on deselect. Muted Q-label gold. Approved Q5–Q1. See R-011. |
+| `/about` scaffolding | `app/about/page.tsx` (new), `components/layout/site-header.tsx` (one line) | **D-066.** The dead `href="#"` is fixed; the page exists with four sections mirroring the landing page — the fourth a rendered **TBD** Carl authorised knowing it deploys. Mark gold and nailed: **left/top identical across `/`, `/start`, `/about` at 1440 AND 375**, centre spread 0.0058px h / 0.0000px v, measured **headed**. ⚠ **Scaffolding, not the About section.** ⛔ **No `SiteHeader` on `/about`** — the header question is Carl's next body of work. ⛔ **Invariant still UNASSERTED**; no harness added (`proven.json` is empty). Unlock opened and **closed with a verified denial**. |
 
 ---
 

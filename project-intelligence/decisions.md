@@ -3177,7 +3177,9 @@ alongside the demotion reasoning. ⛔ **History is preserved, not rewritten** �
 **Date recorded:** 2026-08-30
 **Status:** ⚠ **APPROVED as a STANDARD; the `/about` insertion is APPROVED ON DELIVERY.** ⛔ **Carl, 30 August 2026, ruling on outcome rather than method:** *"This is the last section that will need logo insertion. All others align to my satisfaction and are approved. If, and excuse the pun, you are given instructions to nail the about logo and you do, then approved. By what method? Thats your domain, i care about outcome."*
 **Authority:** Human Founder — Carl, 30 August 2026: *"a user could be on a page. No matter where the user navigates to, the logo wont move. It might change colour but it will be absolutely constant and accurate, showing no movement, only change."* On the signal: *"Think what such a concept says to a user - pin point precision."* On the reach: *"Think beyond our site to a clients who will possibly have a logo… What if a client wants the same immobility?"*
-**Bears on:** every route that renders the mark — `app/page.tsx` (via `components/layout/site-header.tsx`), `app/start/page.tsx`, and prospectively `app/about/page.tsx`. Generalises **D-062** and **D-063**; depends on **D-060**. ⚠ **Also bears on `live-work/references/workshop-template-and-client-delivery.md`** — see *the capability*, below.
+**Bears on:** every route that renders the mark — `app/page.tsx` (via `components/layout/site-header.tsx`), `app/start/page.tsx`, and `app/about/page.tsx`. Generalises **D-062** and **D-063**; depends on **D-060**. ⚠ **Also bears on `live-work/references/workshop-template-and-client-delivery.md`** — see *the capability*, below.
+
+> ⛔ **AMENDED 31 August 2026 — `/about` HAS LANDED, AND "prospectively" IS REMOVED.** The word was true when written and went false on delivery. **The insertion was measured and approved on delivery under clause 4 — see D-066.** ⚠⚠ **THE STATE OF THE SITE IS NOW: TWO COPIES OF THE NAIL CONSTANTS (`app/start/page.tsx`, `app/about/page.tsx`) AND THREE MECHANISMS REACHING ONE POINT** — the landing page through `SiteHeader`'s flow layout, the other two from the nail. ⛔ **THE INVARIANT REMAINS UNASSERTED and the harness is still owed when the header work lands; a third route joining has not changed that, it has raised what it costs.**
 
 > ## ⛔⛔ **NO MOVEMENT, ONLY CHANGE.**
 
@@ -3255,3 +3257,115 @@ alongside the demotion reasoning. ⛔ **History is preserved, not rewritten** �
 ---
 
 *⚠ **Drafted by the Builder, 30 August 2026, on Carl's instruction, and REDRAFTED the same day after his outcome ruling.** ⛔ **The rule, its reasoning and the capability framing are Carl's, quoted above; the measurements are D-063's, already approved. The Builder authored the write-up, not the decision.** ⚠ **The STANDARD is approved. The `/about` insertion is approved ON DELIVERY, against measurement.***
+
+---
+
+## D-066 — The `/about` Scaffolding: The Page Exists, The Link Is Hot, And The Mark Is Nailed
+
+**Date recorded:** 2026-08-31
+**Status:** ⚠ **TWO STATUSES ON ONE ELEMENT, AND BOTH ARE WRITTEN — `context-rules.md`: *"Statuses are written — never implied."***
+
+| element | status |
+|---|---|
+| **The mark's PLACEMENT on `/about`** | ⛔ **APPROVED** — on delivery, under **D-065 clause 4**, against the figures below. ⚠ **CONFIRMED BY EYE, 31 August 2026: Carl navigated between routes and checked for movement — *"Excuse the pun - nailed it. Great"*. See R-020.** ⛔ **Rule 7 is satisfied: the verdict is Carl's, recorded at the level he gave it.** |
+| **The mark's COLOUR on `/about`** | ⛔ **PROVISIONAL** — Carl: *"it may not stay that way."* In place, deliberately untuned, awaiting the mastering pass (**D-035**). ⚠ **Not a gap. Do not raise a missing approval for it.** |
+| **The page CONTENT** | ⛔ **PROVISIONAL** — scaffolding that conveys position. **Not the About section.** |
+
+**Authority:** Human Founder — Carl, 31 August 2026. On the fourth section: *"Build the 4th section but just put a heading of TBD- To Be Determined, in there and we will decide what content is in there later. Authorisation is granted for F7."* On the unlock: *"You are authorised to use site-header.tsx  Lock it after use."*
+**Bears on:** `app/about/page.tsx` (new), `components/layout/site-header.tsx` (one line). Discharges the on-delivery half of **D-065**; depends on **D-060**, **D-062**, **D-063**. ⚠ **Does NOT touch `app/page.tsx` or `app/start/page.tsx`.**
+
+---
+
+### ⛔ THE DECISION
+
+**`/about` is set up the way the landing page was set up: bare bones that convey position.** Carl's DAW model (**D-035**) — *"Lets get the bare bones in there and then zero in and focus at the right time."* ⛔ **THIS IS TRACKING, NOT THE SECTION.**
+
+1. **The dead link is fixed.** `href="#"` → `href="/about"` in `site-header.tsx`. ⚠ **`#` jumped to the top of the page, so the link read as BROKEN, not inert.** That was the defect that opened the whole subject.
+2. **The page carries FOUR SECTIONS, mirroring the landing page's four** — the founder and the process, the roles, what a website can actually do, and **TBD**.
+3. **The mark is gold, top-left, placed by the nail.**
+
+⚠ **The copy conveys position and is NOT final.** It is held to the standard Carl set for the landing page's own placeholders: they *"convey positions and ideas"* while *"the text wording will be edited, refined and focused."*
+
+⛔ **AMENDED THE SAME DAY, AFTER CARL LOOKED AT IT — the sections are FULL-VIEWPORT and the page title shares section 1's canvas.**
+
+> Carl: *"make them larger like on the home page. Sections 2,3 and 4 should be the same as 1. If i can see all the real estate that gives a better size canvas to design in. Rather than thinner 'strips'."* And: *"Lose the dividing line that runs through the middle of section 1."*
+
+⚠⚠ **THE REASON IS THE DEVELOPMENT PASS, NOT THIS ONE.** Each section is `min-h-screen`, **so the canvas it will eventually be designed into is visible at its real size while it is being designed.** ⛔ **A section sized to its placeholder copy would have to be resized once real content arrives, and every design judgement until then would have been made against the wrong dimensions.**
+
+⚠ **The page title and section 1 were two full-height sections with a rule between them, which cut the opening statement in half.** They are now **one section**; three dividers remain, between the four. **`border-neutral-800` — the site's existing hairline-rule vocabulary, not a new value.**
+
+⚠⚠ **AND THE RESIZE INTRODUCED A DEFECT THAT WAS CAUGHT BY EYE, NOT BY A NUMBER.** The heading rendered at **left 442.5** against the landing page's **104.5** — the text detached from the mark it aligns under. ⛔ **THE CAUSE IS `Container`'s `mx-auto`: an auto inline margin sizes the box to its CONTENT and centres the shrunken result, REGARDLESS of the parent's alignment.** `align-items` and `justify-items` do not override it, and **three layout modes were tried and measured failing** — `flex items-center`, `flex flex-col items-stretch`, and `grid content-center justify-items-stretch`, the last with a full-width track and `stretch` applied. **The layout mode was never the cause.** ⛔ **Fixed by giving the child an explicit `w-full`; `container.tsx` is protected and the fix belongs on the consuming page.** ⚠ **The three failed attempts are recorded in a load-bearing comment in `app/about/page.tsx` so the class is not "simplified" away.** **Verified: `/` and `/about` both at container left 72.5, width 1280.0, heading left 104.5000.**
+
+⚠ **The copy obeys the settled register rulings so the placeholders cannot contradict them later:** **first person** (*"I run C2B"*), **no condescension toward other agencies**, and **the roles described in principle, never by roster.** ⛔ **That is the rulings CONSTRAINING scaffolding, not the argument being built.**
+
+### ⛔⛔ SECTION 4 IS A RENDERED "TBD", AND CARL AUTHORISED IT KNOWING IT SHIPS
+
+⚠ **The Architect recommended AGAINST it** — three rendered sections with section 4 as a source comment — **on the grounds that it deploys.** ⛔ **Every push to `main` deploys to Vercel, and the production alias returns HTTP 200 with no authentication** (`app/robots.ts` blocks crawlers and states in its own header that it *"is NOT access control"*).
+
+⛔ **The exposure was put to Carl explicitly and he authorised the heading anyway.** ⚠ **Recorded because the Architect's objection was sound and is on the record; the ruling is Carl's and it is not an oversight.**
+
+⚠ **Inventing a subject for section 4 would have DECIDED IT BY DEFAULT.** ⛔ **The placeholder exists precisely to prevent that** — its subject is Carl's and undecided.
+
+---
+
+### ⚠⚠ THE NAIL IS DUPLICATED, DELIBERATELY — AND THE DEBT HAS AN OWNER
+
+⛔ **`app/about/page.tsx` carries a SECOND COPY of `NAIL_X`, `NAIL_Y`, `MARK.gold`, `CORE_H` and `place()`.**
+
+⚠⚠ **THE COUNT, STATED ACCURATELY BECAUSE THE PLAN FIRST GOT IT WRONG.** The plan said *"a third independent copy"*; **it is the second.** Verified: those constants appear in exactly one other file, `app/start/page.tsx`. ⛔ **The landing page does not use the nail at all** — it reaches the same point through `SiteHeader`'s flow layout, **which is why D-065 clause 4 was redrafted away from naming the nail as a requirement.** ⚠ **Caught by the Architect (F1). A trade-off argued from an inflated number is a weaker argument, not a safer one.**
+
+⛔⛔ **THE TRUE STATE OF THE SITE: TWO COPIES OF THE CONSTANTS, THREE MECHANISMS REACHING ONE POINT.**
+
+**Why a shared module was NOT extracted, though the duplication is real:**
+
+- It would **edit `app/start/page.tsx`** — approved work under D-062/D-063, needing Carl's word.
+- It would be a **structural decision taken inside a chunk that did not authorise it** (CLAUDE.md §5a).
+- It would **pre-empt the header work**, which is where the sharing question belongs. ⚠ **D-065 clause 4 was redrafted precisely because its first draft *"would have obliged the header work to make the nail SHARED — a structural decision smuggled in through a decision entry."***
+
+⛔ **THE DEBT'S OWNER IS THE HEADER CHUNK.** ⚠ **A cost with no holder is how things go quiet; naming the owner here is what stops that.**
+
+---
+
+### THE MEASUREMENT — how D-065's approval is discharged
+
+**Full record: `live-work/about-scaffold-measurement-31-august.md`.** Production build, **HEADED** Chromium, two viewports.
+
+| viewport | `/` | `/start` | `/about` |
+|---|---|---|---|
+| **1440** | left **104.8598**, top **19.9908** | left **104.8598**, top **19.9908** | left **104.8598**, top **19.9908** |
+| **375** | left **15.9926**, top **19.9908** | left **15.9926**, top **19.9908** | left **15.9926**, top **19.9908** |
+
+⛔ **Identical across all three routes at both widths.** Derived centre spread: **0.0058px horizontal, 0.0000px vertical** — inside D-062's recorded 0.0058 / 0.0064, and the 0.0058 is the known artefact of the landing page's frame width (69.9104 vs the nail's 69.9219), not drift. **`/start` and `/about` agree to 0.0000px on both axes.**
+
+⚠⚠ **`/about` SCROLLS (doc 1511px) WHERE `/start` DOES NOT (900px)** — ⛔ **exactly the asymmetry that produced the 7.35px offset Carl saw on 27 August**, held by `scrollbar-gutter: stable` (D-062). **A headless run could not have shown this working: headless Chromium has no scrollbar and reported 0.00px while the real defect was live.**
+
+**Three things the measurement was built to avoid, all on this project's record:**
+
+1. ⛔ **It publishes RAW `getBoundingClientRect()`, not the derived centre.** The centre is computed through `MARK.gold.cx/cy` — **the same constants copied into the new file** — so measuring it directly would have shared a constant with the implementation, and **a mis-transcribed fraction would have produced three agreeing numbers and a mark in the wrong place.** *(Architect F2. Same class as `cross-section.mjs`'s duplicated `BEVEL_WIDTH`.)*
+2. ⛔ **It checks computed style against the painted rect.** On 18 August computed read correct while the element painted 400px away, because an ancestor established a containing block. ⚠ **The `/about` wrapper is new code.** Computed resolves to **~0.00003px — effectively `left: 0, top: 0`**, independently confirming the nail lands on `Container`'s content origin. *(Architect F3.)*
+3. ⛔ **It measures at TWO viewports.** `Container` is `px-4 sm:px-6 lg:px-8`, so the content-left edge moves at breakpoints. **The three routes agree at every width only because all three resolve through `Container` — the coincidence D-065 calls unasserted.** *(Architect F4. `opening-arm.mjs` running only at 1440px is on the record as one of the seven harness lies.)*
+
+### ⛔ NO HARNESS WAS ADDED, AND THE INVARIANT IS STILL UNASSERTED
+
+⚠⚠ **`verify/proven.json` lists ZERO proven instruments.** `run.mjs` suppresses the pass verdict of any unlisted script, so **a new harness would be unproven by construction** — no red run, no empty-input control, no stability declaration. ⛔ **Filing one would have manufactured the exact false credential D-064 exists to prevent, and it would have looked like rigour.**
+
+⛔ **D-065'S STATUS IS UNCHANGED: UNASSERTED — VERIFY BEFORE RELYING ON THIS.** ⚠ **The measurement above is a ONE-OFF DELIVERY MEASUREMENT discharging Carl's on-delivery condition. It is not an assertion.** **The harness is owed when the header work lands.**
+
+---
+
+### ⚠ WHAT THIS ENTRY DOES NOT DECIDE
+
+- ⛔⛔ **Whether `SiteHeader` renders on `/about` or any other route. NOT DECIDED, and deliberately not settled here.** ⚠ **Carl, 31 August: *"We will probably add a site header to all the pages. What i have to decide is what font to use and the design."*** ⛔ **`SiteHeader` is NOT rendered on `/about`; the mark is placed independently.** **Site headers are the next body of work.**
+- ⛔ **The About section's content.** All of it — the argument, the examples, C2B TV, the fourth section's subject. **Development-pass work, unauthorised.**
+- ⚠ **`about-section-thinking.md` is untouched by this chunk.** It is idea stage; the scaffolding settles no question in it.
+
+### ⚠⚠ TWO THINGS THE HEADER CHUNK INHERITS — raised by the Architect, recorded so they are not rediscovered
+
+1. ⛔⛔ **FULL NAVIGATION DEFEATS D-065's DEMONSTRATION.** ⚠ **Verified: `next/link` is used NOWHERE in the app, and `app/page.tsx:245` already navigates to `/start` via a plain `<a>`.** A plain `<a href="/about">` is a **full document navigation** — the page blanks and repaints, **so the mark disappears and comes back.** ⛔ **D-065's argument is precisely *"a visitor can navigate and watch it not move — a claim they verify themselves."*** ⚠⚠ **Under full navigation the immobility stays MEASURABLE and stops being PERCEIVABLE: the measurement above passes, and the demonstration does not run.** ⛔ **This is not "should the nav use `next/link`" — it is whether the site's navigation is client-side at all, which decides whether D-065 is a claim a visitor can verify or one only an instrument can.** *(Architect F8.)*
+2. ⚠ **THE OTHER THREE NAV LINKS BECOME DEAD IF THE HEADER GOES SITE-WIDE.** `Services`, `Work` and `Contact` remain in-page anchors. **Harmless today** — `SiteHeader` does not render on `/about`. ⛔ **But from `/about` they would resolve to `/about#services`, which has no target, and behave exactly like the `href="#"` defect this chunk fixed.** *(Architect F9.)*
+
+---
+
+*⚠ **Reviewed by the Architect before execution** (`live-work/architect-prompt-about-scaffolding.md` → the plan → its findings). ⛔ **Six findings were applied to the plan before any code was written: F1 the constant count, F2 raw rects, F3 the containing-block check, F4 the second viewport, F5 the constraint's `/about` reason, F6 the two statuses above.** **F7 and F8 went to Carl. F7 he authorised against the recommendation; F8 is recorded for the header chunk.***
+
+*⛔ **The unlock was opened and closed within the chunk.** Carl named `components/layout/site-header.tsx`; the edit was **one line** (`git diff --stat`: 1 file changed, 1 insertion, 1 deletion); `chunk-scope.json` was deleted and **the lock RE-VERIFIED BY OBSERVING A REAL DENIAL** — the guard fails open on an absent scope file, so deletion alone proves nothing.*
