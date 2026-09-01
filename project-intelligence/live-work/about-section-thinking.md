@@ -2838,3 +2838,390 @@ it provides by accident of where it sits — and state for each how it is preser
 is settled until he approves it.**
 
 ---
+
+# ⛔⛔ SECTION 3 — THE FOUR EXAMPLES NAMED, THE LAYOUT, AND THE SHOWROOM SCREEN. Carl, 1 September 2026
+
+⚠ **The standing from the section 2 pass applies here unchanged: this is the DEVELOPMENT of 1–4, a
+TRACKING PASS, and nothing is settled until Carl approves it.** ⛔ **Carl reserves the right to change
+it on the fly.**
+
+⛔⛔ **AND SECTION 3'S DESIGN IS CARL'S — *"i will take care of the design of section 3."*** ⚠ **The
+layout below is CARL'S, stated by him. The Builder does not propose arrangements in this section.**
+
+---
+
+## ⛔ THE FOUR EXAMPLES — TWO NAMED, TWO TBD
+
+**Carl: *"i had originally intended this to be about examples of elements either on or off the site.
+This is still the case but i think one of them should be about CD. Another will be the blue platinum
+button. The other two are up for grabs, TBD."***
+
+| # | example | standing |
+|---|---|---|
+| **1** | ⛔ **The blue platinum button** | named. ⚠ **The recolour method already applies — see the 30 August pass** |
+| **2** | ⛔ **CD — Claude Design** | ⚠ **NEW this session.** Section 3 previously had no CD example |
+| **3** | ⛔ **TBD** | ⚠ **Carl: *"I will decide about the other two before planning."*** |
+| **4** | ⛔ **TBD** | as above |
+
+⚠ **The two sources from §10a are unchanged: things already ON the site, and things built
+specifically for the purpose.** ⛔ **The blue button is source 1 and must be recoloured for
+recording — the visitor has already seen the live one and an identical copy is repetition.**
+
+---
+
+## ⛔⛔ THE CD EXAMPLE — ITS PURPOSE IS FAMILIARITY, NOT PROOF OF WORK
+
+**Carl: *"I will want to get acquainted with CD before i use it with clients. Either use it with my
+own brand or make up an example. The goal is to show capability and the process. It is also the
+first thing a client will encounter during discovery. Showing a bit about what that process is
+introduces familiarity to a certain extent."***
+
+⚠⚠ **THIS IS A DIFFERENT KIND OF ARGUMENT FROM THE BUTTON'S, AND THE DIFFERENCE MATTERS.**
+
+| | **the button** | **CD** |
+|---|---|---|
+| **demonstrates** | ⛔ a **capability** — this material has parameters and can be tuned | ⛔ **a step the client is about to take** |
+| **the viewer is** | evaluating craft | ⚠ **previewing their own first meeting** |
+
+### ⛔ THE FABRICATION OBJECTION WAS RAISED AND CARL'S ANSWER DISSOLVES IT
+
+⚠ **The Builder raised that a CD example needs a client brand, there is no client, and an invented
+one reads as a fake portfolio piece.** ⛔ **Carl's answer settles it: the claim being made is about
+the PROCESS, not about a client.**
+
+⛔⛔ **A made-up example is not dishonest when what is being shown is HOW IT WORKS rather than WHO
+CARL HAS WORKED FOR.** ⚠ **Both routes are therefore open — Carl's own brand, or an invented one —
+and they differ only in which is easier to make land.**
+
+⚠ **THE BUILDER'S LEAN, NOT A RULING:** ⛔ **a made-up example is cleaner**, because C2B is the site
+the visitor is already looking at and a CD demonstration of C2B risks reading as recursive. ⚠ **Carl's
+own brand is more honest and has no permission question, and C2B now HAS existing material — a mark,
+a palette, a typeface, a live site — which is exactly CD's input.** **Carl's call.**
+
+### ⛔⛔ A PREREQUISITE, NOT AN ASIDE — recorded as SEQUENCE
+
+⛔ **Carl gets acquainted with CD BEFORE the example exists.** ⚠ **A demonstration of a process not
+yet run would be a first attempt at the tool, and would look like one.** **It is upstream of section
+3 having content at all — not a section 3 blocker.**
+
+### ⚠ WHAT THE CD EXAMPLE CLOSES
+
+⛔ **The 30 August pass noted that the recolour argument connects section 3 to section 2 — *"we can
+put this in your colours"* is not a CLAIM on the About page but a DESCRIPTION OF A STEP THAT ALREADY
+EXISTS.** ⚠⚠ **CD is the seat that performs it. So the button demonstrates the capability and the CD
+example demonstrates WHERE THAT CAPABILITY COMES FROM. Two halves of one argument.**
+
+⛔ **It also satisfies the structural rule that the four examples build on sections 1 and 2** — a CD
+example is section 2's content SHOWN rather than described.
+
+---
+
+## ⛔⛔ THE LAYOUT — CARL'S. A LIST AND A STAGE
+
+**Carl: *"left side, 4 boxes with video content that can be pressed. Right side, in the middle.
+Viewer to watch the content."***
+
+| | |
+|---|---|
+| **left** | ⛔ **four boxes carrying video content, PRESSABLE** |
+| **right** | ⛔ **a viewer, vertically centred.** Press a box, watch it here |
+
+⚠⚠ **IT DIFFERS FROM SECTION 2 ON THE AXIS THAT MATTERS.** ⛔ **Section 2 is a 2+2 grid of equal
+regions; section 3 is ASYMMETRIC — one side selects, the other plays.** **Neither reads as a repeat
+of the other, which was Carl's requirement: *"In layout they should be different."***
+
+⚠ **AND IT INVERTS SECTION 1 WITHOUT REPEATING IT.** ⛔ **Section 1 is text left, image right.
+Section 3 is selectors left, viewer right — the IMAGE SIDE STAYS RIGHT down the page**, giving the
+page a spine without reusing a layout.
+
+### ⚠ THE INTERACTION VOCABULARY IS ALREADY SETTLED ON THIS SITE
+
+⛔ **Four selectable things driving one changing display is the ANSWER-CARD PATTERN.** ⚠ **The
+enquiry corridor already solved selection state, hover rules and the locked rule that hover adds no
+new white (D-031/D-032), and the visitor will have learned it on `/start`.**
+
+⛔ **THIS IS NOT A PROPOSAL TO REUSE THE CODE** — the corridor is Three.js and this is video. ⚠ **It
+is a note that the BEHAVIOUR is established and a novel selection pattern would be worth less than a
+familiar one.**
+
+### ⚠ REAL ESTATE ABOVE AND BELOW THE VIEWER
+
+⛔ **Carl: *"It means we will have some real estate above and below the viewer that may or may not be
+used."*** ⚠ **The four boxes stack down the left; a centred viewer shorter than that stack leaves
+space top and bottom.** **NOTED, NOT DECIDED.**
+
+---
+
+# ⛔⛔ THE SHOWROOM SCREEN — WHAT PLAYS BEFORE A SELECTION. CARL'S BRIEF TO THE BUILDER
+
+⛔⛔ **ITS OWN SESSION, AT THE APPROPRIATE TIME. Carl: *"We will spend a session on this at the
+appropriate time."*** ⚠ **NOTHING IS BUILT FROM THIS ENTRY. It is recorded so the brief is not lost
+and not misremembered.**
+
+## ⛔ THE BRIEF, IN CARL'S WORDS
+
+> *"like a TV in a showroom, we need some sort of image on the screen when a video is not selected.
+> It wont be a video and im thinking of making the viewer 16:9. Thats a certain amount of pixels.
+> Im gonna oversee this but im going to let you come up with the creative part, as well as build it.
+> Slop is definately not needed. It could be on a 5 sec loop. It could be elaborate Digital Art,
+> treatment of the logo, whatever. Lets see what you come up with - organise those pixels."*
+
+| constraint | |
+|---|---|
+| **never blank** | ⛔ the screen always shows something |
+| **not a video** | ⛔ **Carl's word.** A still, or a short loop |
+| **16:9** | ⛔ a fixed pixel budget — **which is the point of naming it** |
+| **duration** | ⚠ *"could be on a 5 sec loop"* — a suggestion, not a spec |
+| **subject** | ⚠ **open** — elaborate digital art, a treatment of the mark, *"whatever"* |
+| **no Three.js** | ⛔ **Carl's 30 August ruling stands.** Canvas, SVG, CSS, or a pre-rendered loop |
+| **standard** | ⛔⛔ **"Slop is definately not needed." *Organise those pixels*** |
+
+## ⛔⛔ THE GRANT — CORRECTED. IT IS WIDER THAN THE BUILDER ASSUMED
+
+⚠⚠ **THE BUILDER READ *"i passed it over to you mostly"* AS the HOW being delegated while the WHAT
+stayed Carl's — production options for abstract colour, brought back for a decision.** ⛔ **THAT WAS
+WRONG AND CARL CORRECTED IT.**
+
+⛔⛔ **THE CREATIVE CALL IS THE BUILDER'S. THE OVERSIGHT IS CARL'S. THE BUILD IS THE BUILDER'S.**
+
+⚠ **Recorded because the Builder ASKED rather than inferred, and the inference would have been too
+narrow.** ⛔ **`current-sprint.md`'s standing instruction — when something is unclear, ask; do not
+reconcile quietly — worked here.**
+
+## ⚠⚠ THREE CONSTRAINTS THE BUILDER RAISED — for the dedicated session, not now
+
+1. ⛔⛔ **IT HAS TO LOSE.** ⚠ **It is the RESTING state: interesting enough that a blank rectangle
+   would be worse, quiet enough not to compete with four video boxes to its left, and the moment a
+   box is pressed its job is TO DISAPPEAR WITHOUT BEING MISSED.** **A harder brief than "make
+   something striking."**
+2. ⚠ **IT IS THE SECOND MOVING THING ON THE PAGE.** ⛔ **Section 2's travelling image is above it. If
+   both are slow, layered and teal, the page reads as ONE CONTINUOUS EFFECT rather than two
+   sections.** **May be right; may be too much.**
+3. ⚠⚠ **FIVE MOVING THINGS AT REST.** ⛔ **Four boxes carrying video content PLUS the screen playing
+   something before selection.** ⚠ **That is a lot of motion competing for attention and it could
+   make the SELECTION STATE hard to read — the exact thing D-031/D-032 worked to get right on the
+   corridor.** **Possible answers exist (static thumbnails until hover; boxes animating only on
+   selection; a slow enough screen) — all for Carl's session.**
+
+⚠ **Constraint 3 is NEW and could not have been seen on 30 August, because the layout did not exist
+then.**
+
+## ⛔ C2B TV NOW HAS A LOCATION
+
+⚠ **The 30 August entry records C2B TV as *"what is playing before an example is selected"* — idea
+stage, dedicated session, nothing built from.** ⛔ **Carl's layout gives it a precise place: THE
+VIEWER, BEFORE ANY BOX IS PRESSED.** ⚠ **Previously an idea without a position; still idea stage,
+still Carl's session.**
+
+## ⚠ AN OPEN QUESTION THIS TOUCHES — the mark, twice
+
+⛔ **Section 1 has *"whether the gold mark appears at all, and as poster or object"* — UNANSWERED
+since 31 August.** ⚠ **Carl has now floated a treatment of the logo as one option for the showroom
+screen.**
+
+⛔⛔ **THESE SHOULD NOT BE DECIDED INDEPENDENTLY.** ⚠ **The mark in section 1's image AND as the
+subject of the section 3 screen is the mark appearing twice, in two treatments, on one page.**
+**Could be a motif; could be repetition.** ⛔ **Flagged for decision together.**
+
+---
+
+## ⚠ WHAT SECTION 3 STILL CARRIES UNRESOLVED
+
+- ⛔⛔ **THE SORTING-RULE CONTRADICTION IS STILL OPEN.** ⚠ **Flagged 30 August, explicitly Carl's,
+  and NOTHING THIS PASS SETTLES IT:** *"In the c2b ethos → the site. Not in the ethos → a video
+  example for clients"* versus section 3 putting examples ON the page. ⚠ **A CD example — a
+  client-brand demonstration — sharpens rather than resolves it.**
+- ⚠ **Examples 3 and 4.** ⛔ **Carl decides before planning.**
+- ⚠ **Which colour the button is recoloured to** — ⛔ **must be one the system has not assigned a
+  job to (§8: warm/salmon is the selection state).** Carried from 30 August.
+- ⚠ **The recolour-and-revert PROCEDURE** — ⛔ **a change to approved work (D-051, D-029) that must
+  not survive the recording. The original constant recorded BEFORE it is touched.** Carried from
+  30 August, still unshaped.
+- ⚠ **Whether the real estate above and below the viewer is used.**
+
+## ⚠⚠ TWO STRUCTURAL NOTES FOR WHOEVER PLANS THIS
+
+1. ⛔ **`/about` GAINS A CLIENT BOUNDARY FROM TWO DIRECTIONS AT ONCE** — section 2's travelling image
+   and section 3's video selection. ⚠ **They arrive together and should be planned as one structural
+   change, not two.**
+2. ⛔ **VIDEO ON `/about` IS NOT FORBIDDEN BY THE HERO RULE.** ⚠ **31 August recorded *"video is the
+   hero's alone; section 1 gets a still"* — that ruling was about SECTION 1.** ⛔ **Section 3 is
+   video by definition. Stated plainly so a later session does not read the hero rule as forbidding
+   it.**
+
+---
+
+# ⛔⛔ THE GOLD MARK — SETTLED IN SECTION 1, OPEN IN SECTION 3. 1 September 2026
+
+⚠⚠ **THIS ENTRY IS THE SEED MATERIAL FOR THE TV CREATIVE SESSION.** ⛔ **Carl's advice, and the
+reason it is written this way: *"record both my comments and your comments for your creative
+session."*** ⚠ **BOTH SIDES ARE PRESERVED — not a conclusion. The reasoning is what the session
+needs.**
+
+---
+
+## ⛔ AUTHORSHIP — CORRECTED, AND THE CORRECTION MATTERS
+
+⚠⚠ **THE BUILDER WAS CREDITED WITH THE POSTER IDEA AND CHECKED RATHER THAN ACCEPTED IT.** ⛔ **Carl
+had floated the translucent teal-and-blue field, the gold mark in it as contrast, AND the
+poster-versus-object pair. The Builder picked the poster and supplied the reason.**
+
+⛔⛔ **CARL'S RULING: *"We both came up with the logo in Section 1, the idea was developed
+together."*** ⚠ **Recorded as JOINT. Not the Builder's, not solely Carl's.**
+
+⚠ **Why this is worth recording at all:** ⛔ **the Builder's instinct was that the poster framing
+might have been its own, and it was not.** **Asking beat reconstructing — the same standing
+instruction that the 31 August handoff records the Builder breaking twice in one sitting.**
+
+---
+
+## ⛔⛔ SECTION 1 — THE MARK IS SETTLED. THE OPEN QUESTION IS STALE
+
+⛔⛔ **CARL, 1 September 2026: *"Its going in there."*** ⚠ **The 31 August open question —
+*"whether the gold mark appears at all, and as poster or object"* — IS ANSWERED. It appears. As a
+poster.**
+
+**What was settled in the exchange, recorded because the reasoning is load-bearing for section 3:**
+
+- ⛔ **THE MARK MAKES IT *THIS* WORKSPACE.** ⚠ **An anonymous studio in three cool tones says
+  *someone works here*. The same room with the C2B mark on the wall says *this is where C2B is
+  made*** — which is section 1's actual subject, the founder and the process, rather than a generic
+  representation of working.
+- ⛔ **IN THE WORLD OF THE IMAGE, NOT COMPOSITED ON TOP.** ⚠ **Faded, at an angle, a real object in
+  a real space.** ⛔ **This reinforces D-065: the mark's constancy is what a visitor can verify for
+  themselves.**
+- ⛔ **POSTER BEATS OBJECT, AND FOR A NAMED REASON.** ⚠ **An object on the desk competes with the
+  screens and the rig — another thing on a surface already full of things. A POSTER SITS IN THE
+  NEGATIVE SPACE BEHIND THE SETUP, where nothing else is happening.** **It reads as environment
+  rather than as a prop that was placed.**
+- ⛔⛔ **IT GOES QUIETER THAN INSTINCT SUGGESTS.** ⚠⚠ **Warm at low saturation against a cool field
+  reads as WARM long before it reads as GOLD — that is how the eye works on colour temperature. It
+  will draw attention whatever value it is given.** ⛔ **Target: DISCOVERED RATHER THAN ANNOUNCED.**
+- ⛔ **§8'S EXCEPTION IS EARNED CLEANLY.** ⚠ **Warm is spoken for as the SELECTION STATE on
+  interactive surfaces. This is the mark, in an image, on a route with no selection at all.** **Gold
+  meaning *the mark* is exactly what gold already means.**
+
+---
+
+## ⛔⛔ SECTION 3 — THE MARK ON THE TV IS THE BUILDER'S CALL
+
+⛔ **Carl: *"For Section 3. That is up to you, its a possibility to use it on the TV."***
+
+⚠⚠ **THIS IS THE GRANT ARRIVING WITH A CONCRETE SUBJECT.** ⛔ **The creative call on the showroom
+screen is the Builder's; the oversight is Carl's. Whether the mark features there is therefore the
+Builder's to decide.**
+
+### ⛔ CARL'S CLUE — recorded verbatim, NOT confirmed and NOT denied
+
+> ⛔⛔ ***"If that was the case, i know what id do with it. I will give you a clue. The gold logo
+> already exists in some form in 1 and 2. It stops at 2. How would it get in the TV?"***
+
+⚠⚠ **THE BUILDER ANSWERED AND CARL DID NOT CONFIRM IT: *"Im not telling you, lol. Reason your way
+to creativity."*** ⛔ **NOTHING BELOW IS RATIFIED. It is preserved as reasoning, per Carl's
+instruction.**
+
+### ⛔ CARL'S SECOND STEER — the test, not the answer
+
+> ⛔⛔ ***"Ask yourself What would C2B do? Whats the ethos, the philosophy? Think of the buzzwords id
+> use. Connectivity. Same world."***
+
+⚠⚠ **"CONNECTIVITY" AND "SAME WORLD" ARE CARL'S WORDS AND THEY ARE THE TEST THE ANSWER MUST PASS.**
+
+---
+
+## ⚠ THE BUILDER'S REASONING — preserved for the session, UNRATIFIED
+
+**1. The mark does not REAPPEAR on the TV; it ARRIVES.** ⛔ **Reappearing means two instances of a
+logo on one page. "Same world" says it is ONE OBJECT the whole way down.**
+
+**2. The site already argues this in three places, independently of the About page:**
+
+| where | what it argues |
+|---|---|
+| **three routes** | the mark holds `104.8598 / 19.9908` — ⛔ **a visitor can verify the constancy themselves** |
+| **`/start`** | gold → blue → gold. ⚠ **One object moving through states, not three logos** |
+| **the corridor** | ⛔ **the same material under different light** — continuity as method |
+
+**3. So a LOGO TREATMENT on the screen is the wrong shape.** ⚠⚠ **A picture OF the mark is a
+different world that happens to share a silhouette.** ⛔ **Two unconnected appearances would be the
+site contradicting its own argument ON THE ONE PAGE THAT EXISTS TO EXPLAIN IT.**
+
+**4. It reframes what the divider stop MEANS.** ⚠ **The section 2 pass recorded the image stopping
+because section 3 is a different subject. Under "connectivity" the question is not what stops — it
+is WHAT IS ENTITLED TO CONTINUE.** ⛔ **The image is the founder's workspace and has no business in
+the client's section. THE MARK IS NOT THE WORKSPACE. It is the constant — the one element whose
+entire recorded argument is that it does not stop.**
+
+**5. The screen becomes a DESTINATION rather than a slot needing filling.** ⚠ **Section 1: the mark
+on the wall of the place where the work is made. Section 3: the same mark, on the screen, above the
+four things made there.** ⛔ **A journey and an arrival, not a poster and a picture.**
+
+**6. ⛔⛔ IT ANSWERS THE HARDEST CONSTRAINT — "it has to lose."** ⚠⚠ **A thing that ARRIVED BY
+TRAVELLING has earned its presence before it settles. The visitor watched it get there.** ⛔ **Then
+it rests; when a box is pressed it GIVES UP THE SCREEN to the client's content.** **The mark
+yielding to the client is the correct hierarchy stated as BEHAVIOUR rather than claimed in copy.**
+
+**7. And it settles loud-versus-quiet without a choice being made.** ⚠ **Section 1's poster is
+discovered rather than announced. If the same mark travels and arrives, the TV version does not need
+to be louder to earn its place — ⛔ THE ARRIVAL IS THE EMPHASIS, NOT THE TREATMENT.** **The two
+appearances stop competing because they are one continuous object.**
+
+---
+
+## ⛔⛔ THE PRODUCTION CONSTRAINT — IT LANDS BEFORE RESOLVE, NOT AFTER
+
+⛔⛔ **IF THE MARK CONTINUES PAST WHERE THE IMAGE STOPS, IT CANNOT BE BAKED INTO THE RESOLVE
+RENDER.** ⚠ **The image and the mark must be SEPARABLE — the poster cannot be part of the flattened
+frame if the mark has to keep going.**
+
+⚠⚠ **THIS IS A REAL CONSTRAINT ON SECTION 1'S IMAGE AND IT ARRIVES BEFORE THE IMAGE IS MADE.**
+⛔ **Raised twice by the Builder in this exchange and not disputed. It joins the aspect-ratio
+question as something worth knowing BEFORE Resolve.**
+
+⚠ **It is a constraint on the OPTION, not a ruling that the option is taken.** ⛔ **If the mark does
+not travel to the TV, it can be baked in and this constraint disappears.** **Which means the section
+3 decision has a deadline: it must be made before section 1's image is rendered.**
+
+---
+
+## ⚠ HOW THIS CHANGES THE FLAGS ALREADY RECORDED
+
+- ⛔ **THE "MARK TWICE" FLAG IS HALF-RESOLVED.** ⚠ **The section 2 pass flagged that the mark in
+  section 1's image and on the TV screen must not be decided independently.** ⛔ **Section 1 is now
+  settled by Carl; the TV is the Builder's.** **They still constrain each other — but only one
+  direction is open.**
+- ⚠ **The section 1 "poster or object" open question is CLOSED.** ⛔ **It should not be carried
+  forward as open.**
+- ⚠ **The C2B TV entry of 30 August is unchanged in standing** — idea stage, Carl's session. ⛔ **But
+  the screen now has a candidate subject with an argument attached.**
+
+---
+
+## ⛔ WHAT THE TV SESSION INHERITS
+
+**Settled and not reopenable by the Builder:**
+
+- ⛔ **The mark is in section 1 as a poster, faded, in the world of the image.**
+- ⛔ **No Three.js.** 16:9. Not a video. Never blank. ⛔ **"Slop is definately not needed."**
+- ⛔ **The creative vision is the Builder's; Carl oversees and may nudge.**
+
+**Carl's steers, to be reasoned from rather than answered back:**
+
+- ⛔ **"Connectivity. Same world."**
+- ⛔ **"The gold logo already exists in some form in 1 and 2. It stops at 2. How would it get in the
+  TV?"**
+- ⚠ **Carl knows what he would do with it and has deliberately not said.**
+
+**Open:**
+
+- ⚠ **Whether the mark features on the TV at all** — ⛔ **the Builder's call.**
+- ⚠ **If it does: how it gets there, and what it does once it has.**
+- ⚠ **If it does not: what occupies the screen instead, to the same standard.**
+
+⚠⚠ **AND ONE NOTE ON HOW TO RUN THE SESSION, FROM THE GRANT ITSELF.** ⛔ **Carl: *"i might give you a
+nudge now and again but not to the extent when i am coming up with the creative vision."*** ⚠ **The
+Builder should arrive with a PROPOSAL AND ITS REASONING, not three options for Carl to choose
+between.** **Offering a menu looks respectful and is actually handing the decision back — which is
+what the grant explicitly removed.**
+
+---
