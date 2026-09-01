@@ -1,202 +1,238 @@
-# Session Handoff — 31 August 2026. The scaffolding and the site headers were BUILT. Six commits, two of them code.
+# Session Handoff — 1 September 2026. Sections 2 and 3 were DISCUSSED. The site was REWIRED and RESIZED. Four commits, two of them live.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
 `live-work-protocol.md` §3a.
 
-⚠⚠ **THE LAST SESSION CHANGED NO CODE. THIS ONE DID.** ⛔ **`app/` and `components/` were both
-touched, and two commits deployed to Vercel.**
+⚠⚠ **THIS SESSION BOTH DISCUSSED AND BUILT.** ⛔ **Five code files changed across two deploying
+commits, and `about-section-thinking.md` grew by 1,053 lines.**
 
 ---
 
 # ⛔⛔ WHAT THE NEXT SESSION DOES — CARL'S INSTRUCTION
 
-> *"The next work is discussion on Sections 2, 3 and 4."*
+> ⛔ ***"The next work. Home page. Write and finalise the copy for Sections 2, 3 + 4. 1, the hero, is
+> an exception and a special case that will be built last. Also included for next work. The About
+> page. Write and finalise the copy for Sections 1, 2 + 4. 3 is video work and your 'piece de
+> resistance'."***
 
-⛔ **DISCUSSION, NOT BUILDING.** ⚠ **Section 1's development landed this session (commit `570e622`)
-and is the model: what it ARGUES was already settled; this pass settled WHERE THINGS GO.**
+**SIX SECTIONS OF COPY. Two exclusions, and they are NOT the same kind:**
 
-⚠⚠ **BEFORE DISCUSSING SECTION 3, READ THIS:** ⛔ **its layout and design are CARL'S — *"i will take
-care of the design of section 3."*** **Do not propose arrangements there.**
+| excluded | why |
+|---|---|
+| **Home — the hero** | ⛔ **DEFERRED.** *"an exception and a special case that will be built last."* ⚠ **Carl has plans for it he has deliberately not shared. Do not ask, do not infer.** |
+| **About — section 3** | ⛔ **DELEGATED to the Builder** — video work, *"your piece de resistance."* |
 
-⚠ **Section 4's SUBJECT is undecided and is Carl's.** ⛔ **Do not invent one. The page renders a
-literal "TBD — To Be Determined" heading, authorised by Carl knowing it deploys publicly.**
+⚠⚠ **THE TWO PAGES ARE NOT THE SAME TASK.** ⛔ **Home's copy is from MONTHS AGO, pre-governance — a
+rewrite from scratch. About has 3,336 lines of recorded thinking — a COMPRESSION of settled
+material.** **Full brief: `about-section-thinking.md` → *THE NEXT PHASE OF WORK*.**
 
-⛔ **THE ONE OPEN SHAPE QUESTION ON SECTION 2:** "the roles" must be described **in principle, never
-by roster** (item 12), and yet must **add structure** to earn its place. ⚠ **A diagram of four seats
-IS the roster. That tension is unresolved and is the substance of the section 2 discussion.**
+⛔⛔ **POSITIONING IS RULED. C2B IS A WEBSITE AGENCY.** Carl: *"We are a website agency for the
+foreseeable future. Lets keep focused."* ⚠ **The copy does not hedge and does not hint at anything
+else.** ⛔ **Carl holds a longer roadmap OUTSIDE this repository and has ruled that none of it
+reaches the site or the record.** **Do not ask about it; do not reconstruct it. D-038 already
+governs.**
+
+⚠ **CARL IS RESEARCHING COMPETITORS FIRST** — local, national, international; copy, aesthetics,
+positioning, target market. ⛔ **Strategist work, upstream of the chunk. What reaches the Builder is
+Carl's CONCLUSION, not the survey.**
+
+⚠ **AUTHORSHIP IS NOT SETTLED — who DRAFTS the copy is Carl's to say when the chunk opens.**
+⛔ **Everything the Builder wrote today was RECORDING. The one exception is `/about` section 4's
+placeholder, which Carl accepted as an indication and which this chunk replaces.**
 
 ---
 
-# ⛔ WHAT WAS BUILT — and it is live
+# ⛔ WHAT WAS BUILT — and two commits are live
 
 | commit | what | deploys? |
 |---|---|---|
-| `24dc907` | `/about` scaffolding — link hot, page created, mark nailed | ⛔ **YES** |
-| `1939d93` | site headers on `/start` and `/about`, plus the `Roles` dropdown | ⛔ **YES** |
-| `10b7a19` | three header files added to the permanent protected list | no |
-| `4216fdd` | the 31 August live-work records | no |
-| `5213259` | **D-035 amended** — mastering covers all devices | no |
-| `570e622` | **section 1's layout and image** — development pass | no |
+| `2fe0bed` | section 2 — the roles named, item 12 reversed, the travelling image | no |
+| `8a3da14` | section 3 — the examples, the layout, the mark's journey | no |
+| `089015a` | ⛔ **the navigation journey** — 5 code files | ⛔ **YES** |
+| `67d8181` | ⛔ **the landing page resize** | ⛔ **YES** |
 
-**`main` = `570e622`, fully pushed, working tree clean.**
+**`main` = `67d8181`, fully pushed, working tree clean.**
 
-## The state of the site
+## ⛔ THE JOURNEY — the site now reads as one line
 
-- ⛔ **`/about` EXISTS** — four `min-h-screen` sections: the founder and the process (sharing a
-  canvas with the page title), the roles, what a website can actually do, and **TBD**.
-- ⛔ **Site headers on `/start` AND `/about`** — nav links **OUT OF FLOW, hanging from the nail**.
-  ⚠⚠ **`SiteHeader` IS NOT RENDERED ON EITHER.** **D-062's 81px in-flow band is not reincurred and
-  `/start`'s document is still 900px.**
-- ⛔ **`Home` is filtered from the landing page** — *"you cant navigate to where you already are."*
-- ⛔ **On `/about`, `About` becomes `Roles`** with a hover dropdown to `Examples` / `TBD`.
-- **The mark is identical on all three routes: `104.8598 / 19.9908` at 1440.**
+⛔ **Home = who we are and what we do → `Who we are` → About = HOW → `Start a conversation` →
+`/start` = the conversation.** ⚠ **`Contact` in the header is the shortcut for a reader who skips
+the walk.**
 
----
+⚠⚠ **THE FAULT IT FIXED:** the landing page's strongest CTA sat at the foot of `#contact` and went
+straight to `/start`, so a reader scrolling down reached the conversation **having never seen
+`/about`.** Anyone who did reach About arrived **after** the invitation.
 
-# ⚠⚠ FIVE THINGS THE NEXT SESSION MUST NOT GET WRONG
+⛔ **"Who we are" IS NOT A SOFTER LABEL — IT IS THE ARGUMENT.** ⚠ **Carl is a solo proprietor and the
+About page's thesis is that *"we"* is nonetheless accurate.** **Carl: *"My thoughts on the matter are
+crystal clear - its 'who we are'!"*** ⛔ **Do not rename it to `How we work`.**
 
-## 1. ⛔⛔ A DELIBERATE SILENCE IS NOT A GAP — THE BUILDER GOT THIS WRONG TWICE IN ONE SITTING
+## ⛔ THE `/about` HEADER IS ITS OWN — and the dropdown is GONE
 
-**Carl:** *"i have discussed the hero with you several times. I had to find out if it was technically
-feasible. I then had it stricken from the record. i need to keep you focused."*
-
-⚠ **The Builder observed that `app/page.tsx` has no right-side element and inferred the arrangement
-did not exist. Corrected — then wrote that "the repo is simply behind", which was ALSO wrong.**
-⛔ **Both treated the absence as something to EXPLAIN. It was something to RESPECT.**
-
-⛔ **THE RULE: when something Carl references is missing from the record, assume it was REMOVED ON
-PURPOSE.** ⚠ **Do not reconstruct it, do not infer its contents, do not write a sentence explaining
-its absence. ASK, or leave it alone.** **`current-sprint.md` has said so since 28 July.**
-
-## 2. ⛔ MOBILE IS NOT AN OPEN DEFECT — IT IS THE MASTERING PASS
-
-**Carl:** *"we could of optimised for mobile while building but that would of slowed the process
-down. Its right that we should get the site built in one medium first before optimising for others."*
-
-⚠⚠ **D-035 WAS AMENDED THIS SESSION (`5213259`) AND DEVICE COVERAGE IS NOW IN ITS `PROVISIONAL`
-LIST.** ⛔ **A route that works at 1440 and not at 375 is *in place, deliberately untuned* — the same
-standing as the provisional gold on `/about`.** **Do not raise it as a defect. Do not "fix it while
-passing."**
-
-⚠ **The Builder first wrote this up as a separate "mobile optimisation pass" and Carl corrected it:
-there is no such pass, it is D-035's.** ⛔ **"All devices" is wider than mobile — nothing in this repo
-has been measured above 1920, and Carl walks the site on a 4K TV.**
-
-## 3. ⚠ THE `/start` AND `/about` NAV HAS NO MOBILE ROUTE
-
-⛔ **Below `md`, neither route has any nav or menu button** — `hidden md:flex`, after a measured
-collision with the mark at 375px. ⚠ **`site-header.tsx` DOES have one, so the site has one mobile
-nav pattern and two routes with none.** **Carried into mastering; not a defect.**
-
-## 4. ⛔ `NAV_DROP_PX = 0.5` IS AN OPTICAL CORRECTION IN TWO FILES
-
-⚠ **Carl set it by eye — 0 *"a smidgeon too high"*, 1 *"a smidgeon too low"*, 0.5 *"Nailed it"*.**
-⛔ **The cause is real: `place()` computes the mark's frame as `CORE_H / coreH` = 39.984px against
-the landing page's round 40px, and everything hung off that centre inherits the 0.016px shortfall as
-a systematic upward bias.**
-
-⚠⚠ **SIX MEASUREMENTS MISSED IT AND ALL SIX WERE TRUE** — they compared the row against the NAIL,
-which carries the same shortfall. ⛔ **A measurement sharing a constant with the thing it checks
-cannot see that constant's error.** **Rule 9 settled it: Carl looked at the screen.**
-
-⛔ **THE PROPER FIX REMOVES THE RESIDUE AND BOTH COPIES. It touches D-060/D-063 and is CARL'S TO
-AUTHORISE.** **Grep `NAV_DROP_PX`.**
-
-## 5. ⚠ `w-[38.293px]` ON THE `Roles` TRIGGER IS FONT-DEPENDENT
-
-⛔ **It is the measured width of the word "About" in this font at this size**, holding the row still
-so the other links do not shift between routes. ⚠ **When the nav font changes it goes stale and the
-row moves again.** **Carl: *"understood. We will cross that bridge when we come to it."***
-
----
-
-# ⛔ THE SCOPE GUARD FIRED THREE TIMES AND WAS RIGHT EVERY TIME
-
-⚠⚠ **IT DENIED THE BUILDER TWICE FOR CREATING FILES OUTSIDE THE DECLARED SCOPE** — `nav-links.ts`
-and `about-nav.tsx`. **Both were genuinely needed; both went to Carl, who granted them by name.**
-⛔ **Widening scope is not the Builder's to do, and the guard's message says so explicitly.**
-
-**Three files were added to the PERMANENT protected list this session (`10b7a19`):**
-`app/start/page.tsx`, `components/layout/nav-links.ts`, `components/layout/about-nav.tsx`.
-
-⚠⚠ **WHY, AND IT IS A TRAP WORTH KNOWING:** the header chunk touched five files and only ONE was
-permanently protected. **The other four were held by the chunk's own scope file — gitignored scratch
-that vanished when the chunk closed.** ⛔ **CLOSING AN UNLOCK THEREFORE LEAVES FILES OPEN, while
-reading as "locked" to anyone who assumes chunk protections persist. They do not.**
-
-⛔ **`app/about/page.tsx` was DELIBERATELY NOT locked** — its content is scaffolding expected to be
-rewritten when the section is developed.
-
-⚠ **Every unlock this session was closed and RE-VERIFIED BY OBSERVING A REAL DENIAL.** ⛔ **The guard
-FAILS OPEN on an absent scope file, so deletion alone proves nothing.**
-
----
-
-# ⛔ SECTION 1 — SETTLED THIS SESSION, and it is the model for 2/3/4
-
-| | |
+| label | goes to |
 |---|---|
-| **Layout** | Text **left**, static image **right**, ⚠ **the image FADES as it meets the text** |
-| **Subject** | ⛔ **SETTLED** — a representation of Carl at a desk, **back to camera**, two screens; a second desk **at 90°** with the music rig. Made in **DaVinci Resolve**. **Static.** |
-| **Treatment** | **Translucent layered colour, NOT a photograph.** ⛔ **Teal-led** (D-025 already assigns teal to this register) |
-| **Why not amber** | ⚠ **Warm is already spoken for** — gold is the mark, warm/salmon is the selection state |
-| **Video** | ⛔ **The hero's alone.** Section 1 gets a still. |
+| **Home** | `/` |
+| **Roles** | `#roles` — section 2 |
+| **Examples** | `#examples` — section 3 |
+| **Start** | `#start` — section 4 |
 
-⚠ **THE MUSIC RIG DOES ARGUMENTATIVE WORK THE COPY IS FORBIDDEN FROM DOING** — two workstations show
-a system with more than one discipline in it **without naming anything**, which is what item 12
-requires.
+⚠⚠ **REMOVING THE DROPDOWN IS THE MOBILE FIX, NOT A DEFERRAL.** ⛔ **It was the site's only
+hover-revealed control, built 31 August over a stated objection. Hover does not exist on touch, so
+its links were effectively unreachable on a phone.** **Four plain links have no reveal step to
+fail.**
 
-**Open, and Carl's:** two colours or three; whether the gold mark appears and as poster or object;
-all exact values (**PROVISIONAL**, D-035); ⚠ **and the IMAGE'S ASPECT RATIO — raised as worth
-settling BEFORE Resolve, since a wide L-shaped setup in a tall slot will crop hard or read small.**
+⛔ **GONE WITH IT: `w-[38.293px]`.** ⚠ **The 31 August handoff flagged it as font-dependent and
+fragile. It existed ONLY to hold the row still while `Roles` occupied `About`'s slot in the SHARED
+list. `/about` no longer renders `NAV_LINKS`, so there is no shared slot and no constraint.**
+⛔ **Do not reintroduce it.**
 
-⛔ **THE SCROLL-AND-MORPH IDEA IS EXPLICITLY NOT RESOLVED** — Carl: *"It could also move down the
-page with us and morph into something else."* ⚠⚠ **That is not a treatment, it is a scroll-driven
-behaviour spanning sections: structural under §5a, needing client-side observation on a page that is
-currently a STATIC PRERENDERED SERVER COMPONENT, and *"something else"* must exist first.**
-**Its own conversation.**
+⚠ **Section 4's id renamed `tbd` → `start`. The nav href and that id are A PAIR — move one without
+the other and the link goes nowhere silently.**
+
+## ⛔⛔ EVERY SCREEN IS NOW EXACTLY ONE VIEWPORT — both routes
+
+**Found by Carl's eye: the page ran past the window, and the thin grey line at the bottom was the
+footer's `border-t` sitting 101px above where the screen ended.**
+
+| | before | after |
+|---|---|---|
+| header + hero | 81 + 564 | ⛔ **81 + 819 = 900** |
+| `#services` | 737.5 | ⛔ **900** |
+| `#work` | 587.25 | ⛔ **900** |
+| `#contact` + footer | 900 + 101 = **1001 in a 900 window** | ⛔ **839 + 61 = 900** |
+| document | 2971 | ⛔ **3600 = 4 × 900, identical to `/about`** |
+
+⚠⚠ **TWO UNASSERTED PAIRS, COMMENTED IN PLACE.** ⛔ **81px is the header's MEASURED height; 61px is
+the footer's. Nothing in code checks either.** **Change the header's padding and the hero overshoots;
+change the footer's and `#contact`'s `calc()` goes stale SILENTLY — the exact fault this fixed.**
+**Re-measure; do not adjust by eye.**
+
+⛔ **THE COPY IS BEING WRITTEN INTO A FIXED FRAME. That is why the resize was done first.**
 
 ---
 
-# ⚠ OTHER RECORDS TOUCHED
+# ⚠⚠ FOUR THINGS THE NEXT SESSION MUST NOT GET WRONG
 
-- **`decisions.md`** — **D-066** added (the scaffolding); **D-065** amended (*"prospectively"*
-  removed, `/about` has landed); **D-035** amended (all devices). **3,406 lines.**
-- **`review-log.md`** — **R-020** added, Carl's eye-confirmation on the mark. ⚠ **Its footer was
-  STALE — it named R-018 while R-019 already existed, and the Builder nearly filed a duplicate ID
-  because of it. Corrected.**
-- **`about-section-thinking.md`** — **2,283 lines**, up from 2,020. Section 1's layout pass.
-- **`current-sprint.md`** — both chunks in Completed.
+## 1. ⛔⛔ ITEM 12 WAS REVERSED. THE FOUR ROLES ARE NAMED
 
-⚠ **`open-defects.md` was NOT touched. Nothing this session produced a live product fault.**
+**Carl: *"Its simple, ive changed my mind."*** ⚠ **The Builder first tried to make his instruction
+and item 12 both true by reading item 12's target as *naming without substance*. ⛔ Carl did not take
+that route and the record follows Carl.**
+
+> ⛔ ***"How would a client know what the system is if we dont tell them, albeit basically, what it
+> is. We cant just say - made with AI, trust us."***
+
+⚠ **A page that describes a structure in principle and never shows it asks for trust on the same
+terms — just with more words.**
+
+## 2. ⛔ THE SEATS CONNECT THROUGH THE BRIDGE, NOT TO EACH OTHER
+
+⛔ **Front half CS + CD (before the repo), back half CA + CB (in it).** ⚠ **Carl confirmed the
+reading: *"an accurate description."*** ⛔⛔ **THIS RULES OUT A DIAGRAM OF FOUR BOXES WITH ARROWS
+BETWEEN ALL OF THEM** — that picture shows parallel agents, which Carl said it is not.
+
+⚠ **Each role is described BY WHAT THE CLIENT GETS, not by its configuration.** ⛔ **Per-seat config
+— settings files, the scope guard, project instructions — IS THE FACTORY IN ANOTHER FORM and does
+not reach the page.**
+
+## 3. ⛔⛔ THE FACTORY MODEL IS REASONING, NEVER PAGE CONTENT
+
+**Carl's ruling.** ⚠ **Same standing as the football reference.** ⛔ **If a client asks, Carl raises
+it in a meeting.**
+
+⚠⚠ **AND ITS BLUEPRINT DOES NOT EXIST YET.** ⛔ **The factory and the product are still ONE REPO,
+entangled. "We clone it" is a PLAN, NOT A CAPABILITY.** **Recorded in those words so a later session
+does not read it as done.**
+
+## 4. ⚠⚠ A GUARD THAT ALREADY EXISTED WAS NOT CARRIED ACROSS — and Carl caught it by eye
+
+⛔ **The resize's first pass CENTRED ALL THE COPY.** `flex items-center` makes `<Container>` a flex
+item, and Container carries `mx-auto`, so it stopped filling the width and centred itself.
+
+⚠⚠ **`/about` HAS USED `[&>div]:w-full` FOR THIS SINCE IT WAS BUILT, AND `app/about/page.tsx`
+DOCUMENTS THE MECHANISM.** ⛔ **The Builder applied the vertical change without the guard.**
+**Carl: *"i did not say to put the text in the middle. The text should be on the left. This is vital
+for what i have planned for the hero."***
+
+⛔ **ANY FUTURE SECTION THAT GAINS `flex` NEEDS `[&>div]:w-full`.** ⚠ **Now commented in the hero.**
+
+---
+
+# ⛔ THE BUILDER HOLDS A CREATIVE GRANT — the showroom screen
+
+⛔⛔ **CARL: *"Im gonna oversee this but im going to let you come up with the creative part, as well
+as build it... Lets see what you come up with - organise those pixels."*** ⚠ **And separately:
+*"i might give you a nudge now and again but not to the extent when i am coming up with the creative
+vision."***
+
+⚠⚠ **THE BUILDER FIRST READ THIS TOO NARROWLY** — as the *how* delegated while the *what* stayed
+Carl's. ⛔ **THE CREATIVE CALL IS THE BUILDER'S. THE OVERSIGHT IS CARL'S.**
+
+⛔ **SO THAT SESSION BRINGS A PROPOSAL AND ITS REASONING — NOT THREE OPTIONS TO CHOOSE FROM.**
+⚠ **Offering a menu looks respectful and is actually handing the decision back, which is what the
+grant removed.**
+
+**Constraints:** never blank · **not a video** · 16:9 · ~5s loop if it loops · **no Three.js** ·
+⛔ **"Slop is definately not needed."**
+
+**Carl's steers, recorded verbatim and NOT confirmed:** ⛔ *"Connectivity. Same world."* and *"The
+gold logo already exists in some form in 1 and 2. It stops at 2. How would it get in the TV?"*
+⚠ **Carl knows what he would do and has deliberately not said. The Builder's reasoning is preserved
+in the file, marked UNRATIFIED.**
+
+---
+
+# ⚠⚠ ONE DEPENDENCY WITH A DEADLINE
+
+⛔⛔ **IF THE MARK TRAVELS TO THE TV SCREEN, IT CANNOT BE BAKED INTO THE RESOLVE RENDER** — the image
+and the mark must be separable.
+
+⚠ **THEREFORE THE SECTION 3 DECISION MUST BE MADE BEFORE SECTION 1'S IMAGE IS RENDERED.** ⛔ **It
+joins the aspect-ratio question, which tightened today: the image must work as a RIGHT-HAND SLOT in
+section 1 AND as a FULL-WIDTH GROUND behind section 2's 2+2.**
 
 ---
 
 # ⚠ STATE AT SESSION END
 
-- **Working tree clean. `main` = `570e622`. Fully pushed.**
-- ⛔ **NO UNLOCK IS LIVE** — `chunk-scope.json` absent, verified.
-- ⛔ **Nothing running on :3100** — killed by PID, confirmed by `netstat`.
-- **`npx tsc --noEmit` clean. `npm run build` compiles. `npm run lint` = 1 error, 5 warnings.**
+- **Working tree clean. `main` = `67d8181`. Fully pushed.**
+- ⛔ **NO UNLOCK IS LIVE** — `chunk-scope.json` absent, and every lock this session was **verified by
+  observing a real denial**: `app/page.tsx` (×2), `site-header.tsx`, `nav-links.ts`,
+  `about-nav.tsx` (×3), `app/start/page.tsx`.
+- ⚠ **`app/about/page.tsx` IS NOT ON THE PERMANENT LIST** — deliberate from 31 August (scaffolding).
+  ⛔ **It now holds a real approved arrangement — section 4's button and the anchor ids. Carl's call
+  whether that changes.**
+- ⛔ **Temp harnesses `tmp-measure-sections.mjs`, `tmp-balance.mjs`, `tmp-geometry.mjs` were created
+  in `verify/` and DELETED.** `verify/` is back to its 131.
+- ⚠ **A production server may still be running on :3100** — kill by PID and confirm with `netstat`
+  before any checkpoint.
+- **`npx tsc --noEmit` clean. `npm run build` compiles, 8/8 static, `/about` still prerendered.
+  `npm run lint` = 1 error, 5 warnings.**
 
-⚠⚠ **THE LINT BASELINE IN CLAUDE.md IS STALE AND IT IS FLAGGED, NOT FIXED.** ⛔ **CLAUDE.md records
-*"1 problem (1 error, 0 warnings)"*, verified 24 July.** **Today: 1 error (the known
-`enquiry-opening.tsx` baseline, UNCHANGED) and 5 warnings — four pre-existing, one from
-`app/about/page.tsx:132`, the same `<img>` pattern both approved routes already use.** ⚠ **The ERROR
-count is what the baseline pins and it is intact. CLAUDE.md is a protected path; correcting the
-figure needs Carl.**
+⚠⚠ **THE LINT BASELINE IN CLAUDE.md IS STILL STALE AND STILL ONLY FLAGGED.** ⛔ **CLAUDE.md records
+*"1 problem (1 error, 0 warnings)"*, verified 24 July. Today: 1 error (the known
+`enquiry-opening.tsx` baseline, UNCHANGED) and 5 warnings.** ⚠ **The ERROR count is what the baseline
+pins and it is intact. CLAUDE.md is a protected path; correcting the figure needs Carl.**
+
+⚠ **`open-defects.md` was NOT touched. Nothing this session produced a live product fault.**
+
+⚠ **A MEASUREMENT SCRIPT WAS WRONG AND WAS CORRECTED BEFORE ITS NUMBERS WERE REPORTED AS FINDINGS.**
+⛔ **`tmp-balance.mjs` first measured `div > div` — an inner wrapper, not the content — and printed
+skews of 264 and 419.5px. Had those been reported, Carl would have been sent chasing a balance
+problem that does not exist.** ⚠ **The corrected version measured all four screens centred within a
+pixel.**
 
 ---
 
-*31 August 2026. **The About section stopped being a discussion and became a page.** The link is
-hot, the mark does not move across three routes, and the site has headers on the two routes that had
-none.*
+*1 September 2026. **The About page stopped being a page and became a destination.** The site reads
+as one journey, every screen is exactly one viewport, and the header that had a hover dropdown now
+has four links that work everywhere.*
 
-*⚠ **Carl confirmed the mark by eye — *"Excuse the pun - nailed it"* — and then found, by eye, two
-faults six measurements had missed.** ⛔ **Both times the instrument was true and blind: it shared a
-constant with the thing it was checking.** **That is now the third recorded instance of that
-failure class on this project.***
+*⚠ **Carl found two faults by eye that no instrument was watching for** — a page that ran past the
+window, and copy that had silently centred itself. ⛔ **The second had a guard already written, in a
+file that already explained why. It simply was not carried across.** **Rule 9 again: the rendered
+screen is the truth.***
 
-*⛔ **NEXT: discussion on sections 2, 3 and 4.** ⚠ **Section 3's design is Carl's. Section 4's
-subject is undecided. Section 2's shape — structure without roster — is the real question.***
+*⛔ **NEXT: the copy. Six sections, two pages, both exclusions deliberate.** ⚠ **Carl researches
+competitors first; what reaches the Builder is his conclusion, not the survey.***

@@ -3225,3 +3225,112 @@ between.** **Offering a menu looks respectful and is actually handing the decisi
 what the grant explicitly removed.**
 
 ---
+
+# ⛔⛔ THE NEXT PHASE OF WORK — THE COPY. Carl, 1 September 2026
+
+⛔⛔ **CARL'S INSTRUCTION, verbatim:**
+
+> *"The next work. Home page. Write and finalise the copy for Sections 2, 3 + 4. 1, the hero, is an
+> exception and a special case that will be built last. Also included for next work. The About page.
+> Write and finalise the copy for Sections 1, 2 + 4. 3 is video work and your 'piece de resistance'."*
+
+## ⛔ THE SIX SECTIONS
+
+| page | section | standing |
+|---|---|---|
+| **Home** | `#services` | ⛔ **copy to be written** |
+| **Home** | `#work` | ⛔ **copy to be written** |
+| **Home** | `#contact` | ⛔ **copy to be written** |
+| **Home** | **hero** | ⛔⛔ **EXCLUDED — *"an exception and a special case that will be built last"*** |
+| **About** | 1 — the founder and the process | ⛔ **copy to be written** |
+| **About** | 2 — the roles | ⛔ **copy to be written** |
+| **About** | 4 — the conclusion | ⛔ **copy to be written** |
+| **About** | 3 — the examples | ⛔⛔ **EXCLUDED — video work, and the Builder's *"piece de resistance"*** |
+
+⚠ **THE TWO EXCLUSIONS ARE NOT THE SAME KIND.** ⛔ **The hero is deferred — built last, and Carl has
+plans for it he has deliberately not shared.** ⛔ **Section 3 is DELEGATED — it is the Builder's
+creative work under the grant recorded for the showroom screen.**
+
+## ⚠⚠ THE TWO PAGES ARE NOT THE SAME TASK
+
+| | **Home** | **About** |
+|---|---|---|
+| **what exists** | ⛔ copy from **months ago, pre-governance** | ⚠ **3,227 lines of recorded thinking** |
+| **the job** | ⛔ **a rewrite from scratch** | ⛔ **COMPRESSION of settled material** |
+| **the risk** | generic agency language | saying more than the argument needs |
+
+⚠ **Home's current copy is *"We build brands that mean something"* / *"A creative agency focused on
+strategy, design, and digital experiences that connect with people."*** ⛔ **It is the sentence every
+agency site has. That is a copy problem in its own right, independent of anything else.**
+
+⚠ **The Home sections' SUBJECTS are D-012 (the service model), D-013 (the agency website as first
+proof) and D-014 (the consultative close).** ⛔ **Whether those arguments still stand is a question
+for the chunk, not an assumption to carry into it.**
+
+## ⛔⛔ THE DIVISION THAT IS NEW AS OF TODAY AND CONSTRAINS ALL SIX
+
+⛔ **Home = who we are and what we do. About = HOW. `/start` = the conversation.**
+
+⚠⚠ **HOME'S COPY PREDATES THIS DIVISION.** ⛔ **It was written when Home was the whole argument and
+the CTA went straight to `/start`. It now hands off to About, and its copy has never been written
+with that in mind.**
+
+## ⛔ POSITIONING — CARL'S RULING, 1 September 2026
+
+⛔⛔ **C2B IS A WEBSITE AGENCY. Carl: *"We are a website agency for the foreseeable future. Lets keep
+focused."*** ⚠ **The copy positions a website agency. It does not hedge, does not hint at anything
+else, and does not hold a door open.**
+
+⚠ **Carl holds a longer roadmap OUTSIDE this repository and has ruled that none of it reaches the
+site or the record — his call, stated explicitly.** ⛔ **D-038 already governs this: future work is
+not recorded here.**
+
+### ⚠⚠ ONE CORRECTION WORTH KEEPING, because the Builder got the reasoning wrong
+
+⛔ **The Builder argued that copy positioning C2B as a web design agency would have to be
+CONTRADICTED if the business ever widened.** ⚠⚠ **Carl corrected it, and the correction is better:**
+
+> ⛔⛔ ***"Its not a contradiction its an expansion. Thats like saying i learnt to play the guitar and
+> read music. Then i learnt piano/keyboards. Did i contradict myself? Or did i build on what
+> knowledge i had and expanded, offered more musically?"***
+
+⚠ **THE CONSEQUENCE FOR THE COPY IS PRACTICAL, NOT PHILOSOPHICAL.** ⛔ **Copy written defensively —
+hedged so it survives a future the reader cannot see — reads as VAGUE, which is the exact fault of
+the generic line it would replace.** ⚠ **Copy written as *this is what we do and we are good at it*
+needs no hedging. It expands on its own.**
+
+## ⚠ CARL'S PREPARATION — upstream of the chunk, and it is his
+
+⛔ **Carl is researching competitors before the copy is written** — local, national, international.
+⚠ **Not only copy: the whole site, the aesthetics, how they position themselves, who they target.**
+
+⛔⛔ **THIS IS STRATEGIST WORK AND IT RUNS UPSTREAM OF A CHUNK.** ⚠ **What reaches the Builder is
+Carl's CONCLUSION — where C2B sits, who it is for, what it is not — not the survey.**
+
+⚠ **ONE CAUTION, RAISED BY THE BUILDER AND NOT DISPUTED: competitor research is right for
+calibration and wrong as a template.** ⛔ **The sorting rule and item 12 both exist because the site
+risks becoming *what everyone else does, slightly better*. The About page's argument is that C2B is
+structurally different.**
+
+## ⛔ WHAT THE COPY CHUNK INHERITS — settled today, do not re-open
+
+- ⛔ **The journey:** Home → `Who we are` → About → `Start a conversation` → `/start`.
+- ⛔ **Every screen on both pages is EXACTLY ONE VIEWPORT** (measured, 4 × 900 = 3600 at 1440×900).
+  ⚠ **The copy is being written INTO a fixed frame — that is why the resize was done first.**
+- ⛔ **Section 4 of `/about` is a CONCLUSION, *"much lighter after the information dump"*, and it
+  must NOT restate sections 1–3.**
+- ⚠ **The placeholder copy now live in `/about` section 4 is the Builder's and is scaffolding.**
+  ⛔ **Carl: it *"gives us an indication of what to put there rather than have blank space or
+  gibberish."*** **It is replaced by this chunk.**
+- ⛔ **Section 2's four roles are described BY WHAT THE CLIENT GETS, not by their configuration.**
+
+## ⚠ AUTHORSHIP IS NOT SETTLED
+
+⛔ **Raised by the Builder, not answered: who DRAFTS the copy.** ⚠ **Everything written today was
+RECORDING — Carl's words, Carl's rulings, the Builder's reasoning marked unratified. The one
+exception is section 4's placeholder.**
+
+⛔ **Copy is the voice of the business.** ⚠ **The TV screen has an explicit grant (*"the floor is
+yours"*); copy has had no such conversation.** **Carl's to decide when the chunk opens.**
+
+---
