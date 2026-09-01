@@ -390,7 +390,23 @@ export default function StartPage() {
             className="absolute left-0 right-0 -translate-y-1/2 hidden md:flex items-center justify-end gap-6"
             style={{ top: `${NAV_CENTRE_Y}px` }}
           >
-            {NAV_LINKS.map(({ label, href }) => (
+            {/* ⛔ `Contact` IS FILTERED HERE. Carl, 1 September 2026: *"on the
+                start page there is no need to have navigation to where you
+                already are."* ⚠ `Contact` was repointed from `/#contact` to
+                `/start` earlier the same day, which made it a SELF-LINK on this
+                route.
+
+                ⛔⛔ FILTERED PER ROUTE, NOT REMOVED FROM `NAV_LINKS`. The entry is
+                still needed by `/` and `/about`, where `Contact` is the shortcut
+                into this page. ⚠ This is the same pattern as `HEADER_LINKS` in
+                `site-header.tsx`, which filters `Home` from the landing page on
+                Carl's 31 August ruling — *"you cant navigate to where you already
+                are."* Two routes, two self-links, one rule.
+
+                ⚠ INLINE RATHER THAN A NAMED CONST because it filters ONE label on
+                ONE route. If a third route ever needs its own filter, that is the
+                point to reach for a shared helper — not before.                 */}
+            {NAV_LINKS.filter(({ label }) => label !== "Contact").map(({ label, href }) => (
               <a
                 key={label}
                 href={href}

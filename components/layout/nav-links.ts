@@ -27,10 +27,30 @@
    see `HEADER_LINKS` in `site-header.tsx`. Carl, 31 August 2026: *"We are already
    there, you cant navigate to where you already are."* `/start` and `/about`
    render the full list. */
+/* ⛔⛔ `Contact` ROUTES TO `/start`, NOT `/#contact`. Carl, 1 September 2026.
+
+   ⚠⚠ THE FAULT IT FIXES, and it was created the same day: the landing page's
+   `#contact` CTA was repointed from `/start` to `/about` and relabelled
+   `Who we are`, so `/start` HAD NO INBOUND ROUTE FROM THE LANDING PAGE AT ALL.
+   `Contact` still pointed at `/#contact` — a section that no longer invites the
+   reader to start anything.
+
+   ⛔ THE JOURNEY THIS COMPLETES:
+       Home   = who we are and what we do   →  `Who we are`  →  /about
+       About  = HOW                          →  `Start a conversation` → /start
+       /start = the conversation, ending at the send button
+   ⚠ `Contact` is the SHORTCUT for a reader who does not want the full walk.
+
+   ⚠⚠ KNOWN AND ACCEPTED: this list is read by THREE routes, and on `/start`
+   `Contact` now points at the page the reader is already on — the same
+   redundancy `Home` has there. ⛔ It is NOT filtered, because filtering is a
+   behaviour change Carl has not asked for. Flagged, not fixed. If it is ever
+   filtered, do it the way `HEADER_LINKS` does in `site-header.tsx` — per route,
+   not by deleting the entry, because the other routes need it.               */
 export const NAV_LINKS = [
   { label: "Home",     href: "/" },
   { label: "Services", href: "/#services" },
   { label: "Work",     href: "/#work" },
   { label: "About",    href: "/about" },
-  { label: "Contact",  href: "/#contact" },
+  { label: "Contact",  href: "/start" },
 ];

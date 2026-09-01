@@ -240,12 +240,44 @@ export default function Home() {
               needs to become.
             </p>
 
+            {/* ⛔⛔ THIS BUTTON OPENS `/about`, NOT `/start`. Carl's navigation
+                ruling, 1 September 2026, and the reasoning is load-bearing:
+
+                  Home  = who we are and what we do
+                  About = HOW  ("expands on the Home")
+                  /start = the conversation, ending at the send button
+
+                ⚠⚠ THE FAULT IT FIXES: this was the strongest CTA on the page,
+                positioned exactly where a convinced reader lands — so a visitor
+                scrolling straight down reached `/start` having NEVER SEEN
+                `/about`. The header's `About` sits third but its content is a
+                separate route, so the page delivered four sections against a
+                five-item promise. Anyone who did reach About arrived AFTER the
+                invitation to start.
+
+                ⛔ "WHO WE ARE" IS NOT A SOFTER LABEL — IT IS THE ARGUMENT.
+                Carl is a solo proprietor, and the About page's whole thesis is
+                that "we" is nonetheless the accurate word: a team with defined
+                roles, each knowing what it needs to know, with Carl as the
+                bridge. ⚠ "Who I am" would contradict that page BEFORE the reader
+                arrived. Carl, 1 September 2026: *"My thoughts on the matter are
+                crystal clear - its 'who we are'!"*
+
+                ⚠ The label sets up a small expectation gap — a reader may expect
+                faces and find roles. THAT GAP IS WHERE THE ARGUMENT LANDS. Do
+                not "fix" it by renaming this to `How we work`.
+
+                ⛔ THE MATCHING BUTTON IS IN `/about` SECTION 4 and carries
+                `Start a conversation` to `/start`. The two are a PAIR: same
+                dimensions, colour and position, deliberately. Change one and the
+                other goes stale. Reasoning: `live-work/about-section-thinking.md`
+                → the navigation ruling.                                          */}
             <div className="mt-10">
               <a
-                href="/start"
+                href="/about"
                 className="inline-block bg-white text-black text-sm font-semibold px-7 py-3 rounded-full tracking-wide hover:bg-neutral-100 transition-colors duration-200"
               >
-                Start a conversation
+                Who we are
               </a>
             </div>
 

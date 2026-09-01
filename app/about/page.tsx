@@ -346,12 +346,67 @@ export default function About() {
           returns HTTP 200 with no authentication (`app/robots.ts` blocks crawlers
           and says of itself that it is NOT access control). The heading was put
           back to Carl with that exposure stated, and he authorised it. */}
-      <section id="tbd" className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
+      {/* ⛔⛔ SECTION 4 IS THE CONCLUSION, AND IT CARRIES THE CONVERSATION.
+          Carl, 1 September 2026: *"4. Should be a conclusion, much lighter after
+          the information dump."* ⚠ Sections 1–3 are a RISING information load —
+          a top level view, then text info, then video info. This section's job is
+          to STOP that, not to add a fifth block of content.
+
+          ⛔ "MUCH LIGHTER" IS A DESCRIPTION OF WHAT THE READER NEEDS, not a style
+          preference. ⚠ Sections 2 and 3 are both four-of-something; a section 4
+          with four of anything would make the page read as a list of lists.
+
+          ⛔⛔ THE BUTTON IS THE PAIR OF THE ONE ON THE LANDING PAGE (`app/page.tsx`,
+          the `#contact` section). SAME dimensions, colour and position — Carl's
+          instruction, and the position is why this block is `text-center
+          max-w-2xl mx-auto py-24` rather than the left-aligned `max-w-2xl` the
+          three sections above use. ⚠ THE TWO BUTTONS ARE A DELIBERATE PAIR:
+          `Who we are` opens this page, `Start a conversation` closes it. Change
+          one and the other goes stale.
+
+          ⛔ THE JOURNEY THIS COMPLETES:
+              Home  = who we are and what we do
+              About = HOW
+              /start = the conversation, ending at the send button
+          ⚠ Nobody now reaches `/start` without having been offered the HOW first.
+
+          ⚠⚠ THE COPY BELOW IS SCAFFOLDING AND CONVEYS POSITION ONLY — the same
+          standard as the rest of this page. ⛔ THE SUBJECT of the conclusion is
+          settled (it concludes, and it opens the conversation); its WORDING is
+          not. Carl: *"We will put some text and subtext above it."*
+
+          ⛔ AND DO NOT LET IT RESTATE SECTIONS 1–3. The reader has just done the
+          work; summarising it back is the information dump continuing under a
+          lighter name.                                                           */}
+      {/* ⛔ THE ID IS `start`, RENAMED FROM `tbd` ON 1 SEPTEMBER 2026 (Carl).
+          ⚠ It is the anchor the header's `Start` entry targets — the label and
+          the target must not drift apart again. `components/layout/about-nav.tsx`
+          is the only consumer; both moved in one change. */}
+      <section id="start" className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
         <Container>
-          <div className="max-w-2xl">
-            <h2 className="text-3xl font-semibold tracking-tight text-neutral-500">
-              TBD — To Be Determined
+          <div className="text-center max-w-2xl mx-auto py-24">
+
+            <h2 className="text-3xl font-semibold tracking-tight">
+              That is how the work gets done.
             </h2>
+
+            {/* max-w-xl mx-auto: matches the landing page's centred body measure —
+                centre-aligned copy needs a shorter line than left-aligned copy. */}
+            <p className="mt-6 text-base text-neutral-400 leading-relaxed max-w-xl mx-auto">
+              A team with defined roles, a process that does not skip a stage, and
+              nothing built before it is agreed. If that is the way you would want
+              your own site made, the next step is a conversation.
+            </p>
+
+            <div className="mt-10">
+              <a
+                href="/start"
+                className="inline-block bg-white text-black text-sm font-semibold px-7 py-3 rounded-full tracking-wide hover:bg-neutral-100 transition-colors duration-200"
+              >
+                Start a conversation
+              </a>
+            </div>
+
           </div>
         </Container>
       </section>
