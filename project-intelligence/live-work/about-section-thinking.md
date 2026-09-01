@@ -2281,3 +2281,560 @@ selection at all — gold meaning *the mark* is exactly what gold already means.
   on `/about`, which is currently a static prerendered server component; and *"something else"* must
   exist before it can be morphed into.** **Its own conversation, not part of section 1's layout.**
 - ⚠ **D-026** — the hero's protected right-side space, and what a hero video does to it.
+
+---
+
+# ⛔⛔ SECTION 2 — THE ROLES ARE NAMED. Carl reversed item 12, 1 September 2026
+
+⚠⚠ **THIS PASS REVERSES A RULING. It is not a reinterpretation of item 12 and must not be recorded
+as one.** ⛔ **Carl, 1 September 2026: *"Its simple, ive changed my mind."***
+
+**His reason, and it is the whole argument:**
+
+> ⛔⛔ ***"How would a client know what the system is if we dont tell them, albeit basically, what it
+> is. We cant just say - made with AI, trust us."***
+
+## ⛔ WHAT ITEM 12 SAID, AND WHY IT STOPPED FITTING
+
+**Item 12 held that the set-up is described IN PRINCIPLE, never by roster.** The 30 August pass
+ruled out the four names as branded seats and wrote that *"a section that only listed CA, CB, CD and
+CS would still violate item 12."*
+
+⚠⚠ **THE BUILDER FIRST TRIED TO MAKE BOTH TRUE** — reading item 12's target as *naming without
+substance*, so that four named roles WITH expansive descriptions would not be a roster. ⛔ **Carl
+did not take that route, and the record follows Carl.** **He changed his mind. Item 12 is
+OVERTAKEN.**
+
+⚠ **AND THE REASONING IS BETTER THAN THE RECONCILIATION WOULD HAVE BEEN.** ⛔ **A page that
+describes a structure in principle and never shows it is asking for trust on the same terms as
+*"made with AI"* — just with more words.** **Item 12 was written against a page of product names;
+the risk that actually materialised was a page that shows nothing.**
+
+⚠ **`context-rules.md` → *approved work is amendable*: a decision is not wrong because it has been
+overtaken. Item 12 was right for the risk it was written against. The risk moved.**
+
+## ⛔ WHAT THE SECTION NOW DOES
+
+⛔ **Four roles, NAMED, each with an expansive description of what it is and how it fits the
+system** — expanding on section 1's top-level view.
+
+**Carl: *"In 2 we must name each role and give a more expansive description what it is and how it
+fits into the system. To basically expand on information that will be given in 1, a top level
+view."***
+
+### ⛔ THE NAMES — initials AND function names, both exist
+
+**Carl: *"you have initials and you also have Role names or function names."***
+
+⚠ **The Builder's recommendation, ACCEPTED IN SUBSTANCE BUT NOT RULED ON:** the **function name
+leads** — *Strategist, Design, Architect, Builder* are jobs a business owner already understands,
+and recognition is the section's mechanism. **The initials are present but subordinate** — CA means
+nothing to a visitor on first sight, but shown beside the function they make the system read as a
+real operation with real conventions rather than four labels invented for a website.
+
+⛔ **NOT SETTLED: whether the initials lead instead.** **Carl's call.**
+
+### ⛔⛔ THE FRAME — IT MIRRORS A REAL BUSINESS, AND THE PAGE SHOWS THAT
+
+**Carl: *"The way we have set things up mirrors a real business. We should show that."***
+
+⚠⚠ **THIS IS THE SAME RECOGNITION MECHANISM THE 30 AUGUST PASS ESTABLISHED, NOW POINTED AT THE
+ROLES THEMSELVES.** ⛔ **A business owner does not need to be persuaded that a structure with
+defined positions works. They run one.**
+
+---
+
+## ⛔⛔ THE SHAPE — TWO PAIRS, NOT FOUR PARALLEL AGENTS
+
+**Carl, on how the roles connect:** *"i will make it clear in 1 about the bridge and in 2 show what
+that bridge is connected to and to emphasise that in some ways the roles are connected. Not as much
+like parallel agents but following the principle."*
+
+⛔ **CARL CONFIRMED THE FRONT-HALF / BACK-HALF READING: *"an accurate description."***
+
+| half | seats | pointed at |
+|---|---|---|
+| **FRONT** | **CS** — Strategist · **CD** — Design | ⛔ **before the repo.** The business, then the client's brand |
+| **BACK** | **CA** — Architect · **CB** — Builder | ⛔ **in the repo.** *"You and CA will do all the serious heavy lifting"* |
+
+⚠⚠ **"CONNECTED, NOT PARALLEL" MEANS WORK MOVES ALONG A ROUTE, NOT THAT FOUR AGENTS RUN AT ONCE.**
+⛔ **The seats do not wire to each other — they connect THROUGH the bridge.**
+
+⛔⛔ **THIS RULES OUT A DIAGRAM OF FOUR BOXES WITH ARROWS BETWEEN ALL OF THEM.** ⚠ **That picture
+shows parallel agents talking to each other, which is precisely what Carl said it is not.**
+
+### ⛔ THE DIVISION OF LABOUR BETWEEN SECTIONS 1 AND 2 — settled
+
+- ⛔ **SECTION 1** carries the counter-argument about working with AI, what a client will know, and
+  **the bridge.**
+- ⛔ **SECTION 2** shows **what the bridge is connected to.**
+
+⚠ **THE BRIDGE IS THEREFORE NOT RE-DESCRIBED IN SECTION 2.** ⛔ **It is established a section
+earlier, so section 2 can be four roles without the structure reading as headless.** **Tidier than
+adding Carl as a fifth block.**
+
+---
+
+## ⛔⛔ THE ORDER IS THE ARGUMENT — CS → CD → CA → CB
+
+**Carl's sequence, in his own words:** *"At first i will sit with a client and have a 'discovery'
+meeting. Its an information gathering excercise. A mock up can be presented soon after. A client
+will then be able to see what is theirs in a whole new light. Sites can be developed from there.
+Before it gets to you and the Architect, CD will be the first port of call."*
+
+| stage | what happens | seat |
+|---|---|---|
+| **before a client exists** | how clients are acquired; whether building anything is even the answer | **CS** |
+| **discovery meeting** | ⛔ **human, not tooled.** Information gathering | **Carl** |
+| **soon after** | their brand in → mock-up out → ⛔ **iterated until it is what they want** | **CD** |
+| **then** | ⛔ **the serious heavy lifting** | **CA + CB** |
+
+⚠⚠ **THE ORDER DOES THE WORK A SPECIAL CASE WOULD OTHERWISE HAVE TO.** ⛔ **CD faces the client
+while CS, CA and CB face inward — but because each role's description includes WHAT REACHES IT and
+WHAT LEAVES IT, CD stays distinct without breaking the parallel.** **CD's input is a client's
+existing site; CB's input is an approved plan.**
+
+### ⚠ "WHAT IS THEIRS IN A WHOLE NEW LIGHT" — the load-bearing phrase
+
+⛔ **The client is not shown a template or someone else's site. They are shown THEIR OWN logo,
+colours and voice, arranged properly.** ⚠⚠ **The recognition is instant and requires no trust:
+they can see it is theirs, and they can see it is better.**
+
+⚠⚠ **THIS IS THE PAGE'S METHOD APPEARING TWICE, AND THAT IS WORTH NAMING.** ⛔ **The business owner
+recognises the team structure because they run one. The client recognises the mock-up because it is
+their own brand.** **Same mechanism, two levels.**
+
+---
+
+## ⛔⛔ WHAT THE PAGE SAYS ABOUT EACH ROLE — POINTED AT THE CLIENT, NOT THE PLANT
+
+⛔⛔ **CARL'S RULING, 1 September 2026: *"In Roles that should focus on what the client wants - a new
+website."***
+
+⚠⚠ **THIS PRUNED MATERIAL THE BUILDER WAS HEADING FOR THE PAGE WITH.** ⛔ **Per-seat configuration —
+CA's settings file, CB's scope guard and protected paths, CS's project instructions — IS THE
+FACTORY IN ANOTHER FORM.** ⚠ **It describes the plant, not the client's website. A client does not
+want to know the Builder has a scope guard; they want to know the person building their site is not
+freelancing on it.** ⛔ **Configuration detail is REASONING, not page content.**
+
+**What survives to the page — each role by what the CLIENT gets from it:**
+
+| seat | what the client gets |
+|---|---|
+| **CS** — Strategist | ⛔ **Before anything is designed, someone thinks about the business the site serves.** Is a new website even the answer, and what must it do? ⚠ **A client recognises this as the bit most web designers skip** |
+| **CD** — Design | ⛔ **Their brand in; their site back, looking as it should.** They see it, change it, keep changing it **before a line of code is written** |
+| **CA** — Architect | ⛔ **Someone plans and reviews the build who is not the one doing it.** ⚠ **The checked-work argument — what a solo freelancer cannot offer** |
+| **CB** — Builder | ⛔ **Builds what was approved.** Not what it felt like building |
+
+⚠⚠ **THE THROUGH-LINE FOR A CLIENT: nothing skips a stage, and nothing gets built before it is
+agreed.** ⛔ **A claim about THEIR project, in language about THEIR website.**
+
+---
+
+## ⚠ LAYOUT — SECTION 2 AND SECTION 3 MUST DIFFER
+
+**Carl, raising section 3 in context:** *"2 has the 4 Ai Roles. 3. has the 4 examples. In layout they
+should be different."*
+
+⚠ **Both sections are four-of-something, stacked on one page.** ⛔ **Identical shapes would read as
+one repeated pattern — four roles and four examples becoming eight boxes — and neither set would
+feel distinct.**
+
+⛔⛔ **SECTION 3'S DESIGN IS CARL'S** — *"i will take care of the design of section 3."* ⚠ **The
+Builder does not propose arrangements there.** **Section 2's shape must therefore be settled either
+around section 3's known direction or deliberately away from it. Not resolved.**
+
+---
+
+# ⛔⛔ THE FACTORY MODEL — CARL'S, AND IT IS ⛔ NOT PAGE CONTENT
+
+⛔⛔ **CARL'S EXPLICIT RULING, 1 September 2026: *"The factory description shouldnt be in 2, thats
+just for your use to increase your understanding, maybe record or add it somewhere. Rest assured,
+should a client ask about it, i will bring it up in a meeting."***
+
+⚠ **Filed the same way as the football reference: REASONING, not copy.** ⛔ **It is how the business
+works. Section 2 is about what the client is getting. Different audiences.**
+
+## ⛔ THE MODEL, IN CARL'S WORDS
+
+> *"You are my factory floor, a place where product is built and shipped out the door. Stripping
+> everything C2B website out of the factory at the end of construction means we have the blueprints
+> for a new factory at hand. We just clone them and build a new factory next door for a new client
+> and we have 'unlimited land'."*
+
+⛔ **The repo is NOT the C2B website. It is a factory that currently has the C2B website in it.**
+⚠ **Strip the product out and what remains is the plant: the governance, the seats, the scope guard,
+the verify harness, the protected paths, the chunk protocol. That is the blueprint.**
+
+## ⛔⛔ WHY IT IS CRUCIAL — Carl, and it is a business-model claim
+
+> *"Without a new factory everytime it would make building for a client a much more longer and
+> difficult process. It is a crucial part of the business model."*
+
+⛔ **Without it every client starts from nothing — not just no code, but no governance, no guards, no
+protocols, no harness, no way of working.** ⚠ **The operating system would be reconstructed
+alongside the product every time, and the second build would be as slow as the first.**
+
+⚠⚠ **IT ATTACKS THE REAL CONSTRAINT ON A ONE-PERSON AGENCY.** ⛔ **A solo operator's ceiling is
+throughput — one person, one project, quality falling as volume rises. The factory reuses the
+STRUCTURE, so capacity is not bounded by rebuilding the method each time.** **That is why it is the
+business model and not an efficiency: it makes the business a business rather than a sequence of
+jobs.**
+
+⚠ **AND IT REFRAMES THE C2B SITE ITSELF — the prototype run that proves the plant works.** ⛔ **Which
+is why building it with governance nobody would need for a single site was never over-engineering.**
+
+## ⚠⚠ TWO FLAGS ON THE MODEL — raised by the Builder, neither disputed
+
+### ⚠ 1. THE FRONT HALF DOES NOT CLONE
+
+⛔ **CS and CD are Claude Desktop products — Projects and Claude Design. They do not live in the repo
+and do not come with a cloned factory.** ⚠ **What clones is the BACK HALF: CA and CB's governance,
+guards, protocols and harness.**
+
+⛔ **The front half is a STANDING CAPABILITY RE-POINTED at each new client, not something duplicated
+per client.** ⚠ **Not a problem and possibly the right shape — but "clone the factory" describes half
+the operation precisely and half loosely.**
+
+### ⛔⛔ 2. THE BLUEPRINT DOES NOT EXIST YET — UNASSERTED, VERIFY BEFORE RELYING ON THIS
+
+⛔⛔ **THE FACTORY AND THE PRODUCT ARE STILL ONE REPO, ENTANGLED. The separation is FUTURE WORK.**
+
+⚠⚠ **`current-sprint.md` carries it as *"At site completion — the workshop/template separation"* —
+which reads as a TIDY-UP TASK. It is the business model.** ⛔ **That entry is STALE in standing, not
+in content. Flagged, NOT amended — `current-sprint.md` is a governance file and this session is
+discussion.**
+
+⛔ **UNTIL THE SEPARATION IS DONE, "we clone it" IS A PLAN, NOT A CAPABILITY.** ⚠ **Recorded in
+these words per `context-rules.md` → *an invariant that lives only in prose is not asserted* — so a
+later session does not read it as already true.**
+
+---
+
+# ⛔ WHAT THE DOCS AND CARL'S SCREENSHOTS CORRECTED — CD AND CS
+
+⚠⚠ **THE 30 AUGUST ROSTER TABLE IS OUT OF DATE ON BOTH FRONT-HALF SEATS.** ⛔ **Read at Carl's
+instruction, 1 September 2026: the Claude Design product pages, the Anthropic Labs announcement,
+three support articles, and a web search for changes since.**
+
+## ⛔ CLAUDE DESIGN — the record said "output can be IMPORTED here". That is wrong
+
+| | |
+|---|---|
+| **launched** | ⛔ **17 April 2026**, Anthropic Labs research preview. ⚠ **Four and a half months, not six** |
+| **surface** | chat left, canvas right, in the Claude Desktop app |
+| **inputs** | text, screenshots, ⛔ **web capture**, DOCX/PPTX/XLSX/PDF, ⛔ **codebases** |
+| **design system** | ⛔ **extracts reusable components, colours, typography and layout patterns** from uploaded assets. One source is enough |
+| **outputs** | prototypes, wireframes, mock-ups, explorations, decks, one-pagers → .zip, PDF, PPTX, HTML, Canva |
+
+### ⛔⛔ THE 17 JUNE 2026 UPDATE — the part the record does not have at all
+
+- ⛔ **`/design-sync` IS TWO-WAY.** **Pull:** the real design system out of the codebase into CD, so
+  generated screens use actual components and tokens. **Push:** the built state syncs back to the
+  canvas.
+- ⚠⚠ **IT IS A SNAPSHOT, NOT A LIVE LINK.** ⛔ **Re-run it after component or token changes or it
+  goes stale.**
+- ⛔ **WYSIWYG canvas editing** — click, resize, reposition, annotate, no prompt round. ⚠ **The
+  annotations travel with the handoff.**
+- ⛔ **Direct handoff to Claude Code** with full context — components, arrangement, annotations —
+  rather than a screenshot and a description.
+
+### ⚠ 17 AUGUST 2026 — `/design` INSIDE CLAUDE CODE
+
+⛔ **Research preview.** Generate editable artboards from a coding session, pick one, tweak it, have
+it implemented. Rendered through the Artifacts runtime. ⚠ **Flagged publicly as token-hungry.**
+
+### ⛔ THE SAFEGUARDS, AND THEY MIRROR THIS PROJECT'S OWN GOVERNANCE
+
+⛔ **DesignSync works ONE COMPONENT AT A TIME, not in bulk. NO WRITE STARTS WITHOUT A PLAN THAT IS
+APPROVED. The order is read → plan → write, and operations outside the plan are REJECTED. The files
+to be written or deleted are shown before confirmation.**
+
+⚠⚠ **THAT IS THE PLAN-REVIEW GATE AND THE SCOPE GUARD, ARRIVING AS A PRODUCT FEATURE** — built
+independently here, and before it existed there.
+
+⛔ **SO CD'S ROUTE TO THE BUILDER IS NOT AN EXCEPTION THAT BYPASSES THE BRIDGE.** ⚠ **It is a route
+with an approval step, and Carl IS the approval step.**
+
+## ⛔ HOW CARL USES CD — client work, not the C2B site
+
+**Carl: *"Not so much for the C2B website but for working with Clients. They will undoubtedly have
+an existing website, maybe with a logo, brand colours and brand voice etc It can be used initially
+as presenting mock ups, but those mockups can be expanded upon and iterated and designed into what
+the client wants."***
+
+⛔ **CD is the CLIENT-FACING SURFACE for the whole design conversation, not a mock-up generator that
+hands one picture to the Builder.** ⚠ **The 30 August record's *"initial mock-up"* is the first five
+minutes of it.**
+
+⚠ **RAISED BY CARL, NOT RESOLVED:**
+
+- ⚠ **F12 developer tools to extract from a client's existing site.** ⛔ **Web capture is already a
+  documented input, so this is a SHARPENING TOOL for exact values — computed hex, font stacks,
+  spacing scale — not the mechanism.** **Worth testing which lands closer on a real client site.**
+- ⚠⚠ **A REPO WAREHOUSE OF REUSABLE COMPONENTS.** ⛔ **`/design-sync` pull is literally the
+  mechanism: the warehouse's real components and tokens, into a client project.** **Each build would
+  start from accumulated work restyled to their brand rather than from nothing.**
+  ⛔ **IT IS A REPO THIS PROJECT DOES NOT HAVE.** ⚠ **Real infrastructure with its own decisions —
+  what goes in, how it is versioned, whether client work flows back. Recorded so it is not assumed
+  into existence.** ⚠ **And the snapshot caveat applies: a warehouse is maintained deliberately, it
+  does not stay current by itself.**
+
+⛔ **THE CLIENT IS NOT IN THE CANVAS.** ⚠ **Carl's answer to the Builder's question — the client is
+in a MEETING, and CD is what makes the meeting produce something.** **Org-scoped share and export
+both exist; neither is how Carl works.**
+
+## ⛔ CLAUDE PROJECTS — what CS actually is
+
+⚠⚠ **THE RECORD SAYS CS'S REPO ACCESS IS *"Carl's call per context — all, one file, or none."*** ⛔
+**True in substance, but it reads as an ad-hoc permission. IT IS A CONFIGURED SEAT.**
+
+**Carl: *"CS is used for information... I can load any file i want in there as well as the repo. It
+knows its role."*** **Evidenced by screenshots of the live C2B Strategist project.**
+
+| component | what it is |
+|---|---|
+| **Instructions** | ⛔ a system prompt shaping every chat in the project |
+| **Files** | ⛔ **a knowledge base, always available, never re-uploaded** — including the repo |
+| **Memory** | ⚠⚠ **SCOPED TO THE PROJECT.** What CS learns stays in CS and does not cross to another project |
+| **Scheduled** | write a prompt once, set a cadence. ⛔ **Runs SERVER-SIDE as of September 2026** — no device online. Earlier in 2026 it needed the desktop app running |
+
+### ⛔⛔ CS'S OWN INSTRUCTIONS ALREADY STATE ITS ROLE — quoted from Carl's screenshot
+
+> ⛔ *"You are the only surface pointed at **problem space** rather than solution space. Carl's other
+> two working surfaces — an Architect and a Builder — are both pointed at the website itself. **You
+> are pointed at the business the website exists to serve.**"*
+>
+> ⛔ *"Start from *what is the problem, and is building anything even the answer* — not from what to
+> build."*
+>
+> ⚠⚠ *"Your subject matter is deliberately open... **Those are examples, not a scope** — helping
+> Carl map the full set of use cases is itself part of the job."*
+
+⚠⚠ **THE BUILDER WAS GIVEN AN EXAMPLE (a background outreach tool: postcode → restaurants → site
+assessment → company info → report → contact with an improved screenshot) AND SPENT THREE PARAGRAPHS
+ON IT, INCLUDING UNASKED-FOR CAUTIONS.** ⛔ **Carl: *"i knew you couldnt resist on commenting on the
+outreach tool, lol I have other ideas too. The point im making about CS is information."***
+
+⛔⛔ **AND CS'S OWN INSTRUCTIONS SAY IT FIRST — *examples, not a scope*. The correction was already
+written into the configuration before the Builder made the mistake.**
+
+⚠ **RECORDED AS A PATTERN, NOT A ONE-OFF: an example offered to illustrate a seat's PURPOSE is not
+a proposal to evaluate.** ⛔ **The outreach tool is NOT page content and is NOT an active work item.**
+
+### ⚠ WHY THIS MATTERS BEYOND CS
+
+⛔ **"It knows its role" is not a figure of speech.** ⚠ **Each seat's role is written into its
+configuration — CA has its settings reference, CB has CLAUDE.md and the scope guard, CS has project
+instructions.** ⛔ **The roles are configured constraints, not a description of how four chat windows
+happen to be used.**
+
+⚠⚠ **AND IT IS THE HONEST VERSION OF *"each knows what it needs to know"* — CS's memory does not
+leak into another project because the product scopes it that way; CB cannot write outside its chunk
+because the guard denies it.** ⛔ **The boundaries are not aspirational.**
+
+⛔⛔ **BUT PER CARL'S RULING ABOVE, NONE OF THIS REACHES THE PAGE.** ⚠ **It is the plant, not the
+client's website.**
+
+---
+
+## ⚠ WHAT THIS PASS SETTLES, AND WHAT IT LEAVES
+
+**Settled by Carl, 1 September 2026:**
+
+- ⛔⛔ **Item 12 is OVERTAKEN. The four roles are NAMED and described expansively.**
+- ⛔ **Both initials and function names exist and both may appear.**
+- ⛔ **The frame is that it mirrors a real business, and the page shows that.**
+- ⛔ **Front half CS + CD, back half CA + CB. Confirmed as accurate.**
+- ⛔ **The bridge is section 1's; section 2 shows what it connects.**
+- ⛔ **Order: CS → discovery meeting → CD → CA + CB.**
+- ⛔ **Each role is described BY WHAT THE CLIENT GETS — not by its configuration.**
+- ⛔ **The factory model is REASONING, never page content.**
+- ⛔ **Sections 2 and 3 differ in layout.**
+
+**Open, and Carl's:**
+
+- ⚠ **Whether function names or initials LEAD.**
+- ⚠ **The section's TITLE** — still open from 30 August: *"Does it have to be called 'meet the
+  team?' No."*
+- ⚠ **Section 2's actual LAYOUT** — and it cannot be settled independently of section 3, whose
+  design is Carl's.
+- ⚠ **Whether the principle is scaffolding-ready or needs a development pass** — carried forward
+  from 30 August, unanswered.
+
+**Flagged, not actioned:**
+
+- ⚠⚠ **`current-sprint.md`'s workshop/template entry reads as a tidy-up task and is actually the
+  business model.** ⛔ **Governance file; Carl's to authorise.**
+- ⚠ **`ai-roles.md` still does not mention CS or CD at all** — carried from 30 August, still true.
+
+---
+
+# ⛔⛔ SECTION 2 — THE LAYOUT, AND THE TRAVELLING IMAGE. Carl, 1 September 2026
+
+⚠⚠ **READ THE STANDING FIRST, BEFORE ANY ITEM BELOW.** ⛔ **Carl, this session:**
+
+> ⛔⛔ ***"What i am describing is the development of 1-4. That doesnt mean that in planning and
+> implementation things wont get tweaked. Nothing is truly settled until it gets approved. I reserve
+> the right to create and sometimes on the fly - im a musician after all, lol"***
+
+⛔ **THIS IS A TRACKING PASS, NOT A MASTER.** ⚠ **`working-with-carl.md` → the DAW model: a decision
+taken during tracking is a take. An arrangement recorded here is NOT a commitment, and ⛔ the Builder
+must not defend it back at Carl when he moves.** **Item 12 was reversed earlier in this same session
+and that was correct.**
+
+⚠ **Carl's close: *"We have enough for now on 2. Its more than the bare bones and we have more to
+work with."*** ⛔ **Section 2 is deliberately BEYOND scaffolding and deliberately SHORT of settled.**
+
+---
+
+## ⛔ THE ARRANGEMENT — 2+2
+
+⛔ **Four large sections in a 2+2 configuration. Each named with the ROLE and carrying a
+DESCRIPTION.**
+
+⚠ **CARDS ARE NOT ASSUMED.** ⛔ **Carl: *"There might not be cards, just 4 2+2 sections of text which
+themselves have to sit in their own 'box'."*** **A bounded region, not necessarily a surface with a
+material.**
+
+⚠⚠ **THE DISTINCTION IS LOAD-BEARING FOR THE IMAGE BELOW.** ⛔ **Four opaque cards would COMPETE with
+the image and hide it behind them. Four bounded text regions let it stay visible as ONE FIELD across
+the section.** ⚠ **The Builder had drifted toward "cards"; Carl corrected it.**
+
+⚠ **2+2 also answers the section 2 / section 3 layout requirement** — *"In layout they should be
+different."* **A grid here does not read as eight boxes alongside whatever section 3 becomes.**
+
+---
+
+## ⛔⛔ THE TRAVELLING IMAGE — SECTIONS 1 AND 2 ONLY
+
+⛔ **The section 1 image travels down the page with the scroll, and when section 2 comes into view it
+sits BEHIND the four roles.**
+
+**Carl: *"that would literally sit behind the 4 roles mirroring or echoing the whole setup."***
+
+### ⛔⛔ NO MORPH. NO CHANGE. JUST TRAVELLING
+
+⛔⛔ **CARL, EXPLICITLY: *"theres no morphing or changing the image, just travelling."***
+
+⚠⚠ **THIS RETIRES THE BLOCKER RECORDED ON 31 AUGUST.** ⛔ **The scroll-and-morph idea was parked
+because *"something else"* had to exist before the image could morph into it. **There is no
+something else. Nothing transforms.** ⚠ **What remains is one image, one bounded travel range.**
+
+### ⛔ WHERE IT STOPS — THE DIVIDER, AND IT ALREADY EXISTS
+
+⛔⛔ **Carl: *"Thats why i had you put the thin grey dividing line between sections. Thats where it
+will stop."***
+
+⚠⚠ **THE STOP IS NOT INVENTED FOR THE IMAGE.** ⛔ **The rule between sections 2 and 3 is already on
+the page doing the same job for the eye. The image stopping there reads as CORRECT rather than as a
+truncation.** ⚠ **The Builder had raised "hard stop vs fade" as an open question; the divider
+answers it.**
+
+⛔ **IT DOES NOT VENTURE INTO SECTION 3.**
+
+### ⚠⚠ WHY IT STOPS THERE — the travel IS the argument
+
+> ⛔⛔ **Carl: *"It is quite literally meant visually what we are saying with text in 1+2 which are
+> related."***
+
+⛔ **Sections 1 and 2 are ONE ARGUMENT IN TWO PARTS** — the bridge, then what it connects. ⚠ **The
+image crossing both and stopping at 3 states that relationship as a fact about the page rather than
+as a sentence.** **A reader does not have to be told 1 and 2 belong together.**
+
+⚠⚠ **AND THE STOP DOES AS MUCH WORK AS THE TRAVEL.** ⛔ **Section 3 is the examples — the client's
+own site, recoloured to their brand. Different subject, different ground.** **An image continuing
+into 3 would claim it belongs to the same argument. It does not.**
+
+### ⚠ WHAT IT RECONTEXTUALISES
+
+⛔ **In section 1 the image is Carl at a desk, two workstations. Behind section 2 the same picture
+becomes THE ROOM THE FOUR ROLES WORK IN.** ⚠ **Recontextualised by what sits on top of it, without
+the image itself changing.**
+
+⚠⚠ **AND IT QUIETLY SOLVES A PROBLEM THE RECORD HAD.** ⛔ **The bridge is section 1's and section 2
+shows what it connects — which risks section 2 reading as detached from the human.** ⚠ **With the
+image carrying Carl at the desk behind the four roles, the human is visibly still present WITHOUT a
+fifth box and without re-explaining the bridge.** **The connection is in the layering.**
+
+### ⛔ THE COLOUR HOLDS
+
+⛔ **Carl: *"it stays predominantly teal or with the blue layering as ive suggested."*** ⚠ **Section
+1's teal-led treatment (D-025 register) carries across. No colour shift on travel.**
+
+---
+
+## ⚠⚠ THE LEFT FADE IS EXPECTED TO MOVE — flagged by Carl, not by the Builder
+
+⛔ **Section 1's arrangement is stronger on the right, fading on the left where it meets the text.**
+⚠ **Carl: *"This may have to be modified."***
+
+⛔ **THE REASON IS GEOMETRIC.** ⚠ **That fade is tuned for a RIGHT-HAND SLOT beside copy. Behind a
+full-width 2+2 there is no left or right to favour — the same treatment would put the image's
+strength under two of the four boxes and starve the other two.**
+
+⛔ **RECORDED AS OPEN AND EXPECTED TO CHANGE — NOT as a section 1 decision that section 2
+contradicts.**
+
+---
+
+## ⚠ WHAT REMAINS OPEN ON THE IMAGE — Builder-raised, not answered
+
+- ⚠ **TRAVEL vs FIXED.** ⛔ **"Moves with the scroll" may mean genuine parallax (translating as the
+  page scrolls) or an element FIXED behind the two sections that they pass over.** ⚠ **Very
+  different builds; the second is far cheaper and may read identically.** **Not decided.**
+- ⚠ **DOES IT SCALE, OR ONLY TRANSLATE?** ⛔ **Section 1 gives it a right-hand slot; section 2 wants
+  it behind a full-width grid. Different footprints** — either it grows as it travels, or it is
+  sized for the wider case and section 1 crops it.
+- ⚠⚠ **THIS TIGHTENS THE ASPECT-RATIO QUESTION ALREADY OPEN FROM 31 AUGUST.** ⛔ **It was raised as
+  worth answering BEFORE Resolve. It is now more constrained: the image must work as a RIGHT-HAND
+  SLOT and as a FULL-WIDTH GROUND.**
+- ⚠ **HOW MUCH SHOWS THROUGH THE BOXES** — depends on whether the boxes are opaque. ⛔ **Follows from
+  the cards/boxes question above, which is Carl's.**
+
+---
+
+## ⛔⛔ STRUCTURAL — THIS DOES NOT GET BUILT WITHOUT REVIEW AND CARL'S AUTHORISATION
+
+⛔ **CLAUDE.md §5a. Stated here so it is not discovered at implementation time.**
+
+⚠ **THE RISK PROFILE DROPPED SHARPLY WHEN THE MORPH WAS REMOVED** — no state crossing a boundary, no
+second expensive resource, no lifetime question. ⛔ **But three structural facts remain:**
+
+1. ⛔ **`/about` IS CURRENTLY A STATIC PRERENDERED SERVER COMPONENT.** ⚠ **Scroll observation needs a
+   client boundary. That changes what the page IS, not how it looks.**
+2. ⛔ **CROSS-SECTION COUPLING.** ⚠ **The image belongs to section 1 but is positioned by section 2's
+   viewport state — two sections sharing one element's lifetime.**
+3. ⛔ **PAINT ORDER AND STACKING BEHIND INTERACTIVE CONTENT.** ⚠⚠ **The 14 August worked cases are
+   the same family: moving the canvas out of the grid made all five cards unclickable and gave
+   `litCards` an unbounded lifetime — both from DOM nesting nobody had written down. Geometry was
+   byte-identical and every instrument was green.**
+
+⛔ **§5b APPLIES: before building, ENUMERATE what the current arrangement provides — including what
+it provides by accident of where it sits — and state for each how it is preserved.**
+
+---
+
+## ⚠ SECTION 2 — STATE AT THE CLOSE OF THIS PASS
+
+**Carl's instructions this pass:**
+
+- ⛔ **2+2, four sections, role name + description.**
+- ⛔ **Boxes, not necessarily cards.**
+- ⛔ **The section 1 image travels through 1 and 2 and STOPS AT THE 2/3 DIVIDER.**
+- ⛔ **No morph, no change — travelling only.**
+- ⛔ **Teal, or teal with the blue layering.**
+- ⛔ **The left fade may have to be modified.**
+
+**Open, and Carl's:**
+
+- ⚠ **Cards or plain boxes**; how much image shows through.
+- ⚠ **True parallax or fixed-behind.**
+- ⚠ **Scale-on-travel, and the image's aspect ratio.**
+- ⚠ **Whether function names or initials lead** (from the earlier pass).
+- ⚠ **The section's title** (open since 30 August).
+
+⛔ **AND EVERYTHING ABOVE IS A TAKE.** ⚠ **Carl reserves the right to change it on the fly. Nothing
+is settled until he approves it.**
+
+---
