@@ -168,17 +168,55 @@ export default function Home() {
               {/* max-w-sm (384px) constrains the line length on wide desktop cards —
                   the card stays architecturally wide but the text sits in a controlled
                   column, leaving intentional whitespace to the right. */}
+              {/* ⛔ CARL'S WORDS, 2 September 2026 — approved verbatim.
+
+                  ⛔⛔ THE SECTION USES TWO REGISTERS AND THIS IS THE RULE. Carl: *"On 2+4, that
+                  is enough. 1+3 should be statements like the sections main headline and
+                  subtext."*
+
+                    cards 2 + 4  →  WE SPEAK   ("We turn...", "We offer...")
+                    cards 1 + 3  →  STATEMENTS, no "we" at all
+
+                  ⚠ DO NOT "FIX" CARDS 1 OR 3 BY ADDING A "WE" TO MATCH THE OTHERS. The absence
+                  is deliberate and it mirrors the section heading and intro, which also state
+                  rather than speak. Carl: *"We shouldnt overuse the word 'we'."*
+
+                  ⚠ "UNIQUE", NOT "PREMIUM", CLOSES IT. Premium bookended the heading and made a
+                  claim the body did not support; custom / tailor-made / bespoke all argue
+                  one-of-a-kind, so unique is what the sentence actually earns.
+
+                  ⚠ "YOUR brand identity" — the ownership matters. An earlier draft read "our",
+                  which reverses the promise: the client's site shaped by C2B's identity rather
+                  than their own.                                                             */}
               <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
-                A high-quality website that makes your business look more trusted, credible,
-                and worth the investment. Built with the attention to detail that reflects
-                well on your brand.
+                Custom, tailor-made architecture designed specifically around your brand identity.
+                Bespoke quality designed to make your business look trusted, credible, and unique.
               </p>
             </div>
 
             <div className="border border-neutral-800 p-6 md:p-8">
               <h3 className="text-lg font-semibold tracking-tight">Website Transformation</h3>
+              {/* ⛔ CARL'S WORDS, 2 September 2026 — approved verbatim.
+
+                  ⚠ "We turn", not "Turning". The original was a GERUND WITH NO ACTOR — nobody
+                  was doing it — which reads as a service-catalogue entry rather than a person
+                  speaking. Cards 2 and 4 now both put us in the sentence.
+
+                  ⛔ "TIRED", NOT "DATED". Carl chose it over "dated", "older" and deleting the
+                  judgement altogether. Tired is the word a client would use about their OWN
+                  site: it diagnoses without blaming anyone, where "dated" implies neglect.
+                  ⚠ "Underperforming" is kept alongside it deliberately — tired is about
+                  APPEARANCE, underperforming is about RESULTS. Two different reasons a client
+                  arrives here, and dropping either narrows the card.
+
+                  ⚠ SINGULAR THROUGHOUT: "a tired... website" → "a ... presence". The plural
+                  form ("tired websites into a presence") disagreed in number.
+
+                  ⚠ "Same business, stronger first impression" is UNCHANGED from the original
+                  and was the strongest line in the section — it tells a client who fears a
+                  redesign means becoming someone else that it does not.                      */}
               <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
-                Turning a dated or underperforming website into a sharper, more persuasive
+                We turn a tired or underperforming website into a sharper, more persuasive
                 digital presence. Same business, stronger first impression.
               </p>
             </div>
@@ -197,10 +235,42 @@ export default function Home() {
             </div>
 
             <div className="border border-neutral-800 p-6 md:p-8">
-              <h3 className="text-lg font-semibold tracking-tight">Ongoing Growth & Improvement</h3>
+              {/* ⛔ CARL'S HEADING, 2 September 2026. Was "Ongoing Growth & Improvement".
+
+                  ⚠ "IMPROVEMENT" WAS THE FAULT, and Carl named it: *"Are we shipping a product
+                  that needs improvement?"* It concedes a deficit at launch, which contradicts
+                  card 1 asserting the site was built properly in the first place — the two
+                  cards were arguing against each other.
+
+                  ⚠ "CARE" IS THE RELATIONSHIP WORD, and it carries the section's tone directly.
+                  "Growth" framed the service as financial return; Carl ruled the value is *"not
+                  just from a financial sense."*                                               */}
+              <h3 className="text-lg font-semibold tracking-tight">Ongoing Long Term Care</h3>
+              {/* ⛔ CARL'S WORDS, 2 September 2026 — approved verbatim, not paraphrased.
+                  ⚠ THE OPENING SENTENCE IS AN OFFER, NOT A DIAGNOSIS, AND THAT IS THE POINT.
+                  Support is a CHOICE the client makes — they buy the site, host it where they
+                  like, and take the retainer or not. Four earlier drafts opened by telling the
+                  client something about their situation ("websites drift", "a website does not
+                  change on its own", "as the business changes...") so the service could be the
+                  answer to a problem the copy had just planted. ⛔ Carl rejected every one:
+                  *"Dont tell people how to run a business."* An offer states what is available
+                  and lets them decline.
+
+                  ⛔ NO PREDICTION AND NO FEAR. Earlier drafts carried "if something goes wrong",
+                  "small faults can appear", "not starting again with a stranger". Carl:
+                  *"Were not gonna tell them about a world where 'shit happens'."* The difficulty
+                  is placed in the WORLD — "in an ever changing world" — never in the client's
+                  business. ⚠ "Ready for whatever comes next" SURVIVED that cut deliberately: it
+                  promises presence, it does not predict trouble. Carl: *"Its honest."*
+
+                  ⚠ "Endeavour" is the honest verb — it promises effort, which is what a retainer
+                  buys, not outcomes it cannot guarantee.
+
+                  ⚠ TONE FOR THE WHOLE SECTION, Carl's words: *"businesslike but not corporate.
+                  Personal, confident that says in every way 'we got your back'."*             */}
               <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
-                Your website should improve over time, not sit still after launch. We continue
-                refining, optimising, and updating so your digital presence keeps working harder.
+                We offer ongoing maintenance, updates and support. In an ever changing world we
+                endeavour to keep your site current, capable, and ready for whatever comes next.
               </p>
             </div>
 
