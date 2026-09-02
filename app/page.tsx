@@ -291,48 +291,84 @@ export default function Home() {
         <Container>
 
           <div className="max-w-2xl">
+            {/* ⛔ CARL'S WORDS, 2 September 2026 — approved verbatim. Was "Built to set the
+                standard." over a two-sentence intro.
+
+                ⛔⛔ THE OLD COPY DATED ON THE FIRST SALE, AND THAT IS WHY IT WENT. It read
+                "Before we bring this level of thinking to client projects, we apply it to our
+                own. This site is the FIRST EXPRESSION of the C2B approach..." ⚠ Both halves
+                CONCEDED THE ABSENCE OF A PORTFOLIO: "before" means not yet, and "first
+                expression" is a count whose value is one. ⛔ Carl: *"This is a problem. A line
+                like this shouldnt be used."* Nobody arrives counting the portfolio — that line
+                handed the reader the thought.
+
+                ⚠ THE IDEA SURVIVED; ONLY THE TENSE WAS WRONG. Carl: *"We will/can do for you
+                what we do for ourselves is a good philosophy."* ⛔ A PERMANENT commitment, not a
+                stage the business is passing through. "One standard, applied to our own work and
+                to yours" says it without a date in it.
+
+                ⛔ NO "WE" HERE, AND IT IS DELIBERATE — the statement register (D-067). Carl:
+                *"No need for a 'we' here, its more than implied 'our own' and 'yours'."*
+                ⚠ THE SPEAKER IS CARRIED BY THE POSSESSIVES. Do not add one.
+
+                ⚠ THE HEADING NO LONGER SAYS "STANDARD" because the body now does. Carl chose
+                "Quality Without Exception" over "Built Without Compromise" and "Guided by
+                Principle" — it is the same claim as the body's, so heading and paragraph make
+                ONE argument rather than two. ⛔ "Guided by Principle" was ruled out as METHOD
+                language: how the work is done is /about's subject, not the landing page's.    */}
             <h2 className="text-3xl font-semibold tracking-tight">
-              Built to set the standard.
+              Quality Without Exception.
             </h2>
             {/* max-w-lg: mirrors the Services intro paragraph constraint —
                 heading stays wide (672px via wrapper), paragraph pulls in to
                 512px, consistent with the established hierarchy language.   */}
             <p className="mt-4 text-base text-neutral-400 leading-relaxed max-w-lg">
-              Before we bring this level of thinking to client projects, we apply it to our own.
-              This site is the first expression of the C2B approach: clear positioning, premium design,
-              intelligent enquiry thinking, and careful ongoing refinement.
+              One standard, applied to our own work and to yours — clear positioning, premium
+              design, intelligent enquiry thinking, and careful ongoing refinement.
             </p>
-          </div>
 
-          {/* 3-col on desktop: visually distinct from Services 2-col grid,
-              same border/padding/type vocabulary. At desktop card width (~384px)
-              the text area is ~320px — already tighter than max-w-sm, so no
-              per-paragraph width constraint is needed here.                 */}
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* ⛔⛔ THE THREE CARDS ARE GONE. Carl's decision, 2 September 2026: *"cards will be
+                gone, that is a decision."* Their content is MERGED into the paragraph below —
+                the three headings survive as PHRASES inside it ("Our design standards...",
+                "In business thinking we...", "We apply modern capabilities..."), which is how
+                Carl specified the merge.
 
-            <div className="border border-neutral-800 p-6 md:p-8">
-              <h3 className="text-lg font-semibold tracking-tight">Design Standard</h3>
-              <p className="mt-3 text-sm text-neutral-400 leading-relaxed">
-                A restrained, premium visual system built to create trust before a conversation begins.
-              </p>
-            </div>
+                ⚠⚠ WHY THEY WENT, AND IT IS A STRUCTURAL REASON, NOT A COPY ONE. Section 2 is a
+                2×2 grid of bordered boxes; this was a 1×3 grid of bordered boxes on the very
+                next screen. Same border vocabulary, same heading-plus-paragraph shape, same scan
+                pattern — ⛔ BY THE SECOND GRID THE EYE RECOGNISES THE PATTERN AND SKIMS, so the
+                harder argument landed on the least attention. ⚠ Section 2's evenness only reads
+                as restraint if it happens ONCE; twice and it is the site's default way of
+                presenting anything.
 
-            <div className="border border-neutral-800 p-6 md:p-8">
-              <h3 className="text-lg font-semibold tracking-tight">Business Thinking</h3>
-              <p className="mt-3 text-sm text-neutral-400 leading-relaxed">
-                A website structured around perception, enquiries, response, and long-term value —
-                not decoration for its own sake.
-              </p>
-            </div>
+                ⛔ AND THE FORM WAS SLIGHTLY FALSE HERE. Section 2's four cards are four
+                DIFFERENT services. These three were three LENSES ON ONE THING — this site — so
+                the grid presented a single piece of evidence as three parallel items.
 
-            <div className="border border-neutral-800 p-6 md:p-8">
-              <h3 className="text-lg font-semibold tracking-tight">Modern Capability</h3>
-              <p className="mt-3 text-sm text-neutral-400 leading-relaxed">
-                A foundation for smarter enquiry journeys and digital systems that help reduce manual
-                work as the business grows.
-              </p>
-            </div>
+                ⚠ THE LAYOUT BELOW IS PROVISIONAL AND CARL SAID SO: *"The layout in 3 will be
+                redesigned at a later date."* The paragraph sits under the subtext in the same
+                max-w-2xl column, on the left. ⛔ Do not treat this arrangement as approved
+                design — only the COPY is approved.
 
+                ⚠ THE REGISTER TURNS HERE, DELIBERATELY. The heading and subtext STATE
+                ("Quality Without Exception", "One standard..."); this paragraph SPEAKS. Carl:
+                *"we can be a bit personal here."* ⛔ That is consistent with D-067's two-register
+                rule, not an exception to it — a commitment is something a person makes.
+
+                ⚠ "An asset, as well as a brochure" is CARL'S AMENDMENT to the draft's "an asset,
+                not a brochure". It concedes the presentational role on purpose rather than
+                denying it.                                                                    */}
+            <p className="mt-6 text-base text-neutral-400 leading-relaxed max-w-lg">
+              Our design standards come down to restraint and deliberate detail: nothing on a page
+              that has not earned its place. Trust gets built before a word is exchanged, and that
+              only happens when the work is careful enough to notice. In business thinking we begin
+              with what the site has to do — how the business is seen, how enquiries come in, how
+              fast they are answered, and what it is still worth years from now. A website is an
+              asset, as well as a brochure. We apply modern capabilities where they earn their keep,
+              so the site can qualify interest, reduce admin, and take on more without taking more
+              of your time. We hold our own work to this, which is the only honest way to offer it
+              to anyone else. Everything here was built the way we would build your website.
+            </p>
           </div>
         </Container>
       </section>
