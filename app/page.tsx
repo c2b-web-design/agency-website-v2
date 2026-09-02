@@ -95,12 +95,33 @@ export default function Home() {
               hover:bg-neutral-100 (was neutral-200): softer hover destination — the shift
               is noticeable but not jarring. Premium transitions are never loud.
               duration-200: explicit and smooth without being slow.                          */}
+          {/* ⛔⛔ "TBD" IS A PLACEHOLDER LABEL, NOT A DESIGN. Carl, 2 September 2026: *"Change
+              see our work to TBD."* Was "See our work".
+
+              ⚠ WHY IT CHANGED: after D-068 removed the three cards, `#work` contains NO WORK —
+              it is now "Quality Without Exception", a statement of standard with no examples.
+              ⛔ The label promised a portfolio and delivered a philosophy.
+
+              ⛔⛔ AND CARL HAS RULED THE FUNCTION: *"I can definately say the button wont be
+              navigational."* ⚠ THIS ELEMENT IS DAY-1 SCAFFOLDING — a hero conventionally has a
+              nav CTA, so one was built. **What occupies this position is undetermined**; Carl:
+              *"its functionality may be something else."*
+
+              ⚠⚠ THE `href="#work"` IS DELIBERATELY LEFT IN PLACE AND IS NOW KNOWN-STALE.
+              Changing the element's type is STRUCTURAL and was not authorised by the label
+              change. ⛔ DO NOT "TIDY" THIS by removing the anchor, pointing it elsewhere, or
+              restoring a descriptive label — the destination is undecided BY RULING, and the
+              header nav already reaches `#work`, so nothing is lost while it waits.
+
+              ⛔ THE HERO IS BUILT LAST AND ITS BRIEF IS NOT IN THIS REPOSITORY. Carl holds it
+              outside the record by his own instruction. ⚠ A session reading these files CANNOT
+              plan this screen — ask Carl; do not infer it from anything here.                */}
           <div className="mt-12">
             <a
               href="#work"
               className="inline-block bg-white text-black text-sm font-semibold px-7 py-3 rounded-full tracking-wide hover:bg-neutral-100 transition-colors duration-200"
             >
-              See our work
+              TBD
             </a>
           </div>
 
