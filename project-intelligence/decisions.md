@@ -3547,3 +3547,64 @@ alongside the demotion reasoning. ⛔ **History is preserved, not rewritten** �
 ### ⚠ VERIFICATION
 
 `npx tsc --noEmit` clean · `npm run build` 8/8 static · `npm run lint` **1 error, 5 warnings — baseline, unchanged.** ⛔ **Copy and the cards' ABSENCE both verified in the served HTML** (0 occurrences of each card title), not only in source.
+
+---
+
+## D-069 — Homepage Section 4: The Copy Stands, And The "Who We Are" Button Becomes A Three.js Surface
+
+**Date recorded:** 2026-09-02
+**Status:** ⚠ **TWO STANDINGS ON ONE SECTION, AND BOTH ARE WRITTEN** — `context-rules.md`: *"Statuses are written — never implied."*
+
+| element | status |
+|---|---|
+| **The section 4 COPY** | ⛔ **APPROVED.** Carl: *"I think Sec 4s copy doesnt need changing, its already good."* One word changed — see below. |
+| **The `Who we are` BUTTON — Three.js rebuild** | ⛔ **PROVISIONAL, AND NOT AUTHORISED TO BUILD.** Carl: *"We are not redesigning now but in later sessions."* ⚠ **The GEOMETRY is settled; the MATERIAL and LIGHTING are undetermined.** |
+
+**Authority:** Human Founder — Carl, 2 September 2026.
+**Bears on:** `app/page.tsx` — the `#contact` section. Commit `0f606b8` (the copy). ⛔ **The button is NOT built and no code exists for it.**
+
+---
+
+### ⛔ THE COPY — APPROVED AS IT STOOD, ONE WORD CHANGED
+
+**Section 4 is a closing invitation, not a claim**, which is why it survived review where sections 2 and 3 did not: it asserts nothing and so never carried the portfolio problem D-068 records. ⚠ **Its three clauses echo cards 1, 2 and 3 in order** — website, first impression, enquiries — so the page closes by recalling what it opened with.
+
+⛔ **"premium" → "bespoke", and the reason is FREQUENCY, NOT THE WORD.** Carl: *"Mentioned once - its there. Mentioned again - reinforces it. Mentioned again - lets not labour the point."*
+
+⚠ **"Premium" REMAINS twice in body copy** — the `#services` intro and the `#work` subtext — **and in card 1's heading `Premium Website Design`.** ⛔ **The word is not retired; only the third body mention is.** **Do not sweep the rest.**
+
+⚠ **The `#services` intro was the risk in making this change** and was deliberately not touched: **that copy is SETTLED** — *"I agree with the headline and subtext, iy doesnt need editing."*
+
+### ⛔⛔ THE BUTTON — WHAT IS DECIDED, AND WHAT IS NOT
+
+**Carl's decision, in his words:** *"The button. Redesigned using three js with existing geometry used elsewhere on the site. However, the material and lighting will be different. This has yet to be determined."*
+
+| | |
+|---|---|
+| ⛔ **SETTLED** | it becomes a **Three.js** surface; it **reuses existing geometry from elsewhere on the site** |
+| ⛔ **UNDETERMINED** | the **material** and the **lighting** — explicitly *"yet to be determined"* |
+| ⛔ **NOT AUTHORISED** | building it. **Later sessions.** |
+
+⚠ **WHICH BUTTON: `Who we are` in `#contact`, which links to `/about`.** ⛔ **NOT the hero's `See our work`** — the hero is deferred and is Carl's own work.
+
+### ⛔⛔ THIS DOES NOT GET BUILT WITHOUT STRUCTURAL REVIEW — RULE 5a
+
+⚠⚠ **A Three.js button on `app/page.tsx` IS A NEW WebGL SURFACE ON A PAGE THAT CURRENTLY HAS NONE.** ⛔ **That is a structural decision under CLAUDE.md §5a — a second instance of an expensive, unique resource — and it stops for review BEFORE it is built.**
+
+⛔ **TWO WORKED CASES ALREADY ON THE RECORD, AND THIS IS THE SAME SHAPE AS BOTH:**
+
+| case | what it cost |
+|---|---|
+| **the warm-up canvas** | 17 programs linked twice, 833ms of GPU work delivering **0.0ms** to the reveal. **Four sessions to diagnose, a week to unwind, an hour to build.** |
+| **`NextStepMeshButton`** | ⚠ **a button, exactly like this one** — inside a keyed subtree, so a **fresh WebGL context on every question step**: 67ms of blocked main thread, **eight contexts across a five-question walk**, invisible for weeks because `one-context.mjs` watched a different canvas |
+
+⚠ **NEITHER WAS A CODING ERROR. Both worked exactly as written.** ⛔ **Recording the precedent here so a later session does not read "Carl decided this" as "therefore build it."** **The decision authorises the DIRECTION. The structure needs its own review, and Carl routes it.**
+
+### ⚠ TWO CONSTRAINTS FOR WHOEVER PLANS IT
+
+- ⛔ **`nextstep-geometry.ts` and `contact-field-geometry.ts` ARE BOTH ON THE PERMANENT PROTECTED LIST.** ⚠ **Reusing geometry means READING them, which is free. If the reuse requires either file to CHANGE, that is an unlock AND an approved-layer question** — both are approved work.
+- ⚠ **The landing page's four screens are each exactly one viewport, and two pairs are UNASSERTED** (81px header, 61px footer — see the comments in `app/page.tsx`). ⛔ **A mesh button in `#contact` sits inside the `calc(100vh-61px)` screen. Anything that changes that section's height stales the pairing silently.**
+
+### ⚠ AND ONE THING THE COPY WORK LEFT OUT OF STEP
+
+⛔ **The hero's CTA reads `See our work` and points at `#work` — which, after D-068, contains no work.** It is now *Quality Without Exception*: a statement of standard with no examples. ⚠ **Raised with Carl and not acted on: the hero is deferred and is his.** **Recorded so it is not discovered later as a defect.**
