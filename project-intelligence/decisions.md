@@ -3608,3 +3608,66 @@ alongside the demotion reasoning. ⛔ **History is preserved, not rewritten** �
 ### ⚠ AND ONE THING THE COPY WORK LEFT OUT OF STEP
 
 ⛔ **The hero's CTA reads `See our work` and points at `#work` — which, after D-068, contains no work.** It is now *Quality Without Exception*: a statement of standard with no examples. ⚠ **Raised with Carl and not acted on: the hero is deferred and is his.** **Recorded so it is not discovered later as a defect.**
+
+⛔ **SUPERSEDED BY D-070, 2 September 2026 — SAME DAY.** ⚠ **It WAS acted on: the label is now `TBD`, and Carl has ruled the button will not be navigational.** **This note stands as history; D-070 is the current state.**
+
+---
+
+## D-070 — The Hero Button: Not Navigational. Kept With A Function, Or Deleted
+
+**Date recorded:** 2026-09-02
+**Status:** ⛔ **APPROVED — WHAT IT IS NOT.** ⚠ **PROVISIONAL — whether it survives at all.** Both are written; neither is implied.
+
+**Authority:** Human Founder — Carl, 2 September 2026. On the unlock: *"Authorised to open file, lock after use."* **Closed and re-verified by observing a real denial.**
+**Bears on:** `app/page.tsx` — the hero CTA only. Commit `1541a12`. ⛔ **Amends the open note at the foot of D-069, which is now superseded** — see below.
+
+---
+
+### ⛔⛔ WHAT IS RULED — AND IT IS A NEGATIVE RULING
+
+**Carl:** *"I can definately say the button wont be navigational."* And: *"It will not be having navigational capabilities."*
+
+⚠⚠ **A NEGATIVE RULING IS STILL A RULING.** ⛔ **It closes a question rather than opening one, and it is not a placeholder for a decision Carl has yet to make.** **The button does not move a reader anywhere. That is settled.**
+
+### ⛔ THE TWO REMAINING OUTCOMES — AND THERE ARE ONLY TWO
+
+**Carl:** *"If its kept it will do some function in the hero section. If not, it will be deleted."*
+
+| outcome | what it means |
+|---|---|
+| **KEPT** | ⛔ it performs **some function IN the hero section** — ⚠ **what that function is, is undetermined** |
+| **DELETED** | ⛔ it goes entirely |
+
+⚠⚠ **NOTE WHAT IS ABSENT: there is no third outcome where it navigates.** ⛔ **A later session proposing "point it at `/about`" or "restore a descriptive label" is re-opening a question Carl has closed.**
+
+### ⚠ THE LABEL IS `TBD`, AND IT IS A PLACEHOLDER, NOT A DESIGN
+
+**Was `See our work`.** ⛔ **It had to change because D-068 removed the three cards from `#work`, so that section now contains NO WORK** — it is *Quality Without Exception*, a statement of standard with no examples. ⚠ **The label promised a portfolio and delivered a philosophy.**
+
+⚠ **THE ELEMENT IS DAY-1 SCAFFOLDING.** Carl: *"The hero scaffolding was the very first thing to be built on Day 1."* **A hero conventionally carries a navigation CTA, so one was built.** ⛔ **Its presence is an artefact of that convention, not a decision anyone took.**
+
+### ⛔⛔ THE `href="#work"` IS LEFT IN PLACE AND IS KNOWN-STALE
+
+⚠ **Changing the element's TYPE is structural and was not authorised by a label change.** ⛔ **DO NOT "TIDY" IT** — do not remove the anchor, repoint it, or restore a descriptive label. **The destination is undecided BY RULING**, and ⚠ **the header nav already reaches `#work`, so nothing is lost while it waits.**
+
+⚠ **The Builder asserted during this session that the button was "the only thing that moves a reader down the page from the hero". THAT WAS WRONG and Carl corrected it: *"There is navigation in the header to move a user down the page."*** ⛔ **Recorded because the false premise would have made removal look costly when it is not.**
+
+### ⛔⛔ THE HERO'S BRIEF IS NOT IN THIS REPOSITORY — AND THAT IS DELIBERATE
+
+**Carl has developed the hero concept across several earlier sessions and *"had it stricken from the record."*** ⚠⚠ **The silence is an instruction, not a gap.**
+
+⛔ **WHAT IS ON THE RECORD, AND IT IS ONLY THIS:**
+
+- **The hero will be a VIDEO BACKGROUND.**
+- **`/about` section 1's image is STATIC.**
+- ⛔⛔ **THEY ARE TWO TOTALLY SEPARATE PIECES OF WORK WITH DIFFERENT IMAGES.** ⚠ **What they may share is a similar LAYOUT — nothing else.**
+
+⚠⚠ **THIS CORRECTS A COUPLING THE BUILDER HAD ASSUMED TWICE.** ⛔ **The travelling-image dependency in the 1 September handoff — *"the image must work as a right-hand slot in section 1 AND as a full-width ground behind section 2"* — belongs to `/about` ALONE.** **The homepage hero is not in that problem.**
+
+⚠ **AND THE VIDEO/NOT-VIDEO SPLIT IS DELIBERATE:** the hero is video; the `/about` section 3 showroom screen is briefed as ⛔ **explicitly NOT a video.** **Do not "harmonise" them.**
+
+⛔⛔ **THE OPERATIONAL CONSEQUENCE: A SESSION READING THESE FILES CANNOT PLAN THE HERO.** ⚠ **Ask Carl. Do not infer it from the layout, the copy, the surrounding sections, or this entry.** **This is why it is built last** — not only sequencing, but because its brief lives outside the system.
+
+### ⚠ WHAT THIS SUPERSEDES
+
+⛔ **D-069's closing note** — *"the hero's CTA reads `See our work` and points at `#work`, which contains no work… raised with Carl and not acted on"* — **is now acted on and out of date.** ⚠ **The label is changed and the button's function is ruled. D-069's note stands as history; this entry is the current state.**
