@@ -3477,3 +3477,73 @@ alongside the demotion reasoning. ⛔ **History is preserved, not rewritten** �
 ### ⚠ VERIFICATION
 
 `npx tsc --noEmit` clean · `npm run build` compiles, 8/8 static · `npm run lint` **1 error, 5 warnings — the recorded baseline, unchanged by this work.** ⛔ **Copy verified in the SERVED HTML on a production build at :3100, not only in source.** Carl's approval is on the rendered page.
+
+---
+
+## D-068 — Homepage Section 3: The Cards Are Removed And The Argument Becomes One Paragraph
+
+**Date recorded:** 2026-09-02
+**Status:** ⛔ **APPROVED — THE COPY ONLY.** Carl, on the rendered production build: *"Sec 3 is approved. Layout work to be done at a later date."* ⚠ **The LAYOUT is explicitly PROVISIONAL and is not approved by this entry.**
+
+**Authority:** Human Founder — Carl, 2 September 2026. Under the same unlock as **D-067**: *"app/page.tsx Authorised to use. Lock when instructed."*
+**Bears on:** `app/page.tsx` — the `#work` section only. Commit `93ad412`. **Follows D-067**; sections 1, 2 and 4 untouched.
+
+---
+
+### ⛔⛔ THE DECISION — THE THREE CARDS ARE GONE
+
+**Carl:** *"cards will be gone, that is a decision."*
+
+`Design Standard`, `Business Thinking` and `Modern Capability` are removed as cards. ⛔ **Their three titles survive as PHRASES inside a single merged paragraph** — *"Our design standards…"*, *"In business thinking we…"*, *"We apply modern capabilities…"* — which is the form Carl specified: *"incorporate the 3 titles into the paragraph and we can be a bit personal here."*
+
+### ⚠⚠ WHY THEY WENT — STRUCTURAL, NOT A COPY PREFERENCE
+
+⛔ **Section 2 is a 2×2 grid of bordered boxes. This was a 1×3 grid of bordered boxes ON THE VERY NEXT SCREEN** — same border vocabulary, same heading-plus-paragraph shape, same scan pattern.
+
+⚠⚠ **BY THE SECOND GRID THE EYE RECOGNISES THE PATTERN AND SKIMS**, so the harder argument landed on the least attention. ⛔ **And section 2's evenness only reads as RESTRAINT if it happens once; twice and it is the site's default way of presenting anything — which is what a template does.**
+
+⛔ **THE FORM WAS ALSO SLIGHTLY FALSE HERE.** Section 2's four cards are **four different services**. These three were **three lenses on ONE thing — this site** — so the grid presented a single piece of evidence as three parallel items.
+
+⚠⚠ **THIS IS A PRECEDENT AND IT BEARS ON SECTION 4.** `#contact` is also a full viewport and is the next screen. **The run of screens must vary in shape, or the same fatigue arrives one screen later.**
+
+### ⛔⛔ THE OLD INTRO DATED ON THE FIRST SALE
+
+**It read:** *"Before we bring this level of thinking to client projects, we apply it to our own. This site is the first expression of the C2B approach…"*
+
+⛔ **Carl:** *"This is a problem. A line like this shouldnt be used."*
+
+⚠ **BOTH HALVES CONCEDED THE ABSENCE OF A PORTFOLIO.** *"Before"* means **not yet**; *"first expression"* is **a count whose value is one**. ⛔ **Nobody arrives counting the portfolio — that line handed the reader the thought.** **It also explained the demonstration instead of letting it work.**
+
+⚠⚠ **THE IDEA SURVIVED; ONLY THE TENSE WAS WRONG.** Carl: *"We will/can do for you what we do for ourselves is a good philosophy."* ⛔ **A PERMANENT commitment, not a stage the business is passing through.** *"One standard, applied to our own work and to yours"* says it with no date in it.
+
+### ⚠ THE HEADING — AND WHY THE THIRD OPTION WAS RULED OUT
+
+**"Built to set the standard." → "Quality Without Exception."** Carl chose it from three he proposed; the other two were *Built Without Compromise* and *Guided by Principle*.
+
+⚠ **It is the same claim as the body's**, so heading and paragraph now make **one argument** rather than two. ⛔ **"Guided by Principle" was ruled out as METHOD language: how the work is done is `/about`'s subject, not the landing page's.** ⚠ **That boundary is load-bearing — the landing page hands off to `/about` and must not spend its argument first.**
+
+### ⛔ THE REGISTER TURNS INSIDE THE SECTION, DELIBERATELY
+
+| element | register |
+|---|---|
+| heading + subtext | ⛔ **STATE** — no "we" |
+| the paragraph | **SPEAKS** |
+
+**Carl on the subtext:** *"No need for a 'we' here, its more than implied 'our own' and 'yours'."* ⚠ **The speaker is carried by the possessives. Do not add one.**
+
+⛔ **THIS IS CONSISTENT WITH D-067'S TWO-REGISTER RULE, NOT AN EXCEPTION TO IT.** **A commitment is something a person makes**; a description of a thing is not. Carl: *"we can be a bit personal here."*
+
+### ⚠ TWO AMENDMENTS CARL MADE TO THE DRAFT
+
+- ⛔ **"an asset, AS WELL AS a brochure"** — the draft read *"an asset, not a brochure"*. **Carl's version concedes the presentational role on purpose rather than denying it.** ⚠ **A different claim, not a softening.**
+- **"build your website", not "build yours"** — *yours* had no clear antecedent; the nearest noun was *our own work*.
+
+### ⛔⛔ THE LAYOUT IS PROVISIONAL AND IS NOT APPROVED
+
+**Carl:** *"Layout work to be done at a later date."* ⚠ **The paragraph sits under the subtext in the same `max-w-2xl` column, on the left — an interim arrangement, marked as such in code.** ⛔ **Do not read this entry as approving the arrangement. Only the copy is approved.**
+
+⚠ **The section is `min-h-screen` with `flex items-center` and has just lost the grid that filled it**, so there is more space around less content than before. **Whether that reads as breathing room or as an empty screen is a Rule 9 question for the redesign.**
+
+### ⚠ VERIFICATION
+
+`npx tsc --noEmit` clean · `npm run build` 8/8 static · `npm run lint` **1 error, 5 warnings — baseline, unchanged.** ⛔ **Copy and the cards' ABSENCE both verified in the served HTML** (0 occurrences of each card title), not only in source.

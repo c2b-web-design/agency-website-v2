@@ -56,6 +56,28 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-022 — Homepage Section 3: The Cards Removed, The Copy Merged
+
+**Date:** 2026-09-02
+**Reviewer:** Human Founder
+**Subject:** The `#work` section in `app/page.tsx`, read on a running production build at :3100. Records **D-068**. Commit `93ad412`.
+
+**Carl's verdict, verbatim:** *"Sec 3 is approved. Layout work to be done at a later date."*
+
+**Findings:**
+
+- ⛔ **APPROVED: THE COPY. NOT THE LAYOUT** — and Carl separated the two himself in the same sentence. ⚠⚠ **Recorded as two standings on one element, per `context-rules.md`: *"Statuses are written — never implied."*** **The interim arrangement — paragraph under the subtext, left, same column — is PROVISIONAL and awaits the redesign.**
+- ⛔⛔ **A DECISION, NOT A REVIEW FINDING: the three cards are gone.** Carl: *"cards will be gone, that is a decision."* ⚠ **He ruled it before any draft existed, which is why the copy was written as a merge rather than as three replacements.**
+- ⚠⚠ **THE REASON IS STRUCTURAL AND IT SETS A PRECEDENT FOR SECTION 4.** Two grids of bordered boxes on consecutive full-viewport screens: the eye learns the pattern and skims the second. ⛔ **Section 2's evenness only reads as restraint if it happens once.** **`#contact` is the next screen and must differ in shape.**
+- ⛔ **CARL CAUGHT THE LINE THE BUILDER HAD BEEN DEFENDING.** The Builder twice argued *"This site is the first expression of the C2B approach"* was the section's load-bearing sentence and worth keeping. ⚠⚠ **Carl: *"This is a problem. A line like this shouldnt be used."*** **Both halves of the old intro conceded the absent portfolio — *before* means not yet, *first expression* is a count of one — and the Builder had read that as honesty rather than as a liability that expires on the first sale.**
+- ⚠ **AND CARL KEPT THE IDEA WHILE REJECTING THE SENTENCE:** *"We will/can do for you what we do for ourselves is a good philosophy."* ⛔ **The fault was the TENSE, not the thought. A permanent commitment had been written as a stage being passed through.**
+- ⚠ **THE HEADING WAS CARL'S SHORTLIST, NOT THE BUILDER'S.** He proposed three — *Built Without Compromise*, *Quality Without Exception*, *Guided by Principle* — and chose the second. ⛔ **The Builder ruled out *Guided by Principle* on the ground that METHOD is `/about`'s subject; Carl's choice is consistent with that boundary.**
+- ⚠ **TWO AMENDMENTS CARL MADE TO THE APPROVED DRAFT**, both changing meaning rather than tone: **"an asset, AS WELL AS a brochure"** (the draft denied the brochure role; Carl concedes it deliberately) and **"build your website"** for *"build yours"* (no clear antecedent).
+- ⚠⚠ **THE BUILDER STOPPED AND ASKED RATHER THAN GUESSING.** Carl's pasted paragraph contained the capabilities sentence **twice**, in two different wordings — a merge artefact from combining two drafts. ⛔ **It was raised as a question, with the two variants set side by side, instead of one being silently chosen.** **Carl's amendment to the brochure line came back in the same exchange.**
+- ⚠ **VERIFIED IN THE SERVED HTML** — the copy present and **0 occurrences of each removed card title**, confirming absence rather than assuming it. `tsc` clean; build 8/8 static; lint **1 error, 5 warnings — baseline, unchanged.**
+
+---
+
 ## R-021 — Homepage Section 2: The Four Service Cards
 
 **Date:** 2026-09-02
