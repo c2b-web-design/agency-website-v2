@@ -412,8 +412,19 @@ export default function Home() {
             {/* max-w-xl mx-auto: center-aligned body copy needs a shorter line
                 measure than left-aligned copy — wide centered lines read as
                 unintentional, not editorial.                                   */}
+            {/* ⛔ "bespoke", NOT "premium" — Carl, 2 September 2026. THE ONLY CHANGE to this
+                section; its copy is otherwise APPROVED AS IT STOOD.
+
+                ⚠ THE REASON IS FREQUENCY, NOT THE WORD. Carl: *"Mentioned once - its there.
+                Mentioned again - reinforces it. Mentioned again - lets not labour the point."*
+                "Premium" survives TWICE on this page — the `#services` intro and the `#work`
+                subtext — and this was the third. ⛔ Card 1's heading "Premium Website Design"
+                also keeps it, so the word is not being retired; only the third body mention is.
+
+                ⚠ AND "BESPOKE" IS ALREADY THE ARGUMENT card 1's body makes. A claim a
+                competitor cannot honestly copy, where "premium" only asks to be believed.    */}
             <p className="mt-6 text-base text-neutral-400 leading-relaxed max-w-xl mx-auto">
-              Whether you need a premium website, a stronger first impression, or a smarter
+              Whether you need a bespoke website, a stronger first impression, or a smarter
               way to handle enquiries, C2B begins with understanding what your business
               needs to become.
             </p>
