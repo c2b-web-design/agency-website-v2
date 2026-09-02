@@ -3404,3 +3404,76 @@ alongside the demotion reasoning. ⛔ **History is preserved, not rewritten** �
 *⚠ **Reviewed by the Architect before execution** (`live-work/architect-prompt-about-scaffolding.md` → the plan → its findings). ⛔ **Six findings were applied to the plan before any code was written: F1 the constant count, F2 raw rects, F3 the containing-block check, F4 the second viewport, F5 the constraint's `/about` reason, F6 the two statuses above.** **F7 and F8 went to Carl. F7 he authorised against the recommendation; F8 is recorded for the header chunk.***
 
 *⛔ **The unlock was opened and closed within the chunk.** Carl named `components/layout/site-header.tsx`; the edit was **one line** (`git diff --stat`: 1 file changed, 1 insertion, 1 deletion); `chunk-scope.json` was deleted and **the lock RE-VERIFIED BY OBSERVING A REAL DENIAL** — the guard fails open on an absent scope file, so deletion alone proves nothing.*
+
+---
+
+## D-067 — Homepage Section 2 Copy: The Four Services, And The Two-Register Rule
+
+**Date recorded:** 2026-09-02
+**Status:** ⛔ **APPROVED** — Carl, on the rendered production build, 2 September 2026: *"Section 2 approved. Commit and push."* ⛔ **Rule 7 is satisfied: confirmed by eye, verdict recorded at the level given.**
+
+**Authority:** Human Founder — Carl, 2 September 2026. On the unlock: *"app/page.tsx Authorised to use. Lock when instructed."*
+**Bears on:** `app/page.tsx` — the four `#services` cards only. Commit `fb732d9`. ⚠ **The section heading and intro paragraph are UNCHANGED and were settled at the outset:** *"I agree with the headline and subtext, iy doesnt need editing."* ⛔ **Does not touch the hero, `#work`, `#contact`, or any layout.**
+
+---
+
+### ⛔ THE DECISION
+
+**All four service cards are rewritten. Card 3 is unchanged, by decision.**
+
+| card | heading | register |
+|---|---|---|
+| 1 | Premium Website Design | ⛔ **statement** |
+| 2 | Website Transformation | **we speak** |
+| 3 | Intelligent Enquiry Systems | ⛔ **statement** — unchanged |
+| 4 | **Ongoing Long Term Care** (was *Ongoing Growth & Improvement*) | **we speak** |
+
+### ⛔⛔ THE TWO-REGISTER RULE — THE PART MOST LIKELY TO BE FLATTENED
+
+**Carl:** *"On 2+4, that is enough. 1+3 should be statements like the sections main headline and subtext."* And: *"We shouldnt overuse the word 'we'."*
+
+⛔ **Cards 1 and 3 contain no "we" at all. That is deliberate and it mirrors the section heading and intro, which also state rather than speak.**
+
+⚠⚠ **THE FORESEEABLE FUTURE EDIT IS SOMEONE "TIDYING" CARDS 1 AND 3 TO MATCH 2 AND 4.** It would read as consistency work and it would destroy the pattern. **Recorded in code comments at the cards as well as here**, because a reader reaches the comment before the governance file.
+
+### ⛔ CARD 4 — THE OFFER, NOT THE DIAGNOSIS
+
+**The heading changed because Carl named the fault:** *"Are we shipping a product that needs improvement?"* ⚠ **"Improvement" concedes a deficit at launch, which card 1 directly contradicts — the two cards were arguing against each other.** *"Growth"* framed the value as financial return; Carl ruled it is *"not just from a financial sense."* **"Care" is the relationship word and carries the section's tone.**
+
+⚠⚠ **THE BODY OPENS WITH AN OFFER BECAUSE SUPPORT IS A CHOICE.** Carl: the client buys the site, hosts it where they like, and takes the retainer or not — *"Their choice, they would be foolish not to, but its still a choice."*
+
+⛔ **FOUR DRAFTS WERE REJECTED FOR THE SAME FAULT, AND IT IS WORTH THE SPACE.** Each opened by telling the client something about their situation so the service could answer a problem the copy had just planted: *"websites drift"*, *"a website does not change on its own"*, *"as the business changes, the website should change with it"*, *"Business decisions come first"*. **Carl:** *"Dont tell people how to run a business."*
+
+⚠ **"Websites drift" failed on ACCURACY, not only tone** — it attributes motion to the wrong object. Carl: *"thats not a drift, its static... a website is immobile until a Dev comes onto the scene."*
+
+⛔ **NO PREDICTION AND NO FEAR.** *"If something goes wrong"*, *"small faults can appear"* and *"not starting again with a stranger"* were all cut. **Carl:** *"Were not gonna tell them about a world where 'shit happens'."* **The difficulty sits in the WORLD — "in an ever changing world" — never in the client's business.**
+
+⚠ **"Ready for whatever comes next" SURVIVED that cut deliberately, overruling the Builder's objection that it predicted trouble.** ⛔ **It promises presence, it does not predict difficulty.** Carl: *"For what ever comes next is good copy. Its honest."*
+
+⚠ **"Endeavour" promises effort, which is what a retainer buys — not outcomes it cannot guarantee.**
+
+### ⚠ CARDS 1 AND 2 — WHAT MOVED AND WHY
+
+**Card 1:** *"Designed from scratch"* was cut as a **non-differentiator**. ⛔ **Carl confirmed everything is designed from scratch, so it described the house standard rather than this service** — and a claim every competitor also makes is not positioning. **Closes on "unique", not "premium"**: premium bookended the heading and claimed what the body had not earned. ⚠ **"YOUR brand identity" — an earlier draft read "our", which reverses the promise.**
+
+**Card 2:** *"We turn"*, not *"Turning"* — ⚠ **the original was a gerund with no actor**, which reads as a catalogue entry rather than a person. ⛔ **"Tired" not "dated"** — the word a client would use about their own site; it diagnoses without blaming, where *dated* implies neglect. ⚠ **"Underperforming" is kept alongside it: tired is APPEARANCE, underperforming is RESULTS, and they are two different reasons a client arrives.** *"Same business, stronger first impression"* is unchanged from the original.
+
+### ⛔ CARD 3 IS UNCHANGED, AND THE REASONING IS PART OF THE DECISION
+
+**Its outcome-only restraint was already correct** — it names no tool or technology, which the standing ruling requires (the factory model is reasoning, never page content).
+
+⚠⚠ **THE BUILDER PROPOSED ELEVATING CARD 3 VISUALLY** on the grounds that the enquiry system is the real differentiator sitting in a grid that weights all four equally. ⛔ **CARL RULED AGAINST IT, AND THE REASON GOVERNS THE WHOLE SECTION:** *"This is the next thing a user will see after the Hero. The hero will be the showpiece of the site, its gonna be a killer feature. What this next section must do is follow it and not compete."*
+
+⛔ **THE 2×2 GRID'S EVENNESS IS THE ASSET, NOT THE FLAW.** Elevating one card would place a second climax immediately after the hero. ⚠ **Carl's frame:** *"If this was lord of the rings, this section would be the shire after the opening exposition."* **Calm and concrete, dense with specifics, unperformed.**
+
+⚠ **And the ordering principle, which is general:** *"Whats important at the outset is the information. How that information is presented then comes into focus."*
+
+### ⛔ THE TONE, IN CARL'S WORDS
+
+> *"businesslike but not corporate. Personal, confident that says in every way 'we got your back'."*
+
+**The test that follows: does the sentence sound like a person who will be there, or like a company describing itself?**
+
+### ⚠ VERIFICATION
+
+`npx tsc --noEmit` clean · `npm run build` compiles, 8/8 static · `npm run lint` **1 error, 5 warnings — the recorded baseline, unchanged by this work.** ⛔ **Copy verified in the SERVED HTML on a production build at :3100, not only in source.** Carl's approval is on the rendered page.

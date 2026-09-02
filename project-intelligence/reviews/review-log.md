@@ -56,6 +56,30 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-021 — Homepage Section 2: The Four Service Cards
+
+**Date:** 2026-09-02
+**Reviewer:** Human Founder
+**Subject:** The four `#services` cards in `app/page.tsx`, read on a running production build at :3100. Records **D-067**. Commit `fb732d9`.
+
+**Carl's verdict, verbatim:** *"Section 2 approved. Commit and push"*
+
+**Findings:**
+
+- ⛔ **APPROVED: all four service cards.** Carl wrote or dictated the final wording of cards 1, 2 and 4 himself; the Builder drafted and Carl selected, corrected and rewrote. ⚠ **The copy in the file is Carl's words, not a paraphrase of them.**
+- ⛔ **THE SECTION HEADING AND INTRO WERE SETTLED BEFORE THE CARDS AND NEVER REOPENED** — Carl, at the outset: *"I agree with the headline and subtext, iy doesnt need editing."* **They are untouched by this work.**
+- ⛔⛔ **APPROVED AS A PATTERN, NOT FOUR SEPARATE APPROVALS: the two-register rule.** Cards **1 and 3 are statements with no "we"**; cards **2 and 4 speak.** Carl: *"On 2+4, that is enough. 1+3 should be statements like the sections main headline and subtext."* ⚠⚠ **This is the finding most at risk of being undone by a well-meaning consistency edit.**
+- ⛔ **CARD 3 WAS REVIEWED AND LEFT UNCHANGED — that is a verdict, not an omission.** Its outcome-only restraint already met the standing ruling that no tool or technology is named.
+- ⚠⚠ **A BUILDER PROPOSAL WAS REJECTED, AND THE REASON IS LOAD-BEARING FOR THE WHOLE PAGE.** The Builder argued card 3 should be visually elevated because the enquiry system is the real differentiator sitting in a grid that weights all four equally. ⛔ **Carl ruled against it:** *"This is the next thing a user will see after the Hero. The hero will be the showpiece of the site, its gonna be a killer feature. What this next section must do is follow it and not compete."* ⚠ **The 2×2 grid's evenness is therefore an asset. Elevating any card would place a second climax immediately after the hero.** Carl's frame: *"If this was lord of the rings, this section would be the shire after the opening exposition."*
+- ⚠ **AN ORDERING PRINCIPLE WAS STATED AND IS GENERAL:** *"Whats important at the outset is the information. How that information is presented then comes into focus."* ⛔ **The Builder had gone to layout before the words were settled.**
+- ⚠ **THE BUILDER WAS OVERRULED ONCE ON THE COPY ITSELF AND CARL WAS RIGHT.** The Builder flagged *"ready for whatever comes next"* for cutting, on the grounds that it gestured at unnamed future events after Carl had just banned prediction. ⛔ **Carl kept it:** *"For what ever comes next is good copy. Its honest."* **It promises presence; it does not predict trouble. The rule was aimed at something else.**
+- ⚠ **A FACTUAL CORRECTION FROM CARL, NOT A TONE NOTE.** The Builder's *"websites drift"* was rejected because it **attributes motion to the wrong object** — Carl: *"thats not a drift, its static... a website is immobile until a Dev comes onto the scene."* **The Builder had chosen the word for its tone without checking the mechanism it described was true.**
+- ⚠ **THE BUILDER PARROTED CARL'S REASONING BACK AS COPY AND WAS CORRECTED FOR IT.** Carl explained the position — the business decides, the website follows — as *footing* for the writing; the Builder converted it directly into the line *"Business decisions come first."* ⛔ **Carl:** *"NO. Dont tell people how to run a business. Your taking what i said literally to describe a position and parroting it back."* **The position was right; stating it on the page lectured the reader.**
+- ⚠ **The Builder also opened on the hero (section 1) when Carl had asked for section 2** — the hero is explicitly deferred and excluded. Corrected in the same message.
+- ⚠ **VERIFIED IN THE SERVED HTML, not only in source.** `npx tsc --noEmit` clean; `npm run build` 8/8 static; `npm run lint` **1 error, 5 warnings — the recorded baseline, unchanged.**
+
+---
+
 ## R-020 — `/about` Scaffolding: The Mark Does Not Move Between Pages
 
 **Date:** 2026-08-31
