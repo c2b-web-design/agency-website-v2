@@ -269,23 +269,111 @@ export default function About() {
           third person on its own. */}
       <section className="min-h-screen flex flex-col justify-center [&>div]:w-full">
         <Container>
-          <div className="max-w-2xl pt-32 pb-24">
-            <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">
+          {/* ⚠⚠ TWO EQUAL COLUMNS — Carl, 3 September 2026, and the SYMMETRY IS
+              THE POINT: *"make both headline font size the same. Space them out
+              equally."* ⛔ Carl balanced the two paragraphs BY EYE against this
+              arrangement, then added a sentence to text 1 to even them up. Change
+              the column widths, the gap or either heading's size and the balance
+              he approved is gone.
+
+              ⛔ THE h1 IS `text-3xl`, DOWN FROM `text-4xl md:text-5xl`, TO MATCH
+              THE h2. ⚠ It is the PAGE's h1 and it now heads the LEFT COLUMN rather
+              than spanning the page — an h1 and an h2 sitting as visual equals is
+              deliberate, not an oversight.
+
+              ⚠ `max-w-2xl` was REMOVED from this block — it was sized for one
+              column and would squeeze both into half the page. */}
+          <div className="pt-32 pb-24">
+            <div className="grid md:grid-cols-2 gap-12 md:gap-20">
+            <div>
+            <h1 className="text-3xl font-semibold tracking-tight">
               How the work gets done.
             </h1>
-            <p className="mt-4 text-base text-neutral-400 leading-relaxed max-w-lg">
-              What we build is covered elsewhere on this site. This page is about
-              the way it is built — the process, the people, and what a website
-              can actually do once it stops being a template.
-            </p>
+            {/* ⛔⛔ TEXT 1 — A STATEMENT. NO FIRST PERSON, AND THAT IS A RULING.
+                Carl, 3 September 2026: *"Statement. No i or we."*
 
-            <h2 className="mt-24 text-3xl font-semibold tracking-tight">
+                ⚠⚠ THIS IS NOT THE THIRD-PERSON DRIFT THE FILE WARNS ABOUT. The
+                first-person ruling (`about-section-thinking.md` L1183–1214) governs
+                copy about THIS OPERATION — Carl himself, the seats, who approves.
+                ⛔ THIS PARAGRAPH IS NOT ABOUT THIS OPERATION. It is about how the
+                tools behave in general, and it is impersonal BY INSTRUCTION.
+
+                ⛔ THE SAME TWO-REGISTER SPLIT AS THE HOMEPAGE (D-067, D-068):
+                statements state, and the speaking happens in the block that follows.
+                ⚠ TEXT 2 CARRIES THE "I". Do not "harmonise" the two — the change of
+                register between them is the design, not an inconsistency.
+
+                ⚠⚠ CARL WROTE THIS. The Builder drafted three options; he selected,
+                cut and pasted back the final wording. ⛔ It is not a paraphrase of
+                his intent — it is his text.
+
+                ⚠ TWO CLAIMS WERE DELIBERATELY NOT MADE, and both were in earlier
+                drafts he rejected:
+                  • "control over every pixel and line of code" — a claim about
+                    client work, on a site with no client work on it yet. Same defect
+                    as the line struck from the homepage on 2 September.
+                  • "cutting-edge execution with uncompromised artistry" — asserts
+                    what the page beneath it is supposed to demonstrate.
+                ⛔ DO NOT REINTRODUCE EITHER WHEN POLISHING. */}
+            <p className="mt-4 text-base text-neutral-400 leading-relaxed">
+              Most AI-driven web development yields generic outcomes because it
+              relies on prompting rather than deliberate structure. AI is not a
+              shortcut. It is a specialised workforce, and it requires
+              architecture, governance and strategic direction to be worth
+              anything. Left to itself it will always produce the most likely
+              answer, which is another way of saying the most ordinary one.
+              Separate the roles &mdash; brand strategy, design,
+              technical architecture, execution &mdash; and creative control stays
+              where it belongs at every stage. Supported by a deep project
+              intelligence system, that framework holds each decision to a
+              brand&rsquo;s own positioning rather than to an automated average.
+              Governed with intention, AI does not replace craft. It carries it.
+            </p>
+            </div>
+
+            {/* ⛔⛔ TEXT 2 — THE PERSON. FIRST PERSON, AND IT IS THE RULING
+                (`about-section-thinking.md` L1183–1214). ⚠ TEXT 1 ABOVE IS
+                IMPERSONAL BY A SEPARATE RULING — Carl, 3 September 2026:
+                *"Statement. No i or we."* ⛔ THE TWO REGISTERS ARE THE DESIGN.
+                Do not harmonise them; the homepage runs the same split (D-067,
+                D-068).
+
+                ⚠⚠ CARL WROTE THIS PARAGRAPH. The Builder proposed edits — the
+                "we"/"I" mix, "pristine, production-ready code", "my exact
+                standards" — and Carl kept his own wording. ⛔ THOSE ARE HIS
+                CHOICES, NOT OVERSIGHTS. Do not "fix" them on a later pass.
+
+                ⚠ THE h2 WAS REMOVED AND THEN RESTORED ON CARL'S INSTRUCTION —
+                *"restore the headline for text 2"*. ⛔ The Builder had cut it on
+                the grounds that the paragraph opens *"As the founder"* and the
+                heading said it twice. That reasoning was NOT accepted; the heading
+                is load-bearing for the two-column symmetry, because text 1 has one.
+
+                ⚠ PLACED RIGHT, ON CARL'S INSTRUCTION — and the file's section-1
+                layout put an IMAGE in this slot (text left, image right, fading as
+                it meets the text). ⛔ THAT ARRANGEMENT IS NOW OPEN: if the image
+                returns to this section it needs somewhere else to go. Carl's call,
+                not settled here. */}
+            <div>
+            <h2 className="text-3xl font-semibold tracking-tight">
               The founder and the process.
             </h2>
-            <p className="mt-4 text-base text-neutral-400 leading-relaxed max-w-lg">
-              I run C2B, and I build with a system rather than by hand alone. This
-              section will set out how that works and why I chose it.
+            <p className="mt-4 text-base text-neutral-400 leading-relaxed">
+              As the founder, my role is to act as the creative director to a
+              digital workforce. By organizing our AI environment into specialized
+              roles of Strategist, Designer, Architect, and Builder we eliminate
+              automated guesswork and maintain strict standards. I
+              actively collaborate with the Architect to map out complex site
+              structures, debate brand positioning with the Strategist, push the
+              Designer for unique visual aesthetics, and oversee the Builder as it
+              writes pristine, production-ready code. Through our rigorous project
+              governance and deep file architecture, this framework allows me to focus
+              entirely on the nuance, curation, and craftsmanship of the project,
+              refining every output until it meets my exact standards for a truly
+              bespoke website.
             </p>
+            </div>
+            </div>
           </div>
         </Container>
       </section>
