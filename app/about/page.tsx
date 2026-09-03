@@ -387,17 +387,111 @@ export default function About() {
 
           ⚠ THE TITLE IS OPEN. Carl: *"Does it have to be called 'meet the team?'
           No."* */}
-      <section id="roles" className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
+      {/* ⚠⚠ THE ROOM — A REAL PHOTOGRAPH, AND THAT IS THE WHOLE POINT OF IT.
+          Carl approved this framing and this image, 4 September 2026: *"im happy
+          with the way you framed it on the site. the middle plant can stay."*
+
+          ⛔⛔ FOUR AI-GENERATED ROOMS WERE TRIED AND REJECTED FIRST, AND THE REASON
+          IS THE SECTION'S OWN ARGUMENT. Carl: *"If anything says 'made with AI',
+          its this picture. Exactly the thing we are arguing against in this
+          section."* ⚠ The tells were real — frames at disagreeing angles, rack
+          gear that dissolves into noise, cabling going nowhere, repeated speakers
+          at wrong scales. ⛔ A PAGE ARGUING THAT UNGOVERNED AI YIELDS GENERIC
+          OUTPUT CANNOT ILLUSTRATE ITSELF WITH GENERIC OUTPUT. It is the same
+          defect as the homepage line struck on 2 September, arriving in a picture
+          instead of a sentence.
+
+          ⚠⚠ DO NOT REPLACE THIS WITH A GENERATED IMAGE, however good it looks in
+          isolation. This section is where a sceptic checks, and a photoreal render
+          is claiming to be a photograph — so it can be caught. This cannot.
+
+          ⛔ SOURCE OF TRUTH: `brand-assets/reddit-original.jpg`, 6158x4105, the
+          photographer's own upload (r/workstations). ⚠ `public/about-studio-source.jpg`
+          is a 2560px 16:9 crop of it — sharp at 1920 and on retina at 460KB.
+          RE-CUT FROM THE MASTER; never upscale the crop.
+
+          ⚠⚠ THE COLOUR NEEDED NO GRADING, AND THAT WAS MEASURED, NOT ASSUMED.
+          The untouched wall reads H200-206 S32-43% L12-17%. The interaction teal
+          on `/start` is H186 S66% L35% (D-053). ⛔ So the field is already at HALF
+          the saturation and a THIRD of the lightness of the state colour — which
+          is exactly what the record asks of a large teal area: *"well below them
+          in saturation, nearer a duck-egg tint over near-black."* No collision.
+
+          ⚠ A TEAL REGRADE WAS BUILT AND ABANDONED. It moved the hue about FIVE
+          DEGREES and cost 94% of the resolution, because each pass ran through a
+          generator at 1264px on an upscaled 699px thumbnail. ⛔ THE LESSON IS
+          GENERAL: every generative round-trip is destructive, and the chain here
+          ran 699 -> upscale -> regrade -> plant removal -> figure. Edit the master.
+
+          ⛔ BING'S BROWSER EDITOR SAVES AT 1080x719 — it works on Reddit's
+          display-size webp, not the original, whatever zoom it reports. Do not
+          crop there. Resolve, Photopea or ffmpeg against the master.
+
+          ⚠⚠ §10a IS UNRESOLVED AND IS CARL'S. *"Every example is our own work"* —
+          this is someone else's room. Whether that rule covers BACKGROUNDS or only
+          WORK EXAMPLES has not been ruled on. ⛔ Raised three times; not settled.
+
+          ⚠⚠ `public/about-studio-figure.jpg` IS KEPT ON PURPOSE AND IS NOT USED BY
+          ANY ROUTE. ⛔ DO NOT DELETE IT AS A STRAY. Carl, 4 September 2026:
+          *"keep it in the files for now."*
+
+          ⛔ IT IS A LIGHTING REFERENCE, NOT AN ASSET. It is the room with a figure
+          composited in, and the figure was GENERATED INTO THIS SCENE — so its rim
+          light and shadow direction already answer to these downlights and these
+          monitors. ⚠ That is the hard part of compositing a person into a dark
+          room, and it is worth keeping even though the pixels are not usable.
+
+          ⚠⚠ WHY THE PIXELS ARE NOT USABLE: the file is 1264px and the figure is
+          roughly 300x400 of it. On the 6158px master that is a 5x upscale of the
+          one thing a viewer looks at — soft against a sharp room, which reads
+          worse than either image alone.
+
+          ⛔ TWO ROUTES IF THE FIGURE PROCEEDS, neither of them "paste this in":
+            1. Composite at 1264 throughout — consistently soft rather than
+               mismatched. Viable if the room ends up behind glass at low opacity.
+            2. Use this only to READ the lighting, and rebuild the figure from a
+               sharp source (a real photo) matched to it. ⚠ Also fixes the two
+               tells in this composite: the chair back reads IN FRONT OF the torso,
+               and there is no contact shadow on chair or floor.
+
+          ⚠ THE ARRIVAL ITSELF — the figure appearing as the image travels from
+          section 1 to section 2 — IS IDEA ONLY. Scroll-driven behaviour spanning
+          sections is structural under CLAUDE.md §5a, and it would end this route's
+          static prerender. Not built, not authorised.
+
+          ⚠ IF THE CROP CHANGES, ANY CARD POSITIONS TUNED AGAINST IT GO STALE. */}
+      <section id="roles" className="relative min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
+        <img
+          src="/about-studio-source.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-neutral-950/25" />
+
         <Container>
-          <div className="max-w-2xl">
-            <h2 className="text-3xl font-semibold tracking-tight">
-              The roles.
-            </h2>
-            <p className="mt-4 text-base text-neutral-400 leading-relaxed max-w-lg">
-              The work is split across defined roles, each one knowing what it
-              needs to know. This section will expand the process above into that
-              structure.
-            </p>
+          <div className="relative max-w-2xl">
+            {/* ⛔⛔ THE SECTION IS DELIBERATELY EMPTY OF COPY. Carl, 3 September
+                2026: *"remove 'the roles' text"* — the heading went the same way
+                as the paragraph before it.
+
+                ⚠ THE WALL IS BEING KEPT CLEAR ON PURPOSE, so the room's negative
+                space can be judged for the FOUR ROLE CARDS. ⛔ This is not an
+                unfinished section that someone forgot to fill; it is a section
+                held empty while its layout is decided.
+
+                ⚠⚠ WHAT WAS REMOVED, so it is not reconstructed from memory:
+                  h2  "The roles."
+                  p   "The work is split across defined roles, each one knowing
+                       what it needs to know. This section will expand the process
+                       above into that structure."
+                ⛔ Both were setup-pass scaffolding. The paragraph's second
+                sentence described what the section WOULD do rather than doing it
+                — the same defect as the two replaced in section 1.
+
+                ⚠ THE HEADING WAS ALREADY PROVISIONAL BEFORE IT WENT. Carl,
+                30 August: *"Does it have to be called 'meet the team?' No."*
+                ⛔ Section 2's copy — the four seats — is NOT YET WRITTEN. */}
           </div>
         </Container>
       </section>
