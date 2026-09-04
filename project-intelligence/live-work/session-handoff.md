@@ -455,3 +455,82 @@ transmitted light; a plano-convex DIAMOND panel **focuses** it — a bright spot
 ⛔⛔ **THE REAL QUESTION IS NOT WHICH LOOKS BETTER. IT IS WHETHER §2 SHOULD ECHO THE LAST FEATURE OR
 ANSWER IT** — frosted is a different register; dispersive would RHYME with it. ⚠ **Carl's, and not
 yet decided.**
+
+---
+
+# ⛔⛔ READ §14a OF THE ETHOS FILE BEFORE BUILDING §2 — IT IS THE GOVERNING RULE
+
+⛔ **`project-intelligence/starter-content/c2b-ethos-and-vision.md` → §14a, *"C2B Ethos: Theme,
+Restraint, and Physical Consequence"*.** ⚠ **Carl: *"that file is the soul of C2B."***
+
+⚠⚠ **IT WAS WRITTEN BEFORE ANY OF THIS WAS BUILT AND IT PREDICTS TODAY'S SESSION.** ⛔ **Everything
+settled here is that section applied — the Builder did not derive these rules, it rediscovered them.**
+
+## ⛔ THE THREE LINES THAT GOVERN THE §2 BUILD
+
+**1. THE THEME RULE — it is in the file verbatim:**
+
+> *"The site should have a recurring theme with variations: a coherent physical language of form,
+> restraint, light, motion, material, rhythm, and consequence. Cards, buttons, rails, logo, hero,
+> text, and transitions should feel like they belong to the same world rather than being separate
+> effects."*
+
+⛔ **So "variations on a theme" is not a metaphor Carl reached for today — it is a written rule being
+restated.** ⚠ **The mark (position fixed, colour free), the buttons (geometry fixed, material free)
+and the cards (family fixed, values free) are three instances of this one sentence.**
+
+**2. THE RULE THAT JUSTIFIES THE FAKED RESPONSE:**
+
+> ⛔⛔ *"Effects should feel caused by the world, not layered on top of it."*
+
+⚠⚠ **THIS IS WHY THE CSS SHINE ON THE `/start` SEND BUTTON IS LEGITIMATE AND NOT A SHORTCUT.** ⛔ **It
+is the mechanism by which a non-mesh element JOINS the world.** ⚠ **The file gives the examples
+directly: *"a glowing filament should affect nearby card light, not sit as an isolated overlay"* and
+*"more selected glowing objects should mean more light in the shared environment."***
+
+⛔ **It is also the standard the gold mark must meet, whichever treatment it gets.**
+
+**3. THE BUILD DISCIPLINE — already policy, a month before this session:**
+
+> ⛔ *"Build the track before adding automation. Prove one object, one motion phrase, or one light
+> behaviour before rolling it out."*
+
+⚠ **The "build it to be reused, not to be finished" standard written into this handoff IS THIS RULE.**
+⛔ **Not the Builder's invention.**
+
+## ⚠ TWO MORE THAT BEAR DIRECTLY ON §2
+
+- ⛔ **§20 — client-facing copy translates TECHNIQUE into BENEFIT.** *"Not glassmorphism. Say: a
+  frosted glass effect that gives the site a modern, premium feel."* ⚠⚠ **Today's ruling that the
+  tooling is not named on the page is THE SAME RULE, arrived at independently.**
+- ⛔ **§19 — *"Cards should feel material, not like form controls."*** ⚠ The §2 cards inherit this.
+
+# ⛔⛔ THE MUSICAL REFERENCE FOR THE LAST FEATURE — AND IT IS A CONSTRAINT, NOT A MOOD
+
+⚠ **Carl described it as "killer". ⛔ THAT DOES NOT MEAN LOUD.**
+
+> ⛔ ***"in musical terms you might expect Also Sprach Zarathustra or Beethovens 5th. That would be
+> cliched and obvious. In reality its more like Clair de Lune with that wonderful arpeggio in the
+> middle."***
+
+⛔⛔ **ZARATHUSTRA ANNOUNCES ITSELF. THAT IS THE OBVIOUS MOVE FOR A HERO AND IT IS RULED OUT.**
+
+⚠⚠ **CLAIR DE LUNE ANNOUNCES NOTHING. It is quiet and unhurried, and the arpeggio arrives INSIDE the
+piece rather than at the top of it.** ⛔ **The moment lands BECAUSE everything around it is
+restrained.**
+
+## ⛔ WHAT THIS ACTUALLY CONSTRAINS
+
+⚠ **THE PAGE DOES NOT OPEN AT FULL INTENSITY.** ⛔ **A hero that opens loud has nowhere to go and
+nothing to land against.**
+
+⛔ **The moving, colour-shifting object and the lit 3D type ARE THE ARPEGGIO — they arrive within
+something already calm, and they work because the surrounding page is STILL.**
+
+⚠⚠ **AND IT IS THE SAME RULE AS THE §2 LIGHT: long silences, short moments. Most of the time it IS
+static.** ⛔ **Carl, on the §2 rig: *"the light doesnt have to stay on all the time. only when its
+pointing at a card and having some sort of interaction with it is important."***
+
+⚠ **§14a says it in the file's own words: *"the emotional discipline of 'Comfortably Numb' more than
+visual showboating: space, tone, timing, release, and one or two moments that land."*** ⛔ **Gilmour
+over Malmsteen. Restraint is the technique, not the absence of one.**
