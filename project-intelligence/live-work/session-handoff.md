@@ -396,3 +396,62 @@ break it in the direction the whole page argues against.
 ⚠ **Carl, on the pun: *"excuse the precious minerals pun, it was unintentional at first."*** ⛔ **The
 naming was not a system imposed up front — it emerged, and was then recognised and adopted. Recorded
 so a later session treats it as a live rule rather than a coincidence.**
+
+---
+
+# ⛔⛔ WHERE `/about` SITS IN THE SCHEME OF THINGS — AND WHY IT RAISES THE BAR
+
+⚠⚠ **THIS SECTION RECORDS A RELATIONSHIP, NOT A BRIEF.** ⛔ **THE HERO'S BRIEF IS NOT IN THIS
+REPOSITORY AND IS NOT WRITTEN HERE — Carl had it stricken deliberately (D-070). A session reading this
+still CANNOT plan the hero. Ask Carl.**
+
+⛔ **What IS recorded, on Carl's instruction and because it changes how `/about` should be built:**
+
+> ⛔ ***"what we do now is a forerunner to this last feature that will be built."***
+
+## ⚠⚠ `/about` IS A REHEARSAL. EVERY MECHANISM IT NEEDS IS BEING PROVEN SOMEWHERE CHEAPER FIRST
+
+| settled or being built | the mechanism it proves |
+|---|---|
+| The travelling light on the §2 cards | **a moving light source in a scene** |
+| The CSS shine faked from the light's proximity (`/start` Send) | **non-mesh elements joining ONE lighting model** |
+| The camera matched to the room photograph | **a 3D scene agreeing with a 2D ground** |
+| The material family across four buttons | **surfaces that vary within one identity** |
+| The mark changing colour by section (D-063) | **colour as STATE, not decoration** |
+
+⛔⛔ **THE LAST FEATURE IS ALL FIVE AT ONCE, ON THE PAGE A VISITOR SEES FIRST.**
+
+## ⛔ WHAT THIS CHANGES ABOUT HOW `/about` IS BUILT
+
+⚠⚠ **WITHOUT THIS CONTEXT, THE §2 LIGHT RIG READS AS A NICE EFFECT FOR ONE SECTION. IT IS NOT.** ⛔ **It
+is the FIRST WORKING INSTANCE of a mechanism the site depends on.**
+
+⛔ **THE CONSEQUENCE IS A STANDARD, NOT A SCHEDULE:** ⚠ **build it to be reused, not to be finished.**
+**A rig that works only for these four cards, or a faked response that only holds at one screen size,
+passes §2 and fails the thing §2 exists to rehearse.**
+
+⚠ **It also explains WHY THE LAST FEATURE IS BUILT LAST — beyond its brief being off-record. If the
+light rig, the colour transitions, the faked response and the camera all work here, that build becomes
+an ASSEMBLY JOB RATHER THAN AN INVENTION.**
+
+## ⚠ AND IT REFRAMES ONE OPEN QUESTION — THE §2 CARD MATERIAL
+
+⛔ **Carl is holding the possibility that the card material changes** — *"the material i have for the
+about cards is frosted glass… the card material could change. im not saying it will. im just saying it
+could."*
+
+⚠⚠ **THE OPTICS ARE GENUINELY DIFFERENT, NOT A VARIATION:**
+
+| | behaviour |
+|---|---|
+| **FROSTED GLASS** | ⛔ **SCATTERS.** Rough-surface diffusion — light comes out soft in every direction. ⚠ **Diffuses what is behind it, which HELPS TEXT READ** — and the cards carry 49–84 words |
+| **DIAMOND-LIKE** | ⛔ **DISPERSES.** Very high refractive index (~2.42 vs glass ~1.5), total internal reflection, spectral separation. ⚠ **Backlit it throws CAUSTICS — concentrated hot spots and coloured fringes that move sharply.** ⛔ **High-contrast structure across the face FIGHTS legibility** |
+
+⛔ **AND IT CHANGES THE FLOOR CARDS' LENS BEHAVIOUR IN KIND:** a plano-convex FROSTED panel diffuses
+transmitted light; a plano-convex DIAMOND panel **focuses** it — a bright spot rather than a glow.
+
+⚠ **The name would fit the material vocabulary better than any of the four already in use.**
+
+⛔⛔ **THE REAL QUESTION IS NOT WHICH LOOKS BETTER. IT IS WHETHER §2 SHOULD ECHO THE LAST FEATURE OR
+ANSWER IT** — frosted is a different register; dispersive would RHYME with it. ⚠ **Carl's, and not
+yet decided.**
