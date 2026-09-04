@@ -346,3 +346,22 @@ on a theme."*** Family resemblance fixed; numbers free.
 ⚠⚠ **THREE ELEMENTS, ONE RULE: THE SITE'S IDENTITY LIVES IN FORM. THE VARIATION LIVES IN SURFACE.**
 ⛔ **A later session that changes a button's GEOMETRY to suit a page has broken the family; one that
 changes its COLOUR has used it correctly.**
+
+### ⛔⛔ AND THE REASON IS THE PAGE'S OWN ARGUMENT — Carl, correcting the Builder
+
+> ⛔ ***"it is decided. decided to what is another matter. Having buttons all the same screams
+> 'template'."***
+
+⚠⚠ **THE BUILDER HAD FRAMED THE MATERIAL AS AN OPEN DECISION. IT IS NOT.** ⛔ **The decision — THAT
+colour and material vary — IS MADE. What each one varies TO is a design question answered at build
+time. Those are different things and the record must not conflate them.**
+
+⛔⛔ **WHY IT MATTERS, AND IT IS NOT A PREFERENCE: THREE IDENTICAL BUTTONS ON THREE ROUTES WOULD READ
+AS A COMPONENT REUSED — WHICH IS WHAT A TEMPLATE DOES, AND WHAT §1 SAYS C2B DOES NOT DO.**
+
+⚠⚠ **THE FORM HOLDING WHILE THE SURFACE CHANGES IS THE VISIBLE PROOF OF BESPOKE: the same hand, a
+different answer each time.** ⛔ **Sameness would be the tell.**
+
+⚠ **It is also why the mark works as it does (D-065). If the mark changed colour by section and the
+buttons did not, THE BUTTONS WOULD BE THE TELL INSTEAD.** ⛔ **The rule has to hold across every
+repeated element or it fails at whichever one is exempt.**
