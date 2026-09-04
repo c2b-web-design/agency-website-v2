@@ -365,3 +365,34 @@ different answer each time.** ⛔ **Sameness would be the tell.**
 ⚠ **It is also why the mark works as it does (D-065). If the mark changed colour by section and the
 buttons did not, THE BUTTONS WOULD BE THE TELL INSTEAD.** ⛔ **The rule has to hold across every
 repeated element or it fails at whichever one is exempt.**
+
+### ⛔⛔ THE MATERIAL VOCABULARY — AND IT CONSTRAINS THE TWO UNBUILT BUTTONS
+
+**The four materials already on the site:**
+
+> ⛔ **IVORY · BLUE PLATINUM · BLUE OPAL · LIT SATIN**
+
+⚠ **Carl's clue when the Builder was asked to spot the pattern: *"monetary value."***
+
+⛔⛔ **THEY ARE ALL PRECIOUS OR LUXURY MATERIALS. NOT COLOURS — SUBSTANCES WITH WORTH.**
+
+⚠⚠ **AND THE PATTERN HOLDS A SECOND WAY, WHICH IS THE USEFUL PART: NOTHING IN THAT LIST IS THE
+VOCABULARY A TECH SITE WOULD REACH FOR.** ⛔ **No chrome, no carbon fibre, no brushed aluminium, no
+titanium.** **It is the vocabulary of JEWELLERY AND FINE GOODS, not of engineering.**
+
+⛔ **WHICH IS THE SAME CLAIM THE COPY MAKES:** bespoke rather than assembled; a thing with material
+worth rather than a component that was cheap to produce.
+
+### ⛔ THE RULE FOR THE REMAINING TWO
+
+> ⛔ ***"We must keep the other buttons in the same vein."***
+
+⚠ **So the material question for `Who we are` and `Start a conversation` is not open-ended. WHATEVER
+THEY LAND ON COMES FROM THE SAME VOCABULARY.**
+
+⛔ **A material that reads as INDUSTRIAL, MASS-PRODUCED OR SYNTHETIC BREAKS THE SET** — and it would
+break it in the direction the whole page argues against.
+
+⚠ **Carl, on the pun: *"excuse the precious minerals pun, it was unintentional at first."*** ⛔ **The
+naming was not a system imposed up front — it emerged, and was then recognised and adopted. Recorded
+so a later session treats it as a live rule rather than a coincidence.**
