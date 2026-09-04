@@ -82,6 +82,18 @@ the record look safer than it is.
   reasoning behind one.**
 - `project-intelligence/reviews/review-log.md` — **when you need to know what Carl has approved by
   eye.**
+- ⛔ **`project-intelligence/starter-content/c2b-ethos-and-vision.md` §14a — BEFORE ANY VISUAL,
+  MATERIAL, MOTION OR COPY WORK.** ⚠⚠ **30 lines, and they are the rules the rest of this file does
+  not carry.** The required list above is all GOVERNANCE — what is authorised, what is broken, what
+  the procedure is. ⛔ **Nothing in it says what the site is FOR or how it should behave.** §14a does:
+  *"a recurring theme with variations"*; ⛔ ***"Effects should feel caused by the world, not layered
+  on top of it"***; *"Build the track before adding automation — prove one object, one motion phrase,
+  or one light behaviour before rolling it out."*
+
+  ⚠ **ADDED 4 September 2026 on Carl's instruction, after a session in which the Builder
+  rediscovered all three rules the slow way** — including four wrong wall measurements taken by
+  treating the room as a diagram rather than as a world. ⛔ **The file is 611 lines; only §14a is
+  triggered here. The rest is reference, consulted when the question arises.**
 - Component, design, and architecture docs — **when working in that component.**
 - Files to be touched — **before touching them.**
 
