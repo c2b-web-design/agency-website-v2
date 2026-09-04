@@ -100,6 +100,15 @@ export default function SiteHeader() {
               says — then cropped to 951x544 keeping 8px of breathing room.
               Precedent for serving it from public/: /contact-field-source.jpg. */}
           <div className="flex items-center gap-2">
+            {/* ⚠ PLAIN <img> BY DECISION, NOT OVERSIGHT — Carl, 4 September 2026.
+                ⛔ FULL REASONING IS IN `app/about/page.tsx`, at the gold mark.
+
+                ⚠⚠ BUT ONE CLAUSE OF IT DOES NOT APPLY HERE, AND SAYING SO MATTERS:
+                this mark is IN FLOW (`h-10 w-auto`), NOT hung on the nail, so the
+                measured-pixel-alignment argument is not the reason in this file.
+                ⛔ THE REST OF THE REASONING IS: it is the same small PNG, already
+                optimal, and there is nothing for the optimiser to win. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/c2b-logo-mark.png"
               alt="C2B"

@@ -178,11 +178,18 @@ export default function StartPage() {
      time to become established before card 1 with its gold rim appears."
      ⚠ UNASSERTED: nothing in code checks that 3600ms field delay against this.
      If the field cascade is re-timed, verify this margin still holds. */
-  const showBlue = stage === "active";
-
-  /* ⚠⚠ THE MASK NEEDS THE DIRECTION, NOT JUST THE STATE — the two radials are
-     opposite gestures, so `showBlue` alone cannot choose between them.
+  /* ⚠⚠ THE MASK NEEDS THE DIRECTION, NOT JUST THE STATE — a two-state boolean
+     cannot choose between the two radials, because they are opposite gestures.
      Carl, 27 August 2026: gold->blue OUTSIDE IN, blue->gold INSIDE OUT.
+
+     ⛔ THERE WAS A `const showBlue = stage === "active"` HERE AND IT IS DELETED
+     — 4 September 2026, on Carl's instruction, as part of taking lint to zero.
+     ⚠ IT WAS DEAD, AND VERIFIED DEAD: declared once, referenced nowhere in the
+     codebase except the sentence above explaining why it was insufficient.
+     `goldMask` below superseded it by deriving THREE states from `stage` where
+     the boolean gave two. ⛔ NOTHING WAS COMPUTED-AND-DROPPED — the concern was
+     raised from the unused-variable warning alone and the code answers it.
+     The paragraph is kept because it records WHY two states are not enough.
 
      ⛔ THE MASK ALWAYS RIDES THE GOLD LAYER, in both directions. Entering the
      Q+A the gold is clipped 150% -> 0%, so it is the LAST THING TO DISAPPEAR AT
@@ -294,6 +301,12 @@ export default function StartPage() {
                 ⚠ IT MATTERS MORE NOW THAN IT DID UNDER THE CROSSFADE: with the
                 blue permanently underneath, that 0.29px rim is visible around
                 the gold at rest rather than hidden by a fade. */}
+            {/* ⚠ PLAIN <img> BY DECISION, NOT OVERSIGHT — Carl, 4 September 2026.
+                The mark is positioned by measured pixel constants (the nail) and
+                `next/image` would wrap and re-size it. ⛔ FULL REASONING IS IN
+                `app/about/page.tsx`, at the gold mark — recorded once there rather
+                than four times. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/c2b-logo-blue-mark.png"
               alt=""
@@ -311,6 +324,7 @@ export default function StartPage() {
                 `transition: opacity 1300ms`, which is exactly the crossfade Carl
                 removed. Reduced motion is handled by `.enquiry-logo-radial`
                 instead — see globals.css. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/c2b-logo-mark.png"
               alt="C2B"

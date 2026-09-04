@@ -6,7 +6,16 @@ Reviews are observational. They surface findings and recommendations. They do no
 
 ---
 
-## ⚠ Why there are no entries after R-018 (22 June 2026) — read before calling this stale
+## ⚠ Why there was a five-week gap after R-018 (22 June – 29 July 2026) — read before calling it stale
+
+⛔ **HEADING CORRECTED 4 September 2026. It previously read *"Why there are no entries after
+R-018"*, which was true when written and is now false** — R-019 through R-024 sit above this
+note. ⚠ **The correction is made in place per `context-rules.md` (*"a code comment asserts
+something no longer true → correct it in place, keep the original claim as history"*), because a
+reader meets this heading before any entry and would conclude the log stops at R-018.**
+⚠⚠ **The note below is still worth reading: the REASONING about what does and does not generate an
+entry is unchanged, and the gap it explains is a real historical gap.**
+
 
 **Added 29 July 2026, after an audit raised the five-week gap as a finding and then withdrew
 it.** The gap is **expected and correct**, and the record needs to say so, because the third
@@ -53,6 +62,60 @@ moves a finding to actionable.
 
 **Entries written under the old schema keep their original wording.** They record what the
 process was at the time; `context-rules.md` forbids retroactive rewriting.
+
+---
+
+## R-024 — `/about` Section 2: The Room Photograph, And Four Generated Rooms Rejected
+
+**Date:** 2026-09-04 (approved 2026-09-03/04; logged late — see **D-074**)
+**Reviewer:** Human Founder
+**Subject:** `public/about-studio-source.jpg` as the ground for `/about` §2, read on a running build. Records **D-073**, and **D-071** for the §10a ruling. Commit `ed0fb5b`.
+
+**Carl's verdict, verbatim:** *"If anything says 'made with AI', its this picture. Exactly the thing we are arguing against in this section."* — said of the GENERATED candidates, which is why they are gone.
+
+**Findings:**
+
+- ⛔⛔ **FOUR AI-GENERATED ROOMS WERE BUILT AND ALL FOUR REJECTED.** ⚠ **The rejection was not on quality — it was on ARGUMENT.** A page whose thesis is *ungoverned AI yields generic output* cannot illustrate itself with generic output. ⛔ **This is the same defect as the homepage line struck on 2 September (D-068), arriving in a picture rather than a sentence.**
+- ⚠ **The tells were real and specific**, not fastidiousness: picture frames at disagreeing angles, rack gear dissolving into noise, cabling going nowhere, repeated speakers at wrong scales. ⛔ **§2 is where a sceptical reader checks the claim.**
+- ⚠⚠ **THE COLOUR NEEDED NO GRADING AND IT IS MEASURED, NOT ASSERTED:** the wall sits at **H 200–206, S 32–43%, L 12–17%** against the `/start` interaction teal's **H 186, S 66%, L 35%** (D-053). ⛔ **Half the saturation, a third the lightness — exactly what the record asks of a large teal area, straight out of camera.**
+- ⛔ **A TEAL REGRADE WAS BUILT AND ABANDONED:** it moved the hue ~5° and cost **94% of the resolution**. ⚠ **The general lesson is on the record now — every generative round-trip is destructive. EDIT THE MASTER.**
+- ⚠ **THE 2° WALL ANGLE IS MEASURED AND IS NOT THE TARGET.** `skewY(2deg)` was built and looked flat, *because it is flat*. ⛔ **Recorded so a later session does not "correct" wall cards back towards the photograph's true angle. That has been tried.**
+- ⚠ **`public/about-studio-figure.jpg` IS NOT USED BY ANY ROUTE AND MUST NOT BE DELETED AS A STRAY** — kept on Carl's instruction as a lighting reference.
+
+**Flags:**
+
+- ⚠ **Medium — the crop was re-verified only by reasoning, not by eye.** The image moved to `next/image` on 4 September; `fill` + `object-cover` should reproduce the framing exactly, **but no before/after comparison was made.** ⛔ **Card positions in §2 will be tuned against this crop, so it should be confirmed visually before that work starts.**
+
+**Recommendations:** Confirm the framing by eye before §2 card positions are tuned. Routed to Carl.
+
+**Status:** Actioned — §10a settled by D-071; section 2 proceeds on this photograph.
+
+---
+
+## R-023 — `/about` Section 1: The Copy Approved, Two Registers Side By Side
+
+**Date:** 2026-09-04 (approved 2026-09-03; logged late — see **D-074**)
+**Reviewer:** Human Founder
+**Subject:** `/about` §1 in `app/about/page.tsx` — both texts and the two-column layout, read on a running build. Records **D-072**. Commit `63b55cb`.
+
+**Carl's verdict:** Approved by eye, on the rendered build, after he rewrote both texts himself.
+
+**Findings:**
+
+- ⛔⛔ **APPROVED: THE COPY *AND* THE LAYOUT.** ⚠⚠ **Both, and this differs from R-022** — where Carl explicitly approved copy and held layout provisional. ⛔ **Here the layout is load-bearing: he balanced the two paragraphs BY EYE against two equal columns with both headings at `text-3xl`, and added a sentence to text 1 to even them up.** **Change the widths, the gap or either heading size and the approved balance is gone.**
+- ⛔ **THE H1 CAME DOWN** from `text-4xl md:text-5xl` to `text-3xl` to match the h2, and now heads the left column instead of spanning the section.
+- ⛔⛔ **THE TWO-REGISTER SPLIT IS A RULING, NOT A DRAFTING ACCIDENT.** Text 1 is a STATEMENT with no first person — Carl: *"Statement. No i or we."* Text 2 is the PERSON, first person throughout. ⚠⚠ **The foreseeable edit is someone harmonising the two, or "correcting" text 1's impersonality as third-person drift. It is impersonal BY INSTRUCTION.**
+- ⛔ **CARL WROTE BOTH TEXTS.** The Builder drafted options; Carl selected, cut, pasted back and rewrote. ⚠ **Text 2 retains choices the Builder queried and he kept — the "we"/"I" mix, "pristine, production-ready code", "my exact standards". THOSE ARE HIS.**
+- ⚠⚠ **A PROCESS FAULT, AND IT IS CARL'S CORRECTION VERBATIM:** the Builder deleted a clause Carl had not named — *"Through our rigorous project governance and deep file architecture,"* — and reported it afterwards. ⛔ **Carl: *"i did not authorise you to remove this. im trying to get both paragraphs to be the same size. i cannot do it if you are taking out things i did not say."*** ⚠ **The harm is specific: he was balancing two columns by eye and the length changed by an amount he did not choose.** ⛔ **The clause is present in the file — correctly restored.**
+- ⚠ **TWO CLAIMS WERE KEPT OUT ON PURPOSE:** *"every pixel and line of code"* (a client-work claim on a site with no client work) and *"cutting-edge execution with uncompromised artistry"* (asserts what the page should demonstrate). ⛔ **Do not reintroduce either when polishing.**
+
+**Flags:**
+
+- ⚠ **Low, and forward-looking — §1 already names all four seats.** Text 2 reads *"specialized roles of Strategist, Designer, Architect, and Builder"*. ⛔ **Section 2's copy therefore cannot earn its screen by naming them again: §1 NAMES, §2 must SHOW.** Recorded in D-072 because it constrains copy not yet written.
+
+**Recommendations:** None. The section is approved as it stands.
+
+**Status:** Actioned.
 
 ---
 

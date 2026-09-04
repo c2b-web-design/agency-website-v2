@@ -3671,3 +3671,393 @@ alongside the demotion reasoning. ⛔ **History is preserved, not rewritten** �
 ### ⚠ WHAT THIS SUPERSEDES
 
 ⛔ **D-069's closing note** — *"the hero's CTA reads `See our work` and points at `#work`, which contains no work… raised with Carl and not acted on"* — **is now acted on and out of date.** ⚠ **The label is changed and the button's function is ruled. D-069's note stands as history; this entry is the current state.**
+
+---
+
+## D-071 — §10a Is Broadened Again: It Governs What C2B CLAIMS TO HAVE MADE, Not Where Pixels Sit
+
+**Date recorded:** 2026-09-04
+**Status:** ⛔ **APPROVED.**
+**Authority:** Human Founder — Carl, 4 September 2026.
+**Bears on:** `public/about-studio-source.jpg` (the `/about` §2 room photograph) and every future material decision. ⚠ **Broadens §10a in `live-work/about-section-thinking.md` L575–640. Does NOT supersede it — the 30 August TV ruling stands undisturbed.**
+
+---
+
+### ⛔⛔ WHAT IS RULED
+
+**Carl, in his own words:**
+
+> *"This is quite literally a background. Is using a font our own work? Its an ornamentation, the paper in a book."*
+
+⛔ **A BACKGROUND PHOTOGRAPH IS MATERIAL, NOT CONTENT. §10a DOES NOT REACH IT.**
+
+### ⚠⚠ THE BUILDER CALLED THIS A REVERSAL. CARL CORRECTED THAT, AND THE CORRECTION IS THE ENTRY
+
+**The Builder's framing:** the 30 August broadening says *"a borrowed background, texture or loop fails for the same reason a borrowed example does"* — the word **background** is in the record — so ruling a background exempt reverses it.
+
+⛔ **CARL: *"is not a reversal, its the broadening of a concept."*** ⚠⚠ **AND HE IS RIGHT, BECAUSE THE TWO READINGS OF §10a ARE NOT THE SAME RULE:**
+
+| the Builder's reading | Carl's reading |
+|---|---|
+| §10a is about **where the pixels sit** — foreground, background, texture, loop | ⛔ §10a is about **what C2B CLAIMS TO HAVE MADE** |
+
+⚠ **Under the first reading, a background is inside the rule and today contradicts 30 August.** ⛔ **Under the second — which is the real one — a background was never the subject, and both rulings follow from one principle applied at different distances.**
+
+### ⛔ THE TEST, STATED SO IT CAN BE APPLIED WITHOUT CARL
+
+**Does a visitor read this as something C2B MADE?**
+
+| | | |
+|---|---|---|
+| **MATERIAL — outside §10a** | fonts, frameworks, the paper stock, a photograph used as ground | ⚠ **Nobody reads Geist as our typeface design.** Using it asserts nothing |
+| **CONTENT — inside §10a** | examples, the corridor, the cards, the light rig, **a screen playing something** | ⛔ **These ARE the claim.** A borrowed one is evidence of taste in SELECTION where the thing sold is judgement in CONSTRUCTION |
+
+### ⚠⚠ WHY THE C2B TV REFUSAL STILL STANDS — AND THIS IS THE LOAD-BEARING PART
+
+⛔ **A ROYALTY-FREE VIDEO ON THE C2B TV WAS REFUSED ON 30 AUGUST AND REMAINS REFUSED.** ⚠ **It is not rescued by today's ruling, and a session reading only this entry must not conclude otherwise.**
+
+**The reason it fails is the test above, not its position on the page:** ⛔ **a screen playing content reads as content, even unlabelled.** The TV sits where C2B's work goes; the visitor's eye arrives at it asking *what has this agency made?* ⚠ **A room photograph behind glass panels never prompts that question.**
+
+### ⚠ THE COPYRIGHT QUESTION IS SEPARATE AND CARL HAS ANSWERED IT
+
+⛔ **§10a is C2B's own honesty rule. Copyright is someone else's rule and does not move when C2B moves its own.** ⚠ **The room photograph is a Reddit upload (r/workstations) whose licence is unknown.** The Builder raised seeking the photographer's permission with a credit.
+
+⛔ **CARL'S RULING: *"not a concern."*** ⚠ **Recorded as ASKED AND ANSWERED so it is not re-raised a fourth time.** ⛔ **It is Carl's call and it is made.**
+
+### ⛔ WHAT THIS UNBLOCKS
+
+⚠ **The 3 September handoff listed §10a as *"UNRESOLVED and it is Carl's"*, raised three times and never settled, with the note that everything in section 2 now builds on that image.** ⛔ **It is settled. Section 2 proceeds on the photograph.**
+
+---
+
+## D-072 — `/about` Section 1 Copy: Two Registers, Statement And Person, Balanced By Eye
+
+**Date recorded:** 2026-09-04 (approved 2026-09-03; recorded late — see D-074)
+**Status:** ⛔ **APPROVED — copy AND layout.** ⚠ Both, and the layout is not incidental.
+**Authority:** Human Founder — Carl, 3 September 2026, on a running build.
+**Bears on:** `app/about/page.tsx` §1 (the unnamed first section). Commit `63b55cb`. Review: **R-023**.
+
+---
+
+### ⛔⛔ THE SPLIT IS THE DESIGN, AND IT IS A RULE
+
+| | register | Carl's ruling |
+|---|---|---|
+| **text 1** (left) — *"How the work gets done."* | ⛔ **A STATEMENT. NO FIRST PERSON** | *"Statement. No i or we."* |
+| **text 2** (right) — *"The founder and the process."* | ⛔ **THE PERSON. FIRST PERSON** | the standing ruling, `about-section-thinking.md` L1183–1214 |
+
+⚠⚠ **TEXT 1 IS NOT THE THIRD-PERSON DRIFT THE RECORD WARNS ABOUT.** ⛔ **The first-person ruling governs copy about THIS OPERATION — Carl, the seats, who approves. Text 1 is about how the tools behave IN GENERAL, and it is impersonal BY INSTRUCTION.**
+
+⚠ **THE HOMEPAGE RUNS THE SAME SPLIT (D-067, D-068). THE FORESEEABLE EDIT IS SOMEONE HARMONISING THE TWO** — it would read as consistency work and would destroy the pattern in both places.
+
+### ⛔ CARL WROTE BOTH TEXTS
+
+⚠ **The Builder drafted options; Carl selected, cut, pasted back and rewrote.** ⛔ **Text 2 is his paragraph INCLUDING the choices the Builder queried and he kept:** the *"we"*/*"I"* mix, *"pristine, production-ready code"*, *"my exact standards"*. ⛔⛔ **THOSE ARE HIS. DO NOT "FIX" THEM.**
+
+### ⚠ LAYOUT IS APPROVED WORK, NOT INCIDENTAL STYLING
+
+**Two equal columns (`grid md:grid-cols-2 gap-12 md:gap-20`), BOTH headings `text-3xl`.**
+
+⛔ **The h1 came DOWN from `text-4xl md:text-5xl` to match the h2**, and now heads the left column rather than spanning the section. ⚠⚠ **Carl balanced the two paragraphs BY EYE against this exact arrangement, and added a sentence to text 1 to even them up.** ⛔ **Change the widths, the gap or either heading size and the balance he approved is gone.**
+
+### ⛔ TWO CLAIMS WERE KEPT OUT ON PURPOSE — DO NOT REINTRODUCE THEM
+
+Both were drafted and rejected:
+
+1. ⛔ **control over *"every pixel and line of code"*** — ⚠ **a claim about CLIENT WORK on a site with no client work.** **The same defect was struck from the homepage on 2 September (D-068).**
+2. ⛔ ***"cutting-edge execution with uncompromised artistry"*** — ⚠ **it ASSERTS what the page is meant to DEMONSTRATE.**
+
+### ⚠⚠ SECTION 1 ALREADY NAMES THE FOUR SEATS — A CONSTRAINT ON SECTION 2
+
+⛔ **Text 2 contains *"specialized roles of Strategist, Designer, Architect, and Builder"*.**
+
+⚠⚠ **AMENDED THE SAME DAY — CARL WITHDREW THE CONSTRAINT THIS PARAGRAPH ORIGINALLY DREW.** The Builder wrote that *"section 2 cannot earn its screen by naming the seats again — section 1 names, section 2 must SHOW."* ⛔ **Carl, 4 September: *"Section 1 only names them in the process. Sec 2 will expand on the naming and give a brief description of their roles."*** ⚠ **A list inside a sentence about process is not an introduction.** ⛔ **§2 NAMES THE ROLES ON THE CARDS and describes them — Carl: *"What will show the differentiation is we will put the Role on the cards."***
+
+⚠ **The original claim is kept above as history per `context-rules.md`. What survives of it: §1's mention is IN PASSING and §2 must not read as a repeat — but naming is §2's job, not a duplication to avoid.**
+
+---
+
+## D-073 — The `/about` §2 Room Is A REAL PHOTOGRAPH. Four Generated Rooms Were Built And Rejected
+
+**Date recorded:** 2026-09-04 (decided 2026-09-03/04; recorded late — see D-074)
+**Status:** ⛔ **APPROVED.**
+**Authority:** Human Founder — Carl, 3/4 September 2026.
+**Bears on:** `public/about-studio-source.jpg`, `brand-assets/reddit-original.jpg`, `app/about/page.tsx` §2. Commit `ed0fb5b`. ⚠ **Licence question closed by D-071.**
+
+---
+
+### ⛔⛔ THE REASON IS THE SECTION'S OWN ARGUMENT
+
+**Carl:** *"If anything says 'made with AI', its this picture. Exactly the thing we are arguing against in this section."*
+
+⛔⛔ **A PAGE ARGUING THAT UNGOVERNED AI YIELDS GENERIC OUTPUT CANNOT ILLUSTRATE ITSELF WITH GENERIC OUTPUT.** ⚠ **Same defect as the homepage line struck on 2 September, arriving in a picture rather than a sentence.** ⛔ **THIS SECTION IS WHERE A SCEPTIC CHECKS.**
+
+⚠ **The tells in the rejected images were real, not fastidiousness:** picture frames at disagreeing angles, rack gear dissolving into noise, cabling going nowhere, repeated speakers at wrong scales.
+
+⛔ **DO NOT REPLACE IT WITH A GENERATED IMAGE, however good it looks in isolation.**
+
+### ⚠⚠ THE COLOUR NEEDED NO GRADING, AND THAT IS MEASURED
+
+| | H | S | L |
+|---|---|---|---|
+| **interaction teal, `/start`** (D-053) | 186 | **66%** | 35% |
+| **the wall, untouched** | 200–206 | **32–43%** | 12–17% |
+
+⛔ **Half the saturation, a third the lightness — exactly what the record asks of a large teal area (*"well below them in saturation, nearer a duck-egg tint over near-black"*), STRAIGHT OUT OF CAMERA.** ⚠ **No collision with the `/start` states.**
+
+⚠⚠ **A TEAL REGRADE WAS BUILT AND ABANDONED: it moved the hue ~5° and cost 94% of the resolution.** ⛔ **THE LESSON IS GENERAL — EVERY GENERATIVE ROUND-TRIP IS DESTRUCTIVE.** The chain ran `699px → upscale → regrade → plant removal → figure`. ⛔ **EDIT THE MASTER.**
+
+### ⛔ THE FILES — AND ONE MUST NOT BE DELETED AS A STRAY
+
+| file | what |
+|---|---|
+| `brand-assets/reddit-original.jpg` | ⛔ **6158×4105 MASTER**, the photographer's own upload. **Re-cut from this; NEVER upscale** |
+| `public/about-studio-source.jpg` | **2560×1707, 459KB** — what the route serves. ⚠ **3:2, NOT 16:9** — a comment in `app/about/page.tsx` calls it a 16:9 crop and that is wrong |
+| `public/about-studio-figure.jpg` | ⚠⚠ **NOT USED BY ANY ROUTE. DO NOT DELETE AS A STRAY.** Kept on Carl's instruction as a **LIGHTING REFERENCE** — its figure was generated INTO this scene, so its rim light and shadow direction already answer to these lamps. ⛔ **The PIXELS are unusable: 1264px file, figure ~300×400, a 5× upscale.** Two known tells: the chair back reads IN FRONT OF the torso, and there is no contact shadow |
+
+⚠ **Carl's idea, 4 September: bring the figure into Resolve and extract it** — *"the lighting would almost match."* ⛔ **Not done.**
+
+### ⚠ TOOLING NOTES THAT COST TIME TO LEARN
+
+- ⛔ **BING'S BROWSER EDITOR SAVES AT 1080×719** — it works on Reddit's display-size webp, not the original, **whatever zoom it reports.** ⚠ Use Resolve, Photopea, or ffmpeg.
+- ⚠ **`ffmpeg` 9.0.1 installed 3 September** (`Gyan.FFmpeg`). ⛔ **`-vsync` is REMOVED in ffmpeg 9 — use `-fps_mode`.**
+
+### ⛔ THE BACK WALL RUNS AT ~2°, MEASURED — AND BEING RIGHT PRODUCED THE WRONG PICTURE
+
+**Measured off the source image from two guides Carl named:** monitor top `x220 y343 → x400 y350` = **2.2°**; picture-frame bottom `x560 y269 → x678 y273` = **1.9°**.
+
+⚠⚠ **A GEOMETRICALLY FAITHFUL VERSION WAS BUILT AND REJECTED.** `skewY(2deg)` **looked flat, because it IS flat.** ⛔⛔ **DO NOT "CORRECT" WALL CARDS BACK TOWARDS 2° ON THE GROUND THAT IT MATCHES THE PHOTOGRAPH. THAT HAS BEEN TRIED.** ⚠ **The measurement is a fact about the image; it is NOT automatically the target.**
+
+⛔ **THE LEFT WALL GENUINELY RECEDES and has real perspective to work with. THE BACK WALL DOES NOT.** ⚠ **Carl then asked for *"text that is initially face on but the left side must be anchored as the right side pushed back"* — an EFFECT angle, not a measured one.**
+
+### ⚠ THE IMAGE IS NOW SERVED THROUGH `next/image` — 4 September
+
+⛔ **Converted as part of taking lint to zero (see CLAUDE.md).** ⚠ **The CROP IS UNCHANGED — `fill` + `object-cover` alters DELIVERY, not framing.** **Measured on the running server: 459KB source → 105KB WebP at 1440 (−77%), 22KB at 750 (−95%).**
+
+⚠⚠ **UNASSERTED: nothing checks that the rendered framing matches what the plain `<img>` produced.** ⛔ **Verify by eye before tuning any card position against this crop.**
+
+---
+
+## D-074 — Three Approvals Lived Only In A Handoff For A Day. The Gap, And Why It Is Recorded Rather Than Quietly Filled
+
+**Date recorded:** 2026-09-04
+**Status:** ⛔ **CLOSED** — D-071, D-072, D-073 and R-023/R-024 are the fill. ⚠ **The entry stays as the record of HOW it happened.**
+**Authority:** Human Founder — Carl, 4 September 2026: *"Decisions and developmant that was made in the last session will be recorded in this session."*
+**Bears on:** `decisions.md`, `reviews/review-log.md`, and `ai-system/live-work-protocol.md` §3a.
+
+---
+
+### ⛔ WHAT HAPPENED
+
+**The 3/4 September session approved three things by Carl's eye and wrote NONE of them into `decisions.md` or `review-log.md`:**
+
+| approved | where it actually lived |
+|---|---|
+| §1's copy and layout | a commit message and `session-handoff.md` |
+| the room photograph, and the rejection of four generated rooms | the same two places |
+| the §10a question | ⚠ **recorded as UNRESOLVED — it was, until 4 September** |
+
+⚠⚠ **THE HANDOFF ITSELF FLAGGED THIS AS A REAL GAP**, in its own words: *"Section 1's copy and layout are APPROVED BY CARL'S EYE and have no `decisions.md` or `review-log.md` entry... THIS IS A REAL GAP."*
+
+### ⛔⛔ WHY IT WAS URGENT AND NOT MERELY UNTIDY
+
+**`live-work/session-handoff.md` IS DELETED AT THE END OF THE SESSION THAT READS IT** — `live-work-protocol.md` §3a, and it is single-use BY DESIGN.
+
+⚠⚠ **SO THE ONLY DURABLE RECORD OF THREE APPROVALS WAS A FILE SCHEDULED FOR DELETION, IN A GITIGNORED FOLDER.** ⛔ **This is not the ordinary staleness failure the record is full of — a claim that OUTLIVES its subject. It is the opposite and it is worse: a true claim about to be DESTROYED while its subject lives on.**
+
+⚠ **The commit messages would have survived. They are not the record** — D-006 and Rule 1: chat history is not canonical, and neither is a commit subject line. **A reader asking *"why is text 1 impersonal?"* does not run `git log`.**
+
+### ⚠ THE MECHANISM THAT FAILED, NAMED PRECISELY
+
+⛔ **NOTHING ENFORCES RULE 7, AND `context-rules.md` ALREADY SAYS SO IN THOSE WORDS:** *"NOTHING ENFORCES THIS RULE... Both hooks are `PreToolUse` — they fire on an edit HAPPENING, and the failure mode here is an edit that NEVER HAPPENS. A hook cannot fire on an absence."*
+
+⚠⚠ **THIS IS THAT FAILURE, ARRIVING EXACTLY AS PREDICTED, THREE WEEKS AFTER THE PREDICTION WAS WRITTEN DOWN.** ⛔ **Recorded because a foreseen failure that then occurs is evidence about the CONTROL, not about the session that tripped it.** The rule was known, written, and cited — and the work still did not happen.
+
+### ⛔ WHAT IS NOT PROPOSED HERE
+
+⚠ **No new rule, no new hook, no checklist item.** ⛔ **A remembered step failed; adding a second remembered step is not a fix, and `live-work-protocol.md` already carries the instruction.**
+
+⚠ **The one thing that would actually close it is a gate that fires on session END rather than on an edit** — and that is a mechanism nobody has designed. ⛔ **Raised to Carl, not built.** Per D-038 it is not parked in a roadmap here.
+
+### ⚠⚠ THE PATTERN WORTH CARRYING FORWARD
+
+⛔ **A HANDOFF THAT CARRIES APPROVALS RATHER THAN POINTING AT THEM IS LOAD-BEARING SCRATCH.** ⚠ **The 3 September handoff was excellent — thorough, honest, and it flagged its own gap. That is precisely what made it dangerous: it was good enough to feel like a record.**
+
+⛔ **THE TEST FOR ANY FUTURE HANDOFF: if this file were deleted right now, what would be LOST rather than merely inconvenient?** ⚠ **Whatever the answer names belongs in `decisions.md` BEFORE the handoff is written, not after.**
+
+---
+
+## D-075 — Lint Goes To Zero Warnings. The Room Image Takes `next/image`; The Four Marks Are Suppressed By Decision
+
+**Date recorded:** 2026-09-04
+**Status:** ⛔ **APPROVED.**
+**Authority:** Human Founder — Carl, 4 September 2026. Unlock: *"app/start/page.tsx components/layout/site-header.tsx Authorised to use."*
+**Bears on:** `CLAUDE.md` (the baseline), `app/about/page.tsx`, `app/start/page.tsx`, `components/layout/site-header.tsx`.
+
+---
+
+### ⛔ WHAT CHANGED
+
+**Before: `7 problems (1 error, 6 warnings)`. After: `1 problem (1 error, 0 warnings)`.**
+
+| | |
+|---|---|
+| **The room image** | ⛔ **CONVERTED to `next/image`** — the project's first use. ⚠ **Measured on the running server: 459KB source → 105KB WebP at 1440 (−77%), 22KB at 750 (−95%).** The crop is unchanged; `fill` + `object-cover` alters DELIVERY, not framing |
+| **The four gold marks** | ⛔ **STAY `<img>`, suppressed per-line with a stated reason.** ⚠ The mark is positioned by measured pixel constants Carl tuned by eye (D-065/D-066); `next/image` wraps and re-sizes its output. **Nothing to win on a small already-optimal PNG, an approved alignment to lose** |
+| **`showBlue`** | ⛔ **DELETED, and it was dead** — declared once, referenced nowhere but the comment explaining why a two-state boolean could not choose between the two radials. ⚠⚠ **The previous baseline flagged it as possibly *"a transition computed and never applied"*. THAT CONCERN IS ANSWERED AND WAS UNFOUNDED** |
+
+### ⚠⚠ THE REASON FOR ZERO RATHER THAN A CORRECTED COUNT
+
+⛔ **The baseline had gone stale TWICE IN A WEEK** — recorded as 6 warnings on 2 September, was 7 by
+3 September when the room image landed. ⚠ **A non-zero baseline is a number someone must remember to
+update; zero is a number the tool maintains.** ⛔ **Any warning is now a regression and is visible on
+sight.**
+
+### ⚠ A SUPPRESSION IS A DEBT
+
+**Four `eslint-disable-next-line` comments now exist.** ⛔ **Each names its reason at the line, and the
+full argument lives once at the mark in `app/about/page.tsx`** rather than four times. ⚠ **If the mark
+ever stops being positioned by measured pixels, the suppressions lose their justification and should
+be revisited rather than inherited.**
+
+⚠ **`site-header.tsx`'s mark is IN FLOW (`h-10 w-auto`), not nail-hung, so only half the argument
+applies there — its comment says so.**
+
+---
+
+## D-076 — The Builder Cannot Measure A Photograph. Four Wrong Angles, And The Instrument That Replaced Them
+
+**Date recorded:** 2026-09-04
+**Status:** ⛔ **APPROVED — the method.** ⚠ **The card positions themselves are Carl's and are recorded in `live-work/wall-card-corners-4-september.md`.**
+**Authority:** Human Founder — Carl, 4 September 2026.
+**Bears on:** `/about` §2 card geometry; `app/proto/wall/` (throwaway tool). ⚠ **Amends D-073's 2° note.**
+
+---
+
+### ⛔⛔ WHAT HAPPENED
+
+**The Builder produced FOUR different values for the angle of the left wall's ceiling seam** — 2.0°,
+3.67°, 5.19°, then 2.31/2.15/2.11° across three runs of one detector on an unchanged image.
+
+⛔⛔ **EACH TIME IT CHECKED ITS LINE AGAINST ITS OWN FIGURE AND REPORTED AGREEMENT.** ⚠⚠ **THE CHECK
+COULD NEVER FAIL, BECAUSE THE MEASUREMENT AND THE CHECK SHARED THE ERROR.** ⛔ **Same family as
+`verify/one-context.mjs` — a true answer to the wrong question.**
+
+⚠ **Why the pixel detector lied specifically: it scans each column for the steepest luminance drop.
+The wall carries bright pools from the downlights, so in some columns the strongest transition is not
+the seam. The fit then draws a confident line through points that are not all on the boundary and
+reports a small residual, because the wrong points are consistent with each other.**
+
+### ⛔⛔ CARL'S TEST FOUND IT IN ONE MOVE
+
+> ⛔ ***"take the red line and move it up to where the ceiling meets the wall. DO NOT alter the angle."***
+
+⚠⚠ **A LINE TRULY PARALLEL AT A CONSTANT OFFSET, LIFTED BY THAT OFFSET, LANDS ON THE SEAM ALONG ITS
+WHOLE LENGTH.** ⛔ **It did not. It diverged visibly.** ⚠ **Carl: *"i knew this 30 mins ago because ive
+got eyes and i could see the perspective is wrong."***
+
+⛔⛔ **THE GENERAL RULE: WHEN A VALUE IS DERIVED FROM AN IMAGE, THE VERIFICATION MUST NOT USE THAT
+VALUE.** ⚠ **Land it on the feature itself. The reference must be the artefact, not the arithmetic.**
+
+### ⛔ THE SHAPE WAS ALSO WRONG, AND THAT IS SEPARATE
+
+⛔⛔ **IT IS A PARALLELOGRAM, NOT A CONVERGING TRAPEZOID.** ⚠ **The Builder foreshortened the far end
+twice on the theory that perspective demands it. At this shallow an angle, this close to face-on, it
+does not — and the convergence is why every attempt read as a panel TIPPING AWAY from the wall.**
+
+⚠ **Carl's framing is the better guide: *"Remember we are hanging a painting/picture. IRL you do that
+face on and stand in the middle. make sure the top is horizontal."***
+
+### ⛔ THE RESOLUTION — A 4-POINT PINNING TOOL
+
+**`app/proto/wall/page.tsx`** — Carl drags four corners; a homography maps the card exactly onto them.
+⛔ **THE BUILDER'S MEASUREMENT IS OUT OF THE LOOP.** ⚠ **It is NOT out of verification — only Carl can
+confirm the result sits on the wall.**
+
+⛔ **THROWAWAY, on the D-053 `?tealstrength=` pattern: an instrument that yields a value by eye, the
+value goes in the code, the instrument is retired.** ⚠ **It is a client component on its own route so
+`/about` keeps its static prerender.**
+
+⚠⚠ **ONE EXTERNAL DIAGNOSIS WAS WRONG AND IS CORRECTED HERE:** it held that the failure was 2D-vs-3D
+thinking and that CSS 3D transforms were the fix. ⛔ **The Builder's line WAS mathematically parallel
+to the slope it had measured — the slope was wrong.** ⚠ **`rotateY(50deg)` would have been guessed and
+mis-verified identically. Changing the transform does not fix a blind operator; removing the
+Builder's eye from the measurement does.**
+
+### ⚠ WHAT THIS AMENDS
+
+⛔ **D-073 records the wall at ~2°, measured off a monitor top and a picture frame.** ⚠⚠ **THOSE ARE
+OBJECTS NEAR THE WALL, NOT THE WALL'S OWN LINE. The figure should not be used for card geometry.**
+⛔ **D-073's substantive ruling — that the measurement is a fact about the image and NOT automatically
+the target — stands and is reinforced.**
+
+---
+
+## D-077 — `/about` §2 Copy: Four Seats, PROVISIONAL. And The Placement Is Settled
+
+**Date recorded:** 2026-09-04
+**Status:** ⚠ **PROVISIONAL — the copy.** ⛔ **APPROVED — the placement, the sizes and the register rules.**
+**Authority:** Human Founder — Carl, 4 September 2026: *"ok, copy is provisionally approved. It has to work in finite space, it may need tweaking."*
+**Bears on:** `/about` §2. Full drafting record: `live-work/about-section-thinking.md`.
+
+---
+
+### ⛔ THE PLACEMENT — SETTLED, AND THE REASON IS THE ARGUMENT
+
+| position | seat | reads |
+|---|---|---|
+| **WALL LEFT** | **The Architect** | 1st |
+| **WALL RIGHT** | **The Builder** | 2nd |
+| **FLOOR LEFT** | **The Designer** | 3rd |
+| **FLOOR RIGHT** | **The Strategist** | 4th |
+
+⛔ **Carl: *"Architect is top left, reading L to R beacuse the Architect begins the work. You cannot
+code if youve no idea what to code."*** ⚠⚠ **A geometric convenience does not get to re-order an
+argument about how the work is done.** ⛔ **The Builder raised an objection about which wall recedes;
+Carl overruled it — *"No, the layout is as it stands."***
+
+⛔ **WALL CARDS ARE LARGER** — *"It is logical to assume a user will drawn to them first."* ⚠ Size,
+position and word count all say the same thing: the heavy lifting is on the wall.
+
+### ⛔⛔ NO CARD IS A STEP — THE CHAIR IS WHY
+
+> ⛔ ***"Dont think in linear terms. In the course of a Clients project i would have to consult each
+> 'team member' on a number of occassions. Thats why the chair sits in the middle."***
+
+⚠⚠ **TWO DESKS, FOUR POSITIONS, AND A CHAIR THAT MOVES BETWEEN THEM. THE ROOM ALREADY CONTAINS THE
+ARGUMENT.** ⛔ **§1 establishes the bridge; §2 shows what it connects to — FOUR POSITIONS YOU RETURN
+TO, not four stages you pass through.**
+
+⛔ **So no card carries a position in an order. No *first*, *then*, *finally*. Each is a standing
+description of a position that is consulted.**
+
+### ⚠ TWO PATTERNS IN THE COPY THAT A LATER EDITOR WOULD "FIX"
+
+1. ⛔ **THE WALL PAIR NEVER SAYS "YOU". THE FLOOR PAIR DOES.** ⚠ The front pair is what the client
+   PARTICIPATES IN; the back pair is work done on their behalf, where "you" would be false intimacy.
+2. ⛔ **THE TOOLING IS NOT NAMED.** ⚠ *"If a client asks i will tell them what i use."* **No product
+   names, no model names.** ⛔ **AND: Anthropic's logo or marks may NOT appear on the site without
+   permission — that includes any "powered by" badge or logo strip. Naming Claude descriptively in
+   conversation is fine.**
+
+### ⛔ WHY PROVISIONAL — THE COPY HAS NOT MET ITS CONTAINER
+
+⚠ **A word count is not a fit.** ⛔ **Wall cards lose width as their far edge compresses; floor cards
+lean back and foreshorten; the room is dark and the glass frosted, so CONTRAST decides legibility as
+much as size.**
+
+⚠⚠ **FOUR LINES MUST SURVIVE ANY TRIM**, and if a card cannot fit while keeping its line, **THE CARD
+SIZE IS WRONG, NOT THE LINE:**
+
+| card | do not cut |
+|---|---|
+| **CA** | *"the work is then checked by someone who did not do it"* |
+| **CB** | *"Code is only good when it stays within the brief."* — ⛔ **Carl wrote this line** |
+| **CD** | *"not a blank page, and not a template"* |
+| **CS** | *"Nothing it recommends becomes work without a decision"* |
+
+### ⚠ ONE CLAIM AHEAD OF THE FACT, FLAGGED NOT RESOLVED
+
+⛔ **CS's *"connected to the things the business actually runs on"* is PRESENT TENSE.** ⚠ **Whether the
+Strategist is currently wired to any live system was raised and not answered.** ⛔ **§2 is where a
+sceptic checks (D-073) — if nothing is connected yet, the fix is small: *"can be connected to"*.**

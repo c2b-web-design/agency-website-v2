@@ -3334,3 +3334,948 @@ exception is section 4's placeholder.**
 yours"*); copy has had no such conversation.** **Carl's to decide when the chunk opens.**
 
 ---
+
+---
+
+# ⛔⛔ SECTION 2 — THE PLACEMENT IS SETTLED. CARL, 4 September 2026
+
+⚠⚠ **THIS IS A RULING, NOT A PROPOSAL. It was given after the Builder raised a geometric objection
+and Carl overruled it on the argument.**
+
+## The four positions
+
+| position | seat | reads |
+|---|---|---|
+| **WALL LEFT** | ⛔ **CA — Architect** | **1st** |
+| **WALL RIGHT** | ⛔ **CB — Builder** | **2nd** |
+| **FLOOR LEFT** | ⛔ **CD — Design** | **3rd** |
+| **FLOOR RIGHT** | ⛔ **CS — Strategist** | **4th** |
+
+⛔ **Carl: *"The user will still be presented with 4 cards that are 2+2 in 3d space."*** ⚠ **The 2+2
+reading is the point: a top pair and a bottom pair, left to right within each.**
+
+## ⛔⛔ WHY THE ARCHITECT IS FIRST — CARL'S REASON, AND IT IS THE ARGUMENT ITSELF
+
+> ⛔ ***"Architect is top left, reading L to R beacuse the Architect begins the work. You cannot code
+> if youve no idea what to code."***
+
+⚠⚠ **THE READING ORDER CARRIES THE SEQUENCE OF THE WORK. Geometry serves that; it does not dictate
+it.** ⛔ **A later session must not re-order these cards for compositional convenience — the order
+IS the claim that nothing gets built before it is planned.**
+
+## ⚠⚠ THE BUILDER'S OBJECTION, RECORDED BECAUSE IT WAS OVERRULED ON GOOD GROUNDS
+
+**What the Builder found in the photograph — and it is a genuine correction to the record:**
+
+⛔⛔ **THERE ARE TWO WALLS MEETING IN A CORNER AT ~x1130 (of 2560), NOT ONE BACK WALL.**
+
+| | what it is | perspective |
+|---|---|---|
+| **WALL LEFT** (x0–1130) | behind the triple-monitor desk | ⛔ **NEAR-FLAT, ~2°** — this is the wall the 2° measurement came from (left monitor top + picture frame, both on it) |
+| **WALL RIGHT** (x1130–2000+) | behind the iMac desk | ⛔ **GENUINELY RECEDES** — ceiling line falls away right, skirting rises toward the corner |
+
+⚠⚠ **THIS INVERTS WHAT THE 3 SEPTEMBER HANDOFF ASSUMED.** It records *"the left wall genuinely
+recedes and has real perspective to work with. The back wall does not."* ⛔ **The photograph says the
+opposite: the RIGHT wall recedes and the LEFT wall is the flat one.** ⚠ **Nobody had decided this
+wrongly — it had not been looked at.**
+
+**So the objection was: CA (wall left) sits on the FLAT wall while CB (wall right) gets real
+perspective, splitting the pair.**
+
+### ⛔ CARL'S RULING: THE LAYOUT STANDS
+
+⚠ **The Builder offered two routes — swap the wall pair, or keep the placement and let the two walls
+do different work.** ⛔ **Carl took neither as a question: *"No, the layout is as it stands."***
+
+⚠⚠ **AND THE REASON OUTRANKS THE GEOMETRY.** The Architect is first because the Architect begins the
+work. ⛔ **A geometric convenience does not get to re-order an argument about how the work is done.**
+
+⚠ **WHAT THIS MEANS IN PRACTICE, AND IT IS NOW A DESIGN PROBLEM RATHER THAN A PLACEMENT ONE:**
+**CA sits on a near-flat wall.** ⛔ **`skewY(2deg)` HAS BEEN TRIED THERE AND LOOKED FLAT, BECAUSE IT
+IS FLAT** (D-073). ⚠ **The route already on the record is Carl's own from 3 September — *"text that
+is initially face on but the left side must be anchored as the right side pushed back"* — AN EFFECT
+ANGLE, NOT A MEASURED ONE.** ⛔ **That is the licensed approach for the left wall card and it is not
+a violation of the 2° measurement; the measurement is a fact about the image, not the target.**
+
+## ⚠⚠ A COPY CONSTRAINT THAT FALLS OUT OF THE PLACEMENT — flagged before the copy is written
+
+⛔ **THE READING ORDER AND THE PROCESS ORDER RUN OPPOSITE WAYS.**
+
+- **Process:** CS → discovery meeting (Carl, human) → CD → CA + CB
+- **Page:** CA → CB → CD → CS
+
+⚠ **This is NOT a fault.** The heavy lifting sits at the top where the eye lands, which matches the
+copy weighting Carl set (CA and CB longest). ⛔ **BUT THE CARDS CANNOT RELY ON SEQUENCE TO EXPLAIN
+THEMSELVES.** ⚠⚠ **Each must stand alone rather than read as step 1 → step 4, and CARD 4 (CS) MUST
+NOT READ AS A CONCLUSION** — it is the earliest stage of the work, arriving last on the page.
+
+⛔ **The existing per-seat descriptions already survive this**, because each is written as *what the
+client gets* — a standing statement, not a step.
+
+## ⚠ THE FLOOR, AS THE PHOTOGRAPH ACTUALLY SHOWS IT
+
+⛔ **The floor is genuinely the emptiest surface and it is large — roughly the bottom 40% of frame is
+clear boards.** ⚠ **This confirms Carl's instruction to keep the floor cards OFF the monitors.**
+
+- **FLOOR LEFT (CD)** — the area in front of the triple-monitor desk. ⛔ **Further back → HIGHER in
+  frame and SMALLER.**
+- **FLOOR RIGHT (CS)** — open floor in front of the right desk. ⛔ **Nearer → LOWER and LARGER.**
+
+⚠⚠ **THE RECESSION CARL SPECIFIED IS ALREADY IN THE ROOM** — *"the desk on the left is further
+back… the floor cards dont have to be on the same horizontal axis."* ⛔ **CD naturally reads smaller
+than CS, and that is the room doing the work rather than an effect being applied.**
+
+⚠ **UNMEASURED: the exact floor plane, the horizon and the vanishing points have NOT been derived.**
+⛔ **Card positions and the lean angle need that. Not done, and it is the next measurement job.**
+
+## ⛔⛔ DO NOT THINK IN LINEAR TERMS — AND THE CHAIR IS WHY. Carl, 4 September 2026
+
+> ⛔ ***"Dont think in linear terms. In the course of a Clients project i would have to consult each
+> 'team member' on a number of occassions. Thats why the chair sits in the middle."***
+
+⚠⚠ **THIS CORRECTS THE BUILDER, WHICH HAD JUST FLAGGED A FALSE PROBLEM.** ⛔ **The Builder warned
+that the page order (CA → CB → CD → CS) runs OPPOSITE to the process order (CS → discovery → CD →
+CA + CB), and that the cards therefore *"cannot rely on sequence to explain themselves"* and
+*"card 4 must not read as a conclusion."***
+
+⛔⛔ **THE WARNING DISSOLVES BECAUSE THERE IS NO SEQUENCE TO CONTRADICT.** ⚠ **A client project is
+not a pipeline that each seat is visited once. Carl consults each position REPEATEDLY and in
+whatever order the work demands** — the brand work changes what the business case looks like, so he
+goes back to CS; a structural finding changes the design, so he goes back to CD.
+
+### ⛔ THE ROOM ALREADY CONTAINS THE ARGUMENT — AND THIS IS THE STRONGEST THING ABOUT THE PHOTOGRAPH
+
+⚠⚠ **TWO DESKS. FOUR POSITIONS AROUND THEM. AND A CHAIR IN THE MIDDLE THAT MOVES BETWEEN THEM.**
+
+⛔ **THE CHAIR IS THE BRIDGE, RENDERED IN THE PHOTOGRAPH RATHER THAN DRAWN AS A DIAGRAM.**
+
+⚠ **This closes a loop the record left open.** §1 establishes the bridge; §2 was to *"show what the
+bridge is connected to"* (settled 30 August). ⛔ **What it is connected to is FOUR POSITIONS YOU
+RETURN TO, not four stages you pass through** — and the room states that without a word of copy.
+
+⚠⚠ **IT ALSO RE-CONFIRMS WHY A FOUR-BOXES-WITH-ARROWS DIAGRAM WAS RULED OUT.** ⛔ **Arrows between
+seats show parallel agents talking to each other. Arrows from a centre show what actually happens,
+and the photograph supplies the centre for free.**
+
+### ⚠ WHAT THIS RELEASES THE COPY FROM
+
+⛔ **NO CARD NEEDS TO CARRY ITS POSITION IN AN ORDER.** ⚠ **No "first", "then", "finally"; no card
+reads as a step or as a conclusion.** ⛔ **Each is a STANDING DESCRIPTION OF A POSITION THAT IS
+CONSULTED — which is exactly the form the per-seat descriptions already take (*what the client
+gets*), so nothing written so far has to change.**
+
+## ⛔ THE WALL CARDS ARE LARGER — Carl, 4 September 2026
+
+> ⛔ ***"The wall cards will be larger. It is logical to assume a user will drawn to them first."***
+
+⚠ **THE HIERARCHY IS DELIBERATE AND IT MATCHES THE COPY WEIGHTING ALREADY SET:** CA and CB carry the
+most copy because *"the architect and the builder will need more copy, they do the heavy lifting."*
+⛔ **Size, position and word count all say the same thing — the heavy lifting is on the wall.**
+
+⚠⚠ **NOTE WHAT THIS IS NOT: it is not a compromise against the process order.** ⛔ **It is weighting
+by WHERE THE WORK HAPPENS, which is a truthful claim about the operation** — *"You and CA will do
+all the serious heavy lifting"* (Carl, on the record since 30 August).
+
+## ⛔⛔ THE ROLE NAME GOES ON THE CARD — and that is what differentiates them
+
+> ⛔ ***"What will show the differentiation is we will put the Role on the cards."***
+
+⚠ **SETTLED: each card carries its role name.** ⛔ **This is §2 doing the job §1 does not — Carl,
+4 September: *"Section 1 only names them in the process. Sec 2 will expand on the naming and give a
+brief description of their roles."***
+
+⚠⚠ **SO THE EARLIER BUILDER CONSTRAINT — *"§1 names, §2 must show"* — IS WITHDRAWN BY CARL.** ⛔ **A
+list inside a sentence about process is not an introduction. §2 names them properly and describes
+them.** ⚠ **D-072 records that constraint; it is superseded on this point.**
+
+## ⛔⛔ THE TOOLING IS NOT NAMED ON THE PAGE — Carl, 4 September 2026
+
+> ⛔ ***"It 'The Designer'. If a client asks i will tell them what i use. I am not allowed to use
+> Anthropics Logo on the site, not without permission. But i am allowed to mention Claude by name."***
+
+⚠ **THE CARDS CARRY THE ROLE, NOT THE PRODUCT.** ⛔ **`The Designer`, `The Architect`, `The Builder`,
+`The Strategist`.** ⚠ **No "Claude Design", no "Claude Code", no model names, no version numbers on
+the page.**
+
+### ⛔ WHY THIS IS RIGHT, BEYOND CARL SAYING SO
+
+⚠⚠ **THE PAGE SELLS A METHOD, NOT A TOOLCHAIN.** ⛔ **A named product dates the page** — tools are
+renamed, versioned and replaced, and a page listing them needs maintaining for no client benefit.
+⚠ **It also invites the wrong comparison: a client who reads a product name can go and buy the
+product. What they cannot buy is the structure around it.**
+
+⚠ **AND THE ANSWER EXISTS FOR ANYONE WHO ASKS** — Carl tells them directly. ⛔ **That is a
+CONVERSATION, not page copy, and it is the honest split: the page claims a method; the founder
+names the tools on request.**
+
+### ⚠⚠ THE TRADEMARK POSITION — RECORDED SO IT IS NOT REDISCOVERED WRONGLY
+
+| | |
+|---|---|
+| ⛔ **NOT PERMITTED** | **Anthropic's logo or marks on the site**, without permission. ⚠ **This includes anything implying ENDORSEMENT OR PARTNERSHIP** — a "powered by" badge, a logo strip, a partner wall |
+| ✅ **PERMITTED** | **Mentioning Claude by name, descriptively** — *"we use Claude"*. ⚠ Nominative use: naming a product to say truthfully what you use |
+
+⛔⛔ **A FORESEEABLE FUTURE EDIT: someone adds a tool-logo strip to the About or Examples section
+thinking it adds credibility. IT IS NOT PERMITTED AND IT IS NOT WANTED.**
+
+## ⚠⚠ WHAT CD ACTUALLY IS — measured against Anthropic's published material, 4 September 2026
+
+⛔ **CD IS A REAL SEAT WITH A REAL TOOL, NOT A METAPHOR.** ⚠ **Researched at Carl's instruction so
+the page's claim about it is accurate rather than aspirational.**
+
+**Claude Design (Anthropic Labs, launched April 2026; major update 17 June 2026):**
+
+- ⛔ **IMPORTS A DESIGN SYSTEM** from a GitHub repository, design files or uploads. ⚠⚠ **It then
+  builds FROM THOSE COMPONENTS and CHECKS ITS OWN OUTPUT against them, correcting deviations.**
+  ⛔ **This is a shift from the original blank-canvas approach and it is the load-bearing fact.**
+- ⛔ **BIDIRECTIONAL WITH CLAUDE CODE.** `/design-sync` pushes a local codebase's design system INTO
+  Claude Design; a finished design returns as a **handoff bundle** passed to Claude Code with a
+  single instruction — ⚠ **no screenshot, no rebuild, no interpretation of a spec.**
+- **Takes:** text, images, documents, codebase references, web captures.
+  **Produces:** prototypes, mockups, wireframes, flows, landing pages.
+
+### ⛔ THIS EXPLAINS CARL'S DESCRIPTION OF CD'S PLACE IN THE SYSTEM
+
+**Carl, earlier the same day:** *"CD will have a limited relationship with CA and CB. Prototypes can
+be built there and brought in."*
+
+⚠⚠ **THE HANDOFF BUNDLE IS THAT RELATIONSHIP, AND IT IS EXACTLY AS LIMITED AS HE SAID:**
+⛔ **DIRECTIONAL (CD → CA/CB), VIA AN ARTEFACT, NOT A CONVERSATION.** ⚠ **Which is the record's
+existing rule arriving with a mechanism: the seats do not wire to each other, work moves along a
+route.**
+
+### ⚠ AND IT MAKES ONE EXISTING COPY CLAIM LITERALLY TRUE
+
+⛔ ***"Before a line of code is written"*** **was a figure of speech in the drafts. IT IS NOW
+LITERAL** — the prototype exists as a designed artefact and is handed to the build. ⚠ **It is not
+described in a document and reconstructed by a developer.**
+
+⛔⛔ **THE CLIENT-FACING CLAIM THAT FALLS OUT OF THIS — and it is checkable, which the section
+needs:** ⚠ **their brand is imported, and the design work is built only from it. Not a blank canvas
+that happens to end up on-brand: a system where their colours, type and components are the only
+materials available, with the output checked against them automatically.**
+
+## ⛔⛔ SECTION 2 — THE FOUR CARDS' COPY, DRAFTED 4 September 2026
+
+⚠⚠ **STATUS: DRAFTED AND WORKED THROUGH WITH CARL IN CONVERSATION. NOT YET APPROVED ON A RENDERED
+BUILD.** ⛔ **Rule 7: a component is complete when Carl has confirmed it BY EYE. This copy has not
+been seen in the room yet, at the sizes it will be read at.**
+
+| position | card | words |
+|---|---|---|
+| **WALL LEFT** | **The Architect** | **57** |
+| **WALL RIGHT** | **The Builder** | **46** |
+| **FLOOR LEFT** | **The Designer** | **40** |
+| **FLOOR RIGHT** | **The Strategist** | **32** |
+
+### The Architect
+
+> Plans the build before any of it exists, and reviews it after. How the site is put together, what
+> happens when it grows, what breaks when something changes later — decided deliberately and written
+> down before anything is committed to it. The work is then checked by someone who did not do it.
+
+⚠ **The last sentence is the argument: CHECKED WORK IS WHAT A SOLO FREELANCER STRUCTURALLY CANNOT
+OFFER.**
+
+### The Builder
+
+> Builds what was approved. Not an interpretation of it, not a faster version of it, and not what
+> turned out to be convenient halfway through. Anything that would depart from the plan stops and
+> comes back for a decision, rather than quietly becoming the new plan.
+
+⚠ **From the record's *"Builds what was approved. Not what it felt like building."*** ⛔ **The phrase
+carrying the weight is *quietly becoming the new plan* — every client burned by a developer
+recognises it.**
+
+### The Designer
+
+> Your brand goes in first — your colours, your type, your marks — and the design is built only from
+> those. You see it, change it, and keep changing it until it is right. All of it before anything is
+> built.
+
+⛔⛔ ***"BUILT ONLY FROM THOSE"* IS THE IMPORTED-DESIGN-SYSTEM CLAIM, MADE WITHOUT NAMING THE TOOL.**
+⚠⚠ **It is the difference between *ends up on-brand* and *cannot be off-brand*, and it is TRUE —
+see the CD research section above.** ⛔ ***"Before anything is built"* is now LITERAL, not a figure
+of speech.**
+
+### The Strategist
+
+> The seat that works on this business as well as yours. How C2B runs, what it should build next,
+> what needs understanding before a decision gets made. The same method applied to itself.
+
+⛔ **CARL'S CORRECTION, AND IT CHANGES THE CLAIM: the Builder drafted *"works on this business
+RATHER THAN yours"*. Carl: *"should read 'this business as well as yours'."*** ⚠⚠ **"Rather than"
+EXCLUDES the client. "As well as" says the same seat serves both — truer to what CS is actually
+used for: understanding something before commissioning it, and that homework lands on the client's
+project.**
+
+⚠ **A VARIANT WAS OFFERED THAT BALANCED THE SECOND SENTENCE ACROSS BOTH BUSINESSES. Carl chose the
+version above.** ⛔ **The specificity of *"how C2B runs, what it should build next"* is what makes
+the claim believable; the balanced variant was vaguer, and vague is this card's failure mode.**
+
+### ⚠⚠ TWO PATTERNS IN THE COPY THAT A LATER EDITOR WOULD "FIX" — THEY ARE DELIBERATE
+
+1. ⛔ **THE WALL PAIR NEVER SAYS "YOU". THE FLOOR PAIR DOES, TWICE.** ⚠ **The front pair (CD, CS) is
+   what the client PARTICIPATES IN, so second person is honest there. The back pair (CA, CB) is work
+   done on their behalf, where "you" would be false intimacy.** ⛔ **Do not harmonise.**
+2. ⚠ **NO CARD READS AS A STEP.** No *first*, *then*, *finally*. ⛔ **Because the seats are
+   CONSULTED REPEATEDLY, not passed through once — the chair in the middle of the room.**
+
+### ⚠ AN OPEN ITEM THE BUILDER RAISED AND CARL HAS NOT RULED ON
+
+⛔ **THE DESIGNER IS 40 WORDS AGAINST THE BUILDER'S 46 — nearly as long, though the floor cards are
+meant to be visibly shorter AND smaller.** ⚠ **If the size difference is significant, CD may need to
+come down to ~30**, probably by cutting *"You see it, change it, and keep changing it until it is
+right"* to *"You change it until it is right."* ⛔ **NOT DECIDED. It should be judged on the rendered
+build, not in a word count.**
+
+### ⛔⛔ THE ARCHITECT — REWRITTEN 4 September 2026. THIS SUPERSEDES THE 57-WORD DRAFT ABOVE
+
+> **The technical foundation of every project. Operating directly inside the development
+> environment, the Architect collaborates on feature design, evaluates system logic, and solves
+> structural problems before a single line of production code is written. High-level ideas are
+> broken down into precise, modular components — a clear blueprint the Builder can execute exactly.
+> And the work is then checked by someone who did not do it.**
+
+**64 words.** ⚠ **Carl's verdict: *"Thats a lot better. Succint and not to technical."*** ⛔ **NOT YET
+SEEN ON A RENDERED BUILD — Rule 7 is not satisfied.**
+
+#### ⛔ WHY THE PREVIOUS DRAFT WENT — CARL CAUGHT A NEGATIVE
+
+**The 57-word draft read *"what breaks when something changes later"*.**
+
+⛔⛔ **CARL: *"'what breaks when something' is negative and an expectation is set up."*** ⚠⚠ **THIS
+IS THE SAME DEFECT STRUCK FROM THE HOMEPAGE ON 2 September — planting a problem so the service can
+solve it.** ⛔ **Four drafts of homepage card 4 were rejected for it (*"websites drift"*, *"a website
+does not change on its own"*).** ⚠ **Here it arrived as a subordinate clause rather than a premise,
+which is why it survived a draft.**
+
+#### ⚠ WHAT WAS TAKEN FROM CARL'S THREE OPTIONS, AND WHAT WAS LEFT
+
+**Carl supplied three drafts and asked for a combination.**
+
+**KEPT:**
+- ⛔ ***"Operating directly inside the development environment"*** — concrete, and it is the
+  differentiator from a consultant reviewing from outside.
+- ⛔ ***"Before a single line of production code is written"*** — ⚠ **literally true, and it pairs
+  with the Designer's *"before anything is built"*.**
+- **The modular-components sentence** — the actual job, said plainly.
+- ***"Collaborates"*** — ⚠ **carries the chair-in-the-middle idea without explaining it.**
+
+**LEFT OUT, and the reasons are rules already on the record:**
+- ⛔ ***"Bulletproof"*, *"rock-solid"*** — ⚠⚠ **ASSERT WHAT THE PAGE SHOULD DEMONSTRATE. Same defect
+  as *"cutting-edge execution with uncompromised artistry"*, struck from §1 (D-072).**
+- ⛔ ***"Absolute speed, precision, and zero wasted effort"*** — a stack of superlatives, ⚠ **and
+  SPEED IS OFF-MESSAGE: the Builder's card says work STOPS and comes back for a decision.**
+- ⛔ ***"Where strategy turns into structural logic"*** — ⚠⚠ **implies CS → CA is a PIPELINE. Carl
+  ruled against linear framing the same day (the chair).**
+- ***"Bring the vision to life"*** — the weakest phrase of the three.
+
+**RESTORED, because all three of Carl's options dropped it:**
+- ⛔⛔ ***"And the work is then checked by someone who did not do it."*** ⚠⚠ **THE CHECKED-WORK
+  ARGUMENT IS THE STRONGEST CLIENT-FACING CLAIM ON THE CARD — what a solo freelancer STRUCTURALLY
+  cannot offer.**
+
+#### ⚠ TWO OPEN ITEMS ON THIS CARD
+
+1. ⚠ ***"Solves structural problems"* retains a mild negative.** ⛔ **Judged acceptable because it
+   describes WORK BEING DONE, not a prediction about the client's asset** — unlike *"what breaks"*.
+   ⚠ **Fallbacks if Carl disagrees on the rendered build: *"structural questions"* or *"resolves
+   structural decisions"*.**
+2. ⛔ **AT 64 WORDS IT IS THE LONGEST CARD AND THE GAP TO THE DESIGNER (40) IS NOW 24 WORDS.**
+   ⚠ **Consistent with CA/CB carrying the most copy and the wall cards being larger — but the
+   balance is a matter for the rendered build.**
+
+### ⛔⛔ THE BUILDER — REWRITTEN 4 September 2026. SUPERSEDES THE 46-WORD DRAFT
+
+> **Where the approved plan becomes the site. Stationed in the same environment as the Architect,
+> the Builder drafts the implementation step by step, then passes it back for review and amendment
+> before any production code is written. Only once it is agreed does the work begin. The plan is
+> verified against the work as it goes, so the site that gets built is the site that was approved.**
+
+**68 words** — ⚠ **against the Architect's 64. The wall pair is balanced, which suits two cards at
+the same size side by side.** ⛔ **NOT YET SEEN ON A RENDERED BUILD.**
+
+#### ⛔⛔ THE CLOSING LINE WAS REWRITTEN TWICE AND CARL RULED ON BOTH — the lesson is in the sequence
+
+**Draft 1, the Builder's:** *"Anything that would depart from the plan stops and comes back for a
+decision, rather than quietly becoming the new plan."*
+
+⛔ **CARL: *"This can and does happen as we know but we must phrase it differently. We are trying to
+sell a product as well as ourselves. Language is important."*** ⚠⚠ **THE MECHANISM WAS RIGHT AND THE
+FRAMING WAS WRONG — *departs*, *stops*, *quietly becoming* are all phrased FROM THE FAILURE END. A
+client reads it and pictures a project going off the rails, even though the sentence exists to say
+it cannot.** ⛔ **SAME DEFECT AS *"what breaks"* ON THE ARCHITECT'S CARD, CAUGHT THE SAME SESSION.**
+
+**Carl then supplied the direction: *"Ypu want to mention loop verification? Plans are monitored."***
+
+**Draft 2 offered three closings. Carl chose C and gave a reason that improves on the choice:**
+
+> ⛔ ***"id go with C. B has a negative in it and approved is better than monitored. Approval comes
+> after monitoring."***
+
+⚠⚠ **THAT IS THE SHARPER POINT AND IT GENERALISES: *MONITORED* IS THE PROCESS; *APPROVED* IS THE
+OUTCOME THE CLIENT CARES ABOUT.** ⛔ **Naming the outcome is stronger than naming the surveillance
+that produced it.** ⚠ **Recorded as a copy rule for the rest of the site.**
+
+⚠ **The rejected B read *"any change is a decision taken together rather than one taken alone"* —
+it names WHO DECIDES, which is the real client anxiety, but *"rather than one taken alone"* is a
+negative.**
+
+#### ⚠ THE CARD BRACKETS ITSELF
+
+⛔ **It opens on *the approved plan* and closes on *the site that was approved*.** ⚠ **That is what
+makes it read as a CLOSED LOOP rather than a list of steps.**
+
+#### ⚠ WHAT WAS TAKEN FROM CARL'S THREE OPTIONS
+
+**KEPT:** the plan-review loop (all three had it — it is `handoff-protocol.md` §2.5 and it is the
+differentiator); *"stationed in"*, pairing with the Architect's *"operating directly inside"*;
+⛔ **option 3's conditional *"Only after / Only once"* — the conditional IS the point.**
+
+**CUT, per rules already on the record:**
+- ⛔ ***"Flawless"*, *"absolute precision"*, *"uncompromised quality"*, *"structural perfection"*** —
+  assert what the page should demonstrate (D-072).
+- ⛔ ***"Brings the bespoke system to life"*** — ⚠ **the same phrase was already cut from the
+  Architect's card as *"bring the vision to life"*.**
+- ***"The engine of execution"*, *"where plans become reality"*** — openers that say nothing.
+- ⛔ ***"High-performance architecture"*** — ⚠ **wrong seat: the Builder produces CODE, not
+  architecture.**
+- ⚠ ***"Meticulous"/"meticulously"*, in all three** — a claim about CARE rather than a description
+  of a MECHANISM. ⛔ **The mechanism proves the care; the adjective asks to be believed.**
+
+#### ⛔ "IDE" IS NOT ON THE PAGE — and *"the same environment as the Architect"* does extra work
+
+⚠ **All three of Carl's options said *IDE*.** ⛔ **It is jargon a client will not parse.** ⚠⚠ **And
+*"the same environment as the Architect"* answers a question a sceptic actually has — *are these
+just four chatbots?* — because being in one environment is WHAT MAKES THE REVIEW LOOP POSSIBLE.**
+
+#### ⛔ "LOOP VERIFICATION" STAYS OFF THE PAGE
+
+⚠ **Carl raised it as a candidate.** ⛔ **It is accurate internally but it is SYSTEM LANGUAGE, and
+the section's rule is WHAT THE CLIENT GETS, not how the plant is wired (Carl's ruling, 1 September).**
+⚠ ***"The plan is verified against the work"* says the same thing in words a client owns.**
+
+### ⛔⛔ THE BUILDER — FINAL FORM, 4 September 2026. SUPERSEDES THE 68-WORD VERSION ABOVE
+
+> **Where the approved plan becomes the site. Stationed in the same environment as the Architect,
+> the Builder drafts the implementation step by step, then passes it back for review and amendment
+> before any production code is written. Each piece of work has a declared scope, and the Builder
+> cannot reach outside it. Code is only good when it stays within the brief. The plan is verified
+> against the work as it goes, so the site that gets built is the site that was approved.**
+
+**84 words** — ⚠ **against the Architect's 64. The pair is no longer balanced, and that is accepted:
+this card carries the section's hardest claim.** ⛔ **NOT YET SEEN ON A RENDERED BUILD.**
+
+#### ⛔⛔ WHAT CHANGED AND WHY — CARL'S RULING ON WHAT THE SECTION IS ACTUALLY FOR
+
+**CUT: *"Only once it is agreed does the work begin."*** ⚠ **A THIRD restatement of the loop — the
+sentence before it already says the plan goes back for review.**
+
+**WHAT REPLACED IT, and this is Carl's instruction verbatim:**
+
+> ⛔ ***"what we should mention is the governance or constriants. Talking and planning is important —
+> building the product is why we are here. We need to ensure that our AI 'doesnt run away with
+> itself' It is disciplined. Not just that it writes good code but this is why it writes good code
+> in terms of a project."***
+
+⚠⚠ **THIS IS THE ONE THING ON THE PAGE A SCEPTIC ACTUALLY NEEDS ANSWERED. Everyone has heard that AI
+writes decent code. NOBODY BELIEVES IT STAYS ON TASK.** ⛔ **The scope constraint is the answer, and
+it was missing from every draft.**
+
+⚠ **NOTE WHAT IS *NOT* ON THE PAGE: the word *disciplined*.** ⛔ **It ASSERTS the quality instead of
+showing the mechanism** — the same defect as *bulletproof* and *meticulous*, both already cut.
+⚠⚠ **DESCRIBING THE BOUNDARY IS THE PROOF OF DISCIPLINE.**
+
+#### ⛔⛔ THE CONSTRAINT SENTENCE — CARL REWROTE IT AND THE REASON IS A GENERAL RULE
+
+**The Builder drafted: *"good code is not the hard part; staying inside the brief is."***
+
+⛔ **CARL: *"the sentiment is good, the description is not. We shouldnt admit that things can be
+hard, we want clients to have confidence in us."*** ⚠⚠ **CONCEDING DIFFICULTY INVITES A CLIENT TO
+WONDER WHETHER YOU ARE UP TO IT.**
+
+**His replacement, and he named its form: *"Code is only good when it stays with the brief." A
+statement.***
+
+⛔⛔ **IT IS STRONGER THAN WHAT IT REPLACED BECAUSE IT REDEFINES *GOOD* RATHER THAN RANKING TWO
+DIFFICULTIES.** ⚠ **Code that leaves the brief is not good code that went astray — it is not good
+code.** ⛔ **And it matches the homepage register rule (D-067): statements do not hedge, they
+define.**
+
+⚠ ***WITHIN*, NOT *WITH*** — Carl's choice on the Builder's query. ⛔ **It pairs with *"cannot reach
+outside it"* in the clause before: a boundary, not fidelity.**
+
+#### ⚠ THE CARD'S SHAPE — four moves, and the third is the one that lands
+
+1. **What it is** — *where the approved plan becomes the site*
+2. **How the plan is made** — drafted, returned for review and amendment
+3. ⛔ **THE CONSTRAINT** — *"Code is only good when it stays within the brief."* ⚠⚠ **The only flat
+   statement on the card, and therefore the line that stands out**
+4. **The verification** — *the site that gets built is the site that was approved*
+
+⚠ **It still brackets itself: opens on *the approved plan*, closes on *the site that was approved*.**
+
+### ⛔⛔ THE DESIGNER — FINAL FORM, 4 September 2026. SUPERSEDES THE 40-WORD DRAFT
+
+> **Your brand is the material. Typography, colour, assets and tone are taken from what you already
+> have and treated as the baseline — not a blank page, and not a template. From there the design is
+> elevated into a bespoke prototype that sets the visual direction before any coding begins.**
+
+**49 words.** ⛔ **Sits properly below the wall pair (CA 64, CB 84) — the floor cards read lighter,
+as designed.** ⚠ **NOT YET SEEN ON A RENDERED BUILD.**
+
+#### ⛔⛔ THE TOOLING IS NOT NAMED, AND THREE DRAFTS HAD TO BE STRIPPED OF IT
+
+⚠⚠ **ALL THREE OF THE OPTIONS CARL SUPPLIED NAMED "Claude Design" OUTRIGHT**, and variously "IDE",
+"HTML/CSS", "development environment", "pipeline", "design-system bundles". ⛔ **STRUCK — Carl's own
+ruling the same session: the cards carry THE ROLE, NOT THE PRODUCT.**
+
+⚠ **This is worth recording because the drafts were otherwise good: the tool-naming came back
+automatically once the seat was researched.** ⛔ **The research belongs in the record; it does not
+reach the page.**
+
+#### ⚠ WHAT WAS TAKEN FROM THE OPTIONS, AND WHAT WAS CUT
+
+**KEPT:** the extraction list (typography, colour, assets, tone) — concrete and true; ⛔ **"BASELINE"
+— the best word in the three options, carrying the starting-point idea in one noun**; *"elevated"*
+and *"bespoke prototype"*; *"before coding begins"*, ⚠ **which chains with the Architect's and
+Builder's *"before a single line of production code"*.**
+
+**CUT, per rules applied all session:**
+- ⛔ ***"Creative engine"*, *"where your current brand meets its modern potential"*, *"the bridge
+  between your current identity and a premium future"*** — slogans. ⚠⚠ **AND *BRIDGE* IS A TAKEN
+  WORD: §1 owns it.**
+- ⛔ ***"Seamless"*** — assert-don't-demonstrate. **Cut three times now across the four cards.**
+- ***"Deeply analyzing"*, *"intelligently analyzes"*** — adverbs claiming care.
+- ⛔ ***"Development environment"*** — ⚠ **the Architect and Builder own that phrase; reusing it here
+  weakens theirs.**
+- ⛔ ***"Premium"*** — **D-069: mentioned once it is there, twice it reinforces, three times it
+  labours the point.** ⚠ **Already twice on the homepage.**
+- ***"High-fidelity"*, *"locking in a visual strategy"*** — internal language.
+
+#### ⛔⛔ TWO PHRASES CARL KILLED, AND THE REASONS GENERALISE
+
+**1. *"changed as often as you like"*** — ⛔ **Carl: *"we dont want a client that is constantly
+iterating. their site should act as a basis in which to develop in updating ideas, intoducing new
+ones etc."*** ⚠⚠ **THE PHRASE INVITES OPEN-ENDED REVISION and frames the prototype as something to
+be worried at rather than settled.** ⛔ **Refinement has a purpose and an end.**
+
+**2. *"a working prototype you can use"*** — ⛔ **Carl: *"is not a good phrase. use for what?"***
+⚠ **Empty verb. The honest answer is *to see and judge*, not to operate.**
+
+#### ⚠⚠ "A REMAKE, A COVER VERSION" — CARL'S DESCRIPTION, DELIBERATELY KEPT OFF THE PAGE
+
+> ⛔ ***"CD is a starting point. Takes what is there, updates it and then is developed further by Ca
+> and CB. Its a remake, a cover version."***
+
+⚠⚠ **THIS IS THE CLEAREST DESCRIPTION OF THE SEAT ANYONE HAS WRITTEN — the song is theirs, the
+arrangement is new.** ⛔ **It is the DAW model arriving in client-facing terms.**
+
+⛔ **IT IS NOT ON THE PAGE, AND THAT IS A JUDGEMENT, NOT AN OVERSIGHT:** ⚠ **it is an ANALOGY, and a
+client who does not think in records may read it as flippant about their business.** **The card
+makes the same point by exclusion instead — *not a blank page, and not a template* — which
+pre-empts the two things a client actually fears.**
+
+#### ⛔⛔ THE NEW-BUSINESS CASE IS DELIBERATELY ABSENT — CARL'S RULING
+
+**The Builder drafted a closing sentence covering clients with no existing site** (*"A new business
+starts a step earlier: the identity is established first…"*), on the ground that *"what you already
+have"* assumes a digital footprint.
+
+⛔ **CARL: *"i dont want to mention new business, that was for your understanding. The starting point
+will be the same for all clients 'want a new site'. If it is a new business they will need extra
+guidance and care in practice. No need to mention it in the CD description."***
+
+⚠⚠ **THE CARD DESCRIBES ONE PROCESS. A new business simply needs more of Carl's time WITHIN it.**
+⛔ **Saying so on the page would SEGMENT THE AUDIENCE for no gain.** ⚠ ***"What you already have"* is
+deliberately loose — it covers a full existing site or a logo and one colour, without the card
+having to distinguish them.**
+
+### ⛔⛔ THE STRATEGIST — FINAL FORM, 4 September 2026. SUPERSEDES THE 32-WORD DRAFT
+
+> **Every other seat is pointed at the website. This one is pointed at the business it exists to
+> serve — connected to the things the business actually runs on, and answering from those rather
+> than from general knowledge. It advises only. Nothing it recommends becomes work without a
+> decision, and nothing it touches is the site itself.**
+
+**55 words.** ⚠ **Sits between the Designer (49) and the Architect (64).** ⛔ **NOT YET SEEN ON A
+RENDERED BUILD.**
+
+#### ⛔⛔ THE DEFINITION CAME FROM CARL'S ACTUAL INSTRUCTION SET, AND IT CORRECTED THE BUILDER TWICE
+
+**Carl supplied CS's real project instructions.** ⚠⚠ **They are the source of truth for what this
+seat is, and the Builder had it wrong twice before seeing them.**
+
+**WRONG READING 1 — "a knowledge seat, where you go to understand something."** ⛔ **The research is
+a CONSEQUENCE, not the definition.**
+
+**THE ACTUAL DEFINITION, from the instructions:** ⛔⛔ ***"You are the only surface pointed at PROBLEM
+SPACE rather than solution space… You are pointed at the business the website exists to serve.
+Start from what is the problem, and is building anything even the answer — not from what to
+build."***
+
+⚠ **THE ORIGINAL RECORD LINE — *"is a new website even the answer"* — WAS RIGHT ALL ALONG.** ⛔ **It
+simply was not the whole seat.**
+
+**WRONG READING 2 — "it answers from a standing record."** ⚠⚠ **PASSIVE. A LIBRARY.** ⛔ **Carl then
+showed the connector surface: 2,381 connectors plus plugins and skills — CRM, ads platforms,
+prospect data, calendar, accounts.** ⚠ **CS can be pointed at LIVE BUSINESS SYSTEMS, not just at
+uploaded documents.** ⛔ **The card now says *"connected to the things the business actually runs
+on"*.**
+
+#### ⛔⛔ CARL'S POINT, AND IT IS THE ANSWER TO THE SCEPTIC'S QUESTION
+
+> ⛔ ***"Projects is more than a source of information. Its how we use it that is important."***
+
+⚠⚠ **THE CONNECTORS ARE AVAILABLE TO ANYONE. WHAT IS NOT OFF-THE-SHELF IS THE INSTRUCTION SET** —
+problem space not solution space; information only; **no authority over the Architect or Builder;
+no channel to them at all**; memory holds context but NEVER conclusions, because *"memory cannot be
+audited"*.
+
+⛔ **SO THE DIFFERENCE BETWEEN CS AND AN ORDINARY CLAUDE CHAT IS NOT THE KNOWLEDGE. IT IS THE
+CONSTITUTION.** ⚠ **That is the same argument the whole section makes, arriving in one seat.**
+
+#### ⚠ THE CLOSE CARRIES TWO CONSTRAINTS, AND THEY ARE THE ANTI-RUNAWAY CLAIM
+
+⛔ ***"Nothing it recommends becomes work without a decision"*** — **from *"Your output is INPUT, NOT
+INSTRUCTION"*.** ⚠⚠ **THE SEAT THAT THINKS ABOUT STRATEGY CANNOT COMMISSION ANYTHING.**
+
+⛔ ***"Nothing it touches is the site itself"*** — **from the instructions' out-of-scope list: any
+code, config or repository file.** ⚠ **It pairs with the Builder's declared scope: two seats, two
+boundaries, same argument.**
+
+#### ⛔ DELIBERATELY NOT SPECIFIC — CARL'S REASONING, AND IT IS FORWARD-LOOKING
+
+> ⛔ ***"We dont have to get specific because i suspect i will use it for much more than a Strategist
+> in the future."***
+
+⚠⚠ **THE CARD DESCRIBES A POSITION, NOT A TASK LIST — so it stays true as the seat widens.** ⛔ **A
+card listing what CS does today would need rewriting the first time Carl used it for something
+else.** ⚠ **Carl's earlier instruction the same session — *"No examples only principles"* — is the
+same rule stated ahead of the reason.**
+
+#### ⚠⚠ ONE CLAIM AHEAD OF THE FACT — FLAGGED, NOT RESOLVED
+
+⛔ ***"Connected to the things the business actually runs on"* IS PRESENT TENSE.** ⚠ **The connector
+surface is a CAPABILITY; whether CS is currently wired to any live system was raised with Carl and
+NOT answered.** ⛔⛔ **THIS SECTION IS WHERE A SCEPTIC CHECKS (D-073). If nothing is connected yet,
+the tense is a problem and the fix is small — *"can be connected to"*.** ⚠ **Carry this to the
+rendered-build review.**
+
+## ⛔⛔ ALL FOUR CARDS — PROVISIONALLY APPROVED. Carl, 4 September 2026
+
+> ⛔ ***"ok, copy is provisionally approved. It has to work in finite space, it may need tweaking."***
+
+⚠⚠ **PROVISIONAL IS A DEFINED STATUS, NOT A SOFT APPROVAL** (`context-rules.md`): *in place,
+deliberately untuned, awaiting the mastering pass (D-035). Not "unapproved" and not a gap —
+reviewers must not raise a missing approval entry for provisional work.*
+
+⛔ **PROVISIONAL → APPROVED IS CARL ONLY.** ⚠ **The Builder cannot promote this, and neither can a
+successful build.**
+
+| card | position | words | status |
+|---|---|---|---|
+| **The Architect** | wall left | **64** | PROVISIONAL |
+| **The Builder** | wall right | **84** | PROVISIONAL |
+| **The Designer** | floor left | **49** | PROVISIONAL |
+| **The Strategist** | floor right | **55** | PROVISIONAL |
+
+### ⚠⚠ WHY IT IS PROVISIONAL AND NOT APPROVED — THE COPY HAS NOT MET ITS CONTAINER
+
+⛔ **A WORD COUNT IS NOT A FIT.** ⚠ **Cards set in 3D space have LESS USABLE ROOM than a flat count
+implies:**
+
+- ⛔ **The wall cards LOSE WIDTH AS THEIR FAR EDGE COMPRESSES** — and this was flagged as a
+  *legibility budget* on 3 September: **the more convincingly a card lies on the wall, the more its
+  far edge compresses, and CA and CB carry the most copy.** ⚠⚠ **THE BUILDER'S CARD IS THE LONGEST
+  AT 84 WORDS AND SITS ON THE RIGHT WALL, WHICH IS THE ONE THAT GENUINELY RECEDES.**
+- ⚠ **The floor cards LEAN BACK**, which foreshortens them vertically.
+- ⛔ **The room is DARK and the glass is FROSTED — contrast, not just size, decides legibility.**
+
+### ⛔ WHAT "TWEAKING" MAY MEAN, SO IT IS NOT MISREAD AS A REWRITE
+
+⚠ **The ARGUMENTS are settled and each card's reasoning is recorded above.** ⛔ **Tweaking means
+FITTING — trimming a clause, shortening a list — NOT re-opening what a card claims.**
+
+⚠⚠ **AND THE LINES THAT MUST SURVIVE A TRIM ARE NAMED, because they are the ones a length pass
+would reach for first:**
+
+| card | ⛔ DO NOT CUT | why |
+|---|---|---|
+| **CA** | *"the work is then checked by someone who did not do it"* | the checked-work argument — what a solo freelancer structurally cannot offer |
+| **CB** | *"Code is only good when it stays within the brief."* | ⛔ **Carl wrote this line himself.** The only flat statement on the card |
+| **CD** | *"not a blank page, and not a template"* | pre-empts the two things a client fears |
+| **CS** | *"Nothing it recommends becomes work without a decision"* | the anti-runaway claim |
+
+⚠ **If a card cannot fit while keeping its named line, the CARD SIZE is wrong, not the line.**
+
+### ⚠ THE ORDER OF OPERATIONS THIS IMPLIES
+
+⛔ **The copy cannot be finalised before the cards exist, and the cards cannot be sized before the
+copy exists.** ⚠⚠ **THAT IS NOT CIRCULAR — it is why the copy is PROVISIONAL: it is a first pass
+that gives the layout something real to size against, and it comes back for a fit once there is a
+container.**
+
+## ⛔⛔ THE WALL GEOMETRY — MEASURED 4 September 2026. THE 2° FIGURE WAS THE WRONG FEATURE
+
+**Carl's instruction:** *"Lets talk about card shape. Notice i say shape first and not geometry…
+The shape should be a rectangle, the shorter sides on the ends. We should start by 'drawing' it on
+the wall. Look where the wall meets the ceiling. The straight lines can be used as guides."*
+
+### ⛔⛔ THE CORRECTION — AND IT EXPLAINS THE FAILED skewY(2deg)
+
+⚠⚠ **THE RECORDED 2° WAS MEASURED OFF A MONITOR TOP AND A PICTURE-FRAME BOTTOM — OBJECTS SITTING
+NEAR THE WALL, NOT THE WALL'S OWN GEOMETRY.** ⛔ **The ceiling junction is the wall's true line.**
+
+| line | measured angle |
+|---|---|
+| **LEFT wall / ceiling** | ⛔ **3.7°**, falling toward the corner |
+| **RIGHT wall / ceiling** | ⛔ **~6.7°**, rising away from the corner |
+| **LEFT wall / desk back edge** | ⛔ **−8.8°** (rising left-to-right, because it is BELOW the horizon) |
+
+⛔⛔ **SO THE WALL WAS NEVER THE PROBLEM. `skewY(2deg)` WAS UNDER-ANGLED BY MORE THAN HALF — AND,
+MORE IMPORTANTLY, IT WAS THE WRONG TRANSFORM ENTIRELY.**
+
+### ⚠⚠ A SKEW CANNOT PRODUCE THIS SHAPE. THIS IS THE LOAD-BEARING FINDING
+
+⛔ **A SKEW SLIDES ONE EDGE AND KEEPS THE TWO HORIZONTALS PARALLEL — it produces a PARALLELOGRAM,
+where both ends are the same height.** ⚠ **That is why it read flat: it is flat.**
+
+⛔⛔ **WHAT A RECTANGLE ON A RECEDING WALL ACTUALLY LOOKS LIKE IS A TRAPEZOID:**
+
+- **Top and bottom edges are NOT parallel** — they CONVERGE, because both point at the same
+  vanishing point.
+- ⛔ **The two ends are VERTICAL** (verticals stay vertical in this view) **and of DIFFERENT
+  HEIGHTS** — the far end is shorter.
+- ⚠ **Above the horizon the top edge falls; below it, the bottom edge rises. A card straddling the
+  horizon has edges going opposite ways — which is exactly the 3.7° / −8.8° pair measured above.**
+
+⚠ **Carl's reference image (white text painted on a brick wall, shot at an angle) is this shape.**
+
+### ⛔ THE LEFT WALL'S VANISHING POINT — AND HOW TO USE IT
+
+**Derived by intersecting two lines that are parallel in reality (ceiling junction × desk back
+edge), then cross-checked against a third (ceiling × skirting):**
+
+| method | VP |
+|---|---|
+| ceiling × desk back edge | **(3905, 442)** |
+| ceiling × skirting | **(3480, 414)** |
+
+⛔ **THE HORIZON IS y ≈ 420–440. Both methods agree to within 28px and THIS IS THE NUMBER THAT
+MATTERS.**
+
+⚠⚠ **THE VP's X IS ±400px AND IS NOT BUILD-GRADE.** ⛔ **A vanishing point far off-frame is extremely
+sensitive to small reading errors, and these lines were read BY EYE off a 256px grid overlay.**
+⛔⛔ **DO NOT INHERIT (3905, 442) AS A CONSTANT.** ⚠ **It is good enough to DRAW THE SHAPE and judge
+whether it reads; it is not good enough to be a final number.**
+
+**HOW TO CONSTRUCT THE CARD, once the near end is chosen:**
+
+1. Draw the **near (left) end** as a VERTICAL at the chosen x, from y-top to y-bottom.
+2. Run the **top edge** from that top point toward the VP.
+3. Run the **bottom edge** from that bottom point toward the VP.
+4. Close with the **far (right) end** as a VERTICAL.
+
+⛔ **The convergence and the far end's shorter height fall out automatically. Nothing is eyeballed
+and no angle is applied twice.**
+
+### ⚠ WHAT IS STILL UNMEASURED
+
+⛔ **The RIGHT wall's vanishing point** — needed for CB. ⚠ **It will be a DIFFERENT point, off-frame
+LEFT, because that wall recedes the other way.**
+⛔ **The FLOOR plane** — needed for CD and CS, their lean angle and their contact shadows.
+⚠ **The corner is at x ≈ 1230 (source), read off the grid overlay.**
+
+## ⛔⛔ THE WALL GEOMETRY — THE BUILDER COULD NOT MEASURE IT AND WASTED A SESSION. 4 September 2026
+
+⚠⚠ **THIS IS THE MOST IMPORTANT PROCESS RECORD OF THE DAY. READ IT BEFORE ATTEMPTING ANY
+MEASUREMENT ON A PHOTOGRAPH.**
+
+### ⛔ WHAT HAPPENED
+
+**The Builder produced FOUR different values for the angle of the left wall's ceiling seam:**
+
+| attempt | value | method |
+|---|---|---|
+| 1 | **2.0°** | two objects near the wall (a monitor top, a picture frame) — ⚠ NOT the wall's own line |
+| 2 | **3.67°** | two points read by eye off a grid overlay |
+| 3 | **5.19°** | automated gradient detection — median residual **101px**, i.e. garbage |
+| 4 | **2.31° / 2.15° / 2.11°** | pixel detection on a Playwright screenshot — three runs, three answers, on an unchanged image |
+
+⛔⛔ **EACH TIME, THE BUILDER THEN CHECKED ITS LINE AGAINST ITS OWN FIGURE AND REPORTED
+AGREEMENT.** ⚠⚠ **THE CHECK COULD NEVER FAIL, BECAUSE THE MEASUREMENT AND THE CHECK SHARED THE
+SAME ERROR.** ⛔ **Same family as `verify/one-context.mjs` and the harness that shared a constant
+with the fix (`context-rules.md`) — an instrument working perfectly and still misleading.**
+
+### ⛔⛔ CARL'S TEST — IT FOUND THE FAULT IN ONE MOVE
+
+> ⛔ ***"take the red line and move it up to where the ceiling meets the wall. DO NOT alter the
+> angle."***
+
+⚠⚠ **IF A LINE IS TRULY PARALLEL TO THE SEAM AT A CONSTANT OFFSET, LIFTING IT BY THAT OFFSET LANDS
+IT ON THE SEAM ALONG ITS WHOLE LENGTH.** ⛔ **It did not. It diverged visibly — tight at the corner,
+wide at the left.**
+
+⛔ **THE TEST DOES NOT SHARE THE BUILDER'S ERROR, because the reference is the actual ceiling in the
+actual image and the verdict is Carl's eye.** ⚠ **Carl: *"i knew this 30 mins ago because ive got
+eyes and i could see the perspective is wrong."***
+
+⛔⛔ **THE GENERAL RULE, AND IT IS THE ONE TO CARRY FORWARD: WHEN THE BUILDER DERIVES A VALUE FROM AN
+IMAGE, THE VERIFICATION MUST NOT USE THAT VALUE.** ⚠ **Lift it, overlay it, land it on the feature
+itself — a test whose reference is the artefact, not the arithmetic.**
+
+### ⚠ WHY THE PIXEL DETECTOR LIED, SPECIFICALLY
+
+⛔ **It scanned each column for the steepest luminance drop in a fixed band.** ⚠ **The wall carries
+bright pools from the downlights, so in some columns the strongest transition IS NOT THE SEAM.** The
+fit then draws a confident straight line through points that are not all on the boundary **and
+reports a small residual, because the wrong points are consistent with each other.**
+
+### ⛔ WHAT WAS ESTABLISHED THAT IS STILL GOOD
+
+⚠ **These came from Carl's eye, by bisection, and are NOT contaminated:**
+
+- ⛔ **REF 1 — the corner where the two ceiling seams and the vertical wall junction converge.**
+  Three lines, one point. ⚠ **The one unambiguous feature in the room, and it is SHARED BY BOTH
+  WALLS — which is what makes "the same drop for CA and CB" mechanically true rather than something
+  to match up by hand.**
+- ⛔ **The vertical wall junction is at x1430** in the §2 SVG space (viewBox 2560x1707, `slice`),
+  confirmed by a full-height guide that tracked the corner top to bottom.
+- ⛔ **REF 2 at (1430, 410)** — Carl's chosen point down that vertical.
+- ⛔⛔ **THE DISTANCE REF 1 → REF 2 IS 155.** ⚠ **This is the drop from the ceiling at which the TOP
+  OF BOTH CARDS SITS.** Carl: *"that will be the distance from the ceiling that the top of both
+  cards will be."*
+
+⚠ **CAVEAT: those numbers are in the SVG overlay's space at the aspect ratio then on screen. The
+crop changes with the viewport.** ⛔ **They are a starting point for the pinning tool, not final.**
+
+### ⛔ THE SHAPE — SETTLED BY CARL AND NOT TO BE RE-LITIGATED
+
+⛔⛔ **IT IS A PARALLELOGRAM, NOT A CONVERGING TRAPEZOID.** Carl's diagram: *"The blue arrows are all
+the same distance. Once a top line is done and a bottom one parallel you only have to join them up
+with vertical lines."* ⚠ **Every gap — ceiling to top edge, top edge to bottom edge — is CONSTANT
+ACROSS THE SPAN, and the two ends are EQUAL IN HEIGHT.**
+
+⚠ **The Builder built converging trapezoids twice on the theory that perspective foreshortens the
+far end.** ⛔ **At this shallow an angle, this close to face-on, it does not — and that convergence
+is why every attempt read as a panel TIPPING AWAY from the wall rather than hanging on it.**
+
+⛔ **Carl's framing is the better guide: *"Remember we are hanging a painting/picture. IRL you do
+that face on and stand in the middle. make sure the top is horizontal. Not drooping down left or
+right."***
+
+### ⛔⛔ THE RESOLUTION — A 4-POINT PINNING TOOL AT `/proto/wall`
+
+⚠ **Carl brought in an external suggestion (CSS 3D transforms + a homography pinning tool) and
+ruled: *"take the code as help. change what you need to. the outcome is important to me, not the
+method."***
+
+⛔ **THE TOOL REMOVES THE BUILDER'S MEASUREMENT FROM THE LOOP.** Carl drags four corners to where he
+can SEE they belong; the homography is exact arithmetic from those points.
+
+⚠⚠ **ONE CLAIM IN THE SUPPLIED DIAGNOSIS WAS WRONG AND IS CORRECTED HERE:** it said the failure was
+2D-vs-3D thinking, and that CSS 3D transforms were the fix. ⛔ **The Builder's last line WAS
+mathematically parallel to the slope it had measured — THE SLOPE WAS WRONG.** ⚠ **`rotateY(50deg)`
+would have been guessed and mis-verified in exactly the same way. CHANGING THE TRANSFORM DOES NOT
+FIX A BLIND OPERATOR — removing the Builder's eye from the measurement does.** ⛔ **The sliders /
+corner-dragging half of that advice is the part that matters.**
+
+⚠ **FOUR CORRECTIONS WERE MADE TO THE SUPPLIED CODE, all real defects — the workspace must crop the
+image exactly as `/about` does (the draft's 800x600 `background-size: cover` box would have made
+every pinned corner land elsewhere), the image path did not exist, output is normalised to fractions
+as well as a matrix, and BOTH cards are pinned together because the equal-drop constraint cannot be
+held by pinning them one at a time.**
+
+⛔ **`/proto/wall` IS THROWAWAY. It is deleted once it has produced the numbers** — the D-053
+`?tealstrength=` pattern: an instrument that yields a value by eye, the value goes in the code, the
+instrument is retired.
+
+⚠⚠ **AND THE LIMIT IS STATED: the tool removes the Builder from MEASUREMENT, not from VERIFICATION.
+Only Carl can confirm the result sits on the wall.**
+
+---
+
+# ⛔⛔ HOW THE `/start` CARDS ACTUALLY WORK — CARL, 4 September 2026
+
+⚠⚠ **THE BUILDER LOOKED AT THE RENDERED CARDS AND READ THEM WRONG. Carl corrected it.** ⛔ **Recorded
+because the wall and floor cards are to be "variations on a theme" of these, and a wrong reading of
+the theme produces a wrong variation.**
+
+## ⛔ THE CARDS ARE WINDOWS ONTO A SHARED DRAPED TEXTURE — NOT COLOURED OBJECTS
+
+> ⛔ ***"the cards are three js geometry. the image gradient is whats 'draped' over all the cards.
+> The cards then act like a 'window'."***
+
+⚠⚠ **THE BUILDER HAD READ THE BLUE VEINING AS A MATERIAL PROPERTY — each card generating its own
+internal structure.** ⛔ **IT IS ONE CONTINUOUS GRADIENT IMAGE BEHIND ALL FIVE CARDS. Each card
+reveals ITS OWN PORTION of it.**
+
+⛔ **"WINDOW" IS LITERAL. The card is an APERTURE, not a tinted panel.** ⚠ **This is a genuinely
+different model from stock glassmorphism, where every panel independently blurs whatever happens to
+sit behind it. Here there is ONE cloth and five openings onto it.**
+
+⚠ **It explains what the Builder mistook for depth: the interiors look structured because they ARE
+— they show different parts of one image, so no two cards read the same.**
+
+### ⚠⚠ THE CONSEQUENCE FOR §2 — AND IT IS AN OPEN QUESTION, NOT A DECISION
+
+⛔ **A wall card on `/about` would need SOMETHING TO BE A WINDOW ONTO.** ⚠ **On `/start` it is the
+blue gradient. In the room the obvious candidate is THE PHOTOGRAPH ITSELF — the card as an aperture
+onto the wall behind it, which is a different thing from a panel sitting on top of it.**
+
+⛔ **NOT DECIDED. Raised so the drape is not simply copied across without asking what it should show.**
+
+⚠ **AND THE FLOOR CARDS BREAK THE MODEL ENTIRELY:** backlit transmission means light coming THROUGH
+from behind, so what is revealed is not a draped texture but **the light source itself, diffused by
+the glass.** ⛔ **Different mechanism. It is part of why the two treatments differ in kind.**
+
+## ⛔ THE ORBIT IS A TILTED ELLIPSE AND IT SPEEDS UP BEHIND
+
+> ⛔ ***"The light is on a tilted orbital ellipse. When it goes round the back it speeds up to affect
+> the front of the cards again."***
+
+⚠⚠ **THE SPEED IS NOT UNIFORM, AND THAT IS A DIRECTOR'S DECISION RATHER THAN A PHYSICAL ONE.** ⛔ **The
+light HURRIES THROUGH THE PART NOBODY SEES to get back to the part that matters.**
+
+⚠ **Same instinct as Carl's §2 instruction — *"the light doesnt have to stay on all the time. only
+when its pointing at a card and having some sort of interaction with it is important."*** ⛔ **The
+rig is directed, not simulated.**
+
+## ⛔⛔ THE SEND BUTTON IS CSS, AND ITS SHINE IS A FAKED RESPONSE TO THE WebGL LIGHT
+
+> ⛔ ***"the blue opal button is CSS. it was built with a small 'shine' on it. When the light is in
+> close proximity the shine intensifies as the orbital light 'affects it'. Which it cant but we can
+> fake it with illusion."***
+
+⚠⚠ **A DOM ELEMENT CANNOT RECEIVE A THREE.JS LIGHT. The intensity is computed from the light's
+DISTANCE and applied to a CSS value.** ⛔ **The illusion is that one lighting model governs the whole
+scene.**
+
+⚠ **THE TECHNIQUE HAS A DEPENDENCY WORTH STATING: the CSS element and the WebGL orbit must share a
+clock.** ⛔ **If they drift, the shine peaks at the wrong moment and the effect INVERTS — it reads as
+an unrelated animation rather than a response.**
+
+## ⛔⛔ THIS IS THE ROUTE FOR THE GOLD MARK — AND IT IS THE "ONE WORLD" IDEA
+
+> ⛔ ***"Depending where and how we put the gold mark we can create the same illusion that illustrates
+> the 'one world' idea."***
+
+⚠⚠ **THIS IS THE POINT, AND IT REFRAMES THE TECHNIQUE: THE FAKE IS NOT A SHORTCUT, IT IS WHAT MAKES
+AN ELEMENT BELONG TO THE SCENE.** ⛔ **One light; everything in the room responds to it, REGARDLESS OF
+WHAT IT IS MADE OF.** ⚠ **A viewer cannot tell which elements are meshes and which are DOM — and that
+indistinguishability IS the "same world" claim (Carl's clue on the §3 showroom screen:
+*"Connectivity. Same world"*).**
+
+### ⚠ IT BEARS DIRECTLY ON THE OPEN TRANSLUCENT/OPAQUE QUESTION
+
+⛔ **The mark's treatment and its IMPLEMENTATION are now linked:**
+
+| | |
+|---|---|
+| **TRANSLUCENT** | ⚠ it is a fifth piece of the same material; light passes THROUGH it. ⛔ **That is a transmission behaviour — it belongs in the WebGL scene as geometry.** |
+| **OPAQUE** | ⚠ it is the one thing in the room that is not glass; light FALLS ON it. ⛔ **That can be the CSS illusion — a DOM element whose brightness tracks the travelling light's proximity, staying out of the scene entirely.** |
+
+⛔⛔ **STILL CARL'S CALL AND STILL UNANSWERED.** ⚠ **What has changed today: the two options now differ
+in COST and STRUCTURE, not only in appearance. Opaque may cost no WebGL at all.**

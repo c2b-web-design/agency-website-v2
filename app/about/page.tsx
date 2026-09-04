@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Container from "@/components/layout/container";
 /* ⚠ THE `/about` NAV — a CLIENT component, deliberately kept in its own file so
    THIS page stays a static prerendered server component. ⛔ NOT `SiteHeader`:
@@ -166,6 +167,33 @@ export default function About() {
               is identical, the reason is different, and copying that page's
               explanation across would assert something untrue of this one. */}
           <div className="relative" style={{ height: 0 }}>
+            {/* ⚠⚠ THE MARK STAYS A PLAIN <img> AND THE SUPPRESSION IS A DECISION,
+                NOT AN OVERSIGHT — Carl, 4 September 2026. ⛔ THIS IS THE CANONICAL
+                STATEMENT OF THE REASON; the other three marks point back here
+                rather than repeat it.
+
+                ⚠ THE THREE ARE NOT IDENTICAL CASES, AND THE POINTER SAYS SO:
+                `app/start/page.tsx` x2 ARE nail-hung and take the whole argument
+                below. ⛔ `components/layout/site-header.tsx` IS IN FLOW (`h-10
+                w-auto`) and takes only the second half — no measured alignment is
+                at stake there, just an already-optimal PNG.
+
+                ⛔ THE REASON IS THE NAIL. This element is positioned by MEASURED
+                PIXEL CONSTANTS that Carl tuned by eye and that were verified
+                identical across `/`, `/start` and `/about` at both 1440 and 375 —
+                centre spread 0.0058px horizontal, 0.0000px vertical (D-065/D-066).
+                ⚠ `next/image` wraps its output and applies sizing of its own, so
+                adopting it here would put a measured, approved alignment at risk.
+
+                ⚠ AND THERE IS NOTHING TO WIN. The rule warns about LCP and
+                bandwidth; this is a small PNG that is already optimal, served on
+                every route. ⛔ The room image in section 2 IS worth optimising and
+                HAS been converted — the two cases were judged separately, which is
+                why this file now contains both an <img> and an <Image>.
+
+                ⚠ IF THE MARK'S POSITIONING EVER STOPS BEING PIXEL-MEASURED, THIS
+                SUPPRESSION LOSES ITS REASON and should be revisited. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/c2b-logo-mark.png"
               alt="C2B"
@@ -461,11 +489,43 @@ export default function About() {
 
           ⚠ IF THE CROP CHANGES, ANY CARD POSITIONS TUNED AGAINST IT GO STALE. */}
       <section id="roles" className="relative min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
-        <img
+        {/* ⚠⚠ `next/image`, AND IT IS THE FIRST USE IN THIS PROJECT — 4 September
+            2026. It replaces a plain <img> that shipped the full 2560px file to
+            every device.
+
+            ⚠⚠ MEASURED, NOT ESTIMATED — against the running server on 4 September:
+            the source is 459KB (470,280 bytes); a 1440 screen now receives 105KB
+            of WebP (−77%) and a 750px phone 22KB (−95%). ⛔ THE SAVING IS LARGEST
+            ON THE DEVICE WITH THE WORST CONNECTION, which is the whole argument.
+
+            ⛔ THE CROP IS UNCHANGED AND THAT IS THE POINT. `fill` + object-cover
+            resolves to the same framing the <img> produced; what changes is
+            DELIVERY (a responsive srcset, AVIF/WebP where supported), not which
+            part of the room is visible. ⚠ THE CARD POSITIONS TUNED AGAINST THIS
+            CROP — section 2's design, unbuilt — ARE THEREFORE UNAFFECTED. If that
+            ever stops being true, the warning above this block applies.
+
+            ⚠ `sizes="100vw"` because the image is full-bleed. Without it the
+            browser assumes 100vw anyway but Next generates only a 1x/2x srcset,
+            which would discard most of the benefit.
+
+            ⚠ NO `priority`: section 2 is below the fold, so native lazy loading
+            is correct here. ⛔ If the travelling-image idea ever lands and this
+            becomes visible from section 1, THIS DECISION INVERTS — priority
+            would then be right, and the LCP element would be this file.
+
+            ⚠ UNASSERTED: nothing in code checks that the rendered framing matches
+            what the <img> produced. It was reasoned from `fill` + object-cover
+            having the same semantics as w-full h-full object-cover, not measured
+            against a before/after screenshot. Verify by eye before tuning any
+            card position to it. */}
+        <Image
           src="/about-studio-source.jpg"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover"
+          fill
+          sizes="100vw"
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-neutral-950/25" />
 

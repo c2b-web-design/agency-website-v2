@@ -160,11 +160,38 @@ If repeated friction or a solved pattern creates a reusable lesson, recommend a 
 
 Distinguish between:
 - **New errors** caused by current work — fix before committing.
-- **Known pre-existing errors** — do not suppress, do not increase. **One** accepted lint error exists in `components/enquiry/enquiry-opening.tsx` (`react-hooks/set-state-in-effect`) — the reduced-motion media-query effect, which calls `setReducedMotion` and `setBeginActive` synchronously. **Verified by running `npm run lint` on 2 September 2026: `6 problems (1 error, 5 warnings)`.** Line numbers deliberately omitted — they shift with every edit above, and a stale baseline cannot be checked. Verify by running lint, not by trusting a recorded line number.
+- **Known pre-existing errors** — do not suppress, do not increase. **One** accepted lint error exists in `components/enquiry/enquiry-opening.tsx` (`react-hooks/set-state-in-effect`) — the reduced-motion media-query effect, which calls `setReducedMotion` and `setBeginActive` synchronously. **Verified by running `npm run lint` on 4 September 2026: `1 problem (1 error, 0 warnings)`.** Line numbers deliberately omitted — they shift with every edit above, and a stale baseline cannot be checked. Verify by running lint, not by trusting a recorded line number.
 
-  ⚠ **THE BASELINE PINS THE ERROR COUNT. THE WARNING COUNT IS RECORDED, NOT PINNED.** The one error above is the whole of what must not increase. **The five warnings are:** four `@next/next/no-img-element` (the gold mark, in `app/about/page.tsx`, `app/start/page.tsx` ×2 and `components/layout/site-header.tsx`) and one `@typescript-eslint/no-unused-vars` — `showBlue` in `app/start/page.tsx`. ⚠ **That last one sits in D-062/D-063 approved work and is the only warning that is not cosmetic: an unused state variable in the mark's colour journey may mean a transition is computed and never applied. Flagged to Carl, not fixed.**
+  ⚠⚠ **THE BASELINE IS NOW ZERO WARNINGS, AND THAT IS THE POINT OF IT.** ⛔ **ANY warning is now a
+  regression and is visible on sight** — no session has to re-derive whether a given count is
+  expected. **Taken to zero on Carl's instruction, 4 September 2026.**
 
-  ⚠⚠ **THIS FIGURE WAS STALE FOR SIX WEEKS AND THE STALENESS WAS ITSELF LOAD-BEARING.** It read `1 problem (1 error, 0 warnings)`, verified 24 July 2026 — true when written. The warnings arrived with later work and **every session since had to re-derive that the extra output was not a regression.** ⛔ **A recorded baseline that no longer matches the tool is worse than none: it makes a correct run look like a failure.** Corrected on Carl's instruction, 2 September 2026. **Nothing in code checks this figure — it goes stale silently and only a run of `npm run lint` can confirm it.**
+  **How the six warnings went, because the reasoning must survive the count:**
+  - ⛔ **The room image (`app/about/page.tsx`) was CONVERTED to `next/image`** — the one case with a
+    real win: the whole 2560px / **459KB** file was going to every device. ⚠ **MEASURED against the
+    running server, 4 September: a 1440 screen now gets 105KB of WebP (−77%) and a 750px phone gets
+    22KB (−95%).** ⛔ **The crop is unchanged; `fill` + `object-cover` alters delivery, not framing.**
+  - ⛔ **The four gold marks stay `<img>` and are SUPPRESSED BY DECISION, per-line.** ⚠ **The mark is
+    positioned by measured pixel constants Carl tuned by eye (D-065/D-066) and `next/image` wraps and
+    re-sizes its output** — there is nothing to win on a small, already-optimal PNG and an approved
+    alignment to lose. **The full reasoning lives at the mark in `app/about/page.tsx`**; the other
+    three point to it. ⚠ **`site-header.tsx`'s mark is in flow, not nail-hung, so only half that
+    argument applies there — its comment says so.**
+  - ⛔ **`showBlue` was DELETED, and it was dead.** ⚠⚠ **The previous baseline flagged it as
+    possibly-not-cosmetic — *"a transition computed and never applied"*. THAT CONCERN IS ANSWERED AND
+    WAS UNFOUNDED:** it was declared once and referenced nowhere but the comment explaining why a
+    two-state boolean could not choose between the two radials. **`goldMask` superseded it with three
+    states derived from `stage`.** ⛔ **The explanatory comment is kept; only the binding went.**
+
+  ⚠ **A SUPPRESSION IS A DEBT, NOT A FIX.** Four `eslint-disable-next-line` comments now exist. **Each
+  names its reason at the line.** ⛔ **If the mark ever stops being positioned by measured pixels, the
+  suppressions lose their justification and should be revisited rather than inherited.**
+
+  ⚠⚠ **THIS FIGURE WAS STALE FOR SIX WEEKS AND THE STALENESS WAS ITSELF LOAD-BEARING.** It read `1 problem (1 error, 0 warnings)`, verified 24 July 2026 — true when written. The warnings arrived with later work and **every session since had to re-derive that the extra output was not a regression.** ⛔ **A recorded baseline that no longer matches the tool is worse than none: it makes a correct run look like a failure.** Corrected on Carl's instruction, 2 September 2026, and **corrected again on 4 September** — that
+  2 September figure had itself gone stale within two days, when the room image added a sixth warning.
+  ⚠⚠ **TWICE IN A WEEK IS THE ARGUMENT FOR ZERO.** ⛔ **A non-zero baseline is a number someone must
+  remember to update; zero is a number the tool maintains.** **Nothing in code checks this figure —
+  it goes stale silently and only a run of `npm run lint` can confirm it.**
 - **Unrelated pre-existing errors** — flag to Carl; do not silently fix.
 - **Environment/tool errors** — stop, diagnose, report before continuing.
 
