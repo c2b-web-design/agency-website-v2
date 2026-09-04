@@ -250,3 +250,70 @@ settled. What it must still answer:**
 - ⛔⛔ **WHAT INSTRUMENT WATCHES IT — NAMED BEFORE THE BUILD**, so it cannot repeat
   `NextStepMeshButton`'s silence.
 - ⚠ **The route's static prerender.** `/about` is currently 9/9 static.
+
+---
+
+# ⛔⛔ SECTION 4 — TWO BUTTONS TO DO, AND THEY ARE A MATCHED PAIR. Carl, 4 September 2026
+
+> ⛔ ***"theres another three js button to keep in the family. that will be the major takeaway from
+> here. the copy is good. button leads to start section"***
+>
+> ⛔ ***"yes theres another button at the bottom of the home page. 2 buttons to do. Geometry is clear,
+> material isnt. its on my radar."***
+
+## ⛔ THE TWO BUTTONS
+
+| | where | goes to | status |
+|---|---|---|---|
+| **`Who we are`** | homepage §4 (`app/page.tsx`) | `/about` | ⛔ ruled to be rebuilt in Three.js (**D-069**), not built |
+| **`Start a conversation`** | `/about` §4 | `/start` | ⛔ **same treatment, not built** |
+
+⚠⚠ **THEY ARE ALREADY ON THE RECORD AS A MATCHED PAIR** — the sprint entry for the navigation work:
+*"Section 4 of `/about` is the conclusion and carries the matching 'Start a conversation' → `/start`,
+same dimensions, colour and position."*
+
+⛔⛔ **SO THE JOURNEY IS: HOME → `/about` → `/start`, THE SAME BUTTON DOING BOTH HANDOFFS AT OPPOSITE
+ENDS.** ⚠ **That is an argument for building them TOGETHER rather than separately: same geometry, same
+material, one decision.**
+
+## ⛔ GEOMETRY IS CLEAR. MATERIAL IS NOT
+
+⚠ **Carl: *"Geometry is clear, material isnt. its on my radar."*** ⛔ **The geometry question is settled
+by the family** — the existing `/start` Next step / Send button (D-031/D-032, approved). ⚠ **THE
+MATERIAL IS AN OPEN QUESTION CARL IS HOLDING, not a gap in the record.**
+
+⚠ **D-069 already says this in the same words: the button is to be rebuilt in Three.js *"reusing
+existing geometry from elsewhere on the site; MATERIAL and LIGHTING are explicitly undetermined."***
+
+## ⚠⚠ A DISTINCTION THAT WILL BE EASY TO CONFUSE LATER — STATED PLAINLY
+
+⛔ **D-070 ruled the HOMEPAGE HERO button NON-NAVIGATIONAL** — *"I can definately say the button wont
+be navigational."*
+
+⛔⛔ **THAT RULING DOES NOT APPLY TO THESE TWO. BOTH OF THESE ARE NAVIGATIONAL BY DESIGN** — `Who we
+are` goes to `/about`, `Start a conversation` goes to `/start`. ⚠ **Three buttons on two pages;
+different rulings. A later session must not carry D-070's ruling across.**
+
+## ⛔ SECTION 4's COPY IS GOOD AS IT STANDS — Carl
+
+> ⛔ ***"the copy is good."***
+
+**Current text, for the record:**
+
+> **That is how the work gets done.**
+>
+> *A team with defined roles, a process that does not skip a stage, and nothing built before it is
+> agreed. If that is the way you would want your own site made, the next step is a conversation.*
+
+⚠ **It is a three-clause summary of exactly what §§1–3 demonstrate, and it puts the decision with the
+reader rather than pushing.** ⛔ **No change wanted.**
+
+## ⚠ WHY THIS IS "THE MAJOR TAKEAWAY FROM HERE"
+
+⛔ **Carl's phrase.** ⚠ **Section 4 is the CONCLUSION of the page — the reader arrives having been
+shown the roles, and the button is what they do about it.** ⛔ **It is the last thing on `/about` and
+the first step into `/start`.**
+
+⚠⚠ **AND IT IS ANOTHER INSTANCE OF THE "ONE WORLD" IDEA: the same button family appears on three
+routes, so the site reads as one object rather than three pages.** ⛔ **Same reasoning as the mark
+that does not move (D-065).**
