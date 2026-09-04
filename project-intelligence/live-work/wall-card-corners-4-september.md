@@ -296,3 +296,79 @@ this is the one behaviour that cannot be faked with an image.**
   wall pinning, not yet done for the floor.**
 - ⚠ **CONTACT SHADOWS remain outstanding** — a leaning panel throws its shadow forward and it
   lengthens with the angle. Planned in, not added after.
+
+---
+
+# ⚠ THE FLOOR PAIR — INDICATIVE POSITIONS ONLY. Carl, 4 September 2026
+
+> ⛔ ***"about here. dimensions will change. this is only to indicate position"***
+
+⛔⛔ **POSITION ONLY. NOT DIMENSIONS, NOT SHAPE, NOT FINAL.** ⚠ **Recorded so the placement intent
+survives; the numbers are expected to move.**
+
+## Where Carl put them
+
+| | |
+|---|---|
+| **FLOOR LEFT (CD)** | ⛔ **Far left of frame, in front of the left desk's near end.** Its lower edge runs past the bottom of the visible area |
+| **FLOOR RIGHT (CS)** | ⛔ **Far right of frame, in front of the right desk, against the snake plant.** Also cut at the bottom |
+
+⚠⚠ **BOTH ARE PUSHED TO THE OUTER EDGES, WELL CLEAR OF THE CENTRE FLOOR.** ⛔ **The open space between
+them — where the two chairs sit — STAYS OPEN.** ⚠ **That is consistent with the chair being the
+bridge: the middle of the room is not decorated.**
+
+⚠ **Both are cut off at the bottom of frame.** ⛔ **Undetermined whether that is intended (a card
+standing on a floor that continues below the crop) or a sign they need to be shorter. Carl's call.**
+
+## ⛔ WHAT THE INDICATIVE QUADS DO *NOT* YET SHOW
+
+⚠ **They are flat, face-on rectangles.** ⛔ **The two rotations Carl specified are NOT applied:**
+
+1. ⛔ **LEAN BACK** — *"the floor cards could be slightly leaning back so they will truly be part of
+   the scene."*
+2. ⛔ **FACE INWARD** — *"i need them to slightly lean back and to both face inward a little."*
+   ⚠ **Mirrored: left card turns right, right card turns left.**
+
+⛔ **Both rotations will change the silhouettes and move these corners.**
+
+## ⚠⚠ THE FLOOR PAIR DOES NOT NEED THE PINNING TOOL — Carl asked, and the answer is no
+
+⛔ **THE WALL CARDS NEEDED IT BECAUSE THEY HAD TO MATCH A SURFACE.** A rectangle lying on a
+photographed wall must agree with that wall's exact perspective, and being wrong is instantly visible.
+**The tool solved *where does this land*.**
+
+⛔ **THE FLOOR CARDS DO NOT MATCH A SURFACE — THEY STAND IN FRONT OF ONE.** ⚠ **Their lean and their
+inward turn are DESIGN DECISIONS, not values the photograph dictates.** ⛔ **Those want a slider and
+Carl's eye, not a homography.**
+
+⚠⚠ **BUT THERE IS A REAL DEPENDENCY, AND IT IS THE SAME ONE ARRIVING FROM A DIFFERENT DIRECTION: THE
+THREE.JS CAMERA MUST AGREE WITH THE PHOTOGRAPH.** ⛔ **A card standing on the floor only reads as IN
+the scene if the scene's perspective matches the room's. Wrong camera, and the cards float in a
+different space whatever their rotations.**
+
+⛔ **THE WALL CORNERS ARE WHAT SOLVES IT** — they say where a plane on that wall projects to, which
+constrains the camera. ⚠ **HONEST ORDER: camera first (derived from the pinned corners), then floor
+cards built face-on in that scene, then the two rotations tuned by eye.**
+
+## ⛔ CONTACT SHADOWS — Carl: *"will they emit a slight shadow on the floor. that will help sell the scene"*
+
+⚠ **Already on the record as non-optional (3 September): *"A card resting on the floor needs a shadow
+where it meets, or it hovers and the illusion dies."***
+
+**Three routes, and they differ in cost:**
+
+| route | what it is | cost |
+|---|---|---|
+| **Real shadow maps** | a casting light, a receiving plane | ⚠ shadow rendering every frame; the floor must exist as invisible geometry. **Physically correct — the shadow lengthens and shifts as the light orbits** |
+| **Baked ellipse** | a soft dark shape painted once | cheap, always right at the contact point. ⛔ **Cannot respond to the travelling light — it would sit static while everything else moves** |
+| ⛔ **COMPUTED CONTACT SHADOW** | a soft gradient at the base, length and direction driven by the light's position | ⚠⚠ **Not a true shadow map — an approximation, exactly like the CSS shine on the Send button.** Cheap, and it RESPONDS |
+
+⛔ **THE BUILDER RECOMMENDS THE THIRD, and the reason is the "one world" idea: it participates in the
+single lighting model.** ⚠ **The contact point is where the eye checks — a shadow that is right where
+the card meets the floor sells it more than an accurate shadow across the whole room.**
+
+⚠⚠ **ONE CONSTRAINT ON ANY ROUTE: the photographed floor ALREADY HAS ITS OWN LIGHTING** — bright pools
+from the downlights, darker at the edges. ⛔ **A shadow must DARKEN WHAT IS THERE, not paint a grey
+shape over it. Multiply, not overlay, or it reads as a sticker.**
+
+⛔ **NOT DECIDED. Carl's call.**

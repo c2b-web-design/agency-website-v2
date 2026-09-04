@@ -19,7 +19,7 @@ than merely inconvenient? Nothing.**
 |---|---|---|
 | **1** | ⛔ **THE GOLD MARK — translucent or opaque** | Carl's named question, twice deferred. ⚠⚠ **It is no longer only an appearance question: translucent = transmission = WebGL geometry; opaque = light falls on it = the CSS proximity illusion, no WebGL at all.** See `about-section-thinking.md` → *the one-world illusion* |
 | **2** | ⛔ **THE §5a STRUCTURAL WRITE-UP** | ⛔⛔ **NOTHING IS AUTHORISED TO BUILD UNTIL THIS EXISTS.** A Three.js surface on `/about` is a new WebGL context on a route with none |
-| **3** | ⚠ **THE FLOOR PAIR'S GEOMETRY** | The floor plane, the lean angle, contact shadows. The wall pair is solved; the floor is not |
+| **3** | ⛔ **BUILD IT** | ⚠⚠ **Carl, at session end: *"i think we have enough to build it next session."*** **The build order, the floor positions and the shadow routes are at the FOOT of this file — read that section, it is the brief.** |
 
 ---
 
@@ -177,3 +177,76 @@ because Carl's hand is on it.*
 *⚠ **And the section found its shape the hard way.** Carl: "this is why i said shapes first. i knew it
 would be difficult, imagine doing this with three js card geometry from the off. we have a basis and
 in more ways than one have truly gained perspective."*
+
+---
+
+# ⛔⛔ ADDED AT SESSION END — THE FLOOR PAIR, AND THE BUILD ORDER FOR NEXT SESSION
+
+⚠⚠ **CARL: *"i think we have enough to build it next session."*** ⛔ **This section is the brief.**
+
+## ⛔ THE BUILD ORDER — AGREED, AND THE FIRST STEP GATES EVERYTHING
+
+> ⛔ ***"Agreed, setting up the camera comes first."***
+
+| # | step | note |
+|---|---|---|
+| **1** | ⛔⛔ **THE CAMERA** | ⚠⚠ **A card only reads as IN the scene if the Three.js perspective matches the room's. Wrong camera and nothing downstream can save it — the cards float in a different space whatever their rotations.** ⛔ **Carl's PINNED WALL CORNERS are what solves this: they say where a plane on that wall projects to, which constrains the camera.** Corners: `live-work/wall-card-corners-4-september.md` |
+| **2** | **The wall pair** | Built to the pinned corners. ⚠ **Those corners are also the ACCEPTANCE TEST — render, screenshot, and the corners must land on Carl's fractions** |
+| **3** | **The floor pair, FACE-ON first** | ⛔ Carl: *"They can be built face on at first"* |
+| **4** | **Then the two rotations, by eye** | ⛔ **LEAN BACK**, and ⛔ **BOTH FACE INWARD A LITTLE** (mirrored — left turns right, right turns left). ⚠ **These are DESIGN decisions, not values the photograph dictates. A slider, not a solve** |
+| **5** | **Contact shadows** | see below |
+
+## ⚠ THE FLOOR PAIR DOES NOT NEED THE PINNING TOOL — asked and answered
+
+⛔ **The wall cards needed it because they had to MATCH A SURFACE** — a rectangle lying on a
+photographed wall must agree with that wall's exact perspective, and being wrong is instantly visible.
+
+⛔ **The floor cards do not match a surface, they STAND IN FRONT OF ONE.** ⚠ **Their angles are Carl's
+to choose. Tune by eye.**
+
+## ⛔ INDICATIVE FLOOR POSITIONS — POSITION ONLY, NOT DIMENSIONS
+
+> ⛔ ***"about here. dimensions will change. this is only to indicate position"***
+
+- **CD (floor left)** — far left of frame, in front of the left desk's near end
+- **CS (floor right)** — far right of frame, in front of the right desk, against the snake plant
+- ⚠⚠ **BOTH PUSHED TO THE OUTER EDGES. THE CENTRE FLOOR — where the chairs are — STAYS OPEN.**
+  ⛔ **Consistent with the chair being the bridge: the middle of the room is not decorated.**
+- ⚠ **Both were drawn cut off at the bottom of frame. UNDETERMINED whether that is intended.**
+
+## ⛔ CONTACT SHADOWS — ROUTE TO BE CHOSEN AT IMPLEMENTATION
+
+> ⛔ ***"we will decide the shadow route when implementing, i am liable to go with your
+> recommendation."***
+
+⚠ **THE BUILDER'S RECOMMENDATION, ON THE RECORD SO IT IS NOT RE-DERIVED: the COMPUTED CONTACT
+SHADOW** — a soft gradient at the base, its length and direction driven by the orbiting light's
+position. ⛔ **Not a true shadow map; an approximation, exactly like the CSS shine on the `/start` Send
+button.** ⚠⚠ **It participates in the single lighting model, which IS the "one world" idea. And the
+contact point is where the eye checks — a shadow that is right where the card meets the floor sells it
+more than an accurate shadow across the whole room.**
+
+⛔ **Alternatives and their costs are in `wall-card-corners-4-september.md`.** ⚠ **CARL HAS NOT
+COMMITTED — he said he is LIKELY to take the recommendation. It is still his call at build time.**
+
+⛔⛔ **ONE CONSTRAINT WHICHEVER ROUTE IS TAKEN: the photographed floor ALREADY HAS ITS OWN LIGHTING.**
+⚠ **A shadow must DARKEN WHAT IS THERE — multiply, not overlay — or it reads as a sticker.**
+
+## ⚠⚠ WHAT IS STILL NOT AUTHORISED
+
+⛔ **THE §5a STRUCTURAL WRITE-UP IS STILL OWED.** ⚠ **"Enough to build it" is Carl's assessment of the
+DESIGN readiness. It is not a waiver of the structural gate** — a Three.js surface on `/about` is a new
+WebGL context on a route with none, and the record holds two worked cases of exactly that shape going
+in unreviewed.
+
+⛔ **The write-up is now NARROWER than it was this morning, because shape, position and geometry are
+settled. What it must still answer:**
+
+- **One canvas or two** (wall pair and floor pair, or all four).
+- **Does `/about` share `/start`'s card host, or get its own?**
+- ⛔ **Material reuse — `answer-card-glass.ts` is PROTECTED and D-051 approved. An unlock, and Carl's.**
+  ⚠⚠ **AND IT CARRIES AN UNTESTED ASSUMPTION: that glass was tuned for a FRONT-LIT card in a dark
+  corridor. The floor cards are BACKLIT. Whether it transmits unchanged is UNKNOWN.**
+- ⛔⛔ **WHAT INSTRUMENT WATCHES IT — NAMED BEFORE THE BUILD**, so it cannot repeat
+  `NextStepMeshButton`'s silence.
+- ⚠ **The route's static prerender.** `/about` is currently 9/9 static.
