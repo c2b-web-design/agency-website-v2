@@ -317,3 +317,32 @@ the first step into `/start`.**
 ⚠⚠ **AND IT IS ANOTHER INSTANCE OF THE "ONE WORLD" IDEA: the same button family appears on three
 routes, so the site reads as one object rather than three pages.** ⛔ **Same reasoning as the mark
 that does not move (D-065).**
+
+## ⛔⛔ THE RULE FOR THE BUTTON FAMILY — Carl, 4 September 2026
+
+> ⛔ ***"the geometry will stay the same, colour and material will change."***
+
+⚠⚠ **THIS IS SHARPER THAN THE RECORD HAD IT. D-069 said material and lighting were *"explicitly
+undetermined"*, which reads as NOT YET DECIDED.** ⛔ **What Carl has stated is a RULE, not a gap:**
+
+| | |
+|---|---|
+| ⛔ **GEOMETRY** | **FIXED across the family.** The same form on every route |
+| ⛔ **COLOUR AND MATERIAL** | **THE VARIABLES.** They change per instance |
+
+⚠ **So the material question is not "what will the material be" — it is "what will it be HERE",
+asked once per button.**
+
+### ⚠⚠ IT IS THE SAME PRINCIPLE THAT GOVERNS EVERYTHING ELSE ON THE SITE
+
+⛔ **THE MARK (D-065): *"No movement, only change."*** Position fixed across routes; colour changes by
+section — gold, blue, gold.
+
+⛔ **THE CARDS (Carl, today): *"the values can change. What the example shows is principle… variations
+on a theme."*** Family resemblance fixed; numbers free.
+
+⛔ **THE BUTTONS: geometry fixed; colour and material free.**
+
+⚠⚠ **THREE ELEMENTS, ONE RULE: THE SITE'S IDENTITY LIVES IN FORM. THE VARIATION LIVES IN SURFACE.**
+⛔ **A later session that changes a button's GEOMETRY to suit a page has broken the family; one that
+changes its COLOUR has used it correctly.**
