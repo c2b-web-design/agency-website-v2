@@ -372,3 +372,319 @@ from the downlights, darker at the edges. ⛔ **A shadow must DARKEN WHAT IS THE
 shape over it. Multiply, not overlay, or it reads as a sticker.**
 
 ⛔ **NOT DECIDED. Carl's call.**
+
+---
+
+# ⛔⛔ AMENDMENT — 5 September 2026. BOTH CARDS ADJUSTED, APPROVED BY CARL BY EYE
+
+⚠⚠ **THE 4 SEPTEMBER SET ABOVE IS NOT EDITED AND NOT SUPERSEDED. IT IS THE ORIGIN.** ⛔ **Every
+number below is stated as a DELTA FROM IT, so the pinned set stays the reference and this amendment
+stays auditable.** ⚠ **`no retroactive rewriting` — `context-rules.md`.**
+
+## ⛔ WHY ANY OF THIS HAPPENED — THE GOAL IS ROUNDED CORNERS
+
+> ⛔ ***"The goal is that we can put rounded corners in."***
+
+⚠⚠ **CB's TR SAT AT `y = 0` — HARD AGAINST THE TOP EDGE OF THE STAGE.** ⛔ **A corner radius needs
+somewhere to go; a corner clamped to the frame boundary has none.** ⚠ **The card was not wrong on the
+wall — it was wrong against the CROP.**
+
+⛔ **Rounded corners are STILL NOT BUILT.** ⚠ **This makes room for them. It does not add them, and
+they are not authorised** — see the standing note above.
+
+## ⛔⛔ THE ACTUAL CHANGES — THREE OPERATIONS, TWO OF THEM DIFFERENT IN KIND
+
+| # | card | operation | corners moved | delta |
+|---|---|---|---|---|
+| **1** | **CB** | **top edge down** | TL, TR | **+0.012 each** |
+| **2** | **CA** | ⛔ **WHOLE CARD down** | **all four** | **+0.010 each** |
+| **3** | **CA** | **top edge down** | TL, TR | **+0.010 each** |
+
+⚠⚠ **OPERATIONS 2 AND 3 ARE NOT THE SAME MOVE AND THE DISTINCTION IS LOAD-BEARING:**
+
+- ⛔ **A WHOLE-CARD DROP moves all four corners. The card KEEPS ITS SHAPE** — every edge angle, its
+  height and its width are mathematically unchanged. It is a translation.
+- ⛔ **A TOP-EDGE DROP moves only TL and TR. The card gets SHORTER.** ⚠ **Used because CA's bottom
+  edge could not go any lower — see the monitor constraint below — so the only way to close the gap
+  to the ceiling was to shorten the card, not move it.**
+
+### The resulting values, as written into `app/proto/wall/page.tsx` → `INITIAL_FRAC`
+
+    CA   0.19766, 0.04849  /  0.46604, 0.11063  /  0.46604, 0.35148  /  0.19766, 0.37449
+    CB   0.60731, 0.10378  /  0.82441, 0.01200  /  0.82441, 0.40362  /  0.60731, 0.35299
+
+**Cumulative deltas from the 4 September pinned set:**
+
+| | TL | TR | BR | BL |
+|---|---|---|---|---|
+| **CA** | **+0.020** | **+0.020** | **+0.010** | **+0.010** |
+| **CB** | **+0.012** | **+0.012** | 0 | 0 |
+
+⛔⛔ **EVERY X IS UNTOUCHED, ON BOTH CARDS, THROUGHOUT.** ⚠ **So the vertical-edge correction from
+4 September still holds — each bottom node still takes the x of the node above it.**
+
+## ⛔⛔ WHY THIS WAS DONE IN ARITHMETIC AND NOT BY DRAGGING — CARL'S REASON
+
+> ⛔ ***"If i did this i would have to do it one at a time and they are not gauranteed to be equal.
+> You have the ability to change the numbers in the output."***
+
+⚠⚠ **TWO HANDLES DRAGGED SEPARATELY PRODUCE TWO DELTAS THAT DIFFER BY A PIXEL OR TWO, AND THE EDGE
+SILENTLY CHANGES ANGLE.** ⛔ **The top edge's angle is the one property of these corners that was
+hard-won on 4 September and must not move.** ⚠ **Equal deltas applied as arithmetic leave it
+mathematically untouched. This is the one part of the job the Builder can do better than the eye —
+and it is the ONLY part.**
+
+## ⚠⚠ THE MONITOR CONSTRAINT — CA's HARD FLOOR
+
+> ⛔ ***"there is little wriggle room with CA because of the 3 monitors. we cannot put the CA card
+> behind the monitors but we can get very close."***
+
+⛔ **The three-monitor array on the left wall is the limit for CA's bottom edge, NOT the frame.**
+⚠ **This is why operation 3 shortened the card instead of dropping it further: the bottom edge had
+nowhere left to go.**
+
+## ⛔⛔ A MEASUREMENT THE BUILDER DECLINED TO MAKE — AND THE DECLINE IS THE RECORD
+
+⚠ **Carl asked: *"are you able to measure the distance from the ceiling of the top edge of CB
+card?"*** ⛔ **The Builder said NO, and did not produce a number.**
+
+⚠⚠ **THAT IS D-076 BEING APPLIED RATHER THAN REDISCOVERED.** ⛔ **This is the exact measurement that
+produced four different ceiling angles on 4 September, each verified against its own figure. A fifth
+attempt would have been the same failure with a fresh number.**
+
+⛔⛔ **AND THERE IS A SECOND, INDEPENDENT REASON THE MEASUREMENT WOULD HAVE BEEN WRONG EVEN IF THE
+SEAM HAD BEEN FOUND EXACTLY:** ⚠⚠ **CA AND CB ARE ON DIFFERENT WALLS RECEDING IN OPPOSITE
+DIRECTIONS.** **Equal PHYSICAL drop from the ceiling does not project to equal SCREEN distance — the
+right wall is further away, so a metre of wall there occupies fewer pixels.** ⛔ **Perpendicular
+screen distance from seam to card top would give two numbers that LOOK comparable and are not.**
+
+⚠ **The 0.010 used in operation 2 was the Builder's reading of a screenshot and was flagged AS SUCH
+in the code comment at the time it was written — deliberately the conservative end of the measured
+gap, offered as a starting position for Carl's eye rather than as a derived value.** ⛔ **Carl then
+set operation 3's number himself.**
+
+### ⚠ THE INSTRUMENT THAT WOULD ANSWER IT PROPERLY — PROPOSED, NOT BUILT
+
+⛔ **The homography already contains the answer.** ⚠ **Each card's four pinned corners define the
+mapping between that wall's real plane and the screen; inverting it turns a screen point into
+UNFORESHORTENED WALL COORDINATES.** **Pin the ceiling seam, map it into each card's own wall space,
+and the two drops become comparable numbers.**
+
+⛔ **NOT BUILT. Carl chose the arithmetic route instead.** ⚠ **Recorded because the equal-drop
+constraint is still open and this is the honest way to close it — the verification would use Carl's
+pinned seam, not a value the Builder derived from the image.**
+
+## ⛔ THE TOOL'S SEEDING WAS CHANGED IN THE SAME PASS
+
+⚠⚠ **`INITIAL_FRAC` NOW WINS ON LOAD, UNCONDITIONALLY. `localStorage` NO LONGER OVERRIDES IT.**
+
+⛔ **Carl: *"what i want is the cards in the position i left them"*** — ⚠ **and they already WERE in
+`INITIAL_FRAC`. A stale browser drag was silently winning on load, so the corrected set looked like
+"default positions" that had been lost.**
+
+⚠⚠ **BOTH SEEDING RULES HAVE NOW FAILED ONCE EACH, IN OPPOSITE DIRECTIONS:**
+
+| version | rule | how it failed |
+|---|---|---|
+| **v1** | re-seed from `INITIAL_FRAC` every mount | ⛔ **threw away Carl's drags on every reload. Cost the positioning work twice** |
+| **v2** (4 Sept) | prefer `localStorage` | ⛔ **hid the corrected committed set behind a stale drag** |
+| **v3** (5 Sept) | ⛔ **`INITIAL_FRAC` wins; storage still WRITTEN, never read on load** | — |
+
+⛔ **THE PRINCIPLE: A GITIGNORED BROWSER STORE MUST NOT OUTRANK A COMMITTED RECORD.** ⚠ **To carry a
+drag forward, read it out of the output block and write it into `INITIAL_FRAC` — the same route these
+numbers took.**
+
+## ⛔ STATUS
+
+⚠ **Carl, on the rendered tool, twice: *"that looks good."*** ⛔ **Approved BY EYE, in the tool, at
+stage aspect 2.106.** ⚠⚠ **NOT verified against a Three.js render — that acceptance test does not
+exist yet and is the whole point of the corners. Nothing here is a harness verdict** (`proven.json`
+is empty, D-064).
+
+## ⚠ STILL OPEN — UNCHANGED BY THIS AMENDMENT
+
+- ⛔ **THE EQUAL-DROP CONSTRAINT IS STILL NOT SATISFIED.** ⚠ **Carl: *"still noticably not the
+  same."* Both cards moved down; neither move was derived from the ceiling.**
+- ⚠ **CB still runs off the right edge of the frame** — TR and BR both at x `0.82441`, clipped.
+- ⛔ **Rounded corners: room made, NOT BUILT, NOT AUTHORISED.**
+- ⚠ **Numeric corner entry: still not built.**
+
+*Amended 5 September 2026. The deltas are arithmetic; every judgement in this file is Carl's.*
+
+---
+
+# ⛔⛔ CORRECTION — "CB RUNS OFF THE RIGHT EDGE" WAS FALSE. 5 September 2026
+
+⚠⚠ **THIS CLAIM WAS CARRIED AS AN OPEN ITEM FROM 4 SEPTEMBER, REPEATED IN THE SESSION HANDOFF, AND
+REPEATED AGAIN BY THE BUILDER TODAY. IT IS WRONG.** ⛔ **Carl challenged it; the arithmetic settles
+it.**
+
+    CB right edge   x = 0.82441  =  1571.3 px of a 1906 px stage
+    clear of the frame by         334.7 px  —  17.6% OF STAGE WIDTH
+
+⛔ **THE CARD IS NOWHERE NEAR THE RIGHT EDGE.**
+
+## ⚠ WHAT WAS ACTUALLY BEING SEEN
+
+⛔ **The STAGE BOX ends where the browser window ends. The CARD does not.** ⚠ **A screenshot cropped
+at the window made the stage boundary look like a clip on the card.**
+
+⚠⚠ **AND THE DRAG HANDLE COMPOUNDED IT: the orange dot is a 20px UI element CENTRED on the corner,
+so it overhangs 10px past the true corner in every direction.** ⛔ **A handle that appears to touch an
+edge does NOT mean the corner does.**
+
+## ⛔ CARL'S POINT, WHICH IS THE STRUCTURAL ONE
+
+> ⛔ ***"i dont think CB TR will go off the edge. it is to be rounded and even though the orange
+> circle is used to drag the corners and that is off the edge, once the card three js geometry is in
+> place we will be alright."***
+
+⚠⚠ **A ROUNDED CORNER PULLS THE VISIBLE MATERIAL INWARD FROM THE MATHEMATICAL CORNER.** ⛔ **The
+pinned point is where the two edges WOULD meet if extended; the rendered card's surface stops short
+of it by the radius.** ⚠ **So the real silhouette is SMALLER at the corners than the pinned quad —
+in the opposite direction from the convex face, which makes it LARGER at the centre.**
+
+## ⛔⛔ THE LESSON, AND IT IS THE SAME ONE AS D-076
+
+⚠⚠ **THE BUILDER READ A DISTANCE OFF A SCREENSHOT AND REPORTED IT AS A DEFECT. THE MEASUREMENT TOOK
+ONE LINE OF ARITHMETIC ON NUMBERS THAT WERE ALREADY IN THE FILE.**
+
+⛔ **WHEN THE VALUE IS ALREADY WRITTEN DOWN, COMPUTE IT. DO NOT LOOK AT IT.** ⚠ **This one survived
+three retellings because nobody checked a number that was sitting in `INITIAL_FRAC` the whole time.**
+
+⚠ **`open-defects.md` is untouched — this was never a product fault, only a wrong note.**
+
+---
+
+# ⛔⛔ THE SEAM INSTRUMENT — BUILT AND APPROVED. 5 September 2026
+
+⚠ **Carl: *"if you wish to build the tool and do this with precision so that it looks better and
+improves it, im all for that."*** ⛔ **Built. Carl on the result: *"thats the best way to do it."***
+
+## ⛔ WHAT IT DOES, AND WHY THE UNIT IS WHAT IT IS
+
+⚠⚠ **CA AND CB ARE ON DIFFERENT WALLS RECEDING IN OPPOSITE DIRECTIONS. EQUAL PHYSICAL DROP FROM THE
+CEILING DOES NOT PROJECT TO EQUAL SCREEN DISTANCE** — the right wall is further from the camera, so a
+metre of wall there occupies fewer pixels. ⛔ **Measuring seam-to-card-top in pixels gives two numbers
+that LOOK comparable and are not.**
+
+⛔ **THE FIX: invert each card's own homography.** ⚠ **The four pinned corners already define the map
+between that wall's real surface and the screen; running a screen point backwards through it yields
+UNFORESHORTENED WALL COORDINATES.** **Both the seam and the card's top edge are mapped that way before
+anything is measured, so the foreshortening cancels.**
+
+⛔ **UNIT: PERCENT OF CARD HEIGHT.** ⚠ Pixels are not comparable across walls; metres would need a
+real-world size nobody has supplied — **inventing one would be a Builder measurement smuggled back
+in.** **Card height is exact, already defined, and the same quantity for both cards.**
+
+⛔ **Measured from the top edge's MIDPOINT, not a corner** — a corner reading changes with the edge's
+angle and would confuse *"is it level"* with *"is it low"*.
+
+## ⛔⛔ THE TECHNIQUE CARL ARRIVED AT — SAMPLE WHERE YOU CAN SEE, EXTRAPOLATE WHERE YOU CANNOT
+
+⚠⚠ **THE CEILING/WALL JOIN IS INVISIBLE IN THE TOP CORNERS — dark-on-dark.** ⛔ **Carl: *"i cannot see
+the corner because of shadows."***
+
+⛔⛔ **THE ANSWER IS THAT A SEAM IS A STRAIGHT LINE, SO TWO SAMPLES ANYWHERE ALONG IT DEFINE IT
+EVERYWHERE.** ⚠ **Carl put both handles where the join is plainly visible and let the line run past
+the corner into the shadow.** ⛔ **The hardest judgement — where is the corner I cannot see — is
+REMOVED rather than attempted.**
+
+⚠⚠ **THIS IS THE SAME MOVE CARL USED TO CATCH THE FOUR WRONG CEILING ANGLES ON 4 SEPTEMBER** — lift a
+line onto the seam and see whether it traces it. **A line is checkable along its whole length; a point
+in shadow is not.**
+
+## ⛔ THREE AFFORDANCES, EACH FROM A REPORTED FAULT
+
+| fault | fix |
+|---|---|
+| *"cannot see the corner because of shadows"* | ⛔ **SHADOW LIFT** — brightness + contrast on the preview image, scrim suppressed while active. ⚠⚠ **A VIEWING AID ONLY: no measurement reads it, the pinned points are stage coordinates regardless of display, and `/about` is untouched** |
+| *"cannot drag the squares out of the viewport"* | ⛔ **SEAM HANDLES UNCLAMPED.** ⚠ The stage is `overflow-visible`; **the IMAGE keeps its own `overflow-hidden` so the CROP the corners were pinned against is unchanged.** ⚠ **Card corners stay CLAMPED — one dragged off-stage becomes unreachable and the card silently loses a corner** |
+| *"can you make the squares smaller"* | ⛔ **16px → 8px.** ⚠ **A marker bigger than the feature it points at hides its own target** |
+
+## ⚠⚠ A BUG CAUGHT IN VERIFICATION — IT WOULD HAVE LIED QUIETLY
+
+⛔ **The first implementation fed the top edge as `(CARD_W/2, 0)` and divided by `CARD_H`.**
+
+⚠⚠ **THE HOMOGRAPHY MAPS THE UNIT SQUARE, NOT A 420x260 BOX** — `matrixFor` divides its coefficients
+by `CARD_W`/`CARD_H` precisely so CSS can apply the matrix to a sized element. ⛔ **The readout would
+have been 260x TOO SMALL — still finite, still moving the right way when dragged, entirely
+plausible.**
+
+⛔⛔ **CAUGHT BY ROUND-TRIPPING BOTH CARDS' REAL CORNERS:** all four map back to the pinned pixels
+within **1e-13**; the inverse round-trips at **2e-16**. ⚠ **The check used Carl's actual numbers, not
+a synthetic case — a synthetic square would have hidden it.**
+
+## ⚠ WHAT THE INSTRUMENT DOES NOT WATCH — STATED IN ITS OWN OUTPUT
+
+⛔ **Per `context-rules.md` (the `one-context.mjs` case: an instrument that names a global property
+while checking a local one lies by implication), the caveat sits NEXT TO THE NUMBER, not in a header
+comment:**
+
+- ⛔ **It does NOT check the seam lines are actually on the ceiling join.** ⚠ **That is Carl's pinning
+  and the readout assumes it.**
+- ⛔ It does not check the two cards are the same size.
+- ⛔ It does not check either card sits on the wall correctly.
+
+⚠ **It answers one question: given these corners and this seam, are the two drops equal.**
+
+## ⛔ STATUS
+
+⚠ **The instrument is APPROVED as a method — Carl: *"thats the best way to do it."*** ⛔⛔ **THE
+EQUAL-DROP NUMBERS THEMSELVES ARE NOT YET SETTLED, AND NO CORNER HAS BEEN MOVED ON THE STRENGTH OF
+THEM.** ⚠ **`/proto/wall` remains throwaway; delete it when its numbers are consumed.**
+
+---
+
+# ⛔⛔ CB TAKEN BACK UP BY HALF, AND THE CLEARANCE IS SETTLED. 5 September 2026
+
+## ⛔ THE FINAL ADJUSTMENT
+
+⚠ **Carl, judging the ceiling gap at the corner in a close crop:** *"to me the CB gap from the
+ceiling seems a smidgeon bigger, whatever you dropped it by, take it up by half that amount."*
+
+**The drop had been +0.012, so +0.006 was returned:**
+
+| corner | after the drop | now |
+|---|---|---|
+| **CB TL** | 0.10378 | **0.09778** |
+| **CB TR** | 0.01200 | **0.00600** |
+
+⛔ **Both −0.006 exactly, so the top edge keeps its angle. BR/BL untouched. X untouched.**
+
+⚠⚠ **NOT taken all the way back to zero, and the reason is the whole point of the original move:**
+**TR at 0.006 still clears the frame, so the rounded corner has somewhere to go.** ⛔ **Returning the
+full 0.012 would have restored the problem the drop existed to fix.**
+
+## ⛔⛔ THE CLEARANCE IS APPROVED — Carl, on the clean-view crop
+
+> ⛔ ***"Any rounding of the corners will be ok"***
+
+⚠ **This settles the question the whole drop sequence existed to answer.** ⛔ **It is NOT authorisation
+to build rounded corners** — that remains asked-about-and-not-built. **It confirms that whatever
+radius is later chosen will fit.**
+
+## ⚠ THE FULL CUMULATIVE POSITION, FROM THE 4 SEPTEMBER PINNED SET
+
+| | TL | TR | BR | BL |
+|---|---|---|---|---|
+| **CA** | **+0.020** | **+0.020** | **+0.010** | **+0.010** |
+| **CB** | **+0.006** | **+0.006** | **0** | **0** |
+
+    CA   0.19766, 0.04849  /  0.46604, 0.11063  /  0.46604, 0.35148  /  0.19766, 0.37449
+    CB   0.60731, 0.09778  /  0.82441, 0.00600  /  0.82441, 0.40362  /  0.60731, 0.35299
+
+⛔ **Every x untouched throughout. The 4 September vertical-edge correction still holds.**
+
+## ⚠⚠ A UI FAULT WORTH RECORDING, BECAUSE IT IS A GENERAL ONE
+
+⛔ **The first "clean view" faded the corner handles with `opacity-0 hover:opacity-100`.**
+
+⚠⚠ **IT DEFEATED ITSELF. Carl was inspecting the CORNER, so the pointer was ON the corner, so the
+handle reappeared exactly where it was in the way** — *"the circles are obscuring the view."*
+
+⛔ **A HOVER-REVEAL IS USELESS WHEN THE THING BEING INSPECTED IS THE THING BEING HOVERED.** ⚠ **Fixed
+by not rendering the handles at all in clean view. Nothing is lost — the positions live in
+`INITIAL_FRAC` and localStorage, not in the handles.**
+
+⚠ **Same family as Rule 8's hover clause: hover must ENHANCE, never carry essential visibility.**
