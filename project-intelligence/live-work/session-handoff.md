@@ -1,4 +1,13 @@
-# Session Handoff — 5 September 2026. ⛔ A WASTED SESSION. NOTHING WAS BUILT AND NOTHING SHIPPED
+# Session Handoff — 5 September 2026. ⛔ THE WORK FAILED HERE AND SUCCEEDED ELSEWHERE
+
+⚠⚠ **READ THE LAST SECTION FIRST IF YOU READ NOTHING ELSE: *"CARL SOLVED IT"*. THE TWO WALL CARDS
+ARE DONE, IN METRES, WITH A LIVE SOLVER AND A SAVED IMAGE.** ⛔ **Everything between here and there
+is the account of how this session failed to produce it.**
+
+⚠ **Carl, at the close: *"If its any consolation you still achieved what i wanted, it was just in a
+different environment."*** ⛔ **Recorded because it is TRUE AND IT IS THE FINDING: the result came
+from a Claude artifact plus Figma, driven by Carl, in minutes. It did not come from this seat, this
+repo, or seven hours of tooling.**
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -219,3 +228,101 @@ rounded corners will fit. Everything else was deleted.** ⚠⚠ The Builder was 
 it correctly, and built something else — on a page whose entire argument is that governed AI stays
 inside its brief. ⛔ The 4 September handoff warned about exactly this and was read at the start of
 this session.*
+
+---
+
+# ⛔⛔ ADDED AT SESSION END — CARL SOLVED IT. THIS IS THE STARTING POINT FOR THE NEXT SESSION
+
+⚠⚠ **AFTER THE SESSION WAS WRITTEN OFF, CARL PRODUCED THE RESULT HIMSELF — with a Claude artifact and
+Figma, in a fraction of the time the Builder spent failing at it.** ⛔ **The two wall cards sit
+correctly on their walls, at matched height and matched drop.**
+
+## ⛔ THE ARTIFACT IS THE ARTEFACT — OPEN IT, DO NOT RE-DERIVE ANYTHING
+
+    claude.ai/code/artifact/f25a6eb3-3c5a-4f0e-94f0-96050fd8abd5     "Perspective Wall Guides"
+
+⚠ **Private by default. It holds the LIVE SOLVER — draggable corners, a "Lock to perspective" toggle,
+a live 8-corner readout with per-quad copy, Reset, and Export SVG (a clean 2000x1333 SVG of just the
+two polygons on transparent background).** ⛔ **A screenshot is a picture of a moment; the artifact is
+the tool. Use it.**
+
+## ⛔⛔ THE NUMBERS — AND THEY ARE IN METRES, WHICH IS NEW
+
+> ⛔ ***"Two rectangles solved against the room's measured vanishing points — 1800 x 1200. Both are
+> 0.79 m tall and hang 0.20 m below the ceiling."***
+
+| | size | |
+|---|---|---|
+| **Left wall (CA)** | **1.929 m x 0.794 m** | |
+| **Right wall (CB)** | **1.939 m x 0.794 m** | |
+| **Horizon** | **y = 442** | ⛔ **LOCKED — the shared-horizon constraint the Builder could not satisfy** |
+| **VP** | **2806 / 416** | |
+
+⛔⛔ **BOTH CARDS ARE 0.794 m TALL AND BOTH HANG 0.20 m BELOW THE CEILING.** ⚠⚠ **EQUAL HEIGHT AND
+EQUAL DROP, BY CONSTRUCTION — the exact constraint Carl's eye caught and no instrument the Builder
+built ever checked.** ⚠ **Only the LENGTH differs (1.929 vs 1.939), which is what Carl said hours
+earlier: *"the height should be the same. Only the length would differ."***
+
+⚠ **The 10mm width difference is presumably deliberate — CA spans the three monitors, CB spans the
+desk. ⛔ CONFIRM WITH CARL BEFORE ANY LATER SESSION "TIDIES" THEM TO MATCH.**
+
+## ⛔ CORNERS — IN A 2000 x 1333 REFERENCE FRAME
+
+⚠⚠ **THE FRAME MUST BE STATED WHEREVER THESE ARE USED. ⛔ Multiply by 3.079 to reach the
+full-resolution file.**
+
+| corner | TL | TR | BR | BL |
+|---|---|---|---|---|
+| **Left wall** | 351, 222 | 931, 274 | 934, 481 | 385, 492 |
+| **Right wall** | 1730, 159 | 1191, 275 | 1184, 480 | 1681, 505 |
+
+⚠ **Note the RIGHT wall's corners are ordered from its far edge — TL is at x=1730 and TR at x=1191.**
+
+## ⚠⚠ A SECOND, DIFFERENT COORDINATE SET EXISTS — DO NOT MIX THEM
+
+⛔ **The Figma stage where Carl started reports DIFFERENT numbers for the same quads:**
+
+    Quad A   TL 480,250   TR 860,281   BR 860,474   BL 480,480
+    Quad B   TL 1300,260  TR 1750,167  BR 1750,484  BL 1300,470
+
+⚠ **Carl: *"yes, the figma coordinates are different, thats where i started."*** ⛔ **These are an
+EARLIER, coarser starting position in a different frame — NOT a second opinion on the answer.**
+⛔⛔ **THE 2000x1333 SET ABOVE IS THE RESULT. The Figma set is provenance.**
+
+⚠⚠ **THIS IS EXACTLY THE STALENESS FAILURE THE RECORD KEEPS HITTING** — a number that is true in one
+frame and wrong in another, with nothing in the file saying which. **State the frame every time.**
+
+## ⛔ THE IMAGE — SAVED. `brand-assets/download.jpg`
+
+⛔ **1800 x 1200, aspect 1.5000 — matches the artifact and the source photograph.** ⚠ **Carl saved
+it; the Builder cannot write an image it has only viewed.**
+
+⚠⚠ **A FULL-RESOLUTION 6158 x 4105 VERSION IS AVAILABLE FROM THE SAME ARTIFACT.** ⛔ **Carl:
+*"say the word and I will swap the page to the full 6158x4105 version so your AI has the original
+resolution to read from. Same link, you would just reload and re-save."*** ⚠ **Ask before assuming
+1800x1200 is enough — the corner table is quoted in a 2000x1333 frame, and a third frame is one more
+chance to mix them up.**
+
+⚠ **Also in `brand-assets/`: `Gemini_Generated_Image_ivgzucivgzucivgz.jpg`, the de-planted room — a
+MEASURING AID ONLY, not a candidate to replace the shipped photograph (Carl, option A).**
+
+## ⛔⛔ THE FULL CONVERSATION THAT PRODUCED IT EXISTS — READ IT BEFORE RE-DERIVING ANYTHING
+
+⚠⚠ **Carl: *"i have it in the desktop app with a complete conversation how it was done so you can
+learn from it."*** ⛔ **Chat name: "Figma perspective rectangles".**
+
+⛔ **THAT TRANSCRIPT IS THE METHOD THAT WORKED. This handoff records the OUTCOME; the conversation
+records HOW.** ⚠ **A next session that starts by rebuilding a solver rather than reading it is
+repeating today.**
+
+## ⚠ WHY THIS MATTERS BEYOND THE TWO CARDS
+
+⛔ **Real-world scale now exists in the record for the first time.** ⚠ **Nothing before today had
+metres — everything was fractions of a stage or of a guessed room height.** ⛔ **That makes the FLOOR
+PAIR, the lean angle and the CONTACT SHADOWS tractable in a way they were not, because a shadow
+length and a card standing on a floor both need real proportions.**
+
+⚠⚠ **AND IT SETTLES THE METHOD ARGUMENT.** ⛔ **Carl said at the outset he could fix this and gave the
+Builder leeway to try its own tools first. ⚠ The tools produced nothing except confirmation that
+Carl's route was correct — which is the least valuable way to arrive at a right answer, and it cost
+seven hours.**
