@@ -77,8 +77,14 @@ pages"*.**
 - ⛔ **`npx tsc --noEmit` CLEAN.**
 - ⚠ **Working tree: `app/proto/wall/page.tsx` restored to `53bd823`. `app/proto/overlay/`,
   `app/proto/stage.ts`, `app/proto/wall/seam.ts`, `public/about-studio-noplant.jpg` — ALL DELETED.**
-- ⚠ **`brand-assets/Gemini_Generated_Image_ivgzucivgzucivgz.jpg` is untracked and left in place** —
-  it is Carl's de-planted room image. **His to keep or bin.**
+- ⛔ **`brand-assets/` IS NOW TRACKED, AND ITS THREE ROOM IMAGES ARE NAMED BY WHAT THEY ARE.** ⚠ **All
+  three arrived with opaque download names — `download.jpg`, a Gemini UUID, and one saved as `.txt`
+  that was actually a 6158x4105 JPEG. ⛔ Renamed, because a file nobody can identify from its name
+  gets re-derived or deleted.**
+
+      about-studio-noplant-1264.jpg          the de-planted room — MEASURING AID ONLY
+      about-studio-wall-cards-1800.jpg       the two solved cards on the walls
+      about-studio-perspective-grid-6158.jpg the FULL-RES grid render — see below
 - ⚠ **A dev server may still be running on :3000.** ⛔ **Kill by PID and confirm the port free.**
 - ⚠ **`open-defects.md` untouched.** ⚠ **`verify/proven.json` still empty (D-064).**
 - ⛔ **All protected paths locked; no unlock was requested or granted today.**
@@ -292,7 +298,7 @@ EARLIER, coarser starting position in a different frame — NOT a second opinion
 ⚠⚠ **THIS IS EXACTLY THE STALENESS FAILURE THE RECORD KEEPS HITTING** — a number that is true in one
 frame and wrong in another, with nothing in the file saying which. **State the frame every time.**
 
-## ⛔ THE IMAGE — SAVED. `brand-assets/download.jpg`
+## ⛔ THE IMAGE — SAVED. `brand-assets/about-studio-wall-cards-1800.jpg`
 
 ⛔ **1800 x 1200, aspect 1.5000 — matches the artifact and the source photograph.** ⚠ **Carl saved
 it; the Builder cannot write an image it has only viewed.**
@@ -303,7 +309,7 @@ resolution to read from. Same link, you would just reload and re-save."*** ⚠ *
 1800x1200 is enough — the corner table is quoted in a 2000x1333 frame, and a third frame is one more
 chance to mix them up.**
 
-⚠ **Also in `brand-assets/`: `Gemini_Generated_Image_ivgzucivgzucivgz.jpg`, the de-planted room — a
+⚠ **Also in `brand-assets/`: `about-studio-noplant-1264.jpg`, the de-planted room — a
 MEASURING AID ONLY, not a candidate to replace the shipped photograph (Carl, option A).**
 
 ## ⛔⛔ THE FULL CONVERSATION THAT PRODUCED IT EXISTS — READ IT BEFORE RE-DERIVING ANYTHING
@@ -378,16 +384,23 @@ fitted to half a pixel over 900px of run — but a raw phone shot at wide angle 
 lines that curve QUIETLY POISON the vanishing points. Lens-correct first if residuals stay
 stubbornly high.**
 
-## ⚠⚠ AND A GRID IMAGE EXISTS — 6158 x 4105
+## ⛔⛔ THE GRID RENDER — SAVED. `brand-assets/about-studio-perspective-grid-6158.jpg`
 
-⛔ **Carl produced a full-resolution render with the perspective GRID drawn across both walls and
-onto the floor, cards included.** ⚠⚠ **It is the Step 5 verification made visible: the grid lines lie
-along the skirting, up the corner seam and across the ceiling, so the perspective can be confirmed
-BY EYE IN ONE SECOND.**
+⛔ **6158 x 4105 — the full-resolution original, not the page copy.** ⚠ **Carl had already saved it;
+it was sitting untracked with a UUID name and a `.txt` extension despite being a JPEG.**
 
-⛔ **NOT YET SAVED TO THE REPO** — the Builder cannot write an image it has only viewed. ⚠ **Ask Carl
-for it; it is the reference that makes the FLOOR PAIR tractable, because the grid extends onto the
-floorboards and the floor cards stand IN the space rather than lying on a photographed surface.**
+⛔ **A full-resolution render with the perspective GRID drawn across both walls and onto the floor,
+cards included.** ⚠⚠ **IT IS THE SKILL'S STEP 5 MADE VISIBLE: the grid lines lie along the skirting,
+up the corner seam and across the ceiling, so the perspective can be confirmed BY EYE IN ONE SECOND
+— which is a check Carl can run and the Builder cannot.**
+
+⛔⛔ **AND IT IS WHAT MAKES THE FLOOR PAIR TRACTABLE.** ⚠ **The grid EXTENDS ONTO THE FLOORBOARDS, and
+the floor cards stand IN the space rather than lying on a photographed surface — so they need the
+floor plane, which this render already shows solved.**
+
+⚠ **The grid cells are also a VISIBLE UNIT OF MEASURE on each wall: anything placed later — the floor
+pair, the lean angle, the contact shadows — can be positioned against them rather than derived from
+scratch.**
 
 ---
 
