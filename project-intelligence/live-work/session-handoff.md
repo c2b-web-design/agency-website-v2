@@ -326,3 +326,65 @@ length and a card standing on a floor both need real proportions.**
 Builder leeway to try its own tools first. ⚠ The tools produced nothing except confirmation that
 Carl's route was correct — which is the least valuable way to arrive at a right answer, and it cost
 seven hours.**
+
+---
+
+# ⛔⛔ THE METHOD IS NOW A SKILL — `.claude/skills/perspective-from-photograph/SKILL.md`
+
+⚠⚠ **THE FIRST SKILL IN THIS PROJECT.** ⛔ **It packages the method that WORKED, with the working
+code, so no session has to rediscover the maths.**
+
+## ⛔ THE OPENING RULE IS THE DIAGNOSIS OF THIS ENTIRE SESSION
+
+> ⛔⛔ ***"Never estimate corner coordinates by eye, and never iterate towards them. Perspective is a
+> measurable property of the image… Attempts that guess corners and then nudge them never converge,
+> because there is no visual feedback signal precise enough to correct a projective error."***
+
+⚠⚠ **THAT IS THE SLIDER RIG, DESCRIBED BEFORE IT WAS BUILT.** ⛔ **It could not have worked. Not
+"was built badly" — could not converge, by the nature of the problem.**
+
+## ⛔ THE FOUR STEPS
+
+1. **Fit lines to REAL PIXELS** — seeded gradient trace, then a robust fit. ⛔ **JUDGE EVERY FIT BY
+   ITS RESIDUAL: under ~1px rms is a real edge; 5–20px means the tracer wandered onto a chair.**
+2. **Vanishing points and the horizon** — ⛔ **both VPs MUST share a horizon. If they disagree on y,
+   the weaker fit is wrong: REMEASURE, do not average.**
+3. **Solve the camera** — two perpendicular walls give focal length free:
+   `f = sqrt(-(vLx-cx)*(vRx-cx))`. ⛔⛔ **THEN FALSIFY IT: the solve predicts where VERTICALS
+   converge; measure a real vertical and check. That check is what separates a solved image from a
+   plausible guess.**
+4. **Place objects in real units and project back** — a rectangle is four `wallpt` calls through
+   `proj`, and it is a true projected rectangle for free.
+5. **Draw a wall grid back onto the photograph and LOOK at it.** ⚠ **One render, and it catches every
+   class of error above.**
+
+## ⚠⚠ THREE THINGS IT NAMES THAT THIS SESSION GOT WRONG
+
+- ⛔ **NO INDEPENDENT CHECK.** The Builder's solves had nothing to disagree with, so a plausible
+  number and a correct one were indistinguishable. **Step 3's vertical-VP test is exactly the
+  falsifier that was missing.** ⚠ **In Carl's solve it came out 5311 against a predicted 5362 — one
+  percent — which confirmed the whole thing BEFORE anything was drawn.**
+- ⛔ **THE FOV SANITY RANGE IS 85–95° FOR AN INTERIOR.** ⚠⚠ **The Builder reported 28° (rejected) and
+  then 50° (accepted, and used to initialise the rig). ⛔ BOTH WERE WRONG — 50° was never sane for a
+  shot showing two walls, ceiling and floor, and the skill says so in one line.**
+- ⛔ **THE MATCHED-SET RULE, STATED PLAINLY:** *"give them identical height and identical drop below
+  the ceiling in wall units, and let only the width vary."* ⚠ **Carl said this in his own words hours
+  before; it is the constraint his eye caught and no instrument here ever checked.**
+
+## ⚠ THE CAVEAT IT CARRIES FORWARD TO CLIENT WORK
+
+⛔ **It assumes NO SIGNIFICANT BARREL DISTORTION.** ⚠ **This photograph was clean — straight lines
+fitted to half a pixel over 900px of run — but a raw phone shot at wide angle often is not, and
+lines that curve QUIETLY POISON the vanishing points. Lens-correct first if residuals stay
+stubbornly high.**
+
+## ⚠⚠ AND A GRID IMAGE EXISTS — 6158 x 4105
+
+⛔ **Carl produced a full-resolution render with the perspective GRID drawn across both walls and
+onto the floor, cards included.** ⚠⚠ **It is the Step 5 verification made visible: the grid lines lie
+along the skirting, up the corner seam and across the ceiling, so the perspective can be confirmed
+BY EYE IN ONE SECOND.**
+
+⛔ **NOT YET SAVED TO THE REPO** — the Builder cannot write an image it has only viewed. ⚠ **Ask Carl
+for it; it is the reference that makes the FLOOR PAIR tractable, because the grid extends onto the
+floorboards and the floor cards stand IN the space rather than lying on a photographed surface.**
