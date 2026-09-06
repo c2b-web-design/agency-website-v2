@@ -462,3 +462,97 @@ of a photograph of one.** ⚠⚠ **That is the same uncanny-valley reaction Carl
   TBD — this is a candidate, not a placement.**
 - ⚠ **Whether the `/about` §2 room itself gets the treatment**, which would make the page demonstrate
   the capability it describes.
+
+---
+
+# ⛔⛔ IT IS A SIGNATURE MOVE — CARL, 6 September 2026. AND THE REASONING IS THE IMPORTANT PART
+
+> ⛔ ***"it should become a signature move."***
+
+⚠⚠ **THE BUILDER ASKED WHETHER THE SIGNATURE IS THE MOVE OR THE CAPABILITY. CARL: *"Both."* ⛔ THE
+QUESTION WAS A FALSE CHOICE, and his answer explains why:**
+
+> ⛔⛔ ***"Edward van Halen has his tapping technique, mostly associated with him. Having played the
+> guitar for over 45 years let me assure you there are many different ways to tap. You want to take it
+> to the extreme, look at the work of Stanley Jordan. Point being, there are many ways to express this
+> technique."***
+
+## ⛔ WHAT THAT SETTLES
+
+⚠⚠ **THE CAPABILITY IS WHAT IS OWNED. THE MOVE IS ONE EXPRESSION OF IT, AND THERE WILL BE OTHERS.**
+
+⛔ **Van Halen made tapping his. Stanley Jordan built an entire two-handed touch style from the same
+physical idea — NOT a variation on Van Halen's licks. Same mechanism, different music.**
+
+⚠ **So the push-in that settles and inserts an object is ONE expression. So is a static composite with
+no motion. So is a logo tracked across a surface that never comes to rest. So is the client's product
+in the client's own room.** ⛔⛔ **THOSE ARE NOT A MENU TO PICK FROM. THEY ARE A VOCABULARY.**
+
+## ⛔⛔ AND IT IS §14a's RULE, ARRIVING A FOURTH TIME
+
+⚠ **`c2b-ethos-and-vision.md` §14a: *"a recurring theme with variations."*** **The site now has four
+instances of that one sentence:**
+
+| element | FIXED | FREE |
+|---|---|---|
+| **The mark** (D-065) | position | colour |
+| **The buttons** (D-069) | geometry | colour and material |
+| **The cards** | family resemblance | every value |
+| ⛔ **THE TECHNIQUE** | the capability | the expression |
+
+⚠⚠ **AND IT ANSWERS §1's CLAIM WITH A MECHANISM RATHER THAN AN ASSERTION.** ⛔ **A TEMPLATE REPEATS
+OLD EXPRESSIONS. A TECHNIQUE GENERATES NEW ONES.** ⚠ **That is why it cannot go stale, and it is the
+same reasoning as Carl's ruling that identical buttons would *"scream template."***
+
+## ⛔ WHY IT IS LEGIBLE, WHICH ALMOST NOTHING ELSE ON THE SITE IS
+
+⚠⚠ **A client cannot tell a good gradient from a great one. THEY CAN TELL INSTANTLY WHETHER AN OBJECT
+IS IN A ROOM OR ON TOP OF A PICTURE OF ONE.** ⛔ **That is the uncanny-valley reaction Carl had all
+through 5 September — and a client's customers have the same reaction without being able to name it.**
+
+⛔ **It also composites into the CLIENT'S OWN SPACE, not a stock render.** ⚠ **Same argument as
+*"a client's frosted glass being THE SAME GLASS is the point."***
+
+---
+
+# ⛔⛔ THE BOTTOM LINE — CARL, 6 September 2026. THIS IS THE THESIS
+
+> ⛔⛔ ***"websites started off as 2d information. Information is important of course, its the primary
+> reason for a website. But, how that information is presented is a whole new ballgame now."***
+
+⚠⚠ **RECORD THIS AS THE ARGUMENT UNDER EVERYTHING ELSE, NOT AS A NOTE ABOUT A TECHNIQUE.**
+
+## ⛔ THE TWO CLAUSES, AND BOTH MATTER
+
+- ⛔ **THE INFORMATION IS STILL PRIMARY.** *"Information is important of course, its the primary
+  reason for a website."* ⚠⚠ **THIS IS A GUARD, NOT A THROWAWAY. It rules out spectacle that gets in
+  the way of the content, and it is consistent with every copy ruling in the record: no showboating,
+  the shire after the opening exposition, Gilmour over Malmsteen.**
+- ⛔ **THE PRESENTATION IS NOW THE DIFFERENTIATOR.** *"a whole new ballgame."* ⚠ **Everyone can put
+  information on a page. What separates one site from another is how that information ARRIVES.**
+
+## ⚠⚠ WHY THIS IS THE FRAME FOR THE WHOLE SITE
+
+⛔ **It explains why the C2B site is built the way it is, and it is not decoration for its own sake:**
+
+- ⛔ **`/start` is information gathering PRESENTED as a corridor**, not a form.
+- ⛔ **`/about` §2 is four job descriptions PRESENTED as objects in a room**, not a list.
+- ⛔ **The buttons are navigation PRESENTED as material.**
+- ⛔ **The mark is branding PRESENTED as a fixed point the world moves past.**
+
+⚠⚠ **IN EVERY CASE THE INFORMATION IS UNCHANGED AND COULD BE DELIVERED AS PLAIN TEXT. THE PRESENTATION
+IS THE PRODUCT.**
+
+## ⛔ AND IT IS WHAT C2B SELLS
+
+⚠ **The front door for a business selling front doors (§14a).** ⛔ **A prospective client does not buy
+"we will write your copy" — they buy the experience of the site they are looking at while deciding.**
+⚠⚠ **Which makes the signature move a SALES ARGUMENT, not a flourish: it is the most legible proof of
+the claim that presentation is where the value is.**
+
+## ⚠ NOT YET DECIDED, AND IT IS CARL'S
+
+⛔ **Whether any of this reaches §2's COPY. §2 is drafted and PROVISIONAL (D-077) and Carl approved
+it as it stands.** ⚠⚠ **A signature move is a claim about WHAT C2B MAKES, which is §10a territory —
+the broadened rule about what C2B claims to have made. ⛔ THE BUILDER HAS NOT TOUCHED §2 AND MUST
+NOT WITHOUT CARL'S WORD.**
