@@ -388,3 +388,77 @@ BY EYE IN ONE SECOND.**
 ⛔ **NOT YET SAVED TO THE REPO** — the Builder cannot write an image it has only viewed. ⚠ **Ask Carl
 for it; it is the reference that makes the FLOOR PAIR tractable, because the grid extends onto the
 floorboards and the floor cards stand IN the space rather than lying on a photographed surface.**
+
+---
+
+# ⛔⛔ A CAPABILITY, NOT JUST A FIX — CARL, 6 September 2026. IDEA ONLY, NOT A DECISION
+
+> ⛔ ***"i suspect this feature may become part of what C2B does, like three js buttons. We can now do
+> it with code and in video Davinci Resolves Fusion has the Planar Tracker."***
+
+⚠⚠ **RECORDED AS AN IDEA CARL IS HOLDING, NOT AS A SETTLED SERVICE.** ⛔ **Nothing here is authorised
+and no page changes.**
+
+## ⛔ THE THREE ROUTES, AND THEY COVER EACH OTHER'S WEAKNESSES
+
+| route | what it does | what it cannot do alone |
+|---|---|---|
+| **CODE — the still solve** | `.claude/skills/perspective-from-photograph`. Solves the CAMERA from one still and gives placement in **metres** | Static. One viewpoint |
+| **VIDEO — Fusion's Planar Tracker** | Solves a homography PER FRAME from a moving camera. Handles motion | ⚠ **Gives the PLANE, not the ROOM'S DIMENSIONS. No metres** |
+| ⛔⛔ **BOTH — Carl's third option** | **See below** | — |
+
+⚠ **The still solve works where a tracker has nothing to lock onto; the tracker works where a still
+cannot. ⛔ AND THE SCALE PROBLEM IS ONE-WAY: a planar track needs metres from somewhere else, which
+is exactly what the still solve produces.**
+
+## ⛔⛔ THE THIRD OPTION — CARL'S, AND IT IS THE STRONGEST
+
+> ⛔ ***"There is also a third option — combine the two. The still image was much bigger at first than
+> it was on the page. Theres nothing to prevent us from zooming in with a camera in Resolve using the
+> Planar tracker to put text, images or a logo on the wall and when the image comes to a standstill
+> inserting an object. All about timing."***
+
+⛔ **THE MOVE: TRACK WHILE IT MOVES, HAND OVER TO GEOMETRY WHEN IT STOPS.**
+
+1. **Resolve pushes in on the still** — the source is 6158 x 4105 against a page image of 1800 x 1200,
+   ⚠⚠ **so there is real resolution to move through. THE ZOOM IS FREE.**
+2. **The Planar Tracker carries text, images or a logo on the wall through the move** — it needs no
+   metres for this, only the plane.
+3. ⛔⛔ **AT THE STANDSTILL, THE FRAME IS A STILL AGAIN — and the code solve owns that frame exactly.**
+   **A real 3D object is inserted there, in metres, with the camera known.**
+
+⚠⚠ **THE HANDOVER IS THE WHOLE IDEA. Each technique runs where it is strong and stops where it is
+weak, and the join is hidden by the motion stopping.**
+
+## ⚠⚠ AND IT IS §14a's RULE, NOT A NEW ONE
+
+⛔ **Carl: *"All about timing."*** ⚠ **The ethos file already says it: *"Motion should feel musical:
+phrased, legato, paced and choreographed"*, and *"Elements should complete their phrase before the
+next phrase begins."***
+
+⛔ **THE MOVE ARRIVES, SETTLES, AND ONLY THEN DOES THE OBJECT APPEAR.** ⚠⚠ **That is the Clair de
+Lune constraint applied to a technique rather than to a hero: the object lands BECAUSE everything
+around it has come to rest.**
+
+⚠ **It is also the ONE-WORLD idea again — an object that belongs in the room rather than sitting on
+a picture of one. Same argument as *"a client's frosted glass being THE SAME GLASS."***
+
+## ⛔ WHY IT FITS WHAT §2 ALREADY CLAIMS
+
+⚠ **The page argues bespoke rather than assembled.** ⛔ **This is a capability that is HARD TO FAKE
+AND VISIBLY HARD TO EYEBALL — a viewer can tell instantly whether an object sits IN a room or on top
+of a photograph of one.** ⚠⚠ **That is the same uncanny-valley reaction Carl had all through
+5 September, and a client's customers would have it too.**
+
+⛔ **And it composites into the CLIENT'S OWN SPACE** — their premises, their room, their product.
+**Not a stock render.**
+
+## ⚠ WHAT IS NOT DECIDED, AND IT IS CARL'S
+
+- ⛔ **Whether this becomes a FIFTH SERVICE, folds into one of the existing four (D-012), or stays an
+  internal technique.** ⚠ **The homepage lists four and its copy is APPROVED (D-067). Nothing here
+  touches it.**
+- ⚠ **Whether it appears on `/about` §3 as an EXAMPLE.** ⛔ **§3's four examples are two named and two
+  TBD — this is a candidate, not a placement.**
+- ⚠ **Whether the `/about` §2 room itself gets the treatment**, which would make the page demonstrate
+  the capability it describes.
