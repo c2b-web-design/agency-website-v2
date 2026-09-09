@@ -4305,3 +4305,46 @@ A row-2 label sat **0px** below the box above it and **4px** above its own field
 **C2B's own, generated from a parameterised script**, replacing the comp removed in D-079. ⚠ **Placement "A" chosen by Carl against three alternatives**, on his criterion: *"a good spread of shades of blue... good representation in each card."*
 
 ⚠ **The generator lives OUTSIDE the repo.** If `ROW_PITCH_PX` moves again the plate must be re-run at the new span — it is one command, not a re-author.
+
+---
+
+## D-081 — The Pikbest Blob Stays In History Until The Blueprint Clone. That Is When It Must Not Travel
+
+**Date recorded:** 2026-09-09
+**Status:** ⛔ **DEFERRED BY DESIGN, NOT UNRESOLVED.** The purge is OWED at a named moment.
+**Authority:** Human Founder — Carl, 9 September 2026: *"History is important. Pikbest is not needed anymore."* And on the plan: *"Remove the C2B site info and clone the repo so i have a blueprint to work with clients."*
+**Bears on:** git history from `30ababe`. Follows **D-079**, which removed the file from the working tree and the live site.
+
+---
+
+### ⛔ WHAT IS AND IS NOT ALREADY DONE
+
+**Done (D-079):** the comp is deleted from `public/` and `brand-assets/`, off the live site, out of every new clone, and referenced by nothing.
+
+⚠ **Not done:** it remains **retrievable from two commits** — `30ababe` (added) and `d76d96f` (removed). ⛔ **`git gc` CANNOT help**: pruning removes only UNREACHABLE objects, and the blob is reachable from `30ababe`. **The only route is rewriting those commits.**
+
+### ⚠⚠ WHY IT IS NOT BEING REWRITTEN NOW — THE COST IS TO THE RECORD
+
+**324 commits sit between `30ababe` and HEAD.** A rewrite changes every one of their hashes. ⛔ **`decisions.md`, `current-sprint.md` and the handoffs cite commit hashes constantly** — `2152e6e`, `442e95e`, `d008b4d`, `30ababe` itself and dozens more. **All would point at commits that no longer exist.**
+
+⛔ **Carl's ruling names the tension exactly: *"History is important."*** A rewrite would remove a dead 17 KB file at the cost of silently invalidating the citation network the whole governance system runs on.
+
+### ⛔⛔ THE PURGE IS OWED AT THE BLUEPRINT CLONE, AND THAT IS THE RIGHT MOMENT
+
+Carl's plan: when the site is finished, strip the C2B-specific content and **clone the repo as a client blueprint.**
+
+⚠⚠ **THAT IS PRECISELY WHEN THE BLOB MUST NOT TRAVEL — and the code comment predicted it, six weeks before the licensing problem was found:** *"If this site is ever used as a template for client work, this asset is the one element that is NOT C2B's to pass on."*
+
+⛔ **AT THAT POINT THE REWRITE COSTS NOTHING.** The blueprint is a fresh artefact with no governance record depending on its hashes. **Same outcome; no collateral.** ⚠ **Doing it now buys nothing the blueprint stage does not buy more cheaply.**
+
+### ⚠ WHAT MUST HAPPEN AT THE BLUEPRINT STAGE — do not let this be rediscovered
+
+1. ⛔ **Purge `public/contact-field-source.jpg` and `brand-assets/images.jpg` from the clone's history** before it reaches any client. Blob `3cefad5`.
+2. ⚠ **`git-filter-repo` is NOT installed and there is no Python on this machine** — either install it, or use `git filter-branch`, which ships with Git.
+3. ⚠ **The rewrite is blocked by the Claude Code safety classifier**, correctly. It needs a Bash permission rule Carl adds himself, or Carl runs the command.
+4. ⛔ **Two branches carry it** — `main` and `fix/q5-stall-and-label-colour`. ⚠ **That branch is KEPT DELIBERATELY**: Carl, *"something that put a spanner in the works for weeks... we will have a ref point."* **Its commits are merged into `main`, and a purge strips the blob while leaving every commit and message intact — the reference point survives.**
+5. ⚠ **Local backup refs exist** from tonight's aborted attempt: branch `backup-pre-purge-2026-09-09` and tag `backup-pre-purge-tag`. **Left in place; useful when the purge runs.**
+
+### ⚠ AND THE WIDER QUESTION IS CARL'S, NOT A TIDY-UP
+
+Carl, on the blueprint: *"we will look at the repo and decide whats stays and if info is important as a record we could possibly store it elsewhere."* ⛔ **The governance record is not automatically part of a client blueprint.** What transfers, what is archived, and what is discarded is a decision for that session.
