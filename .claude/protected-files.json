@@ -64,7 +64,23 @@
     "that is expected to be rewritten when the About section is developed — locking",
     "it would obstruct the work it exists for. The nail constants inside it are the",
     "part worth protecting, and they are a copy; the durable fix is removing the",
-    "duplication, not locking the page."
+    "duplication, not locking the page.",
+    "",
+    "⚠⚠ components/enquiry/enquiry-opening.tsx ADDED 9 September 2026, on Carl's",
+    "instruction, AND THE GAP WAS INVISIBLE UNTIL IT WAS TRIPPED OVER. Every other",
+    "file in the enquiry corridor was already listed — the contact field, the answer",
+    "cards, nextstep-geometry — but the 2,700-line component that OWNS the corridor,",
+    "the stage machine, the choreography and the whole timing contract was not.",
+    "",
+    "⛔ HOW IT WAS FOUND, WHICH IS THE PART WORTH KEEPING: the Builder told Carl a",
+    "fix 'would need your word because it's a protected file', Carl authorised it on",
+    "that basis, and the file was never protected. The claim was checked afterwards",
+    "by attempting a probe edit that SHOULD have been denied and was not.",
+    "",
+    "⚠ So an authorisation was granted on a false premise. The work was what Carl",
+    "asked for either way, but the reason given for needing permission did not hold.",
+    "⛔ A list is only as good as the assumption that it is complete, and nothing in",
+    "this repository asserts that it is."
   ],
 
   "protected": [
@@ -80,6 +96,7 @@
     "verify/proven.json",
     "verify/run.mjs",
 
+    "components/enquiry/enquiry-opening.tsx",
     "components/enquiry/contact-field-canvas.tsx",
     "components/enquiry/contact-field-geometry.ts",
     "components/enquiry/contact-field-inputs.tsx",
