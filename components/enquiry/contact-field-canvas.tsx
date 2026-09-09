@@ -338,11 +338,16 @@ const FIELD_TEX_H = 384;
 // one family. These values sit in the opal's hue family and closer to its
 // saturation, so the two complement rather than compete — while the field stays
 // clearly subordinate to the gold, which measures 172.9 at full.
-// ⚠ SAMPLED FROM `brand-assets/images.jpg`, Carl's flowing-ribbon reference, then
-// COMPRESSED. He asked for it followed closely: *"if you have to copy this design
-// closely, do it. Most of it will be masked anyway."*
+// ⚠ MEASURED FROM Carl's flowing-ribbon reference, then COMPRESSED. He asked for
+// it followed closely: *"if you have to copy this design closely, do it. Most of it
+// will be masked anyway."*
 //
-// Measured from the reference (699x392, sampled on a grid):
+// ⛔ THE REFERENCE FILE IS GONE FROM THIS REPO — it was `brand-assets/images.jpg`,
+// an unlicensed watermarked comp, deleted 9 September 2026. See the removal note
+// below. ⚠ **These numbers stay because they are MEASUREMENTS, not the artwork**:
+// a hue path, compressed to sit under the gold. Carl holds the reference offline.
+//
+// Measured from that reference (699x392, sampled on a grid):
 //
 //   darkest   #000761  luminance  12
 //   mid-dark  #1148bd  luminance  69
@@ -358,25 +363,39 @@ const FIELD_TEX_H = 384;
 //
 // The hue also sits close to the Send opal's #163a8f -> #114aa5, which is what Carl
 // asked for on the 65" TV: *"all would echo the blue opal."*
-// ── The sampled source ───────────────────────────────────────────────────────
+// ── The sampled source — ⛔ REMOVED 9 September 2026 ──────────────────────────
 //
-// ⚠ A DELIBERATE EXCEPTION TO THIS PROJECT'S OWN RULE, taken by Carl with the
-// trade-off in front of him. Every other material here is GENERATED — the gold was
-// sampled from C2B's own logo, the studio environment is built in code with no
-// HDRI and no network request. `contact-field-source.jpg` is a licensed stock
-// asset (Pikbest, watermarked in the original), and using it closely was raised as
-// a licensing and originality question before it was done.
+// ⛔⛔ `contact-field-source.jpg` WAS AN UNLICENSED WATERMARKED COMP AND IT WAS
+// SHIPPING IN PRODUCTION. Deleted from `public/` and `brand-assets/` on Carl's
+// instruction: *"I cannot use the old file, references to it in the repo should be
+// deleted."*
 //
-// Carl's decision, with his reasoning: *"Yes, I'd be breaking my own rule, but for
-// this effect — worth it!"* and, on the method: *"I'd be sampling in Music."*
+// ⚠⚠ THE RECORD PREDICTED THIS AND THE SAFEGUARD WORKED. The note here already
+// named Pikbest, already said *"watermarked in the original"*, and already warned
+// it was **"the one element that is NOT C2B's to pass on"** if this site were used
+// as a client template. ⛔ **The procedural field was kept as a working fallback
+// FOR EXACTLY THIS EVENT** — so removal was a deletion, not a rebuild.
 //
-// Recorded here so it reads as a decision rather than an oversight to whoever finds
-// it later. ⚠ **If this site is ever used as a template for client work
-// (`live-work/references/workshop-template-and-client-delivery.md`), this asset is
-// the one element that is NOT C2B's to pass on.**
+// ⚠ WHAT THE ORIGINAL DECISION GOT RIGHT AND WRONG. Carl took it with the
+// trade-off in front of him — *"Yes, I'd be breaking my own rule, but for this
+// effect — worth it!"* — and it was recorded as a decision rather than hidden. What
+// was wrong was the word **"licensed"**: the file was a watermarked preview, never
+// cleared. ⛔ **The visible Pikbest wordmark was in the pixels being rendered to
+// every visitor.**
 //
-// The procedural field below is kept as a working fallback for exactly that reason.
-const FIELD_SOURCE_URL = "/contact-field-source.jpg";
+// ⚠ FOUND BY A THIRD PARTY, NOT BY THIS PROJECT'S OWN CHECKS. Nothing here — not
+// lint, not tsc, not any harness — asserts that a shipped asset is licensed. ⛔ **A
+// green gate proves the thing it tests and nothing else** (`context-rules.md`).
+//
+// ⛔ THE REPLACEMENT IS COMMISSIONED ORIGINAL WORK. Carl is outsourcing a field
+// built from scratch — similar in spirit, inspired by the reference, but C2B's own.
+// ⚠ **The one constraint to pass to whoever builds it: the four box faces are
+// WINDOWS ONTO ONE SHARED FIELD**, so it must survive being cropped into four
+// unrelated rectangles. A design whose interest sits in one corner will not work.
+//
+// ⚠ THE PALETTE CONSTANTS BELOW STAY. They were *measured* from the reference and
+// then compressed against the Send opal — colour direction, not copied expression,
+// and they are what keeps the procedural field in the opal's family.
 // ── Grading the source against the Send opal ─────────────────────────────────
 //
 // ⚠ ANCHORED TO MEASURED VALUES, not adjusted by feel. Carl: *"look at the hex of
@@ -572,8 +591,11 @@ const FIELD_LIT = "#4fa2ea";
  * smaller than a box, which is 2.9 units wide.** Each box caught a bright patch
  * and flat tone either side, so it never read as a gradient at all.
  *
- * ⚠ THE REFERENCE IS NOT SPOTS, IT IS RIBBONS. Measured from
- * `brand-assets/images.jpg` by tracing the brightest row per column:
+ * ⚠ THE REFERENCE IS NOT SPOTS, IT IS RIBBONS. Measured by tracing the brightest
+ * row per column of Carl's flowing-ribbon reference — ⛔ **that file is no longer
+ * in this repo** (unlicensed comp, deleted 9 September 2026; Carl holds it
+ * offline). The crest positions are kept because they describe the SHAPE the
+ * procedural arcs were built to approximate, and nothing else records it:
  *
  *   x=0.00  crest at 0.90    x=0.45  crest at 0.45    x=0.82  crest at 0.53
  *   x=0.18  crest at 0.60    x=0.55  crest at 0.51    x=1.00  crest at 0.39
@@ -772,6 +794,19 @@ function buildFieldNormalTexture(height: HTMLCanvasElement): THREE.CanvasTexture
  * ⚠ `SRGBColorSpace` is REQUIRED on a colour map. Omitting it double-applies the
  * transfer function and the field renders visibly darker and more saturated than
  * authored — a silent failure that looks like a palette problem.
+ */
+/**
+ * ⚠⚠ `source` IS NOW ALWAYS `undefined` — AND IT IS LEFT IN DELIBERATELY.
+ *
+ * ⛔ The only caller that ever passed an image was the JPEG upgrade path, removed
+ * 9 September 2026 with the unlicensed comp. **The sampling branch below is
+ * therefore DEAD CODE as of that date.**
+ *
+ * ⚠ IT IS KEPT, NOT DELETED, because the replacement is already commissioned: an
+ * original field is being built to drop into exactly this parameter. Deleting the
+ * path would mean rebuilding it in a fortnight from a diff nobody would think to
+ * look for. ⛔ **If that commission is abandoned, delete the branch — a dead path
+ * that nothing is coming for is a liability, not an option.**
  */
 function buildFieldColourTexture(
   source?: HTMLImageElement,
@@ -1050,30 +1085,19 @@ function useFieldTexture(
       invalidate();
     };
 
-    // Draw the procedural field immediately, so there is never an untextured
-    // frame, then upgrade to the sampled source when it loads.
-    let current = buildFieldColourTexture(undefined, heightCanvas);
+    // ⛔ THE PROCEDURAL FIELD IS NOW THE FIELD, not a placeholder for a sampled
+    // upgrade. The JPEG that used to replace it was REMOVED on 9 September 2026 —
+    // see the licensing note at `buildFieldColourTexture`.
+    //
+    // ⚠ IT WAS KEPT AS A FALLBACK FOR EXACTLY THIS EVENT, and the fallback held:
+    // captured on a production build with the request blocked, the four boxes keep
+    // their gold rims, blue faces and the orbit's glint. **Flatter and darker than
+    // the sampled version, and coherent.** It is an interim, not the destination —
+    // Carl is commissioning an original field to replace it.
+    const current = buildFieldColourTexture(undefined, heightCanvas);
     apply(current);
 
-    // ⚠ LOADED, NOT BUNDLED. The source is a 17 KB JPEG served from `public/`, so
-    // it is fetched once and cached. It is deliberately NOT blocking: if it never
-    // arrives, the procedural field stays and the page is coherent.
-    let cancelled = false;
-    const img = new Image();
-    img.onload = () => {
-      if (cancelled) return;
-      const sampled = buildFieldColourTexture(img, heightCanvas);
-      const previous = current;
-      current = sampled;
-      apply(sampled);
-      // Dispose the procedural one only AFTER the replacement is attached, so no
-      // material ever references a disposed texture.
-      previous.dispose();
-    };
-    img.src = FIELD_SOURCE_URL;
-
     return () => {
-      cancelled = true;
       attached.forEach((material) => {
         material.map = null;
         material.normalMap = null;

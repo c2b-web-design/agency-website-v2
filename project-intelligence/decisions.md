@@ -4147,3 +4147,92 @@ of you" rule doing its job.**
 screenshots. ⛔ **Pre-existing, cannot fire for a visitor, and Carl has deferred it:** *"We
 will fix the artifact when we fix another issue in this section that has recently come to
 light."* **Not a defect of this work.**
+
+---
+
+## D-079 — The Contact Field's Source Image Was An Unlicensed Watermarked Comp. Removed From The Repo And The Live Site
+
+**Date recorded:** 2026-09-09
+**Status:** ⛔ **APPROVED — the removal.** ⚠ **The procedural fallback is INTERIM, not the destination.**
+**Authority:** Human Founder — Carl, 9 September 2026: *"I cannot use the old file, references to it in the repo should be deleted."*
+**Bears on:** `components/enquiry/contact-field-canvas.tsx`. Amends the sampled-source decision recorded in that file's comments (30 July 2026, commit `30ababe`).
+
+---
+
+### ⛔⛔ WHAT WAS SHIPPING
+
+`public/contact-field-source.jpg` — a **699x392 Pikbest comp with the wordmark
+visible in the pixels** — was fetched by every visitor to `/start` and sampled into
+the four contact boxes' face texture. ⚠ **A byte-identical second copy sat at
+`brand-assets/images.jpg`** (MD5 `615696bc…`), also tracked. Both committed
+30 July 2026 in `30ababe`. **Both now deleted.**
+
+### ⚠ THE ORIGINAL DECISION WAS RECORDED HONESTLY AND STILL WENT WRONG
+
+⛔ **This was not hidden.** The code comment named Pikbest, said *"watermarked in
+the original"*, called it *"a deliberate exception to this project's own rule"*, and
+warned it was **"the one element that is NOT C2B's to pass on"** if the site were
+ever used as a client template. Carl took it with the trade-off stated: *"Yes, I'd
+be breaking my own rule, but for this effect — worth it!"*
+
+⚠⚠ **THE FAULT WAS ONE WORD: "licensed".** The comment called it *"a licensed stock
+asset"* in the same sentence that called it watermarked. ⛔ **A watermarked preview
+is the opposite of licensed, and the two claims sat side by side for six weeks
+without the contradiction being read.**
+
+### ⛔ THE SAFEGUARD WORKED, AND IT IS THE REASON REMOVAL WAS CHEAP
+
+⚠ **The procedural arc field was kept as a working fallback FOR EXACTLY THIS
+EVENT** — the comment said so. ⛔ **So this was a deletion, not a rebuild.**
+**Verified on a production build before the file was touched**, by blocking the
+request: the four boxes keep their gold rims, blue faces and the orbit's glint.
+**Flatter and darker than the sampled version, and coherent.**
+
+### ⚠⚠ HOW IT WAS FOUND — NOT BY THIS PROJECT, AND NOT BY THIS SEAT
+
+⛔ **A third party using Claude found it.** ⚠ **The Builder had the file open, read
+the procedural path, and told Carl "nothing loads an image" — the JPEG upgrade was
+one function call below where it stopped.** The `"not copied"` palette comment was
+true of the three hex constants and false of the field, and was read as covering
+both.
+
+⛔⛔ **THE GENERAL FORM: A COMMENT WAS CONFIRMED INSTEAD OF THE BEHAVIOUR.** Same
+family as every instrument defect on the record — `context-rules.md`, *"a green gate
+proves the thing it tests and nothing else."* ⚠ **Nothing in this project — not
+lint, not tsc, not any of the 131 harnesses — asserts that a shipped asset is
+licensed. That gap is unclosed and is stated here rather than implied.**
+
+### ⛔ WHAT REPLACES IT
+
+**Carl is commissioning original work** — *"We are going to remove it and build our
+own. It will look similar to whats there, serve as inspiration if you will, but the
+work will be our own and i am gonna outsource the work."* ⚠ **He holds the reference
+offline, on his desktop, and will delete it once the new field exists.**
+
+⚠⚠ **THE CONSTRAINT TO BRIEF WHOEVER BUILDS IT: the four box faces are WINDOWS ONTO
+ONE SHARED FIELD.** The variation between boxes comes from where each window sits,
+not from per-box artwork. ⛔ **It must survive being cropped into four unrelated
+rectangles — a design whose interest sits in one corner will not work.**
+
+### ⚠ WHAT WAS KEPT, AND WHY IT IS NOT A LICENSING RESIDUE
+
+- **The palette constants** — *measured* from the reference then compressed against
+  the Send opal. ⛔ **Colour direction, not copied expression.** They are what keeps
+  the procedural field in the opal's family.
+- **The crest positions** — a traced description of the reference's SHAPE, which the
+  arcs were built to approximate. **Nothing else records it.**
+- **`buildFieldColourTexture`'s `source` parameter and its sampling branch** — now
+  **dead code**, kept because the replacement drops straight into it. ⛔ **If the
+  commission is abandoned, delete the branch.**
+
+### ⚠ NOT DONE — AND IT IS CARL'S CALL
+
+- ⛔⛔ **THE FILE REMAINS IN GIT HISTORY.** Removal takes it off the live site and
+  out of new clones; **it is still retrievable from commits back to `30ababe`.**
+  Purging needs `git filter-repo` and a force-push — **destructive, rewrites every
+  hash from that point.** ⚠ **Private repo. Not done, and will not be without a
+  direct instruction.**
+- ⚠ **`components/layout/site-header.tsx:101` still cites the deleted file as
+  precedent** for serving an asset from `public/`. **A protected file; the mention is
+  cosmetic and carries no licensing risk.** Left rather than unlock a protected path
+  for a comment.
