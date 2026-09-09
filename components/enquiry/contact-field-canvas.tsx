@@ -286,17 +286,25 @@ export const FIELD_ENTRANCE_END_MS = FIELD_ENTRANCES.reduce(
 // that follows this chunk; a satin face RECEIVES light instead.
 
 /** Texture resolution. 6:1 to match the field's world aspect — see below. */
-const FIELD_TEX_W = 2304;
+// ⛔ 2304 -> 2048 on 9 September 2026. NOT a quality change: `ROW_PITCH_PX`
+// 58 -> 70 moved the world span 576x96 -> 576x108, so the square-texel ratio is
+// now 5.33:1 rather than 6:1. **384 x 5.3333 = 2048.**
+const FIELD_TEX_W = 2048;
 const FIELD_TEX_H = 384;
 
 /**
- * ⚠ THE TEXTURE IS 6:1, NOT SQUARE, AND THAT IS LOAD-BEARING.
+ * ⚠ THE TEXTURE MATCHES THE WORLD ASPECT, NOT SQUARE, AND THAT IS LOAD-BEARING.
  *
- * The shared field spans 576 x 96 world units. The UVs are isotropic — 96 world
+ * The shared field spans 576 x 108 world units. The UVs are isotropic — 108 world
  * units per UV unit on BOTH axes at every viewport width (verified at 576/400/300)
- * — so a square texture would map its square pixels onto a 6:1 world rectangle and
- * a circle drawn in texture space would render as a 6:1 ellipse. At 2304 x 384 the
- * texel is square in world space: draw a circle, get a circle.
+ * — so a square texture would map its square pixels onto a 5.33:1 world rectangle
+ * and a circle drawn in texture space would render as a 5.33:1 ellipse. At
+ * 2048 x 384 the texel is square in world space: draw a circle, get a circle.
+ *
+ * ⛔ **WAS 6:1 / 576 x 96 / 2304 x 384 UNTIL 9 September 2026.** `ROW_PITCH_PX`
+ * 58 -> 70 (the label-proximity fix) moved `spanY` 96 -> 108. ⚠⚠ **THE TEXTURE
+ * DIMENSIONS ARE DERIVED FROM THE SPAN AND ARE NOT FREE** — changing the pitch
+ * again obsoletes the plate and it must be re-generated at the new ratio.
  *
  * That matters from step 3, when the arcs arrive. It costs nothing to get right
  * now and is expensive to discover later.
@@ -396,6 +404,10 @@ const FIELD_TEX_H = 384;
 // ⚠ THE PALETTE CONSTANTS BELOW STAY. They were *measured* from the reference and
 // then compressed against the Send opal — colour direction, not copied expression,
 // and they are what keeps the procedural field in the opal's family.
+//
+// ⛔⛔ REPLACED THE SAME DAY BY C2B'S OWN PLATE — `contact-field-plate.jpg`.
+// **Generated, not sourced.** Full note at the loader in `useFieldTexture`.
+const FIELD_SOURCE_URL = "/contact-field-plate.jpg";
 // ── Grading the source against the Send opal ─────────────────────────────────
 //
 // ⚠ ANCHORED TO MEASURED VALUES, not adjusted by feel. Carl: *"look at the hex of
@@ -1085,19 +1097,59 @@ function useFieldTexture(
       invalidate();
     };
 
-    // ⛔ THE PROCEDURAL FIELD IS NOW THE FIELD, not a placeholder for a sampled
-    // upgrade. The JPEG that used to replace it was REMOVED on 9 September 2026 —
-    // see the licensing note at `buildFieldColourTexture`.
-    //
-    // ⚠ IT WAS KEPT AS A FALLBACK FOR EXACTLY THIS EVENT, and the fallback held:
-    // captured on a production build with the request blocked, the four boxes keep
-    // their gold rims, blue faces and the orbit's glint. **Flatter and darker than
-    // the sampled version, and coherent.** It is an interim, not the destination —
-    // Carl is commissioning an original field to replace it.
-    const current = buildFieldColourTexture(undefined, heightCanvas);
+    // Draw the procedural field immediately, so there is never an untextured
+    // frame, then upgrade to the authored plate when it loads.
+    let current = buildFieldColourTexture(undefined, heightCanvas);
     apply(current);
 
+    // ⛔ THE PLATE — `public/contact-field-plate.jpg`, 2048 x 384, 63 KB.
+    //
+    // ⚠⚠ C2B'S OWN WORK. Generated procedurally from a parameterised script, not
+    // sourced: continuous folds of light across one cloth, so the four windows
+    // read as siblings while each catches something different. **It replaces the
+    // unlicensed Pikbest comp removed earlier on 9 September 2026 (D-079), and
+    // carries no third-party rights.**
+    //
+    // ⛔ APPROVED BY CARL'S EYE as placement "A" — the group centred on the plate
+    // at scale 1.0 — chosen against three alternatives on this criterion, in his
+    // words: *"a good spread of shades of blue... Enough light blue and darker
+    // blue spread out over the area and good representation in each card."*
+    // ⚠ **That is a stronger test than the spread BETWEEN card means, which is
+    // what the instrument reported: a card needs range INSIDE it to read as lit
+    // material, not merely a different average from its neighbour.** All four
+    // windows reach down to ~23 luma and differ in how much light they catch.
+    //
+    // ⚠ GRADE, MEASURED ON THE SHIPPED FILE: luma floor 20.8, mean 54.3, peak
+    // 150.2, 1297 distinct RGB triples, nothing at or over the gold rim's 172.9.
+    // ⛔ **The floor is deliberate and is NOT "how dark the corner looks" — it is
+    // how dark it looks AFTER being multiplied by AMBIENT_INTENSITY 0.22.** Below
+    // roughly 20 the hue crushes to void and the corners stop reading as blue.
+    //
+    // ⚠ JPEG q92 AT 4:4:4, NOT PNG — 63 KB against 571 KB, and **measured to
+    // preserve the grade exactly** (floor 21.0 -> 20.8, mean 54.3 -> 54.3, peak
+    // 150.4 -> 150.2). ⛔ **Distinct colours went UP, 949 -> 1297**: the encoder's
+    // own noise adds to the TPDF dither rather than smoothing it away, so the
+    // anti-banding survives compression.
+    //
+    // ⚠ LOADED, NOT BUNDLED, and deliberately NOT blocking: if it never arrives
+    // the procedural field stays and the page is coherent. That fallback is not
+    // theoretical — it is what shipped between the comp's removal and this plate.
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => {
+      if (cancelled) return;
+      const sampled = buildFieldColourTexture(img, heightCanvas);
+      const previous = current;
+      current = sampled;
+      apply(sampled);
+      // Dispose the procedural one only AFTER the replacement is attached, so no
+      // material ever references a disposed texture.
+      previous.dispose();
+    };
+    img.src = FIELD_SOURCE_URL;
+
     return () => {
+      cancelled = true;
       attached.forEach((material) => {
         material.map = null;
         material.normalMap = null;

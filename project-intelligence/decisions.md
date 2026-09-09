@@ -4236,3 +4236,72 @@ rectangles — a design whose interest sits in one corner will not work.**
   precedent** for serving an asset from `public/`. **A protected file; the mention is
   cosmetic and carries no licensing risk.** Left rather than unlock a protected path
   for a comment.
+
+---
+
+## D-080 — The Contact Field Relit: An Aimed Relay Of Two Lights, C2B's Own Plate, And The Row Pitch Fixed
+
+**Date recorded:** 2026-09-09
+**Status:** ⛔ **APPROVED BY EYE on the running build.** ⚠ **The VALUES remain PROVISIONAL (D-044/D-035).**
+**Authority:** Human Founder — Carl, 9 September 2026, on the finished behaviour: *"There are no dead moments... There are moments that are more 'chill' than others and moments when the state is on the way to excited... This looks so cool. Well done."*
+**Bears on:** `contact-field-light-rig.tsx`, `contact-field-canvas.tsx`, `contact-field-geometry.ts`, `public/contact-field-plate.jpg`. Follows **D-078** (the orbit ships) and **D-079** (the comp removed).
+
+---
+
+### ⛔ FIVE CHANGES, AND THEY ARE ONE SYSTEM
+
+Carl ruled early that they could not be tuned separately: *"changing one aspect at a time wont be enough."*
+
+| | from | to |
+|---|---|---|
+| **`ROW_PITCH_PX`** | 58 | **70** |
+| **The plate** | unlicensed comp | **C2B's own, generated** |
+| **Aim** | fixed target | **rotating, rakes then opens** |
+| **Intensity** | fixed | **exposure x d²** |
+| **Lights** | one | **two, in relay** |
+
+### ⛔⛔ THE AIM ROTATES — the change that made the geometry legible
+
+Until now the light aimed at one pinned point: it orbited, so distance changed, but **it never turned to look somewhere else.** Carl specified a sweep from a side-view sketch — raking along the row from one side, opening face-on at the bottom to take in the Send button, then raking from the other side.
+
+⚠⚠ **THE RAKE IS WHAT SHOWS THE CROWN.** The face has a shallow crown and a normal-mapped grain and **both are only legible under grazing light.** Carl: *"it will also show the shadows because of the geometry, especially from the left and right."* **Ends give SHAPE; the middle gives PRESENCE.**
+
+### ⛔ EXPOSURE, NOT INTENSITY — borrowed from the APPROVED Q+A cards
+
+Carl named the problem: the light is **furthest** where it is most face-on, **closest** at the corners, so a fixed intensity makes the most important moment the dimmest. `answer-card-canvas.tsx` already solved this — hold a constant exposure, multiply by d² per frame. ⛔ **Not a new invention; the same model, one file over.**
+
+**Shipped exposure: 0.70.** ⚠ Derived, not guessed: the previous pair delivered an effective 0.80 which Carl judged *"just a little too bright"*, so this is 87% of it.
+
+### ⛔⛔ THE RELAY, AND CARL'S MODEL IS WHY IT IS SIMPLE
+
+**Two lights, same behaviour, offset by a TRIGGER — the moment light A's cone stops reaching the faces.** ⚠ **5694ms of a 10000ms lap, MEASURED by integrating the speed profile.**
+
+⚠⚠ **THE TRIGGER IS A PROPERTY OF ONE LIGHT'S OWN LAP, NOT A RELATIONSHIP BETWEEN TWO.** Carl: *"All you have to do is sort out the figures for the first light and clone it. Do they have to be synchronised? No... It's like having a four bar piece of music, copying it and offsetting it."*
+
+⛔ **A lap is 9s slow across the faces + 1s fast round the back.** The fast return is **a rim glint, not dead time** — Carl found the behaviour (*"the face is dead but you can see the gold rim glint"*) and then designed for it (*"glints happen fast"*).
+
+### ⚠⚠ EVENNESS IS NOT THE TARGET — the correction that matters most
+
+**Measured: floor 103, peak 224, mean 146, swing 2.18x, no sample at the ambient-only 64.**
+
+⛔ **The Builder was optimising toward evenness and that would have killed it.** Carl's verdict names the intent: *"that means its not constantly alive, an evenness... moments that are more 'chill'... and moments when the state is on the way to excited."* **The remaining 2.18x swing IS the effect.** ⛔ **A future session that flattens the ratio will destroy the thing this entry approves.**
+
+### ⚠ THREE ERRORS BY THE BUILDER, RECORDED BECAUSE THEY SHARE ONE SHAPE
+
+1. ⛔ **A curve measured in TIME, applied as PHASE.** The dead zone was sampled by wall clock; the offset derived from it was applied to orbit phase. The speed profile makes those non-linear, so the "measured" 0.40 offset was a real curve read against the wrong ruler — and measured **worse than a single light**.
+2. ⚠ **"Shadow cancellation" over-stated.** A naive count said both lights were forward ~52% of the lap. **Checked rather than assumed: when both are forward they sit at OPPOSITE ENDS of the row** — cancellation needs both cones on the same card, and they are mostly lighting different ones.
+3. ⚠ **"Restoring full exposure doubles the brightness"** — wrong. The pair already delivered an effective 0.80 per light.
+
+⛔ **All three are the same failure: reasoning about a quantity without checking which space it lives in.** Same family as the instrument defects in `context-rules.md`.
+
+### ⚠ THE ROW PITCH, AND WHY IT HAD TO GO FIRST
+
+A row-2 label sat **0px** below the box above it and **4px** above its own field — bound by proximity to the wrong control. **Found by a third party (Runable), not by this project.** Now 12px/4px.
+
+⛔ **It had to be fixed BEFORE the plate was authored**: pitch -> `spanY` 96->108 -> plate aspect 6.00:1 -> **5.33:1**. Authoring first would have meant authoring twice.
+
+### ⛔ THE PLATE — `public/contact-field-plate.jpg`, 2048 x 384, 62 KB
+
+**C2B's own, generated from a parameterised script**, replacing the comp removed in D-079. ⚠ **Placement "A" chosen by Carl against three alternatives**, on his criterion: *"a good spread of shades of blue... good representation in each card."*
+
+⚠ **The generator lives OUTSIDE the repo.** If `ROW_PITCH_PX` moves again the plate must be re-run at the new span — it is one command, not a re-author.

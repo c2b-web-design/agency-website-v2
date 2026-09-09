@@ -33,6 +33,12 @@ export const COLUMN_GAP_PX = 8;
 // each grid cell is label(16) + mb-1(4) + input(38) = 58px; two rows + 8px row
 // gap = 124px; the layer is 184px with `align-items: center`, so the grid top
 // is (184-124)/2 = 30px, and the top-left INPUT top is 30+16+4 = 50px.
+//
+// ⚠⚠ THAT DERIVATION DESCRIBES THE ORIGINAL CSS GRID AND IS KEPT AS HISTORY —
+// it is how `FIELD_OFFSET_TOP_PX` = 50 was arrived at, and 50 is unchanged.
+// ⛔ **But the "58px cell" no longer describes the ROW PITCH.** `ROW_PITCH_PX`
+// was raised to 70 on 9 September 2026 to fix a label-proximity defect; see its
+// own comment for the arithmetic. **The grid is no longer two equal 58px cells.**
 /** Left offset of the field body from the contact layer's left edge. */
 export const FIELD_OFFSET_LEFT_PX = 0;
 /** Top offset of the field body from the contact layer's top edge. */
@@ -41,13 +47,41 @@ export const FIELD_OFFSET_TOP_PX = 50;
 /**
  * Vertical pitch between row 1 and row 2 of the 2x2 grid.
  *
- * DERIVED, not measured separately: it is exactly one grid cell, which the
- * comment above already decomposes as label(16) + mb-1(4) + input(38) = 58.
- * Row 2's input top is therefore 50 + 58 = 108, and the pair spans
- * 50..146 inside the 184px layer — symmetric about the centre (50 top margin,
- * 38 bottom), which is the `align-items: center` result the CSS grid produced.
+ * ⛔⛔ RAISED 58 -> 70 ON 9 September 2026. THE OLD VALUE PUT EVERY ROW-2 LABEL
+ * CLOSER TO THE FIELD IT DOES NOT LABEL.
+ *
+ * ⚠⚠ THE ARITHMETIC, BECAUSE IT IS EXACT AND NOTHING CAUGHT IT FOR SIX WEEKS:
+ * a row-2 label's gap ABOVE it is `pitch - FIELD_HEIGHT_PX - LABEL_BLOCK_PX`.
+ * At 58 that is **58 - 38 - 20 = 0px**, against **4px** below (the `mb-1`).
+ * ⛔ **So "Website URL" sat FLUSH against the Name box above it and 4px from its
+ * own field.** Proximity is how the eye groups: the label bound upward, to the
+ * wrong control. Same for "Email".
+ *
+ * ⛔ **At 70 it is 12px above / 4px below** — the label is three times closer to
+ * the field it names. **Row 1 was never affected**; its labels have open space.
+ *
+ * ⚠ **FOUND BY A THIRD PARTY (Runable), NOT BY THIS PROJECT.** It measured the
+ * rendered gaps at roughly 14px above / 8px below — the same defect read off
+ * pixels including the line-box's internal leading, where this comment reads the
+ * layout constants. **Different numbers, same conclusion.**
+ *
+ * ⚠ HEADROOM CHECKED, NOT ASSUMED. `.enquiry-contact-layer` is a FIXED
+ * `height: 11.5rem` (184px) in `globals.css`, so the pair must fit inside it.
+ * The block runs from row 1's label top to row 2's box bottom:
+ * `LABEL_BLOCK_PX + FIELD_HEIGHT_PX + pitch` = 20 + 38 + 70 = **128px**, leaving
+ * **28px margin each side**. ⛔ At 58 it was 116px / 34px. **Nothing overflows,
+ * and the block stays centred because the layer is `align-items: center`.**
+ *
+ * ⚠⚠ THIS CONSTANT IS LOAD-BEARING BEYOND LAYOUT. It feeds `fieldPlacements`,
+ * which feeds `sharedFieldWindow`, whose `spanY` sets the UV scale for the
+ * texture — so **changing it changes the aspect at which the field plate must be
+ * authored.** ⛔ **The plate was generated AFTER this change, at the new span.**
+ * Any future change here obsoletes the plate and it must be re-generated.
+ *
+ * Row 2's input top is now 50 + 70 = 120, and the pair spans 50..158 inside the
+ * 184px layer.
  */
-export const ROW_PITCH_PX = 58;
+export const ROW_PITCH_PX = 70;
 
 /**
  * Field body width for a given contact-layer width. The layer spans the shared
@@ -178,9 +212,15 @@ export type FieldWindow = {
  * would create a second copy of the placement maths that could silently disagree
  * with the first. If the boxes move, this window moves with them by construction.
  *
- * At the standard 576 x 184 layer this returns origin (-288, -54), span 576 x 96
+ * At the standard 576 x 184 layer this returns origin (-288, -66), span 576 x 108
  * — the outer rim silhouettes of the four boxes, exactly spanning the layer width
- * with the 8px gutter inside it. Note the y range is NOT symmetric about the
+ * with the 8px gutter inside it.
+ *
+ * ⛔ **576 x 96 UNTIL 9 September 2026.** `ROW_PITCH_PX` 58 -> 70 moved `spanY`
+ * 96 -> 108, which changes the PLATE ASPECT from 6.00:1 to **5.33:1**. ⚠ **The
+ * field texture is authored to this ratio — see `FIELD_TEX_W`/`FIELD_TEX_H`.**
+ *
+ * Note the y range is NOT symmetric about the
  * layer centre (+42 to -54): the DOM grid it inherits was centred on label+input
  * cells rather than on the inputs alone. That asymmetry is correct and inherited,
  * not a defect.
