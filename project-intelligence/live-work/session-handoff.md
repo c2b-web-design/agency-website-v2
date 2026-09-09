@@ -10,7 +10,7 @@
 
 | # | go to | why |
 |---|---|---|
-| **1** | ⛔ **"WHAT IS IN FRONT OF THE NEXT SESSION"** | **Carl has already chosen it.** Floor pair, contact shadows, the two buttons |
+| **1** | ⛔ **"WHAT IS IN FRONT OF THE NEXT SESSION"** | ⚠ **SIX THREE.JS OBJECTS, ONE FAMILY, ONE BODY OF WORK.** Carl's own words — and rule 5a applies before anything is built |
 | **2** | ⛔ **"EVENNESS IS NOT THE TARGET"** | ⚠ **The one rule most likely to be broken by a well-meaning future session** |
 | **3** | ⚠ **"WHAT CHANGED"** | D-078 to D-081, in the order they happened |
 | **4** | ⚠ **"STILL OPEN"** | The §5a write-up still gates §2 and is still untouched |
@@ -133,21 +133,56 @@ on a false premise.** Found by attempting a probe edit that should have been den
 
 ---
 
-# ⛔ WHAT IS IN FRONT OF THE NEXT SESSION — CARL HAS ALREADY CHOSEN
+# ⛔⛔ WHAT IS IN FRONT OF THE NEXT SESSION — IT IS ONE BODY OF WORK, NOT THREE ERRANDS
 
-> ⛔ ***"The floor pair (CD, CS)... Contact shadows... The two Three.js buttons. Next sessions work,
-> thats why im cleaning up now."***
+⚠⚠ **CARL RESTATED THE SCOPE AFTER THIS HANDOFF WAS FIRST WRITTEN, AND THE RESTATEMENT IS THE
+BRIEF.** An earlier draft listed the floor pair, contact shadows and the two buttons as three
+separate items. ⛔ **That framing was wrong and would have produced four unrelated builds.**
 
-| # | item | state |
-|---|---|---|
-| **1** | **The floor pair (CD, CS)** | Newly tractable — the perspective grid solves the floor plane. ⚠ **Rotations are Carl's eye, not a solve** |
-| **2** | **Contact shadows** | Route NOT committed. ⛔ **One constraint either way: MULTIPLY, never overlay** — the photographed floor has its own lighting |
-| **3** | **The two Three.js buttons** | `Who we are` and `Start a conversation`. **Geometry fixed, colour and material free** (D-069/D-070) |
+> ⛔⛔ ***"The next session starts the body of work. Its basically 6 three js objects. The shape of
+> the wall cards is decided. We will decide the shape of the floor cards and implement the geometry
+> for all 4. The shape and size may differ but the geometry will be similar, all part of the same
+> family."***
 
-⚠⚠ **RULE 5a APPLIES TO ITEM 3 AND IT IS EXPLICIT IN THE SPRINT FILE: a Three.js button is a NEW
-WebGL SURFACE on a page that currently has none.** ⛔ **Same shape as the warm-up canvas (four
-sessions to diagnose) and `NextStepMeshButton` (eight contexts across a five-question walk).
-STRUCTURAL REVIEW BEFORE BUILDING.**
+## ⛔ SIX OBJECTS, ONE FAMILY
+
+| | state |
+|---|---|
+| **CA, CB — the wall cards** | ⛔ **SHAPE DECIDED.** Position solved in metres (see the 5-6 Sept record and the `perspective-from-photograph` skill) |
+| **CD, CS — the floor cards** | ⚠ **SHAPE IS THE LIVE DESIGN QUESTION — Carl decides it next session** |
+| **The two buttons** | `Who we are` and `Start a conversation` (D-069/D-070) |
+
+⛔⛔ **THE GEOMETRY IS IMPLEMENTED FOR ALL FOUR CARDS TOGETHER, NOT CARD BY CARD.** Carl: *"the shape
+and size may differ but the geometry will be similar, all part of the same family."*
+
+⚠⚠ **THAT IS §14a's RULE AGAIN — *a recurring theme with variations*. FIXED: the geometry. FREE:
+shape and size.** ⛔ **It is the same pattern already recorded for the mark (D-065), the buttons
+(D-069) and the answer cards.**
+
+## ⛔⛔ AND THAT MAKES IT STRUCTURAL — RULE 5a, BEFORE ANY OF IT IS BUILT
+
+⚠ **"One family" is a claim about how the code is SHAPED, not only about how the objects look.** One
+parameterised geometry module? A shared factory? Four files sharing constants? ⛔ **A future reader
+will ask "why is there a second X?" about whichever answer is chosen — which is the rule 5a test,
+and it must be written up and reviewed BEFORE building, not reported afterwards.**
+
+⚠⚠ **THE WEBGL-SURFACE CONCERN NOW COVERS THE WHOLE BODY OF WORK, NOT JUST THE BUTTONS.** The sprint
+file flags a Three.js button as a NEW WebGL SURFACE on a page that currently has none. ⛔ **Six
+objects makes that question bigger, not smaller: how many canvases, who owns them, what their
+lifetime is.** **Same shape as the warm-up canvas (four sessions to diagnose) and
+`NextStepMeshButton` (eight contexts across a five-question walk).**
+
+⚠ **`nextstep-geometry.ts` and `contact-field-geometry.ts` are BOTH PROTECTED and both already
+express card geometry. Reading them is free; changing them is an unlock and an approved-layer
+question.** ⛔ **They are the obvious prior art for a shared family and should be read before
+anything is designed.**
+
+## ⚠ ALSO IN SCOPE, AND NOT YET ROUTED
+
+- **Contact shadows** — route NOT committed. ⛔ **One constraint either way: MULTIPLY, never
+  overlay** — the photographed floor already has its own lighting.
+- ⚠ **The floor cards' lean-back and inward-turn rotations are CARL'S EYE, not a solve.** The
+  perspective grid solves the floor PLANE; it does not choose the angles.
 
 ---
 
