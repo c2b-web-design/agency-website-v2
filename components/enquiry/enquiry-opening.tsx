@@ -2170,6 +2170,29 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
   // heading depth = memory.length + 1 (0 = full opening size, no depth class applied).
   // The heading is the deepest corridor layer — always one step below the deepest memory.
   const headingDepth = memory.length > 0 ? memory.length + 1 : 0;
+
+  /**
+   * ⛔ THE DEV DOOR'S OVERLAP — `?skip=1` ONLY, and it can never reach a visitor.
+   *
+   * ⚠⚠ THE HEADING NORMALLY FADES BY DEPTH, NOT BY STAGE. `headingDepth` is
+   * derived from `memory.length`, and the `enquiry-heading-complete` fade to
+   * `opacity: 0` is written only against `.enquiry-heading-d2..d6`
+   * (`globals.css`). **So the fade exists but is unreachable when depth is 0.**
+   *
+   * ⛔ `?skip=1` mounts `complete` DIRECTLY — no question is ever answered, so
+   * `memory` is empty, `headingDepth` is 0, and the heading renders at full
+   * opening size **on top of the contact field.** That is the overlap in every
+   * screenshot of this section.
+   *
+   * ⚠ **A REAL VISITOR NEVER SEES IT**: walking the corridor fills `memory`, so
+   * depth is >= 2 by completion and the existing fade runs. This flag is true
+   * only in the state the dev door creates.
+   *
+   * ⚠ Carl, 9 September 2026: *"i wondered why that text was overlayed... by all
+   * means fix it."* ⛔ **The scaffold itself is still scheduled for deletion when
+   * Q5 carries real selection again — see the `?skip=` note above.**
+   */
+  const skipDoorHeadingHidden = stage === "complete" && headingDepth === 0;
   // The first recede (full opening heading -> d2) uses the ghost crossfade; later steps just
   // deepen via the transition. memory.length === 1 while the first step is in flight.
   const firstRecede = corridorMoving && memory.length === 1;
@@ -2517,6 +2540,10 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
               ? ` enquiry-heading-d${headingDepth}${firstRecede ? " enquiry-heading-hidden" : ""}${corridorMoving && !firstRecede ? " enquiry-heading-deepening" : ""}${stage === "complete" ? " enquiry-heading-complete" : ""}`
               : " text-3xl sm:text-4xl leading-[1.15]"
           }`}
+          // ⛔ THE DEV DOOR ONLY — see `skipDoorHeadingHidden`. Hidden rather
+          // than unmounted so the shell keeps its box and nothing below reflows.
+          style={skipDoorHeadingHidden ? { opacity: 0 } : undefined}
+          aria-hidden={skipDoorHeadingHidden || undefined}
         >
           {/* ⚠ `openingMask` — NOT `stage === "opening"` alone. The mask classes
               carry the animations, so withholding the CLASS is what holds the
