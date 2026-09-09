@@ -3,8 +3,22 @@
 /**
  * THE ORBITING LIGHT — a tilted elliptical orbit around the four-box group.
  *
- * ⚠ STILL A TEST INSTRUMENT. Spacebar turns it on and off; nothing else. Values
- * here are chosen to make the effect judgeable, not because they are approved.
+ * ⛔ IT SHIPS. Carl authorised deploying it on 9 September 2026: *"i would prefer
+ * the light to be moving on Vercel."* The orbit runs on every build.
+ *
+ * ⚠⚠ BUT THE VALUES ARE STILL PROVISIONAL (D-044), AND THE TWO ARE DIFFERENT
+ * THINGS. Shipping was authorised; the numbers were not. Crown depth, grain tint
+ * and the 3s hidden half remain takes, chosen to make the effect judgeable rather
+ * than because they are approved. ⛔ **Carl has named this section as one to look
+ * at closely during the mastering pass (D-035)** — do not read its presence in
+ * production as approval of any figure in this file.
+ *
+ * ⚠ THIS HEADER READ "STILL A TEST INSTRUMENT" UNTIL THE DAY IT SHIPPED, which is
+ * the exact staleness `context-rules.md` warns about: a true sentence that
+ * outlives its subject, sitting where a reader meets it first.
+ *
+ * ⚠ THE SPACEBAR IS NO LONGER PART OF THE SHIPPED SURFACE — it is bound only on
+ * localhost or with `?lightrig=`. See `useLightRig` below.
  *
  * ── THE PATH, FROM CARL'S SPECIFICATION AND HIS SKETCH ──────────────────────
  *
@@ -345,8 +359,27 @@ function orbitPhase(elapsedMs: number): number {
 }
 
 export type LightRigState = {
-  /** Whether the orbiting light is on. Spacebar toggles it. */
+  /**
+   * Whether the orbiting light is on. The spacebar toggles it where that binding
+   * is enabled (localhost / `?lightrig=`); elsewhere it is simply `true`.
+   */
   lightOn: boolean;
+  /**
+   * ⚠ `true` only at the `complete` stage — the four-box contact field.
+   *
+   * ⛔ THE ORBIT'S RUN GATE, AND IT IS NOT COSMETIC. The rAF loop below calls
+   * `invalidate()` every frame, so the canvas cannot idle in `frameloop="demand"`
+   * while it turns. The canvas MOUNTS far earlier, on `canvasWarm`, to keep WebGL
+   * setup off the completion choreography — so without this gate the orbit would
+   * start at warm-up and spin through the entire questionnaire **lighting boxes
+   * nobody can see yet**.
+   *
+   * ⚠ That was the second of the two reasons the orbit was localhost-only. It is
+   * fixed here rather than accepted: gating on `active` makes the deployed
+   * behaviour strictly better than the localhost behaviour it replaces, which ran
+   * the loop from mount.
+   */
+  active: boolean;
 };
 
 /**
@@ -357,7 +390,7 @@ export type LightRigState = {
  * `Vector3` silently does nothing. Aiming at the group's centre rather than at any
  * one box is what makes this an orbit around the whole assembly.
  */
-export function LightRigScene({ lightOn }: LightRigState) {
+export function LightRigScene({ lightOn, active }: LightRigState) {
   const size = useThree((state) => state.size);
   const invalidate = useThree((state) => state.invalidate);
 
@@ -393,7 +426,12 @@ export function LightRigScene({ lightOn }: LightRigState) {
    * canvas go quiet again.
    */
   useEffect(() => {
-    if (!lightOn || !frame) {
+    // ⛔ `active` JOINS THE CONDITION HERE — see `LightRigState.active`. The loop
+    // runs only at the `complete` stage, so the canvas stays quiet through the
+    // questionnaire it is mounted behind. Leaving the effect early also restores
+    // the opal's resting value through the cleanup below, so a light that never
+    // started cannot strand the button mid-shine.
+    if (!lightOn || !active || !frame) {
       invalidate();
       return;
     }
@@ -429,7 +467,7 @@ export function LightRigScene({ lightOn }: LightRigState) {
         String(OPAL_SHINE_REST),
       );
     };
-  }, [lightOn, frame, invalidate]);
+  }, [lightOn, active, frame, invalidate]);
 
   if (!frame) return null;
 
@@ -457,6 +495,17 @@ export function LightRigScene({ lightOn }: LightRigState) {
  *
  * ⚠ KEYS AIMED AT A TEXT FIELD ARE IGNORED — the contact boxes are real inputs, so
  * a space typed into a field must not also kill the light.
+ *
+ * ⚠⚠ `enabled` IS THE KEYBOARD BINDING ALONE — IT IS NO LONGER THE ORBIT'S GATE.
+ * Until 9 September 2026 one flag controlled both, so shipping the orbit meant
+ * shipping the spacebar with it. **That conflation was the whole reason the orbit
+ * could not be deployed**: on `/start`'s completion stage space belongs to the
+ * visitor — it scrolls, and it activates a focused button, including **Send**. A
+ * visitor who tabbed to Send and pressed space would have toggled a test rig.
+ *
+ * ⛔ The two are now separate. The orbit runs unconditionally on every build;
+ * this binding stays localhost/`?lightrig=` only. Carl's local toggle is
+ * unchanged. See `contact-field-canvas.tsx` for the gate that calls this.
  */
 export function useLightRig(enabled: boolean) {
   const [lightOn, setLightOn] = useState(true);

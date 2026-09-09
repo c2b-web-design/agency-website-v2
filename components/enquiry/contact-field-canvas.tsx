@@ -1909,8 +1909,13 @@ function FieldScene({
   active: boolean;
   filled: boolean[];
   /**
-   * ⚠ TEST RIG ONLY. `undefined` means the rig is not mounted, which is the case
-   * on every ordinary page load; a boolean is the probe light's on/off state.
+   * The orbiting light's on/off state. ⛔ SHIPPED — a boolean on every ordinary
+   * page load since 9 September 2026.
+   *
+   * ⚠ `undefined` no longer means "test build". It means the orbit is SUPPRESSED,
+   * which happens for one reason: `prefers-reduced-motion`. The static field is
+   * unaffected either way — `BASE_LIGHT_SCALE` is 1.0, so the key/fill/ambient are
+   * identical whether the rig is mounted or not.
    */
   lightRigOn?: boolean;
 }) {
@@ -1961,8 +1966,14 @@ function FieldScene({
   // placements so a re-render at the same size does not restart the cascade.
   const baseYs = useMemo(() => placements.map((p) => p.y), [placements]);
 
-  // ⚠ TEST RIG ONLY. 1 on every ordinary load — the base lights are untouched
-  // unless the probe is mounted.
+  // ⚠ NO LONGER "TEST RIG ONLY" — the orbit ships (9 September 2026), so the rig
+  // is mounted on every ordinary load and this branch takes the right-hand side.
+  //
+  // ⛔ IT IS A NO-OP EITHER WAY, AND THAT IS WHY SHIPPING THE ORBIT DOES NOT
+  // TOUCH THE STATIC LIGHTING: `BASE_LIGHT_SCALE` is 1.0, so key/fill/ambient are
+  // identical whether the rig is present or not. ⚠ Verified by reading the
+  // constant, not assumed — if it ever stops being 1.0, deploying the orbit
+  // silently changes the field's base exposure for every visitor.
   const baseScale = lightRigOn === undefined ? 1 : BASE_LIGHT_SCALE;
 
   useEntranceCascade(groups, baseYs, bevelMaterialRefs, reducedMotion, active);
@@ -1990,8 +2001,10 @@ function FieldScene({
         position={FILL_LIGHT_POSITION}
         intensity={FILL_LIGHT_INTENSITY * baseScale}
       />
-      {/* ⚠ TEST RIG ONLY — absent unless `?lightrig=1`. */}
-      {lightRigOn !== undefined && <LightRigScene lightOn={lightRigOn} />}
+      {/* ⛔ SHIPPED since 9 September 2026 — present on every build. `undefined`
+          now means only that the orbit is suppressed (reduced motion), not that
+          this is a test build. The orbit's own run gate is `active`. */}
+      {lightRigOn !== undefined && <LightRigScene lightOn={lightRigOn} active={active} />}
       {placements.map((placement, i) => (
         <ContactField
           key={placement.id}
@@ -2056,31 +2069,39 @@ export default function ContactFieldCanvas({
   );
 
   /**
-   * ⚠ TEST RIG ONLY — on by default on localhost, never on a deployed build.
+   * ⛔⛔ THE ORBIT NOW SHIPS. Carl, 9 September 2026: *"i would prefer the light to
+   * be moving on Vercel."*
+   *
+   * ⚠⚠ WHAT CHANGED IS THE SHAPE, NOT JUST THE VALUE. One flag used to control
+   * two unrelated things — whether the light orbits, and whether SPACEBAR is bound
+   * to toggle it. That conflation is why the orbit could not be deployed: shipping
+   * the motion meant shipping the key binding. **They are now separate concerns.**
+   *
+   *   - **The orbit** runs on every build, gated on `active` (the `complete`
+   *     stage) and on reduced motion — see `LightRigScene`.
+   *   - **The spacebar** stays a test control: localhost, or an explicit
+   *     `?lightrig=` parameter. `lightRigKeys` below is that binding ALONE.
+   *
+   * ⚠ THE TWO ORIGINAL OBJECTIONS ARE ANSWERED IN CODE, NOT WAIVED:
+   *
+   *   1. **Spacebar belonged to the visitor** — it scrolls, and it activates a
+   *      focused button including **Send**. The binding is no longer shipped.
+   *   2. **The rAF loop cannot idle under `frameloop="demand"`.** The loop is now
+   *      gated on `active`, so it runs at the completion stage only. The canvas
+   *      mounts much earlier on `canvasWarm`, so this is STRICTLY LESS work than
+   *      the localhost behaviour it replaces, which span from mount.
+   *
+   * ⚠⚠ AND THE ORBIT REMAINS PROVISIONAL (D-044). Carl authorised SHIPPING it; he
+   * did not settle its values. **Crown depth, grain tint and the 3s hidden half are
+   * still takes, not decisions**, awaiting the mastering pass (D-035). Do not read
+   * this deployment as approval of those numbers.
    *
    * A lazy initialiser for the same reason `reducedMotion` is one — it must be
    * settled before the first frame, and this component only ever mounts
-   * client-side.
-   *
-   * ⚠ THE HOSTNAME CHECK IS THE GATE, NOT THE QUERY PARAMETER. Carl asked to see
-   * the orbit on localhost without appending a flag every time (3 August 2026).
-   * Deployed builds are unchanged and still require `?lightrig=1`, because two
-   * things make it unfit for production as it stands:
-   *
-   *   1. `useLightRig` binds SPACEBAR to toggle the light. On a deployed page
-   *      that key belongs to the user — it scrolls, and it activates a focused
-   *      button. A visitor would toggle a test rig by pressing space.
-   *   2. The orbit runs a continuous rAF loop, so the canvas cannot sit in
-   *      `frameloop="demand"` while it is on — a phone renders WebGL for as long
-   *      as the section is on screen.
-   *
-   * ⚠ AND THE ORBIT IS PROVISIONAL (D-044) — crown depth, grain tint and the 3s
-   * hidden half are takes, not decisions. Promoting it to production is a design
-   * call for Carl under the mastering methodology (D-035), not a config change.
-   *
-   * `?lightrig=0` forces it off locally; the parameter still forces it on anywhere.
+   * client-side. `?lightrig=0` disables the KEY BINDING locally; the parameter
+   * still forces it on anywhere. ⛔ Neither value stops the orbit any more.
    */
-  const [lightRigEnabled] = useState(() => {
+  const [lightRigKeys] = useState(() => {
     if (typeof window !== "undefined") {
       const flag = new URLSearchParams(window.location.search).get("lightrig");
       if (flag !== null) return flag === "1";
@@ -2089,7 +2110,17 @@ export default function ContactFieldCanvas({
     }
     return false;
   });
-  const { lightOn: rigLightOn } = useLightRig(lightRigEnabled);
+  const { lightOn: rigLightOn } = useLightRig(lightRigKeys);
+
+  /**
+   * ⛔ REDUCED MOTION SUPPRESSES THE ORBIT ENTIRELY — applied at the `lightRigOn`
+   * prop below, which passes `undefined` so `LightRigScene` never mounts.
+   *
+   * A continuous 9-second circuit is precisely what the preference exists to
+   * remove, and the light is decorative — the field is fully legible without it.
+   * The boxes keep their static lighting; only the sweep stops. ⚠ Nothing else
+   * changes: `BASE_LIGHT_SCALE` is 1.0, so key/fill/ambient are identical.
+   */
 
   return (
     <div
@@ -2163,7 +2194,10 @@ export default function ContactFieldCanvas({
           reducedMotion={reducedMotion}
           active={active}
           filled={filled}
-          lightRigOn={lightRigEnabled ? rigLightOn : undefined}
+          // ⛔ NO LONGER GATED ON THE TEST FLAG — the orbit ships. `undefined`
+          // withholds the rig entirely under reduced motion; otherwise the
+          // spacebar's state rides through (always `true` where unbound).
+          lightRigOn={reducedMotion ? undefined : rigLightOn}
         />
       </Canvas>
     </div>

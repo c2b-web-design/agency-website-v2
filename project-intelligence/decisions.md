@@ -4061,3 +4061,89 @@ SIZE IS WRONG, NOT THE LINE:**
 ⛔ **CS's *"connected to the things the business actually runs on"* is PRESENT TENSE.** ⚠ **Whether the
 Strategist is currently wired to any live system was raised and not answered.** ⛔ **§2 is where a
 sceptic checks (D-073) — if nothing is connected yet, the fix is small: *"can be connected to"*.**
+
+---
+
+## D-078 — The Orbiting Light Ships. The Flag Controlled Two Things And Only One Of Them Was Ever The Problem
+
+**Date recorded:** 2026-09-09
+**Status:** ⛔ **APPROVED — that it ships.** ⚠⚠ **PROVISIONAL — every value in it (D-044 stands).**
+**Authority:** Human Founder — Carl, 9 September 2026: *"i would prefer the light to be moving on Vercel"*, and on seeing it: *"The orbit looks good, however this is one of the things to look closely at when 'mastering' is taking place at build completion."*
+**Bears on:** `components/enquiry/contact-field-canvas.tsx`, `components/enquiry/contact-field-light-rig.tsx`. Amends **D-044**, which is not superseded.
+
+---
+
+### ⛔ THE FAULT AS REPORTED WAS NOT THE FAULT
+
+Reported as *"the webgl camera in the client section is static, it should be moving."*
+⚠ **The camera is orthographic, fixed at `[0, 0, 1000]`, and has never moved.** What moves
+is a **spotlight orbiting the four boxes**; the apparent motion is the glint travelling
+across the faces. ⛔ **Recorded because "the camera is static" would send the next reader
+into camera code, which is correct, and waste the trip.**
+
+### ⛔⛔ THE MECHANISM — ONE FLAG, TWO UNRELATED JOBS
+
+`lightRigEnabled` gated **both** *does the light orbit* **and** *is SPACEBAR bound to
+toggle it*. ⚠⚠ **That conflation is the whole reason the orbit could not be deployed:
+shipping the motion meant shipping the key binding.** The two are now separate concerns.
+
+| | before | after |
+|---|---|---|
+| **The orbit** | localhost / `?lightrig=1` only | ⛔ **every build**, gated on `active` + reduced motion |
+| **The spacebar** | shipped with the orbit | localhost / `?lightrig=` **only** |
+
+### ⚠ BOTH ORIGINAL OBJECTIONS ARE ANSWERED IN CODE, NOT WAIVED
+
+1. **Spacebar belonged to the visitor** — it scrolls and activates a focused button,
+   **including Send**. The binding is no longer shipped. Carl's local toggle is unchanged.
+2. **The rAF loop cannot idle under `frameloop="demand"`.** Now gated on `active`, so it
+   runs at the `complete` stage only. ⛔ **The canvas mounts far earlier on `canvasWarm`,
+   so this is STRICTLY LESS work than the localhost behaviour it replaced**, which span
+   from mount through the entire questionnaire lighting boxes nobody could see.
+
+**Also added:** `prefers-reduced-motion` suppresses the orbit entirely — a continuous
+9-second circuit is what that preference exists to remove. ⚠ **The static field is
+unaffected either way: `BASE_LIGHT_SCALE` is 1.0**, so key/fill/ambient are identical
+whether the rig is mounted or not. **Verified by reading the constant, not assumed.**
+
+### ⛔⛔ SHIPPING IS NOT APPROVAL OF THE VALUES, AND CARL SAID SO IN THE SAME BREATH
+
+⚠⚠ **D-044 STANDS. Crown depth, grain tint and the 3s hidden half remain takes**, not
+decisions, awaiting the mastering pass (**D-035**). ⛔ **Carl has NAMED THIS SECTION as one
+to look at closely during that pass.** **Do not read its presence in production as approval
+of any figure in `contact-field-light-rig.tsx`.**
+
+### ⚠ HOW IT WAS TESTED — AND THE TRAP THAT MAKES THE OBVIOUS TEST WORTHLESS
+
+⛔ **A harness that visits `localhost` takes the OLD path and proves nothing.** The test
+routed a fake production host (`www.example-deployed.test`) at a local **production build**,
+so the page saw a non-localhost hostname exactly as Vercel does. Motion was read from
+`--opal-shine`, which the orbit writes every frame from the same clock as the light.
+
+| arm | before fix | after fix |
+|---|---|---|
+| deployed host, `complete` | ⛔ **static** (0 distinct) | ✅ **moving** (22) |
+| deployed host, reduced motion | static | ✅ static — correct |
+| deployed host, **before** `complete` | static | ✅ static — loop idle |
+| localhost, `complete` | moving (23) | ✅ moving (23) |
+| spacebar on deployed host | — | ✅ **not bound** |
+
+⚠⚠ **THE INSTRUMENT WAS FALSIFIED BEFORE IT WAS TRUSTED** — stashed, rebuilt, confirmed
+**red** against the old code (reproducing the reported fault), restored, confirmed green.
+⛔ **The harness was temporary and was deleted; it is not in `verify/` and is NOT in
+`proven.json`.** The evidence is this entry and the commit.
+
+### ⚠ STALE COMMENTS CORRECTED IN THE SAME CHUNK — `context-rules.md`, and the sweep found a fourth
+
+⛔ **The file header read *"STILL A TEST INSTRUMENT"* until the day it shipped** — the exact
+staleness the rules warn about, sitting where a reader meets it first. ⚠ **A `grep` sweep
+for every copy of the claim then found `baseScale`'s *"TEST RIG ONLY"* comment**, also
+false. **Both corrected.** ⛔ **This is the "sweep for every copy, not just the one in front
+of you" rule doing its job.**
+
+### ⚠ NOT FIXED, AND DEFERRED BY CARL
+
+**The `?skip=1` dev door leaves the opening heading overlapping the contact boxes** in
+screenshots. ⛔ **Pre-existing, cannot fire for a visitor, and Carl has deferred it:** *"We
+will fix the artifact when we fix another issue in this section that has recently come to
+light."* **Not a defect of this work.**
