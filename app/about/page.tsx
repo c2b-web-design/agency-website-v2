@@ -1,5 +1,9 @@
 import Image from "next/image";
 import Container from "@/components/layout/container";
+/* ⛔ SCAFFOLDING — the /about §2 wall-card copy, projected onto the wall by a
+   homography. A CLIENT component in its own file so THIS page stays a static
+   prerendered server component. Delete with the guides. */
+import WallCardText from "@/components/about/wall-card-text";
 /* ⚠ THE `/about` NAV — a CLIENT component, deliberately kept in its own file so
    THIS page stays a static prerendered server component. ⛔ NOT `SiteHeader`:
    that would place the links in flow, at a different point from `/start`. */
@@ -519,15 +523,142 @@ export default function About() {
             having the same semantics as w-full h-full object-cover, not measured
             against a before/after screenshot. Verify by eye before tuning any
             card position to it. */}
+        {/* ⛔⛔ THE GUIDED PLATE — SCAFFOLDING, AND IT DEPLOYS. 10 September 2026,
+            on Carl's instruction. It carries the CA/CB wall-card guide quads
+            drawn onto the room, so the floor pair can be built over them.
+
+            ⚠⚠ THIS IS TEMPORARY AND IT IS LIVE. The cyan and magenta quads are
+            development guides visible to anyone who visits /about. ⛔ REVERT TO
+            `/about-studio-source.jpg` WHEN THE CARDS ARE BUILT — that file is
+            untouched and still in `public/`, so this is a one-line change back.
+
+            ⛔ THE GUIDES ARE MEASURED, NOT DRAWN BY EYE. They were transferred
+            from `brand-assets/about-studio-wall-cards-1800.jpg` (the calculated
+            placement, solved outside this system) onto the full-resolution
+            original by colour segmentation and per-edge line fitting: all eight
+            edges fitted at <1px rms, and the two quads' vanishing points landed
+            on a COMMON HORIZON (y=397 in the 1800 frame) without that being
+            imposed. ⚠ An earlier hand-drawn iteration was DISCARDED by Carl —
+            its perspective was wrong. Do not resurrect it from git history.
+
+            ⚠ SAME FRAME, SO THE CROP IS UNCHANGED: 6158x4105 at aspect 1.5001,
+            the same 1.500 framing as `about-studio-source.jpg` (2560x1707).
+            `fill` + object-cover therefore resolves to the identical framing and
+            the warning above this block is not triggered.
+
+            ⚠ MASTER IS 4.72MB (q95, 4:4:4 — no chroma subsampling, because
+            subsampling smears saturated line art). ⛔ THAT IS THE MASTER, NOT THE
+            DELIVERY: measured, this serves 70KB of WebP at 1440 against the clean
+            plate's 105KB. next/image re-encodes per device, so the guides cost
+            nothing to a visitor. */}
         <Image
-          src="/about-studio-source.jpg"
+          src="/about-studio-wall-guides.jpg"
           alt=""
           aria-hidden="true"
           fill
           sizes="100vw"
-          className="object-cover"
+          className="object-contain"
         />
         <div className="absolute inset-0 bg-neutral-950/25" />
+
+        <WallCardText />
+
+        {/* ⛔⛔ FLOOR-CARD COPY IN THE GUIDES — SCAFFOLDING, 10 September 2026.
+            Carl: "put them both in and lets see how they look."
+
+            ⚠⚠ WHY THIS IS AN ASPECT-LOCKED BOX AND NOT `inset-0`: the plate is
+            `object-contain`, so it is LETTERBOXED inside a full-viewport section.
+            A box at 10.8% of the SECTION is not 10.8% of the IMAGE. This wrapper
+            reproduces object-contain's own geometry — same 3:2 aspect, centred,
+            capped by both width and height — so the guide fractions and these
+            text boxes share ONE coordinate space. ⛔ Change this to inset-0 and
+            every card drifts off its rectangle.
+
+            ⚠ The rectangles are CD 0.108-0.222 x / 0.524-0.800 y and CS
+            0.655-0.795 x / 0.5466-0.855 y, as fractions of the PLATE.
+
+            ⛔ PURPOSE: judging whether the copy FITS its rectangle — D-077, "a
+            word count is not a fit". Carl decides the aspect once he can see the
+            text in place; that question is OPEN and neither ratio is approved.
+            ⚠ NOT a styling pass. Type here is unstyled on purpose. */}
+        {/* ⚠⚠ THE WRAPPER MUST TRACK object-contain's OWN BOX, AND THE FIRST
+            ATTEMPT DID NOT. It was `aspect-[3/2] max-h-full max-w-full w-full`:
+            `w-full` forced full section width, so on a window WIDER than 3:2 the
+            box overflowed instead of shrinking, and both text blocks sat to the
+            LEFT of their rectangles. ⛔ Height must drive on a wide window and
+            width on a tall one — which is exactly what object-contain does. */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="relative h-full max-h-full w-auto max-w-full aspect-[3/2]">
+            {[
+              /* ⛔ THE WALL PAIR IS NOT IN THIS ARRAY. CA and CB are rendered by
+                 `components/about/wall-card-text.tsx`, a client component, because
+                 projecting their copy onto the wall needs a homography, which needs
+                 the box's pixel size, which needs hooks — and THIS PAGE IS A STATIC
+                 PRERENDERED SERVER COMPONENT and is kept that way on purpose (see
+                 the AboutNav note above; same pattern, same reason).
+                 ⚠ Only the FLOOR pair is below: face-on, per Carl's sequence. */
+              /* ⛔⛔ LANDSCAPE, 10 September 2026 — Carl's sketch, measured off it
+                 rather than eyeballed. THIS REVERSES THE 4 SEPTEMBER PORTRAIT
+                 RULING ("their shorter sides will be on the top edge"), and the
+                 reversal is his: the portrait shape was set BEFORE the copy had
+                 met its container, and 49/55 words in a narrow column could not be
+                 made to fit without breaking type size, the 2+2 composition, or the
+                 copy itself. ⚠ Landscape is why the WALL pair works — prose sets in
+                 few long lines, not many short ones.
+                 ⛔ Superseded, not contradicted: record what moved. */
+              {
+                id: "CD",
+                x: 0.0321, y: 0.6019, w: 0.4002 - 0.0321, h: 0.8744 - 0.6019,
+                text:
+                  "Your brand is the material. Typography, colour, assets and tone are taken from what you already have and treated as the baseline — not a blank page, and not a template. From there the design is elevated into a bespoke prototype that sets the visual direction before any coding begins.",
+              },
+              {
+                id: "CS",
+                /* ⚠ BOTTOM EDGES SET TO CLEAR THE LAST LINE — Carl, 10 September.
+                   The first raise to 0.9280 went too far and cut CS's closing
+                   "the site itself." below the edge; this drops back ~1.2 lines.
+                   ⛔ MATCHED BY ASPECT (2.026:1), NOT BY HEIGHT. CD sits further
+                   back, so equal on-screen height would be a DIFFERENT real size
+                   in the room. Widths and tops untouched; only the bottoms moved.
+                   ⚠ CD KEEPS DEAD SPACE AT ITS BOTTOM AND THAT IS ACCEPTED —
+                   Carl: "the green card will still have some dead space at the
+                   bottom, thats ok." Matching the pair beats filling one box. */
+                x: 0.5764, y: 0.6748, w: 0.9427 - 0.5764, h: 0.946 - 0.6748,
+                text:
+                  "Every other seat is pointed at the website. This one is pointed at the business it exists to serve — connected to the things the business actually runs on, and answering from those rather than from general knowledge. It advises only. Nothing it recommends becomes work without a decision, and nothing it touches is the site itself.",
+              },
+            ].map((c) => (
+              <div
+                key={c.id}
+                /* ⚠ NOT `overflow-hidden`: Carl, 10 September — "if it goes
+                   outside the bottom of the card, thats ok, we will decide how
+                   to enlarge the card." Clipping would HIDE the overflow that
+                   is the whole signal being judged. */
+                /* ⚠ TOP PADDING REDUCED 1.2% -> 0.4% — Carl, 10 September: the
+                   bottom edge was running THROUGH "the site itself." on CS. He
+                   offered two routes ("below the 3 words, or raise both texts up
+                   slightly"); raising the copy is the one that does NOT disturb
+                   the box dimensions he has just approved. Sides and bottom
+                   unchanged, so both boxes keep their 2.026:1 match. */
+                className="absolute pt-[0.4%] pr-[1.2%] pb-[1.2%] pl-[1.2%] text-white"
+                style={{
+                  left: `${c.x * 100}%`,
+                  top: `${c.y * 100}%`,
+                  width: `${c.w * 100}%`,
+                  height: `${c.h * 100}%`,
+                  /* ⚠ WAS `clamp(8px, 1.05vw, 19px)` — a CAVEAT-era number. Geist
+                     has a much higher x-height and rendered far larger at the same
+                     value, which is what made the floor copy overflow worse after
+                     the font switch. Reset for Geist in a LANDSCAPE box. */
+                  fontSize: "clamp(9px, 1.15vw, 21px)",
+                  lineHeight: 1.4,
+                }}
+              >
+                {c.text}
+              </div>
+            ))}
+          </div>
+        </div>
 
         <Container>
           <div className="relative max-w-2xl">

@@ -2,6 +2,18 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* ⚠ THE CAVEAT SCAFFOLDING FONT IS GONE — 10 September 2026. Carl: "it doesnt
+   have to be handwritten." The card copy now uses the project's own Geist, which
+   is already loaded by next/font in app/layout.tsx, so there is no @import and no
+   extra request. ⛔ Judging fit in the face the cards will actually ship in makes
+   the verdict real rather than indicative.
+
+   ⚠ WORTH KEEPING, BECAUSE IT COST AN HOUR: a remote `@import url(...)` placed
+   AFTER `@import "tailwindcss"` is SILENTLY STRIPPED. CSS requires every @import
+   to precede all other rules; the compiled chunk came back with zero occurrences
+   of the font, nothing errored, and the class resolved to the fallback stack. If
+   a webfont is ever added here, it goes on line 1. */
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
