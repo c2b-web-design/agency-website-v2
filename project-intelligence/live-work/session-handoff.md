@@ -125,6 +125,27 @@ the same one that makes the WALL pair work: prose sets in FEW LONG LINES, not ma
 
 # ⛔⛔ WHAT IS IN FRONT OF THE NEXT SESSION
 
+## ⛔⛔ THE ORDER, SETTLED WITH CARL AT THE END OF THE SESSION
+
+    1. DESK-ANGLE CHECK    2D line fitting on the plate. No camera, no Three.js.
+    2. CAMERA SOLVE        From the horizon + the two VPs + the wall corners.
+    3. GEOMETRY & PLACEMENT  The cards built and positioned IN that scene.
+
+⚠⚠ **A DISTINCTION THE BUILDER GOT WRONG ONCE TODAY AND CARL NEARLY INHERITED — READ IT BEFORE
+PLANNING:** ⛔ **"2D placement first, then camera" IS WRONG for the floor pair.**
+
+- ⛔ **The DESK-ANGLE CHECK is genuinely 2D** — fit the desk front edges, test convergence. Do it
+  first, it needs nothing built.
+- ⛔⛔ **BUT PLACING THE CARDS BEHIND THE CHAIRS IS NOT A 2D JOB.** ⚠ *"Perpendicular to the desk"*
+  **is a statement about the room's 3D space. A card standing at an angle projects to a TRAPEZOID
+  whose shape depends on the camera.** ⛔ **Drawing that quad in 2D means EYEBALLING THE ANGLE —
+  which is the same failure as the four wrong ceiling angles (D-076).**
+- ✅ **What IS already done in 2D and stands: size, proportion, position and copy fit.** It feeds
+  step 3 as the card's dimensions.
+
+⚠ **Steps 1 and 2 are MEASUREMENT, not building, so neither needs the §5a write-up.** ⛔ **That gate
+applies when a WebGL context actually lands on `/about`.**
+
 ## ⛔ 1. THE DESK ANGLES — CARL'S INSIGHT, AND IT IS MEASURABLE
 
 **Carl's new direction for the floor pair, with a sketch:** ⛔ ***"Behind the chairs, approx
@@ -145,7 +166,36 @@ compaction before it could be.**
 its near section may not be flush with the wall; the two desks meet in the corner, so one may be
 rotated slightly to make the join.
 
-## ⛔ 2. THE §5a STRUCTURAL WRITE-UP — STILL OWED, STILL GATES EVERYTHING
+## ⛔ 2. THE CAMERA SOLVE — MORE OF IT EXISTS THAN IT LOOKS
+
+⛔ **The camera is needed for PLACEMENT, not for GEOMETRY.** ⚠ **Building the card itself — flat
+back, convex face, rim, rounded corners — is independent of where the camera lands and can be done
+first.** ⛔ **But the moment a card must sit *in the room*, the scene needs a camera that agrees with
+the photograph, or placement is dragging a mesh until it looks right.**
+
+**THREE THINGS ALREADY CONSTRAIN IT, and they came out of today's measurement:**
+
+| | |
+|---|---|
+| **horizon** | **y = 0.331** — two independently-fitted quads landed on it unforced |
+| **VP left wall** | **(2523, 397)** — from CA's top/bottom edges |
+| **VP right wall** | **(374, 397)** — from CB's |
+
+⚠⚠ **TWO PERPENDICULAR HORIZONTAL DIRECTIONS GIVE FOCAL LENGTH DIRECTLY**, and the horizon gives the
+pitch. ⛔ **The `perspective-from-photograph` skill carries the arithmetic — `f = sqrt(-(vLx-cx)*(vRx-cx))`
+— and an interior wide-angle should land at roughly 85-95° hFOV. A result of 50° or 120° means a VP
+is wrong.**
+
+⛔⛔ **AND IT CARRIES A FALSIFICATION TEST, WHICH IS THE THING TODAY KEPT LACKING:** the solved camera
+predicts where VERTICAL world lines converge. ⚠ **Measure a real vertical well away from the image
+centre — a monitor bezel, the room's corner seam — and check it points at that predicted vertical
+VP.** **Agreement within a few percent confirms the whole solution against something other than
+itself.**
+
+⚠ **THE DESK CHECK FEEDS THIS.** ⛔ **If the desk edges converge on the wall VPs, it confirms the
+camera solve AND hands over the card angles in the same measurement.**
+
+## ⛔ 3. THE §5a STRUCTURAL WRITE-UP — STILL OWED, STILL GATES EVERYTHING
 
 ⚠⚠ **UNTOUCHED TODAY, AS ON 5, 6 AND 9 SEPTEMBER.** ⛔ **A Three.js surface on `/about` is the FIRST
 WebGL CONTEXT ON A ROUTE THAT HAS NONE — verified today, not assumed: `app/about/page.tsx` has no
@@ -155,7 +205,7 @@ WebGL CONTEXT ON A ROUTE THAT HAS NONE — verified today, not assumed: `app/abo
 says `AboutNav` was split out to keep it that way. ⛔ **Any hooks on the page itself convert it to
 client rendering. That is a structural change to an approved property.**
 
-## ⚠ 3. THE MATERIAL — CARL HAS NAMED IT, AND IT IS AN UNLOCK QUESTION
+## ⚠ 4. THE MATERIAL — CARL HAS NAMED IT, AND IT IS AN UNLOCK QUESTION
 
 ⛔ **Carl: *"The material is frosted glass."*** ⚠ **That is `answer-card-glass.ts` — a PROTECTED path
 and D-051 APPROVED work.** ⛔ **Reading is free. Reuse is an unlock and an approved-layer question
@@ -165,7 +215,7 @@ the point."***
 ⚠ **OPEN AND UNANSWERED: whether the approved glass carries light THROUGH from behind unchanged.**
 It was tuned for a FRONT-LIT card in a dark corridor. **Untested.**
 
-## ⚠ 4. THE FACE-ON QUADS ARE NOT AN ACCEPTANCE TEST
+## ⚠ 5. THE FACE-ON QUADS ARE NOT AN ACCEPTANCE TEST
 
 ⛔ **Carl's sequence stands: build face-on in Three.js, then rotate and move into position.** ⚠⚠ **So
 the four fractions above are a SIZE-AND-POSITION STATEMENT. Once the cards rotate, THE PROJECTED
