@@ -149,8 +149,12 @@ CHUNK 1 IS FINISHED:**
 
 # ⛔⛔ THE DESIGN CARL SPECIFIED TODAY — recorded because it exists nowhere else
 
-**Full detail in the plan at `C:\Users\Carl Buckley\.claude\plans\concurrent-churning-whistle.md`
-and the review at `live-work/architect-plan-response-about-cards.md`.**
+**Full detail: `live-work/about-cards-plan-11-september.md` — ⛔ AND ITS REVIEW,
+`live-work/architect-plan-response-about-cards.md`. NEVER THE PLAN ALONE: it contains five claims
+that do not survive a file check, and the review names them.**
+
+⚠ **The plan was originally written to a machine-local path outside version control.** Copied into
+the repo on 11 September so the design specification survives the machine.
 
 - ⛔ **NEON.** *"What works well with frosted glass and would have an impact? Neon."* ⚠⚠ **The
   half-tube rim IS a neon tube** — built in August so it *"will emit light onto the bevel and face,
@@ -271,6 +275,51 @@ have had **zero vertices**. An unused-variable warning was the only thing that n
   it demanded a bead of **15–22% of card height — a picture frame.** ⛔ **The shipped Q5 card's rim
   subtends 4px and reads.** Current: bead 2.2%, bevel 3.0% of height. **At 390px that is 2.8px —
   possibly too fine; the fix would be a floor on rendered size, not a bigger percentage.**
+
+---
+
+# ⚠ HOW TO USE THE BENCH — it is not obvious from the code
+
+**`/proto/card`.** ⛔ **Start the server first; it was stopped at the end of this session and the
+port verified free two ways.**
+
+| control | what it does |
+|---|---|
+| **view** | oblique · face-on · **side elevation** · top elevation. ⚠ Opens on OBLIQUE deliberately — face-on flatters a crown |
+| **height** | 400–1400mm. Every other dimension follows it |
+| **aspect** | floor 2.026:1 · wall 1.615:1 |
+| **crown** | ⚠ **a RATIO**, shown as % and mm. Moves the whole family at once |
+| **oval** | ⛔ **the unresolved dial.** Below ~1.26 flat corners; above it the edges stand proud |
+| **light** | 0–180°. ⛔ **SWEEP IT BEFORE JUDGING** — a correct crown reads FLAT head-on |
+| **proxy behind** | the sampled room colour. ⚠ Auto-hides in the edge-on views |
+
+⚠ **The readout prints MEASURED tilt (built normals) beside PREDICTED tilt (the formula) and flags
+a disagreement over 2°.** ⛔ **Trust the measured one.** They currently agree within ~1°.
+
+---
+
+# ⚠ THREE UNTRACKED FILES, LEFT UNCOMMITTED ON PURPOSE
+
+    brand-assets/Gemini_Generated_Image_v709qev709qev709.jpg   the REJECTED floor grid
+    brand-assets/logo/c2b-logo-gold-relit-alpha-1671.png       predates this session
+    brand-assets/logo/c2b-logo-gold-relit-source-1671.png      predates this session
+
+⛔ **The Gemini image is a DISCREDITED test artefact** — floor lines bowing 25px, wrong aspect.
+Committing it would put a failed reference in the repo looking like a resource. ⚠ **The two logo
+PNGs are Carl's and predate this session; they are not mine to commit.**
+
+---
+
+# ⛔ WHAT THE NEXT SESSION SHOULD NOT DO
+
+- ⛔ **Do not swap `insetDistance` back in** without Carl's word. It fixes the corners and caused the
+  ridge; the trade is unresolved and he chose the current side of it.
+- ⛔ **Do not "fix" the flat corners as if they were unknown.** They are a known, accepted fault.
+- ⛔ **Do not trust `maxFaceTiltDegrees()`.** It changed four times in one day, each time edited to
+  match the mesh.
+- ⛔ **Do not re-derive the camera.** It is solved and falsified; the failure modes are recorded.
+- ⛔ **Do not put a WebGL canvas on `/about`** until the §5a note is written and Carl has ruled.
+- ⚠ **Do not read the plan without its review.**
 
 ---
 
