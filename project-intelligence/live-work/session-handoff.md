@@ -1,4 +1,4 @@
-# Session Handoff — 10 September 2026. THE FOUR CARDS HOLD THEIR COPY, AND THE FLOOR PAIR WENT LANDSCAPE
+# Session Handoff — 11 September 2026. THE CAMERA IS SOLVED AND THE CARD HAS A SHAPE
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written** —
@@ -10,304 +10,253 @@
 
 | # | go to | why |
 |---|---|---|
-| **1** | ⛔ **"WHAT IS IN FRONT OF THE NEXT SESSION"** | ⚠ **The desk-angle measurement — Carl's own insight, and it is CHECKABLE, not an assumption** |
-| **2** | ⛔ **"NOTHING IS COMMITTED"** | ⚠ **Five files changed, none committed. Read before touching anything** |
-| **3** | ⛔ **"THE FOUR CARDS AS THEY NOW STAND"** | The numbers, and which are approved vs. seeds |
-| **4** | ⚠ **"WHAT I GOT WRONG"** | Four faults, all the same family. Worth reading before repeating them |
+| **1** | ⛔ **"WHAT IS IN FRONT OF THE NEXT SESSION"** | The shape is close; two dials are unsettled and one is Carl's eye |
+| **2** | ⛔ **"THE §5a NOTE IS STILL OWED"** | ⚠ **It now gates real work, not a hypothetical** |
+| **3** | ⚠ **"WHAT THE ARCHITECT CAUGHT"** | Five claims of the Builder's did not survive a file check |
+| **4** | ⚠ **"WHAT I GOT WRONG"** | Six shape attempts, and the pattern in them is worth the two minutes |
 
 ---
 
 ## ⛔⛔ WHAT HAPPENED, IN ONE LINE
 
-**The wall guides were transferred onto the shipped plate by measurement, all four cards were given
-their real copy, and a fit problem that looked unsolvable was closed by Carl's own sketch: the floor
-cards became LANDSCAPE.** ⚠ **The session ended on a new direction — the floor cards move behind the
-chairs, perpendicular to the desks — which is NOT yet built.**
+**The camera was solved and independently falsified at 0.6°, the room was measured, the Architect
+reviewed the plan and found five false claims, and the floor card's geometry was built on a bench
+through six shape iterations — ending close to right, with the crown converted to a RATIO so the
+family holds at any size.**
 
 ---
 
-# ⛔⛔ NOTHING IS COMMITTED. FIVE PATHS CHANGED
+# ⛔ NOTHING IS COMMITTED. HEAD IS STILL `27067d7`
 
-    M app/about/page.tsx              §2 backdrop swapped; floor-card copy overlay added
-    M app/globals.css                 Caveat scaffolding font added THEN removed
-    M app/proto/wall/page.tsx         CA/CB replaced with MEASURED values; CD/CS added; seeding v3
-    ?? components/about/              NEW — wall-card-text.tsx (client component)
-    ?? public/about-studio-wall-guides.jpg   NEW — the guided plate, 1800x1200
+    M  app/about/page.tsx                 scaffolding reverted; floor copy withdrawn
+    M  app/proto/wall/page.tsx            rails, smaller handles, brightness, comment fixes
+    M  public/about-studio-wall-guides.jpg  floor guides repositioned
+    ?? app/proto/card/                    NEW — the geometry bench
+    ?? components/about/about-card-geometry.ts   NEW
+    ?? components/about/about-card-mesh.tsx      NEW
+    ?? components/about/card-bench.tsx           NEW
 
-⚠ **HEAD is still `f082f17`.** ⛔ **Carl has not been asked to commit and no commit was made.**
-
----
-
-# ⛔⛔ THE GUIDED PLATE IS LIVE ON `/about` AND IT DEPLOYS
-
-`app/about/page.tsx` §2 now renders **`/about-studio-wall-guides.jpg`** instead of
-`about-studio-source.jpg`. ⚠ **The clean plate is UNTOUCHED in `public/`, so reverting is a one-line
-change.**
-
-⛔⛔ **THE GUIDES ARE DEVELOPMENT SCAFFOLDING AND THEY ARE VISIBLE TO ANY VISITOR.** ⚠ **Carl
-authorised this explicitly** — *"On about itself"* — **after being told plainly that it deploys.**
-**Revert before the section is finished.**
-
-## ⚠⚠ AND `object-cover` BECAME `object-contain` — A REAL CHANGE, NOT A DETAIL
-
-⛔ **§2's image was `object-cover` and is now `object-contain`.** ⚠ **Reason: at Carl's ~2.1 window
-aspect, `object-cover` showed only the middle 71.2% of the 1.500 plate and CB's top-right corner
-landed at y = −0.035, OFF THE TOP.** **The whole frame must be visible or the guides are cut.**
-
-⚠ **CONSEQUENCE THE NEXT SESSION MUST KNOW: the section is no longer full-bleed.** There is
-letterboxing above and below at wide windows. ⛔ **That is a change to how an approved section
-renders, made for scaffolding. It reverts with the plate.**
+⚠ **`npx tsc --noEmit` CLEAN. `npm run lint` = `1 problem (1 error, 0 warnings)`** — the documented
+`enquiry-opening.tsx` baseline. ⛔ **Zero warnings held all session.**
+⚠ **The dev server is RUNNING on :3000.** Stop it before any checkpoint measurement.
 
 ---
 
-# ⛔⛔ THE WALL GUIDES WERE MEASURED, NOT DRAWN — AND THIS REPLACES THE RECORD'S NUMBERS
+# ⛔⛔ THE CAMERA IS SOLVED — `live-work/camera-solve-11-september.md`
 
-⚠⚠ **CARL RETIRED THE HAND-DRAWN ITERATION: *"the original hand drawn is discarded, the perspective
-is wrong."*** ⛔ **So the delta chain in `wall-card-corners-4-september.md` describes a DEAD
-ARTEFACT. Its arithmetic is sound; its subject is retired. Do not restore those values.**
+| | |
+|---|---|
+| focal length | **1282.0 px** on the 2560x1707 plate |
+| **vFOV for Three.js** | ⛔ **67.31°** — `PerspectiveCamera.fov` is VERTICAL |
+| hFOV / 35mm equiv | 89.91° / 18mm |
+| pitch | 12.68° below horizontal |
 
-**The live numbers came from `brand-assets/about-studio-wall-cards-1800.jpg` — the calculated
-placement, solved OUTSIDE this system — transferred by colour segmentation and per-edge line
-fitting:**
+⛔ **FALSIFIED INDEPENDENTLY: the left desk's cabinet base — fitted at rms 0.33px and never fed into
+the solve — back-projects to 0.6° from its wall.** It should be 0°. **That test could have failed
+and did not.**
 
-    CA  0.17505,0.16609  0.46536,0.20507  0.46685,0.35997  0.19208,0.36855
-    CB  0.59518,0.20601  0.86464,0.11912  0.84034,0.37849  0.59165,0.35976
+⚠⚠ **THE SCALE TRAP THAT COST THE FIRST SOLVE:** the VPs (2523, 397) and (374, 397) are in the
+**1800x1200** frame, not the plate. Read as plate pixels they gave a plausible-looking f = 958px /
+106° / 13.5mm, **exposed only because the cabinet base then read 20.6° off its own wall.**
+⛔ **A pixel coordinate without its frame size is not a measurement.**
 
-⛔ **ALL EIGHT EDGES FITTED UNDER 1px rms.** ⚠⚠ **THE CHECK THAT MAKES THEM TRUSTWORTHY, AND IT WAS
-NOT IMPOSED: CA's top/bottom edges converge at (2523, 397); CB's at (374, 397). Opposite sides of
-the frame — as two walls receding in opposite directions must — AT THE SAME HORIZON HEIGHT.**
-Vertical ratios agree independently: **CA 1.317** (left edge longer), **CB 0.587** (right longer).
+## ⚠ THE ROOM, AND THE TWO SIDES ARE NOT EQUALLY EVIDENCED
 
-⛔ **THE HORIZON IS y = 0.331 AND IT IS THE MOST TRUSTWORTHY NUMBER IN THIS FILE** — two independent
-quads landed on it. **Every depth calculation below uses it.**
+- **LEFT desk — measured AND independently confirmed.** Carl's rail 0.3° off its wall; cabinet base
+  0.6°. ⚠⚠ **His hand-placed rail landed 0.13° from the camera's own construction.**
+- ⛔ **RIGHT desk — CARL'S RAIL ALONE, ~5.4° off its wall.** The skirting "confirmation" at 4.9° came
+  from a fit that never converged and is **not** independent evidence. **CS's yaw rests on one
+  hand-placed line.**
+- **The two desks are 84.3° apart in the room** — 90° less the right desk's turn.
 
-⚠ **These are fractions of the 1.500 SOURCE FRAME.** ⛔ **NOT stage fractions at 2.106.**
-
----
-
-# ⛔ THE FOUR CARDS AS THEY NOW STAND
-
-| card | x | y | notes |
-|---|---|---|---|
-| **CA** | 0.17505 → 0.46685 | 0.16609 → 0.36855 | ⛔ **CALCULATED. Trapezoid. Do not adjust by eye** |
-| **CB** | 0.59165 → 0.86464 | 0.11912 → 0.37849 | ⛔ **CALCULATED. Trapezoid** |
-| **CD** | 0.0321 → 0.4002 | 0.6019 → **0.8744** | ⚠ **LANDSCAPE. 663 x 327px, 2.026:1** |
-| **CS** | 0.5764 → 0.9427 | 0.6748 → **0.9460** | ⚠ **LANDSCAPE. 659 x 325px, 2.026:1** |
-
-⛔ **THE FLOOR PAIR IS MATCHED BY ASPECT (2.026:1), NOT BY HEIGHT.** ⚠ **CD sits further back, so
-equal on-screen height would be a DIFFERENT REAL SIZE in the room.** **Depth factor from the
-horizon: CD 0.469 above it, CS 0.524 — CS is nearer by 1.1173x.**
-
-⚠ **CD keeps dead space at its bottom and Carl accepted it: *"thats ok."*** **Matching the pair beats
-filling one box.**
-
-## ⛔⛔ THE PORTRAIT RULING IS REVERSED — BY CARL, AND THE REASON MATTERS
-
-⚠ **4 September: *"their shorter sides will be on the top edge"* — portrait, a deliberate contrast
-with the landscape wall pair.** ⛔ **REVERSED 10 September.** **That ruling was made BEFORE the copy
-met its container.**
-
-**Why it had to go — three constraints closed in on it:**
-
-- ⛔ **Type could not shrink** — Carl: *"text size cannot be made any smaller because it will become
-  hard to read."*
-- ⛔ **Width could not grow** — it destroys portrait.
-- ⛔ **Height could not grow** — Carl: *"it would ruin that proportion as well as obscure the desk
-  monitors and make the image unbalanced."* **The 2+2 arrangement is a composition.**
-- ⛔ **The copy could not be cut** — Carl: *"the copy was already rewritten and edited. Sec 1 mentions
-  the 4 seats. Sec 2 must expand on that and give an adequate explanation."*
-
-⚠⚠ **LANDSCAPE WAS CARL'S ANSWER, FROM A SKETCH, AND IT DISSOLVED THE DEADLOCK.** ⛔ **The reason is
-the same one that makes the WALL pair work: prose sets in FEW LONG LINES, not many short ones.**
-**Same area, better shape for reading.** **Areas went 3.15% → 10.03% and 4.32% → 9.93%.**
+⚠ **`INITIAL_RAIL` labels are INVERTED and the names are kept only so Carl's handles reappear:**
+RL/RR say "ANGLE" but sit on the **chair castors**; PL/PR say "POSITION" but are **the
+measurement**. Documented in the file.
 
 ---
 
 # ⛔⛔ WHAT IS IN FRONT OF THE NEXT SESSION
 
-## ⛔⛔ THE ORDER, SETTLED WITH CARL AT THE END OF THE SESSION
+## 1. ⛔ THE SHAPE — CLOSE, WITH TWO DIALS UNSETTLED
 
-    1. DESK-ANGLE CHECK    2D line fitting on the plate. No camera, no Three.js.
-    2. CAMERA SOLVE        From the horizon + the two VPs + the wall corners.
-    3. GEOMETRY & PLACEMENT  The cards built and positioned IN that scene.
+**`/proto/card`.** Rim, bevel, convex face under a three-tone diagnostic. Views: oblique, face-on,
+**side elevation**, top elevation. Sliders: height, aspect, crown, **oval**, light angle.
 
-⚠⚠ **A DISTINCTION THE BUILDER GOT WRONG ONCE TODAY AND CARL NEARLY INHERITED — READ IT BEFORE
-PLANNING:** ⛔ **"2D placement first, then camera" IS WRONG for the floor pair.**
+⚠ **Carl on the last render: *"subtle dome from the side and the top"*, and the oblique read well.**
+⛔ **Not approved — he was still looking when the session ended.**
 
-- ⛔ **The DESK-ANGLE CHECK is genuinely 2D** — fit the desk front edges, test convergence. Do it
-  first, it needs nothing built.
-- ⛔⛔ **BUT PLACING THE CARDS BEHIND THE CHAIRS IS NOT A 2D JOB.** ⚠ *"Perpendicular to the desk"*
-  **is a statement about the room's 3D space. A card standing at an angle projects to a TRAPEZOID
-  whose shape depends on the camera.** ⛔ **Drawing that quad in 2D means EYEBALLING THE ANGLE —
-  which is the same failure as the four wrong ceiling angles (D-076).**
-- ✅ **What IS already done in 2D and stands: size, proportion, position and copy fit.** It feeds
-  step 3 as the card's dimensions.
+**The two open dials:**
 
-⚠ **Steps 1 and 2 are MEASUREMENT, not building, so neither needs the §5a write-up.** ⛔ **That gate
-applies when a WebGL context actually lands on `/about`.**
+- ⛔ **`OVAL_EXPAND` (currently 1.35) — THE UNRESOLVED TRADE.** Carl's solution to flat corners:
+  *"expand the oval in all directions so it goes outside the rectangle, but only show what is inside
+  the rectangle."* **Below E≈1.26 the corners fall off the curve and go flat; above it the whole card
+  is on the curve BUT the mid-edges stand proud of the bevel — 24mm at E=1.35, nearly half the
+  crown.** ⚠ **Judgement, not arithmetic.** ⚠ If the step reads wrong at every setting, the likely
+  answer is that **the bevel should follow the face's edge height** rather than being flat — the
+  mount shaped to the lens, not the lens forced to the mount. **Untested.**
+- ⚠ **`OVAL_EXPAND` IS ALSO NOT YET DERIVED FROM ASPECT.** The threshold where corners stop going
+  flat depends on how elongated the rectangle is, so **a 1.615:1 wall card needs a different value.**
+  Currently a constant tuned against 2.026:1.
 
-## ⛔ 1. THE DESK ANGLES — CARL'S INSIGHT, AND IT IS MEASURABLE
+## 2. ⛔ THE CROWN IS NOW A RATIO — the last thing done
 
-**Carl's new direction for the floor pair, with a sketch:** ⛔ ***"Behind the chairs, approx
-perpendicular to the desks. The material is frosted glass."***
+**`CROWN_RATIO = 0.0901`** (9.01% of card height), back-derived from the 100mm crown on the 1110mm
+card Carl was judging. Carl: *"this formula should be used for all cards. Not the exact same figures
+because the cards are different sizes."*
 
-**Then the insight that makes it tractable:** ⛔ ***"if we can assume that the desks have some
-relationship to the wall, the wall 2 cards are on, i would say the angles are very similar."***
+⚠⚠ **WHAT IS PRESERVED IS THE ANGLE, NOT THE DEPTH** — max surface tilt is **27.9° at every size**:
 
-⚠⚠ **THIS IS CHECKABLE, NOT AN ASSUMPTION, AND THE CHECK HAS A REAL PASS/FAIL.** ⛔ **Each wall
-card's quad already encodes its wall's vanishing point — CA (2523, 397), CB (374, 397). If a desk's
-long edge is parallel to its wall, that edge EXTENDED MUST CONVERGE ON THE SAME POINT.**
+    600mm -> 54.1mm    1110mm -> 100.0mm    1400mm -> 126.1mm     all 27.9°
 
-**Method: fit the desk front edges the way the guide quads were fitted (strong light/dark boundary
-against the floor), then test convergence.** ⛔ **NOT RUN — Carl stopped the session at 40%
-compaction before it could be.**
+⛔ **A fixed millimetre crown would read as a dome on a small card and flat on a large one.**
 
-⚠ **What could break it, stated so a green result is not over-read:** the right desk is an **L**, so
-its near section may not be flush with the wall; the two desks meet in the corner, so one may be
-rotated slightly to make the join.
+## 3. ⛔⛔ THE §5a NOTE IS STILL OWED — AND IT NOW GATES REAL WORK
 
-## ⛔ 2. THE CAMERA SOLVE — MORE OF IT EXISTS THAN IT LOOKS
+⚠ **Owed since 5 September. The bench does NOT trip it** (`/proto/card`, same precedent as
+`/proto/nextstep`) — **but a canvas on `/about` does, and that is the next structural step.**
 
-⛔ **The camera is needed for PLACEMENT, not for GEOMETRY.** ⚠ **Building the card itself — flat
-back, convex face, rim, rounded corners — is independent of where the camera lands and can be done
-first.** ⛔ **But the moment a card must sit *in the room*, the scene needs a camera that agrees with
-the photograph, or placement is dragging a mesh until it looks right.**
+⛔ **The Architect named four questions missing from its scope, and TWO MUST BE ANSWERED BEFORE
+CHUNK 1 IS FINISHED:**
 
-**THREE THINGS ALREADY CONSTRAIN IT, and they came out of today's measurement:**
+- ⛔⛔ **THERE IS NOTHING IN THE SCENE FOR THE GLASS TO TRANSMIT.** `answer-card-geometry.ts` records
+  it: *"the frost was never the problem; the absence of anything worth seeing through was."*
+  ⚠ **Carl's answer — sample the wall/floor colour and put a proxy rectangle behind each card** —
+  avoids putting the 459KB plate in the scene and reinstating the regression D-075 removed.
+  **Sampled and in the code: CA `#182733` · CB `#192a35` · CD `#15191f` · CS `#2d353c`.**
+  ⚠⚠ **MEASURED SURPRISE: after a heavy blur both floor regions go FLAT.** So a faithful proxy gives
+  the glass nothing to distort — **it may need MORE contrast than the room has.** `PROXY_CONTRAST`
+  is the dial, currently 0.
+- ⛔ **WHERE THE COPY LIVES.** Builder's advice, given on request: **DOM overlay, not baked** —
+  baking reproduces D-051-A11Y four times over on the page whose job is explaining the four roles,
+  and it is an indexing problem as well as an accessibility one. ⚠ **Cost: DOM text is not refracted
+  by the glass it sits on.** **Carl has not ruled.**
 
-| | |
-|---|---|
-| **horizon** | **y = 0.331** — two independently-fitted quads landed on it unforced |
-| **VP left wall** | **(2523, 397)** — from CA's top/bottom edges |
-| **VP right wall** | **(374, 397)** — from CB's |
+**Also missing:** the unit system (millimetres adopted, anchored on an **assumed** 750mm desk); and
+**§2's final aspect and fit mode**, which placement depends on — ⚠ if it reverts to `object-cover`,
+**CB's top-right corner lands off the top of the frame at Carl's ~2.1 aspect.**
 
-⚠⚠ **TWO PERPENDICULAR HORIZONTAL DIRECTIONS GIVE FOCAL LENGTH DIRECTLY**, and the horizon gives the
-pitch. ⛔ **The `perspective-from-photograph` skill carries the arithmetic — `f = sqrt(-(vLx-cx)*(vRx-cx))`
-— and an interior wide-angle should land at roughly 85-95° hFOV. A result of 50° or 120° means a VP
-is wrong.**
+## 4. ⚠ SIX DECISIONS THE ARCHITECT PUT TO CARL — ALL STILL OPEN
 
-⛔⛔ **AND IT CARRIES A FALSIFICATION TEST, WHICH IS THE THING TODAY KEPT LACKING:** the solved camera
-predicts where VERTICAL world lines converge. ⚠ **Measure a real vertical well away from the image
-centre — a monitor bezel, the room's corner seam — and check it points at that predicted vertical
-VP.** **Agreement within a few percent confirms the whole solution against something other than
-itself.**
-
-⚠ **THE DESK CHECK FEEDS THIS.** ⛔ **If the desk edges converge on the wall VPs, it confirms the
-camera solve AND hands over the card angles in the same measurement.**
-
-## ⛔ 3. THE §5a STRUCTURAL WRITE-UP — STILL OWED, STILL GATES EVERYTHING
-
-⚠⚠ **UNTOUCHED TODAY, AS ON 5, 6 AND 9 SEPTEMBER.** ⛔ **A Three.js surface on `/about` is the FIRST
-WebGL CONTEXT ON A ROUTE THAT HAS NONE — verified today, not assumed: `app/about/page.tsx` has no
-`@react-three` import.**
-
-⚠ **AND THE PAGE IS A STATIC PRERENDERED SERVER COMPONENT, deliberately** — its own header comment
-says `AboutNav` was split out to keep it that way. ⛔ **Any hooks on the page itself convert it to
-client rendering. That is a structural change to an approved property.**
-
-## ⚠ 4. THE MATERIAL — CARL HAS NAMED IT, AND IT IS AN UNLOCK QUESTION
-
-⛔ **Carl: *"The material is frosted glass."*** ⚠ **That is `answer-card-glass.ts` — a PROTECTED path
-and D-051 APPROVED work.** ⛔ **Reading is free. Reuse is an unlock and an approved-layer question
-for Carl.** **The record already leans that way: *"a client's frosted glass being THE SAME GLASS is
-the point."***
-
-⚠ **OPEN AND UNANSWERED: whether the approved glass carries light THROUGH from behind unchanged.**
-It was tuned for a FRONT-LIT card in a dark corridor. **Untested.**
-
-## ⚠ 5. THE FACE-ON QUADS ARE NOT AN ACCEPTANCE TEST
-
-⛔ **Carl's sequence stands: build face-on in Three.js, then rotate and move into position.** ⚠⚠ **So
-the four fractions above are a SIZE-AND-POSITION STATEMENT. Once the cards rotate, THE PROJECTED
-CORNERS MOVE — a wide card leaning back foreshortens more in height than a tall one, and the inward
-turn shortens the far edge.** ⛔ **A rendered card checked against these numbers would fail
-CORRECTLY and send someone fixing the wrong thing.**
+1. **Frosted or satin?** ⛔ D-051 is **satin** and supersedes the frosted decision; the file named
+   *glass* holds satin. **"Frosted glass" names a superseded decision.**
+2. Plate in the scene, or transmission shows nothing?
+3. Copy baked or DOM?
+4. §2's aspect and fit mode.
+5. Equal trim in the room, or equal trim on screen?
+6. **Duty cycle before periods** — how often may the room go fully dark, and for how long?
 
 ---
 
-# ⚠⚠ WHAT I GOT WRONG — FOUR FAULTS, AND THEY RHYME
+# ⛔⛔ THE DESIGN CARL SPECIFIED TODAY — recorded because it exists nowhere else
 
-⛔ **Recording these because each cost real time and three are the SAME defect: a number produced by
-an instrument whose bounds I set, then read back as a measurement.**
+**Full detail in the plan at `C:\Users\Carl Buckley\.claude\plans\concurrent-churning-whistle.md`
+and the review at `live-work/architect-plan-response-about-cards.md`.**
 
-**1. ⛔ THE CHAIR HEIGHT — MEASURED THREE TIMES, WRONG THREE TIMES.** A luminance scan returned
-`0.426` where every column reported **the scan's own start bound** as the chair's top. A gradient
-scan then returned `0.238`, which looked sound — until a side-by-side crop showed the rules landing
-on the **monitors** and **below the castors**. ⚠ **The room's luminance does not separate chair from
-desk from shadow: the profile runs dark from 0.30 to ~0.75 with no gap.** ⛔ **DO NOT ATTEMPT A
-FOURTH TIME. It is not available from this image.**
-
-**2. ⛔ THE PERSPECTIVE SOLVE — TWO FAILED ATTEMPTS BEFORE CARL SAID IT WAS ALREADY DONE.** Line fits
-came back at 9–21px rms with a 4.4° field of view for an interior wide-angle. ⚠⚠ **The instrument
-declaring its own failure is the ONLY reason a wrong camera was not built on.** ⛔ **The perspective
-is solved OUTSIDE this system. Do not re-derive it.**
-
-**3. ⛔ FONT SIZE CARRIED ACROSS A FONT CHANGE.** 23px was set for **Caveat**, which sits small on its
-em; swapping in **Geist**, which has a high x-height, at the same number made the overflow WORSE.
-⚠ **The floor pair's `clamp(8px, 1.05vw, 19px)` had the same inherited-number defect.** ⛔ **A size
-is only meaningful against a named face.**
-
-**4. ⛔⛔ SCOPE DRIFT — FIVE EDITS, NO COMPILE, AND THE APPROVED FLOOR PAIR MOVED.** Asked to angle the
-wall text, I converted the overlay to a fixed-pixel coordinate layer, which **also moved CD and CS
-off their approved percentage positions.** ⚠ **Carl was offered the choice and took the revert.**
-⛔ **The proven mechanism already existed in `/proto/wall`; I reached for a novel one. That is the
-"why is there a second X?" test in CLAUDE.md §5a, failed.**
-
-⚠ **A fifth, different in kind: Carl said where growth COULD come from if a card were widened, and I
-drew three width options. *"i didnt say do it, i gave you no instructions or dimensions."*** ⛔ **A
-constraint is not an instruction. Same fault as the 4 September corner-tool incident.**
+- ⛔ **NEON.** *"What works well with frosted glass and would have an impact? Neon."* ⚠⚠ **The
+  half-tube rim IS a neon tube** — built in August so it *"will emit light onto the bevel and face,
+  and if it's making a journey down the right hand side it will affect the 2 card."*
+- ⛔ **SUBTLE.** *"Just enough to confirm the 'same world' idea."* ⛔ **The room is already lit — do
+  NOT add a global light.** Carl corrected this directly: *"You're assuming that a white global
+  light is going to be used."* The white ceiling and pale floor are in the photograph and **receive**
+  the spill.
+- ⛔⛔ **THE FUSION GLOW MASK.** A WebGL object cannot light a photograph. Carl: ***"no, it can't be
+  baked in Fusion — but you can MASK it!"*** **Per-card glow layers authored in Fusion, composited
+  over the plate, opacity driven by each card's live state.** Matching hex, subtle.
+- ⛔ **THE SCENE MUST BE ALIVE.** *"It's like writing a song in 5/4. Every 4 bars complete the
+  cycle."* ⚠ **No randomness needed — incommensurate periods.** {5,6,7,8} repeats only after 840s.
+  ⛔ **4-and-8 lock** (8 is a multiple of 4). ⚠ **Architect's correction: duty cycle matters more
+  than cycle length** — at 50% duty each, all four are dark 6.25% of the time, probably too often.
+- ⚠ **Pop / fade / flicker DEFERRED** — Carl: *"we can sort this out when it's time."*
+- ⚠ **`prefers-reduced-motion` is unhandled** and belongs with the mechanism.
 
 ---
 
-# ⚠ TWO INFRASTRUCTURE TRAPS THAT COST AN HOUR EACH
+# ⚠⚠ WHAT THE ARCHITECT CAUGHT — five claims that did not survive a file check
 
-**1. ⛔⛔ `@import url(...)` AFTER `@import "tailwindcss"` IS SILENTLY STRIPPED.** CSS requires every
-`@import` to precede all other rules. ⚠ **The compiled chunk came back with ZERO occurrences of the
-font, nothing errored, and the class resolved to the fallback stack.** ⛔ **If a webfont is ever
-added to `globals.css`, IT GOES ON LINE 1.** *(The Caveat import is now removed entirely — the cards
-use Geist.)*
+⛔ **All six checkable claims were re-verified by the Builder against the repo. All confirmed.**
 
-**2. ⛔⛔ THE NEXT IMAGE CACHE IS AT `.next/dev/cache/images`, NOT `.next/cache/images`.** ⚠⚠ **I
-checked the wrong path, reported the cache empty, and told Carl a fix had landed TWICE when it had
-not.** ⛔ **It survives a server restart — killing the process does nothing.** **`X-Nextjs-Cache: HIT`
-on a brand-new process is the tell.** ⚠ **After changing the plate: `rm -rf .next/dev/cache/images`,
-and Carl must HARD reload (Ctrl+F5) — the browser caches `/_next/image` separately.**
+1. ⛔ **`answer-card-geometry.ts` IS NOT PROTECTED.** The plan said it was. ⚠⚠ **The file's own
+   comments record an authorisation Carl granted once on exactly this false premise. The same
+   mistake, repeated.** ⛔ **Check `.claude/protected-files.json`; do not recall it.**
+2. The right desk was over-claimed as measured. **Corrected in code.**
+3. `INITIAL_RAIL` contradicted itself. **Corrected in code.**
+4. **"Frosted glass" ≠ D-051, which is satin.**
+5. **The acceptance test was wrong in both directions:** CA/CB are a valid projection test;
+   **CD/CS are a size statement and NOT a test.** ⚠ And **decide the attribution rule before
+   measuring** — a consistent offset shared by all four cards is a **camera** error, not a placement
+   error.
+
+⚠ **And a bug caught before it was written: `PerspectiveCamera.fov` is VERTICAL.** The plan carried
+the 89.9° hFOV.
 
 ---
 
-# ⛔ THE STATE — VERIFIED, NOT ASSUMED
+# ⚠⚠ WHAT I GOT WRONG — six shape attempts, and they rhyme
 
-- ⛔ **`npx tsc --noEmit` CLEAN (exit 0). `npm run lint` = `1 problem (1 error, 0 warnings)`** — the
-  documented `enquiry-opening.tsx` baseline, untouched.
-- ⛔ **NO SERVER RUNNING. Port 3000 verified free by netstat AND a curl returning 000.**
-- ⛔ **NO UNLOCK LIVE.** `chunk-scope.json` absent. **No protected path was edited this session.**
-- ⚠ **`app/about/page.tsx` is NOT protected — deliberately, per `.claude/protected-files.json`.**
-- ⚠ **HEAD `f082f17`. Five paths changed, none committed.**
+⛔ **Recorded because the pattern is the useful part: each fix created the next fault, and three of
+the six were caused by reasoning from a formula instead of looking at a render.**
 
-## ⚠ THE VERIFICATION GAP THE NEXT SESSION INHERITS
+| # | attempt | Carl's verdict |
+|---|---|---|
+| 1 | plateau — flat centre, curve confined to a band | *"You cannot put text on the slope"* — the shoulder |
+| 2 | paraboloid, radial | *"More like an old TV screen"* |
+| 3 | raised cosine on true distance | *"Flat in the corners"* |
+| 4 | superellipse n=6 | *"Not a shallow dome but 4 sloping triangles"* |
+| 5 | superellipse n=3 | close, corners still flat |
+| 6 | **true SDF** | **regressed — REVERTED on Carl's instruction** |
 
-⛔⛔ **`components/about/wall-card-text.tsx` RENDERS ONLY AFTER HYDRATION** — it guards on a measured
-box size, which is 0 on the server. ⚠⚠ **So a curl sees NOTHING either way, and NO CHECK I CAN RUN
-DISTINGUISHES "working" FROM "silently absent."** ⛔ **Only Carl's eye closes that gap.** **It was
-working when he last looked.**
+⛔ **THE PLATEAU WAS BACKWARDS AND THE FIRST RENDER SHOWED IT.** The reasoning was that a flat centre
+*protects* the text. **It does the opposite:** confining curvature to a narrow band makes it steep
+and shrinks the flat centre to pay for it.
+
+⚠⚠ **THE SDF REGRESSION IS DIAGNOSED AND THE CAUSE IS WORTH KEEPING: on a long rectangle a true
+distance field SATURATES.** From the centre out to x=404 of 807 — **more than half the card's
+length** — it reads 1.0, so the surface was a flat ridge with turned-down ends.
+⛔ **`insetDistance` is RETAINED in the file, unused and suppressed, with the reason at the line.**
+It is the measured fix for the corners and **the corner fault and the ridge are not yet
+reconciled.**
+
+⚠ **A CORRECT COMPONENT WAS DELETED FOR ITS CALLER'S DEFECT.** `insetDistance` was written, then
+removed when the *radial profile* built on it looked like a CRT. The distance field was never the
+fault. **Restored, with that noted so it is not discarded a third time.**
+
+⚠⚠ **AND A REFERENCE PHOTOGRAPH CAN SHOW A LIGHTING CONDITION AND BE READ AS A GEOMETRY.** Carl:
+*"the top view is the same as the side view, it only looks flat because light isn't shone on it."*
+⛔ **A cylindrical lens was one step from being built off that misreading** — while a bench with a
+sweepable light sat open in the next tab.
+
+⚠ **`maxFaceTiltDegrees()` CHANGED FOUR TIMES TODAY, each time edited to match the mesh.**
+⛔ **A formula kept in step with the thing it measures is not an instrument.**
+**`measuredMaxTiltDegrees()` reads built normals and is the one with authority.** They currently
+agree within ~1°.
+
+⚠ **The lint caught a real bug, not tidiness:** an edit dropped `positions.push`, so the face would
+have had **zero vertices**. An unused-variable warning was the only thing that noticed.
 
 ---
 
 # ⚠ SMALLER THINGS, RECORDED SO THEY ARE NOT REDISCOVERED
 
-- ⚠ **The plate is 1800x1200** — Carl asked for the reference's dimensions. ⛔ **The 6158 original is
-  at `brand-assets/reddit-original.jpg` if a higher-resolution plate is ever wanted; the guides
-  would need redrawing at that scale (fractions are scale-invariant, so it is cheap).**
-- ⚠ **`/proto/wall` now holds all four cards** and its `INITIAL_FRAC` carries the MEASURED wall
-  values. ⛔ **Its seeding is v3: `INITIAL_FRAC` wins on load, storage written but never read.** **The
-  record said this was already true on 5 September; the file still ran v2. Corrected.**
-- ⚠ **The floor pair in `/proto/wall` is still the OLD PORTRAIT seed** — it was never updated to
-  landscape. ⛔ **The live numbers are in `app/about/page.tsx`, not the proto tool.**
-- ⚠ **Three brand assets remain untracked on disk** — unchanged from the last handoff.
+- ⛔ **The Gemini floor-grid image was TESTED AND REJECTED.** Floor lines bow up to **25px** off
+  their own best fit; 3 of 5 untraceable; **aspect 1.5821 vs 1.500 — not even the same frame.**
+  ⚠ **The walls were broadly sound; only the floor was decorative.** An image model reproduces the
+  *appearance* of a grid.
+- ⛔ **Four automatic fitting attempts on the desks FAILED** — fixed-band edge fit (25px rms),
+  floorboard seams (grain indistinguishable from seams), right-desk blob segmentation (feet, column
+  and shadow merge into one 125k-px mass). ⚠ **Carl's hand placement beat all of them.**
+- ⚠ **The floor copy overlay is WITHDRAWN, not deleted** — preserved in full at
+  `live-work/floor-copy-overlay-withdrawn-11-september.md` with the 2.026:1 dimensions. ⛔ It could
+  not be commented out in place: **the block contains its own block comments and the first inner
+  `*/` breaks the parse.**
+- ⚠ **`/about` is back to the wall-guides plate** with the floor guides repositioned on Carl's
+  instruction (green in from the wall, purple back, 92px gap, side by side).
+- ⚠ **Trim rejected the Architect's 8–12 screen-px target.** Computed against CD at a 390px window
+  it demanded a bead of **15–22% of card height — a picture frame.** ⛔ **The shipped Q5 card's rim
+  subtends 4px and reads.** Current: bead 2.2%, bevel 3.0% of height. **At 390px that is 2.8px —
+  possibly too fine; the fix would be a floor on rendered size, not a bigger percentage.**
 
 ---
 
-*Written 10 September 2026. **The four cards hold their copy at a legible size, and the shape that
-made it possible came from Carl's sketch, not from any of the three routes the Builder proposed.***
-⚠⚠ **The next real step is the desk-angle check — his idea, and the first thing all session that can
-be verified against something other than itself.**
+*Written 11 September 2026. **The camera passes one independent test at 0.6°, and the card has a
+shape Carl called "subtle" from three angles.*** ⚠⚠ **The next real step is Carl's eye on the oval
+dial — and the §5a note, which now stands between the bench and the room.**

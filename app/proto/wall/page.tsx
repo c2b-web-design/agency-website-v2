@@ -190,17 +190,34 @@ const INITIAL_FRAC: Record<CardKey, Pt[]> = {
      ⚠ CD AND CS WILL NOT PROJECT TO THE SAME ON-SCREEN SIZE even at equal size
      in the room — CS is nearer the camera. ⛔ CARL: "yes that is the point." Do
      not flatten them to match. */
+  /* ⛔ MOVED BACK — 11 September 2026, Carl: "move the floor cards slightly back,
+     they dont need to be in the foreground while we are building and we will
+     probably shine some light at them, lets have space to work."
+
+     ⚠ WHAT MOVED AND WHAT DID NOT. Both cards are pushed back and up toward the
+     POSITION RAILS (PL/PR), and scaled down — a card further from the camera
+     projects smaller, so shrinking them is what keeps them plausible at the new
+     depth rather than a separate decision.
+     ⛔ STILL FACE-ON AND STILL RECTANGULAR. Carl's sequence is unchanged: prove
+     the card face-on, THEN rotate and place. No yaw is applied here.
+
+     ⚠⚠ THESE ARE STILL THE OLD PORTRAIT SEEDS IN SHAPE. The approved LANDSCAPE
+     geometry (2.026:1) was never carried into this tool — it lived only in
+     app/about/page.tsx and is now preserved at
+     live-work/floor-copy-overlay-withdrawn-11-september.md.
+     ⛔ So these quads are WORKING SPACE, not the approved card. Do not read them
+     as a size decision. */
   CD: [
-    { x: 0.06, y: 0.5 },
-    { x: 0.18, y: 0.5 },
-    { x: 0.18, y: 0.86 },
-    { x: 0.06, y: 0.86 },
+    { x: 0.145, y: 0.470 },
+    { x: 0.245, y: 0.470 },
+    { x: 0.245, y: 0.745 },
+    { x: 0.145, y: 0.745 },
   ],
   CS: [
-    { x: 0.7, y: 0.54 },
-    { x: 0.83, y: 0.54 },
-    { x: 0.83, y: 0.95 },
-    { x: 0.7, y: 0.95 },
+    { x: 0.640, y: 0.495 },
+    { x: 0.748, y: 0.495 },
+    { x: 0.748, y: 0.800 },
+    { x: 0.640, y: 0.800 },
   ],
 };
 
@@ -208,6 +225,113 @@ const INITIAL_FRAC: Record<CardKey, Pt[]> = {
    a stored {CA,CB} would restore over a four-card layout leaving CD/CS missing
    with no error. A new key retires the stale shape rather than migrating it. */
 const STORE_KEY = "c2b-pin-corners-4card";
+
+/* ⛔ FLOOR RAILS — TWO POINTS EACH, NOT FOUR. Added 11 September 2026 on Carl's
+   instruction: "on the floor, instead of giving me 4 points to move, just give
+   me 2 so i can draw a line."
+
+   ⚠⚠ A RAIL IS NOT A CARD AND MUST NOT BE READ AS ONE. It is a LINE ON THE
+   FLOOR, placed by Carl's eye through the two floor-contact points of a desk —
+   where the feet meet the floor, NOT the desk's top edge, which sits at desk
+   height and is a different line in space.
+
+   ⛔ PURPOSE: the rail carries the DIRECTION a floor card turns to at its
+   destination, and the cards slide ALONG it to find their position. Carl:
+   "make them longer so we can move them into position along the lines. That
+   way we will have a direction to move them slightly if needed."
+
+   ⚠ The drawn line EXTENDS BEYOND both handles, deliberately — the handles mark
+   where it was pinned, the extension is the rail itself.
+
+   ⛔⛔ FOUR RAILS, TWO JOBS — 11 September 2026, Carl's instruction.
+   RL/RR are the ANGLE rails: he placed them along the two desks, and they carry
+   the DIRECTION each floor card turns to. PL/PR are the POSITION rails: the
+   same job, moved to where the cards actually stand — BEHIND the chairs,
+   clearing each chair's CENTRE WHEEL. Carl: "the lines must clear that... i
+   will eyeball it."
+
+   ⚠ THE ANGLE RAILS AND THE POSITION RAILS ARE NOT INDEPENDENT. A position rail
+   is meant to be PARALLEL IN THE ROOM to its angle rail — same floor direction,
+   different depth. ⛔ Parallel in the ROOM is NOT parallel on screen: two floor
+   lines at different depths converge toward the same vanishing point, so their
+   screen slopes MUST differ. Do not "correct" a position rail to match its
+   angle rail's screen slope — that would make them non-parallel in the room. */
+type RailKey = "RL" | "RR" | "PL" | "PR";
+const RAILS: RailKey[] = ["RL", "RR", "PL", "PR"];
+
+const RAIL_META: Record<RailKey, { label: string; line: string }> = {
+  RL: { label: "Left desk — ANGLE", line: "#00ff88" },
+  RR: { label: "Right desk — ANGLE", line: "#ff9500" },
+  PL: { label: "Left card — POSITION", line: "#00e5ff" },
+  PR: { label: "Right card — POSITION", line: "#ff4fd8" },
+};
+
+/* ⛔⛔ THE LABELS ARE INVERTED RELATIVE TO WHAT THESE RAILS ACTUALLY HOLD, AND
+   THE NAMES ARE KEPT ONLY BECAUSE CARL'S HANDLES MUST REAPPEAR WHERE HE LEFT
+   THEM. Corrected 11 September 2026 after an Architect review found this file
+   asserting two contradictory things fifteen lines apart.
+
+   ⚠ Read the names as HISTORY, not as description:
+
+     RL / RR  — named "ANGLE", and they are NOT the desk angles. They sit on the
+                CHAIR CASTOR BASES. The Builder misread them as desk references
+                and produced a "57.7° between the desks" figure. ⛔ DISCARDED.
+
+     PL / PR  — named "POSITION", and these are THE MEASUREMENT. Carl placed them
+                by hand along the two desks' floor lines; back-projected through
+                the solved camera they are what established the room's geometry.
+
+   ⛔ TWO EARLIER COMMENT BLOCKS HERE SAID "PL/PR ARE SEEDS ONLY" AND "PL/PR ARE
+   THE MEASUREMENT" AT THE SAME TIME. Both were written the same day by the same
+   author. The second is correct. */
+const INITIAL_RAIL: Record<RailKey, Pt[]> = {
+  /* ⚠ RL/RR AS CARL LAST PLACED THEM. ⛔ These sit on the CHAIR CASTOR BASES,
+     not on the desks — the Builder misread them as desk references on
+     11 September and produced a "57.7° between the desks" figure from it.
+     That figure is discarded. Kept only so the handles reappear where he
+     left them. */
+  RL: [
+    { x: 0.28549, y: 0.83876 },
+    { x: 0.4164, y: 0.77087 },
+  ],
+  RR: [
+    { x: 0.56968, y: 0.76742 },
+    { x: 0.66895, y: 0.90205 },
+  ],
+
+  /* ⛔⛔ THESE TWO ARE THE MEASUREMENT, 11 September 2026. Carl placed them by
+     hand; back-projected through the solved camera they read:
+         PL  0.3° off the LEFT wall   (cabinet base independently: 0.6°)
+         PR  5.4° off the RIGHT wall  (skirting independently: 4.9°)
+         between them, in the room: 84.3°
+     ⚠⚠ PL LANDED 0.13° FROM THE CAMERA'S OWN CONSTRUCTION — a mouse-drawn line
+     an eighth of a degree from solved geometry.
+     ⛔ PR IS AUTHORITATIVE OVER THE CONSTRUCTION. The right desk is turned ~5°
+     off its wall (an L-desk pushed into the corner), so a rail built to the
+     right wall's vanishing point is wrong by that amount. Carl's verdict by eye
+     — "slightly off" — decided it.
+
+     ⚠⚠ BUT THE TWO SIDES ARE NOT EQUALLY EVIDENCED, AND A REVIEW CAUGHT THIS
+     BEING STATED AS IF THEY WERE:
+       LEFT  — measured AND independently confirmed (cabinet base, rms 0.33px,
+               fitted separately and never fed into the camera).
+       RIGHT — Carl's rail ALONE. The skirting "confirmation" at 4.9° came from
+               a fit that never converged (slope oscillating 0.385-0.414, 100 of
+               140 samples rejected) and is NOT independent evidence.
+     ⛔ camera-solve-11-september.md still lists the right desk's direction under
+     "What is NOT established". That stands. CS's yaw rests on one hand-placed
+     rail, and the floor cards are specified perpendicular to the desks — so this
+     is load-bearing, not a footnote.
+     Full record: live-work/camera-solve-11-september.md */
+  PL: [
+    { x: 0.27621, y: 0.94232 },
+    { x: 0.46058, y: 0.83185 },
+  ],
+  PR: [
+    { x: 0.50858, y: 0.80654 },
+    { x: 0.64059, y: 1.00101 },
+  ],
+};
 
 const toPx = (f: Record<CardKey, Pt[]>, w: number, h: number) =>
   Object.fromEntries(
@@ -222,14 +346,31 @@ export default function WallPinningTool() {
     CD: [],
     CS: [],
   });
+  const [rails, setRails] = useState<Record<RailKey, Pt[]>>({
+    RL: [],
+    RR: [],
+    PL: [],
+    PR: [],
+  });
   const seeded = useRef(false);
   const [drag, setDrag] = useState<{ card: CardKey; i: number } | null>(null);
+  const [railDrag, setRailDrag] = useState<{ rail: RailKey; i: number } | null>(
+    null
+  );
   const [size, setSize] = useState({ w: 0, h: 0 });
 
   /* Aspect ratio of the workspace. MUST match the viewport `/about` is judged at,
      because object-cover crops differently at every shape. 1906x905 is Carl's
      browser at the size the screenshots were taken. */
   const [aspect, setAspect] = useState(1906 / 905);
+
+  /* ⚠ VIEWING AID ONLY, added 11 September 2026 on Carl's instruction ("make the
+     image brighter so i can see better"). The room is dark and the floor features
+     being pinned sit in shadow.
+     ⛔ IT CHANGES NOTHING THAT IS MEASURED. Brightness is a CSS filter on the
+     display layer; the pinned coordinates are stage fractions and are unaffected.
+     ⛔ It does NOT touch the plate on /about — this is the proto tool only. */
+  const [brightness, setBrightness] = useState(1.9);
 
   useEffect(() => {
     const el = stageRef.current;
@@ -257,6 +398,14 @@ export default function WallPinningTool() {
       if (!seeded.current && w > 0 && h > 0) {
         seeded.current = true;
         setCorners(toPx(INITIAL_FRAC, w, h));
+        setRails(
+          Object.fromEntries(
+            RAILS.map((k) => [
+              k,
+              INITIAL_RAIL[k].map((p) => ({ x: p.x * w, y: p.y * h })),
+            ])
+          ) as Record<RailKey, Pt[]>
+        );
       }
     };
     const ro = new ResizeObserver(apply);
@@ -267,25 +416,35 @@ export default function WallPinningTool() {
 
   const onMove = useCallback(
     (e: React.PointerEvent) => {
-      if (!drag || !stageRef.current) return;
+      if ((!drag && !railDrag) || !stageRef.current) return;
       const r = stageRef.current.getBoundingClientRect();
       /* Clamped to the stage: a handle dragged past the edge becomes unreachable,
          and the card silently loses a corner. */
       const x = Math.max(0, Math.min(r.width, e.clientX - r.left));
       const y = Math.max(0, Math.min(r.height, e.clientY - r.top));
+      if (railDrag) {
+        setRails((prev) => {
+          const next = { ...prev, [railDrag.rail]: [...prev[railDrag.rail]] };
+          next[railDrag.rail][railDrag.i] = { x, y };
+          return next;
+        });
+        return;
+      }
+      if (!drag) return;
       setCorners((prev) => {
         const next = { ...prev, [drag.card]: [...prev[drag.card]] };
         next[drag.card][drag.i] = { x, y };
         return next;
       });
     },
-    [drag]
+    [drag, railDrag]
   );
 
   /* Persist on release, as fractions so a different window size still restores
      the same placement. */
   const stop = useCallback(() => {
     setDrag(null);
+    setRailDrag(null);
     if (!size.w || !size.h) return;
     try {
       const asFrac = (ps: Pt[]) =>
@@ -348,9 +507,39 @@ export default function WallPinningTool() {
   const wallArea = areaPx(corners.CA) + areaPx(corners.CB);
   const floorArea = areaPx(corners.CD) + areaPx(corners.CS);
 
+  /* ⚠ A rail's ANGLE ON SCREEN is not its angle in the room — perspective
+     foreshortens an oblique direction heavily. Reported because it is what the
+     drawing shows, NOT as a room measurement. ⛔ Converting it needs a camera. */
+  const railBlock = (k: RailKey) => {
+    const p = rails[k];
+    if (p.length !== 2) return `${k}  —`;
+    const [a, b] = p.map(frac);
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const slope = dx ? dy / dx : Infinity;
+    return (
+      `${k}  ${RAIL_META[k].label}\n` +
+      `${k}  A  ${a.x}, ${a.y}\n` +
+      `${k}  B  ${b.x}, ${b.y}\n` +
+      `${k}  slope ${Number.isFinite(slope) ? slope.toFixed(5) : "vertical"}` +
+      `   screen angle ${((Math.atan2(dy, dx) * 180) / Math.PI).toFixed(1)}°`
+    );
+  };
+
   const report =
     CARDS.map(block).join("\n\n") +
-    `\n\n── SIZE READINGS ──────────────────────────────────────────\n` +
+    `\n\n── ANGLE RAILS (the direction each card turns to) ──────────\n` +
+    ["RL", "RR"].map((k) => railBlock(k as RailKey)).join("\n\n") +
+    `\n\n── POSITION RAILS (where each card stands) ─────────────────\n` +
+    ["PL", "PR"].map((k) => railBlock(k as RailKey)).join("\n\n") +
+    `\n\n  ⚠ SCREEN ANGLES, NOT ROOM ANGLES. A right angle in the room reads\n` +
+    `    far smaller on the picture plane when viewed obliquely. Comparing\n` +
+    `    these figures does NOT test whether the desks are square.\n` +
+    `  ⚠ A POSITION rail is meant to be parallel IN THE ROOM to its ANGLE\n` +
+    `    rail — so their SCREEN slopes should NOT match. Two floor lines at\n` +
+    `    different depths converge; equal screen slope would mean they are\n` +
+    `    NOT parallel in the room.\n` +
+    `\n── SIZE READINGS ──────────────────────────────────────────\n` +
     `  CA vs CB   ${areaPx(corners.CA).toFixed(0)} / ${areaPx(corners.CB).toFixed(
       0
     )} px²   ratio ${
@@ -403,6 +592,22 @@ export default function WallPinningTool() {
         <span className="text-neutral-500">
           match this to the viewport /about is judged at — the crop depends on it
         </span>
+        <label className="flex items-center gap-2">
+          brightness
+          <input
+            type="range"
+            min={1}
+            max={4}
+            step={0.05}
+            value={brightness}
+            onChange={(e) => setBrightness(Number(e.target.value))}
+            className="w-40"
+          />
+          <span className="tabular-nums text-neutral-400 w-10">
+            {brightness.toFixed(2)}
+          </span>
+        </label>
+        <span className="text-neutral-500">viewing aid — nothing measured changes</span>
         <button
           onClick={() => {
             try {
@@ -433,9 +638,16 @@ export default function WallPinningTool() {
           fill
           sizes="100vw"
           className="object-cover"
+          style={{ filter: `brightness(${brightness}) contrast(1.05)` }}
           priority
         />
-        <div className="absolute inset-0 bg-neutral-950/25" />
+        {/* ⚠ THE DIM LAYER FADES OUT AS BRIGHTNESS RISES. At 1.0 it is the /about
+            §2 treatment exactly; brightening it while leaving a 25% black wash on
+            top would fight itself. ⛔ Viewing aid only — nothing measured changes. */}
+        <div
+          className="absolute inset-0 bg-neutral-950"
+          style={{ opacity: Math.max(0, 0.25 - (brightness - 1) * 0.25) }}
+        />
 
         {CARDS.map((k) => (
           <div
@@ -466,8 +678,75 @@ export default function WallPinningTool() {
                 setDrag({ card: k, i });
               }}
               title={`${k} ${["TL", "TR", "BR", "BL"][i]}`}
-              className="absolute w-5 h-5 rounded-full border-2 border-white cursor-move z-20 -translate-x-1/2 -translate-y-1/2 hover:scale-125"
+              /* ⚠ 20px -> 10px on Carl's instruction, 11 September 2026: the
+                 larger handle covered the floor feature being pinned. Border
+                 thinned to match so the dot stays readable at half size. */
+              className="absolute w-2.5 h-2.5 rounded-full border border-white cursor-move z-20 -translate-x-1/2 -translate-y-1/2 hover:scale-150"
               style={{ left: p.x, top: p.y, background: META[k].line }}
+            />
+          ))
+        )}
+
+        {/* ⛔ THE RAILS. Each is ONE LINE through TWO handles, drawn EXTENDED to
+            the stage edges so a card can be slid along it. ⚠ The handles mark
+            where Carl pinned it; the extension beyond them is the rail. */}
+        <svg
+          className="absolute inset-0 pointer-events-none z-10"
+          width={size.w}
+          height={size.h}
+        >
+          {RAILS.map((k) => {
+            const p = rails[k];
+            if (p.length !== 2) return null;
+            const [a, b] = p;
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const len = Math.hypot(dx, dy) || 1;
+            /* Extend far past the stage in both directions; the SVG clips it. */
+            const ext = (size.w + size.h) * 1.5;
+            const ux = (dx / len) * ext;
+            const uy = (dy / len) * ext;
+            return (
+              <g key={k}>
+                <line
+                  x1={a.x - ux}
+                  y1={a.y - uy}
+                  x2={b.x + ux}
+                  y2={b.y + uy}
+                  stroke={RAIL_META[k].line}
+                  strokeWidth={2}
+                  opacity={0.85}
+                  /* ⚠ POSITION rails are DASHED so they cannot be mistaken for
+                     the ANGLE rails at a glance. Two different jobs. */
+                  strokeDasharray={k.startsWith("P") ? "10 7" : undefined}
+                />
+                {/* the pinned span, thicker, so the measured part is legible */}
+                <line
+                  x1={a.x}
+                  y1={a.y}
+                  x2={b.x}
+                  y2={b.y}
+                  stroke={RAIL_META[k].line}
+                  strokeWidth={5}
+                  opacity={0.95}
+                />
+              </g>
+            );
+          })}
+        </svg>
+
+        {RAILS.map((k) =>
+          rails[k].map((p, i) => (
+            <div
+              key={`${k}${i}`}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                setRailDrag({ rail: k, i });
+              }}
+              title={`${k} ${i === 0 ? "A" : "B"} — ${RAIL_META[k].label}`}
+              className="absolute w-3 h-3 rounded-full border-2 border-white cursor-move z-30 -translate-x-1/2 -translate-y-1/2 hover:scale-150"
+              style={{ left: p.x, top: p.y, background: RAIL_META[k].line }}
             />
           ))
         )}
