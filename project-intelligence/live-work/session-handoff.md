@@ -256,6 +256,17 @@ have had **zero vertices**. An unused-variable warning was the only thing that n
   invisible or dark grey."* ⚠ **Parameter ranges are there for chunk 2, with three project facts
   that override them: `thickness` scales with the model (so D-051's 6 is wrong on a mm-scale card),
   the approved material is SATIN not frosted, and no HDRI or drei preset may be used.**
+- ⛔⛔ **AND CARL'S COROLLARY, WHICH CHANGES HOW CHUNK 2 MUST BE BENCHED:** *"It's not just the
+  parameters that are important but also where the light is placed. Also what colour glass."*
+  ⚠ **The material bench needs a MOVEABLE light before any value is tuned** — the same lesson as the
+  geometry bench, where a correct crown reads flat under a head-on beam.
+  ⚠⚠ **AND TINT COMES FROM `attenuationColor`, NOT `color`:** once transmission is high, colour is
+  absorbed through the VOLUME, so **thick parts tint more than thin.** ⛔ **This card's thickness
+  varies by design** — crown thickest at the centre, nothing at the rim — **so attenuation gives a
+  tint gradient that tracks the geometry for free.** Using `color` would give a flat wash and throw
+  away the one optical property the crown was shaped to produce. ⚠ **`attenuationDistance` scales
+  with the model, same trap as `thickness`.** ⛔ **The colour is undecided and is Carl's — it
+  interacts with the neon, since the rim's hue passes through the glass and is attenuated by it.**
 - ⚠ **Trim rejected the Architect's 8–12 screen-px target.** Computed against CD at a 390px window
   it demanded a bead of **15–22% of card height — a picture frame.** ⛔ **The shipped Q5 card's rim
   subtends 4px and reads.** Current: bead 2.2%, bevel 3.0% of height. **At 390px that is 2.8px —

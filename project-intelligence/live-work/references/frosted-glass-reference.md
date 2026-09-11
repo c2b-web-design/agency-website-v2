@@ -69,6 +69,53 @@ generate its own regardless of any material reuse.
 
 ---
 
+## ⛔⛔ THE PARAMETERS ARE NOT THE WHOLE ANSWER — LIGHT PLACEMENT AND TINT
+
+**Carl, 11 September 2026, on a second set of demo renders:** *"It's not just the parameters that
+are important but also where the light is placed. Also what colour glass."*
+
+### ⚠ WHERE THE LIGHT SITS
+
+⛔ **The same parameters read as glass or as grey plastic depending on the rig.** In the demo the
+knot reads as glass because a source BEHIND it transmits through — picking out the thick parts of
+the curve — while a separate source catches the surface, and the spheres behind are visible and
+blurred by the roughness.
+
+⚠⚠ **THIS IS THE SAME PRINCIPLE THE GEOMETRY BENCH ALREADY PROVED.** A correct crown reads as FLAT
+under a head-on beam; *"the ends give SHAPE and the middle gives PRESENCE."* ⛔ **A material cannot
+be judged under a light that cannot disclose it** — and this project has already mis-judged a crown
+exactly that way (contact field, 5.67° max tilt: *"I cannot tell any face being convex"*).
+
+⛔ **CONSEQUENCE FOR CHUNK 2: the material bench needs a MOVEABLE light before any value is tuned**,
+or the first parameter set that "looks right" will be one that suits an arbitrary light position.
+
+### ⛔⛔ TINT COMES FROM `attenuationColor`, NOT `color` — AND THIS CARD MAKES IT MATTER
+
+⚠⚠ **ONCE `transmission` IS HIGH, `color` STOPS BEHAVING LIKE PAINT.** Tint in a transmissive
+material comes from **`attenuationColor` + `attenuationDistance`**: light is absorbed as it travels
+THROUGH the volume, so **thick parts tint more than thin parts** (Beer-Lambert). It is why real
+glass is pale at an edge and saturated through its body.
+
+⛔ **AND THIS CARD'S THICKNESS VARIES BY DESIGN.** The crown is thickest at the centre and falls to
+nothing at the rim. **Under volume attenuation that produces a tint gradient across the face for
+free — deepest where the crown is highest, clearing toward the edges.**
+
+⚠ **That is the SAME behaviour the record already says the convex face exists for:** a curved face
+*"concentrates transmission where the glass is thickest and falls off toward the rim — which is what
+makes it read as a solid object made of glass rather than a glowing panel"* (4 September).
+
+⛔ **Setting the tint with `color` would give a FLAT WASH that ignores the geometry entirely** —
+throwing away the one optical property the crown was shaped to produce.
+
+⚠ **`attenuationDistance` IS IN WORLD UNITS and scales with the model, exactly like `thickness`.**
+Same trap, same rescale. ⛔ **Unmeasured on a millimetre-scale card.**
+
+⚠ **THE COLOUR ITSELF IS UNDECIDED AND IS CARL'S.** It interacts with the neon — if the rim is the
+light source, its hue passes THROUGH the glass and is attenuated by the tint. **Two colour decisions
+that cannot be taken separately.**
+
+---
+
 ## ⚠ WHAT THE SNIPPET'S GEOMETRY IS NOT
 
 Gemini uses `BoxGeometry(2, 2, 0.04)` — a flat slab. ⛔ **This project's card is a rim, a bevel and
