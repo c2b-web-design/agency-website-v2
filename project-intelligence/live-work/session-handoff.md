@@ -250,6 +250,12 @@ have had **zero vertices**. An unused-variable warning was the only thing that n
   `*/` breaks the parse.**
 - ⚠ **`/about` is back to the wall-guides plate** with the floor guides repositioned on Carl's
   instruction (green in from the wall, purple back, 92px gap, side by side).
+- ⚠ **A frosted-glass reference is filed at `live-work/references/frosted-glass-reference.md`** —
+  Carl's supply, 11 September. ⛔ **Its most useful line corroborates this project's own record:**
+  *"Ensure your scene has background geometry or an environment map, otherwise the glass will appear
+  invisible or dark grey."* ⚠ **Parameter ranges are there for chunk 2, with three project facts
+  that override them: `thickness` scales with the model (so D-051's 6 is wrong on a mm-scale card),
+  the approved material is SATIN not frosted, and no HDRI or drei preset may be used.**
 - ⚠ **Trim rejected the Architect's 8–12 screen-px target.** Computed against CD at a 390px window
   it demanded a bead of **15–22% of card height — a picture frame.** ⛔ **The shipped Q5 card's rim
   subtends 4px and reads.** Current: bead 2.2%, bevel 3.0% of height. **At 390px that is 2.8px —
