@@ -818,112 +818,6 @@ function useDisposable(g: THREE.BufferGeometry) {
   useEffect(() => () => g.dispose(), [g]);
 }
 
-/**
- * How steep the simulated dome is, in the normal map only. ⛔ NOTHING IN THE MESH
- * MOVES — this is a lighting property, not a geometric one.
- *
- * ⚠ The outside recommendation Carl brought in puts the equivalent physical
- * displacement at **2–4% of card width**. On CD that is 16–33mm, and the tent-pole
- * build was at 16.24mm — the BOTTOM of that band. ⛔ So the amplitude was never
- * obviously the fault; the falloff's SHAPE was. Recorded because it corrects the
- * Builder's read that the pole was simply too quiet.
- *
- * ⚠ 0.35 is a starting volume, matched to `normalScale` at 0.15 in the material.
- * The two multiply, so raising either deepens the apparent dome. ⛔ NOT APPROVED —
- * Carl tunes by eye, and the lighting it will finally be judged under does not
- * exist yet (the rim is not a light source until chunk 3).
- */
-const NORMAL_MAP_DEPTH = 0.35;
-
-/**
- * ⛔⛔ A CONVEX NORMAL MAP — LIGHTING CURVATURE ON A PHYSICALLY FLAT FACE.
- * 14 September 2026, from an outside recommendation Carl brought in.
- *
- * ⚠⚠ WHY THIS BREAKS THE DEADLOCK. Five mesh formulations were built and rejected
- * today, and every one made the same trade: curvature that closed the seam ate
- * text area, or preserved text area and left a 16mm gap at the bevel. **A normal
- * map does not make that trade at all.** The mesh stays flat — so it meets the
- * bevel at every point by construction and the UVs stay undistorted for text —
- * while the LIGHTING reads as domed.
- *
- * ⛔ THE ASSUMPTION THAT COST THE DAY: that the curvature had to be in the MESH.
- * It never did. Only the specular response has to be curved.
- *
- * ⚠ RADIAL, NOT THE SINGLE-AXIS PARABOLA THE ADVICE SUGGESTED. `z = -d(2x/w)^2`
- * is a CYLINDRICAL bend, curved across one axis only — which is exactly the
- * *"single flat sheet that has been bent"* reading Carl rejected earlier today. A
- * radial falloff reads as a dome from every direction.
- *
- * ⚠ ENCODING: tangent-space normals, RGB = (nx, ny, nz) mapped from [-1,1] to
- * [0,1]. A flat surface is (128, 128, 255). The slope grows toward the rim and is
- * zero at the centre, which is what a dome does.
- *
- * ⚠ 256x256 IS DELIBERATE AND SMALL. This is a smooth gradient with no detail to
- * preserve — the answer card's 2048px LABEL texture exists because GLYPHS need
- * resolution. ⛔ At 256 the whole map is 256KB of RGBA against 4MB, and it is
- * built ONCE per aspect rather than per card.
- */
-const normalMapCache = new Map<string, THREE.CanvasTexture>();
-
-function buildConvexNormalMap(aspect: number): THREE.CanvasTexture | null {
-  if (typeof document === "undefined") return null;
-
-  const key = aspect.toFixed(3);
-  const cached = normalMapCache.get(key);
-  if (cached) return cached;
-
-  const SIZE = 256;
-  const canvas = document.createElement("canvas");
-  canvas.width = SIZE;
-  canvas.height = SIZE;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
-
-  const img = ctx.createImageData(SIZE, SIZE);
-
-  for (let py = 0; py < SIZE; py++) {
-    for (let px = 0; px < SIZE; px++) {
-      /* -1..1 across the face, corrected for aspect so the dome is not stretched
-         along the long axis. */
-      const u = (px / (SIZE - 1)) * 2 - 1;
-      const v = (py / (SIZE - 1)) * 2 - 1;
-
-      /**
-       * ⚠ THE DOME'S HEIGHT FIELD, ONLY ITS DERIVATIVE IS USED. A raised cosine
-       * in the radial parameter: flat at the apex, steepest mid-slope, and
-       * arriving at the rim with zero slope so the lighting has no hard seam
-       * where the face meets the bevel.
-       */
-      const r = Math.min(1, Math.hypot(u * aspect, v) / aspect);
-      const slope = (Math.PI / 2) * Math.sin(Math.PI * r) * NORMAL_MAP_DEPTH;
-
-      /* Outward radial direction in the plane; zero at the exact centre. */
-      const len = Math.hypot(u * aspect, v) || 1;
-      const dx = (u * aspect) / len;
-      const dy = v / len;
-
-      /* Tangent-space normal: tilt away from +Z by `slope`, toward the rim. */
-      const nx = -dx * slope;
-      const ny = -dy * slope;
-      const nz = 1;
-      const n = Math.hypot(nx, ny, nz);
-
-      const i = (py * SIZE + px) * 4;
-      img.data[i] = ((nx / n) * 0.5 + 0.5) * 255;
-      img.data[i + 1] = ((ny / n) * 0.5 + 0.5) * 255;
-      img.data[i + 2] = ((nz / n) * 0.5 + 0.5) * 255;
-      img.data[i + 3] = 255;
-    }
-  }
-
-  ctx.putImageData(img, 0, 0);
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.NoColorSpace; // ⛔ normals are DATA, never sRGB
-  tex.needsUpdate = true;
-  normalMapCache.set(key, tex);
-  return tex;
-}
 
 export type AboutCardMeshProps = {
   dims: CardDims;
@@ -945,19 +839,6 @@ export type AboutCardMeshProps = {
    * approved crown so the pair can be compared in the room.
    */
   flat?: boolean;
-  /**
-   * ⛔ SIMULATE A CONVEX FACE IN THE LIGHTING ONLY — a normal map on a physically
-   * flat mesh. 14 September 2026, from an outside recommendation Carl brought in.
-   *
-   * ⚠⚠ THE POINT IS THAT IT MAKES NO TRADE. Five mesh formulations were rejected
-   * today, each either closing the seam by eating text area or preserving the area
-   * and leaving a 16mm gap. ⛔ The mesh stays flat — flush to the bevel at every
-   * point, undistorted UVs for text — while only the specular response curves.
-   *
-   * ⚠ Use WITH `flat`. Combining it with a crowned mesh would double the effect
-   * and defeat the purpose.
-   */
-  domed?: boolean;
   /** Reports the measured tilt of the built face, for the bench readout. */
   onTilt?: (deg: number) => void;
 };
@@ -967,25 +848,8 @@ export function AboutCardMesh({
   crownMm,
   ovalExpand = OVAL_EXPAND,
   flat = false,
-  domed = false,
   onTilt,
 }: AboutCardMeshProps) {
-  /**
-   * ⚠ Built from the FACE's aspect, not the card's, so the dome is not stretched
-   * along the long axis. ⛔ Cached per aspect in a module-level map and
-   * deliberately NOT disposed with the mesh: the texture is shared between cards
-   * of the same proportion, so disposing it with one would pull it out from under
-   * the others. `answer-card-mesh.tsx`'s label cache makes the same choice for the
-   * same reason. ⚠ It therefore persists for the life of the page — stated rather
-   * than left to be discovered.
-   */
-  const faceNormalMap = useMemo(
-    () =>
-      domed
-        ? buildConvexNormalMap(dims.faceWidthMm / dims.faceHeightMm)
-        : null,
-    [domed, dims.faceWidthMm, dims.faceHeightMm],
-  );
   const path = useMemo(
     () =>
       sampleRoundedRectPath(
@@ -1098,16 +962,10 @@ export function AboutCardMesh({
         />
       </mesh>
       <mesh geometry={faceGeometry} position={[0, 0, faceBaseZ]}>
-        {/* ⚠ `normalScale` AND `NORMAL_MAP_DEPTH` MULTIPLY. 0.15 is the subtle
-            setting the outside recommendation names; the map's own depth is 0.35.
-            ⛔ Raising either deepens the apparent dome, so tune ONE of them — two
-            dials for one effect is how a value ends up impossible to reason about.
-            ⚠ Null when `domed` is false, which is a no-op, so CD is unaffected. */}
+        {/* ⚠ NO NORMAL MAP. The convex-normal-map route was tested and closed on
+            14 September 2026 — Carl: *"NO change. CD is the way to go."* The
+            curvature is real geometry; see `ovalHeight`. */}
         <meshStandardMaterial
-          normalMap={faceNormalMap}
-          normalScale={
-            faceNormalMap ? new THREE.Vector2(0.15, 0.15) : undefined
-          }
           color={DIAG_FACE_COLOR}
           roughness={0.55}
           metalness={0}

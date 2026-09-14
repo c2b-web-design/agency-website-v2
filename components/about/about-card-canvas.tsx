@@ -379,7 +379,7 @@ export default function AboutCardCanvas() {
               try it on the Right card."* ⚠ CD stays flat and plain as the CONTROL,
               so the effect can be judged against its own absence in one frame.
 
-              ⚠⚠ `flat` AND `domed` TOGETHER IS THE WHOLE IDEA, not a contradiction:
+              ⚠⚠ [SUPERSEDED — see below] `flat` AND `domed` TOGETHER WAS THE IDEA:
               the MESH is flat — flush to the bevel at every point, undistorted UVs
               for the text — and only the LIGHTING reads as curved. ⛔ Five mesh
               formulations were rejected today because each traded seam against text

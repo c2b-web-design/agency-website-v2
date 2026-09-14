@@ -72,19 +72,24 @@ type View = "face" | "oblique" | "side" | "top";
  * header says so — and judging a profile in the room was the error that cost most
  * of 14 September.
  *
- *   curved  CD's treatment. Real geometry, `(1-x²)(1-y²)`. Normals genuinely vary,
- *           so it shades from any angle and has a real silhouette in profile.
- *   domed   CS's treatment. A FLAT mesh carrying a convex normal map. Cheaper and
- *           perfectly planar for text, but the illusion breaks at grazing angles
- *           and in any true side view. ⚠ WATCH IT IN "side" — that is where the
- *           difference should be unmistakable.
- *   flat    the control. No curvature of either kind.
+ *   curved  THE BLUEPRINT for all four cards. Real geometry, `(1-x²)(1-y²)`.
+ *           Normals genuinely vary, so it shades from any angle and has a real
+ *           silhouette in profile.
+ *   flat    the control. No curvature — useful for separating "is this curvature
+ *           or is it shading?", which is how the dead normal map was caught.
+ *
+ * ⚠⚠ A THIRD OPTION, `domed`, WAS REMOVED ON 14 September 2026. It rendered a FLAT
+ * mesh carrying a convex normal map. ⛔ Carl, after testing it here under the light
+ * sweep: *"NO change. CD is the way to go."* The map was built correctly, the
+ * binding was right, and missing UVs were found and added — it stayed inert.
+ * **Likely cause, unproven: `meshStandardMaterial` needs a `tangent` attribute for
+ * a tangent-space normal map, and this geometry has none.**
  *
  * ⛔ NEITHER IS APPROVED, and the lighting they will finally live under does not
  * exist: the rim is not a light source until chunk 3 and the four aimed lights
  * are unbuilt.
  */
-type Treatment = "curved" | "domed" | "flat";
+type Treatment = "curved" | "flat";
 
 export default function CardBench() {
   const [treatment, setTreatment] = useState<Treatment>("curved");
@@ -184,8 +189,7 @@ export default function CardBench() {
             onChange={(e) => setTreatment(e.target.value as Treatment)}
             className="bg-neutral-800 px-2 py-1 rounded"
           >
-            <option value="curved">curved geometry — CD</option>
-            <option value="domed">flat + normal map — CS</option>
+            <option value="curved">curved geometry</option>
             <option value="flat">flat (control)</option>
           </select>
         </label>
@@ -323,8 +327,7 @@ export default function CardBench() {
             dims={dims}
             crownMm={crownMm}
             ovalExpand={ovalExpand}
-            flat={treatment !== "curved"}
-            domed={treatment === "domed"}
+            flat={treatment === "flat"}
             onTilt={setMeasuredTilt}
           />
         </Canvas>
