@@ -383,9 +383,34 @@ export default function AboutCardCanvas() {
               the MESH is flat — flush to the bevel at every point, undistorted UVs
               for the text — and only the LIGHTING reads as curved. ⛔ Five mesh
               formulations were rejected today because each traded seam against text
-              area; this one makes no such trade. */}
+              area; this one makes no such trade.
+
+              ⛔⛔ SUPERSEDED — THE NORMAL-MAP ROUTE IS CLOSED, 14 September 2026.
+              Carl, after testing it on the bench under the light sweep: *"NO
+              change. CD is the way to go."* **CS now runs the same real curved
+              geometry as CD**, and the paragraph above describes what it USED to
+              carry.
+
+              ⚠⚠ THE MAP WAS BUILT CORRECTLY AND STILL DID NOTHING. Verified
+              against the code as written: the texels genuinely encoded a dome (R
+              channel 66..189 against 128 for flat), the material binding was
+              right, and UVs were added when their absence was found — they had
+              been missing entirely, so every fragment sampled texel (0,0). It
+              remained inert after all three were fixed.
+              ⛔ LIKELY CAUSE, UNPROVEN: `meshStandardMaterial` needs a `tangent`
+              attribute to apply a tangent-space normal map reliably, and this
+              geometry has none. **Not chased further — CD had already won on
+              evidence Carl gathered himself.**
+
+              ⚠ AND THE PROFILE TEST WAS NEVER MEANINGFUL FOR A FLAT MESH. A plane
+              is a straight line in top and side elevation at ANY crown value —
+              construction, not a finding. The Builder proposed that view as the
+              discriminator and was wrong to.
+
+              ⛔ BOTH CARDS NOW RUN ONE BLUEPRINT: `(1-x²)(1-y²)` at Carl's crown
+              of 0.073. *"it is a blueprint for all 4 cards."* */}
           <group position={cs.position} rotation={[0, cs.rotationY, 0]} scale={cs.scale}>
-            <AboutCardMesh dims={cs.dims} crownMm={cs.crownMm} flat domed />
+            <AboutCardMesh dims={cs.dims} crownMm={cs.crownMm} />
           </group>
         </Canvas>
       </div>

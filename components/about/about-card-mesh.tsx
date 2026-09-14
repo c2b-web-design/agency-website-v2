@@ -683,6 +683,9 @@ function convexFaceGeometry(
   };
 
   const positions: number[] = [];
+  /** ⛔ See the `uvs.push` in the vertex loop — their absence made the normal map
+      completely inert, which is the fault Carl found on CS. */
+  const uvs: number[] = [];
   const indices: number[] = [];
   const cols = segX + 1;
 
@@ -735,6 +738,39 @@ function convexFaceGeometry(
        */
       const z = flat ? 0 : crown * ovalHeight(x, y, hw, hh);
       positions.push(px, py, z);
+
+      /**
+       * ⛔⛔ UVs — ADDED 14 September 2026, AND THEIR ABSENCE WAS A SILENT BUG.
+       *
+       * ⚠⚠ THE FACE HAD NO `uv` ATTRIBUTE AT ALL. A normal map is sampled BY UV,
+       * so with none present Three.js reads texel (0,0) for every fragment — one
+       * corner of the map, encoding an essentially flat normal. **The map was
+       * applied, uploaded and completely inert.**
+       *
+       * ⛔ THAT IS WHAT CARL OBSERVED: *"Moving CS parameters had no effect…
+       * Changing Ovals and Crown has no effect on the shape, Changing light angle
+       * just changes the face shade uniformly."* Two causes, both real: `flat`
+       * discards the crown and oval before they reach the mesh, and the missing
+       * UVs made the normal map unreadable. **CS had no mechanism to respond to
+       * anything.**
+       *
+       * ⚠⚠ SO THE NORMAL-MAP APPROACH WAS NEVER ACTUALLY TESTED. The verification
+       * confirmed the texture BUILT and the page COMPILED — it never checked that
+       * the geometry could SAMPLE it. Same class of gap as every other false green
+       * today: the thing measured was not the thing that mattered.
+       *
+       * ⚠ RECTANGULAR MAPPING over the face's bounding box, which is what the
+       * outside advice assumed: *"The rectangular UV coordinates remain unchanged
+       * while the geometry underneath them curves, so the text follows the
+       * surface."* ⛔ It is also what the BAKED COPY will need in chunk 2 — the
+       * same mapping serves both, so this is not scaffolding for the test alone.
+       *
+       * ⚠ `u`/`v` run 0→1 across the face's full extent. Corner vertices are
+       * clamped inward to the rounded-rect outline, so their UVs compress
+       * slightly there — correct, since the texture should follow the visible
+       * surface rather than a rectangle the face does not occupy.
+       */
+      uvs.push((px + hw) / (2 * hw), (py + hh) / (2 * hh));
     }
   }
 
@@ -750,6 +786,9 @@ function convexFaceGeometry(
 
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  /** ⛔ WITHOUT THIS THE NORMAL MAP IS INERT — every fragment samples texel (0,0).
+      See the `uvs.push` in the vertex loop for the full account. */
+  g.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
   g.setIndex(indices);
   g.computeVertexNormals();
   return g;
