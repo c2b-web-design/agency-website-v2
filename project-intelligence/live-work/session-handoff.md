@@ -71,6 +71,23 @@ above the midline, green 1 / purple 0 below. **A filename is not evidence.**
 
 # ⛔⛔ WHAT IS IN FRONT OF YOU
 
+## ⛔⛔ CARL'S ORDER FOR THE NEXT SESSION, STATED 14 SEPTEMBER
+
+> *"The wall cards are relatively easy, also with the text. After that — the frosted glass material
+> and the background for it."*
+
+| # | subject | note |
+|---|---|---|
+| **1** | **CA and CB — the wall pair, WITH their text** | Carl: *"relatively easy."* The cyan and magenta quads are on the plate as the reference, and the floor guides are gone so nothing competes |
+| **2** | **The frosted glass material** | ⛔ **CHUNK 2.** Still unauthorised at the time of writing — and the frosted-vs-satin question below is OPEN and Carl's |
+| **3** | **The background for the glass** | ⚠ This is the **transmission proxy**, and Carl already ruled on its shape — see §"WHAT THE GLASS SEES" below |
+
+⚠⚠ **THE FLOOR PAIR'S COPY IS NOT IN THAT LIST, AND THAT IS A CHANGE OF ORDER.** Earlier on
+14 September the stated sequence was *"insert the text. If it doesnt fit we will raise the height of
+the cards"* against four tests — copy fits · proportionate to the desks · proportionate to the wall
+cards · scene balanced. ⛔ **The wall pair now comes first.** The floor copy and the height question
+are still live, just later. **Do not read the four tests as dropped.**
+
 ## ⛔ THE FACE IS SETTLED. THE TEXT IS NEXT.
 
 **The face question closed on 14 September after SIX formulations.** Both floor cards now run one
@@ -249,6 +266,49 @@ geometry had replaced the deleted quads when nothing had.
 - ⛔ **Do not add `clearcoat` or change roughness.** Chunk 2 is unauthorised; the material is the
   grey diagnostic by instruction.
 - ⚠ **Do not "fix" `WallCardText` floating.** Known, and the wall pair is a later chunk.
+
+---
+
+# ⛔⛔ WHAT THE GLASS SEES — Carl's ruling, and item 3 lands on it
+
+⚠⚠ **THE ROOM IS A PHOTOGRAPH OUTSIDE THE CANVAS.** A WebGL card can only refract objects in its
+OWN scene. `answer-card-geometry.ts` records the lesson: ***"The frost was never the problem; the
+absence of anything worth seeing through was."***
+
+⛔ **CARL'S ANSWER: A PROXY BEHIND EACH CARD, NOT THE PLATE IN THE SCENE.** Putting the 459KB image
+in as a texture would bypass `next/image` and reinstate the exact regression D-075 removed.
+
+**The walls are simple** — a flat sampled rectangle. CA `#182733`, CB `#192a35`.
+
+⛔⛔ **THE FLOOR PAIR IS NOT, AND A FLAT RECTANGLE IS WRONG THERE.** Carl: *"the floor cards are a
+little more difficult. Whatever is seen through the cards when put in position will have several
+colours. For example, the left card. There will be floor, black and silver of the chair, white
+skirting and wall."*
+
+⚠ Those stack as roughly **horizontal bands**, and frosted glass preserves exactly that scale of
+structure while destroying everything finer. ⛔ **So each floor card gets a small vertical gradient
+— a few colour stops at measured heights — not one hex.**
+
+⛔ **THE METHOD IS CARL'S AND IT IS SEQUENCED:** *"a way to do it when they are moved is to note
+their position and the pixels they are covering will act as a guide. We will see how it looks when
+first built and positioned and tweaked if neccersary."*
+⚠⚠ **NOTHING IS SAMPLED UNTIL THE CARDS ARE ON THEIR RAILS — AND THEY NOW ARE.** That precondition
+is met, so the sampling can proceed.
+
+⚠ **CD AND CS GET INDIVIDUAL BACKGROUNDS.** Not just different means — different CONTENT. CD has a
+chrome chair base and lit floor; CS has the dark desk column and the plant. ⛔ Reusing one gradient
+reproduces the pale-slab fault one level up. **CS is roughly twice CD's luminance.**
+
+⚠⚠ **THE STANDARD IS "SELL THE ILLUSION", NOT REPRODUCE THE ROOM.** Carl: *"the user will see whats
+outside, the floors, left side of skirting etc, the human brain has an amazing way of filling in the
+blanks when there is some context."* ⛔ The proxy only has to be plausible where it is occluded.
+
+⚠ **`PROXY_CONTRAST` is the dial**, 0 = the sampled truth. ⛔ Judged by eye — *"We will play it by
+ear, or in this case — by eye."*
+
+⚠ **MEASURED AND UNRESOLVED:** after a heavy blur both floor regions go essentially FLAT. The bands
+are the answer to that, but whether they read as depth or as wallpaper is unproven — a gradient has
+no parallax. **If it reads flat, the next step is a few planes at different depths.**
 
 ---
 
