@@ -500,20 +500,30 @@ export const CROWN_RATIO = 0.0901;
  * there is no pole, and the value is the CURVATURE of a shallow dome — but it is
  * kept so the dial has one home rather than two. **Rename when the shape settles.**
  *
- * ⚠ 0.025 IS THE RECOMMENDED STARTING POINT, not a judged value: *"I'd start
- * around 0.015–0.03 relative to the card's size rather than making it obviously
- * curved."* On CD that is 10.15mm of rise on a 757x346mm face.
+ * ⛔⛔ 0.073 — CARL'S VALUE, SET BY EYE ON THE BENCH, 14 September 2026. *"CD — i
+ * modified the crown."* **30mm of rise on CD's 757x346mm face.**
+ *
+ * ⚠⚠ ALMOST THREE TIMES THE RECOMMENDED STARTING POINT, and that is the finding.
+ * The outside advice suggested 0.015–0.03 *"rather than making it obviously
+ * curved"*, and the Builder opened at 0.025 on that basis. ⛔ **Judged on the
+ * bench under a swept light, in side and top elevation, it wanted far more.**
+ * The conservative figure was too timid for a card this size in a dark room.
  *
  *     0.015    6.09mm    max tilt 4.03°
- *     0.025   10.15mm    max tilt 6.69°   <- current
+ *     0.025   10.15mm    max tilt 6.69°    the recommended start
  *     0.030   12.18mm    max tilt 8.02°
+ *     0.073   30.00mm                      <- CARL'S, by eye
  *
- * ⛔ ALL THREE KEEP 100% OF THE FACE UNDER 8° — the quartic spends no text area on
- * slope, which is what every earlier formulation failed to do.
+ * ⚠ THE QUARTIC SPENDS NO TEXT AREA ON SLOPE AT ANY SETTING — each factor
+ * vanishes on its own axis, so the edges are zero however high the centre goes.
+ * **That is why a value this large is affordable here and was not on any earlier
+ * formulation**, all of which bought their seam with face area.
  *
- * ⚠ NOT APPROVED. A starting volume, not a setting.
+ * ⚠ SET BY EYE, NOT YET SIGNED OFF as the final value — the lighting it will
+ * finally live under does not exist (the rim is not a light source until chunk 3,
+ * and the four aimed lights are unbuilt).
  */
-export const TENT_POLE_RATIO = 0.025;
+export const TENT_POLE_RATIO = 0.073;
 
 /**
  * ⛔⛔ SUPERSEDED 11 SEPTEMBER 2026 — THE FACE IS A LENS AND HAS NO PLATEAU.
