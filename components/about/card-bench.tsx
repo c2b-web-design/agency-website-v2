@@ -19,7 +19,7 @@ import {
   FLOOR_CARD_ASPECT,
   WALL_CARD_ASPECT,
   CD_CARD_HEIGHT_MM,
-  CROWN_RATIO,
+  TENT_POLE_RATIO,
   PROXY_COLORS,
   maxFaceTiltDegrees,
   TILT_REFERENCE_INVISIBLE_DEG,
@@ -62,7 +62,32 @@ import { AboutCardMesh } from "./about-card-mesh";
  */
 type View = "face" | "oblique" | "side" | "top";
 
+/**
+ * ⛔⛔ THE TWO LIVE FACE TREATMENTS — 14 September 2026. Carl: *"its hard to tell
+ * at this angle, id need to see them in the proto card page."*
+ *
+ * ⚠⚠ THE BENCH IS WHERE THIS IS JUDGED AND `/about` IS NOT. The bench has a
+ * SWEEPABLE light and a SIDE ELEVATION; the room has one fixed stand-in beam and
+ * one fixed camera. ⛔ A crown reads FLAT under a head-on light — this file's own
+ * header says so — and judging a profile in the room was the error that cost most
+ * of 14 September.
+ *
+ *   curved  CD's treatment. Real geometry, `(1-x²)(1-y²)`. Normals genuinely vary,
+ *           so it shades from any angle and has a real silhouette in profile.
+ *   domed   CS's treatment. A FLAT mesh carrying a convex normal map. Cheaper and
+ *           perfectly planar for text, but the illusion breaks at grazing angles
+ *           and in any true side view. ⚠ WATCH IT IN "side" — that is where the
+ *           difference should be unmistakable.
+ *   flat    the control. No curvature of either kind.
+ *
+ * ⛔ NEITHER IS APPROVED, and the lighting they will finally live under does not
+ * exist: the rim is not a light source until chunk 3 and the four aimed lights
+ * are unbuilt.
+ */
+type Treatment = "curved" | "domed" | "flat";
+
 export default function CardBench() {
+  const [treatment, setTreatment] = useState<Treatment>("curved");
   const [heightMm, setHeightMm] = useState(CD_CARD_HEIGHT_MM);
   const [aspect, setAspect] = useState(FLOOR_CARD_ASPECT);
   /**
@@ -71,7 +96,14 @@ export default function CardBench() {
    * on EVERY size at once, which is what a family parameter should do; a
    * millimetre slider would tune one card and silently leave the others.
    */
-  const [crownRatio, setCrownRatio] = useState(CROWN_RATIO);
+  /**
+   * ⚠⚠ OPENS AT `TENT_POLE_RATIO`, NOT `CROWN_RATIO` — corrected 14 September 2026.
+   * ⛔ `CROWN_RATIO = 0.0901` was back-derived to hold 27.9° of tilt on the
+   * SUPERELLIPSE profile, which is dead. The live surface is the quartic
+   * `(1-x²)(1-y²)` and its dial is `TENT_POLE_RATIO = 0.025`. **Opening the bench
+   * at 0.0901 would show a card 3.6x more curved than anything on `/about`.**
+   */
+  const [crownRatio, setCrownRatio] = useState(TENT_POLE_RATIO);
   const crownMm = heightMm * crownRatio;
   const [ovalExpand, setOvalExpand] = useState(1.35);
   const [lightAngle, setLightAngle] = useState(60);
@@ -138,6 +170,23 @@ export default function CardBench() {
             <option value="face">face-on</option>
             <option value="side">side elevation (the profile)</option>
             <option value="top">top elevation</option>
+          </select>
+        </label>
+
+        {/* ⛔ THE TWO LIVE TREATMENTS, SIDE BY SIDE UNDER THE SWEEP. See the
+            `Treatment` type for what each one is and what it costs. ⚠ The "side"
+            view is where real geometry and a normal map should separate
+            unmistakably — a flat mesh has no silhouette to show in profile. */}
+        <label className="flex items-center gap-2">
+          face
+          <select
+            value={treatment}
+            onChange={(e) => setTreatment(e.target.value as Treatment)}
+            className="bg-neutral-800 px-2 py-1 rounded"
+          >
+            <option value="curved">curved geometry — CD</option>
+            <option value="domed">flat + normal map — CS</option>
+            <option value="flat">flat (control)</option>
           </select>
         </label>
 
@@ -267,10 +316,15 @@ export default function CardBench() {
             </mesh>
           )}
 
+          {/* ⚠ `flat` AND `domed` TOGETHER IS THE NORMAL-MAP TREATMENT, not a
+              contradiction: the MESH is flat — flush to the bevel at every point,
+              undistorted UVs for text — and only the LIGHTING reads as curved. */}
           <AboutCardMesh
             dims={dims}
             crownMm={crownMm}
             ovalExpand={ovalExpand}
+            flat={treatment !== "curved"}
+            domed={treatment === "domed"}
             onTilt={setMeasuredTilt}
           />
         </Canvas>
