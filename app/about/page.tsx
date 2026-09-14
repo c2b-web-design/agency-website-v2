@@ -3,6 +3,11 @@ import Container from "@/components/layout/container";
 /* ⛔ SCAFFOLDING — the /about §2 wall-card copy, projected onto the wall by a
    homography. A CLIENT component in its own file so THIS page stays a static
    prerendered server component. Delete with the guides. */
+/* ⚠ IMPORT RETAINED, RENDER WITHHELD — the wall copy is temporarily not drawn
+   while the guide quads are back on the plate. See the commented `<WallCardText />`
+   in §2. ⛔ Removing the import too would make restoring it a two-step job and
+   invite someone to rebuild a component that already exists. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import WallCardText from "@/components/about/wall-card-text";
 /* ⛔⛔ THE FIRST WebGL CONTEXT ON THIS ROUTE — 14 September 2026, on Carl's
    instruction: "Build it in the About page taking into consideration the
@@ -535,16 +540,33 @@ export default function About() {
             having the same semantics as w-full h-full object-cover, not measured
             against a before/after screenshot. Verify by eye before tuning any
             card position to it. */}
-        {/* ⛔⛔ THE CLEAN PLATE — the guides are GONE, 14 September 2026. Carl:
-            *"the guide rectangles have done there job, they can be deleted."*
+        {/* ⛔⛔ THE WALLS-ONLY PLATE — 14 September 2026. Carl: *"put the guide
+            lines back on the wall and temporarily remove the text"*, then *"no
+            need to have the floor guide lines there."*
 
-            ⚠⚠ THE GUIDES WERE PAINTED INTO THE IMAGE, NOT DRAWN IN CODE. Deleting
-            them is this one-line swap back to `/about-studio-source.jpg`, exactly
-            as the previous comment here predicted. ⛔ `about-studio-wall-guides.jpg`
-            is LEFT IN `public/` — it is the only record of the measured quads, and
-            `GUIDE_CD`/`GUIDE_CS` in `about-card-geometry.ts` were segmented from
-            it. Deleting the file would destroy the provenance of numbers still in
-            use.
+            ⚠⚠ THE QUADS ARE PAINTED INTO THE IMAGE, NOT DRAWN IN CODE, so which
+            guides are visible is a choice of FILE, not a CSS toggle. Three plates
+            exist and each carries a different set:
+
+              about-studio-source.jpg       2560x1707   no guides at all
+              about-studio-wall-guides.jpg  1800x1200   WALL + FLOOR quads
+              about-studio-wall-only.jpg    1800x1200   WALL quads only   <- current
+
+            ⛔ ALL THREE ARE 1.500 FRAMING, so the crop is identical whichever is
+            served and **no card placement moves.** Verified: 2560/1707 = 1.4997,
+            1800/1200 = 1.5000.
+
+            ⚠ THE WALLS-ONLY FILE WAS NOT AUTHORED TODAY — it is
+            `brand-assets/about-studio-wall-cards-1800.jpg`, the plate the CA/CB
+            quads were originally transferred FROM, copied into `public/` so it can
+            be served. ⛔ CONFIRMED BY COLOUR SEGMENTATION, NOT BY ITS FILENAME:
+            cyan 5155 and magenta 4778 pixels above the midline, green 1 and purple
+            0 below it. **A filename is not evidence.**
+
+            ⚠ `about-studio-wall-guides.jpg` STAYS in `public/` regardless — it is
+            the only record of the measured FLOOR quads, and `GUIDE_CD`/`GUIDE_CS`
+            in `about-card-geometry.ts` were segmented from it. **Do not delete it
+            in either direction.**
 
             ⚠ THE FLOOR RAILS ARE NOT AFFECTED — the blue and pink lines are SVG,
             drawn in this file below, and Carl asked for them to stay.
@@ -580,7 +602,7 @@ export default function About() {
             plate's 105KB. next/image re-encodes per device, so the guides cost
             nothing to a visitor. */}
         <Image
-          src="/about-studio-source.jpg"
+          src="/about-studio-wall-only.jpg"
           alt=""
           aria-hidden="true"
           fill
@@ -589,7 +611,12 @@ export default function About() {
         />
         <div className="absolute inset-0 bg-neutral-950/25" />
 
-        <WallCardText />
+        {/* ⛔ TEMPORARILY NOT RENDERED — 14 September 2026, Carl: *"put the guide
+            lines back on the wall and temporarily remove the text."* ⚠ The wall
+            copy was positioned to sit INSIDE the painted cyan and magenta quads,
+            so with the guides back it would overlap them. **Restore by
+            uncommenting — nothing about the component changed.**
+            <WallCardText /> */}
 
         {/* ⛔⛔ THE BLUE RAIL (PL) ONLY — 14 September 2026, Carl: *"The lines that
             are in the proto wall, just put the blue line in."*

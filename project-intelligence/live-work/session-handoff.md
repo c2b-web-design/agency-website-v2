@@ -24,54 +24,99 @@ on sight, ending with two different approaches running side by side for comparis
 
 ---
 
-# ⛔ NOTHING IS COMMITTED. HEAD IS STILL `c1d87df`
+# ⛔ COMMITTED AND PUSHED. HEAD IS `065e9e9`
 
-    M  app/about/page.tsx                    canvas mounted; rails drawn; clean plate restored
-    M  app/proto/card/page.tsx               bench labelled CD, placeholder warning
-    M  app/proto/wall/page.tsx               the four card quads DELETED, rails kept
-    M  components/about/about-card-geometry.ts   guides, rails, yaws, per-card heights
-    M  components/about/about-card-mesh.tsx      the face formulations + normal map
-    M  components/about/card-bench.tsx           opens on CD
-    ?? components/about/about-card-canvas.tsx    NEW — the /about canvas
+**Six commits on `main`, all pushed:**
+
+    c1d87df  (the 11 September starting point)
+    f950206  the floor cards stand on their rails in the room
+    84023d6  both face treatments on /proto/card, under the light sweep
+    467b241  the crown is Carl's, set by eye on the bench
+    90cd291  both floor cards on one blueprint; the normal-map route is closed
+    065e9e9  delete the normal-map machinery, one blueprint for all cards
+
+**Uncommitted at the time of writing** — the walls-only plate work:
+
+    M  app/about/page.tsx                 walls-only plate; WallCardText withheld
+    ?? public/about-studio-wall-only.jpg  NEW — copied from brand-assets
 
 ⚠ **`npx tsc --noEmit` CLEAN. `npm run lint` = `1 problem (1 error, 0 warnings)`** — the documented
 `enquiry-opening.tsx` baseline. ⛔ **Zero warnings held all session.**
 ⚠ **The dev server is RUNNING on :3000.**
 
+## ⚠ THREE PLATES, AND WHICH GUIDES SHOW IS A CHOICE OF **FILE**
+
+⛔ **The quads are PAINTED INTO the images, not drawn in code**, so showing or hiding them is an
+`src` swap — there is no CSS toggle.
+
+    about-studio-source.jpg       2560x1707   no guides at all
+    about-studio-wall-guides.jpg  1800x1200   WALL + FLOOR quads
+    about-studio-wall-only.jpg    1800x1200   WALL quads only      <- current
+
+⛔ **ALL THREE ARE 1.500 FRAMING** (2560/1707 = 1.4997, 1800/1200 = 1.5000), so the crop is
+identical whichever is served and **no card placement moves.**
+
+⚠ **The walls-only file was not authored today** — it is
+`brand-assets/about-studio-wall-cards-1800.jpg`, the plate CA/CB were transferred FROM, copied into
+`public/`. ⛔ **Confirmed by COLOUR SEGMENTATION, not by its filename:** cyan 5155 / magenta 4778
+above the midline, green 1 / purple 0 below. **A filename is not evidence.**
+
+⚠ **`about-studio-wall-guides.jpg` STAYS** — it is the only record of the measured FLOOR quads, and
+`GUIDE_CD`/`GUIDE_CS` were segmented from it.
+
+⚠ **`WallCardText` is COMMENTED OUT** with its import retained behind a suppression — Carl:
+*"temporarily remove the text."* Restoring it is one uncomment.
+
 ---
 
 # ⛔⛔ WHAT IS IN FRONT OF YOU
 
-## ⚠⚠ CARL'S NEXT STEP, STATED: SEE THEM ON `/proto/card`
+## ⛔ THE FACE IS SETTLED. THE TEXT IS NEXT.
 
-**14 September, on the two face treatments:** *"its hard to tell at this angle, id need to see them
-in the proto card page."*
+**The face question closed on 14 September after SIX formulations.** Both floor cards now run one
+blueprint: real curved geometry, `(1-x²)(1-y²)`, at **Carl's crown of 0.073** — set by his eye on
+the bench under a swept light, in side and top elevation.
 
-⛔ **THE BENCH HAS WHAT THE ROOM DOES NOT: a sweepable light and a side elevation.** A crown reads
-FLAT under a fixed beam — the bench's own header says so — and `/about` has one fixed stand-in
-light and one fixed camera. **Judging a profile there was the Builder's error, repeated for hours.**
+⛔ **CARL'S STATED ORDER, AND STEP ONE IS DONE:** *"insert the text. If it doesnt fit we will raise
+the height of the cards"* — against four tests: **copy fits · proportionate to the desks ·
+proportionate to the wall cards · scene balanced.** ⚠ *"One step at a time. Angles first."*
+**Angles are finished. The copy has not been inserted.**
 
-⚠ **THE BENCH DOES NOT CURRENTLY RENDER EITHER NEW TREATMENT.** It calls `AboutCardMesh` without
-`flat` or `domed`, so it shows the quartic only. **Wiring both onto the bench, side by side, under
-the sweep, is the first job.**
+## ⚠⚠ THE CROWN IS 0.073 AND THAT FIGURE CARRIES A LESSON
 
-## THE TWO TREATMENTS, ONE PER CARD
+    0.015     6.09mm    max tilt 4.03°
+    0.025    10.15mm    max tilt 6.69°    the outside recommendation's start
+    0.073    30.00mm                      <- CARL'S, by eye
 
-| | CD (left) | CS (right) |
-|---|---|---|
-| method | **real curved geometry** | **flat mesh + convex normal map** |
-| surface | `(1-x²)(1-y²)` at 2.5% = 10.15mm rise | physically flat |
-| seam | zero on every edge, ALGEBRAICALLY | zero by construction |
-| text area under 8° | **100%** | 100% (it is a plane) |
-| dials | `TENT_POLE_RATIO = 0.025` | `NORMAL_MAP_DEPTH = 0.35` × `normalScale 0.15` |
+⛔ **NEARLY THREE TIMES THE RECOMMENDED STARTING POINT.** The outside advice said 0.015–0.03
+*"rather than making it obviously curved"*, and the Builder opened there. **Judged properly — swept
+light, profile views — it wanted far more.** The conservative figure was too timid for a card this
+size in a dark room.
 
-⛔ **BOTH SOLVE THE SEAM AND BOTH KEEP THE FULL TEXT AREA.** The difference is only how light
-behaves: CD's normals genuinely vary, so it shades from any angle and has a real silhouette in
-profile. CS fakes it on a plane — cheaper, perfectly flat for text, **but the illusion breaks at
-grazing angles and in any true side view.**
+⚠ **A value that deep is only affordable because of the quartic.** Each factor vanishes on its own
+axis, so the edges are zero **however high the centre goes** — the seam cannot reopen at any
+curvature. Every earlier formulation bought its seam with face area and could not have taken this.
 
-⚠ **NEITHER IS APPROVED.** And the lighting they will finally live under does not exist: the rim is
-not a light source until chunk 3 and the four aimed lights are unbuilt.
+## ⛔ THE NORMAL-MAP ROUTE WAS TESTED AND CLOSED
+
+**CS briefly carried a flat mesh with a convex normal map** — the alternative an outside
+recommendation proposed. Carl tested it on the bench under the sweep: ***"NO change. CD is the way
+to go."***
+
+⚠⚠ **IT WAS BUILT CORRECTLY AND STILL DID NOTHING.** The texels genuinely encoded a dome (R channel
+66..189 against 128 for flat), the material binding was right, and **missing UVs were found and
+added** — the face geometry had never had a `uv` attribute at all, so every fragment sampled texel
+(0,0). It stayed inert after all three were fixed.
+⛔ **LIKELY CAUSE, UNPROVEN:** `meshStandardMaterial` wants a `tangent` attribute for a
+tangent-space normal map and this geometry has none. **Not chased — CD had already won.**
+
+⛔ **THE MACHINERY IS DELETED** (`065e9e9`, 158 lines). The failure is recorded at the bench's
+`Treatment` type. ⚠ **THE UVs ARE KEPT AND ARE NOW LOAD-BEARING** — chunk 2's baked copy needs
+exactly that rectangular mapping.
+
+⚠⚠ **AND A BUILDER ERROR WORTH INHERITING: the profile test was never meaningful for a flat mesh.**
+A plane is a straight line in top and side elevation at ANY crown value. That is construction, not a
+finding — and it was proposed as the discriminator between the two treatments.
 
 ---
 
@@ -86,7 +131,7 @@ not a light source until chunk 3 and the four aimed lights are unbuilt.
 | 3 | 15% seam band | closed the seam, **ate ~28% of the text area** at 52° slope |
 | 4 | tent-pole membrane (max-norm) | **rectangular contours ⇒ diagonal ridge**, visible creases |
 | 5 | Q+A separable form + plateau | *"theres a lump in the middle and flat bits"* — the plateau WAS the lump |
-| 6 | **quartic `(1-x²)(1-y²)`** | **current on CD.** No seam, no crease, no flat region, 100% text area |
+| 6 | **quartic `(1-x²)(1-y²)`** | ⛔ **WON.** No seam, no crease, no flat region, 100% text area. **Both cards run it at Carl's crown of 0.073.** |
 
 ⛔ **THE TRAP ALL FIVE FELL INTO: they traded the SEAM against the TEXT AREA.** Close the gap by
 bending the surface down to the bevel and you spend face area doing it. **The quartic makes no
@@ -191,8 +236,13 @@ geometry had replaced the deleted quads when nothing had.
 
 # ⛔ WHAT THE NEXT SESSION SHOULD NOT DO
 
-- ⛔ **Do not propose a seventh face formulation** before reading the table above.
-- ⛔ **Do not judge a face profile on `/about`.** One fixed light, one fixed camera. **Use the bench.**
+- ⛔⛔ **Do not reopen the face.** It is SETTLED — the quartic at 0.073, both cards, judged by Carl
+  on the bench. ⚠ Six formulations were tried and the table above records why five died. **A
+  seventh needs Carl's word, not a better idea.**
+- ⛔ **Do not judge a face profile on `/about`.** One fixed light, one fixed camera. **Use the
+  bench** — that is where the crown was finally settled and it is the lesson of the whole day.
+- ⛔ **Do not re-test the normal map.** Built correctly, bound correctly, UVs added, still inert.
+  **Closed on Carl's word.**
 - ⛔ **Do not read `INITIAL_RAIL` numbers as plate fractions.** Convert them.
 - ⛔ **Do not re-derive the camera.** Solved, falsified at 0.6°.
 - ⛔ **Do not delete `about-studio-wall-guides.jpg`** — it is the provenance of `GUIDE_CD`/`GUIDE_CS`.
