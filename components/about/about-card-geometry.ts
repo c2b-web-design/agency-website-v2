@@ -123,6 +123,243 @@ export const FLOOR_CARD_HEIGHT_MM = 860;
 /** Floor card width, from the approved aspect. */
 export const FLOOR_CARD_WIDTH_MM = FLOOR_CARD_HEIGHT_MM * FLOOR_CARD_ASPECT;
 
+/**
+ * ⛔⛔ THE FLOOR PAIR, PER CARD — added 14 September 2026, Carl: *"Both floor cards
+ * do differ slightly in size."*
+ *
+ * ⚠⚠ THE HEIGHTS BELOW ARE PLACEHOLDERS AND THE STRUCTURE IS THE POINT. Until the
+ * cards are placed on the rails there is no way to derive a real millimetre height
+ * for either: the only landscape numbers that exist are ON-SCREEN fractions at the
+ * old face-on position, and converting a projected size to a real one needs a
+ * DEPTH — which is exactly what changes when the card moves. ⛔ Both therefore
+ * carry `FLOOR_CARD_HEIGHT_MM` today. **They are not yet different.**
+ *
+ * ⚠ WHY THE ENTRY EXISTS ANYWAY: so each card is ADDRESSABLE BY NAME and the two
+ * can diverge without a second edit to every consumer. Carl's ruling is recorded
+ * in the shape of the code before it is recorded in its numbers.
+ *
+ * ⛔ THE MEASURED DIFFERENCE, SO IT IS NOT LOST — from the 10 September landscape
+ * work (`live-work/floor-copy-overlay-withdrawn-11-september.md`), as fractions of
+ * the 1800x1200 plate:
+ *
+ *     CD   0.3681 w   0.2725 h   ->  662.6 x 327.0 px   aspect 2.0263
+ *     CS   0.3663 w   0.2712 h   ->  659.3 x 325.4 px   aspect 2.0261
+ *
+ * ⚠ CD IS ~0.5% LARGER THAN CS IN BOTH AXES, and the aspects agree to 1 part in
+ * 10,000 — **the same shape at slightly different sizes**, not two shapes.
+ * ⛔ A Builder called that difference hand-placement slop on 14 September; Carl
+ * corrected it. It is intended and must not be flattened away.
+ *
+ * ⚠⚠ AND IT IS AN ON-SCREEN DIFFERENCE, WHICH IS NOT THE SAME AS A REAL ONE. CS
+ * sits nearer the camera, so equal real size projects LARGER for CS — yet CD reads
+ * larger here. ⛔ **Whether the two cards are different objects in the room, or one
+ * size at two depths, is UNRESOLVED and is Carl's, in situ.** Do not infer it from
+ * these numbers.
+ */
+/**
+ * ⛔⛔ SOLVED, NOT CHOSEN — 14 September 2026. These are the heights at which each
+ * card, STANDING ON ITS RAIL, subtends exactly the on-screen size of its guide
+ * rectangle.
+ *
+ * ⚠⚠ THE RULE THEY COME FROM IS CARL'S, AND IT IS THE CONSTRAINT: *"The height
+ * has already been worked out and is the height of the green and purple
+ * rectangles. The copy text was also worked out. Once the geometry for the cards
+ * that were built face on was established it shouldnt be changed. All that should
+ * change is the angle at which they sit."*
+ *
+ * ⛔ SO THE APPROVED QUANTITY IS THE ON-SCREEN SIZE, AND THE MILLIMETRE HEIGHT IS
+ * ITS CONSEQUENCE. Verified: CD subtends 0.27670 against a guide of 0.27670, CS
+ * 0.27410 against 0.27410 — exact to five decimal places.
+ *
+ * ⚠⚠ WHY THE PREVIOUS 860mm WAS WRONG, AND IT IS AN INSTRUCTIVE FAILURE. Size was
+ * inherited from a FACE-ON fit at the front of the frame, then the card was moved
+ * DEEP INTO THE ROOM without re-deriving it. A rectangle that fills the green box
+ * near the camera must be enormous to fill it from the rails: the cards came out
+ * **1730mm wide — wider than the desks they stand behind.** ⛔ Size and position
+ * were taken from two unrelated sources and the mismatch was invisible on screen.
+ *
+ * ⚠ CONSEQUENCE, STATED SO IT IS JUDGED RATHER THAN DISCOVERED: at these heights
+ * the cards are **~0.54x desk height** — roughly knee-high behind the chairs.
+ * ⛔ NOT YET JUDGED BY EYE, and Carl has named the order in which it will be:
+ * insert the text first; if it does not fit, raise the height so that (1) the copy
+ * fits, (2) it is proportionate to the desks, (3) proportionate to the wall cards,
+ * and (4) the scene looks balanced. **Angles first.**
+ *
+ * ⚠ THE PAIR STILL OVERLAP AT THE CURRENT MIDPOINTS. Centres are 424mm apart and
+ * half the summed widths is ~808mm, so they collide by ~380mm. ⛔ The midpoints
+ * are PROVISIONAL and the rails carry long extensions precisely so the cards can
+ * be slid along their axis — Carl: *"i will move them along the axis."*
+ */
+export const CD_CARD_HEIGHT_MM = 406;
+export const CS_CARD_HEIGHT_MM = 392;
+
+/**
+ * ⛔⛔ THE GUIDE RECTANGLES, MEASURED OFF THE PLATE — 14 September 2026.
+ *
+ * ⚠⚠ RECOVERED BY COLOUR SEGMENTATION, NOT READ FROM ANY RECORD, BECAUSE NO
+ * RECORD HELD THEM. The guides are PAINTED INTO `about-studio-wall-guides.jpg`;
+ * their coordinates existed nowhere in code or in `live-work/`. ⛔ Three recorded
+ * CD quads all disagree with the plate and are STALE:
+ *
+ *     INITIAL_FRAC CD        0.145 -> 0.245 x    PORTRAIT   working-space seeds
+ *     page.tsx comment       0.108 -> 0.222 x    PORTRAIT   stale
+ *     withdrawn overlay      0.0321 -> 0.4002 x  landscape, wrong x-origin
+ *
+ * **The true green box starts at 0.1094.** None of the three would have landed
+ * the card, and a Builder searching for "the green rectangle" finds all three
+ * before finding the truth. ⛔ These are the numbers; the others are history.
+ *
+ * ⚠ METHOD: green-dominant and magenta-dominant pixels, restricted to BELOW
+ * y = 0.45 so the cyan and magenta WALL quads cannot contaminate the floor pair.
+ * A first pass without that restriction merged the wall quads in and produced a
+ * 1.394 aspect for CD — wrong, and wrong in a way that looked plausible.
+ *
+ * ⛔ BOTH ARE AXIS-ALIGNED RECTANGLES, VERIFIED: the top and bottom rows of each
+ * box return identical x-ranges. They are NOT projected quads, so a bounding box
+ * is the whole shape rather than its hull.
+ *
+ *     CD (green)    x 0.1094 -> 0.4806   y 0.5725 -> 0.8492   668 x 332   2.0120
+ *     CS (purple)   x 0.5294 -> 0.8972   y 0.5817 -> 0.8558   662 x 329   2.0122
+ *
+ * ⚠⚠ THE TWO ASPECTS AGREE TO 1 PART IN 10,000 and sit within 0.7% of the
+ * approved `FLOOR_CARD_ASPECT` (2.026). **The approved shape, confirmed
+ * independently from the plate.**
+ *
+ * ⛔ AND THIS IS THE MEASURED FORM OF CARL'S RULING THAT THE TWO DIFFER: CD is
+ * **0.9% larger than CS in both axes**. ⚠ An earlier figure of 0.5% came from the
+ * withdrawn overlay; these come from the plate Carl is actually looking at and
+ * supersede it. **Same shape, different size — do not flatten them to match.**
+ *
+ * ⚠ FRACTIONS OF THE 1800x1200 PLATE, which is `about-studio-wall-guides.jpg` and
+ * shares its 1.5 aspect with `about-studio-source.jpg` (2560x1707). ⛔ A pixel
+ * coordinate without its frame size is not a measurement — the scale trap that
+ * cost an entire camera solve on 11 September.
+ */
+export const GUIDE_CD = {
+  x0: 0.1094,
+  y0: 0.5725,
+  x1: 0.4806,
+  y1: 0.8492,
+} as const;
+
+export const GUIDE_CS = {
+  x0: 0.5294,
+  y0: 0.5817,
+  x1: 0.8972,
+  y1: 0.8558,
+} as const;
+
+/**
+ * ⛔⛔ THE POSITION RAILS' MIDPOINTS — where each floor card's RIM CENTRE sits.
+ * Carl, 14 September 2026: *"Move the cards so that the centre of each rim of
+ * each card fit exactly halfway along the thicker lines."* Then, disambiguating:
+ * *"left card on blue rail. Right card on pink rail."*
+ *
+ * ⚠⚠ THE RAIL NAMES ARE INVERTED AND THIS IS THE TRAP THAT HAS ALREADY COST ONE
+ * MEASUREMENT. In `/proto/wall`:
+ *
+ *     RL / RR   labelled "ANGLE"      -> sit on the CHAIR CASTOR BASES.
+ *                                        A Builder read them as desk references
+ *                                        and produced a "57.7° between the desks"
+ *                                        figure. ⛔ DISCARDED.
+ *     PL / PR   labelled "POSITION"   -> THE MEASUREMENT. Carl's hand-placed desk
+ *                                        floor lines, and where the cards stand.
+ *
+ * ⛔ THESE ARE PL AND PR — the BLUE (cyan) and PINK (magenta) rails. Carl asked
+ * for "the angle rails" and then named the colours; **the colours are
+ * authoritative and they resolve to the pair labelled POSITION.** A future reader
+ * searching for "angle" will find RL/RR first and they are the wrong lines.
+ *
+ * ⚠ THE MIDPOINT IS OF THE PINNED SPAN — the THICK segment between the two
+ * handles, drawn at `strokeWidth={5}`. The thin extension beyond it is the slide
+ * axis, deliberately longer so the cards can be nudged along it: *"that way we
+ * will have a direction to move them slightly if needed."* ⛔ The midpoint of the
+ * drawn line is NOT the midpoint of the extension.
+ *
+ *     PL  0.27621, 0.94232  ->  0.46058, 0.83185   mid  0.368395, 0.887085
+ *     PR  0.50858, 0.80654  ->  0.64059, 1.00101   mid  0.574585, 0.903775
+ *
+ * ⚠ PR's B handle is at y = 1.00101, fractionally BELOW the plate's bottom edge.
+ * That is Carl's placement as committed, not a clamp error — the rail leaves the
+ * frame and its midpoint is still inside it.
+ *
+ * ⛔ UNASSERTED: these are a COPY of `INITIAL_RAIL` in `app/proto/wall/page.tsx`.
+ * Nothing in code checks the two agree, and they will drift silently if the rails
+ * are ever re-pinned. **Verify against that file before relying on them.**
+ */
+export const RAIL_MID_CD = { x: 0.368395, y: 0.887085 } as const;
+export const RAIL_MID_CS = { x: 0.574585, y: 0.903775 } as const;
+
+/**
+ * ⛔⛔ THE SOLVED CAMERA — `live-work/camera-solve-11-september.md`.
+ *
+ * ⚠⚠ `PerspectiveCamera.fov` IS VERTICAL. The plan carried the 89.91° HORIZONTAL
+ * figure; the Architect caught it before it was written. **67.31° is the vertical
+ * FOV derived from f = 1282px on the 2560x1707 plate.**
+ *
+ * ⛔ FALSIFIED INDEPENDENTLY AT 0.6°: the left desk's cabinet base, fitted at
+ * rms 0.33px and never fed into the solve, back-projects to 0.6° from its wall.
+ * It should be 0°. **That test could have failed and did not.**
+ *
+ * ⚠ THE PRINCIPAL POINT IS ASSUMED AT IMAGE CENTRE. Not solved. Unasserted.
+ */
+export const CAMERA_VFOV_DEG = 67.31;
+export const CAMERA_PITCH_DEG = 12.68;
+
+/**
+ * ⛔⛔ EACH FLOOR CARD'S YAW, BACK-PROJECTED FROM ITS RAIL — 14 September 2026.
+ *
+ * ⚠⚠ DERIVED, NOT CHOSEN, AND THE DERIVATION CORROBORATES CARL'S ACCOUNT OF HOW
+ * THE RAILS WERE MADE. Carl, 14 September: *"the green and amber lines… follow
+ * the desk where it meets the floor. Blue and pink were extrapolated from those
+ * angles."* Back-projecting all four onto the solved floor plane:
+ *
+ *     RL (green, left desk)    123.88°
+ *     PL (blue,  left card)    122.80°   <- 1.08° from RL. The extrapolation holds.
+ *     RR (amber, right desk)    26.16°
+ *     PR (pink,  right card)    31.47°   <- 5.32° from RR
+ *
+ * ⛔ THE 5.32° ON THE RIGHT IS NOT ERROR. It matches the recorded **5.4° turn of
+ * the right desk off its wall** — an L-desk pushed into the corner. ⚠ And that
+ * side rests on Carl's single hand-placed rail: `camera-solve-11-september.md`
+ * still lists the right desk's direction under *"What is NOT established"*.
+ *
+ * ⚠ THE DESKS COME OUT 82.28° APART against the recorded **84.3°**. The ~2°
+ * residual is the assumed principal point and camera height. ⛔ It does not affect
+ * the RELATIVE yaws, which is what the cards use.
+ *
+ * ⚠⚠ A SIGN ERROR IN THE PITCH ROTATION FIRST PRODUCED **146.26°** FOR THE SAME
+ * PAIR — a 62° error that looked like a number. It was caught ONLY by testing both
+ * conventions against Carl's recorded 84.3°. ⛔ The transform was written in one
+ * pass and checked against nothing, which is the four-ceiling-angles failure in a
+ * new place. **Verify a derived angle against a known one before using it.**
+ */
+export const CD_RAIL_YAW_DEG = 122.8;
+export const CS_RAIL_YAW_DEG = 31.47;
+
+/**
+ * ⛔⛔ WHICH WAY EACH CARD FACES — Carl, 14 September: *"Each card faces inward,
+ * mirroring the wall cards."*
+ *
+ * ⚠ A RAIL IS A LINE WITH TWO DIRECTIONS, so the face normal is the rail's yaw
+ * ±90° and only one of the two points into the room. Resolved by dotting each
+ * candidate against the direction back to the camera:
+ *
+ *     CD   normal 32.80°   -> x +0.542, z +0.841   dot +0.956   inward from LEFT
+ *     CS   normal 301.47°  -> x -0.853, z +0.522   dot +0.640   inward from RIGHT
+ *
+ * ⛔ BOTH ARE `yaw - 90°`, AND THAT SYMMETRY IS EVIDENCE RATHER THAN COINCIDENCE:
+ * the same rule resolves both sides, and the two normals mirror each other exactly
+ * as Carl specified.
+ *
+ * ⚠ THE MESH IS BUILT IN THE XY PLANE FACING +Z (`about-card-mesh.tsx` returns a
+ * bare group; the face is offset along +Z). So orienting a card is a **Y-ROTATION
+ * ONLY** — there is no X rotation, because "no lean" means no backward tilt.
+ * ⛔ Carl, 14 September: *"standing upright, no lean."*
+ */
+export const CD_FACE_YAW_DEG = CD_RAIL_YAW_DEG - 90;
+export const CS_FACE_YAW_DEG = CS_RAIL_YAW_DEG - 90;
+
 // ── Trim: the parts that do NOT scale with the card ──────────────────────────
 
 /**
@@ -229,6 +466,54 @@ export const FACE_PROUD_RATIO = 0.018;
  * reproduces it at any size.
  */
 export const CROWN_RATIO = 0.0901;
+
+/**
+ * ⛔⛔ THE TENT POLE — how far the centre of the face is lifted, as a fraction of
+ * CARD HEIGHT. This is the dial. 14 September 2026.
+ *
+ * ⚠⚠ CARL'S MODEL, AND IT IS THE SPACETIME PICTURE INVERTED: a pliable sheet
+ * pinned to its frame, with a pole pushing UP at the centre instead of a mass
+ * pulling down. *"Just enough so the face is curved, text can be read off it and
+ * when light is shone at it, especially from the top and sides — it is noticably
+ * curved."*
+ *
+ * ⛔ A RATIO, NOT A MILLIMETRE VALUE, so it travels across all four cards at their
+ * different sizes — the same family rule that governs every other dimension.
+ * Carl: *"it is a blueprint for all 4 cards."*
+ *
+ * ⚠⚠ START SMALL AND BRING IT UP — Carl's instruction, in his own terms: *"Start
+ * small, lets see what effect it has on the face. Like music production, we will
+ * start at low volume and increase as needs be."*
+ *
+ *     0.040   <- current. ~16mm on CD, about a third of the old lift.
+ *     0.060      ~24mm
+ *     0.090      ~37mm, roughly what the superseded crown produced
+ *
+ * ⛔ DELIBERATELY NOT `CROWN_RATIO`. That value was back-derived to hold 27.9° of
+ * maximum tilt on the OLD superellipse profile — a model that has been replaced.
+ * Reusing it would carry a number tuned for one surface onto a different one,
+ * which is the class of mistake this project has recorded repeatedly. **The pole
+ * gets its own figure, tuned by eye against the membrane.**
+ *
+ * ⚠⚠ RETUNED TO 0.025 ON 14 SEPTEMBER 2026, when the quartic bulge
+ * `(1 - x²)(1 - y²)` replaced the tent-pole membrane. ⛔ The name is now stale —
+ * there is no pole, and the value is the CURVATURE of a shallow dome — but it is
+ * kept so the dial has one home rather than two. **Rename when the shape settles.**
+ *
+ * ⚠ 0.025 IS THE RECOMMENDED STARTING POINT, not a judged value: *"I'd start
+ * around 0.015–0.03 relative to the card's size rather than making it obviously
+ * curved."* On CD that is 10.15mm of rise on a 757x346mm face.
+ *
+ *     0.015    6.09mm    max tilt 4.03°
+ *     0.025   10.15mm    max tilt 6.69°   <- current
+ *     0.030   12.18mm    max tilt 8.02°
+ *
+ * ⛔ ALL THREE KEEP 100% OF THE FACE UNDER 8° — the quartic spends no text area on
+ * slope, which is what every earlier formulation failed to do.
+ *
+ * ⚠ NOT APPROVED. A starting volume, not a setting.
+ */
+export const TENT_POLE_RATIO = 0.025;
 
 /**
  * ⛔⛔ SUPERSEDED 11 SEPTEMBER 2026 — THE FACE IS A LENS AND HAS NO PLATEAU.

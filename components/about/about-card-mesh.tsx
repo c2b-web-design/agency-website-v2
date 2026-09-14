@@ -76,7 +76,52 @@ const DIAG_FACE_COLOR = "#c8c8c8";
  * version broke are not yet reconciled.** `insetDistance` is retained below,
  * unused, for that reason.
  */
+/* ⚠ UNUSED SINCE THE Q+A GEOMETRY REPLACED THE SUPERELLIPSE MODEL, 14 September
+   2026. ⛔ KEPT, NOT DELETED: the comment above is the record of why a norm-based
+   face could not meet its own bevel — only the corners ever reached the boundary —
+   and that reasoning is what stops the model being rebuilt. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CORNER_NORM = 3;
+
+/**
+ * ⛔⛔ THE PLATEAU, RE-DERIVED FOR THE ABOUT CARDS' PROPORTIONS — 14 September 2026.
+ *
+ * ⚠ The Q+A answer card holds full crown height across `CROWN_PLATEAU_U = 0.72` of
+ * its LONG axis and rolls off in the last 28% at each end. ⛔ **That figure does
+ * not transfer**, because the two faces are different shapes:
+ *
+ *     Q+A answer card face    ~3.89 : 1    a strip
+ *     About floor card face    2.19 : 1    much squarer
+ *
+ * ⚠⚠ THE INVARIANT WORTH HOLDING IS THE ROLL-OFF BAND'S SHAPE, not the plateau
+ * fraction. On the Q+A card the band measures **1.089 x its own half-height**.
+ * Holding that same relationship on a 2.19:1 face gives:
+ *
+ *     band  = 1.089 x 173mm  = 188mm  of a 378mm half-width
+ *     plateau = 1 - 188/378  = 0.502
+ *
+ * ⛔ Carl, 14 September: *"the face proportions are different, this has to be taken
+ * into consideration and modified accordingly."* **Inheriting 0.72 would be the
+ * same class of error as inheriting the contact field's crown of 5.0 — a number
+ * tuned against one object's proportions carried onto another's.**
+ *
+ * ⚠ It still leaves a real plateau: 50.2% of the half-width, ~190mm of near-level
+ * surface down the middle of the card, which is where the copy sits.
+ *
+ * ⚠⚠ UNUSED SINCE 14 SEPTEMBER 2026 — AND ITS FAILURE IS THE POINT OF KEEPING IT.
+ * Carl, on the build that used it: *"theres a lump in the middle and flat bits."*
+ * ⛔ **The plateau WAS the lump.** Holding full height across the middle 50.2% of
+ * the long axis gave a profile of 16.2 / 16.2 / 16.2 / 8.2 / 0.0mm — three samples
+ * at identical height is a flat top, not a curve.
+ *
+ * ⛔ THE LESSON: the plateau is a STRIP feature. On the Q+A card (3.89:1) the long
+ * axis is nearly straight anyway and the plateau reads as a cylindrical roll. On a
+ * 2.19:1 face the flat region is wide in BOTH directions and reads as a panel with
+ * a bulge. **Re-deriving the value (0.72 -> 0.502) only tuned how wide the lump
+ * was; the feature itself did not belong here.**
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ABOUT_PLATEAU_U = 0.502;
 
 /**
  * How far the oval extends BEYOND the card, as a multiple of the card's extent.
@@ -125,6 +170,25 @@ const OVAL_EXPAND = 1.35;
  * set how much of the face is usable for text.
  */
 const CROWN_FALLOFF = 2.5;
+
+/**
+ * ⚠ THE SEAM-BAND CONSTANT WAS REMOVED, 14 September 2026. It scaled the approved
+ * surface down to zero across the outer `SEAM_BAND` of the face. It closed the gap
+ * at every perimeter point and left the inboard heights bit-identical — and it was
+ * still wrong, because 15% in from every edge is **~28% of the face area** turned
+ * into slope at 52.43°. ⛔ Carl: *"youve made the real estate where the text goes
+ * much smaller."*
+ *
+ * ⚠⚠ THE MEASUREMENTS ARE KEPT because the next attempt must not rediscover them:
+ *
+ *     band   short axis   long axis   face area consumed
+ *     0.10     17.3mm       37.8mm          ~19%
+ *     0.15     25.9mm       56.8mm          ~28%
+ *     0.20     34.6mm       75.7mm          ~36%
+ *
+ * ⛔ ALL THREE CLOSE THE SEAM. None of them is acceptable, because the cost is
+ * paid in the text area the face exists to provide.
+ */
 
 /** Samples around the perimeter. Corners need the density; edges do not suffer. */
 const PATH_SAMPLES = 512;
@@ -372,6 +436,12 @@ function convexFaceGeometry(
    */
   segX = 160,
   segY = 80,
+  /**
+   * ⛔ BUILD THE FACE FLAT — no crown at all. CS only, 14 September 2026.
+   * See the `flat ? 0 : ...` line in the vertex loop for why this closes the seam
+   * without spending any face area.
+   */
+  flat = false,
 ): THREE.BufferGeometry {
   const hw = width / 2;
   const hh = height / 2;
@@ -432,6 +502,12 @@ function convexFaceGeometry(
    *
    * `t` is distance from the boundary: 0 at the bevel, 1 at the innermost point.
    */
+  /* ⚠ UNUSED SINCE THE TENT-POLE MEMBRANE, 14 September 2026 — the raised cosine
+     in `ovalHeight` replaced it. ⛔ KEPT, NOT DELETED: the comment above records
+     Carl's contour drawing and the 9/19/31/48/70 spacing derived from it, which is
+     the specification any future profile has to answer to. **The falloff was never
+     the fault — the norm it was applied to was.** */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const profile = (t: number) => {
     const a = Math.max(0, Math.min(1, t));
     return 1 - Math.pow(1 - a, CROWN_FALLOFF);
@@ -455,24 +531,155 @@ function convexFaceGeometry(
    * of cutting a rectangle out of an oval and it is VISIBLE — if it reads wrong,
    * the dial is `OVAL_EXPAND`: higher flattens the difference, lower exaggerates
    * it and eventually returns the flat corners.
+   *
+   * ══════════════════════════════════════════════════════════════════════════
+   * ⚠⚠ A PER-DIRECTION NORMALISATION WAS BUILT HERE ON 14 SEPTEMBER AND REVERTED
+   * ══════════════════════════════════════════════════════════════════════════
+   *
+   * ⛔ THE DEFECT IS REAL AND IS STILL OPEN. Carl, on the rendered page: *"the face
+   * does not connect with the bevel on the sides… its quite clearly a gap."*
+   * Measured on CD (406mm tall, crown 36.6mm): the face's edge floats **16.05mm**
+   * above the bevel at the mid-edges — 3.95% of card height, larger than the rim
+   * bead (8.93mm) and larger than the bevel band (12.18mm). Zero at the corners,
+   * worst at the mid-edges.
+   *
+   * ⚠⚠ IT HID ON THE BENCH AND THE REASON IS WORTH KEEPING. Carl: *"in the proto
+   * card construction because it was on a black background this could of been
+   * mistaken for a shadow."* A 16mm lift showing black against black reads as
+   * shading; against a lit floor it is unmistakable. **The bench could not have
+   * disclosed this; only the room could.**
+   *
+   * ⛔⛔ WHY THE FIX WAS REVERTED, AND IT IS A SCOPE FAILURE NOT A MATHS FAILURE.
+   * The attempt normalised EVERY sample against its own boundary point. It did
+   * close the gap — seven perimeter points measured 0.000000mm — but it changed
+   * the face's surface EVERYWHERE, on BOTH cards, and produced visible diagonal
+   * creases across each face. Carl: *"i did not say change the left card. i did
+   * not say change the whole geometry of the face. just fill in the gap with a
+   * gentle curve."*
+   *
+   * ⚠ THE BRIEF IS NARROWER THAN THE FIX THAT WAS APPLIED: the bevel stays
+   * equidistant and unmodified, the approved face geometry stays as Carl approved
+   * it, and only the GAP is to be filled — with a gentle curve, on the edge where
+   * it shows. ⛔ A global re-normalisation is not that.
    */
   const ovalHeight = (x: number, y: number, ohw: number, ohh: number) => {
-    const raw = (px2: number, py2: number) => {
-      const su = Math.abs(px2) / (ohw * expand);
-      const sv = Math.abs(py2) / (ohh * expand);
-      const s = Math.min(
-        1,
-        Math.pow(
-          Math.pow(su, CORNER_NORM) + Math.pow(sv, CORNER_NORM),
-          1 / CORNER_NORM,
-        ),
-      );
-      return profile(1 - s);
-    };
-    const lowest = raw(ohw, ohh); // the card's corner — furthest from centre
-    const peak = raw(0, 0);
-    const span = peak - lowest || 1;
-    return Math.max(0, (raw(x, y) - lowest) / span);
+    /**
+     * ⛔⛔ THE TENT-POLE MEMBRANE — THE FACE FORMULATION FOR ALL FOUR CARDS.
+     * Carl, 14 September 2026: *"it is a blueprint for all 4 cards… we can touch
+     * the face surface now, the old model didnt work."*
+     *
+     * ⚠⚠ HIS MODEL, AND IT IS THE SPACETIME PICTURE INVERTED. A pliable sheet
+     * pinned to its frame with a mass pulling DOWN — except here a pole pushes UP
+     * at the centre: *"Imagine our face is fabric. Its pliable. at the very centre
+     * of the face we have a tent pole. Whats gonna happen if we lift it up? Just
+     * enough so the face is curved, text can be read off it and when light is
+     * shone at it, especially from the top and sides — it is noticably curved."*
+     *
+     * ⛔⛔ THE PINNING IS WHAT FIXES THE SEAM, AND IT FIXES IT BY CONSTRUCTION.
+     * A membrane fixed to its frame CANNOT lift off it, however high the pole
+     * goes. `m` is 1 on the boundary, so `1 - m` is 0 there, so the height is
+     * EXACTLY 0 — at every perimeter point, on every card, at every pole value.
+     * **No seam band, no re-normalisation, and no face area spent closing a gap.**
+     *
+     * ⚠⚠ WHAT THIS REPLACES. The old model took a superellipse NORM of the two
+     * axes and applied one profile to it. With `OVAL_EXPAND` pushing the oval's rim
+     * outside the card, a mid-edge sample read `su = 1/1.35 = 0.741` with `sv = 0`,
+     * so the norm never reached 1 and the surface never came down. **Only the
+     * CORNERS — where both terms contribute — touched the bevel.** Carl, in the
+     * room: *"the face is a single flat sheet that has had equal pressure applied
+     * at the corners and bent."* The gap measured 16.05mm on CD, larger than the
+     * rim bead (8.93mm) and larger than the bevel band (12.18mm).
+     *
+     * ⛔ TWO PATCHES WERE BUILT ON THE OLD MODEL AND BOTH FAILED — recorded so
+     * neither is retried as if new:
+     *   1. PER-DIRECTION NORMALISATION — closed the gap, rewrote the whole surface
+     *      on BOTH cards, visible diagonal creases.
+     *   2. A 15% SEAM BAND — closed the gap, left the inboard surface identical,
+     *      but turned ~28% of the FACE AREA into 52° slope. *"youve made the real
+     *      estate where the text goes much smaller."*
+     * ⛔ **Neither fault is possible here: a pinned membrane spends nothing to
+     * reach its own edge.**
+     *
+     * ⚠ `CORNER_NORM`, `OVAL_EXPAND` and `CROWN_FALLOFF` are now UNUSED by this
+     * function and are retained only as the record of the model that did not work.
+     *
+     * ⚠ `m` is the rounded-rect ray parameter — the same outline the vertex loop
+     * clamps to, so the pinning and the geometry agree by construction rather than
+     * by coincidence.
+     */
+    /**
+     * ⛔⛔ PLAN B — THE Q+A ANSWER CARD'S GEOMETRY, 14 September 2026. Carl:
+     * *"Apply the q+a geometry to the cards."*
+     *
+     * ⚠⚠ SEPARABLE AND MULTIPLICATIVE: `longAxis * shortAxis`. Ported in form from
+     * `answer-card-mesh.tsx`'s `crownZ`, which is the shape approved on BOTH
+     * existing objects — the answer card and the contact field.
+     *
+     * ⛔ WHY IT CLOSES THE SEAM BY CONSTRUCTION. At `v = ±1` — anywhere on a long
+     * edge — `shortAxis = (1 + cos(pi)) / 2 = 0`, and the PRODUCT is zero
+     * regardless of `u`. At `u = ±1` the same holds via `longAxis`. **Every
+     * perimeter point is zero, so the face meets the bevel all the way round.**
+     *
+     * ⚠⚠ AND IT HAS NO DIAGONAL RIDGE, WHICH IS WHY THE MEMBRANE FAILED. The
+     * tent-pole model used `max(|x|/hw, |y|/hh)` — a max-norm, whose contours are
+     * RECTANGLES. Those meet at the diagonals as a crease, and the render showed
+     * exactly that: two visible creases running corner to corner. ⛔ A product of
+     * two smooth per-axis falloffs has no such seam anywhere in the interior.
+     *
+     * ⚠ THE PLATEAU IS RE-DERIVED, NOT INHERITED. The Q+A card is a 3.89:1 strip;
+     * this face is 2.19:1. Holding the Q+A's roll-off band at the same proportion
+     * of the SHORT axis gives `ABOUT_PLATEAU_U ≈ 0.502` here against 0.72 there.
+     * ⛔ Carl: *"the face proportions are different, this has to be taken into
+     * consideration and modified accordingly."*
+     */
+    /**
+     * ⛔⛔ THE QUARTIC BULGE — `(1 - x²)(1 - y²)`. 14 September 2026, from a second
+     * outside recommendation Carl brought in, and it is the SIXTH face formulation
+     * tried today. The five before it were rejected on sight.
+     *
+     * ⚠⚠ IT CLOSES THE SEAM ALGEBRAICALLY, NOT APPROXIMATELY. Each factor vanishes
+     * on its own axis: at `x = ±1` the first is exactly 0 regardless of y, and at
+     * `y = ±1` the second is exactly 0 regardless of x. **Every perimeter point is
+     * zero at every curvature value** — so the face meets the bevel all the way
+     * round and cannot lift off it, which is what the superellipse model could not
+     * do (it reached zero only at the four corners, hanging 16.05mm elsewhere).
+     *
+     * ⛔ AND IT HAS NO FLAT REGION AND NO CREASE — the two faults that sank the
+     * attempts in between. Measured on CD at 2.5%:
+     *
+     *     perimeter        0 on every edge      (algebraic)
+     *     diagonal spike   2.2e-4               smooth, no ridge
+     *     flat run         3.3%                 noise, no plateau
+     *     max tilt         6.69°
+     *     TEXT-FLAT        100% of the face     <- the number that matters
+     *
+     * ⚠⚠ **100% OF THE FACE SITS UNDER 8° OF TILT.** Every earlier fix spent text
+     * area to close the seam: the 15% band left 72%, the membrane 80%, and the
+     * plateau build had a visibly flat top. This has no flat region AND no steep
+     * region. ⛔ Carl's constraint throughout — *"youve made the real estate where
+     * the text goes much smaller"* — is finally satisfied rather than traded
+     * against.
+     *
+     * ⚠ THE PROFILE IS A DOME, NOT A BENT SHEET: 10.15 / 9.52 / 7.61 / 4.44 / 0.00
+     * — shallow near the apex, steepening toward the rim. The quartic is flattest
+     * where the text sits and does its work near the edge, where the light catches.
+     *
+     * ⚠ THE RIM AND BEVEL ARE UNTOUCHED, as the recommendation requires — they are
+     * separate swept meshes in this file and nothing here reaches them.
+     *
+     * ⚠ `x`/`y` here are already the clamped rounded-rect coordinates from the
+     * vertex loop, so the normalisation matches the outline the face is cut to.
+     */
+    const u = Math.min(1, Math.abs(x) / ohw);
+    const v = Math.min(1, Math.abs(y) / ohh);
+
+    const h = (1 - u * u) * (1 - v * v);
+
+    /**
+     * ⚠ 0 ON THE BOUNDARY, 1 AT THE POLE. The caller multiplies by the pole
+     * height, so this returns a normalised membrane rather than millimetres.
+     */
+    return h;
   };
 
   const positions: number[] = [];
@@ -506,7 +713,27 @@ function convexFaceGeometry(
        * deliberately NOT used; the build that used it regressed elsewhere and Carl
        * reverted it. **Do not swap it back without his word.**
        */
-      const z = crown * ovalHeight(x, y, hw, hh);
+      /**
+       * ⛔⛔ `flat` BUILDS A PLANE FACE — CS ONLY, 14 September 2026, on Carl's
+       * instruction: *"On the right card, make it flat and connect it to the bevel
+       * at all points."*
+       *
+       * ⚠⚠ A FLAT FACE SOLVES THE SEAM BY CONSTRUCTION. Height is zero at every
+       * sample, so the face sits on the bevel's own front plane (`faceBaseZ`) and
+       * touches it all the way round — no gap, no seam band, and **no face area
+       * spent on slope.** The two reverted fixes both closed the gap by consuming
+       * the text area; this one cannot.
+       *
+       * ⛔ IT IS A TEST, NOT A DECISION. CD keeps the approved crown so the two can
+       * be judged side by side in the room — which is the only place the seam was
+       * ever visible.
+       *
+       * ⚠ WHAT IT COSTS, STATED: the crown is the whole reason the rim can light
+       * the face, and it is what makes a plano-convex card refract backlight. A
+       * flat face is a flat sheet of glass. **The comparison is between a defect
+       * that shows and an optical property that may not survive its removal.**
+       */
+      const z = flat ? 0 : crown * ovalHeight(x, y, hw, hh);
       positions.push(px, py, z);
     }
   }
@@ -552,6 +779,113 @@ function useDisposable(g: THREE.BufferGeometry) {
   useEffect(() => () => g.dispose(), [g]);
 }
 
+/**
+ * How steep the simulated dome is, in the normal map only. ⛔ NOTHING IN THE MESH
+ * MOVES — this is a lighting property, not a geometric one.
+ *
+ * ⚠ The outside recommendation Carl brought in puts the equivalent physical
+ * displacement at **2–4% of card width**. On CD that is 16–33mm, and the tent-pole
+ * build was at 16.24mm — the BOTTOM of that band. ⛔ So the amplitude was never
+ * obviously the fault; the falloff's SHAPE was. Recorded because it corrects the
+ * Builder's read that the pole was simply too quiet.
+ *
+ * ⚠ 0.35 is a starting volume, matched to `normalScale` at 0.15 in the material.
+ * The two multiply, so raising either deepens the apparent dome. ⛔ NOT APPROVED —
+ * Carl tunes by eye, and the lighting it will finally be judged under does not
+ * exist yet (the rim is not a light source until chunk 3).
+ */
+const NORMAL_MAP_DEPTH = 0.35;
+
+/**
+ * ⛔⛔ A CONVEX NORMAL MAP — LIGHTING CURVATURE ON A PHYSICALLY FLAT FACE.
+ * 14 September 2026, from an outside recommendation Carl brought in.
+ *
+ * ⚠⚠ WHY THIS BREAKS THE DEADLOCK. Five mesh formulations were built and rejected
+ * today, and every one made the same trade: curvature that closed the seam ate
+ * text area, or preserved text area and left a 16mm gap at the bevel. **A normal
+ * map does not make that trade at all.** The mesh stays flat — so it meets the
+ * bevel at every point by construction and the UVs stay undistorted for text —
+ * while the LIGHTING reads as domed.
+ *
+ * ⛔ THE ASSUMPTION THAT COST THE DAY: that the curvature had to be in the MESH.
+ * It never did. Only the specular response has to be curved.
+ *
+ * ⚠ RADIAL, NOT THE SINGLE-AXIS PARABOLA THE ADVICE SUGGESTED. `z = -d(2x/w)^2`
+ * is a CYLINDRICAL bend, curved across one axis only — which is exactly the
+ * *"single flat sheet that has been bent"* reading Carl rejected earlier today. A
+ * radial falloff reads as a dome from every direction.
+ *
+ * ⚠ ENCODING: tangent-space normals, RGB = (nx, ny, nz) mapped from [-1,1] to
+ * [0,1]. A flat surface is (128, 128, 255). The slope grows toward the rim and is
+ * zero at the centre, which is what a dome does.
+ *
+ * ⚠ 256x256 IS DELIBERATE AND SMALL. This is a smooth gradient with no detail to
+ * preserve — the answer card's 2048px LABEL texture exists because GLYPHS need
+ * resolution. ⛔ At 256 the whole map is 256KB of RGBA against 4MB, and it is
+ * built ONCE per aspect rather than per card.
+ */
+const normalMapCache = new Map<string, THREE.CanvasTexture>();
+
+function buildConvexNormalMap(aspect: number): THREE.CanvasTexture | null {
+  if (typeof document === "undefined") return null;
+
+  const key = aspect.toFixed(3);
+  const cached = normalMapCache.get(key);
+  if (cached) return cached;
+
+  const SIZE = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  const img = ctx.createImageData(SIZE, SIZE);
+
+  for (let py = 0; py < SIZE; py++) {
+    for (let px = 0; px < SIZE; px++) {
+      /* -1..1 across the face, corrected for aspect so the dome is not stretched
+         along the long axis. */
+      const u = (px / (SIZE - 1)) * 2 - 1;
+      const v = (py / (SIZE - 1)) * 2 - 1;
+
+      /**
+       * ⚠ THE DOME'S HEIGHT FIELD, ONLY ITS DERIVATIVE IS USED. A raised cosine
+       * in the radial parameter: flat at the apex, steepest mid-slope, and
+       * arriving at the rim with zero slope so the lighting has no hard seam
+       * where the face meets the bevel.
+       */
+      const r = Math.min(1, Math.hypot(u * aspect, v) / aspect);
+      const slope = (Math.PI / 2) * Math.sin(Math.PI * r) * NORMAL_MAP_DEPTH;
+
+      /* Outward radial direction in the plane; zero at the exact centre. */
+      const len = Math.hypot(u * aspect, v) || 1;
+      const dx = (u * aspect) / len;
+      const dy = v / len;
+
+      /* Tangent-space normal: tilt away from +Z by `slope`, toward the rim. */
+      const nx = -dx * slope;
+      const ny = -dy * slope;
+      const nz = 1;
+      const n = Math.hypot(nx, ny, nz);
+
+      const i = (py * SIZE + px) * 4;
+      img.data[i] = ((nx / n) * 0.5 + 0.5) * 255;
+      img.data[i + 1] = ((ny / n) * 0.5 + 0.5) * 255;
+      img.data[i + 2] = ((nz / n) * 0.5 + 0.5) * 255;
+      img.data[i + 3] = 255;
+    }
+  }
+
+  ctx.putImageData(img, 0, 0);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.NoColorSpace; // ⛔ normals are DATA, never sRGB
+  tex.needsUpdate = true;
+  normalMapCache.set(key, tex);
+  return tex;
+}
+
 export type AboutCardMeshProps = {
   dims: CardDims;
   /** Crown height in mm. Separate from dims so the bench can sweep it. */
@@ -562,6 +896,29 @@ export type AboutCardMeshProps = {
    * the mid-edges stand increasingly proud of the bevel. See `OVAL_EXPAND`.
    */
   ovalExpand?: number;
+  /**
+   * ⛔ BUILD THE FACE FLAT — no crown. CS only, 14 September 2026, Carl: *"On the
+   * right card, make it flat and connect it to the bevel at all points."*
+   *
+   * ⚠ A flat face touches the bevel all the way round BY CONSTRUCTION and spends
+   * no face area doing it — unlike the two reverted seam fixes, which both paid
+   * for the gap with the text area. ⛔ A TEST, not a decision: CD keeps the
+   * approved crown so the pair can be compared in the room.
+   */
+  flat?: boolean;
+  /**
+   * ⛔ SIMULATE A CONVEX FACE IN THE LIGHTING ONLY — a normal map on a physically
+   * flat mesh. 14 September 2026, from an outside recommendation Carl brought in.
+   *
+   * ⚠⚠ THE POINT IS THAT IT MAKES NO TRADE. Five mesh formulations were rejected
+   * today, each either closing the seam by eating text area or preserving the area
+   * and leaving a 16mm gap. ⛔ The mesh stays flat — flush to the bevel at every
+   * point, undistorted UVs for text — while only the specular response curves.
+   *
+   * ⚠ Use WITH `flat`. Combining it with a crowned mesh would double the effect
+   * and defeat the purpose.
+   */
+  domed?: boolean;
   /** Reports the measured tilt of the built face, for the bench readout. */
   onTilt?: (deg: number) => void;
 };
@@ -570,8 +927,26 @@ export function AboutCardMesh({
   dims,
   crownMm,
   ovalExpand = OVAL_EXPAND,
+  flat = false,
+  domed = false,
   onTilt,
 }: AboutCardMeshProps) {
+  /**
+   * ⚠ Built from the FACE's aspect, not the card's, so the dome is not stretched
+   * along the long axis. ⛔ Cached per aspect in a module-level map and
+   * deliberately NOT disposed with the mesh: the texture is shared between cards
+   * of the same proportion, so disposing it with one would pull it out from under
+   * the others. `answer-card-mesh.tsx`'s label cache makes the same choice for the
+   * same reason. ⚠ It therefore persists for the life of the page — stated rather
+   * than left to be discovered.
+   */
+  const faceNormalMap = useMemo(
+    () =>
+      domed
+        ? buildConvexNormalMap(dims.faceWidthMm / dims.faceHeightMm)
+        : null,
+    [domed, dims.faceWidthMm, dims.faceHeightMm],
+  );
   const path = useMemo(
     () =>
       sampleRoundedRectPath(
@@ -648,8 +1023,11 @@ export function AboutCardMesh({
         dims.cornerRadiusMm - dims.faceInsetMm,
         crownMm,
         ovalExpand,
+        undefined,
+        undefined,
+        flat,
       ),
-    [dims, crownMm, ovalExpand],
+    [dims, crownMm, ovalExpand, flat],
   );
 
   useDisposable(rimGeometry);
@@ -681,7 +1059,16 @@ export function AboutCardMesh({
         />
       </mesh>
       <mesh geometry={faceGeometry} position={[0, 0, faceBaseZ]}>
+        {/* ⚠ `normalScale` AND `NORMAL_MAP_DEPTH` MULTIPLY. 0.15 is the subtle
+            setting the outside recommendation names; the map's own depth is 0.35.
+            ⛔ Raising either deepens the apparent dome, so tune ONE of them — two
+            dials for one effect is how a value ends up impossible to reason about.
+            ⚠ Null when `domed` is false, which is a no-op, so CD is unaffected. */}
         <meshStandardMaterial
+          normalMap={faceNormalMap}
+          normalScale={
+            faceNormalMap ? new THREE.Vector2(0.15, 0.15) : undefined
+          }
           color={DIAG_FACE_COLOR}
           roughness={0.55}
           metalness={0}

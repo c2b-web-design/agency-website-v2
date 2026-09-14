@@ -649,43 +649,24 @@ export default function WallPinningTool() {
           style={{ opacity: Math.max(0, 0.25 - (brightness - 1) * 0.25) }}
         />
 
-        {CARDS.map((k) => (
-          <div
-            key={k}
-            className="absolute top-0 left-0 pointer-events-none"
-            style={{
-              width: CARD_W,
-              height: CARD_H,
-              transformOrigin: "0 0",
-              transformStyle: "preserve-3d",
-              transform: matrixFor(corners[k]),
-              background: META[k].fill,
-              border: `2px solid ${META[k].line}`,
-              backdropFilter: "blur(6px)",
-            }}
-          >
-            <div className="p-4 text-sm font-medium">{META[k].label}</div>
-          </div>
-        ))}
+        {/* ⛔⛔ THE FOUR CARD QUADS WERE DELETED HERE — 14 September 2026, Carl:
+            "the 4 cards in the proto wall now serve no purpose. they are the wrong
+            size, position and perspective. They can be deleted, LEAVE THE GUIDE
+            LINES."
 
-        {CARDS.map((k) =>
-          corners[k].map((p, i) => (
-            <div
-              key={`${k}${i}`}
-              onPointerDown={(e) => {
-                e.stopPropagation();
-                (e.target as HTMLElement).setPointerCapture(e.pointerId);
-                setDrag({ card: k, i });
-              }}
-              title={`${k} ${["TL", "TR", "BR", "BL"][i]}`}
-              /* ⚠ 20px -> 10px on Carl's instruction, 11 September 2026: the
-                 larger handle covered the floor feature being pinned. Border
-                 thinned to match so the dot stays readable at half size. */
-              className="absolute w-2.5 h-2.5 rounded-full border border-white cursor-move z-20 -translate-x-1/2 -translate-y-1/2 hover:scale-150"
-              style={{ left: p.x, top: p.y, background: META[k].line }}
-            />
-          ))
-        )}
+            ⛔ NOTHING HAS REPLACED THEM. This tool now draws the RAILS ONLY. The
+            approved `/proto/card` geometry has NOT been applied to the floor cards
+            here — that work is not built, and putting a WebGL canvas on this page is
+            a §5a structural question that is still open.
+
+            ⚠ AN EARLIER VERSION OF THIS COMMENT SAID THE GEOMETRY HAD REPLACED THEM.
+            It was written in the same edit that deleted the quads, describing work
+            that did not exist. ⛔ Recorded rather than quietly corrected: a comment
+            asserting unbuilt work is the exact failure this project keeps finding —
+            a true-sounding sentence a later reader takes as fact.
+
+            ⛔ THE RAILS BELOW ARE THE SURVIVING CONTENT OF THIS TOOL and are the
+            reason it still exists. Do not remove them with the cards. */}
 
         {/* ⛔ THE RAILS. Each is ONE LINE through TWO handles, drawn EXTENDED to
             the stage edges so a card can be slid along it. ⚠ The handles mark

@@ -18,7 +18,7 @@ import {
   cardDims,
   FLOOR_CARD_ASPECT,
   WALL_CARD_ASPECT,
-  FLOOR_CARD_HEIGHT_MM,
+  CD_CARD_HEIGHT_MM,
   CROWN_RATIO,
   PROXY_COLORS,
   maxFaceTiltDegrees,
@@ -26,6 +26,32 @@ import {
   TILT_REFERENCE_LEGIBLE_DEG,
 } from "./about-card-geometry";
 import { AboutCardMesh } from "./about-card-mesh";
+
+/**
+ * ⛔ CHUNK: THE LEFT FLOOR CARD (CD) — 14 September 2026, Carl: *"Lets start with
+ * the left floor card first."* One card at a time.
+ *
+ * ⚠⚠ WHAT ACTUALLY CHANGED IS SMALL, AND SAYING SO MATTERS. The bench's opening
+ * height now comes from `CD_CARD_HEIGHT_MM` instead of `FLOOR_CARD_HEIGHT_MM`.
+ * ⛔ THOSE ARE THE SAME 860mm TODAY, so NOTHING MOVES ON SCREEN. What changed is
+ * that the number is ADDRESSABLE AS CD'S and can diverge from CS without touching
+ * this file.
+ *
+ * ⚠ AN EARLIER VERSION OF THIS COMMENT CLAIMED THE BENCH "NOW OPENS ON CD BY NAME
+ * RATHER THAN AN ANONYMOUS DEFAULT." The default it replaced was the floor-pair
+ * constant — not anonymous, and the same value. ⛔ Recorded rather than silently
+ * fixed: a comment describing a change as larger than it is will be inherited as
+ * fact by the next reader, which is this project's most-recorded failure.
+ *
+ * ⚠⚠ CD'S HEIGHT IS A PLACEHOLDER. See `CD_CARD_HEIGHT_MM` — no real millimetre
+ * height is derivable until the card is on its rail, because converting a
+ * projected size needs a depth that is about to change. ⛔ Do not read 860mm as
+ * measured, and do not tune anything against it.
+ *
+ * ⚠ The proxy is read inline as `PROXY_COLORS.CD` at the mesh — it was already
+ * per-card, so no alias is needed. ⛔ One was added here on 14 September and
+ * consumed nothing; deleted rather than left as a second name for one value.
+ */
 
 
 /**
@@ -37,7 +63,7 @@ import { AboutCardMesh } from "./about-card-mesh";
 type View = "face" | "oblique" | "side" | "top";
 
 export default function CardBench() {
-  const [heightMm, setHeightMm] = useState(FLOOR_CARD_HEIGHT_MM);
+  const [heightMm, setHeightMm] = useState(CD_CARD_HEIGHT_MM);
   const [aspect, setAspect] = useState(FLOOR_CARD_ASPECT);
   /**
    * ⚠ THE SLIDER IS A RATIO NOW, NOT MILLIMETRES — Carl, 11 September: the formula

@@ -37,12 +37,18 @@ export default function CardBenchPage() {
   return (
     <div className="min-h-screen bg-neutral-950 text-white p-6">
       <h1 className="text-lg font-semibold mb-1">
-        /about role card — geometry bench
+        CD — left floor card — geometry bench
       </h1>
       <p className="text-sm text-neutral-400 mb-4">
         Chunk 1: rim, bevel, convex face. Diagnostic material only — no glass, no
         neon. Drag the light slider to rake the surface; the crown does not read
         under a head-on beam.
+      </p>
+      <p className="text-sm text-amber-300/80 mb-4">
+        Opens at CD&apos;s height — <strong>860mm is a placeholder, not a
+        measurement.</strong> No real height is derivable until the card is on its
+        rail: converting a projected size needs a depth, and the depth is what
+        changes when it moves. CD and CS are the same value today.
       </p>
       <CardBench />
     </div>
