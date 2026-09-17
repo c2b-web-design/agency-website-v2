@@ -548,9 +548,27 @@ export default function About() {
             guides are visible is a choice of FILE, not a CSS toggle. Three plates
             exist and each carries a different set:
 
-              about-studio-source.jpg       2560x1707   no guides at all
+              about-studio-source.jpg       2560x1707   no guides at all  <- current
               about-studio-wall-guides.jpg  1800x1200   WALL + FLOOR quads
-              about-studio-wall-only.jpg    1800x1200   WALL quads only   <- current
+              about-studio-wall-only.jpg    1800x1200   WALL quads only
+
+            ⛔⛔ THE CLEAN PLATE, 17 September 2026 — Carl: *"The guides for the
+            wall cards have done their job. The wall cards will not be moved.
+            Guides can be removed. Keep the floor axis lines."*
+
+            ⚠⚠ THE WALL GUIDES ARE GONE AND THE FLOOR RAILS STAY, AND THAT IS ONE
+            SWAP RATHER THAN TWO EDITS — because the two live in different places.
+            The wall quads are PAINTED INTO the plate, so serving the clean file
+            removes them; the floor rails are SVG drawn in this component below
+            and are untouched by the swap. ⛔ **Nothing about the rails changed.**
+
+            ⚠ THE WALL QUADS HAVE BEEN CONSUMED, NOT DISCARDED. They were
+            segmented into `GUIDE_CA_QUAD`/`GUIDE_CB_QUAD` and solved into
+            `CA_CARD_ASPECT` 2.327 / `CB_CARD_ASPECT` 2.248 — the corner
+            coordinates now live in `about-card-geometry.ts` and the overlay that
+            proved them is committed at
+            `live-work/wall-corner-check-17-september.png`. **The picture is no
+            longer the record.**
 
             ⛔ ALL THREE ARE 1.500 FRAMING, so the crop is identical whichever is
             served and **no card placement moves.** Verified: 2560/1707 = 1.4997,
@@ -596,13 +614,26 @@ export default function About() {
             `fill` + object-cover therefore resolves to the identical framing and
             the warning above this block is not triggered.
 
-            ⚠ MASTER IS 4.72MB (q95, 4:4:4 — no chroma subsampling, because
-            subsampling smears saturated line art). ⛔ THAT IS THE MASTER, NOT THE
-            DELIVERY: measured, this serves 70KB of WebP at 1440 against the clean
-            plate's 105KB. next/image re-encodes per device, so the guides cost
-            nothing to a visitor. */}
+            ⚠⚠ THE PARAGRAPH ABOVE DESCRIBED A GUIDES PLATE AND NO LONGER APPLIES
+            — corrected in place 17 September 2026 rather than deleted, because a
+            reader reaching a stale claim measures the code by it.
+
+            ⛔ NOW SERVING THE CLEAN SOURCE: `about-studio-source.jpg`, 2560x1707,
+            459KB on disk. ⚠ THAT IS THE MASTER, NOT THE DELIVERY — measured
+            against the running server on 17 September, `next/image` ships:
+
+                640    17.4KB        1920   104.9KB
+                1200   46.9KB        2048   117.4KB
+                                     3840   192.8KB
+
+            ⚠⚠ AND IT DOES **NOT** CAP, WHICH THE WALLS-ONLY PLATE DID. A first
+            draft of this comment claimed a 103.2KB ceiling — true of the 1800px
+            guides plate, where every width above 1800 returned one identical
+            file, and **false here.** ⛔ This source is 2560 wide, so a 4K screen
+            genuinely receives 192.8KB. **Measured, after the wrong figure had
+            already been written down.** */}
         <Image
-          src="/about-studio-wall-only.jpg"
+          src="/about-studio-source.jpg"
           alt=""
           aria-hidden="true"
           fill
@@ -611,11 +642,24 @@ export default function About() {
         />
         <div className="absolute inset-0 bg-neutral-950/25" />
 
-        {/* ⛔ TEMPORARILY NOT RENDERED — 14 September 2026, Carl: *"put the guide
-            lines back on the wall and temporarily remove the text."* ⚠ The wall
-            copy was positioned to sit INSIDE the painted cyan and magenta quads,
-            so with the guides back it would overlap them. **Restore by
-            uncommenting — nothing about the component changed.**
+        {/* ⛔ STILL NOT RENDERED — 14 September 2026, Carl: *"put the guide lines
+            back on the wall and temporarily remove the text."*
+
+            ⚠⚠ ITS ORIGINAL REASON HAS EXPIRED AND THE WITHHOLDING HAS NOT. The
+            copy was withheld because it sat INSIDE the painted quads and would
+            have overlapped them — and **the quads are gone as of 17 September**,
+            so that specific conflict no longer exists. ⛔ It stays commented out
+            because Carl has not asked for it back, not because of the overlap.
+
+            ⚠ AND THERE IS NOW A SECOND, STRONGER REASON TO LEAVE IT. The wall
+            cards are real geometry at solved aspects (CA 2.327, CB 2.248), but
+            `WallCardText` positions its copy against `wall-card-text.tsx`'s own
+            420x260 CSS box — **an aspect of 1.615, which is the very figure the
+            corner solve proved wrong by 42%.** Uncommenting it today would place
+            the copy by a measurement the cards no longer use.
+
+            ⛔ Restoring it is still one uncomment; the component is unchanged.
+            **But the copy's box needs re-deriving from the solved aspects first.**
             <WallCardText /> */}
 
         {/* ⛔⛔ THE BLUE RAIL (PL) ONLY — 14 September 2026, Carl: *"The lines that
