@@ -59,6 +59,25 @@ point."* ⛔ **`roughness 0.18` is where the fader OPENS, not what it aims at.**
 precedent: it opened at a recommended 0.015-0.03 and Carl's eye settled 0.073 — nearly 3x.**
 **The UI must mark these "starting point, not a proposal".**
 
+## ⛔ CARL HAS AN EXTERNAL GLASS TOOL — the iteration route for 2a
+
+**A live `MeshPhysicalMaterial` sandbox built for him in Gemini's chat interface** — roughness,
+transmission, thickness, IOR on sliders, plus tint swatches. **Full detail in the plan.**
+
+⛔ **IT RUNS BOTH WAYS, and that is why it is worth knowing about before 2a is built:** Carl moves
+sliders and pastes a picture, **and takes numbers OUT of the implementation to replicate them
+there.** ⚠⚠ **Today's lighting took four measured-clean-and-rejected iterations, and what located
+the fault was four words — *"its acting like a street light."* A rendered frame beats an adjective.**
+
+⛔⛔ **READ THE CHARACTER, NEVER THE NUMBER.** `lod = log2(samplerSize.x) * roughness`, so frost
+scale depends on the render target's width — **the tool's canvas is not the bench's and neither is
+the room's.** ⚠ **And its scene is a thick torus knot at demo scale against CS's 9.8mm near-flat
+face at millimetres x 750: `thickness 0.35` there is a solid chunk of glass and meaningless here.**
+
+⚠ **IT ALSO EXPLAINS THE THIRD OUTSIDE FIGURE SET** (0.28 / 0.95 / 0.3 / 1.5) — **that was the
+tool's DEFAULT SLIDER POSITION, not a recommendation reasoned for this room. Not a third
+independent opinion.**
+
 ## ⛔ THE THREE-WAY SPLIT — and it is forced, not tidy
 
     2a  bench only          <- APPROVED. This is the next session's work.

@@ -351,6 +351,47 @@ on the existing proxy plane. ⚠ `/proto` is not a production route, so **D-075 
   WARM-UP. That is acceptable on `/proto` — STATED so a stutter on the bench is not read as a
   production regression.**
 
+### ⛔⛔ THE ITERATION ROUTE — Carl's external glass tool, recorded 17 September 2026
+
+**Carl has a live `MeshPhysicalMaterial` sandbox built for him in Gemini's chat interface** —
+roughness, transmission, thickness and IOR on sliders, plus tint swatches, over a torus knot and
+coloured spheres.
+
+⛔⛔ **IT IS A GUIDE, NOT A SOURCE OF VALUES, AND CARL SET IT THAT WAY:** *"i will treat it as a
+guide."*
+
+**It runs BOTH DIRECTIONS, and that is the point:**
+
+| direction | what it does |
+|---|---|
+| **tool → build** | Carl moves sliders and **pastes a visual representation.** ⛔ *"after a first implentation i dont have to rely on just words to iterate."* |
+| **build → tool** | ⛔ **Carl takes the numbers OUT of the implementation, plugs them into Gemini and replicates them there** — *"It works both ways."* A scratchpad sitting on top of the real build |
+
+⚠⚠ **WHY THIS MATTERS MORE THAN IT LOOKS. Today's lighting work took FOUR measured iterations,
+every one clean, every one rejected — and what finally located the fault was four words:
+*"its acting like a street light."*** ⛔ **A rendered frame does that job faster than any
+adjective.** *"More frosted"* is ambiguous; **a screenshot plus *"like this but less"* is not.**
+
+⛔⛔ **THE STANDING CAVEAT — READ THE CHARACTER, NEVER THE NUMBER.** `lod =
+log2(transmissionSamplerSize.x) * applyIorToRoughness(roughness, ior)`, so **frost scale depends on
+the render target's width.** ⚠ **The tool's canvas is not the bench's and neither is the room's.**
+**A value that looks right there will read differently in both.**
+
+⚠ **AND THE SCENES ARE NOT COMPARABLE:** a thick rounded torus knot against coloured spheres on
+black, at demo scale — against a **9.8mm-deep near-flat face over a photographed room at
+millimetres x 750.** ⛔ **`thickness: 0.35` on that knot is a solid chunk of glass; the same
+literal on CS would be meaningless.** **That is the object-space trap the Architect caught (A1),
+arriving from a second direction.**
+
+⚠ **THE TOOL'S DEFAULTS EXPLAIN THE THIRD OUTSIDE FIGURE SET.** Its opening state — **roughness
+0.28, transmission 0.95, thickness 0.35, IOR 1.48** — is within rounding of the third source's
+0.28 / 0.95 / 0.3 / 1.5. ⛔ **So that set was A DEMO'S DEFAULT POSITION, not a recommendation
+reasoned for this room.** **Weigh it accordingly; it is not a third independent opinion.**
+
+⚠ **The tint swatches are noted for later.** CS is colourless by Carl's ruling, but when the
+four-colour question opens, **this is a fast way to see what a tinted glass does to what is behind
+it** before anything is committed.
+
 ⚠⚠ **AND THE BENCH IS MORE FAITHFUL THAN THE ORIGINAL PLAN ASSUMED:** blur and refraction offset
 are both sampled in **screen space** (`:133`, `:147`), so **how far the background sits behind the
 glass changes neither.** A textured plane at any depth shows the real character of the frost.
