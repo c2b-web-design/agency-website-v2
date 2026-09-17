@@ -1,332 +1,202 @@
-# Session Handoff — 14 September 2026. THE CARDS ARE IN THE ROOM, ON THEIR RAILS
+# Session Handoff — 17 September 2026. CHUNK 2a IS APPROVED. BUILD IT.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
 
 ---
 
-## ⛔ WHERE TO START
+## ⛔⛔ WHERE TO START
 
 | # | go to | why |
 |---|---|---|
-| **1** | ⛔ **"WHAT IS IN FRONT OF YOU"** | Two face treatments are live, one per card, awaiting Carl's eye ON THE BENCH |
-| **2** | ⛔ **"SIX FACE FORMULATIONS"** | ⚠ **Do not propose a seventh without reading why five died** |
-| **3** | ⛔ **"THE STAGE/PLATE TRAP"** | ⚠ It silently corrupted every card placement for hours |
-| **4** | ⚠ **"WHAT I GOT WRONG"** | The pattern matters more than any single error |
+| **1** | ⛔⛔ **`live-work/chunk2-plan-amended-17-september.md`** | **APPROVED. It is the next session's work.** 457 lines, Architect-reviewed twice |
+| **2** | ⛔ **"THE THREE RULINGS"** below | Thickness, Option A, and what the figures actually are |
+| **3** | ⚠ **"WHAT I GOT WRONG"** | Four errors, two caught by the Architect. The pattern matters more than any one |
+| **4** | ⚠ **`live-work/structural-note-backplate-17-september.md`** | Option A is now confirmed; F7 must be added to its §5b table |
 
 ---
 
 ## ⛔⛔ WHAT HAPPENED, IN ONE LINE
 
-**Both floor cards now stand on their rails in the room at the solved camera, yawed to their desks,
-corners exact on their handles — and the face profile went through SIX formulations, five rejected
-on sight, ending with two different approaches running side by side for comparison.**
+**The wall cards got geometry (and a 42%-wrong aspect was found and corrected), the lighting
+became two directional lights after a day of rejected alternatives, the backplate superseded the
+sampled proxy, and chunk 2a — CS's frosted glass on the bench — was planned, reviewed twice by the
+Architect, corrected, and APPROVED.**
 
----
+# ⛔ COMMITTED AND PUSHED. HEAD IS `30442e2` (+ this handoff and the plan)
 
-# ⛔ COMMITTED AND PUSHED. HEAD IS `065e9e9`
-
-**Six commits on `main`, all pushed:**
-
-    c1d87df  (the 11 September starting point)
-    f950206  the floor cards stand on their rails in the room
-    84023d6  both face treatments on /proto/card, under the light sweep
-    467b241  the crown is Carl's, set by eye on the bench
-    90cd291  both floor cards on one blueprint; the normal-map route is closed
-    065e9e9  delete the normal-map machinery, one blueprint for all cards
-
-**Uncommitted at the time of writing** — the walls-only plate work:
-
-    M  app/about/page.tsx                 walls-only plate; WallCardText withheld
-    ?? public/about-studio-wall-only.jpg  NEW — copied from brand-assets
+    83a6e46  the backplate supersedes the proxy; the lighting system, designed and unbuilt
+    c0c9913  ignore three undecided brand-asset candidates by exact path
+    ac4a4c8  the wall pair has geometry; two directional lights, all four readable
+    30442e2  the clean plate — wall guides retired, floor rails kept
 
 ⚠ **`npx tsc --noEmit` CLEAN. `npm run lint` = `1 problem (1 error, 0 warnings)`** — the documented
 `enquiry-opening.tsx` baseline. ⛔ **Zero warnings held all session.**
-⚠ **The dev server is RUNNING on :3000.**
-
-## ⚠ THREE PLATES, AND WHICH GUIDES SHOW IS A CHOICE OF **FILE**
-
-⛔ **The quads are PAINTED INTO the images, not drawn in code**, so showing or hiding them is an
-`src` swap — there is no CSS toggle.
-
-    about-studio-source.jpg       2560x1707   no guides at all
-    about-studio-wall-guides.jpg  1800x1200   WALL + FLOOR quads
-    about-studio-wall-only.jpg    1800x1200   WALL quads only      <- current
-
-⛔ **ALL THREE ARE 1.500 FRAMING** (2560/1707 = 1.4997, 1800/1200 = 1.5000), so the crop is
-identical whichever is served and **no card placement moves.**
-
-⚠ **The walls-only file was not authored today** — it is
-`brand-assets/about-studio-wall-cards-1800.jpg`, the plate CA/CB were transferred FROM, copied into
-`public/`. ⛔ **Confirmed by COLOUR SEGMENTATION, not by its filename:** cyan 5155 / magenta 4778
-above the midline, green 1 / purple 0 below. **A filename is not evidence.**
-
-⚠ **`about-studio-wall-guides.jpg` STAYS** — it is the only record of the measured FLOOR quads, and
-`GUIDE_CD`/`GUIDE_CS` were segmented from it.
-
-⚠ **`WallCardText` is COMMENTED OUT** with its import retained behind a suppression — Carl:
-*"temporarily remove the text."* Restoring it is one uncomment.
+⚠ **A dev server was running on :3000 (PID 3036). Kill it before any checkpoint or `verify/` run.**
 
 ---
 
-# ⛔⛔ WHAT IS IN FRONT OF YOU
+# ⛔⛔ THE NEXT SESSION'S WORK — CHUNK 2a, APPROVED
 
-## ⛔⛔ CARL'S ORDER FOR THE NEXT SESSION, STATED 14 SEPTEMBER
+⛔ **THE PLAN IS THE SPEC. `live-work/chunk2-plan-amended-17-september.md`. Do not re-derive it.**
 
-> *"The wall cards are relatively easy, also with the text. After that — the frosted glass material
-> and the background for it."*
+**2a is BENCH ONLY.** CS's face gets `meshPhysicalMaterial` with transmission; the bench gets
+roughness and thickness faders and a photographic proxy. ⛔ **`/about` IS NOT TOUCHED.**
 
-| # | subject | note |
-|---|---|---|
-| **1** | **CA and CB — the wall pair, WITH their text** | Carl: *"relatively easy."* The cyan and magenta quads are on the plate as the reference, and the floor guides are gone so nothing competes |
-| **2** | **The frosted glass material** | ⛔ **CHUNK 2.** Still unauthorised at the time of writing — and the frosted-vs-satin question below is OPEN and Carl's |
-| **3** | **The background for the glass** | ⚠ This is the **transmission proxy**, and Carl already ruled on its shape — see §"WHAT THE GLASS SEES" below |
+## ⛔⛔ THE THREE RULINGS — Carl's, 17 September
 
-⚠⚠ **THE FLOOR PAIR'S COPY IS NOT IN THAT LIST, AND THAT IS A CHANGE OF ORDER.** Earlier on
-14 September the stated sequence was *"insert the text. If it doesnt fit we will raise the height of
-the cards"* against four tests — copy fits · proportionate to the desks · proportionate to the wall
-cards · scene balanced. ⛔ **The wall pair now comes first.** The floor copy and the height question
-are still live, just later. **Do not read the four tests as dropped.**
+**1. THICKNESS = 9.80mm, AS A TYPED CONSTANT.** ⚠⚠ **NOT `heightMm * TENT_POLE_RATIO` — that
+expression gives 28.6mm and is NOT what he approved.** ⛔ **The coupling to the crown is DECLINED**,
+so the crown can be re-tuned without dragging the glass with it. ⚠ **Whether the other three cards
+share 9.80mm or scale to their heights is OPEN — a rollout question. Do not assume.**
 
-## ⛔ THE FACE IS SETTLED. THE TEXT IS NEXT.
+**2. BACKPLATE = OPTION A (REPLACE), CONFIRMED BY NAME.** ⛔ The backplate replaces the
+`next/image` element. **The room stops surviving JS failure, stops surviving WebGL context loss,
+and no longer paints before JS runs. Given up deliberately.**
 
-**The face question closed on 14 September after SIX formulations.** Both floor cards now run one
-blueprint: real curved geometry, `(1-x²)(1-y²)`, at **Carl's crown of 0.073** — set by his eye on
-the bench under a swept light, in side and top elevation.
+**3. THE FIGURES ARE A STARTING POINT, NOT CARL'S.** *"The figures were presented as a starting
+point."* ⛔ **`roughness 0.18` is where the fader OPENS, not what it aims at.** ⚠ **The crown is the
+precedent: it opened at a recommended 0.015-0.03 and Carl's eye settled 0.073 — nearly 3x.**
+**The UI must mark these "starting point, not a proposal".**
 
-⛔ **CARL'S STATED ORDER, AND STEP ONE IS DONE:** *"insert the text. If it doesnt fit we will raise
-the height of the cards"* — against four tests: **copy fits · proportionate to the desks ·
-proportionate to the wall cards · scene balanced.** ⚠ *"One step at a time. Angles first."*
-**Angles are finished. The copy has not been inserted.**
+## ⛔ THE THREE-WAY SPLIT — and it is forced, not tidy
 
-## ⚠⚠ THE CROWN IS 0.073 AND THAT FIGURE CARRIES A LESSON
+    2a  bench only          <- APPROVED. This is the next session's work.
+    backplate chunk         <- separate. Option A. Returns through the gate.
+    2b  the room            <- separate. Warm-up, target measurement, FINAL roughness.
 
-    0.015     6.09mm    max tilt 4.03°
-    0.025    10.15mm    max tilt 6.69°    the outside recommendation's start
-    0.073    30.00mm                      <- CARL'S, by eye
+⛔⛔ **WHY CS's GLASS MUST NOT GO IN THE ROOM YET.** `three.module.js:18019`:
+`if (_currentClearAlpha < 1) _this.setClearColor(0xffffff, 0.5)`. **The `/about` canvas is
+`alpha: true`**, so the transmission target clears to **50% WHITE** and CS would render a **milky
+slab**. ⚠⚠ **It would look exactly like "the frost is too heavy" when it is a PIPELINE ARTEFACT —
+worse than an empty result, because it is a confident wrong answer.**
 
-⛔ **NEARLY THREE TIMES THE RECOMMENDED STARTING POINT.** The outside advice said 0.015–0.03
-*"rather than making it obviously curved"*, and the Builder opened there. **Judged properly — swept
-light, profile views — it wanted far more.** The conservative figure was too timid for a card this
-size in a dark room.
+## ⛔ THE GATE — A2, and it is the one that bites
 
-⚠ **A value that deep is only affordable because of the quartic.** Each factor vanishes on its own
-axis, so the edges are zero **however high the centre goes** — the seam cannot reopen at any
-curvature. Every earlier formulation bought its seam with face area and could not have taken this.
+**`about-card-mesh.tsx` is shared by ALL FOUR room cards.** ⛔ **The glass MUST be behind a prop
+that is OFF by default**, or every card turns into that milky slab on the next build.
+⚠ **2a's verification includes: load `/about`, confirm all four cards are STILL GREY.**
 
-## ⛔ THE NORMAL-MAP ROUTE WAS TESTED AND CLOSED
+## ⚠ Two corrections owed at execution
 
-**CS briefly carried a flat mesh with a convex normal map** — the alternative an outside
-recommendation proposed. Carl tested it on the bench under the sweep: ***"NO change. CD is the way
-to go."***
-
-⚠⚠ **IT WAS BUILT CORRECTLY AND STILL DID NOTHING.** The texels genuinely encoded a dome (R channel
-66..189 against 128 for flat), the material binding was right, and **missing UVs were found and
-added** — the face geometry had never had a `uv` attribute at all, so every fragment sampled texel
-(0,0). It stayed inert after all three were fixed.
-⛔ **LIKELY CAUSE, UNPROVEN:** `meshStandardMaterial` wants a `tangent` attribute for a
-tangent-space normal map and this geometry has none. **Not chased — CD had already won.**
-
-⛔ **THE MACHINERY IS DELETED** (`065e9e9`, 158 lines). The failure is recorded at the bench's
-`Treatment` type. ⚠ **THE UVs ARE KEPT AND ARE NOW LOAD-BEARING** — chunk 2's baked copy needs
-exactly that rectangular mapping.
-
-⚠⚠ **AND A BUILDER ERROR WORTH INHERITING: the profile test was never meaningful for a flat mesh.**
-A plane is a straight line in top and side elevation at ANY crown value. That is construction, not a
-finding — and it was proposed as the discriminator between the two treatments.
+- ⛔ **`card-bench.tsx:109` says `TENT_POLE_RATIO = 0.025`. The code says 0.073.** **This stale
+  comment produced a wrong figure in a plan put to Carl. Correct it in place.**
+- ⛔ **The face must be WHITE, not `DIAG_FACE_COLOR` `#c8c8c8`** — transmission is multiplied by
+  `color`, so the grey would tint the "colourless" glass to **78%**.
 
 ---
 
-# ⛔⛔ SIX FACE FORMULATIONS. FIVE REJECTED ON SIGHT.
+# ⛔ WHAT WAS BUILT TODAY
 
-**⚠ Read this before proposing a seventh. Every one of these verified clean and was still wrong.**
+## The wall pair has geometry — and a 42% error was found
 
-| # | model | why it failed |
-|---|---|---|
-| 1 | superellipse norm + `OVAL_EXPAND` | met the bevel **only at the 4 corners**, hung 16.05mm elsewhere |
-| 2 | per-direction re-normalisation | closed the seam, **rewrote both whole faces**, diagonal creases |
-| 3 | 15% seam band | closed the seam, **ate ~28% of the text area** at 52° slope |
-| 4 | tent-pole membrane (max-norm) | **rectangular contours ⇒ diagonal ridge**, visible creases |
-| 5 | Q+A separable form + plateau | *"theres a lump in the middle and flat bits"* — the plateau WAS the lump |
-| 6 | **quartic `(1-x²)(1-y²)`** | ⛔ **WON.** No seam, no crease, no flat region, 100% text area. **Both cards run it at Carl's crown of 0.073.** |
+**CA and CB hang at the solved camera on the same blueprint as the floor pair.** Carl: *"The cards
+can be seen as one 'family'. They all share similar chracteristics, only the dimensions change."*
 
-⛔ **THE TRAP ALL FIVE FELL INTO: they traded the SEAM against the TEXT AREA.** Close the gap by
-bending the surface down to the bevel and you spend face area doing it. **The quartic makes no
-trade — each factor vanishes on its own axis, so edges are zero at ANY curvature.**
+⛔ **`WALL_CARD_ASPECT = 1.615` WAS WRONG BY 42%.** It came from `wall-card-text.tsx`'s 420x260 CSS
+box and had **never been measured against the plate.** Solved: **CA 2.327, CB 2.248.**
 
-⚠⚠ **THE PLATEAU IS A STRIP FEATURE AND DOES NOT TRANSFER.** On the Q+A card (3.89:1) it reads as a
-cylindrical roll. On a 2.19:1 face the flat region is wide in BOTH directions and reads as a panel
-with a bulge. **Re-deriving 0.72 → 0.502 only tuned how wide the lump was.**
+⚠ **Carl chose the slower route** — *"getting it right is more important than how fast"* — **and it
+is what found the fault.** The quads are PROJECTED trapezoids; a bounding box returned CA and CB
+**overlapping**, which is impossible for two cards.
 
-⛔ **ALL SIX SURVIVE IN `about-card-mesh.tsx`** with each failure recorded at the line where it
-lived. `CORNER_NORM`, `ABOUT_PLATEAU_U` and `profile` are retained, suppressed and documented —
-**they are the record of what does not work.**
+**Five independent checks:** three focal lengths agree within 6.4% · the aspect is stable across
+that range · orthogonality within 0.012 · the overlay lands on the painted quads
+(`live-work/wall-corner-check-17-september.png`) · **and Carl's own test** — the desks relate to
+the walls, so two flat cards should be ~89.4° apart; **measured 96.10°.** ⚠ **The 6.7° residual is
+stated, not dressed up; the record already lists the right desk's direction under "What is NOT
+established".**
 
----
+## Lighting — two directional lights, after a day of rejects
 
-# ⛔⛔ THE STAGE/PLATE TRAP — IT CORRUPTED EVERYTHING FOR HOURS
+⛔⛔ **FOUR SPOTLIGHT RIGS WERE BUILT AND REJECTED ON SIGHT.** Carl: *"its acting like a street
+light."* ⚠⚠ **THE FAULT WAS THE LIGHT TYPE, NOT ITS PLACEMENT.** A `spotLight` has a position, so
+it pools and falls off; a `directionalLight` has neither, so **the only thing varying across a face
+is the face.**
 
-**`/proto/wall` renders the plate `object-cover` in a stage of aspect 1906/905 = 2.1061. The plate
-is 3:2 = 1.5000.** Cover on a wider box matches the WIDTHS and crops top and bottom, so **the tool
-shows only the middle 71.222% of the plate's height.**
+⚠ **Four measured iterations — raking spots, cones, rim axis, a 25° swing — EVERY ONE MEASURED
+CLEAN AND LOOKED WORSE.** ⛔ **Rule 9. The screen is the truth and Carl's eye is the instrument.**
 
-⛔ **EVERY NUMBER IN `INITIAL_RAIL` IS A FRACTION OF THAT WINDOW, NOT OF THE IMAGE.**
+**The second light:** ⚠ the obvious mirror `[-1,2,2]` is WRONG — it lights the RIGHT pair more
+(0.632) than the left (0.380), because the cards are yawed to their desks, not mirrored about the
+room. **`[5,2,-2]` grazes CD/CA at 0.179/0.104 and gives exactly 0.000 to CS/CB.**
 
-    y_plate = 0.14389 + y_stage * 0.71222        x is unchanged
+⚠ **And the key had to come down, which was not part of the request:** at key 1.2 it still supplied
+**88% of CD's light AT NEAR HEAD-ON**, so 88% of what the left pair received carried no gradient.
+**Key 0.5 / fill 2.6 inverts that to 56% fill at a grazing angle.**
 
-⚠⚠ **Feeding stage fractions to a plate-space function put the rails across the room and every card
-metres out of place — while the arithmetic reported "EXACT, 0.00000px".** The check and the bug
-shared the same wrong input space, so it could never fail.
+⛔ **CARL ACCEPTS THE TRADE:** the right pair drops ~0.03 from the values he approved. *"It is a
+trade off, but all 4 are now visible. Its something to work with."*
 
-⛔ **THE GUIDE RECTANGLES ARE NOT AFFECTED** — `GUIDE_CD`/`GUIDE_CS` were segmented directly from
-the plate image and are already in plate space.
+## The clean plate
 
-⚠ **UNASSERTED:** nothing checks the tool's stage aspect is still 1906/905. **It is a settable
-input. Change it and the conversion silently becomes wrong.**
-
----
-
-# ⛔ WHAT IS BUILT AND VERIFIED
-
-## Placement — both cards, exact
-
-| | CD | CS |
-|---|---|---|
-| anchor | bottom-**RIGHT** corner on PL's **B** handle | bottom-**LEFT** corner on PR's **A** handle |
-| reprojection error | **1.11e-16** (0.0000 px) | **1.11e-16** |
-| yaw | 122.80° rail → **32.80°** face | 31.47° rail → **301.47°** face |
-| size | 817 × 406 mm | 789 × 392 mm |
-
-⚠⚠ **THE MIRROR IS LOAD-BEARING.** CD anchors right, CS anchors left, so **both grow AWAY from the
-room's centre.** Centring both on their midpoints overlapped them by 16% of the plate.
-
-⛔ **THE HEIGHTS ARE SOLVED, NOT CHOSEN:** 406mm and 392mm are the heights at which each card,
-standing on its rail, subtends exactly its guide rectangle's on-screen size. ⚠ **An earlier 860mm
-came from a FACE-ON fit at the front of the frame and made the cards 1730mm wide — wider than the
-desks.** Size and position were taken from unrelated sources.
-
-## The yaws corroborate Carl's account of the rails
-
-    RL (green, left desk)   123.88°
-    PL (blue,  left card)   122.80°    <- 1.08° from RL. The extrapolation holds.
-    RR (amber, right desk)   26.16°
-    PR (pink,  right card)   31.47°    <- 5.32°, matching the right desk's recorded 5.4° turn
-
-⚠⚠ **A SIGN ERROR IN THE PITCH ROTATION FIRST PRODUCED 146.26° FOR THE SAME PAIR.** Caught ONLY by
-testing both conventions against Carl's recorded 84.3°. **Verify a derived angle against a known
-one before using it.**
-
-## Also done
-
-- ⛔ **The four card quads DELETED from `/proto/wall`**, rails kept — Carl's instruction.
-- ⛔ **The guides plate swapped for the clean one.** `about-studio-wall-guides.jpg` is **KEPT in
-  `public/`** — it is the only record of the measured quads and `GUIDE_CD`/`GUIDE_CS` came from it.
-- ⚠ **`WallCardText` now floats on a bare wall** — its copy was positioned inside the painted quads.
-  **Not a fault to fix; the wall pair is a later chunk.**
-- ⛔ **The §5a note exists**: `live-work/structural-decision-note-about-canvas.md`. ⚠⚠ **IT WAS
-  NEVER ROUTED TO THE ARCHITECT.** The canvas was built on Carl's direct instruction; the skip is
-  recorded in the canvas file and the page import.
+⛔ **Wall guides gone, floor rails kept.** One `src` swap — the wall quads are PAINTED INTO the
+plate; the floor rails are SVG in the component. ⚠ **Both plates are 1.500 framing, so no card
+moved.** **The guides were CONSUMED, not discarded** — they are now the solved aspects.
 
 ---
 
 # ⚠⚠ WHAT I GOT WRONG — the pattern, not the list
 
-⛔ **THREE TIMES MY OWN CHECKER MANUFACTURED A RED**, and once it manufactured a green:
+⛔ **FOUR ERRORS. THE ARCHITECT CAUGHT TWO THAT WOULD HAVE REACHED THE BUILD.**
 
 | | |
 |---|---|
-| **false green** | "EXACT, 0.00000px" while cards sat metres wrong — **the check shared the stage/plate bug with the code** |
-| **false red** | a "19px / 36px round-trip error" — compared a **3D midpoint** against a **2D midpoint**, genuinely different points under perspective |
-| **false red** | "FLAT REGION PRESENT" — the scan included the **boundary row**, which is correctly flat |
-| **false red** | "GAP" on the quartic — the probe included an **interior point** in a list of perimeter points |
+| **A1 — thickness 2.92x out** | Every figure computed at **0.025** when `TENT_POLE_RATIO` is **0.073**. ⚠ **Cause: a STALE COMMENT at `card-bench.tsx:109`.** It produced a wrong number in a plan put to Carl |
+| **A2 — the missing gate** | The first plan said "optional prop"; the amended plan **dropped the words**. Without them, 2a turns all four room cards milky |
+| **C1 — a FALSE argument** | I wrote that Option B would draw the DOM image "ACES-shifted". ⛔ **It would not — `next/image` is a DOM node; three never renders it.** I invented a mechanism to support a conclusion that was right for other reasons |
+| **A3 — over-claimed authority** | I recorded Option A as Carl's decision under *"take the best course of action."* ⛔ **`CLAUDE.md`: an override authorises the NAMED change only** |
 
-⚠⚠ **WHEN MY ARITHMETIC AND CARL'S SCREEN DISAGREED, THE SCREEN WON EVERY TIME.**
+⚠⚠ **AND THREE OF MY OWN CHECKS PRODUCED FALSE RESULTS TODAY** — a 33/57px "error" comparing a 3D
+centroid against a 2D corner average; a "0.00 contribution" from a double-negated light vector; a
+delivery figure that claimed a cap the 2560px plate does not have. ⛔ **Each was caught by the
+result being incoherent, not by the check failing.**
 
-⛔ **AND TWICE I EXCEEDED A NARROW INSTRUCTION.** *"Just fill in the gap"* became a rewrite of both
-faces; *"just where it meets the bevel"* became a band eating 28% of the text area. **Carl:
-*"i did not say change the left card. i did not say change the whole geometry of the face."***
-
-⚠ **THREE COMMENTS WERE WRITTEN AHEAD OF THE WORK** and corrected in place — including one claiming
-geometry had replaced the deleted quads when nothing had.
+> ⛔ **THE LESSON: I VERIFIED THE ARCHITECT'S FINDINGS IN `node_modules` RATHER THAN INHERITING
+> THEM — all six were verbatim. Do the same with anything in this handoff.** `context-rules.md`: a
+> claim in a governance file *"will be read as verified because it is written down."*
 
 ---
 
 # ⛔ WHAT THE NEXT SESSION SHOULD NOT DO
 
-- ⛔⛔ **Do not reopen the face.** It is SETTLED — the quartic at 0.073, both cards, judged by Carl
-  on the bench. ⚠ Six formulations were tried and the table above records why five died. **A
-  seventh needs Carl's word, not a better idea.**
-- ⛔ **Do not judge a face profile on `/about`.** One fixed light, one fixed camera. **Use the
-  bench** — that is where the crown was finally settled and it is the lesson of the whole day.
-- ⛔ **Do not re-test the normal map.** Built correctly, bound correctly, UVs added, still inert.
-  **Closed on Carl's word.**
-- ⛔ **Do not read `INITIAL_RAIL` numbers as plate fractions.** Convert them.
-- ⛔ **Do not re-derive the camera.** Solved, falsified at 0.6°.
-- ⛔ **Do not delete `about-studio-wall-guides.jpg`** — it is the provenance of `GUIDE_CD`/`GUIDE_CS`.
-- ⛔ **Do not add `clearcoat` or change roughness.** Chunk 2 is unauthorised; the material is the
-  grey diagnostic by instruction.
-- ⚠ **Do not "fix" `WallCardText` floating.** Known, and the wall pair is a later chunk.
-
----
-
-# ⛔⛔ WHAT THE GLASS SEES — Carl's ruling, and item 3 lands on it
-
-⚠⚠ **THE ROOM IS A PHOTOGRAPH OUTSIDE THE CANVAS.** A WebGL card can only refract objects in its
-OWN scene. `answer-card-geometry.ts` records the lesson: ***"The frost was never the problem; the
-absence of anything worth seeing through was."***
-
-⛔ **CARL'S ANSWER: A PROXY BEHIND EACH CARD, NOT THE PLATE IN THE SCENE.** Putting the 459KB image
-in as a texture would bypass `next/image` and reinstate the exact regression D-075 removed.
-
-**The walls are simple** — a flat sampled rectangle. CA `#182733`, CB `#192a35`.
-
-⛔⛔ **THE FLOOR PAIR IS NOT, AND A FLAT RECTANGLE IS WRONG THERE.** Carl: *"the floor cards are a
-little more difficult. Whatever is seen through the cards when put in position will have several
-colours. For example, the left card. There will be floor, black and silver of the chair, white
-skirting and wall."*
-
-⚠ Those stack as roughly **horizontal bands**, and frosted glass preserves exactly that scale of
-structure while destroying everything finer. ⛔ **So each floor card gets a small vertical gradient
-— a few colour stops at measured heights — not one hex.**
-
-⛔ **THE METHOD IS CARL'S AND IT IS SEQUENCED:** *"a way to do it when they are moved is to note
-their position and the pixels they are covering will act as a guide. We will see how it looks when
-first built and positioned and tweaked if neccersary."*
-⚠⚠ **NOTHING IS SAMPLED UNTIL THE CARDS ARE ON THEIR RAILS — AND THEY NOW ARE.** That precondition
-is met, so the sampling can proceed.
-
-⚠ **CD AND CS GET INDIVIDUAL BACKGROUNDS.** Not just different means — different CONTENT. CD has a
-chrome chair base and lit floor; CS has the dark desk column and the plant. ⛔ Reusing one gradient
-reproduces the pale-slab fault one level up. **CS is roughly twice CD's luminance.**
-
-⚠⚠ **THE STANDARD IS "SELL THE ILLUSION", NOT REPRODUCE THE ROOM.** Carl: *"the user will see whats
-outside, the floors, left side of skirting etc, the human brain has an amazing way of filling in the
-blanks when there is some context."* ⛔ The proxy only has to be plausible where it is occluded.
-
-⚠ **`PROXY_CONTRAST` is the dial**, 0 = the sampled truth. ⛔ Judged by eye — *"We will play it by
-ear, or in this case — by eye."*
-
-⚠ **MEASURED AND UNRESOLVED:** after a heavy blur both floor regions go essentially FLAT. The bands
-are the answer to that, but whether they read as depth or as wallpaper is unproven — a gradient has
-no parallax. **If it reads flat, the next step is a few planes at different depths.**
+- ⛔⛔ **Do not put glass in the room.** 2a is bench only. The milky-slab artefact is waiting.
+- ⛔⛔ **Do not write thickness as `heightMm * TENT_POLE_RATIO`.** It gives 28.6mm. Carl approved
+  **9.80mm** as a constant.
+- ⛔ **Do not treat `roughness 0.18` as a target.** It is where the fader opens.
+- ⛔ **Do not swap the face material without the off-by-default prop.**
+- ⛔ **Do not reopen D-051.** Satin stays on `/start` — the orthographic camera and dead backdrop
+  still hold there. **Two cards, two materials, one consistent reason.**
+- ⛔ **Do not copy `/start`'s baked-albedo text route.** Correct for satin, **wrong for frost** —
+  the frost would soften its own copy.
+- ⛔ **Do not add `anisotropy`.** It needs a `tangent` attribute; **this geometry has none**, which
+  is what made the normal-map route inert on 14 September.
+- ⛔ **Do not add `clearcoat`.** Forbidden by name, and `answer-card-mesh.tsx:226`: *"SWEEP IT WITH
+  `roughness`, NEVER ALONE."*
+- ⛔ **Do not reopen the crown (0.073) or the solved aspects.**
+- ⚠ **Do not "fix" the left/right lighting imbalance.** Carl accepted it after four rejected rigs.
+- ⚠ **Do not uncomment `WallCardText`.** Its 420x260 box is the 1.615 aspect the solve disproved.
 
 ---
 
 # ⚠ STILL OPEN AND CARL'S
 
-1. **Which face treatment** — real geometry or normal map. **To be judged on the bench.**
-2. **Frosted or satin.** D-051 is satin; the file named *glass* holds satin.
-3. **§2's final aspect and fit mode.** `object-cover` would clip CB and shift every card.
-4. **Equal trim in the room, or equal trim on screen?**
-5. **Duty cycle before periods** for the neon timing.
-6. **`prefers-reduced-motion`** — unhandled, belongs with the timing mechanism.
-
-⚠ **AND THE TEXT HAS NOT BEEN INSERTED.** Carl's order: *"insert the text. If it doesnt fit we will
-raise the height of the cards"* against four tests — copy fits, proportionate to the desks,
-proportionate to the wall cards, scene balanced. **Angles first was step one and it is done.**
+1. **Four neon colours** — ⛔ **ruled that there will be four, all different. NONE chosen. Red was
+   an example, not a decision.**
+2. **Option C** — if he wants the failure-mode cover back, its fetch behaviour must be **MEASURED**.
+3. **`transmissionResolutionScale`** — after 2b measures the target's real memory. ⚠ The Architect's
+   arithmetic (not measured) puts it at **~300MB at dpr 2**, against 8MB for the backplate texture.
+4. **Final roughness** — set in the room, in 2b. **The bench cannot settle it** (F3: frost scale
+   depends on render-target width).
+5. **Thickness for CD, CA, CB** at rollout.
+6. **§2's copy is PROVISIONAL** — CA 64 / CB 84 / CD 49 / CS 55 words, four lines uncuttable.
+7. **Accessibility** — Carl ruled it gets done. A visually-hidden DOM layer. ⚠ **Needs final copy
+   or it is written twice.** It would also close **D-051-A11Y** on `/start`, which is his call.
+8. **The record is behind the code.** ⛔ **Today's work is in NO `decisions.md` entry and NOT in
+   `current-sprint.md`.** ⚠⚠ **D-051's own lesson: the material changed on 9 August and the record
+   did not for TEN DAYS, and the stale line was about to be built into a protected-file list.**
 
 ---
 
-*Written 14 September 2026. **Both cards stand on their rails at the solved camera, corners exact to
-1.11e-16.** ⚠⚠ The face profile is the one thing six attempts could not settle, and the next step is
-Carl's eye on the bench — where the light sweeps.*
+*Written 17 September 2026. ⛔ **Chunk 2a is approved and is the next session's work.** ⚠ The plan
+is the spec — 457 lines, reviewed twice, corrected four times. Read it before touching anything.*
