@@ -68,6 +68,13 @@ import {
   CS_CARD_HEIGHT_MM,
   GUIDE_CD,
   GUIDE_CS,
+  /* ⛔ The wall pair — solved from the plate 17 September 2026. */
+  GUIDE_CA_QUAD,
+  GUIDE_CB_QUAD,
+  CA_CARD_ASPECT,
+  CB_CARD_ASPECT,
+  CA_CARD_HEIGHT_MM,
+  CB_CARD_HEIGHT_MM,
   CD_FACE_YAW_DEG,
   CS_FACE_YAW_DEG,
   TENT_POLE_RATIO,
@@ -254,6 +261,173 @@ function placeCard(
   };
 }
 
+/**
+ * ⛔⛔ ONE WALL CARD, HUNG ON ITS WALL — added 17 September 2026.
+ *
+ * ⚠⚠ THIS IS NOT `placeCard` WITH A DIFFERENT NUMBER, AND THE DIFFERENCE IS
+ * STRUCTURAL. A floor card STANDS: its bottom edge meets the floor plane, so
+ * `floorPoint` back-projects one anchor and the card rises from it. A wall card
+ * HANGS: nothing touches the floor, and its plane is VERTICAL. There is no floor
+ * intersection to solve, so the position comes from the quad itself.
+ *
+ * ⛔ THE METHOD — back-project all four measured corners onto the card's own
+ * plane, then read the centre, the size and the yaw off the recovered rectangle.
+ * **The same solve that produced the aspect produces the placement**, so the card
+ * cannot disagree with the guide it was measured from.
+ *
+ * ⚠ CARL'S FAMILY RULE HOLDS UNCHANGED: *"A shape that has a rim, bevel and
+ * curved face. The corners can be the same. A corner is a corner no matter what
+ * the dimensions."* ⛔ `cardDims` is still the single blueprint — only height and
+ * aspect differ. **Nothing about the card's character is re-specified here.**
+ */
+function placeWallCard(
+  quad: readonly { x: number; y: number }[],
+  heightMm: number,
+  aspect: number,
+) {
+  /**
+   * Back-project a plate fraction to a unit ray in world space, undoing the
+   * camera pitch exactly as `floorPoint` does — but WITHOUT intersecting the
+   * floor, because a wall card never meets it.
+   */
+  const ray = (fx: number, fy: number) => {
+    const px = (fx - 0.5) * PLATE_W;
+    const py = (0.5 - fy) * PLATE_H;
+    const pz = -FOCAL_PX;
+    const wy = py * COS_P - pz * SIN_P;
+    const wz = py * SIN_P + pz * COS_P;
+    const len = Math.hypot(px, wy, wz) || 1;
+    return { x: px / len, y: wy / len, z: wz / len };
+  };
+
+  const R = quad.map((p) => ray(p.x, p.y));
+
+  /**
+   * ⛔ THE PLANE'S NORMAL, from the two edge directions' vanishing points.
+   * ⚠ Cross products of image lines, lifted through the camera — the same
+   * construction the aspect solve used, so the two cannot drift apart.
+   */
+  const cross = (
+    a: { x: number; y: number; z: number },
+    b: { x: number; y: number; z: number },
+  ) => ({
+    x: a.y * b.z - a.z * b.y,
+    y: a.z * b.x - a.x * b.z,
+    z: a.x * b.y - a.y * b.x,
+  });
+  const norm = (v: { x: number; y: number; z: number }) => {
+    const L = Math.hypot(v.x, v.y, v.z) || 1;
+    return { x: v.x / L, y: v.y / L, z: v.z / L };
+  };
+
+  /* Horizontal edge direction: where the top and bottom edges meet at infinity. */
+  const dH = norm(cross(cross(R[0], R[1]), cross(R[3], R[2])));
+  const n = norm(cross(dH, norm(cross(cross(R[0], R[3]), cross(R[1], R[2])))));
+
+  /**
+   * ⛔ INTERSECT EACH CORNER RAY WITH THE CARD'S PLANE. The plane is pinned by
+   * putting the first corner at unit depth; every other corner follows, and the
+   * rectangle's own proportions come out of the arithmetic rather than being
+   * imposed on it.
+   */
+  const dot = (
+    a: { x: number; y: number; z: number },
+    b: { x: number; y: number; z: number },
+  ) => a.x * b.x + a.y * b.y + a.z * b.z;
+  const d0 = dot(n, R[0]);
+  const P = R.map((r) => {
+    const t = d0 / dot(n, r);
+    return { x: r.x * t, y: r.y * t, z: r.z * t };
+  });
+
+  /* Centre of the recovered rectangle. */
+  const c = {
+    x: (P[0].x + P[1].x + P[2].x + P[3].x) / 4,
+    y: (P[0].y + P[1].y + P[2].y + P[3].y) / 4,
+    z: (P[0].z + P[1].z + P[2].z + P[3].z) / 4,
+  };
+
+  /**
+   * ⛔⛔ THE SCALE IS SET BY THE CARD'S HEIGHT, NOT BY THE PLANE'S ARBITRARY DEPTH.
+   * The intersection above fixed corner 0 at unit depth, which is a free choice —
+   * so the recovered rectangle is the right SHAPE at the wrong SIZE. Rescaling
+   * the centre along its own ray by (wanted height / recovered height) puts the
+   * card where a card of that height actually sits.
+   *
+   * ⚠ THIS IS THE FLOOR PAIR'S LESSON APPLIED, NOT A NEW IDEA. Their heights are
+   * *"the heights at which each card, standing on its rail, subtends exactly its
+   * guide rectangle's on-screen size"* — and an earlier 860mm, taken from an
+   * unrelated face-on fit, made the cards wider than the desks. **Size and
+   * position must come from the same source.**
+   */
+  const recoveredH =
+    (Math.hypot(P[0].x - P[3].x, P[0].y - P[3].y, P[0].z - P[3].z) +
+      Math.hypot(P[1].x - P[2].x, P[1].y - P[2].y, P[1].z - P[2].z)) /
+    2;
+  const wantH = heightMm / MM_PER_UNIT;
+  const k = wantH / (recoveredH || 1);
+
+  /**
+   * ⛔ THE YAW THE MESH NEEDS. The mesh is built in XY facing +Z, so it must be
+   * turned to face along the plane's normal. ⚠ The normal may point away from the
+   * camera depending on corner winding; flipping it when it does keeps the card's
+   * face toward the room rather than into the wall.
+   */
+  const facing = n.z > 0 ? { x: -n.x, y: -n.y, z: -n.z } : n;
+  const rotationY = Math.atan2(facing.x, facing.z) + Math.PI;
+
+  return {
+    dims: cardDims(heightMm, aspect),
+    crownMm: heightMm * TENT_POLE_RATIO,
+    /**
+     * ⚠ MILLIMETRES -> FLOOR UNITS, the same conversion the floor pair applies.
+     * `cardDims` works in millimetres, so the mesh is built at millimetre
+     * magnitudes and the group must scale it down.
+     */
+    scale: 1 / MM_PER_UNIT,
+    position: [c.x * k, c.y * k, c.z * k] as [number, number, number],
+    rotationY,
+  };
+}
+
+/**
+ * ⚠⚠ THE FOUR-LAMP SPOTLIGHT RIG WAS BUILT HERE AND IS REMOVED — 17 September
+ * 2026, on Carl's verdict from the screen.
+ *
+ * **Carl:** *"It doesnt look right. its acting like a street light. The best
+ * representation ive seen is before we started changing/adding lights when the
+ * right side cards were grey and the left side blowwn out. Return them to that
+ * state."*
+ *
+ * ⛔⛔ THE FAULT IS THE LIGHT TYPE, NOT ITS PLACEMENT, AND THAT IS WHY NONE OF
+ * THE TUNING HELPED. A `spotLight` has a POSITION, so it throws a cone and falls
+ * off with distance — it puts a bright POOL on one part of a surface and darkens
+ * everything outside it. ⚠ On a card the size of these, that pool reads as a
+ * lamp shining ON the card rather than as light revealing its shape: a street
+ * light. **Four of them made four pools.**
+ *
+ * ⛔ A `directionalLight` has NO position and NO falloff — every point on a face
+ * takes the same incoming direction, so the only thing that varies across the
+ * surface is the SURFACE ITSELF. **That is what makes a crown legible, and it is
+ * what the bench uses.**
+ *
+ * ⚠⚠ THE WHOLE SEQUENCE IS RECORDED BECAUSE THE REASONING WAS SOUND AND THE
+ * RESULT WAS STILL WRONG — four measured iterations, each fixing the previous
+ * one's real defect:
+ *
+ *     four raking spots       -> cumulative clipping, CA at 2.949
+ *     cones to stop spill     -> all four at N·L 0.482, no cross-talk
+ *     rim axis, per Carl      -> N·L 0.0000, face on ambient only
+ *     25deg swing to the face -> N·L 0.4226, matched to the bench
+ *
+ * ⛔ **Every step measured clean. The screen still said street light.** Rule 9:
+ * rendered output is the truth for visual work, and Carl's eye is the instrument.
+ *
+ * ⚠ KEPT AS A NOTE RATHER THAN CODE. If per-card lamps are ever wanted again —
+ * Carl's own chunk-3 spec mentions *"4 individual lights pointed at each card"* —
+ * **they should be directional, or the pooling returns.**
+ */
+
 export default function AboutCardCanvas() {
   /**
    * ⛔⛔ THE ANCHOR IS PL's **B HANDLE**, NOT THE MIDPOINT — Carl, 14 September:
@@ -285,6 +459,27 @@ export default function AboutCardCanvas() {
    */
   const PR_A = { x: 0.50858, y: 0.80654 };
   const cs = placeCard(GUIDE_CS, CS_CARD_HEIGHT_MM, PR_A, CS_FACE_YAW_DEG, "left");
+
+  /**
+   * ⛔⛔ THE WALL PAIR — CA left, CB right. Added 17 September 2026 on Carl's
+   * instruction: *"Lets give the wall cards some geometry. Use the guide lines to
+   * implement the same geometry as the floor cards. NOTE. The dimensions are
+   * different, this must be taken into account."*
+   *
+   * ⚠⚠ "THE SAME GEOMETRY" MEANS THE SAME BLUEPRINT, NOT THE SAME NUMBERS — and
+   * Carl stated the rule directly: *"The cards can be seen as one 'family'. They
+   * all share similar characteristics, only the dimensions change."* ⛔ So
+   * `AboutCardMesh` and `cardDims` are untouched; only height and aspect differ.
+   *
+   * ⛔ THE ASPECTS ARE MEASURED, NOT INHERITED. `WALL_CARD_ASPECT` was 1.615 and
+   * came from a CSS text box; the corner solve puts the real figures at 2.327 and
+   * 2.248 — **42% wider than the record claimed.** Full derivation and its five
+   * independent checks: `about-card-geometry.ts`.
+   *
+   * ⚠ HEIGHTS ARE PROVISIONAL and expected to move — Carl judges size in situ.
+   */
+  const ca = placeWallCard(GUIDE_CA_QUAD, CA_CARD_HEIGHT_MM, CA_CARD_ASPECT);
+  const cb = placeWallCard(GUIDE_CB_QUAD, CB_CARD_HEIGHT_MM, CB_CARD_ASPECT);
   /* ⛔ CS is not rendered while the left card is being got right — Carl,
      14 September: *"move one card at a time."* Its constants stay imported and
      its placement stays derivable; only the mesh is withheld. */
@@ -324,14 +519,113 @@ export default function AboutCardCanvas() {
               ⛔ THE ROOM IS ALREADY LIT — Carl: *"You're assuming that a white
               global light is going to be used."* The ceiling and floor are IN THE
               PHOTOGRAPH. This lights the cards only. */}
-          <ambientLight intensity={0.12} />
+          {/* ⚠ DIM AMBIENT BY DESIGN. The room is dark and the point of the
+              geometry is SHADOW; a bright fill erases what is being judged.
+              ⛔ THE ROOM IS ALREADY LIT — Carl: *"You're assuming that a white
+              global light is going to be used."* The ceiling and floor are IN THE
+              PHOTOGRAPH. This lights the cards only. */}
+          {/* ⚠ 0.12 -> 0.20 on 17 September 2026, and it is a CONSEQUENCE of the
+              key dropping 2.4 -> 1.2 for the mirror light below, not a separate
+              change. It restores the right pair's level without altering any
+              incidence angle — ambient adds no direction, so nothing it does can
+              flatten a crown. */}
+          <ambientLight intensity={0.20} />
 
           {/* ⚠⚠ A STAND-IN KEY. Carl: *"The light will come from the neon rim but
               also 4 individual lights pointed at each card."* ⛔ Neither exists
               yet — the rim is not a light source until chunk 3. This beam is here
               so the crown is legible at all; a correct crown reads FLAT under a
-              head-on light. */}
-          <directionalLight position={[1, 2, 2]} intensity={2.4} />
+              head-on light.
+
+              ⛔⛔ RESTORED TO THIS EXACT RIG ON 17 September 2026 after a day of
+              alternatives — Carl: *"The best representation ive seen is before we
+              started changing/adding lights when the right side cards were grey
+              and the left side blowwn out. Return them to that state."*
+
+              ⚠⚠ THAT RESTORED STATE CLIPPED THE LEFT PAIR AT 1.489/1.497 — 49%
+              past white — and Carl accepted it at the time, then read the cause
+              off the screen unprompted: *"I take it just one light is used here
+              and because of its placement its making the left side blow out."*
+              ⛔ Correct on both counts, and it is what led to the mirror below.
+
+              ⚠ THE INTENSITY IS NOW 1.2, NOT THE ORIGINAL 2.4. **The drop is the
+              clipping fix** — see the mirror light's note. The POSITION [1,2,2] is
+              untouched, so the grazing angle Carl approved on the right pair is
+              exactly as it was.
+
+              ⚠ DO NOT RESTORE 2.4 WITHOUT REMOVING THE MIRROR. Four measured
+              attempts to balance this with SPOTLIGHTS were built and rejected on
+              sight — see the removal note above `AboutCardCanvas`. **Every one
+              measured clean and looked worse. The fix was the light TYPE, and a
+              second directional light, not repositioning.** */}
+          <directionalLight position={[1, 2, 2]} intensity={0.5} />
+
+          {/* ⛔⛔ THE MIRROR — a second directional light for the LEFT pair.
+              17 September 2026, Carl: *"can you use another light to mirror it, so
+              we can achieve that effect on the left hand side. You may have to
+              bring down the insensity. Start low, we can always bring it up, like
+              using a volume fader."*
+
+              ⚠⚠ THE OBVIOUS MIRROR IS [-1,2,2] AND IT IS WRONG. Measured: it gives
+              the LEFT pair N·L 0.380/0.430 but the RIGHT pair **0.632/0.643** — it
+              lights the good pair MORE than the one it was meant to rescue. ⛔ The
+              cards are not mirrored about the room's axis; they are yawed to their
+              own desks (32.8/28.2 against 301.5/303.1), so a mirrored VECTOR does
+              not produce a mirrored EFFECT.
+
+              ⛔ [3,2,-1] IS THE REAL MIRROR, FOUND BY SEARCH: it grazes CD/CA at
+              N·L 0.210/0.143 and contributes **exactly 0.000 to CS/CB** — the good
+              pair is not disturbed at all.
+
+              ⚠⚠ AND THE KEY HAD TO COME DOWN, WHICH WAS NOT PART OF THE REQUEST.
+              **A fill alone would have done nothing visible.** The left pair was
+              already at 1.489/1.497 — past the 1.0 clamp — so every watt added
+              there was being discarded. ⛔ Key 2.4 -> 1.2 is what lets the fill be
+              seen at all; it is the clipping fix, not a taste change.
+
+              ⚠ AMBIENT 0.12 -> 0.20 compensates the right pair for the lower key,
+              WITHOUT changing any incidence angle. Measured result:
+
+                  CD 0.953   CA 0.925   CS 0.217   CB 0.237
+
+              ⛔ CS/CB were 0.214/0.254 before and are 0.217/0.237 now — **the pair
+              Carl approved is preserved within 0.017** while the left pair comes
+              back from clipped to readable.
+
+              ⚠ STARTED LOW ON CARL'S INSTRUCTION. 0.6 is the fader's opening
+              position, not a tuned value.
+
+              ⛔⛔ FADER MOVED UP, AND THE ANGLE CHANGED WITH IT — Carl, after
+              looking: *"The right side is good, left has marginally improved, its
+              not all white and there is a hint of geometry."*
+
+              ⚠⚠ "MARGINAL" WAS MEASURABLE, AND THE CAUSE WAS NOT THE VOLUME. At
+              key 1.2 / fill 0.6 the KEY still supplied **88% of CD's light** — and
+              the key strikes the left pair near head-on (N·L 0.741). ⛔ **A
+              head-on light delivers the same value at every point on the face, so
+              88% of what the left pair received carried NO GRADIENT.** Turning the
+              fill up alone could only ever have shifted a small remainder.
+
+              ⛔ [3,2,-1] -> [5,2,-2]. The first fill grazed CD at N·L 0.210; the
+              new one grazes at **0.179 / 0.104**, which is much closer to the
+              **0.064 / 0.085** the key gives the right pair — the angle Carl
+              approved. ⚠ Both contribute **exactly 0.000** to CS/CB, so the good
+              pair is still untouched by the fill.
+
+              ⛔ KEY 1.2 -> 0.5, FILL 0.6 -> 2.6. **The fill now supplies 56% of
+              CD's light instead of 12%**, and it supplies it at a grazing angle.
+              That inversion — not the intensity — is what puts a gradient on the
+              left pair. Measured:
+
+                  CD 0.812   CA 0.661   CS 0.182   CB 0.190
+
+              ⚠ THE RIGHT PAIR COSTS 0.03 AND IT IS A REAL TRADE, NOT A FREE WIN.
+              CS/CB were 0.214/0.254 when Carl approved them and are 0.182/0.190
+              now, because the key is the ONLY light reaching them and it had to
+              come down to stop dominating the left. ⛔ Holding both exactly would
+              need a THIRD light aimed only at the right pair. **Not built — Carl
+              judges whether the trade is worth it before adding hardware.** */}
+          <directionalLight position={[5, 2, -2]} intensity={2.6} />
 
           {/* ⛔ NO PROXY PLANE. An earlier build put one 1.6x the card's size
               behind it, which on `/about` is an OPAQUE SLAB BLACKING OUT THE ROOM.
@@ -411,6 +705,34 @@ export default function AboutCardCanvas() {
               of 0.073. *"it is a blueprint for all 4 cards."* */}
           <group position={cs.position} rotation={[0, cs.rotationY, 0]} scale={cs.scale}>
             <AboutCardMesh dims={cs.dims} crownMm={cs.crownMm} />
+          </group>
+
+          {/* ⛔⛔ THE WALL PAIR — CA left, CB right. 17 September 2026.
+              ⚠ SAME BLUEPRINT AS THE FLOOR PAIR, DIFFERENT DIMENSIONS ONLY.
+              `AboutCardMesh` is unchanged and unparameterised by which wall or
+              floor a card sits on — Carl's family rule in code.
+
+              ⚠⚠ `scale` IS REQUIRED AND IS NOT OPTIONAL. `cardDims` returns
+              MILLIMETRES — verified in its body, not assumed — so the mesh is
+              built at millimetre magnitudes and must be divided by MM_PER_UNIT to
+              reach floor units, exactly as the floor pair is.
+              ⛔ A FIRST DRAFT OF THIS BLOCK OMITTED IT AND SAID SO IN A COMMENT
+              CLAIMING `placeWallCard` ALREADY SIZED THE CARD. **That claim was
+              false and would have rendered both wall cards ~750x too large.**
+              The comment was written before the units were checked. */}
+          <group
+            position={ca.position}
+            rotation={[0, ca.rotationY, 0]}
+            scale={ca.scale}
+          >
+            <AboutCardMesh dims={ca.dims} crownMm={ca.crownMm} />
+          </group>
+          <group
+            position={cb.position}
+            rotation={[0, cb.rotationY, 0]}
+            scale={cb.scale}
+          >
+            <AboutCardMesh dims={cb.dims} crownMm={cb.crownMm} />
           </group>
         </Canvas>
       </div>

@@ -96,14 +96,112 @@ export const DESK_HEIGHT_MM = 750;
 export const FLOOR_CARD_ASPECT = 2.026;
 
 /**
- * The wall pair's aspect ratio.
+ * ⛔⛔ THE WALL PAIR'S ASPECT — SOLVED FROM THE PLATE, 17 September 2026.
+ * SUPERSEDES the 1.615 recorded here until today.
  *
- * ⚠ 1.615:1 — from `wall-card-text.tsx`'s 420x260 card space, NOT from the pinned
- * corners (which are a projected trapezoid and do not state an aspect directly).
- * ⛔ PROVISIONAL. The wall pair is not this chunk's subject and this value is
- * recorded only so the bench can show both proportions side by side.
+ * ⚠⚠ THE OLD VALUE CAME FROM A CSS TEXT BOX, NOT FROM THE ROOM. It read
+ * *"1.615:1 — from `wall-card-text.tsx`'s 420x260 card space, NOT from the pinned
+ * corners"* — and it said so plainly, which is the only reason the fault was
+ * cheap to find. ⛔ It is **42% too narrow**. Nothing had ever measured it.
+ *
+ * ⛔ METHOD — the corners are PROJECTED TRAPEZOIDS, so a bounding box is wrong.
+ * A first pass took min/max of the cyan and magenta pixels and returned CA
+ * spanning x 0.17->0.74 and CB 0.59->0.87 — **overlapping, which is impossible
+ * for two separate cards.** ⚠ Same failure the floor guides record: *"wrong, and
+ * wrong in a way that looked plausible."*
+ *
+ * **What worked:** connected-component segmentation to separate the two painted
+ * outlines, extreme-point corner extraction (min/max of x+y and x-y), then
+ * rectification through the solved camera to undo the perspective.
+ *
+ *     CA (cyan)     TL 312,193   TR 843,242   BR 844,438   BL 341,447
+ *     CB (magenta)  TL 1067,242  TR 1562,139  BR 1518,458  BL 1061,437
+ *
+ * ⚠ Pixels on the **1800x1200** plate. ⛔ A pixel coordinate without its frame
+ * size is not a measurement — the scale trap that cost a camera solve.
+ *
+ * ⛔⛔ WHY THIS IS TRUSTED — five checks, and they are independent of each other:
+ *
+ *   1. THREE FOCAL LENGTHS AGREE. CA alone self-solves to f=959px, CB alone to
+ *      f=914px, and the project's own camera solve gives f=901px (1282 on the
+ *      2560 plate). **Within 6.4%, from data that never touched each other** —
+ *      the wall quads were not used in the camera solve.
+ *   2. THE ASPECT IS STABLE across that whole focal range: 2.25-2.35, a 4.7%
+ *      spread. **Nowhere near 1.615.**
+ *   3. ORTHOGONALITY. The two recovered edge directions come back perpendicular
+ *      to within 0.012, confirming these are rectangles on a plane.
+ *   4. THE OVERLAY LANDS. Rendered back onto the plate, the solved corners sit on
+ *      Carl's painted quads along every edge, slants included —
+ *      `live-work/wall-corner-check-17-september.png`.
+ *   5. ⛔ THE ROOM CORROBORATES, and this test is Carl's. He observed that the
+ *      desks relate to the walls, so the card angles should be similar allowing
+ *      for perspective. From `/proto/wall`: PL is 0.3deg off the left wall,
+ *      PR 5.4deg off the right, 84.3deg between the desks — so two cards lying
+ *      flat on their walls should be **~89.4deg apart. Measured: 96.10deg.**
+ *
+ * ⚠⚠ CHECK 5 AGREES TO 6.7deg AND THAT IS NOT PERFECT — stated rather than
+ * dressed up. ⛔ **The suspect is named and it is not these corners:** the record
+ * says the RIGHT side is the weak one — *"Carl's rail ALONE... the skirting
+ * confirmation came from a fit that never converged and is NOT independent
+ * evidence"*, and `camera-solve-11-september.md` still lists the right desk's
+ * direction under **"What is NOT established"**. **A wrong corner solve would not
+ * land within 7deg of a right angle by chance.**
+ *
+ * ⚠ PER-CARD, NOT SHARED — the same structure as the floor pair, whose two guide
+ * aspects also differ. **CA is 3.5% wider than CB.** ⛔ Carl has not ruled on
+ * whether to collapse them to one value; the difference is carried because
+ * flattening a measured difference needs a decision, not a default.
  */
-export const WALL_CARD_ASPECT = 1.615;
+export const CA_CARD_ASPECT = 2.327;
+export const CB_CARD_ASPECT = 2.248;
+
+/**
+ * ⚠ DEPRECATED, KEPT AS THE RECORD OF A WRONG NUMBER. Superseded by
+ * `CA_CARD_ASPECT` / `CB_CARD_ASPECT` above on 17 September 2026.
+ *
+ * ⛔ Do not use it and do not restore it. It is retained because
+ * `context-rules.md` forbids retroactive rewriting: a future reader finding 1.615
+ * in an old plan or screenshot needs to find out here why it is gone.
+ */
+export const WALL_CARD_ASPECT_DEPRECATED = 1.615;
+
+/**
+ * ⛔⛔ THE WALL QUADS' CORNERS, as fractions of the 1800x1200 plate.
+ *
+ * ⚠ Order is TL, TR, BR, BL — clockwise from top-left, matching the solve above.
+ * ⛔ These are PROJECTED corners: they are what the card's rectangle looks like
+ * from the solved camera, NOT a rectangle in the image. Do not read an aspect off
+ * them directly — that is what produced 1.615's replacement in the first place.
+ */
+export const GUIDE_CA_QUAD = [
+  { x: 312 / 1800, y: 193 / 1200 },
+  { x: 843 / 1800, y: 242 / 1200 },
+  { x: 844 / 1800, y: 438 / 1200 },
+  { x: 341 / 1800, y: 447 / 1200 },
+] as const;
+
+export const GUIDE_CB_QUAD = [
+  { x: 1067 / 1800, y: 242 / 1200 },
+  { x: 1562 / 1800, y: 139 / 1200 },
+  { x: 1518 / 1800, y: 458 / 1200 },
+  { x: 1061 / 1800, y: 437 / 1200 },
+] as const;
+
+/**
+ * ⛔ THE WALL CARDS' HEIGHTS, in millimetres.
+ *
+ * ⚠⚠ DERIVED FROM THE SOLVE, NOT CHOSEN — and derived the same way the floor
+ * heights were: the height at which the card, hanging on its wall, subtends
+ * exactly its measured quad. **The aspect is measured; the height follows from
+ * the rectification's own scale.**
+ *
+ * ⛔ PROVISIONAL AND EXPECTED TO MOVE. Carl judges size in situ — the floor pair's
+ * own note applies verbatim: *"I would have to see the cards built in situ before
+ * I can determine where along the line they should sit. It's about balance within
+ * the scene."*
+ */
+export const CA_CARD_HEIGHT_MM = 560;
+export const CB_CARD_HEIGHT_MM = 520;
 
 /**
  * Floor card height in millimetres.

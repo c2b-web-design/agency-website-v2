@@ -17,7 +17,8 @@ import { Canvas } from "@react-three/fiber";
 import {
   cardDims,
   FLOOR_CARD_ASPECT,
-  WALL_CARD_ASPECT,
+  CA_CARD_ASPECT,
+  CB_CARD_ASPECT,
   CD_CARD_HEIGHT_MM,
   TENT_POLE_RATIO,
   PROXY_COLORS,
@@ -217,8 +218,16 @@ export default function CardBench() {
             onChange={(e) => setAspect(Number(e.target.value))}
             className="bg-neutral-800 px-2 py-1 rounded"
           >
+            {/* ⛔ The wall entry was `wall 1.615:1` until 17 September 2026. That
+                value came from a CSS text box, never from the plate, and the
+                corner solve put the real figures at 2.327 / 2.248 — see
+                `about-card-geometry.ts`. ⚠ BOTH wall cards are listed because
+                they genuinely differ by 3.5%; the bench exists to compare
+                proportions, so flattening them here would hide the thing it is
+                for. */}
             <option value={FLOOR_CARD_ASPECT}>floor 2.026:1</option>
-            <option value={WALL_CARD_ASPECT}>wall 1.615:1</option>
+            <option value={CA_CARD_ASPECT}>wall CA 2.327:1</option>
+            <option value={CB_CARD_ASPECT}>wall CB 2.248:1</option>
           </select>
         </label>
 
