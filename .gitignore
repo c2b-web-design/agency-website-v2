@@ -45,3 +45,18 @@ next-env.d.ts
 # worth keeping, not their output. The `/out/` rule above is root-anchored and
 # does not cover this path.
 verify/out/
+
+# Undecided brand-asset candidates — Carl, 17 September 2026: *"I may or may not
+# use them. There is no need for them to be tracked but i will keep them on my PC
+# for now."* Kept on disk, out of version control, and out of every `git status`.
+#
+# ⚠ THREE EXACT PATHS, NOT THE FOLDER. `brand-assets/` is heavily TRACKED — it
+# holds the logo masters, the DaVinci sources and `about-studio-wall-cards-1800.jpg`,
+# the plate the About wall cards were transferred FROM. Ignoring the directory
+# would be wrong; these three are named individually on purpose.
+#
+# ⛔ REVERSIBLE BY DESIGN. If one of these is later chosen, delete its line here
+# and `git add` it — nothing else is needed. Ignoring never deleted anything.
+brand-assets/Gemini_Generated_Image_v709qev709qev709.jpg
+brand-assets/logo/c2b-logo-gold-relit-alpha-1671.png
+brand-assets/logo/c2b-logo-gold-relit-source-1671.png
