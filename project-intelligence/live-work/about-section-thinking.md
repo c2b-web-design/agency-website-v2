@@ -3075,6 +3075,15 @@ instruction that the 31 August handoff records the Builder breaking twice in one
 
 ---
 
+> ⛔⛔ **THE POSTER IS SUPERSEDED — D-088, 18 September 2026.** Carl: *"The cards are bigger than the
+> first iteration, theres no room for a poster but that doesnt mean the logo cant be used."* ⚠ **The
+> poster argument below depended on NEGATIVE SPACE BEHIND THE SETUP — and the wall cards now occupy
+> it.** ⛔ **The mark instead STANDS ON THE RIGHT DESK in §2 and TRAVELS into §3's player.**
+>
+> ⚠⚠ **THE REASONING BELOW DID NOT FAIL — ITS PREMISE MOVED, and it is kept for the parts that
+> survive:** the mark makes it *this* workspace; it is **in the world of the image, not composited on
+> top**; and it is **discovered rather than announced**. ⛔ **Only the POSTER FORM is dead.**
+
 ## ⛔⛔ SECTION 1 — THE MARK IS SETTLED. THE OPEN QUESTION IS STALE
 
 ⛔⛔ **CARL, 1 September 2026: *"Its going in there."*** ⚠ **The 31 August open question —

@@ -4793,3 +4793,82 @@ Four cards on periods that do not divide into one another produce a composite th
 ⚠ **WHY IT MATTERS, CONCRETELY.** Mouse proximity sat in a quoted sentence in a gitignored file with nothing to say it had been dropped. **A future session planning chunk 3 would have found three live options and no way to tell which Carl had settled on** — and would have asked him to decide something he decided on 11 September.
 
 ⛔ **Same family as D-074 and D-086: a decision that exists only in `live-work/` is not recorded.** ⚠ **Third instance in this chunk.**
+
+---
+
+## D-088 — The Mark Travels: Desk In §2, Into The Player In §3. The Poster Is Ruled Out
+
+**Date recorded:** 2026-09-18
+**Status:** ⛔ **PROPOSED — Carl's direction, and he expects to run with it.** *"This is further discussion for an idea that i think would work well… We will probably run with this."* ⚠ **Not APPROVED and nothing is authorised to build. Recorded so the details can be worked out at the appropriate time.**
+**Authority:** Human Founder — Carl, 18 September 2026.
+**Bears on:** `/about` §2 and §3, `about-card-canvas.tsx`, the §3 player. ⛔ **Supersedes the POSTER ruling of 1 September.** ⚠ Answers Carl's own §3 clue.
+
+---
+
+### ⛔⛔ THE POSTER IS RULED OUT — AND THE REASON IS THE CARDS GREW
+
+**Carl, 18 September:** *"The cards are bigger than the first iteration, theres no room for a poster but that doesnt mean the logo cant be used."*
+
+⚠⚠ **THIS SUPERSEDES *"Its going in there"* (1 September), WHICH IS OTHERWISE STILL WRITTEN AS SETTLED.** ⛔ The poster argument depended on **negative space behind the setup, "where nothing else is happening"** — and that space is now occupied by the wall cards. **The reasoning did not fail; its premise moved.** ⚠ Classic overtaken decision, `context-rules.md`: *"a cost/benefit judgement expires when either side moves."*
+
+⛔ **WHAT SURVIVES THE POSTER'S DEATH, because it was never about the poster:**
+- **The mark makes it THIS workspace** — *"this is where C2B is made"*, not a generic studio.
+- ⛔ **IN THE WORLD OF THE IMAGE, NOT COMPOSITED ON TOP.** A real object in a real space.
+- ⛔ **DISCOVERED RATHER THAN ANNOUNCED.** ⚠ Warm at low saturation against a cool field reads as WARM long before it reads as GOLD.
+
+### ⛔ THE PLACE — THE RIGHT DESK, RIGHT OF THE MOUSE
+
+**Carl:** *"Look at the right desk on its right side, to the right of the mouse. Do you think theres room to put a Logo there?"*
+
+⚠ **MEASURED, AND THERE IS.** Inspected on the plate: right of the iMac sit a speaker, a small succulent and a dark cylindrical speaker, then **the desk surface runs out to the right and is EMPTY** before the snake plant.
+
+⛔ **AND IT IS CLEAR OF THE CARDS. CB's lowest point is y 0.3785; the desk surface sits around y 0.50-0.62.** **CB stops well above it** — the mark would occupy genuinely unoccupied space, not sit behind glass.
+
+**Three reasons this beats the poster on its own merits, not only on space:**
+- ⚠ **IT IS A LIT SURFACE.** The desktop catches the wall wash and the iMac's glow, so a reflective mark picks up the room. **A poster on a wall in shadow sits flat.**
+- ⛔ **AN OBJECT ON A DESK IS WHAT THE MARK ALREADY IS.** `c2b-logo-mark.png` and `c2b-logo-blue-mark.png` are **physical half-tube objects with real specular** — the same rim/bevel/lit-core construction as the answer card. **A poster would have flattened that.**
+- ⚠ **IT STARTS IN THE RIGHT HALF OF THE FRAME**, which is where §3's player goes. **It begins on the side it must exit from.**
+
+### ⛔⛔ THE TRAVEL — AND IT ANSWERS CARL'S OWN §3 CLUE
+
+**Carl, 18 September:** *"When scrolling to Sec 3 it moves, comes with us and at a certain point when the player comes into view — jumps in the screen."*
+
+⚠⚠ **THIS IS THE ANSWER TO THE CLUE CARL SET ON 1 SEPTEMBER AND REFUSED TO CONFIRM:**
+
+> ⛔ *"The gold logo already exists in some form in 1 and 2. It stops at 2. How would it get in the TV?"*
+
+⛔ **IT CARRIES ITSELF THERE.** ⚠ **Not two instances of a logo on one page — ONE OBJECT, the whole way down**, which is what *"Connectivity. Same world."* demands.
+
+⛔⛔ **AND IT SOLVES §3's IDLE-PLAYER PROBLEM IN THE SAME MOVE.** Carl: *"Sec 3 will have a video player on the right hand side, it cannot be idle and must contain something. Possibly a Logo image, before a video is chosen."* ⚠ **The screen is not empty before a video is chosen, because the thing that just arrived is in it.**
+
+⛔ **§2's MARK AND §3's PLACEHOLDER ARE THEREFORE ONE PIECE OF WORK, NOT TWO.**
+
+### ⛔ FOUR NEON COLOURS IS NOW DOUBTED BY CARL
+
+**Carl, 18 September:** *"I did rule 4 colours but i think that would be too much."*
+
+⚠ **D-087's "four, all different, none chosen" is NOT withdrawn — it is doubted by its author.** ⛔ **No new number is chosen.** ⚠ The concern matches what the record already flagged: *"the site's established language is narrow: gold, platinum-blue, amber"*, and **each card spills onto the photograph and its neighbours, so the palette decides what colour the room turns.** **Four fighting colours make mud.**
+
+⚠ **AND TWO STRONG NEON OBJECTS ALREADY EXIST** — `c2b-logo-mark.png` (gold) and `c2b-logo-blue-mark.png` (platinum-blue), both already half-tube neon with a lit core. ⛔ **Carl: *"The Gold and Blue are strong."*** **Whether §2 uses two colours, or one with variations, is open.**
+
+### ⚠ THE `/start` PRECEDENT CARL POINTED AT
+
+**Carl:** *"Look what we did in the contact/start section. Look what the Logo does after the 'Begin' button is pressed."*
+
+⛔ **THE MARK TRANSFORMS IN PLACE AND NEVER MOVES.** Two marks stacked at one pinned point; a radial mask rides the GOLD layer while the blue cross-fades underneath. **Begin: gold clipped 150%->0%, OUTSIDE IN** — *"right at the centre of the logo the gold would be the last thing to disappear."* **Client info: 0%->150%, INSIDE OUT.** D-062/D-063.
+
+⚠⚠ **THE PRECEDENT IS *THE MARK RESPONDS TO PAGE STATE*, NOT *THE MARK MOVES*.** ⛔ **D-065 makes it constant and immobile site-wide.** **§2/§3 proposes something genuinely new: a SECOND instance that travels.** ⚠ **Whether that enriches D-065 or contradicts it is CARL'S and is unresolved.**
+
+### ⛔⛔ WHAT MUST BE SETTLED BEFORE THIS IS BUILT — §5a APPLIES
+
+⚠ **THIS IS STRUCTURAL AND IS NOT AUTHORISED.** Raised now so it is not discovered mid-build:
+
+1. ⛔ **A SCROLL-LINKED ANIMATION IS A NEW MECHANISM. THE SITE HAS NO PRECEDENT FOR ONE** — nothing currently moves with scroll. **A new lifecycle for the canvas, which today mounts once and draws on demand.**
+2. ⛔⛔ **THE HAND-OFF IS THE HARD PART.** The mark leaves a **3D scene** and enters a **DOM player** in another section. ⚠ **Two different coordinate spaces, and the moment of transfer is where it looks either wrong or magical.**
+3. ⚠ **`prefers-reduced-motion`** — a travelling mark would be the site's most prominent motion.
+4. ⚠ **WHICH MARK, AND WHAT HAPPENS TO ITS COLOUR IN THE ROOM.** The neon spills onto the photograph, so a gold mark under a magenta card is not gold. ⛔ **The mark's colour is load-bearing on `/start`.**
+5. ⚠ **Does the pinned top-left mark persist while the travelling one moves** — two marks visible at once, or one?
+
+### ⚠ RECORDED UNDER THE D-087 RULE
+
+**This entry exists because of the standing rule added the same day:** a brainstorm is a source of record, and provisional ideas are written down. ⛔ **Carl: *"It should be recorded so the details can be worked out at the appropriate time."*** ⚠ **PROPOSED is the honest status — he expects to run with it, and has not ruled.**

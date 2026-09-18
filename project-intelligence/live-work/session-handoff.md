@@ -1,4 +1,4 @@
-# Session Handoff — 18 September 2026 (SECOND SESSION OF THE DAY). THE PROXY WORKS. THE PLACEMENT DATA DOES NOT.
+# Session Handoff — 18 September 2026 (THIRD SESSION OF THE DAY). THE PROXY NEVER RENDERED. NOW IT DOES.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
@@ -7,203 +7,179 @@
 
 ## ⛔⛔ WHAT HAPPENED, IN ONE LINE
 
-**Chunk 2a's glass was proven on the bench and approved by eye; putting it in the room took FIVE
-attempts at the background geometry, the fifth works — and it exposed TWO PLACEMENT FAULTS IN
-COMMITTED DATA that predate all of today's work.**
+**The depth proxy built yesterday had never drawn a single pixel — its triangles were wound
+backwards and the GPU culled all 4,608 of them — and it hid because the DOM `<img>` behind the
+transparent canvas was still painting the same room.**
 
-## ⚠⚠ A DATE ERROR WAS WRITTEN INTO THE RECORD AND CORRECTED — READ THIS
+## ⛔ COMMITTED AND PUSHED. HEAD is `8041c20`.
 
-⛔ **ELEVEN INSTANCES OF "19 September" WERE WRITTEN ACROSS `decisions.md`, `review-log.md`,
-`current-sprint.md`, this handoff AND A CODE COMMENT. The date was 18 September throughout.**
-Carl caught it: *"Its not 19 sept, its still 18. i am starting my 2nd session today."*
+    8041c20  the depth proxy was never visible — its triangles were wound backwards
 
-⚠ **CAUSE: the Builder assumed a date rollover because a long session spanned two sittings.**
-⛔ **Git had it right all along — all three commits are dated 2026-09-18.** The error was
-confined to prose, which nothing checks.
+⚠⚠ **COMMITTED IS NOT APPROVED. Carl has NOT passed the room, the glass or the rails by eye.**
 
-⚠⚠ **THIS IS THE SAME CLASS AS EVERY OTHER FAULT ON THIS PROJECT'S RECORD: a confident claim
-written down without being verified against something that knows.** ⛔ **The date is knowable
-— `git log --date=short` — and was never consulted.** **Check it; do not infer it.**
+⛔ **UNCOMMITTED AT SESSION END — governance only, no code:**
 
-## ⛔ COMMITTED AND PUSHED. HEAD is `39ce005`.
+    project-intelligence/decisions.md               D-088
+    project-intelligence/active-sprints/current-sprint.md
+    project-intelligence/live-work/about-section-thinking.md   (poster supersession pointer)
 
-    f51e865  the camera-matched depth proxy; CS's glass in the scene
-    39ce005  D-084 and R-026 — the record caught up
-
-⚠⚠ **COMMITTED IS NOT APPROVED. Carl has NOT passed the room build by eye** — it is verified for
-FRAMING only (D-084). ⛔ **The bench glass at ~0.35 IS approved (R-026); the room is not.**
-
-⚠ **`npx tsc --noEmit` CLEAN. `npm run lint` = `1 problem (1 error, 0 warnings)`** — the documented
-baseline. ⛔ **Port 3000 confirmed free.**
-⛔ **`git stash@{0}` holds the FIRST (broken) room attempt. Keep — it carries the failure record.**
+⚠ `npx tsc --noEmit` CLEAN. `npm run lint` = `1 problem (1 error, 0 warnings)` — the documented
+baseline. ⛔ **Dev server was left running on :3000. Kill it and confirm the port free.**
 
 ---
 
-# ⛔⛔ THE TWO FAULTS IN COMMITTED DATA — THE SESSION'S REAL OUTPUT
+# ⛔⛔ THE FAULT AND THE FIX — D-085
 
-## 1. `GUIDE_CA_QUAD` / `GUIDE_CB_QUAD` DO NOT MATCH CARL'S PINNED CORNERS
+**The index order `a, a+DIV+1, a+1` winds clockwise from this camera.** Every triangle was
+back-facing; the GPU discarded them under the default `FrontSide`.
 
-⛔ **In `about-card-geometry.ts`, committed, wrong today.** ⚠⚠ **THE TELL IS CARL'S OWN
-VERTICAL-EDGE CORRECTION** — his instruction of 4 September was that every bottom node takes its
-top node's x. **His file has that exactly; the code does not:**
+⛔ **IT WAS NEVER FRUSTUM-CULLED AND NEVER HIDDEN.** `onBeforeRender` **fired every frame** — the
+mesh reached `renderObject()` and was handed to the GPU, which dropped it at face culling.
+`visible: true`, texture bound, `frustumCulled={false}` changed nothing.
 
-    CA   code TL.x 0.17333  vs  BL.x 0.18944     Carl: BOTH 0.19766
-    CB   code TL.x 0.59278  vs  BL.x 0.58944     Carl: BOTH 0.60731
+⚠⚠ **AND IT EXPLAINS WHAT LOOKED IMPOSSIBLE: CS refracted a room that was not on screen.** Three's
+transmission pass flips `material.side` to `BackSide`, so the proxy was **visible to the GLASS and
+culled in the MAIN pass.** The unexplained `side: 1` in a scene dump was that flip caught mid-pass.
 
-**Worst positional error: CB's TR, out by 0.043 in x and 0.028 in y; CB's BR by 0.050 in y.**
-⛔ **This is what Carl saw:** *"CB is way out of alignment, the distance from the top edge to the
-ceiling is the giveaway."*
+**Fixed by reversing the index order only. Positions and UVs untouched.**
 
-⛔ **SOURCE OF TRUTH: `live-work/wall-card-corners-4-september.md`**, the corrected `INITIAL_FRAC`
-set. ⚠⚠ **THAT FILE SAYS "DO NOT EDIT THESE NUMBERS. THEY ARE CARL'S, SET BY EYE."** It exists
-because the Builder lost them twice.
+⛔ **SECOND, SEPARATE DEFECT — the horizon sign.** `nyHorizon` returned **-0.33794** where the
+horizon is **+0.33794** (verified by substitution: 2.8e-17 vs **-0.43901**). ⚠⚠ **NOT the cause of
+the invisibility** — both grids built finite vertices either way, so **fixing it alone would have
+changed nothing on screen, a real bug that would have looked like a failed fix.** `WALL_Z` -2.04 →
+-78.68. **The comment above the line said *"ny ~= 0.400"* — positive — while the code computed
+negative, and nothing checked they agreed.**
 
-⚠ **A fix was written and then REVERTED with everything else. It is not in the tree.** The
-conversion is `x` unchanged, `y` through `STAGE_CROP + y * STAGE_VISIBLE`.
+## ⛔ D-084's ACCEPTANCE TEST IS WITHDRAWN AS EVIDENCE
 
-⛔⛔ **AND THE DOWNSTREAM CONSTANTS ARE STALE IF THE QUADS CHANGE.** `CA_CARD_ASPECT` 2.327,
-`CB_CARD_ASPECT` 2.248 and both heights were **derived from the wrong quads on 17 September**.
-**Correcting the quads without re-deriving these leaves the cards the wrong shape.**
-
-## 2. CB'S CEILING DROP IS UNRESOLVED IN THE PINNED DATA ITSELF
-
-⛔ **Not a code fault and NOT fixable by arithmetic.** `wall-card-corners-4-september.md` lists it
-under *"What is still open"*: **CB's TR sits at y = 0 — hard against the top edge of the pinning
-tool — while CA's TL is at 0.02849.** Carl's rule *"The distance from the ceiling must be the same
-for CA and CB. Its like hanging a picture"* **was never satisfied.**
-
-⚠ **The old letterboxed framing hid it. A correctly-framed room shows it.**
-⛔ **NEEDS CARL TO RE-PIN CB IN `/proto/wall`. Do not invent the number.**
+**It compared the DOM photograph with ITSELF.** The proxy contributed nothing to either side.
+⚠ **A control comparing an image with itself returns 0.000 and proves nothing.** The NDC round-trip
+at 2.22e-16 verified the maths of a mesh that never drew. ⛔ **D-084's ARCHITECTURE STANDS — only the
+claim that it was verified working is gone.**
 
 ---
 
-# ⛔ THE BACKGROUND GEOMETRY — FIVE ATTEMPTS, AND WHY THE FIFTH IS RIGHT
+# ⛔ THE RECORD GAP IS THE SESSION'S REAL THEME — THREE INSTANCES
 
-⚠⚠ **A DOM `<img>` BEHIND A TRANSPARENT CANVAS IS INVISIBLE TO THE GLASS** — three never renders
-it, so transmission samples an empty target (cleared to 50% WHITE on `alpha: true`) and CS reads as
-a **milky slab**. The room must be IN the scene.
+**D-074 named this failure. It recurred three times in this one chunk.**
 
-    1  flat plane, depth 30, exact FOV     bottom third of frame BLACK
-    2  same + overscan 2.2                 filled the frame but SCALED THE IMAGE —
-                                           room zoomed, cards against a framing their
-                                           positions were never solved from
-    3  flat plane, depth 6                 PIXEL-IDENTICAL to (1). ⛔ A change that
-                                           should have mattered did not, which PROVED
-                                           the variable being tuned was never the cause
-    4  projected from PLATE FRACTIONS      correct framing lost — see the bug below
-    5  projected from SCREEN NDC           ⛔ WORKS
+| entry | what lived only in a gitignored `live-work/` file |
+|---|---|
+| **D-086** | **The card copy is BAKED INTO THE FACE** — Carl's ruling of 14 September, four days unrecorded |
+| **D-087** | **The neon LOOP**, and that mouse proximity + randomness were **raised and not chosen** |
+| **D-088** | The poster ruling, now superseded |
 
-⛔⛔ **WHY A FLAT PLANE CANNOT WORK, MEASURED:** at VFOV 67.31 / pitch 12.68 **the bottom of the
-frame meets the floor at t = 1.38 camera units** while the back wall is ~16. **No single plane at
-one depth can be both.**
+⚠⚠ **AND THE D-086 GAP PRODUCED A WRONG ANSWER TO CARL THIS SESSION.** Asked whether the card text
+reads without the neon, the Builder read `wall-card-text.tsx`, found DOM `text-white`, and said
+*"Yes — legibility does not depend on the neon at all."* ⛔ **That file is the SUPERSEDED approach
+and nothing canonical said so.** Carl: *"This is out of date, i decided to use three js text that
+is affected by the scene."*
 
-## ⛔ THE BUG IN ATTEMPT 4, AND IT IS THE ONE WORTH REMEMBERING
+⛔ **THE CORRECT ANSWER IS UNKNOWN. The text and the neon are ONE problem.**
 
-Past a `FAR` limit it **clamped `z` and scaled `x` while leaving `y` untouched** — which lifts the
-vertex **off the camera ray that generated its UV**. The vertex then draws its photograph pixel at
-the wrong screen position, non-uniformly across the grid. ⛔ **The cards never moved. The
-background's camera-to-image mapping did.**
+## ⛔⛔ A STANDING RULE WAS ADDED TO `context-rules.md`
 
-## ⛔ THE FIX — EVERY VERTEX IS AN UNPROJECTED SCREEN POINT
+> ⛔ ***"When im brainstorming at the start of a section things i mention, albeit provisionally
+> should be recorded. Its clear that some ideas were not."***
 
-⚠⚠ **THE METHOD CAME FROM OUTSIDE — Carl took the problem to ChatGPT on 18 September and pasted
-the answer back.** ⛔ **Recorded because provenance matters: it is the second outside contribution
-to this chunk, after the glass sandbox, and the record should say which parts the Builder did not
-originate.**
-
-**What it supplied, and it was the architecture, not a tweak:**
-- ⛔ **Derive every vertex by unprojecting a screen/NDC point through the SOLVED camera**, so
-  position and UV come from the same point *by construction*.
-- ⛔ **Bound the grid at the horizon rather than clamping vertices.**
-- ⛔ **The acceptance test** — opaque material first, prove the framing is pixel-identical to the
-  CSS photograph, and only THEN enable transmission. ⚠ **A better gate than the Builder had.**
-- ⚠ **The round-trip check** — back-project known points and re-project them; ~0px error proves the
-  proxy cannot be causing framing drift.
-
-⚠⚠ **ITS FIRST DIAGNOSIS WAS WRONG AND THAT IS WORTH KEEPING TOO.** It identified missing
-`object-contain` letterbox offsets. ⛔ **Measurement showed those are ZERO here** — the wrapper is
-`aspect-[3/2]`, so the canvas box and the displayed image box already coincide (0.00px at 1440 and
-1920). **The real bug was the Builder's `FAR` clamp.**
-
-⛔ **THE METHOD WAS STILL RIGHT, AND FOR A BETTER REASON THAN THE ONE GIVEN.** It fixes the clamp
-bug as a side effect, and being correct by construction rather than by coincidence **it survives
-the 800x1200 case where the boxes DO diverge by 338px.** ⚠ **A right method reached through a wrong
-cause — do not let the wrong cause be inherited as fact.**
-
-    NDC point -> camera ray -> plane intersection -> vertex
-    the SAME NDC point -> the photograph's UV
-
-**Correct by construction; framing cannot drift.** Horizon handled by **bounding the grid**, never
-by clamping vertices. ⚠ **NDC round-trip verified at 2.22e-16.**
-
-⚠⚠ **AND IT WAS *NOT* AN `object-contain` FAULT, WHICH WAS THE FIRST DIAGNOSIS.** ⛔ **MEASURED: the
-canvas box and the `object-contain` displayed image box agree to 0.00px at 1440 AND 1920** — the
-wrapper is `aspect-[3/2]`, the plate's own aspect. ⚠ **But at 800x1200 they diverge by 338px**, so
-the NDC route is still right: correct by construction, not by coincidence.
-
-## ⛔ THE ACCEPTANCE TEST PASSED — run it again after any change
-
-**Unlit proxy vs the CSS photograph, card-free regions, 0-255 scale:**
-
-    ceiling strip           8.93      far-right wall column   2.71
-    far-left wall column    4.70      (bottom-centre 22.92 — contains CS, not clean)
-
-⚠ **Control (ref vs ref) = 0.000, so the comparison is sound.** ⛔ **Wall/ceiling agreement at
-2.7-8.9 is resampling noise, not displacement. THE FRAMING IS RIGHT.**
+⚠⚠ **AND THE HARDER HALF: AN IDEA CAN BE CHOSEN BY BEING EXPANDED ON.** Carl raises three options
+and develops one; **the development IS the decision.** ⛔ **Record the others as raised-and-not-
+chosen.** **The test: if a future reader cannot tell which option is live, the record has failed —
+even though every word in it is true.**
 
 ---
 
-# ⚠⚠ WHAT I GOT WRONG
+# ⚠⚠ WHAT I GOT WRONG — and the controls that caught it
 
 | | |
 |---|---|
-| **Kept fixing forward** | ⛔ **Four failed background attempts before stopping.** Should have stopped at two. Each fix broke something the last had not. |
-| **Lost the placement while chasing the material** | Carl: *"The cards can look fantastic but it will mean nothing if it looks like it dont belong in the scene."* **Correct, and it is the lesson of the session.** |
-| **A probe that could not fail** | `drawImage` off a WebGL canvas returned **0/0/0 even with glass OFF**. `preserveDrawingBuffer: false`. Caught only by running a CONTROL. |
-| **Measured the wrong quantity** | A roughness sweep by MEAN looked dead. ⛔ **Blur PRESERVES the mean** — frost lives in VARIANCE. sd 12.21 -> 2.95 across 0 -> 0.8. |
-| **A threshold chosen by assertion** | The A2 harness opened at 170 and **returned PASS on a defect measuring 167.2.** Now 140, measured between both populations. |
-| **A diagnostic that ignored its own switch** | `false && a \|\| b` collapses to `b` — guides drew with the flag off. Caught only because the render disagreed with the flag. |
-| **A false mechanism written down as fact** | Attributed the black face to `alpha: true`, reasoned line-by-line out of three 0.185.1. **`alpha: false` changed the number by 0.0.** |
+| **A probe that could not fail** | An r3f harness reported 0.0 for hiding the backplate — **and 0.0 for its control too.** `frameloop="demand"`, nothing repainted. **Every number was fiction.** ⛔ Without the control it would have been a finding. |
+| **The wrong instrument, twice** | `elementFromPoint` returned `canvas` **before AND after** the z-index fix — the SVG is `pointer-events-none`, so hit-testing reports what is BENEATH it. ⛔ **HIT ORDER IS NOT PAINT ORDER.** Trusting it would have called a working fix a failure. |
+| **A hypothesis I built on** | *"The backplate does not cover the ceiling"* — **falsified by my own arithmetic.** The wall grid spans the full frame to ny=1. |
+| **Turned on the wrong guides** | Asked for floor rails, flipped `showGuides` — **the GREEN CARD QUADS.** Two different things in two different files; the distinction is now written at both sites. |
+| **Broke a file with a comment** | My `wall-card-text.tsx` header closed the block early and orphaned the original body into code. `tsc` caught it. |
 
-> ⛔⛔ **THE PATTERN: A CONFIDENT EXPLANATION PRODUCED BEFORE IT WAS TESTED, TWICE.** Verifying that
-> a mechanism EXISTS is not verifying it is THE ONE ACTING.
+> ⛔⛔ **THE PATTERN: MEASURE THE PIXELS. Three separate instruments agreed with a wrong answer this
+> session, and only rendered output settled it.**
+
+---
+
+# ⛔ THE RAILS — ON UNTIL CARL SAYS OTHERWISE
+
+**Carl:** *"They should be on until i instruct to remove them."*
+
+⛔ **They were never removed — they were COVERED.** `AboutCardCanvas` is later in the DOM with an
+**exactly overlapping box** (both 38,0 1349x899), so at `z-index: auto` it won on document order.
+**Fixed with `z-20`** plus an `aspect-[3/2]` wrapper so they track the plate, not the letterboxed
+section.
+
+⚠ **MEASURED ANGLES UNCHANGED: PL −15.8809°, PR 34.9716°.** ⛔ **No rail coordinate was touched** —
+Carl: *"they were meticulously measured… if the floor cards are moved later on a wrong axis it will
+ruin the perspective."*
+
+⛔ **BLUE AND PINK ONLY.** The green card quads are a **consumed placement check** and stay OFF —
+Carl: *"NOT green card rectangles."* The green/orange lines in `/proto/wall` are starter references
+and stay there.
 
 ---
 
 # ⛔ WHAT THE NEXT SESSION SHOULD DO, IN ORDER
 
-1. ⛔ **`npm run lint`** — not re-run since the last edits.
-2. ⛔⛔ **Put the two committed-data faults to Carl.** They are independent of today's build and are
-   recorded NOWHERE except this file. **Fault 1 needs the quads corrected AND the aspects/heights
-   re-derived. Fault 2 needs Carl to re-pin CB.**
-3. ⚠ **Do not touch card positions otherwise.** They are approved.
-4. ⚠ **`?guides=1` draws the quads, the floor rects and the PL/PR rails.** ⛔ **They must come out
-   before this ships.**
-5. ⛔ **THE RECORD IS CAUGHT UP — CLOSED 18 September, commit `39ce005`, pushed.** **D-084** (the
-   depth proxy, the five attempts, the clamp bug, both data faults), **R-026** (the bench glass
-   approved at ~0.35), a **forward-pointer on D-083** correcting its env-map finding, the sprint
-   row, and the Blockers replaced. ⚠ **An earlier version of this item said the record was three
-   sessions behind. That was true when written and is now false** — corrected rather than left, per
-   `context-rules.md`.
+1. ⛔ **Kill the dev server on :3000 and confirm the port free.**
+2. ⛔ **Commit and push the three governance files** listed at the top. **D-088 is written but
+   unpushed.**
+3. ⚠ **Nothing is authorised to build.** Chunk 3 is not open.
+
+---
+
+# ⚠ PARKED BY CARL — NO DECISION, DO NOT PRESS
+
+1. **The travelling-room question** — room in §1 with cards fading in at §2, or §2 as the reveal.
+2. **Whether CA strikes first** — ⚠ in tension with Carl's own *"NO CARD IS A STEP."*
+3. **Four neon colours** — ⛔ **now doubted by Carl himself:** *"I did rule 4 colours but i think
+   that would be too much."* D-087 not withdrawn; no new number chosen.
+4. **`wall-card-corners-4-september.md` supersession notice** — still owed. ⛔ It still says
+   **"DO NOT EDIT THESE NUMBERS"** and carries **no notice that Carl discarded that set on
+   10 September.** ⚠⚠ **This is what produced two false blockers last session.**
+
+---
+
+# ⛔⛔ THE LIVE DIRECTION — D-088, PROPOSED, "we will probably run with this"
+
+**The poster is RULED OUT: the cards grew and took its space.** ⚠ The reasoning did not fail; its
+premise moved.
+
+**The mark instead STANDS ON THE RIGHT DESK in §2** — right of the mouse, measured and clear
+(CB's lowest point y 0.3785 against a desk surface at y 0.50-0.62) — **and TRAVELS into §3's player
+on scroll**, jumping into the screen as the player comes into view.
+
+⛔⛔ **IT ANSWERS CARL'S OWN CLUE** — *"It stops at 2. How would it get in the TV?"* **It carries
+itself there: ONE OBJECT the whole way down.** ⚠ **And it solves §3's idle-player problem in the
+same move, so §2's mark and §3's placeholder are ONE piece of work.**
+
+⛔ **§5a APPLIES AND IT IS NOT AUTHORISED. Five things unsolved:** a scroll-linked animation is a
+**new mechanism with no precedent on this site**; **the 3D→DOM hand-off** is two coordinate spaces
+and is the hard part; `prefers-reduced-motion`; what the neon spill does to the mark's colour; and
+**whether a second travelling instance enriches D-065's immobile mark or contradicts it.**
 
 ---
 
 # ⚠ STILL OPEN AND CARL'S
 
-1. ⛔⛔ **The two placement faults above.**
-2. **`ENV_PLATE_INTENSITY = 6.0` is a COMPENSATION, not a physical value** — it multiplies a dim
-   room by six to manufacture highlights. ⚠ **Revisit DOWNWARD when the neon exists.**
-3. ⛔ **The rim will not read like Carl's references until it EMITS** — emission + a real light +
-   bloom. **Chunk 3. An env map makes it LEGIBLE, not CORRECT.**
-4. **The bevel is frosted FOR NOW** — metallic is live and gets tested in chunk 3, *"when the neon
-   light is off."*
-5. **Four neon colours** — four, all different, none chosen.
-6. **`transmissionResolutionScale`** and the PMREM cost — both unmeasured in the room.
-7. **Final roughness** — Carl at **0.35** on the bench, *"in the ballpark... any modifications
-   would be slight."* ⚠ **Not settled in the room.**
-8. **§2 copy PROVISIONAL**; **accessibility** owed.
+1. ⛔ **The room, the glass in the room, and the rails are ALL unapproved by eye.**
+2. **`ENV_PLATE_INTENSITY = 6.0` is a COMPENSATION**, not a physical value. Revisit downward.
+3. **Roughness 0.35 was approved on the BENCH, not in the room.** Rim 0.10 clear, bevel+face 0.35
+   frosted — **verified live on the GPU this session.**
+4. **The texture budget for baked text is UNMEASURED and is the real constraint** — the answer card
+   bakes ONE LINE into 4 MiB at +108ms; these cards carry **49-84 words.** ⛔ **Size it BEFORE
+   building, not in a stall.**
+5. **PMREM cost in the room still unmeasured.**
+6. ⚠ **`?guides=1` guide lines render WITHOUT the flag** — 1,025 guide-coloured pixels on a plain
+   load. **Reported, not fixed.**
+7. **§2 copy PROVISIONAL**; **accessibility** owed (`sr-only` copy, D-086).
 
 ---
 
-*Written 18 September 2026. ⛔ **The proxy works and is verified. The placement data underneath it
-does not.** ⚠ Committed and pushed at `39ce005`; the record is caught up. ⛔ Committed is not approved.*
+*Written 18 September 2026, third session. ⛔ **The proxy renders for the first time and the glass is
+judgeable.** ⚠ **Committed is not approved.** ⛔ **Three decisions were recovered from gitignored
+files; the rule that should prevent a fourth is now in `context-rules.md`.***
