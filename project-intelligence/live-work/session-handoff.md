@@ -11,16 +11,16 @@
 attempts at the background geometry, the fifth works — and it exposed TWO PLACEMENT FAULTS IN
 COMMITTED DATA that predate all of today's work.**
 
-## ⛔ NOTHING IS COMMITTED. HEAD is `052703a`.
+## ⛔ COMMITTED AND PUSHED. HEAD is `39ce005`.
 
-    M  components/about/about-card-canvas.tsx   the camera-matched proxy + guide overlay
-    M  components/about/about-card-glass.ts     rim 0.10, env-map constants
-    M  components/about/about-card-mesh.tsx     rim clear, bevel frosted
-    M  components/about/card-bench.tsx          backplate, env map, faders
-    ?? components/about/room-environment.tsx    NEW — the PMREM builder
+    f51e865  the camera-matched depth proxy; CS's glass in the scene
+    39ce005  D-084 and R-026 — the record caught up
 
-⚠ **`npx tsc --noEmit` CLEAN.** ⛔ **`npm run lint` NOT RE-RUN since the last edits — run it.**
-⚠ **A dev server may be on :3000. Kill it before any checkpoint.**
+⚠⚠ **COMMITTED IS NOT APPROVED. Carl has NOT passed the room build by eye** — it is verified for
+FRAMING only (D-084). ⛔ **The bench glass at ~0.35 IS approved (R-026); the room is not.**
+
+⚠ **`npx tsc --noEmit` CLEAN. `npm run lint` = `1 problem (1 error, 0 warnings)`** — the documented
+baseline. ⛔ **Port 3000 confirmed free.**
 ⛔ **`git stash@{0}` holds the FIRST (broken) room attempt. Keep — it carries the failure record.**
 
 ---
@@ -165,8 +165,12 @@ the NDC route is still right: correct by construction, not by coincidence.
 3. ⚠ **Do not touch card positions otherwise.** They are approved.
 4. ⚠ **`?guides=1` draws the quads, the floor rects and the PL/PR rails.** ⛔ **They must come out
    before this ships.**
-5. ⛔ **The record is THREE sessions behind** — 17 Sept, 18 Sept, and this. D-082/D-083/R-025 were
-   written and are COMMITTED; today's proxy work and both faults are not.
+5. ⛔ **THE RECORD IS CAUGHT UP — CLOSED 19 September, commit `39ce005`, pushed.** **D-084** (the
+   depth proxy, the five attempts, the clamp bug, both data faults), **R-026** (the bench glass
+   approved at ~0.35), a **forward-pointer on D-083** correcting its env-map finding, the sprint
+   row, and the Blockers replaced. ⚠ **An earlier version of this item said the record was three
+   sessions behind. That was true when written and is now false** — corrected rather than left, per
+   `context-rules.md`.
 
 ---
 
@@ -188,4 +192,4 @@ the NDC route is still right: correct by construction, not by coincidence.
 ---
 
 *Written 19 September 2026. ⛔ **The proxy works and is verified. The placement data underneath it
-does not.** ⚠ Nothing committed.*
+does not.** ⚠ Committed and pushed at `39ce005`; the record is caught up. ⛔ Committed is not approved.*
