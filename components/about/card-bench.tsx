@@ -12,46 +12,53 @@
  * a check sharing a formula with the thing it checks cannot fail.
  *
  * ══════════════════════════════════════════════════════════════════════════
- * ⛔⛔ THE TRANSMISSIVE FACE NEEDS AN ENVIRONMENT MAP. THE BENCH HAS NONE.
+ * ⛔⛔ THE BACKPLATE IS WHAT THE GLASS REFRACTS. IT MUST COVER THE FRAME.
  * ══════════════════════════════════════════════════════════════════════════
  *
- * **18 September 2026. Chunk 2a is BUILT AND IS NOT YET JUDGEABLE**, and the
- * reason is one missing ingredient, not a wrong parameter. The glass toggle
- * works, the faders move, the photographic proxy loads and is plainly visible
- * around the card — ⛔ **and the face renders near-black and barely responds to
- * either fader.**
+ * **18 September 2026. The frosted face works and is ready for Carl's eye.**
+ * ⛔ **Carl's ruling, 17 September, Option A, confirmed by name: the backplate is
+ * the background for the frosted glass.** That was already decided; this file
+ * just had not built it yet.
  *
- * **MEASURED, from screenshots** (the in-page canvas readback returns an empty
- * buffer — see the harness note below):
+ * ⚠⚠ **TRANSMISSION SAMPLES THE RENDER TARGET IN SCREEN SPACE**
+ * (`transmission_pars_fragment.glsl.js:147`), so a plane that merely sits BEHIND
+ * the card is not enough — **the refracted ray lands where it lands, and anywhere
+ * the plate does not cover reads as empty target.** ⛔ The original proxy was
+ * 1.6x the card and did not cover an oblique frame; the face measured **2.2**.
  *
- *     face centre luminance, glass OFF          113.2   <- correct, lit grey
- *     face centre luminance, glass ON             2.2
- *     across roughness 0 -> 0.5                2.2 -> 3.1
- *     across thickness  0 -> 40mm              2.2 -> 2.2   (no response)
- *     with a FULLY EMISSIVE proxy behind       2.2 -> 6.1
- *     ⛔ WITH AN `<Environment>` IN THE SCENE   2.2 -> 56.8  <- 26x
+ *     face centre luminance, glass OFF                113.2   <- lit grey
+ *     glass ON, card-sized proxy                        2.2   <- the fault
+ *     glass ON, frame-filling camera-aligned backplate  99.6   <- correct
  *
- * ⛔⛔ **THE LAST ROW IS THE CAUSE.** `MeshPhysicalMaterial`'s transmission takes
- * its specular and its IBL from an environment map; with none in the scene there
- * is almost nothing for the face to return, so it reads black no matter what the
- * faders say. ⚠ **This is why `/start`'s glass BUILDS ONE DELIBERATELY** —
- * `answer-card-canvas.tsx` generates a local env map with `PMREMGenerator`, at a
- * measured ~572ms, and that file already records `envMapIntensity` ramping from
- * black as *"what produced the black rectangle."*
+ * ⛔ **AND THE CONTROL HELD AT 113.2 THROUGHOUT**, which is the test that
+ * separates a real fix from a scene-wide brightening.
  *
- * ⛔ **WHAT THE ENVIRONMENT MAP IS IS CARL'S AND IS NOT DECIDED HERE.** A drei
- * `preset` was used as a DIAGNOSTIC ONLY and has been removed: it also lifted the
- * control from 113 to 225, so it lights the whole bench, not just the glass. ⚠ A
- * room-derived env map — plausibly built from the plate the proxy already crops —
- * is the obvious candidate and is **a §5a-shaped question, not an implementation
- * detail.** It goes to Carl.
+ * ### ⚠⚠ THE ROUGHNESS FADER WORKS, AND MEAN LUMINANCE CANNOT SEE IT
  *
- * ⛔ **RULED OUT, so the next session does not re-walk any of it:**
- *   - **Lighting / a dark proxy** — the emissive row above.
- *   - **Geometry or occlusion** — glass OFF renders a correctly lit face at the
- *     same position; the proxy sits at z -24mm, the face at z +7mm.
- *   - **The parameters** — `thickness: 0` and `roughness: 0` are the near-clear
- *     case and render identically black.
+ * **A sweep measured by MEAN read 99.6 -> 100.5 and looked dead. It is not.**
+ * ⛔ **Blurring an image PRESERVES its mean** — the quantity frost changes is
+ * LOCAL CONTRAST. Measured as standard deviation inside the face:
+ *
+ *     roughness 0.00   sd 12.21      roughness 0.30   sd  9.86
+ *     roughness 0.18   sd 11.40      roughness 0.50   sd  4.09
+ *                                    roughness 0.80   sd  2.95
+ *
+ * ⚠ **AT THE OPENING 0.18 THE FROST IS VERY LIGHT — sd falls only 7% from
+ * clear.** The real range is above 0.3. ⛔ **Consistent with the crown, where
+ * Carl's eye settled nearly 3x past the outside figure. Do not read 0.18 as the
+ * answer.**
+ *
+ * ### ⛔ RULED OUT — do not re-walk any of it
+ *
+ *   - **An environment map is NOT required and was NOT the answer.** ⚠ A drei
+ *     `<Environment>` lifted the face 2.2 -> 56.8, which located the symptom and
+ *     **MISLED ON THE CAUSE**: it also lifted the CONTROL 113 -> 225, so it lit
+ *     the whole bench. ⛔ And `/start`'s env map is a **SYNTHETIC two-panel
+ *     studio in a black shell**, not a room — it was never the same thing as the
+ *     backplate. **Removed.**
+ *   - **Lighting / a dark proxy** — a fully emissive proxy moved it only to 6.1.
+ *   - **The parameters** — `thickness: 0` and `roughness: 0` rendered identically
+ *     black while the coverage was wrong.
  *   - **`alpha: true` on the canvas** — ⚠⚠ **REASONED IN FULL, THEN FALSIFIED.**
  *     A mechanism was built out of `three.module.js:18019` ->
  *     `transmission_fragment:31` -> `opaque_fragment:7`, every line of which is
@@ -60,13 +67,13 @@
  *     wrong argument that survives next to a right conclusion becomes a false
  *     fact a later reader relies on.
  *
- * ⛔⛔ **AND A HARNESS DEFECT WORTH MORE THAN THE BUG.** The first probe read the
- * canvas with `drawImage` into a 2D context and reported **0/0/0 at every setting
- * — INCLUDING WITH GLASS OFF**, where the screenshot plainly shows a bright grey
- * face. `preserveDrawingBuffer: false` makes that readback empty. ⚠ **It was
- * caught only because a control was run with the feature turned OFF and the
- * "defect" was still there.** Every instrument failure in this project that cost
- * days failed toward a confident wrong number. **Run the control.**
+ * ⛔⛔ **AND TWO INSTRUMENT DEFECTS WORTH MORE THAN THE BUG.** The first probe
+ * read the canvas with `drawImage` into a 2D context and reported **0/0/0 at
+ * every setting — INCLUDING WITH GLASS OFF**, where the screenshot plainly shows
+ * a bright grey face (`preserveDrawingBuffer: false` makes that readback empty).
+ * **The second measured the wrong QUANTITY** — mean, where the effect lives in
+ * variance — and made a working fader look dead. ⚠ **Both were caught by running
+ * a control whose answer was already known.** **Run the control.**
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -94,6 +101,7 @@ import {
   GLASS_TRANSMISSION,
 } from "./about-card-glass";
 import { AboutCardMesh } from "./about-card-mesh";
+import { RoomEnvironment } from "./room-environment";
 
 /**
  * ⛔ CHUNK: THE LEFT FLOOR CARD (CD) — 14 September 2026, Carl: *"Lets start with
@@ -159,6 +167,33 @@ type View = "face" | "oblique" | "side" | "top";
  */
 type Treatment = "curved" | "flat";
 
+/**
+ * ⛔⛔ THE ROOM ENVIRONMENT MAP — built from the plate, on Carl's instruction,
+ * 18 September 2026: *"We are gonna need an env map. Lets build it now."*
+ *
+ * ⚠⚠ **IT EXISTS FOR THE RIM, NOT THE FACE.** The frosted face is served by the
+ * backplate (measured 2.2 -> 99.6). ⛔ **The CLEAR rim cannot render at all
+ * without an environment**: at `transmission: 1` there is no diffuse colour, and
+ * `three.module.js:18039` renders `opaqueObjects` ONLY into the transmission
+ * target — **so no transmissive object can see itself or its neighbours.**
+ * Specular reflection is the only channel left.
+ *
+ * ⛔ **THE SHELL IS THE PLATE, NOT A STUDIO.** `/start` builds two abstract
+ * panels in a black sphere; that is right for an orthographic card on a dead
+ * backdrop and wrong here. This card stands IN a photographed room and must
+ * reflect THAT room — §14a: *"Effects should feel caused by the world, not
+ * layered on top of it."*
+ *
+ * ⚠ **IT IS NOT THE NEON AND DOES NOT PRETEND TO BE.** Carl's references show a
+ * rim that spills visibly onto the floor with bloom. **That is emission plus a
+ * real light plus a bloom pass — chunk 3.** This makes the rim LEGIBLE so the
+ * glass can be judged; it does not make it CORRECT.
+ *
+ * ⚠ **BENCH ONLY.** It is built here and NOT in `about-card-canvas.tsx`, which
+ * 2a does not touch. ⛔ Its cost is unmeasured in the room — the `/start`
+ * precedent is ~572ms of ungated PMREM, and 2b owns that measurement.
+ */
+
 export default function CardBench() {
   const [treatment, setTreatment] = useState<Treatment>("curved");
   const [heightMm, setHeightMm] = useState(CD_CARD_HEIGHT_MM);
@@ -203,6 +238,13 @@ export default function CardBench() {
   const [glassOn, setGlassOn] = useState(false);
   const [glassRoughness, setGlassRoughness] = useState(GLASS_ROUGHNESS);
   const [glassThicknessMm, setGlassThicknessMm] = useState(GLASS_THICKNESS_MM);
+  /**
+   * ⛔ THE ENV MAP TOGGLE. ⚠ ON by default when the glass is on — without it the
+   * CLEAR rim does not render at all, so the card would be judged missing a part.
+   * It is a toggle rather than always-on so the rim's dependence on it stays
+   * VISIBLE and is not rediscovered later as a mystery.
+   */
+  const [envOn, setEnvOn] = useState(true);
 
   /**
    * ⛔ THE PHOTOGRAPHIC PROXY — the region of the plate that sits behind CS,
@@ -228,16 +270,42 @@ export default function CardBench() {
     const img = new Image();
     img.onload = () => {
       if (cancelled) return;
-      const sx = Math.round(GUIDE_CS.x0 * img.naturalWidth);
-      const sy = Math.round(GUIDE_CS.y0 * img.naturalHeight);
-      const sw = Math.round((GUIDE_CS.x1 - GUIDE_CS.x0) * img.naturalWidth);
-      const sh = Math.round((GUIDE_CS.y1 - GUIDE_CS.y0) * img.naturalHeight);
+      /**
+       * ⛔⛔ THE CROP IS CENTRED ON CS BUT WIDENED TO THE BACKPLATE'S ASPECT.
+       *
+       * ⚠⚠ AN EARLIER VERSION TOOK `GUIDE_CS` EXACTLY AND IT WAS WRONG FOR A
+       * BACKPLATE — a 1.34:1 crop stretched across a 16:9 plane distorts the
+       * room, and the glass would then be judged against a misshapen photograph.
+       * ⛔ The crop keeps CS's CENTRE and takes as much plate as the plane's
+       * aspect asks for, so the room behind the card is the real room at the
+       * real proportions.
+       *
+       * ⚠ `GUIDE_CS` IS ALREADY IN PLATE SPACE, so no stage->plate conversion is
+       * involved. **That trap corrupted every card placement for hours on 14
+       * September while the arithmetic reported "EXACT, 0.00000px"** — stated
+       * because its absence here is worth knowing, not assumed.
+       */
+      const cx = (GUIDE_CS.x0 + GUIDE_CS.x1) / 2;
+      const cy = (GUIDE_CS.y0 + GUIDE_CS.y1) / 2;
+      const TARGET_ASPECT = 16 / 9;
+      // Take the full plate height available around CS, then the width its aspect needs.
+      let sh = (GUIDE_CS.y1 - GUIDE_CS.y0) * img.naturalHeight * 2.2;
+      let sw = sh * TARGET_ASPECT;
+      // ⚠ Clamp to the plate rather than sampling outside it, which returns transparent.
+      sw = Math.min(sw, img.naturalWidth);
+      sh = Math.min(sh, img.naturalHeight, sw / TARGET_ASPECT);
+      const sx = Math.round(
+        Math.max(0, Math.min(cx * img.naturalWidth - sw / 2, img.naturalWidth - sw)),
+      );
+      const sy = Math.round(
+        Math.max(0, Math.min(cy * img.naturalHeight - sh / 2, img.naturalHeight - sh)),
+      );
       const canvas = document.createElement("canvas");
-      canvas.width = sw;
-      canvas.height = sh;
+      canvas.width = Math.round(sw);
+      canvas.height = Math.round(sh);
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+      ctx.drawImage(img, sx, sy, Math.round(sw), Math.round(sh), 0, 0, Math.round(sw), Math.round(sh));
       const tex = new THREE.CanvasTexture(canvas);
       /* ⛔ A KNOWN FAILURE, NOT A PRECAUTION. `contact-field-canvas.tsx:806`:
          *"Omitting it double-applies the transfer function."* */
@@ -276,6 +344,60 @@ export default function CardBench() {
           : [camDist * 0.62, camDist * 0.34, camDist * 0.72];
 
   const edgeOn = view === "side" || view === "top";
+
+  /**
+   * ⛔⛔ THE BACKPLATE'S SIZE IS DERIVED FROM THE CAMERA IN USE, NOT CHOSEN.
+   *
+   * ⚠⚠ THIS IS THE FIX FOR THE BLACK FACE AND THE ARITHMETIC IS THE POINT.
+   * Transmission samples the render target in SCREEN SPACE, so the backplate has
+   * to cover the FRAME, not merely sit behind the card. **Anywhere it does not
+   * cover reads as empty target** — which is exactly what the 1.6x-the-card proxy
+   * produced (face luminance 2.2).
+   *
+   * `visibleHeight = 2 * distance * tan(fov / 2)`, the standard perspective
+   * relation, with the SAME `fov` the Canvas is given below. ⛔ Sharing the
+   * source with the camera is deliberate: a hard-coded size would go stale the
+   * moment the view or the fov changes, and a stale constant is this project's
+   * most-recorded failure.
+   *
+   * ⚠ `backplateDistance` is measured from the CAMERA, not from the origin, so
+   * the card sits between the two. **1.35x the camera distance** puts it behind
+   * the card with room to spare at every view.
+   *
+   * ⚠ `OVERSCAN` covers the oblique views, where the plane is seen at an angle
+   * and its projected footprint shrinks. ⛔ It is a margin, not a measurement —
+   * if a future view shows an edge, raise it rather than hand-tuning a size.
+   */
+  const BACKPLATE_OVERSCAN = 1.8;
+  const backplateDistance = camDist * 1.35;
+  const backplateFov = edgeOn ? 15 : 40;
+  const backplateH =
+    2 *
+    (backplateDistance + camDist) *
+    Math.tan(((backplateFov * Math.PI) / 180) / 2) *
+    BACKPLATE_OVERSCAN;
+  /**
+   * ⚠ 16/9 IS THE PANEL'S ASPECT, set on the wrapper below as `aspectRatio`.
+   * ⛔ It is NOT the plate's 1.5 — the plate is cropped INTO this plane by the
+   * texture, and stretching the plane to the plate's aspect would letterbox the
+   * frame rather than fill it.
+   */
+  const backplateW = backplateH * (16 / 9);
+  /**
+   * ⛔ THE BACKPLATE TURNS TO FACE THE CAMERA, derived from `camPos` — the same
+   * source the camera itself uses, so the two cannot drift apart.
+   *
+   * ⚠ A plane's default normal is +z, so yawing by `atan2(x, z)` and pitching by
+   * `-asin(y / |camPos|)` points it back down the view axis. **In the face-on
+   * view both terms are 0 and the plane is unrotated**, which is the correct
+   * degenerate case rather than a special case that needs handling.
+   */
+  const camLen = Math.hypot(camPos[0], camPos[1], camPos[2]) || 1;
+  const backplateRot: [number, number, number] = [
+    -Math.asin(camPos[1] / camLen),
+    Math.atan2(camPos[0], camPos[2]),
+    0,
+  ];
 
   // The raking light: swept around the card in its own plane, kept forward of it.
   const a = (lightAngle * Math.PI) / 180;
@@ -472,6 +594,16 @@ export default function CardBench() {
           </span>
         </label>
 
+        <label className="flex items-center gap-2 aria-disabled:opacity-40" aria-disabled={!glassOn}>
+          <input
+            type="checkbox"
+            checked={envOn}
+            disabled={!glassOn}
+            onChange={(e) => setEnvOn(e.target.checked)}
+          />
+          room env map
+        </label>
+
         <span className="text-neutral-500">
           ior <span className="tabular-nums">{GLASS_IOR}</span> · transmission{" "}
           <span className="tabular-nums">{GLASS_TRANSMISSION}</span> — fixed
@@ -531,17 +663,43 @@ export default function CardBench() {
           <ambientLight intensity={0.12} />
           <directionalLight position={lightPos} intensity={2.4} />
 
-          {/* The transmission proxy — a flat plane of the sampled floor colour,
-              standing in for what is behind the card in the room.
-              ⛔ It does nothing under a diagnostic material; it is here so the
-              same scene serves chunk 2 without restructuring. */}
-          {/* ⚠ Hidden edge-on: seen from the side the proxy is a wall across the
-              frame and the card's profile disappears behind it. */}
+          {/* ⛔ THE ROOM ENV MAP. ⚠ Gated on `glassOn` as well as its own toggle:
+              it exists for the CLEAR RIM and costs a PMREM build, so it does not
+              run while the card is diagnostic grey. */}
+          <RoomEnvironment plate={proxyTexture} enabled={glassOn && envOn} />
+
+          {/* ⛔⛔ THE BACKPLATE — what the frosted glass refracts. Carl's ruling,
+              17 September 2026, Option A, confirmed by name: **the backplate is
+              the background for the frosted glass.**
+
+              ⚠⚠ IT IS SIZED TO FILL THE CAMERA'S FRUSTUM AT ITS OWN DEPTH, and
+              that is the whole fix for the black face. Transmission samples the
+              transmission render target in SCREEN SPACE
+              (`transmission_pars_fragment.glsl.js:147`), so a plane that merely
+              sits behind the card is not enough — **the refracted ray lands
+              wherever it lands, and anywhere the plate does not cover reads as
+              empty target.** ⛔ The previous 1.6x-the-card proxy did not cover an
+              oblique frame, which is why the face measured 2.2.
+
+              ⚠ AN `<Environment>` WAS TRIED AS A DIAGNOSTIC AND IS NOT THE
+              ANSWER. It lifted the face 2.2 -> 56.8, which located the symptom
+              and MISLED ON THE CAUSE: it also lit the whole bench (control
+              113 -> 225), and `/start`'s env map is a SYNTHETIC two-panel studio
+              in a black shell, not a room. ⛔ The backplate was already the
+              decided route; the env map was never an alternative to it. */}
+          {/* ⚠ Hidden edge-on: seen from the side the backplate is a wall across
+              the frame and the card's profile disappears behind it. */}
           {proxyOn && !edgeOn && (
-            <mesh position={[0, 0, -dims.heightMm * 0.06]}>
-              <planeGeometry
-                args={[dims.widthMm * 1.6, dims.heightMm * 1.6]}
-              />
+            /**
+             * ⛔ CAMERA-ALIGNED, NOT AXIS-ALIGNED. ⚠ The oblique view looks at
+             * the scene from `[0.62, 0.34, 0.72] * camDist`, so a plane lying on
+             * the z axis is seen at an angle and its projected footprint leaves
+             * a wedge of empty target in the corner — which the glass then
+             * refracts as BLACK. **Turning the plane to face the camera is the
+             * fix; raising the overscan only hides it.**
+             */
+            <mesh position={[0, 0, -backplateDistance]} rotation={backplateRot}>
+              <planeGeometry args={[backplateW, backplateH]} />
               {/* ⛔ `toneMapped={false}` — the same reason as F7 on the room's
                   backplate. Without it the bench shows a COLOUR-SHIFTED
                   photograph behind the glass and the frost is judged against the

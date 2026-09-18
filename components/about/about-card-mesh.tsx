@@ -50,6 +50,7 @@ import {
   GLASS_COLOR,
   GLASS_IOR,
   GLASS_METALNESS,
+  GLASS_RIM_ROUGHNESS,
   GLASS_ROUGHNESS,
   GLASS_THICKNESS_MM,
   GLASS_TRANSMISSION,
@@ -991,19 +992,81 @@ export function AboutCardMesh({
 
   return (
     <group>
+      {/* ⛔⛔ THE RIM — CLEAR GLASS, NOT FROSTED. Carl, 18 September 2026:
+          *"The rim, which will be a neon light should be clear glass with a
+          roughness value of around 0.10."*
+
+          ⚠⚠ THE REASON IS ITS JOB: **this rim IS the neon** (see the half-tube
+          note above). A frosted rim would scatter its own emission; a clear one
+          stays a legible light source. ⛔ The neon is chunk 3 and is NOT built —
+          four colours are ruled and none is chosen. */}
       <mesh geometry={rimGeometry}>
-        <meshStandardMaterial
-          color={DIAG_RIM_COLOR}
-          roughness={0.55}
-          metalness={0}
-        />
+        {glass ? (
+          <meshPhysicalMaterial
+            color={GLASS_COLOR}
+            roughness={GLASS_RIM_ROUGHNESS}
+            metalness={GLASS_METALNESS}
+            transmission={GLASS_TRANSMISSION}
+            thickness={glassThicknessMm}
+            ior={GLASS_IOR}
+            attenuationColor={GLASS_ATTENUATION_COLOR}
+            attenuationDistance={GLASS_ATTENUATION_DISTANCE}
+            side={THREE.FrontSide}
+          />
+        ) : (
+          <meshStandardMaterial
+            color={DIAG_RIM_COLOR}
+            roughness={0.55}
+            metalness={0}
+          />
+        )}
       </mesh>
+      {/* ⛔ THE BEVEL — FROSTED GLASS FOR NOW. Carl, 18 September 2026: *"For the
+          moment, lets go with frosted glass."*
+
+          ⚠⚠ **NOT SETTLED, AND THE ALTERNATIVE IS LIVE.** Carl's reasoning: the
+          bevel is STRUCTURAL — it attaches the face to the rim — and ⛔ **that job
+          does not dictate the material.** *"It could be frosted glass or it could
+          be metallic - it cannot stay as a grey placeholder."* **Both would
+          reflect the neon; they differ in how.** His distinction: *"If its frosted
+          glass it would look cleaner. If, for instance, its silver metallic the
+          light would behave differently and look differently WHEN THE NEON LIGHT
+          IS OFF."*
+
+          ⛔⛔ **THE OFF STATE IS THE ARGUMENT, AND IT IS WHY THIS IS DEFERRED
+          RATHER THAN DECIDED.** A card with its neon off is a real state of this
+          design, and glass and metal diverge most there. ⚠ **It cannot be judged
+          until the neon exists — chunk 3, four colours ruled, none chosen.**
+
+          ⚠ **AN EARLIER VERSION OF THIS COMMENT RECORDED FROSTED AS CARL'S
+          DECISION AND THAT OVERSTATED IT.** He offered it as one of two
+          candidates; the Builder read a candidate as a ruling. Corrected in place
+          rather than silently, per `context-rules.md`.
+
+          ⚠ IT TRACKS THE FACE'S FADER DELIBERATELY, not a second dial. *"Same as
+          the face"* is a relationship, and giving the bevel its own roughness
+          would let the two drift apart silently the first time the face is
+          re-tuned. */}
       <mesh geometry={bevelGeometry}>
-        <meshStandardMaterial
-          color={DIAG_BEVEL_COLOR}
-          roughness={0.55}
-          metalness={0}
-        />
+        {glass ? (
+          <meshPhysicalMaterial
+            color={GLASS_COLOR}
+            roughness={glassRoughness}
+            metalness={GLASS_METALNESS}
+            transmission={GLASS_TRANSMISSION}
+            thickness={glassThicknessMm}
+            ior={GLASS_IOR}
+            attenuationColor={GLASS_ATTENUATION_COLOR}
+            attenuationDistance={GLASS_ATTENUATION_DISTANCE}
+            side={THREE.FrontSide}
+          />
+        ) : (
+          <meshStandardMaterial
+            color={DIAG_BEVEL_COLOR}
+            roughness={0.55}
+            metalness={0}
+          />
+        )}
       </mesh>
       <mesh geometry={faceGeometry} position={[0, 0, faceBaseZ]}>
         {/* ⚠ NO NORMAL MAP. The convex-normal-map route was tested and closed on

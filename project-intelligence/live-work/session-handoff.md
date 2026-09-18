@@ -1,4 +1,4 @@
-# Session Handoff — 18 September 2026. CHUNK 2a IS BUILT. IT NEEDS ONE MORE INGREDIENT.
+# Session Handoff — 18/19 September 2026. THE PROXY WORKS. THE PLACEMENT DATA DOES NOT.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
@@ -7,137 +7,185 @@
 
 ## ⛔⛔ WHAT HAPPENED, IN ONE LINE
 
-**Chunk 2a was built to the approved plan and all its gates pass — and the rendered face came up
-BLACK. The cause was found by measurement: `MeshPhysicalMaterial`'s transmission needs an
-ENVIRONMENT MAP, and the bench has none. What that env map should be is Carl's decision and is not
-taken.**
+**Chunk 2a's glass was proven on the bench and approved by eye; putting it in the room took FIVE
+attempts at the background geometry, the fifth works — and it exposed TWO PLACEMENT FAULTS IN
+COMMITTED DATA that predate all of today's work.**
 
-## ⛔ COMMITTED AND PUSHED on Carl's instruction — ⚠ **COMMITTED IS NOT APPROVED.**
+## ⛔ NOTHING IS COMMITTED. HEAD is `052703a`.
 
-⛔ **Chunk 2a is on `main` and Carl has NOT seen the material.** The code travels with the record
-that describes it (D-083 holds the status, and the blocker is open). ⚠ **Do not read "it is in
-`main`" as acceptance.**
+    M  components/about/about-card-canvas.tsx   the camera-matched proxy + guide overlay
+    M  components/about/about-card-glass.ts     rim 0.10, env-map constants
+    M  components/about/about-card-mesh.tsx     rim clear, bevel frosted
+    M  components/about/card-bench.tsx          backplate, env map, faders
+    ?? components/about/room-environment.tsx    NEW — the PMREM builder
 
-    M  components/about/about-card-mesh.tsx     the glass, behind an off-by-default prop
-    M  components/about/card-bench.tsx          faders, photographic proxy, the open finding
-    ?? components/about/about-card-glass.ts     NEW — the constants
-    ?? verify/about-cards-still-grey.mjs        NEW — the A2 gate
-    M  project-intelligence/decisions.md        D-082, D-083
-    M  project-intelligence/active-sprints/current-sprint.md   two rows + the blocker
-    M  project-intelligence/reviews/review-log.md              R-025
-
-⚠ **`npx tsc --noEmit` CLEAN. `npm run lint` = `1 problem (1 error, 0 warnings)`** — the documented
-`enquiry-opening.tsx` baseline, zero warnings held. ⚠ **A warning WAS introduced during the session
-(an unused binding in the new harness) and was fixed before the gate was called clean.**
-⛔ **Dev server killed; port 3000 confirmed free by `Get-NetTCPConnection`.**
+⚠ **`npx tsc --noEmit` CLEAN.** ⛔ **`npm run lint` NOT RE-RUN since the last edits — run it.**
+⚠ **A dev server may be on :3000. Kill it before any checkpoint.**
+⛔ **`git stash@{0}` holds the FIRST (broken) room attempt. Keep — it carries the failure record.**
 
 ---
 
-# ⛔⛔ THE FINDING — AND IT IS THE SESSION'S REAL OUTPUT
+# ⛔⛔ THE TWO FAULTS IN COMMITTED DATA — THE SESSION'S REAL OUTPUT
 
-**The glass toggle works, the faders move, the photographic proxy loads and is plainly visible
-around the card. The FACE renders near-black and barely responds to either fader.**
+## 1. `GUIDE_CA_QUAD` / `GUIDE_CB_QUAD` DO NOT MATCH CARL'S PINNED CORNERS
 
-**Measured from screenshots, face-centre luminance:**
+⛔ **In `about-card-geometry.ts`, committed, wrong today.** ⚠⚠ **THE TELL IS CARL'S OWN
+VERTICAL-EDGE CORRECTION** — his instruction of 4 September was that every bottom node takes its
+top node's x. **His file has that exactly; the code does not:**
 
-    glass OFF                          113.2   <- correct, lit grey
-    glass ON                             2.2
-    roughness swept 0 -> 0.5          2.2 -> 3.1
-    thickness swept 0 -> 40mm         2.2 -> 2.2   (no response at all)
-    a FULLY EMISSIVE proxy behind     2.2 -> 6.1
-    ⛔ an <Environment> in the scene   2.2 -> 56.8  <- 26x. THE CAUSE.
+    CA   code TL.x 0.17333  vs  BL.x 0.18944     Carl: BOTH 0.19766
+    CB   code TL.x 0.59278  vs  BL.x 0.58944     Carl: BOTH 0.60731
 
-⛔⛔ **TRANSMISSION TAKES ITS SPECULAR AND IBL FROM AN ENVIRONMENT MAP. With none in the scene there
-is almost nothing for the face to return**, so it reads black whatever the faders say. ⚠ **This is
-why `/start`'s glass BUILDS ONE DELIBERATELY** — `answer-card-canvas.tsx` generates a local env map
-with `PMREMGenerator` at a measured ~572ms, and that file already records `envMapIntensity` ramping
-from black as *"what produced the black rectangle."*
+**Worst positional error: CB's TR, out by 0.043 in x and 0.028 in y; CB's BR by 0.050 in y.**
+⛔ **This is what Carl saw:** *"CB is way out of alignment, the distance from the top edge to the
+ceiling is the giveaway."*
 
-## ⛔ WHAT IS CARL'S, AND IT IS A §5a-SHAPED QUESTION
+⛔ **SOURCE OF TRUTH: `live-work/wall-card-corners-4-september.md`**, the corrected `INITIAL_FRAC`
+set. ⚠⚠ **THAT FILE SAYS "DO NOT EDIT THESE NUMBERS. THEY ARE CARL'S, SET BY EYE."** It exists
+because the Builder lost them twice.
 
-**A drei `preset` was used as a DIAGNOSTIC ONLY and has been REMOVED.** ⚠ **It also lifted the
-control from 113 to 225 — it lights the whole bench, not just the glass**, so it is not the answer.
+⚠ **A fix was written and then REVERTED with everything else. It is not in the tree.** The
+conversion is `x` unchanged, `y` through `STAGE_CROP + y * STAGE_VISIBLE`.
 
-⛔ **A room-derived env map — plausibly built from the plate the proxy already crops — is the
-obvious candidate. It is NOT an implementation detail:** it is a new expensive GPU resource with a
-measured cost on the precedent (~572ms of PMREM), and §5a's first category is *"a second instance
-of an expensive resource."* **It goes to Carl before it is built.**
+⛔⛔ **AND THE DOWNSTREAM CONSTANTS ARE STALE IF THE QUADS CHANGE.** `CA_CARD_ASPECT` 2.327,
+`CB_CARD_ASPECT` 2.248 and both heights were **derived from the wrong quads on 17 September**.
+**Correcting the quads without re-deriving these leaves the cards the wrong shape.**
+
+## 2. CB'S CEILING DROP IS UNRESOLVED IN THE PINNED DATA ITSELF
+
+⛔ **Not a code fault and NOT fixable by arithmetic.** `wall-card-corners-4-september.md` lists it
+under *"What is still open"*: **CB's TR sits at y = 0 — hard against the top edge of the pinning
+tool — while CA's TL is at 0.02849.** Carl's rule *"The distance from the ceiling must be the same
+for CA and CB. Its like hanging a picture"* **was never satisfied.**
+
+⚠ **The old letterboxed framing hid it. A correctly-framed room shows it.**
+⛔ **NEEDS CARL TO RE-PIN CB IN `/proto/wall`. Do not invent the number.**
 
 ---
 
-# ⚠⚠ WHAT I GOT WRONG — and one of them is the more useful half of the session
+# ⛔ THE BACKGROUND GEOMETRY — FIVE ATTEMPTS, AND WHY THE FIFTH IS RIGHT
+
+⚠⚠ **A DOM `<img>` BEHIND A TRANSPARENT CANVAS IS INVISIBLE TO THE GLASS** — three never renders
+it, so transmission samples an empty target (cleared to 50% WHITE on `alpha: true`) and CS reads as
+a **milky slab**. The room must be IN the scene.
+
+    1  flat plane, depth 30, exact FOV     bottom third of frame BLACK
+    2  same + overscan 2.2                 filled the frame but SCALED THE IMAGE —
+                                           room zoomed, cards against a framing their
+                                           positions were never solved from
+    3  flat plane, depth 6                 PIXEL-IDENTICAL to (1). ⛔ A change that
+                                           should have mattered did not, which PROVED
+                                           the variable being tuned was never the cause
+    4  projected from PLATE FRACTIONS      correct framing lost — see the bug below
+    5  projected from SCREEN NDC           ⛔ WORKS
+
+⛔⛔ **WHY A FLAT PLANE CANNOT WORK, MEASURED:** at VFOV 67.31 / pitch 12.68 **the bottom of the
+frame meets the floor at t = 1.38 camera units** while the back wall is ~16. **No single plane at
+one depth can be both.**
+
+## ⛔ THE BUG IN ATTEMPT 4, AND IT IS THE ONE WORTH REMEMBERING
+
+Past a `FAR` limit it **clamped `z` and scaled `x` while leaving `y` untouched** — which lifts the
+vertex **off the camera ray that generated its UV**. The vertex then draws its photograph pixel at
+the wrong screen position, non-uniformly across the grid. ⛔ **The cards never moved. The
+background's camera-to-image mapping did.**
+
+## ⛔ THE FIX — EVERY VERTEX IS AN UNPROJECTED SCREEN POINT
+
+⚠⚠ **THE METHOD CAME FROM OUTSIDE — Carl took the problem to ChatGPT on 19 September and pasted
+the answer back.** ⛔ **Recorded because provenance matters: it is the second outside contribution
+to this chunk, after the glass sandbox, and the record should say which parts the Builder did not
+originate.**
+
+**What it supplied, and it was the architecture, not a tweak:**
+- ⛔ **Derive every vertex by unprojecting a screen/NDC point through the SOLVED camera**, so
+  position and UV come from the same point *by construction*.
+- ⛔ **Bound the grid at the horizon rather than clamping vertices.**
+- ⛔ **The acceptance test** — opaque material first, prove the framing is pixel-identical to the
+  CSS photograph, and only THEN enable transmission. ⚠ **A better gate than the Builder had.**
+- ⚠ **The round-trip check** — back-project known points and re-project them; ~0px error proves the
+  proxy cannot be causing framing drift.
+
+⚠⚠ **ITS FIRST DIAGNOSIS WAS WRONG AND THAT IS WORTH KEEPING TOO.** It identified missing
+`object-contain` letterbox offsets. ⛔ **Measurement showed those are ZERO here** — the wrapper is
+`aspect-[3/2]`, so the canvas box and the displayed image box already coincide (0.00px at 1440 and
+1920). **The real bug was the Builder's `FAR` clamp.**
+
+⛔ **THE METHOD WAS STILL RIGHT, AND FOR A BETTER REASON THAN THE ONE GIVEN.** It fixes the clamp
+bug as a side effect, and being correct by construction rather than by coincidence **it survives
+the 800x1200 case where the boxes DO diverge by 338px.** ⚠ **A right method reached through a wrong
+cause — do not let the wrong cause be inherited as fact.**
+
+    NDC point -> camera ray -> plane intersection -> vertex
+    the SAME NDC point -> the photograph's UV
+
+**Correct by construction; framing cannot drift.** Horizon handled by **bounding the grid**, never
+by clamping vertices. ⚠ **NDC round-trip verified at 2.22e-16.**
+
+⚠⚠ **AND IT WAS *NOT* AN `object-contain` FAULT, WHICH WAS THE FIRST DIAGNOSIS.** ⛔ **MEASURED: the
+canvas box and the `object-contain` displayed image box agree to 0.00px at 1440 AND 1920** — the
+wrapper is `aspect-[3/2]`, the plate's own aspect. ⚠ **But at 800x1200 they diverge by 338px**, so
+the NDC route is still right: correct by construction, not by coincidence.
+
+## ⛔ THE ACCEPTANCE TEST PASSED — run it again after any change
+
+**Unlit proxy vs the CSS photograph, card-free regions, 0-255 scale:**
+
+    ceiling strip           8.93      far-right wall column   2.71
+    far-left wall column    4.70      (bottom-centre 22.92 — contains CS, not clean)
+
+⚠ **Control (ref vs ref) = 0.000, so the comparison is sound.** ⛔ **Wall/ceiling agreement at
+2.7-8.9 is resampling noise, not displacement. THE FRAMING IS RIGHT.**
+
+---
+
+# ⚠⚠ WHAT I GOT WRONG
 
 | | |
 |---|---|
-| **B1 — a probe that could not fail** | The first probe read the canvas via `drawImage` into a 2D context and reported **0/0/0 at every setting — INCLUDING GLASS OFF**, where the screenshot plainly shows a bright grey face. `preserveDrawingBuffer: false` makes that readback empty. ⛔ **Caught only because a control was run with the feature OFF and the "defect" was still there.** |
-| **B2 — a false mechanism, reasoned in full** | I concluded the black face came from `alpha: true`: target cleared at alpha 0.5 (`three.module.js:18019`) → `transmission_fragment:31` → `opaque_fragment:7` → the face goes semi-transparent. ⚠⚠ **Every line of that is really in three 0.185.1 and it predicted the exact symptom. `alpha: false` changed the number by 0.0.** ⛔ I wrote it into a code comment as fact BEFORE testing it, and had to remove it. |
-| **B3 — a threshold chosen by assertion** | The A2 harness's first `MILKY_LUM` was **170, picked before either population was measured.** On the red run the defect measured **167.2 — and the harness returned PASS.** It missed the defect it exists to catch, by 2.8 points. |
+| **Kept fixing forward** | ⛔ **Four failed background attempts before stopping.** Should have stopped at two. Each fix broke something the last had not. |
+| **Lost the placement while chasing the material** | Carl: *"The cards can look fantastic but it will mean nothing if it looks like it dont belong in the scene."* **Correct, and it is the lesson of the session.** |
+| **A probe that could not fail** | `drawImage` off a WebGL canvas returned **0/0/0 even with glass OFF**. `preserveDrawingBuffer: false`. Caught only by running a CONTROL. |
+| **Measured the wrong quantity** | A roughness sweep by MEAN looked dead. ⛔ **Blur PRESERVES the mean** — frost lives in VARIANCE. sd 12.21 -> 2.95 across 0 -> 0.8. |
+| **A threshold chosen by assertion** | The A2 harness opened at 170 and **returned PASS on a defect measuring 167.2.** Now 140, measured between both populations. |
+| **A diagnostic that ignored its own switch** | `false && a \|\| b` collapses to `b` — guides drew with the flag off. Caught only because the render disagreed with the flag. |
+| **A false mechanism written down as fact** | Attributed the black face to `alpha: true`, reasoned line-by-line out of three 0.185.1. **`alpha: false` changed the number by 0.0.** |
 
-⚠⚠ **B3 IS THE ONE TO CARRY FORWARD. A harness written specifically to prevent this project's
-recorded failure class committed it on its first run** — `q5-stutter.mjs` read 0/3 CLEAN on a
-visible stall; `one-context.mjs` read 2/2 while a context was created every question; **all of them
-failed toward a PASS, and so did this.** ⛔ **The threshold is now 140, measured between both
-populations, and the red/green pair is recorded in the file.**
-
-> ⛔ **THE PATTERN ACROSS ALL THREE: I twice produced a confident explanation before testing it.**
-> B2 was verified line-by-line in `node_modules` and was still wrong, **because verifying that a
-> mechanism EXISTS is not the same as verifying it is THE ONE ACTING.**
+> ⛔⛔ **THE PATTERN: A CONFIDENT EXPLANATION PRODUCED BEFORE IT WAS TESTED, TWICE.** Verifying that
+> a mechanism EXISTS is not verifying it is THE ONE ACTING.
 
 ---
 
-# ⛔ WHAT WAS BUILT, AND WHAT IT HOLDS
+# ⛔ WHAT THE NEXT SESSION SHOULD DO, IN ORDER
 
-- **`about-card-glass.ts`** — the constants, each labelled with its provenance. ⛔ **Only
-  `GLASS_THICKNESS_MM = 9.8` is Carl's**; the rest are marked a starting point, in the file and in
-  the bench UI.
-- ⛔ **THICKNESS IS A TYPED CONSTANT, NOT `heightMm * TENT_POLE_RATIO`** — the coupling to the crown
-  is declined, exactly as ruled.
-- ⛔ **THE A2 GATE HOLDS.** `about-card-canvas.tsx` is untouched; the `glass` prop defaults OFF.
-  **Verified by loading `/about` and measuring the cards, not by reasoning** — CD 112.0, CS 37.4,
-  channel spread < 2. ⚠ **And the harness was PROVEN: forced glass on in the room, confirmed it goes
-  RED (167.2), reverted, confirmed green.** ⛔ **It is still NOT admissible** — `proven.json` is
-  empty (D-064) and no entry was filed.
-- ⛔ **THE STALE COMMENT AT `card-bench.tsx:109` IS CORRECTED.** It claimed `TENT_POLE_RATIO = 0.025`
-  against a code value of 0.073 and produced the 2.92x thickness error in the plan. ⚠ **The live
-  value is deliberately NOT repeated there — naming it twice is how it went stale.**
-- ⛔ **The face is WHITE, not `DIAG_FACE_COLOR`** (F4), and `FrontSide` is set with F5's corrected
-  reasoning.
-
----
-
-# ⛔ WHAT THE NEXT SESSION SHOULD NOT DO
-
-- ⛔⛔ **Do not pick the environment map and build it.** It is Carl's, and §5a-shaped.
-- ⛔⛔ **Do not conclude the parameters are wrong.** `thickness: 0` and `roughness: 0` render
-  identically black — **the faders are not the variable.**
-- ⛔ **Do not re-test `alpha: true`.** Falsified by measurement, and the false argument is recorded
-  in `card-bench.tsx` so it is not re-derived.
-- ⛔ **Do not trust an in-page `drawImage` canvas readback.** It returns empty. Screenshot instead,
-  **and run a control with the feature OFF.**
-- ⛔ **Do not put glass in the room.** 2a is still bench-only and the milky-slab artefact is waiting.
-- ⛔ **Do not file a proof into `proven.json` from this session's run.** The red/green pair exists
-  but the write-up and the `emptyInput` block do not.
+1. ⛔ **`npm run lint`** — not re-run since the last edits.
+2. ⛔⛔ **Put the two committed-data faults to Carl.** They are independent of today's build and are
+   recorded NOWHERE except this file. **Fault 1 needs the quads corrected AND the aspects/heights
+   re-derived. Fault 2 needs Carl to re-pin CB.**
+3. ⚠ **Do not touch card positions otherwise.** They are approved.
+4. ⚠ **`?guides=1` draws the quads, the floor rects and the PL/PR rails.** ⛔ **They must come out
+   before this ships.**
+5. ⛔ **The record is THREE sessions behind** — 17 Sept, 18 Sept, and this. D-082/D-083/R-025 were
+   written and are COMMITTED; today's proxy work and both faults are not.
 
 ---
 
 # ⚠ STILL OPEN AND CARL'S
 
-1. ⛔⛔ **The environment map for the bench** — the blocker on 2a being judgeable. **New.**
-2. **Carl's eye on the bench** — 2a's checkpoint (Rule 7). ⚠ **Cannot happen until item 1 does.**
-3. **Four neon colours** — four, all different, none chosen.
-4. **Option C** — its fetch behaviour must be MEASURED if he wants the failure-mode cover back.
-5. **`transmissionResolutionScale`** — after 2b measures the target's real memory.
-6. **Final roughness** — set in the room, in 2b. The bench cannot settle it.
-7. **Thickness for CD, CA, CB** at rollout — 9.80mm is CS's; same-or-scaled is undecided.
-8. **§2's copy is PROVISIONAL** — CA 64 / CB 84 / CD 49 / CS 55 words, four lines uncuttable.
-9. **Accessibility** — ruled to get done; needs final copy or it is written twice.
-10. ⛔ **THE RECORD IS CAUGHT UP — CLOSED 18 September, on Carl's instruction.** **D-082** (the wall
-    pair, the 42% aspect error, the two directional lights), **D-083** (chunk 2a and the
-    environment-map finding), **R-025** (the lighting, approved by eye), two `current-sprint.md`
-    rows and the blocker **CHUNK-2a-ENVMAP**. ⚠ **No R entry exists for chunk 2a and that is
-    correct — Carl has not seen it, and only Carl moves REVIEW REQUIRED → APPROVED (D-036).**
+1. ⛔⛔ **The two placement faults above.**
+2. **`ENV_PLATE_INTENSITY = 6.0` is a COMPENSATION, not a physical value** — it multiplies a dim
+   room by six to manufacture highlights. ⚠ **Revisit DOWNWARD when the neon exists.**
+3. ⛔ **The rim will not read like Carl's references until it EMITS** — emission + a real light +
+   bloom. **Chunk 3. An env map makes it LEGIBLE, not CORRECT.**
+4. **The bevel is frosted FOR NOW** — metallic is live and gets tested in chunk 3, *"when the neon
+   light is off."*
+5. **Four neon colours** — four, all different, none chosen.
+6. **`transmissionResolutionScale`** and the PMREM cost — both unmeasured in the room.
+7. **Final roughness** — Carl at **0.35** on the bench, *"in the ballpark... any modifications
+   would be slight."* ⚠ **Not settled in the room.**
+8. **§2 copy PROVISIONAL**; **accessibility** owed.
 
 ---
 
-*Written 18 September 2026. ⛔ **Chunk 2a is built, gated and NOT judgeable until the environment
-map question is answered by Carl.** ⚠ Committed and pushed on his instruction — ⛔ committed is not approved.*
+*Written 19 September 2026. ⛔ **The proxy works and is verified. The placement data underneath it
+does not.** ⚠ Nothing committed.*
