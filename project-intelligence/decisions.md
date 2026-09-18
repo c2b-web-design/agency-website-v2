@@ -4420,7 +4420,7 @@ Carl, on the blueprint: *"we will look at the repo and decide whats stays and if
 
 ⚠ **THIS IS WHY `/start`'s GLASS BUILDS ONE DELIBERATELY.** `answer-card-canvas.tsx` generates a local env map with `PMREMGenerator` at a measured **~572ms**, and that file already records `envMapIntensity` ramping from black as *"what produced the black rectangle."*
 
-⚠⚠ **OVERTAKEN BY D-084, 19 September 2026 — READ THIS BEFORE THE SECTION BELOW.** ⛔ **The finding that follows is TRUE OF THE FROSTED FACE AND FALSE OF THE CLEAR RIM.** The backplate supplies the face; **the rim CANNOT RENDER AT ALL without an environment map**, because at `transmission: 1` there is no diffuse colour and transmissive objects are excluded from the transmission target. ⚠ **The distinction did not exist when this was written — Carl ruled the rim clear on 18 September, a day later.** ⛔ **The entry is not wrong; a fact it relied on moved.** See D-084.
+⚠⚠ **OVERTAKEN BY D-084, 18 September 2026 — READ THIS BEFORE THE SECTION BELOW.** ⛔ **The finding that follows is TRUE OF THE FROSTED FACE AND FALSE OF THE CLEAR RIM.** The backplate supplies the face; **the rim CANNOT RENDER AT ALL without an environment map**, because at `transmission: 1` there is no diffuse colour and transmissive objects are excluded from the transmission target. ⚠ **The distinction did not exist when this was written — Carl ruled the rim clear on 18 September, a day later.** ⛔ **The entry is not wrong; a fact it relied on moved.** See D-084.
 
 ### ⛔⛔ WHAT THE ENVIRONMENT MAP SHOULD BE IS CARL'S, AND IT IS §5a-SHAPED
 
@@ -4460,7 +4460,7 @@ Carl, on the blueprint: *"we will look at the repo and decide whats stays and if
 
 ## D-084 — The Room Becomes A Camera-Matched Depth Proxy. Five Attempts, And Two Faults In Committed Data
 
-**Date recorded:** 2026-09-19
+**Date recorded:** 2026-09-18
 **Status:** ⚠ **IMPLEMENTED, NOT APPROVED.** ⛔ **Carl has not passed the room build by eye.** Verified for FRAMING only. Commit `f51e865`, pushed.
 **Authority:** Human Founder — Carl, 18 September 2026: *"Yes, build the backplate and env map. It cannot be properly judged until its in place."* Option A was his by name on 17 September. ⚠ **The METHOD came from outside — see below.**
 **Bears on:** `about-card-canvas.tsx`, `room-environment.tsx` (new). Supersedes the billboard approach in **D-083**; amends D-083's env-map finding.
@@ -4498,7 +4498,7 @@ Past a `FAR` limit it **clamped `z` and scaled `x` while leaving `y` untouched**
 
 ### ⚠⚠ THE METHOD CAME FROM OUTSIDE, AND THE PROVENANCE IS RECORDED
 
-**Carl took the problem to ChatGPT on 19 September and pasted the answer back.** ⛔ **The second outside contribution to this chunk**, after the glass sandbox (D-083). It supplied the NDC architecture, the horizon bounding, the acceptance test and the round-trip check.
+**Carl took the problem to ChatGPT on 18 September and pasted the answer back.** ⛔ **The second outside contribution to this chunk**, after the glass sandbox (D-083). It supplied the NDC architecture, the horizon bounding, the acceptance test and the round-trip check.
 
 ⛔ **ITS FIRST DIAGNOSIS WAS WRONG AND THAT IS KEPT.** It identified missing `object-contain` letterbox offsets. ⚠ **Measured: those are ZERO here** — the canvas wrapper is `aspect-[3/2]`, so the canvas box and the displayed image box agree to **0.00px at 1440 and 1920**. The real bug was the Builder's clamp.
 

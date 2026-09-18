@@ -434,7 +434,7 @@ function placeWallCard(
 
 
 /**
- * ⛔⛔ THE ROOM AS A CAMERA-MATCHED DEPTH PROXY — rebuilt 19 September 2026.
+ * ⛔⛔ THE ROOM AS A CAMERA-MATCHED DEPTH PROXY — rebuilt 18 September 2026.
  *
  * ⚠⚠ **THE PHOTOGRAPH IS STILL THE SOURCE OF EVERY PIXEL. THIS GEOMETRY ONLY
  * SUPPLIES DEPTH**, so `MeshPhysicalMaterial` transmission has something in the
@@ -461,7 +461,7 @@ function placeWallCard(
  * background's camera-to-image mapping did.**
  *
  * ⚠ AND IT WAS NOT AN `object-contain` FAULT, WHICH WAS THE FIRST DIAGNOSIS.
- * **Measured, 19 September: the canvas box and the `object-contain` displayed
+ * **Measured, 18 September: the canvas box and the `object-contain` displayed
  * image box agree to 0.00px at 1440 and 1920** — the wrapper is `aspect-[3/2]`,
  * the plate's own aspect, so the letterbox offsets inside the canvas are zero.
  * ⛔ Recorded because a plausible wrong cause was nearly built against.

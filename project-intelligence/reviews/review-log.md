@@ -737,7 +737,7 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-09-19 — **R-026 added**: chunk 2a's frosted glass **APPROVED on the bench** at
+*Last updated: 2026-09-18 — **R-026 added**: chunk 2a's frosted glass **APPROVED on the bench** at
 roughness ~0.35, with Carl's own qualification recorded alongside it — *"Not until i see the card in
 the scene can it be truly judged."* ⛔⛔ **HIS FINDING IS THE ENTRY'S REAL CONTENT:** *"You can tell
 the different types of glass not just by the way light interacts with it but how the background does

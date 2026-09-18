@@ -1,4 +1,4 @@
-# Session Handoff — 18/19 September 2026. THE PROXY WORKS. THE PLACEMENT DATA DOES NOT.
+# Session Handoff — 18 September 2026 (SECOND SESSION OF THE DAY). THE PROXY WORKS. THE PLACEMENT DATA DOES NOT.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
@@ -10,6 +10,20 @@
 **Chunk 2a's glass was proven on the bench and approved by eye; putting it in the room took FIVE
 attempts at the background geometry, the fifth works — and it exposed TWO PLACEMENT FAULTS IN
 COMMITTED DATA that predate all of today's work.**
+
+## ⚠⚠ A DATE ERROR WAS WRITTEN INTO THE RECORD AND CORRECTED — READ THIS
+
+⛔ **ELEVEN INSTANCES OF "19 September" WERE WRITTEN ACROSS `decisions.md`, `review-log.md`,
+`current-sprint.md`, this handoff AND A CODE COMMENT. The date was 18 September throughout.**
+Carl caught it: *"Its not 19 sept, its still 18. i am starting my 2nd session today."*
+
+⚠ **CAUSE: the Builder assumed a date rollover because a long session spanned two sittings.**
+⛔ **Git had it right all along — all three commits are dated 2026-09-18.** The error was
+confined to prose, which nothing checks.
+
+⚠⚠ **THIS IS THE SAME CLASS AS EVERY OTHER FAULT ON THIS PROJECT'S RECORD: a confident claim
+written down without being verified against something that knows.** ⛔ **The date is knowable
+— `git log --date=short` — and was never consulted.** **Check it; do not infer it.**
 
 ## ⛔ COMMITTED AND PUSHED. HEAD is `39ce005`.
 
@@ -92,7 +106,7 @@ background's camera-to-image mapping did.**
 
 ## ⛔ THE FIX — EVERY VERTEX IS AN UNPROJECTED SCREEN POINT
 
-⚠⚠ **THE METHOD CAME FROM OUTSIDE — Carl took the problem to ChatGPT on 19 September and pasted
+⚠⚠ **THE METHOD CAME FROM OUTSIDE — Carl took the problem to ChatGPT on 18 September and pasted
 the answer back.** ⛔ **Recorded because provenance matters: it is the second outside contribution
 to this chunk, after the glass sandbox, and the record should say which parts the Builder did not
 originate.**
@@ -165,7 +179,7 @@ the NDC route is still right: correct by construction, not by coincidence.
 3. ⚠ **Do not touch card positions otherwise.** They are approved.
 4. ⚠ **`?guides=1` draws the quads, the floor rects and the PL/PR rails.** ⛔ **They must come out
    before this ships.**
-5. ⛔ **THE RECORD IS CAUGHT UP — CLOSED 19 September, commit `39ce005`, pushed.** **D-084** (the
+5. ⛔ **THE RECORD IS CAUGHT UP — CLOSED 18 September, commit `39ce005`, pushed.** **D-084** (the
    depth proxy, the five attempts, the clamp bug, both data faults), **R-026** (the bench glass
    approved at ~0.35), a **forward-pointer on D-083** correcting its env-map finding, the sprint
    row, and the Blockers replaced. ⚠ **An earlier version of this item said the record was three
@@ -191,5 +205,5 @@ the NDC route is still right: correct by construction, not by coincidence.
 
 ---
 
-*Written 19 September 2026. ⛔ **The proxy works and is verified. The placement data underneath it
+*Written 18 September 2026. ⛔ **The proxy works and is verified. The placement data underneath it
 does not.** ⚠ Committed and pushed at `39ce005`; the record is caught up. ⛔ Committed is not approved.*

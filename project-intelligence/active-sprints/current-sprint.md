@@ -539,7 +539,7 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 ## Blockers
 
-**⛔ CHUNK-2a-ENVMAP — RESOLVED 19 September 2026.** The env map was built (D-084) and the room now has a camera-matched depth proxy. ⚠ **Kept for one cycle rather than deleted, because the reason it closed matters: the env map turned out to be required for the CLEAR RIM, not for the frosted face the blocker was raised about.**
+**⛔ CHUNK-2a-ENVMAP — RESOLVED 18 September 2026.** The env map was built (D-084) and the room now has a camera-matched depth proxy. ⚠ **Kept for one cycle rather than deleted, because the reason it closed matters: the env map turned out to be required for the CLEAR RIM, not for the frosted face the blocker was raised about.**
 
 **⛔⛔ WALL-QUADS-STALE — the wall cards are built to quads that are not Carl's.** `GUIDE_CA_QUAD` / `GUIDE_CB_QUAD` in `about-card-geometry.ts` do not match the pinned corners in `live-work/wall-card-corners-4-september.md`. ⚠ **The tell is Carl's own vertical-edge correction** — every bottom node should share its top node's x, and his file has that while the code does not (`CA TL.x 0.17333` vs `BL.x 0.18944`; his: both `0.19766`). **Worst error: CB's TR, out by 0.043 in x and 0.028 in y.** ⛔ Carl: *"CB is way out of alignment, the distance from the top edge to the ceiling is the giveaway."* ⚠⚠ **FIXING THE QUADS ALSO REQUIRES RE-DERIVING `CA_CARD_ASPECT`, `CB_CARD_ASPECT` AND BOTH HEIGHTS**, which were computed from the wrong quads (D-082). **Reasoning: D-084.**
 
@@ -547,7 +547,7 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 ---
 
-*Last updated: 2026-09-19 — **D-084**: the room becomes a camera-matched depth proxy after five
+*Last updated: 2026-09-18 — **D-084**: the room becomes a camera-matched depth proxy after five
 attempts, and CS's glass goes into the scene. ⛔ **IMPLEMENTED, NOT APPROVED — Carl has not passed
 the room by eye; it is verified for FRAMING only.** ⚠⚠ **THE BLOCKER THAT CLOSED WAS REPLACED BY
 TWO WORSE ONES:** CHUNK-2a-ENVMAP is resolved, and the corrected framing exposed **WALL-QUADS-STALE**
