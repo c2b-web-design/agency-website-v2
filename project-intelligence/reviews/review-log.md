@@ -65,6 +65,34 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-026 — Chunk 2a's Frosted Glass On The Bench: APPROVED. And The Background Is What Makes Two Glasses Legible
+
+**Date:** 2026-09-18
+**Reviewer:** Human Founder
+**Subject:** CS's face material on `/proto/card`, read on a running build at roughness **0.35**. Records **D-083**; the room build that followed is **D-084** and is NOT covered by this entry.
+
+**Carl's verdict, verbatim:** *"The floorboards look good behind and there is noticable blurring on the chairs castors... it looks good, we sre in the ballpark with the roughness figure and any modifications of this figure would be slight."*
+
+**Findings:**
+
+- ⛔ **APPROVED ON THE BENCH AT ~0.35**, with the qualification stated in the same breath: *"Not until i see the card in the scene can it be truly judged."* ⚠ **The bench settles the frost's CHARACTER; its final value is set in the room.**
+- ⛔⛔ **CARL NAMED THE MECHANISM THE BUILDER HAD NOT SEEN:** *"You can tell the different types of glass not just by the way light interacts with it but how the background does too."* ⚠⚠ **The frosted face BLURS what is behind it; the clear rim keeps it SHARP. Same room, two treatments of it — and that contrast is what reads as two materials.** ⛔ **So the backplate is not scenery. It is the instrument that makes material difference legible**, and against a flat or empty background roughness 0.10 and 0.35 are nearly the same picture.
+- ⛔ **THE RIM IS CLEAR GLASS AT ~0.10, CARL'S FIGURE BY EYE:** *"The rim, which will be a neon light should be clear glass."* ⚠ **The reason is its JOB, not its look** — a frosted rim would scatter its own emission.
+- ⚠ **THE BEVEL IS FROSTED *FOR NOW*, NOT SETTLED.** Carl: *"It could be frosted glass or it could be metallic - it cannot stay as a grey placeholder... For the moment, lets go with frosted glass."* ⛔ **Metallic is live and is to be tested in chunk 3** — his distinction: *"the light would behave differently and look differently WHEN THE NEON LIGHT IS OFF."* ⚠⚠ **A Builder comment recorded frosted as a decision and OVERSTATED it; corrected in place.**
+- ⚠ **Carl supplied neon references** showing a rim that spills visibly onto floor and wall with bloom. ⛔ **That is emission + a real light + a bloom pass — chunk 3.** An env map makes the rim **legible**, not **correct**.
+
+**Flags:**
+
+- ⚠ **Medium — the roughness fader looked dead under the wrong instrument.** A sweep measured by MEAN read 99.6 → 100.5. ⛔ **Blurring PRESERVES the mean;** the effect lives in variance (sd 12.21 → 2.95 across 0 → 0.8). **Recorded so the fader is not "fixed".**
+- ⚠ **Medium — `ENV_PLATE_INTENSITY = 6.0` is a compensation, not a physical value.** It multiplies a dim room by six to manufacture highlights it does not contain. ⛔ **Revisit downward once the neon exists.**
+- ⚠ **Carl's own caveat stands as the gating flag:** the room is where this is truly judged, and **the dark region under the desk will show less material character than the bench does.**
+
+**Recommendations:** Set the final roughness in the room, not here. Test the metallic bevel in chunk 3 with the neon both on and off. Routed to Carl.
+
+**Status:** ⛔ **APPROVED on the bench** — the value is ~0.35 and *"any modifications would be slight"*. ⚠ **The room build (D-084) is NOT approved and is not covered here.**
+
+---
+
 ## R-025 — `/about` §2 Lighting: Four Rigs Rejected On Sight, And The Fault Was The Light TYPE
 
 **Date:** 2026-09-17 (logged 2026-09-18 — see **D-074** for why late logging is itself a recorded fault)
@@ -709,7 +737,15 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-09-18 — **R-025 added**: the `/about` §2 lighting, approved by eye after **four
+*Last updated: 2026-09-19 — **R-026 added**: chunk 2a's frosted glass **APPROVED on the bench** at
+roughness ~0.35, with Carl's own qualification recorded alongside it — *"Not until i see the card in
+the scene can it be truly judged."* ⛔⛔ **HIS FINDING IS THE ENTRY'S REAL CONTENT:** *"You can tell
+the different types of glass not just by the way light interacts with it but how the background does
+too."* ⚠ **That makes the backplate an instrument, not scenery.** ⚠⚠ **NO ENTRY EXISTS FOR THE ROOM
+BUILD (D-084) AND THAT IS CORRECT — Carl has not seen it; it is verified for FRAMING only.**
+⛔ `REVIEW REQUIRED → APPROVED` is Carl's alone (D-036).*
+
+*Previously: 2026-09-18 — **R-025 added**: the `/about` §2 lighting, approved by eye after **four
 rigs that each measured clean and were each rejected on sight.** ⚠ **The fault was the light TYPE,
 not its placement**, which is why four placement iterations could not find it. ⛔ **Carl accepted a
 measured ~0.03 regression on the right pair knowingly — do not "fix" it.**

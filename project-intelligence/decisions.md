@@ -4420,6 +4420,8 @@ Carl, on the blueprint: *"we will look at the repo and decide whats stays and if
 
 ⚠ **THIS IS WHY `/start`'s GLASS BUILDS ONE DELIBERATELY.** `answer-card-canvas.tsx` generates a local env map with `PMREMGenerator` at a measured **~572ms**, and that file already records `envMapIntensity` ramping from black as *"what produced the black rectangle."*
 
+⚠⚠ **OVERTAKEN BY D-084, 19 September 2026 — READ THIS BEFORE THE SECTION BELOW.** ⛔ **The finding that follows is TRUE OF THE FROSTED FACE AND FALSE OF THE CLEAR RIM.** The backplate supplies the face; **the rim CANNOT RENDER AT ALL without an environment map**, because at `transmission: 1` there is no diffuse colour and transmissive objects are excluded from the transmission target. ⚠ **The distinction did not exist when this was written — Carl ruled the rim clear on 18 September, a day later.** ⛔ **The entry is not wrong; a fact it relied on moved.** See D-084.
+
 ### ⛔⛔ WHAT THE ENVIRONMENT MAP SHOULD BE IS CARL'S, AND IT IS §5a-SHAPED
 
 **A drei `preset` was used as a DIAGNOSTIC ONLY and has been REMOVED.** ⚠ **It also lifted the control from 113 to 225 — it lights the whole bench, not just the glass.** It is not the answer.
@@ -4453,3 +4455,84 @@ Carl, on the blueprint: *"we will look at the repo and decide whats stays and if
 ### ⛔ WHAT IS EXPLICITLY NOT DECIDED HERE
 
 **The final roughness** (set in the room, in 2b — frost scale depends on render-target width) · **thickness for CD, CA and CB** at rollout · **the four neon colours** (four, all different, none chosen) · **`transmissionResolutionScale`** (after 2b measures) · ⛔ **and glass in the room, which 2a does not touch.**
+
+---
+
+## D-084 — The Room Becomes A Camera-Matched Depth Proxy. Five Attempts, And Two Faults In Committed Data
+
+**Date recorded:** 2026-09-19
+**Status:** ⚠ **IMPLEMENTED, NOT APPROVED.** ⛔ **Carl has not passed the room build by eye.** Verified for FRAMING only. Commit `f51e865`, pushed.
+**Authority:** Human Founder — Carl, 18 September 2026: *"Yes, build the backplate and env map. It cannot be properly judged until its in place."* Option A was his by name on 17 September. ⚠ **The METHOD came from outside — see below.**
+**Bears on:** `about-card-canvas.tsx`, `room-environment.tsx` (new). Supersedes the billboard approach in **D-083**; amends D-083's env-map finding.
+
+---
+
+### ⛔⛔ WHY THE ROOM HAD TO ENTER THE SCENE
+
+**A DOM `<img>` behind a transparent canvas is invisible to the glass** — three never renders it. So transmission samples an empty target, cleared to **50% white** on an `alpha: true` canvas (`three.module.js:18019`), and CS reads as a **milky slab**. ⛔ **Not a tuning problem; the photograph had to become geometry.**
+
+### ⛔ FIVE ATTEMPTS, AND THE THIRD IS THE ONE THAT DIAGNOSED IT
+
+    1  flat plane, depth 30, exact FOV   bottom third of frame BLACK
+    2  same + overscan 2.2               filled the frame but SCALED THE IMAGE — the
+                                         room zoomed and every card sat against a
+                                         framing its position was never solved from
+    3  flat plane, depth 6               PIXEL-IDENTICAL to (1)
+    4  projected from PLATE FRACTIONS    framing lost
+    5  projected from SCREEN NDC         ⛔ WORKS
+
+⚠⚠ **(3) IS THE USEFUL RESULT. A change that should have mattered did not — which proved the variable being tuned was never the cause.** ⛔ Measured: at VFOV 67.31 / pitch 12.68 **the bottom of the frame meets the floor at t = 1.38 camera units** while the back wall is ~16. **No single flat plane at one depth can be both.**
+
+### ⛔⛔ THE BUG IN (4) — THE ONE WORTH REMEMBERING
+
+Past a `FAR` limit it **clamped `z` and scaled `x` while leaving `y` untouched**, lifting the vertex **off the camera ray that generated its UV**. The vertex then drew its photograph pixel at the wrong screen position, **non-uniformly across the grid**.
+
+⛔⛔ **THE CARDS NEVER MOVED. THE BACKGROUND'S CAMERA-TO-IMAGE MAPPING DID.** ⚠ That distinction cost most of an evening: the symptom reads as "the cards are misplaced".
+
+### ⛔ THE FIX — EVERY VERTEX IS AN UNPROJECTED SCREEN POINT
+
+    NDC point -> camera ray -> plane intersection -> vertex
+    the SAME NDC point -> the photograph's UV
+
+**Correct by construction; framing cannot drift.** ⛔ The horizon is handled by **bounding the grid**, never by clamping vertices. ⚠ **NDC round-trip verified at 2.22e-16.**
+
+### ⚠⚠ THE METHOD CAME FROM OUTSIDE, AND THE PROVENANCE IS RECORDED
+
+**Carl took the problem to ChatGPT on 19 September and pasted the answer back.** ⛔ **The second outside contribution to this chunk**, after the glass sandbox (D-083). It supplied the NDC architecture, the horizon bounding, the acceptance test and the round-trip check.
+
+⛔ **ITS FIRST DIAGNOSIS WAS WRONG AND THAT IS KEPT.** It identified missing `object-contain` letterbox offsets. ⚠ **Measured: those are ZERO here** — the canvas wrapper is `aspect-[3/2]`, so the canvas box and the displayed image box agree to **0.00px at 1440 and 1920**. The real bug was the Builder's clamp.
+
+⚠⚠ **THE METHOD IS STILL RIGHT, FOR A BETTER REASON THAN THE ONE GIVEN:** it fixes the clamp bug as a side effect, and being correct by construction rather than by coincidence **it survives the 800x1200 case where the boxes DO diverge by 338px.** ⛔ **A right method reached through a wrong cause — do not inherit the wrong cause as fact.**
+
+### ⛔ THE ACCEPTANCE TEST — run it after any change here
+
+**Unlit proxy vs the CSS photograph, card-free regions, 0-255 scale:**
+
+    ceiling strip  8.93   ·   far-left wall  4.70   ·   far-right wall  2.71
+
+⚠ **Control (reference vs itself) = 0.000, so the comparison is sound.** ⛔ Agreement at 2.7-8.9 is **resampling noise, not displacement.** ⚠ **Opaque material FIRST, prove the framing, and only THEN enable transmission** — otherwise a projection error hides inside the glass effect.
+
+### ⛔⛔ AMENDS D-083 — AN ENV MAP *IS* REQUIRED, FOR THE RIM
+
+**D-083 records that an environment map was "NOT required and NOT the answer."** ⚠ **That was true of the FROSTED FACE — the backplate supplies it — and is FALSE of the CLEAR RIM**, which did not exist as a question until Carl ruled the rim clear on 18 September.
+
+⛔ At `transmission: 1` a clear material has no diffuse colour, and **transmissive objects are excluded from the transmission target** (`three.module.js:18039` renders `opaqueObjects` only), so **specular reflection is the only channel that can draw the rim.** ⚠ Measured: with no environment the all-glass card lost its silhouette entirely.
+
+⚠ **`ENV_PLATE_INTENSITY = 6.0` IS A COMPENSATION, NOT A PHYSICAL VALUE** — it multiplies a photograph of a dim room by six to manufacture highlights the room does not contain. ⛔ **Revisit downward when the neon exists.**
+
+### ⛔⛔ TWO FAULTS IN COMMITTED DATA, EXPOSED BY THE CORRECTED FRAMING
+
+⚠⚠ **BOTH PREDATE THIS WORK. NEITHER IS FIXED. BOTH ARE CARL'S.**
+
+**1. `GUIDE_CA_QUAD` / `GUIDE_CB_QUAD` DO NOT MATCH CARL'S PINNED CORNERS.** ⛔ The tell is **his own vertical-edge correction** (4 September): every bottom node should take its top node's x. **His file has that exactly; the code does not.**
+
+    CA   code TL.x 0.17333  vs  BL.x 0.18944      Carl: BOTH 0.19766
+    CB   code TL.x 0.59278  vs  BL.x 0.58944      Carl: BOTH 0.60731
+
+**Worst error: CB's TR, out by 0.043 in x and 0.028 in y.** ⛔ Carl: *"CB is way out of alignment, the distance from the top edge to the ceiling is the giveaway."* ⚠⚠ **CORRECTING THE QUADS ALSO REQUIRES RE-DERIVING `CA_CARD_ASPECT` (2.327), `CB_CARD_ASPECT` (2.248) AND BOTH HEIGHTS** — all computed from the wrong quads on 17 September (D-082). **Source of truth: `live-work/wall-card-corners-4-september.md`.**
+
+**2. CB'S CEILING DROP IS UNRESOLVED IN THE PINNED DATA ITSELF.** ⛔ **Not a code fault and not fixable by arithmetic.** That file lists it under *"What is still open"*: **CB's TR sits at y = 0, hard against the pinning tool's top edge**, while CA's TL is at 0.02849. Carl's rule — *"The distance from the ceiling must be the same for CA and CB. Its like hanging a picture"* — **was never satisfied.** ⚠ **The old letterboxed framing hid it; a correctly-framed room shows it.** ⛔ **Needs Carl to re-pin CB in `/proto/wall`.**
+
+### ⚠ WHAT IS DELIBERATELY NOT DONE
+
+⛔ **`?guides=1` draws the quads, the floor rects and the PL/PR rails. THEY MUST COME OUT BEFORE THIS SHIPS.** · The proxy is **one floor plane plus one wall plane** — desks, chairs and plants are painted on and have no depth, which is accepted; ⛔ **it is a depth proxy, NOT a 3D reconstruction, and must not be grown into one.** · The PMREM cost in the room is **unmeasured**; the `/start` precedent is ~572ms for a different scene.
