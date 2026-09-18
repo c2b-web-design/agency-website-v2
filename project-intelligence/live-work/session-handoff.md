@@ -11,20 +11,18 @@
 backwards and the GPU culled all 4,608 of them — and it hid because the DOM `<img>` behind the
 transparent canvas was still painting the same room.**
 
-## ⛔ COMMITTED AND PUSHED. HEAD is `8041c20`.
+## ⛔ COMMITTED AND PUSHED. HEAD is `2978766`.
 
     8041c20  the depth proxy was never visible — its triangles were wound backwards
+    2978766  D-088 the mark travels desk-to-player; the poster is ruled out
 
 ⚠⚠ **COMMITTED IS NOT APPROVED. Carl has NOT passed the room, the glass or the rails by eye.**
 
-⛔ **UNCOMMITTED AT SESSION END — governance only, no code:**
-
-    project-intelligence/decisions.md               D-088
-    project-intelligence/active-sprints/current-sprint.md
-    project-intelligence/live-work/about-section-thinking.md   (poster supersession pointer)
+✔ **WORKING TREE CLEAN — nothing uncommitted.** ⚠ One pre-existing untracked file,
+`brand-assets/c2b-logo-blue-mark.png`, predates this session and was left alone.
 
 ⚠ `npx tsc --noEmit` CLEAN. `npm run lint` = `1 problem (1 error, 0 warnings)` — the documented
-baseline. ⛔ **Dev server was left running on :3000. Kill it and confirm the port free.**
+baseline. ✔ **Ports 3000 and 3100 CONFIRMED FREE at session end — no server left running.**
 
 ---
 
@@ -125,9 +123,8 @@ and stay there.
 
 # ⛔ WHAT THE NEXT SESSION SHOULD DO, IN ORDER
 
-1. ⛔ **Kill the dev server on :3000 and confirm the port free.**
-2. ⛔ **Commit and push the three governance files** listed at the top. **D-088 is written but
-   unpushed.**
+1. ⛔ **Verify ports 3000/3100 are free before starting anything** — they were free at session end.
+2. ✔ **All governance is committed and pushed — nothing is owed.**
 3. ⚠ **Nothing is authorised to build.** Chunk 3 is not open.
 
 ---
