@@ -4348,3 +4348,108 @@ Carl's plan: when the site is finished, strip the C2B-specific content and **clo
 ### ⚠ AND THE WIDER QUESTION IS CARL'S, NOT A TIDY-UP
 
 Carl, on the blueprint: *"we will look at the repo and decide whats stays and if info is important as a record we could possibly store it elsewhere."* ⛔ **The governance record is not automatically part of a client blueprint.** What transfers, what is archived, and what is discarded is a decision for that session.
+
+---
+
+## D-082 — The Wall Pair Gets Geometry, A 42% Aspect Error Is Found, And The Lighting Becomes Two Directional Lights
+
+**Date recorded:** 2026-09-18 (work done 17 September 2026)
+**Status:** ⛔ **APPROVED.** Carl accepted the lighting on sight after four rejected rigs. Commits `ac4a4c8`, `30442e2`.
+**Authority:** Human Founder — Carl, 17 September 2026. On the card family: *"The cards can be seen as one 'family'. They all share similar chracteristics, only the dimensions change."* On the lighting trade: *"It is a trade off, but all 4 are now visible. Its something to work with."*
+**Bears on:** `components/about/about-card-geometry.ts`, `components/about/about-card-canvas.tsx`, `app/about/page.tsx`. Extends **D-076** (the measurement instrument) and **D-077** (placement).
+
+---
+
+### ⛔⛔ `WALL_CARD_ASPECT = 1.615` WAS WRONG BY 42%
+
+**It came from `wall-card-text.tsx`'s 420x260 CSS box and had NEVER been measured against the plate.** ⛔ Solved from Carl's pinned corners: **CA 2.327, CB 2.248** (`about-card-geometry.ts:155-156`). ⚠ **The dead value is kept as `WALL_CARD_ASPECT_DEPRECATED` at `:166`** so a reader who finds 1.615 in an old note can see what happened to it.
+
+⚠⚠ **CARL CHOSE THE SLOWER ROUTE AND IT IS WHAT FOUND THE FAULT** — *"getting it right is more important than how fast."* ⛔ **The quads are PROJECTED trapezoids**; a bounding box returned CA and CB **overlapping**, which is impossible for two cards on a wall.
+
+**Five independent checks:** three focal lengths agree within 6.4% · the aspect is stable across that range · orthogonality within 0.012 · the overlay lands on the painted quads (`live-work/wall-corner-check-17-september.png`) · **and Carl's own test** — the desks relate to the walls, so two flat cards should be ~89.4° apart; **measured 96.10°.**
+
+⚠ **THE 6.7° RESIDUAL IS STATED, NOT DRESSED UP.** The record already lists the right desk's direction under *"What is NOT established"*.
+
+### ⛔⛔ THE LIGHT TYPE WAS THE FAULT, NOT ITS PLACEMENT
+
+**FOUR SPOTLIGHT RIGS WERE BUILT AND REJECTED ON SIGHT.** Carl: *"its acting like a street light."*
+
+⛔ **A `spotLight` has a position, so it pools and falls off. A `directionalLight` has neither, so the only thing varying across a face is THE FACE.** ⚠ **Four measured iterations — raking spots, cones, rim axis, a 25° swing — EVERY ONE MEASURED CLEAN AND LOOKED WORSE.** **Rule 9: the screen is the truth and Carl's eye is the instrument.**
+
+**The built result** (`about-card-canvas.tsx:561, :628`): key `[1,2,2]` at **0.5**, fill `[5,2,-2]` at **2.6**, ambient **0.20**.
+
+⚠ **THE OBVIOUS MIRROR `[-1,2,2]` IS WRONG** — it lights the RIGHT pair more (0.632) than the left (0.380), **because the cards are yawed to their desks, not mirrored about the room.** `[5,2,-2]` grazes CD/CA at 0.179/0.104 and gives exactly **0.000** to CS/CB.
+
+⚠⚠ **AND THE KEY HAD TO COME DOWN, WHICH WAS NOT PART OF THE REQUEST.** At key 1.2 it still supplied **88% of CD's light AT NEAR HEAD-ON** — so 88% of what the left pair received carried no gradient. **Key 0.5 / fill 2.6 inverts that to 56% fill at a grazing angle.**
+
+⛔ **CARL ACCEPTS THE TRADE: the right pair drops ~0.03 from values he had already approved.** ⚠ **Do not "fix" this imbalance later** — it is the accepted outcome of four rejected rigs, not an oversight.
+
+### ⚠ THE CLEAN PLATE — the guides were CONSUMED, not discarded
+
+**Wall guides gone, floor rails kept.** One `src` swap: **the wall quads are PAINTED INTO the plate**; the floor rails are SVG in the component. ⚠ **Both plates are 1.500 framing, so no card moved.** **The guides became the solved aspects.**
+
+### ⚠ WHAT THIS ENTRY DOES NOT SETTLE
+
+⛔ **`WallCardText` stays commented out.** Its 420x260 box is the 1.615 aspect the solve disproved. ⚠ **Uncommenting it reintroduces the error.**
+
+---
+
+## D-083 — Chunk 2a: CS's Frosted Face Is Built And Gated. Transmission Needs An Environment Map, And The Bench Has None
+
+**Date recorded:** 2026-09-18
+**Status:** ⚠ **IMPLEMENTED, NOT APPROVED.** ⛔ **Carl's verdict is PENDING and CANNOT be given yet** — the material is not judgeable until the environment-map question below is answered. ⚠⚠ **COMMITTED ON CARL'S INSTRUCTION, 18 September. ⛔ COMMITTING IS NOT APPROVING** — the code is on `main` so it travels with the record that describes it, and **this entry is the status.** A later reader must not read "it is in `main`" as "Carl accepted it."
+**Authority:** Human Founder — Carl, 17 September 2026, approving the plan: *"The plan is approved."* ⛔ **That authorises the BENCH only.** The three rulings it carries: thickness *"9.80mm"*, *"Confirm Option A"*, and *"The figures were presented as a starting point."*
+**Bears on:** `components/about/about-card-glass.ts` (new), `about-card-mesh.tsx`, `card-bench.tsx`, `verify/about-cards-still-grey.mjs` (new). Spec: `live-work/chunk2-plan-amended-17-september.md`. Follows **D-051** (satin on `/start`, NOT reopened).
+
+---
+
+### ⛔⛔ THE FINDING — TRANSMISSION TAKES ITS SPECULAR AND IBL FROM AN ENVIRONMENT MAP
+
+**The glass toggle works, the faders move, the photographic proxy loads and is plainly visible around the card — and the FACE renders near-black and barely responds to either fader.**
+
+**Measured from screenshots, face-centre luminance:**
+
+    glass OFF                          113.2   <- correct, lit grey
+    glass ON                             2.2
+    roughness swept 0 -> 0.5          2.2 -> 3.1
+    thickness swept 0 -> 40mm         2.2 -> 2.2   (no response at all)
+    a FULLY EMISSIVE proxy behind     2.2 -> 6.1
+    ⛔ an <Environment> in the scene   2.2 -> 56.8  <- 26x. THE CAUSE.
+
+⛔ **With no environment map there is almost nothing for the face to return**, so it reads black whatever the faders say. ⚠⚠ **THE PARAMETERS ARE NOT THE VARIABLE — `thickness: 0` and `roughness: 0` are the near-clear case and render identically black.**
+
+⚠ **THIS IS WHY `/start`'s GLASS BUILDS ONE DELIBERATELY.** `answer-card-canvas.tsx` generates a local env map with `PMREMGenerator` at a measured **~572ms**, and that file already records `envMapIntensity` ramping from black as *"what produced the black rectangle."*
+
+### ⛔⛔ WHAT THE ENVIRONMENT MAP SHOULD BE IS CARL'S, AND IT IS §5a-SHAPED
+
+**A drei `preset` was used as a DIAGNOSTIC ONLY and has been REMOVED.** ⚠ **It also lifted the control from 113 to 225 — it lights the whole bench, not just the glass.** It is not the answer.
+
+⛔ **A room-derived env map — plausibly built from the plate the proxy already crops — is the obvious candidate and is NOT an implementation detail.** It is a new expensive GPU resource with a measured cost on the precedent, and §5a's first category is *"a second instance of an expensive resource."* **It goes to Carl before it is built.**
+
+### ⛔ WHAT IS BUILT AND WHAT IT HOLDS
+
+- **`about-card-glass.ts`** — constants, each labelled with its provenance. ⛔ **Only `GLASS_THICKNESS_MM = 9.8` is Carl's**; the rest are marked a starting point in the file AND in the bench UI.
+- ⛔ **THICKNESS IS A TYPED CONSTANT, NOT `heightMm * TENT_POLE_RATIO`** — that expression gives **28.6mm**, not the 9.80mm Carl approved. **The coupling to the crown is DECLINED**, so the crown can be re-tuned without dragging the glass with it.
+- ⛔ **THE A2 GATE.** `about-card-mesh.tsx` is shared by **all four room cards**, so the glass sits behind a prop that is **OFF by default**. ⚠ **Verified by LOADING `/about` and measuring, not by reasoning** — CD 112.0, CS 37.4, channel spread < 2.
+- ⛔ **The face is WHITE, not `DIAG_FACE_COLOR`** — transmission is multiplied by `color` and the grey would tint the *"colourless"* glass to **78%**.
+- ⛔ **The stale comment at `card-bench.tsx:109` is CORRECTED.** It claimed `TENT_POLE_RATIO = 0.025` against a code value of **0.073** and produced a 2.92x thickness error in a plan put to Carl. ⚠ **The live value is deliberately NOT repeated there — naming it twice is how it went stale.**
+
+### ⚠⚠ THREE BUILDER ERRORS, AND THE THIRD IS THE ONE THAT MATTERS
+
+| | |
+|---|---|
+| **B1 — a probe that could not fail** | The first probe read the canvas via `drawImage` into a 2D context and reported **0/0/0 at every setting, INCLUDING GLASS OFF**, where the screenshot plainly shows a bright grey face. `preserveDrawingBuffer: false` makes that readback empty. ⛔ **Caught only by running a control with the feature OFF.** |
+| **B2 — a false mechanism, reasoned in full and written down as fact** | The black face was attributed to `alpha: true`: target cleared at alpha 0.5 (`three.module.js:18019`) → `transmission_fragment:31` → `opaque_fragment:7`. ⚠⚠ **Every line is really in three 0.185.1 and it predicted the exact symptom. `alpha: false` changed the number by 0.0.** ⛔ **It was written into a code comment BEFORE being tested.** Recorded, not deleted, in `card-bench.tsx`. |
+| **B3 — a threshold chosen by assertion** | The A2 harness opened at `MILKY_LUM = 170`, picked before either population was measured. ⛔⛔ **On the red run the defect measured 167.2 AND THE HARNESS RETURNED PASS.** It missed the defect it exists to catch, by 2.8 points. **Now 140, measured between both populations.** |
+
+> ⛔⛔ **THE PATTERN: A CONFIDENT EXPLANATION WAS PRODUCED TWICE BEFORE IT WAS TESTED.** B2 was verified line-by-line in `node_modules` and was still wrong, **because verifying that a mechanism EXISTS is not the same as verifying it is THE ONE ACTING.**
+
+⚠⚠ **B3 IS THE GENERAL LESSON. A harness written specifically to prevent this project's recorded failure class committed it on its first run** — `q5-stutter.mjs` read 0/3 CLEAN on a visible stall; `one-context.mjs` read 2/2 while a context was created every question. **All failed toward a PASS, and so did this.**
+
+### ⚠ THE HARNESS IS PROVEN-CAPABLE BUT NOT ADMISSIBLE
+
+**`verify/about-cards-still-grey.mjs` was run against the defect** — glass forced on in the room — **confirmed RED at 167.2, reverted, confirmed green at 112.0.** ⛔ **It is still NOT admissible: `proven.json` is empty (D-064) and no entry was filed** — the write-up and the `emptyInput` block do not exist.
+
+### ⛔ WHAT IS EXPLICITLY NOT DECIDED HERE
+
+**The final roughness** (set in the room, in 2b — frost scale depends on render-target width) · **thickness for CD, CA and CB** at rollout · **the four neon colours** (four, all different, none chosen) · **`transmissionResolutionScale`** (after 2b measures) · ⛔ **and glass in the room, which 2a does not touch.**

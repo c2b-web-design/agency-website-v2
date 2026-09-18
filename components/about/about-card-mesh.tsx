@@ -42,6 +42,18 @@ import {
   maxFaceTiltDegrees,
   type CardDims,
 } from "./about-card-geometry";
+/* ⚠ CHUNK 2a — consumed ONLY when the `glass` prop is on. See its note: the
+   default stays chunk 1's diagnostic grey for all four room cards. */
+import {
+  GLASS_ATTENUATION_COLOR,
+  GLASS_ATTENUATION_DISTANCE,
+  GLASS_COLOR,
+  GLASS_IOR,
+  GLASS_METALNESS,
+  GLASS_ROUGHNESS,
+  GLASS_THICKNESS_MM,
+  GLASS_TRANSMISSION,
+} from "./about-card-glass";
 
 // ── Diagnostic tones ─────────────────────────────────────────────────────────
 // Deliberately achromatic and deliberately DIFFERENT per part, so the three
@@ -839,6 +851,35 @@ export type AboutCardMeshProps = {
    * approved crown so the pair can be compared in the room.
    */
   flat?: boolean;
+  /**
+   * ⛔⛔ THE GLASS GATE — OFF BY DEFAULT, AND THE DEFAULT IS LOAD-BEARING.
+   *
+   * ⚠⚠ THIS COMPONENT IS SHARED BY ALL FOUR ROOM CARDS. Swapping the face
+   * material outright — rather than behind this prop — turns CD, CS, CA and CB
+   * into milky slabs on the next build, and the milkiness is **a pipeline
+   * artefact, not a material verdict**:
+   *
+   *     three.module.js:18019
+   *     if ( _currentClearAlpha < 1 ) _this.setClearColor( 0xffffff, 0.5 );
+   *
+   * **The `/about` canvas is `alpha: true`**, so the transmission render target
+   * clears to **50% WHITE**. ⛔ It would look exactly like *"the frost is too
+   * heavy"* when nothing about the frost is wrong — **worse than an empty
+   * result, because it is a confident wrong answer.**
+   *
+   * ⛔ ONLY THE BENCH SETS THIS IN CHUNK 2a. `about-card-canvas.tsx` is NOT
+   * changed until 2b, which owns the warm-up and the target measurement.
+   *
+   * ⚠ Found by the Architect: the first plan said "optional prop" and the
+   * amended plan dropped the words, which would have made the claim *"2a does
+   * not touch `/about`"* false. **This is the §5b lesson in miniature — a change
+   * to a shared component reaches every consumer.**
+   */
+  glass?: boolean;
+  /** ⚠ Bench faders. Ignored unless `glass`. See `about-card-glass.ts`. */
+  glassRoughness?: number;
+  /** ⚠ MILLIMETRES, object space. ⛔ Never divided by `MM_PER_UNIT`. */
+  glassThicknessMm?: number;
   /** Reports the measured tilt of the built face, for the bench readout. */
   onTilt?: (deg: number) => void;
 };
@@ -848,6 +889,9 @@ export function AboutCardMesh({
   crownMm,
   ovalExpand = OVAL_EXPAND,
   flat = false,
+  glass = false,
+  glassRoughness = GLASS_ROUGHNESS,
+  glassThicknessMm = GLASS_THICKNESS_MM,
   onTilt,
 }: AboutCardMeshProps) {
   const path = useMemo(
@@ -965,11 +1009,35 @@ export function AboutCardMesh({
         {/* ⚠ NO NORMAL MAP. The convex-normal-map route was tested and closed on
             14 September 2026 — Carl: *"NO change. CD is the way to go."* The
             curvature is real geometry; see `ovalHeight`. */}
-        <meshStandardMaterial
-          color={DIAG_FACE_COLOR}
-          roughness={0.55}
-          metalness={0}
-        />
+        {glass ? (
+          /* ⛔⛔ CHUNK 2a — CS'S FROSTED FACE, BENCH ONLY. Reached only through
+             the `glass` prop, which is OFF by default; see its note for the
+             milky-slab artefact that gate exists to prevent.
+
+             ⚠ THE COLOUR IS WHITE AND NOT `DIAG_FACE_COLOR` DELIBERATELY:
+             transmission is multiplied by `color`, so the grey would tint this
+             "colourless" glass to 78%. See `GLASS_COLOR`.
+
+             ⚠ `thickness` IS IN MILLIMETRES — object space, already scaled by
+             the group's scale. ⛔ Do NOT divide it by `MM_PER_UNIT`. */
+          <meshPhysicalMaterial
+            color={GLASS_COLOR}
+            roughness={glassRoughness}
+            metalness={GLASS_METALNESS}
+            transmission={GLASS_TRANSMISSION}
+            thickness={glassThicknessMm}
+            ior={GLASS_IOR}
+            attenuationColor={GLASS_ATTENUATION_COLOR}
+            attenuationDistance={GLASS_ATTENUATION_DISTANCE}
+            side={THREE.FrontSide}
+          />
+        ) : (
+          <meshStandardMaterial
+            color={DIAG_FACE_COLOR}
+            roughness={0.55}
+            metalness={0}
+          />
+        )}
       </mesh>
     </group>
   );

@@ -10,9 +10,67 @@
  * predicted by `maxFaceTiltDegrees()`. Both are printed side by side precisely so
  * a disagreement is visible: that function once carried a factor-of-2 error and
  * a check sharing a formula with the thing it checks cannot fail.
+ *
+ * ══════════════════════════════════════════════════════════════════════════
+ * ⛔⛔ THE TRANSMISSIVE FACE NEEDS AN ENVIRONMENT MAP. THE BENCH HAS NONE.
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * **18 September 2026. Chunk 2a is BUILT AND IS NOT YET JUDGEABLE**, and the
+ * reason is one missing ingredient, not a wrong parameter. The glass toggle
+ * works, the faders move, the photographic proxy loads and is plainly visible
+ * around the card — ⛔ **and the face renders near-black and barely responds to
+ * either fader.**
+ *
+ * **MEASURED, from screenshots** (the in-page canvas readback returns an empty
+ * buffer — see the harness note below):
+ *
+ *     face centre luminance, glass OFF          113.2   <- correct, lit grey
+ *     face centre luminance, glass ON             2.2
+ *     across roughness 0 -> 0.5                2.2 -> 3.1
+ *     across thickness  0 -> 40mm              2.2 -> 2.2   (no response)
+ *     with a FULLY EMISSIVE proxy behind       2.2 -> 6.1
+ *     ⛔ WITH AN `<Environment>` IN THE SCENE   2.2 -> 56.8  <- 26x
+ *
+ * ⛔⛔ **THE LAST ROW IS THE CAUSE.** `MeshPhysicalMaterial`'s transmission takes
+ * its specular and its IBL from an environment map; with none in the scene there
+ * is almost nothing for the face to return, so it reads black no matter what the
+ * faders say. ⚠ **This is why `/start`'s glass BUILDS ONE DELIBERATELY** —
+ * `answer-card-canvas.tsx` generates a local env map with `PMREMGenerator`, at a
+ * measured ~572ms, and that file already records `envMapIntensity` ramping from
+ * black as *"what produced the black rectangle."*
+ *
+ * ⛔ **WHAT THE ENVIRONMENT MAP IS IS CARL'S AND IS NOT DECIDED HERE.** A drei
+ * `preset` was used as a DIAGNOSTIC ONLY and has been removed: it also lifted the
+ * control from 113 to 225, so it lights the whole bench, not just the glass. ⚠ A
+ * room-derived env map — plausibly built from the plate the proxy already crops —
+ * is the obvious candidate and is **a §5a-shaped question, not an implementation
+ * detail.** It goes to Carl.
+ *
+ * ⛔ **RULED OUT, so the next session does not re-walk any of it:**
+ *   - **Lighting / a dark proxy** — the emissive row above.
+ *   - **Geometry or occlusion** — glass OFF renders a correctly lit face at the
+ *     same position; the proxy sits at z -24mm, the face at z +7mm.
+ *   - **The parameters** — `thickness: 0` and `roughness: 0` are the near-clear
+ *     case and render identically black.
+ *   - **`alpha: true` on the canvas** — ⚠⚠ **REASONED IN FULL, THEN FALSIFIED.**
+ *     A mechanism was built out of `three.module.js:18019` ->
+ *     `transmission_fragment:31` -> `opaque_fragment:7`, every line of which is
+ *     really in three 0.185.1, and it predicted exactly this symptom. **Setting
+ *     `alpha: false` changed the number by 0.0.** ⛔ Recorded, not deleted: a
+ *     wrong argument that survives next to a right conclusion becomes a false
+ *     fact a later reader relies on.
+ *
+ * ⛔⛔ **AND A HARNESS DEFECT WORTH MORE THAN THE BUG.** The first probe read the
+ * canvas with `drawImage` into a 2D context and reported **0/0/0 at every setting
+ * — INCLUDING WITH GLASS OFF**, where the screenshot plainly shows a bright grey
+ * face. `preserveDrawingBuffer: false` makes that readback empty. ⚠ **It was
+ * caught only because a control was run with the feature turned OFF and the
+ * "defect" was still there.** Every instrument failure in this project that cost
+ * days failed toward a confident wrong number. **Run the control.**
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import {
   cardDims,
@@ -21,11 +79,20 @@ import {
   CB_CARD_ASPECT,
   CD_CARD_HEIGHT_MM,
   TENT_POLE_RATIO,
+  GUIDE_CS,
   PROXY_COLORS,
   maxFaceTiltDegrees,
   TILT_REFERENCE_INVISIBLE_DEG,
   TILT_REFERENCE_LEGIBLE_DEG,
 } from "./about-card-geometry";
+import {
+  GLASS_IOR,
+  GLASS_ROUGHNESS,
+  GLASS_ROUGHNESS_RANGE,
+  GLASS_THICKNESS_MM,
+  GLASS_THICKNESS_RANGE_MM,
+  GLASS_TRANSMISSION,
+} from "./about-card-glass";
 import { AboutCardMesh } from "./about-card-mesh";
 
 /**
@@ -106,8 +173,18 @@ export default function CardBench() {
    * ⚠⚠ OPENS AT `TENT_POLE_RATIO`, NOT `CROWN_RATIO` — corrected 14 September 2026.
    * ⛔ `CROWN_RATIO = 0.0901` was back-derived to hold 27.9° of tilt on the
    * SUPERELLIPSE profile, which is dead. The live surface is the quartic
-   * `(1-x²)(1-y²)` and its dial is `TENT_POLE_RATIO = 0.025`. **Opening the bench
-   * at 0.0901 would show a card 3.6x more curved than anything on `/about`.**
+   * `(1-x²)(1-y²)` and its dial is `TENT_POLE_RATIO`.
+   *
+   * ⚠⚠ THIS COMMENT SAID `TENT_POLE_RATIO = 0.025` UNTIL 18 September 2026 AND
+   * THE CODE SAID 0.073 — corrected in place, per `context-rules.md`. **0.025 was
+   * true when written and was dropped on 14 September when Carl's eye settled
+   * 0.073.** ⛔ The stale figure was not inert: it was read as current while
+   * drafting chunk 2's plan and produced **a thickness figure 2.92x out in a plan
+   * put to Carl.** *"A STALE COMMENT IS AN INSTRUMENT. It is what the next reader
+   * measures the code by, and it lies exactly as a bad harness lies."*
+   *
+   * ⛔ THE LIVE VALUE IS NOT REPEATED HERE. `about-card-geometry.ts:624` is the
+   * one place it is written; naming it again is how this comment went stale.
    */
   const [crownRatio, setCrownRatio] = useState(TENT_POLE_RATIO);
   const crownMm = heightMm * crownRatio;
@@ -116,6 +193,65 @@ export default function CardBench() {
   const [view, setView] = useState<View>("oblique");
   const [measuredTilt, setMeasuredTilt] = useState<number | null>(null);
   const [proxyOn, setProxyOn] = useState(true);
+
+  /**
+   * ⛔⛔ CHUNK 2a — THE GLASS FADERS. ⚠⚠ THESE OPEN AT A STARTING POINT, NOT AT A
+   * PROPOSAL. Carl, 17 September 2026: *"The figures were presented as a starting
+   * point."* See `about-card-glass.ts` — the crown precedent is a 3x move from an
+   * outside figure, and the UI below says so where the numbers are read.
+   */
+  const [glassOn, setGlassOn] = useState(false);
+  const [glassRoughness, setGlassRoughness] = useState(GLASS_ROUGHNESS);
+  const [glassThicknessMm, setGlassThicknessMm] = useState(GLASS_THICKNESS_MM);
+
+  /**
+   * ⛔ THE PHOTOGRAPHIC PROXY — the region of the plate that sits behind CS,
+   * cropped in PLATE SPACE from `GUIDE_CS`, which is already in plate space.
+   *
+   * ⚠⚠ THE STAGE→PLATE CONVERSION TRAP DOES NOT APPLY HERE, and that is stated
+   * rather than left to be rediscovered: that trap corrupted every card placement
+   * for hours on 14 September while the arithmetic reported *"EXACT, 0.00000px"*.
+   * `GUIDE_CS` needs no conversion — it is fractions of the plate.
+   *
+   * ⛔ CROPPED FROM `about-studio-source.jpg`, THE CLEAN PLATE. ⚠ NOT
+   * `about-studio-wall-only.jpg`, which carries painted guide quads, and not the
+   * guides plate. A guide quad behind the glass would be read as an artefact of
+   * the material.
+   *
+   * ⚠ `/proto` IS NOT A PRODUCTION ROUTE, so D-075 (the lint/bytes decision) does
+   * not apply and a raw `<img>` fetch is acceptable here.
+   */
+  const [proxyTexture, setProxyTexture] = useState<THREE.Texture | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    let made: THREE.Texture | null = null;
+    const img = new Image();
+    img.onload = () => {
+      if (cancelled) return;
+      const sx = Math.round(GUIDE_CS.x0 * img.naturalWidth);
+      const sy = Math.round(GUIDE_CS.y0 * img.naturalHeight);
+      const sw = Math.round((GUIDE_CS.x1 - GUIDE_CS.x0) * img.naturalWidth);
+      const sh = Math.round((GUIDE_CS.y1 - GUIDE_CS.y0) * img.naturalHeight);
+      const canvas = document.createElement("canvas");
+      canvas.width = sw;
+      canvas.height = sh;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+      const tex = new THREE.CanvasTexture(canvas);
+      /* ⛔ A KNOWN FAILURE, NOT A PRECAUTION. `contact-field-canvas.tsx:806`:
+         *"Omitting it double-applies the transfer function."* */
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.needsUpdate = true;
+      made = tex;
+      setProxyTexture(tex);
+    };
+    img.src = "/about-studio-source.jpg";
+    return () => {
+      cancelled = true;
+      if (made) made.dispose();
+    };
+  }, []);
 
   const dims = useMemo(() => cardDims(heightMm, aspect), [heightMm, aspect]);
   const predictedTilt = useMemo(
@@ -289,6 +425,70 @@ export default function CardBench() {
         </label>
       </div>
 
+      {/* ⛔⛔ CHUNK 2a — THE GLASS ROW. Separated from the geometry dials above
+          because they answer different questions and mixing them is how two
+          variables get swept at once. */}
+      <div className="flex flex-wrap items-center gap-4 text-sm border-t border-neutral-800 pt-3">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={glassOn}
+            onChange={(e) => setGlassOn(e.target.checked)}
+          />
+          <strong>frosted glass face</strong>
+        </label>
+
+        <label className="flex items-center gap-2 aria-disabled:opacity-40" aria-disabled={!glassOn}>
+          roughness
+          <input
+            type="range"
+            min={GLASS_ROUGHNESS_RANGE.min}
+            max={GLASS_ROUGHNESS_RANGE.max}
+            step={GLASS_ROUGHNESS_RANGE.step}
+            value={glassRoughness}
+            disabled={!glassOn}
+            onChange={(e) => setGlassRoughness(Number(e.target.value))}
+            className="w-44"
+          />
+          <span className="tabular-nums text-neutral-400 w-14">
+            {glassRoughness.toFixed(3)}
+          </span>
+        </label>
+
+        <label className="flex items-center gap-2 aria-disabled:opacity-40" aria-disabled={!glassOn}>
+          thickness
+          <input
+            type="range"
+            min={GLASS_THICKNESS_RANGE_MM.min}
+            max={GLASS_THICKNESS_RANGE_MM.max}
+            step={GLASS_THICKNESS_RANGE_MM.step}
+            value={glassThicknessMm}
+            disabled={!glassOn}
+            onChange={(e) => setGlassThicknessMm(Number(e.target.value))}
+            className="w-44"
+          />
+          <span className="tabular-nums text-neutral-400 w-16">
+            {glassThicknessMm.toFixed(2)}mm
+          </span>
+        </label>
+
+        <span className="text-neutral-500">
+          ior <span className="tabular-nums">{GLASS_IOR}</span> · transmission{" "}
+          <span className="tabular-nums">{GLASS_TRANSMISSION}</span> — fixed
+        </span>
+
+        <button
+          type="button"
+          onClick={() => {
+            setGlassRoughness(GLASS_ROUGHNESS);
+            setGlassThicknessMm(GLASS_THICKNESS_MM);
+          }}
+          className="px-2 py-1 rounded bg-neutral-800 hover:bg-neutral-700"
+        >
+          reset to opening values
+        </button>
+      </div>
+
       <div
         className="relative w-full border border-neutral-700 bg-neutral-900"
         style={{ aspectRatio: "16 / 9" }}
@@ -302,7 +502,28 @@ export default function CardBench() {
           }}
           key={view}
           dpr={[1, 2]}
-          gl={{ antialias: true, alpha: true }}
+          /**
+           * ⚠ `alpha: false` ON THE BENCH. ⛔ IT IS NOT THE FIX FOR THE BLACK
+           * FACE AND MUST NOT BE RECORDED AS ONE — see the open defect in this
+           * file's header. Measured 18 September 2026: face luminance was 2.2
+           * both before and after this change, **identical to three significant
+           * figures.**
+           *
+           * ⚠⚠ A PLAUSIBLE MECHANISM WAS WRITTEN HERE AND IT WAS FALSE. The
+           * argument ran: the transmission target is cleared at alpha 0.5
+           * (`three.module.js:18019`), that alpha reaches the face's own alpha
+           * (`transmission_fragment:31` -> `opaque_fragment:7`), so the face goes
+           * semi-transparent over a dark page. **Every line of it is really in
+           * three 0.185.1. It still did not cause this.** ⛔ Recorded rather than
+           * deleted, on the Architect's standing reasoning: *"A wrong argument
+           * recorded in support of a right conclusion becomes a false fact later
+           * readers rely on."*
+           *
+           * ⚠ KEPT ONLY because an opaque canvas is the honest setting for a
+           * bench that draws on its own dark panel, and it removes one variable
+           * from the next session's search. ⛔ It decides NOTHING for `/about`.
+           */
+          gl={{ antialias: true, alpha: false }}
           frameloop="always"
         >
           {/* ⚠ Deliberately dim ambient. The room is dark and the point of this
@@ -321,8 +542,15 @@ export default function CardBench() {
               <planeGeometry
                 args={[dims.widthMm * 1.6, dims.heightMm * 1.6]}
               />
+              {/* ⛔ `toneMapped={false}` — the same reason as F7 on the room's
+                  backplate. Without it the bench shows a COLOUR-SHIFTED
+                  photograph behind the glass and the frost is judged against the
+                  wrong image. ⚠ The flat sampled colour is the fallback until
+                  the crop loads, not a second option. */}
               <meshStandardMaterial
-                color={PROXY_COLORS.CD}
+                map={proxyTexture ?? undefined}
+                color={proxyTexture ? "#ffffff" : PROXY_COLORS.CD}
+                toneMapped={false}
                 roughness={0.95}
                 metalness={0}
               />
@@ -337,6 +565,9 @@ export default function CardBench() {
             crownMm={crownMm}
             ovalExpand={ovalExpand}
             flat={treatment === "flat"}
+            glass={glassOn}
+            glassRoughness={glassRoughness}
+            glassThicknessMm={glassThicknessMm}
             onTilt={setMeasuredTilt}
           />
         </Canvas>
@@ -366,6 +597,28 @@ REFERENCE (face-on, orthographic, light 30 deg off-normal — DOES NOT TRANSFER)
   ${TILT_REFERENCE_LEGIBLE_DEG}deg  measured clearly legible
   The floor at which convexity reads HERE must be re-derived: oblique view,
   89.9 deg lens, and eventually a neon rim a few mm away rather than a key light.
+
+GLASS         ${glassOn ? "ON" : "off — the face is chunk 1's diagnostic grey"}
+  roughness   ${glassOn ? num(glassRoughness, 3) : "—"}   opened at ${num(GLASS_ROUGHNESS, 3)}
+  thickness   ${glassOn ? num(glassThicknessMm, 2) + " mm" : "—"}   opened at ${num(GLASS_THICKNESS_MM, 2)} mm
+  ior ${GLASS_IOR} · transmission ${GLASS_TRANSMISSION} — fixed, not swept
+  ⚠⚠ THE OPENING VALUES ARE A STARTING POINT, NOT A PROPOSAL. They came from
+     an outside source and Carl passed them on as such, 17 September 2026.
+     The face crown opened at an outside 0.015-0.03 and Carl's eye settled
+     0.073 — nearly 3x. Do not read these as where the answer is.
+  ⛔ THICKNESS IS A TYPED CONSTANT (9.80mm, Carl's), NOT heightMm x the crown
+     ratio. That expression gives 28.6mm. The coupling to the crown is DECLINED,
+     so sweeping the crown above does not move the glass.
+  ⛔ WHAT THIS BENCH CANNOT SETTLE — the FINAL roughness. lod =
+     log2(transmissionSamplerSize.x) x roughness, so FROST SCALE DEPENDS ON THE
+     RENDER TARGET'S WIDTH, and this canvas is not the room's. The bench settles
+     the frost's CHARACTER; its scale is set in the room, in 2b.
+  ⚠ Blur and refraction offset are both sampled in SCREEN SPACE, so how far the
+     proxy sits behind the glass changes neither. A textured plane at any depth
+     shows the real character.
+  ⚠ NOT WATCHED HERE: this bench creates its own transmission target and
+     compiles every shader twice with NO warm-up. A stutter here is expected on
+     /proto and is NOT a production regression.
 
 TRIM as a share of card height
   bead   ${num((100 * dims.rimBeadMm) / dims.heightMm, 2)}%

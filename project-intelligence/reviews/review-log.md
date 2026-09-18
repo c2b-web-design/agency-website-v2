@@ -65,6 +65,32 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-025 — `/about` §2 Lighting: Four Rigs Rejected On Sight, And The Fault Was The Light TYPE
+
+**Date:** 2026-09-17 (logged 2026-09-18 — see **D-074** for why late logging is itself a recorded fault)
+**Reviewer:** Human Founder
+**Subject:** The §2 card lighting in `components/about/about-card-canvas.tsx`, read on a running build. Records **D-082**. Commit `ac4a4c8`.
+
+**Carl's verdict, verbatim:** *"its acting like a street light."* — of the spotlight rigs. And on the accepted result: *"It is a trade off, but all 4 are now visible. Its something to work with."*
+
+**Findings:**
+
+- ⛔⛔ **FOUR SPOTLIGHT RIGS WERE BUILT AND REJECTED ON SIGHT.** ⚠⚠ **EVERY ONE MEASURED CLEAN AND EVERY ONE LOOKED WORSE** — raking spots, cones, a rim axis, a 25° swing. ⛔ **Rule 9 in its purest form: the instruments agreed with the Builder four times running and the screen did not.**
+- ⚠⚠ **THE FAULT WAS THE LIGHT TYPE, NOT ITS PLACEMENT — and that is why four placement iterations could not find it.** A `spotLight` has a position, so it pools and falls off; a `directionalLight` has neither, **so the only thing varying across a face is the face.** ⛔ **Carl's four words located in one move what four measured rounds had not.**
+- ⚠ **THE OBVIOUS MIRROR IS WRONG.** `[-1,2,2]` lights the RIGHT pair more (0.632) than the left (0.380), **because the cards are yawed to their desks, not mirrored about the room.** `[5,2,-2]` grazes CD/CA at 0.179/0.104 and gives exactly **0.000** to CS/CB.
+- ⚠⚠ **THE KEY HAD TO COME DOWN, AND THAT WAS NOT PART OF THE REQUEST.** At 1.2 it supplied **88% of CD's light AT NEAR HEAD-ON** — so 88% of what the left pair received carried no gradient at all. **Key 0.5 / fill 2.6 inverts that to 56% fill at a grazing angle.**
+- ⛔ **CARL ACCEPTED A MEASURED REGRESSION KNOWINGLY:** the right pair drops **~0.03 from values he had already approved**, in exchange for all four cards being readable.
+
+**Flags:**
+
+- ⚠ **Medium — the accepted imbalance will read as a defect to a later session.** ⛔ **It is the outcome of four rejected rigs and Carl's explicit trade, not an oversight. Do not "fix" it.** Recorded here and in D-082 because the code alone does not say so.
+
+**Recommendations:** None outstanding. ⚠ **The lighting the cards will FINALLY live under still does not exist** — the rim is not a light source until chunk 3.
+
+**Status:** ⛔ **APPROVED** — accepted by eye, with the trade stated.
+
+---
+
 ## R-024 — `/about` Section 2: The Room Photograph, And Four Generated Rooms Rejected
 
 **Date:** 2026-09-04 (approved 2026-09-03/04; logged late — see **D-074**)
@@ -683,6 +709,15 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-08-31 — **R-020 added**: the `/about` scaffolding, Carl confirming by eye that the mark does not move between pages — *"nailed it"*. Placement APPROVED (D-066); colour PROVISIONAL. Also records the sections resized to full viewport, the rule removed from section 1, and a left-edge defect introduced and fixed in the same pass.*
+*Last updated: 2026-09-18 — **R-025 added**: the `/about` §2 lighting, approved by eye after **four
+rigs that each measured clean and were each rejected on sight.** ⚠ **The fault was the light TYPE,
+not its placement**, which is why four placement iterations could not find it. ⛔ **Carl accepted a
+measured ~0.03 regression on the right pair knowingly — do not "fix" it.**
+⚠⚠ **NO ENTRY EXISTS FOR CHUNK 2a AND THAT IS CORRECT: Carl has not seen it.** ⛔ **It is blocked
+before its own checkpoint** — the transmissive face is not judgeable without an environment map
+(**D-083**, blocker CHUNK-2a-ENVMAP). **`REVIEW REQUIRED → APPROVED` is Carl's alone (D-036); a
+Builder cannot file an entry for work no one has looked at.***
+
+*Previously: 2026-08-31 — **R-020 added**: the `/about` scaffolding, Carl confirming by eye that the mark does not move between pages — *"nailed it"*. Placement APPROVED (D-066); colour PROVISIONAL. Also records the sections resized to full viewport, the rule removed from section 1, and a left-edge defect introduced and fixed in the same pass.*
 
 *⚠ **The previous footer read "2026-06-22 — R-018 added" while R-019 was already in the file.** Corrected here rather than only appended to: a footer naming the wrong latest entry is the kind of stale instrument `context-rules.md` warns about, and R-020 was very nearly filed as a duplicate R-019 because of it.*
