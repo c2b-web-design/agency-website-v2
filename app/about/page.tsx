@@ -683,6 +683,48 @@ export default function About() {
             thin extension is the SLIDE AXIS — deliberately longer so the card can
             be nudged along it once all four are placed. Drawn here at the same
             weights `/proto/wall` uses so the two views read alike. */}
+        {/* ⛔⛔ THE RAILS MUST TRACK THE PLATE'S BOX, NOT THE SECTION'S — fixed
+            18 September 2026 (second session). The SVG was `absolute inset-0` on
+            the full-viewport section while the plate is LETTERBOXED inside it, so
+            the rails were drawn against the wrong rectangle and ran off the image.
+            ⚠ Only a stub was visible at the bottom-left corner.
+
+            ⚠⚠ THE GUARD ALREADY EXISTED AND WAS NOT CARRIED ACROSS. `AboutCardCanvas`
+            wraps itself in exactly this centred `aspect-[3/2]` box, and its own
+            comment states the rule: *"THE BOX MUST TRACK `object-contain`'s OWN
+            GEOMETRY, NOT `inset-0`... a fraction of the SECTION is not a fraction of
+            the IMAGE."* ⛔ **Third recorded instance of a fix living in one place and
+            being re-broken in another**, after the `[&>div]:w-full` centring guard.
+
+            ⛔ THE COORDINATES ARE UNCHANGED. Only the box they resolve against
+            moves, so nothing about the pinned rail maths is touched. */}
+        {/* ⛔⛔ `z-20` PUTS THE RAILS ABOVE THE CANVAS — 18 September 2026.
+            Carl: *"when refreshed the guide floor lines appear first, on there
+            own, no cards. then the cards appear and the lines disappear."*
+
+            ⚠⚠ THE RAILS WERE NEVER REMOVED — THEY WERE COVERED. `AboutCardCanvas`
+            is later in the DOM and its box overlaps the SVG's **exactly**
+            (both 38,0 1349x899), so with both at `z-index: auto` the canvas wins
+            on document order. ⛔ **VERIFIED BY COUNTING RENDERED PIXELS: cyan 1768,
+            pink 1670, both spanning the floor.**
+
+            ⚠⚠ AND `elementFromPoint` IS THE WRONG INSTRUMENT HERE — IT LIED BOTH
+            BEFORE AND AFTER THE FIX, RETURNING `canvas` EITHER WAY. The SVG is
+            `pointer-events-none`, so hit-testing reports whatever sits BENEATH it
+            regardless of paint order. ⛔ **HIT ORDER IS NOT PAINT ORDER.** Trusting
+            it would have reported this working fix as a failure. **Measure the
+            pixels.**
+
+            ⚠ AN `alpha: true` CANVAS IS TRANSPARENT BUT STILL COMPOSITES. "You can
+            see the room through it" does not mean "it cannot hide a line under
+            it" — the transparent region composites over whatever is beneath.
+
+            ⛔ THE RAILS MUST SIT ON TOP because they are a REFERENCE the cards are
+            judged against: a rail hidden behind the thing it measures cannot do
+            its job. ⚠ Same reason `GuideOverlay` uses `renderOrder={999}` and
+            `depthTest={false}` inside the scene. */}
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+        <div className="relative h-full max-h-full w-auto max-w-full aspect-[3/2]">
         <svg
           className="pointer-events-none absolute inset-0 h-full w-full"
           viewBox="0 0 1.5 1"
@@ -800,6 +842,8 @@ export default function About() {
             opacity={0.95}
           />
         </svg>
+        </div>
+        </div>
 
         {/* ⛔ CD RETURNS — 14 September 2026, the blue rail having been verified
             alone first. ⚠⚠ THAT ORDER WAS THE POINT: a card drawn against a

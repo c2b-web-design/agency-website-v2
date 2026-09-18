@@ -3,6 +3,22 @@
 /* ⛔⛔ THROWAWAY SCAFFOLDING — /about §2 wall-card copy, projected onto the wall.
    10 September 2026. DELETE WITH THE GUIDES.
 
+   ⛔⛔ SUPERSEDED AS THE VISIBLE TEXT — D-086, Carl's ruling of 14 September 2026.
+   THE COPY IS BAKED INTO THE CARD FACE, because a DOM overlay cannot catch the
+   light: *"If its a simple text overlay the light from the rim will have no
+   effect."* And the light is not only the rim — four individual lights are
+   planned, one per card. ⚠ A DOM overlay forfeits both.
+
+   ⚠⚠ DO NOT REINSTATE THIS AS THE VISIBLE TEXT. On 18 September a session read
+   this file, found `text-white` DOM copy, and told Carl the card text is legible
+   without the neon rim. ⛔ THAT WAS THE SUPERSEDED APPROACH AND THE ANSWER WAS
+   WRONG — with baked text, legibility under an unlit or flickering rim is an OPEN
+   QUESTION the neon work must answer.
+
+   ⚠ IT MAY SURVIVE AS THE `sr-only` COPY. D-086: baking without a visually-hidden
+   DOM equivalent would reproduce D-051-A11Y four times over. **That is a reuse of
+   the markup, not of the rendering.**
+
    WHAT IT IS FOR: Carl asked to "put the wall text at an angle, so it looks right
    in the card." The copy is laid out FLAT in the card's own coordinate space, then
    a homography maps that rectangle onto the four pinned corners, so the type takes

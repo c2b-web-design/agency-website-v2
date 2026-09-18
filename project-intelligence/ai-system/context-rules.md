@@ -293,6 +293,33 @@ it tests, and nothing else.** Four gates agreed the file was fine. None of them 
 the file was *well-formed*, because nobody had thought to ask. **The failure mode is not a gate
 being wrong — it is a gate being absent and its absence looking identical to a pass.**
 
+### ⚠⚠ A BRAINSTORM IS A SOURCE OF RECORD — AND AN IDEA CAN BE CHOSEN BY BEING EXPANDED ON
+
+**Carl, 18 September 2026:** *"When im brainstorming at the start of a section things i mention,
+albeit provisionally should be recorded. Its clear that some ideas were not."*
+
+**What Carl raises at the start of a section is recorded, including what he does not pick — and
+which is which is marked.** Provisional is a status, not a reason to omit.
+
+⛔ **THE HARDER HALF: CARL DOES NOT ALWAYS SAY "I REJECT A AND B."** He raises three options and
+then develops one. **The development IS the decision.** Carl: *"These were options, however when i
+expanded on an idea i had settled on it should of been clear that the other 2 ideas had not been
+chosen."*
+
+**So record the unchosen ones as RAISED AND NOT CHOSEN.** ⚠ **Being dropped is not the same as
+being recorded as dropped** — a reader finding the original sentence sees live options and no
+indication that two are dead.
+
+⚠⚠ **WORKED CASE — the neon timing, D-087.** Carl raised *"a loop, or mouse proximity, or add an
+element of randomness"*, then expanded only on the loop, giving its mechanism, its musical frame
+and its durations. ⛔ **Nothing anywhere said the other two were dead.** Mouse proximity survived
+in one quoted sentence in a **gitignored** file and was never mentioned again. **A session planning
+chunk 3 would have found three live options and asked Carl to decide something he decided on
+11 September.**
+
+⛔ **THE TEST: if a future reader could not tell which option is live, the record has failed** —
+even though every word in it is true.
+
 ### Formatting consistency
 Use the established schema for every entry type. Do not add new fields. Do not omit mandatory fields. Schema deviations require a governance update to the relevant file.
 
@@ -366,4 +393,6 @@ Carl hears about it; the repo is not the place it waits.
 
 ---
 
-*Last updated: 2026-08-11 — "Approved work is amendable" added to File Integrity Rules on Carl's instruction: a record describing an element must be amended when new work lands on it. Distinct from supersession, which was already covered. Worked case: D-046/D-048.*
+*Last updated: 2026-09-18 — "A brainstorm is a source of record" added on Carl's instruction: what he raises at the start of a section is recorded INCLUDING what he does not pick, and an idea can be chosen by being expanded on rather than by the others being explicitly rejected. Worked case: D-087, where mouse proximity and real randomness sat in one gitignored sentence with nothing to say they were dead.*
+
+*Previously: 2026-08-11 — "Approved work is amendable" added to File Integrity Rules on Carl's instruction: a record describing an element must be amended when new work lands on it. Distinct from supersession, which was already covered. Worked case: D-046/D-048.*

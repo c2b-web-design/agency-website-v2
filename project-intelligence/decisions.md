@@ -4506,11 +4506,20 @@ Past a `FAR` limit it **clamped `z` and scaled `x` while leaving `y` untouched**
 
 ### ⛔ THE ACCEPTANCE TEST — run it after any change here
 
+> ⛔⛔ **WITHDRAWN AS EVIDENCE BY D-085, 18 September 2026 — THE FIGURES BELOW DID NOT MEASURE THE PROXY.**
+> **The proxy's triangles were wound backwards and were culled by the GPU on every frame**, so it
+> contributed **no pixels** to either side of this comparison: both were the DOM `<img>`. ⚠⚠ **A
+> control comparing an image with itself returns 0.000 and proves nothing.** ⛔ **The numbers are
+> kept, not deleted** — a future reader finding them in an old plan needs to find out here why they
+> mean nothing. **The METHOD below is still right; only the claim that it was verified is gone.**
+
 **Unlit proxy vs the CSS photograph, card-free regions, 0-255 scale:**
 
     ceiling strip  8.93   ·   far-left wall  4.70   ·   far-right wall  2.71
 
 ⚠ **Control (reference vs itself) = 0.000, so the comparison is sound.** ⛔ Agreement at 2.7-8.9 is **resampling noise, not displacement.** ⚠ **Opaque material FIRST, prove the framing, and only THEN enable transmission** — otherwise a projection error hides inside the glass effect.
+
+⚠⚠ **AND THE OPAQUE-FIRST RULE IS THE ONE THAT WAS SKIPPED.** It is stated here and was not followed: had the proxy been proved painting with an opaque material before transmission went on, **the invisibility would have been caught on day one.** ⛔ **The rule was written down and not executed** — see D-085.
 
 ### ⛔⛔ AMENDS D-083 — AN ENV MAP *IS* REQUIRED, FOR THE RIM
 
@@ -4536,3 +4545,251 @@ Past a `FAR` limit it **clamped `z` and scaled `x` while leaving `y` untouched**
 ### ⚠ WHAT IS DELIBERATELY NOT DONE
 
 ⛔ **`?guides=1` draws the quads, the floor rects and the PL/PR rails. THEY MUST COME OUT BEFORE THIS SHIPS.** · The proxy is **one floor plane plus one wall plane** — desks, chairs and plants are painted on and have no depth, which is accepted; ⛔ **it is a depth proxy, NOT a 3D reconstruction, and must not be grown into one.** · The PMREM cost in the room is **unmeasured**; the `/start` precedent is ~572ms for a different scene.
+
+---
+
+## D-085 — The Depth Proxy Was Never Visible. Its Triangles Were Wound Backwards, And Every Instrument Reported Green
+
+**Date recorded:** 2026-09-18
+**Status:** ⚠ **IMPLEMENTED, NOT APPROVED.** ⛔ **Carl has not passed the result by eye.** Two defects fixed; the cards are measured unmoved.
+**Authority:** Human Founder — Carl, 18 September 2026: *"The most important thing at this stage is that card position and geometry MUST NOT change. Fix then write."*
+**Bears on:** `about-card-canvas.tsx` (`RoomBackplate`). ⛔ **Corrects D-084's acceptance test, which passed against the wrong thing.**
+
+---
+
+### ⛔⛔ THE FAULT — BACK-FACING TRIANGLES, CULLED BY THE GPU
+
+**The proxy built in D-084 never appeared on screen for a single frame of its first day.** The index order `a, a+DIV+1, a+1` winds **clockwise** as seen from this camera, so all 4,608 triangles were back-facing and discarded under the default `FrontSide`.
+
+⛔ **IT WAS NEVER FRUSTUM-CULLED AND NEVER HIDDEN.** `onBeforeRender` **fired every frame** — the mesh reached `renderObject()` and was submitted to the GPU, which then dropped it at the face-culling stage. `visible: true`, texture bound, `frustumCulled={false}` changed nothing.
+
+⚠⚠ **HOW IT HID FOR A WHOLE SESSION: the room LOOKED right.** The DOM `<img>` sat behind a transparent canvas exactly as before the proxy was written. ⛔ **A layer contributing nothing is indistinguishable from one that works, when something else is already drawing the same picture.**
+
+### ⛔⛔ AND IT EXPLAINS THE CONTRADICTION THAT LOOKED IMPOSSIBLE
+
+**CS refracted a room that was not on screen.** Three's transmission pass temporarily flips `material.side` to `BackSide`, so the proxy was **visible to the glass and culled in the main pass.** ⚠ **Two observations that appeared to contradict each other, one cause.** The `side: 1` reading in a live scene dump — which nothing in the source sets — was this flip caught mid-pass.
+
+### ⛔ THE FIX — INDEX ORDER ONLY
+
+    was:  idx.push(a, a + DIV + 1, a + 1,  a + 1, a + DIV + 1, a + DIV + 2)
+    now:  idx.push(a, a + 1, a + DIV + 1,  a + 1, a + DIV + 2, a + DIV + 1)
+
+⛔ **POSITIONS AND UVs ARE UNTOUCHED.** No vertex moves, so no card geometry can shift. **`side` is NOT set** — the default `FrontSide` now works because the winding is right, rather than being papered over with `DoubleSide`.
+
+### ⛔ SECOND DEFECT — THE HORIZON SIGN, REAL AND SEPARATE
+
+`nyHorizon = SIN_P / (COS_P * tanV)` returned **-0.33794**; the horizon is **+0.33794**. From `rayDir`, `y = ny*tanV*COS_P + SIN_P`, so `y = 0` gives `ny = -SIN_P/(tanV*COS_P)`. **The minus was dropped.** Verified by substitution: at +0.33794 the y-component is **2.8e-17**; at -0.33794 it is **-0.43901**, which is not a horizon.
+
+⚠⚠ **THE COMMENT WAS RIGHT WHILE THE CODE WAS WRONG.** The note above the line read *"ny ~= 0.400"* — positive — directly above a line computing a negative. ⛔ **Nothing checked that the two agreed.** Same class as every prose invariant on this record.
+
+⚠⚠ **THIS WAS NOT WHY THE PROXY WAS INVISIBLE, AND THE DISTINCTION MATTERS.** Both grids build finite, bounded, NaN-free vertices either way. ⛔ **Fixing the sign alone would have changed nothing on screen** — a real bug that would have looked like a failed fix. `WALL_Z` moves from **-2.04 to -78.68**, far closer to the ~16-unit back wall the record describes.
+
+### ⛔⛔ D-084's ACCEPTANCE TEST MEASURED THE PHOTOGRAPH AGAINST ITSELF
+
+**Its figures — ceiling 8.93, far-left 4.70, far-right 2.71, control 0.000 — are withdrawn as evidence of proxy framing.** The proxy contributed **nothing** to either side of that comparison; both were the DOM `<img>`. ⚠ **A control comparing an image with itself agrees perfectly and proves nothing.** The NDC round-trip at **2.22e-16** is likewise uninformative — it verified the maths of a mesh that never rendered.
+
+⛔ **D-084's ARCHITECTURE IS NOT WITHDRAWN.** Unprojecting NDC through the solved camera is still right, and the `FAR`-clamp diagnosis still stands. **What is withdrawn is the claim that it was verified working.**
+
+### ⚠⚠ WHAT THE INSTRUMENTS DID — FOUR WAYS TO REPORT GREEN ON A DEAD LAYER
+
+| instrument | verdict | why it was wrong |
+|---|---|---|
+| D-084's acceptance test | ✅ agreement at 2.7–8.9 | compared the DOM image with itself |
+| NDC round-trip | ✅ 2.22e-16 | correct maths, mesh never drawn |
+| live scene dump | ✅ `visible: true`, map bound, 13,824 verts | present ≠ painted |
+| `about-cards-still-grey.mjs` | — | watches card greyness, not the proxy |
+
+⛔ **A GREEN GATE PROVES THE THING IT TESTS AND NOTHING ELSE.** None was asked *"does this layer contribute any pixels?"*
+
+### ⛔⛔ A BUILDER PROBE THAT COULD NOT FAIL — CAUGHT BY ITS OWN CONTROL
+
+An r3f-internals harness toggled scene objects and reported **0.0 delta** for hiding the backplate. ⚠⚠ **Its control — hide nine card meshes, expect a large delta — ALSO returned 0.0.** The canvas is `frameloop="demand"` with no `invalidate` call, so nothing repainted and **every number it produced was fiction.** ⛔ **Without the control it would have been reported as a finding.** Third instance of this class after the `drawImage` 0/0/0 probe and `q5-stutter.mjs`.
+
+⚠ **A second harness was also discarded mid-session:** a CS edge-shift measure reported shifts up to 411px. Its "before" image contained **1,025 guide-line pixels** the "after" did not, so it was measuring dashed guides, then CD's rim. **Numbers withdrawn, not reported.**
+
+### ⛔ THE CARDS DID NOT MOVE — MEASURED, NOT ASSERTED
+
+Silhouette fingerprints, 1440x900, baseline at HEAD vs fixed:
+
+    ✔  94,578,603,806  area 4003    IDENTICAL
+    ✔ 112,489,609,664  area 56817   IDENTICAL   <- CD
+    ✔ 257,162,625,314  area 23219   IDENTICAL
+
+⚠ **CS's blob necessarily changed — it stopped being an opaque white slab. That is the fix, not a move.** ⛔ **Confirmed by cropping CS's region from both frames: same outline, same corners, same slant; only the face changed from milky white to transparent frosted glass showing the desk and chair through it.**
+
+`npx tsc --noEmit` clean. `npm run lint` = `1 problem (1 error, 0 warnings)`, the documented baseline.
+
+### ⚠ WHAT IS STILL OPEN
+
+⛔ **Carl has not approved the result by eye** — the glass is now judgeable for the first time, which is the point. · **`?guides=1` guide lines render WITHOUT the flag** — 1,025 guide-coloured pixels in a plain `/about` load. **Found while measuring, not chased. Reported, not fixed.** · **`ENV_PLATE_INTENSITY = 6.0` is still a compensation.** · **Roughness 0.35 was approved on the BENCH, not in the room.** · **PMREM cost in the room still unmeasured.**
+
+### ⚠⚠ THE METHOD CAME FROM OUTSIDE AGAIN — AND ITS HEADLINE WAS WRONG
+
+Carl took the problem to an outside AI. ⛔ **Its lead diagnosis — the horizon sign — was a REAL bug and NOT the cause.** Its claim that *"if frustum-culled it cannot appear in the transmission pass"* was sound reasoning pointing away from the answer; the mesh was never frustum-culled.
+
+⚠ **ITS TEST ORDERING IS WHAT FOUND IT** — `onBeforeRender` plus one-variable-at-a-time isolation, better than the instrument the Builder was building. ⛔ **Third outside contribution to this chunk, and the second whose first diagnosis was wrong.** **Recorded so the wrong cause is not inherited as fact.**
+
+---
+
+## D-086 — The Card Copy Is BAKED INTO THE FACE, Because The Light Must Reach It. Recorded Four Days Late, From A Gitignored File
+
+**Date recorded:** 2026-09-18
+**Status:** ⛔ **APPROVED — Carl's ruling, 14 September 2026.** The RULING is his and settled; the IMPLEMENTATION is unbuilt and its texture budget is unmeasured.
+**Authority:** Human Founder — Carl, 14 September 2026, and re-stated 18 September: *"i decided to use three js text that is affected by the scene."*
+**Bears on:** `about-card-mesh.tsx`, `wall-card-text.tsx` (the DOM overlay this supersedes), chunk 3. ⛔ **Closes the shape of D-051-A11Y rather than repeating it four times.**
+
+---
+
+### ⛔⛔ THE RULING, AND THE REASON IS LIGHT
+
+> ⛔ ***"If its a simple text overlay the light from the rim will have no effect. However, if its baked in this will have echoes of what im gonna do as part of the hero section."***
+
+⛔ **AND THE LIGHT IS NOT ONLY THE RIM.** Carl: *"The light will come from the neon rim but also 4 individual lights pointed at each card."* ⚠⚠ **A DOM overlay forfeits BOTH.**
+
+⚠ **The answer-card file states the same mechanism from the other side:** *"the text now catches the light exactly as the surface does… because the label is part of the material rather than sitting in front of it."*
+
+### ⛔ WHAT THIS SUPERSEDES
+
+**`components/about/wall-card-text.tsx` renders `text-white` DOM copy in an overlay div.** It is currently commented out at `app/about/page.tsx:663`. ⛔ **It is NOT the approved approach and must not be reinstated as one.** ⚠ It may survive as the `sr-only` accessibility copy — see below — but not as the visible text.
+
+### ⛔⛔ ACCESSIBILITY IS NOT A TRADE-OFF, AND FRAMING IT AS ONE WAS A BUILDER ERROR
+
+**A visually-hidden DOM copy gives screen readers and search the real text while the visible text stays in the material.** ⚠ The answer-card file already establishes that a correct DOM label becomes ***"MANDATORY, not optional"*** once text is a texture. ⛔ **Only the selection affordance is lost.**
+
+⚠⚠ **THIS CLOSES D-051-A11Y's SHAPE.** That defect exists because answer-card text is baked with no DOM equivalent. **Baking four About cards without the `sr-only` copy would reproduce it four times over.**
+
+### ⛔⛔ THE TEXTURE BUDGET IS THE REAL CONSTRAINT AND IT IS UNMEASURED
+
+**The answer card bakes ONE LINE into 2048x512 = 4 MiB RGBA per card, ~27 MiB with mips across five**, uploaded synchronously, measured at **+108ms inside the 1300ms reveal — the largest single allocation in that window.**
+
+⚠⚠ **THE ABOUT CARDS CARRY 49-84 WORDS.** A naive scale-up to 4096x2048 is **32 MiB per card before mips, four times over.**
+
+⛔ **THREE ROUTES, ALL CHEAPER, TO BE SIZED BEFORE THE FIRST CARD IS BUILT — NOT DISCOVERED IN A STALL:**
+- **Size the texture to the real face.** The answer card's oversample measured **>=11x linear, >=121x by area**, against a justification wrong by 3x *in the flattering direction*. **There is a great deal of headroom before crispness is at risk.**
+- **Signed-distance-field text** — crisp at a fraction of the resolution, the standard answer for paragraphs in WebGL.
+- **Bake + `sr-only` DOM copy.**
+
+### ⛔ THE HERO CALLBACK — RECORDED ON CARL'S EXPLICIT INSTRUCTION
+
+> ⛔ ***"The hero section follows the same idea but is much more sophisticated with moving object animation and a light pinned to it that changes colour as the object changes colours and the 3D text on the left, its edges catch the light. The About section can be seen as the child of the Hero."***
+
+⚠ **THE HERO'S BRIEF IS NOT IN THIS REPOSITORY — D-070, stricken deliberately.** The sentence is recorded because Carl instructed it and **it governs the About cards' technique.** ⛔ **It is NOT a hero specification and a session cannot plan the hero from it.**
+
+### ⚠⚠ WHY THIS ENTRY EXISTS — THE RECORD FAILED IN THE EXACT WAY D-074 NAMES
+
+⛔ **The ruling was taken on 14 September and lived ONLY in `live-work/structural-decision-note-about-canvas.md` §6.2 — a GITIGNORED scratch folder — with no `decisions.md` entry for four days.**
+
+⚠⚠ **AND IT MISLED A SESSION ON 18 September.** The Builder, asked whether the card text is readable without the neon rim, **read `wall-card-text.tsx`, found DOM `text-white`, and answered "Yes — legibility does not depend on the neon at all."** ⛔ **That was the superseded approach, and nothing canonical said so.** Carl corrected it: *"This is out of date… Find out about what was decided for this section, it may not have been recorded, when it should of."*
+
+⛔⛔ **THE CORRECT ANSWER IS THAT IT IS UNKNOWN AND IS A REAL DESIGN CONSTRAINT.** If the copy is part of the material, **how legible it is under an unlit or flickering rim is a question the neon work must answer, not assume.** ⚠ **The text and the neon are ONE problem, not two.**
+
+⚠ **Second instance of D-074's failure mode in this chunk**, after §1's copy, the room image and §10a. **An approval living only in a folder scheduled for deletion is not recorded.**
+
+### ⛔ WHAT THIS ENTRY DOES NOT DECIDE — all Carl's, all open
+
+- **Which baking route** — size-to-face, SDF, or another. **Unmeasured; measure before building.**
+- **Whether the neon flickers at all, and in what pattern.** ⚠ An imperfect ignition is a **broken-tube cue** and is *"the most effect-like thing proposed"* — in tension with §14a's *"emotional discipline of Comfortably Numb"* and *"nothing should feel like a sudden UI toggle unless there is a deliberate reason."* ⛔ **Carl's call, made deliberately.**
+- ⛔⛔ **FOUR NEON COLOURS, ALL DIFFERENT, NONE CHOSEN.** Carl, 17 September: *"No colour is decided yet, but there will be 4 and all different."* ⚠⚠ **RED IS NOT A DECISION AND MUST NOT BE INHERITED FROM THE DIAGRAMS** — *"Red was just an example i used to describe the problem."* ⛔ **Each card spills its colour onto the photograph and its neighbours, so the palette determines WHAT COLOUR THE ROOM TURNS.**
+- **Duty cycle before periods** — how often the room may go fully dark, and for how long. ⛔ **Compute the rest pattern from the duties FIRST, then pick periods.**
+- **Whether CA strikes first.** ⚠⚠ **A strict sequence is in tension with Carl's own ruling that NO CARD IS A STEP** — *"Dont think in linear terms."*
+- **`prefers-reduced-motion`** — unhandled, and belongs with the timing mechanism.
+
+⛔⛔ **EVERY NUMBER IN THE SOURCE NOTES IS HELD AND MUST NOT BE IMPLEMENTED AS A STARTING POINT** — rim 100%, glass 20-40%, text 10-25%, wall/floor 2-5%, ceiling 1-2%, cross-card 0.5-2%, the 50-150ms delay, hold times, flicker steps. ⚠⚠ **THE PRECEDENT COST A DAY: the face crown opened at an outside recommendation's 0.015-0.03 and Carl's eye settled it at 0.073 — nearly THREE TIMES the recommended start.** ⛔ **The failure mode is not a wrong value, it is an ANCHOR: a number already in the code becomes the thing Carl's judgement is argued AGAINST, rather than the input it should be.**
+
+---
+
+## D-087 — The Neon Is A LOOP Of Incommensurate Periods. Mouse Proximity And Real Randomness Were Raised And NOT Chosen
+
+**Date recorded:** 2026-09-18
+**Status:** ⛔ **DIRECTION SETTLED, VALUES OPEN.** The loop is Carl's choice; the periods, duties, colours and ignition style are all his and unchosen. **Nothing is built — chunk 3.**
+**Authority:** Human Founder — Carl, 11 September 2026, expanding on the loop. **Recorded 18 September on his instruction:** *"When im brainstorming at the start of a section things i mention, albeit provisionally should be recorded. Its clear that some ideas were not."*
+**Bears on:** chunk 3, `about-card-mesh.tsx`, the Fusion glow plates. ⚠ Pairs with **D-086** — the baked copy is lit BY this neon, so the two are one problem.
+
+---
+
+### ⛔⛔ THREE OPTIONS WERE RAISED. ONE WAS CHOSEN BY BEING EXPANDED ON
+
+> *"Our scene needs to be alive."* — *"We could put them on a loop, **or mouse proximity, or add an element of randomness.** Still technically on a loop but appearing more random."*
+
+⛔ **THE LOOP IS THE CHOICE.** Carl then expanded only on it, and ⚠⚠ **THE EXPANSION *WAS* THE DECISION** — Carl, 18 September: *"These were options, however when i expanded on an idea i had settled on it should of been clear that the other 2 ideas had not been chosen."*
+
+| option | status |
+|---|---|
+| **A loop of incommensurate periods** | ⛔ **CHOSEN** |
+| **Mouse proximity** | ⛔ **RAISED, NOT CHOSEN.** Never mentioned again after the sentence that raised it. |
+| **Real randomness** | ⛔ **RAISED, NOT CHOSEN** — and separately answered: it is not needed. |
+
+⚠⚠ **NEITHER REJECTION WAS WRITTEN DOWN ANYWHERE UNTIL NOW, AND THAT IS THE DEFECT.** A future session reading the source sentence finds **three live options** and no indication that two are dead. ⛔ **Being dropped is not the same as being recorded as dropped.**
+
+### ⛔ CARL'S MECHANISM, IN HIS WORDS
+
+> *"I'm sure there's a way to have them on/off for **4,5,6,7,8s** and have some formula that with 4 boxes and 5 durations can 'randomise' the whole thing."*
+
+**And his own frame for it:** ⛔ ***"It's like writing a song in 5/4. Every 4 bars complete the cycle."***
+
+### ⚠⚠ NO RANDOMNESS IS REQUIRED — INCOMMENSURATE PERIODS DO IT
+
+Four cards on periods that do not divide into one another produce a composite that repeats only at their **LCM**:
+
+    periods 5,6,7,8  ->  LCM 840s  = 14 minutes
+    periods 4,6,7,8  ->  LCM 168s  = 2.8 minutes
+
+⛔ **4 AND 8 ARE A BAD PAIR** — 8 is a **multiple** of 4, so the two lock into a fixed relationship and visibly pulse together. **Two similar-looking sets differ five-fold.**
+
+⚠ **Phase offsets and unequal on/off times extend it further at no cost** — on 5s / off 7s is a 12s cycle, not 10.
+
+**Why a loop beats real randomness — three properties, and they are the argument:**
+- ⛔ **REPRODUCIBLE.** The same moment always looks the same, so a screenshot is comparable and a change is verifiable. ⚠ **Random state cannot be checked** — and on this project an instrument that cannot be checked has cost days repeatedly.
+- ⛔ **NO BAD STATES BY ACCIDENT.** Whether all four are ever dark together, and for how long, is **computable in advance** rather than discovered live.
+- ⛔ **TUNABLE BY EAR**, which is how Carl works (D-035, the DAW model).
+
+### ⛔ TWO ARCHITECT CORRECTIONS, BOTH ACCEPTED
+
+**1. "Coprimality buys the length" is LOOSE.** {5,6,7,8} is **not** pairwise coprime — 6 and 8 share 2 — and still gives 840s. ⛔ **LCM is the quantity.** 4-and-8 fails because 8 is a **multiple** of 4, not because they share a factor. {5,7,8,9} gives 2520s.
+
+**2. ⛔⛔ LENGTH PAST A COUPLE OF MINUTES IS VANITY — DUTY CYCLE IS THE REAL LEVER.** No viewer tracks a 14-minute cycle. What they notice is **how often the room goes dark**:
+
+    all-dark fraction = product of (1 - duty_i)
+
+    50% duty each                  -> 6.25%   a rest every few seconds, too often
+    on/off (4,1)(5,2)(6,2)(7,2)    -> periods 5/7/8/9, pairwise coprime, LCM 2520s
+                                      duties 0.80/0.71/0.75/0.78
+                                      all-dark 0.32% — a rest of a second or two,
+                                      roughly once every five minutes
+
+⛔ **COMPUTE THE REST PATTERN FROM THE DUTIES FIRST, THEN PICK PERIODS. The plan had that ordering backwards.**
+
+### ⚠ ALL-FOUR-DARK IS A REST, NOT A FAULT
+
+**In the 5/4 frame a rest is written, and a rest before a downbeat is what makes the downbeat land.** ⛔ How long, how often and where it falls are **all computable from the periods before anything is built.**
+
+### ⛔ THE CLOCK MUST NOT BE A MOUNT TIME
+
+⚠ A loop driven from component mount is not reproducible and drifts per visitor. **Stop dead when the tab is hidden, phase-correct on the first frame back**, and add a **`?neon=<seconds>` freeze so a screenshot is comparable.** ⛔ **The reproducibility argument above is void without this.**
+
+### ⛔ `prefers-reduced-motion` IS UNHANDLED AND BELONGS WITH THE MECHANISM
+
+**A continuous on/off loop is motion.** This project honours the query throughout — ⚠ **the one accepted lint error is that very effect.** Under reduced motion the neon **holds a steady state.** ⛔ **Architect's placement: with the timing mechanism, NOT deferred to chunk 3.**
+
+### ⚠ WHAT IS STILL OPEN AND IS CARL'S
+
+- **Whether the four are independent voices or some move together.**
+- **The exact periods and duties.**
+- **Whether "lit" is binary or has levels.**
+- **The ignition style** — deferred by Carl: *"does the neon pop on, fade on or flicker on? We can sort this out when it's time to do so."* ⚠ **Not three styles: real neon strikes with a stutter and holds; a clean fade is LED behaviour.** ⛔ And an imperfect ignition is *"the most effect-like thing proposed"*, in tension with §14a's *"emotional discipline of Comfortably Numb"*.
+- **Whether CA strikes first.** ⚠⚠ **A strict sequence is in tension with Carl's own ruling that NO CARD IS A STEP** — *"Dont think in linear terms."*
+- ⛔⛔ **FOUR COLOURS, ALL DIFFERENT, NONE CHOSEN** — and **red must not be inherited from the diagrams.**
+
+---
+
+## ⛔⛔ THE STANDING RULE THIS ENTRY ESTABLISHES — Carl, 18 September 2026
+
+> ⛔ ***"When im brainstorming at the start of a section things i mention, albeit provisionally should be recorded. Its clear that some ideas were not."***
+
+**A brainstorm at the start of a section is a source of record, not conversation.** ⛔ **Write down what Carl raises, including what he does not pick — and mark which is which.**
+
+⚠⚠ **AND THE HARDER HALF: AN IDEA CAN BE CHOSEN BY BEING EXPANDED ON.** Carl does not always say *"I reject A and B."* **He raises three, then develops one.** ⛔ **The development IS the decision, and the other two are then DEAD — record them as raised-and-not-chosen rather than leaving them to read as live options.**
+
+⚠ **WHY IT MATTERS, CONCRETELY.** Mouse proximity sat in a quoted sentence in a gitignored file with nothing to say it had been dropped. **A future session planning chunk 3 would have found three live options and no way to tell which Carl had settled on** — and would have asked him to decide something he decided on 11 September.
+
+⛔ **Same family as D-074 and D-086: a decision that exists only in `live-work/` is not recorded.** ⚠ **Third instance in this chunk.**

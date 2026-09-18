@@ -501,9 +501,29 @@ function RoomBackplate() {
 
     /**
      * ⛔ THE HORIZON IN NDC, DERIVED not guessed: the ray whose world y-component
-     * is zero is parallel to the floor. ⚠ Measured at this camera: ny ~= 0.400.
+     * is zero is parallel to the floor.
+     *
+     * ⛔⛔ SIGN CORRECTED, 18 September 2026. It read
+     * `SIN_P / (COS_P * tanV)` and returned **-0.33794**; the horizon is
+     * **+0.33794**.
+     *
+     * ⚠⚠ THE DERIVATION, because the old value looked plausible and was not:
+     * `rayDir` gives `y = ny*tanV*COS_P - dz*SIN_P` with `dz = -1`, i.e.
+     * `y = ny*tanV*COS_P + SIN_P`. Setting `y = 0` gives
+     * `ny = -SIN_P / (tanV*COS_P)`. **The minus sign was dropped.** Verified by
+     * substitution: at +0.33794 the y-component is 2.8e-17; at -0.33794 it is
+     * **-0.43901**, which is not a horizon at all.
+     *
+     * ⚠ THE COMMENT WAS RIGHT WHILE THE CODE WAS WRONG — this note previously
+     * read *"ny ~= 0.400"*, a POSITIVE number, sitting directly above a line
+     * that computed a negative one. ⛔ Nothing in code checked the two agreed.
+     *
+     * ⚠⚠ THIS WAS **NOT** WHY THE PROXY WAS INVISIBLE — that was the winding,
+     * below. Both grids built finite, bounded, NaN-free vertices either way.
+     * **Fixing this alone would have changed nothing on screen**, which is
+     * exactly how a real bug can be mistaken for a failed fix.
      */
-    const nyHorizon = SIN_P / (COS_P * tanV);
+    const nyHorizon = -SIN_P / (COS_P * tanV);
     /* ⚠ Stop just short — at the horizon itself `t` diverges. */
     const nyFloorTop = nyHorizon - 0.02;
 
@@ -531,7 +551,32 @@ function RoomBackplate() {
       for (let iy = 0; iy < DIV; iy++) {
         for (let ix = 0; ix < DIV; ix++) {
           const a = iy * (DIV + 1) + ix;
-          idx.push(a, a + DIV + 1, a + 1, a + 1, a + DIV + 1, a + DIV + 2);
+          /**
+           * ⛔⛔ WINDING REVERSED, 18 September 2026. THIS IS WHY THE PROXY WAS
+           * INVISIBLE FOR THE WHOLE OF ITS FIRST DAY.
+           *
+           * ⚠⚠ The original order — `a, a+DIV+1, a+1` — winds CLOCKWISE as seen
+           * from this camera, so every triangle was BACK-FACING and the GPU
+           * culled all 4,608 of them under the default `FrontSide`. ⛔ The mesh
+           * was never frustum-culled and never hidden: `onBeforeRender` FIRED on
+           * every frame, so it reached `renderObject()` and was submitted to the
+           * GPU, which then discarded it at the face-culling stage.
+           *
+           * ⛔ HOW IT HID: the room LOOKED correct because the DOM `<img>` sat
+           * behind a transparent canvas, exactly as it had before the proxy was
+           * written. **A layer that contributed nothing was indistinguishable
+           * from one that worked.**
+           *
+           * ⚠⚠ AND IT IS WHY CS COULD REFRACT A ROOM THAT WAS NOT ON SCREEN:
+           * three's transmission pass temporarily flips `material.side` to
+           * `BackSide`, so the proxy was visible to the GLASS and culled in the
+           * MAIN pass. Two contradictory-looking observations, one cause.
+           *
+           * ⛔ POSITIONS AND UVs ARE UNTOUCHED. Only the index order changes, so
+           * no vertex moves and the cards' geometry cannot shift. Proved by
+           * silhouette comparison before/after.
+           */
+          idx.push(a, a + 1, a + DIV + 1, a + 1, a + DIV + 2, a + DIV + 1);
         }
       }
       const g = new THREE.BufferGeometry();
@@ -703,6 +748,21 @@ export default function AboutCardCanvas() {
    * and the guides drew regardless. **A diagnostic that ignores its own switch
    * is the instrument-fault class this project keeps recording** — it was caught
    * only because the render disagreed with the flag.
+   *
+   * ⛔⛔ THIS OVERLAY IS THE **GREEN CARD RECTANGLES** AND IT STAYS OFF.
+   * ⚠⚠ **DO NOT CONFUSE IT WITH THE FLOOR RAILS CARL ASKS TO KEEP.** They are
+   * different things in different files, and the Builder turned this one on by
+   * mistake on 18 September when asked for the rails:
+   *
+   *     GREEN quads, here          the four cards' own outlines — a PLACEMENT
+   *                                check. Consumed; Carl does not want them.
+   *     BLUE/PINK dashed, in       the DESK FLOOR AXES the cards stand on — a
+   *     `app/about/page.tsx`       COMPOSITIONAL instrument. **These are the
+   *                                ones that stay on.**
+   *
+   * ⛔ Carl, 18 September 2026: *"no, the floor lines on which the cards are
+   * sitting. NOT green card rectangles."* **The rails are ON until he instructs
+   * otherwise; this overlay is not.**
    */
   const showGuides =
     typeof window !== "undefined" &&
