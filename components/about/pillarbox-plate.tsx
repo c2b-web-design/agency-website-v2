@@ -3,11 +3,11 @@
 import Image from "next/image";
 
 /**
- * §2's pillarbox band — **CHUNK 1: ONE SAMPLED STRIP, RIGHT SIDE ONLY.**
+ * §2's pillarbox bands — **BOTH SIDES, each from the picture's own edge column.**
  *
- * ⚠ **RIGHT BAND ONLY** — Carl, 22 September 2026: *"i said nothing about the
- * left side. just the right, i want to see how it looks."* **The left is
- * untouched, so the two sit side by side as a before/after in one frame.**
+ * ⚠ **HISTORY:** the right band was built first, alone — Carl, 22 September
+ * 2026: *"i said nothing about the left side. just the right, i want to see how
+ * it looks."* **The left followed once the right had been judged.**
  *
  * ⛔ **ONE STRIP, PLACED ONCE, TIGHT AGAINST THE PICTURE'S EDGE** — *"dont put
  * 6 tiles in. Sample the edge and reproduce it once tight next to it."*
@@ -227,9 +227,24 @@ export default function PillarboxPlate() {
           about the left side. just the right, i want to see how it looks."*
           ⚠ **The left band is deliberately untouched so the two sit side by side
           as a before/after in one frame.** */}
+      {/* ⛔⛔ **THE RIGHT COLUMN IS DELIBERATELY UNREPAIRED — DO NOT "FIX" IT.**
+          Its bottom still carries the skirting and floor, stretched outward.
+          ⚠ **A repair to wall was built on 22 September and Carl reverted it:**
+          *"you shouldnt of deleted the right hand side."* His ruling: *"The
+          bottom right hand side was a happy accident, serendipity. The
+          stretched floor reads as a shadow and the right hand side is as room
+          extension that was never planned but fixed a few problems."*
+          ⛔ **So the two bands are NOT symmetrical by design** — the left is
+          wall to the bottom, the right extends the room. */}
+      {/* ⛔ **+1px INTO THE PLATE — THE SAME HALF-PIXEL HAIRLINE AS THE LEFT.**
+          Carl, 22 September 2026: *"The hairline on the right hand side is also
+          an issue."* ⚠ Measured on his screenshot: the join column read **luma
+          10 at every height** — page background — including the skirting row,
+          where its neighbours read 82 and 60. ⛔ The band is 247.5px, so its
+          inner edge lands on a half pixel; the overlap covers it. */}
       <div
         className="pointer-events-none absolute inset-y-0 right-0"
-        style={{ ...bandRight, width: "max(0px, calc((100% - 150vh) / 2))" }}
+        style={{ ...bandRight, width: "max(0px, calc((100% - 150vh) / 2 + 1px))" }}
         aria-hidden="true"
       />
 
@@ -316,7 +331,7 @@ export default function PillarboxPlate() {
              * the skirting's own content at the seam, which is what the plate
              * draws there anyway.
              */
-            left: "max(0px, calc((100% - 150vh) / 2 - 150vh * 40 / 2560))",
+            left: "max(0px, calc((100% - 150vh) / 2 - 150vh * 114 / 2560))",
             /**
              * ⛔⛔ 90.80%, NOT 88.64% — AND THE 2.16% ERROR WAS VISIBLE AT ONCE.
              * Carl: *"the bottom of the new skirting is sitting at the top of
@@ -403,7 +418,29 @@ export default function PillarboxPlate() {
              * 2.95% is 28px at a 949px-tall section and proportionally different
              * elsewhere. **Verified at 1920x950 only.**
              */
-            top: "90.54%",
+            /**
+             * ⛔⛔ **100 COLUMNS, NOT 40 — THE SKIRTING NOW RUNS OUT OF THE FRAME.**
+             *
+             * ⚠⚠ Carl, 22 September 2026: *"the extension isnt long enough. The
+             * top edge of the skirting should run diagonally to the edge of the
+             * image"* — **the top edge AND the face.** ⛔ At 40 columns the face
+             * hit the piece's LEFT edge at screen y 905-949 and was cut dead: a
+             * vertical line, 53-63 against the band's 6-8.
+             *
+             * ⚠ **Same construction, longer sample.** The skirting is a straight
+             * strip, so a longer run of it translated along its own slope
+             * continues it without inventing a pixel. **The translation keeps
+             * Carl's corner-test ratio — 68.5 rows down per 40 columns left** —
+             * so 100 columns is 171.3 rows: crop top 80.141% + 10.03% = 90.17%.
+             * ⛔ The top edge at the piece's outer column lands at source row
+             * 1724, **past the frame's 1707**, so neither edge meets a side.
+             *
+             * ⛔ **TRANSPARENT ABOVE THE TOP EDGE** (4-row ramp, per column) — a
+             * 100-column box would otherwise carry a patch of the plate's wall,
+             * lit to ~18 near the skirting, over a band reading ~9. **Only the
+             * skirting and what is below it is drawn; the band shows above.**
+             */
+            top: "90.67%",
             /**
              * ⛔⛔ THE WIDTH IS IN PLATE SCALE, NOT A RAW PIXEL COUNT.
              *
@@ -418,8 +455,31 @@ export default function PillarboxPlate() {
              * sample is never rescaled and the angle is whatever the photograph
              * says it is.
              */
-            width: "calc(150vh * 40 / 2560 + 1px)",
-            height: "10.08%",
+            /**
+             * ⛔ **x1.14 — PERSPECTIVE, MEASURED IN SOURCE.**
+             * The skirting thickens and darkens toward the camera, and the
+             * piece's seam end is cut 99 columns further away:
+             *
+             *     source x=0   (picture edge)   face 90 rows   lip 87-94   face 47-64
+             *     source x=99  (piece's seam)   face 79 rows   lip 119     face 67-84
+             *
+             * ⚠ Uncorrected, the face was ~6px thin at the join — a notch.
+             * **Scale is 90/79, about the lip at the seam** (piece row 8), so
+             * the slope is untouched; top moved 90.17% -> 90.10%.
+             *
+             * ⛔ **THEN LOWERED TO 90.67% ON CARL'S EYE** — *"now it just needs
+             * aligning."* Line fits either side of the seam put the piece
+             * **4.2px high at the lip, 6.6px at the face bottom**, thickness and
+             * slope matching. ⚠ **After: within 1.8px at 1920x950, 1920x920,
+             * 1920x1080 and 1600x900** — top % is plate-relative, so it holds.
+             *
+             * ⛔ **NO BRIGHTNESS CORRECTION, THOUGH THE SOURCE SAYS ~30%.** A
+             * `brightness(0.73)` was tried: on screen it put the lip at 70-75
+             * against the picture's 93-100. **Uncorrected, both read 104** — the
+             * source ratio did not survive to the screen. Measure there.
+             */
+            width: "calc(150vh * 114 / 2560 + 1px)",
+            height: "22.64%",
             backgroundImage: 'url("/about-skirting-left.png")',
             backgroundSize: "100% 100%",
             backgroundRepeat: "no-repeat",
