@@ -65,6 +65,44 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-028 — All Four Cards In Glass, And The PLACEMENT Is APPROVED. The Rails Come Out
+
+**Date:** 2026-09-22
+**Reviewer:** Human Founder
+**Subject:** The four `/about` §2 role cards in glass, judged together on a running build. ⛔ **TWO separate verdicts: the card PLACEMENT, and the wall pair's material.** Records **D-089** (the values), **D-092** (what Carl raised next).
+
+**Carl's verdict, verbatim:** *"Looking at the position and spacing. The cards are essentially 2+2. I think they dont need moving. The original calculations were done accurately. Form and balance look good. So you can remove the guide floor lines."*
+
+**Findings:**
+
+- ✔✔ **PLACEMENT APPROVED — NO CARD MOVED.** ⚠⚠ **This is the judgement the floor rails existed for**, and it could not be made until all four cards were glass: Carl, 22 September — *"When all 4 cards are glass i will be able to see them in the scene... The floor cards could be moved and if they are it will be along those lines."* ⛔ **The answer was that they did not need to move.**
+- ⛔ **THE RAILS ARE REMOVED, THEIR JOB DONE — not as tidying.** ⚠ The angles survive in `app/proto/wall/page.tsx` (`INITIAL_RAIL`); **restoring them is a revert, not a re-measurement.** ⛔ **This also CLOSES the GUIDES-WITHOUT-FLAG defect by removal** — the rails were unconditional by design and had no flag to be missing from.
+- ✔ **THE FOUR-CARD MATERIAL PASSES ON FAMILY RESEMBLANCE, NOT MATCHED NUMBERS.** ⛔⛔ **CARL'S ACCEPTANCE TEST, AND IT IS THE FINDING OF THE DAY:** *"they feel all part of the same family except CA."* ⚠⚠ **Four cards against four different backgrounds need FOUR VALUES to read as ONE material** — CA 0.95, CB 0.86, CD 0.95, CS 0.86. **§14a: a recurring theme WITH VARIATIONS.**
+- ⚠ **A FIXED MATERIAL OVER A VARYING BACKGROUND READS AS A VARYING MATERIAL** — dark, featureless backgrounds go milky at 0.86; bright detailed ones do not. ⛔ **CS is the exception, not the standard.**
+- ⚠⚠ **NOT APPROVED, AND CARL SAID SO HIMSELF:** *"it is possible that these values might need tweaking once neon and light are added. We wont know until then."* ⛔ **Only D-089's CS values carry an approval; CA, CB and CD are PROVISIONAL.**
+- ⛔ **THE RIM IS PARKED, NOT FIXED.** RIM-DARK stays open — Carl: *"its a minor issue and we will return to it."*
+
+---
+
+## R-027 — CS's Glass IN THE ROOM: APPROVED. The Face Gets A Body And The Shape Returns
+
+**Date:** 2026-09-22
+**Reviewer:** Human Founder
+**Subject:** CS's face material on `/about`, read on a running dev build at roughness **0.35** and face transmission **0.86**. Records **D-089**. ⛔ **CS ONLY — CD, CA and CB are still diagnostic grey.**
+
+**Carl's verdict, verbatim:** *"Thats a lot better. Card shape is clearly defined."* and, after sweeping the fader to both ends, *"0.86 was a good estimation. Material is approved. Its a good basis to start from."*
+
+**Findings:**
+
+- ✔ **APPROVED IN THE ROOM.** ⚠⚠ **This is the judgement R-026 deferred** — Carl's own qualification there was *"Not until i see the card in the scene can it be truly judged."* ⛔ **That condition is now met.**
+- ⛔⛔ **THE FAULT WAS NO BODY, NOT TOO LITTLE FROST.** At `transmission: 1.0` the face had **no diffuse contribution at all**, so the card took its brightness entirely from the background and **its left edge vanished against the dark desk.** ⚠ **Carl's opening instinct was to increase the frost; it would not have worked** — a blurred dark background is still dark. **Full reasoning: D-089.**
+- ⛔ **CARL SWEPT BOTH ENDS BEFORE RULING** — *"all the way left, 0.5 gives a milky effect. All the way right, 1.0 and its practically clear."* ⚠ **The verdict is bounded, not a single sample.**
+- ⛔ **THE RIM IS UNTOUCHED AND STAYS CLEAR AT 1.0.** Carl: *"The rim is clear glass, as per the neon light it will become. The bevel and face are frosted."* ⚠ **It is not on the fader — it IS the neon, and a body tone on a light source is wrong.**
+- ⚠ **ROUGHNESS 0.35 RODE ALONG AND WAS NOT THE SUBJECT.** It was approved on the bench (R-026) and has never been swept in the room. ⛔ **The prediction that the room's transmission target might frost it differently did NOT materialise — judged by eye, not measured.**
+- ⚠⚠ **"A GOOD BASIS TO START FROM" IS PART OF THE VERDICT, NOT A PLEASANTRY.** ⛔ **The neon, the lighting and the baked text build ON this; the card is not finished.** **Approved as a basis is not approved as a master (D-035).**
+
+---
+
 ## R-026 — Chunk 2a's Frosted Glass On The Bench: APPROVED. And The Background Is What Makes Two Glasses Legible
 
 **Date:** 2026-09-18
@@ -737,7 +775,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-09-18 — **R-026 added**: chunk 2a's frosted glass **APPROVED on the bench** at
+*Last updated: 2026-09-22 — **R-028 added**: all four cards in glass; ✔✔ **the PLACEMENT is
+APPROVED and NO CARD MOVED** — *"the cards are essentially 2+2... the original calculations were
+done accurately."* ⛔ **The floor rails are REMOVED, their job done**, which also closes
+GUIDES-WITHOUT-FLAG by removal. ⛔⛔ **Carl's acceptance test for the material is FAMILY
+RESEMBLANCE, NOT MATCHED NUMBERS** — *"they feel all part of the same family except CA"* — so the
+four cards carry FOUR values (CA 0.95, CB 0.86, CD 0.95, CS 0.86). ⚠ **Only CS's are approved;
+the rest are PROVISIONAL and Carl expects lighting to move them.***
+
+*Previously: 2026-09-22 — **R-027 added**: CS's glass **APPROVED IN THE ROOM** at roughness 0.35
+and face transmission **0.86**. ⛔⛔ **THE FAULT WAS NO BODY, NOT TOO LITTLE FROST** — at
+`transmission: 1.0` the face had no diffuse contribution and the card's left edge vanished against
+the dark desk. ⚠⚠ **Carl's opening instinct was MORE FROST and it would not have worked**; he had
+already ruled out the heavy-diffusion reference himself — *"Too much for us."* ⚠ **This is the
+judgement R-026 deferred** (*"Not until i see the card in the scene"*). ⛔ **The rim is untouched at
+1.0 — it IS the neon.** ⚠ **CS only; CD, CA and CB remain grey.** **D-089.***
+
+*Previously: 2026-09-18 — **R-026 added**: chunk 2a's frosted glass **APPROVED on the bench** at
 roughness ~0.35, with Carl's own qualification recorded alongside it — *"Not until i see the card in
 the scene can it be truly judged."* ⛔⛔ **HIS FINDING IS THE ENTRY'S REAL CONTENT:** *"You can tell
 the different types of glass not just by the way light interacts with it but how the background does

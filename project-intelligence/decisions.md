@@ -4872,3 +4872,315 @@ Four cards on periods that do not divide into one another produce a composite th
 ### ⚠ RECORDED UNDER THE D-087 RULE
 
 **This entry exists because of the standing rule added the same day:** a brainstorm is a source of record, and provisional ideas are written down. ⛔ **Carl: *"It should be recorded so the details can be worked out at the appropriate time."*** ⚠ **PROPOSED is the honest status — he expects to run with it, and has not ruled.**
+
+---
+
+## D-089 — The Face Gets A BODY. Transmission Splits From The Rim's And Carl Settles 0.86
+
+**Date recorded:** 2026-09-22
+**Status:** ✔ **APPROVED — Carl's eye, on the built room, 22 September 2026.** *"Material is approved. Its a good basis to start from."* ⚠ **Approved as a BASIS: the neon (chunk 3) and lighting build on it. It is not a mastering-pass verdict and the card is not finished.**
+**Authority:** Human Founder — Carl, 22 September 2026, after sweeping the fader to both ends on `/proto/card` and judging the result on `/about`.
+**Bears on:** `about-card-glass.ts`, `about-card-mesh.tsx`, `about-card-canvas.tsx` (CS), `card-bench.tsx`. ⛔ **CS ONLY. CD, CA and CB are still diagnostic grey and their values are NOT decided by this entry.**
+
+---
+
+### ⛔⛔ THE FAULT — AT `transmission: 1.0` THE CARD HAD NO BODY OF ITS OWN
+
+**Carl, 22 September, on the built room:** *"the blurring is working well due to the backplate but its difficult to make out the shape of the card at the moment."*
+
+⚠⚠ **A `meshPhysicalMaterial` AT `transmission: 1.0` HAS NO DIFFUSE CONTRIBUTION AT ALL.** `about-card-glass.ts` already stated this **of the rim** — *"at `transmission: 1` a clear material has no diffuse colour"* — and it was **equally true of the face, where it was never the intention.** All three surfaces shared one constant at 1.0.
+
+⛔ **SO EVERY PIXEL OF THE BODY WAS REFRACTED BACKGROUND OR SPECULAR REFLECTION.** The card took its brightness **entirely from whatever sat behind it.** ⚠ **Against the dark desk mass CS's left edge disappeared completely** — measured by eye on the render: the right edge traceable only because lighter floor sat behind it.
+
+⚠ **`GLASS_COLOR` WAS INERT.** White multiplied into transmission at 1.0 contributes nothing. The constant carried a careful note about why it must be white rather than `DIAG_FACE_COLOR` grey — **correct, and doing nothing.**
+
+### ⛔⛔ AND MORE ROUGHNESS WAS NOT THE FIX — THIS IS THE TRAP THE ENTRY EXISTS TO RECORD
+
+**Carl's opening instinct was to increase the frost** — *"im thinking of making the frostedness more like the screenshot i sent you."* ⛔ **It would not have worked, and it would have looked like progress.**
+
+⚠⚠ **ROUGHNESS BLURS WHAT IS BEHIND THE CARD. A BLURRED DARK BACKGROUND IS STILL DARK.** The card would have stayed a region of smeared room with no silhouette of its own.
+
+⛔ **AND CARL RULED OUT THE DESTINATION HIMSELF** before any of it was built. Shown two glassmorphism references, one with heavy diffusion: *"Here are 2 examples with one of them with the 'frosted' dialed up. Too much for us but i like the other example."* ⚠ **The reference he chose is barely frosted — its legibility is a WHITE BODY AT LOW ALPHA, not diffusion.** Its background stays recognisable; the rejected one destroys it.
+
+⚠⚠ **THE MISSING INGREDIENT WAS NEVER FROST. IT WAS TONE** — and the two are separate dials that were fused into one constant.
+
+### ⛔ THE SPLIT — THE RIM KEEPS 1.0 AND IS NOT ON THE FADER
+
+**Carl, restating the constraint when the work opened:** *"The rim is clear glass, as per the neon light it will become. The bevel and face are frosted."*
+
+| surface | transmission | why |
+|---|---|---|
+| **rim** | `GLASS_TRANSMISSION` **1.0** | ⛔ **it IS the neon** (D-086 lineage, `about-card-mesh.tsx`). **A body tone on a light source is wrong.** |
+| **bevel** | `GLASS_FACE_TRANSMISSION` | tracks the face, for the same reason it already tracks the face's roughness |
+| **face** | `GLASS_FACE_TRANSMISSION` | the surface that needed a body |
+
+⚠ **THE BEVEL TRACKS RATHER THAN GETTING ITS OWN DIAL**, consistent with the existing roughness note: *"giving the bevel its own roughness would let the two drift apart silently the first time the face is re-tuned."*
+
+### ✔ 0.86 — SWEPT TO BOTH ENDS, THEN SETTLED
+
+⛔ **CARL SWEPT THE FADER BEFORE RULING, AND THE ENDS ARE RECORDED BECAUSE THEY BOUND THE RANGE:**
+
+    0.5  (full left)   "gives a milky effect"        -> stops being glass
+    1.0  (full right)  "practically clear"           -> the original fault
+    0.86                "was a good estimation"       -> APPROVED
+
+⚠ **THIS IS THE ONE CASE IN THIS FILE WHERE AN OPENING FIGURE SURVIVED CARL'S EYE**, and the entry says so because the precedent runs the other way: **the crown opened at an outside 0.015-0.03 and Carl settled 0.073, nearly three times it.** ⛔ **0.86 was chosen as a deliberate over-reach past the 0.95 an outside source proposed on 22 September** — 0.95 is a 5% body and would have been too timid against a dark room. **The over-reach is why it landed, not luck.**
+
+⚠ **THE FADER RANGE STOPS AT 0.5 AT THE BOTTOM** and Carl's sweep confirms that floor is real: below it the card stops reading as glass.
+
+### ⚠ WHAT IS APPROVED, AND WHAT IS EXPLICITLY NOT
+
+✔ **APPROVED:** the transmission split, the rim staying clear at 1.0, and **0.86 on CS's face and bevel at roughness 0.35, in the room.**
+
+⛔ **NOT APPROVED AND NOT DECIDED BY THIS ENTRY:**
+- **CD, CA and CB.** They remain diagnostic grey. ⚠ **Whether they take 0.86 or values of their own is OPEN** — the same question `GLASS_THICKNESS_MM` already carries: *"do not assume either."*
+- **Roughness 0.35**, which was approved on the BENCH and has never been swept in the room. ⚠ It rode along here; it was not the subject.
+- **`ENV_PLATE_INTENSITY = 6.0`**, still a compensation for a missing light, still marked for revisiting downward once the neon exists.
+- **The neon, the lighting, and the baked text.** *"A good basis to start from"* names them as the things that come next.
+
+### ⚠⚠ A FROST SCALE THAT DEPENDS ON THE RENDER TARGET — STILL TRUE, AND IT SURVIVED THE MOVE
+
+`lod = log2(transmissionSamplerSize.x) * applyIorToRoughness(roughness, ior)` (`transmission_pars_fragment.glsl.js:147`), so **the same roughness frosts differently on the bench and in the room.** ⚠ **The prediction was that 0.35 might not transfer. It did — judged by eye across both, 22 September.** ⛔ **Recorded as an observation, not a proof: nothing measured it, and the next value change re-opens the question.**
+
+### ⚠ WHAT NOTHING ASSERTS — declared rather than implied
+
+⛔ **NO GATE CHECKS ANY OF THIS.** `tsc` and lint confirm it compiles; they cannot see a material. ⚠ **The verdict is Carl's eye on a rendered frame, and `verify/proven.json` remains empty (see D-064) — no harness pass is admissible.** **If the value moves, only a person looking at the screen will know whether it is still right.**
+
+⚠ **`GLASS_FACE_TRANSMISSION` IS A SHARED DEFAULT AND ITS REACH IS REAL.** Every `AboutCardMesh` consumer that omits the prop inherits it. ⛔ **CS passes it explicitly at the `/about` call site anyway** — the render is identical, but the room's two glass numbers are readable where the room is built rather than requiring a second file.
+
+---
+
+## D-090 — Each Card Gets Its Own Light. Whether The Frost Is TINTED, And Whether That Light Is White Or Neon, Are OPEN
+
+**Date recorded:** 2026-09-22
+**Status:** ⛔ **RAISED, NOT DECIDED.** Carl, 22 September 2026, on approving D-089's material: *"If there is a change to the card it will come when we address lighting."*
+**Authority:** Human Founder — Carl, 22 September 2026.
+**Bears on:** the lighting chunk (not open), `about-card-glass.ts`, `about-card-mesh.tsx`, and **D-087's neon**, which is also unbuilt. ⚠ **Does NOT reopen D-089.**
+
+---
+
+### ⛔ RECORDED UNDER THE D-087 RULE, AND THAT IS WHY THIS ENTRY EXISTS
+
+**`context-rules.md`:** *"a brainstorm is a source of record, and an idea can be chosen by being EXPANDED ON."* ⚠⚠ **The rule was added on 18 September after THREE decisions were found living only in gitignored files** — and one of them produced a wrong answer to Carl. ⛔ **These are provisional and are written down anyway. That is the point of the rule.**
+
+### ✔ WHAT IS SETTLED
+
+- ⛔ **EACH CARD GETS AN INDIVIDUAL LIGHT.** Carl: *"Each card will have an individual light."* ⚠ **Four cards, four lights** — not one rig lighting the group.
+- ⛔ **THE NEON RIM ALSO LIGHTS THE CARD.** *"It will also have light from the neon rim."* ⚠⚠ **This is the second source and it is not optional** — it follows from D-087's rim being a real emitter, and from the reference behaviour recorded at `ENV_PLATE_INTENSITY`: **the rim is the brightest thing in frame and the ROOM reflects IT.**
+- ⛔ **THE STARTING POINT IS NEON + WHITE LIGHT.** Carl: *"We will start of with neon and white light."*
+
+### ⛔⛔ THE THREE OPEN QUESTIONS — CARL'S OWN WORDS, UNANSWERED
+
+1. **Should the frosting be lightly coloured?** ⚠ **D-089 approved a COLOURLESS face** (`GLASS_COLOR` `#ffffff`, `GLASS_ATTENUATION_COLOR` `#ffffff`, attenuation distance `Infinity`). ⛔ **A tint would be a change to approved work and needs Carl** — it is raised here, not authorised.
+2. **Is the individual light white, or the colour of the neon?**
+3. ⚠ **AND THE TWO INTERACT.** A tinted face lit by a coloured light is not the sum of the two decisions taken separately. ⛔ **Sweep them against each other, one at a time, the way `card-bench.tsx` already insists.**
+
+### ⚠⚠ THE METHOD IS STATED AND IT IS THE SAME ONE THAT JUST WORKED
+
+**Carl:** *"wont know until we see it in the scene."*
+
+⛔ **THIS IS §14a AND R-026's QUALIFICATION RESTATED** — *"Not until i see the card in the scene can it be truly judged."* ⚠ **It was correct about the glass: the bench approved 0.35, and the ROOM exposed that the card had no body at all.** **Do not settle a lighting value on the bench and call it done.**
+
+### ⚠ WHAT THIS ENTRY DOES NOT DO
+
+⛔ **IT DOES NOT REOPEN D-089.** The material is APPROVED. ⚠ Carl's framing is explicit: *"a good basis to start from"*, and *"if there is a change it will come when we address lighting."* **A later change made under lighting supersedes by a new entry; it does not make D-089 wrong** (`context-rules.md` — an overtaken decision is not a mistaken one).
+
+⛔ **AND NOTHING HERE IS AUTHORISED TO BUILD.** The lighting chunk is not open. ⚠ **Four individual lights is a STRUCTURAL question under CLAUDE.md §5a** — it is a new mechanism where an existing rig could serve, and R-025 records **four lighting rigs that each measured clean and were each rejected on sight.** **It stops for review before it is built.**
+
+---
+
+## D-091 — The Neon Is ONE BRIGHTNESS TRACK And The Room Reads It. ⚠ AMENDED: The Send Opal Already Does This
+
+**Date recorded:** 2026-09-22
+**Status:** ⛔ **DIRECTION — RAISED AND EXPANDED ON BY CARL, NOT AUTHORISED TO BUILD.** Carl, 22 September 2026: *"its not authorised yet but its in the files to be worked out and expanded upon."*
+**Authority:** Human Founder — Carl, 22 September 2026, working from a conversation with an outside model (recorded below as such).
+**Bears on:** D-087 (the neon loop), D-090 (the per-card lights), D-086 (the card text), D-088 (the travelling mark), D-084/D-085 (the backplate), `room-environment.tsx`, `about-card-canvas.tsx`. ⛔ **§5a APPLIES — the backplate change is STRUCTURAL and stops for review.**
+
+---
+
+### ⛔⛔ THE GOVERNING RULE IS §14a AND IT WAS WRITTEN BEFORE ANY OF THIS
+
+**`c2b-ethos-and-vision.md` §14a:** *"Effects should feel caused by the world, not layered on top of it."* ⚠⚠ **AND ITS OWN EXAMPLES NAME THIS EXACT CASE:**
+
+- *"A glowing filament should affect nearby card light, not sit as an isolated overlay."*
+- *"More selected glowing objects should mean more light in the shared environment."*
+
+⛔ **SO THE SPILL IS NOT AN ENHANCEMENT. A LIT TUBE THAT LEAVES THE ROOM UNTOUCHED IS THE "ISOLATED OVERLAY" §14a FORBIDS.** ⚠ **The Builder initially scoped the ceiling spill as expensive-and-optional and asked whether wall spill would do. That framing was WRONG and is recorded so it is not repeated** — it is a coherence requirement, not a cost trade.
+
+### ⚠⚠ AND THE CEILING ON THE EFFECT IS AS IMPORTANT AS THE FLOOR — CARL'S CORRECTION
+
+**Carl, 22 September:** *"subtlety is important, just enough to suggest its the same world."*
+
+⛔ **READ THIS AS A LIMIT, NOT A BUDGET.** ⚠ The Builder first read "subtle" as *do less because it is expensive*. **It is not.** The suggestion IS the effect; **a convincing light simulation would overshoot it.** §14a: *"Prefer David Gilmour restraint over Yngwie Malmsteen excess."*
+
+⚠⚠ **THIS LOWERS THE ENGINEERING BAR AND THAT MATTERS.** A surface that must read as *approximately the same room* is a far cheaper thing than a correctly solved one. ⛔ **Do not over-build the geometry for an effect whose success condition is that it is barely noticed.**
+
+### ⛔ THE ARCHITECTURE — ONE TRACK PER CARD, EVERYTHING KEYED OFF IT
+
+**Each card's neon has a brightness track over time — off, through the stutters, to full. The trigger starts the TRACK. Every effect reads that same track at its own depth:**
+
+    rim itself              full strength
+    reflection in its TEXT  a small fraction
+    ceiling / wall spill    smaller
+    neighbouring card       smaller still
+
+⛔⛔ **BECAUSE THEY ALL READ ONE SIGNAL THEY CANNOT DRIFT.** ⚠ **Every stutter appears in the room on the same frame.** **This is a sidechain — a lighting desk cue — and it is the same model as Carl's DAW method (D-035).**
+
+⚠⚠ **AND IT IS NOT NEW — SEE THE AMENDMENT BELOW.** ⛔ **The `/start` Send opal already does exactly this in production**, driving a CSS custom property from a WebGL light's phase on the same frame. **This paragraph was written as though the architecture had to be invented; it has to be EXTENDED.**
+
+⚠ **A CONSEQUENCE WORTH NAMING: the secondary effects are DEPTH SETTINGS ON AN EXISTING SIGNAL, not new systems.** ⛔ **So build the TRACK first and the spill after** — §14a: *"Build the track before adding automation."* **The pun is accidental and the rule is literal.**
+
+⚠ **THE SEQUENCE:** the button fires the Architect card's track; the next card starts at a chosen offset. ⛔ **AUTHORED TO THE MILLISECOND, NOT RANDOM** — *"the way you'd program a drum fill."* ⚠⚠ **This CONFIRMS D-087 rather than adding to it**: the loop was already ruled, and mouse proximity and randomness were already raised-and-not-chosen on 11 September.
+
+### ⛔⛔ THE STRUCTURAL BLOCKER — THE BACKPLATE CANNOT RECEIVE LIGHT
+
+**`RoomBackplate` is `MeshBasicMaterial`, UNLIT BY DELIBERATE DECISION.** Its own comment: *"The room is ALREADY LIT — the ceiling lights and their falloff are IN the photograph. Shading it again would light a picture of a lit room."*
+
+⚠⚠ **THAT REASONING WAS RIGHT AND IS NOW IN TENSION WITH §14a.** ⛔ **An unlit plate cannot respond to anything.** **Classic overtaken decision** (`context-rules.md`, D-046/D-048): the judgement did not fail, **one side of it moved.**
+
+⛔ **THE REQUIREMENT IS SELECTIVE: THE PLATE MUST RECEIVE THE NEON WITHOUT RECEIVING AMBIENT.** ⚠ **A plain swap to `MeshStandardMaterial` would let EVERY light reach it — including D-090's four card lights — which is exactly the failure the original decision prevented.** **A material swap is NOT the fix; a mechanism is needed (layers, or selective lights).**
+
+⚠⚠ **THIS SECTION ASSUMES THE PLATE MUST BECOME LIGHTABLE AT ALL. THE AMENDMENT BELOW GIVES A ROUTE WHERE IT DOES NOT** — drive one property of a surface from the same clock, the way the Send opal is driven. ⛔ **Read both before treating this as the only option.**
+
+### ✔ WHAT THE PROXY ALREADY PROVIDES — AND WHAT IT DOES NOT
+
+⛔ **THE BACKPLATE IS ALREADY SHAPED TO THE ROOM. It is NOT a flat sheet.** Two camera-solved 48x48 grids (D-084/D-085): a **floor** intersecting `y = -CAM_H`, and a **wall** at `WALL_Z`, meeting along a derived horizon.
+
+⚠ **THE OUTSIDE MODEL ASKED TWICE WHETHER IT WAS FLAT, AND CAVEATED ITS ANSWER ON NOT KNOWING.** ⛔ **It is answered here: already shaped.**
+
+| surface | state | consequence |
+|---|---|---|
+| **floor** | ✔ a correct horizontal plane | ⛔ **a floor card's pool needs NO new geometry** |
+| **wall** | ✔ a correct vertical plane at `WALL_Z` | wall spill is available |
+| **ceiling** | ⛔⛔ **DOES NOT EXIST** | everything above the horizon is mapped onto the VERTICAL wall plane |
+
+⚠⚠ **SO CARL'S OWN QUESTION — *"would you not expect it to have some sort of impact on the white of the ceiling?"* — LANDS ON THE ONE SURFACE THAT IS NOT MODELLED.** ⛔ **Geometrically the ceiling IS A WALL FACING THE CAMERA**, which is precisely the failure the outside model described: light would land in the wrong shape and fall off in the wrong direction.
+
+⛔ **AND THIS INVERTS THE OUTSIDE MODEL'S DIFFICULTY ORDERING.** It predicted floor pieces would need cutting for the floor cards and named the wall cards as the simpler case. **The opposite is true: the FLOOR CARDS ARE THE CHEAP TEST and the WALL CARDS need a ceiling plane solved.**
+
+### ⚠⚠ THE DEPENDENCY THAT MAKES THIS BIGGER THAN THE RIM — CARL'S POINT, AND THE REASON IT IS RECORDED NOW
+
+**Carl, 22 September:** *"Your suggestion about extending the backplate has implications for 'later on' thats why i mention the larger vision."*
+
+⛔ **A ROOM THAT CAN RESPOND IS A CAPABILITY, NOT A FIX.** ⚠ **Everything downstream inherits whatever shape is chosen here:**
+
+- **the neon spill** — ceiling, wall, floor pool, neighbour glow
+- **D-088's travelling mark**, which crosses §2 into §3 and would want the room to acknowledge it
+- **§3's player**, which is a light source in a room
+- **anything later that needs the world to react**
+
+⚠⚠ **SO A MINIMAL CEILING PIECE CUT ONLY FOR THE WALL CARDS' SPILL MAY BE SCOPED TO THE WRONG REQUIREMENT.** ⛔ **Choose the shape against the vision, not against the rim.**
+
+### ⚠ THE TEXT — THIS MAY AMEND D-086, AND THE DISTINCTION HAS ALREADY MISLED ONCE
+
+**Carl:** the cards carry the four AI workflows — **Architect, Builder, Designer, Strategist** — and *"the text will be three JS text because I want when the neon starts on a card for it to be slightly reflected in the text itself."*
+
+⛔⛔ **"BAKED INTO THE FACE'S ALBEDO" (D-086) AND "LIT BY THE SCENE" ARE NOT THE SAME THING.** ⚠⚠ **The confusion between them ALREADY produced a wrong answer to Carl on 18 September** — the Builder read the superseded DOM overlay and told him the text was legible without the neon. ⛔ **Settle this explicitly before the text chunk opens; a texture baked into an albedo map does not take a live reflection.**
+
+⚠ **THE TEXTURE BUDGET IS STILL UNMEASURED** and remains the real constraint — the answer card bakes ONE LINE into 4 MiB at +108ms; these cards carry 49-84 words.
+
+### ⛔ ACCESSIBILITY — THREE FLASHES PER SECOND, AND FOUR CARDS IS WHERE IT BREAKS
+
+**The guideline is no more than three flashes in any one second.** ⚠⚠ **ONE card stuttering is unlikely to breach it; FOUR CARDS IN A TIMED SEQUENCE IS WHERE IT WOULD.** ⛔ **This is a constraint on the AUTHORED PATTERN and must be designed in, not checked afterwards.**
+
+⚠ **`prefers-reduced-motion` GETS A GENTLE FADE-UP INSTEAD OF THE STUTTER.** ⛔ **This is now the THIRD accessibility item owed on this section** — D-088's reduced-motion for the travelling mark and D-086's `sr-only` copy are the others. **They are one piece of work and should be scoped as one.**
+
+### ⚠ PARKED BY CARL — DO NOT PRESS
+
+**Whether showing clients that the site is built by AI roles strengthens or weakens a premium, human-led positioning.** ⛔ **A real strategic question, Carl's alone, and the neon effect does not depend on the answer.**
+
+
+### ⛔⛔ AMENDED 22 September 2026 — THE PROJECT HAD ALREADY SOLVED THIS, AND NOTHING POINTED TO IT
+
+**Carl, 22 September, after the entry above was written:** *"Let me demonstrate subtlety. Go to the client info section and look whats going on. Look particularly at the blue opal CSS button and the 'shine'."*
+
+⚠⚠ **THE `/start` SEND OPAL IS A DOM ELEMENT LIT BY A WEBGL LIGHT, IN PRODUCTION, APPROVED (D-033 / R-018, the coupling authorised 2 August 2026).** ⛔ **That is the 3D-to-photograph boundary — the thing this entry called unsolved — CROSSED AND WORKING.**
+
+**The mechanism, in `contact-field-light-rig.tsx`:** a light orbits the four contact boxes; **on the same frame it moves**, the rig writes `--opal-shine` to `<html>`; the CSS button reads that variable in **exactly one** of its eleven gradient layers, swinging **0.45 -> 0.85** on a smoothed bell across the visible sweep.
+
+⛔⛔ **THIS IS D-074's FAILURE MODE — the answer existed, and nothing in the record pointed at it.** ⚠ **The entry above was written from an outside model's architecture while this project's own proven solution sat unreferenced.** **The amendment is the fix; the pointer is the point.**
+
+#### ⛔ THE FOUR RULES THE OPAL ALREADY PROVES — TAKE THESE, NOT A NEW ARCHITECTURE
+
+**1. ⛔⛔ ONE LAYER MOVES. TEN DO NOT.** The button's own comment: *"IT IS DELIBERATELY THE ONLY ANIMATED LAYER... Carl: 'The whole opal doesn't have to interact, but just that subtle shine on the opal.' One specular catch responding reads as a material in a lit world; the whole button moving would read as a light show."*
+
+⚠⚠ **THIS IS THE DIRECT ANSWER TO THE CEILING QUESTION. THE ROOM DOES NOT NEED TO RESPOND — ONE THING IN IT DOES.** ⛔ **It is §14a's Gilmour/Malmsteen line expressed as code, and it was written before this conversation.**
+
+**2. ⛔ ONE CLOCK, BOTH EFFECTS.** *"Written on the same frame as the light moves, so the shine and the sweep share ONE clock — two clocks would drift and the opal would stop reading as part of the same event."*
+
+⚠⚠ **THE SIDECHAIN RECORDED ABOVE AS A NEW ARCHITECTURE IS ALREADY BUILT AND ALREADY APPROVED.** ⛔ **It is not a new mechanism (§5a) — it is an EXISTING one to extend.** **That materially lowers the structural risk of the whole direction.**
+
+**3. ⛔⛔ TRUE PROXIMITY WAS MEASURED AND REJECTED — AND THE MEASUREMENT IS THE ARGUMENT.** Driving the shine from real distance fails twice: **closest approach lands at phase 0.953, inside the HIDDEN half**, so it would peak while the boxes are dark; and **the whole range is a 1.3x swing** (489 to 625 units), too little to read.
+
+⚠⚠ **SO THE AUTHORED BELL READS AS *CAUSED* AND THE PHYSICALLY CORRECT VERSION DOES NOT.** ⛔ **This is the strongest evidence in the project for AUTHORED over SIMULATED, and it is measured rather than asserted.** **It bears directly on the neon's stutter pattern: authored to the millisecond is not a compromise, it is the thing that works.**
+
+**4. ⚠ THE FALLBACK IS THE APPROVED VALUE.** `var(--opal-shine, 0.72)` — with no rig mounted the button renders D-033 **exactly as approved**. ⛔ **The coupling is INERT unless something drives it.** **A pattern to copy: a new effect that is invisible when its driver is absent cannot regress approved work.**
+
+#### ⚠⚠ WHAT THIS CHANGES — A ROUTE THIS ENTRY MISSED
+
+**The entry above states that the backplate must become able to receive light, and calls that structural.** ⛔ **THE OPAL DEMONSTRATES A CHEAPER ROUTE: do not light the surface — DRIVE ONE PROPERTY OF IT FROM THE SAME CLOCK.**
+
+⚠ A subtle brightening of the ceiling region could be **a driven value on an overlay**, not a lit material: **no `MeshStandardMaterial`, no selective layers, and no re-lighting a photograph of a lit room.** ⛔ **The D-084 reasoning would not need reopening at all.**
+
+⚠⚠ **THIS IS NOT A FINDING AND IT IS NOT TESTED.** ⛔ **It is a second candidate that was missing when the options above were listed, and the options list was therefore incomplete.** **Both routes go to the Architect; neither is chosen.**
+
+#### ⛔ AND THE PRECEDENT CUTS ON FAITHFULNESS TOO
+
+⚠ **§14a asks that effects feel *caused by the world*. The opal's shine is NOT physically derived — and it reads as caused BECAUSE the authored version was chosen over the measured one.** ⛔ **"Caused by the world" is a perceptual standard, not a physical one.** **Do not read §14a as a mandate for simulation.**
+### ⚠ PROVENANCE — RECORDED BECAUSE THE METHOD CAME FROM OUTSIDE
+
+**The trigger model and the two-kinds-of-light distinction came from a conversation between Carl and an outside model, pasted into the session in full.** ⚠ **Its principles are sound and are adopted.** ⛔ **Its two open questions are ANSWERED HERE — the backplate is already shaped, and it is unlit by decision — and its difficulty ordering is CORRECTED above.** **Same handling as D-084, where an outside method's first diagnosis was wrong and was recorded as such so it was not inherited as fact.**
+
+---
+
+## D-092 — The Room May Begin In §1, FADED, And SOLIDIFY Into §2. And The Cards Need An ACTIVATION TRIGGER That Does Not Exist
+
+**Date recorded:** 2026-09-22
+**Status:** ⛔ **RAISED AND REASONED, NOT DECIDED.** Carl, 22 September 2026: *"Sec 1 may yet have the image there but in a faded state... The 4 cards may yet fade in."* ⚠ **"May yet" is the status — recorded under the D-087 rule, which exists because provisional ideas were lost.**
+**Authority:** Human Founder — Carl, 22 September 2026.
+**Bears on:** `app/about/page.tsx` §1 and §2, `about-card-canvas.tsx`, `components/layout/about-nav.tsx`, **D-091** (the brightness track this trigger would start), D-088 (the travelling mark, which needs the same mechanism). ⛔ **§5a APPLIES.**
+
+---
+
+### ⛔⛔ THE DESIGN IDEA — THE ROOM SOLIDIFIES AS THE EXPLANATION LANDS
+
+**Carl, 22 September:** *"From a design point of view to have an 'office' there while giving a top level explanation is a good idea. To see that 'solidify' with members of the team drives home the point."*
+
+⚠⚠ **THE MOTION CARRIES THE ARGUMENT, IT DOES NOT DECORATE IT.** §1 explains the roles in prose against a **faded room behind the text**; §2 is that same room **resolved**, with the four role cards in it. ⛔ **The reader is told a team exists, and then shown it.**
+
+⚠ **THIS IS §14a'S "recurring theme with variations" ACROSS SECTIONS RATHER THAN WITHIN ONE** — the same room, twice, in two states. **And it is the ONE-OBJECT principle D-088 already applies to the travelling mark: continuity beats a cut.**
+
+**Two movements, and they are separable:**
+- **THE ROOM** — faded behind §1's text, solidifying toward §2.
+- **THE FOUR CARDS** — fading in *"once roles has been pressed or by a trigger that is activated by scrolling."*
+
+⛔ **DO NOT ASSUME THEY ARE ONE ANIMATION.** The room could resolve on scroll while the cards wait for the neon's own trigger. **Which is undecided.**
+
+### ⛔⛔ THE GAP CARL FOUND — THERE IS NO ACTIVATION MECHANISM, AND THERE IS NO SECOND ONE EITHER
+
+**Carl:** *"A user will navigate to the about section and read Sect 1. Most likely they will press 'Roles' and get here... But what if they scroll here? We need a mechanism that at a certain point the cards will be 'activated'."*
+
+⛔ **VERIFIED, 22 September: there is NO `IntersectionObserver` ANYWHERE IN THIS CODEBASE.** No viewport-activation mechanism of any kind exists.
+
+⚠⚠ **AND THE "PRESS ROLES" PATH IS NOT A SEPARATE CASE.** `about-nav.tsx` gives `Roles` as `href="#roles"` — **a plain anchor jump, not an event the canvas can hear.** ⛔ **So the click path and the scroll path are the SAME unhandled problem**, and one observer covers both. **Two mechanisms would be two things to keep in sync; there is no reason to build them.**
+
+### ⚠ THE CASES ANY MECHANISM MUST SURVIVE — named so they are not discovered one at a time
+
+- **Anchor click** — the section is already in view on arrival
+- **Scrolling in** — a threshold is crossed
+- **Deep link or refresh on `#roles`** — in view at FIRST PAINT, ⚠ **possibly before the canvas is ready**
+- ⛔⛔ **SCROLL AWAY AND BACK — DOES IT REPLAY?** ⚠ **A neon that re-strikes on every pass becomes wallpaper.** A one-shot is the likely answer. **CARL'S CALL, NOT THE BUILDER'S — it is a design decision wearing technical clothes.**
+- **Scrolled past fast** — ⚠ does a half-seen section consume its one shot?
+- **`prefers-reduced-motion`** — a gentle fade, not the stutter. ⛔ **THE FOURTH accessibility item owed on this section** (D-086's `sr-only`, D-088's reduced-motion mark, D-091's three-flashes limit). **Scope them as ONE piece of work.**
+
+### ⛔ WHY THIS IS STRUCTURAL (§5a) AND MUST NOT BE BUILT INSIDE ANOTHER CHUNK
+
+- **A fired-once flag is "state that survives a boundary it previously died at"** — named explicitly in §5a's list.
+- **It is a new mechanism where none exists**, so it **sets the pattern for every scroll-triggered effect on this site** — including D-088's travelling mark, which needs the same thing.
+- ⚠⚠ **IT IS THE FRONT DOOR TO THE NEON.** The trigger starts D-091's brightness track, and **every secondary effect keys off that track.** ⛔ **Its shape therefore matters far more than "make the cards appear."**
+
+### ⚠ THE BUILDER'S RECOMMENDATION — RECORD NOW, BUILD WITH THE NEON
+
+⛔ **THERE IS NOTHING FOR THE TRIGGER TO DRIVE YET.** The cards are already visible and no sequence exists. ⚠ **Building the trigger before the thing it triggers means guessing at the interface it must expose** — and D-091's track is that interface.
+
+⚠ **RECORDED TODAY REGARDLESS, because a finding that lives only in chat is lost — D-074.**

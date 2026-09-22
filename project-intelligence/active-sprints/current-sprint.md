@@ -547,7 +547,7 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 **⛔ HORIZON-SIGN — RESOLVED 18 September 2026.** `nyHorizon` was `SIN_P / (COS_P * tanV)` and returned **-0.33794**; the horizon is **+0.33794**. ⚠ **A real bug and NOT the cause of the invisibility** — both grids built finite vertices either way, so fixing it alone would have changed nothing on screen. ⛔ **The comment above the line said *"ny ~= 0.400"* — positive — while the code computed negative, and nothing checked they agreed.** `WALL_Z` moves -2.04 → -78.68. **Reasoning: D-085.**
 
-**⚠ GUIDES-WITHOUT-FLAG — OPEN, NOT CHASED.** A plain `/about` load (no `?guides=1`) renders **1,025 guide-coloured pixels** — the dashed PL/PR rails. ⛔ **Found while measuring something else; reported, not fixed.** Waiting on Carl.
+**✔ GUIDES-WITHOUT-FLAG — CLOSED 22 September 2026, BY REMOVAL RATHER THAN BY FIX.** The 1,025 guide-coloured pixels on a plain `/about` load were the dashed PL/PR floor rails, which were **unconditional by design** — Carl, 18 September: *"they should be on until i instruct to remove them."* ⛔ **It was never a flag fault: the rails had no flag to be missing from.** ⚠⚠ **They were the TRACK the floor cards would have slid along, and on 22 September Carl approved the placement — *"the cards are essentially 2+2... they dont need moving. The original calculations were done accurately"* — so the instrument's job was done and it came out.** ⚠ The green card quads in `about-card-canvas.tsx` are a **different** instrument, still gated behind `?guides=1`, untouched. **The angles survive in `app/proto/wall/page.tsx` (`INITIAL_RAIL`); restoring the rails is a revert, not a re-measurement.**
 
 **⛔ CHUNK-2a-ENVMAP — RESOLVED 18 September 2026.** The env map was built (D-084) and the room now has a camera-matched depth proxy. ⚠ **Kept for one cycle rather than deleted, because the reason it closed matters: the env map turned out to be required for the CLEAR RIM, not for the frosted face the blocker was raised about.**
 
@@ -575,7 +575,18 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 ---
 
-*Last updated: 2026-09-18 (second session) — **D-088**: ⛔ **the poster is RULED OUT — the cards grew
+*Last updated: 2026-09-22 — **the glass rolled out to all four cards, and Carl's acceptance test is
+FAMILY RESEMBLANCE, NOT MATCHED NUMBERS** — *"they feel all part of the same family except CA."*
+⛔ **D-089 APPROVED the face transmission split** (rim clear at 1.0, face+bevel 0.86); **CD 0.95 and
+CA 0.95 followed, CB and CS stay 0.86.** ⚠⚠ **A fixed material over a VARYING background reads as a
+VARYING material** — dark featureless backgrounds go milky at 0.86. ⛔ **D-090** records the lighting
+questions; ⛔ **D-091** the neon's ONE BRIGHTNESS TRACK — ⚠ **amended: the `/start` Send opal already
+does this in production and nothing pointed to it** (D-074 again). ⛔ **D-092**: the room may begin
+FADED in §1 and solidify into §2, and ⚠⚠ **there is NO activation mechanism in this codebase at
+all** — `Roles` is a plain anchor, so click and scroll are ONE unhandled case. ⚠ **Two new defects:
+ENVMAP-STALE and RIM-DARK (parked by Carl).** ⛔ **Nothing but D-089 is approved.***
+
+*Previously: 2026-09-18 (second session) — **D-088**: ⛔ **the poster is RULED OUT — the cards grew
 and took its space** — and the mark instead **stands on the right desk in §2 and TRAVELS into §3's
 player**, which answers Carl's own clue (*"It stops at 2. How would it get in the TV?"*) and solves
 the idle-player problem in one move. ⚠ **PROPOSED, not approved** — *"We will probably run with

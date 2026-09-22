@@ -58,3 +58,31 @@ alongside it could never have fitted inside it. Corrected 19 August 2026.*
 ---
 
 *Seeded 19 August 2026. Entries are admitted by Carl only.*
+
+---
+
+## ENVMAP-STALE — env-map constants appear to do nothing
+
+- **What:** `useRoomEnvMap`'s `useMemo` is keyed `[plate, gl]`. `ENV_SHELL_COLOR`,
+  `ENV_PLATE_INTENSITY` and `ENV_SHELL_RADIUS` are read inside it and are **not** dependencies, so
+  a changed value serves the cached target and looks dead.
+- **Where:** `components/about/room-environment.tsx`.
+- **Found:** 2026-09-22. ⚠ Carl saw the diagnostic red, reloaded, and it went dark **with the red
+  still on disk**. ⛔ **The `?guides=1` failure again — a control ignoring its own switch.**
+  ⚠⚠ A reload before looking would have recorded RIM-DARK as falsified.
+- **Waiting on:** Carl — **report, do not fix.**
+
+---
+
+## RIM-DARK — the clear rim reflects a near-black shell, not the room
+
+- **What:** The rim reads dark where skirting and floorboards sit behind it. ⛔ Not failed
+  refraction — at grazing angles Fresnel drives the half-tube to **reflection**, of
+  `ENV_SHELL_COLOR` `#141a20`.
+- **Where:** `about-card-glass.ts`, `room-environment.tsx`.
+- **Found:** 2026-09-22, Carl's eye; **proven by setting the shell red — the rim went red.**
+  ⚠ The backplate hypothesis is **falsified**: it spans the full frame.
+- **Why it is real:** ⚠ **The neon spends real time OFF**, already recorded as *"a real state of
+  this design"*. **An unlit rim must still read as glass.**
+- **Waiting on:** Carl. Two candidates in **D-091** — extend the plate panel's arc, or drive one
+  property the way the Send opal is driven. Reasoning there, not here.
