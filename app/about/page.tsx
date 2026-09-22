@@ -562,6 +562,14 @@ export default function About() {
             removes them; the floor rails are SVG drawn in this component below
             and are untouched by the swap. ⛔ **Nothing about the rails changed.**
 
+            ⛔⛔ SUPERSEDED 22 September 2026 — THE FLOOR RAILS ARE NOW ALSO GONE,
+            removed on Carl's word once he approved the placement: *"I think they
+            dont need moving... you can remove the guide floor lines."* ⚠ **The
+            paragraph above describes 17 September and is kept because its
+            mechanism is still true — the two guide sets DO live in different
+            places, which is why they could be removed independently.** See the
+            removal note further down this file.
+
             ⚠ THE WALL QUADS HAVE BEEN CONSUMED, NOT DISCARDED. They were
             segmented into `GUIDE_CA_QUAD`/`GUIDE_CB_QUAD` and solved into
             `CA_CARD_ASPECT` 2.327 / `CB_CARD_ASPECT` 2.248 — the corner
@@ -588,6 +596,8 @@ export default function About() {
 
             ⚠ THE FLOOR RAILS ARE NOT AFFECTED — the blue and pink lines are SVG,
             drawn in this file below, and Carl asked for them to stay.
+            ⛔ **NO LONGER TRUE AS OF 22 September 2026 — the rails were removed
+            once Carl approved the card placement. True when written.**
 
             ⚠⚠ WHAT THIS EXPOSES: `WallCardText` still renders the CA/CB wall copy,
             which was positioned to sit inside the painted cyan and magenta quads.
@@ -662,188 +672,33 @@ export default function About() {
             **But the copy's box needs re-deriving from the solved aspects first.**
             <WallCardText /> */}
 
-        {/* ⛔⛔ THE BLUE RAIL (PL) ONLY — 14 September 2026, Carl: *"The lines that
-            are in the proto wall, just put the blue line in."*
+        {/* ⛔⛔ THE FLOOR RAILS ARE REMOVED — 22 September 2026, ON CARL'S WORD,
+            THEIR JOB DONE. *"Looking at the position and spacing. The cards are
+            essentially 2+2. I think they dont need moving. The original
+            calculations were done accurately. Form and balance look good. So you
+            can remove the guide floor lines."*
 
-            ⚠ ONE LINE, ONE CARD. The right card and the pink rail are withheld
-            while the left one is got right: two of each made it impossible to tell
-            which discrepancy belonged to which.
+            ⚠⚠ THEY WERE NEVER DECORATION AND NEVER A DIAGNOSTIC LEFT ON BY
+            ACCIDENT. Carl, 22 September: *"When all 4 cards are glass i will be
+            able to see them in the scene. The wall cards are fixed... The floor
+            cards could be moved and if they are it will be along those lines.
+            Its about composition and balance."* ⛔ **They were the TRACK the floor
+            pair would have slid along, and the judgement they existed for has now
+            been made: NO CARD MOVED.**
 
-            ⚠⚠ SAME COORDINATE SPACE AS THE CANVAS AND THE PLATE. A unit viewBox
-            with `preserveAspectRatio="xMidYMid meet"` reproduces `object-contain`
-            geometry natively, so the line, the painted guides and the WebGL card
-            share ONE space with no arithmetic between them. ⛔ `inset-0` would
-            drift it off the room.
+            ⛔ THE ANGLES ARE NOT LOST. PL -15.8809 deg and PR 34.9716 deg live in
+            `app/proto/wall/page.tsx` (`INITIAL_RAIL`), which is where they were
+            measured and where the conversion to plate space is recorded. ⚠ Carl:
+            *"they were meticulously measured... if the floor cards are moved later
+            on a wrong axis it will ruin the perspective."* **Restoring them is a
+            git revert of this commit, not a re-measurement.**
 
-            ⚠ COORDINATES ARE `INITIAL_RAIL.PL` FROM `app/proto/wall/page.tsx`,
-            VERBATIM. ⛔ A COPY — nothing asserts the two agree, and they will
-            drift silently if the rail is re-pinned. Verify there before relying.
+            ⚠ THIS ALSO CLOSES THE GUIDES-WITHOUT-FLAG DEFECT BY REMOVAL rather
+            than by fix: the 1,025 guide-coloured pixels on a plain load were these
+            rails, which were UNCONDITIONAL BY DESIGN. ⛔ The green card quads in
+            `about-card-canvas.tsx` are a DIFFERENT instrument, still gated behind
+            `?guides=1`, and are untouched. */}
 
-            ⚠ THE THICK SPAN IS THE PINNED PART, between Carl's two handles. The
-            thin extension is the SLIDE AXIS — deliberately longer so the card can
-            be nudged along it once all four are placed. Drawn here at the same
-            weights `/proto/wall` uses so the two views read alike. */}
-        {/* ⛔⛔ THE RAILS MUST TRACK THE PLATE'S BOX, NOT THE SECTION'S — fixed
-            18 September 2026 (second session). The SVG was `absolute inset-0` on
-            the full-viewport section while the plate is LETTERBOXED inside it, so
-            the rails were drawn against the wrong rectangle and ran off the image.
-            ⚠ Only a stub was visible at the bottom-left corner.
-
-            ⚠⚠ THE GUARD ALREADY EXISTED AND WAS NOT CARRIED ACROSS. `AboutCardCanvas`
-            wraps itself in exactly this centred `aspect-[3/2]` box, and its own
-            comment states the rule: *"THE BOX MUST TRACK `object-contain`'s OWN
-            GEOMETRY, NOT `inset-0`... a fraction of the SECTION is not a fraction of
-            the IMAGE."* ⛔ **Third recorded instance of a fix living in one place and
-            being re-broken in another**, after the `[&>div]:w-full` centring guard.
-
-            ⛔ THE COORDINATES ARE UNCHANGED. Only the box they resolve against
-            moves, so nothing about the pinned rail maths is touched. */}
-        {/* ⛔⛔ `z-20` PUTS THE RAILS ABOVE THE CANVAS — 18 September 2026.
-            Carl: *"when refreshed the guide floor lines appear first, on there
-            own, no cards. then the cards appear and the lines disappear."*
-
-            ⚠⚠ THE RAILS WERE NEVER REMOVED — THEY WERE COVERED. `AboutCardCanvas`
-            is later in the DOM and its box overlaps the SVG's **exactly**
-            (both 38,0 1349x899), so with both at `z-index: auto` the canvas wins
-            on document order. ⛔ **VERIFIED BY COUNTING RENDERED PIXELS: cyan 1768,
-            pink 1670, both spanning the floor.**
-
-            ⚠⚠ AND `elementFromPoint` IS THE WRONG INSTRUMENT HERE — IT LIED BOTH
-            BEFORE AND AFTER THE FIX, RETURNING `canvas` EITHER WAY. The SVG is
-            `pointer-events-none`, so hit-testing reports whatever sits BENEATH it
-            regardless of paint order. ⛔ **HIT ORDER IS NOT PAINT ORDER.** Trusting
-            it would have reported this working fix as a failure. **Measure the
-            pixels.**
-
-            ⚠ AN `alpha: true` CANVAS IS TRANSPARENT BUT STILL COMPOSITES. "You can
-            see the room through it" does not mean "it cannot hide a line under
-            it" — the transparent region composites over whatever is beneath.
-
-            ⛔ THE RAILS MUST SIT ON TOP because they are a REFERENCE the cards are
-            judged against: a rail hidden behind the thing it measures cannot do
-            its job. ⚠ Same reason `GuideOverlay` uses `renderOrder={999}` and
-            `depthTest={false}` inside the scene. */}
-        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
-        <div className="relative h-full max-h-full w-auto max-w-full aspect-[3/2]">
-        <svg
-          className="pointer-events-none absolute inset-0 h-full w-full"
-          viewBox="0 0 1.5 1"
-          preserveAspectRatio="xMidYMid meet"
-          aria-hidden="true"
-        >
-          {/* ⛔⛔ STAGE FRACTIONS CONVERTED TO PLATE FRACTIONS — 14 September 2026.
-              THIS IS THE BUG THAT PUT THE LINE IN THE WRONG PLACE.
-
-              ⚠⚠ `/proto/wall` renders the plate `object-cover` inside a stage whose
-              aspect defaults to 1906/905 = 2.1061. The plate is 3:2 = 1.5000. Cover
-              on a WIDER box matches the widths and crops the overflow top and
-              bottom, so the tool shows only the MIDDLE 71.222% of the plate's
-              height and `INITIAL_RAIL`'s fractions are measured against THAT
-              window — not against the whole image.
-
-              ⛔ `/about` renders the same plate `object-contain` at its native 3:2,
-              where the full height is visible. So a y-fraction from the tool must
-              be remapped:
-
-                  y_plate = 0.143890 + y_stage * 0.712220
-
-              x is unchanged: cover matched the widths, so horizontal fractions
-              already agree.
-
-              ⚠ The shift is large — A moves up by 0.127 and B by 0.096 — which is
-              why the uncorrected line ran high and right across the room instead of
-              sitting low-left behind the chair.
-
-              ⛔ THIS IS THE TRAP `/proto/wall`'s OWN HEADER WARNS ABOUT: *"geometry
-              derived in the source file's coordinate space, applied to a cropped
-              view."* It was written about the previous session's failure and then
-              repeated here. ⚠ EVERY number taken from that tool is in stage space —
-              the rail midpoints too. The GUIDE rectangles are NOT affected: those
-              were segmented directly from the plate image.
-
-              ⚠ UNASSERTED: nothing checks that the tool's stage aspect is still
-              1906/905. It is a settable input. If Carl changes it, this conversion
-              silently becomes wrong. */}
-          {/* ⛔⛔ THE SLIDE AXIS — ONE STRAIGHT LINE THROUGH THE THICK SPAN, and it
-              took two sign errors to get here. Carl: *"so whats the dotted line
-              doing in space? Do you think it should be connected to the thicker
-              line?"* ⚠ It is the SAME rail: the dashes run through the pinned span
-              and out both ends.
-
-              ⚠⚠ ERROR 1 — `y1 - (y2 - y1) * 3` with a NEGATIVE delta ADDS, throwing
-              one end to y = 1.273 and the other to 0.500: a full-diagonal sweep
-              that read as a different rail entirely.
-
-              ⚠⚠ ERROR 2, THE ONE THAT LEFT IT FLOATING — `A.y - dy * -3` is
-              `A.y + 3dy`, which extends the START end in the SAME direction as the
-              finish end. Both ends travelled up-rail, so the dashed segment
-              detached from the thick span and hung above it in mid-air.
-
-              ⛔ THE RULE: extend each end along the direction vector, opposite
-              signs. start = A - 3d, end = B + 3d.
-
-              ✔ VERIFIED COLLINEAR IN PLATE SPACE — all three slopes identical to
-              six decimal places:
-                  thick span  -0.426745
-                  start -> A  -0.426745
-                  B -> end    -0.426745 */}
-          <line
-            x1={(0.27621 - (0.46058 - 0.27621) * 3) * 1.5}
-            y1={0.14389 + (0.94232 - (0.83185 - 0.94232) * 3) * 0.71222}
-            x2={(0.46058 + (0.46058 - 0.27621) * 3) * 1.5}
-            y2={0.14389 + (0.83185 + (0.83185 - 0.94232) * 3) * 0.71222}
-            stroke="#00e5ff"
-            strokeWidth={0.002}
-            strokeDasharray="0.012 0.008"
-            opacity={0.85}
-          />
-          {/* the pinned span — the thick part the card's bottom rim sits on */}
-          <line
-            x1={0.27621 * 1.5}
-            y1={0.14389 + 0.94232 * 0.71222}
-            x2={0.46058 * 1.5}
-            y2={0.14389 + 0.83185 * 0.71222}
-            stroke="#00e5ff"
-            strokeWidth={0.005}
-            strokeLinecap="round"
-            opacity={0.95}
-          />
-
-          {/* ⛔ THE PINK RAIL (PR) — the right card's line. Added 14 September once
-              the blue rail was verified against `/proto/wall`.
-
-              ⚠ SAME CONVERSION, SAME REASONING: stage fractions from
-              `INITIAL_RAIL.PR`, remapped to plate space by
-              `y_plate = 0.14389 + y_stage * 0.71222`. ⛔ Do not read the raw
-              numbers as plate coordinates — that is the fault that put the blue
-              line across the room.
-
-              ⚠ PR's B handle is at stage y = 1.00101, a whisker past the plate's
-              bottom edge; converted it lands at 0.85683, comfortably in frame.
-              That is Carl's placement as committed, not a clamp error. */}
-          <line
-            x1={(0.50858 - (0.64059 - 0.50858) * 3) * 1.5}
-            y1={0.14389 + (0.80654 - (1.00101 - 0.80654) * 3) * 0.71222}
-            x2={(0.64059 + (0.64059 - 0.50858) * 3) * 1.5}
-            y2={0.14389 + (1.00101 + (1.00101 - 0.80654) * 3) * 0.71222}
-            stroke="#ff4fd8"
-            strokeWidth={0.002}
-            strokeDasharray="0.012 0.008"
-            opacity={0.85}
-          />
-          <line
-            x1={0.50858 * 1.5}
-            y1={0.14389 + 0.80654 * 0.71222}
-            x2={0.64059 * 1.5}
-            y2={0.14389 + 1.00101 * 0.71222}
-            stroke="#ff4fd8"
-            strokeWidth={0.005}
-            strokeLinecap="round"
-            opacity={0.95}
-          />
-        </svg>
-        </div>
-        </div>
 
         {/* ⛔ CD RETURNS — 14 September 2026, the blue rail having been verified
             alone first. ⚠⚠ THAT ORDER WAS THE POINT: a card drawn against a
