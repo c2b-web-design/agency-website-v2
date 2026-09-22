@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Container from "@/components/layout/container";
 /* ⛔ SCAFFOLDING — the /about §2 wall-card copy, projected onto the wall by a
    homography. A CLIENT component in its own file so THIS page stays a static
@@ -21,6 +20,8 @@ import WallCardText from "@/components/about/wall-card-text";
    ⚠ THE §5a NOTE EXISTS AND WAS NOT ROUTED TO THE ARCHITECT BEFORE THIS LANDED:
    `live-work/structural-decision-note-about-canvas.md`. Recorded, not hidden. */
 import AboutCardCanvas from "@/components/about/about-card-canvas";
+/** ⚠ The §2 plate plus its pillarbox bands — see the note at its call site. */
+import PillarboxPlate from "@/components/about/pillarbox-plate";
 /* ⚠ THE `/about` NAV — a CLIENT component, deliberately kept in its own file so
    THIS page stays a static prerendered server component. ⛔ NOT `SiteHeader`:
    that would place the links in flow, at a different point from `/start`. */
@@ -211,6 +212,10 @@ export default function About() {
                 every route. ⛔ The room image in section 2 IS worth optimising and
                 HAS been converted — the two cases were judged separately, which is
                 why this file now contains both an <img> and an <Image>.
+                ⛔ NO LONGER TRUE AS OF 22 September 2026: the room's `<Image>` moved
+                into `PillarboxPlate`, so only the <img> marks remain here. ⚠ The
+                REASONING is unchanged — the room is still optimised, from another
+                file. True when written.
 
                 ⚠ IF THE MARK'S POSITIONING EVER STOPS BEING PIXEL-MEASURED, THIS
                 SUPPRESSION LOSES ITS REASON and should be revisited. */}
@@ -642,14 +647,18 @@ export default function About() {
             file, and **false here.** ⛔ This source is 2560 wide, so a 4K screen
             genuinely receives 192.8KB. **Measured, after the wrong figure had
             already been written down.** */}
-        <Image
-          src="/about-studio-source.jpg"
-          alt=""
-          aria-hidden="true"
-          fill
-          sizes="100vw"
-          className="object-contain"
-        />
+        {/* ⛔⛔ THE PILLARBOX BANDS — 22 September 2026. The plate is a true 3:2
+            (2560x1707) in a 16:9 viewport, so `object-contain` leaves ~16% of the
+            width as dead black BY GEOMETRY. ⚠ Carl: *"Aspect ratio screams 4:3...
+            this says one thing very loudly - OLD."*
+
+            ⚠⚠ THE PLATE ITSELF IS UNCHANGED AND UNMASKED INSIDE THAT COMPONENT —
+            same `object-contain`, same framing. **The camera solve and every plate
+            fraction are untouched.** Reasoning, the measured sample window and the
+            live controls: `components/about/pillarbox-plate.tsx`.
+
+            ⚠ PROVISIONAL. `?ow=1.28&oh=0.92&sample=0.06&fade=0.55` */}
+        <PillarboxPlate />
         <div className="absolute inset-0 bg-neutral-950/25" />
 
         {/* ⛔ STILL NOT RENDERED — 14 September 2026, Carl: *"put the guide lines
