@@ -94,6 +94,8 @@ import {
 } from "./about-card-geometry";
 import {
   GLASS_IOR,
+  GLASS_FACE_TRANSMISSION,
+  GLASS_FACE_TRANSMISSION_RANGE,
   GLASS_ROUGHNESS,
   GLASS_ROUGHNESS_RANGE,
   GLASS_THICKNESS_MM,
@@ -237,6 +239,13 @@ export default function CardBench() {
    */
   const [glassOn, setGlassOn] = useState(false);
   const [glassRoughness, setGlassRoughness] = useState(GLASS_ROUGHNESS);
+  /**
+   * ⛔ THE FACE AND BEVEL'S BODY TONE. ⚠ The rim is NOT on this fader — it is
+   * clear glass because it is the neon. See `GLASS_FACE_TRANSMISSION`.
+   */
+  const [glassFaceTransmission, setGlassFaceTransmission] = useState(
+    GLASS_FACE_TRANSMISSION,
+  );
   const [glassThicknessMm, setGlassThicknessMm] = useState(GLASS_THICKNESS_MM);
   /**
    * ⛔ THE ENV MAP TOGGLE. ⚠ ON by default when the glass is on — without it the
@@ -577,6 +586,28 @@ export default function CardBench() {
           </span>
         </label>
 
+        {/* ⛔⛔ THE BODY-TONE FADER — face and bevel only, added 22 September
+            2026. ⚠⚠ **SWEEP IT AGAINST ROUGHNESS, NOT INSTEAD OF IT.** The two
+            references Carl compared differ along BOTH axes at once, and the one
+            he rejected was heavier frost AND less visible body. **A single dial
+            cannot separate them.** */}
+        <label className="flex items-center gap-2 aria-disabled:opacity-40" aria-disabled={!glassOn}>
+          face body
+          <input
+            type="range"
+            min={GLASS_FACE_TRANSMISSION_RANGE.min}
+            max={GLASS_FACE_TRANSMISSION_RANGE.max}
+            step={GLASS_FACE_TRANSMISSION_RANGE.step}
+            value={glassFaceTransmission}
+            disabled={!glassOn}
+            onChange={(e) => setGlassFaceTransmission(Number(e.target.value))}
+            className="w-44"
+          />
+          <span className="tabular-nums text-neutral-400 w-14">
+            {glassFaceTransmission.toFixed(3)}
+          </span>
+        </label>
+
         <label className="flex items-center gap-2 aria-disabled:opacity-40" aria-disabled={!glassOn}>
           thickness
           <input
@@ -605,14 +636,17 @@ export default function CardBench() {
         </label>
 
         <span className="text-neutral-500">
-          ior <span className="tabular-nums">{GLASS_IOR}</span> · transmission{" "}
-          <span className="tabular-nums">{GLASS_TRANSMISSION}</span> — fixed
+          ior <span className="tabular-nums">{GLASS_IOR}</span> — fixed · rim
+          transmission{" "}
+          <span className="tabular-nums">{GLASS_TRANSMISSION}</span> — clear, not
+          on the fader
         </span>
 
         <button
           type="button"
           onClick={() => {
             setGlassRoughness(GLASS_ROUGHNESS);
+            setGlassFaceTransmission(GLASS_FACE_TRANSMISSION);
             setGlassThicknessMm(GLASS_THICKNESS_MM);
           }}
           className="px-2 py-1 rounded bg-neutral-800 hover:bg-neutral-700"
@@ -725,6 +759,7 @@ export default function CardBench() {
             flat={treatment === "flat"}
             glass={glassOn}
             glassRoughness={glassRoughness}
+            glassFaceTransmission={glassFaceTransmission}
             glassThicknessMm={glassThicknessMm}
             onTilt={setMeasuredTilt}
           />
@@ -758,8 +793,14 @@ REFERENCE (face-on, orthographic, light 30 deg off-normal — DOES NOT TRANSFER)
 
 GLASS         ${glassOn ? "ON" : "off — the face is chunk 1's diagnostic grey"}
   roughness   ${glassOn ? num(glassRoughness, 3) : "—"}   opened at ${num(GLASS_ROUGHNESS, 3)}
+  face body   ${glassOn ? num(glassFaceTransmission, 3) : "—"}   opened at ${num(GLASS_FACE_TRANSMISSION, 3)}   <- transmission of FACE + BEVEL
   thickness   ${glassOn ? num(glassThicknessMm, 2) + " mm" : "—"}   opened at ${num(GLASS_THICKNESS_MM, 2)} mm
-  ior ${GLASS_IOR} · transmission ${GLASS_TRANSMISSION} — fixed, not swept
+  ior ${GLASS_IOR} — fixed, not swept
+  rim transmission ${GLASS_TRANSMISSION} — CLEAR BY RULING, never on the fader.
+     The rim IS the neon; a body tone on a light source is wrong.
+  ⚠ FACE BODY IS NOT FROST. Lower = more white body = the card reads on a dark
+     background. Roughness blurs what is BEHIND; this sets what the card IS.
+     Carl rejected the heavy-diffusion reference (22 Sep): "Too much for us."
   ⚠⚠ THE OPENING VALUES ARE A STARTING POINT, NOT A PROPOSAL. They came from
      an outside source and Carl passed them on as such, 17 September 2026.
      The face crown opened at an outside 0.015-0.03 and Carl's eye settled

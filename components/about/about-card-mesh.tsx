@@ -52,6 +52,7 @@ import {
   GLASS_METALNESS,
   GLASS_RIM_ROUGHNESS,
   GLASS_ROUGHNESS,
+  GLASS_FACE_TRANSMISSION,
   GLASS_THICKNESS_MM,
   GLASS_TRANSMISSION,
 } from "./about-card-glass";
@@ -879,6 +880,16 @@ export type AboutCardMeshProps = {
   glass?: boolean;
   /** ⚠ Bench faders. Ignored unless `glass`. See `about-card-glass.ts`. */
   glassRoughness?: number;
+  /**
+   * ⛔ THE FACE AND BEVEL'S TRANSMISSION. ⚠⚠ **THE RIM IS NOT AFFECTED and must
+   * not be** — it is clear glass because it IS the neon. See
+   * `GLASS_FACE_TRANSMISSION`.
+   *
+   * ⚠ DEFAULTS TO THE CONSTANT, so every existing consumer — `/about` included
+   * — keeps whatever the constant says without passing anything. **The default
+   * is the behaviour change; the prop is only the bench's dial.**
+   */
+  glassFaceTransmission?: number;
   /** ⚠ MILLIMETRES, object space. ⛔ Never divided by `MM_PER_UNIT`. */
   glassThicknessMm?: number;
   /** Reports the measured tilt of the built face, for the bench readout. */
@@ -892,6 +903,7 @@ export function AboutCardMesh({
   flat = false,
   glass = false,
   glassRoughness = GLASS_ROUGHNESS,
+  glassFaceTransmission = GLASS_FACE_TRANSMISSION,
   glassThicknessMm = GLASS_THICKNESS_MM,
   onTilt,
 }: AboutCardMeshProps) {
@@ -1053,7 +1065,10 @@ export function AboutCardMesh({
             color={GLASS_COLOR}
             roughness={glassRoughness}
             metalness={GLASS_METALNESS}
-            transmission={GLASS_TRANSMISSION}
+            /* ⚠ THE FACE'S TRANSMISSION, NOT THE RIM'S — the bevel is frosted
+               and tracks the face, for the same reason it tracks its
+               roughness. See `GLASS_FACE_TRANSMISSION`. */
+            transmission={glassFaceTransmission}
             thickness={glassThicknessMm}
             ior={GLASS_IOR}
             attenuationColor={GLASS_ATTENUATION_COLOR}
@@ -1087,7 +1102,12 @@ export function AboutCardMesh({
             color={GLASS_COLOR}
             roughness={glassRoughness}
             metalness={GLASS_METALNESS}
-            transmission={GLASS_TRANSMISSION}
+            /* ⛔⛔ BELOW 1.0, AND THAT IS WHAT GIVES THE CARD A BODY. At 1.0
+               there is no diffuse contribution at all, so the face took its
+               brightness entirely from the background and vanished against the
+               dark desk. ⚠ `GLASS_COLOR`'s white is INERT at 1.0 and only
+               starts to read below it. See `GLASS_FACE_TRANSMISSION`. */
+            transmission={glassFaceTransmission}
             thickness={glassThicknessMm}
             ior={GLASS_IOR}
             attenuationColor={GLASS_ATTENUATION_COLOR}

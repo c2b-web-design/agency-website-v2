@@ -84,6 +84,11 @@ import {
   CAMERA_PITCH_DEG,
   DESK_HEIGHT_MM,
 } from "./about-card-geometry";
+import {
+  CA_FACE_TRANSMISSION,
+  CD_FACE_TRANSMISSION,
+  GLASS_FACE_TRANSMISSION,
+} from "./about-card-glass";
 import { AboutCardMesh } from "./about-card-mesh";
 import { RoomEnvironment } from "./room-environment";
 
@@ -767,6 +772,47 @@ export default function AboutCardCanvas() {
   const showGuides =
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("guides") === "1";
+
+  /**
+   * ⛔⛔ CD's FACE TRANSMISSION, OVERRIDABLE IN THE ROOM WITH `?cd=0.93` — added
+   * 22 September 2026 so Carl can find the value ON THE BACKGROUND THAT CAUSED
+   * THE PROBLEM. ⚠⚠ **THE BENCH CANNOT ANSWER THIS ONE.** The whole finding is
+   * that a fixed material over a VARYING background reads as a varying
+   * material; a bench with one floor behind it is the wrong instrument.
+   *
+   * ⛔ **WHY CD NEEDS ITS OWN NUMBER AT ALL** — Carl, 22 September, on seeing
+   * both floor cards at an identical 0.86: *"they do read as different cards."*
+   * ⚠ At 0.86 the card is 86% background + 14% white body. **The body is a
+   * CONSTANT; what it is added to is not.** CD's face overlaps the DARK desk
+   * front, so the white body is a large fraction of the final pixel and reads
+   * MILKY. CS's overlaps LIT, grainy floorboards, which dominate — so it reads
+   * CLEAR. **Same numbers, different picture, and no transmission value makes
+   * them identical.**
+   *
+   * ⚠ **CARL'S RULE, FROM HIS OWN SWEEP:** *"0.5 = milky, 1.0 = clear. If CD is
+   * 0.86 and its giving off this milky look i would up the value to make it a
+   * bit clearer, more in line to look like CS."* ⛔ **THE TARGET IS CS'S
+   * APPEARANCE, NOT CS'S NUMBER.**
+   *
+   * ⚠ DEV-ONLY AND UNSWEPT. **It defaults to `CD_FACE_TRANSMISSION` and the
+   * URL only overrides it** — so a plain `/about` load always shows the
+   * committed value, never a stale query string.
+   */
+  /**
+   * ⚠ ONE READER, NOT FOUR COPIES. A per-card duplicate of this parse is four
+   * places for the guard to drift apart — the shared-accessor rule.
+   */
+  const transmissionOverride = (key: string): number | null => {
+    if (typeof window === "undefined") return null;
+    const raw = new URLSearchParams(window.location.search).get(key);
+    if (raw === null) return null;
+    const n = Number(raw);
+    /* ⛔ A BAD VALUE FALLS BACK RATHER THAN RENDERING NaN — `Number("")` is 0,
+       and a 0 here would look like a deliberate opaque card. */
+    return Number.isFinite(n) && n >= 0.5 && n <= 1 ? n : null;
+  };
+  const cdTransmissionOverride = transmissionOverride("cd");
+  const caTransmissionOverride = transmissionOverride("ca");
   /**
    * ⛔⛔ THE ANCHOR IS PL's **B HANDLE**, NOT THE MIDPOINT — Carl, 14 September:
    * *"put the right bottom corner of the left card on the thicker line on the
@@ -1025,8 +1071,37 @@ export default function AboutCardCanvas() {
 
               ⚠ `flat` IS REMOVED HERE so the geometry actually curves. Leaving it
               would have rendered a plane and silently ignored the new surface. */}
+          {/* ⛔⛔ CD TAKES CS'S APPROVED VALUES — 22 September 2026, Carl: *"They
+              carry the same values for now. We will make a visual inspection when
+              they are changed and see if they need individual attention."*
+
+              ⚠⚠ CD NO LONGER CARRIES CS'S 0.86 — AND THE CORRECTION IS RECORDED
+              BECAUSE THE PREDICTION WRITTEN HERE WAS WRONG. This comment previously
+              said CD would read *"slightly clearer than CS"*, because CD is nearer and
+              larger so a fixed frost covers less of it. ⛔ **THE OPPOSITE HAPPENED.**
+              Carl, 22 September, on both at 0.86: *"they do read as different cards"* —
+              **CD MILKY, CS CLEAR.**
+
+              ⛔⛔ THE MECHANISM IS THE BACKGROUND, NOT THE CARD. At 0.86 a pixel is 86%
+              background + 14% white body. **The body is a constant; what it is added to
+              is not.** CD's face overlaps the DARK desk front, so the body dominates.
+              CS's overlaps LIT grainy floorboards, which dominate instead. ⚠ **The old
+              note had this backwards — it reasoned from the lit floor NEAR CD rather
+              than the dark desk BEHIND it.** Full reasoning: `CD_FACE_TRANSMISSION`.
+
+              ⚠ SWEEP IT IN THE ROOM WITH `?cd=0.93`. ⛔ **The bench cannot answer this**
+              — the whole finding is that the background varies, and the bench has one.
+
+              ⛔ PROVISIONAL AND UNAPPROVED. ⚠ It may be a compensation for lighting that
+              does not exist yet (D-090); revisit when the lights land. */}
           <group position={cd.position} rotation={[0, cd.rotationY, 0]} scale={cd.scale}>
-            <AboutCardMesh dims={cd.dims} crownMm={cd.crownMm} />
+            <AboutCardMesh
+              dims={cd.dims}
+              crownMm={cd.crownMm}
+              glass
+              glassRoughness={0.35}
+              glassFaceTransmission={cdTransmissionOverride ?? CD_FACE_TRANSMISSION}
+            />
           </group>
 
           {/* ⛔ CS — the right floor card, restored 14 September once CD was
@@ -1076,7 +1151,33 @@ export default function AboutCardCanvas() {
               ⛔ BOTH CARDS NOW RUN ONE BLUEPRINT: `(1-x²)(1-y²)` at Carl's crown
               of 0.073. *"it is a blueprint for all 4 cards."* */}
           <group position={cs.position} rotation={[0, cs.rotationY, 0]} scale={cs.scale}>
-            <AboutCardMesh dims={cs.dims} crownMm={cs.crownMm} glass glassRoughness={0.35} />
+            {/* ⛔⛔ THE TWO GLASS NUMBERS ARE STATED HERE, NOT INHERITED — 22 September
+                2026. `glassFaceTransmission` would default to `GLASS_FACE_TRANSMISSION`
+                anyway; it is passed explicitly so **the room's values are readable at
+                the room's call site** rather than by opening a second file.
+
+                ⚠⚠ BOTH ARE BENCH VALUES AND THE BENCH IS NOT THE ROOM. `lod` scales
+                with the transmission render target's width (`transmission_pars_fragment
+                .glsl.js:147`), so **the same roughness frosts differently here.** The
+                bench settles the frost's CHARACTER; its SCALE is a property of the
+                target. See the header of `about-card-glass.ts`.
+
+                ⚠ 0.86 gives the face a BODY so the card reads against the dark desk —
+                at 1.0 it had none and its left edge vanished. ⛔ THE RIM IS UNAFFECTED
+                and stays clear at 1.0: it is the neon.
+
+                ✔✔ BOTH VALUES ARE APPROVED BY CARL'S EYE IN THIS ROOM, 22 September
+                2026 — D-089, R-027. ⛔⛔ DO NOT RETUNE EITHER WITHOUT HIS SPECIFIC
+                AUTHORISATION: *"I am happy with the frostiness."* ⚠ The only thing
+                that may still move is COLOUR (D-090), which lives in `GLASS_COLOR` /
+                `GLASS_ATTENUATION_COLOR` — not in these two numbers. */}
+            <AboutCardMesh
+              dims={cs.dims}
+              crownMm={cs.crownMm}
+              glass
+              glassRoughness={0.35}
+              glassFaceTransmission={GLASS_FACE_TRANSMISSION}
+            />
           </group>
 
           {/* ⛔⛔ THE WALL PAIR — CA left, CB right. 17 September 2026.
@@ -1097,14 +1198,57 @@ export default function AboutCardCanvas() {
             rotation={[0, ca.rotationY, 0]}
             scale={ca.scale}
           >
-            <AboutCardMesh dims={ca.dims} crownMm={ca.crownMm} />
+            {/* ⛔⛔ THE WALL PAIR TAKES THE BASELINE 0.86 — Carl, 22 September 2026:
+                *"Lets do the 2 wall cards at the baseline of 0.86 and see how they
+                look."* ⚠ **BOTH TOGETHER, deliberately** — Carl: *"because the wall
+                cards are similar and easier, do them both together."* **They share a
+                wall, a distance and an incidence band, so judging them apart would
+                compare each against a different neighbour.**
+
+                ⚠⚠ THE FLOOR PAIR DIVERGED AND THE WALL PAIR MAY NOT. CD needed 0.95
+                because its face overlaps the DARK desk front while CS's overlaps LIT
+                floorboards. ⛔ **Both wall cards sit against the SAME dark blue wall**,
+                so the mechanism that split the floor pair does not obviously apply
+                here. **That is a prediction, and the last two were wrong.**
+
+                ⛔ CA IS THE ONE TO WATCH. The record has it at ~14 degrees mean
+                incidence — near face-on, where refraction barely happens. ⚠ **What
+                sells glass at an angle is the bend; CA has almost none of it**, so it
+                leans harder on the BODY than any other card. **If one of the four
+                needs its own value, this is the likeliest.**
+
+                ⚠ A DARK BLUE WALL IS LOW-DETAIL COMPARED TO FLOORBOARDS.
+                `about-card-glass.ts`: *"a card against a dark, featureless region will
+                show less material character."* **Expect less frost character here and
+                do not read it as the frost failing.**
+
+                ⛔ NOTHING APPROVED. Carl inspects the pair before any value is kept. */}
+            {/* ⛔⛔ CA LEAVES THE BASELINE, CB DOES NOT — Carl, 22 September 2026:
+                *"they feel all part of the same family except CA. Lets bump it up to
+                0.95."* ⚠⚠ **THE TEST IS FAMILY RESEMBLANCE, NOT MATCHED NUMBERS** —
+                CB passed his eye at 0.86 in the same frame. ⛔ **Do not tidy the pair
+                onto one value because they share a wall.** Reasoning:
+                `CA_FACE_TRANSMISSION`. ⚠ Sweep live with `?ca=0.93`. */}
+            <AboutCardMesh
+              dims={ca.dims}
+              crownMm={ca.crownMm}
+              glass
+              glassRoughness={0.35}
+              glassFaceTransmission={caTransmissionOverride ?? CA_FACE_TRANSMISSION}
+            />
           </group>
           <group
             position={cb.position}
             rotation={[0, cb.rotationY, 0]}
             scale={cb.scale}
           >
-            <AboutCardMesh dims={cb.dims} crownMm={cb.crownMm} />
+            <AboutCardMesh
+              dims={cb.dims}
+              crownMm={cb.crownMm}
+              glass
+              glassRoughness={0.35}
+              glassFaceTransmission={GLASS_FACE_TRANSMISSION}
+            />
           </group>
         </Canvas>
       </div>
