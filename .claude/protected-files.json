@@ -83,6 +83,26 @@
     "this repository asserts that it is."
   ],
 
+  "_comment_2026_09_22": [
+    "⚠ components/about/about-card-glass.ts ADDED 22 September 2026, on Carl's",
+    "instruction: 'Lock these files'.",
+    "",
+    "WHY: it holds D-089's APPROVED material — the face/rim transmission split,",
+    "GLASS_FACE_TRANSMISSION 0.86 and the per-card values CA/CD 0.95, CB/CS 0.86.",
+    "Carl approved these by eye in the room and said re-authorisation is unlikely:",
+    "'I am happy with the frostiness.'",
+    "",
+    "⚠ THE PRECEDENT IS EXACT: components/enquiry/answer-card-glass.ts is already",
+    "listed for the same reason — an approved material that a later session could",
+    "re-tune without realising it was settled. Prose comments in the file say so;",
+    "only this list enforces it.",
+    "",
+    "⛔ ONE THING IN THAT FILE IS STILL OPEN: colour. Whether the frost becomes",
+    "lightly tinted is D-090 and unanswered, and it lives in GLASS_COLOR /",
+    "GLASS_ATTENUATION_COLOR. The lighting chunk will need an unlock naming this",
+    "file. That friction is the point."
+  ],
+
   "protected": [
     "CLAUDE.md",
 
@@ -117,6 +137,8 @@
     "components/layout/nav-links.ts",
     "components/layout/about-nav.tsx",
     "components/ui/button.tsx",
-    "lib/utils.ts"
+    "lib/utils.ts",
+
+    "components/about/about-card-glass.ts"
   ]
 }
