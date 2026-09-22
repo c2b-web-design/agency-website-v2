@@ -4689,7 +4689,7 @@ Carl took the problem to an outside AI. ⛔ **Its lead diagnosis — the horizon
 
 - **Which baking route** — size-to-face, SDF, or another. **Unmeasured; measure before building.**
 - **Whether the neon flickers at all, and in what pattern.** ⚠ An imperfect ignition is a **broken-tube cue** and is *"the most effect-like thing proposed"* — in tension with §14a's *"emotional discipline of Comfortably Numb"* and *"nothing should feel like a sudden UI toggle unless there is a deliberate reason."* ⛔ **Carl's call, made deliberately.**
-- ⛔⛔ **FOUR NEON COLOURS, ALL DIFFERENT, NONE CHOSEN.** Carl, 17 September: *"No colour is decided yet, but there will be 4 and all different."* ⚠⚠ **RED IS NOT A DECISION AND MUST NOT BE INHERITED FROM THE DIAGRAMS** — *"Red was just an example i used to describe the problem."* ⛔ **Each card spills its colour onto the photograph and its neighbours, so the palette determines WHAT COLOUR THE ROOM TURNS.**
+- ⛔⛔ **FOUR NEON COLOURS, ALL DIFFERENT, NONE CHOSEN.** Carl, 17 September: *"No colour is decided yet, but there will be 4 and all different."* ⚠⚠ **RED IS NOT A DECISION AND MUST NOT BE INHERITED FROM THE DIAGRAMS** — *"Red was just an example i used to describe the problem."* ⛔ **Each card spills its colour onto the photograph and its neighbours, so the palette determines WHAT COLOUR THE ROOM TURNS.** ⛔ **SUPERSEDED 22 September — the neon is BLUE (D-090, amended).**
 - **Duty cycle before periods** — how often the room may go fully dark, and for how long. ⛔ **Compute the rest pattern from the duties FIRST, then pick periods.**
 - **Whether CA strikes first.** ⚠⚠ **A strict sequence is in tension with Carl's own ruling that NO CARD IS A STEP** — *"Dont think in linear terms."*
 - **`prefers-reduced-motion`** — unhandled, and belongs with the timing mechanism.
@@ -4778,7 +4778,7 @@ Four cards on periods that do not divide into one another produce a composite th
 - **Whether "lit" is binary or has levels.**
 - **The ignition style** — deferred by Carl: *"does the neon pop on, fade on or flicker on? We can sort this out when it's time to do so."* ⚠ **Not three styles: real neon strikes with a stutter and holds; a clean fade is LED behaviour.** ⛔ And an imperfect ignition is *"the most effect-like thing proposed"*, in tension with §14a's *"emotional discipline of Comfortably Numb"*.
 - **Whether CA strikes first.** ⚠⚠ **A strict sequence is in tension with Carl's own ruling that NO CARD IS A STEP** — *"Dont think in linear terms."*
-- ⛔⛔ **FOUR COLOURS, ALL DIFFERENT, NONE CHOSEN** — and **red must not be inherited from the diagrams.**
+- ⛔⛔ **FOUR COLOURS, ALL DIFFERENT, NONE CHOSEN** — and **red must not be inherited from the diagrams.** ⛔ **SUPERSEDED 22 September — four colours WITHDRAWN; the neon is BLUE. See D-090, amended.**
 
 ---
 
@@ -4799,7 +4799,7 @@ Four cards on periods that do not divide into one another produce a composite th
 ## D-088 — The Mark Travels: Desk In §2, Into The Player In §3. The Poster Is Ruled Out
 
 **Date recorded:** 2026-09-18
-**Status:** ⛔ **PROPOSED — Carl's direction, and he expects to run with it.** *"This is further discussion for an idea that i think would work well… We will probably run with this."* ⚠ **Not APPROVED and nothing is authorised to build. Recorded so the details can be worked out at the appropriate time.**
+**Status:** ⛔ **PROPOSED — Carl's direction, and he expects to run with it.** *"This is further discussion for an idea that i think would work well… We will probably run with this."* ⚠ **Not APPROVED and nothing is authorised to build. Recorded so the details can be worked out at the appropriate time.** ⚠ **AMENDED 22 September (end of entry): the mark now STARTS ON THE RIGHT WALL, gold, and the SCROLL pulls it off — a simple 2D fall into §3, gold to platinum-blue, reversible.**
 **Authority:** Human Founder — Carl, 18 September 2026.
 **Bears on:** `/about` §2 and §3, `about-card-canvas.tsx`, the §3 player. ⛔ **Supersedes the POSTER ruling of 1 September.** ⚠ Answers Carl's own §3 clue.
 
@@ -4845,6 +4845,8 @@ Four cards on periods that do not divide into one another produce a composite th
 
 ### ⛔ FOUR NEON COLOURS IS NOW DOUBTED BY CARL
 
+⛔ **RESOLVED 22 September: four colours WITHDRAWN by Carl — *"too loud and seem out of place."* The neon is BLUE; the gold is the mark's alone. See D-090, amended.**
+
 **Carl, 18 September:** *"I did rule 4 colours but i think that would be too much."*
 
 ⚠ **D-087's "four, all different, none chosen" is NOT withdrawn — it is doubted by its author.** ⛔ **No new number is chosen.** ⚠ The concern matches what the record already flagged: *"the site's established language is narrow: gold, platinum-blue, amber"*, and **each card spills onto the photograph and its neighbours, so the palette decides what colour the room turns.** **Four fighting colours make mud.**
@@ -4872,6 +4874,41 @@ Four cards on periods that do not divide into one another produce a composite th
 ### ⚠ RECORDED UNDER THE D-087 RULE
 
 **This entry exists because of the standing rule added the same day:** a brainstorm is a source of record, and provisional ideas are written down. ⛔ **Carl: *"It should be recorded so the details can be worked out at the appropriate time."*** ⚠ **PROPOSED is the honest status — he expects to run with it, and has not ruled.**
+
+### ⛔⛔ AMENDED 22 September 2026 — THE MARK STARTS ON THE WALL, AND THE SCROLL PULLS IT OFF
+
+⚠ **STILL PROPOSED. Nothing is authorised to build.** Recorded under the D-087 rule.
+
+**WHY THE WALL IS BACK — THE POSTER'S PREMISE MOVED AGAIN.** The poster died for **lack of wall space** (above). ⛔ **The 4:3 pillarbox work (22 September) created wall that did not exist on 18 September:** the RIGHT band, whose column was deliberately left unrepaired. Carl: *"The bottom right hand side was a happy accident, serendipity... the right hand side is as room extension that was never planned but fixed a few problems."* ⚠ Carl, on the frame idea: *"It was ruled out for a lack of space. Your happy accident on the right hand side means it could be back on the table."*
+
+**CARL'S DIRECTION, verbatim:**
+
+> *"It can start off Gold on the right wall facing the user. There is no direct link from Sect 2 to 3. A user has to scroll. Scrolling can show the effect of the user 'pulling' it off the wall with the scroll action. It could 'tumble' off the wall to Sect 3 TV screen slowly transitioning to Platinum Blue along the way. The intensity of the Gold colour could be dialed down at first because of its location in the scene. But its Gold, there will still be plenty of contrast and it wont overpower other elements."*
+
+> *"[Reversal is] just like deselecting an answer card choice in the q+a reverses the process."* — *"it doesnt have to tumble in a 3D way. Scroll dislodges it from the wall. We just need to give it some simple animation as it falls."*
+
+| element | status |
+|---|---|
+| **Starts GOLD, on the right wall (the pillarbox band), FACING THE USER** | ⛔ **PROPOSED — replaces the desk as the starting point.** ⚠ The band's stretched skirting runs horizontal, so it reads as a wall facing camera; a square-on mount agrees with it. **Builder's observation, not measured.** |
+| **Gold dialled down at first, for its place in the scene** | ⛔ PROPOSED — *"it wont overpower other elements."* |
+| **SCROLL-DRIVEN, not triggered — the scroll dislodges it** | ⛔ PROPOSED. ⚠⚠ **The user CAUSES it — §14a's *"caused by the world"*, with the visitor's hand as the cause.** |
+| **REVERSIBLE — scrolling back returns it, like deselecting an answer card** | ⛔ PROPOSED. ⚠⚠ **This answers D-092's replay question FOR THIS OBJECT:** motion the user drives cannot become wallpaper. **The neon still needs D-092's trigger; the mark does not.** |
+| **A SIMPLE 2D FALL, not a 3D tumble** | ⛔ PROPOSED. ⚠ **Removes the flat-asset problem** — both marks are 2D renders of a half-tube and would thin to a line edge-on. |
+| **Gold -> platinum-blue ON THE WAY, arriving as §3's idle-player content** | ⛔ PROPOSED. ⚠ **D-063's radial reveal is an approved C2B colour gesture and a CANDIDATE for the change — not chosen.** |
+
+#### ⚠⚠ WHAT THE WALL START CHANGES STRUCTURALLY
+
+⛔ **THE BAND IS DOM, OUTSIDE THE WEBGL CANVAS; §3's PLAYER IS DOM. A 2D fall need never enter the 3D scene.** ⚠⚠ **So the hand-off this entry calls *"the hard part"* — 3D scene into DOM player — MAY NOT EXIST on this route.** **The Builder's reading, not tested.**
+
+⚠ **Consequences of the mark living in the DOM:** its light on the room would cross DOM -> canvas (the opal-style coupling, D-091), and **the cards' glass will not see it** — it is not in the scene.
+
+#### ⛔ OPEN, AND CARL'S
+
+1. ⛔ **D-065, *"No movement, only change."*** The pinned header mark does not move; this is a SECOND mark, an object in the room. **Whether that enriches D-065 or contradicts it is unresolved** (point 5 above still applies: two marks visible at once, or one?).
+2. ⛔ **D-063, *"BLUE BELONGS TO THE Q+A AND NOTHING ELSE."*** The mark arrives in §3 blue. **Whether §3 earns blue, or blue gains a second meaning, is Carl's.** ⚠ The same objection bears on D-090's neon colours.
+3. ⛔⛔ **THE BAND'S WIDTH IS VIEWPORT-DEPENDENT.** Measured 22 September: **~240px at 1920x950, ~143px at 1920x1080, ~118px at 1600x900, 0px at 3:2 and narrower** — laptops, tablets, phones. **Where the mark hangs when there is no wall is unanswered.** ⚠ The Builder suggested the desk as the fallback; **Carl has not ruled on that.**
+4. ⚠ **Reduced motion.** The fall would be the site's most prominent motion. **D-063's precedent: the animation goes, the STATE stays** — gold on the wall, blue in the player, no journey.
+5. ⛔ **§5a — A SCROLL-LINKED MECHANISM IS NEW TO THIS SITE.** ⚠ **Design it WITH D-092's activation trigger, not separately** — both need scroll position, and two mechanisms would be two things to keep in sync.
 
 ---
 
@@ -4953,7 +4990,7 @@ Four cards on periods that do not divide into one another produce a composite th
 ## D-090 — Each Card Gets Its Own Light. Whether The Frost Is TINTED, And Whether That Light Is White Or Neon, Are OPEN
 
 **Date recorded:** 2026-09-22
-**Status:** ⛔ **RAISED, NOT DECIDED.** Carl, 22 September 2026, on approving D-089's material: *"If there is a change to the card it will come when we address lighting."*
+**Status:** ⛔ **RAISED, NOT DECIDED.** Carl, 22 September 2026, on approving D-089's material: *"If there is a change to the card it will come when we address lighting."* ⚠ **AMENDED 22 September (end of entry): the neon is BLUE, built PAIR BY PAIR (wall cards first, a darker blue), with a MEASURED BLOOM TARGET. The glow colour is not chosen.**
 **Authority:** Human Founder — Carl, 22 September 2026.
 **Bears on:** the lighting chunk (not open), `about-card-glass.ts`, `about-card-mesh.tsx`, and **D-087's neon**, which is also unbuilt. ⚠ **Does NOT reopen D-089.**
 
@@ -4987,12 +5024,85 @@ Four cards on periods that do not divide into one another produce a composite th
 
 ⛔ **AND NOTHING HERE IS AUTHORISED TO BUILD.** The lighting chunk is not open. ⚠ **Four individual lights is a STRUCTURAL question under CLAUDE.md §5a** — it is a new mechanism where an existing rig could serve, and R-025 records **four lighting rigs that each measured clean and were each rejected on sight.** **It stops for review before it is built.**
 
+### ⛔⛔ AMENDED 22 September 2026 — THE NEON IS BLUE, BUILT PAIR BY PAIR, AND THE BLOOM HAS A MEASURED TARGET
+
+⚠ **DIRECTION, NOT AUTHORISED TO BUILD.** Recorded under the D-087 rule. ⛔ **The glow colour itself is NOT chosen** — Carl: *"ive not made my mind up yet."*
+
+#### ⛔ FOUR COLOURS IS DEAD — THE NEON IS BLUE
+
+**Carl:** *"4 different colours, even brand colours would be too much for the scene. Too loud and seem out of place."* ⚠ **This RETIRES D-087's "four, all different"** (doubted by its author on 18 September, now withdrawn). ⛔ **The cards' neon is BLUE.**
+
+⚠⚠ **HOW BLUE WAS REACHED, BECAUSE A WRONG OBJECTION NEARLY BLOCKED IT.** The Builder objected that D-063 rules *"blue belongs to the Q+A and nothing else."* ⛔ **Carl pointed at the answer cards and the client-info boxes: both are BLUE-BODIED** (satin `#0b1f4d` with sheen `#5b9ede`; field ramp `#1148bd -> #2784e1 -> #35a9f4 -> #c2ffff`). **D-063's rule governs the MARK's colour, not materials.** Blue neon on the cards continues the site's material family.
+
+⚠ **AND THE COMPOSITION IS ALREADY THE SITE'S:** client info is **blue boxes with ONE gold accent** (the Name box's rim, `#f2bf61`). `/about` becomes **four blue neon cards with ONE gold mark** on the right wall (D-088, amended). ⛔ **Warm means *lit because chosen* (the answer-card filament), so blue cards that ignite on their own do not claim selection, and the gold mark stays the only warm light.**
+
+#### ⛔ BUILT PAIR BY PAIR — WALL CARDS FIRST
+
+**Carl:** *"When it comes to implementing this we should separate them. Wall cards first, tweak so they visually match then work on the floor cards."* ⛔ **And: *"We should start with a darker blue for the wall cards."***
+
+| step | what | note |
+|---|---|---|
+| **1** | **Wall pair (CA, CB) neon** — a DARKER blue, tuned until the two visually match | ⚠ The rim is on the card, so **the neon needs nothing from the backplate** |
+| **2** | **Floor pair (CD, CS) neon** — tuned the same way | |
+| **3** | **Spill** | ⛔ **Only here does the unmodelled CEILING (D-091) bite** — track before spill, as D-091 already rules |
+
+⚠⚠ **THE PAIRS ARE THE EYE'S GROUPING, NOT THE BACKGROUND'S — AND THE BUILDER WAS CORRECTED ON IT.** The Builder argued from sampled backgrounds that the surroundings split **3+1**, not 2+2 (CD, a floor card, sits in the desk's shadow at `#15191f`, darker than the walls; only CS is lit, `#2d353c`). ⛔ **Carl: *"Yes, the figures say that but visually they are part of the same family."*** **The pairs group by POSITION, which is what the eye reads — and Carl had already ruled *"the cards are essentially 2+2."*** ⚠ **Background luminance was the wrong measure for a grouping question.**
+
+**Why a colour per pair rather than one hex — Carl's reasoning:** one blue will read differently by placement anyway (*"even if we use 4 same blue, same Hex, they may look slightly different because of where they're located"*), so either route is tuned by eye; ⛔ **a darker and a lighter blue per pair means tweaking less, *"but probably still tweak."*** ⚠ **Precedent for expecting the tweak: D-089's glass needed FOUR values to read as ONE material** — and those came out on the DIAGONAL (CA/CD 0.95, CB/CS 0.86), so **one property grouping by pair does not guarantee another will.**
+
+#### ⚠ THE CANDIDATE BLUES — FROM CARL'S OWN LOGOS, NOT CHOSEN
+
+**Carl:** *"Look inside brand assets for blue Logos, theres plenty of variation and shades."* ⛔ **The navy-to-teal chrome renders** (`brand-assets/logo/ig_…c6430c…png`, `Logo 2.2.png`, and siblings) are **lit tubes running deep blue on the "c" to teal-cyan on the "b"** — so **ONE MARK already holds a darker and a lighter blue.** Sampled per half; two files agree within a few levels:
+
+    the "c" — DARKER    edge #01143a  body #05265c  GLOW #17468a/#1b4789  bright #477ec4  CORE #b7d6f3/#a5caf3
+    the "b" — LIGHTER   edge #02344e  body #08758c  GLOW #1bb6c5/#18a6bd  bright #5ce5eb  CORE #cefcfe/#d1fcfe
+
+⚠ **Candidate, not chosen:** the "c" blue for the wall pair, the "b" teal for the floor pair — **the two pairs as the two halves of one mark.** ⛔ **Matches D-025 exactly:** *"teal / duck-egg / deep blue as modern intelligence accent."*
+
+⚠ **The PLATINUM-BLUE** (the `/start` mark, `#486285 -> #d2e4f9`) is **too desaturated to read as neon** — it stays **the MARK's blue**, the one it arrives in §3 wearing.
+
+⚠ **"DARKER" FOR A LIGHT SOURCE MEANS DEEPER AND MORE SATURATED, NOT DIMMER.** Dimming is the intensity fader's job.
+
+⚠ **PREDICTION, UNTESTED:** the wall behind CA/CB is itself dark blue (`#182733`); a cobalt neon is close in hue and may read subtle — or merge. **Only the scene decides.**
+
+#### ⛔⛔ THE BLOOM TARGET — CARL CHOSE IT, AND THE BUILDER'S FIRST READING OF IT WAS WRONG
+
+**Carl, from four neon-on-wall references:** *"This one. Not so much the colour but the bloom. Its more localised."* ⛔ **Carl: *"Neon intensity is also important."***
+
+⚠ **References saved locally (gitignored — third-party images, some watermarked, NOT committed):** `live-work/references/neon-22-september/` — **`CHOSEN-blue-rectangle-localised-bloom.png`** plus the three not chosen. ⛔ **The numbers below carry the record if the images are lost.**
+
+⚠⚠ **THE BUILDER FIRST CALLED THIS REFERENCE'S GLOW "FLATTER, BROADER… bloom laid on top" — THE OPPOSITE OF TRUE.** It compared raw luma without subtracting each image's background; this one sits on lighter concrete (L20 against L4-8). ⛔ **Re-measured with background subtracted, averaged over 21 rows:**
+
+    glow ABOVE BACKGROUND, px outward from the tube
+                       0     2     4     8    16    32    48
+    CHOSEN (blue)    180   161    15    18    11     7     2   <- cliff at 2-4px, then a faint shelf
+    purple            228   161    85    37    27    16     8   <- gradual halo
+    blue-violet       215   102    48    32    23    15     6   <- gradual halo
+
+⛔⛔ **"LOCALISED" MEANS TWO LAYERS WITH DIFFERENT DEPTHS:**
+1. **A TIGHT BLOOM ON THE TUBE** — 89% of core at 2px, **8% by 4px**. All the brightness hugs the tube. **This is the neon itself.**
+2. **A FAINT, SHORT WASH BEYOND IT** — ~8-10% of core, out to ~24px, gone by ~48px. **This is the secondary light: the first DEPTH on D-091's one track**, and the level Carl's *"just enough to suggest its the same world"* points at.
+
+⚠ **The same reference shows the FLOOR case** — a soft blue reflection on the ground below the frame, where the floor cards' pool would sit.
+
+#### ⚠ WHAT BOTH REFERENCE SETS AGREE ON — the logo renders AND the neon frames
+
+- ⛔ **THE CORE IS NEAR-WHITE; THE COLOUR LIVES IN THE GLOW.** Logo tube peaks sat 0.04-0.16 (`#f1f8fe`, `#fefbd6`); frame cores `#f3e3fe`, `#eceaff`. ⚠ **Choosing the neon colour means choosing the GLOW.** The one exception, the chosen reference's own saturated cyan tube (`#04ffe7`), reads as LED/graphic — **which is why Carl took its bloom and not its colour.**
+- ⛔ **SPILL IS DARKER BUT FAR MORE SATURATED THAN THE TUBE** — logo pools at 15-31% of tube brightness, saturation 0.3-0.99. ⚠ **Gold spills ORANGE** (`#a03c01`), so the gold mark on the wall would throw amber — the filament's family, and caused by the mark.
+- ⛔ **SPILL POOLS WHERE THE TUBE IS NEAREST THE SURFACE** and fades with distance (§14a). **For the floor cards: at the rim's base, not spread evenly.**
+- ⚠ **THE INSIDE OF A FRAME HOLDS LIGHT** from all four sides adding up — **on the cards, the frosted face is that interior**: the rim lighting the card, seen directly.
+- ⚠ **The logo renders are showpieces with generous spill.** They give **shape and colour behaviour, not strength.** ⛔ **The neon-frame references sit at background L6-12 against the wall cards' ~9 — their ratios transfer; the showpieces' do not.**
+
+#### ⚠ IGNITION — A CANDIDATE FROM THE SITE'S OWN APPROVED WORK
+
+⚠ **The answer-card filament is an approved ignition language**: it **fades up along a physical heat ramp**, red `#8c1f06` -> orange `#ff6a1a` -> amber `#ffab52` — Carl: *"does it have to move? No. it could fade in, like a real light bulb filament."* ⛔ **A blue equivalent — dim blue to near-white core — is a CANDIDATE against D-087's open "pop, fade or flicker".** Not chosen.
+
 ---
 
 ## D-091 — The Neon Is ONE BRIGHTNESS TRACK And The Room Reads It. ⚠ AMENDED: The Send Opal Already Does This
 
 **Date recorded:** 2026-09-22
-**Status:** ⛔ **DIRECTION — RAISED AND EXPANDED ON BY CARL, NOT AUTHORISED TO BUILD.** Carl, 22 September 2026: *"its not authorised yet but its in the files to be worked out and expanded upon."*
+**Status:** ⛔ **DIRECTION — RAISED AND EXPANDED ON BY CARL, NOT AUTHORISED TO BUILD.** Carl, 22 September 2026: *"its not authorised yet but its in the files to be worked out and expanded upon."* ⚠ **SECOND AMENDMENT (end of entry): the BACKPLATE route is chosen for secondary effects; the opal route is the fallback; Carl's own questions to CS are on file.**
 **Authority:** Human Founder — Carl, 22 September 2026, working from a conversation with an outside model (recorded below as such).
 **Bears on:** D-087 (the neon loop), D-090 (the per-card lights), D-086 (the card text), D-088 (the travelling mark), D-084/D-085 (the backplate), `room-environment.tsx`, `about-card-canvas.tsx`. ⛔ **§5a APPLIES — the backplate change is STRUCTURAL and stops for review.**
 
@@ -5130,6 +5240,41 @@ Four cards on periods that do not divide into one another produce a composite th
 ### ⚠ PROVENANCE — RECORDED BECAUSE THE METHOD CAME FROM OUTSIDE
 
 **The trigger model and the two-kinds-of-light distinction came from a conversation between Carl and an outside model, pasted into the session in full.** ⚠ **Its principles are sound and are adopted.** ⛔ **Its two open questions are ANSWERED HERE — the backplate is already shaped, and it is unlit by decision — and its difficulty ordering is CORRECTED above.** **Same handling as D-084, where an outside method's first diagnosis was wrong and was recorded as such so it was not inherited as fact.**
+
+### ⛔⛔ SECOND AMENDMENT, 22 September 2026 — THE BACKPLATE ROUTE IS CHOSEN, AND CARL'S QUESTIONS ARE NOW ON FILE
+
+⚠⚠ **THE PROVENANCE ABOVE RECORDED THE ANSWERS AND NOT THE QUESTIONS.** The outside conversation was with **CS, the Strategist seat** — the card Carl addresses as *"you here the strategist"*. ⛔ **An answer read without its question was read wrongly once already:** the Builder took "the backplate method" to mean three different things before Carl supplied his own words. **They are recorded here so no later reading depends on CS's paraphrase.**
+
+**CARL'S QUESTIONS, verbatim (spoken, lightly punctuated):**
+
+> *"the cards on them represent the four AI workflows for example the architect the builder the designer and you here the strategist telling how it works in the system so there will be text on the cards the text will be three JS text because I want when the neon starts on a card for it to be slightly reflected in the text itself the effect I want is going to be subtle it doesn't have to be really really heavy just enough to indicate that it belongs in the room ... if it's a bloom on the wall or the ceiling it will be very very subtle a lot of it depends on the intensity of the neon so when a user navigates to this page by pressing a button ... the top left the architect card would come on first and that would stutter flicker come on and it would have some effect on the ceiling maybe on the card next to it so this will be a trigger that starts the neon coming on but could that trigger also trigger the secondary effects"*
+
+> *"So would it be right to assume that the backplate method could be used for the ceiling and for the walls? It's only going to be in immediate proximity. Could I use the same technique to get these secondary light effects? i already have the backplate in the scene, incidentally for your card."*
+
+#### ⛔ WHAT IS NOW CHOSEN, AND WHAT IS NOT
+
+| item | status |
+|---|---|
+| **The backplate carries the secondary light** — the neon's light falls on the in-scene copy of the photograph (D-084/D-085), the technique built so CS's frost could see the room | ⛔ **CHOSEN** — Carl, 22 September: *"We can use the backplate method for light secondary effects."* |
+| **The opal route** — drive one property of an overlay instead of lighting anything | ⛔ **RAISED, NOT CHOSEN for secondary effects.** ⚠ **Kept as the FALLBACK** if the lit backplate fails the eye test. |
+| **The card text is Three.js text, so the neon reflects in it** | ⛔ **DIRECTION** — stated by Carl as intent, not asked as a question. ⚠⚠ **This moves D-086** (copy baked into the face's albedo, which cannot take a live reflection). **D-086 is amended by a new entry when the text chunk opens, not silently.** |
+| **One trigger starts the neon AND its secondary effects** | ⛔ **CONFIRMED** — this is the track architecture above, now in Carl's words. |
+| **Spill strength follows the neon's intensity** — *"a lot of it depends on the intensity of the neon"* | ⛔ **CONFIRMED** — the depth-per-effect model above, stated by Carl before it was written. |
+| **The Architect card striking first; spill on the ceiling and the neighbouring card** | ⚠ **EXAMPLES, NOT FIXED** — *"for example"*. ⛔ Still open under D-087 (*"whether CA strikes first"*). |
+
+#### ⚠⚠ THE ROUTE CHOSEN INHERITS THIS ENTRY'S STRUCTURAL BLOCKER — IT IS NOT DISSOLVED BY CHOOSING
+
+⛔ **The backplate is `MeshBasicMaterial`, unlit by decision, and must take THE NEON AND NOTHING ELSE** — not the ambient, not the stand-in key, not D-090's four card lights. ⚠ **As far as the Builder knows, three.js has no built-in per-object light targeting, so the selective mechanism must be designed. UNVERIFIED — check before planning.** **§5a: it stops for review before it is built.**
+
+⚠ **Two further points the CS answers did not carry:**
+- **The rim's reflections come from `useRoomEnvMap`, built once from the plain photograph.** Spill on the backplate shows THROUGH the glass (transmission renders it) but **not IN the rim's reflection.** ⛔ **Bears on ENVMAP-STALE.**
+- **Physics favours the subtlety Carl asked for.** Light multiplies the surface's own colour; the wall is ~luma 9, so a neon falling on it can only lift it a little. ⚠ **CS's "coloured wash" risk is an ADDED wash — a lit dark surface cannot overshoot the same way.** Prediction from how the shading works, **not measured.**
+
+#### ⚠⚠ CARL'S OWN FIRST EXAMPLE LANDS ON THE UNSOLVED SURFACE
+
+**His scenario is the Architect card (top left, a WALL card) lighting the CEILING.** ⛔ **The ceiling is the one surface the proxy does not model** (table above). ⚠ **The Builder's floor-first test — CS's pool on the already-modelled floor — proves the mechanism most cheaply but is NOT the case Carl described.** ⛔ **Which is proven first is Carl's call; both are recorded so the choice is visible.**
+
+**Proposed first test, NOT AUTHORISED:** proto bench, one card, one neon-coloured light at a hand-set value, reaching the backplate only, judged by eye against the photograph. No track, no stutter, no second card — §14a: *"Prove one object, one motion phrase, or one light behaviour before rolling it out."*
 
 ---
 
