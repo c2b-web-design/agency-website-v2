@@ -1,213 +1,101 @@
-# Session Handoff — 22 September 2026. THE GLASS IS DONE AND APPROVED. THE PILLARBOX IS NOT.
+# Session Handoff — 22/23 September 2026. THE LIGHTING CONCEPT IS RECORDED. NEXT: THE WALL NEON.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
 
 ---
 
-## ⛔⛔ TWO HALVES, AND ONLY ONE IS FINISHED
+## ⛔ THE NEXT SESSION — CARL'S PLAN, IN HIS ORDER
 
-**FIRST HALF — the glass rollout. D-089 APPROVED BY CARL'S EYE.**
-**SECOND HALF — the 4:3 pillarbox bands. COMMITTED, and Carl's verdict on the skirting corner is
-*"much better"* — ⛔ NOT a formal approval. The COLOUR of the skirting is still unresolved.**
+> *"So the next session we can implement the wall neon first. We'll go to plan mode, bring in the
+> Architect to evaluate and take it from there with the floor cards neon after that. Then we will
+> point some individual wall lights at the cards and see how it looks."*
 
-## ⛔ COMMITTED AND PUSHED. HEAD is `b1900b2`.
+1. ⛔ **WALL PAIR NEON (CA, CB) — PLAN MODE FIRST, ARCHITECT EVALUATES THE PLAN** (plan-review gate,
+   `handoff-protocol.md` §2.5). Carl approves before anything is built.
+2. **FLOOR PAIR NEON (CD, CS)** — after the wall pair is matched by eye.
+3. **INDIVIDUAL LIGHTS pointed at the cards** (D-090's four lights) — *"and see how it looks."*
+4. *(Not in Carl's list for next session: the SPILL onto the backplate. D-091 rules track before
+   spill; the unmodelled CEILING only bites there.)*
 
-    817a4c9  feat(about): the face gets a BODY — transmission splits from the rim's
-    a957f1a  feat(about): placement APPROVED, no card moved — the floor rails come out
-    b1900b2  docs: D-089 to D-092 — the material, the lighting questions, and two gaps
+⚠⚠ **READ BEFORE PLANNING:** `decisions.md` **D-090 (amended 22 Sept)** — the whole lighting concept
+lives there — plus **D-087** (the loop), **D-091** (one brightness track; backplate route chosen),
+and ethos **§14a**. ⛔ **Also the stand-in rig's notes in `about-card-canvas.tsx`** (key 0.5, mirror
+2.6, ambient 0.20) — **four earlier rigs measured clean and were rejected on sight** (R-025).
 
-⚠ `npx tsc --noEmit` CLEAN. `npm run lint` = **1 problem (1 error, 0 warnings)** — the documented
-baseline. ⛔ **Dev server was running on port 3000 (PID 4364) during the session — CHECK AND KILL
-IT before measuring anything.**
+### ⚠ WHAT IS SET vs WHAT IS DELIBERATELY OPEN
 
-## ⚠⚠ UNCOMMITTED WORK IN THE TREE — deliberate, not forgotten
+⛔ **CARL LEAVES WRIGGLE ROOM ON PURPOSE:** *"Creativity is best when performed within certain
+parameters but not rigid enough to stifle and contain creativity and inspiration."* **Set the bounds;
+do not press him to pick values the scene has not judged. Record candidates as CANDIDATES.**
 
-    M  app/about/page.tsx                        renders <PillarboxPlate />
-    ?? components/about/pillarbox-plate.tsx      the whole band component
-    ?? public/about-edge-column.png              2x1707  right band source
-    ?? public/about-edge-column-left.png         2x1707  left band source, repaired
-    ?? public/about-skirting-left.png            40x172  the corner fragment, UNFLOPPED
+| SET | OPEN (on purpose) |
+|---|---|
+| Neon is **BLUE**; four colours withdrawn | **The glow colour** — *"ive not made my mind up yet"* |
+| **Pair by pair**, wall cards first, a **DARKER** blue | Candidate: the **"c" navy** of the navy-teal logos, glow ~`#1a468a`, core ~`#b0d0f3` |
+| **Bloom target MEASURED** — tight bloom (8% of core by 4px) + faint ~8-10% wash | Exact intensities — **tune by eye in the room** |
+| Core near-white, **colour lives in the glow** | Ignition style — candidate: the filament's fade-up, in blue |
 
-⛔ **NOW COMMITTED. NOTHING HERE IS APPROVED — Carl said *"much better"*, not approved.**
-
----
-
-# ✔ WHAT IS FINISHED AND APPROVED — THE GLASS
-
-**D-089 APPROVED, R-027 and R-028 filed.** Carl's eye, in the room.
-
-⛔⛔ **THE FAULT WAS NO BODY, NOT TOO LITTLE FROST.** At `transmission: 1.0` a
-`meshPhysicalMaterial` has **no diffuse contribution at all**, so each card took its brightness
-entirely from its background and CS's left edge vanished against the dark desk. ⚠⚠ **Carl's own
-opening instinct was MORE FROST and it would not have worked** — a blurred dark background is
-still dark. **The missing ingredient was TONE.**
-
-⛔ **THE RIM STAYS CLEAR AT 1.0 AND IS NOT ON THE FADER — it IS the neon.**
-
-⚠⚠ **CARL'S ACCEPTANCE TEST IS FAMILY RESEMBLANCE, NOT MATCHED NUMBERS** — *"they feel all part of
-the same family except CA."* ⛔ **Four cards against four backgrounds need FOUR values to read as
-ONE material:**
-
-    CA 0.95   dark blue wall          CD 0.95   dark desk front
-    CB 0.86   dark blue wall          CS 0.86   lit floorboards — THE EXCEPTION
-
-⛔ **ONLY CS's VALUES ARE APPROVED.** CA, CB and CD are **PROVISIONAL** and Carl said so himself:
-*"it is possible that these values might need tweaking once neon and light are added."*
-
-⛔ **PLACEMENT APPROVED — NO CARD MOVED.** *"The cards are essentially 2+2... the original
-calculations were done accurately."* **The floor rails are REMOVED, their job done**, which closed
-GUIDES-WITHOUT-FLAG by removal. ⚠ Angles survive in `app/proto/wall/page.tsx` (`INITIAL_RAIL`);
-**restoring them is a revert of `a957f1a`, not a re-measurement.**
+⚠ **§5a WILL BITE IN PLANNING:** a light source per card, and anything that makes the rim EMIT, may be
+a new mechanism. **Write the structural decision and stop — do not build it inside the chunk.**
 
 ---
 
-# ⛔⛔ THE PILLARBOX — WHERE IT ACTUALLY STANDS
+## ✔ WHAT THIS SESSION DID — ALL COMMITTED AND PUSHED. HEAD `1d4064f`, tree clean.
 
-**THE PROBLEM.** The plate is a true 3:2 (2560x1707) in a 16:9 viewport, so ~16% of the width is
-dead black by geometry. Carl: *"Aspect ratio screams 4:3 and for someone with a massive modern 4k
-HDR TV... this says one thing very loudly - OLD."*
+    eea55a1  chore(guard): lock about-card-glass.ts — D-089's approved material
+    f9a162e  feat(about): skirting runs out of the frame; left band is wall to the bottom
+    1d4064f  docs: the lighting concept — blue neon pair by pair, the mark on the wall, the backplate route
 
-⚠⚠ **AND THE DEFECT IS THE STRAIGHT EDGE, NOT THE DARKNESS.** The top 85% of both plate edges is
-already `rgb(8,9,13)` — **under 4% from pure black.** The band reads because a perfectly straight
-vertical boundary is findable at almost any contrast.
+⚠ `tsc` clean; lint at baseline `1 problem (1 error, 0 warnings)`. **Dev server STOPPED, port 3000
+free.**
 
-## ✔ WHAT WORKS — the wall bands
-
-⛔ **THE BAND IS BUILT FROM THE PICTURE'S OWN LAST PIXEL COLUMN** — Carl's construction. **The
-band's first column IS the picture's last column at every height, so the join is exact by
-construction rather than by tuning.**
-
-**MEASURED, right band:** join step +0.67 to -2.00 through the wall, all negative-or-zero (band
-slightly darker, never lighter). Outward ramp monotonic at every height — 20%: 17.0 -> 9.3,
-45%: 12.7 -> 9.0, 70%: 10.7 -> 9.0.
-
-⛔ **THE EASE RATE IS DERIVED, NOT CHOSEN.** Fitted over the seven clean columns at the right edge:
-`luma = -0.5146x% + 65.23`, reaching 0 at x = 126.8% of plate width. **The band only reaches
-117.4% at 16:9, so the physics does 65% of the work and the ease closes the rest.**
-
-⚠ **THE LEFT COLUMN IS REPAIRED** by Carl's own method — *"sample the wall pixels horizontally"*.
-**125 of 1707 rows** replaced: 36 found clean wall further right, **89 fell back to the nearest
-clean row above.** Max greenness 4.63 -> 2.00, max luma 58.0 -> 22.0. ⚠ **A third of the repairs
-are the row above, not a true horizontal sample. Stated, not hidden.**
-
-## ✔ THE SKIRTING CORNER — RESOLVED BY CARL'S CORNER TEST, 22 September
-
-**Carl's spec:** *"its only a small number of pixels in a corner... It only has to look like the
-skirting."* **The floor below is left alone — it reads as shadow.**
-
-⛔⛔ **CARL'S CORNER TEST IS THE INSTRUMENT THAT SOLVED IT** — *"The old skirting will have a pixel where it meets the floor. The new will have a pixel at the bottom on its furthest away, right hand side. When these 2 pixels are next to each other it will be aligned."*
-
-⚠⚠ **THE BUILDER'S BAND-THICKNESS MEASUREMENTS AGREED WITH TWO WRONG ANSWERS.** They compared the skirting as a BAND at the join column and never checked DIRECTION or on-screen POSITION. **Carl caught both by eye.**
-
-**THREE FAULTS, EACH FOUND ONLY ON SCREEN:**
-
-1. ⛔ **THE V.** A flopped sample measured perfectly — bottoms identical, tops and thickness within 0.10% — and rendered as a V. **The skirting DESCENDS toward the seam (plate x=40 at y 86.8%, x=0 at 91.0%), so continuing it needs pixels from x < 0 that do not exist.** Flopping manufactures them and reverses the slope. ⛔ **DO NOT RE-TRY THE FLOP. The asset is UNFLOPPED.**
-
-2. ⛔ **A 28px VERTICAL ERROR HIDDEN BY AN ARITHMETIC MISTAKE.** The Builder claimed "aligned to 0.008%" by comparing SOURCE coordinates, ignoring that the element is a sibling of the band and resolves `top` against the SECTION. ⚠ Carl nudged twice by eye and correctly reported *"its not moved"* — 10px of a 28px error is invisible. **Fixed: `top: 90.54%`, measured band 914px against picture 914px, gap 0.**
-
-3. ⛔ **A ONE-PIXEL BLACK SEAM.** Carl: *"I can see the join. The black line."* **Measured: x=239 luma 52, x=240 luma 10, x=241 luma 55.** ⚠ The band is `(1920-1425)/2 = 247.5px` — **the element's right edge landed on a HALF PIXEL**, rounded away, and page background showed through. **Fixed by widening the element 1px into the plate. Nothing was misaligned; the geometry has no whole pixel there.** ⛔ **Do not remove the 1px overlap.**
-
-⚠ **ANGLE: 2.23 degrees mismatch**, after sizing the piece in PLATE SCALE (`calc(150vh * 40 / 2560 + 1px)`) rather than raw pixels. **A fixed 40px was a 1.8x stretch that flattened it to -52.3.**
-
-⛔⛔ **COLOUR IS STILL NOT SOLVED — THE ONE THING LEFT ON THIS FRAGMENT:**
-
-    source skirting at x=0                    peak luma 105
-    after the section 25% neutral-950 overlay        81
-    measured on screen                               56   <- ~25 levels UNEXPLAINED
-
-⚠⚠ **AND A SECOND FAULT:** the picture reads 105 ON SCREEN at x=250, so its source there is ~137. **The sample was cut from the skirting's dim end and butted against its bright end.**
-
-⚠ **A PIXEL OFFSET STORED AS A PERCENTAGE IS VIEWPORT-DEPENDENT.** 90.54% is correct at 1920x950 and unverified elsewhere.
+1. **The glass file is LOCKED** in `.claude/protected-files.json`, **verified by a probe edit the
+   guard denied.** ⛔ **The lighting chunk may need to touch `about-card-glass.ts` (D-090's tint
+   question lives in `GLASS_COLOR`) — that needs Carl to NAME the file for an unlock.**
+2. **Pillarbox, bottom-left — Carl: *"Yes, thats it. Looks aligned... its hard to see the join."*** The
+   skirting piece is now 100 columns, scaled 1.14 for perspective, lowered to 90.67%; aligned within
+   1.8px at four window sizes. The left band is wall to the bottom.
+3. ⛔⛔ **THE RIGHT BAND IS DELIBERATELY UNREPAIRED.** Carl: *"a happy accident, serendipity. The
+   stretched floor reads as a shadow."* **A repair was built and reverted. Recorded at the band in
+   code. DO NOT "FIX" IT.**
+4. **Lighting concept recorded** — D-088, D-090, D-091 amended (see commit `1d4064f`).
 
 ---
 
-# ⛔⛔ THE FINDING THAT COST FIVE REBUILDS — READ THIS BEFORE TOUCHING §2
+## ⛔ CORRECTIONS CARL MADE THIS SESSION — so they are not repeated
 
-**WHAT YOU SEE IN §2 IS WEBGL, NOT THE DOM IMAGE.** `RoomBackplate` in `about-card-canvas.tsx`
-draws the same photograph as **3D geometry** (D-084/D-085).
-
-⚠⚠ **A CSS MASK CAN NEVER TOUCH IT.** Proven by compositing over a red backdrop: **the room stayed
-fully opaque (redGain 0) while the bands went transparent (redGain 129-184).**
-
-⛔ **The bands are still free DOM space** because the canvas is confined to its own centred
-`aspect-[3/2]` box. **That is the only reason any of this works.**
-
-⚠ **A SECOND TRAP IN THE SAME AREA:** `fill` + `object-contain` gave the plate `<img>` a box
-**1905px wide — the whole section** — and its transparent letterbox area **covered the bands**.
-Measured `[0, 951, 1905, 949]` before the fix, `[241, 951, 1424, 949]` after. **Geometry is not
-paint; measure the rendered boxes.**
-
----
-
-# ⚠⚠ THE METHOD CARL IMPOSED, AND IT WORKED
-
-**After the Builder built mask, fill, fade and blend in one pass and then could not find which of
-the four was broken:**
-
-> *"I would do this in stages (chunks)... The problem with doing everything all at once is you have
-> to hunt to find the issue with all of it."*
-
-⛔ **AND HE KEPT THE LEFT BAND UNTREATED AS A CONTROL** — *"i said nothing about the left side.
-just the right, i want to see how it looks."* **A before/after in one frame.**
-
-⚠ **EVERY REAL FAULT THIS SESSION WAS FOUND BY MEASURING RENDERED PIXELS, NOT BY READING CODE.**
-The Builder re-read its own markup three times while the cause sat in a file it had already read.
+1. ⛔ **"The backplate method" was read three ways before Carl supplied his own questions to CS.**
+   **An answer read without its question misleads.** Carl's questions are now verbatim in D-091.
+2. ⛔ **The Builder argued the surroundings split 3+1 (CD sits in shadow), so pairs don't fit.**
+   Carl: *"the figures say that but visually they are part of the same family."* **Grouping is what
+   the EYE reads — background luma was the wrong measure.**
+3. ⛔ **The Builder called the chosen bloom reference "broad, overlay-like" — the opposite of true.**
+   It compared raw luma **without subtracting the image's own background.** **Subtract the
+   background before comparing glow.**
+4. ⛔ **The Builder objected blue "belongs to the Q+A" (D-063).** Carl pointed at the answer cards
+   and client info — **both blue-bodied. D-063 governs the MARK, not materials.**
+5. ⚠ **Skirting: a brightness correction derived from the SOURCE (0.73) over-darkened on SCREEN.**
+   **Measure on screen, not in the source.**
 
 ---
 
-# ⛔ WHAT THE NEXT SESSION SHOULD DO, IN ORDER
+## ⚠ STILL OPEN AND CARL'S — unchanged unless noted
 
-1. ⛔ **Check ports 3000/3100 and kill any dev server before measuring.**
-2. ⚠ **ASK CARL WHICH WAY TO GO ON THE SKIRTING CORNER.** He was offered three and has not chosen:
-   - keep chasing the ~25 unexplained levels
-   - re-cut the sample from nearer the seam (fixes the ~32-level source mismatch)
-   - ⛔ **drop the fragment entirely and ship the wall band alone** — the Builder's own note is that
-     the wall band works and this is a ~22px detail that has consumed a large part of a session
-3. ⚠ **The pillarbox work is UNCOMMITTED. Carl has not asked for it to be committed.**
-
----
-
-# ⚠ STILL OPEN AND CARL'S
-
-1. ⛔ **RIM-DARK — PARKED BY CARL**, not fixed: *"its a minor issue and we will return to it."*
-   The clear rim reflects `ENV_SHELL_COLOR` `#141a20`, proven by turning the shell red.
-2. ⛔ **ENVMAP-STALE** — `useRoomEnvMap`'s `useMemo` is keyed `[plate, gl]`, so env constants
-   appear dead. ⚠⚠ **It nearly produced a wrong finding: Carl saw the diagnostic red, reloaded,
-   and it went dark WITH THE RED STILL ON DISK.**
-3. **D-090** — each card gets its own light plus neon spill. **Open: should the frosting be
-   lightly coloured, and is the individual light white or the neon's colour. They interact.**
-4. **D-091** — the neon is ONE BRIGHTNESS TRACK. ⚠⚠ **AMENDED: `/start`'s Send opal already does
-   this in production and nothing pointed to it** (D-074 again). **Four rules it proves; read them
-   before inventing an architecture.**
-5. **D-092** — the room may begin FADED in §1 and solidify into §2. ⛔ **There is NO
-   IntersectionObserver anywhere in this codebase and `Roles` is a plain anchor**, so click and
-   scroll are ONE unhandled case. **The replay-on-scroll-back question is Carl's.**
-6. ⚠ **`ENV_PLATE_INTENSITY = 6.0` is still a compensation** for a missing light.
-7. ⛔ **FOUR accessibility items are owed on this section and should be scoped as ONE piece of
-   work:** D-086's `sr-only` copy, D-088's reduced-motion mark, D-091's three-flashes limit,
-   D-092's reduced-motion fade.
-8. ⛔ **THE FILE LOCK IS STILL OWED.** Carl agreed the approved glass values should be protected
-   from future sessions. ⚠ **It needs him to NAME `.claude/protected-files.json` and
-   `components/about/about-card-glass.ts`** — the guard requires the exact path from Carl, and the
-   Builder inferring it is exactly what the protocol forbids. **`chunk-scope.json` does not exist;
-   it would be created.**
+1. ⛔ **D-088 (amended):** the mark starts GOLD on the right wall, scroll pulls it off, 2D fall into §3,
+   gold -> platinum-blue. **Open: D-065 (no movement), D-063 (blue), the band's width (0px on 3:2 and
+   narrower — where does the mark hang?), reduced motion, §5a scroll mechanism with D-092.**
+2. **D-092** — activation trigger; **no IntersectionObserver exists**; replay-on-scroll-back is Carl's.
+3. **RIM-DARK** (parked by Carl) and **ENVMAP-STALE** — the rim's env map is built once from the
+   plain photo, so **spill will not appear IN the rim's reflection.**
+4. **The card text becomes Three.js text** (D-091 direction) — **moves D-086; new entry when the text
+   chunk opens.**
+5. ⛔ **FOUR accessibility items, scoped as ONE piece of work:** D-086 `sr-only`, D-088 reduced motion,
+   D-091 three-flashes limit (**four cards in sequence is where it breaks**), D-092 reduced-motion fade.
+6. **`wall-card-corners-4-september.md` supersession notice** — still owed.
+7. ⚠ **Parked, do not press:** AI-roles-vs-premium positioning; the travelling-room question.
 
 ---
 
-# ⚠ PARKED BY CARL — DO NOT PRESS
-
-1. **Whether showing clients the site is built by AI roles helps or hurts a premium, human-led
-   positioning.** ⛔ Strategic, Carl's alone, and the neon does not depend on it.
-2. **The travelling-room question**, **whether CA strikes first**, and **the neon colour count**
-   he now doubts.
-3. **`wall-card-corners-4-september.md` supersession notice** — still owed. ⛔ It still says
-   **"DO NOT EDIT THESE NUMBERS"** with no notice that Carl discarded that set on 10 September.
-   ⚠⚠ **That omission produced two false blockers on 18 September.**
-
----
-
-*Written 22 September 2026. ⛔ **The glass is approved and pushed; the pillarbox is uncommitted and
-its last 22px are unsolved.** ⚠⚠ **The Builder's predictions were wrong three times on the card
-values and four times on the skirting colour — every one corrected by Carl's eye or by measuring
-pixels, never by reading code.***
+*Written 23 September 2026. ⛔ **Everything is pushed. The next session opens in PLAN MODE on the wall
+pair's neon, and the Architect evaluates before anything is built.***
