@@ -4990,7 +4990,7 @@ Four cards on periods that do not divide into one another produce a composite th
 ## D-090 — Each Card Gets Its Own Light. Whether The Frost Is TINTED, And Whether That Light Is White Or Neon, Are OPEN
 
 **Date recorded:** 2026-09-22
-**Status:** ⛔ **RAISED, NOT DECIDED.** Carl, 22 September 2026, on approving D-089's material: *"If there is a change to the card it will come when we address lighting."* ⚠ **AMENDED 22 September (end of entry): the neon is BLUE, built PAIR BY PAIR (wall cards first, a darker blue), with a MEASURED BLOOM TARGET. The glow colour is not chosen.**
+**Status:** ⛔ **RAISED, NOT DECIDED.** Carl, 22 September 2026, on approving D-089's material: *"If there is a change to the card it will come when we address lighting."* ⚠ **AMENDED 22 September (end of entry): the neon is BLUE, built PAIR BY PAIR (wall cards first, a darker blue), with a MEASURED BLOOM TARGET. The glow colour is not chosen.** ⛔ **AMENDED 23 September: POST-PROCESSING BLOOM IS PART OF THE NEON — decided by Carl (end of entry).**
 **Authority:** Human Founder — Carl, 22 September 2026.
 **Bears on:** the lighting chunk (not open), `about-card-glass.ts`, `about-card-mesh.tsx`, and **D-087's neon**, which is also unbuilt. ⚠ **Does NOT reopen D-089.**
 
@@ -5097,6 +5097,26 @@ Four cards on periods that do not divide into one another produce a composite th
 
 ⚠ **The answer-card filament is an approved ignition language**: it **fades up along a physical heat ramp**, red `#8c1f06` -> orange `#ff6a1a` -> amber `#ffab52` — Carl: *"does it have to move? No. it could fade in, like a real light bulb filament."* ⛔ **A blue equivalent — dim blue to near-white core — is a CANDIDATE against D-087's open "pop, fade or flicker".** Not chosen.
 
+#### ⛔⛔ AMENDED 23 September 2026 — POST-PROCESSING BLOOM IS PART OF THE NEON. DECIDED BY CARL
+
+**Carl:** *"This is an essential element for making neon lights look realistic."* ⛔ **And the second reason, which is his:** *"this is new for us but future clients may want this feature and one of the purposes for the C2B site is to demonstrate and showcase various techniques."*
+
+⚠⚠ **THE BUILDER FIRST PROPOSED EXTENDING THE FILAMENT'S IN-SHADER BLOOM** (`answer-card-mesh.tsx`, `uBloomWidth`/`uBloomGain`) to avoid a new mechanism. ⛔ **Wrong, and the MEASURED TARGET above is what rules it out:** a material colours only the pixels its mesh covers, and both layers of the target — the tight bloom and the ~24px wash — sit on the wall **beyond** the tube. **No rim shader can draw there.**
+
+| route | status |
+|---|---|
+| **Screen-space bloom pass** (`@react-three/postprocessing`, installed and unused; or three's `UnrealBloomPass`) | ⛔ **CHOSEN.** Which library is for the plan and the Architect. |
+| In-shader emissive falloff (the filament's method) | ⛔ **REJECTED** — cannot reach outside the mesh. |
+| A blurred halo mesh behind the tube | ⛔ **REJECTED** — fixed geometry; does not follow the loop's stutter for free. |
+
+⛔ **BLOOM IS GLARE, NOT ILLUMINATION.** It lights nothing. **The rim lighting the face (above) and the spill (D-091) remain separate work** — bloom makes the tube read as a source; those make the room answer it. §14a needs all three.
+
+⚠ **THE ETHOS LINE THIS SITS BESIDE:** `c2b-ethos-and-vision.md` — the site should not feel like *"a developer demonstrating technical tricks."* ⚠ **Builder's reading, not Carl's words:** the two do not conflict while the technique serves the world — the showcase is bloom tuned to the measured, *localised* target, not bloom as spectacle. ⛔ **The measured target is the guard.**
+
+⛔ **STRUCTURAL (§5a) — it replaces the /about canvas's render path.** Known couplings, **predictions, untested:** the photograph renders IN the canvas (`RoomBackplate`), so selectivity must come from the neon exceeding 1.0 against a threshold the unlit, `toneMapped={false}` plate cannot reach; tone mapping moves into the composer, so **bloom at intensity 0 must be pixel-identical to today** or approved work (D-089) has moved; `frameloop="demand"` gives way to the loop anyway. ⚠ **`answer-card-glass.ts` records a bloom pass considered and not taken for the ENQUIRY canvas**, for that canvas's reasons, naming it *"the upgrade path"* — **not reopened here; different canvas.**
+
+⛔ **FORWARD POINTER — D-093 (23 September 2026) BUILT THIS, BY THE NEON-ONLY ROUTE.** ⚠ **The paragraph above is now half overtaken:** the THRESHOLD clause is **retired** (the bloom's only input is the emitter meshes, so no threshold exists), and the PIXEL-IDENTITY clause is **carried and measured** (0 px). ⛔ **Read D-093's table before relying on either.**
+
 ---
 
 ## D-091 — The Neon Is ONE BRIGHTNESS TRACK And The Room Reads It. ⚠ AMENDED: The Send Opal Already Does This
@@ -5139,6 +5159,8 @@ Four cards on periods that do not divide into one another produce a composite th
 ⚠⚠ **AND IT IS NOT NEW — SEE THE AMENDMENT BELOW.** ⛔ **The `/start` Send opal already does exactly this in production**, driving a CSS custom property from a WebGL light's phase on the same frame. **This paragraph was written as though the architecture had to be invented; it has to be EXTENDED.**
 
 ⚠ **A CONSEQUENCE WORTH NAMING: the secondary effects are DEPTH SETTINGS ON AN EXISTING SIGNAL, not new systems.** ⛔ **So build the TRACK first and the spill after** — §14a: *"Build the track before adding automation."* **The pun is accidental and the rule is literal.**
+
+⛔ **FORWARD POINTER — THE TRACK IS BUILT for the wall pair: D-093** (`about-neon.ts`, `neonLevel`), read at two depths (tube, bloom source) with a hold-or-loop tail. **Spill and the text's reflection join as further depths on the same value.**
 
 ⚠ **THE SEQUENCE:** the button fires the Architect card's track; the next card starts at a chosen offset. ⛔ **AUTHORED TO THE MILLISECOND, NOT RANDOM** — *"the way you'd program a drum fill."* ⚠⚠ **This CONFIRMS D-087 rather than adding to it**: the loop was already ruled, and mouse proximity and randomness were already raised-and-not-chosen on 11 September.
 
@@ -5329,3 +5351,125 @@ Four cards on periods that do not divide into one another produce a composite th
 ⛔ **THERE IS NOTHING FOR THE TRIGGER TO DRIVE YET.** The cards are already visible and no sequence exists. ⚠ **Building the trigger before the thing it triggers means guessing at the interface it must expose** — and D-091's track is that interface.
 
 ⚠ **RECORDED TODAY REGARDLESS, because a finding that lives only in chat is lost — D-074.**
+
+⛔⛔ **REVISED BY CARL THE SAME DAY — THE IGNITION PLAYS WHEN THE READER REACHES §2, NOT ON LANDING.** Having seen that a landing trigger plays the ignition while the reader is still in §1: *"i do not think the clock should start as soon as a user lands in About. The flicker is wasted. By the time they get there the lights are alredy on."* ⚠ **So this entry's viewport trigger IS needed after all, and every case in the list below applies to the neon** — including replay on scroll-back. ⛔ **§5a stands: it stops for review before it is built.** Current behaviour (strike on landing) is acceptable *"for now"* — Carl. **The paragraph below is kept as the record of the first reading and why it was revised.**
+
+⛔ **CARL'S TRIGGER, same day:** *"If Roles is pressed it will instantly take them to Sect 2. What is the Lights start then. Its as if they are responding to the viewer. If a user decides to scroll to Sect 2 when they reach a certain point that should trigger the lights. Maybe when the wall cards come into full view."* ⚠ **ONE CONDITION SERVES BOTH PATHS** — this entry already found `Roles` is a plain anchor, so the jump lands with the wall cards in view and the same check fires at once. **Candidate condition: CA and CB entirely inside the viewport** (*"maybe"* — a candidate, not ruled). ~~⛔ **Still Carl's: does it strike once per visit, or again on scrolling away and back?**~~ ✔ **Answered below: once per visit.**
+
+✔ **BUILT THE SAME DAY ON CARL'S INSTRUCTION, WITHOUT THE PLAN-REVIEW GATE** — Carl: *"No need to plan or go to the architect. This is relatively straight forward. Implement it."* **Scope: the in-view trigger only.** ⚠ **No `IntersectionObserver`:** a rAF-coalesced check of the canvas rect against the wall band, on `document` scroll (capture), `resize` and `visibilitychange` — `wallCardsInView` in `about-neon.ts`, the band DERIVED from `GUIDE_CA_QUAD`/`GUIDE_CB_QUAD`. ⛔ **ONCE PER VISIT — CARL'S RULING, confirmed after it was built as the Builder's default:** *"once a user has seen the on effect theres no need to labour the point."* **This closes this entry's replay question for the neon.** **Verified in a real browser:** landing on §1 → no strike; scrolling → strikes as the band's lower edge clears the window (1440×900: scrollY 360, cards at 645–884px); scrolling away and back → still one strike; `Roles` → strikes on arrival; deep link `#roles` → strikes on load. Identity gate 0 px after the change. ⚠ **It fires the moment the cards' bottom edge enters — with them in the lower third of the window.** *"Maybe"* was Carl's word; the point is his to move.
+
+~~⛔⛔ **ANSWERED FOR THE NEON BY CARL, 23 September 2026 — THE TRIGGER IS LANDING ON THE PAGE, NOT REACHING §2:**~~ *(superseded above, same day)* *"If a user is on the Home page and navigates to About (Sect 1) as soon as they land there the lights are activated. So by time they read the copy they either press Roles or scroll to Sect 2 and the lights are on going through their sequence."* ⚠ **So the neon needs NO viewport mechanism, and the replay-on-scroll-back question does not arise for it** — the sequence belongs to the page visit, not to the section. ⛔ **Still open here and NOT answered by this:** the room fading from §1 into §2, and D-088's scroll-driven mark. **Verified the same day:** the built stand-in already strikes on landing at §1 (scrollY 0), direct and via the Home link — see D-093.
+
+⛔ **FORWARD POINTER, 23 September 2026 — THE INTERFACE NOW EXISTS: D-093.** The wall pair's track is built, and **`ignite()` in `neon-bloom.tsx` is the one door a track starts through.** ⚠ **It must invalidate the canvas in the same statement** (Architect F1) — a scroll callback is neither a store change nor a prop update, so an observer that merely set a start time would strike nothing. **A dev watchdog asserts it.** The stand-in trigger (first ready frame) is what this entry replaces; **nothing here is decided by it.**
+
+---
+
+## D-093 — The Wall Pair's Neon Is Built: Neon-Only Bloom, Two Colours On One Track, A Stutter Ignition
+
+**Date recorded:** 2026-09-23
+**Status:** ✔ **THE PALETTE IS APPROVED AS A STARTING POINT — R-028, 23 September 2026:** *"Its a great colour combination and the neon palette works very well in the room. its a good starting point… they still need working on."* ⚠ **The individual values (peaks, bloom, ignition patterns, order) are NOT individually approved and the ignition has no verdict** — a take, not a master (D-035). ~~IMPLEMENTED — CARL'S VERDICT PENDING.~~
+**Authority:** Human Founder — Carl, 23 September 2026: the route (*neon-only bloom*), ignition in scope (*"The lights will be off at first then flicker or stutter on"*), the plan approved after the Architect's review, and `about-card-glass.ts` unlocked for the colour-ruling comments.
+**Bears on:** D-087 (the loop), D-090 (the neon, the bloom target), D-091 (the track), D-092 (the trigger). **Files:** `components/about/about-neon.ts` (new), `neon-bloom.tsx` (new), `about-card-mesh.tsx`, `about-card-canvas.tsx`, `about-card-glass.ts` (comments only), `verify/about-neon.mjs` (new). **Plan and review:** `live-work/wall-neon-plan-23-september.md`, `live-work/architect-plan-response-wall-neon-23-september.md`.
+
+---
+
+### ⛔ WHAT IS BUILT — CA AND CB ONLY
+
+- **The rim emits.** CA's and CB's `meshPhysicalMaterial` rims gain an emissive, written every frame by one writer. **D-089's glass values are untouched.**
+- **Neon-only bloom.** The scene renders exactly as before; an **emitter** mesh sharing each rim's geometry is drawn alone on `NEON_LAYER` into a HalfFloat target, blurred with `postprocessing`'s `MipmapBlurPass` (the Unreal-style dual filter), and **added** onto the screen.
+- **A brightness track per card (D-091)**, read at two depths: the tube and the bloom's source. **Its type carries a HOLD or LOOP tail**, so D-087's loop extends it rather than replacing it.
+- **A stutter ignition**, CA first then CB, with a reduced-motion fade-up. **The flash cap is asserted in code** (`maxRisesPerSecond`, across the loop wrap).
+- ⛔ **CD and CS are untouched. The floor pair is the next step.**
+
+### ⛔ WHY NEON-ONLY AND NOT `EffectComposer` — Carl's choice, verified in the installed source
+
+`@react-three/postprocessing`'s composer sets `NoToneMapping` while mounted, and three 0.185 tone-maps a material only when drawing to the screen (`WebGLRenderer.js:2351-2357`). ⚠ **Under a composer, D-089's glass would lose ACES, the backplate's `toneMapped={false}` would stop meaning anything, and the glass's HDR env-map highlights would bloom.** The neon-only route leaves the base render as the same call R3F makes.
+
+### ⛔⛔ D-090's §5a PARAGRAPH — WHICH HALF IS ANSWERED, WHICH IS CARRIED (Architect F11)
+
+D-090 recorded, as untested predictions: *"selectivity must come from the neon exceeding 1.0 against a threshold… bloom at intensity 0 must be pixel-identical to today."*
+
+| clause | status |
+|---|---|
+| **Selectivity by threshold** | ⛔ **RETIRED.** There is no threshold: the bloom's only input is the two emitter meshes. Nothing else can glow — not the ceiling lights in the photograph, not the glass's highlights. |
+| **Pixel-identical at intensity 0** | ✔ **CARRIED AND MEASURED** — the identity gate below. |
+
+### ⛔⛔ THE TUBE AND THE GLOW NEED DIFFERENT COLOURS — MEASURED, AND IT CORRECTS A PREDICTION
+
+**Predicted (Architect F10, and the Builder agreed):** under ACES the tube's core *"desaturates toward white while the bloom stays saturated navy"* — D-090's model for free.
+
+⚠⚠ **HALF RIGHT.** The glow did land on the logo's navy (**214–216°** from 8px out). ⛔ **The tube did NOT whiten toward pale blue — it passed through CYAN: 186–196°**, where the logo's own core sits at ~210°. **ACES lifts the green channel into its shoulder first. The navy "c" was reading as the teal "b".**
+
+⛔ **So the tube has its own colour, pre-shifted away from green**; the glow keeps the logo's navy. Measured tube cores: `#1b4789` → 186° · **`#1b2f8a` → 211° (chosen: the logo's core)** · `#1a2699` → 224° · `#2323a0` → 237°. ⚠ **Two colours, one track** — and three dials that are NOT views of one: tube colour, peak (tube whiteness), bloom strength (glow reach).
+
+### ⚠ THE STARTING VALUES — candidates, measured against D-090's chosen reference
+
+| | value | why |
+|---|---|---|
+| glow | `#1b4789` | the navy "c", re-sampled from two logo files |
+| tube | `#1b2f8a` | lands the core at 211° (above) |
+| peak | CA 6 · CB 6 | separate constants, so the pair can be matched |
+| bloom | strength 0.25 · radius 0.7 · 5 levels | 8px 13% · 16px 7% · 24px 4% · 48px 2% of core (target ~8–10% shelf, ~0 by 48px). The first build (peak 12, bloom 0.6) measured 26% at 8px and 6% at 48px — **a broad halo, the kind Carl did not choose** |
+
+⚠ **4px reads 53–93% at every setting because the tube is ~5px across on screen** — the reference's was a hairline. **Compare from 8px out.**
+
+### ⛔ WHAT WAS MEASURED — `verify/about-neon.mjs`, headed, real GPU (AMD D3D11)
+
+- **Noise floor:** HEAD against HEAD, **0 px** at 1440 and 1920.
+- **Identity gate:** `?neon=none` and `?neon=off` against the HEAD baseline — **0 px at both widths**, re-run on the final code.
+- **Floor (Architect F9):** the gate sees a neon at **peak 0.0005** (2,559 px, max delta 1) — the lowest swept, so the true floor is lower. ⚠ **The Architect's concern that 0.01 might sit below one quantisation step is answered: it does not** (36,404 px).
+- **Red run at 0.001 (2x the lowest visible):** **FAIL, 5,004 / 7,085 px** — the same counts as the sweep; deterministic. ⚠ **Not filed in `proven.json`** (protected, and admission needs a written-up run). **Carl's call.**
+- **Frames:** the FIRST strike lands during page load (0.8–1.6s in) and frames over 50ms occur around it — **but the no-neon control shows them at the same offsets.** ⛔ **Struck again after load (`?reignite=5000`), 6 of 6 runs: zero frames over 33ms, max 17.5ms against the control's 17.4ms.** The ignition costs nothing measurable in pacing. ⚠ **Consequence: until D-092's trigger fires later, load hitches can land on CA's stutter.**
+- ⚠ **`##VERDICT:` sentinel — first real use.** `run.mjs` honoured PASS, FAIL and NONE correctly.
+
+### ⚠⚠ A BUILDER DEFECT, CAUGHT BY THE GATE — RECORDED BECAUSE OF WHERE IT BROKE
+
+The emitter's layer ref callback did not guard `null`. React calls an inline ref with `null` whenever it swaps the function, and **the throw happened in React, OUTSIDE `NeonBloom`'s isolation — the whole canvas unmounted with a lost context.** ⛔ **The frame's try/catch protects the render; it cannot protect React callbacks.** Caught by the identity gate's `?neon=off` arm (the canvas detached mid-capture); fixed, and the guard's reason is at the line.
+
+### ⚠ CORRECTIONS MADE IN PLACE (the amendable rule, Architect F12)
+
+- **The five "four colours ruled, none chosen" copies** — `about-card-mesh.tsx` ×2, `about-card-glass.ts` ×3 (**Carl's unlock, comments only; no value changed**).
+- `about-card-canvas.tsx`: the stand-in key's *"the rim is not a light source until chunk 3"* — **amended: the rims glow and bloom but light nothing.**
+- ⚠ **KNOWINGLY LEFT, OUTSIDE THIS CHUNK'S FILES — for Carl:** *"the rim is not a light source until chunk 3"* in `about-card-geometry.ts` (the `TENT_POLE_RATIO` note) and `card-bench.tsx` (two notes), and *"emission plus a real light plus a bloom pass — chunk 3"* in `about-card-glass.ts` (`ENV_PLATE_INTENSITY` and its neighbour). **Partly overtaken, not false:** emission and bloom now exist for the wall pair; the real light does not.
+
+### ⛔ WHAT THIS DOES NOT DO
+
+The floor pair · D-087's loop (**its type exists; its periods do not**) · D-090's four lights · the rim lighting the face as real light · spill (D-091) · a glass tint · **D-092's trigger** · Three.js text · RIM-DARK and ENVMAP-STALE. ⚠ **The OFF state still shows RIM-DARK, and the ignition begins in it** (Architect F13) — a stutter judged at checkpoint 2 starts from a frame with an open defect.
+
+⚠ **Pulled forward from the four accessibility items: the flash cap and the reduced-motion fade only.** The rest stays one piece of work.
+
+### ⛔⛔ REVISED BY CARL THE SAME DAY — THE IGNITION BELONGS AT §2, SO THE STAND-IN IS NOT THE DESIGN
+
+**Carl, after the section below was written:** *"i do not think the clock should start as soon as a user lands in About. The flicker is wasted. By the time they get there the lights are alredy on."* ⛔ **The ignition must start when the reader REACHES §2** — D-092's viewport trigger, which is structural (§5a) and stops for review. ⚠ **The measurement below is WHY he revised it:** a landing trigger plays a ~4s ignition to a reader still in §1. **The strike-on-landing behaviour stays "for now" — Carl — until that trigger is built.** ⚠ **It plugs into `ignite()`**, which already wakes the canvas (F1), so the trigger is a new caller, not a new clock.
+
+⚠ **This also narrows the D-087 question below:** the clock starts at §2, not at mount — closer to what D-087 asked for. Hidden-tab pause is still unbuilt.
+
+✔ **CARL'S EYE, 23 September 2026, on the running build (screenshot of the lit pair):** *"i think the colour is good."* ⚠ **Recorded at the level given — the COLOUR** (tube `#1b2f8a`, glow `#1b4789`). Not yet a verdict on intensity, bloom or the ignition.
+
+⚠ **HE ALSO SAW "a noticable change to the colour of the face when the cards flicker on" — MEASURED: IT IS THE BLOOM'S GLARE, NOT LIGHT.** Face centres: neon off CA `#151e25` / CB `#1d2f3e`; neon on `#151f2c` / `#1d3041`; ⛔ **neon on with `bloom=0` is byte-identical to neon off.** The rim does not yet light the face (D-090's second source is unbuilt); the glow washing inward over the frost is the whole change — the "inside of a frame holds light" behaviour D-090 recorded from the references.
+
+⚠ **Then asked for the card lights on a 5s timer** — *"i want to see the difference between a light shining on the card and not"* — built as a URL-only diagnostic, `?lightblink=5000` (`LightBlink`, `about-card-canvas.tsx`; the two directional lights, ambient left on; intensity to 0, not hidden, so no shader recompile). **Measured:** CA `#151f2c` → `#061220` with the lights off; ⚠ **CB barely moves** (`#1d3041` → `#1a2e3f`), consistent with the rig's recorded grazing incidence on the right pair. ⛔ **To be removed once Carl has his answer.**
+
+✔ **The blink was removed the same day** — Carl: *"Done with the blink, remove it."* His on/off screenshots showed the WALL pair holding without the light (the neon defines them) and the FLOOR pair, then unlit, dissolving without it.
+
+### ⛔⛔ THE FLOOR PAIR (CD, CS) — BUILT THE SAME DAY, WITHOUT THE PLAN-REVIEW GATE
+
+**Carl:** *"Implement the floor cards. No need for plan/architect. We will then see what the whole scene looks like."* ⚠ **Scope: the same mechanism on CD and CS; nothing structural is new** — two more channels on the existing writer, layer and bloom.
+
+- **Colour — CANDIDATE, not chosen:** the logo's teal **"b"**, glow and tube both `#18a6bd` (D-090's recorded pairing: *"the two pairs as the two halves of one mark"*). ⚠ **No tube pre-shift:** ACES drifts it to cyan-white, and the "b"'s own core IS cyan-white (`#cefcfe`).
+- ⛔⛔ **PEAK 1.8, NOT 6 — MEASURED:** at the wall pair's 6 the floor tubes blew out white (`#edffff`, sat 0.07) with a heavy halo (8px 52%, 48px 8%). **The teal is ~4.75x brighter than the navy at the same peak** (relative luminance 0.311 vs 0.065 — green, which the eye weights most). **1.8 matches CA's core whiteness** (sat 0.46 vs 0.48); 1.3 goes saturated cyan, the "LED" look. Full table at `CD_NEON_PEAK`.
+- **Sequence — the Builder's order, candidates:** wall pair then floor pair, each left to right — CD at 4.4s, CS at 6.4s; all four hold by ~8.1s. **Rises never exceed 2 in any second across all four** (asserted at module load). `?reignite`'s floor is now DERIVED from the sequence (10s) and **clamps a shorter request up** rather than silently ignoring it.
+- **Verified:** identity gate 0 px (all four cards wired); profile covers all four (16px out: wall 7–9%, floor 9–14%); no console errors.
+- ⚠⚠ **FRAMES — INTERMITTENT, UNEXPLAINED, TO WATCH.** 1440: clean. **1920: the first two four-card runs showed 17–25 frames >33ms and one >50ms (66.8, 50.1) during the ignition; the control was clean. Two further runs as built were completely clean (0 >33ms in every segment), and a floor-dark variant with identical GPU work was clean too.** ⛔ **Not attributed** — plausibly machine load, but that is not measured, and this project's Q5 history is exactly an intermittent stall that read as noise. **Recorded, not dismissed.**
+
+✔ **BUILT THE SAME DAY** — the wall cards in full view, once per visit. Carl waived the plan-review gate for it. **Detail and verification: D-092's revision note.** ⚠ `?reignite=` deliberately keeps striking on load, as a tuning tool.
+
+### ~~⛔⛔ AMENDED 23 September 2026 — THE TRIGGER IS LANDING, SO THE STAND-IN IS THE DESIGN~~ *(superseded above, same day — kept as the first reading)*
+
+**Carl:** *"as soon as they land there the lights are activated. So by time they read the copy they either press Roles or scroll to Sect 2 and the lights are on going through their sequence."*
+
+- ⛔ **The "stand-in" trigger (the first ready frame) IS the intended behaviour.** **Verified:** direct `/about` strikes at 1756ms, Home → About by the site's link at 709ms after the new page, both with the reader at the top of §1. **The canvas mounts with the page, not with §2.**
+- ⚠⚠ **SO THE IGNITION IS MOSTLY PLAYED WHILE THE READER IS IN §1, AND WHAT §2 SHOWS IS WHATEVER THE SEQUENCE IS DOING WHEN THEY ARRIVE.** With only the ignition built, that is a steady hold. ⛔ **"Going through their sequence" is D-087's LOOP — which makes the loop, not the ignition, the thing a reader of §2 actually sees.**
+- ⚠ **The ignition is seen directly only by a deep link to `#roles`** — or behind §1 if D-092's faded room is built.
+- ⚠ **It also lands inside page load** (0.7–1.8s), where the frames measurement found load hitches in the no-neon control too. **Mostly unseen from §1** for the same reason.
+- ⚠⚠ **D-087 SAYS "THE CLOCK MUST NOT BE A MOUNT TIME."** A clock that starts on landing is a mount time in substance. **The concerns behind that line are reproducibility (met by `?neont` and the deterministic track), a stop when the tab is hidden with a phase-correct return (not built — the track reads `performance.now()`, so a hidden tab skips ahead), and per-visitor drift (inherent to Carl's design: each reader arrives at §2 at a different point).** ⛔ **Whether Carl's ruling supersedes that line is his to confirm, not the Builder's to assume.**

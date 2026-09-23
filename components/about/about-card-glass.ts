@@ -87,8 +87,11 @@ export const GLASS_ROUGHNESS = 0.18;
  * ⚠⚠ **THE REASON IS THE RIM'S JOB, NOT ITS LOOK.** ⛔ **This rim IS the neon**
  * (`about-card-mesh.tsx` — *"that is now load-bearing rather than incidental"*).
  * A frosted rim would scatter its own emission; **a clear one stays a legible
- * light source.** ⚠ The neon itself is chunk 3 and **is not built** — four
- * colours are ruled, none chosen.
+ * light source.** ⛔ *(Corrected 23 September 2026 on Carl's unlock: this read
+ * "the neon itself is chunk 3 and is not built — four colours are ruled, none
+ * chosen". D-090 retired the four colours — **the neon is BLUE**, built pair by
+ * pair — and **D-093 built the WALL pair's (CA, CB)**; the floor pair's is not
+ * built. Its values live in `about-neon.ts`, not here.)*
  *
  * ⚠ **0.10 IS CARL'S FIGURE, GIVEN BY EYE ON THE BENCH**, and it is the ONE
  * roughness in this file he has named. ⛔ Unlike `GLASS_ROUGHNESS` it is not an
@@ -465,6 +468,10 @@ export const ENV_PLATE_INTENSITY = 6.0;
  *   `clearcoat`   ⛔ FORBIDDEN BY NAME for this chunk. `answer-card-mesh.tsx:226`:
  *                 *"SWEEP IT WITH `roughness`, NEVER ALONE."*
  *   `thicknessMap` possible (the UVs exist), out of scope, recorded only.
- *   tint          CS stays colourless by Carl's ruling. The four neon colours are
- *                 ruled to be four and all different; **none is chosen.**
+ *   tint          CS stays colourless by Carl's ruling. ⛔ *(Corrected 23 September
+ *                 2026: this read "the four neon colours are ruled to be four and
+ *                 all different; none is chosen". D-090 RETIRED four colours —
+ *                 the neon is BLUE, pair by pair; the wall pair starts from the
+ *                 logo's navy "c", `about-neon.ts`.)* Whether the frost itself is
+ *                 tinted is still D-090's open question 1.
  */

@@ -84,6 +84,24 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-028 — The Four-Card Neon IN THE ROOM: APPROVED AS A STARTING POINT. The Palette Works; The Values Still Need Working On
+
+**Date:** 2026-09-23
+**Reviewer:** Human Founder
+**Subject:** All four `/about` §2 cards with their neon lit, read on a running dev build (Carl's own screenshot of `?neon=full`). Wall pair (CA, CB): glow `#1b4789`, tube `#1b2f8a`, peak 6. Floor pair (CD, CS): the logo's teal "b", `#18a6bd`, peak 1.8. Bloom 0.25 / radius 0.7 / 5 levels. Records **D-093** (with D-090, D-091, D-092).
+
+**Carl's verdict, verbatim:** *"i think these look good. Its a great colour combination and the neon palette works very well in the room. its a good starting point, We can commit and push these though they still need working on. We will get to that"* — and earlier, on the wall pair alone: *"i think the colour is good."*
+
+**Findings:**
+
+- ✔ **THE PALETTE IS APPROVED: navy "c" on the wall, teal "b" on the floor — the two halves of one mark.** ⛔ **This settles D-090's open glow-colour question for BOTH pairs**, which D-093 had recorded as candidates.
+- ⚠⚠ **"A GOOD STARTING POINT" AND "STILL NEED WORKING ON" ARE PART OF THE VERDICT.** ⛔ **Approved as a take, not a master (D-035).** Peaks, bloom, the ignition patterns and the sequence order are **NOT individually approved** — Carl judged the lit scene, not each dial.
+- ⚠ **THE IGNITION WAS NOT THE SUBJECT.** The screenshot is the held, lit state. **Checkpoint 2 (the stutter, the order, the timing) has not been given a verdict.**
+- ⚠ **Also carried, not judged:** the in-view trigger (built and verified by instrument; Carl ruled *once per visit*), the approximation in the bloom composite over bright floorboards, and the intermittent 1920 frame drops recorded in D-093.
+- ⛔ **The glass is untouched** — D-089's values held throughout, and the identity gate measured it (0 px with the neon off).
+
+---
+
 ## R-027 — CS's Glass IN THE ROOM: APPROVED. The Face Gets A Body And The Shape Returns
 
 **Date:** 2026-09-22

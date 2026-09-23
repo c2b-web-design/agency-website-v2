@@ -56,6 +56,8 @@ import {
   GLASS_THICKNESS_MM,
   GLASS_TRANSMISSION,
 } from "./about-card-glass";
+/* ⛔ D-093 — consumed ONLY when the `neon` prop is passed (CA and CB). */
+import { NEON_LAYER, type NeonChannel } from "./about-neon";
 
 // ── Diagnostic tones ─────────────────────────────────────────────────────────
 // Deliberately achromatic and deliberately DIFFERENT per part, so the three
@@ -894,6 +896,22 @@ export type AboutCardMeshProps = {
   glassThicknessMm?: number;
   /** Reports the measured tilt of the built face, for the bench readout. */
   onTilt?: (deg: number) => void;
+  /**
+   * ⛔⛔ THE NEON — D-093. OFF BY DEFAULT, AND THE DEFAULT IS LOAD-BEARING.
+   *
+   * When passed, the rim gains an EMISSIVE and a second mesh — the EMITTER —
+   * shares the rim's geometry on `NEON_LAYER`, where only `NeonBloom`'s neon
+   * pass sees it. Both are driven every frame by ONE writer (`neon-bloom.tsx`).
+   *
+   * ⚠⚠ WHEN ABSENT NOTHING CHANGES — CD, CS and the bench render exactly as
+   * before. **The opal's rule 4 (D-091): an effect that is invisible without its
+   * driver cannot regress approved work.** The identity gate measures this.
+   *
+   * ⛔ REQUIRES `glass` — Architect F14. The rim's physical material exists only
+   * in the glass branch; neon without glass would do nothing silently, and look
+   * like a dead constant. A dev check says so loudly.
+   */
+  neon?: NeonChannel;
 };
 
 export function AboutCardMesh({
@@ -906,7 +924,16 @@ export function AboutCardMesh({
   glassFaceTransmission = GLASS_FACE_TRANSMISSION,
   glassThicknessMm = GLASS_THICKNESS_MM,
   onTilt,
+  neon,
 }: AboutCardMeshProps) {
+  useEffect(() => {
+    if (neon && !glass && process.env.NODE_ENV !== "production") {
+      console.error(
+        `⛔ NEON WITHOUT GLASS on card "${neon.id}" — the rim's emissive lives only in the glass branch, so this neon renders NOTHING. Pass \`glass\`.`,
+      );
+    }
+  }, [neon, glass]);
+
   const path = useMemo(
     () =>
       sampleRoundedRectPath(
@@ -1010,11 +1037,32 @@ export function AboutCardMesh({
 
           ⚠⚠ THE REASON IS ITS JOB: **this rim IS the neon** (see the half-tube
           note above). A frosted rim would scatter its own emission; a clear one
-          stays a legible light source. ⛔ The neon is chunk 3 and is NOT built —
-          four colours are ruled and none is chosen. */}
+          stays a legible light source.
+
+          ⛔ CORRECTED 23 September 2026, in place per the amendable rule. This
+          read: *"The neon is chunk 3 and is NOT built — four colours are ruled
+          and none is chosen."* ⚠ **Both halves are overtaken:** D-090 retired
+          the four colours on 22 September (the neon is BLUE, built pair by
+          pair), and **D-093 built the WALL PAIR's (CA, CB) neon** on 23
+          September — the `neon` branch below. **The floor pair's is not built.** */}
       <mesh geometry={rimGeometry}>
         {glass ? (
           <meshPhysicalMaterial
+            /* ⛔ D-093 — registered with the writer; `emissiveIntensity` starts
+               at 0 and is written EVERY FRAME by `NeonBloom`, never by a prop,
+               so a re-render cannot reset a lit tube. ⚠ The glass values above
+               and below are D-089's and are NOT touched by the neon. */
+            ref={
+              neon
+                ? (m: THREE.MeshPhysicalMaterial) => {
+                    Object.assign(neon, { rim: m });
+                    return () => {
+                      Object.assign(neon, { rim: null });
+                    };
+                  }
+                : undefined
+            }
+            {...(neon ? { emissive: neon.tubeColor, emissiveIntensity: 0 } : {})}
             color={GLASS_COLOR}
             roughness={GLASS_RIM_ROUGHNESS}
             metalness={GLASS_METALNESS}
@@ -1033,6 +1081,43 @@ export function AboutCardMesh({
           />
         )}
       </mesh>
+      {/* ⛔⛔ THE EMITTER — D-093. The bloom's ONLY input. It SHARES
+          `rimGeometry` — the same object, so the glow's shape cannot drift from
+          the tube's — and sits on `NEON_LAYER` ALONE, so the base render never
+          draws it; only `NeonBloom`'s neon pass does.
+
+          ⚠ THE LAYER IS SET IN THE REF, NOT AS `layers={n}` — Architect F14.
+
+          ⚠⚠ `toneMapped={false}` IS REDUNDANT HERE AND IS NOT WHAT PROTECTS
+          IT — Architect F10. The emitter only ever renders into a render target,
+          and three applies no tone mapping to a target at all
+          (`WebGLRenderer.js:2351-2357`). ⛔ **The flag records intent; do not
+          read it as load-bearing.** That the bloom is never tone-mapped is what
+          keeps the glow NAVY while the ACES-mapped tube whitens. */}
+      {neon && glass && (
+        <mesh
+          geometry={rimGeometry}
+          /* ⛔ GUARD THE NULL. React calls a ref callback with `null` whenever
+             it swaps the function (every re-render of an inline ref). The
+             unguarded first build threw here, OUTSIDE `NeonBloom`'s isolation,
+             and took the whole canvas down with a lost context — caught by the
+             identity gate's `?neon=off` arm on 23 September 2026. */
+          ref={(m: THREE.Mesh | null) => {
+            m?.layers.set(NEON_LAYER);
+          }}
+        >
+          <meshBasicMaterial
+            ref={(m: THREE.MeshBasicMaterial) => {
+              Object.assign(neon, { emitter: m });
+              return () => {
+                Object.assign(neon, { emitter: null });
+              };
+            }}
+            color="#000000"
+            toneMapped={false}
+          />
+        </mesh>
+      )}
       {/* ⛔ THE BEVEL — FROSTED GLASS FOR NOW. Carl, 18 September 2026: *"For the
           moment, lets go with frosted glass."*
 
@@ -1048,7 +1133,10 @@ export function AboutCardMesh({
           ⛔⛔ **THE OFF STATE IS THE ARGUMENT, AND IT IS WHY THIS IS DEFERRED
           RATHER THAN DECIDED.** A card with its neon off is a real state of this
           design, and glass and metal diverge most there. ⚠ **It cannot be judged
-          until the neon exists — chunk 3, four colours ruled, none chosen.**
+          until the neon exists.** ⛔ *(Corrected 23 September 2026: this read
+          "chunk 3, four colours ruled, none chosen". D-090 made the neon BLUE;
+          D-093 built the WALL pair's — so CA and CB are now the place to judge
+          the bevel lit AND off.)*
 
           ⚠ **AN EARLIER VERSION OF THIS COMMENT RECORDED FROSTED AS CARL'S
           DECISION AND THAT OVERSTATED IT.** He offered it as one of two

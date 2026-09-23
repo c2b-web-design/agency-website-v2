@@ -91,6 +91,21 @@ import {
 } from "./about-card-glass";
 import { AboutCardMesh } from "./about-card-mesh";
 import { RoomEnvironment } from "./room-environment";
+import {
+  CA_NEON_PEAK,
+  CB_NEON_PEAK,
+  CD_NEON_PEAK,
+  CS_NEON_PEAK,
+  FLOOR_NEON_GLOW_HEX,
+  FLOOR_NEON_TUBE_HEX,
+  NEON_GLOW_HEX,
+  NEON_TUBE_HEX,
+  neonHex,
+  neonMode,
+  neonNumber,
+  type NeonChannel,
+} from "./about-neon";
+import { NeonBloom } from "./neon-bloom";
 
 /** The plate is 3:2. ⚠ Guide and rail fractions are of the PLATE, not the stage. */
 const PLATE_W = 2560;
@@ -864,6 +879,61 @@ export default function AboutCardCanvas() {
    */
   const ca = placeWallCard(GUIDE_CA_QUAD, CA_CARD_HEIGHT_MM, CA_CARD_ASPECT);
   const cb = placeWallCard(GUIDE_CB_QUAD, CB_CARD_HEIGHT_MM, CB_CARD_ASPECT);
+
+  /**
+   * ⛔⛔ THE NEON — D-093, 23 September 2026. ALL FOUR CARDS, BUILT PAIR BY PAIR:
+   * the wall pair first (Carl: *"Wall cards first, tweak so they visually match
+   * then work on the floor cards."*), then the floor pair the same day —
+   * *"Implement the floor cards… We will then see what the whole scene looks
+   * like."*
+   *
+   * ⚠ ONE COLOUR PER PAIR — Carl: *"a darker and a lighter blue per pair."* The
+   * wall pair is the logo's navy "c" (approved by eye); the floor pair its teal
+   * "b" (a candidate).
+   *
+   * ⚠ MEMOISED ONCE PER MOUNT, AND THAT IS LOAD-BEARING: `NeonBloom` ignites when
+   * `mode` changes, so a fresh object on every render would re-strike the neon.
+   * The URL is read once — reload to apply a new fader.
+   *
+   *   ?neon=none | off | full   ?neont=<ms>   ?reignite=<ms>
+   *   ?neonca= ?neoncb= ?neoncd= ?neoncs=  ?bloom= ?bloomr=
+   *   wall: ?neonhex= (glow) ?neontube= (tube)   floor: ?floorhex= ?floortube=
+   *
+   * Every fader falls back to the committed value in `about-neon.ts`, so a plain
+   * `/about` always shows what is committed.
+   */
+  const neon = useMemo(() => neonMode(), []);
+  const neonChannels = useMemo(() => {
+    /* ⚠ TWO COLOURS PER PAIR: the GLOW and the TUBE. They differ on the wall
+       pair because ACES turns a navy tube cyan (see `NEON_TUBE_HEX`). */
+    const wall = { glow: neonHex(NEON_GLOW_HEX), tube: neonHex(NEON_TUBE_HEX, "neontube") };
+    const floor = {
+      glow: neonHex(FLOOR_NEON_GLOW_HEX, "floorhex"),
+      tube: neonHex(FLOOR_NEON_TUBE_HEX, "floortube"),
+    };
+    const make = (
+      id: NeonChannel["id"],
+      pair: { glow: string; tube: string },
+      peak: number,
+    ): NeonChannel => ({
+      id,
+      color: new THREE.Color(pair.glow),
+      tubeColor: new THREE.Color(pair.tube),
+      peak,
+      rim: null,
+      emitter: null,
+    });
+    return [
+      make("ca", wall, neonNumber("neonca", CA_NEON_PEAK, 0, 200)),
+      make("cb", wall, neonNumber("neoncb", CB_NEON_PEAK, 0, 200)),
+      make("cd", floor, neonNumber("neoncd", CD_NEON_PEAK, 0, 200)),
+      make("cs", floor, neonNumber("neoncs", CS_NEON_PEAK, 0, 200)),
+    ];
+  }, []);
+  /* ⚠ `?neon=none` passes NO channel, so every card takes the exact pre-neon
+     path — the identity gate's first arm. */
+  const [caNeon, cbNeon, cdNeon, csNeon] =
+    neon.kind === "none" ? [undefined, undefined, undefined, undefined] : neonChannels;
   /* ⛔ CS is not rendered while the left card is being got right — Carl,
      14 September: *"move one card at a time."* Its constants stay imported and
      its placement stays derivable; only the mesh is withheld. */
@@ -951,7 +1021,10 @@ export default function AboutCardCanvas() {
 
           {/* ⚠⚠ A STAND-IN KEY. Carl: *"The light will come from the neon rim but
               also 4 individual lights pointed at each card."* ⛔ Neither exists
-              yet — the rim is not a light source until chunk 3. This beam is here
+              yet. ⚠ *(Amended 23 September 2026: CA and CB's rims now GLOW and
+              BLOOM — D-093 — but they cast NO LIGHT on anything; emission and
+              bloom are seen, not received. So this key still stands in for the
+              rim's light on all four cards.)* This beam is here
               so the crown is legible at all; a correct crown reads FLAT under a
               head-on light.
 
@@ -1101,6 +1174,7 @@ export default function AboutCardCanvas() {
               glass
               glassRoughness={0.35}
               glassFaceTransmission={cdTransmissionOverride ?? CD_FACE_TRANSMISSION}
+              neon={cdNeon}
             />
           </group>
 
@@ -1177,6 +1251,7 @@ export default function AboutCardCanvas() {
               glass
               glassRoughness={0.35}
               glassFaceTransmission={GLASS_FACE_TRANSMISSION}
+              neon={csNeon}
             />
           </group>
 
@@ -1235,6 +1310,7 @@ export default function AboutCardCanvas() {
               glass
               glassRoughness={0.35}
               glassFaceTransmission={caTransmissionOverride ?? CA_FACE_TRANSMISSION}
+              neon={caNeon}
             />
           </group>
           <group
@@ -1248,9 +1324,17 @@ export default function AboutCardCanvas() {
               glass
               glassRoughness={0.35}
               glassFaceTransmission={GLASS_FACE_TRANSMISSION}
+              neon={cbNeon}
             />
           </group>
-        </Canvas>
+
+          {/* ⛔⛔ THE FRAME OWNER — D-093, S1. While mounted it renders EVERY frame
+              of this canvas (priority 1 switches off R3F's own render for the
+              whole root); the base render is the same call R3F makes, and the
+              neon is isolated so a failure costs the glow, never the room.
+              ⚠ `?neon=none` unmounts it and R3F renders the room itself. See
+              `neon-bloom.tsx`. */}
+          {neon.kind !== "none" && <NeonBloom channels={neonChannels} mode={neon} />}        </Canvas>
       </div>
     </div>
   );
