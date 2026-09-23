@@ -1,101 +1,117 @@
-# Session Handoff — 22/23 September 2026. THE LIGHTING CONCEPT IS RECORDED. NEXT: THE WALL NEON.
+# Session Handoff — 23 September 2026. THE NEON IS BUILT (ALL FOUR). NEXT: THE CARD TEXT.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
 
 ---
 
-## ⛔ THE NEXT SESSION — CARL'S PLAN, IN HIS ORDER
+## ⛔ WHERE THINGS STAND
 
-> *"So the next session we can implement the wall neon first. We'll go to plan mode, bring in the
-> Architect to evaluate and take it from there with the floor cards neon after that. Then we will
-> point some individual wall lights at the cards and see how it looks."*
+**All four `/about` §2 cards have neon.** The palette is **APPROVED AS A STARTING POINT (R-028)**:
+navy "c" on the wall pair, teal "b" on the floor pair. Carl: *"Its a great colour combination and the
+neon palette works very well in the room. its a good starting point… they still need working on."*
+⚠ **That approves the PALETTE only.** Peaks, bloom, the ignition patterns and the order are
+**not individually approved**, and **the ignition has no verdict**.
 
-1. ⛔ **WALL PAIR NEON (CA, CB) — PLAN MODE FIRST, ARCHITECT EVALUATES THE PLAN** (plan-review gate,
-   `handoff-protocol.md` §2.5). Carl approves before anything is built.
-2. **FLOOR PAIR NEON (CD, CS)** — after the wall pair is matched by eye.
-3. **INDIVIDUAL LIGHTS pointed at the cards** (D-090's four lights) — *"and see how it looks."*
-4. *(Not in Carl's list for next session: the SPILL onto the backplate. D-091 rules track before
-   spill; the unmodelled CEILING only bites there.)*
+- **Record:** **D-093** (the neon, and every measurement), **D-092** (the trigger), **D-094** (the text
+  direction, new), **D-077** amended (Carl's copy-setting rules), **R-028**.
+- **Code:** `components/about/about-neon.ts` (values and track), `neon-bloom.tsx` (the frame owner),
+  `about-card-mesh.tsx` (`neon` prop), `about-card-canvas.tsx` (wiring), `verify/about-neon.mjs`
+  (identity / floor / profile / frames).
+- **To view:** `npm run dev` (the server is STOPPED and port 3000 is free).
+  - `/about?neon=full#roles` holds all four lit.
+  - `/about?reignite=10000#roles` replays the ignition.
+  - Plain `/about` then scroll or press Roles gives the real trigger.
+  - The faders are listed at `about-card-canvas.tsx` (`neonChannels`).
 
-⚠⚠ **READ BEFORE PLANNING:** `decisions.md` **D-090 (amended 22 Sept)** — the whole lighting concept
-lives there — plus **D-087** (the loop), **D-091** (one brightness track; backplate route chosen),
-and ethos **§14a**. ⛔ **Also the stand-in rig's notes in `about-card-canvas.tsx`** (key 0.5, mirror
-2.6, ambient 0.20) — **four earlier rigs measured clean and were rejected on sight** (R-025).
+## ⛔ THE NEXT SUBJECT: THE CARD TEXT — D-094
 
-### ⚠ WHAT IS SET vs WHAT IS DELIBERATELY OPEN
+Carl opened it: *"Talk to me about three js text."* It was discussed, not built.
 
-⛔ **CARL LEAVES WRIGGLE ROOM ON PURPOSE:** *"Creativity is best when performed within certain
-parameters but not rigid enough to stifle and contain creativity and inspiration."* **Set the bounds;
-do not press him to pick values the scene has not judged. Record candidates as CANDIDATES.**
+**Carl's rules. They are RULED and bind any route:**
+1. **The copy is crafted; its SETTING is part of the edit.** Size and word spacing matter, and it
+   must sit within the card.
+2. **JUSTIFIED.** Not left-aligned, which reads *"like a letter or memo"*. Centred was raised and not
+   chosen.
+3. ⛔ **REWORDING IS THE LAST RESORT.** The order is: setting first, then card size (D-077), then the
+   words, taken to Carl. **The Builder never trims copy to fit.**
 
-| SET | OPEN (on purpose) |
-|---|---|
-| Neon is **BLUE**; four colours withdrawn | **The glow colour** — *"ive not made my mind up yet"* |
-| **Pair by pair**, wall cards first, a **DARKER** blue | Candidate: the **"c" navy** of the navy-teal logos, glow ~`#1a468a`, core ~`#b0d0f3` |
-| **Bloom target MEASURED** — tight bloom (8% of core by 4px) + faint ~8-10% wash | Exact intensities — **tune by eye in the room** |
-| Core near-white, **colour lives in the glow** | Ignition style — candidate: the filament's fade-up, in blue |
+**The recommended route, NOT yet confirmed by Carl:** the browser's own text engine draws each card
+into its **own** texture, on its **own** surface (the face's geometry, lifted a hair). The line breaks
+are chosen for even justified gaps, a gap cap is set, and a fit check fails loudly. It has its **own
+material**, driven from the D-091 track (the opal route), and an `sr-only` DOM copy. ⚠ **troika was
+measured unable to guarantee a crafted setting:** it has no word-spacing control, its own layout
+engine, and no `woff2` support.
 
-⚠ **§5a WILL BITE IN PLANNING:** a light source per card, and anything that makes the rim EMIT, may be
-a new mechanism. **Write the structural decision and stop — do not build it inside the chunk.**
+**First step, per §14a: CA alone.** Measure the dome under the text block and the texture budget
+**before** building. Move all four copies into **one module** first. ⚠ CD's and CS's copy exists
+only in `live-work/about-section-thinking.md` (D-077's pointer).
 
----
+**Open, and Carl's:**
+- the route
+- role names: same setting, or a title that *"catches the light"*
+- is the text readable before the neon strikes, or revealed by it?
+- the font (Geist?)
+- the last line of each paragraph
+- the gap cap, set by eye
 
-## ✔ WHAT THIS SESSION DID — ALL COMMITTED AND PUSHED. HEAD `1d4064f`, tree clean.
-
-    eea55a1  chore(guard): lock about-card-glass.ts — D-089's approved material
-    f9a162e  feat(about): skirting runs out of the frame; left band is wall to the bottom
-    1d4064f  docs: the lighting concept — blue neon pair by pair, the mark on the wall, the backplate route
-
-⚠ `tsc` clean; lint at baseline `1 problem (1 error, 0 warnings)`. **Dev server STOPPED, port 3000
-free.**
-
-1. **The glass file is LOCKED** in `.claude/protected-files.json`, **verified by a probe edit the
-   guard denied.** ⛔ **The lighting chunk may need to touch `about-card-glass.ts` (D-090's tint
-   question lives in `GLASS_COLOR`) — that needs Carl to NAME the file for an unlock.**
-2. **Pillarbox, bottom-left — Carl: *"Yes, thats it. Looks aligned... its hard to see the join."*** The
-   skirting piece is now 100 columns, scaled 1.14 for perspective, lowered to 90.67%; aligned within
-   1.8px at four window sizes. The left band is wall to the bottom.
-3. ⛔⛔ **THE RIGHT BAND IS DELIBERATELY UNREPAIRED.** Carl: *"a happy accident, serendipity. The
-   stretched floor reads as a shadow."* **A repair was built and reverted. Recorded at the band in
-   code. DO NOT "FIX" IT.**
-4. **Lighting concept recorded** — D-088, D-090, D-091 amended (see commit `1d4064f`).
+⚠ **The plan-review gate applies unless Carl waives it.** He waived it twice this session, for the
+trigger and for the floor pair, each time for that piece only. **A waiver is not standing.**
 
 ---
 
-## ⛔ CORRECTIONS CARL MADE THIS SESSION — so they are not repeated
+## ✔ WHAT THIS SESSION DID — all committed and pushed
 
-1. ⛔ **"The backplate method" was read three ways before Carl supplied his own questions to CS.**
-   **An answer read without its question misleads.** Carl's questions are now verbatim in D-091.
-2. ⛔ **The Builder argued the surroundings split 3+1 (CD sits in shadow), so pairs don't fit.**
-   Carl: *"the figures say that but visually they are part of the same family."* **Grouping is what
-   the EYE reads — background luma was the wrong measure.**
-3. ⛔ **The Builder called the chosen bloom reference "broad, overlay-like" — the opposite of true.**
-   It compared raw luma **without subtracting the image's own background.** **Subtract the
-   background before comparing glow.**
-4. ⛔ **The Builder objected blue "belongs to the Q+A" (D-063).** Carl pointed at the answer cards
-   and client info — **both blue-bodied. D-063 governs the MARK, not materials.**
-5. ⚠ **Skirting: a brightness correction derived from the SOURCE (0.73) over-darkened on SCREEN.**
-   **Measure on screen, not in the source.**
+1. **The wall pair's neon (CA, CB) went through the plan-review gate.** The Architect found 14 things;
+   F1 was a build blocker (the ignition would never have fired). All were taken. Files:
+   `live-work/wall-neon-plan-23-september.md`, `architect-plan-response-wall-neon-23-september.md`.
+2. **Neon-only bloom, not `EffectComposer`** (Carl's choice). The composer would have stripped ACES
+   from D-089's glass. The identity gate measures the room with the neon off as **0 px different**,
+   with a noise floor of 0, and a red run was seen to go red.
+3. **The trigger (D-092): the wall cards fully in view, ONCE per visit** (Carl ruled). The Roles jump
+   and scrolling are the same check.
+4. **The floor pair (CD, CS)**, on Carl's instruction without the gate.
+5. **`about-card-glass.ts` was unlocked for comments only**, to correct the retired "four colours"
+   ruling, and **relocked. The relock was verified by a real guard denial.**
+6. `##VERDICT:` sentinel: used for the first time in real runs, and the sprint item is retired.
+
+## ⛔ CORRECTIONS AND FINDINGS THIS SESSION, so they are not repeated
+
+1. ⛔ **The Builder first led with in-shader bloom to avoid a new mechanism. It was wrong:** a
+   material can't draw outside its mesh, and the chosen bloom target sits on the wall. **Carl: the
+   site SHOWCASES techniques** (saved to memory). Cheapest is not automatically right.
+2. ⛔ **Carl said "activate on landing", then revised it on seeing the consequence:** *"The flicker is
+   wasted."* Both readings are in D-092.
+3. ⚠ **Measured: ACES turns a saturated navy tube CYAN**, not white. The wall tube is pre-shifted
+   (`#1b2f8a`, core 211°). **Measure colour on screen; luma-only instruments can't see hue.**
+4. ⚠ **Measured: the teal is ~4.75x brighter than the navy at the same peak**, so the floor pair runs
+   at 1.8, not 6.
+5. ⚠ **Builder bug, caught by the identity gate:** an inline ref callback that didn't guard `null`
+   took the whole canvas down, OUTSIDE the frame's try/catch. **The frame's isolation can't protect
+   React callbacks.**
+6. ⚠ **The face-colour shift Carl saw on ignition is the BLOOM'S GLARE, not light.** `bloom=0` made it
+   byte-identical to neon-off. **The neon still lights nothing.**
+
+## ⚠ OPEN — owners in brackets
+
+1. **The ignition verdict** (checkpoint 2) and the **scroll strike point**: it fires when the cards'
+   bottom edge enters, with the cards in the lower third of the screen. Carl said *"maybe"*. [Carl]
+2. ⚠ **Intermittent 1920 frame drops:** 2 of 6 four-card runs showed 17–25 frames over 33ms and 1
+   over 50ms; 4 runs were clean. Not attributed. **Watch it; don't dismiss it** (Q5 history). [Builder]
+3. **D-087's loop is unbuilt.** Its type exists (hold/loop tails). **Hidden-tab pause is unbuilt:**
+   the track reads `performance.now()`, so a hidden tab skips ahead. [next neon chunk]
+4. **The rim lighting the face** (D-090's second source), **D-090's four lights**, and the **spill**
+   (D-091, backplate route; the ceiling is unmodelled). [Carl]
+5. **RIM-DARK and ENVMAP-STALE** (open defects). The ignition begins in RIM-DARK's off state. [Carl]
+6. **Filing the red run in `verify/proven.json`:** the file is protected and needs a written-up run.
+   [Carl]
+7. **Partly-stale "the rim is not a light source until chunk 3" comments** in
+   `about-card-geometry.ts`, `card-bench.tsx`, and `about-card-glass.ts` (locked). They are listed in
+   D-093. [Carl, for the unlock]
+8. Carried from before: the **accessibility items** (now partly pulled forward: the flash cap and the
+   reduced-motion fade), the **`wall-card-corners-4-september.md` supersession notice**, and D-088's
+   travelling mark. [Carl]
 
 ---
 
-## ⚠ STILL OPEN AND CARL'S — unchanged unless noted
-
-1. ⛔ **D-088 (amended):** the mark starts GOLD on the right wall, scroll pulls it off, 2D fall into §3,
-   gold -> platinum-blue. **Open: D-065 (no movement), D-063 (blue), the band's width (0px on 3:2 and
-   narrower — where does the mark hang?), reduced motion, §5a scroll mechanism with D-092.**
-2. **D-092** — activation trigger; **no IntersectionObserver exists**; replay-on-scroll-back is Carl's.
-3. **RIM-DARK** (parked by Carl) and **ENVMAP-STALE** — the rim's env map is built once from the
-   plain photo, so **spill will not appear IN the rim's reflection.**
-4. **The card text becomes Three.js text** (D-091 direction) — **moves D-086; new entry when the text
-   chunk opens.**
-5. ⛔ **FOUR accessibility items, scoped as ONE piece of work:** D-086 `sr-only`, D-088 reduced motion,
-   D-091 three-flashes limit (**four cards in sequence is where it breaks**), D-092 reduced-motion fade.
-6. **`wall-card-corners-4-september.md` supersession notice** — still owed.
-7. ⚠ **Parked, do not press:** AI-roles-vs-premium positioning; the travelling-room question.
-
----
-
-*Written 23 September 2026. ⛔ **Everything is pushed. The next session opens in PLAN MODE on the wall
-pair's neon, and the Architect evaluates before anything is built.***
+*Written 23 September 2026. ⛔ **Everything is pushed; no chunk is scoped; no protected file is open.***

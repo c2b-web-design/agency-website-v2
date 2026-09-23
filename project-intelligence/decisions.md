@@ -4062,6 +4062,15 @@ SIZE IS WRONG, NOT THE LINE:**
 Strategist is currently wired to any live system was raised and not answered.** ⛔ **§2 is where a
 sceptic checks (D-073) — if nothing is connected yet, the fix is small: *"can be connected to"*.**
 
+### ⛔⛔ AMENDED 23 September 2026 — HOW THE COPY IS SET IS PART OF THE COPY. CARL'S RULES FOR THE TEXT WORK
+
+Raised as the Three.js text work was being discussed (D-086, D-091). ⛔ **They bind whichever text route is built.**
+
+- ⛔ **CRAFTED COPY — THE SETTING IS PART OF THE EDIT.** Carl: *"The text copy has been crafted and edited. It is important that it sits within the card. So text size is important as is the spaces inbetwwen words."* ⚠ **The fit was judged in the BROWSER's text engine** (the superseded overlay, Geist 16px / 1.35 in the card's 420x260 space). **An engine that re-wraps or re-spaces the text undoes the edit silently** — so line breaks are FIXED, not re-flowed, and **fit is MEASURED** (every line within the face; the block within its height), not assumed.
+- ⛔ **NOT LEFT-ALIGNED.** Carl: *"they shouldnt be left aligned, that would read like a letter or memo and inevitably leads to spacing issues on the right. It must fit within the card and be visually balanced."* ⚠ **A ragged right edge is ruled out.** ⛔ **JUSTIFIED — chosen the same day** (*"lets go with justified"*); centred raised and not chosen. ⛔ **Rewording is the LAST RESORT** — *"i would rather not"* — after the setting and the card size. **Full direction: D-094.**
+- ⚠ **Measured the same day:** `troika-three-text` (installed via drei) has **no word-spacing control**, justifies by its own calculation, lays out with its own engine, and **does not read `.woff2`** (its README) — so it cannot guarantee a crafted setting. **The route that can is the browser's own text engine drawing each card's text into its own texture**, with the line breaks and word gaps computed and fixed. ⛔ **A finding, not a ruling — the text route is Carl's.**
+- ⚠ **CD's and CS's final copy exists only in `live-work/about-section-thinking.md`** (the CA/CB copy in `wall-card-text.tsx` matches its final forms word for word). **When the text work opens, all four move into ONE module** that both the rendered text and the D-086 screen-reader copy read — one source, so an edit cannot reach one and miss the other.
+
 ---
 
 ## D-078 — The Orbiting Light Ships. The Flag Controlled Two Things And Only One Of Them Was Ever The Problem
@@ -4669,6 +4678,8 @@ Carl took the problem to an outside AI. ⛔ **Its lead diagnosis — the horizon
 - **Signed-distance-field text** — crisp at a fraction of the resolution, the standard answer for paragraphs in WebGL.
 - **Bake + `sr-only` DOM copy.**
 
+⛔ **FORWARD POINTER, 23 September 2026 — D-094 carries the text direction.** ⚠ The ruling here (text in the scene, never a DOM overlay; the `sr-only` copy mandatory) **stands.** D-094 adds Carl's setting rules and weighs the three routes above against them — **troika measured unable to guarantee a crafted setting.**
+
 ### ⛔ THE HERO CALLBACK — RECORDED ON CARL'S EXPLICIT INSTRUCTION
 
 > ⛔ ***"The hero section follows the same idea but is much more sophisticated with moving object animation and a light pinned to it that changes colour as the object changes colours and the 3D text on the left, its edges catch the light. The About section can be seen as the child of the Hero."***
@@ -5211,6 +5222,8 @@ Four cards on periods that do not divide into one another produce a composite th
 
 ⚠ **THE TEXTURE BUDGET IS STILL UNMEASURED** and remains the real constraint — the answer card bakes ONE LINE into 4 MiB at +108ms; these cards carry 49-84 words.
 
+⛔ **FORWARD POINTER, 23 September 2026 — D-094.** ⚠ **The "baked cannot take a live reflection" framing above is half right:** baked text IS lit by the scene; what it cannot do is respond differently from the glass. **The axis is the text's OWN material vs the face's.** D-094 records Carl's setting rules (crafted copy, justified, rewording last) and the recommended route.
+
 ### ⛔ ACCESSIBILITY — THREE FLASHES PER SECOND, AND FOUR CARDS IS WHERE IT BREAKS
 
 **The guideline is no more than three flashes in any one second.** ⚠⚠ **ONE card stuttering is unlikely to breach it; FOUR CARDS IN A TIMED SEQUENCE IS WHERE IT WOULD.** ⛔ **This is a constraint on the AUTHORED PATTERN and must be designed in, not checked afterwards.**
@@ -5473,3 +5486,64 @@ The floor pair · D-087's loop (**its type exists; its periods do not**) · D-09
 - ⚠ **The ignition is seen directly only by a deep link to `#roles`** — or behind §1 if D-092's faded room is built.
 - ⚠ **It also lands inside page load** (0.7–1.8s), where the frames measurement found load hitches in the no-neon control too. **Mostly unseen from §1** for the same reason.
 - ⚠⚠ **D-087 SAYS "THE CLOCK MUST NOT BE A MOUNT TIME."** A clock that starts on landing is a mount time in substance. **The concerns behind that line are reproducibility (met by `?neont` and the deterministic track), a stop when the tab is hidden with a phase-correct return (not built — the track reads `performance.now()`, so a hidden tab skips ahead), and per-visitor drift (inherent to Carl's design: each reader arrives at §2 at a different point).** ⛔ **Whether Carl's ruling supersedes that line is his to confirm, not the Builder's to assume.**
+
+---
+
+## D-094 — The Card Text: Carl's Crafted Copy, JUSTIFIED, Set By The Browser's Own Engine On Its Own Surface. The Direction, Not Yet Built
+
+**Date recorded:** 2026-09-23
+**Status:** ⛔ **JUSTIFIED IS RULED** — Carl, 23 September 2026: *"lets go with justified."* ⛔ **Copy edits are a LAST RESORT, ruled** — *"I dont want to edit the text but i understand it may be a last resort. If that means rewording a sentence i will have to compromise - but i would rather not."* ⚠ **The IMPLEMENTATION ROUTE below is the Builder's recommendation, following from those rules and from measurement — not yet confirmed by Carl, and NOTHING IS BUILT.** This is the entry D-091 said was owed when the text work opened; it records the direction so the chunk opens on it.
+**Authority:** Human Founder — Carl, 23 September 2026, in a discussion of Three.js text he opened (*"Talk to me about three js text. Look what the files say about the diection as well."*).
+**Bears on:** **D-077** (the copy — its 23 September amendment carries Carl's setting rules), **D-086** (text must catch the light; the screen-reader copy), **D-091** (the neon *"slightly reflected in the text itself"*), D-093 (the track the text would read), `wall-card-text.tsx`, the four card faces.
+
+---
+
+### ⛔⛔ CARL'S RULES — THEY BIND ANY ROUTE
+
+1. ⛔ **The copy is crafted; its SETTING is part of the edit** — *"text size is important as is the spaces inbetwwen words."* **The copy must sit within the card.**
+2. ⛔ **NOT LEFT-ALIGNED** — *"that would read like a letter or memo and inevitably leads to spacing issues on the right. It must fit within the card and be visually balanced."*
+3. ⛔ **JUSTIFIED** — chosen over centred. ⚠ **Centred was raised and NOT chosen** (it keeps word spacing natural but makes the eye hunt for each line start across 49–84 words).
+4. ⛔ **REWORDING IS THE LAST RESORT**, and a compromise Carl would rather not make. ⚠⚠ **So the order of remedies when a card does not fit is: the SETTING first (line breaks, gap limits, a hair of letter-spacing), then the CARD SIZE — D-077 already rules *"if a card cannot fit while keeping its named line, the CARD SIZE is wrong, not the line"* — and ONLY THEN the words, taken to Carl.** ⛔ **The Builder never trims copy to make a fit.**
+
+### ⚠⚠ THE FRAMING THE RECORD HAD WRONG — "BAKED vs THREE.JS" IS NOT THE AXIS
+
+D-091 set it up as baked text versus Three.js text, claiming a texture *"baked into an albedo map does not take a live reflection."* ⛔ **Half right.** Text baked into the FACE'S albedo IS lit by the scene — it is part of the glass material. **What it cannot do is respond DIFFERENTLY from the glass around it.** ⛔ **The real question is whether the text SHARES the face's material or HAS ITS OWN.** *"Slightly reflected in the text itself"* needs its own. **Neither D-086 nor D-091 is reversed by this — the correction is to how they were framed.**
+
+### ⛔ THE THREE ROUTES, WEIGHED AGAINST THE RULES
+
+| | baked into the face | `troika-three-text` (installed, via drei `<Text>`) | extruded 3D text |
+|---|---|---|---|
+| own material (can catch the neon) | ⛔ no — frosted with the glass | ✔ any three material | ✔ edges catch light |
+| follows the domed face | ✔ automatically | ⛔ flat | ⛔ |
+| **Carl's setting rules** | ✔ browser engine | ⛔ **see below** | ⛔ wrong for paragraphs |
+
+⛔ **MEASURED FROM troika's OWN README AND SOURCE, 23 September:** **no word-spacing control** (only `letterSpacing`); `textAlign: 'justify'` computes its own gaps, so they **cannot be capped or evened**; it lays out with **its own engine** (Typr), so widths differ from the browser the copy was fitted in and **line breaks can move**; and **`.woff2` is not supported** (README l.150) — the site's Geist is served as `woff2` by `next/font`. ⚠ **troika can hold the words; it cannot guarantee the setting.**
+
+### ⛔⛔ THE RECOMMENDED ROUTE — the browser's engine, drawing into the text's OWN surface
+
+| need | how |
+|---|---|
+| **size and spacing exactly as edited** | Draw with the **browser's own text engine and font** (the engine the copy was fitted in), into a texture per card. **Line breaks are FIXED, not re-flowed.** |
+| **justified, with even word spacing** | **Choose the line breaks to share the stretch evenly** (book-typesetting practice; the browser alone does not), **cap the widest gap**, allow a **hair** of letter-spacing to absorb what is left, and decide the short last line. ⚠ **This is possible only because every word is placed by us** — the argument against troika's `justify`. |
+| **sits within the card** | A **measured fit check** in the card's own space — every line within the face width, the block within its height, **every gap under the cap** — that **fails loudly**. ⚠ Gate it (`context-rules.md`: an invariant in prose is not asserted). |
+| **the neon *"slightly reflected in the text itself"*** | The text surface has **its OWN material**, one property driven from the card's **D-091 track** — the opal route (*"one layer moves"*, one clock). ⚠ **The neon currently lights NOTHING** (emission + glare, D-093), so without this or D-090's real rim light the text cannot respond at all. |
+| **follows the domed face** | The text surface **reuses the face's own geometry**, lifted a hair, so it curves with the glass. |
+| **accessibility** | The **`sr-only` DOM copy D-086 makes mandatory** — `wall-card-text.tsx`'s markup is the candidate. |
+| **one source** | All four cards' copy in **ONE module**, read by the rendered text AND the screen-reader copy. ⚠ **CD's and CS's final copy currently exists only in `live-work/about-section-thinking.md`** (D-077's pointer); CA/CB in `wall-card-text.tsx` match their final forms word for word. |
+
+⚠ **COST: one text texture per card — D-086's unmeasured budget.** Text needs **ONE channel** (a quarter of the answer card's RGBA) and can be **sized to the real face** (D-086: the answer card was oversampled ≥11x linear). ⛔ **Measure before building, not in a stall.**
+
+⚠ **The wall cards recede.** Setting the text FLAT in the card's own space first means the justified edges stay true to the card's edges as the far side compresses — **the perspective is the geometry's job, not the typesetter's.**
+
+### ⚠ OPEN — CARL'S, NOT DECIDED HERE
+
+- **The route itself** — recommended above, not confirmed.
+- **The role names** (The Architect, …) — the same setting as the body, or a title that *"catches the light"* (the hero's *"its edges catch the light"*, D-086 — extruded or troika text suits a short title where crafted setting is not at stake).
+- **Is the text readable BEFORE the neon strikes**, or does it come up with the light — the neon revealing the copy?
+- **The font** — Geist, as the overlay used, or other.
+- **The last line of each justified paragraph** — centred, or eliminated by the break choice.
+- **The gap cap** — a number to be set by eye in the room, not asserted in advance (D-086's anchoring warning).
+
+### ⛔ FIRST STEP WHEN THE CHUNK OPENS — §14a
+
+**CA alone:** one justified block, its own material, the fit check, responding to CA's track. **Measure the dome under the text block and the texture budget BEFORE building.** Then the other three.
