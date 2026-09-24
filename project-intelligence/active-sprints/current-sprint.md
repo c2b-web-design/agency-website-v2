@@ -579,7 +579,11 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 ---
 
-*Last updated: 2026-09-24 (session 2, latest) — ⛔ **ALL FOUR CARDS HAVE TEXT, ONE PER LOAD; EVERY CARD LIGHT OFF.** CD 2 mm and CS 0.9 mm deep by the depth rule. Next, by Carl's order: all four static and visible, then the light (*"change the light type and… alter the intensity"*). Reasoning: D-094.*
+*Last updated: 2026-09-24 (session 2, final) — ⛔ **CARL IS LEANING TOWARD REPLACING THE ROOM PHOTOGRAPH** (*"What doesnt work? The environment"*), RAISED, NOT DECIDED; the selection criteria are in D-094. ✔ The "H" is fixed (typeface rebuilt from Vercel's static Geist). This commit is the reference point. Reasoning: D-094.*
+
+*Previously: 2026-09-24 (session 2, last) — ⛔ **ALL FOUR CARDS SHOW A FULL PAGE, STATIC, ON PLAIN `/about`** (`?textstatic=0` runs them; `?extrude=cb` isolates). ⚠ **A font defect found: CA's "H" renders with a wedge** (a self-crossing outline in the converted Geist). Fix outside scope, Carl's call. Reasoning: D-094.*
+
+*Previously: 2026-09-24 (session 2, latest) — ⛔ **ALL FOUR CARDS HAVE TEXT, ONE PER LOAD; EVERY CARD LIGHT OFF.** CD 2 mm and CS 0.9 mm deep by the depth rule. Next, by Carl's order: all four static and visible, then the light (*"change the light type and… alter the intensity"*). Reasoning: D-094.*
 
 *Previously: 2026-09-24 (session 2, later) — ⛔ **CB HAS ITS TEXT, ONE CARD PER LOAD.** Plain `/about` shows CB only (CA is `?extrude=ca`), each card its own white light, CA's position scaled by face width. *"When all 4 cards have text we can then work out at what point a card triggers the next."* Uncommitted. Reasoning: D-094.*
 

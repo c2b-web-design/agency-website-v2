@@ -4,13 +4,23 @@
  *
  *   node scripts/build-geist-typeface.mjs <path/to/Geist-Regular.ttf>
  *
- * ⚠ SOURCE: Google Fonts' static Geist 400 TTF, the same family `next/font/google`
- * serves the site (as woff2). Fetched 24 September 2026 from
+ * ⛔ SOURCE: VERCEL'S OWN STATIC Geist-Regular.ttf, from the `geist` npm package
+ * (v1.7.2, `dist/fonts/geist-sans/Geist-Regular.ttf`; `npm pack geist` and
+ * extract — it is NOT a project dependency). Font version 1.800. Geist is ©
+ * Vercel, SIL Open Font License 1.1 — the licence travels with the font's own
+ * name table, kept in the output's `original_font_information`.
+ *
+ * ⚠⚠ *Corrected in place, 24 September 2026 (session 2):* the source WAS Google
+ * Fonts' "static" Geist 400
  *   https://fonts.gstatic.com/s/geist/v5/gyBhhwUxId8gMGYQMKR3pzfaWI_RnOM4nQ.ttf
- * (the URL the Google Fonts CSS API returns for `family=Geist:wght@400` to a
- * non-woff2 client). Geist is © Vercel, SIL Open Font License 1.1 — the licence
- * travels with the font's own name table, which is kept in the output's
- * `original_font_information`.
+ * which is an INSTANCE of the variable font and KEEPS OVERLAPPING OUTLINES. Three
+ * triangulates each contour on its own, so a self-crossing one fills wrongly:
+ * CA's "H" rendered with a solid wedge. Of the 41 glyphs the copy uses, 10 had
+ * self-crossing contours (h n a u r p m H B F); Vercel's file has NONE, and its
+ * advances are IDENTICAL for every character the copy uses (same version, 1.800),
+ * so the setting does not move. ⛔ Do not go back to the Google Fonts TTF.
+ * ⚠ Nothing checks a future source for overlaps — unasserted; the check that
+ * found this lives in the run log (`run-log-four-static-24-september.md`).
  *
  * ⚠ WHY A CONVERTED FILE AND NOT THE SITE'S WOFF2: three extrudes from glyph
  * OUTLINES, and there is no woff2 decoder in this project. `opentype.js`

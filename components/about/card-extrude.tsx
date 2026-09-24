@@ -1,10 +1,10 @@
 "use client";
 
 /* ⛔⛔ THE EXTRUDED CARD TEXT — THE "DRY" TAKE. D-094, 24 September 2026. ALL FOUR
-   CARDS, ONE PER LOAD. ⚠ *Corrected in place:* this read "CA ONLY", then "CA AND
+   CARDS, ALL FOUR AT ONCE AND STATIC ON PLAIN `/about` (`extrudeCards`, `still`). ⚠ *Corrected in place:* this read "CA ONLY", then "CA AND
    CB"; CD and CS joined later in session 2. CB joined in session 2 the same
    day — Carl: *"Same text size, same type of text. Same reveal… The only
-   difference being is that CB has more words."* ⛔ ONE CARD PER LOAD (`extrudeCard`):
+   difference being is that CB has more words."* ⛔ It was ONE CARD PER LOAD (the selector is now `extrudeCards`):
    *"isolate CA text so we can focus on CB… one card at a time."* The sequence
    (each card striking as the previous ends) is a later chunk, once all four have text.
    ⚠ *Corrected in place:* this read "BEHIND `?extrude=1`". Since session 2 the
@@ -41,7 +41,7 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { neonHex, neonNumber, neonParam, wallCardsInView } from "./about-neon";
 import { faceBaseZ, faceDome } from "./about-card-mesh";
 import type { CardDims } from "./about-card-geometry";
-import { chase, eraseLag, setJustified, type Chase, type SetLine } from "./card-text-timeline";
+import { chase, eraseLag, setJustified, type Chase, type LineState, type SetLine } from "./card-text-timeline";
 
 // ── Candidates ──────────────────────────────────────────────────────────────
 
@@ -74,6 +74,8 @@ export type ExtrudeSettings = {
   light: boolean;
   /** The card's own neon rim is lit — ONLY that card's (`?textrim=0|1`). */
   rim: boolean;
+  /** STATIC: the first full page, every slot filled, no chase (`?textstatic=0|1`). */
+  still: boolean;
 };
 
 /**
@@ -149,7 +151,7 @@ export const START_PAGE_WPM = (12 / 4200) * 60_000;
  * ⚠ Since later that session it is ONE CARD AT A TIME — see `extrudeCard`.
  */
 export function extrudeEnabled(): boolean {
-  return extrudeCard() !== null;
+  return extrudeCards().length > 0;
 }
 
 export type ExtrudeCardId = "ca" | "cb" | "cd" | "cs";
@@ -161,27 +163,34 @@ const EXTRUDE_CARD_IDS: readonly ExtrudeCardId[] = ["ca", "cb", "cd", "cs"];
  * one card at a time. When all 4 cards have text we can then work out at what
  * point a card triggers the next and what does that card do after."*
  *
- * The card plain `/about` shows while it is being worked on. ⚠ A working
- * position, not a design: the four-card sequence replaces this when it is built.
+ * ⚠ *Superseded as the DEFAULT, same session:* CB was the working card; now ALL
+ * FOUR are, static — Carl: *"make visible all the text in each card but make them
+ * static for now… so that there is a lot of text on each card to judge."* One card
+ * at a time is still one URL away (`?extrude=cb`).
+ *
+ * ⚠ A working position, not a design: the four-card sequence replaces this.
  */
-export const EXTRUDE_WORKING_CARD: ExtrudeCardId = "cb";
+export const EXTRUDE_WORKING_CARDS: readonly ExtrudeCardId[] = EXTRUDE_CARD_IDS;
 
 /**
- * Which card carries the extruded text on this load, or `null` for none.
- *   (absent)          → `EXTRUDE_WORKING_CARD`
- *   `?extrude=ca|cb|cd|cs` → that card
- *   `?extrude=1`      → CA — ⚠ kept so every record saying `?extrude=1` still means CA
- *   `?extrude=0`      → none: the previous `/about`, neon lit
+ * Which cards carry the extruded text on this load; empty for none.
+ *   (absent) or `all`       → `EXTRUDE_WORKING_CARDS` (all four)
+ *   `?extrude=ca|cb|cd|cs`  → that card; a comma list (`ca,cb`) → those
+ *   `?extrude=1`            → CA — ⚠ kept so every record saying `?extrude=1` still means CA
+ *   `?extrude=0`            → none: the previous `/about`, neon lit
  * ⚠ Anything else mounts NOTHING and says so — a typo must not pass for a choice.
  */
-export function extrudeCard(): ExtrudeCardId | null {
+export function extrudeCards(): readonly ExtrudeCardId[] {
   const v = neonParam("extrude");
-  if (v === null) return EXTRUDE_WORKING_CARD;
-  if (v === "0") return null;
-  if (v === "1") return "ca";
-  if ((EXTRUDE_CARD_IDS as readonly string[]).includes(v)) return v as ExtrudeCardId;
-  console.error(`⛔ ?extrude=${JSON.stringify(v)} is not a card — use ca, cb, cd, cs, 1 (= ca) or 0. No extruded text mounted.`);
-  return null;
+  if (v === null || v === "all") return EXTRUDE_WORKING_CARDS;
+  if (v === "0") return [];
+  if (v === "1") return ["ca"];
+  const ids = v.split(",");
+  if (ids.every((id) => (EXTRUDE_CARD_IDS as readonly string[]).includes(id))) {
+    return EXTRUDE_CARD_IDS.filter((id) => ids.includes(id));
+  }
+  console.error(`⛔ ?extrude=${JSON.stringify(v)} is not a card list — use all, ca, cb, cd, cs (comma-separated), 1 (= ca) or 0. No extruded text mounted.`);
+  return [];
 }
 
 /** Read once per mount by the canvas (reload to apply). */
@@ -189,6 +198,12 @@ export function extrudeSettings(card: ExtrudeCardId): ExtrudeSettings {
   return {
     light: switchParam("textlight", EXTRUDE_SWITCHES[card].light),
     rim: switchParam("textrim", EXTRUDE_SWITCHES[card].rim),
+    /* ⛔ STATIC BY DEFAULT — Carl, 24 September 2026 (session 2): *"make visible all
+       the text in each card but make them static for now… so that there is a lot of
+       text on each card to judge."* ⚠ At 52 mm no card holds its whole copy (CA: 10
+       lines, 6 slots), so "all the text" is read as A FULL FIRST PAGE: every slot
+       filled with the copy's first lines. `?textstatic=0` runs the pages again. */
+    still: switchParam("textstatic", true),
     emMm: neonNumber("textem", 52, 20, 120),
     /* ⛔ PER CARD — CB 3 → 1.5 mm, 24 September 2026 (session 2). Carl: *"CA and CB
        are at different angles to the user, the text shouldnt be at the same
@@ -240,6 +255,21 @@ const FONT_URL = "/fonts/geist-regular.typeface.json";
  * ⚠ Checked against the browser's own Geist in the run log.
  */
 const EM_UNITS = 100000 / 72;
+
+/* ⚠ ONE LOAD FOR EVERY CARD: the typeface JSON is ~33 KB (⚠ corrected in place: first written as "~198 KB", a misread
+   listing), and with four cards
+   mounted each would fetch and PARSE it. A failed load is forgotten so a remount
+   retries. */
+let fontLoad: Promise<Font> | null = null;
+function loadFont(): Promise<Font> {
+  if (!fontLoad) {
+    fontLoad = new FontLoader().loadAsync(FONT_URL);
+    fontLoad.catch(() => {
+      fontLoad = null;
+    });
+  }
+  return fontLoad;
+}
 /** How far the letters' backs sink into the face, so the dome's curvature under
     a glyph never opens a gap. */
 const SINK_MM = 0.3;
@@ -302,7 +332,7 @@ export function CardExtrudedText({
     (async () => {
       let font: Font;
       try {
-        font = await new FontLoader().loadAsync(FONT_URL);
+        font = await loadFont();
       } catch (e) {
         console.error(`⛔ EXTRUDED TEXT NOT MOUNTED on ${id} — the font did not load (${FONT_URL}).`, e);
         return;
@@ -462,11 +492,16 @@ export function CardExtrudedText({
     const b = built;
     const group = groupRef.current;
     const start = startRef.current;
-    if (!b || !group || start === null) return;
+    if (!b || !group || (start === null && !s.still)) return;
     const slots = slotsRef.current;
     if (!slots.length) return;
 
-    const states = b.chase.at(performance.now() - start);
+    /* ⛔ STATIC: the first full page — slot i holds line i, fully revealed, no clock.
+       No self-invalidation below, so a still card costs frames only when something
+       else asks for one. */
+    const states: LineState[] = s.still
+      ? Array.from({ length: Math.min(b.slots, b.lines.length) }, (_, i) => ({ slot: i, line: i, reveal: 1, erase: 0 }))
+      : b.chase.at(performance.now() - (start ?? 0));
     const mw = group.matrixWorld;
     const X = v.current.x.set(1, 0, 0).transformDirection(mw);
     const worldX = (xLocal: number) => v.current.p.set(xLocal, 0, 0).applyMatrix4(mw).dot(X);
@@ -497,7 +532,7 @@ export function CardExtrudedText({
     slots.forEach((sl, i) => {
       if (!seen.has(i)) sl.mesh.visible = false;
     });
-    invalidate();
+    if (!s.still) invalidate();
   });
 
   // ── Light placement, face-local mm: above and in front, angled DOWN ──

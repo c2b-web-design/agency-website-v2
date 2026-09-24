@@ -109,7 +109,9 @@ import { NeonBloom } from "./neon-bloom";
 import { etchEnabled, etchSettings, type EtchSettings } from "./card-etch";
 import {
   CardExtrudedText,
-  extrudeCard,
+  extrudeCards,
+  type ExtrudeCardId,
+  type ExtrudeSettings,
   extrudeEnabled,
   extrudeSettings,
   LIGHT_DISTANCE_MM as EXTRUDE_LIGHT_DISTANCE_MM,
@@ -931,21 +933,25 @@ export default function AboutCardCanvas() {
    * only way to `null`**, and with it the neon, its faders (`?neon=`, `?neonca=`…)
    * and the etched take (`&etch=1`) — ⚠ **those faders do nothing without it.**
    */
-  /* ⛔ ONE CARD PER LOAD — `extrudeCard` (plain `/about`: CB, the card being worked
-     on). Every switch below keys on `extrude`; only the text and its face's
-     shadow key on WHICH card. */
-  const extrudeCardId = useMemo(() => extrudeCard(), []);
-  const extrude = useMemo(
-    () => (extrudeCardId ? extrudeSettings(extrudeCardId) : null),
-    [extrudeCardId],
-  );
+  /* ⛔ THE CARDS CARRYING TEXT, EACH WITH ITS OWN SETTINGS — `extrudeCards` (plain
+     `/about`: ALL FOUR, static, since 24 September session 2; *corrected in place:*
+     this was one card per load, CB). Every switch below keys on `extrude` being
+     non-null; the text and its face's shadow key on the card's own entry. */
+  const extrude = useMemo(() => {
+    const ids = extrudeCards();
+    if (!ids.length) return null;
+    const byCard: Partial<Record<ExtrudeCardId, ExtrudeSettings>> = {};
+    for (const id of ids) byCard[id] = extrudeSettings(id);
+    return byCard;
+  }, []);
   /* ⛔ THE RIM UNDER THE TEXT TAKE — Carl, 24 September 2026 (session 2): *"On CB,
-     turn off the light but turn on the rim."* With `extrude.rim` the neon mounts as
-     it does on the neon page (`neonMode()`, so `?neon=full|off|<ignite>` and every
-     neon fader apply), but ⚠ ONLY THE SELECTED CARD'S CHANNEL is passed (see
-     `liveNeon` below): every other rim stays plain clear glass, as isolation needs. */
+     turn off the light but turn on the rim."* When any mounted card's `rim` is on the
+     neon mounts as it does on the neon page (`neonMode()`, so `?neon=full|off|<ignite>`
+     and every neon fader apply), but ⚠ ONLY THOSE CARDS' CHANNELS are passed (see
+     `liveNeon` below): every other rim stays plain clear glass. */
   const neon = useMemo<ReturnType<typeof neonMode>>(
-    () => (extrude && !extrude.rim ? { kind: "none" } : neonMode()),
+    () =>
+      extrude && !Object.values(extrude).some((st) => st.rim) ? { kind: "none" } : neonMode(),
     [extrude],
   );
   /**
@@ -1000,16 +1006,16 @@ export default function AboutCardCanvas() {
   }, [caEtch, cbEtch]);
   /* ⚠ `?neon=none` passes NO channel, so every card takes the exact pre-neon
      path — the identity gate's first arm. */
-  /* ⚠ Under the text take with the rim on, ONE channel: the selected card's. A card
+  /* ⚠ Under the text take, only the channels of mounted cards whose rim is on. A card
      with no channel takes the exact pre-neon path, so the other three are unlit. */
   const liveNeon = useMemo(
     () =>
       neon.kind === "none"
         ? []
         : extrude
-          ? neonChannels.filter((ch) => ch.id === extrudeCardId)
+          ? neonChannels.filter((ch) => extrude[ch.id]?.rim)
           : neonChannels,
-    [neon, extrude, extrudeCardId, neonChannels],
+    [neon, extrude, neonChannels],
   );
   const neonFor = (id: NeonChannel["id"]) => liveNeon.find((ch) => ch.id === id);
   const [caNeon, cbNeon, cdNeon, csNeon] = [neonFor("ca"), neonFor("cb"), neonFor("cd"), neonFor("cs")];
@@ -1264,19 +1270,19 @@ export default function AboutCardCanvas() {
               glassRoughness={0.35}
               glassFaceTransmission={cdTransmissionOverride ?? CD_FACE_TRANSMISSION}
               neon={cdNeon}
-              faceReceiveShadow={extrudeCardId === "cd"}
+              faceReceiveShadow={!!extrude?.cd}
             />
             {/* ⛔ CD'S TEXT — CA's treatment, 24 September 2026 (session 2). Carl: *"put
                 the text in for CD and CS."* Depth from ITS measured view angle (the
                 depth rule, `EXTRUDE_DEPTH_MM`); the light scaled as CB's is, but OFF by
-                default (*"Turn all the lights off"*). One card per load: `?extrude=cd`. */}
-            {extrude && extrudeCardId === "cd" && (
+                default (*"Turn all the lights off"*). Alone: `?extrude=cd` (plain `/about` shows all four, static). */}
+            {extrude?.cd && (
               <CardExtrudedText
                 id="cd"
                 body={aboutCardCopy("CD").body}
                 dims={cd.dims}
                 crownMm={cd.crownMm}
-                settings={extrude}
+                settings={extrude.cd}
                 lightDistanceMm={(EXTRUDE_LIGHT_DISTANCE_MM * cd.dims.faceWidthMm) / ca.dims.faceWidthMm}
               />
             )}
@@ -1356,16 +1362,16 @@ export default function AboutCardCanvas() {
               glassRoughness={0.35}
               glassFaceTransmission={GLASS_FACE_TRANSMISSION}
               neon={csNeon}
-              faceReceiveShadow={extrudeCardId === "cs"}
+              faceReceiveShadow={!!extrude?.cs}
             />
-            {/* ⛔ CS'S TEXT — as CD's above. One card per load: `?extrude=cs`. */}
-            {extrude && extrudeCardId === "cs" && (
+            {/* ⛔ CS'S TEXT — as CD's above. Alone: `?extrude=cs`. */}
+            {extrude?.cs && (
               <CardExtrudedText
                 id="cs"
                 body={aboutCardCopy("CS").body}
                 dims={cs.dims}
                 crownMm={cs.crownMm}
-                settings={extrude}
+                settings={extrude.cs}
                 lightDistanceMm={(EXTRUDE_LIGHT_DISTANCE_MM * cs.dims.faceWidthMm) / ca.dims.faceWidthMm}
               />
             )}
@@ -1428,15 +1434,15 @@ export default function AboutCardCanvas() {
               glassFaceTransmission={caTransmissionOverride ?? CA_FACE_TRANSMISSION}
               neon={caNeon}
               etch={caEtch}
-              faceReceiveShadow={extrudeCardId === "ca"}
+              faceReceiveShadow={!!extrude?.ca}
             />
-            {extrude && extrudeCardId === "ca" && (
+            {extrude?.ca && (
               <CardExtrudedText
                 id="ca"
                 body={aboutCardCopy("CA").body}
                 dims={ca.dims}
                 crownMm={ca.crownMm}
-                settings={extrude}
+                settings={extrude.ca}
               />
             )}
           </group>
@@ -1453,7 +1459,7 @@ export default function AboutCardCanvas() {
               glassFaceTransmission={GLASS_FACE_TRANSMISSION}
               neon={cbNeon}
               etch={cbEtch}
-              faceReceiveShadow={extrudeCardId === "cb"}
+              faceReceiveShadow={!!extrude?.cb}
             />
             {/* ⛔⛔ CB'S TEXT — CA'S TREATMENT EXACTLY, 24 September 2026 (session 2).
                 Carl: *"Same text size, same type of text. Same reveal. It should
@@ -1462,16 +1468,16 @@ export default function AboutCardCanvas() {
                 settings object as CA — one set of faders drives both.
                 ⛔ ITS OWN LIGHT, at CA's position SCALED BY FACE WIDTH: *"approximately
                 in the same position as CAs light given its proportions."*
-                ⛔ ONE CARD PER LOAD: *"isolate CA text so we can focus on CB."*
+                ⛔ ONE CARD PER LOAD WAS THE RULE WHILE CB WAS WORKED ON: *"isolate CA text so we can focus on CB."* ⚠ Since the same session plain `/about` shows ALL FOUR, static; `?extrude=cb` isolates CB.
                 *"Just as the text sequence is coming to an end, CB will activate"*
                 is a LATER chunk, once all four cards have text. */}
-            {extrude && extrudeCardId === "cb" && (
+            {extrude?.cb && (
               <CardExtrudedText
                 id="cb"
                 body={aboutCardCopy("CB").body}
                 dims={cb.dims}
                 crownMm={cb.crownMm}
-                settings={extrude}
+                settings={extrude.cb}
                 lightDistanceMm={(EXTRUDE_LIGHT_DISTANCE_MM * cb.dims.faceWidthMm) / ca.dims.faceWidthMm}
               />
             )}
