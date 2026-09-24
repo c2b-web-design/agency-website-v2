@@ -5834,3 +5834,115 @@ At the body pace one pass of CA takes ~22 s, and of CB ~29 s. ⚠ **Carl holds t
 - **Selection criteria from today's measurements (candidates for Carl):** (1) card faces within ~25° of square to the camera; (2) cards at similar distances, so one type size reads alike; (3) calm, even surfaces behind the faces; (4) visible light sources that can justify the card lights; (5) faces tall enough for 6-line pages (~470 mm). **Standing constraints:** a REAL photograph (D-073, *"If anything says 'made with AI', its this picture"*) and a clean licence (D-079).
 - **Builder's recommendation:** commit the current state (four cards static, the H fixed) first, as the reference the rebuild is measured against.
 - **Carl, confirming the commit:** *"On the positive side - we have all the assets and know how so its not a 'back to the drawing board'."* The current state (four cards static, the H fixed) is committed as the reference point for a room change.
+
+## D-095 — PROPOSED: The Room Is CONSTRUCTED, Not Found. A Wireframe First, Governed Generation At Most
+
+**Date:** 2026-09-24 (session 2)
+**Status:** ⚠ **PROPOSED — raised by Carl, not decided.** ⛔ **It would REOPEN D-073** ("DO NOT REPLACE IT WITH A GENERATED IMAGE"), which only Carl can do.
+**Authority:** Human Founder — Carl.
+
+**Carl:** *"We have 2 choices. Try to find a suitable image or have AI consruct one. I favour the latter but i want to do it differently than one shot a prompt and iterate. I would want to construct a wire frame, a scene constuction. Does it have to be photo realistic? Not neccersarily. It must be an office environment. The visual style is open. Plus, i have Davinci Resolve. So we must 'build' our office ourselves."*
+
+- **Raised and not chosen:** find a suitable photograph (the other of Carl's two choices; not favoured).
+- ⛔ **Why it differs from what D-073 rejected:** D-073's tells were STRUCTURAL (frames at disagreeing angles, gear dissolving, cabling to nowhere, repeated speakers at wrong scales), because the generator invented the geometry. **Here the geometry is authored, and generation at most surfaces it: GOVERNED, where D-073's reason was UNGOVERNED output.** ⚠ **D-073's test stands regardless: if it SAYS "made with AI", it fails.**
+- **Routes (Builder's framing, none chosen):** **A**, the room is real 3D in three.js (designed angles and distances, no camera solve, real light, a camera that can move); **B**, blockout → depth/line-conditioned generation → Resolve grade → plate, with the blockout as an EXACT depth proxy (one generation from the master; no chains); **C**, real 3D structure with generated surface textures only.
+- **Photorealism: not required (Carl).** Builder's note: the cards are rendered, so a constructed room makes cards and room one world (§14a, *"caused by the world"*); today every card is a composite on a photograph.
+- **Resolve:** Fusion (3D compositing, depth passes) and Color (grading, the plate's mastering). Not a modeller — the wireframe is code or Blender.
+- **Proposed first step, route-independent:** a parametric three.js blockout on a `/proto` page (walls, floor, desks, four card slots, camera, practical lights), measured live against D-094's five criteria (≤ ~25° view angle, similar distances, calm backgrounds, justifying light sources, ~470 mm faces). **Not authorised.**
+- **Carries over from the current room:** see D-094's room entry.
+- ⛔ **CARL'S CLARIFICATION ON D-073, same session:** *"my comments were recorded months ago. AI image generation is much better now with GPT now leading Gemini. Also, with a blueprint and an elaborate prompt we stand a better chance of a good outcome today than 'models' ago."*
+  - ⚠ **Framed per D-048: D-073 is OVERTAKEN, not wrong.** It judged one-shot generations from the models of its day. Carl changes BOTH inputs: the METHOD (blueprint plus elaborate prompt) and the MODELS.
+  - ⚠ **Date, for accuracy:** D-073 is dated 3–4 September 2026, three weeks before this. Carl's point is that model generations turn over fast.
+  - ⚠ **"GPT now leading Gemini" is Carl's assessment, not verified by the Builder.**
+  - ⛔ **The test is unchanged and empirical:** generate FROM THE BLUEPRINT, then check against D-073's tells (agreeing angles, resolving objects, cabling that goes somewhere, consistent scale) and *"does it say made with AI"*. ⚠ **A blueprint makes the geometry MEASURABLE against its source,** which a found photograph never was (D-076).
+- ⚠ **EXTERNAL INFORMATION — GPT's answer to the information-only prompt** (`live-work/gpt-room-information-prompt-24-september.md`), pasted by Carl. **Information, not a decision.** Its core: ***"3D controls where things are. AI controls what they look like."*** Blockout = source of truth; two blueprints (technical and art-direction, same camera); a structured prompt (constraints kept apart from aesthetics); freeze the composition and then edit deterministically; designed calm fields behind each card; *"lighting variation in the room, lighting consistency on the cards"*; a validation pass projecting the card planes onto the result, **regenerating rather than moving cards to fit an AI mistake.**
+  - ✔ **Consistent with the record:** D-095's governed framing; D-073's *"every generative round-trip is destructive"*; the CS field measurement; the light findings; the D-084 edge-fitting method and the `?guides=1` quads as the validation instrument.
+  - ⛔ **Builder's caveats:**
+    - (1) **It concedes the model will not hold the camera exactly, and the glass refracts a depth proxy.** Drift from the blueprint misaligns refraction, the D-076/D-084 problem. **A pass/fail tolerance must be set BEFORE generating** (card-zone corners and key edges within N px of the blueprint, measured the D-084 way).
+    - (2) **It does not weigh routes A/C.** An exact blueprint rendered by us has exact geometry by construction. B costs alignment risk; A/C cost art time.
+    - (3) **Using the current photograph as an atmosphere reference** may be a use D-071 did not cover. Check before doing it.
+  - ⚠ **UNVERIFIED by the Builder:** the output limits (≤ 3840 px edge, multiples of 16, >2560×1440 experimental) and the licence/indemnity summary. Its citations did not survive the paste. **Check OpenAI's current documentation before relying on either;** a legal review is Carl's call.
+- ⚠ **EXTERNAL INFORMATION — GEMINI's answer to the same brief**, pasted by Carl for comparison. **Information, not a decision.**
+  - **Agrees with GPT:** the blockout is the authority and references are suggestions; neither model holds an exact camera or lens; edits must be local; keep generated content minimal where the tells live; commercial use is allowed, exclusivity is not guaranteed.
+  - ⛔ **DIFFERS ON THE CONCLUSION:** *"relying on AI to generate the final composite plate is likely the wrong tool for the job… You should simply finish the 3D scene"*, with AI for textures and concept art only (**route C**). GPT recommends blueprint → image model → validate (**route B**). **Gemini's route removes the alignment caveat recorded above.**
+  - **Other differences:**
+    - geometry control needs Stable Diffusion + **ControlNet** (depth/edge), not a chat image model;
+    - native resolution ~1536 px then upscale, where GPT claims up to 3840 px — ⛔ **they conflict, neither is verified, and upscaling is the generative round-trip D-073 forbids for a master**;
+    - negatives backfire (GPT includes an avoid list): **model-dependent, test it**;
+    - the US Copyright Office position that output without significant human authorship is not copyrightable **favours an authored 3D room for a studio selling craft.**
+  - **Gemini's best specific idea:** SOLID FLAT BLOCKS in the blockout where the cards go, so calm backgrounds are a geometric fact, not a prompt request. Also a hybrid: generate only the shell and render desks and monitors ourselves.
+  - ⚠ A small factual error in it: *"potted plants behind the lower cards"*. The plants are BESIDE them; floorboards and chair legs are behind.
+  - **Builder's synthesis:** both lead to the same first step, the exact blueprint. The fork after it is **render it ourselves (Gemini; wins on alignment, light accuracy, ownership) vs AI renders from our blueprint (GPT; wins on richness per hour of art)**. ⚠ **A third option neither named: the room REAL-TIME in three.js** — the room's lights ARE the cards' lights (§14a by construction), and the camera can move (D-092's §1 fade, D-088's mark to §3); a showcase technique in itself. **Not decided.**
+- ⚠ **CARL, on current tooling, same session:** *"When you ask GPT or Gemini to make an image now you can use styles or templates. Sonething that didnt exist a while back."* (Screenshots of both galleries.)
+  - **Builder's reading: two kinds of preset.**
+    - (1) **STYLE presets** for a new image ('80s, Cinematic, Moody, isometric Interior design, Blueprint poster, Cross-section): good for exploring a direction; ⚠ **a shared house look raises D-073's "says made with AI" risk.**
+    - (2) **TRANSFORM presets on an uploaded image** (Gemini **Restyle**; GPT **Improve Your Desk Setup**, **Fix lighting**, **Enhance photos**): they keep the supplied structure and change its treatment — **GPT's route (B) without ControlNet.**
+  - ⛔ **Proposed test, not authorised:** run a blockout's clay render through both transforms and MEASURE the drift of walls, desk edges and card zones against the blueprint. **That settles B vs render-it-ourselves with evidence.**
+  - ⚠ Upload a blockout render or a sketch, **not the current photograph** (D-071 scope).
+- ⛔ **CARL — THE INVENTORY AND NEGATIVE PROMPTS, same session:** *"The trick is to use negative prompts as well. What do we need? Desk, PC monitors and Walls. Thats it."* **The scene is MINIMAL: desks, monitors, walls.** Every omitted object is a tell that cannot occur, and the card backgrounds calm (CS's chair legs go).
+  - ⚠ **Implied, and put to Carl to decide:**
+    - (1) **floor and ceiling** — the floor cards stand on the floor, and the ceiling downlights are criterion 4, the cards' light source (§14a);
+    - (2) **keyboard and mouse** — staged-looking without them vs more small-object risk with them;
+    - (3) **cables** — say where they go ("monitor arms, cables routed out of sight through the desk") rather than negate them, or the monitors feed from nowhere (D-073's cabling tell, inverted).
+  - **Draft negative list (Builder's, from the recorded tells):** plants, artwork, picture frames, shelves, speakers, rack equipment, visible cables, chairs, people, windows, lamps, decorative objects, text, logos, signage, clutter, reflections of people, curved or warped desk edges, duplicated monitors, extreme wide-angle distortion. ⚠ **Negative-prompt efficacy is model-dependent (GPT vs Gemini disagree); the drift test shows it.**
+- ⛔ **CARL — THE PIPELINE, same session:** *"If we start off from a simple blueprint, basic geometry of a room. Placement of obects. Once an image is made ill get it in Resolve and get rid of the awful colour grade that screams 'made with AI'."*
+  - **Order (Builder's, agreed in outline):** blueprint → generate → **measure the drift against the blueprint (accept or reject BEFORE grading)** → Resolve grade (Carl) → into three.js → re-tune the glass against the new plate.
+  - ⚠ **The grade has a MEASURED target:** D-073's wall at **H 200–206°, S 32–43%, L 12–17%**, clear of `/start`'s interaction teal (H 186, S 66%, L 35%). The Builder can check the graded plate against it.
+  - ⛔ **Protect the master (D-073):** the generator's full-resolution output straight into Resolve, lossless export (16-bit TIFF/PNG), NEVER upscale.
+  - ⚠ **Grading fixes colour, not every tell:** texture tells (over-sharpened micro-detail, halos, plastic smoothness) need grain, softness or midtone work. **Structural tells are the blueprint's job.**
+- ⛔ **CARL — THE CARD ARRANGEMENT IS OPEN, same session:** *"It doesnt have to be 2+2 cards. Everything is open. Cards can go anywhere in the scene."* ⚠ **The two-wall / two-floor layout (D-077's placement, D-082) is NOT carried into the blueprint as a given.** ⚠ The four copy blocks (CA/CB/CD/CS) are unchanged unless Carl says otherwise; **only where the cards sit is open.** The blueprint plan is authorised to be WRITTEN ("Yes"); Carl is gathering references first (*"Stand by, im trawling the internet"*).
+- ⚠ **CARL PIVOTS, same session:** *"A blueprint may not be needed. Ive got 3 images, all are suitable. Any AI manipulation will be minimal. I will post them one by one for discussion."* **The found-image route (Carl's other first choice) is back in play;** the blueprint is on hold, not dropped. Each image is to be assessed against D-094's five criteria, D-073's tells and real-photograph standard, and D-079's licence requirement.
+- **CANDIDATE IMAGE 1 of 3 — a 3D ARCHVIZ RENDER** (a cutaway room: marble slab edge, curved ceiling slab, a mural back wall, a live-edge table, a chrome chair, a blue cabinet, a black glass vitrine). **Carl's edits:** *"Wall colour change needed- mural gone. PC and chair to be added. Anything else, black box rectangle gone."*
+  - ✔ **Geometry — the best seen:** a one-point perspective; the back wall is near square-on (estimated by eye from level horizontals and true verticals, **to be confirmed with the perspective tool per D-076**); every card on it sits at ONE distance, so one type size reads alike; ceiling downlights are visible (criterion 4).
+  - ⚠ **Wall-washer pools** near the top of the back wall will sit behind the cards once the mural goes: to be judged.
+  - ⛔ **THE BIG RISK: A BRIGHT, DAYLIT ROOM.** White extruded letters need a dark field (the CS problem, wall-wide). **Taking bright to dark is a RELIGHT, not a regrade;** a dark navy back wall alone may hold, the whole room less likely. The neon reads weak on light walls.
+  - ⚠ **Framing:** the cutaway (slab edges, sky strip) is either a feature for a construction argument or a crop, and cropping costs resolution.
+  - ⛔ **1920×1109 (~16:9), NOT 3:2; D-073 forbids upscaling, so a higher-resolution original is needed.** **Licence unknown (D-079).** **Authorship:** a human CG render, not a generated image and not a photograph; whether it meets D-073's "real photograph" is Carl's call (it arguably fits D-095's "constructed").
+  - ⚠ **The added PC is the most exposed generated object** (stands, cables): keep it simple or render it ourselves.
+- **CANDIDATE 1 — SOURCE AND LICENCE, VERIFIED:** Pixabay #6804137, *"Office Home Interior Design"* by **ST4N**, https://pixabay.com/photos/office-home-office-interior-design-6804137/ .
+  - ✔ **Uploaded 18 November 2021, no AI label.** The date predates public image generators (2022), so it is almost certainly a human CG render (**the Builder's inference**).
+  - ✔ **Original 4500 × 2599** (fetched from the page). A 3:2 crop at full height ≈ 3900 × 2600; cropped inside the cutaway ≈ 3150 wide. **No upscale needed.**
+  - ✔ **Pixabay Content License** (the summary page, fetched 24 September 2026): commercial use; *"Modify or adapt Content into new works"*; no attribution required. **Prohibitions:** standalone sale or distribution; trademarked content for goods and services; merchandise; immoral or illegal use; ***misleading or deceptive use***; trademark registration; the user checks third-party IP.
+  - ⚠ **Consequences:**
+    - removing the mural also removes a THIRD-PARTY IP question (it is a landscape photograph inside the render);
+    - ⚠ **"misleading use": the room must not be presented as C2B's actual premises** (D-071's §10a line);
+    - ⚠ **not exclusive: 3,055 downloads**, mitigated by heavy modification.
+  - **Carl's first grade** (a global cool shift) measured: wall H 218°, S 33% (on target) but **L 63% vs the 12–17% target**, and the floor lost its warmth (H 18° → 252°). **The deciding test is still open: a WALLS-ONLY pull to dark navy, floor kept warm.**
+- ✔ **Carl has downloaded candidate 1 at its original 4500 × 2599** (the master).
+- **CANDIDATE IMAGE 2 of 3 — a CG render of a red-LED gaming room** (preview 1920 × 1279, **exactly 3:2**; source and licence not yet known).
+  - ✔ **The best CONCEPT seen:** four equal white CABINET DOORS in a row above the desk, near square-on (estimated <~15° by eye) and at one distance — **card positions built into the room.** ✔ **Already DARK**, lit by LED strips (the neon's family; §14a). Red → navy/teal is a HUE ROTATION that keeps the light's form, far easier than relighting image 1.
+  - ⛔ **Against it:**
+    - **pervasive TRADEMARKS** (PS5 and its logo, Pokémon figures, Minecraft and Mario blocks, Spider-Man, Steam, Call of Duty), which Pixabay's licence prohibits for commercial use: **many detailed removals**;
+    - **clutter** far beyond Carl's inventory (gaming chair in front of the desk, sofa, TV, controllers, PC tower, headphones, shelves);
+    - **the wrong register** (a gamer's den against D-094's business-owner audience);
+    - busy acoustic foam behind the monitors (the CS problem).
+  - **Builder's net: image 1 is the stronger BASE; image 2 is a LIGHTING DIRECTION for it** (dark, lit by its own practical sources).
+- ⚠ **CARL, on candidate 2:** *"the main task would be removal which AI is better at because it has context."* **Accepted in part; the Builder's "many removals" objection is REVISED.** Context-aware fill handles small objects on simple surfaces well (figures, blocks, PS5, logo; the screens are REPLACED with our content).
+  - ⛔ **The deciding variable is what sits BEHIND a removal:** simple visible surfaces (low risk); the sofa, TV and controllers at the front edge (moderate); **the gaming chair, which hides desk underside, floor, cabinet and foam = invented hidden geometry (HIGH, D-073's "dissolving equipment" tell).**
+  - ⚠ **Cautions:** masked edits are not pixel-exact and round-trips accumulate (D-073), so use FEW passes, at FULL resolution, with the outside-mask drift measured. **Removal does not change the room's character** (LED strips, foam, chair shapes); whether it reads studio or den is Carl's eye after the pass.
+  - **Revised net: candidate 2 is a real contender IF THE CHAIR COMES OUT CLEANLY** — its deciding test, as the walls-only pull is image 1's.
+- **CARL'S EDITS FOR CANDIDATE 2:** *"remove foam and replace with the wall its placed against. For the playstation, copy the PC tower on the right side."*
+  - **Foam → wall:** ✔ removes the busiest background. ⚠ **Brief it to KEEP the LED gradient** from the strips above and below; a flat, evenly lit wall would contradict the strips and read as a paste-over.
+  - **PS5 → a copy of the PC tower:** ⛔ **"repeated objects at the wrong scale" is one of D-073's four tells.** A straight copy is wrong in perspective (the left spot is seen from front-right, nearer, larger) and identical in detail. **Safer brief: GENERATE a matching tower in place, consistent with the room's perspective and lighting.** ⚠ **Alternative put to Carl:** remove the PS5 and leave the desk clear (Carl's inventory; fewer tells; less gaming register). **Carl's call.**
+- ✔ **Carl has downloaded candidate 2's original.**
+- **CANDIDATE IMAGE 3 of 3 — a CG render (game-engine look) of an orange-LED room:** a large wall-set TV on a frontal back wall above a long credenza, a run of upper cabinet doors, LED light lines wrapping the corner, a desk with twin monitors to the right, and a chair mid-floor. Preview 1920 × 1080 (16:9); source and licence not yet known. Carl: *"Guess why i chose image 3."*
+  - **Builder's guess:** (1) **the TV** — a large dark square-on rectangle, both a card-quality field and **D-088's §3 "player"** (Carl: *"How would it get in the TV?"*); (2) **the LED strips are light LINES, the neon's own form** — §14a's *"recurring theme with variations"* and *"caused by the world"* built into the room.
+  - ✔ **Also:** already dark (a hue rotation, not a relight); a frontal back wall at one distance; the chair occludes less than candidate 2's.
+  - ⛔ **Costs:** trademarks (a Deadpool figure, Mario/Luigi, a PS5, an Xbox controller, anime on the screens, book spines), small removals on simple surfaces; dense shelving and cubbies; a bright, receding right wall (no cards); **16:9, a 3:2 crop at full height ≈ 1620 wide from the preview, so the original's size and source are needed.**
+- ⛔ **CARL'S LAYOUT FOR CANDIDATE 3:** *"crop image on the left, lose the clutter. Delete TV and shelving in the corner. Chair closer to desk. pc tower under desk. 2 cards on the wall facing, one elongated one above and same on the floor."*
+  - **Read as FOUR cards:** two side by side on the back wall where the TV was, one ELONGATED above them, one ELONGATED freestanding on the floor. **The reading is put to Carl for confirmation.**
+  - **The Builder's annotated brief:** `live-work/screenshots/candidate3-layout-brief-full.png` and `…-crop-3x2.png`. The crop is at x = 300 (3:2 = 1620 × 1080 from the preview); the card outlines follow the wall's perspective from two guides read off the image (the LED strip's lower edge and the credenza top). **Placement is approximate, not solved.**
+  - ⚠ **Not in Carl's list but inside the card zones:** the two tall speakers, the headset stand, the white box and the console on the credenza, all in front of the wall cards' lower edges. Presumably covered by *"lose the clutter"*; **confirm.**
+- ✔ **ALL THREE ORIGINALS ARE IN `brand-assets/`, verified against their Pixabay pages (fetched 24 September 2026):**
+  - **Candidate 1:** `st4n-office-6804137.jpg`, **4500 × 2599**, ST4N, uploaded 18 November 2021.
+  - **Candidate 2:** `setupx3d-interior-design-8922413.jpg`, **3840 × 2560 (exactly 3:2)**, *"Interior Design Home Office Modern"*, Setupx3D, **26 July 2024**.
+  - **Candidate 3:** `setupx3d-interior-design-7413418.jpg`, **4000 × 2250 (16:9)**, *"Interior Design Home Office Desk"*, Setupx3D, **28 August 2022**.
+  - **All three:** Pixabay Content License, no AI label; the file sizes match each page's stated maximum.
+  - ⚠ **Provenance strength differs:** candidate 1's 2021 date makes "human-made" near-certain; for candidates 2 and 3, "not AI" rests on **the absent label and the creator's 3D-render name** — reasonable, weaker.
+  - ✔ **Candidate 3's crop at full resolution:** x = 625 → **3375 × 2250** at 3:2 (the brief's x = 300 of 1920 scales exactly), ~30% above the 2560 served now. **No upscale.**
+  - ⛔ **These are MASTERS (D-073): edit copies, never these files.**
+- **RENAMED on Carl's instruction** (*"Rename them office image 1, 2 and 3"*), kebab-case like the other assets. **The provenance lives HERE, not in the filenames:**
+  - `brand-assets/office-image-1.jpg` ← `st4n-office-6804137.jpg` (Pixabay #6804137, ST4N)
+  - `brand-assets/office-image-2.jpg` ← `setupx3d-interior-design-8922413.jpg` (Pixabay #8922413, Setupx3D)
+  - `brand-assets/office-image-3.jpg` ← `setupx3d-interior-design-7413418.jpg` (Pixabay #7413418, Setupx3D)
+  - ⚠ The entries above use the old names; this mapping resolves them. **Untracked in git; commit them to keep the masters.**
