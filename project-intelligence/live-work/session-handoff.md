@@ -37,9 +37,32 @@ and scene. Its best to do this in chunks."* **One card (CA) until he says otherw
 - ⚠ **He waived the plan gate twice today, each for that piece only:** CB's etch, and the dry
   extrusion. **A waiver is not standing.**
 
-## ⛔ NEXT: THE "EFFECTS", A CHUNK AT A TIME — Carl leads the order
+## ⛔⛔ NEXT — CARL'S ORDER, set at the end of the session. Work it in this sequence
 
-**Measured and open, from the run logs:**
+Carl, 24 September: *"in the new convo we will isolate the other cards and put the text in. Then we
+will see what effect turning the rim on has and decide whether white light should be changed to a
+colour to 'complement' the card. Then we will look at light movement for the wall cards and then
+light movement for the floor cards which may be different given their location."*
+
+1. **ISOLATE CB, CD, CS AND PUT THE TEXT IN.** Use the same dry treatment as CA: extruded, "pages" at
+   171.4 wpm, rims off, one white static downward light.
+   - ⚠ **"Isolate" = one card at a time**, as CA was judged. `?extrude=1` mounts CA only today; the
+     next step is per-card isolation.
+   - ⚠ **The floor pair is the harder case:** CD and CS lean and are yawed toward their desks.
+     Measure the dome, the slots and the reveal direction in each card's own frame; don't assume CA's.
+2. **TURN THE RIM ON, AND SEE WHAT IT DOES TO THE TEXT.** Then Carl decides whether the **white light
+   changes to a colour that "complements" the card**.
+   - The rims: navy on the wall, teal on the floor (R-028).
+   - ⚠ The colour is measured ON SCREEN, not by hex (the D-093 / D-094 lesson).
+3. **LIGHT MOVEMENT — THE WALL CARDS.** D-094's direction: off-centre left, drifting right and back,
+   subtle, shadow-first.
+4. **LIGHT MOVEMENT — THE FLOOR CARDS**, *"which may be different given their location."* ⚠ Don't
+   carry the wall pair's movement over by default.
+
+⚠ **Carl's method holds throughout:** dry first, then "effects", one chunk at a time. **The plan gate
+applies unless he waives it for the piece.**
+
+**Measured and open, from the run logs** (they fold into the steps above as Carl reaches them):
 1. **The light's hotspot.** The spot mirrored in the glossy dome washes out words at CA's top-centre.
    - Intensity plateaus: 3 → 1.5 → **0.5 now**.
    - **The angle is the lever:** at 0.5, 60° gives a hotspot word 2.59 : 1 vs 2.80 elsewhere (45° gives 2.22).
