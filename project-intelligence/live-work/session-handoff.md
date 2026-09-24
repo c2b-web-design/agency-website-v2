@@ -75,6 +75,8 @@ lives in D-095. ⛔ **Masters: edit copies, never these files. Never upscale.**
 
 ## ⚠ PARKED / CARRIED
 
+- ⛔ **THE LOGO (D-088):** Carl — *"the concept will remain, the execution will differ. i will let you know when the time is right."* He has a placement in mind. **Do not raise it; wait for him.**
+
 - `live-work/cards-text-isolation-plan-24-september.md` is **SUPERSEDED** (the text went to all four cards differently).
 - **D-095 is PROPOSED throughout, not approved as a whole:** the image choice and the layout are Carl's rulings; its route (A/B/C) is moot now that a found render is the base.
 - Carried: the two R-028s (not renumbered); remove the etched take?; CS's "connected to…" (D-077); accessibility deferred to mastering (D-094); ENVMAP-STALE / RIM-DARK; the `proven.json` filing.

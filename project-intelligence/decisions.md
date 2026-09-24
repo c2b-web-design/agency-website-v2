@@ -6076,3 +6076,4 @@ At the body pace one pass of CA takes ~22 s, and of CB ~29 s. ⚠ **Carl holds t
   - (2) the turn shows the glass side and ring fans: a practical light source in the corner (the LED-room idea); it combines with (1) or (3).
   - (3) is the simplest for the generator: open, lit floor, not chair-hidden.
   - **Builder's recommendation: (1), optionally with (2).** Revised line 6 appended to `live-work/office-image-3-removal-prompt.md`. Carl's choice.
+- ⛔ **CARL — THE LOGO (D-088) IN THE NEW ROOM:** *"On the Logo, the concept will remain, the execution will differ. i will let you know when the time is right."* **D-088's CONCEPT stands** (the mark lives in §2's room and travels into §3's player); **its execution is re-planned for the new room** (the desk and TV it assumed have changed). Carl has a placement in mind. ⛔ **Timing is Carl's: do not raise or plan it until he does.**
