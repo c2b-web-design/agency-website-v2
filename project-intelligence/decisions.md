@@ -5946,3 +5946,133 @@ At the body pace one pass of CA takes ~22 s, and of CB ~29 s. ⚠ **Carl holds t
   - `brand-assets/office-image-2.jpg` ← `setupx3d-interior-design-8922413.jpg` (Pixabay #8922413, Setupx3D)
   - `brand-assets/office-image-3.jpg` ← `setupx3d-interior-design-7413418.jpg` (Pixabay #7413418, Setupx3D)
   - ⚠ The entries above use the old names; this mapping resolves them. **Untracked in git; commit them to keep the masters.**
+- ⛔⛔ **CHOSEN — CANDIDATE 3 (`office-image-3.jpg`), Carl, 24 September 2026 (session 2).** The Builder chose it independently before Carl revealed his pick; Carl: *"Welcome to the choir!"* **The reasons both hold** (Builder's): already dark (a hue rotation, not a relight); LED light LINES are the neon's form (§14a); a frontal back wall at one distance holding Carl's four cards; mostly low-risk removals (the chair MOVES into open floor rather than being removed); the 3:2 crop at full height gives 3375 × 2250, no upscale. **Watch:** whether the hue rotation still reads as light; a bright, steep right wall (no cards there); the moved chair and tower (repetition and perspective tells).
+- ⛔ **CARL — WHAT MAY CHANGE, WHAT MAY NOT:** *"The Rim colours can change, as the text colours and size to fit in with the new image. The concept remains the same."* **Rim colours (D-093), text colour and size (D-094) are OPEN to fit the room; the CONCEPT is fixed:** glass cards, extruded text in pages, neon rims, the room's light as the cards' light.
+  - ⚠ **OPEN, put to Carl: WARM or COOL.** Keep the room's orange and let the rims go amber or gold (least editing; kin to the gold mark, D-063; but the navy/teal palette and D-073's wall target stop applying to this section), OR rotate the room to navy/teal (keeps the palette and D-073's target; carries the hue-rotation risk).
+- ⛔ **RULED — THE ROOM STAYS ORANGE/AMBER.** Carl: *"Yes, the room can stay orange/amber. For the rims we shall see what works."* **No hue rotation.** ⚠ **D-073's teal wall target and the navy/teal pair colours (D-093) do NOT carry to this room;** rim colour is judged on screen against it.
+- ⛔ **CARL, on the perspective:** *"To match the perspective there are plenty of straight lines to use as references and the angles are 'kinder'. Go look to the files to find out how the perspective was worked out and give me your assessment."* **The Builder's assessment, from `camera-solve-11-september.md`, D-076, D-084 and `placeWallCard`:**
+  - **The method transfers:** Carl pins, not the Builder's eye (D-076); two perpendicular vanishing points give f; one feature held out as a falsification test; back-projection for wall cards; the ground plane plus hand rails for floor cards; an NDC-unprojected depth proxy (D-084).
+  - ✔ **Easier here:**
+    - a CG render is likely a true pinhole (no distortion; the principal point at the ORIGINAL frame's centre);
+    - far better features: long bright LED strips, cabinet-door gaps, credenza and drawer edges, the desk (the old solve fought wood grain);
+    - the right-wall strip gives a well-conditioned vanishing point.
+  - ⛔ **NEW TRAP 1 — THE CROP MOVES THE PRINCIPAL POINT.** Cropping x = 625 puts the original centre (x 2000) at x 1375 of the 3375-wide crop, not 1687. **SOLVE ON THE UNCROPPED ORIGINAL; apply the crop as an off-centre view (three's view offset).** Solving on the crop gives a wrong camera that passes a casual look — the scale trap's twin.
+  - ⛔ **NEW TRAP 2 — "KINDER" ANGLES ARE WORSE-CONDITIONED FOR THE SOLVE.** A near-frontal back wall's vanishing point is far off-frame, so small slope errors move it, and f, a long way. **Solve mainly from the RIGHT wall, use MANY back-wall lines together, and MEASURE whether the verticals converge.** A renderer's lens shift would move the principal point vertically; **that is the first measurement.**
+  - ⛔ **SOLVE AND VERIFY ON THE UNEDITED MASTER.** The AI edits are not geometry-exact; the edited plate is checked against the master's camera (the drift test) BEFORE grading.
+- ⛔ **CARL — NO CROP; MINIMAL REMOVAL; THE TV BECOMES A CARD:** *"So it might be better not to crop and just remove the deadpool. The trinkets can stay as ornamentation, to give the room some character. one wall card can be the dimensions of the TV. A left wall card. Measure the space on the right and make sure it can fit."*
+  - ✔ **No crop removes trap 1** (the principal point stays at the frame centre). ⚠ **The plate is 16:9, not 3:2**, so the canvas frame (`aspect-[3/2]`, `PLATE_W/H`) changes; placement is re-derived anyway.
+  - ✔ **MEASURED — THE RIGHT CARD FITS** (full-resolution master; scripts in `live-work/scripts/wallfit*.mjs`; overlay `live-work/screenshots/office-image-3-right-card-fit.png`).
+    - Method: lines fitted to the back wall's horizontals (LED strip rms 0.34 px; shelf top 0.45; shelf strip 0.28; TV top 2.52 and bottom 1.96, looser); their least-squares vanishing point; the wall position along the TV's bottom line by 1-D projective mapping. **Needs NO TV aspect assumption.**
+    - **Free wall between the TV's right edge and the corner = ~1.41 TV widths** (range 1.20–1.48 across line subsets; the TV-only pair is the worst-conditioned).
+    - **A TV-sized right card fits with ~0.20 TV widths of gap each side**, top and bottom level with the TV. It renders ~450 px tall at its far edge vs the TV's 513: true perspective.
+    - The fitted horizon (y ≈ 1291 of 2250) sits just under the TV's bottom edge.
+    - **Obstacles:** the corner shelving (behind most of it — delete); the right speaker's top (lower-left clip); the PC tower's top (lower-right clip — moving under the desk); the white box and headset stand are clear.
+    - ⚠ **By D-076, this is a FEASIBILITY measurement by the Builder, not placement.** Final corners are Carl's pins, checked against an independent feature.
+  - ⚠ **Trinkets vs the licence** (Pixabay: no recognisable trademarks/brands in commercial use):
+    - fine: masks, vases, the molecule model, the clock, plants, books;
+    - **must go:** Deadpool (Carl); the Mario/Luigi figures (on the corner shelving, so they leave with it); **the consoles** (white PS5, the PS4 under the credenza, the Xbox and controllers on it — recognisable products without a visible logo);
+    - the monitors' anime is replaced with our content;
+    - **check book spines and the PC tower for logos at full resolution before editing.**
+- ⛔ **CARL — WHICH CARD IS WHICH:** *"These cards are CA on the left and CB on the right."* **CA = the TV-sized card on the back wall's left (in the TV's place); CB = the same-sized card to its right, before the corner.** Reading order stays left to right, CA → CB (D-077).
+  - ⚠ **Consequences for the text (D-094), to re-derive once the room is solved:** the cards take the TV's proportions (roughly 16:9 if it is a standard screen, **UNMEASURED**) instead of today's CA/CB faces (1220 × 477 / 1092 × 443 mm), so **more lines per page and more grace at the same type size**. CB carries the most words (84) on a card that renders slightly smaller (the wall recedes), mild but real. Both sit near square-on, so the depth rule likely lets both carry more depth than CB's 1.5 mm; **measure the view angles after the camera solve.**
+- ⛔ **CARL — THE ABOVE CARD:** *"between these cards total combined width and the space in between there will be a centre point. That should be the centre point of the Above elongated card, a rectangle. The height should be the height of those squares. We will see what the area of the wall cards are and make the above card the same."* **Read as:** centred on the CA + gap + CB span; height = the UPPER CABINET DOORS; area = one wall card's.
+  - ✔ **MEASURED** (`live-work/scripts/abovecard.mjs`; overlay `live-work/screenshots/office-image-3-above-card.png`):
+    - the span's centre is **1.102 TV widths** from CA's left edge (image x 1652 of 4000);
+    - door height there is **0.564 × the wall cards' height** (door bottom edge rms 1.38 px; ⚠ door TOP edge soft, rms 6.38 px → ~±2% on the height);
+    - **equal area → width 1.773 TV widths**, spanning **0.215–1.988** (inside CA's left edge and CB's right edge, well inside the cabinet run; corner at 2.407);
+    - ~3.1× the wall cards' elongation (≈ 5.6 : 1 IF the TV is 16:9, unmeasured). **Robust:** width 1.773–1.775 across the gap uncertainty.
+  - ⚠ **Put to Carl:**
+    - (1) **wall-centred reads slightly LEFT of centre on screen** (the receding wall gives its left half more pixels); screen-centring is a deliberate alternative, his call;
+    - (2) **the cabinet fronts stand proud of the wall**, so pixel heights overstate the doors slightly vs the wall plane, and the true equal-area width is a little WIDER; the solved camera settles it.
+- ⛔ **CARL — BALANCE BETWEEN THE ABOVE AND FLOOR CARDS:** *"if the squares are cabinet doors and above and below they have their own 'rim' measure this height… If the floor card is to sit in front of the draws at the bottom measure how far up it would go if these above and floor cards were the same height. Also measure the height of the 2 draws… If this is close to the height of the above card- the floor card can float/hover. im looking for balance here."*
+  - **MEASURED at the centre line** (x 1652 of 4000; `live-work/scripts/profile.mjs`, `balance.mjs`; overlay `live-work/screenshots/office-image-3-balance.png`):
+    - band top incl. the upper rim y ≈ 211 (soft, ±6); door bottoms 499; the lower rim (the perforated fascia) to the LED strip's upper edge ≈ 585;
+    - counter edge / top of drawer 1 ≈ 1547–1550; the drawer gap ≈ 1690–1698; bottom of drawer 2: 1833; kick recess then plinth to the floor ≈ 1960 (±8).
+  - **Heights:**
+
+    | | px | vs band |
+    |---|---|---|
+    | band incl. rims | **374** | 1.00 |
+    | doors only | 288 | 0.77 |
+    | **two drawers stacked** | **283** | 0.76 |
+
+  - **Two balanced options, put to Carl:**
+    - **A** — the above card = band WITH rims (374) → a floor card of equal height STANDS on the floor and its top lands ≈ 36 px under the counter edge, filling the credenza front floor-to-counter; equal area → above-card width ≈ **1.37 TV widths**;
+    - **B** — the above card = DOORS ONLY (288) → the drawer stack (283) matches within **2%**, so the floor card HOVERS in front of the drawers as an exact mirror; equal area → **1.77 TV widths**.
+    - ⚠ **The drawer stack is NOT close to the band with rims** (24% short), so the hover works only with B.
+  - ⚠ **Accuracy:** the cabinet fronts and the credenza front sit at different depths (~±4% on cross-plane comparison), plus the soft top edge (~2%). Neither closes the 24% gap nor breaks the 2% match. The solved camera firms it.
+- ⛔ **CARL — SYMMETRY AND THE CHAIR:** *"if we can get the chair closer to the desk theres real estate behind for the card. if its tight we can move the floor card left and the above card right a little. Thats why i asked about a centre line- to achieve balance and symmetry."*
+  - ✔ **The principle, stated:** equal and opposite shifts along the wall keep the PAIR's combined centre on the CA + gap + CB centre line (a seesaw), so balance holds when neither card is individually centred.
+  - **MEASURED against the chair as it stands** (chair from image x ≈ 2020 at credenza height; wall-plane mapping as before):
+    - **A** (1.37 wide): floor card x 1035–2182 → shift needed ≈ **0.25 TV widths**; the above card then ends at 2.03, clear of the corner (2.407) ✔;
+    - **B** (1.77 wide): floor card x 834–2324 → shift needed ≈ **0.45**; the above card would end at 2.43, **PAST THE CORNER** ✘.
+    - **Moving the chair to the desk frees both.** ⛔ **With B the chair MUST move; A tolerates the symmetric shift.**
+  - ⚠ **Edit risk:** behind the chair is the credenza's right cubby with a book stack (some spines look branded) → the move requires hidden-geometry fill (moderate). **Suggest clearing the books too**, which simplifies the fill and the licence question.
+- ⛔ **CARL — THE FLOOR CARD STOPS AT THE CUBBY LINE; THE CHAIR STAYS:** *"the chair might not have to move yet, the card rim can stop at this point, the vertical line here at the entrance to the cubby hole."*
+  - **MEASURED:** the cubby's right inner wall ends at **x ≈ 2110 of 4000 (±15)**; the chair frame starts ≈ 2135, so **~25 px of clearance**. Along the wall that line is **1.688 TV widths**.
+  - **Seesaw applied** (`live-work/scripts/layouts.mjs`; overlays `live-work/screenshots/office-image-3-layout-A.png`, `…-layout-B.png`):
+    - **A:** shift 0.099 → floor 0.318–1.688, above 0.516–1.886 (corner 2.407, comfortable);
+    - **B:** shift 0.301 → floor −0.085–1.688 (starts just left of CA's left edge, still in front of the credenza), above 0.516–2.289 (0.12 from the corner, tight but clear).
+    - ✔ **BOTH FIT WITH THE CHAIR UNMOVED.**
+  - ⚠ **The floor card now fronts the cubby opening:** the books would sit behind frosted glass (the CS busy-background problem). **Clearing the books solves that and the branded-spine question.**
+  - **Open, Carl's eye: A (compact, floor-to-counter) or B (wide, hovering).**
+- **CARL: *"for the new wall card size, the TV, are any of the old cards comparable in size?"*** — **NO.**
+  - **Scale estimate:** the desk top's back edge meets the wall at the room corner. **ASSUMING a standard 750 mm desk** (`DESK_HEIGHT_MM`), it spans ≈ 395 px there vs the TV lines' 486 px at the same x → **TV ≈ 920 mm tall × 1640 mm wide (~75")**, at 16:9 (the pixel aspect ≈ 1.77, consistent). ⚠ **An estimate, ±~5%, resting on the desk-height assumption; the solved camera confirms it.**
+  - **Vs the old outer sizes:** CA 1303 × 560 (2.33:1, **0.48×** the new area); CB 1169 × 520 (0.40×); CD 823 × 406 (0.22×); CS 794 × 392 (0.21×). **The new wall card is ~2× CA's area and TALLER in shape** (16:9 vs 2.0–2.3:1).
+  - ⚠ **Consequence for D-094's text:**
+    - at 52 mm the face holds ~10 lines per page (CA today: 6) and is wider, so **CA's 64 words, and likely CB's 84, fit on ONE page** and the page model goes idle;
+    - ⛔ **but 52 mm was set for the OLD camera distance. Re-derive the type size from ON-SCREEN em in the new room** (the old wall cards ≈ 12–14 px/em) after the camera solve. A larger size brings pages back naturally.
+- ⛔ **POINTER — HOW THE CARD FAMILY IS BUILT (Carl: *"go look how it was done and how they were built and at least make a note to point yourself at this info"*):**
+  - **The blueprint:** `cardDims(heightMm, aspect)` in `components/about/about-card-geometry.ts`. **Every dimension is a FRACTION OF CARD HEIGHT:** `CORNER_RADIUS_RATIO` 0.12, `RIM_BEAD_RATIO` 0.022 (the rim takes 2 × bead per side), `BEVEL_WIDTH_RATIO` 0.03, `FACE_PROUD_RATIO` 0.018, face inset = 2·bead + bevel.
+  - **The crown:** `TENT_POLE_RATIO` 0.073 × height (Carl's, by eye, on the bench), shaped by the quartic `faceDome` = (1−u²)(1−v²) in `about-card-mesh.tsx`; the text sits on the same formula (`faceBaseZ`). **A ratio holds the curvature's ANGLE across sizes.**
+  - ⛔ **TRAP:** `cardDims().crownMm` still uses the SUPERSEDED `CROWN_RATIO` (0.0901); the canvas passes `heightMm × TENT_POLE_RATIO` itself (`placeWallCard`, the floor placement). **Use the canvas route.**
+  - **The bench:** `/proto/card` (`components/about/card-bench.tsx`) — one card (CD) proven in face-on AND oblique views (oblique = acceptance) under a SWEEPABLE light; dials `?crown= ?h= ?aspect= ?light=`; **tilt read from BUILT NORMALS, never the formula.**
+  - **Scale:** millimetres, anchored on an ASSUMED 750 mm desk (`DESK_HEIGHT_MM`); a wrong anchor scales everything together.
+  - **Per-card glass:** `about-card-glass.ts` (D-089's 0.86 / 0.95 were tuned against the OLD backgrounds; re-tune for the new room).
+  - ⚠ **Open for the new room:** heights would span ~920 mm (CA/CB) to ~520 mm (option B's elongated cards) IN ONE VIEW, against 392–560 mm before. The trim is a fraction of HEIGHT, so the small card's rim and corners are ~57% of CA's. **Whether one family still reads at that spread is Carl's eye, on the bench, BEFORE the room.**
+- ⛔ **CARL — NOT EVERYTHING IS REMOVED; ONE PROMPT:** *"im not sure we have to delete everything youve mentioned. Everything is a product right? i can see a case for deadpool and mario, possibly the games console but we need to give just one prompt for removal."* **Accepted: the test is RECOGNISABLE brand, not "a product".** The list is re-tiered:
+  - **MUST (layout):** the TV (CA replaces it); the corner shelving AND its contents (CB's wall; takes Mario/Luigi with it).
+  - **SHOULD (licence):** Deadpool; the consoles (PS5, the PS4 under the credenza, the Xbox and controllers) — recognisable characters and distinctive product designs.
+  - **OPTIONAL (technical, not licence):** the two tall speakers. **WebGL draws the cards OVER the plate, so a plate object standing IN FRONT of a card renders BEHIND it** (the right speaker clips CB). Keeping them needs an occlusion matte. **Carl's call.**
+  - **KEEP:** books, masks, vases, the clock, headphones, the PC tower, the chair, the desk kit. **The monitors' anime is replaced in a separate step,** not in the removal prompt.
+  - **The single prompt:** `live-work/office-image-3-removal-prompt.md`. ⛔ **Edit a COPY; check the output size (no downscale accepted, no upscale).**
+- ✔ **A TEST RUN of the removal prompt, in Gemini and GPT** (Carl: *"this was just a test. i think it will work with a one shot."*). Both removed the listed items and kept the room's structure and light.
+  - ⚠ **The Builder had omitted Carl's PC-tower move** (under the desk); it is now line 8 of `live-work/office-image-3-removal-prompt.md`, and the keep-list names the white box and headphones explicitly.
+  - **Observed by eye, not measured:** Gemini also changed things NOT asked for (the white box went, the cubbies were re-rendered as lit boxes, the monitors changed); GPT stayed closer to the original but cleared the cubby books. ⚠ **Both previews looked smaller than the 4000 × 2250 master — check the real output's size before accepting it (D-073: no upscale).**
+- ⛔ **THE TEST, COMPARED ON THE CUBBIES (Carl: *"have you noticed something about the cubby holes?"*):**
+  - **Gemini's cubby interiors went NEUTRAL GREY-WHITE,** lit by light that does not exist in the room: they read as pasted-in boxes, **the room's light stops at the openings — the OPPOSITE of §14a's "caused by the world", and a generation tell.** GPT's cubbies keep the room's warm light.
+  - **Also seen:** the credenza's rhythm (drawers / cubby / drawers / cubby), with the two cubbies roughly under CA and CB and the right cubby at the floor card's cubby line.
+  - ⛔ **MEASURED OUTPUT SIZES: Gemini 1024 × 576, GPT 1672 × 941, vs the master's 4000 × 2250.** Neither is usable as a master; no upscale (D-073). **The real run must return full resolution** (an API or high-resolution mode, not the chat window; GPT's claimed 3840 px limit is UNVERIFIED).
+  - **On this evidence GPT is the stronger editor for this image** (truer light, fewer uninvited changes). **Resolution is the problem to solve.**
+- ⛔ **RULED — GPT IS THE EDITOR; A NEW PROMPT; THE CUBBIES ARE NOT TOUCHED.** Carl: *"GPT is the stronger editor. Thats what we will use but we will craft a new prompt for it - the cubby holes dont need to be touched, the card will be in the way, whatever is behind it will be blurred."*
+  - The prompt is `live-work/office-image-3-removal-prompt.md` (the earlier draft is superseded): TV, corner shelving and contents, Deadpool, the white console, the console and controllers on the cabinet top, the speakers (**optional, Carl's call**), and **the PC tower MOVED under the desk**. Explicit keep-list incl. the cubbies and their contents.
+  - ✔ **The frost removes the cubby contents' SHAPE, and with it their recognisability** (the licence concern for the PS4 and the book covers).
+  - ⚠ **It does NOT remove BRIGHTNESS:** the PS4's cyan light bar and the red covers will show as soft glows behind the floor card's text (the CS rule: the brightest patch sets legibility). **Judge through the glass; a targeted fix later if needed.**
+  - ⛔ **Resolution is still the gate:** the test returned 1672 × 941; the prompt asks for 4000 × 2250, and the output must be checked.
+- ⚠ **ChatGPT's image editor, examined (Carl's screenshot):** tools *Markup, Comment, Remove BG, Erase, Resize*.
+  - ⛔ **"Resize" is NOT a resolution control:** *"Generate this image with a different aspect ratio"* (1:1, 3:4, 9:16, 4:3, 16:9) — a FULL REGENERATION (a round trip, drift) at the chat window's own resolution. **Nothing on that screen sets pixel size.**
+  - ✔ **"Erase" is a LOCAL masked edit** — the right kind of tool.
+  - **Builder's proposed route to full resolution: PATCH THE MASTER IN PLACE.** Nearly every removal sits over PLAIN surfaces (wall, cabinet top, shelf), so an in-place fill on the 4000 × 2250 original (e.g. Photoshop Generative Fill or another in-place inpainting tool) regenerates ONLY the selected regions; **every other pixel stays the master's** (no downscale, no drift, D-073-clean). The PC-tower move is the one true generation, and it is a small patch. **Tool availability is Carl's to confirm.**
+  - ⚠ **The shown GPT result removed the TV, shelving, speakers and consoles cleanly, with the light holding, but the PC tower is STILL ON THE DESK** (if it was the new prompt, GPT skipped the move), another reason to do the move as its own patch.
+- ⛔ **CHATGPT'S ERASE DOES NOT WORK** — Carl tried the brush-erase in both the web chat and the desktop app; it failed in both. **GPT's editor is OUT for the master.**
+  - **Builder's route: edit the 4000 × 2250 original IN PLACE with a tool that works on the full file.**
+    - **Photopea** (free, browser; already trusted in D-073): Content-Aware Fill / Remove tool — fills from the surrounding pixels at full resolution; every unselected pixel stays the master's. Plain walls with a smooth light gradient suit it; ⚠ watch the LED glow's continuity across a fill.
+    - **DaVinci Resolve** (Carl has it): the Patch Replacer ResolveFX; Object Removal in Studio if available — full resolution, in the same tool as the grade.
+  - **The PC tower:** neither tool MOVES objects. Either copy it as a layer from the same image and relight it by hand, or **REMOVE it** — its move existed only to clear CB's lower-right corner, which removal also achieves with one fewer invented object. **Builder's suggestion: Photopea for the removals, remove the tower. Carl's call.**
+  - **Acceptance:** the Builder measures the result's size (must be 4000 × 2250) and the PIXEL IDENTITY of the unedited regions against the master.
+- ⛔ **RULED — THE PC TOWER STAYS, MOVED UNDER THE DESK.** Carl: *"the tower should stay but moved- how do the monitors work? they are clearly not an AIO."* ⚠ **The Builder's suggestion to remove it is WITHDRAWN:** monitors with no computer are a world-logic tell (D-073's "cables going nowhere" family; §14a).
+  - **Method — COPY-MOVE, no generation** (Photopea, on the full-resolution master): copy the tower to a layer → Content-Aware Fill its old spot (desk top and lit wall) → move the layer DOWN to the floor under the desk, against the right wall near the corner. **At the same depth there is NO scaling;** a forward move needs a slight enlargement. Darken the case body to the under-desk shade, keep the self-lit RGB rings bright, add a soft floor contact shadow.
+  - The Builder offers a scale check against the room's floor and wall lines once it is placed.
+- ⚠ **CARL: *"If less is being removed we should be able to one shot it in GPT."*** The Builder's answer: **the removal COUNT was never the obstacle.** Two things are, and neither changes with a shorter list:
+  - (1) **Resolution:** 1672 × 941 against ≈ 1920 device px needed on Carl's screen (the section ~1412 CSS × DPR 1.36, so ~87%) and ≥ 2560 on large or Retina displays (~65%), with no upscale (D-073);
+  - (2) **a FULL REDRAW:** every pixel is regenerated, so the camera must be solved on GPT's image and all measurements so far re-derived on it.
+  - **A knowing trade, Carl's:** GPT one-shot = fastest, ~1672 px, a fresh measurement pass; Photopea = full resolution and the master's own pixels, removals by hand. **Proposed decider:** run the one-shot; the Builder measures its size and how much of the unedited room was redrawn; Carl judges the softness at his screen size.
+- **CARL — A SHORT GPT ONE-SHOT, THE TOWER TO THE FLOOR CORNER:** *"Give it a shorter removal list and it already knows what the tower looks like… just put it in the corner where the 2 skirtings meet. Some of it will be hidden by the chair anyway."*
+  - ⚠ **MEASURED:** the skirtings meet at ≈ (2611, 1806), **under the small drawer unit hanging beneath the desk** (underside y ≈ 1744; ~62 px of clearance vs a ~265 px tower). **The corner itself cannot take it.**
+  - **Options:** right of the hanging unit against the right wall (fits, lit by the under-desk glow, NOT chair-hidden), or in front of the unit at the corner (partly chair-hidden, blocks the drawer). **Carl's call.**
+  - The short prompt is appended to `live-work/office-image-3-removal-prompt.md`.
+- **CARL — THE TOWER, THREE SOLUTIONS:** *"1. Put it flush against the drawer and remove the handle. 2. turn it 90 deg 3. the other side of the desk. Theres always a solution."*
+  - **Measured for (1):** the tower rises to y ≈ 1541, covering almost all of the hanging drawer front (y ≈ 1517–1744; the handle is behind it); partly chair-hidden; clear of CB and the floor card.
+  - (2) the turn shows the glass side and ring fans: a practical light source in the corner (the LED-room idea); it combines with (1) or (3).
+  - (3) is the simplest for the generator: open, lit floor, not chair-hidden.
+  - **Builder's recommendation: (1), optionally with (2).** Revised line 6 appended to `live-work/office-image-3-removal-prompt.md`. Carl's choice.

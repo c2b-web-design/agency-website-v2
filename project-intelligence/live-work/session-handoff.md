@@ -1,4 +1,4 @@
-# Session Handoff — 24 September 2026. CA'S TEXT IS EXTRUDED AND RUNS IN "PAGES". NEXT: THE "EFFECTS".
+# Session Handoff — 24 September 2026 (session 2). THE ROOM IS BEING REPLACED: office-image-3, orange.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
@@ -7,110 +7,85 @@
 
 ## ⛔ WHERE THINGS STAND
 
-**CA's copy is EXTRUDED Geist, written and erased left to right in "pages" at `/start`'s pace.**
-Carl: *"it is clearly 'pages' with a start and end. This i great."*
-- **R-029 records that verdict for the PACE AND PAGE MODEL ONLY.** Every look value is still a take.
-- **The record is D-094.** Its 24 September amendments run in order: etched → CB → the chase → pace → extrusion → light → pages.
+**The card TECHNIQUE is proven. The ROOM PHOTOGRAPH is the limit, and it is being replaced.**
+Carl: *"The concept and technique are good… What doesnt work? The environment."* Record: **D-095**
+(it is long; its entries run in order). **D-094** holds the text work.
 
-- **To view:** `npm run dev` (**the server is STOPPED; port 3000 is free**), then **`/about?extrude=1#roles`**.
-  Under the flag every rim is off, the etch is off, and one white spot is on, centred, static and
-  downward. **Plain `/about` is measured pixel-identical** (the identity gate reads 0 px on all four arms).
-- **Faders**, read once per load (reload to apply). Defaults are in `card-extrude.tsx`:
-  - `textem` (52 mm), `textdepth` (3 mm)
-  - `textwpm` (171.4 = `START_PAGE_WPM`), `textlead` (1 = off), `textrest` (0)
-  - `lighti` (0.5), `lightangle` (45° from the face normal)
-  - `textcolor`, `textrough`, `textbw`/`textbh`, `textlh`
-- **Code:**
-  - `card-extrude.tsx`: the component
-  - `card-text-timeline.ts`: the setting and the chase, pure
-  - `about-card-mesh.tsx`: `faceDome` / `faceBaseZ` exported; `faceReceiveShadow`
-  - `about-card-canvas.tsx`: the flag wiring
-  - `public/fonts/geist-regular.typeface.json`, built by `scripts/build-geist-typeface.mjs` from Google Fonts' Geist TTF; the TTF itself is not in the repo, and its URL is in the script
-  - `about-card-copy.ts`: the ONE copy source
-- **The etched take** (`card-etch.ts`, behind `?etch=1`) is **superseded but still in the code, gated.
-  Removing it is Carl's call.**
+- **Live `/about` (commit `8902774`):** all four cards show a FULL FIRST PAGE, STATIC, every card
+  light and rim OFF, on the OLD photograph. It stays until the new room is ready.
+  - `?textstatic=0` runs the pages. `?extrude=cb` (or `ca,cb`) isolates cards. `?extrude=0` is the old neon page.
+  - `?textlight=1` / `?textrim=1` restore a card's spot or rim.
+- **Per-card depth (the depth rule, D-094):** CA 3 / CB 1.5 / CD 2 / CS 0.9 mm, from measured view
+  angles. ⛔ **Rule: the steeper a card sits to the viewer, the shallower its letters.**
+- ✔ **The "H" is fixed:** the typeface was rebuilt from Vercel's static Geist (see `scripts/build-geist-typeface.mjs`).
 
-## ⛔ CARL'S METHOD FOR THIS WORK — standing for this subject
+## ⛔⛔ THE NEW ROOM — CHOSEN: `brand-assets/office-image-3.jpg`
 
-*"Im looking at this as a 'dry' sound first. We will add 'effects' as we go and 'shape' the cards
-and scene. Its best to do this in chunks."* **One card (CA) until he says otherwise.**
-- ⚠ **He waived the plan gate twice today, each for that piece only:** CB's etch, and the dry
-  extrusion. **A waiver is not standing.**
+Pixabay #7413418, Setupx3D, **4000 × 2250 (16:9)**, Pixabay Content License. It is a CG render with orange
+LED strips. The three candidate MASTERS are in `brand-assets/office-image-1/2/3.jpg`; their provenance
+lives in D-095. ⛔ **Masters: edit copies, never these files. Never upscale.**
 
-## ⛔⛔ NEXT — CARL'S ORDER, set at the end of the session. Work it in this sequence
+**Carl's rulings (all in D-095):**
+- **NO CROP** (the principal point stays at the frame centre). The canvas frame changes from 3:2 to 16:9.
+- **The room STAYS ORANGE/AMBER.** Rim colour is *"we shall see what works"*; text colour and size may change; **the CONCEPT is fixed.**
+- **Four cards:**
+  - **CA** = the TV's size and place, back wall left.
+  - **CB** = same size, to its right (MEASURED to fit: free wall ≈ 1.41 TV widths; ~0.20 TV-width gaps each side).
+  - **An elongated card ABOVE**, on the cabinet-door band, centred on the CA + gap + CB centre line, **area = one wall card's**.
+  - **An elongated card on the FLOOR** in front of the credenza, **its right edge at the cubby line** (x ≈ 2110), so **the chair does NOT move.**
+- **The seesaw:** equal and opposite shifts of the floor card (left) and the above card (right) keep the pair centred on the line.
+- **Minimal removal:** Deadpool; the TV and corner shelving; consoles/trademarks per the licence list in D-095. The other trinkets STAY for character.
+- **TV size estimate:** ≈ 1640 × 920 mm (~75"), ASSUMING a 750 mm desk. **No old card is comparable** (~2× CA's area, 16:9).
 
-Carl, 24 September: *"in the new convo we will isolate the other cards and put the text in. Then we
-will see what effect turning the rim on has and decide whether white light should be changed to a
-colour to 'complement' the card. Then we will look at light movement for the wall cards and then
-light movement for the floor cards which may be different given their location."*
+**Overlays and scripts:** `live-work/screenshots/office-image-3-*.png`, `live-work/scripts/*.mjs`
+(the wall fit, the above card, the balance, the layouts). ⛔ **All are FEASIBILITY measurements by the Builder. By D-076, final corners are Carl's pins, checked against an independent feature.**
 
-1. **ISOLATE CB, CD, CS AND PUT THE TEXT IN.** Use the same dry treatment as CA: extruded, "pages" at
-   171.4 wpm, rims off, one white static downward light.
-   - ⚠ **"Isolate" = one card at a time**, as CA was judged. `?extrude=1` mounts CA only today; the
-     next step is per-card isolation.
-   - ⚠ **The floor pair is the harder case:** CD and CS lean and are yawed toward their desks.
-     Measure the dome, the slots and the reveal direction in each card's own frame; don't assume CA's.
-2. **TURN THE RIM ON, AND SEE WHAT IT DOES TO THE TEXT.** Then Carl decides whether the **white light
-   changes to a colour that "complements" the card**.
-   - The rims: navy on the wall, teal on the floor (R-028).
-   - ⚠ The colour is measured ON SCREEN, not by hex (the D-093 / D-094 lesson).
-3. **LIGHT MOVEMENT — THE WALL CARDS.** D-094's direction: off-centre left, drifting right and back,
-   subtle, shadow-first.
-4. **LIGHT MOVEMENT — THE FLOOR CARDS**, *"which may be different given their location."* ⚠ Don't
-   carry the wall pair's movement over by default.
+## ⛔⛔ NEXT — QUESTIONS CARL IS ASKED TO SETTLE FIRST
 
-⚠ **Carl's method holds throughout:** dry first, then "effects", one chunk at a time. **The plan gate
-applies unless he waives it for the piece.**
+1. **A or B.**
+   - **A:** the above card = the door band WITH its rims (374 px at the centre line); the floor card STANDS floor-to-just-under-the-counter; width ≈ 1.37 TV widths.
+   - **B:** DOORS ONLY (288 px); the floor card HOVERS over the drawer stack (283 px, a 2% match); width ≈ 1.77.
+   - Both fit with the chair unmoved (`…-layout-A.png` / `…-layout-B.png`).
+2. **The above card centred on the WALL (reads slightly left on screen) or on the SCREEN.**
+3. **The TV removed and replaced by CA** (assumed), or CA mounted over it.
+4. **The removal — GPT is the editor (Carl, after a Gemini/GPT test); ONE prompt, cubbies untouched:** `live-work/office-image-3-removal-prompt.md`. **Open: keep or remove the speakers** (keep = an occlusion matte for CB). ⛔ **The test came back 1672 × 941: the real run MUST return 4000 × 2250 (no upscale).**
+5. ⛔ **GPT's Erase FAILED (web and desktop).** ⛔ **The PC tower STAYS, MOVED (Carl: the monitors are not an AIO).**
+   **Two routes, Carl's trade:**
+   - (a) **A GPT ONE-SHOT with the SHORT prompt** (the end of `office-image-3-removal-prompt.md`): fastest, but it returns ~1672 px (≈87% of Carl's screen, ~65% of a 2560 display) and REDRAWS every pixel, so the camera and every measurement are re-derived on GPT's image;
+   - (b) **Photopea / Resolve IN PLACE on the master:** full resolution and the master's own pixels, removals by hand; the tower is a copy-move.
+6. **Where the tower goes.** The floor corner is under the hanging drawer unit (~62 px of clearance vs a ~265 px tower). Carl's three solutions:
+   - (1) flush against the drawer unit, handle removed — **Builder's recommendation**; it covers almost the whole drawer front and is partly chair-hidden;
+   - (2) turned 90° to show the glass side and ring fans;
+   - (3) the other side of the desk.
+   The revised line 6 is in the prompt file. **Whatever runs, send it: the Builder measures its size, its drift from the master, and where the tower landed.**
 
-**Measured and open, from the run logs** (they fold into the steps above as Carl reaches them):
-1. **The light's hotspot.** The spot mirrored in the glossy dome washes out words at CA's top-centre.
-   - Intensity plateaus: 3 → 1.5 → **0.5 now**.
-   - **The angle is the lever:** at 0.5, 60° gives a hotspot word 2.59 : 1 vs 2.80 elsewhere (45° gives 2.22).
-   - ⚠ **But steeper angles lengthen the shadows** (≈ depth × tan θ): ~3 mm at 45°, ~5 at 60°, ~8 at 70°, against a ~5 mm stroke.
-   - **Carl asked what angle it is (45°) and did not rule.**
-2. **The drift:** off-centre left → right → back, subtle (D-094). **Not built.**
-3. **Depth and colour of the letters** (3 mm, `#f2f4f7`, roughness 0.6). **Not judged.**
-4. **The clear takes 10.2 s** with nothing new appearing. A faster clear would echo the Q&A's "it's done its job". **Not built.**
-5. **The setting:** greedy breaks, gaps up to 4.4x a space, the last line set left. **The fit chunk.**
-6. ⚠ **A 309 ms long task at the clock's start**, probably the first compile of the shadowed and clipped programs. **Recorded, not tuned** (the Q5 pattern).
-7. **CB, CD, CS**, then **the four cards striking in turn**. The next card flickers on as the reader
-   reaches the previous card's last words; the lead point is a POSITION in the copy (D-094).
-   - ⚠ **Those sequence figures were computed at 200 wpm with no clear phase.** At 171.4 wpm with the page model, CA alone is a 32.9 s cycle. **Recompute before planning the sequence.**
+## ⛔ THE ORDER OF WORK (Builder's proposal, in D-095)
 
-## ⛔ CORRECTIONS THIS SESSION, so they are not repeated
+1. **Solve the camera on the UNEDITED master.**
+   - The LED strips are excellent features.
+   - Solve mainly from the RIGHT wall: a near-frontal back wall's vanishing point is badly conditioned.
+   - **First measurement: do the verticals converge?** A renderer's lens shift would move the principal point.
+2. AI edits (Carl) → **measure the drift against the master's camera** → Resolve grade (Carl) → into three.js.
+3. **Build new card sizes from the family blueprint:** `cardDims()` + the `TENT_POLE_RATIO` crown. ⚠ `cardDims().crownMm` is stale.
+   Prove them on `/proto/card` **before** the room: heights span ~920 vs ~520 mm, so **does the family still read as one?** (Carl's eye.)
+4. **Re-derive the type size from ON-SCREEN em** in the new room (the old wall cards ≈ 12–14 px/em). 52 mm was set for the old camera.
+5. **Re-tune the glass per card** (D-089's values were tuned against the old backgrounds).
 
-1. ⚠ **The Builder's first reading-time figure (~107 s for all four) was ~30 s out.** It stacked
-   `/start`'s 171 wpm on a per-character clock. **Carl's stopwatch and two tools fixed it:**
-   Read-o-Meter (`https://niram.org/read/`) and Gorby agree at 200 wpm. ⛔ **Gorby rounds to whole
-   minutes; do not use it for timing.**
-2. ⚠ **The first hotspot measurement read "fine".** Its box measured words against the dark gaps
-   between lines. **Measure a word against the glass right behind it.**
-3. ⚠ The Builder told Carl D-077 held CS's word count. **It holds none;** the count lived in the
-   sprint entry and in live-work files, and **is corrected to 56 everywhere.**
-4. **Matching the tube's HEX cannot match the rim AS SEEN:** the rim is tone-mapped at intensity 6
-   plus its untone-mapped bloom. **Measure colour on screen** (the D-093 lesson again).
+⚠ **Plan gate:** the new-room work is new chunks. The gate applies unless Carl waives it for the piece.
 
-## ⚠ OPEN — owners in brackets
+## ⚠ PARKED / CARRIED
 
-1. **The review log has TWO entries numbered R-028** (22 and 23 September), and the 22nd sits ABOVE
-   the 23rd in a reverse-chronological file. **Found today, not renumbered.** History is not
-   rewritten without Carl. [Carl]
-2. **Remove the etched take** (`card-etch.ts`, the `?etch=1` wiring), or keep it as a fallback. [Carl]
-3. **Accessibility:** `sr-only` copy, reduced motion, the flash cap, hidden-tab pause. **All
-   deferred to mastering by Carl's ruling** (D-094). [mastering]
-4. **CS's present-tense "connected to…"** (D-077) is still unanswered. [Carl]
-5. Carried: the ignition verdict and the scroll strike point; the intermittent 1920 frame drops;
-   D-087's loop; RIM-DARK / ENVMAP-STALE; the `proven.json` filing; the stale "rim is not a light
-   source" comments; `wall-card-corners-4-september.md`'s supersession notice. [Carl / Builder]
+- `live-work/cards-text-isolation-plan-24-september.md` is **SUPERSEDED** (the text went to all four cards differently).
+- **D-095 is PROPOSED throughout, not approved as a whole:** the image choice and the layout are Carl's rulings; its route (A/B/C) is moot now that a found render is the base.
+- Carried: the two R-028s (not renumbered); remove the etched take?; CS's "connected to…" (D-077); accessibility deferred to mastering (D-094); ENVMAP-STALE / RIM-DARK; the `proven.json` filing.
 
 ## ⚠ HOUSEKEEPING
 
-- **`live-work/chunk-scope.json` is LIVE** (`ca-extruded-text-dry`). It is gitignored. **Re-scope it
-  for the next chunk.** Don't delete it silently: the guard FAILS OPEN when the file is absent.
-- **Carl's machine:** DPR **1.36**, viewport ~**1412 x 700** CSS. Capture at that size for his eye.
-- **Committed and pushed at the end of this session** (see `git log`). The push deploys to production;
-  everything new is gated behind flags.
+- **`live-work/chunk-scope.json` still names `four-cards-static-text` (closed, committed). RE-SCOPE it for the next chunk**; don't delete it (the guard fails open).
+- **Carl's machine:** DPR 1.36, viewport ~1412 × 700 CSS.
+- **The dev server is stopped at the end of this session.** Port 3000 should be free.
+- **Correction made this session:** a font file was first reported as ~198 KB (a misread `ls`, because the username has a space). It is ~33 KB. **Use `stat`, not `ls | awk`.**
 
 ---
 
-*Written 24 September 2026.*
+*Written 24 September 2026 (session 2).*
