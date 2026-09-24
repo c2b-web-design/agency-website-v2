@@ -43,6 +43,7 @@
    rendering fault. Carl has already established type cannot shrink further. */
 
 import { useEffect, useRef, useState } from "react";
+import { aboutCardCopy } from "./about-card-copy";
 
 type Pt = { x: number; y: number };
 
@@ -104,7 +105,9 @@ const WALL_CARDS = [
       { x: 0.4668487, y: 0.35997265 },
       { x: 0.19208298, y: 0.36854913 },
     ],
-    text: "The technical foundation of every project. Operating directly inside the development environment, the Architect collaborates on feature design, evaluates system logic, and solves structural problems before a single line of production code is written. High-level ideas are broken down into precise, modular components — a clear blueprint the Builder can execute exactly. And the work is then checked by someone who did not do it.",
+    /* ⛔ The copy lives in `about-card-copy.ts` — one source for the rendered
+       text and the sr-only copy (D-094). Do not inline it here again. */
+    text: aboutCardCopy("CA").body,
   },
   {
     id: "CB",
@@ -114,7 +117,7 @@ const WALL_CARDS = [
       { x: 0.84034374, y: 0.37848976 },
       { x: 0.59164856, y: 0.35975847 },
     ],
-    text: "Where the approved plan becomes the site. Stationed in the same environment as the Architect, the Builder drafts the implementation step by step, then passes it back for review and amendment before any production code is written. Each piece of work has a declared scope, and the Builder cannot reach outside it. Code is only good when it stays within the brief. The plan is verified against the work as it goes, so the site that gets built is the site that was approved.",
+    text: aboutCardCopy("CB").body,
   },
 ];
 

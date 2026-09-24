@@ -469,9 +469,10 @@ export type NeonCardId = "ca" | "cb" | "cd" | "cs";
  * drives. `AboutCardMesh` registers the materials; `NeonBloom` writes them on
  * the same frame it renders (the opal's *"one clock, both effects"*).
  *
- * ⚠ THE TWO MATERIALS ARE TWO DEPTHS ON ONE TRACK (D-091): the rim's emissive
- * (the tube, seen) and the emitter's colour (the bloom's source). Spill and the
- * text's reflection join later as further depths on the same value.
+ * ⚠ THE MATERIALS ARE DEPTHS ON ONE TRACK (D-091): the rim's emissive (the
+ * tube, seen), the emitter's colour (the bloom's source) and — since 24 September
+ * 2026, CA only behind `?etch=1` — the ETCHED TEXT's glow (D-094). ⛔ *Corrected in
+ * place: this read "the text's reflection joins later".* Spill is still to come.
  */
 export type NeonChannel = {
   id: NeonCardId;
@@ -482,6 +483,16 @@ export type NeonChannel = {
   peak: number;
   rim: THREE.MeshPhysicalMaterial | null;
   emitter: THREE.MeshBasicMaterial | null;
+  /**
+   * ⛔ THE ETCH'S GLOW MESH — additive, so it ADDS light rather than covering
+   * (Architect F1). Registered by `AboutCardMesh` only when the card has `etch`
+   * AND a channel; the writer sets its colour every frame. See `card-etch.ts`.
+   */
+  textGlow: THREE.MeshBasicMaterial | null;
+  /** The glow's colour — the TUBE's by default (Architect S4). */
+  textColor: THREE.Color;
+  /** Its share of `peak × level`. 0 on every card without etch. */
+  textDepth: number;
 };
 
 // ── URL faders — ONE reader (the shared-accessor rule) ──────────────────────

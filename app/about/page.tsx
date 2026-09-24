@@ -789,7 +789,14 @@ export default function About() {
 
                 ⚠ THE HEADING WAS ALREADY PROVISIONAL BEFORE IT WENT. Carl,
                 30 August: *"Does it have to be called 'meet the team?' No."*
-                ⛔ Section 2's copy — the four seats — is NOT YET WRITTEN. */}
+                ⛔ *Corrected in place, 24 September 2026. This read: "Section 2's
+                copy — the four seats — is NOT YET WRITTEN."* ⚠ Overtaken: the
+                copy was written on 4 September (D-077, PROVISIONAL) and lives in
+                `components/about/about-card-copy.ts`. **What still stands: this
+                container is held EMPTY OF VISIBLE COPY on purpose** — the words go
+                ON THE CARDS, as etched glass (D-094), not in this block.
+                ⚠ No screen-reader copy here yet, by Carl's ruling of 24 September:
+                accessibility is optimised at mastering (D-035). */}
           </div>
         </Container>
       </section>

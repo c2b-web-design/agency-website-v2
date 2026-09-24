@@ -151,7 +151,10 @@ function disposeBloom(b: Bloom) {
 
 /** Every rim dark — on failure and on unmount, so nothing inherits a lit tube. */
 function darken(channels: NeonChannel[]) {
-  for (const ch of channels) if (ch.rim) ch.rim.emissiveIntensity = 0;
+  for (const ch of channels) {
+    if (ch.rim) ch.rim.emissiveIntensity = 0;
+    ch.textGlow?.color.setRGB(0, 0, 0);
+  }
 }
 
 /**
@@ -386,6 +389,10 @@ export function NeonBloom({ channels, mode }: Props) {
              A method call is how the emitter line below already writes. */
           ch.rim?.setValues({ emissiveIntensity: k });
           ch.emitter?.color.copy(ch.color).multiplyScalar(k);
+          /* ⛔ THE ETCHED TEXT — a third depth on the same value (D-091, D-094).
+             Additive, so it adds light and is independent of the frost's opacity
+             (Architect F1). Not on NEON_LAYER: it glows, it does not bloom. */
+          ch.textGlow?.color.copy(ch.textColor).multiplyScalar(k * ch.textDepth);
         }
       } catch (e) {
         failOnce("the track", e);

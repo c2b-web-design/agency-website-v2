@@ -31,7 +31,8 @@
  * card is tuned.**
  */
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
+import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import {
   cardDims,
@@ -58,6 +59,8 @@ import {
 } from "./about-card-glass";
 /* ⛔ D-093 — consumed ONLY when the `neon` prop is passed (CA and CB). */
 import { NEON_LAYER, type NeonChannel } from "./about-neon";
+/* ⛔ D-094 — consumed ONLY when the `etch` prop is passed (CA, behind `?etch=1`). */
+import { buildEtchTexture, resolveEtchFamily, type EtchSettings } from "./card-etch";
 
 // ── Diagnostic tones ─────────────────────────────────────────────────────────
 // Deliberately achromatic and deliberately DIFFERENT per part, so the three
@@ -435,6 +438,26 @@ function insetDistance(
  * directions, and a plateau on one axis alone would leave the short axis curving
  * continuously under the text.
  */
+/**
+ * ⛔ THE FACE'S DOME, normalised: 0 on the boundary, 1 at the pole. The quartic
+ * bulge `(1 − u²)(1 − v²)` — see `ovalHeight` below for the whole account.
+ *
+ * ⚠ EXPORTED SO THE EXTRUDED TEXT (`card-extrude.tsx`, D-094) SITS ON THE SAME
+ * SURFACE the face is built from — one formula, not a copy that could drift.
+ * Multiply by the crown (mm); add `faceBaseZ(dims)`.
+ */
+export function faceDome(x: number, y: number, hw: number, hh: number): number {
+  const u = Math.min(1, Math.abs(x) / hw);
+  const v = Math.min(1, Math.abs(y) / hh);
+  return (1 - u * u) * (1 - v * v);
+}
+
+/** Where the face's base sits: the bevel's front plane, so the seam does not gap.
+    ⚠ Exported for the same reason as `faceDome`. */
+export function faceBaseZ(dims: CardDims): number {
+  return dims.rimBeadMm * 0.8;
+}
+
 function convexFaceGeometry(
   width: number,
   height: number,
@@ -686,16 +709,10 @@ function convexFaceGeometry(
      * ⚠ `x`/`y` here are already the clamped rounded-rect coordinates from the
      * vertex loop, so the normalisation matches the outline the face is cut to.
      */
-    const u = Math.min(1, Math.abs(x) / ohw);
-    const v = Math.min(1, Math.abs(y) / ohh);
-
-    const h = (1 - u * u) * (1 - v * v);
-
-    /**
-     * ⚠ 0 ON THE BOUNDARY, 1 AT THE POLE. The caller multiplies by the pole
-     * height, so this returns a normalised membrane rather than millimetres.
-     */
-    return h;
+    /* ⚠ THE FORMULA LIVES IN `faceDome` (module scope, exported) SO THE EXTRUDED
+       TEXT SITS ON THE SAME SURFACE — one source, not a copy (D-094, 24 September
+       2026). Moved verbatim; the face's vertices are unchanged. */
+    return faceDome(x, y, ohw, ohh);
   };
 
   const positions: number[] = [];
@@ -903,6 +920,9 @@ export type AboutCardMeshProps = {
    * shares the rim's geometry on `NEON_LAYER`, where only `NeonBloom`'s neon
    * pass sees it. Both are driven every frame by ONE writer (`neon-bloom.tsx`).
    *
+   * ⚠ With `etch` as well (CA, `?etch=1`), the etched text's GLOW mesh
+   * registers into the same channel as a third depth (D-094, 24 September).
+   *
    * ⚠⚠ WHEN ABSENT NOTHING CHANGES — CD, CS and the bench render exactly as
    * before. **The opal's rule 4 (D-091): an effect that is invisible without its
    * driver cannot regress approved work.** The identity gate measures this.
@@ -912,6 +932,17 @@ export type AboutCardMeshProps = {
    * like a dead constant. A dev check says so loudly.
    */
   neon?: NeonChannel;
+  /**
+   * ⛔⛔ THE ETCHED TEXT — D-094, 24 September 2026. OFF BY DEFAULT, and the
+   * default is load-bearing for the same reason as `neon`: absent, nothing new
+   * renders and no card changes. Only CA, only with `?etch=1`, until Carl approves.
+   *
+   * ⚠ MUST BE MEMOISED BY THE CALLER — an inline object would be new on every
+   * render (Architect S1). The texture effect is keyed on primitives anyway.
+   */
+  etch?: { id: string; body: string; settings: EtchSettings };
+  /** The face receives shadows — D-094's extruded text only. Off by default. */
+  faceReceiveShadow?: boolean;
 };
 
 export function AboutCardMesh({
@@ -925,6 +956,8 @@ export function AboutCardMesh({
   glassThicknessMm = GLASS_THICKNESS_MM,
   onTilt,
   neon,
+  etch,
+  faceReceiveShadow = false,
 }: AboutCardMeshProps) {
   useEffect(() => {
     if (neon && !glass && process.env.NODE_ENV !== "production") {
@@ -1027,7 +1060,56 @@ export function AboutCardMesh({
   }, [faceGeometry, onTilt]);
 
   // The face's base sits at the bevel's front plane so the seam does not gap.
-  const faceBaseZ = dims.rimBeadMm * 0.8;
+  const baseZ = faceBaseZ(dims);
+
+  // ── THE ETCH'S TEXTURE — D-094. Built only when `etch` is passed. ──
+  //
+  // ⚠ KEYED ON PRIMITIVES (Architect S1): the body, the size and weight, and the
+  // face's millimetres — the texture's size comes from `dims`.
+  // ⛔ STATE IS SET ONLY AFTER THE AWAIT (Architect S8): a synchronous setState in
+  // an effect body is the lint baseline's one accepted error, not a second.
+  // ⛔ NOTHING MOUNTS UNTIL THE TEXTURE EXISTS (Architect F3): a transparent white
+  // material without its map would draw a pale slab over the card, and adding
+  // the map later forces a recompile.
+  const gl = useThree((s) => s.gl);
+  const invalidate = useThree((s) => s.invalidate);
+  const [etchTex, setEtchTex] = useState<THREE.CanvasTexture | null>(null);
+  const etchId = etch?.id;
+  const etchBody = etch?.body;
+  const etchEm = etch?.settings.emMm;
+  const etchWeight = etch?.settings.weight;
+  const etchBW = etch?.settings.blockW;
+  const etchBH = etch?.settings.blockH;
+  const faceW = dims.faceWidthMm;
+  const faceH = dims.faceHeightMm;
+  useEffect(() => {
+    if (!etchId || !etchBody || etchEm === undefined || etchWeight === undefined || etchBW === undefined || etchBH === undefined) return;
+    let cancelled = false;
+    let made: THREE.CanvasTexture | null = null;
+    (async () => {
+      try {
+        const family = await resolveEtchFamily(etchWeight, etchBody);
+        if (cancelled) return;
+        made = buildEtchTexture(etchId, etchBody, faceW, faceH, etchEm, etchWeight, etchBW, etchBH, family).texture;
+        /* ⚠ THE UPLOAD HAPPENS HERE, at a moment chosen — not inside whatever
+           frame first draws it (Architect F3). Timed separately from the paint
+           and from the first render's program compile. */
+        const t0 = performance.now();
+        gl.initTexture(made);
+        performance.measure(`etch:upload:${etchId}`, { start: t0, end: performance.now() });
+        if (cancelled) return;
+        performance.mark(`etch:ready:${etchId}`);
+        setEtchTex(made);
+        invalidate();
+      } catch (e) {
+        console.error(`⛔ ETCH NOT MOUNTED on ${etchId} — ${e instanceof Error ? e.message : e}`);
+      }
+    })();
+    return () => {
+      cancelled = true;
+      made?.dispose();
+    };
+  }, [etchId, etchBody, etchEm, etchWeight, etchBW, etchBH, faceW, faceH, gl, invalidate]);
 
   return (
     <group>
@@ -1171,7 +1253,13 @@ export function AboutCardMesh({
           />
         )}
       </mesh>
-      <mesh geometry={faceGeometry} position={[0, 0, faceBaseZ]}>
+      <mesh
+        geometry={faceGeometry}
+        position={[0, 0, baseZ]}
+        /* ⚠ D-094's extruded text (CA, `?extrude=1`): the letters' shadows land on
+           the face. Off everywhere else; `false` is three's own default. */
+        receiveShadow={faceReceiveShadow}
+      >
         {/* ⚠ NO NORMAL MAP. The convex-normal-map route was tested and closed on
             14 September 2026 — Carl: *"NO change. CD is the way to go."* The
             curvature is real geometry; see `ovalHeight`. */}
@@ -1210,6 +1298,64 @@ export function AboutCardMesh({
           />
         )}
       </mesh>
+      {/* ⛔⛔ THE ETCHED TEXT — D-094, 24 September 2026. TWO MESHES, BOTH SHARING
+          `faceGeometry` — the same object, as the emitter shares `rimGeometry`, so
+          the words cannot drift from the dome.
+
+          ⚠⚠ TWO, NOT ONE — Architect F1. In one transparent material the emissive
+          is inside the colour that gets multiplied by alpha, so the glow would be
+          capped by the frost's opacity and `etchop=0` could never glow. Frost
+          COVERS what is behind it (normal blend); escaping light ADDS to it
+          (additive). Two blend terms, two meshes.
+
+          ⚠ SIBLINGS OF THE FACE, NEVER CHILDREN, with the face's own position —
+          nesting would double the offset (Architect S2). Coplanar with the glass
+          ("etched IN it"), held in front by `polygonOffset`, not lifted.
+
+          ⚠ `renderOrder` 1 then 2: both are transparent at the same depth, so
+          without it their order would fall to creation order. Frost first, so it
+          never covers the glow. */}
+      {etch && etchTex && (
+        <mesh geometry={faceGeometry} position={[0, 0, baseZ]} renderOrder={1}>
+          <meshStandardMaterial
+            color="#ffffff"
+            roughness={etch.settings.roughness}
+            metalness={0}
+            transparent
+            opacity={etch.settings.opacity}
+            alphaMap={etchTex}
+            depthWrite={false}
+            polygonOffset
+            polygonOffsetFactor={-1}
+            polygonOffsetUnits={-4}
+          />
+        </mesh>
+      )}
+      {/* ⚠ THE GLOW needs a channel: with `?neon=none` it is not mounted and the
+          frost renders unlit (Architect S3). Black until the writer sets it. */}
+      {etch && etchTex && neon && (
+        <mesh geometry={faceGeometry} position={[0, 0, baseZ]} renderOrder={2}>
+          <meshBasicMaterial
+            ref={(m: THREE.MeshBasicMaterial | null) => {
+              /* ⛔ NULL-GUARDED — the D-093 lesson: an unguarded ref here threw
+                 outside the writer's isolation and lost the whole context. */
+              if (!m) return;
+              Object.assign(neon, { textGlow: m });
+              return () => {
+                Object.assign(neon, { textGlow: null });
+              };
+            }}
+            color="#000000"
+            transparent
+            blending={THREE.AdditiveBlending}
+            alphaMap={etchTex}
+            depthWrite={false}
+            polygonOffset
+            polygonOffsetFactor={-1}
+            polygonOffsetUnits={-4}
+          />
+        </mesh>
+      )}
     </group>
   );
 }

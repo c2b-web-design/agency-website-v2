@@ -106,6 +106,9 @@ import {
   type NeonChannel,
 } from "./about-neon";
 import { NeonBloom } from "./neon-bloom";
+import { etchEnabled, etchSettings, type EtchSettings } from "./card-etch";
+import { CardExtrudedText, extrudeEnabled, extrudeSettings } from "./card-extrude";
+import { aboutCardCopy } from "./about-card-copy";
 
 /** The plate is 3:2. ⚠ Guide and rail fractions are of the PLATE, not the stage. */
 const PLATE_W = 2560;
@@ -898,11 +901,41 @@ export default function AboutCardCanvas() {
    *   ?neon=none | off | full   ?neont=<ms>   ?reignite=<ms>
    *   ?neonca= ?neoncb= ?neoncd= ?neoncs=  ?bloom= ?bloomr=
    *   wall: ?neonhex= (glow) ?neontube= (tube)   floor: ?floorhex= ?floortube=
+   *   etched text (D-094, CA only): ?etch=1  ?etchem= ?etchbw= ?etchbh= ?etchop= ?etchglow=
+   *                                 ?etchrough= ?etchweight= ?etchhex=
    *
-   * Every fader falls back to the committed value in `about-neon.ts`, so a plain
-   * `/about` always shows what is committed.
+   * Every fader falls back to the committed value in `about-neon.ts` /
+   * `card-etch.ts`, so a plain `/about` always shows what is committed.
    */
-  const neon = useMemo(() => neonMode(), []);
+  /**
+   * ⛔⛔ THE EXTRUDED TEXT, "DRY" — D-094, 24 September 2026. CA ONLY, AND ONLY WITH
+   * `?extrude=1`. Carl: *"turned all the rims off. At this point we dont want
+   * extraneous light 'polluting' the scene."* So under the flag the neon is NOT
+   * MOUNTED (`none`: every rim is plain clear glass, no bloom) and the etched text
+   * is off. ⚠ Plain `/about` is untouched: without the flag this is `null`.
+   */
+  const extrude = useMemo(() => (extrudeEnabled() ? extrudeSettings() : null), []);
+  const neon = useMemo<ReturnType<typeof neonMode>>(
+    () => (extrude ? { kind: "none" } : neonMode()),
+    [extrude],
+  );
+  /**
+   * ⛔⛔ THE ETCHED TEXT — D-094, 24 September 2026. THE WALL PAIR, AND ONLY WITH
+   * `?etch=1`: plain `/about` is pixel-identical until Carl approves the take.
+   * ⚠ CB JOINED THE SAME DAY, beyond the CA-only plan, on Carl's word: *"we had
+   * no idea how that plan would look in practice… we wont know that until text is
+   * put into CB."* Its angle decides the display options (D-094).
+   * ⚠ MEMOISED ONCE PER MOUNT (Architect S1) — an inline object would be new on
+   * every render. Plan: `live-work/card-text-etch-plan-24-september.md`.
+   */
+  const [caEtch, cbEtch] = useMemo(() => {
+    if (!etchEnabled() || extrudeEnabled()) return [undefined, undefined];
+    return (["ca", "cb"] as const).map((id) => ({
+      id,
+      body: aboutCardCopy(id === "ca" ? "CA" : "CB").body,
+      settings: etchSettings(id),
+    }));
+  }, []);
   const neonChannels = useMemo(() => {
     /* ⚠ TWO COLOURS PER PAIR: the GLOW and the TUBE. They differ on the wall
        pair because ACES turns a navy tube cyan (see `NEON_TUBE_HEX`). */
@@ -915,6 +948,8 @@ export default function AboutCardCanvas() {
       id: NeonChannel["id"],
       pair: { glow: string; tube: string },
       peak: number,
+      /** ⚠ Only the wall pair's channels carry the etch's depth; the floor pair's is 0. */
+      etch?: { settings: EtchSettings },
     ): NeonChannel => ({
       id,
       color: new THREE.Color(pair.glow),
@@ -922,14 +957,18 @@ export default function AboutCardCanvas() {
       peak,
       rim: null,
       emitter: null,
+      textGlow: null,
+      /* ⛔ MATCHED TO THE RIM AS SEEN — see `ETCH_GLOW_HEX`. */
+      textColor: new THREE.Color(etch ? etch.settings.glowHex : pair.tube),
+      textDepth: etch ? etch.settings.glowDepth : 0,
     });
     return [
-      make("ca", wall, neonNumber("neonca", CA_NEON_PEAK, 0, 200)),
-      make("cb", wall, neonNumber("neoncb", CB_NEON_PEAK, 0, 200)),
+      make("ca", wall, neonNumber("neonca", CA_NEON_PEAK, 0, 200), caEtch),
+      make("cb", wall, neonNumber("neoncb", CB_NEON_PEAK, 0, 200), cbEtch),
       make("cd", floor, neonNumber("neoncd", CD_NEON_PEAK, 0, 200)),
       make("cs", floor, neonNumber("neoncs", CS_NEON_PEAK, 0, 200)),
     ];
-  }, []);
+  }, [caEtch, cbEtch]);
   /* ⚠ `?neon=none` passes NO channel, so every card takes the exact pre-neon
      path — the identity gate's first arm. */
   const [caNeon, cbNeon, cdNeon, csNeon] =
@@ -957,7 +996,14 @@ export default function AboutCardCanvas() {
         <Canvas
           frameloop="demand"
           dpr={[1, 2]}
+          /* ⚠ Shadows ONLY under `?extrude=1` — the letters' shadows on CA's face.
+             `false` is R3F's own default, so plain `/about` is unchanged. */
+          shadows={extrude ? "soft" : false}
           gl={{ antialias: true, alpha: true }}
+          /* ⚠ The extruded text's reveal/erase wipe is two clipping planes per line,
+             which need LOCAL clipping — a renderer switch, set only under the flag.
+             It affects only materials that carry `clippingPlanes` (only the text's). */
+          onCreated={extrude ? ({ gl }) => { gl.localClippingEnabled = true; } : undefined}
           camera={{
             /* ⛔ VERTICAL FOV. `PerspectiveCamera.fov` is vertical and the plan
                carried the 89.91° HORIZONTAL figure — caught before it shipped. */
@@ -1311,7 +1357,18 @@ export default function AboutCardCanvas() {
               glassRoughness={0.35}
               glassFaceTransmission={caTransmissionOverride ?? CA_FACE_TRANSMISSION}
               neon={caNeon}
+              etch={caEtch}
+              faceReceiveShadow={!!extrude}
             />
+            {extrude && (
+              <CardExtrudedText
+                id="ca"
+                body={aboutCardCopy("CA").body}
+                dims={ca.dims}
+                crownMm={ca.crownMm}
+                settings={extrude}
+              />
+            )}
           </group>
           <group
             position={cb.position}
@@ -1325,6 +1382,7 @@ export default function AboutCardCanvas() {
               glassRoughness={0.35}
               glassFaceTransmission={GLASS_FACE_TRANSMISSION}
               neon={cbNeon}
+              etch={cbEtch}
             />
           </group>
 
