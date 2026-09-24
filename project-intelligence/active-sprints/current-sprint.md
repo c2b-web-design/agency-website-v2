@@ -579,7 +579,11 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 ---
 
-*Last updated: 2026-09-24 (session 2) — ⛔ **THE EXTRUDED TAKE IS PLAIN `/about`, RIMS OFF**, on Carl's word (gate waived for this piece only): *"The rim lights should be turned off so we can see the card in isolation."* **`?extrude=0` is the previous page** (neon, etched take), measured 0 px against the baseline. ⚠ **Plain `/about` is no longer pixel-identical to production's previous page, by design.** Nothing pushed. Reasoning: D-094.*
+*Last updated: 2026-09-24 (session 2, latest) — ⛔ **ALL FOUR CARDS HAVE TEXT, ONE PER LOAD; EVERY CARD LIGHT OFF.** CD 2 mm and CS 0.9 mm deep by the depth rule. Next, by Carl's order: all four static and visible, then the light (*"change the light type and… alter the intensity"*). Reasoning: D-094.*
+
+*Previously: 2026-09-24 (session 2, later) — ⛔ **CB HAS ITS TEXT, ONE CARD PER LOAD.** Plain `/about` shows CB only (CA is `?extrude=ca`), each card its own white light, CA's position scaled by face width. *"When all 4 cards have text we can then work out at what point a card triggers the next."* Uncommitted. Reasoning: D-094.*
+
+*Previously: 2026-09-24 (session 2) — ⛔ **THE EXTRUDED TAKE IS PLAIN `/about`, RIMS OFF**, on Carl's word (gate waived for this piece only): *"The rim lights should be turned off so we can see the card in isolation."* **`?extrude=0` is the previous page** (neon, etched take), measured 0 px against the baseline. ⚠ **Plain `/about` is no longer pixel-identical to production's previous page, by design.** Nothing pushed. Reasoning: D-094.*
 
 *Previously: 2026-09-24 — **the card text.** One copy module; the etched take built and superseded; ⛔ **CA's copy is now EXTRUDED and runs in "pages" at `/start`'s pace — Carl: "This i great" (R-029), on the timing model only.** Everything is behind `?etch=1` / `?extrude=1`; plain `/about` is measured unchanged. Reasoning: D-094.*
 

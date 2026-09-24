@@ -1,6 +1,12 @@
 "use client";
 
-/* ⛔⛔ THE EXTRUDED CARD TEXT — THE "DRY" TAKE. D-094, 24 September 2026. CA ONLY.
+/* ⛔⛔ THE EXTRUDED CARD TEXT — THE "DRY" TAKE. D-094, 24 September 2026. ALL FOUR
+   CARDS, ONE PER LOAD. ⚠ *Corrected in place:* this read "CA ONLY", then "CA AND
+   CB"; CD and CS joined later in session 2. CB joined in session 2 the same
+   day — Carl: *"Same text size, same type of text. Same reveal… The only
+   difference being is that CB has more words."* ⛔ ONE CARD PER LOAD (`extrudeCard`):
+   *"isolate CA text so we can focus on CB… one card at a time."* The sequence
+   (each card striking as the previous ends) is a later chunk, once all four have text.
    ⚠ *Corrected in place:* this read "BEHIND `?extrude=1`". Since session 2 the
    same day it is ON BY DEFAULT on plain `/about`, with every rim off;
    `?extrude=0` restores the previous page (see `extrudeEnabled`).
@@ -58,7 +64,68 @@ export type ExtrudeSettings = {
   /** The spot: intensity, and its angle DOWN from the face's normal (degrees). */
   lightIntensity: number;
   lightAngleDeg: number;
+  /** The spot SWUNG about the face's vertical axis, degrees; negative = toward the
+      card's −x (CB's far, left end). 0 = centred, as the dry take was built. */
+  lightYawDeg: number;
+  /** Where the spot aims across the face, in half-widths (−1 = the −x edge). The
+      light moves WITH its aim, so the angles above stay relative to the aim point. */
+  lightAimX: number;
+  /** The card's own spot is mounted (`?textlight=0|1`). */
+  light: boolean;
+  /** The card's own neon rim is lit — ONLY that card's (`?textrim=0|1`). */
+  rim: boolean;
 };
+
+/**
+ * ⛔ PER-CARD DEFAULTS for the two switches — the state each card is being judged in.
+ * - CA: spot ON, rim OFF. This is the state R-029/R-030 judged, kept so `?extrude=ca`
+ *   (and `?extrude=1`) still shows what those records describe.
+ * - CB: **spot ON, rim ON.** Carl, 24 September 2026 (session 2): first *"On CB, turn
+ *   off the light but turn on the rim"* — step 2 of his order, *"see what effect
+ *   turning the rim on has"* — then *"It looks better close up… turn the light back
+ *   on so CB has Rim and WebGL light."*
+ * - CD, CS: no text yet; CA's state until they get their own.
+ */
+/* ⛔⛔ ALL OFF — Carl, later the same session: *"a way around this is to change the
+   light type and to alter the intensity. Turn all the lights off and put the text
+   in for CD and CS."* Every card's spot and rim; the room's own lights (ambient,
+   key, fill — `about-card-canvas.tsx`) are untouched. ⚠ The history above is kept:
+   CA's R-029/R-030 state is now `?extrude=ca&textlight=1`, CB's last state
+   `?textlight=1&textrim=1`. The light TYPE and intensity are the next light
+   chunk, after all four cards show their text. */
+const EXTRUDE_SWITCHES: Record<ExtrudeCardId, { light: boolean; rim: boolean }> = {
+  ca: { light: false, rim: false },
+  cb: { light: false, rim: false },
+  cd: { light: false, rim: false },
+  cs: { light: false, rim: false },
+};
+
+/**
+ * ⛔ EXTRUSION DEPTH PER CARD, mm — THE DEPTH RULE (D-094): *the steeper a card sits
+ * to the viewer, the shallower its letters.* The side wall shows at ≈ (depth ÷
+ * stem) × tan θ of a stroke's face; Geist's stem ≈ 4.5 mm at 52 mm. Each figure
+ * comes from that card's MEASURED view angle off its normal (far / centre / near):
+ *   CA 23.7 / 12.1 / 4.0°  → 3 mm   (worst side wall 29%)
+ *   CB 46.5 / 37.4 / 25.5° → 1.5 mm (35%) — Carl's diagnosis
+ *   CD 26.9 / 27.4 / 34.7° → 2 mm   (31%; at 3 mm it would be 46%)
+ *   CS 60.0 / 52.8 / 44.2° → 0.9 mm (35%; at 3 mm it would be 115% — more side
+ *                                     wall than letter face)
+ * CD and CS are set to CB's 35% as the ceiling (the value Carl has looked at).
+ * ⚠ CS is the steepest card of the four: its far letters are also squashed to
+ * cos 60° = half their width, which no depth can fix.
+ * ⚠ Takes. `?textdepth=` overrides for whichever card is loaded.
+ */
+const EXTRUDE_DEPTH_MM: Record<ExtrudeCardId, number> = {
+  ca: 3,
+  cb: 1.5,
+  cd: 2,
+  cs: 0.9,
+};
+
+function switchParam(key: string, fallback: boolean): boolean {
+  const v = neonParam(key);
+  return v === "1" ? true : v === "0" ? false : fallback;
+}
 
 /**
  * ⛔ THE START PAGE'S READING PACE — Carl, 24 September 2026: *"Slow it down to the
@@ -79,16 +146,59 @@ export const START_PAGE_WPM = (12 / 4200) * 60_000;
  * `?extrude=1` still works and means the same thing; ⛔ **`?extrude=0` is now the
  * way back to the previous `/about`** (the neon rims lit, no extruded text, the
  * etched take reachable with `&etch=1`).
+ * ⚠ Since later that session it is ONE CARD AT A TIME — see `extrudeCard`.
  */
 export function extrudeEnabled(): boolean {
-  return neonParam("extrude") !== "0";
+  return extrudeCard() !== null;
+}
+
+export type ExtrudeCardId = "ca" | "cb" | "cd" | "cs";
+const EXTRUDE_CARD_IDS: readonly ExtrudeCardId[] = ["ca", "cb", "cd", "cs"];
+
+/**
+ * ⛔⛔ ONE CARD AT A TIME — Carl, 24 September 2026 (session 2): *"isolate CA text
+ * so we can focus on CB. It doesnt need to be seen at the moment. We should do it
+ * one card at a time. When all 4 cards have text we can then work out at what
+ * point a card triggers the next and what does that card do after."*
+ *
+ * The card plain `/about` shows while it is being worked on. ⚠ A working
+ * position, not a design: the four-card sequence replaces this when it is built.
+ */
+export const EXTRUDE_WORKING_CARD: ExtrudeCardId = "cb";
+
+/**
+ * Which card carries the extruded text on this load, or `null` for none.
+ *   (absent)          → `EXTRUDE_WORKING_CARD`
+ *   `?extrude=ca|cb|cd|cs` → that card
+ *   `?extrude=1`      → CA — ⚠ kept so every record saying `?extrude=1` still means CA
+ *   `?extrude=0`      → none: the previous `/about`, neon lit
+ * ⚠ Anything else mounts NOTHING and says so — a typo must not pass for a choice.
+ */
+export function extrudeCard(): ExtrudeCardId | null {
+  const v = neonParam("extrude");
+  if (v === null) return EXTRUDE_WORKING_CARD;
+  if (v === "0") return null;
+  if (v === "1") return "ca";
+  if ((EXTRUDE_CARD_IDS as readonly string[]).includes(v)) return v as ExtrudeCardId;
+  console.error(`⛔ ?extrude=${JSON.stringify(v)} is not a card — use ca, cb, cd, cs, 1 (= ca) or 0. No extruded text mounted.`);
+  return null;
 }
 
 /** Read once per mount by the canvas (reload to apply). */
-export function extrudeSettings(): ExtrudeSettings {
+export function extrudeSettings(card: ExtrudeCardId): ExtrudeSettings {
   return {
+    light: switchParam("textlight", EXTRUDE_SWITCHES[card].light),
+    rim: switchParam("textrim", EXTRUDE_SWITCHES[card].rim),
     emMm: neonNumber("textem", 52, 20, 120),
-    depthMm: neonNumber("textdepth", 3, 0.5, 20),
+    /* ⛔ PER CARD — CB 3 → 1.5 mm, 24 September 2026 (session 2). Carl: *"CA and CB
+       are at different angles to the user, the text shouldnt be at the same
+       extruded height. It should be slightly smaller."* MEASURED: CB is seen at
+       46.5° / 37.4° / 25.5° off its normal (far / centre / near), CA at 23.7° /
+       12.1° / 4.0°. The side wall shows ≈ (depth / stem) × tan θ of a stroke's face
+       (Geist's stem ≈ 4.5 mm at 52 mm): at 3 mm CB's far edge carries 70% against
+       CA's worst 29%. 1.5 mm gives CB 35% / 26% / 16%; ≈1.25 would match CA's worst.
+       ⚠ A take. CA stays at 3. Per card since CD/CS: `EXTRUDE_DEPTH_MM`. */
+    depthMm: neonNumber("textdepth", EXTRUDE_DEPTH_MM[card], 0.5, 20),
     /* ⛔ 240 → 171.4 (START_PAGE_WPM), 24 September: *"The text reveal seems
        'chaotic'… its too fast."* */
     wpm: neonNumber("textwpm", START_PAGE_WPM, 100, 400),
@@ -114,6 +224,8 @@ export function extrudeSettings(): ExtrudeSettings {
        ANGLE moves it — at 0.5, `?lightangle=60` gives 2.59 vs 2.80. */
     lightIntensity: neonNumber("lighti", 0.5, 0, 50),
     lightAngleDeg: neonNumber("lightangle", 45, 10, 80),
+    lightYawDeg: neonNumber("lightyaw", 0, -80, 80),
+    lightAimX: neonNumber("lightaimx", 0, -1, 1),
   };
 }
 
@@ -131,8 +243,12 @@ const EM_UNITS = 100000 / 72;
 /** How far the letters' backs sink into the face, so the dome's curvature under
     a glyph never opens a gap. */
 const SINK_MM = 0.3;
-/** Light distance from the face's centre, mm. */
-const LIGHT_DISTANCE_MM = 900;
+/** Light distance from the face's centre, mm — CA's. ⚠ Other cards take it
+    SCALED BY FACE WIDTH (the `lightDistanceMm` prop): Carl, 24 September 2026,
+    *"approximately in the same position as CAs light given its proportions."*
+    The angle, cone and intensity are unchanged, so the cone covers each face
+    with CA's margin and the shadows keep CA's length (≈ depth × tan θ). */
+export const LIGHT_DISTANCE_MM = 900;
 
 type Built = {
   lines: SetLine[];
@@ -150,9 +266,18 @@ type Props = {
   dims: CardDims;
   crownMm: number;
   settings: ExtrudeSettings;
+  /** The spot's distance from the face centre, mm. Default: CA's. */
+  lightDistanceMm?: number;
 };
 
-export function CardExtrudedText({ id, body, dims, crownMm, settings: s }: Props) {
+export function CardExtrudedText({
+  id,
+  body,
+  dims,
+  crownMm,
+  settings: s,
+  lightDistanceMm = LIGHT_DISTANCE_MM,
+}: Props) {
   const gl = useThree((st) => st.gl);
   const invalidate = useThree((st) => st.invalidate);
   const groupRef = useRef<THREE.Group>(null);
@@ -296,12 +421,12 @@ export function CardExtrudedText({ id, body, dims, crownMm, settings: s }: Props
     /* The card group scales mm to world units (`1 / MM_PER_UNIT`); the shadow
        camera's near/far are in WORLD units. */
     const worldPerMm = new THREE.Vector3().setFromMatrixScale(group.matrixWorld).x;
-    const d = LIGHT_DISTANCE_MM * worldPerMm;
+    const d = lightDistanceMm * worldPerMm;
     light.shadow.camera.near = d * 0.3;
     light.shadow.camera.far = d * 2.5;
     light.shadow.camera.updateProjectionMatrix();
     invalidate();
-  }, [invalidate]);
+  }, [invalidate, lightDistanceMm, s.light]);
 
   // ── The clock: starts once, when the wall cards are in view (D-092's check) ──
   const startRef = useRef<number | null>(null);
@@ -377,16 +502,30 @@ export function CardExtrudedText({ id, body, dims, crownMm, settings: s }: Props
 
   // ── Light placement, face-local mm: above and in front, angled DOWN ──
   const a = (s.lightAngleDeg * Math.PI) / 180;
-  const lightPos: [number, number, number] = [0, LIGHT_DISTANCE_MM * Math.sin(a), baseZ + LIGHT_DISTANCE_MM * Math.cos(a)];
+  const yaw = (s.lightYawDeg * Math.PI) / 180;
+  const aimX = s.lightAimX * hw;
+  /* Down by `a` from the normal, then swung by `yaw` about the vertical — at yaw 0
+     exactly the original `[0, d·sin a, baseZ + d·cos a]`. */
+  const lightPos: [number, number, number] = [
+    aimX + lightDistanceMm * Math.cos(a) * Math.sin(yaw),
+    lightDistanceMm * Math.sin(a),
+    baseZ + lightDistanceMm * Math.cos(a) * Math.cos(yaw),
+  ];
 
   return (
     <group ref={groupRef}>
-      <object3D ref={targetRef} position={[0, 0, baseZ]} />
+      <object3D ref={targetRef} position={[aimX, 0, baseZ]} />
       {/* ⛔ WHITE, CENTRED, STATIC — the dry take. `decay 0` so its strength does
           not depend on the scene's mm-to-world scale. The cone is kept just past
           CA's edges so CB and the floor pair stay untouched; ⚠ watch for D-082's
-          "street light" pooling. */}
-      <spotLight
+          "street light" pooling.
+          ⛔ ONE LIGHT PER CARD — Carl, 24 September 2026: *"Each card gets its own
+          light, white for now."* ⚠ Each is a shadow-casting spot, so each costs a
+          shadow-map render per frame. ⚠ *"Untouched" was measured for CA alone;
+          the CB spill measurement is in the run log of that date.* */}
+      {/* ⚠ Not mounted at all when `light` is off (CB's working state) — no light
+          and no shadow-map render, rather than a spot at intensity 0. */}
+      {s.light && <spotLight
         ref={lightRef}
         position={lightPos}
         color="#ffffff"
@@ -399,7 +538,7 @@ export function CardExtrudedText({ id, body, dims, crownMm, settings: s }: Props
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
         shadow-bias={-0.0004}
-      />
+      />}
     </group>
   );
 }

@@ -65,6 +65,27 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-030 — The Extruded Take As Plain `/about`, Rims Off: GREAT — Committed And Pushed
+
+**Date:** 2026-09-24 (session 2)
+**Reviewer:** Human Founder
+**Subject:** Plain `/about` promoted to the take R-029 reviewed behind `?extrude=1`: CA's extruded text in "pages", **every rim off** (the neon not mounted), one white static spot at 0.5. **`?extrude=0` is the previous page.** Commit `83810e9`. Records **D-094** (its session-2 amendments).
+
+**Carl's verdicts, verbatim:**
+- On the result of the day's pivot: *"What we arrived at was far better than i had envisaged."*
+- On the rims: *"The rim lights should be turned off so we can see the card in isolation. CA light intensity was modified, it stays static for now."*
+- On plain `/about` as built: *"Thats great. we can commit and push this."*
+
+**Findings:**
+
+- ✔ **THE PROMOTION PASSES.** Plain `/about` IS the take. It was measured identical to `?extrude=1` outside CA's wipe, and `?extrude=0` measured **0 px** against the pre-neon baseline on all four arms.
+- ⚠ **Rims off is for ISOLATION, not a ruling against the neon.** Turning the rim back on and choosing the light's colour is step 2 of Carl's order.
+- ⚠ **The light stays static "for now".** Its movement comes in steps 3 and 4.
+- ⛔ **NOT COVERED — still takes:** every look value R-029 lists (the hotspot, depth, colour, roughness, size, breaks, the clear).
+- ⚠ **Since superseded as the working state, the same session:** plain `/about` now shows ONE card at a time, **CB** (D-094). CA is `?extrude=ca`. **CB's text has no verdict yet.**
+
+---
+
 ## R-029 — CA's Card Text, "Pages" At The Start Page's Pace: GREAT — On The Timing Model Only
 
 **Date:** 2026-09-24

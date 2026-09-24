@@ -107,7 +107,13 @@ import {
 } from "./about-neon";
 import { NeonBloom } from "./neon-bloom";
 import { etchEnabled, etchSettings, type EtchSettings } from "./card-etch";
-import { CardExtrudedText, extrudeEnabled, extrudeSettings } from "./card-extrude";
+import {
+  CardExtrudedText,
+  extrudeCard,
+  extrudeEnabled,
+  extrudeSettings,
+  LIGHT_DISTANCE_MM as EXTRUDE_LIGHT_DISTANCE_MM,
+} from "./card-extrude";
 import { aboutCardCopy } from "./about-card-copy";
 
 /** The plate is 3:2. ⚠ Guide and rail fractions are of the PLATE, not the stage. */
@@ -912,7 +918,8 @@ export default function AboutCardCanvas() {
    * `extrude` below), so `?neon=full` alone changes nothing on screen.
    */
   /**
-   * ⛔⛔ THE EXTRUDED TEXT, "DRY" — D-094, 24 September 2026. CA ONLY. Carl:
+   * ⛔⛔ THE EXTRUDED TEXT, "DRY" — D-094, 24 September 2026. CA, AND CB SINCE
+   * SESSION 2 (was "CA ONLY", corrected in place). Carl:
    * *"turned all the rims off. At this point we dont want extraneous light
    * 'polluting' the scene."* So while it is on the neon is NOT MOUNTED (`none`:
    * every rim is plain clear glass, no bloom) and the etched text is off.
@@ -924,9 +931,21 @@ export default function AboutCardCanvas() {
    * only way to `null`**, and with it the neon, its faders (`?neon=`, `?neonca=`…)
    * and the etched take (`&etch=1`) — ⚠ **those faders do nothing without it.**
    */
-  const extrude = useMemo(() => (extrudeEnabled() ? extrudeSettings() : null), []);
+  /* ⛔ ONE CARD PER LOAD — `extrudeCard` (plain `/about`: CB, the card being worked
+     on). Every switch below keys on `extrude`; only the text and its face's
+     shadow key on WHICH card. */
+  const extrudeCardId = useMemo(() => extrudeCard(), []);
+  const extrude = useMemo(
+    () => (extrudeCardId ? extrudeSettings(extrudeCardId) : null),
+    [extrudeCardId],
+  );
+  /* ⛔ THE RIM UNDER THE TEXT TAKE — Carl, 24 September 2026 (session 2): *"On CB,
+     turn off the light but turn on the rim."* With `extrude.rim` the neon mounts as
+     it does on the neon page (`neonMode()`, so `?neon=full|off|<ignite>` and every
+     neon fader apply), but ⚠ ONLY THE SELECTED CARD'S CHANNEL is passed (see
+     `liveNeon` below): every other rim stays plain clear glass, as isolation needs. */
   const neon = useMemo<ReturnType<typeof neonMode>>(
-    () => (extrude ? { kind: "none" } : neonMode()),
+    () => (extrude && !extrude.rim ? { kind: "none" } : neonMode()),
     [extrude],
   );
   /**
@@ -981,8 +1000,19 @@ export default function AboutCardCanvas() {
   }, [caEtch, cbEtch]);
   /* ⚠ `?neon=none` passes NO channel, so every card takes the exact pre-neon
      path — the identity gate's first arm. */
-  const [caNeon, cbNeon, cdNeon, csNeon] =
-    neon.kind === "none" ? [undefined, undefined, undefined, undefined] : neonChannels;
+  /* ⚠ Under the text take with the rim on, ONE channel: the selected card's. A card
+     with no channel takes the exact pre-neon path, so the other three are unlit. */
+  const liveNeon = useMemo(
+    () =>
+      neon.kind === "none"
+        ? []
+        : extrude
+          ? neonChannels.filter((ch) => ch.id === extrudeCardId)
+          : neonChannels,
+    [neon, extrude, extrudeCardId, neonChannels],
+  );
+  const neonFor = (id: NeonChannel["id"]) => liveNeon.find((ch) => ch.id === id);
+  const [caNeon, cbNeon, cdNeon, csNeon] = [neonFor("ca"), neonFor("cb"), neonFor("cd"), neonFor("cs")];
   /* ⛔ CS is not rendered while the left card is being got right — Carl,
      14 September: *"move one card at a time."* Its constants stay imported and
      its placement stays derivable; only the mesh is withheld. */
@@ -1007,7 +1037,7 @@ export default function AboutCardCanvas() {
           frameloop="demand"
           dpr={[1, 2]}
           /* ⚠ Shadows ONLY while the extruded text is on — the letters' shadows on
-             CA's face. ⚠ *Corrected in place:* this read "ONLY under `?extrude=1`…
+             CA's and CB's faces. ⚠ *Corrected in place:* this read "ONLY under `?extrude=1`…
              so plain `/about` is unchanged"; the text is now plain `/about`'s
              default, so `?extrude=0` is what gives `false` (R3F's own default). */
           shadows={extrude ? "soft" : false}
@@ -1234,7 +1264,22 @@ export default function AboutCardCanvas() {
               glassRoughness={0.35}
               glassFaceTransmission={cdTransmissionOverride ?? CD_FACE_TRANSMISSION}
               neon={cdNeon}
+              faceReceiveShadow={extrudeCardId === "cd"}
             />
+            {/* ⛔ CD'S TEXT — CA's treatment, 24 September 2026 (session 2). Carl: *"put
+                the text in for CD and CS."* Depth from ITS measured view angle (the
+                depth rule, `EXTRUDE_DEPTH_MM`); the light scaled as CB's is, but OFF by
+                default (*"Turn all the lights off"*). One card per load: `?extrude=cd`. */}
+            {extrude && extrudeCardId === "cd" && (
+              <CardExtrudedText
+                id="cd"
+                body={aboutCardCopy("CD").body}
+                dims={cd.dims}
+                crownMm={cd.crownMm}
+                settings={extrude}
+                lightDistanceMm={(EXTRUDE_LIGHT_DISTANCE_MM * cd.dims.faceWidthMm) / ca.dims.faceWidthMm}
+              />
+            )}
           </group>
 
           {/* ⛔ CS — the right floor card, restored 14 September once CD was
@@ -1311,7 +1356,19 @@ export default function AboutCardCanvas() {
               glassRoughness={0.35}
               glassFaceTransmission={GLASS_FACE_TRANSMISSION}
               neon={csNeon}
+              faceReceiveShadow={extrudeCardId === "cs"}
             />
+            {/* ⛔ CS'S TEXT — as CD's above. One card per load: `?extrude=cs`. */}
+            {extrude && extrudeCardId === "cs" && (
+              <CardExtrudedText
+                id="cs"
+                body={aboutCardCopy("CS").body}
+                dims={cs.dims}
+                crownMm={cs.crownMm}
+                settings={extrude}
+                lightDistanceMm={(EXTRUDE_LIGHT_DISTANCE_MM * cs.dims.faceWidthMm) / ca.dims.faceWidthMm}
+              />
+            )}
           </group>
 
           {/* ⛔⛔ THE WALL PAIR — CA left, CB right. 17 September 2026.
@@ -1371,9 +1428,9 @@ export default function AboutCardCanvas() {
               glassFaceTransmission={caTransmissionOverride ?? CA_FACE_TRANSMISSION}
               neon={caNeon}
               etch={caEtch}
-              faceReceiveShadow={!!extrude}
+              faceReceiveShadow={extrudeCardId === "ca"}
             />
-            {extrude && (
+            {extrude && extrudeCardId === "ca" && (
               <CardExtrudedText
                 id="ca"
                 body={aboutCardCopy("CA").body}
@@ -1396,7 +1453,28 @@ export default function AboutCardCanvas() {
               glassFaceTransmission={GLASS_FACE_TRANSMISSION}
               neon={cbNeon}
               etch={cbEtch}
+              faceReceiveShadow={extrudeCardId === "cb"}
             />
+            {/* ⛔⛔ CB'S TEXT — CA'S TREATMENT EXACTLY, 24 September 2026 (session 2).
+                Carl: *"Same text size, same type of text. Same reveal. It should
+                appear in the card in the same way as CA text does. The only
+                difference being is that CB has more words."* ⚠ Same `extrude`
+                settings object as CA — one set of faders drives both.
+                ⛔ ITS OWN LIGHT, at CA's position SCALED BY FACE WIDTH: *"approximately
+                in the same position as CAs light given its proportions."*
+                ⛔ ONE CARD PER LOAD: *"isolate CA text so we can focus on CB."*
+                *"Just as the text sequence is coming to an end, CB will activate"*
+                is a LATER chunk, once all four cards have text. */}
+            {extrude && extrudeCardId === "cb" && (
+              <CardExtrudedText
+                id="cb"
+                body={aboutCardCopy("CB").body}
+                dims={cb.dims}
+                crownMm={cb.crownMm}
+                settings={extrude}
+                lightDistanceMm={(EXTRUDE_LIGHT_DISTANCE_MM * cb.dims.faceWidthMm) / ca.dims.faceWidthMm}
+              />
+            )}
           </group>
 
           {/* ⛔⛔ THE FRAME OWNER — D-093, S1. While mounted it renders EVERY frame
@@ -1405,7 +1483,7 @@ export default function AboutCardCanvas() {
               neon is isolated so a failure costs the glow, never the room.
               ⚠ `?neon=none` unmounts it and R3F renders the room itself. See
               `neon-bloom.tsx`. */}
-          {neon.kind !== "none" && <NeonBloom channels={neonChannels} mode={neon} />}        </Canvas>
+          {neon.kind !== "none" && <NeonBloom channels={liveNeon} mode={neon} />}        </Canvas>
       </div>
     </div>
   );

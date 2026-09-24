@@ -1256,9 +1256,11 @@ export function AboutCardMesh({
       <mesh
         geometry={faceGeometry}
         position={[0, 0, baseZ]}
-        /* ⚠ D-094's extruded text (CA — plain `/about` since 24 September 2026;
-           was `?extrude=1` only): the letters' shadows land on the face. Off
-           everywhere else; `false` is three's own default. */
+        /* ⚠ D-094's extruded text: the letters' shadows land on the face of the
+           ONE card carrying text on this load (`extrudeCard` — plain `/about`
+           shows CB while it is worked on; `?extrude=ca|cb|cd|cs` picks one). Off
+           everywhere else; `false` is three's own default. ⚠ *Corrected in
+           place:* this read "(CA — plain `/about`…; was `?extrude=1` only)". */
         receiveShadow={faceReceiveShadow}
       >
         {/* ⚠ NO NORMAL MAP. The convex-normal-map route was tested and closed on
