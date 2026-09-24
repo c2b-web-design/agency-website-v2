@@ -249,7 +249,7 @@ than the pinned quad. Do not pin to the silhouette.**
 
 | | |
 |---|---|
-| **Size** | ⛔ **SMALLER than the wall cards.** Consistent with the copy weighting — CD 49 words, CS 55, against CA 64 and CB 84 |
+| **Size** | ⛔ **SMALLER than the wall cards.** Consistent with the copy weighting — CD 49 words, CS 56 (recorded as 55 until 24 September 2026), against CA 64 and CB 84 |
 | **Orientation** | ⛔ **PORTRAIT. *"their shorter sides will be on the top edge"*** — ⚠⚠ **the opposite of the wall pair, which are landscape.** A real differentiation between the two treatments, and it follows the room: a panel standing on a floor is upright |
 | **Back** | ⛔ **STILL FLAT**, though it faces away and is never seen |
 | **Geometry** | ⛔ **SAME FAMILY PATTERN** — flat back, convex face, rim, rounded corners |

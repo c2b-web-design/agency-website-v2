@@ -3908,7 +3908,7 @@ having to distinguish them.**
 > than from general knowledge. It advises only. Nothing it recommends becomes work without a
 > decision, and nothing it touches is the site itself.**
 
-**55 words.** ⚠ **Sits between the Designer (49) and the Architect (64).** ⛔ **NOT YET SEEN ON A
+**56 words** — ⚠ recorded as 55 until a recount on 24 September 2026; the copy is unchanged. ⚠ **Sits between the Designer (49) and the Architect (64).** ⛔ **NOT YET SEEN ON A
 RENDERED BUILD.**
 
 #### ⛔⛔ THE DEFINITION CAME FROM CARL'S ACTUAL INSTRUCTION SET, AND IT CORRECTED THE BUILDER TWICE
@@ -3988,7 +3988,7 @@ successful build.**
 | **The Architect** | wall left | **64** | PROVISIONAL |
 | **The Builder** | wall right | **84** | PROVISIONAL |
 | **The Designer** | floor left | **49** | PROVISIONAL |
-| **The Strategist** | floor right | **55** | PROVISIONAL |
+| **The Strategist** | floor right | **56** (recorded as 55 until 24 September 2026) | PROVISIONAL |
 
 ### ⚠⚠ WHY IT IS PROVISIONAL AND NOT APPROVED — THE COPY HAS NOT MET ITS CONTAINER
 

@@ -346,7 +346,7 @@ as unasserted rather than implied to be safe.
 5. ⛔ **Accessibility.** Carl, 17 September: *"If you need to address the Accessibility — the
    chance to not repeat D-051-A11Y, you flagged then this should be done."* **A visually-hidden
    DOM layer carrying the card copy.** ⚠ **§2's copy is PROVISIONAL** (CA 64 / CB 84 / CD 49 /
-   CS 55 words, four lines uncuttable) — **a DOM layer needs final copy or it is written twice.**
+   CS 56 words (recorded as 55 until 24 September 2026), four lines uncuttable) — **a DOM layer needs final copy or it is written twice.**
 
 ---
 

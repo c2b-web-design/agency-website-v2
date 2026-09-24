@@ -5547,3 +5547,236 @@ D-091 set it up as baked text versus Three.js text, claiming a texture *"baked i
 ### ⛔ FIRST STEP WHEN THE CHUNK OPENS — §14a
 
 **CA alone:** one justified block, its own material, the fit check, responding to CA's track. **Measure the dome under the text block and the texture budget BEFORE building.** Then the other three.
+
+### ⛔⛔ AMENDED 24 September 2026 — THE TEXT'S MATERIAL IS ETCHED GLASS, EDGE-LIT BY THE RIM. And the first two steps are done
+
+**Carl, 24 September 2026:** *"Etched glass sounds like a great concept. We can rule out metal because of the surroundings issue. The gilded idea is a good thought too and i will take it as a recommendation. It fits the concept."* ⛔ **He tunes it by eye.**
+
+| option | standing |
+|---|---|
+| ⛔ **ETCHED GLASS, EDGE-LIT** — the body copy is a frosted, etched region IN the glass. When the rim strikes, the etching glows in the tube's colour. | **CHOSEN** |
+| **Metal body text** (gilded, reflective) | ⛔ **RULED OUT** — *"because of the surroundings issue"*: a metal letter reflects its environment, which is near-black (RIM-DARK), and the neon lights nothing (D-093). Unlit metal text would read dark. |
+| **Gilded ROLE NAMES** with an etched body | ⚠ **RECOMMENDED, NOT RULED OR BUILT** — Carl: *"take it as a recommendation. It fits the concept."* It answers the open "a title that catches the light" question. ⚠ **It carries the same surroundings dependency that ruled metal out for the body**, so it cannot read as intended until the rim is a real light (D-090) or the environment is fixed (RIM-DARK). |
+
+**Why etched glass — the physics is the argument (§14a).** Engrave a glass or acrylic sheet, light its edge, and the light travels inside the sheet until the engraving lets it escape: the letters light up and the clear glass stays dark. **These cards have that construction: a glass face with a light-source tube around its rim.** The glowing text is therefore caused by the world, not laid on top of it. It is also a real signage technique, which fits the showcase brief.
+
+**How it behaves:**
+- **One layer moves** (D-091, the opal rule). The glow reads the card's existing D-093 brightness track at a small depth, so every stutter reaches the words on the same frame.
+- **Unlit, the etch reads as pale frost on clear glass.** That turns the open question *"readable before the neon, or revealed by it?"* into ONE dial: how strongly the etch reads unlit. The material serves either answer.
+- **It depends on nothing unbuilt**: no ceiling, no real rim light, no env-map fix. That is exactly what separates it from the metal option.
+
+**Carl's by eye, not asserted here:** the etch's unlit visibility; the glow's depth on the track; whether the glow falls off from the rim toward the centre (real edge-lit glass does). ⚠ **Measure the glow's hue on screen:** ACES turned the navy tube cyan (D-093).
+
+**Steps 1 and 2 — DONE 24 September, on Carl's instruction.** The copy is in ONE module, `components/about/about-card-copy.ts`, checked character for character against the final forms; ⚠ **CS is 56 words, not 55, and the record is corrected everywhere.** The measurements are in `live-work/card-text-measurements-24-september.md`:
+- ⛔⛔ **The overlay's fit does NOT transfer.** It set the copy in a 420x260 box, the aspect D-082 disproved; the largest justified size that fits the real face is **−24% on CA and −22% on CB**. The setting must be done fresh.
+- ⚠ **CB's far edge renders at an 8px em at 1440**, even at the largest fitting size. That is D-077's legibility budget, now measured.
+- ✔ **The texture budget is small:** all four cards need **under 5 MiB** at 1920 DPR 2 with one channel. D-086's 32 MiB/card does not hold.
+- ⚠ **The dome curves the text on screen.** The justified edges stay within 2.5px of straight; a middle line on the floor cards curves by 8–11px at 1440, against a flat control at 0.00. Carl judges it by eye.
+
+⛔ **ACCESSIBILITY IS DEFERRED TO MASTERING — Carl, 24 September 2026:** *"When the site is finished and the 'mastering' is taking place we will optimise for screen readers, mobile and anything else we need to."* ⚠ **This defers D-086's `sr-only` copy; it does not drop it.** It also carries the other owed items (D-088's and D-091's reduced motion, the flash cap) into the mastering pass (D-035). The copy's one source for the screen-reader text already exists (`about-card-copy.ts`).
+
+**CA's etched text is BUILT behind `?etch=1`, through the plan-review gate** (plan, Architect response and run log in `live-work/`, all `…-24-september.md`). ⛔ **NOT APPROVED — Carl tunes it by eye.** Two measured findings go to him:
+- a first-render stall that lands on the ignition's first frame on a direct `#roles` landing (114–249 ms against 68 ms without the etch)
+- the glow's hue at 234° against the 211° target, where `?etchhex=1b5c8a` measures 210°.
+
+⛔ **TUNED BY EYE, 24 September 2026 — CA at the whole face (`etchbw=1&etchbh=1&etchem=44`, +30%) with the glow matched to the rim AS SEEN** (`etchhex=5c9cff&etchglow=0.1`: glyph cores `#80baf2`, 209° / 81% / 72%, against the rim's `#7eb7f3`, 211° / 83% / 72%). Carl: *"Thats a lot better, more readable now."* ⚠ **Recorded at the level given — "better", not approved.** ⚠ **The finding behind it:** the rim on screen is the tube tone-mapped at intensity 6 PLUS its untone-mapped bloom, and the text has no bloom, so **matching the tube's hex can never match the rim as seen.** Measured in `live-work/run-log-card-text-etch-24-september.md`.
+
+⚠ **RAISED BY CARL, NOT CHOSEN — "display options":** *"making the text bigger but not having it all in the card at the same time, and there are a few ways to do this."* ⛔ **It depends on how CB looks with this configuration** — *"Its angle is different."* No option is named or chosen yet; record the ones Carl names when he names them (the brainstorm rule, `context-rules.md`).
+
+⚠ **CB JOINED, BEYOND THE CA-ONLY PLAN — a gate waiver for THIS PIECE ONLY.** Carl, 24 September: *"Yes it does go against the approved plan but we had no idea how that plan would look in practice. The plan would have to be modified depending on how CB looks and we wont know that until text is put into CB. Only then can a decision be made to make both wall card text non static."* ⛔ **A waiver is not standing.** It was the same pattern, the same files and no new structure.
+- **The new defaults (behind `?etch=1`):** the whole face (`ETCH_BLOCK` 1 x 1); the largest fitting size per card (**CA 44mm, 8 lines, 475/477 · CB 40mm, 8 lines, 432/443**); glow `#5c9cff` at 0.1.
+- **The colour carries to CB:** glyph cores **211° / 90% / 70%** against CB's rim as seen, **211° / 84% / 72%**.
+- The identity gate is still **0 px** without the flag.
+
+⚠ **"NON-STATIC" IS THE DISPLAY OPTION CARL IS WEIGHING** for the wall pair's text: bigger type, not all on the card at once. **It depends on CB's angle**, and the ways to do it are his to name. Raised, not chosen.
+
+### ⚠ RAISED BY CARL AND BEING DEVELOPED, 24 September 2026 — "THE COPY CHASING ITSELF". NOT YET RULED
+
+**The problem it answers:** CB's receding side is unreadable at room distance (~9 px at 1440) and
+will be worse on mobile; the setting has run out at the whole face. Carl: *"We are gonna have to
+pivot and think on our feet."*
+
+**Carl's idea, verbatim:** *"First sentence reveals. Then the second sentence. We follow this pattern
+until putting in the whole of the next sentence means it wouldnt fit in the card. At this point we
+return to the first sentence and hide it. meaning the left to right reveal makes the text disappear.
+At the appropriate time we reveal the next sentence. It wouls be like the copy is chasing itself.
+The text could be bigger and becuase timing is involved the process could be carefully
+choreographed. Its not as if we havent done it before on this site. 'variation on a theme'."*
+
+- **"Variation on a theme"** is §14a's own phrase: `/start` and the Q&A already reveal text with a
+  left-to-right wipe.
+- **Why it works:** the card only ever holds as many sentences as fit, so the type is sized to the
+  largest SENTENCE, not to the whole paragraph.
+
+**Also raised in the same exchange — its standing:**
+
+| raised | standing |
+|---|---|
+| *"the text doesn't have to be in the card all at once"* | the premise of the idea above |
+| **extruded text**, with a well-placed light for the far edge | **measured, not chosen and not rejected** (`live-work/run-log-card-text-etch-24-september.md`): whole cards 126k–838k triangles, 90–495 ms to build; one sentence at a time ~57k triangles / ~41 ms at its cheapest |
+| a **display behind frosted glass**, with scrolling or paging | **raised by the Builder**; Carl developed the reveal instead |
+
+⚠ **A consequence Carl should rule on:** text that is written and then erased is not a cut in the
+glass. **The permanent etched frost does not fit a copy that disappears.** The idea points to the text
+being LIGHT (the glow), and that may amend the etched-glass ruling above. ⛔ **The ruling is Carl's.**
+
+⚠ **REFINED BY CARL — the control is READING POSITION, not sentences:** *"We dont have to use sentences as the control. If we get through say, 75% of the cards visible text, the earlier text ( first sentence) could be removed and as the user is coming to the last few words on the cards, space will be available at the beginning. Look at the text reveal on the start page. Its not a random number. Its at the speed that an average person reads at."*
+
+⛔ **So: a WRITE head and an ERASE head, both at reading pace, a fixed gap apart.** The erase starts when the write reaches ~75% of the card's capacity, and the write wraps into the space freed at the top. Sentence length stops constraining the size (the sentence-as-unit framing above is superseded by this).
+
+**Tuning: size against a slow reader's grace**, the time before the text they are on is erased. For CB, from the measured 40 mm fit and ESTIMATED beyond it:
+- 50 mm: ~12 px at the far edge, ~13 s of grace
+- 57 mm: ~13 px, ~10 s of grace
+
+**The reading pace is recorded here because it is written down NOWHERE:** it is implicit in `/start`'s approved durations (`globals.css`, `.enquiry-*-mask`). Derived from the real copy:
+- **body (the subtext): 12 words / 59 characters in 4.2 s → ~171 wpm, ~14 characters/s**
+- the heading lines: ~114 wpm
+
+At the body pace one pass of CA takes ~22 s, and of CB ~29 s. ⚠ **Carl holds the source reading-speed data** (*"i got timing data on how fast an average human reads"*, 27 July); these figures are derived from the durations, not from it.
+
+**Open, Carl's:**
+- the size / grace trade
+- a rest at the loop point (D-087's *"a rest before the downbeat"*)
+- whether the erase is gentler than the reveal: it happens in peripheral vision
+- the start's coupling to the neon ignition
+- the material (whether the etched frost goes)
+
+⚠ **RAISED BY CARL AND BEING DEVELOPED — THE FOUR CARDS STRIKE IN TURN, LED BY THE READING.** *"Just before the end of CA process CB could flicker on, This doesnt put too much infomation on screen at once and gently leads the user as the q+a does and as the client info does."* **It would REPLACE D-093's ignition schedule** (all four within ~8 s), which **has no verdict**, so nothing approved is undone. ⚠ It interacts with **D-092's trigger**.
+
+**The precedent is the site's own principle:** the next element begins BEFORE the current one resolves, at a point tied to what the reader is doing, and the lead point is a RELATIONSHIP, not a fixed delay:
+
+| section | lead point |
+|---|---|
+| `/start` | each element 600 ms before the previous ends; Begin "during the final words" (reading pace) |
+| Q&A | card 1 at **half the question's reveal** (`CARD_FIRST_ENTRANCE_MS`), then a 72% overlap |
+| client info | the fields at ~78% of the supporting sentence's reveal, 500 ms apart with overlapping fades |
+
+**So CB's lead point would be a POSITION in CA's copy** (its last line or last few words), not a fixed time.
+
+**First-pass estimates at 171 wpm:** CA ~22 s · CB ~29 s · CD ~17 s · CS ~20 s, so **CS strikes about a minute in.**
+
+**Open, Carl's:**
+- the dark wait for the later cards: a scanner sees unlit rims for longer, and RIM-DARK makes that state read worse
+- what CA does once CB takes over: keep chasing, hold, or quiet down (the Q&A's *"it's done its job"*)
+- whether the floor pair also waits to be in view (D-092)
+
+⚠ **THE SEQUENCE, CALCULATED FROM `/start`'s READING FIGURES (Carl asked for it to decide the loop), 24 September 2026:**
+
+**Inputs:**
+- **The pace:** `/start`'s body subtext, 59 characters / 12 words in 4200 ms → **14.05 characters/s (71.2 ms each), 171.4 wpm.**
+- **The overlap:** `/start`'s **600 ms**, so each card's text starts 600 ms before the previous card's text ends.
+- **The ignitions:** as built (D-093) — CA 1950 ms, CB 1610, CD 1700, CS 1690 — each timed so its neon HOLDS just as its text is due to begin.
+
+| card | characters | words* | reading at 14.05 char/s | (at 171 wpm) | neon starts | text starts | text ends |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| CA | 428 | 65 | **30.5 s** | 22.8 s | 0.0 s (the trigger, D-092) | 1.9 s | 32.4 s |
+| CB | 470 | 84 | **33.5 s** | 29.4 s | 30.2 s | 31.8 s | 65.3 s |
+| CD | 284 | 50 | **20.2 s** | 17.5 s | 63.0 s | 64.7 s | 84.9 s |
+| CS | 331 | 57 | **23.6 s** | 19.9 s | 82.6 s | 84.3 s | **107.9 s** |
+
+\* Whitespace-split, so the em dash counts as a word (the D-077 counts are 64 / 84 / 49 / 56).
+
+**Each next card's flicker begins ~2.2 s before the previous text ends, which is its last 6–7 words:** *"during the final words"*, as Begin does on `/start`.
+
+**TOTAL first pass, trigger to CS's last word:**
+- **~108 s by characters**
+- ~90 s by words
+
+⚠ **The two paces differ because this copy is denser:** ~6.6 characters per word against the subtext's 4.9. **Characters are what the wipe crosses; words are what the reader reads.** Which one sets the clock is Carl's.
+
+⛔ **SUPERSEDED THE SAME DAY — MEASURED, NOT DERIVED. The pace is 200 wpm.** Carl timed CA with a stopwatch (*"less than 20s"*) and named the tool: **Read-o-Meter, `https://niram.org/read/`**, *"This site will give you accurate results"* (200 wpm; it computes in the browser, with no upload).
+- **Its results:** CA **19 s** (65 words) · CB **25 s** (84) · CD **15 s** (50) · CS **17 s** (57). It counts the em dash as a word, as the table above did.
+- **They agree with Carl's stopwatch.** The ~108 s / ~90 s figures above are superseded; they are kept for the reasoning.
+
+| card | reads | neon strikes | text | flicker leads the previous text's end by |
+|---|---:|---:|---|---|
+| CA | 19.5 s | 0.0 s | 1.9 → 21.4 s | — |
+| CB | 25.2 s | 19.2 s | 20.9 → 46.0 s | 2.2 s ≈ its last 7 words |
+| CD | 15.0 s | 43.8 s | 45.5 → 60.5 s | 2.3 s |
+| CS | 17.1 s | 58.2 s | 59.9 → **77.0 s** | 2.3 s |
+
+**TOTAL, trigger to CS's last word: ~77 s.** ⚠ **Note:** `/start`'s own body reveal runs at ~171 wpm, slower than 200. The cards would reveal a little faster than `/start`'s text.
+
+**Second opinion — Gorby (`https://gorby.app/tools/reading-time-calculator/`), on Carl's instruction.**
+- ⚠ **It rounds UP to whole minutes** ("1 minutes" for every card at every speed), so **it cannot time copy this short.**
+- **Its word counts are 64 / 84 / 49 / 56**, matching D-077: it does not count the em dash.
+- Seconds computed from its counts at its speeds:
+
+| | CA | CB | CD | CS | total, trigger to CS's last word |
+|---|---:|---:|---:|---:|---:|
+| Read-o-Meter @200 | 19.5 | 25.2 | 15.0 | 17.1 | **76.9 s** |
+| Gorby's counts @200 | 19.2 | 25.2 | 14.7 | 16.8 | **76.0 s** |
+| Gorby @150 ("slow") | 25.6 | 33.6 | 19.6 | 22.4 | 101.4 s |
+| Gorby @250 ("average adult") | 15.4 | 20.2 | 11.8 | 13.4 | 60.9 s |
+
+✔ **At the same speed the two tools agree to 0.3 s per card, <1 s in total**; the only difference is the em dash. ⚠ **The real variable is the SPEED ASSUMED, not the tool:** 150–250 wpm spans **61–101 s**. Carl's stopwatch (CA under 20 s) sits at 200.
+
+⛔ **THE AUDIENCE THE PACE IS SET FOR — Carl, 24 September 2026:** *"We can assume that a business owner or someone who is responsible for the commission of a website will be a user. We must give them credit for a little bit more than average intelligence and not a slow reader. Its difficult not to be judgemental on this as its hard to quantify."* *"Timing for this will be all important."*
+- ⚠ **The Builder's first figure (~107 s) was wrong by ~30 s:** it stacked `/start`'s ~171 wpm subtext pace on a per-character clock that penalised this denser copy. **Carl's stopwatch and two tools corrected it.**
+
+**The Builder's recommendation, NOT ruled:** split the one compromise into TWO numbers.
+1. **The reveal pace**, at the audience's speed: **~225–240 wpm**. The average adult reads non-fiction at ~238 wpm (Brysbaert 2019, a meta-analysis of 190 studies; from knowledge, not re-checked this session). Carl's stopwatch puts him at ~200.
+2. **The grace**, the erase head's gap, sized for the slowest reader still served: **~200 wpm**. A 200-wpm reader of a 240-wpm reveal falls ~17% behind, **~4 s by the end of CB**, against ~10–13 s of grace at the larger sizes.
+
+**The whole sequence, trigger to CS's last word, by reveal pace:** 200 → 76 s · 225 → 68 s · 240 → 63 s · 250 → 61 s.
+
+⚠ **To quantify rather than judge:** time 3–4 real business owners reading CA on the card.
+
+⛔ **RULED — AUTOMATIC, NEVER CLICK-TO-ADVANCE. Carl, 24 September 2026:** *"The worse scenario here is that we keep most users waiting. The way around this is if we give them something to click but id rather avoid that- too mechanical, we must provide the automatic average mechanics."*
+- ⛔ **A click / advance control: RAISED BY CARL AND NOT CHOSEN** — *"too mechanical"*.
+- ⚠ **The priority it sets:** keeping most users WAITING is the worst case. Falling behind is the lesser one, because the erase head's grace can absorb it.
+
+⛔ **EXTRUSION IS THE ROUTE; CA FIRST, ONE CARD. Carl, 24 September 2026:** *"We will try it with CA first. Let us stick to one card at the moment… seeing as we are going with extrusion that raises interesting options and possibilities of what to do with light. Mainly WebGL light that can move."*
+
+⚠ **This SUPERSEDES the etched-glass material ruled this morning.** Etched glass was built behind `?etch=1` and tuned (the rim-matched glow, the whole-face setting); it stays in the code, gated, until Carl rules on removing it. **Why it went:** CB's receding side was unreadable at room distance, and the copy now writes and erases (the chase), which a cut in glass cannot do.
+
+**What extrusion brings, measured today** (`live-work/run-log-card-text-etch-24-september.md`):
+- ~57k triangles and ~41 ms to build CB's largest sentence at its cheapest; whole cards 126k–838k triangles, 90–495 ms
+- **Geist must be converted** into a font format three can extrude: a new asset and a new pipeline
+- geometry edges alias more than a filtered texture, worst when small and moving
+- a 4 mm depth is ~1 px at the far edge, so **the depth shows only if the letters are bigger or deeper**
+- the letters must follow the dome
+
+⛔ **§5a — a new mechanism. The plan goes to the Architect.**
+
+**Next subject, opened by Carl: moving WebGL light on the extruded text.**
+
+⛔ **THE LIGHT ON THE EXTRUDED TEXT — CARL'S DIRECTION, 24 September 2026:** *"the difference from q+a. Each letter has a different geometry that will appear and change what is in the same place at different times. Shadows are the biggest win here so placement and movement doesnt have to be 'sweeping'. Having a light angled either down or up will present the shadows in a certain way. If its slightly off centre, say left and makes its way right and back again the shadows will be slightly animated. We need to keep the text, albeit larger, legible. So subtle animation will be achieved."*
+
+**The principle:** the CHANGING TEXT supplies the variation (new letter geometry arrives where old letters were), so **the light need not sweep**. It is **SHADOW-FIRST, for legibility**, from **one light angled down or up, slightly off-centre left, drifting right and back.** The animation is subtle.
+
+| option | standing |
+|---|---|
+| a shadow light, off-centre, a slow left–right–left drift | **CHOSEN as the direction** |
+| the light as the write head | raised by the Builder, **not taken up** |
+| the rim as a real light on the letters | raised by the Builder, **not taken up** |
+| a roaming / orbiting light like the contact field's | raised by the Builder, **not taken up** — *"doesnt have to be sweeping"* |
+
+**Open, Carl's:**
+- **above or below** — *"either down or up"*
+- the drift's range and period
+- the extrusion depth and the light's angle, which together set the shadow's length
+
+⛔ **DOWNWARD — Carl, 24 September 2026:** *"If you look at the scene there are 3 lights in the ceiling. Im not soggesting we put lights in that location, im just making the case for downward pointing lights."*
+- **Downward is CHOSEN; up-lighting (from the monitors below CA) is raised and NOT CHOSEN.**
+- ⚠ **The ceiling downlights are the JUSTIFICATION, not the POSITION:** the light is not placed at them.
+- **Why it holds:** the photograph's own shading already falls downward, so the text's shadows agree with the room (§14a). It also matches how relief is read: raised letters lit from above read as raised.
+
+⛔ **THE "DRY" EXTRUDED TAKE IS BUILT behind `?extrude=1`** — CA only; every rim off; one white spot, centred, static, downward; the chase at 240 wpm with a lead and a rest. **The gate was waived by Carl for this piece.** ⚠ **NOT APPROVED.**
+
+**Measured** (`live-work/run-log-card-text-extrude-dry-24-september.md`):
+- 10 lines in 6 slots
+- a 16.8 s pass
+- ⚠ **grace 4.5 s**
+- a 309 ms compile stall at the start
+- ⚠ **a specular hotspot from the spot washing out words at the top-centre of CA's glass**
+
+⛔ **THE PASS — RULED BY CARL, 24 September 2026:** *"once it has reached the end it should start again from the top left. To make space for it have the preceeding text disappear. Only when the last word has disappeared then start the cycle again. Slow it down to the speed of the start page text."*
+- **The model:** each pass ends by erasing everything left, and the next begins on an EMPTY card, top left. It supersedes the continuous wrap across passes.
+- **The pace is `/start`'s, 171.4 wpm** (was 240). The lead is off and there is no rest.
+- **Measured on CA:** a 32.9 s cycle (22.8 s writing + 10.2 s clearing), grace 7.7 s.
+
+✔ **CARL'S VERDICT ON THE PASS MODEL AND THE PACE, by eye, 24 September 2026:** *"This is a lot better because it also solves the problem if someone reads slower. The text is on the page for longer giving them time to read it. The whole sequence is not long enough for someone to lose focus and it is clearly 'pages' with a start and end. This i great."*
+- ⚠ **Recorded at the level given.** It covers the **pace (`/start`'s 171.4 wpm)** and the **"pages" model** (each pass writes, clears to an empty card, restarts top left).
+- ⛔ **It does NOT cover:** the light (intensity 0.5, angle 45°, the hotspot), the extrusion depth, the letters' colour and roughness, the type size, the greedy breaks, or the 10.2 s clear. Those are still takes.
+- ⚠ **Why it works, in Carl's terms:** the slower pace IS the slow reader's grace (7.7 s at minimum), so one number answers both the waiting problem and the falling-behind problem. **The page boundary gives the copy a beginning and an end.**

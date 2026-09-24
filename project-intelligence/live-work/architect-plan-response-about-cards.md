@@ -95,7 +95,7 @@ throwaway. Two answers, both with costs:
 - **DOM overlay** — never refracted by the glass it sits on, and must track the
   projected quad.
 
-CA 64 / CB 84 / CD 49 / CS 55 words, four lines uncuttable. ⛔ **Carl's call, and it
+CA 64 / CB 84 / CD 49 / CS 56 words (recorded as 55 until 24 September 2026), four lines uncuttable. ⛔ **Carl's call, and it
 constrains the face geometry.**
 
 **2.3 ⚠ THE UNIT SYSTEM IS UNDEFINED.** The ground plane sits at *"an arbitrary unit

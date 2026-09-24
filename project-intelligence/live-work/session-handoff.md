@@ -1,4 +1,4 @@
-# Session Handoff — 23 September 2026. THE NEON IS BUILT (ALL FOUR). NEXT: THE CARD TEXT.
+# Session Handoff — 24 September 2026. CA'S TEXT IS EXTRUDED AND RUNS IN "PAGES". NEXT: THE "EFFECTS".
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
@@ -7,111 +7,87 @@
 
 ## ⛔ WHERE THINGS STAND
 
-**All four `/about` §2 cards have neon.** The palette is **APPROVED AS A STARTING POINT (R-028)**:
-navy "c" on the wall pair, teal "b" on the floor pair. Carl: *"Its a great colour combination and the
-neon palette works very well in the room. its a good starting point… they still need working on."*
-⚠ **That approves the PALETTE only.** Peaks, bloom, the ignition patterns and the order are
-**not individually approved**, and **the ignition has no verdict**.
+**CA's copy is EXTRUDED Geist, written and erased left to right in "pages" at `/start`'s pace.**
+Carl: *"it is clearly 'pages' with a start and end. This i great."*
+- **R-029 records that verdict for the PACE AND PAGE MODEL ONLY.** Every look value is still a take.
+- **The record is D-094.** Its 24 September amendments run in order: etched → CB → the chase → pace → extrusion → light → pages.
 
-- **Record:** **D-093** (the neon, and every measurement), **D-092** (the trigger), **D-094** (the text
-  direction, new), **D-077** amended (Carl's copy-setting rules), **R-028**.
-- **Code:** `components/about/about-neon.ts` (values and track), `neon-bloom.tsx` (the frame owner),
-  `about-card-mesh.tsx` (`neon` prop), `about-card-canvas.tsx` (wiring), `verify/about-neon.mjs`
-  (identity / floor / profile / frames).
-- **To view:** `npm run dev` (the server is STOPPED and port 3000 is free).
-  - `/about?neon=full#roles` holds all four lit.
-  - `/about?reignite=10000#roles` replays the ignition.
-  - Plain `/about` then scroll or press Roles gives the real trigger.
-  - The faders are listed at `about-card-canvas.tsx` (`neonChannels`).
+- **To view:** `npm run dev` (**the server is STOPPED; port 3000 is free**), then **`/about?extrude=1#roles`**.
+  Under the flag every rim is off, the etch is off, and one white spot is on, centred, static and
+  downward. **Plain `/about` is measured pixel-identical** (the identity gate reads 0 px on all four arms).
+- **Faders**, read once per load (reload to apply). Defaults are in `card-extrude.tsx`:
+  - `textem` (52 mm), `textdepth` (3 mm)
+  - `textwpm` (171.4 = `START_PAGE_WPM`), `textlead` (1 = off), `textrest` (0)
+  - `lighti` (0.5), `lightangle` (45° from the face normal)
+  - `textcolor`, `textrough`, `textbw`/`textbh`, `textlh`
+- **Code:**
+  - `card-extrude.tsx`: the component
+  - `card-text-timeline.ts`: the setting and the chase, pure
+  - `about-card-mesh.tsx`: `faceDome` / `faceBaseZ` exported; `faceReceiveShadow`
+  - `about-card-canvas.tsx`: the flag wiring
+  - `public/fonts/geist-regular.typeface.json`, built by `scripts/build-geist-typeface.mjs` from Google Fonts' Geist TTF; the TTF itself is not in the repo, and its URL is in the script
+  - `about-card-copy.ts`: the ONE copy source
+- **The etched take** (`card-etch.ts`, behind `?etch=1`) is **superseded but still in the code, gated.
+  Removing it is Carl's call.**
 
-## ⛔ THE NEXT SUBJECT: THE CARD TEXT — D-094
+## ⛔ CARL'S METHOD FOR THIS WORK — standing for this subject
 
-Carl opened it: *"Talk to me about three js text."* It was discussed, not built.
+*"Im looking at this as a 'dry' sound first. We will add 'effects' as we go and 'shape' the cards
+and scene. Its best to do this in chunks."* **One card (CA) until he says otherwise.**
+- ⚠ **He waived the plan gate twice today, each for that piece only:** CB's etch, and the dry
+  extrusion. **A waiver is not standing.**
 
-**Carl's rules. They are RULED and bind any route:**
-1. **The copy is crafted; its SETTING is part of the edit.** Size and word spacing matter, and it
-   must sit within the card.
-2. **JUSTIFIED.** Not left-aligned, which reads *"like a letter or memo"*. Centred was raised and not
-   chosen.
-3. ⛔ **REWORDING IS THE LAST RESORT.** The order is: setting first, then card size (D-077), then the
-   words, taken to Carl. **The Builder never trims copy to fit.**
+## ⛔ NEXT: THE "EFFECTS", A CHUNK AT A TIME — Carl leads the order
 
-**The recommended route, NOT yet confirmed by Carl:** the browser's own text engine draws each card
-into its **own** texture, on its **own** surface (the face's geometry, lifted a hair). The line breaks
-are chosen for even justified gaps, a gap cap is set, and a fit check fails loudly. It has its **own
-material**, driven from the D-091 track (the opal route), and an `sr-only` DOM copy. ⚠ **troika was
-measured unable to guarantee a crafted setting:** it has no word-spacing control, its own layout
-engine, and no `woff2` support.
+**Measured and open, from the run logs:**
+1. **The light's hotspot.** The spot mirrored in the glossy dome washes out words at CA's top-centre.
+   - Intensity plateaus: 3 → 1.5 → **0.5 now**.
+   - **The angle is the lever:** at 0.5, 60° gives a hotspot word 2.59 : 1 vs 2.80 elsewhere (45° gives 2.22).
+   - ⚠ **But steeper angles lengthen the shadows** (≈ depth × tan θ): ~3 mm at 45°, ~5 at 60°, ~8 at 70°, against a ~5 mm stroke.
+   - **Carl asked what angle it is (45°) and did not rule.**
+2. **The drift:** off-centre left → right → back, subtle (D-094). **Not built.**
+3. **Depth and colour of the letters** (3 mm, `#f2f4f7`, roughness 0.6). **Not judged.**
+4. **The clear takes 10.2 s** with nothing new appearing. A faster clear would echo the Q&A's "it's done its job". **Not built.**
+5. **The setting:** greedy breaks, gaps up to 4.4x a space, the last line set left. **The fit chunk.**
+6. ⚠ **A 309 ms long task at the clock's start**, probably the first compile of the shadowed and clipped programs. **Recorded, not tuned** (the Q5 pattern).
+7. **CB, CD, CS**, then **the four cards striking in turn**. The next card flickers on as the reader
+   reaches the previous card's last words; the lead point is a POSITION in the copy (D-094).
+   - ⚠ **Those sequence figures were computed at 200 wpm with no clear phase.** At 171.4 wpm with the page model, CA alone is a 32.9 s cycle. **Recompute before planning the sequence.**
 
-**First step, per §14a: CA alone.** Measure the dome under the text block and the texture budget
-**before** building. Move all four copies into **one module** first. ⚠ CD's and CS's copy exists
-only in `live-work/about-section-thinking.md` (D-077's pointer).
+## ⛔ CORRECTIONS THIS SESSION, so they are not repeated
 
-**Open, and Carl's:**
-- the route
-- role names: same setting, or a title that *"catches the light"*
-- is the text readable before the neon strikes, or revealed by it?
-- the font (Geist?)
-- the last line of each paragraph
-- the gap cap, set by eye
-
-⚠ **The plan-review gate applies unless Carl waives it.** He waived it twice this session, for the
-trigger and for the floor pair, each time for that piece only. **A waiver is not standing.**
-
----
-
-## ✔ WHAT THIS SESSION DID — all committed and pushed
-
-1. **The wall pair's neon (CA, CB) went through the plan-review gate.** The Architect found 14 things;
-   F1 was a build blocker (the ignition would never have fired). All were taken. Files:
-   `live-work/wall-neon-plan-23-september.md`, `architect-plan-response-wall-neon-23-september.md`.
-2. **Neon-only bloom, not `EffectComposer`** (Carl's choice). The composer would have stripped ACES
-   from D-089's glass. The identity gate measures the room with the neon off as **0 px different**,
-   with a noise floor of 0, and a red run was seen to go red.
-3. **The trigger (D-092): the wall cards fully in view, ONCE per visit** (Carl ruled). The Roles jump
-   and scrolling are the same check.
-4. **The floor pair (CD, CS)**, on Carl's instruction without the gate.
-5. **`about-card-glass.ts` was unlocked for comments only**, to correct the retired "four colours"
-   ruling, and **relocked. The relock was verified by a real guard denial.**
-6. `##VERDICT:` sentinel: used for the first time in real runs, and the sprint item is retired.
-
-## ⛔ CORRECTIONS AND FINDINGS THIS SESSION, so they are not repeated
-
-1. ⛔ **The Builder first led with in-shader bloom to avoid a new mechanism. It was wrong:** a
-   material can't draw outside its mesh, and the chosen bloom target sits on the wall. **Carl: the
-   site SHOWCASES techniques** (saved to memory). Cheapest is not automatically right.
-2. ⛔ **Carl said "activate on landing", then revised it on seeing the consequence:** *"The flicker is
-   wasted."* Both readings are in D-092.
-3. ⚠ **Measured: ACES turns a saturated navy tube CYAN**, not white. The wall tube is pre-shifted
-   (`#1b2f8a`, core 211°). **Measure colour on screen; luma-only instruments can't see hue.**
-4. ⚠ **Measured: the teal is ~4.75x brighter than the navy at the same peak**, so the floor pair runs
-   at 1.8, not 6.
-5. ⚠ **Builder bug, caught by the identity gate:** an inline ref callback that didn't guard `null`
-   took the whole canvas down, OUTSIDE the frame's try/catch. **The frame's isolation can't protect
-   React callbacks.**
-6. ⚠ **The face-colour shift Carl saw on ignition is the BLOOM'S GLARE, not light.** `bloom=0` made it
-   byte-identical to neon-off. **The neon still lights nothing.**
+1. ⚠ **The Builder's first reading-time figure (~107 s for all four) was ~30 s out.** It stacked
+   `/start`'s 171 wpm on a per-character clock. **Carl's stopwatch and two tools fixed it:**
+   Read-o-Meter (`https://niram.org/read/`) and Gorby agree at 200 wpm. ⛔ **Gorby rounds to whole
+   minutes; do not use it for timing.**
+2. ⚠ **The first hotspot measurement read "fine".** Its box measured words against the dark gaps
+   between lines. **Measure a word against the glass right behind it.**
+3. ⚠ The Builder told Carl D-077 held CS's word count. **It holds none;** the count lived in the
+   sprint entry and in live-work files, and **is corrected to 56 everywhere.**
+4. **Matching the tube's HEX cannot match the rim AS SEEN:** the rim is tone-mapped at intensity 6
+   plus its untone-mapped bloom. **Measure colour on screen** (the D-093 lesson again).
 
 ## ⚠ OPEN — owners in brackets
 
-1. **The ignition verdict** (checkpoint 2) and the **scroll strike point**: it fires when the cards'
-   bottom edge enters, with the cards in the lower third of the screen. Carl said *"maybe"*. [Carl]
-2. ⚠ **Intermittent 1920 frame drops:** 2 of 6 four-card runs showed 17–25 frames over 33ms and 1
-   over 50ms; 4 runs were clean. Not attributed. **Watch it; don't dismiss it** (Q5 history). [Builder]
-3. **D-087's loop is unbuilt.** Its type exists (hold/loop tails). **Hidden-tab pause is unbuilt:**
-   the track reads `performance.now()`, so a hidden tab skips ahead. [next neon chunk]
-4. **The rim lighting the face** (D-090's second source), **D-090's four lights**, and the **spill**
-   (D-091, backplate route; the ceiling is unmodelled). [Carl]
-5. **RIM-DARK and ENVMAP-STALE** (open defects). The ignition begins in RIM-DARK's off state. [Carl]
-6. **Filing the red run in `verify/proven.json`:** the file is protected and needs a written-up run.
-   [Carl]
-7. **Partly-stale "the rim is not a light source until chunk 3" comments** in
-   `about-card-geometry.ts`, `card-bench.tsx`, and `about-card-glass.ts` (locked). They are listed in
-   D-093. [Carl, for the unlock]
-8. Carried from before: the **accessibility items** (now partly pulled forward: the flash cap and the
-   reduced-motion fade), the **`wall-card-corners-4-september.md` supersession notice**, and D-088's
-   travelling mark. [Carl]
+1. **The review log has TWO entries numbered R-028** (22 and 23 September), and the 22nd sits ABOVE
+   the 23rd in a reverse-chronological file. **Found today, not renumbered.** History is not
+   rewritten without Carl. [Carl]
+2. **Remove the etched take** (`card-etch.ts`, the `?etch=1` wiring), or keep it as a fallback. [Carl]
+3. **Accessibility:** `sr-only` copy, reduced motion, the flash cap, hidden-tab pause. **All
+   deferred to mastering by Carl's ruling** (D-094). [mastering]
+4. **CS's present-tense "connected to…"** (D-077) is still unanswered. [Carl]
+5. Carried: the ignition verdict and the scroll strike point; the intermittent 1920 frame drops;
+   D-087's loop; RIM-DARK / ENVMAP-STALE; the `proven.json` filing; the stale "rim is not a light
+   source" comments; `wall-card-corners-4-september.md`'s supersession notice. [Carl / Builder]
+
+## ⚠ HOUSEKEEPING
+
+- **`live-work/chunk-scope.json` is LIVE** (`ca-extruded-text-dry`). It is gitignored. **Re-scope it
+  for the next chunk.** Don't delete it silently: the guard FAILS OPEN when the file is absent.
+- **Carl's machine:** DPR **1.36**, viewport ~**1412 x 700** CSS. Capture at that size for his eye.
+- **Committed and pushed at the end of this session** (see `git log`). The push deploys to production;
+  everything new is gated behind flags.
 
 ---
 
-*Written 23 September 2026. ⛔ **Everything is pushed; no chunk is scoped; no protected file is open.***
+*Written 24 September 2026.*

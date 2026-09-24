@@ -55,7 +55,7 @@ comment in the file about `object-contain`.
                  rather than eyeballed. THIS REVERSES THE 4 SEPTEMBER PORTRAIT
                  RULING ("their shorter sides will be on the top edge"), and the
                  reversal is his: the portrait shape was set BEFORE the copy had
-                 met its container, and 49/55 words in a narrow column could not be
+                 met its container, and 49/56 words (CS recorded as 55 until 24 September 2026) in a narrow column could not be
                  made to fit without breaking type size, the 2+2 composition, or the
                  copy itself. ⚠ Landscape is why the WALL pair works — prose sets in
                  few long lines, not many short ones.

@@ -65,6 +65,29 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-029 — CA's Card Text, "Pages" At The Start Page's Pace: GREAT — On The Timing Model Only
+
+**Date:** 2026-09-24
+**Reviewer:** Human Founder
+**Subject:** CA's copy as **extruded Geist** behind `?extrude=1` — the "dry" take: every rim off, one white spot centred, static, downward. The copy writes and erases left to right in **"pages"**: each pass clears to an empty card and restarts top left, at **`/start`'s pace, 171.4 wpm**. Records **D-094** (its 24 September amendments).
+
+**Carl's verdict, verbatim:** *"This is a lot better because it also solves the problem if someone reads slower. The text is on the page for longer giving them time to read it. The whole sequence is not long enough for someone to lose focus and it is clearly 'pages' with a start and end. This i great."*
+
+**Findings:**
+
+- ✔ **THE PACE AND THE PAGE MODEL PASS.** ⚠ **The slower pace IS the slow reader's grace** (7.7 s minimum per line), so one number answers both waiting and falling behind. **The page boundary gives the copy a beginning and an end.** The earlier continuous wrap was "chaotic".
+- ⛔ **NOT COVERED — still takes:**
+  - the light: intensity 0.5 (from 3), angle 45°, and ⚠ a specular hotspot that washes words at CA's top-centre. The ANGLE is the lever: 60° measured 2.59 vs 2.80.
+  - the 3 mm depth
+  - the letters' colour and roughness
+  - the 52 mm size
+  - greedy breaks and the left-set last line
+  - the 10.2 s clear
+- ⛔ **The route changed twice in the day and the record says so:** etched glass (built, tuned, superseded) → extrusion. The etched take remains gated behind `?etch=1`.
+- ⚠ **Not yet seen by Carl:** CB/CD/CS with extruded text (CA first, one card), the light's drift, colour, neon.
+
+---
+
 ## R-028 — All Four Cards In Glass, And The PLACEMENT Is APPROVED. The Rails Come Out
 
 **Date:** 2026-09-22
