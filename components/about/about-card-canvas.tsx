@@ -906,13 +906,23 @@ export default function AboutCardCanvas() {
    *
    * Every fader falls back to the committed value in `about-neon.ts` /
    * `card-etch.ts`, so a plain `/about` always shows what is committed.
+   *
+   * ⛔ SINCE 24 September 2026 (session 2) EVERY FADER ABOVE NEEDS `?extrude=0`:
+   * plain `/about` carries the extruded text with the neon NOT mounted (see
+   * `extrude` below), so `?neon=full` alone changes nothing on screen.
    */
   /**
-   * ⛔⛔ THE EXTRUDED TEXT, "DRY" — D-094, 24 September 2026. CA ONLY, AND ONLY WITH
-   * `?extrude=1`. Carl: *"turned all the rims off. At this point we dont want
-   * extraneous light 'polluting' the scene."* So under the flag the neon is NOT
-   * MOUNTED (`none`: every rim is plain clear glass, no bloom) and the etched text
-   * is off. ⚠ Plain `/about` is untouched: without the flag this is `null`.
+   * ⛔⛔ THE EXTRUDED TEXT, "DRY" — D-094, 24 September 2026. CA ONLY. Carl:
+   * *"turned all the rims off. At this point we dont want extraneous light
+   * 'polluting' the scene."* So while it is on the neon is NOT MOUNTED (`none`:
+   * every rim is plain clear glass, no bloom) and the etched text is off.
+   *
+   * ⛔⛔ ON BY DEFAULT — PLAIN `/about` — since 24 September 2026 (session 2). Carl:
+   * *"The rim lights should be turned off so we can see the card in isolation."*
+   * ⚠ *Corrected in place:* this read "AND ONLY WITH `?extrude=1`… Plain `/about`
+   * is untouched: without the flag this is `null`." ⛔ **Now `?extrude=0` is the
+   * only way to `null`**, and with it the neon, its faders (`?neon=`, `?neonca=`…)
+   * and the etched take (`&etch=1`) — ⚠ **those faders do nothing without it.**
    */
   const extrude = useMemo(() => (extrudeEnabled() ? extrudeSettings() : null), []);
   const neon = useMemo<ReturnType<typeof neonMode>>(
@@ -996,12 +1006,15 @@ export default function AboutCardCanvas() {
         <Canvas
           frameloop="demand"
           dpr={[1, 2]}
-          /* ⚠ Shadows ONLY under `?extrude=1` — the letters' shadows on CA's face.
-             `false` is R3F's own default, so plain `/about` is unchanged. */
+          /* ⚠ Shadows ONLY while the extruded text is on — the letters' shadows on
+             CA's face. ⚠ *Corrected in place:* this read "ONLY under `?extrude=1`…
+             so plain `/about` is unchanged"; the text is now plain `/about`'s
+             default, so `?extrude=0` is what gives `false` (R3F's own default). */
           shadows={extrude ? "soft" : false}
           gl={{ antialias: true, alpha: true }}
           /* ⚠ The extruded text's reveal/erase wipe is two clipping planes per line,
-             which need LOCAL clipping — a renderer switch, set only under the flag.
+             which need LOCAL clipping — a renderer switch, set only while the text
+             is on (by default since 24 September; off with `?extrude=0`).
              It affects only materials that carry `clippingPlanes` (only the text's). */
           onCreated={extrude ? ({ gl }) => { gl.localClippingEnabled = true; } : undefined}
           camera={{

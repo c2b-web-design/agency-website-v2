@@ -100,10 +100,21 @@ const browser = await chromium.launch({
   args: ["--enable-gpu", "--use-angle=default", "--ignore-gpu-blocklist"],
 });
 
+/**
+ * ⛔⛔ EVERY URL THIS HARNESS OPENS CARRIES `extrude=0` — since 24 September 2026
+ * (session 2). Plain `/about` now carries CA's extruded text with the neon NOT
+ * MOUNTED (D-094; `extrudeEnabled` in `card-extrude.tsx`), so without it every
+ * neon arm would measure a page with no neon, and the identity arms would compare
+ * the text take against a pre-neon baseline that never had it. ⚠ `?extrude=0` is
+ * the previous `/about` exactly — the identity gate is the proof, at 0 px.
+ * ⚠ Appended here, in the ONE place a URL is built, so no mode can miss it.
+ */
+const PIN = "extrude=0";
 async function openCanvas(query, viewport, { initScript } = {}) {
   const page = await browser.newPage({ viewport });
   if (initScript) await page.addInitScript(initScript);
-  await page.goto(`${BASE}/about${query}#roles`, { waitUntil: "networkidle" });
+  const q = query ? `${query}&${PIN}` : `?${PIN}`;
+  await page.goto(`${BASE}/about${q}#roles`, { waitUntil: "networkidle" });
   const canvas = page.locator("canvas").first();
   await canvas.waitFor({ state: "visible", timeout: 20000 });
   await canvas.scrollIntoViewIfNeeded();
@@ -215,7 +226,9 @@ if (mode === "identity") {
       if (d.count !== 0) allZero = false;
     }
   }
-  console.log("\n  ⚠ NOT WATCHED: CD and CS UNDER a lit neon (only the off/none paths are compared);");
+  console.log(`\n  ⚠ EVERY ARM CARRIES ${PIN}: this gates the neon page, NOT plain /about — which`);
+  console.log("    since 24 September 2026 carries CA's extruded text with no neon, and is not compared here.");
+  console.log("  ⚠ NOT WATCHED: CD and CS UNDER a lit neon (only the off/none paths are compared);");
   console.log("    anything outside the canvas; the ignition's in-between frames.");
   if (inject !== null) {
     console.log(allZero

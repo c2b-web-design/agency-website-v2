@@ -1,7 +1,9 @@
 "use client";
 
-/* ⛔⛔ THE EXTRUDED CARD TEXT — THE "DRY" TAKE. D-094, 24 September 2026. CA ONLY,
-   BEHIND `?extrude=1`.
+/* ⛔⛔ THE EXTRUDED CARD TEXT — THE "DRY" TAKE. D-094, 24 September 2026. CA ONLY.
+   ⚠ *Corrected in place:* this read "BEHIND `?extrude=1`". Since session 2 the
+   same day it is ON BY DEFAULT on plain `/about`, with every rim off;
+   `?extrude=0` restores the previous page (see `extrudeEnabled`).
 
    Carl: *"At first try the lights centred and static… Also turned all the rims off.
    At this point we dont want extraneous light 'polluting' the scene. Keep the
@@ -67,9 +69,19 @@ export type ExtrudeSettings = {
  */
 export const START_PAGE_WPM = (12 / 4200) * 60_000;
 
-/** `?extrude=1` — the whole take is mounted only with this. */
+/**
+ * ⛔⛔ ON BY DEFAULT SINCE 24 September 2026 (session 2) — PLAIN `/about` IS THIS
+ * TAKE. Carl: *"First turn off all the rim lights. Can you see what was built
+ * here at this URL? I want you to implement it"*, then *"The rim lights should be
+ * turned off so we can see the card in isolation."* (D-094.)
+ *
+ * ⚠ It WAS `?extrude=1`-only (*"the whole take is mounted only with this"*).
+ * `?extrude=1` still works and means the same thing; ⛔ **`?extrude=0` is now the
+ * way back to the previous `/about`** (the neon rims lit, no extruded text, the
+ * etched take reachable with `&etch=1`).
+ */
 export function extrudeEnabled(): boolean {
-  return neonParam("extrude") === "1";
+  return neonParam("extrude") !== "0";
 }
 
 /** Read once per mount by the canvas (reload to apply). */

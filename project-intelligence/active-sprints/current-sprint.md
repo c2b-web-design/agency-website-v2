@@ -579,7 +579,9 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 ---
 
-*Last updated: 2026-09-24 — **the card text.** One copy module; the etched take built and superseded; ⛔ **CA's copy is now EXTRUDED and runs in "pages" at `/start`'s pace — Carl: "This i great" (R-029), on the timing model only.** Everything is behind `?etch=1` / `?extrude=1`; plain `/about` is measured unchanged. Reasoning: D-094.*
+*Last updated: 2026-09-24 (session 2) — ⛔ **THE EXTRUDED TAKE IS PLAIN `/about`, RIMS OFF**, on Carl's word (gate waived for this piece only): *"The rim lights should be turned off so we can see the card in isolation."* **`?extrude=0` is the previous page** (neon, etched take), measured 0 px against the baseline. ⚠ **Plain `/about` is no longer pixel-identical to production's previous page, by design.** Nothing pushed. Reasoning: D-094.*
+
+*Previously: 2026-09-24 — **the card text.** One copy module; the etched take built and superseded; ⛔ **CA's copy is now EXTRUDED and runs in "pages" at `/start`'s pace — Carl: "This i great" (R-029), on the timing model only.** Everything is behind `?etch=1` / `?extrude=1`; plain `/about` is measured unchanged. Reasoning: D-094.*
 
 *Previously: 2026-09-22 — **the glass rolled out to all four cards, and Carl's acceptance test is
 FAMILY RESEMBLANCE, NOT MATCHED NUMBERS** — *"they feel all part of the same family except CA."*
