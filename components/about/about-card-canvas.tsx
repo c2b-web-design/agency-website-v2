@@ -231,7 +231,9 @@ const CAMERA_FAR = Math.ceil(PROXY_MAX_DEPTH * 1.25);
 function textCardsFromUrl(): Set<ExtrudeCardId> {
   const v = neonParam("text");
   const all: ExtrudeCardId[] = ["ca", "cb", "cd", "cs"];
-  if (v === null) return new Set<ExtrudeCardId>(["ca"]);
+  /* ⛔ CB NOW, CA HIDDEN — Carl, 25 September 2026: *"Hide CA text for now. Lets concentrate on CB text."*
+     (Was CA alone. `?text=ca` shows CA again.) */
+  if (v === null) return new Set<ExtrudeCardId>(["cb"]);
   if (v === "1" || v === "all") return new Set(all);
   if (v === "0") return new Set<ExtrudeCardId>();
   return new Set(all.filter((id) => v.split(",").includes(id)));
@@ -680,7 +682,7 @@ export default function AboutCardCanvas() {
      new 805 × 1332 mm: the face is the same width to 0.6% (the SAME words per line at 52 mm) and 44%
      taller (**8 lines, was 6**). ⚠ The depth rule re-checked in the new room: CA is seen at 15.7 / 7.1 /
      10.8° (was 23.7 / 12.1 / 4.0°), so 3 mm leaves a worst side wall of **19%** (was 29%) — kept.
-     `?text=` : absent → CA only · `1`/`all` → all four · `0` → none · a list (`ca,cb`) → those. */
+     `?text=` : absent → CB only (since later the same day; was CA) · `1`/`all` → all four · `0` → none · a list (`ca,cb`) → those. */
   const textCards = useMemo(() => textCardsFromUrl(), []);
   /* ⛔ THE MOVING LIGHT — ON on plain `/about` (`?lightmove=0` removes it). The static key and fill
      are OFF under it by default — Carl's experiment, so it is seen alone (ambient kept); `?lmglobal=1` puts

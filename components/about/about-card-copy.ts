@@ -80,22 +80,40 @@ export const ABOUT_CARD_COPY: readonly AboutCardCopy[] = [
     id: "CB",
     role: "The Builder",
     position: "wall-right",
-    body: "Where the approved plan becomes the site. Stationed in the same environment as the Architect, the Builder drafts the implementation step by step, then passes it back for review and amendment before any production code is written. Each piece of work has a declared scope, and the Builder cannot reach outside it. Code is only good when it stays within the brief. The plan is verified against the work as it goes, so the site that gets built is the site that was approved.",
-    /* ⛔ Carl wrote this line himself. */
-    keepLine: "Code is only good when it stays within the brief.",
+    /* ⛔⛔ EDITED BY CARL'S OPTIONS TO FIT, 25 September 2026 (second session) — his choice, "B", of the two best
+       fits from all 48 combinations (`live-work/scripts/cb-edits.mjs`): *"'Where the' may not be needed.
+       Aproved plans become… 'Production' may not be needed. Code stays within the brief. plans are constantly
+       verified. Approved plans build the site."* **At 68 mm (CA's size): 12 lines in 6 slots — two FULL pages
+       — widest gap 3.45×, two weak line-endings.** A BOOKEND: the card opens *"Approved plans become the
+       site."* and closes *"Approved plans build the site."* ⚠ "In a shared environment" was offered and not
+       used (it helped none of the best fits). ⚠ The KEEP-LINE is Carl's own, shortened by Carl.
+       Was: "Where the approved plan becomes the site. Stationed in the same environment as the Architect, the
+       Builder drafts the implementation step by step, then passes it back for review and amendment before any
+       production code is written. Each piece of work has a declared scope, and the Builder cannot reach
+       outside it. Code is only good when it stays within the brief. The plan is verified against the work as
+       it goes, so the site that gets built is the site that was approved." */
+    body: "Approved plans become the site. Stationed in the same environment as the Architect, the Builder drafts the implementation step by step, then passes it back for review and amendment before any code is written. Each piece of work has a declared scope, and the Builder cannot reach outside it. Code stays within the brief. Plans are constantly verified against the work. Approved plans build the site.",
+    /* ⛔ Carl wrote this line himself — and shortened it himself (was "Code is only good when it stays within
+       the brief."). */
+    keepLine: "Code stays within the brief.",
   },
   {
     id: "CD",
     role: "The Designer",
     position: "floor",
-    body: "Your brand is the material. Typography, colour, assets and tone are taken from what you already have and treated as the baseline — not a blank page, and not a template. From there the design is elevated into a bespoke prototype that sets the visual direction before any coding begins.",
+    /* ⛔ THE EM DASH OUT — Carl, 25 September 2026: *"Em dashes can go"* (on CA: *"if anything screams AI its
+       that"*). A comma, the smallest change; the keep-line is untouched. Was: "…treated as the baseline — not
+       a blank page, and not a template." ⚠ Not yet fitted to CD's card (its text is hidden). */
+    body: "Your brand is the material. Typography, colour, assets and tone are taken from what you already have and treated as the baseline, not a blank page, and not a template. From there the design is elevated into a bespoke prototype that sets the visual direction before any coding begins.",
     keepLine: "not a blank page, and not a template",
   },
   {
     id: "CS",
     role: "The Strategist",
     position: "above",
-    body: "Every other seat is pointed at the website. This one is pointed at the business it exists to serve — connected to the things the business actually runs on, and answering from those rather than from general knowledge. It advises only. Nothing it recommends becomes work without a decision, and nothing it touches is the site itself.",
+    /* ⛔ THE EM DASH OUT — Carl, 25 September 2026: *"Em dashes can go."* A comma. Was: "…the business it exists
+       to serve — connected to the things…". ⚠ Not yet fitted to CS's card (its text is hidden). */
+    body: "Every other seat is pointed at the website. This one is pointed at the business it exists to serve, connected to the things the business actually runs on, and answering from those rather than from general knowledge. It advises only. Nothing it recommends becomes work without a decision, and nothing it touches is the site itself.",
     keepLine: "Nothing it recommends becomes work without a decision",
   },
 ];
