@@ -60,6 +60,8 @@ export type ExtrudeSettings = {
   /** Sentence easing: words either side of a boundary over which the speed ramps. */
   easeWords: number;
   restMs: number;
+  /** The erase waits for the last word of the line it trails (`ChaseParams.eraseAtLastWord`). */
+  eraseAtLastWord: boolean;
   blockW: number;
   blockH: number;
   lineHeight: number;
@@ -120,12 +122,36 @@ const EXTRUDE_SWITCHES: Record<ExtrudeCardId, { light: boolean; rim: boolean }> 
  * ⚠ CS is the steepest card of the four: its far letters are also squashed to
  * cos 60° = half their width, which no depth can fix.
  * ⚠ Takes. `?textdepth=` overrides for whichever card is loaded.
+ *
+ * ⛔ THE ANGLES ABOVE ARE THE OLD ROOM'S — kept as history. RE-CHECKED FOR THE NEW ROOM (D-095), at 68 mm
+ * (stem ≈ 4.5 × 68/52 ≈ 5.9 mm). Worst view angle → side wall at the depth below:
+ *   CA 15.7° → 3 mm   ~14%   ·   CB 32.8° → 1.5 mm ~16%   ·   CD 25.4° → 2 mm ~16%
+ *   CS 33.8° → 0.9 mm ~10% — the outlier: the new room sees CS nearly face-on (was 60°), so its letters
+ *   read flatter than the other three. ⛔ **0.9 → 1.4 mm, Carl, 25 September 2026 (third session):**
+ *   *"I understand, change the depth."* → ~15%, inside the band the others share. Its far letters now squash
+ *   to cos 33.8° ≈ 0.83, not half. ⚠ The angles are the second session's computation, not re-run here.
  */
 const EXTRUDE_DEPTH_MM: Record<ExtrudeCardId, number> = {
   ca: 3,
   cb: 1.5,
   cd: 2,
-  cs: 0.9,
+  cs: 1.4,
+};
+
+/**
+ * ⛔ THE ERASE WAITS FOR THE LAST WORD — PER CARD. Carl, 25 September 2026 (third session), on CS: *"It can
+ * start as the head is approaching the last word of the second line, not the beginning of it."* First on CS
+ * alone — the card it was seen on (3 slots, the erase ONE line behind). ⛔ **CD ROLLED OUT the same session,
+ * Carl: *"Roll it out to CD"*** — its erase was two lines behind the reader, now nearly three. CA/CB stay on
+ * the old cue: their erase is already four lines behind, so the change barely moves them (measured: D-095 tail).
+ * The reveal is untouched either way — 171.4 wpm (Carl: *"the reveal is at the speed an average human reads
+ * at"*). `?texterase=1` / `0` forces it on or off for the loaded card(s). See `chase` in `card-text-timeline.ts`.
+ */
+const ERASE_AT_LAST_WORD: Record<ExtrudeCardId, boolean> = {
+  ca: false,
+  cb: false,
+  cd: true,
+  cs: true,
 };
 
 function switchParam(key: string, fallback: boolean): boolean {
@@ -248,6 +274,7 @@ export function extrudeSettings(card: ExtrudeCardId): ExtrudeSettings {
     /* ⛔ 0: Carl — *"Only when the last word has disappeared then start the cycle
        again."* The next pass begins as the card empties. `?textrest=` adds a pause. */
     restMs: neonNumber("textrest", 0, 0, 10_000),
+    eraseAtLastWord: switchParam("texterase", ERASE_AT_LAST_WORD[card]),
     blockW: neonNumber("textbw", 0.94, 0.5, 1),
     blockH: neonNumber("textbh", 0.9, 0.5, 1),
     lineHeight: neonNumber("textlh", 1.35, 1, 2),
@@ -425,17 +452,18 @@ export function CardExtrudedText({
       const sentenceEase = { sentenceEnds: sentenceEnds(lines), floor: s.easeFloor, words: s.easeWords };
       const ch = chase(
         wordsPerLine,
-        { wpm: s.wpm, lead: s.lead, restMs: s.restMs, slots, lag: eraseLag(slots) },
+        { wpm: s.wpm, lead: s.lead, restMs: s.restMs, slots, lag: eraseLag(slots), eraseAtLastWord: s.eraseAtLastWord },
         sentenceEase,
       );
       const easeCost = easeCostMs(wordsPerLine, s.wpm, sentenceEase);
       const tris = flat.reduce((a, g) => a + g.attributes.position.count / 3, 0);
       console.info(
-        `${id} extrude: ${lines.length} lines, ${slots} slots, erase ${eraseLag(slots)} lines behind · ` +
+        `${id} extrude: ${lines.length} lines, ${slots} slots, erase ${eraseLag(slots)} lines behind (cue: ${s.eraseAtLastWord ? "its last word" : "its start"}) · ` +
           `${s.emMm}mm, depth ${s.depthMm}mm, ${Math.round(tris).toLocaleString()} tris · ` +
           `pass ${(ch.periodMs / 1000).toFixed(1)}s at ${s.wpm} wpm (rest ${s.restMs}ms), grace ${(ch.graceMs / 1000).toFixed(1)}s · ` +
           `sentence ease ${s.easeFloor} over ${s.easeWords} words: +${(easeCost.perBoundaryMs / 1000).toFixed(2)}s a boundary, +${(easeCost.perPassMs / 1000).toFixed(1)}s over the write (the erase adds its own) · ` +
           `widest gap ${widestGap.toFixed(2)}x a space (${balanced ? "balanced" : "greedy"}, last line left — provisional)` +
+          (ch.broughtForward ? ` · ${ch.broughtForward} erase(s) started before the last word to keep the pace` : "") +
           (ch.clipped ? ` · ⛔ ${ch.clipped} erase(s) cut short to free a slot` : ""),
       );
       if (overlong.length) console.error(`⛔ ${id.toUpperCase()} EXTRUDED TEXT: words wider than the block ${JSON.stringify(overlong)} — nothing trimmed.`);
@@ -447,7 +475,7 @@ export function CardExtrudedText({
       cancelled = true;
       flat.forEach((g) => g.dispose());
     };
-  }, [id, body, dims.faceWidthMm, dims.faceHeightMm, s.emMm, s.depthMm, s.wpm, s.lead, s.easeFloor, s.easeWords, s.restMs, s.blockW, s.blockH, s.lineHeight]);
+  }, [id, body, dims.faceWidthMm, dims.faceHeightMm, s.emMm, s.depthMm, s.wpm, s.lead, s.easeFloor, s.easeWords, s.restMs, s.eraseAtLastWord, s.blockW, s.blockH, s.lineHeight]);
 
   // ── The slots: N meshes, each with its own clipping pair ──
   type Slot = { mesh: THREE.Mesh; mat: THREE.MeshStandardMaterial; reveal: THREE.Plane; erase: THREE.Plane; key: string };

@@ -198,6 +198,9 @@ export type ChaseParams = {
   /** "75% of the card's visible text": the erase trails the write by this many
       lines. Derived by `eraseLag`. */
   lag: number;
+  /** When line i's erase starts: false = as line i+lag BEGINS writing; true = as the write head
+      reaches the LAST WORD of line i+lag. See the note in `chase`. Absent = false. */
+  eraseAtLastWord?: boolean;
 };
 
 /**
@@ -232,6 +235,9 @@ export type Chase = {
   /** Lines whose erase had to be CUT SHORT to free the slot in time. Should be
       0; published rather than hidden (the guard-that-hides-its-skips lesson). */
   clipped: number;
+  /** Erases started BEFORE the last-word cue so they finish at the pace (only with `eraseAtLastWord`).
+      Published for the same reason as `clipped`. */
+  broughtForward: number;
 };
 
 /**
@@ -353,7 +359,7 @@ export function chase(wordsPerLine: number[], p: ChaseParams, ease?: SentenceEas
   /* ⛔ ONE PASS, SCHEDULED ONCE — every pass is identical and they never overlap
      (Carl, 24 September: the copy restarts only when the last word has gone).
      Within a pass: line i writes into slot i mod N; its erase starts when line
-     i+K starts writing. After the LAST line is written, nothing new writes: the
+     i+K starts writing (or reaches its last word — `eraseCue`, below). After the LAST line is written, nothing new writes: the
      erase head carries on through the remaining lines at the same pace, line
      after line, until the card is empty. Then the rest, then the next pass from
      slot 0 — the top left. */
@@ -364,11 +370,35 @@ export function chase(wordsPerLine: number[], p: ChaseParams, ease?: SentenceEas
     t += writeMs(i);
   }
   const writeEnd = t;
+  /* ⛔ THE ERASE WAITS FOR THE LAST WORD — Carl, 25 September 2026 (third session), on CS: *"Your right
+     about the reveal catch up. It can start as the head is approaching the last word of the second line,
+     not the beginning of it."* With 3 slots the lag is ONE line, so line i began to go the moment line i+1
+     began: CS never showed more than two lines, at 16 s only one. Now (when `eraseAtLastWord`) line i's
+     erase starts as the write head reaches the LAST WORD of line i+K — a full line later, less a word.
+     ⚠ The slot guard below is unchanged: line i's erase still has until line i+N starts writing, and a cut
+     short erase is still counted (`clipped`), never hidden.
+     ⛔ MEASURED BEFORE BUILT: on CS the pure last-word cue cut lines 1 and 2 short — erased at 1.29× and
+     1.12× the pace (`live-work/scripts/cs-erase-detail.mjs`), because each is longer than the line two below
+     it. So where waiting for the last word would cut an erase short, it starts JUST EARLY ENOUGH to finish at
+     the pace (never earlier than the old cue) — "approaching" the last word rather than on it. The pace is
+     the rule that wins (the start page's, D-094). Counted as `broughtForward`, not hidden. */
+  const eraseCue = (j: number) =>
+    p.eraseAtLastWord
+      ? ws[j] + (tm.at(c[j] + wordsPerLine[j] - 1) - tm.at(c[j])) * (j === 0 ? p.lead : 1)
+      : ws[j];
   const es: number[] = [];
   const ed: number[] = [];
   let clipped = 0;
+  let broughtForward = 0;
   for (let i = 0; i < L; i++) {
-    const start = i + K < L ? ws[i + K] : Math.max(writeEnd, i > 0 ? es[i - 1] + ed[i - 1] : 0);
+    let start = i + K < L ? eraseCue(i + K) : Math.max(writeEnd, i > 0 ? es[i - 1] + ed[i - 1] : 0);
+    if (p.eraseAtLastWord && i + K < L && i + N < L) {
+      const latest = Math.max(ws[i + K], ws[i + N] - lineMs(i));
+      if (latest < start) {
+        start = latest;
+        broughtForward++;
+      }
+    }
     /* The erase lasts the line's own time — unless its slot is needed by
        line i+N first, in which case it is CUT SHORT and counted. */
     let dur = lineMs(i);
@@ -403,5 +433,5 @@ export function chase(wordsPerLine: number[], p: ChaseParams, ease?: SentenceEas
     return out;
   };
 
-  return { at, periodMs, graceMs, clipped };
+  return { at, periodMs, graceMs, clipped, broughtForward };
 }

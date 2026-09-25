@@ -103,17 +103,30 @@ export const ABOUT_CARD_COPY: readonly AboutCardCopy[] = [
     position: "floor",
     /* ⛔ THE EM DASH OUT — Carl, 25 September 2026: *"Em dashes can go"* (on CA: *"if anything screams AI its
        that"*). A comma, the smallest change; the keep-line is untouched. Was: "…treated as the baseline — not
-       a blank page, and not a template." ⚠ Not yet fitted to CD's card (its text is hidden). */
-    body: "Your brand is the material. Typography, colour, assets and tone are taken from what you already have and treated as the baseline, not a blank page, and not a template. From there the design is elevated into a bespoke prototype that sets the visual direction before any coding begins.",
-    keepLine: "not a blank page, and not a template",
+       a blank page, and not a template."
+       ⛔ FITTED BY CARL'S EDITS — 25 September 2026 (third session). As written it set to 9 lines in 4 slots at
+       68 mm (three pages, one line on the last) and line 1 opened to 5.52×. Carl: *"Brand is material. taken from
+       an existing site. or template. Any is optional"*, then *"now try "Your" brand"*. All three edits on, with
+       "Your": **8 lines, two full pages, widest gap 2.15×** (line 1 1.35×). The keep-line is HIS edit, so it
+       follows. Was: "Your brand is the material. … taken from what you already have … not a blank page, and not
+       a template." Searches: `live-work/scripts/cd-edits.mjs`, `cd-order-probe.mjs`; reasoning: the D-095 tail. */
+    body: "Your brand is material. Typography, colour, assets and tone are taken from an existing site and treated as the baseline, not a blank page or template. From there the design is elevated into a bespoke prototype that sets the visual direction before any coding begins.",
+    keepLine: "not a blank page or template",
   },
   {
     id: "CS",
     role: "The Strategist",
     position: "above",
     /* ⛔ THE EM DASH OUT — Carl, 25 September 2026: *"Em dashes can go."* A comma. Was: "…the business it exists
-       to serve — connected to the things…". ⚠ Not yet fitted to CS's card (its text is hidden). */
-    body: "Every other seat is pointed at the website. This one is pointed at the business it exists to serve, connected to the things the business actually runs on, and answering from those rather than from general knowledge. It advises only. Nothing it recommends becomes work without a decision, and nothing it touches is the site itself.",
+       to serve — connected to the things…".
+       ⛔ FITTED BY CARL'S EDITS — 25 September 2026 (third session). As written it set to 8 lines in 3 slots at
+       68 mm (three pages, two lines on the last). Carl chose two pages and offered five cuts (*"'other' is
+       optional. 'exists' is optional… 'actually' is optional. and is too. 'and nothing it touches is the site
+       itself.' all that can go"*); the fewest that fit, taken on his *"proceed with your recommendation"*: the
+       close cut and "and" out — **6 lines, two full pages, widest gap 1.72×**. The keep-line is untouched and
+       now ends the card. Was: "…actually runs on, and answering from those… without a decision, and nothing it
+       touches is the site itself." Search: `live-work/scripts/cs-edits.mjs`; reasoning: the D-095 tail. */
+    body: "Every other seat is pointed at the website. This one is pointed at the business it exists to serve, connected to the things the business actually runs on, answering from those rather than from general knowledge. It advises only. Nothing it recommends becomes work without a decision.",
     keepLine: "Nothing it recommends becomes work without a decision",
   },
 ];
