@@ -2,7 +2,7 @@ import sharp from "file:///C:/Users/Carl%20Buckley/agency-website-v2/node_module
 const SRC = "C:/Users/Carl Buckley/agency-website-v2/brand-assets/office-image-3.jpg";
 const VP = [9196, 1291], xl = 608, xr = 1566;
 const tvTop = (x) => 0.04592 * x + 692.9, tvBot = (x) => 0.01945 * x + 1247.4;
-const dT = (x) => 0.12211 * x + 9.0, dB = (x) => 0.11506 * x + 308.7;
+// (unused seeds) dT(x) = 0.12211x + 9.0, dB(x) = 0.11506x + 308.7
 const u = (x) => (x - xl) / (VP[0] - x), k = 1 / u(xr), X = (w) => (w * VP[0] + k * xl) / (k + w);
 const thru = (y0) => (x) => y0 + (VP[1] - y0) * (x - 1652) / (VP[0] - 1652); // a wall-horizontal through (1652, y0)
 const band = { A: [211, 585, 1.37], B: [211, 499, 1.773] };

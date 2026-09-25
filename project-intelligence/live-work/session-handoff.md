@@ -1,4 +1,4 @@
-# Session Handoff — 24 September 2026 (session 2). THE ROOM IS BEING REPLACED: office-image-3, orange.
+# Session Handoff — 25 September 2026. THE NEW ROOM IS BUILT ON `/about`, UNCOMMITTED.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
@@ -7,87 +7,86 @@
 
 ## ⛔ WHERE THINGS STAND
 
-**The card TECHNIQUE is proven. The ROOM PHOTOGRAPH is the limit, and it is being replaced.**
-Carl: *"The concept and technique are good… What doesnt work? The environment."* Record: **D-095**
-(it is long; its entries run in order). **D-094** holds the text work.
+**Plain `/about` §2 now shows office-image-3 (the new room), with all four cards placed by Carl's rulings.
+IT IS NOT COMMITTED.** Carl: *"Change about, build it there so when i ask you to start the server we can
+go from there."* ⛔ **The first thing Carl is expected to do is ask for the server (port 3000).**
 
-- **Live `/about` (commit `8902774`):** all four cards show a FULL FIRST PAGE, STATIC, every card
-  light and rim OFF, on the OLD photograph. It stays until the new room is ready.
-  - `?textstatic=0` runs the pages. `?extrude=cb` (or `ca,cb`) isolates cards. `?extrude=0` is the old neon page.
-  - `?textlight=1` / `?textrim=1` restore a card's spot or rim.
-- **Per-card depth (the depth rule, D-094):** CA 3 / CB 1.5 / CD 2 / CS 0.9 mm, from measured view
-  angles. ⛔ **Rule: the steeper a card sits to the viewer, the shallower its letters.**
-- ✔ **The "H" is fixed:** the typeface was rebuilt from Vercel's static Geist (see `scripts/build-geist-typeface.mjs`).
+- **Record: D-095** (its 25 September entries run in order: removal list → four edits measured → plate
+  chosen → camera → layout → build). **Current sprint:** the "THE ROOM REPLACED" row.
+- **Plate:** `brand-assets/office-image-3-edited.png` (3632 × 2048, from a non-GPT generator; committed
+  `a0658b2`) → served as `public/about-room-plate.jpg` (**2560 × 1435, square pixels**).
+- **Camera** (`live-work/camera-solve-25-september.md`): f 2013.7 px on the 4000 px master, 89.6° hFOV,
+  **3.22° UP**, roll 0; falsified four ways. ⛔ **The left bookcase is NOT plumb in the render — never a
+  reference.** In the scene: vFOV **58.203°**, `PITCH` positive.
+- **Layout, accepted by eye** (*"Placement and balance are good"*), all in `about-room.ts` → `ROOM_CARDS`,
+  in ROOM MILLIMETRES (desk = 750 mm ASSUMED): CA/CB on the back wall (the TV's frame, 1332 × 805, level,
+  equal 226 mm spacing, CB's bottom 10 mm above the chair tip); **CS ABOVE**, 4 doors (1662 × 423) trim to
+  trim on the cabinet fronts (401 mm off the wall); **CD on the FLOOR**, 101 mm (one skirting height) in
+  front of the skirting face, top level with the top drawer handle IN THE PICTURE, 1284.5 × 546.9 (area =
+  CS's), right edge clear of the chair. ⚠ **Moving a card = editing `ROOM_CARDS`.**
+- **The layout tool:** `live-work/scripts/card-layout-office3.mjs` (args: `<out.jpg|""> equal 4 0
+  977.5,1858 0 1545,1628`; `EXPORT=1` prints the scene constants and a transcription check).
 
-## ⛔⛔ THE NEW ROOM — CHOSEN: `brand-assets/office-image-3.jpg`
+## ⛔ UNCOMMITTED WORKING TREE (Carl commits on request)
 
-Pixabay #7413418, Setupx3D, **4000 × 2250 (16:9)**, Pixabay Content License. It is a CG render with orange
-LED strips. The three candidate MASTERS are in `brand-assets/office-image-1/2/3.jpg`; their provenance
-lives in D-095. ⛔ **Masters: edit copies, never these files. Never upscale.**
+New: `components/about/about-room.ts`, `components/about/room-plate.tsx`, `public/about-room-plate.jpg`,
+`live-work/camera-solve-25-september.md`, scripts `camera-solve-office3.mjs`, `verticals*-office3.mjs`,
+`room-model-office3.mjs`, `door-gaps-office3.mjs`, `card-layout-office3.mjs`, screenshots
+`office-image-3-cards-current.jpg`, `new-room-first-render-{guides,plain}.png`.
+Changed: `about-card-canvas.tsx`, `about-card-copy.ts`, `app/about/page.tsx`, `decisions.md`,
+`current-sprint.md`, and seven `live-work/scripts/*.mjs` (unused variables removed — lint baseline).
+✔ `tsc` clean · `npm run build` clean · **lint 1 error, 0 warnings (baseline)**.
+⚠ `live-work/` files are gitignored: **force-add** the new scripts/records/screenshots when committing.
 
-**Carl's rulings (all in D-095):**
-- **NO CROP** (the principal point stays at the frame centre). The canvas frame changes from 3:2 to 16:9.
-- **The room STAYS ORANGE/AMBER.** Rim colour is *"we shall see what works"*; text colour and size may change; **the CONCEPT is fixed.**
-- **Four cards:**
-  - **CA** = the TV's size and place, back wall left.
-  - **CB** = same size, to its right (MEASURED to fit: free wall ≈ 1.41 TV widths; ~0.20 TV-width gaps each side).
-  - **An elongated card ABOVE**, on the cabinet-door band, centred on the CA + gap + CB centre line, **area = one wall card's**.
-  - **An elongated card on the FLOOR** in front of the credenza, **its right edge at the cubby line** (x ≈ 2110), so **the chair does NOT move.**
-- **The seesaw:** equal and opposite shifts of the floor card (left) and the above card (right) keep the pair centred on the line.
-- **Minimal removal:** Deadpool; the TV and corner shelving; consoles/trademarks per the licence list in D-095. The other trinkets STAY for character.
-- **TV size estimate:** ≈ 1640 × 920 mm (~75"), ASSUMING a 750 mm desk. **No old card is comparable** (~2× CA's area, 16:9).
+## ⛔⛔ NEXT — WHAT THE FIRST RENDER SHOWED (production build, real GPU, `?guides=1`)
 
-**Overlays and scripts:** `live-work/screenshots/office-image-3-*.png`, `live-work/scripts/*.mjs`
-(the wall fit, the above card, the balance, the layouts). ⛔ **All are FEASIBILITY measurements by the Builder. By D-076, final corners are Carl's pins, checked against an independent feature.**
+1. ✔ **All four cards sit on their guides** — the scene path and the layout path agree.
+0. ✔ **FIXED, second session 25 September — ITEMS 2 AND 3 BELOW WERE ONE CAUSE:** `far` = 100 clipped the
+   proxy's far plane (102–106 m), so WebGL drew nothing above plate row 0.56; the DOM `<img>` showed through
+   (the seam) and CA/CB/CS's glass refracted a 50%-white clear. `far` is now DERIVED (`CAMERA_FAR`). All four
+   read as glass. **Awaiting Carl's eye.** D-095's last entry; `live-work/scripts/seam-far-clip.mjs`;
+   `live-work/screenshots/current-about-25-september/about-now.png`. ⚠ Items 2–3 kept as first written.
+2. ⚠ ~~**The cards read OPAQUE WHITE, not glass.**~~ *(cause found — item 0)* All four now face one way (18.4° off the camera axis) into
+   the OLD room's key light ([1,2,2] @0.5; fill [5,2,-2] @2.6); glass values (D-089) were tuned for the old
+   yaws/backgrounds. **The light/glass pass is next, by Carl's eye.** ⛔ D-089 values are approved — do not
+   retune without Carl's word.
+3. ⚠ **A horizontal SEAM across the back wall near eye height; the monitors look ghosted where it crosses.**
+   **Hypothesis, UNMEASURED:** the floor-grid rows near the horizon (now mid-frame, NDC ≈ −0.10) span
+   enormous depths and the GPU's perspective-correct UV interpolation bends the NDC-mapped texture. ⛔
+   **Measure before fixing** (compare the WebGL frame against the plate, row by row, around the horizon).
+4. **Side bands** are page background (~75 px a side at 1412 × 700). Rebuilt bands from the new plate =
+   Carl's call. `PillarboxPlate` is kept, unused (old-photo assets).
+5. **Carried to later passes:** text size/depth per card (D-094's depth rule was set from OLD view angles);
+   rim bloom over the chair where gaps are a few px (**parked by Carl**: *"We will cross that bridge"*);
+   CD physically intersects the floating cabinet (underside ~310 mm) — reads fine on screen.
 
-## ⛔⛔ NEXT — QUESTIONS CARL IS ASKED TO SETTLE FIRST
+## ⚠ CARL'S RULINGS AND STANDING INSTRUCTIONS FROM THIS SESSION
 
-1. **A or B.**
-   - **A:** the above card = the door band WITH its rims (374 px at the centre line); the floor card STANDS floor-to-just-under-the-counter; width ≈ 1.37 TV widths.
-   - **B:** DOORS ONLY (288 px); the floor card HOVERS over the drawer stack (283 px, a 2% match); width ≈ 1.77.
-   - Both fit with the chair unmoved (`…-layout-A.png` / `…-layout-B.png`).
-2. **The above card centred on the WALL (reads slightly left on screen) or on the SCREEN.**
-3. **The TV removed and replaced by CA** (assumed), or CA mounted over it.
-4. **The removal — GPT is the editor (Carl, after a Gemini/GPT test); ONE prompt, cubbies untouched:** `live-work/office-image-3-removal-prompt.md`. **Open: keep or remove the speakers** (keep = an occlusion matte for CB). ⛔ **The test came back 1672 × 941: the real run MUST return 4000 × 2250 (no upscale).**
-5. ⛔ **GPT's Erase FAILED (web and desktop).** ⛔ **The PC tower STAYS, MOVED (Carl: the monitors are not an AIO).**
-   **Two routes, Carl's trade:**
-   - (a) **A GPT ONE-SHOT with the SHORT prompt** (the end of `office-image-3-removal-prompt.md`): fastest, but it returns ~1672 px (≈87% of Carl's screen, ~65% of a 2560 display) and REDRAWS every pixel, so the camera and every measurement are re-derived on GPT's image;
-   - (b) **Photopea / Resolve IN PLACE on the master:** full resolution and the master's own pixels, removals by hand; the tower is a copy-move.
-6. **Where the tower goes.** The floor corner is under the hanging drawer unit (~62 px of clearance vs a ~265 px tower). Carl's three solutions:
-   - (1) flush against the drawer unit, handle removed — **Builder's recommendation**; it covers almost the whole drawer front and is partly chair-hidden;
-   - (2) turned 90° to show the glass side and ring fans;
-   - (3) the other side of the desk.
-   The revised line 6 is in the prompt file. **Whatever runs, send it: the Builder measures its size, its drift from the master, and where the tower landed.**
+- ⛔ **Show ONE image of the current state** — no comparison sheets (memory saved). Open it in a folder of
+  its own: the Photos app arrows to sibling files and Carl once landed on a stale overlay.
+- *"Always trust your instincts."* (on the floor card's resize).
+- The PS4 is uncovered and **stays** — his licence call (*"I doubt whether Sony will come after me"*).
+- The plan gate was waived for the room swap (*"nothing is new here- only the image"*).
+- Equal-area rule for above/floor cards is DROPPED; CD's area now matches CS's (his later instruction).
 
-## ⛔ THE ORDER OF WORK (Builder's proposal, in D-095)
+## ⚠ PARKED / CARRIED / OPEN QUESTIONS
 
-1. **Solve the camera on the UNEDITED master.**
-   - The LED strips are excellent features.
-   - Solve mainly from the RIGHT wall: a near-frontal back wall's vanishing point is badly conditioned.
-   - **First measurement: do the verticals converge?** A renderer's lens shift would move the principal point.
-2. AI edits (Carl) → **measure the drift against the master's camera** → Resolve grade (Carl) → into three.js.
-3. **Build new card sizes from the family blueprint:** `cardDims()` + the `TENT_POLE_RATIO` crown. ⚠ `cardDims().crownMm` is stale.
-   Prove them on `/proto/card` **before** the room: heights span ~920 vs ~520 mm, so **does the family still read as one?** (Carl's eye.)
-4. **Re-derive the type size from ON-SCREEN em** in the new room (the old wall cards ≈ 12–14 px/em). 52 mm was set for the old camera.
-5. **Re-tune the glass per card** (D-089's values were tuned against the old backgrounds).
-
-⚠ **Plan gate:** the new-room work is new chunks. The gate applies unless Carl waives it for the piece.
-
-## ⚠ PARKED / CARRIED
-
-- ⛔ **THE LOGO (D-088):** Carl — *"the concept will remain, the execution will differ. i will let you know when the time is right."* He has a placement in mind. **Do not raise it; wait for him.**
-
-- `live-work/cards-text-isolation-plan-24-september.md` is **SUPERSEDED** (the text went to all four cards differently).
-- **D-095 is PROPOSED throughout, not approved as a whole:** the image choice and the layout are Carl's rulings; its route (A/B/C) is moot now that a found render is the base.
-- Carried: the two R-028s (not renumbered); remove the etched take?; CS's "connected to…" (D-077); accessibility deferred to mastering (D-094); ENVMAP-STALE / RIM-DARK; the `proven.json` filing.
+- ⛔ **THE LOGO (D-088):** Carl will say when. **Do not raise it.**
+- **Unanswered:** move the five superseded 24 September overlays (`office-image-3-layout-A/B`,
+  `-above-card`, `-balance`, `-right-card-fit`) into a `superseded/` folder? (Carl opened one by mistake.)
+- **Unanswered:** CLAUDE.md says the "read before touching anything" list is 8,837 words; it is ~19,100
+  (`current-sprint.md` alone ~12,800+). Flagged at session start; no ruling.
+- Carried from before: the two R-028s; remove the etched take?; CS's "connected to…" (D-077);
+  accessibility at mastering (D-094); ENVMAP-STALE / RIM-DARK; the `proven.json` filing.
 
 ## ⚠ HOUSEKEEPING
 
-- **`live-work/chunk-scope.json` still names `four-cards-static-text` (closed, committed). RE-SCOPE it for the next chunk**; don't delete it (the guard fails open).
-- **Carl's machine:** DPR 1.36, viewport ~1412 × 700 CSS.
-- **The dev server is stopped at the end of this session.** Port 3000 should be free.
-- **Correction made this session:** a font file was first reported as ~198 KB (a misread `ls`, because the username has a space). It is ~33 KB. **Use `stat`, not `ls | awk`.**
+- `live-work/chunk-scope.json` = **`new-room-swap`, active** (files listed there). Re-scope for the next chunk.
+- **Servers: none running.** Port 3000 and 3100 confirmed free at session end.
+- **Carl's machine:** DPR 1.36, viewport ~1412 × 700 CSS (≈2.02:1).
+- ⚠ **Bash eats backticks inside `node -e "…"`** — twice this session comment text lost its `code` names.
+  Write replacement text to a quoted-heredoc file and read it from node, or use the Edit tool.
 
 ---
 
-*Written 24 September 2026 (session 2).*
+*Written 25 September 2026.*

@@ -20,8 +20,9 @@ import WallCardText from "@/components/about/wall-card-text";
    ⚠ THE §5a NOTE EXISTS AND WAS NOT ROUTED TO THE ARCHITECT BEFORE THIS LANDED:
    `live-work/structural-decision-note-about-canvas.md`. Recorded, not hidden. */
 import AboutCardCanvas from "@/components/about/about-card-canvas";
-/** ⚠ The §2 plate plus its pillarbox bands — see the note at its call site. */
-import PillarboxPlate from "@/components/about/pillarbox-plate";
+/** ⛔ The §2 plate — the NEW ROOM (office-image-3), 25 September 2026. It replaces `PillarboxPlate`,
+    whose bands and skirting are cut from the OLD photograph; that file is kept, unused. */
+import RoomPlate from "@/components/about/room-plate";
 /* ⚠ THE `/about` NAV — a CLIENT component, deliberately kept in its own file so
    THIS page stays a static prerendered server component. ⛔ NOT `SiteHeader`:
    that would place the links in flow, at a different point from `/start`. */
@@ -657,8 +658,14 @@ export default function About() {
             fraction are untouched.** Reasoning, the measured sample window and the
             live controls: `components/about/pillarbox-plate.tsx`.
 
-            ⚠ PROVISIONAL. `?ow=1.28&oh=0.92&sample=0.06&fade=0.55` */}
-        <PillarboxPlate />
+            ⚠ PROVISIONAL. `?ow=1.28&oh=0.92&sample=0.06&fade=0.55`
+
+            ⛔⛔ SUPERSEDED FOR THIS ROOM, 25 September 2026 — Carl: *"Change about, build it there."*
+            §2 now shows office-image-3 (D-095): a ~16:9 plate (2560 x 1435), so the pillarbox is
+            narrower, and the bands above were cut from the OLD photograph's edges. **`RoomPlate`
+            draws the new plate in its own centred box with page background either side**; bands
+            rebuilt from the new plate are an open question for Carl. `PillarboxPlate` is kept. */}
+        <RoomPlate />
         <div className="absolute inset-0 bg-neutral-950/25" />
 
         {/* ⛔ STILL NOT RENDERED — 14 September 2026, Carl: *"put the guide lines

@@ -1,7 +1,7 @@
 import sharp from "file:///C:/Users/Carl%20Buckley/agency-website-v2/node_modules/sharp/lib/index.js";
 const SRC = "C:/Users/Carl Buckley/agency-website-v2/brand-assets/office-image-3.jpg";
 const { data, info } = await sharp(SRC).greyscale().blur(1.2).raw().toBuffer({ resolveWithObject: true });
-const W = info.width, H = info.height;
+const W = info.width;
 const L = (x, y) => data[Math.round(y) * W + Math.round(x)];
 // robust line fit: repeatedly drop worst 10% until rms stable
 function fit(pts, vertical = false) {

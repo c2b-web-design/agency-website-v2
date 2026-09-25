@@ -31,8 +31,10 @@ export type AboutCardCopy = {
   /** The seat's name. ⚠ Whether it is set like the body or as a title that
       "catches the light" is OPEN (D-094). */
   role: string;
-  /** Placement is SETTLED (D-077) and reading order is the argument. */
-  position: "wall-left" | "wall-right" | "floor-left" | "floor-right";
+  /** Placement is SETTLED (D-077) and reading order is the argument. ⛔ THE NEW ROOM, 25 September 2026
+      (D-095): *"CS is above and CD is the floor"* — was CD "floor-left", CS "floor-right". ⚠ A LABEL:
+      nothing reads it; the card's place is `ROOM_CARDS` in `about-room.ts`. */
+  position: "wall-left" | "wall-right" | "above" | "floor";
   body: string;
   /** ⛔ The line that must survive any trim (D-077). If a card cannot fit while
       keeping it, the CARD SIZE is wrong, not the line. Must appear in `body`
@@ -61,14 +63,14 @@ export const ABOUT_CARD_COPY: readonly AboutCardCopy[] = [
   {
     id: "CD",
     role: "The Designer",
-    position: "floor-left",
+    position: "floor",
     body: "Your brand is the material. Typography, colour, assets and tone are taken from what you already have and treated as the baseline — not a blank page, and not a template. From there the design is elevated into a bespoke prototype that sets the visual direction before any coding begins.",
     keepLine: "not a blank page, and not a template",
   },
   {
     id: "CS",
     role: "The Strategist",
-    position: "floor-right",
+    position: "above",
     body: "Every other seat is pointed at the website. This one is pointed at the business it exists to serve — connected to the things the business actually runs on, and answering from those rather than from general knowledge. It advises only. Nothing it recommends becomes work without a decision, and nothing it touches is the site itself.",
     keepLine: "Nothing it recommends becomes work without a decision",
   },

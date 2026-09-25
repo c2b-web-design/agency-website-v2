@@ -3,6 +3,12 @@
 /**
  * /about §2 — the role-card canvas. ⛔ THE FLOOR PAIR, CD AND CS, 14 September 2026.
  *
+ * ⛔⛔ READ FIRST — THE ROOM WAS REPLACED ON 25 September 2026 (D-095). §2 now shows office-image-3
+ * through its own solved camera, and all four cards are placed in ROOM MILLIMETRES from
+ * `about-room.ts` (CA/CB on the back wall, CS above on the cabinet fronts, CD on the floor). ⚠ **Most of
+ * the history below describes the OLD room** — the rails, the desks, the yawed floor pair. It is kept
+ * for its reasoning; where it names a placement mechanism, that mechanism is gone (see `placeRoomCard`).
+ *
  * ⛔⛔ THIS IS THE FIRST WebGL CONTEXT ON `/about`, AND IT IS THE §5a STRUCTURE.
  * Built on Carl's explicit instruction. ⚠⚠ The §5a note exists and was NOT routed
  * to the Architect before this landed:
@@ -64,26 +70,22 @@
 import * as THREE from "three";
 import { useEffect, useMemo } from "react";
 import { Canvas, useLoader } from "@react-three/fiber";
+/* ⛔ The old room's guide, rail, aspect, height and camera constants are no longer read here (the new
+   room, 25 September 2026). They stay exported from `about-card-geometry.ts` — `/proto/wall` and the
+   card bench still use the old plate and camera. */
+import { cardDims, TENT_POLE_RATIO } from "./about-card-geometry";
 import {
-  cardDims,
-  CD_CARD_HEIGHT_MM,
-  CS_CARD_HEIGHT_MM,
-  GUIDE_CD,
-  GUIDE_CS,
-  /* ⛔ The wall pair — solved from the plate 17 September 2026. */
-  GUIDE_CA_QUAD,
-  GUIDE_CB_QUAD,
-  CA_CARD_ASPECT,
-  CB_CARD_ASPECT,
-  CA_CARD_HEIGHT_MM,
-  CB_CARD_HEIGHT_MM,
-  CD_FACE_YAW_DEG,
-  CS_FACE_YAW_DEG,
-  TENT_POLE_RATIO,
-  CAMERA_VFOV_DEG,
-  CAMERA_PITCH_DEG,
-  DESK_HEIGHT_MM,
-} from "./about-card-geometry";
+  ROOM_CAMERA_PITCH_UP_DEG,
+  ROOM_CAMERA_VFOV_DEG,
+  ROOM_CARD_GUIDES,
+  ROOM_CARDS,
+  ROOM_CORNER_FLOOR_MM,
+  ROOM_MM_PER_UNIT,
+  ROOM_PLATE_ASPECT,
+  ROOM_PLATE_SRC,
+  roomCardPlacement,
+  type RoomCardSpec,
+} from "./about-room";
 import {
   CA_FACE_TRANSMISSION,
   CD_FACE_TRANSMISSION,
@@ -118,309 +120,119 @@ import {
 } from "./card-extrude";
 import { aboutCardCopy } from "./about-card-copy";
 
-/** The plate is 3:2. ⚠ Guide and rail fractions are of the PLATE, not the stage. */
-const PLATE_W = 2560;
-const PLATE_H = 1707;
-/** Focal length in plate pixels — `camera-solve-11-september.md`. */
-const FOCAL_PX = 1282;
-
-/** Camera height in floor units. Everything below is relative to it. */
-const CAM_H = 1;
-/** Millimetres per floor unit, via the one assumed real dimension. */
-const MM_PER_UNIT = DESK_HEIGHT_MM / CAM_H;
-
-const PITCH = (-CAMERA_PITCH_DEG * Math.PI) / 180;
+/**
+ * ⛔⛔ THE NEW ROOM — office-image-3, 25 September 2026 (D-095). Carl: *"Change about, build it there."*
+ *
+ * ⚠⚠ THE OLD ROOM'S PLACEMENT MACHINERY IS REMOVED, NOT ADAPTED: `floorPoint` (a plate fraction dropped
+ * onto the floor), `placeCard` (a floor card on Carl's hand-pinned rail, by a named corner),
+ * `stageToPlateY` (the /proto/wall crop fix) and `placeWallCard` (a card recovered from its pinned
+ * quad). ⛔ **All four existed to read a card's place off the OLD photograph**; the new room states each
+ * card in ROOM MILLIMETRES (`about-room.ts`), so there is nothing to read off the plate. The code and
+ * its reasoning are in git at a0658b2 and earlier; the camera and layout records are in `live-work/`.
+ *
+ * ⚠ Scene units are METRES (`ROOM_MM_PER_UNIT = 1000`), the camera sits at the origin 1139 mm above the
+ * floor (desk-scaled), and the floor is the plane `y = -CAM_H`.
+ */
+const CAM_H = -ROOM_CORNER_FLOOR_MM[1] / ROOM_MM_PER_UNIT;
+/** ⛔ PITCH IS POSITIVE: this camera looks UP 3.22° (the old room looked down 12.68°). */
+const PITCH = (ROOM_CAMERA_PITCH_UP_DEG * Math.PI) / 180;
 const COS_P = Math.cos(PITCH);
 const SIN_P = Math.sin(PITCH);
 
 /**
- * Back-project a plate fraction onto the floor plane.
- *
- * ⛔⛔ VERIFIED TO ROUND-TRIP AT 0.0000000. A point taken from the plate, dropped
- * onto the floor and projected back lands exactly where it started, at every rail
- * endpoint and midpoint.
- *
- * ⚠⚠ AND A CORRECTION WORTH KEEPING: an earlier check reported ~19px and ~36px
- * "errors" and was itself wrong. It compared the projection of the **3D midpoint
- * of the rail** against the **2D midpoint of its drawn endpoints** — genuinely
- * different points, because under perspective the receding half of a line takes
- * less screen space than the near half. ⛔ Nothing was broken. **The model was
- * declared unreliable on that false reading and a corrective pass was proposed
- * for a fault that did not exist.**
- *
- * ⚠ Carl chose the DRAWN midpoint: *"The thick spans midpoint should align with
- * the bottom edges rim."* It is what he sees and nudges, and it is PROVISIONAL.
+ * ⛔ THE BACKPLATE'S CAMERA MATHS, at module scope so the geometry AND the camera's `far` read it.
+ * The canvas box is the plate's own aspect (2560 x 1435), so NDC maps linearly onto the photograph.
  */
-function floorPoint(fx: number, fy: number) {
-  const px = (fx - 0.5) * PLATE_W;
-  const py = (0.5 - fy) * PLATE_H;
-  const pz = -FOCAL_PX;
-  const wy = py * COS_P - pz * SIN_P;
-  const wz = py * SIN_P + pz * COS_P;
-  const t = -CAM_H / wy;
-  return { x: px * t, y: -CAM_H, z: wz * t };
-}
+const PROXY_TAN_V = Math.tan((ROOM_CAMERA_VFOV_DEG * Math.PI) / 360);
+const PROXY_TAN_H = PROXY_TAN_V * ROOM_PLATE_ASPECT;
 
-/**
- * One card, standing on the floor at its rail.
- *
- * ⛔⛔ ONE FUNCTION, CALLED PER CARD — THE FAMILY RULE IN CODE. Carl: *"The 4
- * cards are all different sizes, therefore there will be 4 individual cards all
- * built of the proto card architecture."*
- *
- * ⚠ "IN PROPORTION" IS WHY `cardDims` IS THE SOURCE. Corner radius, rim bead,
- * bevel, face-proud and crown are all RATIOS OF HEIGHT, so a different height
- * rescales the whole family together and nothing inside the card changes shape.
- *
- * ⛔ THE CARD'S SIZE STILL COMES FROM ITS GUIDE RECTANGLE — measured off the
- * plate and approved by Carl's eye. The RAIL supplies only position and yaw.
- */
-/**
- * ⛔⛔ STAGE FRACTIONS -> PLATE FRACTIONS. THE SAME BUG THAT MISPLACED THE RAIL
- * ALSO MISPLACED EVERY CARD, AND IT WENT UNNOTICED FOR FOUR PLACEMENTS.
- *
- * ⚠⚠ `/proto/wall` renders the plate `object-cover` in a stage of aspect
- * 1906/905 = 2.1061 against the plate's 3:2. Cover on a wider box matches the
- * WIDTHS and crops top and bottom, so the tool shows only the middle **71.222%**
- * of the plate's height. ⛔ `INITIAL_RAIL` and every midpoint derived from it are
- * fractions of THAT window, not of the image.
- *
- * ⛔ `floorPoint()` expects PLATE fractions. Feeding it stage fractions put each
- * card's base tens of percent too low — which is why the cards never sat on their
- * rails no matter how exactly the arithmetic "verified".
- *
- * ⚠ x is unchanged: cover matched the widths.
- *
- * ⛔ THE GUIDE RECTANGLES ARE NOT AFFECTED — those were segmented directly from
- * the plate image and are already in plate space.
- *
- * ⚠ UNASSERTED: nothing checks the tool's stage aspect is still 1906/905. It is a
- * settable input; change it and this conversion silently becomes wrong.
- */
-const STAGE_CROP = 0.14389;
-const STAGE_VISIBLE = 0.71222;
-const stageToPlateY = (yStage: number) => STAGE_CROP + yStage * STAGE_VISIBLE;
-
-/**
- * One card, standing on the floor at its rail.
- *
- * ⛔⛔ ONE FUNCTION, CALLED PER CARD — THE FAMILY RULE IN CODE. Carl: *"The 4
- * cards are all different sizes, therefore there will be 4 individual cards all
- * built of the proto card architecture."*
- *
- * ⚠ "IN PROPORTION" IS WHY `cardDims` IS THE SOURCE. Corner radius, rim bead,
- * bevel, face-proud and crown are all RATIOS OF HEIGHT, so a different height
- * rescales the whole family together and nothing inside the card changes shape.
- *
- * ⛔ THE CARD'S SIZE STILL COMES FROM ITS GUIDE RECTANGLE — measured off the
- * plate and approved by Carl's eye. The RAIL supplies only position and yaw.
- */
-function placeCard(
-  guide: { x0: number; y0: number; x1: number; y1: number },
-  heightMm: number,
-  anchorStage: { x: number; y: number },
-  faceYawDeg: number,
-  /**
-   * ⛔⛔ WHICH BOTTOM CORNER SITS ON THE ANCHOR. The two floor cards MIRROR each
-   * other and the sign flip is load-bearing:
-   *
-   *   "right"  CD — bottom-RIGHT corner on PL's B handle (upper-right end)
-   *   "left"   CS — bottom-LEFT  corner on PR's A handle (upper-left end)
-   *
-   * ⚠⚠ GET THIS BACKWARDS AND THE CARD JUMPS A FULL WIDTH IN THE WRONG
-   * DIRECTION. Anchoring by the right corner means stepping the centre BACK along
-   * local +X; anchoring by the left means stepping it FORWARD. Both cards then
-   * grow AWAY from the middle of the room, which is what stops them colliding
-   * across the centre — the fault that made the pair overlap by 16% of the plate
-   * when both were centred on their midpoints.
-   */
-  anchorCorner: "left" | "right",
-) {
-  /* Size: the guide's own aspect, at the card's own height. */
-  const guideW = (guide.x1 - guide.x0) * (PLATE_W / PLATE_H);
-  const guideH = guide.y1 - guide.y0;
-  const dims = cardDims(heightMm, guideW / guideH);
-  /**
-   * ⛔ THE TENT POLE, NOT THE OLD CROWN — 14 September 2026. `TENT_POLE_RATIO` is
-   * the dial for the pinned membrane; `CROWN_RATIO` was back-derived to hold 27.9°
-   * on the superseded superellipse profile and does not transfer to a different
-   * surface. ⚠ Carl is tuning this by eye, starting quiet.
-   */
-  const crownMm = heightMm * TENT_POLE_RATIO;
-
-  /**
-   * ⛔⛔ THE ANCHOR IS THE CARD'S BOTTOM-RIGHT CORNER, NOT ITS CENTRE — Carl,
-   * 14 September: *"put the right bottom corner of the left card on the thicker
-   * line on the right circle."* ⚠ The "right circle" is the B handle, the
-   * upper-right end of the pinned span, NOT the midpoint used before.
-   *
-   * ⚠ CONVERTED FROM STAGE TO PLATE SPACE FIRST — see `stageToPlateY`.
-   */
-  const base = floorPoint(anchorStage.x, stageToPlateY(anchorStage.y));
-
-  const scale = 1 / MM_PER_UNIT;
-  const halfH = (dims.heightMm / 2) * scale;
-  const halfW = (dims.widthMm / 2) * scale;
-
-  /**
-   * ⛔⛔ THE CORNER OFFSET IS APPLIED IN THE CARD'S OWN ROTATED FRAME, AND THAT IS
-   * NOT A DETAIL. The card is yawed, so its "right" is along its LOCAL +X after
-   * rotation — not world +X. Stepping back by `halfW` in world space would put the
-   * corner somewhere else entirely, and the error would grow with the yaw angle.
-   *
-   * ⚠ The mesh is built in XY facing +Z, so local +X maps to world
-   * (cos(yaw), 0, -sin(yaw)) under a Y-rotation.
-   */
-  const yaw = (faceYawDeg * Math.PI) / 180;
-  const rightX = Math.cos(yaw);
-  const rightZ = -Math.sin(yaw);
-
-  /**
-   * ⛔ THE SIGN IS THE MIRROR. Anchoring by the RIGHT corner puts the centre a
-   * half-width BACK along local +X; anchoring by the LEFT puts it a half-width
-   * FORWARD. ⚠ Both cards then grow away from the room's centre.
-   */
-  const dir = anchorCorner === "right" ? -1 : 1;
-
+/** NDC -> world ray direction, through the solved camera's pitch. Camera-space z is −1, so a hit at
+ *  parameter `t` lies at camera DEPTH `t`. */
+function proxyRayDir(nx: number, ny: number) {
+  const dx = nx * PROXY_TAN_H;
+  const dy = ny * PROXY_TAN_V;
+  const dz = -1;
   return {
-    dims,
-    crownMm,
-    scale,
-    position: [
-      base.x + dir * rightX * halfW,
-      base.y + halfH,
-      base.z + dir * rightZ * halfW,
-    ] as [number, number, number],
-    rotationY: yaw,
+    x: dx,
+    y: dy * COS_P - dz * SIN_P,
+    z: dy * SIN_P + dz * COS_P,
   };
 }
 
 /**
- * ⛔⛔ ONE WALL CARD, HUNG ON ITS WALL — added 17 September 2026.
+ * ⛔ THE HORIZON IN NDC, DERIVED not guessed: the ray whose world y-component
+ * is zero is parallel to the floor.
  *
- * ⚠⚠ THIS IS NOT `placeCard` WITH A DIFFERENT NUMBER, AND THE DIFFERENCE IS
- * STRUCTURAL. A floor card STANDS: its bottom edge meets the floor plane, so
- * `floorPoint` back-projects one anchor and the card rises from it. A wall card
- * HANGS: nothing touches the floor, and its plane is VERTICAL. There is no floor
- * intersection to solve, so the position comes from the quad itself.
+ * ⛔⛔ SIGN CORRECTED, 18 September 2026. It read
+ * `SIN_P / (COS_P * tanV)` and returned **-0.33794**; the horizon is
+ * **+0.33794**.
  *
- * ⛔ THE METHOD — back-project all four measured corners onto the card's own
- * plane, then read the centre, the size and the yaw off the recovered rectangle.
- * **The same solve that produced the aspect produces the placement**, so the card
- * cannot disagree with the guide it was measured from.
+ * ⚠⚠ THE DERIVATION, because the old value looked plausible and was not:
+ * `rayDir` gives `y = ny*tanV*COS_P - dz*SIN_P` with `dz = -1`, i.e.
+ * `y = ny*tanV*COS_P + SIN_P`. Setting `y = 0` gives
+ * `ny = -SIN_P / (tanV*COS_P)`. **The minus sign was dropped.** Verified by
+ * substitution: at +0.33794 the y-component is 2.8e-17; at -0.33794 it is
+ * **-0.43901**, which is not a horizon at all.
  *
- * ⚠ CARL'S FAMILY RULE HOLDS UNCHANGED: *"A shape that has a rim, bevel and
- * curved face. The corners can be the same. A corner is a corner no matter what
- * the dimensions."* ⛔ `cardDims` is still the single blueprint — only height and
- * aspect differ. **Nothing about the card's character is re-specified here.**
+ * ⚠ THE COMMENT WAS RIGHT WHILE THE CODE WAS WRONG — this note previously
+ * read *"ny ~= 0.400"*, a POSITIVE number, sitting directly above a line
+ * that computed a negative one. ⛔ Nothing in code checked the two agreed.
+ *
+ * ⚠⚠ THIS WAS **NOT** WHY THE PROXY WAS INVISIBLE — that was the winding,
+ * below. Both grids built finite, bounded, NaN-free vertices either way.
+ * **Fixing this alone would have changed nothing on screen**, which is
+ * exactly how a real bug can be mistaken for a failed fix.
+ *
+ * ⚠ The +0.33794 figures are the OLD room's (pitched down). The new room's horizon is **−0.1011**.
  */
-function placeWallCard(
-  quad: readonly { x: number; y: number }[],
-  heightMm: number,
-  aspect: number,
-) {
-  /**
-   * Back-project a plate fraction to a unit ray in world space, undoing the
-   * camera pitch exactly as `floorPoint` does — but WITHOUT intersecting the
-   * floor, because a wall card never meets it.
-   */
-  const ray = (fx: number, fy: number) => {
-    const px = (fx - 0.5) * PLATE_W;
-    const py = (0.5 - fy) * PLATE_H;
-    const pz = -FOCAL_PX;
-    const wy = py * COS_P - pz * SIN_P;
-    const wz = py * SIN_P + pz * COS_P;
-    const len = Math.hypot(px, wy, wz) || 1;
-    return { x: px / len, y: wy / len, z: wz / len };
-  };
+const NY_HORIZON = -SIN_P / (COS_P * PROXY_TAN_V);
+/* ⚠ Stop just short — at the horizon itself `t` diverges. */
+const NY_FLOOR_TOP = NY_HORIZON - 0.02;
 
-  const R = quad.map((p) => ray(p.x, p.y));
+/**
+ * The far plane: a vertical plane at the depth the floor reaches at its far edge,
+ * so the two meet along the horizon with no seam and no arithmetic between them.
+ */
+const PROXY_WALL_Z = (() => {
+  const d = proxyRayDir(0, NY_FLOOR_TOP);
+  return (-CAM_H / d.y) * d.z;
+})();
 
-  /**
-   * ⛔ THE PLANE'S NORMAL, from the two edge directions' vanishing points.
-   * ⚠ Cross products of image lines, lifted through the camera — the same
-   * construction the aspect solve used, so the two cannot drift apart.
-   */
-  const cross = (
-    a: { x: number; y: number; z: number },
-    b: { x: number; y: number; z: number },
-  ) => ({
-    x: a.y * b.z - a.z * b.y,
-    y: a.z * b.x - a.x * b.z,
-    z: a.x * b.y - a.y * b.x,
-  });
-  const norm = (v: { x: number; y: number; z: number }) => {
-    const L = Math.hypot(v.x, v.y, v.z) || 1;
-    return { x: v.x / L, y: v.y / L, z: v.z / L };
-  };
+/**
+ * ⛔⛔ THE CAMERA'S `far` IS DERIVED FROM THE PROXY'S DEEPEST POINT — 25 September 2026.
+ *
+ * ⚠⚠ IT WAS A HAND-SET 100, AND THE NEW ROOM PUT THE FAR PLANE PAST IT. Looking UP 3.22°, the floor
+ * stops 0.02 NDC below a horizon that is nearly level, so its far edge — and the far plane with it —
+ * lands **102.3–106.0 m** out (the old room, looking down 12.68°: ~16 m). ⛔ **Everything above plate
+ * row 0.561 was clipped and never drawn.** Measured, not inferred
+ * (`live-work/scripts/seam-far-clip.mjs`): WebGL drew nothing above row 533 of 951 (0.560).
+ *
+ * ⚠ IT HID THE SAME WAY THE BACKWARDS WINDING DID: the DOM `<img>` behind the transparent canvas drew
+ * the same room, so the missing wall showed only as a SEAM where the two resamplings met, with the
+ * monitors — which sit on the horizon — ghosted along it. ⛔⛔ **AND IT MADE CA, CB AND CS READ
+ * OPAQUE WHITE**: with no wall in the scene their glass refracted the transmission target's 50%-white
+ * clear, while CD, over the drawn floor, read as glass. **It was never the lighting.**
+ *
+ * ⛔ Depth at the far plane's top row (ny = 1) is the deepest the proxy goes; the margin covers the
+ * corners, which share the row's depth. ⚠ Precision is not a concern: near 0.01 / far ~133 still
+ * resolves ~0.15 mm at the cards' 5 m.
+ */
+const PROXY_MAX_DEPTH = PROXY_WALL_Z / proxyRayDir(0, 1).z;
+const CAMERA_FAR = Math.ceil(PROXY_MAX_DEPTH * 1.25);
 
-  /* Horizontal edge direction: where the top and bottom edges meet at infinity. */
-  const dH = norm(cross(cross(R[0], R[1]), cross(R[3], R[2])));
-  const n = norm(cross(dH, norm(cross(cross(R[0], R[3]), cross(R[1], R[2])))));
-
-  /**
-   * ⛔ INTERSECT EACH CORNER RAY WITH THE CARD'S PLANE. The plane is pinned by
-   * putting the first corner at unit depth; every other corner follows, and the
-   * rectangle's own proportions come out of the arithmetic rather than being
-   * imposed on it.
-   */
-  const dot = (
-    a: { x: number; y: number; z: number },
-    b: { x: number; y: number; z: number },
-  ) => a.x * b.x + a.y * b.y + a.z * b.z;
-  const d0 = dot(n, R[0]);
-  const P = R.map((r) => {
-    const t = d0 / dot(n, r);
-    return { x: r.x * t, y: r.y * t, z: r.z * t };
-  });
-
-  /* Centre of the recovered rectangle. */
-  const c = {
-    x: (P[0].x + P[1].x + P[2].x + P[3].x) / 4,
-    y: (P[0].y + P[1].y + P[2].y + P[3].y) / 4,
-    z: (P[0].z + P[1].z + P[2].z + P[3].z) / 4,
-  };
-
-  /**
-   * ⛔⛔ THE SCALE IS SET BY THE CARD'S HEIGHT, NOT BY THE PLANE'S ARBITRARY DEPTH.
-   * The intersection above fixed corner 0 at unit depth, which is a free choice —
-   * so the recovered rectangle is the right SHAPE at the wrong SIZE. Rescaling
-   * the centre along its own ray by (wanted height / recovered height) puts the
-   * card where a card of that height actually sits.
-   *
-   * ⚠ THIS IS THE FLOOR PAIR'S LESSON APPLIED, NOT A NEW IDEA. Their heights are
-   * *"the heights at which each card, standing on its rail, subtends exactly its
-   * guide rectangle's on-screen size"* — and an earlier 860mm, taken from an
-   * unrelated face-on fit, made the cards wider than the desks. **Size and
-   * position must come from the same source.**
-   */
-  const recoveredH =
-    (Math.hypot(P[0].x - P[3].x, P[0].y - P[3].y, P[0].z - P[3].z) +
-      Math.hypot(P[1].x - P[2].x, P[1].y - P[2].y, P[1].z - P[2].z)) /
-    2;
-  const wantH = heightMm / MM_PER_UNIT;
-  const k = wantH / (recoveredH || 1);
-
-  /**
-   * ⛔ THE YAW THE MESH NEEDS. The mesh is built in XY facing +Z, so it must be
-   * turned to face along the plane's normal. ⚠ The normal may point away from the
-   * camera depending on corner winding; flipping it when it does keeps the card's
-   * face toward the room rather than into the wall.
-   */
-  const facing = n.z > 0 ? { x: -n.x, y: -n.y, z: -n.z } : n;
-  const rotationY = Math.atan2(facing.x, facing.z) + Math.PI;
-
+/**
+ * ⛔ ONE CARD, IN THE ROOM. The family rule unchanged — Carl: *"A shape that has a rim, bevel and curved
+ * face… A corner is a corner no matter what the dimensions."* `cardDims` is the single blueprint; only a
+ * card's height and aspect differ, and both come from its room spec.
+ */
+function placeRoomCard(spec: RoomCardSpec) {
+  const p = roomCardPlacement(spec);
   return {
-    dims: cardDims(heightMm, aspect),
-    crownMm: heightMm * TENT_POLE_RATIO,
-    /**
-     * ⚠ MILLIMETRES -> FLOOR UNITS, the same conversion the floor pair applies.
-     * `cardDims` works in millimetres, so the mesh is built at millimetre
-     * magnitudes and the group must scale it down.
-     */
-    scale: 1 / MM_PER_UNIT,
-    position: [c.x * k, c.y * k, c.z * k] as [number, number, number],
-    rotationY,
+    dims: cardDims(spec.heightMm, p.aspect),
+    crownMm: spec.heightMm * TENT_POLE_RATIO,
+    scale: p.scale,
+    position: p.position,
+    rotationY: p.rotationY,
   };
 }
 
@@ -505,58 +317,24 @@ function placeWallCard(
  * ⛔ THE HORIZON IS HANDLED BY BOUNDING THE GRID, NOT BY CLAMPING VERTICES.
  * Rays at and above it never meet the floor; the floor grid stops just short and
  * the wall takes everything above.
+ *
+ * ⛔⛔ THE NEW ROOM, 25 September 2026: the same construction, a different plate and camera. ⚠ **This
+ * camera looks UP, so the horizon is BELOW the frame's centre** (NDC ≈ −0.10) and the floor grid covers
+ * only the bottom ~45% of the frame; the far plane takes the rest. ⚠ The proxy is still a floor and ONE
+ * far vertical plane — not the room's real back and right walls. It only has to sit BEHIND every card,
+ * and it does: a ray through any card meets the floor or the far plane further away than the card.
  */
 function RoomBackplate() {
-  const texture = useLoader(THREE.TextureLoader, "/about-studio-source.jpg");
+  const texture = useLoader(THREE.TextureLoader, ROOM_PLATE_SRC);
   /* ⛔ `contact-field-canvas.tsx:806`: omitting this double-applies the transfer
      function. ⚠ Via `Object.assign` — the lint rule objects to mutating a hook's
      return value directly. */
   Object.assign(texture, { colorSpace: THREE.SRGBColorSpace });
 
   const { floor, wall } = useMemo(() => {
-    const ASPECT = 1.5; // the canvas box, `aspect-[3/2]`, and the plate's own
-    const tanV = Math.tan((CAMERA_VFOV_DEG * Math.PI) / 360);
-    const tanH = tanV * ASPECT;
-
-    /** NDC -> world ray direction, through the solved camera's pitch. */
-    const rayDir = (nx: number, ny: number) => {
-      const dx = nx * tanH;
-      const dy = ny * tanV;
-      const dz = -1;
-      return {
-        x: dx,
-        y: dy * COS_P - dz * SIN_P,
-        z: dy * SIN_P + dz * COS_P,
-      };
-    };
-
-    /**
-     * ⛔ THE HORIZON IN NDC, DERIVED not guessed: the ray whose world y-component
-     * is zero is parallel to the floor.
-     *
-     * ⛔⛔ SIGN CORRECTED, 18 September 2026. It read
-     * `SIN_P / (COS_P * tanV)` and returned **-0.33794**; the horizon is
-     * **+0.33794**.
-     *
-     * ⚠⚠ THE DERIVATION, because the old value looked plausible and was not:
-     * `rayDir` gives `y = ny*tanV*COS_P - dz*SIN_P` with `dz = -1`, i.e.
-     * `y = ny*tanV*COS_P + SIN_P`. Setting `y = 0` gives
-     * `ny = -SIN_P / (tanV*COS_P)`. **The minus sign was dropped.** Verified by
-     * substitution: at +0.33794 the y-component is 2.8e-17; at -0.33794 it is
-     * **-0.43901**, which is not a horizon at all.
-     *
-     * ⚠ THE COMMENT WAS RIGHT WHILE THE CODE WAS WRONG — this note previously
-     * read *"ny ~= 0.400"*, a POSITIVE number, sitting directly above a line
-     * that computed a negative one. ⛔ Nothing in code checked the two agreed.
-     *
-     * ⚠⚠ THIS WAS **NOT** WHY THE PROXY WAS INVISIBLE — that was the winding,
-     * below. Both grids built finite, bounded, NaN-free vertices either way.
-     * **Fixing this alone would have changed nothing on screen**, which is
-     * exactly how a real bug can be mistaken for a failed fix.
-     */
-    const nyHorizon = -SIN_P / (COS_P * tanV);
-    /* ⚠ Stop just short — at the horizon itself `t` diverges. */
-    const nyFloorTop = nyHorizon - 0.02;
+    /* ⚠ The ray, horizon and far-plane depth live at module scope (`proxyRayDir`, `NY_FLOOR_TOP`,
+       `PROXY_WALL_Z`) — the camera's `far` is derived from the same numbers. */
+    const rayDir = proxyRayDir;
 
     /** Build a grid between two NDC y values, intersecting `plane`. */
     const grid = (
@@ -618,21 +396,15 @@ function RoomBackplate() {
     };
 
     /* The floor: y = -CAM_H. */
-    const floorG = grid(-1, nyFloorTop, (d) => {
+    const floorG = grid(-1, NY_FLOOR_TOP, (d) => {
       const t = -CAM_H / d.y;
       return [d.x * t, -CAM_H, d.z * t];
     });
 
-    /**
-     * The wall: a vertical plane at the depth the floor reaches at its far edge,
-     * so the two meet along the horizon with no seam and no arithmetic between
-     * them.
-     */
-    const dTop = rayDir(0, nyFloorTop);
-    const WALL_Z = (-CAM_H / dTop.y) * dTop.z;
-    const wallG = grid(nyFloorTop, 1, (d) => {
-      const t = WALL_Z / d.z;
-      return [d.x * t, d.y * t, WALL_Z];
+    /* The wall: the far plane at `PROXY_WALL_Z` (see its note — and `CAMERA_FAR`'s). */
+    const wallG = grid(NY_FLOOR_TOP, 1, (d) => {
+      const t = PROXY_WALL_Z / d.z;
+      return [d.x * t, d.y * t, PROXY_WALL_Z];
     });
 
     return { floor: floorG, wall: wallG };
@@ -677,66 +449,39 @@ function RoomBackplate() {
  * **a check that shares its input with the thing it checks cannot fail.**
  *
  * ⚠ DEV-ONLY, and off unless `?guides=1`. It is diagnostic, not design.
+ *
+ * ⛔⛔ THE NEW ROOM, 25 September 2026: it draws the four APPROVED card outlines (`ROOM_CARD_GUIDES`), as
+ * the LAYOUT script projected them — while the cards themselves are placed by the SCENE path
+ * (`roomCardPlacement`). ⚠ **Two code paths, one camera: a card and its guide coincide only if the two
+ * agree.** (The old room's rails and pinned quads went with the old photograph.) ⚠ The guides are the
+ * outlines at each card's SURFACE plane; the wall cards and CS hang one rim bead proud of it, so expect
+ * a few pixels of offset toward the camera's side, not coincidence to the pixel.
  */
 function GuideOverlay() {
   const geometry = useMemo(() => {
-    /* ⚠ A plane 1 unit ahead, so the guides sit in front of everything. */
+    /* ⚠ A plane just ahead of the camera, so the guides sit in front of everything. */
     const D = 0.6;
+    const tanV = Math.tan((ROOM_CAMERA_VFOV_DEG * Math.PI) / 360);
+    const tanH = tanV * ROOM_PLATE_ASPECT;
+    /** A plate fraction -> a point on the camera ray through it, D ahead. Same NDC route as the backplate. */
     const at = (fx: number, fy: number) => {
-      const px = (fx - 0.5) * PLATE_W;
-      const py = (0.5 - fy) * PLATE_H;
-      const pz = -FOCAL_PX;
-      const wy = py * COS_P - pz * SIN_P;
-      const wz = py * SIN_P + pz * COS_P;
-      const t = -D / wz;
-      return [px * t, wy * t, wz * t] as const;
+      const dx = (2 * fx - 1) * tanH;
+      const dy = (1 - 2 * fy) * tanV;
+      const dz = -1;
+      const x = dx;
+      const y = dy * COS_P - dz * SIN_P;
+      const z = dy * SIN_P + dz * COS_P;
+      const L = Math.hypot(x, y, z) || 1;
+      return [(x / L) * D, (y / L) * D, (z / L) * D] as const;
     };
     const pts: number[] = [];
-    const loop = (corners: ReadonlyArray<{ x: number; y: number }>) => {
+    for (const corners of Object.values(ROOM_CARD_GUIDES)) {
       for (let i = 0; i < corners.length; i++) {
         const a = corners[i];
         const b = corners[(i + 1) % corners.length];
-        pts.push(...at(a.x, a.y), ...at(b.x, b.y));
+        pts.push(...at(a[0], a[1]), ...at(b[0], b[1]));
       }
-    };
-    /* The floor pair's guides are axis-aligned rectangles in plate space. */
-    const rect = (g: { x0: number; y0: number; x1: number; y1: number }) =>
-      loop([
-        { x: g.x0, y: g.y0 },
-        { x: g.x1, y: g.y0 },
-        { x: g.x1, y: g.y1 },
-        { x: g.x0, y: g.y1 },
-      ]);
-    rect(GUIDE_CD);
-    rect(GUIDE_CS);
-
-    /**
-     * ⛔⛔ THE RAILS — PL AND PR, CARL'S OWN HAND-PINNED DESK FLOOR LINES.
-     * Carl, 18 September: *"How can i tell if there aligns to the desks when i
-     * have no guides. Thats why they are there."*
-     *
-     * ⚠⚠ **THESE ARE THE ALIGNMENT REFERENCE FOR THE FLOOR PAIR, NOT THE GUIDE
-     * RECTANGLES.** The rects say how big a card is; **the rails say where it
-     * stands and which way it faces.** ⛔ Carl: *"The cards should sit on that and
-     * be at almost 90 deg from each other — not face on."*
-     *
-     * ⚠ STAGE FRACTIONS from `INITIAL_RAIL`, converted here. ⛔ A COPY — nothing
-     * asserts these still agree with `/proto/wall`, and they will drift silently
-     * if the rails are re-pinned. The same caveat the page's own SVG carries.
-     *
-     * ⚠ PL/PR ARE THE "POSITION" PAIR. ⛔ **NOT RL/RR, which sit on the chair
-     * castor bases** and were misread as desk references once already, producing
-     * a discarded 57.7° figure.
-     */
-    const railSeg = (a: { x: number; y: number }, b: { x: number; y: number }) => {
-      pts.push(...at(a.x, stageToPlateY(a.y)), ...at(b.x, stageToPlateY(b.y)));
-    };
-    railSeg({ x: 0.27621, y: 0.94232 }, { x: 0.46058, y: 0.83185 }); // PL
-    railSeg({ x: 0.50858, y: 0.80654 }, { x: 0.64059, y: 1.00101 }); // PR
-    /* ⚠ The wall pair's are PROJECTED trapezoids — do not read an aspect off
-       them, which is the error that produced 1.615. */
-    loop(GUIDE_CA_QUAD);
-    loop(GUIDE_CB_QUAD);
+    }
 
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
@@ -758,7 +503,7 @@ function GuideOverlay() {
  * — not a second download.
  */
 function RoomEnvironmentFromPlate() {
-  const texture = useLoader(THREE.TextureLoader, "/about-studio-source.jpg");
+  const texture = useLoader(THREE.TextureLoader, ROOM_PLATE_SRC);
   return <RoomEnvironment plate={texture} enabled />;
 }
 
@@ -840,56 +585,23 @@ export default function AboutCardCanvas() {
   const cdTransmissionOverride = transmissionOverride("cd");
   const caTransmissionOverride = transmissionOverride("ca");
   /**
-   * ⛔⛔ THE ANCHOR IS PL's **B HANDLE**, NOT THE MIDPOINT — Carl, 14 September:
-   * *"put the right bottom corner of the left card on the thicker line on the
-   * right circle."* The "right circle" is the upper-right end of the pinned span.
+   * ⛔⛔ THE FOUR CARDS IN THE NEW ROOM — 25 September 2026, Carl's accepted layout (D-095):
+   * *"Placement and balance are good."* Every number is in `ROOM_CARDS` (`about-room.ts`), in room
+   * millimetres; **moving a card is editing that table, not this file.**
    *
-   * ⚠ STAGE FRACTIONS, converted inside `placeCard`. Taken verbatim from
-   * `INITIAL_RAIL.PL[1]` in `app/proto/wall/page.tsx`.
+   *   CA  wall, left      CB  wall, right     (the TV's outer frame each, level)
+   *   CS  ABOVE, on the cabinet fronts        CD  the FLOOR card, one skirting height off the skirting
    *
-   * ⚠ `RAIL_MID_CD` is no longer used here and is deliberately left in
-   * `about-card-geometry.ts`: it is the record of the first anchor Carl tried, and
-   * the midpoint may well come back when the card is nudged along the axis.
+   * ⚠ *"CS is above and CD is the floor."* The old room had CD floor-left and CS floor-right; the names
+   * and their copy, glass values and text settings carry over unchanged — only where they stand moved.
+   * ⚠ Every card now faces the same way (the back wall's normal, 18.40° off the camera axis). The old
+   * pairs were yawed to two desks; the glass values and the text depths were tuned against THOSE angles
+   * and backgrounds (D-089, D-094) and are **not re-tuned here** — that is the next pass, by Carl's eye.
    */
-  const PL_B = { x: 0.46058, y: 0.83185 };
-  const cd = placeCard(GUIDE_CD, CD_CARD_HEIGHT_MM, PL_B, CD_FACE_YAW_DEG, "right");
-
-  /**
-   * ⛔⛔ CS ANCHORS BY ITS BOTTOM-**LEFT** CORNER TO PR's **A** HANDLE — Carl,
-   * 14 September: *"Take the bottom left corner of the right card and place that
-   * on the circle on the left."*
-   *
-   * ⚠⚠ THE MIRROR OF CD, AND THE ASYMMETRY IS THE POINT. CD hangs its bottom-RIGHT
-   * corner on PL's B (the upper-right end); CS hangs its bottom-LEFT corner on
-   * PR's A (the upper-left end). Both cards therefore grow AWAY from the centre of
-   * the room, which is what keeps them from colliding across the middle.
-   *
-   * ⚠ Stage fractions, taken verbatim from `INITIAL_RAIL.PR[0]`; converted inside
-   * `placeCard`.
-   */
-  const PR_A = { x: 0.50858, y: 0.80654 };
-  const cs = placeCard(GUIDE_CS, CS_CARD_HEIGHT_MM, PR_A, CS_FACE_YAW_DEG, "left");
-
-  /**
-   * ⛔⛔ THE WALL PAIR — CA left, CB right. Added 17 September 2026 on Carl's
-   * instruction: *"Lets give the wall cards some geometry. Use the guide lines to
-   * implement the same geometry as the floor cards. NOTE. The dimensions are
-   * different, this must be taken into account."*
-   *
-   * ⚠⚠ "THE SAME GEOMETRY" MEANS THE SAME BLUEPRINT, NOT THE SAME NUMBERS — and
-   * Carl stated the rule directly: *"The cards can be seen as one 'family'. They
-   * all share similar characteristics, only the dimensions change."* ⛔ So
-   * `AboutCardMesh` and `cardDims` are untouched; only height and aspect differ.
-   *
-   * ⛔ THE ASPECTS ARE MEASURED, NOT INHERITED. `WALL_CARD_ASPECT` was 1.615 and
-   * came from a CSS text box; the corner solve puts the real figures at 2.327 and
-   * 2.248 — **42% wider than the record claimed.** Full derivation and its five
-   * independent checks: `about-card-geometry.ts`.
-   *
-   * ⚠ HEIGHTS ARE PROVISIONAL and expected to move — Carl judges size in situ.
-   */
-  const ca = placeWallCard(GUIDE_CA_QUAD, CA_CARD_HEIGHT_MM, CA_CARD_ASPECT);
-  const cb = placeWallCard(GUIDE_CB_QUAD, CB_CARD_HEIGHT_MM, CB_CARD_ASPECT);
+  const cd = placeRoomCard(ROOM_CARDS.CD);
+  const cs = placeRoomCard(ROOM_CARDS.CS);
+  const ca = placeRoomCard(ROOM_CARDS.CA);
+  const cb = placeRoomCard(ROOM_CARDS.CB);
 
   /**
    * ⛔⛔ THE NEON — D-093, 23 September 2026. ALL FOUR CARDS, BUILT PAIR BY PAIR:
@@ -1036,9 +748,16 @@ export default function AboutCardCanvas() {
      * plate is letterboxed inside a full-viewport section, so a fraction of the
      * SECTION is not a fraction of the IMAGE. ⛔ The floor-copy overlay's first
      * attempt used `w-full` here and both text blocks sat left of their targets.
+     *
+     * ⛔ THE NEW ROOM: the box is the PLATE'S aspect, 2560/1435 = 1.784 (was 3:2), set from the same
+     * constant the backplate and camera use, so the three cannot drift apart. `RoomPlate` in
+     * `app/about/page.tsx` sizes the DOM fallback the same way.
      */
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-      <div className="relative h-full max-h-full w-auto max-w-full aspect-[3/2]">
+      <div
+        className="relative h-full max-h-full w-auto max-w-full"
+        style={{ aspectRatio: ROOM_PLATE_ASPECT }}
+      >
         <Canvas
           frameloop="demand"
           dpr={[1, 2]}
@@ -1055,10 +774,12 @@ export default function AboutCardCanvas() {
           onCreated={extrude ? ({ gl }) => { gl.localClippingEnabled = true; } : undefined}
           camera={{
             /* ⛔ VERTICAL FOV. `PerspectiveCamera.fov` is vertical and the plan
-               carried the 89.91° HORIZONTAL figure — caught before it shipped. */
-            fov: CAMERA_VFOV_DEG,
+               carried the 89.91° HORIZONTAL figure — caught before it shipped.
+               ⛔ The new room: 58.203° on the 2560 x 1435 plate, pitched UP 3.22° (`PITCH` > 0). */
+            fov: ROOM_CAMERA_VFOV_DEG,
             near: 0.01,
-            far: 100,
+            /* ⛔ DERIVED, not set — it was 100 and clipped the whole far plane (see `CAMERA_FAR`). */
+            far: CAMERA_FAR,
             position: [0, 0, 0],
             rotation: [PITCH, 0, 0],
           }}

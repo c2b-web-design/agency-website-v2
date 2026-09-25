@@ -11,7 +11,6 @@ const e1 = await sharp(E1).greyscale().raw().toBuffer({ resolveWithObject: true 
 const bil = (buf, w, h, x, y) => { if (x < 0 || y < 0 || x > w - 2 || y > h - 2) return NaN; const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0; const d = buf; return d[y0 * w + x0] * (1 - fx) * (1 - fy) + d[y0 * w + x0 + 1] * fx * (1 - fy) + d[(y0 + 1) * w + x0] * (1 - fx) * fy + d[(y0 + 1) * w + x0 + 1] * fx * fy; };
 // box-average master over the footprint of one edit pixel (3.1 x 2.0 master px)
 const Mv = (xe, ye) => { let s = 0, n = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1.5; dx <= 1.5; dx += 1) { const v = bil(mm.data, 4000, 2250, KX * xe + BX + dx, KY * ye + BY + dy * 0.66); if (!isNaN(v)) { s += v; n++; } } return n ? s / n : NaN; };
-const E1v = (xe, ye) => bil(e1.data, 1376, 768, (KX * xe + BX) * 0.344, (KY * ye + BY) * 0.344 - 3);
 const signed = Buffer.alloc(W * H * 3);
 for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const a = Mv(x, y), b = e.data[y * W + x]; const i = (y * W + x) * 3; if (isNaN(a)) { signed[i + 1] = 90; continue; } const s = Math.max(-255, Math.min(255, (b - a) * 3)); signed[i] = s > 0 ? s : 0; signed[i + 2] = s < 0 ? -s : 0; }
 await sharp(signed, { raw: { width: W, height: H, channels: 3 } }).png().toFile(SP + "/edit2-signeddiff.png");
