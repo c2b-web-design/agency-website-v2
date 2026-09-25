@@ -603,6 +603,10 @@ export default function AboutCardCanvas() {
   };
   const cdTransmissionOverride = transmissionOverride("cd");
   const caTransmissionOverride = transmissionOverride("ca");
+  /* ⚠ DIAGNOSTIC — `?cb=` sweeps CB's face body live, like `?ca=`/`?cd=`; absent → the committed value. Added 25
+     September 2026 (third session): CB's text reads fainter than CA's because its GLASS is brighter (face body 0.86
+     vs CA's 0.95), not its text — measured before proposing a nudge. ⛔ Carl then set CB to 0.95 ("yes, proceed"). */
+  const cbTransmissionOverride = transmissionOverride("cb");
   /**
    * ⛔⛔ THE FOUR CARDS IN THE NEW ROOM — 25 September 2026, Carl's accepted layout (D-095):
    * *"Placement and balance are good."* Every number is in `ROOM_CARDS` (`about-room.ts`), in room
@@ -1230,7 +1234,14 @@ export default function AboutCardCanvas() {
               glass
               /* ⛔ 0.35 → 0.20 — Carl, 25 September 2026 (third session): *"Go with option 1 but tune CA + CB to 0.20"* (D-089's roughness lock lifted for the new room; CD/CS 0.25; the reflection now blurred on its own, `ENV_BLUR_SIGMA`). */
               glassRoughness={0.20}
-              glassFaceTransmission={GLASS_FACE_TRANSMISSION}
+              /* ⛔ FACE BODY 0.86 → 0.95 — Carl, 25 September 2026 (third session): *"yes, proceed"*, on the
+                 measurement. CB's TEXT was the brighter; its GLASS was lighter (99 vs CA's 70 luma), so the text
+                 stood 40 off it where CA's stood 51. At 0.95 the frost lets more of the dark wall through:
+                 contrast 49.8 (CA 51.1), and 48.6 at CB's blowout point (was 38.6) — no light added, so the
+                 blowout eases rather than grows. ⚠ CB leaves the shared `GLASS_FACE_TRANSMISSION` (0.86, which
+                 CS still takes) for its own value here, as CA and CD have theirs. ⚠ It lands on CA's 0.95 by
+                 MEASUREMENT, not by tidying the pair (see the note above). `?cb=` still sweeps it. */
+              glassFaceTransmission={cbTransmissionOverride ?? 0.95}
               neon={cbNeon}
               etch={cbEtch}
               faceReceiveShadow={!!extrude?.cb}
