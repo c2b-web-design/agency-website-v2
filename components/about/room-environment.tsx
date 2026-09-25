@@ -1,7 +1,10 @@
 "use client";
 
 /**
- * The room environment map. ⛔ **ONE CONSUMER TODAY: the bench (`/proto/card`).**
+ * The room environment map. ⛔ **TWO CONSUMERS: `/about` (`RoomEnvironmentFromPlate`, since the new room,
+ * D-095) and the bench (`/proto/card`).** *Corrected in place, 25 September 2026 (third session) — the line
+ * below was true when written and the next paragraph records why it stopped being.* Was: "ONE CONSUMER
+ * TODAY: the bench".
  *
  * ⚠⚠ AN EARLIER VERSION OF THIS HEADER SAID "SHARED BY THE BENCH AND THE ROOM"
  * AND THAT IS NO LONGER TRUE. It was extracted into its own module when `/about`
@@ -19,10 +22,13 @@ import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { useThree } from "@react-three/fiber";
 import {
+  ENV_BLUR_SIGMA,
+  ENV_MAP_SIZE,
   ENV_PLATE_INTENSITY,
   ENV_SHELL_COLOR,
   ENV_SHELL_RADIUS,
 } from "./about-card-glass";
+import { neonNumber } from "./about-neon";
 
 /**
  * ⚠ `useMemo`, NOT `useEffect` + `setState` — matching `useLocalEnvMap` in
@@ -33,6 +39,12 @@ import {
  */
 export function useRoomEnvMap(plate: THREE.Texture | null): THREE.Texture | null {
   const gl = useThree((s) => s.gl);
+  /* ⛔ THE REFLECTION'S OWN BLUR (`ENV_BLUR_SIGMA`). Read once per mount and passed as a DEPENDENCY, so a new
+     value rebuilds the map — ⚠ the constants read inside the memo below are not, the ENVMAP-STALE defect. */
+  const blur = useMemo(
+    () => ({ sigma: neonNumber("envblur", ENV_BLUR_SIGMA, 0, 0.5), size: neonNumber("envsize", ENV_MAP_SIZE, 32, 1024) }),
+    [],
+  );
 
   const built = useMemo(() => {
     if (!plate) return null;
@@ -85,12 +97,12 @@ export function useRoomEnvMap(plate: THREE.Texture | null): THREE.Texture | null
      * actually matters; on `/proto` it is a one-off on an already-unwarmed bench.
      */
     const pmrem = new THREE.PMREMGenerator(gl);
-    const rt = pmrem.fromScene(studio, 0, 0.1, 200);
+    const rt = pmrem.fromScene(studio, blur.sigma, 0.1, 200, { size: blur.size });
     pmrem.dispose();
     disposables.forEach((d) => d.dispose());
 
     return { rt };
-  }, [plate, gl]);
+  }, [plate, gl, blur]);
 
   /* ⚠ DISPOSAL IS THE EFFECT'S ONLY JOB. The memo builds; this releases the GPU
      target when the plate changes or the bench unmounts. */

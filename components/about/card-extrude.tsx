@@ -1,7 +1,7 @@
 "use client";
 
 /* ⛔⛔ THE EXTRUDED CARD TEXT — THE "DRY" TAKE. D-094, 24 September 2026. ALL FOUR
-   CARDS, ALL FOUR MOUNTED; ⚠ *corrected in place, 25 September (second session):* this read "AND STATIC ON PLAIN `/about`" — now only CA SHOWS (`?text=`, the canvas) and its pages RUN (`still` defaults false). ⚠ *Corrected in place:* this read "CA ONLY", then "CA AND
+   CARDS, ALL FOUR MOUNTED; ⚠ *corrected in place, 25 September (second session):* this read "AND STATIC ON PLAIN `/about`" — now only CA SHOWS (`?text=`, the canvas) and its pages RUN (`still` defaults false). ⚠ *And again, third session:* ALL FOUR show and `still` defaults TRUE once more — to judge the moving light against every card's text (Carl). ⚠ *Corrected in place:* this read "CA ONLY", then "CA AND
    CB"; CD and CS joined later in session 2. CB joined in session 2 the same
    day — Carl: *"Same text size, same type of text. Same reveal… The only
    difference being is that CB has more words."* ⛔ It was ONE CARD PER LOAD (the selector is now `extrudeCards`):
@@ -238,7 +238,12 @@ export function extrudeSettings(card: ExtrudeCardId): ExtrudeSettings {
        bigger."* (No rewording: *"No rewording is neccersary."*) ⚠ The static first page hid CA's last two
        lines — its KEEP-LINE among them — so the chase is now the default; `?textstatic=1` holds the first
        page again for judging. */
-    still: switchParam("textstatic", false),
+    /* ⛔⛔ STATIC AGAIN, FOR THE LIGHT — Carl, 25 September 2026 (third session): *"Put all the text on each
+       card and make them static for now. Our next task is to watch the travelling light and see where it
+       blows out the text."* Every card is now two FULL pages, so the static first page fills every slot —
+       every line position the light can wash is occupied. ⚠ Page 2 is not shown while static; its lines sit
+       in the same slots. `?textstatic=0` runs the pages. */
+    still: switchParam("textstatic", true),
     /* ⛔ 52 → 60 mm, the same day: *"we can make the text a bit bigger."* A take (+15%). On the new CA's
        face (block 1140 × 617 mm) 60 mm gives **7 slots** (52 gave 8; the old room's 6). ⚠ Carl ruled on
        24 September that CB uses CA's size (*"Same text size"*), so this is every card's default. */

@@ -6,6 +6,15 @@
  * ⛔ **`GLASS_FACE_TRANSMISSION` 0.86 and `GLASS_ROUGHNESS` at CS's 0.35 ARE NOT
  * TO BE CHANGED WITHOUT CARL'S SPECIFIC AUTHORISATION** — *"which is unlikely.
  * I am happy with the frostiness."*
+ * ⛔⛔ **THE ROUGHNESS LOCK IS LIFTED — Carl, 25 September 2026 (third session):** *"im gonna unlock it
+ * because they need to change. 3 cards are reading as too opaque in this new environment."* The 0.35 was
+ * tuned in the OLD room; the new room (D-095) reads the frost differently. **Roughness only, all four cards;
+ * face body (CS/CB 0.86, CA/CD 0.95) is NOT part of the unlock.** Set per card in `about-card-canvas.tsx`
+ * (`glassRoughness`): **CD 0.25** (*"That a lot better, we can see more of the background and its less
+ * blurred"*), then **CS 0.25** (*"Drop CS by the same amount"*), then **CA and CB 0.20** (*"Go with option
+ * 1 but tune CA + CB to 0.20"*) — with the REFLECTION now blurred on its own (`ENV_BLUR_SIGMA`, below). ⚠ `GLASS_ROUGHNESS`
+ * below is **0.18 — the BENCH's opening value, never /about's**; the "0.35" above lived only in the per-card
+ * props. Reasoning: the D-095 tail of `decisions.md`.
  *
  * ⚠⚠ **ONE THING MAY STILL MOVE, AND IT IS COLOUR, NOT FROST — D-090.** Whether
  * the frosting becomes lightly tinted is OPEN, and it interacts with whether
@@ -423,6 +432,25 @@ export const ENV_FROM_PLATE = true;
  * the failure this env map exists to fix.
  */
 export const ENV_SHELL_COLOR = "#141a20";
+
+/**
+ * ⛔⛔ THE REFLECTION IS BLURRED ON ITS OWN — Carl, 25 September 2026 (third session). With CS's roughness down
+ * to 0.25 an ARC appeared across its face (*"there is an arc of a streak accross the face of CS"*): the env
+ * map wraps the PLATE round the cards, the new plate's bright horizontal bands (the LED strip, the ceiling
+ * cove, × `ENV_PLATE_INTENSITY`) become a ring, and the domed face reflects the ring as a curve. ✔ Proven by
+ * `?envmap=0` (the arc goes) and `?lmexp=0` (it stays). At 0.35 roughness blurred it to a glow; 0.25 resolved it.
+ * ⛔ **Carl chose to blur the REFLECTION, not raise the roughness** (option 1) — the frost stays see-through,
+ * the reflection goes soft. It applies to every card's reflection, on `/about` AND the bench.
+ *
+ * Radians, applied to the env scene before prefiltering (`PMREMGenerator.fromScene`'s sigma). ⚠ three caps the
+ * blur at 20 samples over 3 standard deviations: at the default 256 px cube that is **~0.039 rad** — past it
+ * the blur clips (and warns). A wider blur needs a smaller cube (`ENV_MAP_SIZE` 128 allows ~0.078). ⚠ A TAKE.
+ * ⛔ MEASURED, same session (`live-work/scripts/cs-arc-probe.mjs blur`): **0.035 at 256 px barely touched the arc**
+ * (the cap is too tight); **0.07 at 128 px turns it into a broad glow.** ⚠ The same map lights every CLEAR RIM,
+ * so a wider blur softens the rims too — check them before going further. Faders: `?envblur=` (rad), `?envsize=` (px).
+ */
+export const ENV_BLUR_SIGMA = 0.07;
+export const ENV_MAP_SIZE = 128;
 
 /**
  * ⚠ HOW BRIGHT THE PLATE READS IN THE REFLECTION. ⛔ A STARTING POINT, not a

@@ -231,10 +231,12 @@ const CAMERA_FAR = Math.ceil(PROXY_MAX_DEPTH * 1.25);
 function textCardsFromUrl(): Set<ExtrudeCardId> {
   const v = neonParam("text");
   const all: ExtrudeCardId[] = ["ca", "cb", "cd", "cs"];
-  /* ⛔ CS NOW — Carl, 25 September 2026 (third session): *"See if the copy works first"*. One card alone, the
-     technique used on each: CD before it (*"Hide CB text for now and lets address CD text."*), CB before that,
-     CA first. `?text=ca` / `cb` / `cd` show them again. */
-  if (v === null) return new Set<ExtrudeCardId>(["cs"]);
+  /* ⛔ NONE — Carl, 25 September 2026 (third session), once the blowout dips were in: *"this will be tuned
+     further when we light the rims. We only need to make it better for now. Hide all the text on the cards."*
+     (Before that, ALL FOUR static — *"Put all the text on each card and make them static for now"* — to find
+     where the moving light blew the text out; before that, one card at a time.) `?text=1` shows all four;
+     a list (`?text=cd`) isolates one. */
+  if (v === null) return new Set<ExtrudeCardId>();
   if (v === "1" || v === "all") return new Set(all);
   if (v === "0") return new Set<ExtrudeCardId>();
   return new Set(all.filter((id) => v.split(",").includes(id)));
@@ -519,7 +521,10 @@ function GuideOverlay() {
  */
 function RoomEnvironmentFromPlate() {
   const texture = useLoader(THREE.TextureLoader, ROOM_PLATE_SRC);
-  return <RoomEnvironment plate={texture} enabled />;
+  /* ⚠ DIAGNOSTIC — `?envmap=0` removes the env map (the glass's REFLECTION of the room). Added 25 September
+     2026 (third session) to tell whether the arc across CS's face is reflected or transmitted (Carl: *"there
+     is an arc of a streak accross the face of CS. Why is this?"*). Absent → on, as before. */
+  return <RoomEnvironment plate={texture} enabled={neonParam("envmap") !== "0"} />;
 }
 
 export default function AboutCardCanvas() {
@@ -683,7 +688,7 @@ export default function AboutCardCanvas() {
      new 805 × 1332 mm: the face is the same width to 0.6% (the SAME words per line at 52 mm) and 44%
      taller (**8 lines, was 6**). ⚠ The depth rule re-checked in the new room: CA is seen at 15.7 / 7.1 /
      10.8° (was 23.7 / 12.1 / 4.0°), so 3 mm leaves a worst side wall of **19%** (was 29%) — kept.
-     `?text=` : absent → CS only (the third session, after CD; CB and CA before that) · `1`/`all` → all four · `0` → none · a list (`ca,cb`) → those. */
+     `?text=` : absent → NONE (hidden, end of the third session; before: all four static, to judge the light; before that CS, CD, CB, CA alone in turn) · `1`/`all` → all four · `0` → none · a list (`ca,cb`) → those. */
   const textCards = useMemo(() => textCardsFromUrl(), []);
   /* ⛔ THE MOVING LIGHT — ON on plain `/about` (`?lightmove=0` removes it). The static key and fill
      are OFF under it by default — Carl's experiment, so it is seen alone (ambient kept); `?lmglobal=1` puts
@@ -1023,7 +1028,12 @@ export default function AboutCardCanvas() {
               dims={cd.dims}
               crownMm={cd.crownMm}
               glass
-              glassRoughness={0.35}
+              /* ⛔ 0.35 → 0.25 — Carl, 25 September 2026 (third session), UNLOCKING D-089's roughness: *"im
+                 gonna unlock it because they need to change. 3 cards are reading as too opaque in this new
+                 environment. Lets take the floor card and drop it to 0.25."* The 0.35 was tuned in the OLD room.
+                 CD first (*"That a lot better"*); CS followed at 0.25; CA/CB still 0.35. Face body (0.95) not part
+                 of the unlock. */
+              glassRoughness={0.25}
               glassFaceTransmission={cdTransmissionOverride ?? CD_FACE_TRANSMISSION}
               neon={cdNeon}
               faceReceiveShadow={!!extrude?.cd}
@@ -1115,7 +1125,10 @@ export default function AboutCardCanvas() {
               dims={cs.dims}
               crownMm={cs.crownMm}
               glass
-              glassRoughness={0.35}
+              /* ⛔ 0.35 → 0.25 — Carl, 25 September 2026 (third session), after CD's drop (*"That a lot better,
+                 we can see more of the background and its less blurred"*): *"Drop CS by the same amount."*
+                 D-089's roughness lock lifted for the new room (see `about-card-glass.ts`). */
+              glassRoughness={0.25}
               glassFaceTransmission={GLASS_FACE_TRANSMISSION}
               neon={csNeon}
               faceReceiveShadow={!!extrude?.cs}
@@ -1186,7 +1199,8 @@ export default function AboutCardCanvas() {
               dims={ca.dims}
               crownMm={ca.crownMm}
               glass
-              glassRoughness={0.35}
+              /* ⛔ 0.35 → 0.20 — Carl, 25 September 2026 (third session): *"Go with option 1 but tune CA + CB to 0.20"* (D-089's roughness lock lifted for the new room; CD/CS 0.25; the reflection now blurred on its own, `ENV_BLUR_SIGMA`). */
+              glassRoughness={0.20}
               glassFaceTransmission={caTransmissionOverride ?? CA_FACE_TRANSMISSION}
               neon={caNeon}
               etch={caEtch}
@@ -1211,7 +1225,8 @@ export default function AboutCardCanvas() {
               dims={cb.dims}
               crownMm={cb.crownMm}
               glass
-              glassRoughness={0.35}
+              /* ⛔ 0.35 → 0.20 — Carl, 25 September 2026 (third session): *"Go with option 1 but tune CA + CB to 0.20"* (D-089's roughness lock lifted for the new room; CD/CS 0.25; the reflection now blurred on its own, `ENV_BLUR_SIGMA`). */
+              glassRoughness={0.20}
               glassFaceTransmission={GLASS_FACE_TRANSMISSION}
               neon={cbNeon}
               etch={cbEtch}

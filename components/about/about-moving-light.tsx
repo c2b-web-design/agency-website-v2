@@ -69,6 +69,9 @@
  *   ?lmglobal=1       the static key and fill back ON — ⚠ OFF BY DEFAULT since 25 September (Carl: *"yes
  *                     try it, im all for experimentation"*); ambient stays
  *   ?lighthelpers=1|0 the trajectory — ON by default on LOCALHOST only
+ *   ?lmdip=0          the blowout dips OFF (full intensity all the way round) — see `BLOWOUT_DIPS`
+ *   ?lmfreeze=0.25    MEASUREMENT: hold both lights at this fraction of a lap (no clock, no reversals)
+ *   ?lmonly=1|2       MEASUREMENT: only L1 (or L2) lit — the other's intensity is 0
  */
 
 import { useEffect, useMemo, useRef, type RefObject } from "react";
@@ -105,6 +108,12 @@ type OrbitSettings = {
   exposure: number;
   color: string;
   helpers: boolean;
+  /** MEASUREMENT (`?lmfreeze=`): a lap fraction to hold at, or null to run. */
+  freeze: number | null;
+  /** MEASUREMENT (`?lmonly=`): 0 = both lit, 1 = L1 only, 2 = L2 only. */
+  only: 0 | 1 | 2;
+  /** The blowout dips (`?lmdip=0` turns them off). */
+  dips: boolean;
 };
 
 function orbitSettings(): OrbitSettings {
@@ -126,7 +135,53 @@ function orbitSettings(): OrbitSettings {
       if (v === "0") return false;
       return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
     })(),
+    /* ⚠ MEASUREMENT ONLY — the blowout scan (Carl, 25 September 2026, third session: *"watch the travelling
+       light and see where it blows out the text"*) needs every lap position, repeatably. Absent → no effect. */
+    freeze: neonParam("lmfreeze") === null ? null : neonNumber("lmfreeze", 0, 0, 1),
+    only: neonParam("lmonly") === "1" ? 1 : neonParam("lmonly") === "2" ? 2 : 0,
+    dips: neonParam("lmdip") !== "0",
   };
+}
+
+/**
+ * ⛔⛔ THE BLOWOUT DIPS — Carl, 25 September 2026 (third session): *"Where it blows out, dial it down and as you
+ * approach these points dial it down gradually, then back up when not blowing text out. we still want some
+ * effect on the face."* And: *"This doesnt have to be perfect now, we have rim lights to add."*
+ *
+ * ⚠ WHAT BLOWS OUT IS THE REFLECTED HOTSPOT — the light mirrored in the glossy dome, about a word wide, turning
+ * white letters white-on-white. Found by holding ONE light at 50 lap positions (`?lmfreeze`, `?lmonly=1`) with
+ * every card's text static (`live-work/scripts/light-blowout-scan.mjs`; frames in `live-work/screenshots/
+ * blowout-scan-25-september/`). ⚠ Whole-card contrast NEVER fell (the light adds more than it takes, card-wide),
+ * so the four points were read off the FRAMES, the figures as a guide: each is where a light is nearest a card.
+ *   CA ~7%  — the left ends of "the", "Architect", "design" wash white
+ *   CD ~28% — a hotspot over "brand"; mild
+ *   CB ~57% — "the site." and "environment"
+ *   CS ~73% — "website. This" and "to serve,"
+ * ⚠ CA/CB and CD/CS sit HALF A LAP APART — the orbit's point symmetry, found not placed.
+ *
+ * `at` is a position ON THE ORBIT (a fraction of a lap from CA's top-left, L1's start), so the dip belongs to
+ * the PLACE and applies to whichever light passes it — and a reversal changes nothing. Each is a raised cosine:
+ * full intensity outside ±`half`, easing down to `floor` at `at` and back up (§14a: legato, no toggle). At the
+ * default 40 s lap, ±0.08 is ±3.2 s either side. ⚠ TAKES, for Carl's eye moving — the floors keep light on
+ * the face (*"we still want some effect"*); CD dips least because it blows out least.
+ */
+const BLOWOUT_DIPS: { card: string; at: number; half: number; floor: number }[] = [
+  { card: "CA", at: 0.07, half: 0.08, floor: 0.3 },
+  { card: "CD", at: 0.28, half: 0.08, floor: 0.6 },
+  { card: "CB", at: 0.57, half: 0.08, floor: 0.3 },
+  { card: "CS", at: 0.73, half: 0.08, floor: 0.3 },
+];
+
+/** The intensity multiplier at an orbit position (0..1 of a lap): 1, except inside a dip. Dips never stack — the deepest wins. */
+function blowoutDim(pos: number): number {
+  let m = 1;
+  for (const d of BLOWOUT_DIPS) {
+    const off = Math.abs(((pos - d.at + 1.5) % 1) - 0.5); // circular distance, 0..0.5
+    if (off >= d.half) continue;
+    const bump = 0.5 * (1 + Math.cos((Math.PI * off) / d.half)); // 1 at the point, 0 at the edge, flat at both
+    m = Math.min(m, 1 - (1 - d.floor) * bump);
+  }
+  return m;
 }
 
 /** Room mm: u along the back wall, v up from the floor, w out from the wall. */
@@ -270,11 +325,18 @@ export function AboutMovingLight() {
         target!.updateMatrixWorld(true);
         light!.target = target!;
         /* ⛔ EXPOSURE HELD AT THE AIM POINT: intensity × 1/d² at the aim = exposure. */
-        light!.intensity = s.exposure * P.distanceToSquared(Q);
+        /* ⛔ …× THE BLOWOUT DIP at this light's own place on the orbit (`BLOWOUT_DIPS`). */
+        const dim = s.dips ? blowoutDim((((lapFraction + i / 2) % 1) + 1) % 1) : 1;
+        light!.intensity = s.only && s.only !== i + 1 ? 0 : s.exposure * P.distanceToSquared(Q) * dim;
         light!.updateMatrixWorld(true);
       });
     };
 
+    if (s.freeze !== null) {
+      place(s.freeze);
+      invalidate();
+      return;
+    }
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       place(REDUCED_MOTION_LAP);
       invalidate();
