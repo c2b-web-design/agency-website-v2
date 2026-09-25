@@ -49,6 +49,13 @@ export const ETCH_GLOW_DEPTH = 0.1;
  *     5c9cff at glow 0.1        #80baf2   209°  sat 81%  light 72%   <- this
  * Carl: *"Thats a lot better, more readable now."* ⚠ Better, not approved.
  * `?etchhex=` overrides it. ⚠ Measured against CA's rim; CB's is measured apart.
+ *
+ * ⛔⛔ STALE SINCE 25 September 2026 (third session) — THE RIM IT MATCHES IS NO LONGER NAVY. The wall pair's
+ * neon is now the room's ORANGE (`NEON_GLOW_HEX` `#f08a30`, `about-neon.ts` — Carl: *"We should echo it"*),
+ * and on screen the rim reads near-white at the core through `#ff8b2b` at its edge. **`#5c9cff` is left as it
+ * was:** the etch is OFF by default (`?etch=1`), so nothing on plain `/about` shows the mismatch, and a new
+ * value must be MEASURED the same way (the brightest 10% of glyph pixels against the rim as seen), not typed.
+ * If the etch returns, re-match it first.
  */
 export const ETCH_GLOW_HEX = "#5c9cff";
 /** How frosted. `?etchrough=` 0–1. */

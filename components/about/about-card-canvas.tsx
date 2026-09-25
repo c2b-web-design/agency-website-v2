@@ -231,12 +231,11 @@ const CAMERA_FAR = Math.ceil(PROXY_MAX_DEPTH * 1.25);
 function textCardsFromUrl(): Set<ExtrudeCardId> {
   const v = neonParam("text");
   const all: ExtrudeCardId[] = ["ca", "cb", "cd", "cs"];
-  /* ⛔ NONE — Carl, 25 September 2026 (third session), once the blowout dips were in: *"this will be tuned
-     further when we light the rims. We only need to make it better for now. Hide all the text on the cards."*
-     (Before that, ALL FOUR static — *"Put all the text on each card and make them static for now"* — to find
-     where the moving light blew the text out; before that, one card at a time.) `?text=1` shows all four;
-     a list (`?text=cd`) isolates one. */
-  if (v === null) return new Set<ExtrudeCardId>();
+  /* ⛔ CA AND CB, STATIC — Carl, 25 September 2026 (third session), with the wall pair's rims lit in the room's
+     orange: *"Put the static text back on CA + CB."* (Before: NONE — *"Hide all the text on the cards"*, once the
+     blowout dips were in; before that all four static, to find the blowout; before that one card at a time.)
+     `?text=1` shows all four; a list (`?text=cd`) isolates; `?text=0` hides all. */
+  if (v === null) return new Set<ExtrudeCardId>(["ca", "cb"]);
   if (v === "1" || v === "all") return new Set(all);
   if (v === "0") return new Set<ExtrudeCardId>();
   return new Set(all.filter((id) => v.split(",").includes(id)));
@@ -632,7 +631,9 @@ export default function AboutCardCanvas() {
    *
    * ⚠ ONE COLOUR PER PAIR — Carl: *"a darker and a lighter blue per pair."* The
    * wall pair is the logo's navy "c" (approved by eye); the floor pair its teal
-   * "b" (a candidate).
+   * "b" (a candidate). ⛔ *Overtaken 25 September 2026 (third session):* **in the new
+   * room the wall pair is the room's own ORANGE, `#f08a30`** (Carl: *"We should echo
+   * it"* — see `NEON_GLOW_HEX`); the floor pair's rims are OFF, their colour to change.
    *
    * ⚠ MEMOISED ONCE PER MOUNT, AND THAT IS LOAD-BEARING: `NeonBloom` ignites when
    * `mode` changes, so a fresh object on every render would re-strike the neon.
@@ -688,7 +689,7 @@ export default function AboutCardCanvas() {
      new 805 × 1332 mm: the face is the same width to 0.6% (the SAME words per line at 52 mm) and 44%
      taller (**8 lines, was 6**). ⚠ The depth rule re-checked in the new room: CA is seen at 15.7 / 7.1 /
      10.8° (was 23.7 / 12.1 / 4.0°), so 3 mm leaves a worst side wall of **19%** (was 29%) — kept.
-     `?text=` : absent → NONE (hidden, end of the third session; before: all four static, to judge the light; before that CS, CD, CB, CA alone in turn) · `1`/`all` → all four · `0` → none · a list (`ca,cb`) → those. */
+     `?text=` : absent → CA + CB, static (the third session, with the orange rims; before: none, then all four static, then CS, CD, CB, CA alone in turn) · `1`/`all` → all four · `0` → none · a list (`ca,cb`) → those. */
   const textCards = useMemo(() => textCardsFromUrl(), []);
   /* ⛔ THE MOVING LIGHT — ON on plain `/about` (`?lightmove=0` removes it). The static key and fill
      are OFF under it by default — Carl's experiment, so it is seen alone (ambient kept); `?lmglobal=1` puts
@@ -722,8 +723,10 @@ export default function AboutCardCanvas() {
     }));
   }, []);
   const neonChannels = useMemo(() => {
-    /* ⚠ TWO COLOURS PER PAIR: the GLOW and the TUBE. They differ on the wall
-       pair because ACES turns a navy tube cyan (see `NEON_TUBE_HEX`). */
+    /* ⚠ TWO COLOURS PER PAIR: the GLOW and the TUBE. They differed on the wall
+       pair because ACES turned the navy tube cyan (see `NEON_TUBE_HEX`); ⛔ since
+       the wall pair went ORANGE (25 September) the two are the same hex — kept as
+       two channels, so a split stays one constant away. */
     const wall = { glow: neonHex(NEON_GLOW_HEX), tube: neonHex(NEON_TUBE_HEX, "neontube") };
     const floor = {
       glow: neonHex(FLOOR_NEON_GLOW_HEX, "floorhex"),

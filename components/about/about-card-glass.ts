@@ -500,6 +500,9 @@ export const ENV_PLATE_INTENSITY = 6.0;
  *                 2026: this read "the four neon colours are ruled to be four and
  *                 all different; none is chosen". D-090 RETIRED four colours —
  *                 the neon is BLUE, pair by pair; the wall pair starts from the
- *                 logo's navy "c", `about-neon.ts`.)* Whether the frost itself is
- *                 tinted is still D-090's open question 1.
+ *                 logo's navy "c", `about-neon.ts`.)* ⛔ *(Overtaken 25 September 2026,
+ *                 third session: in the new room the wall pair's neon is the ROOM'S
+ *                 ORANGE, `#f08a30` — Carl: "We should echo it". The floor pair's
+ *                 colour is to change too; its rims are off. See `NEON_GLOW_HEX`.)*
+ *                 Whether the frost itself is tinted is still D-090's open question 1.
  */

@@ -100,10 +100,17 @@ export type ExtrudeSettings = {
    key, fill — `about-card-canvas.tsx`) are untouched. ⚠ The history above is kept:
    CA's R-029/R-030 state is now `?extrude=ca&textlight=1`, CB's last state
    `?textlight=1&textrim=1`. The light TYPE and intensity are the next light
-   chunk, after all four cards show their text. */
+   chunk, after all four cards show their text.
+   ⛔⛔ THE RIMS BACK ON — Carl, 25 September 2026 (third session), with the roughness settled: *"Lets have a
+   look at the rims."* ⚠ `rim: false` on every card kept the NEON OFF on plain `/about` all through the new
+   room (the canvas mounts the neon only if some card's rim is on), so the rims read as plain clear glass. All
+   four `rim: true` → the D-093 neon and its ignition, as built in the old room. `?textrim=0` puts them out.
+   The per-card SPOT (`light`) stays off — the moving light is the room's light now.
+   ⛔ CD AND CS OFF AGAIN, the same session — Carl, on seeing all four lit: *"First of all, all the rim colours
+   must change. Tyrn off CD + CS for now."* The wall pair stays lit to work the colour on. */
 const EXTRUDE_SWITCHES: Record<ExtrudeCardId, { light: boolean; rim: boolean }> = {
-  ca: { light: false, rim: false },
-  cb: { light: false, rim: false },
+  ca: { light: false, rim: true },
+  cb: { light: false, rim: true },
   cd: { light: false, rim: false },
   cs: { light: false, rim: false },
 };

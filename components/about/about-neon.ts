@@ -21,7 +21,23 @@ import { ROOM_CARD_GUIDES } from "./about-room";
 // ── Colour ──────────────────────────────────────────────────────────────────
 
 /**
- * ⛔ THE GLOW COLOUR — the navy "c" of Carl's navy-teal logos, CANDIDATE.
+ * ⛔⛔ THE WALL PAIR JOINS THE ROOM'S ORANGE — Carl, 25 September 2026 (third session). On seeing the navy
+ * tone-mapped to pale periwinkle in the new room: *"all the rim colours must change"*, then: *"The room already
+ * has its own neon strips. They are in a powerful and prominent position. CA + CB also sit in a dominant
+ * position, not only in the scene but in the C2B ecosystem as well. Any colours, including complimentary
+ * colours are gonna 'fight' with the orange neon. It has its own colour, bloom etc. We should echo it."*
+ * **`NEON_GLOW_HEX` and `NEON_TUBE_HEX` → `#f08a30`, peak unchanged (6).** ⛔ Chosen by MEASUREMENT against the
+ * strip's own cross-section in the rendered room (`live-work/scripts/rim-strip-profile.mjs`, `rim-orange-try.mjs`):
+ *     strip:  core white · inner edge 37°→25° gold-orange · 16 px #c1531d 20° · 24 px #ad4213 18°
+ *     rim:    core #ffffee · inner edge 27°→22°            · 16 px #d75b26 18° · 24 px #c24d20 17°
+ * Tried and passed over: #e0702c/#e8782e (redder, 16–18° inside), peaks 3/4/5 (core yellows; halo thins).
+ * ⚠ The rim's halo reads a shade stronger than the strip's — left so; the pair is the more prominent element.
+ * ⚠ ONE colour for tube and glow: ACES makes a bright orange's core white through gold on its own — the same
+ * shape the strip has — so no pre-shift is needed (the navy needed one; see below, kept as history).
+ * ⚠ THE FLOOR PAIR (`FLOOR_NEON_*`) is unchanged and its rims are OFF — Carl: *"Turn off CD + CS for now."*
+ * ⚠ A TAKE for Carl's eye, moving. The navy notes below are HISTORY.
+ *
+ * ⛔ (HISTORY) THE GLOW COLOUR — the navy "c" of Carl's navy-teal logos, CANDIDATE.
  *
  * Re-sampled 23 September 2026 from `brand-assets/logo/Logo 2.2.png` and the
  * `ig_…c6430c…` render — two files, one hue (215–217°):
@@ -38,7 +54,7 @@ import { ROOM_CARD_GUIDES } from "./about-room";
  * ⚠ "DARKER" FOR A LIGHT SOURCE MEANS DEEPER AND MORE SATURATED, NOT DIMMER.
  * Dimming is the peak's job. Sweep with `?neonhex=1b4789`.
  */
-export const NEON_GLOW_HEX = "#1b4789";
+export const NEON_GLOW_HEX = "#f08a30"; // was #1b4789 (the navy "c") — the room's orange, 25 September (see the top of this section)
 /* ⚠ Measured with the tube pre-shifted (below): the glow reads 214–216° from
    8px out — on the logo's navy. */
 
@@ -66,7 +82,7 @@ export const NEON_GLOW_HEX = "#1b4789";
  *
  * ⛔ A CANDIDATE, set by measurement against the logo — Carl's eye decides.
  */
-export const NEON_TUBE_HEX = "#1b2f8a";
+export const NEON_TUBE_HEX = "#f08a30"; // was #1b2f8a (the navy, pre-shifted for ACES) — the room's orange
 
 /**
  * ⚠ `NEON_GLOW_HEX` / `NEON_TUBE_HEX` ARE THE **WALL** PAIR'S (CA, CB) — named
