@@ -93,6 +93,7 @@ import {
 } from "./about-card-glass";
 import { AboutCardMesh } from "./about-card-mesh";
 import { RoomEnvironment } from "./room-environment";
+import { AboutMovingLight, movingLightEnabled, movingLightGlobalOn } from "./about-moving-light";
 import {
   CA_NEON_PEAK,
   CB_NEON_PEAK,
@@ -105,6 +106,7 @@ import {
   neonHex,
   neonMode,
   neonNumber,
+  neonParam,
   type NeonChannel,
 } from "./about-neon";
 import { NeonBloom } from "./neon-bloom";
@@ -656,6 +658,15 @@ export default function AboutCardCanvas() {
     for (const id of ids) byCard[id] = extrudeSettings(id);
     return byCard;
   }, []);
+  /* ⛔⛔ THE TEXT IS HIDDEN — Carl, 25 September 2026 (second session): *"First, hide the text. Lets
+     deal with the card faces."* The light is being worked on the FACES alone. ⚠ Only the letters go:
+     `extrude` stays as it was, so every rim stays off and nothing else about the take changes
+     (`?extrude=0` would have brought the neon back). **`?text=1` shows the text again.** */
+  const showText = useMemo(() => neonParam("text") === "1", []);
+  /* ⛔ THE MOVING LIGHT — ON on plain `/about` (`?lightmove=0` removes it). The static key and fill
+     are OFF under it by default — Carl's experiment, so it is seen alone (ambient kept); `?lmglobal=1` puts
+     them back. See `about-moving-light.tsx`, D-090. */
+  const [movingLight, globalOn] = useMemo(() => [movingLightEnabled(), movingLightGlobalOn()], []);
   /* ⛔ THE RIM UNDER THE TEXT TAKE — Carl, 24 September 2026 (session 2): *"On CB,
      turn off the light but turn on the rim."* When any mounted card's `rim` is on the
      neon mounts as it does on the neon page (`neonMode()`, so `?neon=full|off|<ignite>`
@@ -833,6 +844,8 @@ export default function AboutCardCanvas() {
               ~572ms for a different scene. **2b owes this measurement.** */}
           <RoomEnvironmentFromPlate />
 
+          {movingLight && <AboutMovingLight />}
+
           <ambientLight intensity={0.20} />
 
           {/* ⚠⚠ A STAND-IN KEY. Carl: *"The light will come from the neon rim but
@@ -865,7 +878,7 @@ export default function AboutCardCanvas() {
               sight — see the removal note above `AboutCardCanvas`. **Every one
               measured clean and looked worse. The fix was the light TYPE, and a
               second directional light, not repositioning.** */}
-          <directionalLight position={[1, 2, 2]} intensity={0.5} />
+          <directionalLight position={[1, 2, 2]} intensity={globalOn ? 0.5 : 0} />
 
           {/* ⛔⛔ THE MIRROR — a second directional light for the LEFT pair.
               17 September 2026, Carl: *"can you use another light to mirror it, so
@@ -932,7 +945,7 @@ export default function AboutCardCanvas() {
               come down to stop dominating the left. ⛔ Holding both exactly would
               need a THIRD light aimed only at the right pair. **Not built — Carl
               judges whether the trade is worth it before adding hardware.** */}
-          <directionalLight position={[5, 2, -2]} intensity={2.6} />
+          <directionalLight position={[5, 2, -2]} intensity={globalOn ? 2.6 : 0} />
 
           {/* ⛔ NO PROXY PLANE. An earlier build put one 1.6x the card's size
               behind it, which on `/about` is an OPAQUE SLAB BLACKING OUT THE ROOM.
@@ -997,7 +1010,7 @@ export default function AboutCardCanvas() {
                 the text in for CD and CS."* Depth from ITS measured view angle (the
                 depth rule, `EXTRUDE_DEPTH_MM`); the light scaled as CB's is, but OFF by
                 default (*"Turn all the lights off"*). Alone: `?extrude=cd` (plain `/about` shows all four, static). */}
-            {extrude?.cd && (
+            {showText && extrude?.cd && (
               <CardExtrudedText
                 id="cd"
                 body={aboutCardCopy("CD").body}
@@ -1086,7 +1099,7 @@ export default function AboutCardCanvas() {
               faceReceiveShadow={!!extrude?.cs}
             />
             {/* ⛔ CS'S TEXT — as CD's above. Alone: `?extrude=cs`. */}
-            {extrude?.cs && (
+            {showText && extrude?.cs && (
               <CardExtrudedText
                 id="cs"
                 body={aboutCardCopy("CS").body}
@@ -1157,7 +1170,7 @@ export default function AboutCardCanvas() {
               etch={caEtch}
               faceReceiveShadow={!!extrude?.ca}
             />
-            {extrude?.ca && (
+            {showText && extrude?.ca && (
               <CardExtrudedText
                 id="ca"
                 body={aboutCardCopy("CA").body}
@@ -1192,7 +1205,7 @@ export default function AboutCardCanvas() {
                 ⛔ ONE CARD PER LOAD WAS THE RULE WHILE CB WAS WORKED ON: *"isolate CA text so we can focus on CB."* ⚠ Since the same session plain `/about` shows ALL FOUR, static; `?extrude=cb` isolates CB.
                 *"Just as the text sequence is coming to an end, CB will activate"*
                 is a LATER chunk, once all four cards have text. */}
-            {extrude?.cb && (
+            {showText && extrude?.cb && (
               <CardExtrudedText
                 id="cb"
                 body={aboutCardCopy("CB").body}

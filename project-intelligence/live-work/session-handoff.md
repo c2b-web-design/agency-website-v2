@@ -41,6 +41,12 @@ Changed: `about-card-canvas.tsx`, `about-card-copy.ts`, `app/about/page.tsx`, `d
 ## ⛔⛔ NEXT — WHAT THE FIRST RENDER SHOWED (production build, real GPU, `?guides=1`)
 
 1. ✔ **All four cards sit on their guides** — the scene path and the layout path agree.
+00. ⛔ **SECOND SESSION, 25 SEPTEMBER — THE LIGHT.** Committed `b00f9b8` (room + far fix), pushed. Since then,
+   UNCOMMITTED: text hidden by default (`?text=1`); **the moving light — CARL'S ORBIT (two spots, one fixed ellipse; the strip take superseded) — ON on plain `/about`** (`?lightmove=0` off; trajectory on localhost by default)
+   (`about-moving-light.tsx`); the landing trigger `WALL_BAND` re-derived from the new room. Decisions in D-090's
+   25 September entries (CA first · the light WASHES · one downbeat on landing · slow · the 3D geometry ·
+   legibility first). Plan gate WAIVED by Carl for the light. **Carl judges it MOVING, not from frames.** The downbeat is PARKED (trigger kept, not consulted — Carl); the trajectory shows by default (localhost). Carl: the orbit "great"; RANDOM REVERSALS at the two lulls built (lmrev 0.5); STATIC LIGHTS OFF by default as his experiment (lmglobal=1 restores). Later, with text: dim at points so it does not blow out the text. CARL (noted, WAITS): it blows out at points — esp. the BOTTOM of the orbit (CD face-on) — needs a gently FADED, TIMED drop there; the white colour waits on his rim-colour idea (do not pre-empt). Cone 40° "looks good". Committed at the end of this stretch.
+   `chunk-scope.json` = `about-moving-light`. Server on :3000 (production build) — stop by PID before a checkpoint.
 0. ✔ **FIXED, second session 25 September — ITEMS 2 AND 3 BELOW WERE ONE CAUSE:** `far` = 100 clipped the
    proxy's far plane (102–106 m), so WebGL drew nothing above plate row 0.56; the DOM `<img>` showed through
    (the seam) and CA/CB/CS's glass refracted a 50%-white clear. `far` is now DERIVED (`CAMERA_FAR`). All four

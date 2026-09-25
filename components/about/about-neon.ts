@@ -16,7 +16,7 @@
  */
 
 import * as THREE from "three";
-import { GUIDE_CA_QUAD, GUIDE_CB_QUAD } from "./about-card-geometry";
+import { ROOM_CARD_GUIDES } from "./about-room";
 
 // ── Colour ──────────────────────────────────────────────────────────────────
 
@@ -419,11 +419,20 @@ if (process.env.NODE_ENV !== "production") {
 /**
  * ⛔⛔ WHERE CA AND CB SIT ON THE CANVAS, as fractions of its box — DERIVED from
  * the two cards' solved corner quads, not typed. ⚠ The canvas box IS the plate
- * (`aspect-[3/2]`, `object-contain` geometry), so plate fractions are canvas
+ * (the plate's own aspect — 2560/1435 in the new room; *corrected in place:* this
+ * read `aspect-[3/2]`, the old photograph's), so plate fractions are canvas
  * fractions. **One source of truth: if the cards move, the trigger moves with
  * them.**
+ *
+ * ⛔⛔ CORRECTED 25 September 2026 (second session) — IT STILL READ THE OLD ROOM. The room swap (D-095)
+ * moved the cards and left this on `GUIDE_CA_QUAD`/`GUIDE_CB_QUAD`, the OLD photograph's quads: a band
+ * at canvas y 0.116–0.382 while the new wall pair sits at **y 0.307–0.559** — so "in full view" fired
+ * with CA and CB still half off the bottom of the window. ⚠ **The sentence above was true and its
+ * import was not: "one source of truth" held only for the room it was written in.** Now derived from
+ * the new room's own outlines, `ROOM_CARD_GUIDES` (the cards' rims, as the layout projected them).
+ * ⚠ It is the LANDING — the neon's ignition, the text's clock, and the moving light's downbeat.
  */
-const WALL_POINTS = [...GUIDE_CA_QUAD, ...GUIDE_CB_QUAD];
+const WALL_POINTS = [...ROOM_CARD_GUIDES.CA, ...ROOM_CARD_GUIDES.CB].map(([x, y]) => ({ x, y }));
 export const WALL_BAND = {
   left: Math.min(...WALL_POINTS.map((p) => p.x)),
   right: Math.max(...WALL_POINTS.map((p) => p.x)),
