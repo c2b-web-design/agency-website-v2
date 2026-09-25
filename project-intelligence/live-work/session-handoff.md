@@ -85,6 +85,22 @@ turns out to be needed.)
 
 ## ⚠ PARKED / WAITING ON CARL — DO NOT PRE-EMPT
 
+- ⛔⛔ **THE ROOM DOES NOT FILL THE VIEWPORT — "looming on the horizon".** Carl, end of the third session: *"i have a
+  problem and its been bugging me all day. We had the same in the old scene. The image doesnt fill the viewport. We
+  got creative in the old scene and solved it. This new scene is a lot more difficult. Parked, but its looming on
+  the horizon."* ⚠ **The facts:** the plate is **1.784:1** (`ROOM_PLATE_ASPECT`, `room-plate.tsx` centres it at its
+  own aspect); Carl's viewport is ~1412 × 700 CSS = **2.02:1**, so black bands sit left and right (visible in every
+  frame this session, ~100 device px each side at 1920). **The old scene's fix:** `components/about/pillarbox-plate.tsx`
+  (kept, unused — its bands are cut from the OLD photo): bands built from the picture's OWN last pixel column,
+  extended outwards, so the join is exact by construction; Carl's method was chunked (*"Just fill them up, lets see
+  what weve got to work with"*), and the right band became wall that later mattered (D-093's *"happy accident"*).
+  ⚠ **Why the new scene is harder (Builder's observation, not measured):** its edges are not a dark, near-uniform
+  wall — the left is the bookcase and its objects, the right the orange-lit side wall and curtain, and the LED strip
+  and ceiling cove run to the frame edge. **Do not start it unasked.**
+  ⛔ **Carl's read, the same exchange:** *"The right side is easier to duplicate and solve, its the left side that
+  will test us. Its parked for now but at the back of my mind."* — the right (plain lit wall) is the easier band;
+  the LEFT (the bookcase and its objects) is the hard one.
+
 - **Static key/fill OFF vs legibility-first** — now MEASURABLE with all text on: under the static rig the text stood
   40–46 luma off the glass, under ambient alone 10–21 (before the rims lit). ⛔ D-090 says *"The text must read
   fully under the static light alone."* Re-judge with the blowout check.
