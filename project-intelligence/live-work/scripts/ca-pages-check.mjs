@@ -1,0 +1,13 @@
+import { chromium } from "playwright";
+const browser = await chromium.launch({ headless: false, args: ["--enable-gpu", "--use-angle=default", "--ignore-gpu-blocklist"] });
+const page = await browser.newPage({ viewport: { width: 1412, height: 700 }, deviceScaleFactor: 1.36 });
+await page.goto("http://localhost:3000/about#roles", { waitUntil: "networkidle" });
+const c = page.locator("canvas").first(); await c.waitFor({ state: "visible", timeout: 20000 });
+await page.waitForTimeout(6000);
+const box = await c.boundingBox();
+const marks = await page.evaluate(() => ({ textStart: performance.getEntriesByName("extrude:start:ca").length, downbeat: performance.getEntriesByName("movinglight:downbeat").length }));
+await page.screenshot({ path: "project-intelligence/live-work/screenshots/moving-light/ca-pages-6s.png", clip: box });
+await page.waitForTimeout(14000);
+await page.screenshot({ path: "project-intelligence/live-work/screenshots/moving-light/ca-pages-20s.png", clip: box });
+console.log(JSON.stringify(marks));
+await browser.close();

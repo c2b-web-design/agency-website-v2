@@ -41,6 +41,7 @@ Changed: `about-card-canvas.tsx`, `about-card-copy.ts`, `app/about/page.tsx`, `d
 ## ⛔⛔ NEXT — WHAT THE FIRST RENDER SHOWED (production build, real GPU, `?guides=1`)
 
 1. ✔ **All four cards sit on their guides** — the scene path and the layout path agree.
+000. ⛔ **CA's TEXT (later the same session):** only CA shows text (`?text=`); the pages run (the D-094 chase), SENTENCE easing (floor 0.6 over 1.5 words), 68 mm, **balanced line breaking by default**; CA's copy EDITED by Carl's options (the em dash out, "is", "didn’t"…) — Carl: *"That looks a lot better."* The text clock's landing trigger is PARKED like the light's. Font re-subset for "’". Details: the D-095 tail of decisions.md. ⚠ CD/CS still carry em dashes; CB/CD/CS text to be fitted.
 00. ⛔ **SECOND SESSION, 25 SEPTEMBER — THE LIGHT.** Committed `b00f9b8` (room + far fix), pushed. Since then,
    UNCOMMITTED: text hidden by default (`?text=1`); **the moving light — CARL'S ORBIT (two spots, one fixed ellipse; the strip take superseded) — ON on plain `/about`** (`?lightmove=0` off; trajectory on localhost by default)
    (`about-moving-light.tsx`); the landing trigger `WALL_BAND` re-derived from the new room. Decisions in D-090's

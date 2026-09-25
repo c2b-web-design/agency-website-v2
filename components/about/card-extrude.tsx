@@ -1,7 +1,7 @@
 "use client";
 
 /* ⛔⛔ THE EXTRUDED CARD TEXT — THE "DRY" TAKE. D-094, 24 September 2026. ALL FOUR
-   CARDS, ALL FOUR AT ONCE AND STATIC ON PLAIN `/about` (`extrudeCards`, `still`). ⚠ *Corrected in place:* this read "CA ONLY", then "CA AND
+   CARDS, ALL FOUR MOUNTED; ⚠ *corrected in place, 25 September (second session):* this read "AND STATIC ON PLAIN `/about`" — now only CA SHOWS (`?text=`, the canvas) and its pages RUN (`still` defaults false). ⚠ *Corrected in place:* this read "CA ONLY", then "CA AND
    CB"; CD and CS joined later in session 2. CB joined in session 2 the same
    day — Carl: *"Same text size, same type of text. Same reveal… The only
    difference being is that CB has more words."* ⛔ It was ONE CARD PER LOAD (the selector is now `extrudeCards`):
@@ -41,7 +41,7 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { neonHex, neonNumber, neonParam, wallCardsInView } from "./about-neon";
 import { faceBaseZ, faceDome } from "./about-card-mesh";
 import type { CardDims } from "./about-card-geometry";
-import { chase, eraseLag, setJustified, type Chase, type LineState, type SetLine } from "./card-text-timeline";
+import { chase, easeCostMs, eraseLag, sentenceEnds, setBalanced, setJustified, type Chase, type LineState, type SetLine } from "./card-text-timeline";
 
 // ── Candidates ──────────────────────────────────────────────────────────────
 
@@ -55,6 +55,10 @@ export type ExtrudeSettings = {
   depthMm: number;
   wpm: number;
   lead: number;
+  /** Sentence easing: the speed AT a sentence boundary (fraction of the pace; 1 = off). */
+  easeFloor: number;
+  /** Sentence easing: words either side of a boundary over which the speed ramps. */
+  easeWords: number;
   restMs: number;
   blockW: number;
   blockH: number;
@@ -198,13 +202,25 @@ export function extrudeSettings(card: ExtrudeCardId): ExtrudeSettings {
   return {
     light: switchParam("textlight", EXTRUDE_SWITCHES[card].light),
     rim: switchParam("textrim", EXTRUDE_SWITCHES[card].rim),
-    /* ⛔ STATIC BY DEFAULT — Carl, 24 September 2026 (session 2): *"make visible all
+    /* ⚠ SUPERSEDED 25 September (below) — was: ⛔ STATIC BY DEFAULT — Carl, 24 September 2026 (session 2): *"make visible all
        the text in each card but make them static for now… so that there is a lot of
        text on each card to judge."* ⚠ At 52 mm no card holds its whole copy (CA: 10
        lines, 6 slots), so "all the text" is read as A FULL FIRST PAGE: every slot
        filled with the copy's first lines. `?textstatic=0` runs the pages again. */
-    still: switchParam("textstatic", true),
-    emMm: neonNumber("textem", 52, 20, 120),
+    /* ⛔⛔ THE PAGES RUN AGAIN — Carl, 25 September 2026 (second session), on CA in the new room: *"We
+       should make it text reveal like it did in the old scene. That means we can make the text a bit
+       bigger."* (No rewording: *"No rewording is neccersary."*) ⚠ The static first page hid CA's last two
+       lines — its KEEP-LINE among them — so the chase is now the default; `?textstatic=1` holds the first
+       page again for judging. */
+    still: switchParam("textstatic", false),
+    /* ⛔ 52 → 60 mm, the same day: *"we can make the text a bit bigger."* A take (+15%). On the new CA's
+       face (block 1140 × 617 mm) 60 mm gives **7 slots** (52 gave 8; the old room's 6). ⚠ Carl ruled on
+       24 September that CB uses CA's size (*"Same text size"*), so this is every card's default. */
+    /* ⛔ 60 → 68 mm, the same day, WITH CA's copy edited to fit (Carl's options — `about-card-copy.ts`): the
+       search over all 128 edit combinations × 52–74 mm put CA at **12 lines in 6 slots — two FULL pages —
+       widest justified gap 2.82×** (60 mm on the old copy: 7.15×). ⚠ Fitted to CA; CB/CD/CS are re-fitted
+       when their text returns (Carl: *"CA first"*). */
+    emMm: neonNumber("textem", 68, 20, 120),
     /* ⛔ PER CARD — CB 3 → 1.5 mm, 24 September 2026 (session 2). Carl: *"CA and CB
        are at different angles to the user, the text shouldnt be at the same
        extruded height. It should be slightly smaller."* MEASURED: CB is seen at
@@ -221,6 +237,14 @@ export function extrudeSettings(card: ExtrudeCardId): ExtrudeSettings {
        the first line ran ~3x the pace, and at the start page's speed the whole
        reveal is one pace. `?textlead=0.35` restores it. */
     lead: neonNumber("textlead", 1, 0.1, 1),
+    /* ⛔ EASING AT THE SENTENCES — Carl, 25 September 2026: *"Use ease in and out at the start and end of
+       every sentence. Be subtle."* A take for his eye (*"This is not an exact science"*): the speed dips to
+       0.6 of the pace AT each sentence boundary over 1.5 words either side. MEASURED on CA's copy (65 words,
+       four sentences, 22.8 s plain): **~0.24 s per boundary; ~1.2 s over the write, ~2.0 s over the whole cycle (the erase eases too) — +5%**. The table Carl was given
+       (per boundary): floor 0.8 → 0.07–0.20 s · 0.7 → 0.11–0.33 · 0.6 → 0.16–0.49 · 0.5 → 0.23–0.69 ·
+       0.4 → 0.32–0.97 (over 1–3 words). `?texteasefloor=1` turns it off. See `card-text-timeline.ts`. */
+    easeFloor: neonNumber("texteasefloor", 0.6, 0.1, 1),
+    easeWords: neonNumber("texteasewords", 1.5, 0, 6),
     /* ⛔ 0: Carl — *"Only when the last word has disappeared then start the cycle
        again."* The next pass begins as the card empties. `?textrest=` adds a pause. */
     restMs: neonNumber("textrest", 0, 0, 10_000),
@@ -270,6 +294,16 @@ function loadFont(): Promise<Font> {
   }
   return fontLoad;
 }
+/** ⛔ The text's clock waits on the landing trigger only when this is true — PARKED, see the clock below. */
+const TEXT_START_ON_LANDING = false;
+
+/** Any part of the canvas inside the window, in a visible tab. */
+function canvasOnScreen(el: Element): boolean {
+  if (typeof document === "undefined" || document.visibilityState !== "visible") return false;
+  const r = el.getBoundingClientRect();
+  return r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth;
+}
+
 /** How far the letters' backs sink into the face, so the dome's curvature under
     a glyph never opens a gap. */
 const SINK_MM = 0.3;
@@ -350,7 +384,14 @@ export function CardExtrudedText({
 
       const blockW = dims.faceWidthMm * s.blockW;
       const blockH = dims.faceHeightMm * s.blockH;
-      const { lines, widestGap, overlong } = setJustified(body.split(/\s+/).filter(Boolean), widthOf, space, blockW);
+      /* ⛔ THE LINE BREAKER — BALANCED BY DEFAULT since 25 September 2026: the paragraph's breaks set
+         together, weak line-endings penalised (`setBalanced`). Carl, on CA set this way: *"That looks a lot
+         better."* `?textbreak=greedy` restores the old line-by-line setter for comparison. */
+      const words = body.split(/\s+/).filter(Boolean);
+      const balanced = neonParam("textbreak") !== "greedy";
+      const { lines, widestGap, overlong } = balanced
+        ? setBalanced(words, widthOf, space, blockW)
+        : setJustified(words, widthOf, space, blockW);
       const lh = s.emMm * s.lineHeight;
       const slots = Math.floor(blockH / lh);
       if (slots < 3) {
@@ -380,16 +421,21 @@ export function CardExtrudedText({
         return;
       }
 
+      const wordsPerLine = lines.map((l) => l.words.length);
+      const sentenceEase = { sentenceEnds: sentenceEnds(lines), floor: s.easeFloor, words: s.easeWords };
       const ch = chase(
-        lines.map((l) => l.words.length),
+        wordsPerLine,
         { wpm: s.wpm, lead: s.lead, restMs: s.restMs, slots, lag: eraseLag(slots) },
+        sentenceEase,
       );
+      const easeCost = easeCostMs(wordsPerLine, s.wpm, sentenceEase);
       const tris = flat.reduce((a, g) => a + g.attributes.position.count / 3, 0);
       console.info(
         `${id} extrude: ${lines.length} lines, ${slots} slots, erase ${eraseLag(slots)} lines behind · ` +
           `${s.emMm}mm, depth ${s.depthMm}mm, ${Math.round(tris).toLocaleString()} tris · ` +
           `pass ${(ch.periodMs / 1000).toFixed(1)}s at ${s.wpm} wpm (rest ${s.restMs}ms), grace ${(ch.graceMs / 1000).toFixed(1)}s · ` +
-          `widest gap ${widestGap.toFixed(2)}x a space (greedy, last line left — provisional)` +
+          `sentence ease ${s.easeFloor} over ${s.easeWords} words: +${(easeCost.perBoundaryMs / 1000).toFixed(2)}s a boundary, +${(easeCost.perPassMs / 1000).toFixed(1)}s over the write (the erase adds its own) · ` +
+          `widest gap ${widestGap.toFixed(2)}x a space (${balanced ? "balanced" : "greedy"}, last line left — provisional)` +
           (ch.clipped ? ` · ⛔ ${ch.clipped} erase(s) cut short to free a slot` : ""),
       );
       if (overlong.length) console.error(`⛔ ${id.toUpperCase()} EXTRUDED TEXT: words wider than the block ${JSON.stringify(overlong)} — nothing trimmed.`);
@@ -401,7 +447,7 @@ export function CardExtrudedText({
       cancelled = true;
       flat.forEach((g) => g.dispose());
     };
-  }, [id, body, dims.faceWidthMm, dims.faceHeightMm, s.emMm, s.depthMm, s.wpm, s.lead, s.restMs, s.blockW, s.blockH, s.lineHeight]);
+  }, [id, body, dims.faceWidthMm, dims.faceHeightMm, s.emMm, s.depthMm, s.wpm, s.lead, s.easeFloor, s.easeWords, s.restMs, s.blockW, s.blockH, s.lineHeight]);
 
   // ── The slots: N meshes, each with its own clipping pair ──
   type Slot = { mesh: THREE.Mesh; mat: THREE.MeshStandardMaterial; reveal: THREE.Plane; erase: THREE.Plane; key: string };
@@ -459,11 +505,18 @@ export function CardExtrudedText({
   }, [invalidate, lightDistanceMm, s.light]);
 
   // ── The clock: starts once, when the wall cards are in view (D-092's check) ──
+  /* ⛔⛔ PARKED — Carl, 25 September 2026: the landing trigger *"is still going to be used but its going to
+     be changed. Dont delete or remove it, just make sure it has no impact at the moment."* With the pages
+     running again it WOULD have an impact, so while `TEXT_START_ON_LANDING` is false the clock starts as
+     soon as the canvas is on screen — as the moving light does. The trigger code is KEPT; flip the switch
+     when the reworked trigger lands. */
   const startRef = useRef<number | null>(null);
   useEffect(() => {
     if (!built) return;
+    const ready = () =>
+      TEXT_START_ON_LANDING ? wallCardsInView(gl.domElement) : canvasOnScreen(gl.domElement);
     const check = () => {
-      if (startRef.current === null && wallCardsInView(gl.domElement)) {
+      if (startRef.current === null && ready()) {
         startRef.current = performance.now();
         performance.mark(`extrude:start:${id}`);
         invalidate();

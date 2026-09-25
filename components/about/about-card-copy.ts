@@ -49,8 +49,32 @@ export const ABOUT_CARD_COPY: readonly AboutCardCopy[] = [
     id: "CA",
     role: "The Architect",
     position: "wall-left",
-    body: "The technical foundation of every project. Operating directly inside the development environment, the Architect collaborates on feature design, evaluates system logic, and solves structural problems before a single line of production code is written. High-level ideas are broken down into precise, modular components — a clear blueprint the Builder can execute exactly. And the work is then checked by someone who did not do it.",
-    keepLine: "the work is then checked by someone who did not do it",
+    /* ⛔⛔ EDITED BY CARL'S OPTIONS, 25 September 2026 (second session), to FIT the card: *"We have the option
+       of inserting 'is' between project and operating. Lose the full stop. Put it at the end of environment.
+       We could lose 'evaluates'. Modular is optional. The hyphen [the em dash] must definately go, if anything
+       screams AI its that. can execute can be executes. Exactly can be precisely. And can go. did not for
+       didnt… Use one or all. Your discression. Goal is to make it fit in the best possible way."*
+       ⚠ CHOSEN BY MEASUREMENT: all 128 combinations set with the real font at 52–74 mm. **This one, at 68 mm,
+       sets as two FULL pages of 6 lines, widest justified gap 2.82× a space** (the old copy at 60 mm: 12 lines
+       in 7 slots, 7.15×). A dozen combinations tie; of those, "evaluates" is KEPT (dropping it needed words
+       added to stay grammatical) and "exactly" is KEPT ("precise components… executes precisely" repeats).
+       Used: "is" + the full stop moved, "modular" out, the em dash out, "executes", "And" out, "didn’t".
+       ⚠ "’" is the typographic apostrophe — the extruded font is re-subset to include it
+       (`scripts/build-geist-typeface.mjs`). ⚠ The KEEP-LINE follows the body (it must appear verbatim).
+       Was: "The technical foundation of every project. Operating directly inside the development environment,
+       the Architect collaborates on feature design, evaluates system logic, and solves structural problems
+       before a single line of production code is written. High-level ideas are broken down into precise,
+       modular components — a clear blueprint the Builder can execute exactly. And the work is then checked by
+       someone who did not do it." */
+    /* ⛔⛔ REVISED THE SAME DAY WITH BALANCED BREAKS (`setBalanced`, now the default) — Carl, on seeing it laid
+       out: *"That looks a lot better."* "evaluates" OUT (with the Builder's grammatical repair *"design and
+       system logic, and solves"*) and "can execute" KEPT (with "executes", line 10 opens to 4.59×). At 68 mm:
+       12 lines in 6 slots, widest gap 2.82×, ONE weak line-ending (was 5), and **page 1 ends on a full
+       sentence** — *"…line of production code is written."* — with page 2 opening *"High-level ideas…"*.
+       The version above this one read "…design, evaluates system logic, and solves… the Builder executes
+       exactly." */
+    body: "The technical foundation of every project is operating directly inside the development environment. The Architect collaborates on feature design and system logic, and solves structural problems before a single line of production code is written. High-level ideas are broken down into precise components, a clear blueprint the Builder can execute exactly. The work is then checked by someone who didn’t do it.",
+    keepLine: "The work is then checked by someone who didn’t do it",
   },
   {
     id: "CB",
