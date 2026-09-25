@@ -107,12 +107,13 @@ export type ExtrudeSettings = {
    four `rim: true` → the D-093 neon and its ignition, as built in the old room. `?textrim=0` puts them out.
    The per-card SPOT (`light`) stays off — the moving light is the room's light now.
    ⛔ CD AND CS OFF AGAIN, the same session — Carl, on seeing all four lit: *"First of all, all the rim colours
-   must change. Tyrn off CD + CS for now."* The wall pair stays lit to work the colour on. */
+   must change. Tyrn off CD + CS for now."* The wall pair stays lit to work the colour on.
+   ⛔ CD AND CS ON AGAIN, the same session, in their new GRADIENT (gold ↔ red, mirrored — `FLOOR_GRADIENT_*`). */
 const EXTRUDE_SWITCHES: Record<ExtrudeCardId, { light: boolean; rim: boolean }> = {
   ca: { light: false, rim: true },
   cb: { light: false, rim: true },
-  cd: { light: false, rim: false },
-  cs: { light: false, rim: false },
+  cd: { light: false, rim: true },
+  cs: { light: false, rim: true },
 };
 
 /**

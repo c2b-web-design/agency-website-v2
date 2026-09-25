@@ -99,8 +99,9 @@ import {
   CB_NEON_PEAK,
   CD_NEON_PEAK,
   CS_NEON_PEAK,
-  FLOOR_NEON_GLOW_HEX,
-  FLOOR_NEON_TUBE_HEX,
+  FLOOR_GRADIENT_GOLD_HEX,
+  FLOOR_GRADIENT_RED_HEX,
+  FLOOR_GRADIENT_BLEND,
   NEON_GLOW_HEX,
   NEON_TUBE_HEX,
   neonHex,
@@ -235,7 +236,9 @@ function textCardsFromUrl(): Set<ExtrudeCardId> {
      orange: *"Put the static text back on CA + CB."* (Before: NONE — *"Hide all the text on the cards"*, once the
      blowout dips were in; before that all four static, to find the blowout; before that one card at a time.)
      `?text=1` shows all four; a list (`?text=cd`) isolates; `?text=0` hides all. */
-  if (v === null) return new Set<ExtrudeCardId>(["ca", "cb"]);
+  /* ⛔ AND CD + CS — Carl, the same session, once the floor pair's gradient rims and grow-flicker were in: *"Put
+     static text back on CS + CS"* (read as CD + CS). All four now, static. */
+  if (v === null) return new Set<ExtrudeCardId>(all);
   if (v === "1" || v === "all") return new Set(all);
   if (v === "0") return new Set<ExtrudeCardId>();
   return new Set(all.filter((id) => v.split(",").includes(id)));
@@ -693,7 +696,7 @@ export default function AboutCardCanvas() {
      new 805 × 1332 mm: the face is the same width to 0.6% (the SAME words per line at 52 mm) and 44%
      taller (**8 lines, was 6**). ⚠ The depth rule re-checked in the new room: CA is seen at 15.7 / 7.1 /
      10.8° (was 23.7 / 12.1 / 4.0°), so 3 mm leaves a worst side wall of **19%** (was 29%) — kept.
-     `?text=` : absent → CA + CB, static (the third session, with the orange rims; before: none, then all four static, then CS, CD, CB, CA alone in turn) · `1`/`all` → all four · `0` → none · a list (`ca,cb`) → those. */
+     `?text=` : absent → ALL FOUR, static (end of the third session, with every rim lit; before: CA + CB, none, all four, then CS, CD, CB, CA alone in turn) · `1`/`all` → all four · `0` → none · a list (`ca,cb`) → those. */
   const textCards = useMemo(() => textCardsFromUrl(), []);
   /* ⛔ THE MOVING LIGHT — ON on plain `/about` (`?lightmove=0` removes it). The static key and fill
      are OFF under it by default — Carl's experiment, so it is seen alone (ambient kept); `?lmglobal=1` puts
@@ -732,16 +735,20 @@ export default function AboutCardCanvas() {
        the wall pair went ORANGE (25 September) the two are the same hex — kept as
        two channels, so a split stays one constant away. */
     const wall = { glow: neonHex(NEON_GLOW_HEX), tube: neonHex(NEON_TUBE_HEX, "neontube") };
-    const floor = {
-      glow: neonHex(FLOOR_NEON_GLOW_HEX, "floorhex"),
-      tube: neonHex(FLOOR_NEON_TUBE_HEX, "floortube"),
-    };
+    /* ⛔ THE FLOOR PAIR IS A GRADIENT (`FLOOR_GRADIENT_*`, Carl, 25 September 2026): the channel's own colours
+       are WHITE carriers and the hue rides on the rim's vertices, side to side. MIRRORED — CS gold → red,
+       CD red → gold. */
+    const gold = new THREE.Color(neonHex(FLOOR_GRADIENT_GOLD_HEX, "goldhex"));
+    const red = new THREE.Color(neonHex(FLOOR_GRADIENT_RED_HEX, "redhex"));
+    const blend = neonNumber("gradblend", FLOOR_GRADIENT_BLEND, 0.02, 1);
+    const floor = { glow: "#ffffff", tube: "#ffffff" };
     const make = (
       id: NeonChannel["id"],
       pair: { glow: string; tube: string },
       peak: number,
       /** ⚠ Only the wall pair's channels carry the etch's depth; the floor pair's is 0. */
       etch?: { settings: EtchSettings },
+      gradient: NeonChannel["gradient"] = null,
     ): NeonChannel => ({
       id,
       color: new THREE.Color(pair.glow),
@@ -753,12 +760,13 @@ export default function AboutCardCanvas() {
       /* ⛔ MATCHED TO THE RIM AS SEEN — see `ETCH_GLOW_HEX`. */
       textColor: new THREE.Color(etch ? etch.settings.glowHex : pair.tube),
       textDepth: etch ? etch.settings.glowDepth : 0,
+      gradient,
     });
     return [
       make("ca", wall, neonNumber("neonca", CA_NEON_PEAK, 0, 200), caEtch),
       make("cb", wall, neonNumber("neoncb", CB_NEON_PEAK, 0, 200), cbEtch),
-      make("cd", floor, neonNumber("neoncd", CD_NEON_PEAK, 0, 200)),
-      make("cs", floor, neonNumber("neoncs", CS_NEON_PEAK, 0, 200)),
+      make("cd", floor, neonNumber("neoncd", CD_NEON_PEAK, 0, 200), undefined, { left: red, right: gold, blend }),
+      make("cs", floor, neonNumber("neoncs", CS_NEON_PEAK, 0, 200), undefined, { left: gold, right: red, blend }),
     ];
   }, [caEtch, cbEtch]);
   /* ⚠ `?neon=none` passes NO channel, so every card takes the exact pre-neon

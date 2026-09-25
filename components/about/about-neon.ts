@@ -111,6 +111,32 @@ export const FLOOR_NEON_GLOW_HEX = "#18a6bd";
  */
 export const FLOOR_NEON_TUBE_HEX = "#18a6bd";
 
+/**
+ * ⛔⛔ THE FLOOR PAIR'S GRADIENT — Carl, 25 September 2026 (third session). The teal is superseded (*"all the
+ * rim colours must change"*). Carl: *"CD + CS do not have to be the same colour. Everything in the scene so far
+ * is complimentary. The colours must be different and not jarring."* Then, with three reference frames of neon
+ * rectangles blending one colour into another: *"If the colours are related a way to break up the monotony is
+ * something like this. Im looking at the colour distribution, not the colours themselves. Make both cards mirror
+ * images of themselves."* Chosen: **side to side**, and **gold ↔ red** — the two ends of the room strip's own
+ * cross-section (its gold inner edge ~40°, its red-orange outer glow deepening toward the floor's crimson), with
+ * the orange wall pair between them.
+ *
+ *   CS  gold (left) → red (right)        CD  red (left) → gold (right)     — a mirror across the room
+ *
+ * ⚠ STARTING TAKES, not settled: `?goldhex=` / `?redhex=` (no `#`) sweep them live. The FLOOR_NEON_* hexes above
+ * are no longer read by the floor channels (history).
+ *
+ * ⛔ MEASURED, same session (`live-work/scripts/floor-gradient-sample.mjs`, frames `live-work/screenshots/
+ * rim-orange-25-september/`): the first take (`#f2a01e` ↔ `#d42a1c`) read only 26° → 15° along the glow — inside
+ * the wall pair's orange, no break in the monotony. ACES whitens the core and the bloom mixes with the room's
+ * orange, so BOTH ENDS ARE PULLED TO THE MIDDLE; the inputs must start wider. **`#ffd21a` ↔ `#e0103c` at peak 4**
+ * reads gold at one end and a pink-red at the other, close up. Peak 1.8 (the teal's) was too dim for these hues.
+ */
+export const FLOOR_GRADIENT_GOLD_HEX = "#ffd21a";
+export const FLOOR_GRADIENT_RED_HEX = "#e82000"; // was #e0103c — its blue read PINK once the core whitened (Carl: "it looks pink")
+/** Width of the blend in the middle, a fraction of the card; each half holds its own colour outside it. `?gradblend=`. */
+export const FLOOR_GRADIENT_BLEND = 0.3;
+
 // ── Intensity — TWO DIALS, NOT ONE (Architect F10) ──────────────────────────
 
 /**
@@ -151,8 +177,9 @@ export const CB_NEON_PEAK = 6;
  * ~8–10px across on screen; compare from 16px out. ⛔ **Candidate — Carl judges
  * the whole scene.**
  */
-export const CD_NEON_PEAK = 1.8;
-export const CS_NEON_PEAK = 1.8;
+/* ⛔ 4 → 1.5 — Carl, 25 September 2026 (third session): "When it first flickers on, that state there, the distribution is a lot better. Thats what i had in mind. Its only as it gains in intensity that it seems to lose that." MEASURED (`floor-gradient-sample.mjs`): ACES whitens the CORE as the peak climbs, and both halves' cores converge — at 4 the red half's core read #fff18e (pale yellow), at 1.5 #ffa54a (orange-red) against the gold half's #ffff57. At 1.5 the COLOUR lives in the tube, not only the glow. `?neoncd=` / `?neoncs=` (1 is more saturated still, and dimmer). Was 1.8 (the teal's), then 4. */
+export const CD_NEON_PEAK = 1.5;
+export const CS_NEON_PEAK = 1.5;
 
 // ── Bloom ───────────────────────────────────────────────────────────────────
 
@@ -309,6 +336,11 @@ export function maxRisesPerSecond(schedules: NeonSchedule[]): number {
  *
  *   dark 700ms → blip 0.6 → drop → blip 0.5 → an unstable dim 0.12 → ramps to
  *   full at ~1.77s and holds.    Rises at 700, 900, 1770 ms: ≤2 in any second.
+ *
+ * ⛔ A FLICKER IN THE GROW — Carl, 25 September 2026 (third session): *"It goes — flicker flicker pause grows in
+ * intensity. As it grows can you put another flicker in?"* The grow no longer runs straight to full: it climbs
+ * to 0.6, DIPS to 0.18 for 60ms, then climbs on to full. Rises now at 700, 900, 1770, 1990 ms — still ≤2 in
+ * any second. (Was: `{ ms: 180, to: 1, ramp: true }` after the pause.)
  */
 const CA_IGNITION: NeonPattern = {
   segments: [
@@ -317,7 +349,9 @@ const CA_IGNITION: NeonPattern = {
     { ms: 140, to: 0.08 },
     { ms: 50, to: 0.5 },
     { ms: 820, to: 0.12 },
-    { ms: 180, to: 1, ramp: true },
+    { ms: 160, to: 0.6, ramp: true },
+    { ms: 60, to: 0.18 },
+    { ms: 200, to: 1, ramp: true },
   ],
   tail: { hold: true },
 };
@@ -326,6 +360,9 @@ const CA_IGNITION: NeonPattern = {
  * ⛔ CB FOLLOWS, WITH ITS OWN CHARACTER — a shorter first blip, a longer gap —
  * so the pair does not read as one pattern copied. Rises at 300, 560, 1390 ms
  * of its own clock.
+ *
+ * ⛔ A FLICKER IN THE GROW, as CA (Carl, same day) — with CB's own timing: climb to 0.6, dip to 0.2 for 60ms,
+ * on to full. Rises now at 300, 560, 1390, 1630 ms of its own clock. (Was: `{ ms: 220, to: 1, ramp: true }`.)
  */
 const CB_IGNITION: NeonPattern = {
   segments: [
@@ -334,6 +371,8 @@ const CB_IGNITION: NeonPattern = {
     { ms: 220, to: 0 },
     { ms: 70, to: 0.7 },
     { ms: 760, to: 0.15 },
+    { ms: 180, to: 0.6, ramp: true },
+    { ms: 60, to: 0.2 },
     { ms: 220, to: 1, ramp: true },
   ],
   tail: { hold: true },
@@ -346,6 +385,11 @@ const CB_IGNITION: NeonPattern = {
  * Builder's; Carl has named only CA first, and only as an example.
  *
  * CD: rises at 500, 720, 1500 ms of its own clock. CS: 350, 600, 1450.
+ *
+ * ⛔ THE GROW-FLICKER ROLLED OUT — Carl, 25 September 2026 (third session), on the wall pair's: *"That looks
+ * fantastic. More natural and realistic. Roll it out to CD + CS."* Each with its own timing: CD climbs to 0.6,
+ * dips to 0.15 for 60ms, on to full; CS to 0.6, dips to 0.2 for 60ms, on. Rises now CD 500, 720, 1500, 1730;
+ * CS 350, 600, 1450, 1700. (Was: one straight ramp to full after the pause.)
  */
 const CD_IGNITION: NeonPattern = {
   segments: [
@@ -354,7 +398,9 @@ const CD_IGNITION: NeonPattern = {
     { ms: 170, to: 0.05 },
     { ms: 60, to: 0.6 },
     { ms: 720, to: 0.1 },
-    { ms: 200, to: 1, ramp: true },
+    { ms: 170, to: 0.6, ramp: true },
+    { ms: 60, to: 0.15 },
+    { ms: 210, to: 1, ramp: true },
   ],
   tail: { hold: true },
 };
@@ -365,7 +411,9 @@ const CS_IGNITION: NeonPattern = {
     { ms: 205, to: 0 },
     { ms: 80, to: 0.65 },
     { ms: 770, to: 0.15 },
-    { ms: 240, to: 1, ramp: true },
+    { ms: 190, to: 0.6, ramp: true },
+    { ms: 60, to: 0.2 },
+    { ms: 230, to: 1, ramp: true },
   ],
   tail: { hold: true },
 };
@@ -374,10 +422,15 @@ const CS_IGNITION: NeonPattern = {
  * ⚠ THE STARTS ARE SPACED SO NO SECOND HOLDS MORE THAN TWO RISES ACROSS ALL FOUR
  * CARDS. Absolute rise times, ms after the trigger:
  *
- *     CA   700   900  1770
- *     CB  2900  3160  3990        (CB's first lands >1s after CA's last)
- *     CD  4900  5120  5900
- *     CS  6750  7000  7850        → all four hold by ~8.1s
+ *     CA   700   900  1770  1990   (the last: the flicker in the grow, 25 September)
+ *     CB  2900  3160  3990  4230   (CB's first lands >1s after CA's last)
+ *     CD  5300  5520  6300  6530   (was 4900 — see below)
+ *     CS  7300  7550  8400  8650   → all four hold by ~8.9s (was ~8.1s)
+ *
+ * ⚠ THE FLOOR PAIR STARTS LATER since the grow-flicker (25 September): at the old 4400 CB's new rise at 4230
+ * would have shared a second with CD's 4900 and 5120 — THREE, over the ≤2 this table is authored to (the cap is
+ * 3) — so CD moved to 4800. When the flicker was rolled out to CD and CS, CD's new rise at 6530 would have shared
+ * a second with CS's first two at 6800's start, so CS moved to 6950. Patterns untouched by the moves.
  *
  * `maxRisesPerSecond` checks this at module load; the table is the reasoning,
  * the check is the assertion.
@@ -385,8 +438,8 @@ const CS_IGNITION: NeonPattern = {
 export const NEON_SCHEDULES: Record<NeonCardId, NeonSchedule> = {
   ca: { pattern: CA_IGNITION, startMs: 0 },
   cb: { pattern: CB_IGNITION, startMs: 2600 },
-  cd: { pattern: CD_IGNITION, startMs: 4400 },
-  cs: { pattern: CS_IGNITION, startMs: 6400 },
+  cd: { pattern: CD_IGNITION, startMs: 4800 },
+  cs: { pattern: CS_IGNITION, startMs: 6950 },
 };
 /** When the last card holds — `?reignite` must leave at least a second after it. */
 export const NEON_SEQUENCE_MS = Math.max(
@@ -518,6 +571,13 @@ export type NeonChannel = {
   textColor: THREE.Color;
   /** Its share of `peak × level`. 0 on every card without etch. */
   textDepth: number;
+  /**
+   * ⛔ A COLOUR GRADIENT ALONG THE RIM, side to side (the floor pair — `FLOOR_GRADIENT_*`), or null for one
+   * colour. When set, `color` and `tubeColor` are WHITE and the hue comes from per-vertex colours on the rim's
+   * geometry (`AboutCardMesh`): the emitter reads them as `vertexColors`, the tube's emissive through a shader
+   * patch. Linear working space, like `color`.
+   */
+  gradient: { left: THREE.Color; right: THREE.Color; /** Width of the middle blend, fraction of the card. */ blend: number } | null;
 };
 
 // ── URL faders — ONE reader (the shared-accessor rule) ──────────────────────

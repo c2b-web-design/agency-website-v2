@@ -31,7 +31,7 @@
  * card is tuned.**
  */
 
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useLayoutEffect, useState } from "react";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -1008,6 +1008,72 @@ export function AboutCardMesh({
     });
   }, [path, dims]);
 
+  // ── THE FLOOR PAIR'S GRADIENT — Carl, 25 September 2026 (third session). ──
+  //
+  // ⛔ *"Im looking at the colour distribution, not the colours themselves. Make both cards mirror images of
+  // themselves."* When the channel carries a `gradient`, every rim vertex takes a colour from its position SIDE
+  // TO SIDE across the card (left → right in the card's own x), lerped in linear space — gold → red passes
+  // through the room's orange on its way. ONE attribute serves both readers of this shared geometry: the
+  // emitter as `color` (`vertexColors`, so the BLOOM carries the gradient) and the tube as `neonGrad` (the
+  // shader patch below, so the TONE-MAPPED tube carries it too). The channel's own colours are white.
+  // ⚠ Set in a LAYOUT effect so it is on the geometry before the first frame draws; removed on cleanup, so a
+  // card without a gradient renders exactly as before.
+  const gradient = neon?.gradient ?? null;
+  useLayoutEffect(() => {
+    if (!gradient) return;
+    const pos = rimGeometry.getAttribute("position");
+    rimGeometry.computeBoundingBox();
+    const bb = rimGeometry.boundingBox;
+    if (!bb) return;
+    const span = Math.max(bb.max.x - bb.min.x, 1e-6);
+    /* ⛔ 50/50, NOT A FADE — Carl, on the first take: *"its not 50/50 round the rim. Only one side is a different
+       colour and it looks pink. IRL i would think the neon tube is faulty, not a design choice."* Two causes, two
+       fixes: (1) the ends are matched in LUMINANCE (linear Rec.709 Y, each scaled to the pair's mean), so the
+       brighter gold no longer swallows the rim; (2) each half HOLDS its colour and they meet in a blend of width
+       `gradient.blend` (a fraction of the card) centred on the middle — a smoothstep, as in his references. */
+    const lum = (col: THREE.Color) => 0.2126 * col.r + 0.7152 * col.g + 0.0722 * col.b;
+    const target = (lum(gradient.left) + lum(gradient.right)) / 2;
+    const left = gradient.left.clone().multiplyScalar(target / Math.max(lum(gradient.left), 1e-6));
+    const right = gradient.right.clone().multiplyScalar(target / Math.max(lum(gradient.right), 1e-6));
+    const lo = 0.5 - gradient.blend / 2;
+    const hi = 0.5 + gradient.blend / 2;
+    const rgb = new Float32Array(pos.count * 3);
+    const c = new THREE.Color();
+    for (let i = 0; i < pos.count; i++) {
+      c.copy(left).lerp(right, THREE.MathUtils.smoothstep((pos.getX(i) - bb.min.x) / span, lo, hi));
+      rgb[i * 3] = c.r;
+      rgb[i * 3 + 1] = c.g;
+      rgb[i * 3 + 2] = c.b;
+    }
+    const attr = new THREE.BufferAttribute(rgb, 3);
+    rimGeometry.setAttribute("color", attr);
+    rimGeometry.setAttribute("neonGrad", attr);
+    return () => {
+      rimGeometry.deleteAttribute("color");
+      rimGeometry.deleteAttribute("neonGrad");
+    };
+  }, [rimGeometry, gradient]);
+  /* ⛔ THE TUBE'S SHADER PATCH — the rim's emissive × the vertex gradient. ⚠ Only the EMISSIVE term is touched:
+     the glass (D-089) — colour, transmission, roughness — is exactly as before. A distinct cache key keeps this
+     program apart from the plain rims'. */
+  const gradientPatch = useMemo(
+    () =>
+      gradient
+        ? {
+            onBeforeCompile: (shader: { vertexShader: string; fragmentShader: string }) => {
+              shader.vertexShader = shader.vertexShader
+                .replace("#include <common>", "#include <common>\nattribute vec3 neonGrad;\nvarying vec3 vNeonGrad;")
+                .replace("#include <begin_vertex>", "#include <begin_vertex>\nvNeonGrad = neonGrad;");
+              shader.fragmentShader = shader.fragmentShader
+                .replace("#include <common>", "#include <common>\nvarying vec3 vNeonGrad;")
+                .replace("vec3 totalEmissiveRadiance = emissive;", "vec3 totalEmissiveRadiance = emissive * vNeonGrad;");
+            },
+            customProgramCacheKey: () => "about-rim-neon-gradient",
+          }
+        : {},
+    [gradient],
+  );
+
   // ── BEVEL — a swept band sloping inward and toward the viewer. ──
   //
   // ⛔ CARL NAMES ITS PURPOSE: *"bevels and light shone from the right direction
@@ -1145,6 +1211,7 @@ export function AboutCardMesh({
                 : undefined
             }
             {...(neon ? { emissive: neon.tubeColor, emissiveIntensity: 0 } : {})}
+            {...gradientPatch}
             color={GLASS_COLOR}
             roughness={GLASS_RIM_ROUGHNESS}
             metalness={GLASS_METALNESS}
@@ -1196,6 +1263,9 @@ export function AboutCardMesh({
               };
             }}
             color="#000000"
+            /* ⛔ The floor pair's GRADIENT reaches the bloom here: the writer sets `color` to white × level, and
+               the rim geometry's per-vertex `color` carries the hue (see the gradient effect above). */
+            vertexColors={!!gradient}
             toneMapped={false}
           />
         </mesh>
