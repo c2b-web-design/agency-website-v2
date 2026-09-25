@@ -582,7 +582,9 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 ---
 
-*Last updated: 2026-09-25 (third session) — the three 25 September rows corrected: the room (`b00f9b8`) and the light (`2ff88fc`) are committed and pushed and the seam is fixed; the text now shows one card by default. ⛔ **CD and CS text FITTED by Carl's edits — all four cards now two full pages at 68 mm** (CD 2.15×, CS 1.72×, CS depth 1.4 mm); CS alone on plain `/about`. Reasoning: the D-095 tail.*
+*Last updated: 2026-09-25 (third session, end) — all four cards text + lit rims (CA/CB orange, CD/CS mirrored gold ↔ red), glass retuned for the new room, blowout dips; NEXT: the blowout re-check, then the navigation from §1 (see the handoff).*
+
+*Previously: 2026-09-25 (third session) — the three 25 September rows corrected: the room (`b00f9b8`) and the light (`2ff88fc`) are committed and pushed and the seam is fixed; the text now shows one card by default. ⛔ **CD and CS text FITTED by Carl's edits — all four cards now two full pages at 68 mm** (CD 2.15×, CS 1.72×, CS depth 1.4 mm); CS alone on plain `/about`. Reasoning: the D-095 tail.*
 
 *Previously: 2026-09-25 — ⛔ **THE NEW ROOM IS ON `/about`, UNCOMMITTED**: office-image-3 edited, camera solved, the four cards laid out in room millimetres by Carl's rulings and accepted by eye; glass and light not yet retuned; a seam at eye height is open. Reasoning: D-095.*
 
