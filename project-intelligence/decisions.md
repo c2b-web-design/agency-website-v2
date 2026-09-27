@@ -5335,7 +5335,7 @@ Four cards on periods that do not divide into one another produce a composite th
 ## D-092 — The Room May Begin In §1, FADED, And SOLIDIFY Into §2. And The Cards Need An ACTIVATION TRIGGER That Does Not Exist
 
 **Date recorded:** 2026-09-22
-**Status:** ⛔ **RAISED AND REASONED, NOT DECIDED.** Carl, 22 September 2026: *"Sec 1 may yet have the image there but in a faded state... The 4 cards may yet fade in."* ⚠ **"May yet" is the status — recorded under the D-087 rule, which exists because provisional ideas were lost.**
+**Status:** ⛔ **RAISED AND REASONED, NOT DECIDED.** Carl, 22 September 2026: *"Sec 1 may yet have the image there but in a faded state... The 4 cards may yet fade in."* ⚠ **"May yet" is the status — recorded under the D-087 rule, which exists because provisional ideas were lost.** ⚠ **Developed by Carl, 27 September 2026 — the room faded in §1, opaque at a scroll point, ONE image travelling with the reader; see D-095's 27 September tail.**
 **Authority:** Human Founder — Carl, 22 September 2026.
 **Bears on:** `app/about/page.tsx` §1 and §2, `about-card-canvas.tsx`, `components/layout/about-nav.tsx`, **D-091** (the brightness track this trigger would start), D-088 (the travelling mark, which needs the same mechanism). ⛔ **§5a APPLIES.**
 
@@ -5395,6 +5395,56 @@ Four cards on periods that do not divide into one another produce a composite th
 ⛔ **FORWARD POINTER, 23 September 2026 — THE INTERFACE NOW EXISTS: D-093.** The wall pair's track is built, and **`ignite()` in `neon-bloom.tsx` is the one door a track starts through.** ⚠ **It must invalidate the canvas in the same statement** (Architect F1) — a scroll callback is neither a store change nor a prop update, so an observer that merely set a start time would strike nothing. **A dev watchdog asserts it.** The stand-in trigger (first ready frame) is what this entry replaces; **nothing here is decided by it.**
 
 ---
+
+
+### ⛔⛔ DEVELOPED BY CARL, 27 SEPTEMBER 2026 — THE ROOM'S MOVEMENT, GIVEN A SHAPE. ⚠ A BRAINSTORM: RECORDED, NOT A CHUNK, NOT BUILT
+
+**Status unchanged: RAISED, NOT DECIDED** — but no longer *"may yet"* in outline. Recorded under the brainstorm rule
+(`context-rules.md`): what Carl raised, and which of the Builder's readings he rejected.
+
+**Carl's idea, in his words and order:**
+1. *"putting the image in sect 1 but translucent, faded so the text can be read better. If a user presses Roles it
+   will appear there. But if a user scrolls it would reach a certain point and become opaque, So the image travels
+   with the user. The black bands seem like a design choice then."*
+2. *"as the image touches where the card is it would be revealed — top down. Only as the bottom of CA is cleared
+   would the sequence begin."*
+3. *"Where the border is between translucent and opaque the change shouldn't be sudden. A gradual gradient should
+   be used."*
+4. ⛔ **HIS MODEL, AS HE CORRECTED IT:** *"the image is faded in Sect 1, its opaque in Sect 2 and cards come into view
+   as the wipe happens. When the wipe clears the bottom of CA, the rim is activated."*
+
+**So, in his terms:**
+- **THE ROOM** — faded in §1, opaque in §2; ONE image that travels with the reader, not two.
+- **THE CHANGE** — a WIPE between faded and opaque, its edge a **gradual gradient**, never a hard line (§14a).
+- **THE CARDS** — come into view **as the wipe happens** (this answers this entry's *"The 4 cards may yet fade in"*:
+  revealed by the wipe, not faded in on their own).
+- **THE TRIGGER** — **when the wipe clears the bottom of CA, CA's rim activates**, and the §2 sequence runs from
+  there (D-095's 27 September tail: CA → CB → CD → CS, looping). ⚠ This REPLACES *"the wall cards in view"* as the
+  condition — with the room already on screen behind §1, that condition would read true in §1.
+- **`Roles`** — lands on §2 with the room opaque (*"it will appear there"*).
+- ⚠ **THE BLACK BANDS** — Carl's read: *"a design choice then."* ⚠ Not ruled. The Builder's note: the plate is fitted
+  to the window's HEIGHT, so the framing Carl sees holds near his 1412 × 700; 16:9 windows show no bands, 2560 × 1080
+  shows 318 px a side (`live-work/scripts/section1-vs-plate.mjs`). His suspicion that §1's text block matched the
+  image's width measured as a near-match of two unrelated rules (1216 vs 1247 px at his window), not a shared one.
+
+⚠ **REJECTED READINGS — the Builder's, not Carl's:** a border sweeping down the room as you scroll, the room opaque
+above it (Carl: *"NO"*); and each card wiping on its own (his question was withdrawn; his correction settles it as
+one wipe).
+
+**TRIED AND REMOVED — a static look:** Carl: *"For now, just put a static faded image in Sect 1. I want to see how the
+logo looks and the navigation text."* §2's plate behind §1 at **0.2 opacity**, nothing moving. ✔ **Carl: *"That looks
+good. The navigation text stands out well against the dark background, as does the logo."*** Then: *"Remove the image
+from Sect 1 and record the brainstorm idea."* **Removed** — `app/about/page.tsx` is as it was. ⚠ **0.2 is the only
+opacity he has seen, and he approved the legibility at it** — a starting point when this becomes a chunk.
+
+⛔ **§5a WHEN IT BECOMES A CHUNK — it stops for review before anything is built:**
+- **One travelling stage** — the plate AND the WebGL canvas (which draws the same room as geometry the glass
+  refracts) must stay put across §1 and §2 while the text scrolls: moving nodes out of §2 into a wrapper spanning both,
+  and changing their lifetime.
+- **The trigger's condition changes** — from "wall cards in view" to "the wipe has cleared CA's bottom".
+- **Cost** — the 3D scene would render behind §1 while faded; it should pause or run lighter until the wipe.
+- **Open, Carl's:** where the wipe starts and ends on the scroll; the gradient's width; what the cards show before
+  the wipe reaches them; reduced motion.
 
 ## D-093 — The Wall Pair's Neon Is Built: Neon-Only Bloom, Two Colours On One Track, A Stutter Ignition
 
@@ -6296,3 +6346,13 @@ At the body pace one pass of CA takes ~22 s, and of CB ~29 s. ⚠ **Carl holds t
     - ⚠ **FLASH CAP NOW AT 3 — AT THE CAP, NOT OVER** (was 2 before the loop). Where: CA's lap-2 grow (rises ~87.1, 87.3 s) runs into CD's reverse flicker (from ~87.9 s). `maxRisesPerSecond` says *"author to ≤2… if a pattern he likes reports 4, the area argument is the one to weigh — and that is his call"*. **Reported, not altered.** ⚠ **NOT JUDGED.**
     - ⚠ **A PRE-EXISTING COST, NOW PERMANENT:** the looping text and neon ask for a frame every frame, and neither checks whether the canvas is on screen (the moving light does). Before, a card's chase already looped for ever; now the neon never settles either. Raised for Carl, not changed.
   - ✔ **CARL on the loop: *"The timing between CS off and CB activation is great, it happens almost as one continuous action."*** (Measured: CS out 108.97 s, CB's lap-2 strike 109.19 s — 0.22 s apart.) Recorded at the level given. Then: *"You can take the guide lines off for the lights and commit and push."* — the moving light's trajectory helpers are **OFF everywhere** (`?lighthelpers=1` draws them; they were on by default on localhost).
+- ⚠ **RAISED BY CARL AND BEING DEVELOPED — D-092's ROOM, TRAVELLING WITH THE READER (27 September 2026). NOT A CHUNK, NOT DECIDED.** Asked to check a suspicion (*"the width of [§1's two text fields] combined is the same width as the image"*), measured (`live-work/scripts/section1-vs-plate.mjs`): **at Carl's 1412 × 700 the text block is 1216 px and the plate 1247 px — 31 px apart, the plate ~16 px past the text each side**; ⚠ **a near-match of two unrelated rules, not a shared one:** the text is the `Container` (`max-w-7xl`, 1216 px at any window ≥ 1280), the plate is the window HEIGHT × 1.784. It holds only near a 700 px-tall window (1920 × 950: 1216 vs 1693; 2560 × 1080: 1216 vs 1925; 1920 × 1080 and 1440 × 900: the plate fills, no bands).
+  - ⛔ **CARL'S DEVELOPMENT OF D-092:** *"So i had the idea of putting the image in sect 1 but translucent, faded so the text can be read better. If a user presses Roles it will appear there. But if a user scrolls it would reach a certain point and become opaque, So the image travels with the user. The black bands seem like a design choice then."* — D-092's two movements, with the ROOM's now given a shape: **faded behind §1's text → opaque at a scroll point; `Roles` lands on it opaque; ONE image that travels**, not two. ⚠ The CARDS' movement (*"may yet fade in"*) is not addressed by this.
+  - ⚠ **THE BLACK BANDS REREAD AS A DESIGN CHOICE** — Carl's read, and it bears on the parked viewport-fill problem (the session handoff: *"looming on the horizon"*). ⚠ **The Builder's note for when he decides:** the framing he sees (a panel roughly the text's width) holds on his window; wider windows show wider bands (318 px each side at 2560 × 1080), and 16:9 windows show none.
+  - ⛔ **§5a WHEN IT BECOMES A CHUNK:** "travels with the user" means the stage — the plate AND the WebGL canvas, which draws the same room as geometry the glass refracts — spans §1 and §2 (sticky or fixed): **moving nodes between parents and changing a lifetime.** And D-092's trigger (*"wall cards in view"*) would read TRUE with the room faded behind §1 — **the trigger's condition changes** (e.g. to the room turning opaque). Both stop for review.
+  - ⛔ **CARL, CONTINUING — THE CARDS AND THE TRIGGER:** *"So on scrolling, as the image touches where the card is it would be revealed — top down. Only as the bottom of CA is cleared would the sequence begin."* **Answers two of D-092's open points:** the CARDS are REVEALED TOP-DOWN, scroll-linked (not faded in); and the sequence's TRIGGER becomes **CA's bottom edge cleared by that reveal** (the Builder had raised that "wall cards in view" would read true with the room faded behind §1). ⚠ **Still a brainstorm — not a chunk.** ⚠ **Reading put to Carl:** one reveal line sweeping the room top-down (cards appearing as it passes them), or each card wiping on its own as the scroll reaches it.
+  - ⛔ **CARL — THE EDGE IS A GRADIENT:** *"Where the border is between translucent and opaque the change shouldn't be sudden. A gradual gradient should be used."* ⚠ This implies the ONE-LINE reading (a border between translucent and opaque that moves with the scroll, the room opaque above it) — the question to Carl was withdrawn by him, so recorded as the Builder's reading of his words, not his ruling. The border is FEATHERED — a soft band, not a line (§14a: *"nothing should feel like a sudden UI toggle"*). Its width is not given.
+  - ⛔⛔ **CORRECTED BY CARL — the Builder's restatement was WRONG:** *"NO, the image is faded in Sect 1, its opaque in Sect 2 and cards come into view as the wipe happens. When the wipe clears the bottom of CA, the rim is activated."* **His model, in his terms:** the ROOM is **faded in §1, opaque in §2**; the change between them is **a wipe**, with a **gradual gradient** at its edge (the entry above); the **CARDS come into view as the wipe happens**; **when the wipe clears the bottom of CA, CA's rim activates** (the sequence begins). ⚠ **Withdrawn:** the Builder's "one border moving down the room as you scroll, the room opaque above it" reading and the claim that it was implied — not Carl's.
+  - ⛔ **A STATIC LOOK, BUILT — Carl:** *"For now, just put a static faded image in Sect 1. I want to see how the logo looks and the navigation text."* §1 now carries §2's plate (`RoomPlate`, same image, same height-fitted box and bands) at **`S1_ROOM_OPACITY` 0.2**, behind the text (`app/about/page.tsx`, added to scope on Carl's *"yes, of course"*). Nothing moves; the wipe, the opaque §2 hand-off and the new trigger are NOT built. At 1412 × 700 the logo sits ~25 px inside the plate's left edge and the nav ends just inside its right. Frame: `live-work/screenshots/s1-faded-room-27-september/s1.png`. ⚠ **NOT JUDGED.** ⚠ No URL fader: the page renders on the server (one would make it dynamic).
+    - ✔ **CARL, on his own screen: *"That looks good. The navigation text stands out well against the dark background, as does the logo."*** (Recorded at the level given — a take.) ⚠ His frame shows the logo's left edge a few px OUTSIDE the plate (on the band) and the nav inside it; the Builder's 1412 × 700 frame had the logo ~25 px inside — his browser's width differs slightly.
+  - ⛔ **CARL: *"Remove the image from Sect 1 and record the brainstorm idea, then commit and push."*** The static §1 look is **REMOVED** (`app/about/page.tsx` identical to its last commit). **The brainstorm is consolidated in D-092** — *"DEVELOPED BY CARL, 27 SEPTEMBER 2026"* — with his words in order, his corrected model, the Builder's rejected readings, the look tried and his verdict on it, and the §5a points for when it becomes a chunk. The bullets above are the session's log of it.
