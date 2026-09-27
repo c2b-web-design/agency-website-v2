@@ -1,4 +1,4 @@
-# Session Handoff — 25 September 2026 (third session). ALL FOUR CARDS HAVE TEXT AND LIT RIMS. NEXT: THE BLOWOUT RE-CHECK, THEN THE NAVIGATION FROM §1.
+# Session Handoff — 27 September 2026. THE §2 SEQUENCE IS BUILT AND LOOPING; THE BLOWOUT IS FIXED. FOUR BRAINSTORMS RECORDED, NOTHING OF THEM BUILT.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
@@ -7,126 +7,100 @@
 
 ## ⛔ WHERE THINGS STAND
 
-**Everything built this session is committed and pushed** (last commit `659cb58`; this handoff is staged with
-`git add -f` and rides in the next commit). ⚠ Pushing `main` DEPLOYS — live `/about` has all of the below.
+**Everything is committed and pushed** (this handoff rides in the last commit of the session). ⚠ Pushing `main`
+DEPLOYS — live `/about` has all of the below. **No server is running.**
 
-⛔ **CARL WORKS ON PLAIN `/about`, REACHED THROUGH "ROLES" → `/about#roles` — NO QUERY STRING.** Build on the plain
-page; flags only switch things OFF or compare. Put the query BEFORE `#roles`.
+⛔ **CARL WORKS ON PLAIN `/about`, and now STARTS AT THE TOP and presses "Roles"** — the sequence begins from there.
+Flags only switch things off or compare; put the query BEFORE `#roles`.
 
-**Plain `/about` now:** all four cards carry their fitted copy, **static** (first page); every rim is lit —
-**CA/CB in the room's own orange `#f08a30`** (peak 6), **CD/CS a mirrored gold ↔ red gradient** (peak 1.5); every
-card's ignition has a **flicker in its grow**; glass roughness **CA/CB 0.20, CD/CS 0.25**; the env-map reflection
-blurred on its own; **CB face body 0.95**; the moving light orbits with **blowout dips** at four points.
+**Built this session, on plain `/about`** (record: the 27 September entries in the D-095 tail of `decisions.md`;
+sprint: the moving-light row and the new SEQUENCE row):
 
-- **Record:** the D-095 tail of `decisions.md` holds the whole session in order. **Sprint:** the three 25 September rows.
+1. **THE FACE'S HIGHLIGHT CAP** (`HIGHLIGHT_CAP` 0.1, `about-card-mesh.tsx`) — the moving light's reflected hotspot
+   (the dome's DIRECT SPECULAR — proven: the white spot stays with the text removed) is limited, never white; the
+   sheen stays. Worst word CS 0.24 → 1.00. **The blowout dips are OFF by default** (`?lmdip=1`). `?hlcap=0` removes
+   the cap. ✔ Carl: *"yes, that looks a lot better."* Carl's four suggested routes (penumbra, text roughness,
+   emissive text, three.js layers) are recorded with why each misses — layers cannot keep a light off one mesh in
+   three r185.
+2. **THE §2 SEQUENCE** — press Roles (or scroll: D-092's trigger, once per visit, unchanged) → CA's rim ignites →
+   CA's text writes → **the next card strikes as this card's FIRST cycle reaches its 3rd-last word** → each card
+   writes **TWO cycles** and goes **OUT: a reverse flicker (its ignition played backwards) ending on the same frame
+   as its text vanishing** → **CS's first cycle strikes CA again: a LOOP, one period of 85.3 s.** ✔ Carl on the
+   steps: *"Thats better"*, *"Thats good"*, and *"The timing between CS off and CB activation is great, it happens
+   almost as one continuous action."*
+   - **Architecture (structural, Carl approved it — *"Yes, build it"*):** ONE timeline set once by the trigger
+     (`sequencePlan`, `about-neon.ts`), read off EACH CARD'S OWN chase via ONE shared layout (`layoutCardText`,
+     `card-extrude.tsx`); the clock is a ref per canvas mount (`sequenceRef`), set by `NeonBloom` in the frame the
+     ignition starts. Faders: `?seq=` (order), `?seqfew=` (words left), `?seqloop=0`, `?textstatic=1`.
+   - **Walked from Roles** (`live-work/scripts/sequence-loop-walk.mjs`): every mark within a frame of the plan;
+     every exit rim + text in one frame; CA comes round at 85.28 s.
+3. **The light's trajectory guides OFF everywhere** (`?lighthelpers=1` draws them).
+4. **§1's em dashes removed** — Carl chose *"Separate the roles into brand strategy, design, technical architecture
+   and execution, and…"*; line counts identical before and after (`live-work/scripts/s1-line-count.mjs`).
 
-## ⛔⛔ NEXT — IN THIS ORDER (Carl)
+## ⚠ OPEN ON WHAT WAS BUILT — CARL'S
 
-### 1. THE BLOWOUT RE-CHECK, NOW THE RIMS ARE LIT
-Carl: *"we will check the blow out issue when the rims are lit"* — they are. ⚠ **Seen at 16 s on plain `/about`: the
-moving light's hotspot washes "other" on CS and "Typography" on CD** (`live-work/screenshots/all-text-rims-25-september/t16s.png`).
-- `BLOWOUT_DIPS` (`about-moving-light.tsx`): CA ~7% · CD ~28% · CB ~57% · CS ~73% of a lap, floors 0.3 (CD 0.6),
-  ±0.08 raised cosine. **Measured at roughness 0.35, BEFORE the roughness dropped and the rims lit** — lower
-  roughness makes the hotspot smaller and more intense, so points and floors may both have moved.
-- **The method that worked:** hold ONE light at lap positions (`?lmfreeze=<0..1>&lmonly=1`), render with and
-  without text (`?text=0`), read the FRAMES — ⚠ whole-card medians never moved; the blowout is a word-wide
-  reflected hotspot. Scripts: `live-work/scripts/light-blowout-scan.mjs`, `blowout-dip-check.mjs`,
-  `cacb-text-contrast.mjs`. Carl's bar: *"All the text must be legible"*, *"we still want some effect on the face"*,
-  *"This doesnt have to be perfect."*
+- ⛔ **FLASH CAP AT 3 — AT THE CAP, NOT OVER** (2 before the loop): CA's lap-2 grow runs into CD's reverse flicker
+  (~87–88 s). The file says author to ≤2 and bring anything more to Carl. **Reported, not altered.**
+- ⚠ **Continuous rendering, off screen too:** the looping text and neon ask for a frame every frame and neither
+  checks visibility (the moving light does). Raised, not changed.
+- The trigger still fires once per visit; the sequence it starts now runs for ever — recorded as overtaking D-092's
+  *"no need to labour the point"* for the sequence.
 
-### 2. THE NAVIGATION FROM §1 — WHO ACTIVATES WHEN
-Carl: *"After that is navigation from Sect 1. CA activates first. When does CB activate etc."*
+## ⛔⛔ BRAINSTORMS — RECORDED, NOT CHUNKS, NOTHING BUILT. DO NOT START ANY UNASKED
 
-⛔⛔ **THE MECHANISM'S IDEA IS ALREADY THERE — A TWEAK, NOT A REDESIGN.** Carl, at the end of the session: *"the idea
-for the mechanism for activation is there. This is a new scene and like everything else in this new scene we will
-tweak slightly to fit the new surroundings."* So: **start from what is built and decided** (below) and adjust it to
-the new room — the way the roughness, the rims, the text and the light were adjusted this session. ⚠ Do not propose
-a new mechanism; do not reopen the decided parts. (A change to the trigger's SHAPE is still §5a — say so if one
-turns out to be needed.)
+- **D-092 DEVELOPED — the room from §1 into §2.** Consolidated in D-092 (*"DEVELOPED BY CARL, 27 SEPTEMBER 2026"*).
+  Carl's model, as he CORRECTED the Builder: *"the image is faded in Sect 1, its opaque in Sect 2 and cards come
+  into view as the wipe happens. When the wipe clears the bottom of CA, the rim is activated."* The wipe's edge is a
+  **gradual gradient**. ⚠ Two Builder readings were REJECTED (recorded there). A static faded look (0.2) was tried
+  — ✔ *"That looks good"* for the logo and nav — **and removed.** ⚠ The black side bands: Carl's read, *"a design
+  choice then"* — not ruled; the parked viewport-fill problem may dissolve into it.
+- **D-088 — THE DESK MARK IS BACK, in the new room.** Right of the monitor (measured: two spots split by the mic-arm
+  clamp; the one right of the clamp is clear overhead — `live-work/screenshots/desk-space-27-september/`). Carl:
+  2D, face-on; **the SCROLL dislodges it and it FALLS into §3's video player** (the files: it lands as the
+  player's idle content, *"before a video is chosen"*). ⚠ Later the same day: *"The desk Logo might well use this
+  technique"* — the 3D half-pipe below. Open: D-065 (a moving mark), D-063 (blue), reduced motion, one scroll
+  mechanism shared with D-092's wipe.
+- **§3's CONTENT — FILMED BUILDS.** The home page's closing **"Who we are"** button becomes a three.js build, *"similar
+  to the 'next step' in q+a. Different material, colour and use of light"*; **each stage (mesh, material, lights)
+  filmed** — one of **FOUR** examples in §3's player. *"We walk the walk."* Answers D-071's refusal (the films ARE
+  C2B's work). ⚠ The button is ONE OF A PAIR with `/about` §4's "Start a conversation"; `app/page.tsx` is
+  PROTECTED. ⛔ **Carl: *"We will work out the details when sect 2 is completed."***
+- **A 3D HALF-PIPE MARK IN THE BOOKCASE CUBBY** (the empty compartment by the clock reading 12:40): *"Leaning against
+  it, inside. A half pipe. Flat back."* — a small **proof of concept for a larger ANIMATED mark in the HERO.** Source:
+  `brand-assets/logo/c2b-flat-white-alpha-cleaned-1x.png` (measured: ONE closed outline; two tight spots; there is NO
+  vector logo — the "gold hero SVG" is a PNG in a wrapper). ⛔⛔ **Carl: *"this is a new type of build. We need all
+  the scrutiny and planning. its just brainstorming at the moment."*** → when it becomes a chunk: **Plan Mode, the
+  Architect's plan-review gate, checkpoints — NOT waived.**
 
-**What the files hold:**
-- **CA FIRST is DECIDED** (D-090's 25 September entry): *"the Architect begins the work"*; the wall cards are larger
-  and at eye height. ⚠ Weighed and NOT chosen: CS first (it is the physically top card) and §1's own naming order
-  (*"Strategist, Designer, Architect, and Builder"*).
-- **The TRIGGER (D-092):** Carl — *"If Roles is pressed it will instantly take them to Sect 2… Its as if they are
-  responding to the viewer. If a user decides to scroll to Sect 2 when they reach a certain point that should trigger
-  the lights. Maybe when the wall cards come into full view."* `Roles` is a plain `#roles` anchor, so **ONE condition
-  serves both paths**. **ONCE PER VISIT** — *"once a user has seen the on effect theres no need to labour the point."*
-  ⚠ *"Maybe"* was his word for the condition; it fires as the cards' bottom edge enters (lower third of the window).
-- **Built today:** `wallCardsInView` (`about-neon.ts`) — the **neon's ignition uses it live** (`neon-bloom.tsx`).
-  ⛔ **Two consumers are PARKED, not removed** (Carl, 25 Sept, 2nd session: *"The trigger mechanism is still going to
-  be used but its going to be changed. Dont delete or remove it, just make sure it has no impact at the moment"*):
-  the moving light's downbeat (`DOWNBEAT_ON_LANDING = false`, `about-moving-light.tsx`) and the text clock
-  (`TEXT_START_ON_LANDING = false`, `card-extrude.tsx`). Both start when the canvas is on screen instead.
-- **The current ignition order** (`NEON_SCHEDULES`, `about-neon.ts`) is the Builder's candidate: **CA 0 · CB 2600 ·
-  CD 4800 · CS 6950 ms**, all four holding by 8880 ms. Only "CA first" is Carl's. ⚠ Starts are constrained by the
-  flash cap — `neon-flash-check.mjs` (≤2 rises in any second; cap 3).
-- **Decided, D-090:** *"ONE SHARED DOWNBEAT: the light's first phrase begins on the landing, as CA's rim flickers on;
-  after that it runs free."* **The text's sequence** — *"each card striking as the previous ends"* — is recorded as
-  a later chunk once all four have text (`card-extrude.tsx` header). **All four now have text.**
-- **RAISED, NOT DECIDED (D-092):** the room faded behind §1 and SOLIDIFYING into §2 (*"Sec 1 may yet have the image
-  there but in a faded state… The 4 cards may yet fade in"*) — two movements, separable, undecided.
-- ⛔ **§5a: the trigger's shape is STRUCTURAL** (a fired-once flag; the pattern for every scroll effect). Any change
-  to it stops for review — D-092's list of cases (anchor click, scroll in, deep link, scroll away and back, scrolled
-  past fast, reduced motion) is the checklist.
+## ⚠ STANDING INSTRUCTIONS AND CORRECTIONS FROM THIS SESSION
 
-## ⚠ CARL'S RULINGS AND STANDING INSTRUCTIONS FROM THIS SESSION
+- ⛔ **No em dashes in site copy** (Carl: *"if anything screams AI its that"*). When removing one from Carl's own
+  words, OFFER rewordings; he checks line counts. Metadata still carries them (the tab title *"About — C2B Web
+  Design"*; og tags in protected `app/layout.tsx`) — raised, not changed. Hyphens in compounds are fine.
+- ⚠ **Twice this session the Builder mis-read Carl and built or wrote the wrong thing**: CB was moved to CA's SECOND
+  cycle (Carl: *"It should activate on CA first cycle"* — it also breached the flash cap), and the §1→§2 idea was
+  restated as a moving border (Carl: *"NO"*). **Restate in HIS terms, and when an answer is ambiguous, ask once
+  rather than build on a reading.**
+- Scope is widened by Carl: he added `app/about/page.tsx` (*"yes, of course"*). `live-work/chunk-scope.json` is still
+  labelled `about-moving-light`; its files now cover the sequence work too. `unlocked` is empty.
 
-- **Copy is fitted by Carl's options, never reworded without them.** All four at 68 mm, two full pages:
-  CA 2.82× · CB 3.45× · CD 2.15× · CS 1.72×. The erase waits for the last word on CS and CD (not CA/CB).
-- The reveal is **171.4 wpm — the average reading pace, by design**; judge the chase by how far the erase trails
-  the READER (the write head), not how long a line sits.
-- **Rims ECHO the room's orange** (*"any colours… are gonna fight"*). The floor pair's gradient was **Carl's idea**
-  (distribution, not colours; mirrored). **A neon keeps its colour only at a low peak** — ACES whitens the core.
-- The flicker in the grow: *"More natural and realistic."*
-- **Roughness is settled for now** (`about-card-glass.ts` re-locked). **Face body *"might need nudging up, but not
-  yet"*** — raised, not scheduled (CS still 0.86; CB now 0.95 on the measurement).
-- Protected files: Carl names the file; lock after use (done twice this session).
+## ⚠ PARKED / STILL CARL'S (carried)
 
-## ⚠ PARKED / WAITING ON CARL — DO NOT PRE-EMPT
-
-- ⛔⛔ **THE ROOM DOES NOT FILL THE VIEWPORT — "looming on the horizon".** Carl, end of the third session: *"i have a
-  problem and its been bugging me all day. We had the same in the old scene. The image doesnt fill the viewport. We
-  got creative in the old scene and solved it. This new scene is a lot more difficult. Parked, but its looming on
-  the horizon."* ⚠ **The facts:** the plate is **1.784:1** (`ROOM_PLATE_ASPECT`, `room-plate.tsx` centres it at its
-  own aspect); Carl's viewport is ~1412 × 700 CSS = **2.02:1**, so black bands sit left and right (visible in every
-  frame this session, ~100 device px each side at 1920). **The old scene's fix:** `components/about/pillarbox-plate.tsx`
-  (kept, unused — its bands are cut from the OLD photo): bands built from the picture's OWN last pixel column,
-  extended outwards, so the join is exact by construction; Carl's method was chunked (*"Just fill them up, lets see
-  what weve got to work with"*), and the right band became wall that later mattered (D-093's *"happy accident"*).
-  ⚠ **Why the new scene is harder (Builder's observation, not measured):** its edges are not a dark, near-uniform
-  wall — the left is the bookcase and its objects, the right the orange-lit side wall and curtain, and the LED strip
-  and ceiling cove run to the frame edge. **Do not start it unasked.**
-  ⛔ **Carl's read, the same exchange:** *"The right side is easier to duplicate and solve, its the left side that
-  will test us. Its parked for now but at the back of my mind."* — the right (plain lit wall) is the easier band;
-  the LEFT (the bookcase and its objects) is the hard one.
-
-- **Static key/fill OFF vs legibility-first** — now MEASURABLE with all text on: under the static rig the text stood
-  40–46 luma off the glass, under ambient alone 10–21 (before the rims lit). ⛔ D-090 says *"The text must read
-  fully under the static light alone."* Re-judge with the blowout check.
-- **The etch glow** (`card-etch.ts`, `?etch=1`, off) was matched to the NAVY rim — re-measure against the orange if
-  the etch returns. **The moving light's colour** (Carl's idea tied to the rims) — do not guess it.
-- **THE LOGO (D-088):** Carl will say when. Do not raise it.
-- Unanswered from before: move the five superseded 24 September overlays into `superseded/`? · CLAUDE.md's
-  "8,837 words" required-reading figure is really ~19,100 · the two R-028s · CS's "connected to…" (D-077) ·
-  accessibility at mastering · ENVMAP-STALE / RIM-DARK (RIM-DARK may have changed now the rims are lit) ·
-  `proven.json`.
+- The logo on `/about` otherwise (D-088 above). Static key/fill off vs legibility-first (D-090) — re-judge with the
+  cap. The etch glow (off). The moving light's colour. ENVMAP-STALE / RIM-DARK. `proven.json` (VERIFY-UNPROVEN).
+  Superseded 24 September overlays → `superseded/`? CLAUDE.md's required-reading word count (~19,100, not 8,837).
 
 ## ⚠ HOUSEKEEPING
 
-- ⛔ **A SCOPE SLIP THIS SESSION, recorded in the D-095 tail:** the guard denied `card-etch.ts` and said *"do not
-  widen it yourself"*; the next command widened it anyway (caught, reverted before any edit). Earlier,
-  `room-environment.tsx` was added to scope by the Builder. **Scope is widened by CARL, every time.**
-- `live-work/chunk-scope.json` = **`about-moving-light`**, active; now also covers `room-environment.tsx`,
-  `about-card-mesh.tsx`, `neon-bloom.tsx` (the last two added by Carl). `unlocked` is empty.
-- **Server:** a production build may be on **:3000** — stop it BY PID before a checkpoint (`TaskStop` again reported
-  success on a held port this session).
-- ⚠ **Shell quoting eats backslashes** (again this session). Write scripts with the Write tool. Scripts importing
-  `components/about/*.ts` that pull extensionless siblings: `register("./ts-resolve-hook.mjs", import.meta.url)`.
-- **In any Playwright context, the FIRST page load lands before the `#roles` scroll** — throw it away (warm-up).
-- Known console noise (pre-existing, not ours): `THREE.Clock` deprecation; a D3D X4122 precision warning.
-- Carl's machine: DPR 1.36, viewport ~1412 × 700 CSS.
+- ⚠ **Shell quoting eats backslashes and `$`** (bit again): write multi-line edits as `.cjs` files with the Write
+  tool and run them with node.
+- Measurement scripts from this session are in `live-work/scripts/` (force-added); two big scan folders
+  (`blowout-scan-27-september`, `highlight-cap-27-september`, ~230 MB) are NOT committed.
+- Playwright: the first page load of a context lands before the `#roles` scroll — throw it away. Known console
+  noise: `THREE.Clock` deprecation; a D3D X4122 warning.
+- Lint baseline holds: `1 problem (1 error, 0 warnings)`. Carl's machine: DPR 1.36, viewport ~1412 × 700 CSS.
 
 ---
 
-*Written 25 September 2026 (third session). Replaces the second session's handoff.*
+*Written 27 September 2026. Replaces the 25 September (third session) handoff.*

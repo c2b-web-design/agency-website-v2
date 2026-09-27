@@ -369,7 +369,13 @@ export default function About() {
                     as the line struck from the homepage on 2 September.
                   • "cutting-edge execution with uncompromised artistry" — asserts
                     what the page beneath it is supposed to demonstrate.
-                ⛔ DO NOT REINTRODUCE EITHER WHEN POLISHING. */}
+                ⛔ DO NOT REINTRODUCE EITHER WHEN POLISHING.
+
+                ⛔ THE EM DASHES ARE GONE — Carl, 27 September 2026: *"Theres an em dash in sect 1. It needs to
+                go."* Of three options he chose "into, with commas": *"Separate the roles — brand strategy,
+                design, technical architecture, execution — and…"* became *"Separate the roles into brand
+                strategy, design, technical architecture and execution, and…"* ⚠ His condition: *"No extra or
+                less lines"* — the two columns stay the same height (checked on the build). */}
             <p className="mt-4 text-base text-neutral-400 leading-relaxed">
               Most AI-driven web development yields generic outcomes because it
               relies on prompting rather than deliberate structure. AI is not a
@@ -377,8 +383,8 @@ export default function About() {
               architecture, governance and strategic direction to be worth
               anything. Left to itself it will always produce the most likely
               answer, which is another way of saying the most ordinary one.
-              Separate the roles &mdash; brand strategy, design,
-              technical architecture, execution &mdash; and creative control stays
+              Separate the roles into brand strategy, design,
+              technical architecture and execution, and creative control stays
               where it belongs at every stage. Supported by a deep project
               intelligence system, that framework holds each decision to a
               brand&rsquo;s own positioning rather than to an automated average.

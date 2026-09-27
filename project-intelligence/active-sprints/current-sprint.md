@@ -583,7 +583,9 @@ future direction becomes current scope, Carl introduces it as a chunk with its o
 
 ---
 
-*Last updated: 2026-09-25 (third session, end) — all four cards text + lit rims (CA/CB orange, CD/CS mirrored gold ↔ red), glass retuned for the new room, blowout dips; NEXT: the blowout re-check, then the navigation from §1 (see the handoff).*
+*Last updated: 2026-09-27 — the face's HIGHLIGHT CAP (blowout fixed, dips off; Carl: "a lot better"); the §2 SEQUENCE from Roles, CA → CB → CD → CS → CA LOOPING, each card two cycles and out with a reverse flicker (Carl: "Thats good" / "great"); light guides off; §1 em dashes out ("into, with commas"). BRAINSTORMS RECORDED, NOTHING BUILT: D-092 developed (the room faded in §1, opaque in §2, a wipe); D-088's desk mark back; §3 = filmed builds; a 3D half-pipe mark in the bookcase cubby — a NEW TYPE OF BUILD, full scrutiny when it becomes a chunk. See the handoff.*
+
+*Previously: 2026-09-25 (third session, end) — all four cards text + lit rims (CA/CB orange, CD/CS mirrored gold ↔ red), glass retuned for the new room, blowout dips; NEXT: the blowout re-check, then the navigation from §1 (see the handoff).*
 
 *Previously: 2026-09-25 (third session) — the three 25 September rows corrected: the room (`b00f9b8`) and the light (`2ff88fc`) are committed and pushed and the seam is fixed; the text now shows one card by default. ⛔ **CD and CS text FITTED by Carl's edits — all four cards now two full pages at 68 mm** (CD 2.15×, CS 1.72×, CS depth 1.4 mm); CS alone on plain `/about`. Reasoning: the D-095 tail.*
 
