@@ -38,6 +38,20 @@ sprint: the moving-light row and the new SEQUENCE row):
 4. **§1's em dashes removed** — Carl chose *"Separate the roles into brand strategy, design, technical architecture
    and execution, and…"*; line counts identical before and after (`live-work/scripts/s1-line-count.mjs`).
 
+## ⛔⛔ NEXT SESSION — CARL'S ORDER
+
+Carl: *"Next session. Image scroll. Then either desk logo or cubby hole issue. I'd have made a decision by then."*
+
+1. **THE IMAGE SCROLL** — D-092 as developed today (the consolidated section in D-092): the room faded in §1,
+   opaque in §2, a wipe with a gradient edge, the cards coming into view as it passes, **CA's rim striking when the
+   wipe clears CA's bottom**. ⛔ **§5a: this is STRUCTURAL** — one stage (the plate AND the WebGL canvas) spanning §1
+   and §2, and the sequence trigger's condition changing. **Set out the structure for review before building**, per
+   D-092's own §5a list. Open points to put to Carl: where the wipe starts and ends on the scroll, the gradient's
+   width, what the cards show before the wipe reaches them, reduced motion, the scene's cost while faded.
+2. **THEN THE DESK LOGO OR THE CUBBY** — ⛔ **Carl decides which by then; do not pre-empt.** ⚠ Whichever it is, the
+   cubby's half-pipe is a new type of build under FULL scrutiny (Plan Mode, the Architect's gate) — and the desk mark
+   may use the same technique.
+
 ## ⚠ OPEN ON WHAT WAS BUILT — CARL'S
 
 - ⛔ **FLASH CAP AT 3 — AT THE CAP, NOT OVER** (2 before the loop): CA's lap-2 grow runs into CD's reverse flicker
