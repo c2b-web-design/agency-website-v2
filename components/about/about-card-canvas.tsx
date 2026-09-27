@@ -68,7 +68,7 @@
  */
 
 import * as THREE from "three";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useLoader } from "@react-three/fiber";
 /* ⛔ The old room's guide, rail, aspect, height and camera constants are no longer read here (the new
    room, 25 September 2026). They stay exported from `about-card-geometry.ts` — `/proto/wall` and the
@@ -108,13 +108,20 @@ import {
   neonMode,
   neonNumber,
   neonParam,
+  SEQUENCE_FEW_WORDS,
+  sequenceOrder,
+  sequencePlan,
+  FLASH_CAP,
   type NeonChannel,
+  type SequenceClock,
 } from "./about-neon";
 import { NeonBloom } from "./neon-bloom";
 import { etchEnabled, etchSettings, type EtchSettings } from "./card-etch";
 import {
   CardExtrudedText,
   extrudeCards,
+  layoutCardText,
+  loadFont,
   type ExtrudeCardId,
   type ExtrudeSettings,
   extrudeEnabled,
@@ -122,6 +129,7 @@ import {
   LIGHT_DISTANCE_MM as EXTRUDE_LIGHT_DISTANCE_MM,
 } from "./card-extrude";
 import { aboutCardCopy } from "./about-card-copy";
+import type { Chase } from "./card-text-timeline";
 
 /**
  * ⛔⛔ THE NEW ROOM — office-image-3, 25 September 2026 (D-095). Carl: *"Change about, build it there."*
@@ -697,6 +705,9 @@ export default function AboutCardCanvas() {
      taller (**8 lines, was 6**). ⚠ The depth rule re-checked in the new room: CA is seen at 15.7 / 7.1 /
      10.8° (was 23.7 / 12.1 / 4.0°), so 3 mm leaves a worst side wall of **19%** (was 29%) — kept.
      `?text=` : absent → ALL FOUR, static (end of the third session, with every rim lit; before: CA + CB, none, all four, then CS, CD, CB, CA alone in turn) · `1`/`all` → all four · `0` → none · a list (`ca,cb`) → those. */
+  /* ⚠ *Overtaken 27 September 2026:* the pages RUN again (`still` false) and, with the neon mounted, a card's text
+     mounts only if the §2 sequence reaches it (`onSeq` below) — plain `/about` writes all four in turn, CA → CB →
+     CD → CS (it was CA then CB first). `?seq=ca,cb` shortens the chain; `?textstatic=1` holds the first page. */
   const textCards = useMemo(() => textCardsFromUrl(), []);
   /* ⛔ THE MOVING LIGHT — ON on plain `/about` (`?lightmove=0` removes it). The static key and fill
      are OFF under it by default — Carl's experiment, so it is seen alone (ambient kept); `?lmglobal=1` puts
@@ -782,6 +793,73 @@ export default function AboutCardCanvas() {
           : neonChannels,
     [neon, extrude, neonChannels],
   );
+  /**
+   * ⛔⛔ THE §2 SEQUENCE — Carl, 27 September 2026: *"press Roles. The rim should activate and then the text reveal
+   * start… CB should activate and then text reveal as the last few words in CA are being read."* The plan is
+   * computed ONCE per mount from each card's own copy and reading settings (`sequencePlan`, `about-neon.ts`); the
+   * CLOCK is this mount's — NeonBloom sets it as the ignition starts, each card's text reads it. ⚠ ON only while
+   * the neon is mounted (it owns the trigger); with `?neon=none` each text keeps its own start, as before.
+   * ⚠ Cards outside `sequenceOrder()` carry no text and stay dark (all four are on it since 27 September; it was
+   * CA, CB first — *"sort out CB timing first"*).
+   */
+  const sequenceRef: SequenceClock = useRef<number | null>(null);
+  /* ⚠ EACH SEQUENCE CARD'S CHASE, from the SAME layout the card builds its letters from (`layoutCardText`) —
+     so the plan knows when a reader reaches a word and when a second cycle ends (which needs the line breaks).
+     The font is the cards' own cached load. Until it lands the plan places only the first card (`pending`). */
+  const [chases, setChases] = useState<Partial<Record<NeonChannel["id"], Chase>>>({});
+  useEffect(() => {
+    if (!extrude || neon.kind === "none") return;
+    let cancelled = false;
+    const ID = { ca: "CA", cb: "CB", cd: "CD", cs: "CS" } as const;
+    loadFont()
+      .then((font) => {
+        if (cancelled) return;
+        const out: Partial<Record<NeonChannel["id"], Chase>> = {};
+        for (const id of sequenceOrder()) {
+          const st = extrude[id];
+          if (!st) continue;
+          const { dims } = placeRoomCard(ROOM_CARDS[ID[id]]);
+          const laid = layoutCardText(font, aboutCardCopy(ID[id]).body, st, dims).chase;
+          if (laid) out[id] = laid;
+        }
+        setChases(out);
+      })
+      .catch(() => {
+        /* the card itself reports a failed font load, loudly */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [extrude, neon]);
+  const plan = useMemo(() => {
+    if (!extrude || neon.kind === "none") return null;
+    const reduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const cards = sequenceOrder()
+      .filter((id) => extrude[id])
+      .map((id) => ({ id, chase: chases[id] ?? null }));
+    const p = sequencePlan(cards, reduced, neonNumber("seqfew", SEQUENCE_FEW_WORDS, 0, 30), neonParam("seqloop") !== "0");
+    const at = (ms: number | undefined) => `${((ms ?? 0) / 1000).toFixed(1)}s`;
+    if (!p.pending) {
+      console.info(
+        `§2 sequence: ${cards
+          .map((c) => `${c.id} rim ${at(p.schedules[c.id]?.startMs)} · text ${at(p.textAtMs[c.id])}${p.textEndMs[c.id] === undefined ? "" : ` · out ${at(p.textEndMs[c.id])}`}`)
+          .join(" | ")} · last word ${at(p.endMs)}${p.loopMs === undefined ? "" : ` · LOOP every ${at(p.loopMs)}`} · max ${p.maxRises} rises in a second (cap ${FLASH_CAP})`,
+      );
+    }
+    /* ⚠ THE FLASH CAP, ASSERTED ON THE REAL PLAN — a card going out overlaps the next one striking. Reported,
+       never quietly fixed: *"report it to Carl, do not quietly alter the pattern"* (see `maxRisesPerSecond`). */
+    if (p.overlaps.length) {
+      console.error(`⛔ THE §2 LOOP CANNOT CLOSE — ${p.overlaps.join(", ")} would come round again before going out (loop ${at(p.loopMs)}). Report to Carl.`);
+    }
+    if (p.maxRises > FLASH_CAP) {
+      console.error(`⛔ NEON FLASH CAP BREACHED BY THE §2 SEQUENCE — ${p.maxRises} rises in one second (cap ${FLASH_CAP}). Report to Carl.`);
+    }
+    return p;
+  }, [extrude, neon, chases]);
+  /** On the sequence: a card's text mounts only if the sequence reaches it. Off it: as before. */
+  const onSeq = (id: NeonChannel["id"]) => !plan || plan.textAtMs[id] !== undefined;
+  const seqProps = (id: NeonChannel["id"]) =>
+    plan ? { startAtMs: plan.textAtMs[id], endAtMs: plan.textEndMs[id], loopMs: plan.loopMs } : {};
   const neonFor = (id: NeonChannel["id"]) => liveNeon.find((ch) => ch.id === id);
   const [caNeon, cbNeon, cdNeon, csNeon] = [neonFor("ca"), neonFor("cb"), neonFor("cd"), neonFor("cs")];
   /* ⛔ CS is not rendered while the left card is being got right — Carl,
@@ -1057,13 +1135,15 @@ export default function AboutCardCanvas() {
                 the text in for CD and CS."* Depth from ITS measured view angle (the
                 depth rule, `EXTRUDE_DEPTH_MM`); the light scaled as CB's is, but OFF by
                 default (*"Turn all the lights off"*). Alone: `?extrude=cd` (plain `/about` mounts all four; since 25 September only CA shows, its pages running — `?text=`). */}
-            {textCards.has("cd") && extrude?.cd && (
+            {textCards.has("cd") && extrude?.cd && onSeq("cd") && (
               <CardExtrudedText
                 id="cd"
                 body={aboutCardCopy("CD").body}
                 dims={cd.dims}
                 crownMm={cd.crownMm}
                 settings={extrude.cd}
+                sequenceRef={plan ? sequenceRef : undefined}
+                {...seqProps("cd")}
                 lightDistanceMm={(EXTRUDE_LIGHT_DISTANCE_MM * cd.dims.faceWidthMm) / ca.dims.faceWidthMm}
               />
             )}
@@ -1149,13 +1229,15 @@ export default function AboutCardCanvas() {
               faceReceiveShadow={!!extrude?.cs}
             />
             {/* ⛔ CS'S TEXT — as CD's above. Alone: `?extrude=cs`. */}
-            {textCards.has("cs") && extrude?.cs && (
+            {textCards.has("cs") && extrude?.cs && onSeq("cs") && (
               <CardExtrudedText
                 id="cs"
                 body={aboutCardCopy("CS").body}
                 dims={cs.dims}
                 crownMm={cs.crownMm}
                 settings={extrude.cs}
+                sequenceRef={plan ? sequenceRef : undefined}
+                {...seqProps("cs")}
                 lightDistanceMm={(EXTRUDE_LIGHT_DISTANCE_MM * cs.dims.faceWidthMm) / ca.dims.faceWidthMm}
               />
             )}
@@ -1221,13 +1303,15 @@ export default function AboutCardCanvas() {
               etch={caEtch}
               faceReceiveShadow={!!extrude?.ca}
             />
-            {textCards.has("ca") && extrude?.ca && (
+            {textCards.has("ca") && extrude?.ca && onSeq("ca") && (
               <CardExtrudedText
                 id="ca"
                 body={aboutCardCopy("CA").body}
                 dims={ca.dims}
                 crownMm={ca.crownMm}
                 settings={extrude.ca}
+                sequenceRef={plan ? sequenceRef : undefined}
+                {...seqProps("ca")}
               />
             )}
           </group>
@@ -1263,14 +1347,18 @@ export default function AboutCardCanvas() {
                 in the same position as CAs light given its proportions."*
                 ⛔ ONE CARD PER LOAD WAS THE RULE WHILE CB WAS WORKED ON: *"isolate CA text so we can focus on CB."* ⚠ Since the same session plain `/about` mounted ALL FOUR, static (since 25 September: CA only, pages running — `?text=`); `?extrude=cb` isolates CB.
                 *"Just as the text sequence is coming to an end, CB will activate"*
-                is a LATER chunk, once all four cards have text. */}
-            {textCards.has("cb") && extrude?.cb && (
+                is a LATER chunk, once all four cards have text. ⚠ *Overtaken 27 September
+                2026:* BUILT — the §2 sequence (`plan` above): CB's rim strikes as CA's reader
+                reaches its third-last word, its text as the ignition ends. */}
+            {textCards.has("cb") && extrude?.cb && onSeq("cb") && (
               <CardExtrudedText
                 id="cb"
                 body={aboutCardCopy("CB").body}
                 dims={cb.dims}
                 crownMm={cb.crownMm}
                 settings={extrude.cb}
+                sequenceRef={plan ? sequenceRef : undefined}
+                {...seqProps("cb")}
                 lightDistanceMm={(EXTRUDE_LIGHT_DISTANCE_MM * cb.dims.faceWidthMm) / ca.dims.faceWidthMm}
               />
             )}
@@ -1282,7 +1370,15 @@ export default function AboutCardCanvas() {
               neon is isolated so a failure costs the glow, never the room.
               ⚠ `?neon=none` unmounts it and R3F renders the room itself. See
               `neon-bloom.tsx`. */}
-          {neon.kind !== "none" && <NeonBloom channels={liveNeon} mode={neon} />}        </Canvas>
+          {neon.kind !== "none" && (
+            <NeonBloom
+              channels={liveNeon}
+              mode={neon}
+              schedules={plan?.schedules}
+              sequenceRef={plan ? sequenceRef : undefined}
+              sequenceEndMs={plan?.endMs}
+            />
+          )}        </Canvas>
       </div>
     </div>
   );

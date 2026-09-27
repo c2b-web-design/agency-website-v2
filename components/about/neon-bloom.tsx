@@ -45,9 +45,13 @@ import {
   neonLevel,
   neonNumber,
   neonSettled,
+  patternMs,
   wallCardsInView,
+  type NeonCardId,
   type NeonChannel,
   type NeonMode,
+  type NeonSchedule,
+  type SequenceClock,
 } from "./about-neon";
 
 /**
@@ -87,6 +91,16 @@ const COMPOSITE_FRAG = /* glsl */ `
 type Props = {
   channels: NeonChannel[];
   mode: Exclude<NeonMode, { kind: "none" }>;
+  /**
+   * ⛔ THE §2 SEQUENCE (27 September 2026, `sequencePlan` in `about-neon.ts`): each card's start on the clock,
+   * derived from the reading of the card before. A card with NO entry stays dark. Absent → the fixed
+   * `NEON_SCHEDULES` (or the reduced set), as before.
+   */
+  schedules?: Partial<Record<NeonCardId, NeonSchedule>>;
+  /** The sequence's shared clock — set here, in the frame the neon clock starts; the text reads it. */
+  sequenceRef?: SequenceClock;
+  /** When the sequence's last word is written — `?reignite=` waits at least this long plus a second. */
+  sequenceEndMs?: number;
 };
 
 /** The bloom's GPU resources — see `createBloom`. */
@@ -165,7 +179,7 @@ function darken(channels: NeonChannel[]) {
  * the `state` `useFrame` hands in rather than hook values. The lint baseline is
  * ZERO warnings; this is how it stays there without a suppression.
  */
-export function NeonBloom({ channels, mode }: Props) {
+export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, sequenceEndMs = 0 }: Props) {
   const gl = useThree((s) => s.gl);
   const size = useThree((s) => s.size);
   const dpr = useThree((s) => s.viewport.dpr);
@@ -225,9 +239,15 @@ export function NeonBloom({ channels, mode }: Props) {
     const reduced =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    return reduced ? NEON_SCHEDULES_REDUCED : NEON_SCHEDULES;
-  }, []);
+    return planned ?? (reduced ? NEON_SCHEDULES_REDUCED : NEON_SCHEDULES);
+  }, [planned]);
   const schedulesRef = useRef(schedules);
+  /* ⚠ THE PLAN CAN ARRIVE AFTER MOUNT — the §2 sequence places the second card once the font has loaded — so the
+     ref follows the prop, and a frame is asked for in case the tracks had already settled. */
+  useEffect(() => {
+    schedulesRef.current = schedules;
+    invalidate();
+  }, [schedules, invalidate]);
 
   const clock = useRef({
     /** When the current ignition's track started, in `performance.now()` ms. */
@@ -246,6 +266,8 @@ export function NeonBloom({ channels, mode }: Props) {
     lastFrameAt: 0,
     /** Set once the neon has thrown; the base render carries on. */
     disabled: false,
+    /** Cards whose rim has struck in the current ignition — one `neon:strike:<id>` mark each, for measurement. */
+    struck: new Set<string>(),
   });
 
   /**
@@ -308,7 +330,9 @@ export function NeonBloom({ channels, mode }: Props) {
     if (mode.kind !== "ignite") return;
     if (mode.reigniteMs !== null) {
       ignite();
-      const id = window.setInterval(ignite, mode.reigniteMs);
+      /* ⚠ The §2 sequence runs far longer than the old fixed schedule (~26 s to CB's last word, not ~9 s), so
+         the replay waits for the whole performance — a shorter one would restart before CB ever struck. */
+      const id = window.setInterval(ignite, Math.max(mode.reigniteMs, Math.ceil((sequenceEndMs + 1000) / 1000) * 1000));
       return () => window.clearInterval(id);
     }
     const el = gl.domElement;
@@ -334,7 +358,7 @@ export function NeonBloom({ channels, mode }: Props) {
     document.addEventListener("visibilitychange", schedule);
     check();
     return stop;
-  }, [mode, ignite, gl]);
+  }, [mode, ignite, gl, sequenceEndMs]);
 
   /* On unmount the rims go dark, so a remount never inherits a lit tube. */
   useEffect(() => {
@@ -367,20 +391,48 @@ export function NeonBloom({ channels, mode }: Props) {
           c.start = now;
           c.started = true;
           c.pending = false;
+          c.struck.clear();
+          /* ⛔ THE SEQUENCE'S DOWNBEAT — the text's clock is THIS moment, not a second reading of the trigger. */
+          if (sequenceRef) sequenceRef.current = now;
           /* ⚠ AN INSTRUMENT HOOK: `verify/about-neon.mjs frames` splits frame
              pacing on this mark, so a long frame during LOAD is not read as one
              during the IGNITION. Cheap, and one per strike. */
           performance.mark("neon:ignite");
         }
+        /* ⚠ WITHOUT AN IGNITION (`?neon=full|off`, `?neont=`) the sequence still needs a clock, or no text would
+           ever start: it starts on the first frame — for a freeze, `tMs` in the past, so the text sits at the
+           same moment of the sequence as the frozen neon (and runs on from there). */
+        if (sequenceRef && sequenceRef.current === null && m.kind !== "ignite") {
+          sequenceRef.current = now - (m.kind === "freeze" ? m.tMs : 0);
+        }
         for (const ch of chs) {
           const s = schedulesRef.current[ch.id];
           let level = 0;
-          if (m.kind === "full") level = 1;
+          /* ⛔ NO SCHEDULE → DARK: a card outside the sequence (`sequenceOrder`) is never struck. */
+          if (!s) level = 0;
+          else if (m.kind === "full") level = 1;
           else if (m.kind === "freeze") level = neonLevel(s.pattern, m.tMs - s.startMs);
           else if (m.kind === "ignite" && c.started) {
             const t = now - c.start;
             level = neonLevel(s.pattern, t - s.startMs);
             changing ||= !neonSettled(s, t);
+            /* ⚠ INSTRUMENT HOOKS, once per LAP (the §2 sequence loops): `neon:strike:<id>` as the card's track
+               begins, `neon:out:<id>` as a track that ends dark reaches its end — the instant its text vanishes. */
+            const since = t - s.startMs;
+            if (since >= 0) {
+              const len = patternMs(s.pattern);
+              const per = "loop" in s.pattern.tail ? Math.max(s.pattern.tail.loop.periodMs, len) : Infinity;
+              const lap = per === Infinity ? 0 : Math.floor(since / per);
+              if (!c.struck.has(`${ch.id}:strike:${lap}`)) {
+                c.struck.add(`${ch.id}:strike:${lap}`);
+                performance.mark(`neon:strike:${ch.id}`);
+              }
+              const endsDark = s.pattern.segments.length > 0 && s.pattern.segments[s.pattern.segments.length - 1].to === 0;
+              if (endsDark && since - lap * (per === Infinity ? 0 : per) >= len && !c.struck.has(`${ch.id}:out:${lap}`)) {
+                c.struck.add(`${ch.id}:out:${lap}`);
+                performance.mark(`neon:out:${ch.id}`);
+              }
+            }
           }
           const k = ch.peak * level;
           /* ⚠ `setValues`, not `.emissiveIntensity = k`: the compiler lint reads

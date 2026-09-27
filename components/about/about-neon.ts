@@ -17,6 +17,7 @@
 
 import * as THREE from "three";
 import { ROOM_CARD_GUIDES } from "./about-room";
+import type { Chase } from "./card-text-timeline";
 
 // ── Colour ──────────────────────────────────────────────────────────────────
 
@@ -246,6 +247,8 @@ export type NeonPattern = { segments: NeonSegment[]; tail: NeonTail };
 export type NeonSchedule = { pattern: NeonPattern; startMs: number };
 
 const total = (p: NeonPattern) => p.segments.reduce((s, x) => s + x.ms, 0);
+/** A pattern's segments, end to end, ms (a loop's period may be longer — it holds its last level). */
+export const patternMs = total;
 
 /**
  * ⛔ THE TRACK — level 0..1 at `tMs` after the pattern starts. Pure and
@@ -434,6 +437,11 @@ const CS_IGNITION: NeonPattern = {
  *
  * `maxRisesPerSecond` checks this at module load; the table is the reasoning,
  * the check is the assertion.
+ *
+ * ⚠ *Overtaken 27 September 2026:* on plain `/about` the STARTS below no longer apply — the §2 sequence
+ * (`sequencePlan`) places each card by the reading of the one before (~21 s apart), and only the PATTERNS are
+ * taken from here. These fixed starts still drive the neon without the text (`?extrude=0`). The flash-cap table
+ * above is for these starts; ~21 s apart the sequence cannot breach it.
  */
 export const NEON_SCHEDULES: Record<NeonCardId, NeonSchedule> = {
   ca: { pattern: CA_IGNITION, startMs: 0 },
@@ -482,6 +490,192 @@ if (process.env.NODE_ENV !== "production") {
     }
   }
 }
+
+// ── The sequence — each card struck by the reading of the one before ─────────
+
+/**
+ * ⛔⛔ THE §2 SEQUENCE — Carl, 27 September 2026: *"lets go from navigation in About and press Roles. The rim
+ * should activate and then the text reveal start. If the text is at average speed a person reads, CB should
+ * activate and then text reveal as the last few words in CA are being read."* Then, on the structure: *"Yes,
+ * build it"* — and *"sort out CB timing first."* Reasoning: D-095's 27 September entry.
+ *
+ * ⛔ ONE TIMELINE, SET ONCE WHEN THE TRIGGER FIRES (D-092's — unchanged, so the `Roles` jump and a scroll both
+ * serve). Per card in `order`:
+ *   rim   — strikes at `rimAtMs` after the trigger: 0 for the first; for the next, as the reader of the card
+ *           before reaches its `fewWords`-th-last word — of its FIRST cycle (read off its chase)
+ *   text  — begins at `textAtMs` = the rim's ignition, ended (its pattern to its hold): *"The rim should
+ *           activate and then the text reveal start"*
+ * ⚠ REJECTED: the cards signalling each other ("CA nearly done → light CB") — more moving parts, a missed signal
+ * stalls the chain, and `?neont=` (the neon frozen at t) could no longer show a moment of the sequence. The
+ * timeline is known before it plays, so it can be measured, frozen and printed.
+ * ⛔ A card NOT in `order` gets NO schedule: its rim stays dark and it carries no text — ⚠ a working position
+ * (*"CB timing first"*), not a design. `?seq=ca,cb,cd,cs` previews the same rule over more cards.
+ * ⚠ The next card's rim strikes while the previous text is still writing, so the two overlap by design
+ * (Carl's *"as the last few words in CA are being read"*). ⚠ *Overtaken the same day:* what a card does after
+ * its copy is written was Carl's to give (*"i will let you know"*) — for CA he gave it: see `SEQUENCE_CYCLES`.
+ */
+/**
+ * ⛔⛔ HOW A CARD GOES OUT — Carl, 27 September 2026: *"CA goes through 2 cycles of text. As the reveal is about to
+ * catch up towards the end of the second cycle, the rim can go through the reverse process flicker and as soon as
+ * the last word has completed the rim and the text should disappear together. So the reverse flicker must be
+ * timed so both go off simultaneously."* Asked, he chose: the text holds steady and VANISHES at the last word
+ * (not flickering with the rim). ⛔ **THE NEXT CARD STILL STRIKES ON THE FIRST CYCLE** — Carl: *"It should
+ * activate on CA first cycle."* (A take built the same day struck CB at the end of CA's SECOND cycle, a relay;
+ * Carl corrected it.) So CA's second cycle writes while CB writes, and CA goes out partway through CB.
+ * `cycles`: how many passes of its copy a card writes before it goes out; absent = it never goes out (the
+ * chase loops, as before).
+ *
+ * ⛔⛔ EVERY CARD, THE SAME RULE — Carl, 27 September 2026, on CA → CB (*"Thats better"*): *"On CB first cycle, that
+ * should activate CD and the off mechanism as CB nears the end of its second cycle. The timings will all differ
+ * because of the length of the copy. What will be the same is the point that the next card is activated or turned
+ * off."* So the POINTS are shared — the next card on this card's FIRST cycle, 3rd-last word; out at the end of its
+ * SECOND — and the SECONDS follow each card's copy. ⚠ Read literally for the LAST card too: CS writes two cycles and
+ * goes out, so the room ends with every rim dark. Carl's to judge; `?seq=` shortens the chain.
+ */
+export const SEQUENCE_CYCLES: Partial<Record<NeonCardId, number>> = { ca: 2, cb: 2, cd: 2, cs: 2 };
+
+/**
+ * ⛔ THE REVERSE FLICKER — the ignition played BACKWARDS, level(t) = ignition(len − t). ⚠ The ignition's DARK
+ * LEAD-IN (its opening segments at 0 — CA's 700 ms before the first blip) is TRIMMED first: reversed, it would
+ * be dark time at the END, and the rim would be out that long before the last word — not "simultaneously".
+ * So the reversed pattern's final drop to 0 is its last instant. Built from the segments, not sampled:
+ *   a STEP segment (holds its level from its start) reverses to a step holding the same level;
+ *   a RAMP (prev → to) reverses to a ramp to → prev — preceded by an instant set (0 ms) when the level before
+ *   it is not where the ramp must start.
+ * `neonLevel` reads a 0 ms segment as an instant set. ⚠ Checked against ignition(len − t) numerically
+ * (`live-work/scripts/reverse-flicker-check.mjs`).
+ */
+export function reversePattern(p: NeonPattern): NeonPattern {
+  let k = 0;
+  while (k < p.segments.length && !p.segments[k].ramp && p.segments[k].to === 0) k++;
+  const segs = p.segments.slice(k);
+  const L = [0, ...segs.map((x) => x.to)];
+  const out: NeonSegment[] = [];
+  let prev = 0; // `neonLevel` starts every pattern from 0
+  for (let i = segs.length; i >= 1; i--) {
+    const sg = segs[i - 1];
+    if (sg.ramp) {
+      if (prev !== L[i]) out.push({ ms: 0, to: L[i] });
+      out.push({ ms: sg.ms, to: L[i - 1], ramp: true });
+      prev = L[i - 1];
+    } else {
+      out.push({ ms: sg.ms, to: L[i] });
+      prev = L[i];
+    }
+  }
+  if (prev !== 0) out.push({ ms: 0, to: 0 });
+  return { segments: out, tail: { hold: true } };
+}
+
+/** On, held, then off: `on`, then its last level held until `offAtMs` (on this pattern's own clock), then `off`. */
+export function onOffPattern(on: NeonPattern, offAtMs: number, off: NeonPattern): NeonPattern {
+  const lit = on.segments.length ? on.segments[on.segments.length - 1].to : 1;
+  return {
+    segments: [...on.segments, { ms: Math.max(0, offAtMs - total(on)), to: lit }, ...off.segments],
+    tail: { hold: true },
+  };
+}
+
+/** A card on the sequence, with ITS OWN chase (`layoutCardText`, `card-extrude.tsx`) — null until the font has loaded. */
+export type SequenceCard = { id: NeonCardId; chase: Chase | null };
+export type SequencePlan = {
+  schedules: Partial<Record<NeonCardId, NeonSchedule>>;
+  /** When each card's text begins, ms after the trigger. */
+  textAtMs: Partial<Record<NeonCardId, number>>;
+  /** When each card's text VANISHES (its last cycle's last word) — only a card that goes out. */
+  textEndMs: Partial<Record<NeonCardId, number>>;
+  /** The LATEST last word of any placed card (a card going out can end after the next one) — the whole performance so far. */
+  endMs: number;
+  /** A card's chase was not ready, so the cards after it are not placed yet. */
+  pending: boolean;
+  /** Most rises in any second across the placed schedules (`maxRisesPerSecond`; the cap is `FLASH_CAP`). */
+  maxRises: number;
+  /** The LOOP's period — every card comes round again this many ms later. Undefined: the sequence plays once. */
+  loopMs?: number;
+  /** Cards that would re-strike BEFORE they had gone out — the loop cannot close cleanly. Should be empty. */
+  overlaps: NeonCardId[];
+};
+/**
+ * ⛔⛔ THE LOOP — Carl, 27 September 2026, on the four in turn (*"Thats good"*): *"Now on CS first cycle, that should
+ * trigger CA and then we will have a loop cycle between all 4 cards."* The last card's FIRST cycle strikes the first
+ * card again — the same point as every other handover — so the whole sequence has one PERIOD: CA's strike to its
+ * next. Every card's track and text repeat on it. ⚠ This loops the SEQUENCE, not the trigger: D-092's trigger still
+ * fires once per visit; what it starts now runs on. `?seqloop=0` plays the chain once (as before).
+ * ⚠ ASSERTED: a card must be OUT before it comes round again (`overlaps`) — else the loop cannot close.
+ */
+export const SEQUENCE_LOOP = true;
+
+/** The words left in a card when the next one strikes — Carl's *"the last few words"*. A take; `?seqfew=`. */
+export const SEQUENCE_FEW_WORDS = 3;
+/**
+ * The cards in the sequence, in reading order (D-077). ⚠ Was CA, CB (*"sort out CB timing first"*); ALL FOUR since
+ * Carl's *"On CB first cycle, that should activate CD"*, the same day. `?seq=` overrides (e.g. `?seq=ca,cb`).
+ */
+export const SEQUENCE_ORDER: readonly NeonCardId[] = ["ca", "cb", "cd", "cs"];
+
+export function sequenceOrder(): NeonCardId[] {
+  const v = neonParam("seq");
+  const all: NeonCardId[] = ["ca", "cb", "cd", "cs"];
+  if (v === null) return [...SEQUENCE_ORDER];
+  const ids = v.split(",").filter((id): id is NeonCardId => (all as string[]).includes(id));
+  return ids.length ? ids : [...SEQUENCE_ORDER];
+}
+
+/**
+ * ⚠ READ OFF EACH CARD'S OWN CHASE (since 27 September, second take): CA's second cycle begins only after its
+ * first has been ERASED, and the erase tail depends on the line breaks — so the plan could not come from the
+ * word count, and a card whose font has not loaded holds the chain (`pending`). The first card's rim and text
+ * need only its ignition, so the trigger never waits on the font.
+ */
+export function sequencePlan(cards: SequenceCard[], reduced: boolean, fewWords: number, loop = SEQUENCE_LOOP, cycles = SEQUENCE_CYCLES): SequencePlan {
+  const set = reduced ? NEON_SCHEDULES_REDUCED : NEON_SCHEDULES;
+  const plan: SequencePlan = { schedules: {}, textAtMs: {}, textEndMs: {}, endMs: 0, pending: false, maxRises: 0, overlaps: [] };
+  let rimAt = 0;
+  for (const c of cards) {
+    const on = set[c.id].pattern;
+    const textAt = rimAt + total(on);
+    plan.schedules[c.id] = { pattern: on, startMs: rimAt };
+    plan.textAtMs[c.id] = textAt;
+    if (!c.chase) {
+      plan.pending = true;
+      break;
+    }
+    const n = cycles[c.id];
+    const lastPass = textAt + ((n ?? 1) - 1) * c.chase.periodMs;
+    const lastWord = lastPass + c.chase.writeEndMs;
+    if (n !== undefined) {
+      const off = reversePattern(on);
+      plan.schedules[c.id] = { pattern: onOffPattern(on, lastWord - total(off) - rimAt, off), startMs: rimAt };
+      plan.textEndMs[c.id] = lastWord;
+    }
+    plan.endMs = Math.max(plan.endMs, lastWord);
+    /* ⛔ THE FIRST CYCLE — Carl: *"It should activate on CA first cycle."* */
+    rimAt = textAt + c.chase.headMs(c.chase.totalWords - fewWords);
+  }
+  /* ⛔ CLOSE THE LOOP: where the next card would strike after the last is where the first strikes again. Only when
+     every card is placed, and only if every card goes out (a card that holds on could never re-strike). */
+  const placed = Object.keys(plan.schedules) as NeonCardId[];
+  if (loop && !plan.pending && placed.length > 1 && placed.every((id) => plan.textEndMs[id] !== undefined)) {
+    const P = rimAt;
+    plan.loopMs = P;
+    for (const id of placed) {
+      const sch = plan.schedules[id]!;
+      if (total(sch.pattern) > P) plan.overlaps.push(id);
+      plan.schedules[id] = { startMs: sch.startMs, pattern: { segments: sch.pattern.segments, tail: { loop: { periodMs: P } } } };
+    }
+  }
+  plan.maxRises = maxRisesPerSecond(Object.values(plan.schedules) as NeonSchedule[]);
+  return plan;
+}
+
+/**
+ * ⛔ THE SEQUENCE'S CLOCK — ONE per canvas mount: a React ref (`useRef`) owned by `AboutCardCanvas`, NOT module
+ * state — module state would outlive a client-side navigation away and back, and the text would come back
+ * mid-sentence before the rims had struck. `current` is the trigger's moment (`performance.now()` ms), `null`
+ * until then. `NeonBloom` writes it in the SAME FRAME its neon clock starts; each card's text reads it.
+ * ⚠ A REF, not a plain object, because the compiler lint forbids mutating a prop and exempts `ref.current`.
+ */
+export type SequenceClock = { current: number | null };
 
 // ── The trigger — the wall cards in FULL view (D-092) ───────────────────────
 

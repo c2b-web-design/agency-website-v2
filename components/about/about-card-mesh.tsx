@@ -58,7 +58,7 @@ import {
   GLASS_TRANSMISSION,
 } from "./about-card-glass";
 /* ⛔ D-093 — consumed ONLY when the `neon` prop is passed (CA and CB). */
-import { NEON_LAYER, type NeonChannel } from "./about-neon";
+import { NEON_LAYER, neonNumber, type NeonChannel } from "./about-neon";
 /* ⛔ D-094 — consumed ONLY when the `etch` prop is passed (CA, behind `?etch=1`). */
 import { buildEtchTexture, resolveEtchFamily, type EtchSettings } from "./card-etch";
 
@@ -68,6 +68,17 @@ import { buildEtchTexture, resolveEtchFamily, type EtchSettings } from "./card-e
 const DIAG_RIM_COLOR = "#9a9a9a";
 const DIAG_BEVEL_COLOR = "#7a7a7a";
 const DIAG_FACE_COLOR = "#c8c8c8";
+
+/**
+ * The face's highlight ceiling, linear radiance — see `highlightCap` in `AboutCardMesh`. `?hlcap=` overrides; 0 = off.
+ * ⛔ 0.1, MEASURED 27 September 2026 (`live-work/scripts/highlight-cap-sweep.mjs`, one light held at each card's worst
+ * lap point, dips off): worst word ÷ its ambient-only contrast, uncapped → 0.1:
+ *   CS 0.24 → 1.00 · CB 0.59 → 0.96 · CD 0.55 → 1.00 · CA never washed (1.00)
+ * while the hotspot still adds +69…+111 luma to the bare face (uncapped +106…+133) — the sheen stays. 1 and 2
+ * changed nothing (the peak sits below their knees); 0.07 gains no legibility and flattens the sheen further.
+ * ⚠ A take for Carl's eye, moving.
+ */
+const HIGHLIGHT_CAP = 0.1;
 
 /**
  * Superellipse exponent used to combine the two axis curvatures.
@@ -1074,6 +1085,46 @@ export function AboutCardMesh({
     [gradient],
   );
 
+  /* ⛔⛔ THE FACE'S HIGHLIGHT CAP — Carl, 27 September 2026: *"The goal is to make the text legible at all times
+     while preserving the 3D effect the light has upon the card face… The choice is yours"*, then *"if that is the
+     best route just build it, i will judge by eye."* Reasoning: D-095's 27 September entry.
+     ⚠ WHAT WASHES THE TEXT IS THE LIGHT MIRRORED IN THE DOME — the face's DIRECT SPECULAR, a word-wide GGX lobe
+     at roughness 0.20/0.25. PROVEN: CS held at 70% of a lap shows the same white spot with the text removed
+     (`live-work/screenshots/blowout-scan-27-september/lap-700-bare.png`). So the letters' own material cannot fix
+     it (roughness/emissive), a spot's penumbra only softens the cone's edge, and three's layers cannot keep a
+     light off one mesh — `WebGLRenderer` tests lights against the CAMERA's layers only (r185, :1393).
+     ⛔ A LIMITER, NOT A FADER: below the knee (half the ceiling) the highlight is untouched; above it, it eases
+     toward the ceiling (slope 1 at the knee, so no edge in the gradient — §14a) and never reaches white. The spot
+     still travels the dome at full size and position, so the 3D read stays; only its peak is held.
+     ⚠ ONLY `directSpecular` — the room's reflection (indirect), the frost (transmission mixes the DIFFUSE term,
+     `meshphysical.glsl.js:196`) and the glass constants (D-089) are untouched. The bevel is NOT capped: it
+     carries no text, and its glints are the edge the rim/bevel exist to draw.
+     `?hlcap=0` removes the patch (the material is then the original program); `?hlcap=<n>` sets the ceiling in
+     linear radiance, before ACES. ⚠ The default is a take, set by the 27 September sweep. */
+  const highlightCap = useMemo(() => {
+    const cap = neonNumber("hlcap", HIGHLIGHT_CAP, 0, 50);
+    if (cap <= 0) return {};
+    return {
+      onBeforeCompile: (shader: { uniforms: Record<string, THREE.IUniform>; fragmentShader: string }) => {
+        shader.uniforms.uHighlightCap = { value: cap };
+        shader.fragmentShader = shader.fragmentShader
+          .replace("#include <common>", "#include <common>\nuniform float uHighlightCap;")
+          .replace(
+            "vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;",
+            `vec3 capSpec = reflectedLight.directSpecular;
+            float capPeak = max(capSpec.r, max(capSpec.g, capSpec.b));
+            float capKnee = 0.5 * uHighlightCap;
+            if (capPeak > capKnee) {
+              float capRoom = uHighlightCap - capKnee;
+              capSpec *= (capKnee + capRoom * (1.0 - exp(-(capPeak - capKnee) / capRoom))) / capPeak;
+            }
+            vec3 totalSpecular = capSpec + reflectedLight.indirectSpecular;`,
+          );
+      },
+      customProgramCacheKey: () => "about-face-highlight-cap",
+    };
+  }, []);
+
   // ── BEVEL — a swept band sloping inward and toward the viewer. ──
   //
   // ⛔ CARL NAMES ITS PURPOSE: *"bevels and light shone from the right direction
@@ -1348,6 +1399,7 @@ export function AboutCardMesh({
              ⚠ `thickness` IS IN MILLIMETRES — object space, already scaled by
              the group's scale. ⛔ Do NOT divide it by `MM_PER_UNIT`. */
           <meshPhysicalMaterial
+            {...highlightCap}
             color={GLASS_COLOR}
             roughness={glassRoughness}
             metalness={GLASS_METALNESS}

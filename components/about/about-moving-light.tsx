@@ -68,8 +68,9 @@
  *   ?lmrevsec=4       seconds a reversal takes (ease to a stop, away the other way)
  *   ?lmglobal=1       the static key and fill back ON — ⚠ OFF BY DEFAULT since 25 September (Carl: *"yes
  *                     try it, im all for experimentation"*); ambient stays
- *   ?lighthelpers=1|0 the trajectory — ON by default on LOCALHOST only
- *   ?lmdip=0          the blowout dips OFF (full intensity all the way round) — see `BLOWOUT_DIPS`
+ *   ?lighthelpers=1   the trajectory — OFF by default since 27 September (was ON on localhost)
+ *   ?lmdip=1          the blowout dips back ON — ⚠ OFF by default since 27 September (the face's highlight cap
+ *                     replaced them) — see `BLOWOUT_DIPS`
  *   ?lmfreeze=0.25    MEASUREMENT: hold both lights at this fraction of a lap (no clock, no reversals)
  *   ?lmonly=1|2       MEASUREMENT: only L1 (or L2) lit — the other's intensity is 0
  */
@@ -127,19 +128,17 @@ function orbitSettings(): OrbitSettings {
     coneRad: (neonNumber("lmcone", 40, 5, 85) * Math.PI) / 180,
     exposure: neonNumber("lmexp", 0.6, 0, 20),
     color: neonHex("#ffffff", "lmhex"),
-    /* ⛔ ON BY DEFAULT ON LOCALHOST — Carl: *"Put the lights trajectory on the screen."* ⚠ Off anywhere
-       else, so a push cannot put the diagnostic on the live site. */
-    helpers: (() => {
-      const v = neonParam("lighthelpers");
-      if (v === "1") return true;
-      if (v === "0") return false;
-      return window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    })(),
+    /* ⚠ SUPERSEDED — was ON BY DEFAULT ON LOCALHOST (Carl: *"Put the lights trajectory on the screen."*).
+       ⛔ OFF EVERYWHERE since 27 September 2026 — Carl: *"You can take the guide lines off for the lights."*
+       `?lighthelpers=1` still draws them. */
+    helpers: neonParam("lighthelpers") === "1",
     /* ⚠ MEASUREMENT ONLY — the blowout scan (Carl, 25 September 2026, third session: *"watch the travelling
        light and see where it blows out the text"*) needs every lap position, repeatably. Absent → no effect. */
     freeze: neonParam("lmfreeze") === null ? null : neonNumber("lmfreeze", 0, 0, 1),
     only: neonParam("lmonly") === "1" ? 1 : neonParam("lmonly") === "2" ? 2 : 0,
-    dips: neonParam("lmdip") !== "0",
+    /* ⛔ OFF BY DEFAULT since 27 September 2026 — the face's HIGHLIGHT CAP (`about-card-mesh.tsx`) does their job
+       without dimming the light. `?lmdip=1` brings them back. See `BLOWOUT_DIPS`. */
+    dips: neonParam("lmdip") === "1",
   };
 }
 
@@ -164,6 +163,15 @@ function orbitSettings(): OrbitSettings {
  * full intensity outside ±`half`, easing down to `floor` at `at` and back up (§14a: legato, no toggle). At the
  * default 40 s lap, ±0.08 is ±3.2 s either side. ⚠ TAKES, for Carl's eye moving — the floors keep light on
  * the face (*"we still want some effect"*); CD dips least because it blows out least.
+ *
+ * ⛔⛔ SUPERSEDED AS THE DEFAULT, 27 September 2026 — OFF unless `?lmdip=1`. Carl: *"make the text legible at all
+ * times while preserving the 3D effect the light has upon the card face… The choice is yours."* ⚠ The re-check with
+ * the rims lit and the new roughness (`live-work/scripts/light-blowout-scan-27-september.mjs`, dips off) MOVED the
+ * points: CS ~70% (worst, 0.24) · CB ~64% · CD ~36% · **CA no longer washes at all** — so the table above is
+ * stale as positions. ⛔ And a dip dims the WHOLE light, the face's broad lift with it, to fix a word-wide spot.
+ * The fix now sits where the fault is: the face's DIRECT SPECULAR is limited (`HIGHLIGHT_CAP`,
+ * `about-card-mesh.tsx`), and the light runs at full intensity all the way round. Kept, not deleted: the
+ * mechanism is a fader Carl may still want.
  */
 const BLOWOUT_DIPS: { card: string; at: number; half: number; floor: number }[] = [
   { card: "CA", at: 0.07, half: 0.08, floor: 0.3 },

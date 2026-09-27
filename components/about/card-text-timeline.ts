@@ -238,6 +238,16 @@ export type Chase = {
   /** Erases started BEFORE the last-word cue so they finish at the pace (only with `eraseAtLastWord`).
       Published for the same reason as `clipped`. */
   broughtForward: number;
+  /**
+   * ⛔ FOR THE §2 SEQUENCE (27 September 2026, `sequencePlan` in `about-neon.ts`) — read off THIS chase, so the
+   * sequence and the card cannot disagree about when a word is reached:
+   *   totalWords  the copy's words
+   *   writeEndMs  ms into a pass when the last word is written (the erase tail follows, to `periodMs`)
+   *   headMs(s)   ms into a pass when the write head reaches word position `s` (0..totalWords) — lead included
+   */
+  totalWords: number;
+  writeEndMs: number;
+  headMs: (wordPos: number) => number;
 };
 
 /**
@@ -433,5 +443,13 @@ export function chase(wordsPerLine: number[], p: ChaseParams, ease?: SentenceEas
     return out;
   };
 
-  return { at, periodMs, graceMs, clipped, broughtForward };
+  const headMs = (wordPos: number) => {
+    const s = Math.max(0, Math.min(total, wordPos));
+    if (s >= total) return writeEnd;
+    let i = 0;
+    while (i + 1 < L && c[i + 1] <= s) i++;
+    return ws[i] + (tm.at(s) - tm.at(c[i])) * (i === 0 ? p.lead : 1);
+  };
+
+  return { at, periodMs, graceMs, clipped, broughtForward, totalWords: total, writeEndMs: writeEnd, headMs };
 }

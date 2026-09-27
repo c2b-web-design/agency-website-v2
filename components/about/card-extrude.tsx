@@ -6,7 +6,10 @@
    day — Carl: *"Same text size, same type of text. Same reveal… The only
    difference being is that CB has more words."* ⛔ It was ONE CARD PER LOAD (the selector is now `extrudeCards`):
    *"isolate CA text so we can focus on CB… one card at a time."* The sequence
-   (each card striking as the previous ends) is a later chunk, once all four have text.
+   (each card striking as the previous ends) is a later chunk, once all four have text. ⚠ *Overtaken
+   27 September 2026:* BUILT for CA → CB — the §2 sequence (`sequencePlan`, `about-neon.ts`; the text's
+   `sequenceRef` / `startAtMs` / `endAtMs` props) — and then for all four, CA → CB → CD → CS, each writing two
+   cycles and going out (`SEQUENCE_CYCLES`).
    ⚠ *Corrected in place:* this read "BEHIND `?extrude=1`". Since session 2 the
    same day it is ON BY DEFAULT on plain `/about`, with every rim off;
    `?extrude=0` restores the previous page (see `extrudeEnabled`).
@@ -38,10 +41,10 @@ import * as THREE from "three";
 import { FontLoader, type Font } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { neonHex, neonNumber, neonParam, wallCardsInView } from "./about-neon";
+import { neonHex, neonNumber, neonParam, wallCardsInView, type SequenceClock } from "./about-neon";
 import { faceBaseZ, faceDome } from "./about-card-mesh";
 import type { CardDims } from "./about-card-geometry";
-import { chase, easeCostMs, eraseLag, sentenceEnds, setBalanced, setJustified, type Chase, type LineState, type SetLine } from "./card-text-timeline";
+import { chase, easeCostMs, eraseLag, sentenceEnds, setBalanced, setJustified, type Chase, type LineState, type SentenceEase, type SetLine } from "./card-text-timeline";
 
 // ── Candidates ──────────────────────────────────────────────────────────────
 
@@ -251,7 +254,11 @@ export function extrudeSettings(card: ExtrudeCardId): ExtrudeSettings {
        blows out the text."* Every card is now two FULL pages, so the static first page fills every slot —
        every line position the light can wash is occupied. ⚠ Page 2 is not shown while static; its lines sit
        in the same slots. `?textstatic=0` runs the pages. */
-    still: switchParam("textstatic", true),
+    /* ⛔⛔ THE PAGES RUN AGAIN — Carl, 27 September 2026, the §2 sequence: *"The rim should activate and then the
+       text reveal start."* The blowout work that needed every slot filled is done (the face's highlight cap).
+       `?textstatic=1` holds the first page again. ⚠ The blowout scripts need it AND `seq=ca,cb,cd,cs` (every card's
+       text and rim) to measure what they did before — the 27 September ones pass both; the older ones do not. */
+    still: switchParam("textstatic", false),
     /* ⛔ 52 → 60 mm, the same day: *"we can make the text a bit bigger."* A take (+15%). On the new CA's
        face (block 1140 × 617 mm) 60 mm gives **7 slots** (52 gave 8; the old room's 6). ⚠ Carl ruled on
        24 September that CB uses CA's size (*"Same text size"*), so this is every card's default. */
@@ -325,7 +332,7 @@ const EM_UNITS = 100000 / 72;
    mounted each would fetch and PARSE it. A failed load is forgotten so a remount
    retries. */
 let fontLoad: Promise<Font> | null = null;
-function loadFont(): Promise<Font> {
+export function loadFont(): Promise<Font> {
   if (!fontLoad) {
     fontLoad = new FontLoader().loadAsync(FONT_URL);
     fontLoad.catch(() => {
@@ -334,7 +341,60 @@ function loadFont(): Promise<Font> {
   }
   return fontLoad;
 }
-/** ⛔ The text's clock waits on the landing trigger only when this is true — PARKED, see the clock below. */
+
+/**
+ * ⛔ ONE CARD'S TEXT, SET AND TIMED — the lines, the slots and the CHASE, from the font, the copy and the card.
+ * ⚠ ONE FUNCTION FOR BOTH READERS (27 September 2026): the card builds its letters from it, and the §2 sequence
+ * (`sequencePlan`, `about-neon.ts`) reads the SAME chase to know when this card's reader reaches a word and when
+ * its second cycle ends — which needs the line breaks (the erase tail), so it could not be worked out from the
+ * word count alone. Pure and cheap: no geometry (the letters are the expensive part, and stay in the card).
+ * `chase` is null when the card has fewer than 3 slots (the card says so and mounts nothing).
+ */
+export type TextLayout = {
+  lines: SetLine[];
+  widestGap: number;
+  overlong: string[];
+  balanced: boolean;
+  missing: string[];
+  lh: number;
+  slots: number;
+  blockW: number;
+  sentenceEase: SentenceEase;
+  chase: Chase | null;
+};
+export function layoutCardText(font: Font, body: string, s: ExtrudeSettings, dims: { faceWidthMm: number; faceHeightMm: number }): TextLayout {
+  const glyphs = font.data.glyphs;
+  const mmPerUnit = s.emMm / EM_UNITS;
+  const missing = [...new Set([...body.replace(/\s/g, "")].filter((c) => !glyphs[c]))];
+  const widthOf = (w: string) => [...w].reduce((a, c) => a + (glyphs[c]?.ha ?? 0), 0) * mmPerUnit;
+  const space = (glyphs[" "]?.ha ?? EM_UNITS * 0.25) * mmPerUnit;
+  const blockW = dims.faceWidthMm * s.blockW;
+  const blockH = dims.faceHeightMm * s.blockH;
+  /* ⛔ THE LINE BREAKER — BALANCED BY DEFAULT since 25 September 2026: the paragraph's breaks set
+     together, weak line-endings penalised (`setBalanced`). Carl, on CA set this way: *"That looks a lot
+     better."* `?textbreak=greedy` restores the old line-by-line setter for comparison. */
+  const words = body.split(/\s+/).filter(Boolean);
+  const balanced = neonParam("textbreak") !== "greedy";
+  const { lines, widestGap, overlong } = balanced
+    ? setBalanced(words, widthOf, space, blockW)
+    : setJustified(words, widthOf, space, blockW);
+  const lh = s.emMm * s.lineHeight;
+  const slots = Math.floor(blockH / lh);
+  const wordsPerLine = lines.map((l) => l.words.length);
+  const sentenceEase = { sentenceEnds: sentenceEnds(lines), floor: s.easeFloor, words: s.easeWords };
+  const ch =
+    slots < 3
+      ? null
+      : chase(
+          wordsPerLine,
+          { wpm: s.wpm, lead: s.lead, restMs: s.restMs, slots, lag: eraseLag(slots), eraseAtLastWord: s.eraseAtLastWord },
+          sentenceEase,
+        );
+  return { lines, widestGap, overlong, balanced, missing, lh, slots, blockW, sentenceEase, chase: ch };
+}
+/** ⛔ The text's clock waits on the landing trigger only when this is true — PARKED, see the clock below.
+    ⚠ Since 27 September a card ON THE §2 SEQUENCE ignores this: its start is the shared clock (`sequenceRef`),
+    which the neon's own trigger sets. This switch now governs only a card mounted without the neon. */
 const TEXT_START_ON_LANDING = false;
 
 /** Any part of the canvas inside the window, in a visible tab. */
@@ -372,6 +432,26 @@ type Props = {
   settings: ExtrudeSettings;
   /** The spot's distance from the face centre, mm. Default: CA's. */
   lightDistanceMm?: number;
+  /**
+   * ⛔ THE §2 SEQUENCE (27 September 2026): the shared clock (`NeonBloom` sets it as the rims' ignition starts)
+   * and this card's own offset on it — its rim's ignition, ended (`sequencePlan`, `about-neon.ts`). When given,
+   * the text starts THERE and nowhere else; the card's own trigger check (below) is not used.
+   */
+  sequenceRef?: SequenceClock;
+  startAtMs?: number;
+  /**
+   * ⛔ WHEN THIS CARD GOES OUT (27 September 2026): ms after the trigger at which its text VANISHES — the last
+   * cycle's last word, the same instant its rim's reverse flicker reaches 0 (`SEQUENCE_CYCLES`, `about-neon.ts`).
+   * Carl: *"as soon as the last word has completed the rim and the text should disappear together."* Absent =
+   * the text never goes out.
+   */
+  endAtMs?: number;
+  /**
+   * ⛔ THE LOOP (27 September 2026): the sequence's period — every card's start and end come round again this
+   * many ms later. Carl: *"on CS first cycle, that should trigger CA and then we will have a loop cycle between all
+   * 4 cards."* Absent = the card plays once.
+   */
+  loopMs?: number;
 };
 
 export function CardExtrudedText({
@@ -381,6 +461,10 @@ export function CardExtrudedText({
   crownMm,
   settings: s,
   lightDistanceMm = LIGHT_DISTANCE_MM,
+  sequenceRef,
+  startAtMs = 0,
+  endAtMs,
+  loopMs,
 }: Props) {
   const gl = useThree((st) => st.gl);
   const invalidate = useThree((st) => st.invalidate);
@@ -412,29 +496,12 @@ export function CardExtrudedText({
         return;
       }
       if (cancelled) return;
-      const glyphs = font.data.glyphs;
       const res = font.data.resolution;
-      const mmPerUnit = s.emMm / EM_UNITS;
-      const missing = [...new Set([...body.replace(/\s/g, "")].filter((c) => !glyphs[c]))];
+      const { lines, widestGap, overlong, balanced, missing, lh, slots, blockW, sentenceEase, chase: laid } = layoutCardText(font, body, s, { faceWidthMm: dims.faceWidthMm, faceHeightMm: dims.faceHeightMm });
       if (missing.length) {
         console.error(`⛔ ${id.toUpperCase()} EXTRUDED TEXT: glyphs missing from the font ${JSON.stringify(missing)} — re-run scripts/build-geist-typeface.mjs.`);
       }
-      const widthOf = (w: string) => [...w].reduce((a, c) => a + (glyphs[c]?.ha ?? 0), 0) * mmPerUnit;
-      const space = (glyphs[" "]?.ha ?? EM_UNITS * 0.25) * mmPerUnit;
-
-      const blockW = dims.faceWidthMm * s.blockW;
-      const blockH = dims.faceHeightMm * s.blockH;
-      /* ⛔ THE LINE BREAKER — BALANCED BY DEFAULT since 25 September 2026: the paragraph's breaks set
-         together, weak line-endings penalised (`setBalanced`). Carl, on CA set this way: *"That looks a lot
-         better."* `?textbreak=greedy` restores the old line-by-line setter for comparison. */
-      const words = body.split(/\s+/).filter(Boolean);
-      const balanced = neonParam("textbreak") !== "greedy";
-      const { lines, widestGap, overlong } = balanced
-        ? setBalanced(words, widthOf, space, blockW)
-        : setJustified(words, widthOf, space, blockW);
-      const lh = s.emMm * s.lineHeight;
-      const slots = Math.floor(blockH / lh);
-      if (slots < 3) {
+      if (!laid) {
         console.error(`⛔ ${id.toUpperCase()} EXTRUDED TEXT: only ${slots} line slots at ${s.emMm}mm — the chase needs 3. Nothing mounted.`);
         return;
       }
@@ -462,12 +529,7 @@ export function CardExtrudedText({
       }
 
       const wordsPerLine = lines.map((l) => l.words.length);
-      const sentenceEase = { sentenceEnds: sentenceEnds(lines), floor: s.easeFloor, words: s.easeWords };
-      const ch = chase(
-        wordsPerLine,
-        { wpm: s.wpm, lead: s.lead, restMs: s.restMs, slots, lag: eraseLag(slots), eraseAtLastWord: s.eraseAtLastWord },
-        sentenceEase,
-      );
+      const ch = laid;
       const easeCost = easeCostMs(wordsPerLine, s.wpm, sentenceEase);
       const tris = flat.reduce((a, g) => a + g.attributes.position.count / 3, 0);
       console.info(
@@ -488,7 +550,7 @@ export function CardExtrudedText({
       cancelled = true;
       flat.forEach((g) => g.dispose());
     };
-  }, [id, body, dims.faceWidthMm, dims.faceHeightMm, s.emMm, s.depthMm, s.wpm, s.lead, s.easeFloor, s.easeWords, s.restMs, s.eraseAtLastWord, s.blockW, s.blockH, s.lineHeight]);
+  }, [id, body, dims.faceWidthMm, dims.faceHeightMm, s, s.emMm, s.depthMm, s.wpm, s.lead, s.easeFloor, s.easeWords, s.restMs, s.eraseAtLastWord, s.blockW, s.blockH, s.lineHeight]);
 
   // ── The slots: N meshes, each with its own clipping pair ──
   type Slot = { mesh: THREE.Mesh; mat: THREE.MeshStandardMaterial; reveal: THREE.Plane; erase: THREE.Plane; key: string };
@@ -552,8 +614,11 @@ export function CardExtrudedText({
      soon as the canvas is on screen — as the moving light does. The trigger code is KEPT; flip the switch
      when the reworked trigger lands. */
   const startRef = useRef<number | null>(null);
+  /* ⛔ ON THE §2 SEQUENCE the start is the shared clock + this card's offset (read each frame, below) — so this
+     card-local check is not used. ⚠ It is KEPT for a card mounted without the neon (`?neon=none`). */
+  const onSequence = !!sequenceRef;
   useEffect(() => {
-    if (!built) return;
+    if (!built || onSequence) return;
     const ready = () =>
       TEXT_START_ON_LANDING ? wallCardsInView(gl.domElement) : canvasOnScreen(gl.domElement);
     const check = () => {
@@ -572,7 +637,10 @@ export function CardExtrudedText({
       window.removeEventListener("resize", check);
       document.removeEventListener("visibilitychange", check);
     };
-  }, [built, gl, id, invalidate]);
+  }, [built, gl, id, invalidate, onSequence]);
+  /** The lap last marked (−1: none yet). */
+  const markedStart = useRef(-1);
+  const markedEnd = useRef(-1);
 
   // ── Each frame: which line is in which slot, and where its two edges are ──
   const v = useRef({ p: new THREE.Vector3(), x: new THREE.Vector3() });
@@ -585,8 +653,33 @@ export function CardExtrudedText({
     }
     const b = built;
     const group = groupRef.current;
-    const start = startRef.current;
+    const seqStart = sequenceRef?.current ?? null;
+    const start = sequenceRef ? (seqStart === null ? null : seqStart + startAtMs) : startRef.current;
     if (!b || !group || (start === null && !s.still)) return;
+    /* ⛔ THE CARD'S OWN TIME. On a looping sequence it folds back every `loopMs` — the card comes round again, from
+       its first word, as the card before it reaches its third-last. `round` counts the laps (for the marks). */
+    let elapsed = start === null ? 0 : performance.now() - start;
+    let round = 0;
+    if (sequenceRef && loopMs && elapsed >= 0) {
+      round = Math.floor(elapsed / loopMs);
+      elapsed -= round * loopMs;
+    }
+    if (sequenceRef && start !== null && elapsed >= 0 && markedStart.current !== round) {
+      markedStart.current = round;
+      performance.mark(`extrude:start:${id}`);
+    }
+    /* ⛔ OUT: at the last cycle's last word every slot goes, in one frame, until the card comes round again. */
+    if (sequenceRef && start !== null && endAtMs !== undefined && elapsed >= endAtMs - startAtMs) {
+      const gone = slotsRef.current;
+      gone.forEach((sl) => {
+        sl.mesh.visible = false;
+      });
+      if (markedEnd.current !== round) {
+        markedEnd.current = round;
+        performance.mark(`extrude:end:${id}`);
+      }
+      return;
+    }
     const slots = slotsRef.current;
     if (!slots.length) return;
 
@@ -595,7 +688,7 @@ export function CardExtrudedText({
        else asks for one. */
     const states: LineState[] = s.still
       ? Array.from({ length: Math.min(b.slots, b.lines.length) }, (_, i) => ({ slot: i, line: i, reveal: 1, erase: 0 }))
-      : b.chase.at(performance.now() - (start ?? 0));
+      : b.chase.at(elapsed);
     const mw = group.matrixWorld;
     const X = v.current.x.set(1, 0, 0).transformDirection(mw);
     const worldX = (xLocal: number) => v.current.p.set(xLocal, 0, 0).applyMatrix4(mw).dot(X);
