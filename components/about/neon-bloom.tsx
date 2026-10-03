@@ -46,7 +46,7 @@ import {
   neonNumber,
   neonSettled,
   patternMs,
-  wallCardsInView,
+  roomWipeClearsCA,
   type NeonCardId,
   type NeonChannel,
   type NeonMode,
@@ -345,7 +345,9 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
     }
     function check() {
       raf = 0;
-      if (wallCardsInView(el)) {
+      /* ⛔ Since 3 October 2026 the trigger is the ROOM'S WIPE clearing CA's bottom (D-092; `roomWipeClearsCA`), not
+         "the wall cards in the window" — the room is on screen behind §1 now, so that read true from landing. */
+      if (roomWipeClearsCA(el)) {
         stop();
         ignite();
       }

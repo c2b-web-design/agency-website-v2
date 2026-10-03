@@ -19,7 +19,7 @@ import WallCardText from "@/components/about/wall-card-text";
 
    ⚠ THE §5a NOTE EXISTS AND WAS NOT ROUTED TO THE ARCHITECT BEFORE THIS LANDED:
    `live-work/structural-decision-note-about-canvas.md`. Recorded, not hidden. */
-import AboutCardCanvas from "@/components/about/about-card-canvas";
+import AboutCardCanvas, { RoomStage } from "@/components/about/about-card-canvas";
 /** ⛔ The §2 plate — the NEW ROOM (office-image-3), 25 September 2026. It replaces `PillarboxPlate`,
     whose bands and skirting are cut from the OLD photograph; that file is kept, unused. */
 import RoomPlate from "@/components/about/room-plate";
@@ -322,206 +322,13 @@ export default function About() {
           third-person copy reads *"as if someone else or AI wrote it"*.
           ⛔ THIS IS THE ITEM MOST LIKELY TO ERODE — polished copy drifts into the
           third person on its own. */}
-      <section className="min-h-screen flex flex-col justify-center [&>div]:w-full">
-        <Container>
-          {/* ⚠⚠ TWO EQUAL COLUMNS — Carl, 3 September 2026, and the SYMMETRY IS
-              THE POINT: *"make both headline font size the same. Space them out
-              equally."* ⛔ Carl balanced the two paragraphs BY EYE against this
-              arrangement, then added a sentence to text 1 to even them up. Change
-              the column widths, the gap or either heading's size and the balance
-              he approved is gone.
-
-              ⛔ THE h1 IS `text-3xl`, DOWN FROM `text-4xl md:text-5xl`, TO MATCH
-              THE h2. ⚠ It is the PAGE's h1 and it now heads the LEFT COLUMN rather
-              than spanning the page — an h1 and an h2 sitting as visual equals is
-              deliberate, not an oversight.
-
-              ⚠ `max-w-2xl` was REMOVED from this block — it was sized for one
-              column and would squeeze both into half the page. */}
-          <div className="pt-32 pb-24">
-            <div className="grid md:grid-cols-2 gap-12 md:gap-20">
-            <div>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              How the work gets done.
-            </h1>
-            {/* ⛔⛔ TEXT 1 — A STATEMENT. NO FIRST PERSON, AND THAT IS A RULING.
-                Carl, 3 September 2026: *"Statement. No i or we."*
-
-                ⚠⚠ THIS IS NOT THE THIRD-PERSON DRIFT THE FILE WARNS ABOUT. The
-                first-person ruling (`about-section-thinking.md` L1183–1214) governs
-                copy about THIS OPERATION — Carl himself, the seats, who approves.
-                ⛔ THIS PARAGRAPH IS NOT ABOUT THIS OPERATION. It is about how the
-                tools behave in general, and it is impersonal BY INSTRUCTION.
-
-                ⛔ THE SAME TWO-REGISTER SPLIT AS THE HOMEPAGE (D-067, D-068):
-                statements state, and the speaking happens in the block that follows.
-                ⚠ TEXT 2 CARRIES THE "I". Do not "harmonise" the two — the change of
-                register between them is the design, not an inconsistency.
-
-                ⚠⚠ CARL WROTE THIS. The Builder drafted three options; he selected,
-                cut and pasted back the final wording. ⛔ It is not a paraphrase of
-                his intent — it is his text.
-
-                ⚠ TWO CLAIMS WERE DELIBERATELY NOT MADE, and both were in earlier
-                drafts he rejected:
-                  • "control over every pixel and line of code" — a claim about
-                    client work, on a site with no client work on it yet. Same defect
-                    as the line struck from the homepage on 2 September.
-                  • "cutting-edge execution with uncompromised artistry" — asserts
-                    what the page beneath it is supposed to demonstrate.
-                ⛔ DO NOT REINTRODUCE EITHER WHEN POLISHING.
-
-                ⛔ THE EM DASHES ARE GONE — Carl, 27 September 2026: *"Theres an em dash in sect 1. It needs to
-                go."* Of three options he chose "into, with commas": *"Separate the roles — brand strategy,
-                design, technical architecture, execution — and…"* became *"Separate the roles into brand
-                strategy, design, technical architecture and execution, and…"* ⚠ His condition: *"No extra or
-                less lines"* — the two columns stay the same height (checked on the build). */}
-            <p className="mt-4 text-base text-neutral-400 leading-relaxed">
-              Most AI-driven web development yields generic outcomes because it
-              relies on prompting rather than deliberate structure. AI is not a
-              shortcut. It is a specialised workforce, and it requires
-              architecture, governance and strategic direction to be worth
-              anything. Left to itself it will always produce the most likely
-              answer, which is another way of saying the most ordinary one.
-              Separate the roles into brand strategy, design,
-              technical architecture and execution, and creative control stays
-              where it belongs at every stage. Supported by a deep project
-              intelligence system, that framework holds each decision to a
-              brand&rsquo;s own positioning rather than to an automated average.
-              Governed with intention, AI does not replace craft. It carries it.
-            </p>
-            </div>
-
-            {/* ⛔⛔ TEXT 2 — THE PERSON. FIRST PERSON, AND IT IS THE RULING
-                (`about-section-thinking.md` L1183–1214). ⚠ TEXT 1 ABOVE IS
-                IMPERSONAL BY A SEPARATE RULING — Carl, 3 September 2026:
-                *"Statement. No i or we."* ⛔ THE TWO REGISTERS ARE THE DESIGN.
-                Do not harmonise them; the homepage runs the same split (D-067,
-                D-068).
-
-                ⚠⚠ CARL WROTE THIS PARAGRAPH. The Builder proposed edits — the
-                "we"/"I" mix, "pristine, production-ready code", "my exact
-                standards" — and Carl kept his own wording. ⛔ THOSE ARE HIS
-                CHOICES, NOT OVERSIGHTS. Do not "fix" them on a later pass.
-
-                ⚠ THE h2 WAS REMOVED AND THEN RESTORED ON CARL'S INSTRUCTION —
-                *"restore the headline for text 2"*. ⛔ The Builder had cut it on
-                the grounds that the paragraph opens *"As the founder"* and the
-                heading said it twice. That reasoning was NOT accepted; the heading
-                is load-bearing for the two-column symmetry, because text 1 has one.
-
-                ⚠ PLACED RIGHT, ON CARL'S INSTRUCTION — and the file's section-1
-                layout put an IMAGE in this slot (text left, image right, fading as
-                it meets the text). ⛔ THAT ARRANGEMENT IS NOW OPEN: if the image
-                returns to this section it needs somewhere else to go. Carl's call,
-                not settled here. */}
-            <div>
-            <h2 className="text-3xl font-semibold tracking-tight">
-              The founder and the process.
-            </h2>
-            <p className="mt-4 text-base text-neutral-400 leading-relaxed">
-              As the founder, my role is to act as the creative director to a
-              digital workforce. By organizing our AI environment into specialized
-              roles of Strategist, Designer, Architect, and Builder we eliminate
-              automated guesswork and maintain strict standards. I
-              actively collaborate with the Architect to map out complex site
-              structures, debate brand positioning with the Strategist, push the
-              Designer for unique visual aesthetics, and oversee the Builder as it
-              writes pristine, production-ready code. Through our rigorous project
-              governance and deep file architecture, this framework allows me to focus
-              entirely on the nuance, curation, and craftsmanship of the project,
-              refining every output until it meets my exact standards for a truly
-              bespoke website.
-            </p>
-            </div>
-            </div>
-          </div>
-        </Container>
-      </section>
-
-      {/* ── 2. The roles ────────────────────────────────────────────────────
-          ⚠⚠ DESCRIBED IN PRINCIPLE, NEVER BY ROSTER. Carl's ruling, 30 August
-          2026: *"a team with defined roles, and each member knows what they need
-          to know."* ⛔ A section that only listed the seats by name would be the
-          exact thing that ruling forbids. Recognition is the mechanism — a
-          business owner already runs this shape.
-
-          ⚠ THE TITLE IS OPEN. Carl: *"Does it have to be called 'meet the team?'
-          No."* */}
-      {/* ⚠⚠ THE ROOM — A REAL PHOTOGRAPH, AND THAT IS THE WHOLE POINT OF IT.
-          Carl approved this framing and this image, 4 September 2026: *"im happy
-          with the way you framed it on the site. the middle plant can stay."*
-
-          ⛔⛔ FOUR AI-GENERATED ROOMS WERE TRIED AND REJECTED FIRST, AND THE REASON
-          IS THE SECTION'S OWN ARGUMENT. Carl: *"If anything says 'made with AI',
-          its this picture. Exactly the thing we are arguing against in this
-          section."* ⚠ The tells were real — frames at disagreeing angles, rack
-          gear that dissolves into noise, cabling going nowhere, repeated speakers
-          at wrong scales. ⛔ A PAGE ARGUING THAT UNGOVERNED AI YIELDS GENERIC
-          OUTPUT CANNOT ILLUSTRATE ITSELF WITH GENERIC OUTPUT. It is the same
-          defect as the homepage line struck on 2 September, arriving in a picture
-          instead of a sentence.
-
-          ⚠⚠ DO NOT REPLACE THIS WITH A GENERATED IMAGE, however good it looks in
-          isolation. This section is where a sceptic checks, and a photoreal render
-          is claiming to be a photograph — so it can be caught. This cannot.
-
-          ⛔ SOURCE OF TRUTH: `brand-assets/reddit-original.jpg`, 6158x4105, the
-          photographer's own upload (r/workstations). ⚠ `public/about-studio-source.jpg`
-          is a 2560px 16:9 crop of it — sharp at 1920 and on retina at 460KB.
-          RE-CUT FROM THE MASTER; never upscale the crop.
-
-          ⚠⚠ THE COLOUR NEEDED NO GRADING, AND THAT WAS MEASURED, NOT ASSUMED.
-          The untouched wall reads H200-206 S32-43% L12-17%. The interaction teal
-          on `/start` is H186 S66% L35% (D-053). ⛔ So the field is already at HALF
-          the saturation and a THIRD of the lightness of the state colour — which
-          is exactly what the record asks of a large teal area: *"well below them
-          in saturation, nearer a duck-egg tint over near-black."* No collision.
-
-          ⚠ A TEAL REGRADE WAS BUILT AND ABANDONED. It moved the hue about FIVE
-          DEGREES and cost 94% of the resolution, because each pass ran through a
-          generator at 1264px on an upscaled 699px thumbnail. ⛔ THE LESSON IS
-          GENERAL: every generative round-trip is destructive, and the chain here
-          ran 699 -> upscale -> regrade -> plant removal -> figure. Edit the master.
-
-          ⛔ BING'S BROWSER EDITOR SAVES AT 1080x719 — it works on Reddit's
-          display-size webp, not the original, whatever zoom it reports. Do not
-          crop there. Resolve, Photopea or ffmpeg against the master.
-
-          ⚠⚠ §10a IS UNRESOLVED AND IS CARL'S. *"Every example is our own work"* —
-          this is someone else's room. Whether that rule covers BACKGROUNDS or only
-          WORK EXAMPLES has not been ruled on. ⛔ Raised three times; not settled.
-
-          ⚠⚠ `public/about-studio-figure.jpg` IS KEPT ON PURPOSE AND IS NOT USED BY
-          ANY ROUTE. ⛔ DO NOT DELETE IT AS A STRAY. Carl, 4 September 2026:
-          *"keep it in the files for now."*
-
-          ⛔ IT IS A LIGHTING REFERENCE, NOT AN ASSET. It is the room with a figure
-          composited in, and the figure was GENERATED INTO THIS SCENE — so its rim
-          light and shadow direction already answer to these downlights and these
-          monitors. ⚠ That is the hard part of compositing a person into a dark
-          room, and it is worth keeping even though the pixels are not usable.
-
-          ⚠⚠ WHY THE PIXELS ARE NOT USABLE: the file is 1264px and the figure is
-          roughly 300x400 of it. On the 6158px master that is a 5x upscale of the
-          one thing a viewer looks at — soft against a sharp room, which reads
-          worse than either image alone.
-
-          ⛔ TWO ROUTES IF THE FIGURE PROCEEDS, neither of them "paste this in":
-            1. Composite at 1264 throughout — consistently soft rather than
-               mismatched. Viable if the room ends up behind glass at low opacity.
-            2. Use this only to READ the lighting, and rebuild the figure from a
-               sharp source (a real photo) matched to it. ⚠ Also fixes the two
-               tells in this composite: the chair back reads IN FRONT OF the torso,
-               and there is no contact shadow on chair or floor.
-
-          ⚠ THE ARRIVAL ITSELF — the figure appearing as the image travels from
-          section 1 to section 2 — IS IDEA ONLY. Scroll-driven behaviour spanning
-          sections is structural under CLAUDE.md §5a, and it would end this route's
-          static prerender. Not built, not authorised.
-
-          ⚠ IF THE CROP CHANGES, ANY CARD POSITIONS TUNED AGAINST IT GO STALE. */}
-      <section id="roles" className="relative min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
+      {/* ⛔⛔ THE ROOM TRAVELS FROM §1 INTO §2 — D-092, built 3 October 2026 on Carl's word: *"You can implement the
+          image scrolling. No need to plan."* §1 and §2 share ONE stage (`RoomStage`), pinned behind both: the room
+          faded under §1's copy (0.2, his 27 September take), opaque in §2, a wipe with a gradient edge descending the
+          room as §2 arrives — and the sequence strikes when the wipe clears CA's bottom (`roomWipeClearsCA`). `Roles`
+          lands on §2 with the room opaque. ⛔ The block below is §2's room, MOVED here unchanged with its notes. */}
+      <div className="relative">
+      <RoomStage faded={<RoomPlate />}>
         {/* ⚠⚠ `next/image`, AND IT IS THE FIRST USE IN THIS PROJECT — 4 September
             2026. It replaces a plain <img> that shipped the full 2560px file to
             every device.
@@ -780,6 +587,216 @@ export default function About() {
             block comments, and the first inner `*​/` terminates a JSX comment
             early. Commenting it out broke the parse — hence a separate file. */}
 
+      </RoomStage>
+
+      {/* ⚠ `-mt-[100vh]`: §1 is pulled up over the stage (one window tall) so the page lays out as before. ⛔ The margin
+          belongs HERE, not on the stage — see `RoomStage`. */}
+      <section className="relative -mt-[100vh] min-h-screen flex flex-col justify-center [&>div]:w-full">
+        <Container>
+          {/* ⚠⚠ TWO EQUAL COLUMNS — Carl, 3 September 2026, and the SYMMETRY IS
+              THE POINT: *"make both headline font size the same. Space them out
+              equally."* ⛔ Carl balanced the two paragraphs BY EYE against this
+              arrangement, then added a sentence to text 1 to even them up. Change
+              the column widths, the gap or either heading's size and the balance
+              he approved is gone.
+
+              ⛔ THE h1 IS `text-3xl`, DOWN FROM `text-4xl md:text-5xl`, TO MATCH
+              THE h2. ⚠ It is the PAGE's h1 and it now heads the LEFT COLUMN rather
+              than spanning the page — an h1 and an h2 sitting as visual equals is
+              deliberate, not an oversight.
+
+              ⚠ `max-w-2xl` was REMOVED from this block — it was sized for one
+              column and would squeeze both into half the page. */}
+          <div className="pt-32 pb-24">
+            <div className="grid md:grid-cols-2 gap-12 md:gap-20">
+            <div>
+            <h1 className="text-3xl font-semibold tracking-tight">
+              How the work gets done.
+            </h1>
+            {/* ⛔⛔ TEXT 1 — A STATEMENT. NO FIRST PERSON, AND THAT IS A RULING.
+                Carl, 3 September 2026: *"Statement. No i or we."*
+
+                ⚠⚠ THIS IS NOT THE THIRD-PERSON DRIFT THE FILE WARNS ABOUT. The
+                first-person ruling (`about-section-thinking.md` L1183–1214) governs
+                copy about THIS OPERATION — Carl himself, the seats, who approves.
+                ⛔ THIS PARAGRAPH IS NOT ABOUT THIS OPERATION. It is about how the
+                tools behave in general, and it is impersonal BY INSTRUCTION.
+
+                ⛔ THE SAME TWO-REGISTER SPLIT AS THE HOMEPAGE (D-067, D-068):
+                statements state, and the speaking happens in the block that follows.
+                ⚠ TEXT 2 CARRIES THE "I". Do not "harmonise" the two — the change of
+                register between them is the design, not an inconsistency.
+
+                ⚠⚠ CARL WROTE THIS. The Builder drafted three options; he selected,
+                cut and pasted back the final wording. ⛔ It is not a paraphrase of
+                his intent — it is his text.
+
+                ⚠ TWO CLAIMS WERE DELIBERATELY NOT MADE, and both were in earlier
+                drafts he rejected:
+                  • "control over every pixel and line of code" — a claim about
+                    client work, on a site with no client work on it yet. Same defect
+                    as the line struck from the homepage on 2 September.
+                  • "cutting-edge execution with uncompromised artistry" — asserts
+                    what the page beneath it is supposed to demonstrate.
+                ⛔ DO NOT REINTRODUCE EITHER WHEN POLISHING.
+
+                ⛔ THE EM DASHES ARE GONE — Carl, 27 September 2026: *"Theres an em dash in sect 1. It needs to
+                go."* Of three options he chose "into, with commas": *"Separate the roles — brand strategy,
+                design, technical architecture, execution — and…"* became *"Separate the roles into brand
+                strategy, design, technical architecture and execution, and…"* ⚠ His condition: *"No extra or
+                less lines"* — the two columns stay the same height (checked on the build). */}
+            <p className="mt-4 text-base text-neutral-400 leading-relaxed">
+              Most AI-driven web development yields generic outcomes because it
+              relies on prompting rather than deliberate structure. AI is not a
+              shortcut. It is a specialised workforce, and it requires
+              architecture, governance and strategic direction to be worth
+              anything. Left to itself it will always produce the most likely
+              answer, which is another way of saying the most ordinary one.
+              Separate the roles into brand strategy, design,
+              technical architecture and execution, and creative control stays
+              where it belongs at every stage. Supported by a deep project
+              intelligence system, that framework holds each decision to a
+              brand&rsquo;s own positioning rather than to an automated average.
+              Governed with intention, AI does not replace craft. It carries it.
+            </p>
+            </div>
+
+            {/* ⛔⛔ TEXT 2 — THE PERSON. FIRST PERSON, AND IT IS THE RULING
+                (`about-section-thinking.md` L1183–1214). ⚠ TEXT 1 ABOVE IS
+                IMPERSONAL BY A SEPARATE RULING — Carl, 3 September 2026:
+                *"Statement. No i or we."* ⛔ THE TWO REGISTERS ARE THE DESIGN.
+                Do not harmonise them; the homepage runs the same split (D-067,
+                D-068).
+
+                ⚠⚠ CARL WROTE THIS PARAGRAPH. The Builder proposed edits — the
+                "we"/"I" mix, "pristine, production-ready code", "my exact
+                standards" — and Carl kept his own wording. ⛔ THOSE ARE HIS
+                CHOICES, NOT OVERSIGHTS. Do not "fix" them on a later pass.
+
+                ⚠ THE h2 WAS REMOVED AND THEN RESTORED ON CARL'S INSTRUCTION —
+                *"restore the headline for text 2"*. ⛔ The Builder had cut it on
+                the grounds that the paragraph opens *"As the founder"* and the
+                heading said it twice. That reasoning was NOT accepted; the heading
+                is load-bearing for the two-column symmetry, because text 1 has one.
+
+                ⚠ PLACED RIGHT, ON CARL'S INSTRUCTION — and the file's section-1
+                layout put an IMAGE in this slot (text left, image right, fading as
+                it meets the text). ⛔ THAT ARRANGEMENT IS NOW OPEN: if the image
+                returns to this section it needs somewhere else to go. Carl's call,
+                not settled here. */}
+            <div>
+            <h2 className="text-3xl font-semibold tracking-tight">
+              The founder and the process.
+            </h2>
+            <p className="mt-4 text-base text-neutral-400 leading-relaxed">
+              As the founder, my role is to act as the creative director to a
+              digital workforce. By organizing our AI environment into specialized
+              roles of Strategist, Designer, Architect, and Builder we eliminate
+              automated guesswork and maintain strict standards. I
+              actively collaborate with the Architect to map out complex site
+              structures, debate brand positioning with the Strategist, push the
+              Designer for unique visual aesthetics, and oversee the Builder as it
+              writes pristine, production-ready code. Through our rigorous project
+              governance and deep file architecture, this framework allows me to focus
+              entirely on the nuance, curation, and craftsmanship of the project,
+              refining every output until it meets my exact standards for a truly
+              bespoke website.
+            </p>
+            </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* ── 2. The roles ────────────────────────────────────────────────────
+          ⚠⚠ DESCRIBED IN PRINCIPLE, NEVER BY ROSTER. Carl's ruling, 30 August
+          2026: *"a team with defined roles, and each member knows what they need
+          to know."* ⛔ A section that only listed the seats by name would be the
+          exact thing that ruling forbids. Recognition is the mechanism — a
+          business owner already runs this shape.
+
+          ⚠ THE TITLE IS OPEN. Carl: *"Does it have to be called 'meet the team?'
+          No."* */}
+      {/* ⚠⚠ THE ROOM — A REAL PHOTOGRAPH, AND THAT IS THE WHOLE POINT OF IT.
+          Carl approved this framing and this image, 4 September 2026: *"im happy
+          with the way you framed it on the site. the middle plant can stay."*
+
+          ⛔⛔ FOUR AI-GENERATED ROOMS WERE TRIED AND REJECTED FIRST, AND THE REASON
+          IS THE SECTION'S OWN ARGUMENT. Carl: *"If anything says 'made with AI',
+          its this picture. Exactly the thing we are arguing against in this
+          section."* ⚠ The tells were real — frames at disagreeing angles, rack
+          gear that dissolves into noise, cabling going nowhere, repeated speakers
+          at wrong scales. ⛔ A PAGE ARGUING THAT UNGOVERNED AI YIELDS GENERIC
+          OUTPUT CANNOT ILLUSTRATE ITSELF WITH GENERIC OUTPUT. It is the same
+          defect as the homepage line struck on 2 September, arriving in a picture
+          instead of a sentence.
+
+          ⚠⚠ DO NOT REPLACE THIS WITH A GENERATED IMAGE, however good it looks in
+          isolation. This section is where a sceptic checks, and a photoreal render
+          is claiming to be a photograph — so it can be caught. This cannot.
+
+          ⛔ SOURCE OF TRUTH: `brand-assets/reddit-original.jpg`, 6158x4105, the
+          photographer's own upload (r/workstations). ⚠ `public/about-studio-source.jpg`
+          is a 2560px 16:9 crop of it — sharp at 1920 and on retina at 460KB.
+          RE-CUT FROM THE MASTER; never upscale the crop.
+
+          ⚠⚠ THE COLOUR NEEDED NO GRADING, AND THAT WAS MEASURED, NOT ASSUMED.
+          The untouched wall reads H200-206 S32-43% L12-17%. The interaction teal
+          on `/start` is H186 S66% L35% (D-053). ⛔ So the field is already at HALF
+          the saturation and a THIRD of the lightness of the state colour — which
+          is exactly what the record asks of a large teal area: *"well below them
+          in saturation, nearer a duck-egg tint over near-black."* No collision.
+
+          ⚠ A TEAL REGRADE WAS BUILT AND ABANDONED. It moved the hue about FIVE
+          DEGREES and cost 94% of the resolution, because each pass ran through a
+          generator at 1264px on an upscaled 699px thumbnail. ⛔ THE LESSON IS
+          GENERAL: every generative round-trip is destructive, and the chain here
+          ran 699 -> upscale -> regrade -> plant removal -> figure. Edit the master.
+
+          ⛔ BING'S BROWSER EDITOR SAVES AT 1080x719 — it works on Reddit's
+          display-size webp, not the original, whatever zoom it reports. Do not
+          crop there. Resolve, Photopea or ffmpeg against the master.
+
+          ⚠⚠ §10a IS UNRESOLVED AND IS CARL'S. *"Every example is our own work"* —
+          this is someone else's room. Whether that rule covers BACKGROUNDS or only
+          WORK EXAMPLES has not been ruled on. ⛔ Raised three times; not settled.
+
+          ⚠⚠ `public/about-studio-figure.jpg` IS KEPT ON PURPOSE AND IS NOT USED BY
+          ANY ROUTE. ⛔ DO NOT DELETE IT AS A STRAY. Carl, 4 September 2026:
+          *"keep it in the files for now."*
+
+          ⛔ IT IS A LIGHTING REFERENCE, NOT AN ASSET. It is the room with a figure
+          composited in, and the figure was GENERATED INTO THIS SCENE — so its rim
+          light and shadow direction already answer to these downlights and these
+          monitors. ⚠ That is the hard part of compositing a person into a dark
+          room, and it is worth keeping even though the pixels are not usable.
+
+          ⚠⚠ WHY THE PIXELS ARE NOT USABLE: the file is 1264px and the figure is
+          roughly 300x400 of it. On the 6158px master that is a 5x upscale of the
+          one thing a viewer looks at — soft against a sharp room, which reads
+          worse than either image alone.
+
+          ⛔ TWO ROUTES IF THE FIGURE PROCEEDS, neither of them "paste this in":
+            1. Composite at 1264 throughout — consistently soft rather than
+               mismatched. Viable if the room ends up behind glass at low opacity.
+            2. Use this only to READ the lighting, and rebuild the figure from a
+               sharp source (a real photo) matched to it. ⚠ Also fixes the two
+               tells in this composite: the chair back reads IN FRONT OF the torso,
+               and there is no contact shadow on chair or floor.
+
+          ⚠ THE ARRIVAL ITSELF — the figure appearing as the image travels from
+          section 1 to section 2 — IS IDEA ONLY. ~~Scroll-driven behaviour spanning
+          sections is structural under CLAUDE.md §5a, and it would end this route's
+          static prerender. Not built, not authorised.~~ ⛔ *Corrected in place, 3
+          October 2026:* the IMAGE now travels (D-092 — `RoomStage`, above §1), and
+          the route stays static: the scroll is read in a client component. The
+          FIGURE is still idea only.
+
+          ⚠ IF THE CROP CHANGES, ANY CARD POSITIONS TUNED AGAINST IT GO STALE. */}
+      {/* ⛔ NO RULE BETWEEN §1 AND §2 — 3 October 2026. The `border-t` this section carried ran across the travelling
+          room mid-scroll (D-092). Carl: *"It looks good apart from the thin black line."* Removed; §3 and §4 keep
+          theirs (the room ends with §2, so they never cross it). */}
+      <section id="roles" className="relative min-h-screen flex flex-col justify-center [&>div]:w-full">
         <Container>
           <div className="relative max-w-2xl">
             {/* ⛔⛔ THE SECTION IS DELIBERATELY EMPTY OF COPY. Carl, 3 September
@@ -813,6 +830,7 @@ export default function About() {
           </div>
         </Container>
       </section>
+      </div>
 
       {/* ── 3. What modern websites can do ──────────────────────────────────
           ⚠ PLAIN LANGUAGE IS THE RULE. Carl: not Three.js geometry but *"a

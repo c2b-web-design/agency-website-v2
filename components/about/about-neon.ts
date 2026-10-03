@@ -733,6 +733,60 @@ export function wallCardsInView(canvas: Element): boolean {
   );
 }
 
+// ── The room's wipe — D-092, built 3 October 2026 ───────────────────────────
+
+/**
+ * ⛔⛔ THE ROOM TRAVELS FROM §1 INTO §2 — D-092 as Carl developed it on 27 September and ruled on 3 October (*"Stick
+ * to the original D-092"*): *"the image is faded in Sect 1, its opaque in Sect 2 and cards come into view as the wipe
+ * happens. When the wipe clears the bottom of CA, the rim is activated."* — top down, its edge *"a gradual gradient"*.
+ * Built on Carl's word, 3 October: *"You can implement the image scrolling. No need to plan."*
+ *
+ * ⛔ ONE NUMBER, READ BY EVERYTHING. The wipe is derived from where `#roles` sits in the window — §2's top at the
+ * window's bottom → nothing opaque; at the window's top → all opaque — so the anchor jump (`Roles`), a deep link and a
+ * scroll all land on the same state. The STAGE's mask (`RoomStage`, `about-card-canvas.tsx`) and the TRIGGER
+ * (`roomWipeClearsCA`, read by `NeonBloom`) both call this; neither computes "where the wipe is" on its own (§5a).
+ * ⚠ Position-derived, so scrolling back up into §1 fades the room again; the sequence, once struck, runs on.
+ *
+ * Returned as fractions of the stage's height (the window's, while it is pinned): above `solid` fully opaque,
+ * below `clear` fully faded, an S-curve between (~~a linear gradient~~ — see `wipeMask`, `about-card-canvas.tsx`).
+ * `?wipegrad=` sets the gradient's width.
+ */
+export const ROOM_WIPE_GRADIENT = 0.3; // ⛔ 0.15 → 0.3, 3 October: Carl, "the gradient can be made bigger" — with the S-curve (`wipeMask`)
+export type RoomWipe = { solid: number; clear: number };
+export function roomWipe(): RoomWipe | null {
+  if (typeof document === "undefined") return null;
+  const roles = document.getElementById("roles");
+  if (!roles) return null;
+  const vh = window.innerHeight || 1;
+  const p = Math.min(1, Math.max(0, 1 - roles.getBoundingClientRect().top / vh));
+  const g = neonNumber("wipegrad", ROOM_WIPE_GRADIENT, 0, 1);
+  const clear = p * (1 + g);
+  return { solid: clear - g, clear };
+}
+
+/** CA's lowest corner, as a fraction of the plate's height — the outline the layout projected (`ROOM_CARD_GUIDES`). */
+const CA_BOTTOM = Math.max(...ROOM_CARD_GUIDES.CA.map(([, y]) => y));
+
+/**
+ * ⛔ THE §2 TRIGGER SINCE 3 OCTOBER — *"When the wipe clears the bottom of CA, the rim is activated"* (D-092): true once
+ * the wipe's FULLY OPAQUE part reaches CA's lowest corner. Replaces `wallCardsInView` as the trigger, because with the
+ * room on screen behind §1 "the wall cards are in the window" is true from landing. The canvas's box is the plate's
+ * (`RoomPlate`'s centred box), so CA's corner is `CA_BOTTOM` of its height. ⚠ Off the stage (no `[data-room-stage]`
+ * ancestor) it falls back to `wallCardsInView`. A HIDDEN tab never counts.
+ */
+export function roomWipeClearsCA(canvas: Element): boolean {
+  if (typeof document === "undefined" || document.visibilityState !== "visible") return false;
+  const stage = canvas.closest("[data-room-stage]");
+  if (!stage) return wallCardsInView(canvas);
+  const w = roomWipe();
+  if (!w) return false;
+  const s = stage.getBoundingClientRect();
+  const r = canvas.getBoundingClientRect();
+  if (s.height < 1 || r.height < 1) return false;
+  const caBottom = (r.top - s.top + CA_BOTTOM * r.height) / s.height;
+  return w.solid >= caBottom - 0.002;
+}
+
 // ── The channel — how one writer reaches a card's materials ─────────────────
 
 export type NeonCardId = "ca" | "cb" | "cd" | "cs";

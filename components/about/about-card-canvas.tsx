@@ -110,6 +110,7 @@ import {
   neonMode,
   neonNumber,
   neonParam,
+  roomWipe,
   SEQUENCE_FEW_WORDS,
   sequenceOrder,
   sequencePlan,
@@ -617,6 +618,93 @@ function TakeLight({ s }: { s: TakeSettings }) {
       shadow-bias={-0.0001}
       shadow-normalBias={0.0005}
     />
+  );
+}
+
+/** §1's faded room — Carl's 27 September take: *"That looks good. The navigation text stands out well against the
+    dark background, as does the logo."* The only opacity he has seen. */
+const S1_ROOM_OPACITY = 0.2;
+
+/**
+ * ⛔⛔ THE TRAVELLING STAGE — D-092, built 3 October 2026 (see `roomWipe`, `about-neon.ts`). Pinned with `sticky`
+ * across §1 and §2 (`app/about/page.tsx` wraps both), one window tall, behind the copy. Two layers of ONE photograph:
+ *   - `faded` — the room at `S1_ROOM_OPACITY`, always there (the 27 September look);
+ *   - `children` — today's §2 room (plate, dark layer, the cards' canvas), shown through a MASK whose edge descends
+ *     the room TOP DOWN with a gradient as §2 arrives. The cards exist only in this layer, so they come into view as
+ *     the wipe passes them — nothing else is built for that.
+ * ⚠ The mask is written from `roomWipe()` on scroll/resize (rAF-coalesced) — the S-curve of `wipeMask`, plus two CSS
+ *   variables for instruments — from the SAME numbers the trigger reads. Before JS the variables sit at 0 (all faded) — the server's state at the top of the page.
+ * ⚠ `pointer-events-none`: the copy and the nav scroll over it and must stay selectable and clickable.
+ * ⚠ `sticky` needs no ancestor with `overflow` hidden/auto (none on /about, checked 3 October) — unasserted after that.
+ * ⛔ NO NEGATIVE MARGIN ON THE STAGE — §1 carries it (`-mt-[100vh]`, page.tsx). A sticky element stops when its MARGIN
+ *   box meets the container's end; with `-mb-[100vh]` here the stage stuck a whole window past §2 and the room covered §3's
+ *   copy (found by Carl, 3 October: §3's text visible only over the side band; hit-test at its heading → the canvas).
+ */
+/**
+ * ⛔ THE WIPE'S EDGE IS AN S-CURVE, NOT A STRAIGHT FADE — 3 October 2026. Carl: *"There seems to be a wider black band
+ * as the gradient starts. Can it be smoother? the gradient can be made bigger if you need more numbers."* MEASURED
+ * first (one column through the mid-scroll frame): the straight fade blended exactly as specified — the band was the
+ * FADE'S CORNERS. A linear ramp has a sudden change of slope where it leaves opaque and where it reaches faded, and
+ * the eye reads a slope corner as a dark (or light) band (Mach bands) — worse here because the opaque room is ~4×
+ * the faded one's brightness. ⛔ So the opacity follows SMOOTHERSTEP (6t⁵ − 15t⁴ + 10t³: zero slope AND zero
+ * curvature at both ends), laid as `WIPE_STOPS` stops, and the gradient is wider (`ROOM_WIPE_GRADIENT`).
+ * ⚠ Alphas are computed here as numbers, never `calc()` inside a colour (the rgba(calc()) failure, recorded).
+ */
+const WIPE_STOPS = 16;
+function wipeMask(solid: number, clear: number): string {
+  const stops: string[] = [];
+  for (let i = 0; i <= WIPE_STOPS; i++) {
+    const t = i / WIPE_STOPS;
+    const a = 1 - t * t * t * (t * (t * 6 - 15) + 10);
+    stops.push(`rgba(0,0,0,${a.toFixed(4)}) ${((solid + (clear - solid) * t) * 100).toFixed(3)}%`);
+  }
+  return `linear-gradient(to bottom, ${stops.join(", ")})`;
+}
+
+export function RoomStage({ faded, children }: { faded: React.ReactNode; children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let raf = 0;
+    const masked = el.lastElementChild as HTMLElement | null;
+    const apply = () => {
+      raf = 0;
+      const w = roomWipe();
+      if (!w || !masked) return;
+      el.style.setProperty("--wipe-solid", `${(w.solid * 100).toFixed(3)}%`);
+      el.style.setProperty("--wipe-clear", `${(w.clear * 100).toFixed(3)}%`);
+      const m = wipeMask(w.solid, w.clear);
+      masked.style.maskImage = m;
+      masked.style.webkitMaskImage = m;
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(apply);
+    };
+    apply();
+    document.addEventListener("scroll", schedule, { capture: true, passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      document.removeEventListener("scroll", schedule, true);
+      window.removeEventListener("resize", schedule);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+  const mask = wipeMask(0, 0); // before JS: all faded — the server's state at the top of the page
+  return (
+    <div
+      ref={ref}
+      data-room-stage=""
+      className="sticky top-0 h-screen pointer-events-none"
+      style={{ ["--wipe-solid" as string]: "0%", ["--wipe-clear" as string]: "0%" }}
+    >
+      <div className="absolute inset-0" style={{ opacity: S1_ROOM_OPACITY }}>
+        {faded}
+      </div>
+      <div className="absolute inset-0" style={{ maskImage: mask, WebkitMaskImage: mask }}>
+        {children}
+      </div>
+    </div>
   );
 }
 

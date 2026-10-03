@@ -81,6 +81,7 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 - ⚠ **THE VERDICT IS ON THE LOOK AS A WHOLE, a take, not a master (D-035).** The individual values (angle, intensity, tint mix, bevel ceiling 0.03, shadow map) are not individually approved.
 - ⚠ **WHAT IT REPLACES:** the 25 September static-lights-off experiment (closed), the Q+A-style grazing rig (built the same day, its rim-corner glint the reason it went), and the moving light's orbit (*"not in the orbit or way it was moving"*). The moving light's code is OFF, not deleted (`?lightmove=1`).
 - ⚠ **CARRIED, NOT CHANGED:** the flash cap at 3 (at the cap) ~87–88 s; continuous rendering while the text loops.
+- ✔ **CARL, LATER THE SAME DAY, on the scene:** *"The top card looks really good against the wood when unlit and the bottom card you can clearly see the orange hue especially highlighted with the skirting that runs through the back of the card. Well done."* — CS UNLIT against the wood; CD's orange read through the glass, the skirting visible behind it. Recorded at the level given.
 
 ---
 
