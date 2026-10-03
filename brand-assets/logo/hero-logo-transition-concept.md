@@ -1,5 +1,14 @@
 # Hero Logo Transition — Concept Salvage
 
+> ⚠ **DATED — READ AS A STARTING POINT, NOT AS CURRENT (note added 3 October 2026).** Carl:
+> *"The Hero transition notes are months old. It has been developed since then, but the Logo will
+> feature."* The development since is not recorded here. Two things below are now known to be wrong:
+> **(1) `c2b-logo-gold-hero.svg` is NOT a vector master** — it is a PNG in an SVG wrapper (see
+> `README.md`); **(2) the white silhouette is NOT the current mark's drawing** — the 3D mark is traced
+> from `c2b-logo-gold-relit-alpha-1671.png` (`README.md`, 3 October correction). ⛔ **The `/about` desk
+> mark (D-088) is the hero's DRESS REHEARSAL** — Carl: *"This is a dress rehearsal for it, though it
+> will be even more sophisticated."* Carl: *"the files can be modified, they are only a starting point."*
+
 **Status:** Not a plan, not an approved design, **no implementation authority.**
 
 This file has two layers, and they must not be confused:

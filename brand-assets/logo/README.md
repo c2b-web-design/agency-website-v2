@@ -29,6 +29,14 @@ added 27 July 2026. Its provenance is recorded with it below.
   **There is no true vector form of the logo in this repo.** Producing one means redrawing the
   mark as curves — from the flat white silhouette below, which exists for exactly that purpose
   (*"a trace source for vector work"*).
+
+  ⛔ **CORRECTED 3 October 2026 — THE WHITE SILHOUETTE IS NOT THE CURRENT MARK'S DRAWING.**
+  Measured against the gold target Carl chose for the 3D mark (`c2b-logo-gold-relit-source-1671.png`):
+  aspect 1.984 vs 1.928, overlap (IoU) 0.84 after fitting boxes — bolder inner strokes, a wider,
+  lower stem. **Trace the gold target's own cut-out instead: `c2b-logo-gold-relit-alpha-1671.png`**
+  (its edge sits on the target's edge; anti-aliased, so sub-pixel). The sentence above was true of
+  the silhouette's purpose when written; it is kept as history. Record: `decisions.md`, D-088's
+  3 October entries.
 - `c2b-logo-gold-hero-transparent.png` — transparent-background raster.
 - `c2b-logo-gold-hero-checker-preview.png` — transparency preview (checkerboard).
 - `Logo2.1.png`, `Logo 2.2.png`, `Logo2.3.png` — iteration versions.
@@ -50,6 +58,8 @@ resized or optimised — these are the originals.
   **Different in kind from everything above.** The other assets are gold, teal or chrome
   *renders*; this is the bare form. Useful as a mask, a stencil, a trace source for vector
   work, or the mark on a dark background.
+  ⚠ **Not as a trace source for the current mark** — it is a different, bolder drawing (see the
+  3 October correction under `c2b-logo-gold-hero.svg` above).
 
   **"Alpha cleaned" is literal and verified:** 68.4% fully transparent, 31.6% fully opaque,
   and **zero partial-alpha pixels** — no semi-transparent fringe anywhere. Hard edges only.

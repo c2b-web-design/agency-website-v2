@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-033 — The Desk Mark On Its Bench (D-088 Chunk 1): "Close And A Good Base To Start From"
+
+**Date:** 2026-10-03 (session 2)
+**Reviewer:** Human Founder
+**Subject:** `/proto/logo` — the C2B mark as a three.js object, alone: traced from the gold target's cut-out (`c2b-logo-gold-relit-alpha-1671.png`), curved front on a flat back, the b's crowned and bevelled stem, distance-field mitred terminals, physical gold (F0 linear 1.00, 0.77, 0.34) under a Lightformer studio. Judged from the checkpoint frames (`live-work/screenshots/logo-bench-3-october/`), not live. Request: `live-work/checkpoint-desk-mark-chunk1-3-october.md`.
+
+**Carl's verdict, verbatim:** *"Its close and a good base to start from."* Earlier, on the first render: *"part of thr b is the wrong way round. showing the flat back"* — fixed by crowning the stem's face.
+
+**Findings:**
+
+- ✔ **A GOOD BASE, CLOSE** — the level given. Not approved; not a master (D-035). No value (dome height 0.85, crown 0.25, roughness 0.25, the studio) is individually approved.
+- ✔ **Measured, not judged:** outline IoU 0.9969 vs a 1-px control of 0.9803, edges ≤ 1.00 px; watertight; no spine seam (crest 4.6°).
+- ⚠ **OPEN:** the Architect's checkpoint review; A13 — flat foot or as built (Carl's); the known teeth at the stem junction and ticks on the 2's diagonal; the terminals' shape; **the gold renders near-black under the room's reflection** (chunk 2).
+
+---
+
 ## R-032 — The Image Scroll On `/about` (D-092): APPROVED
 
 **Date:** 2026-10-03 (session 2)
@@ -873,7 +889,9 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-10-03 (session 2) — **R-032 added**: the image scroll (D-092) approved. ⚠ **This footer had stopped at R-028 while R-029–R-031 were filed** — the stale-footer fault the note at the end of this file records, again.*
+*Last updated: 2026-10-03 (session 2, end) — **R-033 added**: the desk mark on its bench, "close and a good base to start from".*
+
+*Previously: 2026-10-03 (session 2) — **R-032 added**: the image scroll (D-092) approved. ⚠ **This footer had stopped at R-028 while R-029–R-031 were filed** — the stale-footer fault the note at the end of this file records, again.*
 
 *Previously: 2026-09-22 — **R-028 added**: all four cards in glass; ✔✔ **the PLACEMENT is
 APPROVED and NO CARD MOVED** — *"the cards are essentially 2+2... the original calculations were

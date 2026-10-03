@@ -74,8 +74,11 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
 - **Decided:** the cubby mark is DISCARDED. The renderer is **route 1 — one canvas for the whole
   journey** (Carl, 3 October, session 2). The structure is not yet designed; it is §5a/§5b and goes
   through the plan-review gate.
-- **In discussion, one at a time:** what "animated" means; the form; the size (the desk space is
-  ~62–75 CSS px wide); §3's design authority. Then D-065 (a second mark), D-063 (blue), reduced motion.
+- **Discussion settled (3 October, session 2):** animated = both (lit by the room on the desk; the scroll-driven
+  topple); the form = a real 3D tube, curved front, flat back, traced from the GOLD target; the size = double a
+  third of the right monitor's edge, set along the desk's right edge, set back; same size through the fall; blue
+  in §3 (D-063 amended); Carl designs to the viewer's edge, the Builder creates inside it. Built in chunks.
+- **Chunk 1 (the mark alone on `/proto/logo`) is at its checkpoint** — see Completed.
 
 ## Carried, open — Carl's
 
@@ -94,6 +97,7 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
 |---|---|---|
 | The image scroll approved | — | R-032 |
 | Sprint 2 archived; this file rebuilt around the About section | `archive/sprint-2.md`, this file | Carl, 3 October 2026 |
+| D-088 desk mark, chunk 1 — the 3D mark alone on `/proto/logo`. ✔ Carl: *"close and a good base to start from"* (R-033) | `app/proto/logo/page.tsx`, `components/about/logo-bench.tsx`, `logo-mark-geometry.ts`, `logo-mark-material.ts`, `logo-mark-outline.ts` | Traced from the gold target; IoU 0.9969, edges ≤ 1 px. Request: `live-work/checkpoint-desk-mark-chunk1-3-october.md`. Open for Carl: flat foot or as built (A13) |
 
 ---
 
@@ -112,4 +116,6 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-03 (session 2) — Sprint 3 opened; Sprint 2 archived verbatim.*
+*Last updated: 2026-10-03 (session 2, end) — the desk mark discussed and settled; chunk 1 built (R-033, "close and a good base"); next: the Architect's checkpoint review, A13, then chunk 2. See the handoff.*
+
+*Previously: 2026-10-03 (session 2) — Sprint 3 opened; Sprint 2 archived verbatim.*
