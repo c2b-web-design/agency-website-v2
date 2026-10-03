@@ -108,7 +108,8 @@ export type ExtrudeSettings = {
    look at the rims."* ⚠ `rim: false` on every card kept the NEON OFF on plain `/about` all through the new
    room (the canvas mounts the neon only if some card's rim is on), so the rims read as plain clear glass. All
    four `rim: true` → the D-093 neon and its ignition, as built in the old room. `?textrim=0` puts them out.
-   The per-card SPOT (`light`) stays off — the moving light is the room's light now.
+   The per-card SPOT (`light`) stays off — ~~the moving light is the room's light now~~ *(3 October 2026: the moving
+   light is removed; the cards' one light is the canvas's `TakeLight`)*.
    ⛔ CD AND CS OFF AGAIN, the same session — Carl, on seeing all four lit: *"First of all, all the rim colours
    must change. Tyrn off CD + CS for now."* The wall pair stays lit to work the colour on.
    ⛔ CD AND CS ON AGAIN, the same session, in their new GRADIENT (gold ↔ red, mirrored — `FLOOR_GRADIENT_*`). */
@@ -611,7 +612,8 @@ export function CardExtrudedText({
   /* ⛔⛔ PARKED — Carl, 25 September 2026: the landing trigger *"is still going to be used but its going to
      be changed. Dont delete or remove it, just make sure it has no impact at the moment."* With the pages
      running again it WOULD have an impact, so while `TEXT_START_ON_LANDING` is false the clock starts as
-     soon as the canvas is on screen — as the moving light does. The trigger code is KEPT; flip the switch
+     soon as the canvas is on screen (as the moving light did, before its removal on 3 October 2026). The trigger
+     code is KEPT; flip the switch
      when the reworked trigger lands. */
   const startRef = useRef<number | null>(null);
   /* ⛔ ON THE §2 SEQUENCE the start is the shared clock + this card's offset (read each frame, below) — so this

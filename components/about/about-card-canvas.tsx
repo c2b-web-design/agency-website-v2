@@ -96,7 +96,6 @@ import {
 } from "./about-card-glass";
 import { AboutCardMesh } from "./about-card-mesh";
 import { RoomEnvironment } from "./room-environment";
-import { AboutMovingLight, movingLightEnabled, movingLightGlobalOn } from "./about-moving-light";
 import {
   CA_NEON_PEAK,
   CB_NEON_PEAK,
@@ -556,9 +555,9 @@ function RoomEnvironmentFromPlate() {
  * Faders: `?take=0` off · `?takeoff=` · `?takeaz=` · `?takei=` · `?takehue=` · `?takemix=`.
  */
 type TakeSettings = { on: boolean; offDeg: number; azDeg: number; intensity: number; hue: string; mix: number };
-function takeSettings(baseline: boolean): TakeSettings {
+function takeSettings(): TakeSettings {
   return {
-    on: baseline && neonParam("take") !== "0",
+    on: neonParam("take") !== "0",
     offDeg: neonNumber("takeoff", 50, 0, 89),
     azDeg: neonNumber("takeaz", 135, -360, 360),
     intensity: neonNumber("takei", 2, 0, 50),
@@ -769,32 +768,19 @@ export default function AboutCardCanvas() {
      `/about`: ALL FOUR mounted since 24 September session 2 — ⚠ since 25 September only CA SHOWS (`?text=`) and its pages run; *corrected in place:*
      this was one card per load, CB). Every switch below keys on `extrude` being
      non-null; the text and its face's shadow key on the card's own entry. */
-  /* ⛔⛔ THE 3 OCTOBER BASELINE — ON on plain `/about`; `?baseline=0` is the page before it. Carl, having ruled out
-     combining /start's Q+A light and the client info's orbit here (*"it doesnt work here. Rims apart, we must go
-     back to the drawing board"*): *"Have the neon rims on and all the text on each card visible and delete all
-     other lights. lets start from that baseline… make the text static."* So, by default:
-       - ALL FOUR RIMS ON, steady (`neon=full` unless `?neon=` says otherwise) — no ignition, no §2 sequence;
-       - ALL FOUR TEXTS STATIC, always shown (the first full page — `?textstatic=0` runs the pages);
-       - NO LIGHTS: no ambient, no static key/fill, no moving light (`?ambi=` `?lmglobal=1` `?lightmove=1` bring
-         each back). ⚠ The room's REFLECTION in the glass (`RoomEnvironmentFromPlate`) is kept: it is an image the
-         glass reflects and refracts, not a light object. ⚠ The neon casts NO light (emission + bloom only), so
-         what lights the faces and letters now is that reflection and nothing else.
-     ⚠ "Delete" is read as OFF BY DEFAULT, nothing removed from the code — every piece returns on a flag.
-     ⛔ AMENDED THE SAME DAY — Carl, with the take light and the bevel cap in: *"Make the text animate and run the
-     sequence."* The baseline now holds only THE LIGHTS: the text runs its pages and the §2 sequence plays (rims
-     ignite, each card two cycles and out, looping) exactly as on 27 September. ~~All four rims steady; all four
-     texts static; the sequence held off.~~ `?neon=full` / `?textstatic=1` still give the still state. */
-  const baseline = useMemo(() => neonParam("baseline") !== "0", []);
-  /* ⛔ THE DRAWING BOARD'S FIRST LIGHT — ON the baseline only (`?take=0` removes it). See `TakeLight`. */
-  const take = useMemo(() => takeSettings(baseline), [baseline]);
+  /* ⛔⛔ THE ONLY LIGHT IS THE TAKE LIGHT — 3 October 2026 (R-031). Carl: *"both goals have been surpassed. It looks
+     great!"* Every earlier light — the ambient, the static key/fill (the 17 September rig, then /start's grazing rig
+     turned to the room), and the MOVING LIGHT with its orbit (`about-moving-light.tsx`) — was REMOVED the same day on
+     his word: *"As long as you dont change how it looks now, delete what is not needed."* They had been off by default
+     since the drawing-board baseline; removing them was measured pixel-identical on two repeatable states
+     (`live-work/scripts/identity-frames-3-october.mjs`). Their history: D-090 and the D-095 tail; the code is in git
+     at `cec1eff`. ⚠ The room's REFLECTION in the glass (`RoomEnvironmentFromPlate`) is not a light and stays. */
+  const take = useMemo(() => takeSettings(), []);
   const extrude = useMemo(() => {
     const ids = extrudeCards();
     if (!ids.length) return null;
     const byCard: Partial<Record<ExtrudeCardId, ExtrudeSettings>> = {};
-    for (const id of ids) {
-      const st = extrudeSettings(id);
-      byCard[id] = st; // ⚠ The baseline no longer holds the text static (3 October, later): the pages run.
-    }
+    for (const id of ids) byCard[id] = extrudeSettings(id);
     return byCard;
   }, []);
   /* ⛔⛔ THE TEXT IS HIDDEN — Carl, 25 September 2026 (second session): *"First, hide the text. Lets
@@ -814,48 +800,6 @@ export default function AboutCardCanvas() {
      mounts only if the §2 sequence reaches it (`onSeq` below) — plain `/about` writes all four in turn, CA → CB →
      CD → CS (it was CA then CB first). `?seq=ca,cb` shortens the chain; `?textstatic=1` holds the first page. */
   const textCards = useMemo(() => textCardsFromUrl(), []);
-  /* ⛔ THE MOVING LIGHT — ON on plain `/about` (`?lightmove=0` removes it). ~~The static key and fill
-     are OFF under it by default — Carl's experiment, so it is seen alone (ambient kept); `?lmglobal=1` puts
-     them back.~~ ⛔ The experiment closed 3 October 2026: the static key and fill are ON under it by default
-     again (Carl: *"This is a lot better"*); `?lmglobal=0` turns them off. See `about-moving-light.tsx`, D-090. */
-  const [movingLight, globalOn] = useMemo(
-    () =>
-      baseline
-        ? [neonParam("lightmove") === "1", neonParam("lmglobal") === "1"] // the baseline: both OFF unless asked for
-        : [movingLightEnabled(), movingLightGlobalOn()],
-    [baseline],
-  );
-  /* ⛔⛔ THE STATIC RIG IS THE Q+A's, TURNED TO THE ROOM — 3 October 2026. Carl, on the fixed bands of light on CA
-     and CS that washed the words under them: *"A postion change or lowering the intensity would br better. The
-     moving light does a lot to highlight the face 3D qualities the staitic light should add to this slightly"*;
-     then, on /start's rig: *"The global light in the image is supposed to hint at the curvature, the moving light
-     brings it out… leys try your proposal."*
-     ⚠ THE BANDS WERE THE KEY'S REFLECTION, AND THE CAUSE WAS ITS ANGLE: [1,2,2] struck the faces near head-on
-     (N·L 0.74), so its mirror image sat mid-face, on the text. Dimming could not help — the letters dimmed with it
-     (words in the band stayed ~0.85 of the card at ×0.5 and ×0.3). ⚠ The old fill [5,2,-2] struck from BEHIND
-     (N·L −0.06) and added nothing to any face.
-     ⛔ NOW: /start's key, fill and ambient (`answer-card-glass.ts` REST_*: key [-160,120,40] 1.6, fill
-     [140,-90,60] 0.35, ambient 0.18) expressed in the cards' own frame — all four share one yaw (`ROOM_YAW_DEG`),
-     so one grazing light serves them as one serves /start's grid. Key N·L 0.20 (grazing, top-left), fill 0.34
-     (bottom-right). MEASURED, moving light at 0 (`live-work/scripts/static-rig-sweep-3-october.mjs`), text off
-     the glass: CS 28.2 → 35.9, CA 39.4 → 40.1; CS's words inside the old band 0.85 → 1.02 of the card; bands on
-     bare glass CS +31 → +17, CA +15 → +7. ⚠ A take for Carl's eye.
-     Faders: `?keyi=` `?filli=` intensity; `?keypos=x,y,z` `?fillpos=x,y,z` direction; `?ambi=` ambient.
-     The 17 September rig: `?keypos=1,2,2&keyi=0.5&fillpos=5,2,-2&filli=2.6&ambi=0.2`. ⚠ The long notes on the
-     two directional lights below describe THAT rig, in the old room. */
-  const staticRig = useMemo(() => {
-    const vec = (key: string, d: [number, number, number]): [number, number, number] => {
-      const v = neonParam(key)?.split(",").map(Number);
-      return v && v.length === 3 && v.every(Number.isFinite) ? [v[0], v[1], v[2]] : d;
-    };
-    return {
-      keyI: neonNumber("keyi", 1.6, 0, 10),
-      fillI: neonNumber("filli", 0.35, 0, 10),
-      keyPos: vec("keypos", [-0.6825, 0.5883, 0.4337]),
-      fillPos: vec("fillpos", [0.8579, -0.5087, 0.072]),
-      ambient: neonNumber("ambi", baseline ? 0 : 0.18, 0, 5),
-    };
-  }, [baseline]);
   /* ⛔ THE RIM UNDER THE TEXT TAKE — Carl, 24 September 2026 (session 2): *"On CB,
      turn off the light but turn on the rim."* When any mounted card's `rim` is on the
      neon mounts as it does on the neon page (`neonMode()`, so `?neon=full|off|<ignite>`
@@ -865,7 +809,7 @@ export default function AboutCardCanvas() {
     () =>
       extrude && !Object.values(extrude).some((st) => st.rim)
         ? { kind: "none" }
-        : neonMode(), // ⚠ The baseline no longer holds the rims steady (3 October, later): the sequence ignites them.
+        : neonMode(),
     [extrude],
   );
   /**
@@ -1109,115 +1053,7 @@ export default function AboutCardCanvas() {
               ~572ms for a different scene. **2b owes this measurement.** */}
           <RoomEnvironmentFromPlate />
 
-          {movingLight && <AboutMovingLight />}
-
-          <ambientLight intensity={staticRig.ambient} />
-
           {take.on && <TakeLight s={take} />}
-
-          {/* ⚠⚠ A STAND-IN KEY. Carl: *"The light will come from the neon rim but
-              also 4 individual lights pointed at each card."* ⛔ Neither exists
-              yet. ⚠ *(Amended 23 September 2026: CA and CB's rims now GLOW and
-              BLOOM — D-093 — but they cast NO LIGHT on anything; emission and
-              bloom are seen, not received. So this key still stands in for the
-              rim's light on all four cards.)* This beam is here
-              so the crown is legible at all; a correct crown reads FLAT under a
-              head-on light.
-
-              ⛔⛔ RESTORED TO THIS EXACT RIG ON 17 September 2026 after a day of
-              alternatives — Carl: *"The best representation ive seen is before we
-              started changing/adding lights when the right side cards were grey
-              and the left side blowwn out. Return them to that state."*
-
-              ⚠⚠ THAT RESTORED STATE CLIPPED THE LEFT PAIR AT 1.489/1.497 — 49%
-              past white — and Carl accepted it at the time, then read the cause
-              off the screen unprompted: *"I take it just one light is used here
-              and because of its placement its making the left side blow out."*
-              ⛔ Correct on both counts, and it is what led to the mirror below.
-
-              ⚠ THE INTENSITY IS NOW 1.2, NOT THE ORIGINAL 2.4. **The drop is the
-              clipping fix** — see the mirror light's note. The POSITION [1,2,2] is
-              untouched, so the grazing angle Carl approved on the right pair is
-              exactly as it was.
-
-              ⚠ DO NOT RESTORE 2.4 WITHOUT REMOVING THE MIRROR. Four measured
-              attempts to balance this with SPOTLIGHTS were built and rejected on
-              sight — see the removal note above `AboutCardCanvas`. **Every one
-              measured clean and looked worse. The fix was the light TYPE, and a
-              second directional light, not repositioning.** */}
-          {/* ⛔ 3 October 2026: the note above is the 17 September KEY in the old room ([1,2,2] at 0.5). Since
-              then this light is the Q+A's grazing key turned to the room — see `staticRig`. */}
-          <directionalLight position={staticRig.keyPos} intensity={globalOn ? staticRig.keyI : 0} />
-
-          {/* ⛔⛔ THE MIRROR — a second directional light for the LEFT pair.
-              17 September 2026, Carl: *"can you use another light to mirror it, so
-              we can achieve that effect on the left hand side. You may have to
-              bring down the insensity. Start low, we can always bring it up, like
-              using a volume fader."*
-
-              ⚠⚠ THE OBVIOUS MIRROR IS [-1,2,2] AND IT IS WRONG. Measured: it gives
-              the LEFT pair N·L 0.380/0.430 but the RIGHT pair **0.632/0.643** — it
-              lights the good pair MORE than the one it was meant to rescue. ⛔ The
-              cards are not mirrored about the room's axis; they are yawed to their
-              own desks (32.8/28.2 against 301.5/303.1), so a mirrored VECTOR does
-              not produce a mirrored EFFECT.
-
-              ⛔ [3,2,-1] IS THE REAL MIRROR, FOUND BY SEARCH: it grazes CD/CA at
-              N·L 0.210/0.143 and contributes **exactly 0.000 to CS/CB** — the good
-              pair is not disturbed at all.
-
-              ⚠⚠ AND THE KEY HAD TO COME DOWN, WHICH WAS NOT PART OF THE REQUEST.
-              **A fill alone would have done nothing visible.** The left pair was
-              already at 1.489/1.497 — past the 1.0 clamp — so every watt added
-              there was being discarded. ⛔ Key 2.4 -> 1.2 is what lets the fill be
-              seen at all; it is the clipping fix, not a taste change.
-
-              ⚠ AMBIENT 0.12 -> 0.20 compensates the right pair for the lower key,
-              WITHOUT changing any incidence angle. Measured result:
-
-                  CD 0.953   CA 0.925   CS 0.217   CB 0.237
-
-              ⛔ CS/CB were 0.214/0.254 before and are 0.217/0.237 now — **the pair
-              Carl approved is preserved within 0.017** while the left pair comes
-              back from clipped to readable.
-
-              ⚠ STARTED LOW ON CARL'S INSTRUCTION. 0.6 is the fader's opening
-              position, not a tuned value.
-
-              ⛔⛔ FADER MOVED UP, AND THE ANGLE CHANGED WITH IT — Carl, after
-              looking: *"The right side is good, left has marginally improved, its
-              not all white and there is a hint of geometry."*
-
-              ⚠⚠ "MARGINAL" WAS MEASURABLE, AND THE CAUSE WAS NOT THE VOLUME. At
-              key 1.2 / fill 0.6 the KEY still supplied **88% of CD's light** — and
-              the key strikes the left pair near head-on (N·L 0.741). ⛔ **A
-              head-on light delivers the same value at every point on the face, so
-              88% of what the left pair received carried NO GRADIENT.** Turning the
-              fill up alone could only ever have shifted a small remainder.
-
-              ⛔ [3,2,-1] -> [5,2,-2]. The first fill grazed CD at N·L 0.210; the
-              new one grazes at **0.179 / 0.104**, which is much closer to the
-              **0.064 / 0.085** the key gives the right pair — the angle Carl
-              approved. ⚠ Both contribute **exactly 0.000** to CS/CB, so the good
-              pair is still untouched by the fill.
-
-              ⛔ KEY 1.2 -> 0.5, FILL 0.6 -> 2.6. **The fill now supplies 56% of
-              CD's light instead of 12%**, and it supplies it at a grazing angle.
-              That inversion — not the intensity — is what puts a gradient on the
-              left pair. Measured:
-
-                  CD 0.812   CA 0.661   CS 0.182   CB 0.190
-
-              ⚠ THE RIGHT PAIR COSTS 0.03 AND IT IS A REAL TRADE, NOT A FREE WIN.
-              CS/CB were 0.214/0.254 when Carl approved them and are 0.182/0.190
-              now, because the key is the ONLY light reaching them and it had to
-              come down to stop dominating the left. ⛔ Holding both exactly would
-              need a THIRD light aimed only at the right pair. **Not built — Carl
-              judges whether the trade is worth it before adding hardware.** */}
-          {/* ⛔ 3 October 2026: the note above is the 17 September "MIRROR" in the old room ([5,2,-2] at 2.6 —
-              in the new room it struck every face from behind, N·L −0.06). Since then this light is the Q+A's
-              quiet fill, bottom-right, turned to the room — see `staticRig`. */}
-          <directionalLight position={staticRig.fillPos} intensity={globalOn ? staticRig.fillI : 0} />
 
           {/* ⛔ NO PROXY PLANE. An earlier build put one 1.6x the card's size
               behind it, which on `/about` is an OPAQUE SLAB BLACKING OUT THE ROOM.

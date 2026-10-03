@@ -693,7 +693,8 @@ export type SequenceClock = { current: number | null };
  * with CA and CB still half off the bottom of the window. ⚠ **The sentence above was true and its
  * import was not: "one source of truth" held only for the room it was written in.** Now derived from
  * the new room's own outlines, `ROOM_CARD_GUIDES` (the cards' rims, as the layout projected them).
- * ⚠ It is the LANDING — the neon's ignition, the text's clock, and the moving light's downbeat.
+ * ⚠ It is the LANDING — the neon's ignition and the text's clock (~~and the moving light's downbeat~~ — the moving
+ *   light was removed 3 October 2026; the take light does not move).
  */
 const WALL_POINTS = [...ROOM_CARD_GUIDES.CA, ...ROOM_CARD_GUIDES.CB].map(([x, y]) => ({ x, y }));
 export const WALL_BAND = {
