@@ -65,6 +65,25 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-031 — The Drawing Board's First Light On `/about`: "Both Goals Have Been Surpassed. It Looks Great" — Committed And Pushed
+
+**Date:** 2026-10-03
+**Reviewer:** Human Founder
+**Subject:** Plain `/about` §2 with every earlier light OFF (ambient, the static key/fill, the moving light) and ONE new light — the TAKE LIGHT (`TakeLight`, `about-card-canvas.tsx`): directional, not moving, shadows on, 50° off the faces' normal from upper-left, the lit wall's hue `#ff6528` at 0.25 into white, intensity 2. The BEVEL takes the face's highlight limiter at its own ceiling 0.03 (`about-card-mesh.tsx`); the rim stays uncapped. The text runs and the §2 sequence plays as on 27 September. `?baseline=0` is the page before. Records the 3 October entries at the end of the D-095 tail.
+
+**Carl's brief, verbatim:** *"1. The glass face should clearly read as frosted glass and its geometry visible. 2. The text should be legible and be noticeably 3d, extruded."* Colour: *"a subtle colour could be used to light the face of the cards… Caused by the world."* Glints: *"Highlights or glints on the rim are good. Its when they are on the face that it looks bad."*
+
+**Carl's verdict, verbatim:** *"I think weve improved that and both goals have been surpassed. It looks great! Commit and push."*
+
+**Findings:**
+
+- ✔ **BOTH GOALS MET, BY CARL'S EYE** — frosted faces with visible geometry; legible, visibly extruded text — under the running sequence.
+- ⚠ **THE VERDICT IS ON THE LOOK AS A WHOLE, a take, not a master (D-035).** The individual values (angle, intensity, tint mix, bevel ceiling 0.03, shadow map) are not individually approved.
+- ⚠ **WHAT IT REPLACES:** the 25 September static-lights-off experiment (closed), the Q+A-style grazing rig (built the same day, its rim-corner glint the reason it went), and the moving light's orbit (*"not in the orbit or way it was moving"*). The moving light's code is OFF, not deleted (`?lightmove=1`).
+- ⚠ **CARRIED, NOT CHANGED:** the flash cap at 3 (at the cap) ~87–88 s; continuous rendering while the text loops.
+
+---
+
 ## R-030 — The Extruded Take As Plain `/about`, Rims Off: GREAT — Committed And Pushed
 
 **Date:** 2026-09-24 (session 2)

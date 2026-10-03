@@ -79,6 +79,40 @@ const DIAG_FACE_COLOR = "#c8c8c8";
  * ⚠ A take for Carl's eye, moving.
  */
 const HIGHLIGHT_CAP = 0.1;
+/** The BEVEL's ceiling — its own since 3 October 2026 (see `bevelCap` in `AboutCardMesh`). `?bevelcap=` overrides.
+    ⛔ 0.03, MEASURED at CB's inner top-left corner under the take light (`live-work/scripts/bevel-cap-sweep-3-october.mjs`):
+    the tick over a highlight-free bevel — uncapped 112 · 0.1 44 · 0.05 25 · **0.03 16** · 0.015 9 luma. 0.03 is "barely
+    noticeable" (Carl's bar) and leaves the bevel a trace of sheen; 0.015 flattens it. ⚠ A take for his eye. */
+const BEVEL_HIGHLIGHT_CAP = 0.03;
+
+/**
+ * The highlight limiter as material props (`onBeforeCompile` + its cache key), for a ceiling `cap` in linear
+ * radiance; `cap <= 0` → no patch. Below the knee (half the ceiling) the direct specular is untouched; above it,
+ * it eases toward the ceiling with slope 1 at the knee and never reaches it. See `highlightCap` in `AboutCardMesh`.
+ * ⚠ One cache key for every ceiling: the shader text is identical, the value is a per-material uniform.
+ */
+function capPatch(cap: number) {
+  if (cap <= 0) return {};
+  return {
+    onBeforeCompile: (shader: { uniforms: Record<string, THREE.IUniform>; fragmentShader: string }) => {
+      shader.uniforms.uHighlightCap = { value: cap };
+      shader.fragmentShader = shader.fragmentShader
+        .replace("#include <common>", "#include <common>\nuniform float uHighlightCap;")
+        .replace(
+          "vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;",
+          `vec3 capSpec = reflectedLight.directSpecular;
+          float capPeak = max(capSpec.r, max(capSpec.g, capSpec.b));
+          float capKnee = 0.5 * uHighlightCap;
+          if (capPeak > capKnee) {
+            float capRoom = uHighlightCap - capKnee;
+            capSpec *= (capKnee + capRoom * (1.0 - exp(-(capPeak - capKnee) / capRoom))) / capPeak;
+          }
+          vec3 totalSpecular = capSpec + reflectedLight.indirectSpecular;`,
+        );
+    },
+    customProgramCacheKey: () => "about-face-highlight-cap",
+  };
+}
 
 /**
  * Superellipse exponent used to combine the two axis curvatures.
@@ -1097,33 +1131,17 @@ export function AboutCardMesh({
      toward the ceiling (slope 1 at the knee, so no edge in the gradient — §14a) and never reaches white. The spot
      still travels the dome at full size and position, so the 3D read stays; only its peak is held.
      ⚠ ONLY `directSpecular` — the room's reflection (indirect), the frost (transmission mixes the DIFFUSE term,
-     `meshphysical.glsl.js:196`) and the glass constants (D-089) are untouched. The bevel is NOT capped: it
-     carries no text, and its glints are the edge the rim/bevel exist to draw.
+     `meshphysical.glsl.js:196`) and the glass constants (D-089) are untouched. ~~The bevel is NOT capped: it
+     carries no text, and its glints are the edge the rim/bevel exist to draw.~~ ⛔ Since 3 October 2026 the BEVEL
+     IS capped too (Carl: a glint on the face *"looks bad, like a white dot, a defect"* — the bevel reads as face);
+     the RIM is not, and carries the edge's glints alone.
      `?hlcap=0` removes the patch (the material is then the original program); `?hlcap=<n>` sets the ceiling in
      linear radiance, before ACES. ⚠ The default is a take, set by the 27 September sweep. */
-  const highlightCap = useMemo(() => {
-    const cap = neonNumber("hlcap", HIGHLIGHT_CAP, 0, 50);
-    if (cap <= 0) return {};
-    return {
-      onBeforeCompile: (shader: { uniforms: Record<string, THREE.IUniform>; fragmentShader: string }) => {
-        shader.uniforms.uHighlightCap = { value: cap };
-        shader.fragmentShader = shader.fragmentShader
-          .replace("#include <common>", "#include <common>\nuniform float uHighlightCap;")
-          .replace(
-            "vec3 totalSpecular = reflectedLight.directSpecular + reflectedLight.indirectSpecular;",
-            `vec3 capSpec = reflectedLight.directSpecular;
-            float capPeak = max(capSpec.r, max(capSpec.g, capSpec.b));
-            float capKnee = 0.5 * uHighlightCap;
-            if (capPeak > capKnee) {
-              float capRoom = uHighlightCap - capKnee;
-              capSpec *= (capKnee + capRoom * (1.0 - exp(-(capPeak - capKnee) / capRoom))) / capPeak;
-            }
-            vec3 totalSpecular = capSpec + reflectedLight.indirectSpecular;`,
-          );
-      },
-      customProgramCacheKey: () => "about-face-highlight-cap",
-    };
-  }, []);
+  const highlightCap = useMemo(() => capPatch(neonNumber("hlcap", HIGHLIGHT_CAP, 0, 50)), []);
+  /* ⛔ THE BEVEL'S OWN CEILING — 3 October 2026. At the face's 0.1 the take light's tick at CB's inner corner was
+     down to a faint mark, not gone: the bevel is a few px wide, so even a capped highlight stands out on it. Carl:
+     *"If you can get it down to barely noticeable, thats ok."* `?bevelcap=` sets it; 0 = uncapped. */
+  const bevelCap = useMemo(() => capPatch(neonNumber("bevelcap", BEVEL_HIGHLIGHT_CAP, 0, 50)), []);
 
   // ── BEVEL — a swept band sloping inward and toward the viewer. ──
   //
@@ -1353,6 +1371,11 @@ export function AboutCardMesh({
       <mesh geometry={bevelGeometry}>
         {glass ? (
           <meshPhysicalMaterial
+            /* ⛔ THE BEVEL TAKES THE FACE'S HIGHLIGHT CAP — 3 October 2026. Carl: *"Highlights or glints on the
+               rim are good. Its when they are on the face that it looks bad, like a white dot, a defect"* — and
+               the bevel reads as face: the take light's white dot at CB's inner top-left corner sat on it. The
+               RIM stays uncapped, so its glints stay. Its own ceiling: `bevelCap`. */
+            {...bevelCap}
             color={GLASS_COLOR}
             roughness={glassRoughness}
             metalness={GLASS_METALNESS}

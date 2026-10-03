@@ -69,20 +69,23 @@
 
 import * as THREE from "three";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useLoader } from "@react-three/fiber";
+import { Canvas, useLoader, useThree } from "@react-three/fiber";
 /* ⛔ The old room's guide, rail, aspect, height and camera constants are no longer read here (the new
    room, 25 September 2026). They stay exported from `about-card-geometry.ts` — `/proto/wall` and the
    card bench still use the old plate and camera. */
 import { cardDims, TENT_POLE_RATIO } from "./about-card-geometry";
 import {
+  ROOM_BACK_DIR,
   ROOM_CAMERA_PITCH_UP_DEG,
   ROOM_CAMERA_VFOV_DEG,
   ROOM_CARD_GUIDES,
   ROOM_CARDS,
   ROOM_CORNER_FLOOR_MM,
+  ROOM_INTO_WALL,
   ROOM_MM_PER_UNIT,
   ROOM_PLATE_ASPECT,
   ROOM_PLATE_SRC,
+  ROOM_UP,
   roomCardPlacement,
   type RoomCardSpec,
 } from "./about-room";
@@ -537,6 +540,87 @@ function RoomEnvironmentFromPlate() {
   return <RoomEnvironment plate={texture} enabled={neonParam("envmap") !== "0"} />;
 }
 
+/**
+ * ⛔⛔ THE TAKE LIGHT — the drawing board's first light, 3 October 2026. ONE directional light, not moving, with
+ * shadows. Carl's brief: *"1. The glass face should clearly read as frosted glass and its geometry visible. 2. The
+ * text should be legible and be noticeably 3d, extruded"*; its colour from the room — *"the walls are orange and the
+ * wood brown. So a subtle colour could be used to light the face of the cards… Caused by the world"* — *"a blend"*.
+ *
+ * ⚠ ITS ANGLE IS SET IN THE CARDS' OWN FRAME: all four share one yaw (`ROOM_YAW_DEG`), so one direction means the
+ * same thing on every card. `offDeg` = degrees off the faces' normal (0 head-on, 90 edge-on); `azDeg` = which side
+ * it comes from, round the normal (0 from the right, 90 from above, 180 from the left, 270 from below).
+ * ⚠ ITS COLOUR is the lit wall's hue (`#ff6528`, sampled from the plate) mixed into white by `mix` (0 white, 1 the
+ * wall) — "subtle" is that strength.
+ * ⚠ SHADOWS: one 4096 map over a 4.4 m square centred on the four cards (~1 mm a texel), so a 3 mm-deep letter can
+ * leave a shadow on its face. The scene is `frameloop="demand"` and nothing here moves, so it renders on change only.
+ * Faders: `?take=0` off · `?takeoff=` · `?takeaz=` · `?takei=` · `?takehue=` · `?takemix=`.
+ */
+type TakeSettings = { on: boolean; offDeg: number; azDeg: number; intensity: number; hue: string; mix: number };
+function takeSettings(baseline: boolean): TakeSettings {
+  return {
+    on: baseline && neonParam("take") !== "0",
+    offDeg: neonNumber("takeoff", 50, 0, 89),
+    azDeg: neonNumber("takeaz", 135, -360, 360),
+    intensity: neonNumber("takei", 2, 0, 50),
+    hue: neonHex("#ff6528", "takehue"),
+    mix: neonNumber("takemix", 0.25, 0, 1),
+  };
+}
+function TakeLight({ s }: { s: TakeSettings }) {
+  const ref = useRef<THREE.DirectionalLight>(null);
+  const scene = useThree((st) => st.scene);
+  const invalidate = useThree((st) => st.invalidate);
+  const target = useMemo(() => new THREE.Object3D(), []);
+  const { centre, position, color } = useMemo(() => {
+    const ps = (["CA", "CB", "CS", "CD"] as const).map((id) => roomCardPlacement(ROOM_CARDS[id]).position);
+    const c = [0, 1, 2].map((i) => ps.reduce((a, p) => a + p[i], 0) / ps.length);
+    const off = (s.offDeg * Math.PI) / 180;
+    const az = (s.azDeg * Math.PI) / 180;
+    const N = ROOM_INTO_WALL.map((v) => -v);
+    const d = [0, 1, 2].map(
+      (i) => Math.sin(off) * Math.cos(az) * ROOM_BACK_DIR[i] + Math.sin(off) * Math.sin(az) * ROOM_UP[i] + Math.cos(off) * N[i],
+    );
+    const col = new THREE.Color("#ffffff").lerp(new THREE.Color(s.hue), s.mix);
+    return {
+      centre: c as [number, number, number],
+      position: [0, 1, 2].map((i) => c[i] + d[i] * 8) as [number, number, number],
+      color: col,
+    };
+  }, [s]);
+  useEffect(() => {
+    const l = ref.current;
+    if (!l) return;
+    target.position.set(...centre);
+    scene.add(target);
+    l.target = target;
+    const cam = l.shadow.camera;
+    cam.left = -2.2;
+    cam.right = 2.2;
+    cam.top = 2.2;
+    cam.bottom = -2.2;
+    cam.near = 0.5;
+    cam.far = 16;
+    cam.updateProjectionMatrix();
+    invalidate();
+    return () => {
+      scene.remove(target);
+    };
+  }, [centre, scene, target, invalidate]);
+  return (
+    <directionalLight
+      ref={ref}
+      position={position}
+      color={color}
+      intensity={s.intensity}
+      castShadow
+      shadow-mapSize-width={4096}
+      shadow-mapSize-height={4096}
+      shadow-bias={-0.0001}
+      shadow-normalBias={0.0005}
+    />
+  );
+}
+
 export default function AboutCardCanvas() {
   /**
    * ⛔ THE GUIDES ARE ON BY DEFAULT WHILE PLACEMENT IS BEING VERIFIED, and off
@@ -685,11 +769,32 @@ export default function AboutCardCanvas() {
      `/about`: ALL FOUR mounted since 24 September session 2 — ⚠ since 25 September only CA SHOWS (`?text=`) and its pages run; *corrected in place:*
      this was one card per load, CB). Every switch below keys on `extrude` being
      non-null; the text and its face's shadow key on the card's own entry. */
+  /* ⛔⛔ THE 3 OCTOBER BASELINE — ON on plain `/about`; `?baseline=0` is the page before it. Carl, having ruled out
+     combining /start's Q+A light and the client info's orbit here (*"it doesnt work here. Rims apart, we must go
+     back to the drawing board"*): *"Have the neon rims on and all the text on each card visible and delete all
+     other lights. lets start from that baseline… make the text static."* So, by default:
+       - ALL FOUR RIMS ON, steady (`neon=full` unless `?neon=` says otherwise) — no ignition, no §2 sequence;
+       - ALL FOUR TEXTS STATIC, always shown (the first full page — `?textstatic=0` runs the pages);
+       - NO LIGHTS: no ambient, no static key/fill, no moving light (`?ambi=` `?lmglobal=1` `?lightmove=1` bring
+         each back). ⚠ The room's REFLECTION in the glass (`RoomEnvironmentFromPlate`) is kept: it is an image the
+         glass reflects and refracts, not a light object. ⚠ The neon casts NO light (emission + bloom only), so
+         what lights the faces and letters now is that reflection and nothing else.
+     ⚠ "Delete" is read as OFF BY DEFAULT, nothing removed from the code — every piece returns on a flag.
+     ⛔ AMENDED THE SAME DAY — Carl, with the take light and the bevel cap in: *"Make the text animate and run the
+     sequence."* The baseline now holds only THE LIGHTS: the text runs its pages and the §2 sequence plays (rims
+     ignite, each card two cycles and out, looping) exactly as on 27 September. ~~All four rims steady; all four
+     texts static; the sequence held off.~~ `?neon=full` / `?textstatic=1` still give the still state. */
+  const baseline = useMemo(() => neonParam("baseline") !== "0", []);
+  /* ⛔ THE DRAWING BOARD'S FIRST LIGHT — ON the baseline only (`?take=0` removes it). See `TakeLight`. */
+  const take = useMemo(() => takeSettings(baseline), [baseline]);
   const extrude = useMemo(() => {
     const ids = extrudeCards();
     if (!ids.length) return null;
     const byCard: Partial<Record<ExtrudeCardId, ExtrudeSettings>> = {};
-    for (const id of ids) byCard[id] = extrudeSettings(id);
+    for (const id of ids) {
+      const st = extrudeSettings(id);
+      byCard[id] = st; // ⚠ The baseline no longer holds the text static (3 October, later): the pages run.
+    }
     return byCard;
   }, []);
   /* ⛔⛔ THE TEXT IS HIDDEN — Carl, 25 September 2026 (second session): *"First, hide the text. Lets
@@ -709,10 +814,48 @@ export default function AboutCardCanvas() {
      mounts only if the §2 sequence reaches it (`onSeq` below) — plain `/about` writes all four in turn, CA → CB →
      CD → CS (it was CA then CB first). `?seq=ca,cb` shortens the chain; `?textstatic=1` holds the first page. */
   const textCards = useMemo(() => textCardsFromUrl(), []);
-  /* ⛔ THE MOVING LIGHT — ON on plain `/about` (`?lightmove=0` removes it). The static key and fill
+  /* ⛔ THE MOVING LIGHT — ON on plain `/about` (`?lightmove=0` removes it). ~~The static key and fill
      are OFF under it by default — Carl's experiment, so it is seen alone (ambient kept); `?lmglobal=1` puts
-     them back. See `about-moving-light.tsx`, D-090. */
-  const [movingLight, globalOn] = useMemo(() => [movingLightEnabled(), movingLightGlobalOn()], []);
+     them back.~~ ⛔ The experiment closed 3 October 2026: the static key and fill are ON under it by default
+     again (Carl: *"This is a lot better"*); `?lmglobal=0` turns them off. See `about-moving-light.tsx`, D-090. */
+  const [movingLight, globalOn] = useMemo(
+    () =>
+      baseline
+        ? [neonParam("lightmove") === "1", neonParam("lmglobal") === "1"] // the baseline: both OFF unless asked for
+        : [movingLightEnabled(), movingLightGlobalOn()],
+    [baseline],
+  );
+  /* ⛔⛔ THE STATIC RIG IS THE Q+A's, TURNED TO THE ROOM — 3 October 2026. Carl, on the fixed bands of light on CA
+     and CS that washed the words under them: *"A postion change or lowering the intensity would br better. The
+     moving light does a lot to highlight the face 3D qualities the staitic light should add to this slightly"*;
+     then, on /start's rig: *"The global light in the image is supposed to hint at the curvature, the moving light
+     brings it out… leys try your proposal."*
+     ⚠ THE BANDS WERE THE KEY'S REFLECTION, AND THE CAUSE WAS ITS ANGLE: [1,2,2] struck the faces near head-on
+     (N·L 0.74), so its mirror image sat mid-face, on the text. Dimming could not help — the letters dimmed with it
+     (words in the band stayed ~0.85 of the card at ×0.5 and ×0.3). ⚠ The old fill [5,2,-2] struck from BEHIND
+     (N·L −0.06) and added nothing to any face.
+     ⛔ NOW: /start's key, fill and ambient (`answer-card-glass.ts` REST_*: key [-160,120,40] 1.6, fill
+     [140,-90,60] 0.35, ambient 0.18) expressed in the cards' own frame — all four share one yaw (`ROOM_YAW_DEG`),
+     so one grazing light serves them as one serves /start's grid. Key N·L 0.20 (grazing, top-left), fill 0.34
+     (bottom-right). MEASURED, moving light at 0 (`live-work/scripts/static-rig-sweep-3-october.mjs`), text off
+     the glass: CS 28.2 → 35.9, CA 39.4 → 40.1; CS's words inside the old band 0.85 → 1.02 of the card; bands on
+     bare glass CS +31 → +17, CA +15 → +7. ⚠ A take for Carl's eye.
+     Faders: `?keyi=` `?filli=` intensity; `?keypos=x,y,z` `?fillpos=x,y,z` direction; `?ambi=` ambient.
+     The 17 September rig: `?keypos=1,2,2&keyi=0.5&fillpos=5,2,-2&filli=2.6&ambi=0.2`. ⚠ The long notes on the
+     two directional lights below describe THAT rig, in the old room. */
+  const staticRig = useMemo(() => {
+    const vec = (key: string, d: [number, number, number]): [number, number, number] => {
+      const v = neonParam(key)?.split(",").map(Number);
+      return v && v.length === 3 && v.every(Number.isFinite) ? [v[0], v[1], v[2]] : d;
+    };
+    return {
+      keyI: neonNumber("keyi", 1.6, 0, 10),
+      fillI: neonNumber("filli", 0.35, 0, 10),
+      keyPos: vec("keypos", [-0.6825, 0.5883, 0.4337]),
+      fillPos: vec("fillpos", [0.8579, -0.5087, 0.072]),
+      ambient: neonNumber("ambi", baseline ? 0 : 0.18, 0, 5),
+    };
+  }, [baseline]);
   /* ⛔ THE RIM UNDER THE TEXT TAKE — Carl, 24 September 2026 (session 2): *"On CB,
      turn off the light but turn on the rim."* When any mounted card's `rim` is on the
      neon mounts as it does on the neon page (`neonMode()`, so `?neon=full|off|<ignite>`
@@ -720,7 +863,9 @@ export default function AboutCardCanvas() {
      `liveNeon` below): every other rim stays plain clear glass. */
   const neon = useMemo<ReturnType<typeof neonMode>>(
     () =>
-      extrude && !Object.values(extrude).some((st) => st.rim) ? { kind: "none" } : neonMode(),
+      extrude && !Object.values(extrude).some((st) => st.rim)
+        ? { kind: "none" }
+        : neonMode(), // ⚠ The baseline no longer holds the rims steady (3 October, later): the sequence ignites them.
     [extrude],
   );
   /**
@@ -966,7 +1111,9 @@ export default function AboutCardCanvas() {
 
           {movingLight && <AboutMovingLight />}
 
-          <ambientLight intensity={0.20} />
+          <ambientLight intensity={staticRig.ambient} />
+
+          {take.on && <TakeLight s={take} />}
 
           {/* ⚠⚠ A STAND-IN KEY. Carl: *"The light will come from the neon rim but
               also 4 individual lights pointed at each card."* ⛔ Neither exists
@@ -998,7 +1145,9 @@ export default function AboutCardCanvas() {
               sight — see the removal note above `AboutCardCanvas`. **Every one
               measured clean and looked worse. The fix was the light TYPE, and a
               second directional light, not repositioning.** */}
-          <directionalLight position={[1, 2, 2]} intensity={globalOn ? 0.5 : 0} />
+          {/* ⛔ 3 October 2026: the note above is the 17 September KEY in the old room ([1,2,2] at 0.5). Since
+              then this light is the Q+A's grazing key turned to the room — see `staticRig`. */}
+          <directionalLight position={staticRig.keyPos} intensity={globalOn ? staticRig.keyI : 0} />
 
           {/* ⛔⛔ THE MIRROR — a second directional light for the LEFT pair.
               17 September 2026, Carl: *"can you use another light to mirror it, so
@@ -1065,7 +1214,10 @@ export default function AboutCardCanvas() {
               come down to stop dominating the left. ⛔ Holding both exactly would
               need a THIRD light aimed only at the right pair. **Not built — Carl
               judges whether the trade is worth it before adding hardware.** */}
-          <directionalLight position={[5, 2, -2]} intensity={globalOn ? 2.6 : 0} />
+          {/* ⛔ 3 October 2026: the note above is the 17 September "MIRROR" in the old room ([5,2,-2] at 2.6 —
+              in the new room it struck every face from behind, N·L −0.06). Since then this light is the Q+A's
+              quiet fill, bottom-right, turned to the room — see `staticRig`. */}
+          <directionalLight position={staticRig.fillPos} intensity={globalOn ? staticRig.fillI : 0} />
 
           {/* ⛔ NO PROXY PLANE. An earlier build put one 1.6x the card's size
               behind it, which on `/about` is an OPAQUE SLAB BLACKING OUT THE ROOM.

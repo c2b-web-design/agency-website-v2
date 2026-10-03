@@ -66,8 +66,8 @@
  *   ?lmhex=ffffff     colour (white: *"the scene is already warm"*)
  *   ?lmrev=0.5        the chance of turning back at each LULL (0 never, 1 always) — see `findLulls`
  *   ?lmrevsec=4       seconds a reversal takes (ease to a stop, away the other way)
- *   ?lmglobal=1       the static key and fill back ON — ⚠ OFF BY DEFAULT since 25 September (Carl: *"yes
- *                     try it, im all for experimentation"*); ambient stays
+ *   ?lmglobal=0       the static key and fill OFF (ambient stays) — the 25 September experiment's state, which
+ *                     was the default until 3 October; ON by default again since (see `movingLightGlobalOn`)
  *   ?lighthelpers=1   the trajectory — OFF by default since 27 September (was ON on localhost)
  *   ?lmdip=1          the blowout dips back ON — ⚠ OFF by default since 27 September (the face's highlight cap
  *                     replaced them) — see `BLOWOUT_DIPS`
@@ -85,15 +85,20 @@ export function movingLightEnabled(): boolean {
   return neonParam("lightmove") !== "0";
 }
 
-/** `?lmglobal=1` puts the static rig back (it is OFF by default under the moving light). */
 /**
- * ⛔ THE STATIC KEY AND FILL ARE OFF BY DEFAULT under the moving light — Carl, 25 September 2026: *"Turning
+ * ~~⛔ THE STATIC KEY AND FILL ARE OFF BY DEFAULT under the moving light — Carl, 25 September 2026: *"Turning
  * the static lights off, yes try it, im all for experimentation."* Ambient stays. `?lmglobal=1` puts the
  * static rig back. ⚠ AN EXPERIMENT, and it sits against a ruling: **the text must read under the static
- * light alone** (D-090, legibility first). The text is hidden today; when it returns, this is re-judged.
+ * light alone** (D-090, legibility first). The text is hidden today; when it returns, this is re-judged.~~
+ * ⛔⛔ THE EXPERIMENT IS CLOSED — THE STATIC KEY AND FILL ARE ON BY DEFAULT AGAIN. Carl, 3 October 2026, on
+ * `?lmglobal=1`: *"This is a lot better. Not only is the text brighter but the card faces are reading more like
+ * curved frosted glass."* The re-judge owed "when the text returns" had never been put to him; under ambient +
+ * the moving light alone CA's text read ~1.65–1.9× its face for most of a lap (2.88 only with the light on it),
+ * with the rig 2.1–2.6× all lap (`live-work/scripts/ca-text-light-ab.mjs`). `?lmglobal=0` = the experiment's
+ * state (ambient + the moving light only). `?lightmove=0` still leaves the rig on.
  */
 export function movingLightGlobalOn(): boolean {
-  return !(movingLightEnabled() && neonParam("lmglobal") !== "1");
+  return !(movingLightEnabled() && neonParam("lmglobal") === "0");
 }
 
 type OrbitSettings = {
