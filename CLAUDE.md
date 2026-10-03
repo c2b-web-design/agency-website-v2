@@ -64,7 +64,12 @@ distinction between them, so everything read as equally mandatory: **35,703 word
 quietly stop completing** — and a rule nobody completes is not a rule, it is a fiction that makes
 the record look safer than it is.
 
-### Read before touching anything — 8,837 words
+### Read before touching anything — 7,255 words
+
+⚠ **Measured 3 October 2026 (session 2), with a 1,015-word handoff.** It had drifted to **19,675**
+because Sprint 2 closed on 14 June and was never archived, so four months of work stacked onto
+`current-sprint.md` (14,577 words). ⛔ **Run the sprint boundary when a sprint closes**
+(`handoff-protocol.md`). Sprint 2's record: `active-sprints/archive/sprint-2.md`.
 
 - `project-intelligence/live-work/session-handoff.md` — **if it exists, read it FIRST.** What the
   last session decided, parked and corrected. Delete it at the end of the session, once its

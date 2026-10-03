@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-032 — The Image Scroll On `/about` (D-092): APPROVED
+
+**Date:** 2026-10-03 (session 2)
+**Reviewer:** Human Founder
+**Subject:** Plain `/about` §1 → §2: ONE `RoomStage` (`about-card-canvas.tsx`), sticky behind both sections; the room faded at 0.2 under §1; §2's room through a top-down SMOOTHERSTEP wipe, 0.3 of the window (`ROOM_WIPE_GRADIENT`); one wipe number (`roomWipe`, `about-neon.ts`) read by the mask and the §2 sequence's trigger (`roomWipeClearsCA`); §2's `border-t` removed; the stage's negative margin moved to §1 so the stage leaves with §2 (the §3 overlap fix). Records D-092's 3 October entries at the end of the D-095 tail.
+
+**Carl's verdicts, verbatim:** first build — *"It looks good apart from the thin black line."* Session 2, after the line was removed, the edge smoothed and the §3 overlap fixed — *"i am happy with the scroll image - approved."*
+
+**Findings:**
+
+- ✔ **APPROVED BY CARL'S EYE** — the faded room in §1, the wipe into §2, the S-curve edge and the §3 fix, as one whole. A take, not a master (D-035); `S1_ROOM_OPACITY` 0.2 and the 0.3 gradient are not individually approved.
+- ⚠ **CARRIED, NOT CHANGED BY THE VERDICT:** §1's last lines pass over the opaque room as they leave (no comment from Carl); scrolling back up fades the room again; reduced motion untouched; phones not looked at (accessibility and mobile are deferred to mastering, D-094); `RoomPlate` has no `priority` though it is on screen at first paint (`room-plate.tsx`, outside the chunk's scope).
+- ⚠ **WHAT IT NOW BEARS ON:** the stage leaving with §2 is why a desk mark inside the cards' canvas cannot reach §3 — the structural question D-088's build must answer.
+
+---
+
 ## R-031 — The Drawing Board's First Light On `/about`: "Both Goals Have Been Surpassed. It Looks Great" — Committed And Pushed
 
 **Date:** 2026-10-03
@@ -857,7 +873,9 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-09-22 — **R-028 added**: all four cards in glass; ✔✔ **the PLACEMENT is
+*Last updated: 2026-10-03 (session 2) — **R-032 added**: the image scroll (D-092) approved. ⚠ **This footer had stopped at R-028 while R-029–R-031 were filed** — the stale-footer fault the note at the end of this file records, again.*
+
+*Previously: 2026-09-22 — **R-028 added**: all four cards in glass; ✔✔ **the PLACEMENT is
 APPROVED and NO CARD MOVED** — *"the cards are essentially 2+2... the original calculations were
 done accurately."* ⛔ **The floor rails are REMOVED, their job done**, which also closes
 GUIDES-WITHOUT-FLAG by removal. ⛔⛔ **Carl's acceptance test for the material is FAMILY
