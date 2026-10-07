@@ -1,7 +1,8 @@
 /**
  * Frames of the mark bench — D-088 PASS 1 (the shape in clay), 7 October 2026. Plan: live-work/desk-mark-pass1-mesh-plan-7-october.md.
  *   node --no-warnings project-intelligence/live-work/scripts/logo-pass1-shots-7-october.mjs <set> [state …]
- *   <set> = the output folder's suffix: "baseline" (the 3 October mesh, step 1) or "pass1" (step 3's mesh).
+ *   <set> = the output folder's suffix: "baseline" (the 3 October mesh, step 1), "take2" (pass 1's mesh), or "gold"
+ *   (pass 2 — the gold states only).
  * Needs the dev server on :3000. Headed, real GPU, Carl's viewport (1412 × 700 @ 1.36), as the 3 October script.
  * Prints each state's junction-window readings (Architect A6) — the baseline's go into live-work/logo-pass1-baseline-7-october.md.
  */
@@ -12,12 +13,17 @@ const SET = process.argv[2] ?? "baseline";
 const OUT = `project-intelligence/live-work/screenshots/logo-pass1-7-october/${SET}`;
 mkdirSync(OUT, { recursive: true });
 const STATES = {};
+if (SET === "gold") {
+  for (const view of ["front", "oblique", "junction", "side", "roomsize"]) for (const m of ["gold", "blue"]) STATES[`${view}-${m}`] = `view=${view}&mode=${m}`;
+  STATES["front-gold-target"] = "view=front&mode=gold&overlay=0.5";
+} else {
 for (const view of ["front", "oblique", "junction"]) for (const mode of ["clay", "flat", "zebra"]) STATES[`${view}-${mode}`] = `view=${view}&mode=${mode}`;
 Object.assign(STATES, {
   "junction-flat-noshadow": "view=junction&mode=flat&shadows=0",
   "junction-flat-wire": "view=junction&mode=flat&wire=1",
   side: "view=side", below: "view=below", roomsize: "view=roomsize",
 });
+}
 const pick = process.argv.slice(3);
 const b = await chromium.launch({ headless: false, args: ["--enable-gpu", "--use-angle=default", "--ignore-gpu-blocklist"] });
 const ctx = await b.newContext({ viewport: { width: 1412, height: 700 }, deviceScaleFactor: 1.36 });

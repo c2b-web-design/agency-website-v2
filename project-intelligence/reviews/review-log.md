@@ -65,6 +65,24 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-035 — The Desk Mark's Two Metals On The Clay Shape (D-088 Pass 2): The Blue "Great", The Gold A Positive Read
+
+**Date:** 2026-10-07
+**Reviewer:** Human Founder
+**Subject:** `/proto/logo` `?mode=gold` and `?mode=blue` — pass 2, the material, on pass 1's approved shape, in chunk 1's Lightformer studio restored as a fixed judging fixture (the real light is pass 3). Gold: chunk 1's physical gold F0 (linear 1.00, 0.77, 0.34), roughness 0.25. Blue, take 3: the blue metal swatch's base colour #3F6DB8 as F0 (linear 0.049, 0.153, 0.479), roughness 0.25. Frames: `live-work/screenshots/logo-pass1-7-october/gold/`.
+
+**Carl's verdicts, verbatim:**
+- Gold: *"Face on the gold looks the same shade with the applied light. At an oblique angle thats when you can really see the different shades. With a well place light and movement from the object this would work very well."*
+- Blue take 1 (platinum tinted halfway to the blue target's hue): *"Its coming off as grey."* Take 2 (the site's blue mark sampled, #8DA7CB): *"Its more silver grey… See the contrast between the two."* Take 3 (the swatch): *"Yes, thats great. When the transition is made that will really contrast against the orange in our scene."*
+
+**Findings:**
+
+- ✔ **THE BLUE: "great"** — the level given. **THE GOLD: a positive read, not an approval.** Neither is a master (D-035); no dial is individually approved.
+- ✔ **The contrast is the point:** the blue against the scene's orange. Brief for the crossing and for pass 3.
+- ⚠ **OPEN:** straight on, both faces are a single shade in the judging studio (a flat mirror) — Carl: a well-placed light and the motion will carry it (pass 3); the blue is a DARK metal (luminance ≈ 0.13) and leans harder on the light than the gold; the gold went near-black under the room's reflection in chunk 1 (RIM-DARK's cause) — pass 3's problem; the crossing (outside-in circular wipe, ending at `logoMarkCentre()`) is not built.
+
+---
+
 ## R-034 — The Desk Mark's Shape In Clay (D-088 Pass 1, Take 2): PASSES
 
 **Date:** 2026-10-07
@@ -906,7 +924,9 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-10-07 — **R-034 added**: the desk mark's shape in clay (pass 1, take 2), PASSES.*
+*Last updated: 2026-10-07 — **R-035 added**: the desk mark's two metals (pass 2) — the blue "great", the gold a positive read.*
+
+*Previously: 2026-10-07 — **R-034 added**: the desk mark's shape in clay (pass 1, take 2), PASSES.*
 
 *Previously: 2026-10-03 (session 2, end) — **R-033 added**: the desk mark on its bench, "close and a good base to start from".*
 

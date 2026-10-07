@@ -9,7 +9,7 @@ import LogoBench, { type LogoBenchFlags } from "@/components/about/logo-bench";
  *
  * ⚠ The URL switches are read HERE, on the server, and passed down — so the bench's first render is the same on the
  * server and the client (a panel sized for `?view=roomsize` must not change size at hydration).
- *   ?view=front|oblique|junction|turntable|side|below|roomsize   ?mode=clay|flat|zebra|normals   ?wire=1
+ *   ?view=front|oblique|junction|turntable|side|below|roomsize   ?mode=clay|flat|zebra|normals|gold|blue   ?wire=1
  *   ?shadows=0   ?az=-90..90   ?el=0..85   ?mask=1   ?overlay=0..1
  */
 export const metadata = {

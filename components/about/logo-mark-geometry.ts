@@ -556,3 +556,22 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
     },
   };
 }
+
+// ── the mark's centre — where the gold → platinum-blue crossing ENDS (Carl, 7 October 2026) ──────────────────────
+
+/**
+ * ⛔ THE CENTRE OF THE MARK IN ALL THREE AXES, mark units — the END POINT of the colour crossing. Carl, 7 October:
+ * *"measure the logos centre spot. Not just coordinates for height and width but for thickness too. That will be a
+ * ending point for the colour transition"* — an OUTSIDE-IN circular wipe (the reverse of the Begin button's entrance),
+ * the platinum blue closing in and the gold going LAST here. Measured on the built pass-1 solid
+ * (`live-work/logo-centre-measurement-7-october.md`):
+ *   - x, y = the centre of the mark's box: (0, 0.5) BY CONSTRUCTION — the trace's normalisation puts the origin at the
+ *     box's bottom-centre with height 1 (`LOGO_OUTLINE_SOURCE`). Source px (845.2, 486.5). The 3D counterpart of
+ *     `/start`'s nail (the letterforms' box centre), NOT the volume centroid (19 px right, 41.5 px lower).
+ *   - z = HALF THE DEPTH — the box runs 0 (the flat back) to `depth` (the face). It FOLLOWS the depth dial.
+ * It falls INSIDE the solid, on the 2's diagonal, 22 source px from its upper-left edge, under the flat face — where
+ * `/start`'s 2D wipe also leaves its last gold.
+ */
+export function logoMarkCentre(p: Pick<LogoMarkParams, "depth" | "scale"> = LOGO_MARK_DEFAULTS): [number, number, number] {
+  return [0, 0.5 * p.scale, (p.depth / 2) * p.scale];
+}

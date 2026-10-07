@@ -10,6 +10,9 @@
  * material and light it so it brings out the geometry… get the shape right."* The gold, the Lightformer studio and the
  * room reflection are GONE from this bench until their passes; `logo-mark-material.ts` stays on disk, unused.
  *
+ * ⛔ PASS 2 (7 October): `gold` — the chunk-1 gold (`logo-mark-material.ts`, physical F0) in a FIXED judging studio
+ * (`GoldStudio`). Carl: *"just apply the gold metal."* The lights are pass 3.
+ *
  * ⛔ THE MODES SEE DIFFERENT THINGS (Architect A4). `clay`, `zebra` and `normals` shade with the COMPUTED vertex normals —
  * and a computed normal can smooth over a crease the triangles really have. **`flat` lights the TRIANGLES**
  * (`flatShading`), so only `flat` shows the mesh as built. Judge a crease in `flat`; judge continuity in `zebra`.
@@ -29,12 +32,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, OrthographicCamera, PerspectiveCamera } from "@react-three/drei";
+import { Environment, Lightformer, OrbitControls, OrthographicCamera, PerspectiveCamera } from "@react-three/drei";
 import goldTarget from "../../brand-assets/logo/c2b-logo-gold-relit-alpha-1671.png";
 import {
   buildLogoMarkGeometry, LOGO_MARK_DEFAULTS, SRC_PX, windowReadouts,
   type LogoMarkParams, type LogoMarkStats, type WindowReadouts,
 } from "./logo-mark-geometry";
+import { createLogoGold, createLogoPlatinumBlue, LOGO_BLUE_DEFAULTS, LOGO_GOLD_DEFAULTS } from "./logo-mark-material";
 import { LOGO_JUNCTION, LOGO_OUTLINE_SOURCE as SRC } from "./logo-mark-outline";
 
 export type LogoBenchFlags = {
@@ -43,7 +47,7 @@ export type LogoBenchFlags = {
 
 const VIEWS = ["front", "oblique", "junction", "turntable", "side", "below", "roomsize"] as const;
 type View = (typeof VIEWS)[number];
-const MODES = ["clay", "flat", "zebra", "normals"] as const;
+const MODES = ["clay", "flat", "zebra", "normals", "gold", "blue"] as const;
 type Mode = (typeof MODES)[number];
 
 /** ⚠ PLACEHOLDER — chunk 2 sets the real height in room millimetres from the plate target (144 plate px). */
@@ -143,6 +147,27 @@ function makeZebra() {
   return new THREE.MeshMatcapMaterial({ matcap: t });
 }
 
+/**
+ * ⛔ PASS 2 (7 October 2026) — THE GOLD'S REFLECTION STUDIO, a FIXED JUDGING FIXTURE, NOT THE LIGHTS PASS. Metal has no
+ * diffuse: with nothing to reflect it renders black, so the gold cannot be judged in the clay's shape light. Restored
+ * verbatim from chunk 1 (`6302913`): Lightformers ONLY, no preset (a preset fetches an HDR from a CDN — Architect A6).
+ * After the gold target's light: two tall softboxes (the two streaks along each stroke), a broad top, a front fill, the
+ * warm bounce of the floor it stands on, and a very dark warm base so no face reflects pure black.
+ * ⚠ Pass 3 (the lights) designs the real light — the room's. Nothing here is that design.
+ */
+function GoldStudio() {
+  return (
+    <Environment resolution={256} frames={1}>
+      <color attach="background" args={["#0d0b09"]} />
+      <Lightformer form="rect" intensity={1.7} color="#fff1d8" position={[-4, 1, 3]} scale={[2.5, 8, 1]} target={[0, 0, 0]} />
+      <Lightformer form="rect" intensity={1.7} color="#fff1d8" position={[4, 1, 3]} scale={[2.5, 8, 1]} target={[0, 0, 0]} />
+      <Lightformer form="rect" intensity={1.1} color="#fff1d8" position={[0, 5, 1]} scale={[8, 2.5, 1]} target={[0, 0, 0]} />
+      <Lightformer form="rect" intensity={0.45} position={[0, 0.5, 6]} scale={[6, 3, 1]} target={[0, 0, 0]} />
+      <Lightformer form="rect" intensity={0.5} color="#ffb060" position={[0, -4, 2]} scale={[8, 2.5, 1]} target={[0, 0, 0]} />
+    </Environment>
+  );
+}
+
 function Slider({ label, value, min, max, step, onChange, fmt }: {
   label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; fmt?: (v: number) => string;
 }) {
@@ -167,6 +192,9 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
   const [heightMm, setHeightMm] = useState(PLACEHOLDER_HEIGHT_MM);
   const [geo, setGeo] = useState<LogoMarkParams>({ ...LOGO_MARK_DEFAULTS });
   const [built, setBuilt] = useState<Built | null>(null);
+  const [roughness, setRoughness] = useState(LOGO_GOLD_DEFAULTS.roughness);
+  const [envI, setEnvI] = useState(LOGO_GOLD_DEFAULTS.envMapIntensity);
+  const [tint, setTint] = useState(LOGO_BLUE_DEFAULTS.tint);
 
   const params = useMemo(() => ({ ...geo, scale: heightMm }), [geo, heightMm]);
 
@@ -202,7 +230,12 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
     zebra?.matcap?.dispose();
     zebra?.dispose();
   }, [clay, flat, zebra, normals, white, wireMat]);
-  const material = mask ? white : mode === "flat" ? flat : mode === "zebra" && zebra ? zebra : mode === "normals" ? normals : clay;
+  const gold = useMemo(() => createLogoGold({ roughness, envMapIntensity: envI }), [roughness, envI]);
+  useEffect(() => () => gold.dispose(), [gold]);
+  const blue = useMemo(() => createLogoPlatinumBlue({ roughness, envMapIntensity: envI, tint }), [roughness, envI, tint]);
+  useEffect(() => () => blue.dispose(), [blue]);
+  const metal = mode === "gold" || mode === "blue";
+  const material = mask ? white : mode === "gold" ? gold : mode === "blue" ? blue : mode === "flat" ? flat : mode === "zebra" && zebra ? zebra : mode === "normals" ? normals : clay;
 
   const S = heightMm;
   const front = view === "front" || view === "roomsize";
@@ -247,6 +280,8 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
             <option value="flat">flat — the triangles as built</option>
             <option value="zebra">zebra — surface continuity</option>
             <option value="normals">normals</option>
+            <option value="gold">gold — pass 2, in the judging studio</option>
+            <option value="blue">platinum blue — in the same studio</option>
           </select>
         </label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={wire} onChange={(e) => setWire(e.target.checked)} /> wireframe</label>
@@ -268,7 +303,8 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
             <PerspectiveCamera makeDefault position={persp[view as keyof typeof persp]} fov={30} near={S * 0.01} far={S * 40} />
           )}
           {!front && <OrbitControls target={target} enableDamping={false} />}
-          {!mask && <ShapeLight S={S} az={az} el={el} shadows={shadows} normalBias={0.5 * geo.gridStep * S} />}
+          {!mask && !metal && <ShapeLight S={S} az={az} el={el} shadows={shadows} normalBias={0.5 * geo.gridStep * S} />}
+          {!mask && metal && <GoldStudio />}
           {built && (
             <Turntable on={view === "turntable"}>
               <mesh geometry={built.geometry} material={material} castShadow={shadows && !mask} receiveShadow={shadows && !mask} />
@@ -290,7 +326,15 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2 text-sm">
         <div className="space-y-2">
-          <div className="text-neutral-500">light — rake it across a feature</div>
+          {metal && (
+            <>
+              <div className="text-neutral-500">{mode === "gold" ? "gold — physical F0" : "platinum blue — the blue metal swatch, sampled"}; starting values for Carl&apos;s eye</div>
+              {mode === "blue" && <Slider label="blue tint" value={tint} min={0} max={1} step={0.05} onChange={setTint} fmt={(v) => (v === 0 ? "platinum" : v === 1 ? "swatch blue" : v.toFixed(2))} />}
+              <Slider label="roughness" value={roughness} min={0.02} max={0.8} step={0.01} onChange={setRoughness} />
+              <Slider label="env intensity" value={envI} min={0.2} max={3} step={0.05} onChange={setEnvI} fmt={(v) => v.toFixed(2)} />
+            </>
+          )}
+          <div className="text-neutral-500">light — rake it across a feature (clay modes)</div>
           <Slider label="key azimuth" value={az} min={-90} max={90} step={1} onChange={setAz} fmt={(v) => `${v}°`} />
           <Slider label="key elevation" value={el} min={0} max={85} step={1} onChange={setEl} fmt={(v) => `${v}°`} />
           <div className="text-neutral-500 pt-2">form — ⚠ starting points for Carl&apos;s eye</div>
