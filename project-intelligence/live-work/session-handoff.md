@@ -56,14 +56,14 @@ Reasoning: D-088's last 7 October entry.
 ## ⚠ OPEN — WITH OWNERS
 
 - **Carl:**
-  - routing pass 1's checkpoint to the Architect (`live-work/checkpoint-desk-mark-pass1-7-october.md`, v3's first
-    review; pass 2 has no checkpoint);
   - the stem's corners (the trace rounds them 22–26 px; the target's are crisp mitres);
   - A13, flat foot or as built;
   - the dial values;
   - the removed stem crown (*"showing the flat back"*), a question for pass 3;
   - the base double line (its own take).
-- **Carl — his `brand-assets/` changes, NOT committed, on his word ("Not just yet"):** five old scene images deleted
+- ✔ **CLOSED by Carl: pass 1's checkpoint is NOT routed** — v3 *"well founded. The results justify that."* (D-088's
+  pivot entry). ⛔ Don't re-raise it.
+- **Carl — his `brand-assets/` changes, NOT committed** (*"Not just yet"*, then *"no reason to keep them in the record"*): five old scene images deleted
   (`about-studio-noplant-1264.jpg`, `about-studio-perspective-grid-6158.jpg`, `about-studio-wall-cards-1800.jpg`,
   `office-image-1.jpg`, `reddit-original.jpg`) and his download `brand-assets/images.jpg` (the swatch sheet).
   Deliberate (*"old images from the old scene"*). Ask before committing.

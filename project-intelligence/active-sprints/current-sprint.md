@@ -83,9 +83,8 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
   checkpoint was NOT routed. `6302913` is held unpushed.
 - **The form, superseded (7 October):** not a domed tube. **A flat face in a narrow chamfer, one profile all
   round** — Carl's flat-face shape target, *"similar with traditional gold bars."*
-- **Pass 1 (the shape, in clay) PASSES (R-034).** Its checkpoint request for the Architect is
-  `live-work/checkpoint-desk-mark-pass1-7-october.md` — ⚠ NOT yet routed (plan v3 was built before review, on
-  Carl's word).
+- **Pass 1 (the shape, in clay) PASSES (R-034).** Its checkpoint request (`live-work/checkpoint-desk-mark-pass1-7-october.md`)
+  is **closed unrouted by Carl**: v3 is *"well founded. The results justify that."* The file is kept as the record.
 - **Pass 2 (the material) — both metals on the bench (R-035):** the gold (a positive read) and the platinum blue
   (the swatch blue #3F6DB8, *"great"* — chosen to contrast with the scene's orange). Built on Carl's *"just apply
   the gold metal"*, without a plan.
