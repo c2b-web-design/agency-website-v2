@@ -63,9 +63,13 @@ Reasoning: D-088's last 7 October entry.
   - the base double line (its own take).
 - ✔ **CLOSED by Carl: pass 1's checkpoint is NOT routed** — v3 *"well founded. The results justify that."* (D-088's
   pivot entry). ⛔ Don't re-raise it.
-- **Carl — his `brand-assets/` changes, NOT committed** (*"Not just yet"*, then *"no reason to keep them in the record"*): five old scene images deleted
+- ✔ **Carl's `brand-assets/` changes — RESOLVED** (*"no reason to keep them in the record"*): five old scene images deleted
   (`about-studio-noplant-1264.jpg`, `about-studio-perspective-grid-6158.jpg`, `about-studio-wall-cards-1800.jpg`,
-  `office-image-1.jpg`, `reddit-original.jpg`) and his download `brand-assets/images.jpg` (the swatch sheet).
+  `office-image-1.jpg`, `reddit-original.jpg`) — ✔ COMMITTED in `89b7634` on Carl's word; the comments citing two of them
+  corrected in `bacc07b`. His swatch-sheet download (`brand-assets/images.jpg`) MOVED to
+  `live-work/references/desk-mark-refs-7-october/metal-swatches-carl-download.jpg` — local only: a WATERMARKED
+  dreamstime stock comp (cf. the earlier Pikbest `images.jpg` on the purge list). Carl: *"That image will become very
+  important."* Reference only — never commit or serve it.
   Deliberate (*"old images from the old scene"*). Ask before committing.
 - **Pass 3 (lights):** both faces are one shade straight on in the studio — light and motion carry it. The blue is a
   DARK metal (luminance ≈ 0.13) and leans on the light. Keep the blue cool against the orange. The gold went
