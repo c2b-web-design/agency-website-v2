@@ -407,6 +407,11 @@ export default function About() {
             be served. ⛔ CONFIRMED BY COLOUR SEGMENTATION, NOT BY ITS FILENAME:
             cyan 5155 and magenta 4778 pixels above the midline, green 1 and purple
             0 below it. **A filename is not evidence.**
+            ⚠ **THE `brand-assets/` MASTER WAS DELETED 7 October 2026 by Carl** —
+            the old scene, superseded by §2's room (commit `89b7634`). The served
+            copy in `public/` is unaffected. Recover the master:
+            `git show 013ad02:brand-assets/about-studio-wall-cards-1800.jpg > about-studio-wall-cards-1800.jpg`.
+            Carl: *"If we are to pivot its good to know what we pivoted from."*
 
             ⚠ `about-studio-wall-guides.jpg` STAYS in `public/` regardless — it is
             the only record of the measured FLOOR quads, and `GUIDE_CD`/`GUIDE_CS`
@@ -437,6 +442,9 @@ export default function About() {
             on a COMMON HORIZON (y=397 in the 1800 frame) without that being
             imposed. ⚠ An earlier hand-drawn iteration was DISCARDED by Carl —
             its perspective was wrong. Do not resurrect it from git history.
+            ⚠ That 1800 plate's `brand-assets/` master was DELETED 7 October 2026
+            as superseded (commit `89b7634`) — see the note above; it is in git at
+            `013ad02`. The measured result lives on in the code, not in the file.
 
             ⚠ SAME FRAME, SO THE CROP IS UNCHANGED: 6158x4105 at aspect 1.5001,
             the same 1.500 framing as `about-studio-source.jpg` (2560x1707).
@@ -739,6 +747,12 @@ export default function About() {
           photographer's own upload (r/workstations). ⚠ `public/about-studio-source.jpg`
           is a 2560px 16:9 crop of it — sharp at 1920 and on retina at 460KB.
           RE-CUT FROM THE MASTER; never upscale the crop.
+          ⚠⚠ **THE MASTER IS NO LONGER IN THE TREE — DELETED 7 October 2026 by Carl**
+          with the old scene, which §2's room superseded (commit `89b7634`). True
+          when written. To re-cut, restore it first:
+          `git show 013ad02:brand-assets/reddit-original.jpg > reddit-original.jpg`.
+          The crop in `public/` is unaffected. Carl: *"If we are to pivot its good to
+          know what we pivoted from."*
 
           ⚠⚠ THE COLOUR NEEDED NO GRADING, AND THAT WAS MEASURED, NOT ASSUMED.
           The untouched wall reads H200-206 S32-43% L12-17%. The interaction teal

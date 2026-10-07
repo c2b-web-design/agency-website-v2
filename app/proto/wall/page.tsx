@@ -122,7 +122,8 @@ function matrixFor(c: Pt[]): string {
    retired. ⛔ Do not "restore" those values; do not reconcile these against them.
 
    HOW THESE WERE OBTAINED, so nobody re-derives them by eye: the guide quads in
-   `brand-assets/about-studio-wall-cards-1800.jpg` were isolated by hue (cyan
+   `brand-assets/about-studio-wall-cards-1800.jpg` (⚠ that master DELETED 7 October 2026 by Carl as superseded,
+   commit `89b7634`; recover: `git show 013ad02:brand-assets/about-studio-wall-cards-1800.jpg`) were isolated by hue (cyan
    ~190deg sat 0.89; magenta ~310deg sat 0.67 — thresholds READ OFF THE IMAGE
    HISTOGRAM, not picked, which matters because a guessed 0.72 floor silently
    discarded 90% of the magenta stroke on the first attempt). Each quad's four
