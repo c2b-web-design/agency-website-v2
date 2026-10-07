@@ -1,4 +1,4 @@
-# Session Handoff — 3 October 2026, session 2. THE DESK MARK DISCUSSED AND SETTLED; CHUNK 1 BUILT ("close and a good base to start from", R-033). NEXT: THE ARCHITECT'S CHECKPOINT REVIEW, A13, THEN CHUNK 2.
+# Session Handoff — 7 October 2026. THE DESK MARK REBUILT IN PASSES: THE SHAPE (R-034) AND BOTH METALS (R-035) DONE. NEXT: THE GOLD → BLUE CROSSING, ON THE BENCH, TIED TO THE OBJECT.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
@@ -7,75 +7,106 @@
 
 ## ⛔ WHERE THINGS STAND
 
-**Committed locally at the end of the session — NOT pushed** (pushing `main` deploys; `/proto/logo` would go live).
-Ask Carl whether to push. **No server is running.**
+**Pushed** (`main` deploys): `6302913` (chunk 1), `6a6e1fe` (pass 1), `a3a3d75` (pass 2), plus this session's closing
+commit. `/proto/logo` is live; `/about` is unchanged. **No server is running.**
 
-**Done this session** (record: D-088's 3 October session-2 entries at the END of `decisions.md`):
+**Done this session.** The record is D-088's 7 October entries at the END of `decisions.md`, plus R-034 and R-035.
 
-1. **Sprint 2 archived** (closed 14 June, never archived) → `active-sprints/archive/sprint-2.md`, verbatim;
-   `current-sprint.md` rebuilt around the About section. Required reading 19,675 → **7,255 words** (CLAUDE.md
-   corrected, re-locked, lock tested). Committed and pushed (`67da4ef`).
-2. **The image scroll APPROVED** (R-032).
-3. **The desk mark (D-088) discussed, one question at a time — all settled by Carl:**
-   - renderer = **route 1, one canvas for the whole journey** (structure not yet designed — chunk 2, §5a/§5b);
-   - "animated" = **both**: lit by the room on the desk, and the scroll-driven fall; from the header (`Examples`) it
-     falls in from the top right, already blue;
-   - form = a **real 3D tube, curved front, flat back**; ⛔ **TARGETS: gold = `brand-assets/logo/c2b-logo-gold-relit-source-1671.png`,
-     blue = `brand-assets/logo/transition/c2b-transition-1-platinum-blue.png`** (not the header's blue);
-   - ⛔ **trace from the GOLD target's cut-out (`c2b-logo-gold-relit-alpha-1671.png`), NOT the white silhouette** —
-     measured a different, bolder drawing (IoU 0.84). Brand README and hero notes corrected;
-   - size = **144 plate px tall** (double a third of the right monitor's edge); **set parallel to the desk's right
-     edge, facing out, set back a believable distance**; the scroll PULLS it forward, it tips **head over toe**; same
-     size through the fall; disappears into the viewer's edge; what it does in the screen — later;
-   - **blue in §3 — D-063 AMENDED**;
-   - ⛔ **§3: Carl designs up to the viewer's edge; INSIDE the screen the Builder CREATES WITHOUT PITCHING** (no
-     concept for approval; the ethos is the brief; bouncing logos banned). §5a still stops structure;
-   - ⛔ **the desk mark IS the hero's DRESS REHEARSAL** (an earlier Builder reading said otherwise — corrected).
-     Hero sequence: video logo (Resolve) → the energy-edge wipe in video → the code logo bursts out → layered over.
-     *"Normal particles are cheesy — this is cool as F."*
-4. **Chunk 1 BUILT — the mark alone on `/proto/logo`** (plan v2 after the Architect's 13 findings; Carl approved).
-   ✔ Carl: *"Its close and a good base to start from."* (R-033 — a base, not approval.)
+1. ⛔ **Carl changed the METHOD:** a Three.js object is built in PASSES — **mesh → material → lights** — each
+   approved by eye before the next (the blue Next step button's process, D-030). Chunk 1 is withdrawn as a build: the
+   b had a torn junction, which gold and studio light had dressed up. Its checkpoint was NEVER routed.
+2. **Pass 1, the shape, in clay — PASSES (R-034).**
+   - The bench became a shape bench: `clay` / `flat` (the triangles) / `zebra` / `normals`, a raking key light, a
+     shadows switch, and a fixed `junction` camera.
+   - Proven first on the known defect: the 3 October mesh reproduced, and Carl marked the gate.
+   - **The form is Carl's flat-face shape target:** ONE profile all round — wall → chamfer (~15 px) → 4 px round →
+     flat face, 41 px deep. *"similar with traditional gold bars."* The junction went from 46.7° to 6.3°; IoU 0.9961.
+   - Plan v2 (Architect-amended) was superseded by v3 (Carl's target, built on his *"have a go"*).
+   - R's cap is now the narrowest stroke body (43.5 px, Carl's option).
+3. **Pass 2, the material — both metals (R-035).** Built on *"just apply the gold metal"*, with no plan.
+   - **Gold:** chunk 1's physical F0, unchanged. A positive read: *"With a well place light and movement… would work
+     very well."*
+   - **Platinum blue:** three takes. Platinum tinted → *"grey"*. The logo's blue → *"silver grey"*. The blue metal
+     swatch's chip **#3F6DB8** → *"great… will really contrast against the orange in our scene."*
+   - Both are shown in a FIXED judging studio (chunk 1's Lightformers), not the light design.
+4. **The crossing, settled by Carl:**
+   - From §1 straight to §3, a mark that is already blue falls from the top right into the player.
+   - Through §2, scroll pulls the gold mark off the desk; it TUMBLES and crosses gold → platinum blue, *"smooth and
+     deliberate"*.
+   - The shape is an **OUTSIDE-IN circular wipe** (the reverse of the Begin button's entrance; the same gesture as
+     `/start`'s logo on Begin — both filmed).
+   - **Its end point is the mark's centre, measured:** `logoMarkCentre()` = (0, 0.5, depth/2), on the 2's diagonal.
+5. **Raised, not chosen:** the paler blue #05CEFA and the teal #05FCEB — brand colours (D-025). Carl: *"I have a
+   feeling they will come into play."*
 
-## ⛔⛔ NEXT SESSION — IN ORDER
+## ⛔⛔ NEXT SESSION — THE AGREED TASK
 
-1. **Route the checkpoint to the Architect:** `live-work/checkpoint-desk-mark-chunk1-3-october.md` (frames in
-   `live-work/screenshots/logo-bench-3-october/`, local). Six deviations from the plan are stated there (eased stem
-   not smooth max; crowned stem face; spline outline; central-difference normals; corner points inserted; measured
-   large) — the Architect should rule on 1 and 4.
-2. **A13 — Carl's: flat foot or as built?** (`side.png`: it stands on a thin strip under the base stroke.)
-3. Carl's eye on the bench (restart the server): dome height (0.85), crown (0.25), roughness (0.25), the studio.
-4. **Chunk 2** (placement in the room + the route-1 renderer) — **full process: plan, Architect gate.** It must solve:
-   ⛔ **the gold renders near-BLACK under the room's reflection** (`oblique-room.png`) — the env map's plate panel
-   misses the directions front-facing metal reflects (the RIM-DARK cause; D-091's candidates); the take light is
-   inline in `about-card-canvas.tsx` (exporting it = a scope change); `/about` is `frameloop="demand"` and
-   `neon-bloom.tsx` owns frames; the take light's shadow frustum (±2.2) may miss the desk; build cost (~0.8 s,
-   241k tris at bench resolution — room size needs far less; runtime vs baked).
+**Build the gold → platinum-blue crossing ON THE BENCH, TIED TO THE OBJECT** (Carl: *"Record that as our next task"*).
+Reasoning: D-088's last 7 October entry.
 
-## ⚠ KNOWN ON THE BENCH (Carl's eye; invisible at room size)
+- **A sphere about `logoMarkCentre()` in the mark's OWN space, shrinking outside in.** The edge rides the tumble.
+- **The whole crossing is ONE number, 0 → 1.** The scene later only sets it from the scroll.
+- **Recommended, for the plan to settle:** ONE mesh carrying both metals, chosen per pixel — not two overlaid meshes.
+- ⚠ **It is the first custom shader on this object, and it runs every frame of the tumble.** Plan and Architect gate,
+  unless Carl waives them; ask.
+- ⚠ **Measure** the start radius (the solid's furthest point from the centre); don't use the ≈ 1.085 estimate.
+- ⚠ **"Smooth and deliberate" while the READER drives the scroll** is open — Carl's.
+- **The bench proves the mechanism and the pace; the look is judged again in the scene,** against the orange.
 
-Tiny teeth at the two inside corners where the bowl meets the stem; faint ticks on the 2's diagonal inner flank
-(`below.png`); terminals are distance-field mitres, not the target's flat cuts.
+## ⚠ OPEN — WITH OWNERS
+
+- **Carl:**
+  - routing pass 1's checkpoint to the Architect (`live-work/checkpoint-desk-mark-pass1-7-october.md`, v3's first
+    review; pass 2 has no checkpoint);
+  - the stem's corners (the trace rounds them 22–26 px; the target's are crisp mitres);
+  - A13, flat foot or as built;
+  - the dial values;
+  - the removed stem crown (*"showing the flat back"*), a question for pass 3;
+  - the base double line (its own take).
+- **Carl — his `brand-assets/` changes, NOT committed, on his word ("Not just yet"):** five old scene images deleted
+  (`about-studio-noplant-1264.jpg`, `about-studio-perspective-grid-6158.jpg`, `about-studio-wall-cards-1800.jpg`,
+  `office-image-1.jpg`, `reddit-original.jpg`) and his download `brand-assets/images.jpg` (the swatch sheet).
+  Deliberate (*"old images from the old scene"*). Ask before committing.
+- **Pass 3 (lights):** both faces are one shade straight on in the studio — light and motion carry it. The blue is a
+  DARK metal (luminance ≈ 0.13) and leans on the light. Keep the blue cool against the orange. The gold went
+  near-black under the room's reflection in chunk 1 (RIM-DARK's cause).
+- **Builder, stated:** the production build was NOT re-run before `a3a3d75` was pushed (`tsc` and lint were). It was
+  run afterwards, at the session's close, on the same code: **compiled successfully**.
 
 ## ⚠ HOW THE BENCH WORKS (so it is not re-derived)
 
-- `live-work/scripts/logo-outline-extract.mjs` regenerates `components/about/logo-mark-outline.ts` (spline, 4,433
-  points, ≤ 0.30 px from the iso-line; stem box, half-widths, the normalisation transform).
-- `logo-bench-measure.mjs` — IoU + edge distance vs the gold alpha (control first), stats, canvases, errors.
-- `logo-bench-shots-3-october.mjs [state…]` — frames. Both hide the Next dev badge.
-- Bench switches: `?view=front|oblique|turntable|side|below|roomsize&mask=1&light=studio|room&overlay=0..1`.
-- To run the geometry in Node: copy the two modules to a temp folder **inside the repo** (three must resolve), add
-  `.ts` to the import, `node file.ts` (Node 25 strips types). ⚠ Move it out before `tsc` (TS5097).
+- `/proto/logo`:
+  - `?view=front|oblique|junction|turntable|side|below|roomsize`
+  - `&mode=clay|flat|zebra|normals|gold|blue`
+  - `&wire=1&shadows=0&az=&el=&mask=1&overlay=`
+- `live-work/scripts/logo-pass1-shots-7-october.mjs <set> [states]`:
+  - sets: `baseline` | `take2` | `gold`;
+  - writes `screenshots/logo-pass1-7-october/<set>/` with `readings.json`;
+  - ⚠ it OVERWRITES that set's `readings.json` with whatever states it shot.
+- `logo-bench-measure.mjs`: IoU and edge distance (mask mode).
+- `logo-outline-extract.mjs`: regenerates `logo-mark-outline.ts`. It STOPS if the junction window drifts from the one
+  the baseline logged.
+- `start-logo-film-7-october.mjs` and `start-begin-film-7-october.mjs`: `/start`'s two radials, filmed.
+- **To run the geometry in Node:** copy `logo-mark-outline.ts` and `logo-mark-geometry.ts` to a temp folder INSIDE
+  the repo (three must resolve), add `.ts` to the import, `node file.ts`. Delete the folder before `tsc`.
+- **References** (local, NOT committed, Carl: keep them local): `live-work/references/desk-mark-refs-7-october/`
+  - the flat-face SHAPE target;
+  - the engraved comparison;
+  - gold and blue standing on a floor;
+  - the metal swatch sheet.
 
 ## ⚠ STANDING / CORRECTIONS THIS SESSION
 
-- **Scope:** `chunk-scope.json` is chunk `desk-mark-1-logo-bench` (Carl-set). The auto-mode classifier BLOCKED a
-  Python edit of the scope file as self-modification; the Edit tool worked once Carl gave permission. Carl widens
-  scope; ask by naming files.
-- Carl prefers questions one at a time in discussion; ask once when a "Yes" is ambiguous (held twice today).
-- Two review-log entries share **R-028** — renumbering is Carl's.
-- Lint baseline: `1 problem (1 error, 0 warnings)`. Carl's machine: DPR 1.36, viewport ~1412 × 700.
-- If Carl reports stutter: check Chrome's GPU process for software WebGL first (carried).
+- **Mesh → material → lights**, each approved by eye (memory saved). The mesh is judged in clay, under a light that
+  shows geometry.
+- **Carl may waive Plan Mode for a pass** (*"no need for plan mode, just apply the gold metal"*). That was per pass,
+  not standing. **Ask for the crossing.**
+- **The Builder retyped a measured value into a record and invented a decimal** (the junction window). Caught by the
+  script's own check. ⛔ Records quote what an instrument LOGGED, never a retyped figure.
+- `chunk-scope.json` still describes pass 1; its file list covered pass 2. Carl rewords it, or gives his word.
+- **Lint baseline:** `1 problem (1 error, 0 warnings)`. Carl's machine: DPR 1.36, viewport ~1412 × 700.
+- Two review-log entries share **R-028**; renumbering is Carl's.
 
 ---
 
-*Written 3 October 2026, session 2 (end). Replaces the 3 October session-1 handoff.*
+*Written 7 October 2026 (end of session). Replaces the 3 October session-2 handoff.*

@@ -83,9 +83,16 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
   checkpoint was NOT routed. `6302913` is held unpushed.
 - **The form, superseded (7 October):** not a domed tube. **A flat face in a narrow chamfer, one profile all
   round** — Carl's flat-face shape target, *"similar with traditional gold bars."*
-- **Pass 1 (the shape, in clay) PASSES (R-034)** — at its checkpoint for the Architect:
-  `live-work/checkpoint-desk-mark-pass1-7-october.md` (plan v3 was built before review, on Carl's word).
-  **Next: pass 2, the material** — its own plan and gate.
+- **Pass 1 (the shape, in clay) PASSES (R-034).** Its checkpoint request for the Architect is
+  `live-work/checkpoint-desk-mark-pass1-7-october.md` — ⚠ NOT yet routed (plan v3 was built before review, on
+  Carl's word).
+- **Pass 2 (the material) — both metals on the bench (R-035):** the gold (a positive read) and the platinum blue
+  (the swatch blue #3F6DB8, *"great"* — chosen to contrast with the scene's orange). Built on Carl's *"just apply
+  the gold metal"*, without a plan.
+- **The crossing:** an OUTSIDE-IN circular wipe, gold → platinum blue during the tumble, smooth and deliberate,
+  ending at the mark's centre `logoMarkCentre()` (0, 0.5, depth/2). Measured: `live-work/logo-centre-measurement-7-october.md`.
+- ⛔ **NEXT (Carl, 7 October): build the crossing ON THE BENCH, TIED TO THE OBJECT** — one progress number, a sphere
+  about the centre in the mark's own space. Reasoning: D-088's 7 October entries, the last of them.
 
 ## Carried, open — Carl's
 
@@ -104,6 +111,7 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
 |---|---|---|
 | The image scroll approved | — | R-032 |
 | Sprint 2 archived; this file rebuilt around the About section | `archive/sprint-2.md`, this file | Carl, 3 October 2026 |
+| D-088 desk mark, PASS 2 — the gold and the platinum blue on the clay shape, in a fixed judging studio. ✔ Blue *"great"*, gold a positive read (R-035). The crossing's end point measured | `logo-mark-material.ts`, `logo-bench.tsx`, `logo-mark-geometry.ts` (`logoMarkCentre`) | Blue in three takes: platinum tinted → logo sample → swatch #3F6DB8. Commit `a3a3d75` |
 | D-088 desk mark, PASS 1 — the shape in clay on `/proto/logo`: a flat face in a narrow chamfer, one profile all round. ✔ Carl: *"Yes"* — passes (R-034) | `app/proto/logo/page.tsx`, `components/about/logo-bench.tsx`, `logo-mark-geometry.ts`, `logo-mark-outline.ts` | Junction 46.7° → 6.3°; IoU 0.9961, edges ≤ 1 px. Plan v2 → v3; request `live-work/checkpoint-desk-mark-pass1-7-october.md`. Open for Carl: the stem's corners (trace 22–26 px vs the target's crisp mitres), A13, the dials |
 | D-088 desk mark, chunk 1 — the 3D mark alone on `/proto/logo`. ✔ Carl: *"close and a good base to start from"* (R-033). ⛔ **Withdrawn as a build 7 October** (the b's tear; mesh, material and light built at once) | `app/proto/logo/page.tsx`, `components/about/logo-bench.tsx`, `logo-mark-geometry.ts`, `logo-mark-material.ts`, `logo-mark-outline.ts` | Traced from the gold target; IoU 0.9969, edges ≤ 1 px. Request: `live-work/checkpoint-desk-mark-chunk1-3-october.md`. Open for Carl: flat foot or as built (A13) |
 
@@ -124,7 +132,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-07 — the desk mark rebuilt in passes; pass 1 (the shape in clay, a flat face in a narrow chamfer) passes, R-034; at its checkpoint.*
+*Last updated: 2026-10-07 (end of session) — passes 1 and 2 of the desk mark done (R-034, R-035); the crossing's end point measured; next: the crossing on the bench, tied to the object.*
+
+*Previously: 2026-10-07 — the desk mark rebuilt in passes; pass 1 passes, R-034.*
 
 *Previously: 2026-10-03 (session 2, end) — the desk mark discussed and settled; chunk 1 built (R-033, "close and a good base"); next: the Architect's checkpoint review, A13, then chunk 2. See the handoff.*
 
