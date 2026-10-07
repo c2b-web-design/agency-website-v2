@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-034 — The Desk Mark's Shape In Clay (D-088 Pass 1, Take 2): PASSES
+
+**Date:** 2026-10-07
+**Reviewer:** Human Founder
+**Subject:** `/proto/logo` in clay — pass 1 of three (mesh → material → lights; Carl, 7 October). ONE cross-section all round, from Carl's flat-face shape target (`live-work/references/desk-mark-refs-7-october/flat-face-shape-target.png`): wall → straight chamfer (~15 source px, 45°) → 4 px round → flat face, 41 source px deep; same trace as chunk 1. Judged from the take-2 frames (`live-work/screenshots/logo-pass1-7-october/take2/`) against the baseline (`…/baseline/`, the 3 October mesh). Plan: `live-work/desk-mark-pass1-mesh-plan-7-october.md`, § Version 3.
+
+**Carl's verdict, verbatim:** asked *"Does it pass?"* — *"Yes. I mentioned the comparison with gold bars, the shape is similar with traditional gold bars. Whereas the 2d image is a moment caught in time with the light reflected of it, the gold material plus webgl light abd the thing is gonna fall off the desk, i think it could work very well."*
+
+**Findings:**
+
+- ✔ **PASSES — the level given.** The shape gate for pass 1; material (pass 2) may build on it. Not a master (D-035): no dial value (bevel 15 px, 45°, round 4 px, depth 41 px) is individually approved.
+- ✔ **The step 1 gate, Carl's eye (A6):** the bench showed the 3 October tear — *"clearly a problem… on a gold bar that will show as a defect"* — and ruled out the pyramid ends (*"a departure from the original logo"*).
+- ✔ **Measured, not judged:** junction window 46.7° → 6.3° (computed normals), 45.4° → 5.6° (triangles); IoU 0.9961 vs control 0.9803; edges ≤ 1 px; open edges 0; interior grid flat (z-step 0); 1 canvas, no console errors.
+- ⚠ **OPEN:** the stem's corners — the trace rounds them 22–26 px, so the chamfer wraps them as a cone where the target shows crisp mitres (raised, not ruled on); the face's 1.27° at the round's last ring; A13 (flat foot or as built); the base double line (its own take, Carl); the removed stem crown (*"showing the flat back"*, 3 October) — **a question for pass 2's material and light**; the Architect's checkpoint review of v3 (built on Carl's *"have a go"*, reviewed after).
+
+---
+
 ## R-033 — The Desk Mark On Its Bench (D-088 Chunk 1): "Close And A Good Base To Start From"
 
 **Date:** 2026-10-03 (session 2)
@@ -889,7 +906,9 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-10-03 (session 2, end) — **R-033 added**: the desk mark on its bench, "close and a good base to start from".*
+*Last updated: 2026-10-07 — **R-034 added**: the desk mark's shape in clay (pass 1, take 2), PASSES.*
+
+*Previously: 2026-10-03 (session 2, end) — **R-033 added**: the desk mark on its bench, "close and a good base to start from".*
 
 *Previously: 2026-10-03 (session 2) — **R-032 added**: the image scroll (D-092) approved. ⚠ **This footer had stopped at R-028 while R-029–R-031 were filed** — the stale-footer fault the note at the end of this file records, again.*
 

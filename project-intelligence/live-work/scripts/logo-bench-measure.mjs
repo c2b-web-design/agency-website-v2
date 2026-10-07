@@ -110,7 +110,7 @@ console.log(gap.length
   ? `    NARROW GAPS: ${gap.length} channel-centre px (channels ≤ ~6 px wide) in the target; open in the render: ${open} (${f((open / gap.length) * 100, 1)}%)`
   : `    NARROW GAPS: the target has NO channel narrower than ~6 px — its narrowest channel is ~${f(2 * narrow, 1)} px wide (half-width ${f(narrow, 1)}); nothing to close`);
 console.log(`(c) page stats: ${page.s.triangles} triangles · build ${f(page.ms, 0)} ms · open edges (welded) ${page.s.openEdges} · non-manifold ${page.s.nonManifoldEdges} · NaN ${page.s.nanValues} · flipped band ${page.s.flippedBandTriangles}`);
-console.log(`    normal angle — crest ${f(page.s.maxNormalAngleCrestDeg, 1)}° · stem ease ${f(page.s.maxNormalAngleStemEaseDeg, 1)}° · whole front ${f(page.s.maxNormalAngleDeg, 1)}° · edges > 30° ${page.s.edgesOver30Deg}`);
+console.log(`    normal angle — face ${f(page.s.maxNormalAngleFaceDeg, 2)}° (must be ~0) · whole front ${f(page.s.maxNormalAngleDeg, 1)}° · edges > 30° ${page.s.edgesOver30Deg} · interior z-step ${f(page.s.maxGridZStepSourcePx, 3)} px (must be 0)`);
 console.log(`(d) canvases on the page: ${page.canvases}`);
 console.log(`(e) console errors: ${errors.length ? errors.join(" | ") : "none"}`);
 console.log("⚠ NOT WATCHED: the material's likeness to the target, the cross-section's height, the terminals' shape, the room's");

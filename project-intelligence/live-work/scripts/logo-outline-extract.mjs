@@ -15,6 +15,10 @@
  * 385-point outline: joints ~18 px apart). The spline's tangent turns continuously. Also emitted, from the same pixels
  * so they share the provenance (Architect A3/A4): the stem rectangle, the stroke half-widths (EDT), and the
  * normalisation transform (source px → mark units, height = 1, origin bottom-centre).
+ *
+ * ⛔ PASS 1 (7 October 2026, plan `live-work/desk-mark-pass1-mesh-plan-7-october.md` v2, Step 2) adds, from the same
+ * pixels: R's cap at the NARROWEST STROKE BODY (Carl's option 2, replacing p5 — now the bevel's cap), the JUNCTION
+ * (inside fillet radii, the readings' window) and the stem's outer corner radii. v2's tube polygon was removed with v3.
  */
 import sharp from "sharp";
 import { createHash } from "node:crypto";
@@ -170,6 +174,22 @@ const pct = (q) => ridge[Math.floor(q * (ridge.length - 1))];
 // pixel-centre EDT measures to the nearest OUTSIDE pixel centre; the iso-line sits ~0.5 px nearer
 const hw = { p5: pct(0.05) - 0.5, median: pct(0.5) - 0.5, p95: pct(0.95) - 0.5, max: ridge[ridge.length - 1] - 0.5 };
 console.log(`stroke half-width (source px): 5th ${hw.p5.toFixed(1)} · median ${hw.median.toFixed(1)} · 95th ${hw.p95.toFixed(1)} · max ${hw.max.toFixed(1)}`);
+// ⛔ THE NARROWEST STROKE BODY — pass 1, 7 October 2026 (Carl, option 2: "Go with 2"). The dome's R is now capped HERE,
+// not at p5. A2's rule is "R at or below the minimum half-width (5th percentile or lower)": wherever a stroke is
+// narrower than R its crest is not flat and a faint ridge runs down its spine. p5 left the b's top stroke beside the
+// junction (43.5 px) and the 2's diagonal (44.8 px) under it — measured 7 October, a ridge-point map: nothing else under
+// 45. ⚠ p5 itself is the wrong statistic for this: it counts the ridge running out into each terminal's taper. The BODY
+// minimum is the smallest ridge maximum wider than 0.6 × the median — the strokes, not their tapering ends.
+let bodyMin = Infinity, bodyAt = [0, 0];
+{
+  const floor = 0.6 * (hw.median + 0.5);
+  for (let y = 2; y < H - 2; y++) for (let x = 2; x < W - 2; x++) {
+    const d = dist(x, y); if (d <= floor || d >= bodyMin + 0.5) continue; let mx = true;
+    for (let oy = -2; oy <= 2 && mx; oy++) for (let ox = -2; ox <= 2; ox++) if (dist(x + ox, y + oy) > d) { mx = false; break; }
+    if (mx) { bodyMin = d - 0.5; bodyAt = [x, y]; }
+  }
+}
+console.log(`narrowest stroke BODY half-width: ${bodyMin.toFixed(2)} source px at (${bodyAt[0]}, ${bodyAt[1]}) — R's cap (pass 1)`);
 
 // ── the stem rectangle ───────────────────────────────────────────────────────
 // The stem is the only shape right of the 2 at 10% below the mark's top; its bottom is where its centre column
@@ -197,8 +217,98 @@ const r5 = (v) => Math.round(v * 1e5) / 1e5;
 // mark units: y up flips the winding — reverse so the loop is counter-clockwise (inside on the left) in mark space
 const pts = simp.map(toMark).reverse();
 const flat = pts.flatMap(([x, y]) => [r5(x), r5(y)]);
+
+// ── PASS 1 (7 October 2026): THE JUNCTION AND THE STEM'S CORNERS, as traced ─────────────────────────────────────────
+// Plan: live-work/desk-mark-pass1-mesh-plan-7-october.md. The b's two INSIDE corners (where the bowl leaves the stem's
+// right side) and the stem's four OUTER corners, measured off the trace, and the JUNCTION WINDOW the before/after
+// readings are taken in. ⚠ v2's tube polygon (the stem as its own solid, option 2) was generated here and REMOVED when
+// v3 passed (Carl, 7 October: one flat-face profile all round — no second cross-section, so no tube to cut).
+const STEM = { x0: smx0, x1: smx1, y0: smy0, y1: smy1 };
+const PX = 1 / hPx; // one source px, mark units
+const R_CAP = bodyMin / hPx; // the dome's R can never exceed the narrowest stroke body (A2, pass 1 — see bodyMin)
+const N = pts.length;
+const at = (i) => pts[((i % N) + N) % N];
+const ang = (i) => { const [ax, ay] = at(i - 1), [bx, by] = at(i + 1); return Math.atan2(by - ay, bx - ax); };
+const dAng = (a, b) => { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
+/** Walk from i in direction dir (±1) while the outline turns faster than TURN_MIN per sample, AVERAGED over 3 samples
+ *  (the spline wiggles sample to sample) — a fillet. Returns its far end, arc length, total turn, radius (arc ÷ turn).
+ *  ⚠ Found 7 October: the counter's top edge is not straight — its fillet runs into the counter's arc (~0.5° per
+ *  sample), so a 2°-per-single-sample threshold stopped mid-fillet and tilted the continuation 24°. 1° averaged over 3
+ *  samples stops where the fillet's tail meets the arc. */
+const TURN_MIN = (1 * Math.PI) / 180;
+function fillet(i, dir) {
+  let k = i, arc = 0, turn = 0;
+  while (Math.abs(dAng(ang(k), ang(k + 3 * dir))) / 3 >= TURN_MIN) {
+    turn += dAng(ang(k), ang(k + dir));
+    arc += Math.hypot(at(k + dir)[0] - at(k)[0], at(k + dir)[1] - at(k)[1]);
+    k += dir;
+    if (Math.abs(k - i) > 200) break;
+  }
+  return { end: k, arc, turn, radius: Math.abs(turn) > 1e-6 ? arc / Math.abs(turn) : Infinity };
+}
+/** From a run's junction end, step BACK into the run until the side is truly vertical (±2°) — so a fillet is measured
+ *  from where it starts, not from where the 1.5 px "on the line" test happens to end. */
+function verticalStart(i, intoRun) {
+  let k = i;
+  for (let s = 0; s < 40 && Math.abs(Math.abs(ang(k)) - Math.PI / 2) > (2 * Math.PI) / 180; s++) k += intoRun;
+  return k;
+}
+/** The unit tangent at i, in the walking direction, fitted over the next `span` samples AWAY from the fillet. */
+function tangentAt(i, awayDir, span = 6) {
+  const [ax, ay] = at(i), [bx, by] = at(i + awayDir * span);
+  const l = Math.hypot(bx - ax, by - ay);
+  return awayDir > 0 ? [(bx - ax) / l, (by - ay) / l] : [(ax - bx) / l, (ay - by) / l];
+}
+// the stem's right side: samples on its line, clear of the stem's own top and bottom corners
+const onRight = pts.map(([x, y]) => Math.abs(x - STEM.x1) < 1.5 * PX && y > STEM.y0 + 4 * PX && y < STEM.y1 - 4 * PX);
+const runsR = [];
+for (let i = 0; i < N; i++) if (onRight[i] && !onRight[(i - 1 + N) % N]) { let j = i; while (onRight[(j + 1) % N]) j++; runsR.push([i, j]); }
+if (runsR.length !== 2) { console.log(`⛔ STOP — expected the stem's right side to be split in TWO runs by the bowl, found ${runsR.length}.`); process.exit(1); }
+const meanY = ([i, j]) => { let s = 0, c = 0; for (let k = i; k <= j; k++) { s += at(k)[1]; c++; } return s / c; };
+const [lowerRun, upperRun] = runsR.sort((p, q) => meanY(p) - meanY(q));
+// CCW (inside on the left): the right side is walked UPWARD. The upper run STARTS at the junction (its fillet lies
+// behind it, then the bowl's top edge); the lower run ENDS at the junction (its fillet ahead, then the counter's top).
+if (!(at(upperRun[1])[1] > at(upperRun[0])[1] && at(lowerRun[1])[1] > at(lowerRun[0])[1])) { console.log("⛔ STOP — the stem's right side is not walked upward; the winding is not what this step assumes."); process.exit(1); }
+const fU = fillet(verticalStart(upperRun[0], +1), -1); // backward from the upper run onto the bowl's top edge
+const fL = fillet(verticalStart(lowerRun[1], -1), +1); // forward from the lower run onto the counter's top edge
+const iPU = fU.end, iPL = fL.end;
+const PU = at(iPU), PL = at(iPL);
+const tU = tangentAt(iPU, -1); // walking direction at PU (leftward along the bowl's top edge)
+const tL = tangentAt(iPL, +1); // walking direction at PL (rightward along the counter's top edge)
+console.log(`junction — inside corners (mark units): upper fillet r ${(fU.radius * hPx).toFixed(2)} px (turn ${((Math.abs(fU.turn) * 180) / Math.PI).toFixed(1)}°), ` +
+  `lower fillet r ${(fL.radius * hPx).toFixed(2)} px (turn ${((Math.abs(fL.turn) * 180) / Math.PI).toFixed(1)}°)`);
+console.log(`  PU (${PU[0].toFixed(4)}, ${PU[1].toFixed(4)}) tangent (${tU[0].toFixed(3)}, ${tU[1].toFixed(3)}) · PL (${PL[0].toFixed(4)}, ${PL[1].toFixed(4)}) tangent (${tL[0].toFixed(3)}, ${tL[1].toFixed(3)})`);
+if (!(tU[0] < -0.5 && tL[0] > 0.5)) { console.log("⛔ STOP — the bowl's edges at the junction do not run left/right as assumed."); process.exit(1); }
+// the stem's four OUTER corners, as traced (A3 — the box's corners are sharp; the trace's may not be)
+const nearestIdx = (x, y) => { let b = 0, bd = Infinity; for (let i = 0; i < N; i++) { const d = Math.hypot(at(i)[0] - x, at(i)[1] - y); if (d < bd) { bd = d; b = i; } } return b; };
+const stemCorner = (x, y) => { const i = nearestIdx(x, y); const a = fillet(i, -1), b = fillet(i, +1); const arc = a.arc + b.arc, turn = Math.abs(a.turn) + Math.abs(b.turn); return { radiusPx: turn > 1e-6 ? (arc / turn) * hPx : 0, turnDeg: (turn * 180) / Math.PI }; };
+const stemCorners = {
+  topLeft: stemCorner(STEM.x0, STEM.y1), topRight: stemCorner(STEM.x1, STEM.y1),
+  bottomLeft: stemCorner(STEM.x0, STEM.y0), bottomRight: stemCorner(STEM.x1, STEM.y0),
+};
+for (const [k, v] of Object.entries(stemCorners)) console.log(`  stem corner ${k}: r ${v.radiusPx.toFixed(2)} px over ${v.turnDeg.toFixed(1)}°`);
+// ⛔ THE JUNCTION WINDOW — from the corners, never typed by hand (Architect, should-fix): the fillets' ends and the run
+// ends, the stem's bevel band at its widest (x down to STEM.x1 − R_CAP), grown by 4 × the larger inside radius.
+// ⚠ FROZEN DERIVATION: these are exactly the terms v2 used (stemRMax was 1, the margin 2 × a fillet dial of 2 × r), so
+// the window — and the 7 October baseline taken in it — is unchanged. Checked below against the baseline's record.
+const insideR = [fU.radius, fL.radius];
+const wpts = [PU, PL, at(upperRun[0]), at(lowerRun[1]), [STEM.x1 - R_CAP, PU[1]], [STEM.x1 - R_CAP, PL[1]]];
+const wm = 4 * Math.max(...insideR);
+const win = {
+  x0: Math.min(...wpts.map((p) => p[0])) - wm, x1: Math.max(...wpts.map((p) => p[0])) + wm,
+  y0: Math.min(...wpts.map((p) => p[1])) - wm, y1: Math.max(...wpts.map((p) => p[1])) + wm,
+};
+console.log(`  window x ${win.x0.toFixed(5)}–${win.x1.toFixed(5)}, y ${win.y0.toFixed(5)}–${win.y1.toFixed(5)} (${((win.x1 - win.x0) * hPx).toFixed(0)} × ${((win.y1 - win.y0) * hPx).toFixed(0)} px, margin ${(wm * hPx).toFixed(1)} px)`);
+// ⛔ the window the BASELINE was measured in, read from what the bench logged at the time — never retyped. (The
+// baseline .md once carried a retyped window off by ~5e-5; the readings were right, the transcription was not.)
+const BASELINE_READINGS = "project-intelligence/live-work/screenshots/logo-pass1-7-october/baseline/readings.json";
+let BASELINE_WIN = null;
+try { BASELINE_WIN = JSON.parse(readFileSync(BASELINE_READINGS, "utf8")).states[0].w; } catch { console.log(`  ⚠ no baseline readings at ${BASELINE_READINGS} — window not checked`); }
+if (BASELINE_WIN && Object.keys(BASELINE_WIN).some((k) => Math.abs(Math.round(win[k] * 1e5) / 1e5 - BASELINE_WIN[k]) > 1e-9)) { console.log("⛔ STOP — the junction window no longer matches the one the baseline was measured in."); process.exit(1); }
+if (BASELINE_WIN) console.log("  ✔ the window matches the baseline's, as logged by the bench");
 const ts = `/**
- * ⛔ GENERATED — DO NOT EDIT BY HAND. The C2B mark's outline, traced from Carl's GOLD TARGET (D-088 chunk 1).
+ * ⛔ GENERATED — DO NOT EDIT BY HAND. The C2B mark's outline, traced from Carl's GOLD TARGET (D-088 chunk 1), with the
+ * pass-1 additions (7 October 2026): R's cap at the narrowest stroke body, the junction, the stem corners.
  * Regenerate: node --no-warnings project-intelligence/live-work/scripts/logo-outline-extract.mjs
  *
  * Source: ${SRC}  (md5 ${md5}, ${W} × ${H})
@@ -233,6 +343,29 @@ export const LOGO_HALF_WIDTH = { p5: ${r5(hw.p5 / hPx)}, median: ${r5(hw.median 
 
 /** The b's stem, mark units — detected from the same pixels (Architect A3), not typed in. */
 export const LOGO_STEM = { x0: ${r5(smx0)}, y0: ${r5(smy0)}, x1: ${r5(smx1)}, y1: ${r5(smy1)} } as const;
+
+/**
+ * ⛔ THE CAP ON THE PROFILE'S WIDTH — the narrowest stroke BODY's half-width, mark units (pass 1, 7 October 2026).
+ * Carl's option 2 on the width question ("Go with 2") made this the dome's R cap in place of p5: p5 left the b's top
+ * stroke beside the junction (${bodyMin.toFixed(1)} px, the minimum, at source (${bodyAt[0]}, ${bodyAt[1]})) narrower than R.
+ * The dome is gone (v3: a flat face in a narrow chamfer); the cap now holds the chamfer narrow enough that the flat face
+ * exists on every stroke. The body minimum ignores the ridge's run-out into the terminals' tapers.
+ */
+export const LOGO_R_CAP = ${r5(R_CAP)};
+
+/**
+ * ⛔ THE JUNCTION — where the bowl joins the stem (pass 1). The two inside fillets as traced (radius = arc ÷ turn), the
+ * points where they meet the bowl's edges, and the WINDOW the before/after readings are taken in: the fillets, the run
+ * ends and the bevel band at its widest, grown by 4 × the larger inside radius. Never typed by hand (Architect).
+ */
+export const LOGO_JUNCTION = {
+  insideRadiiPx: { upper: ${r5(fU.radius * hPx)}, lower: ${r5(fL.radius * hPx)} },
+  pu: [${r5(PU[0])}, ${r5(PU[1])}], pl: [${r5(PL[0])}, ${r5(PL[1])}],
+  window: { x0: ${r5(win.x0)}, y0: ${r5(win.y0)}, x1: ${r5(win.x1)}, y1: ${r5(win.y1)} },
+} as const;
+
+/** The stem's four OUTER corners as traced, source px (radius = arc ÷ turn) — the box's corners are sharp (A3). */
+export const LOGO_STEM_CORNER_RADII_PX = { ${Object.entries(stemCorners).map(([k, v]) => `${k}: ${r5(v.radiusPx)}`).join(", ")} } as const;
 
 /** The outline, flattened [x0, y0, x1, y1, …], mark units. */
 export const LOGO_OUTLINE: readonly number[] = [

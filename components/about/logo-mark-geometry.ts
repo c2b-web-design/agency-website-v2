@@ -1,101 +1,94 @@
 /**
- * ⛔⛔ THE C2B MARK AS A SOLID — D-088 chunk 1, 3 October 2026. Plan: `live-work/desk-mark-chunk1-plan-3-october.md`
- * (version 2, amended by the Architect's review). Pure: no React, no scene. Chunk 2 imports this into the room.
+ * ⛔⛔ THE C2B MARK AS A SOLID — D-088. Pure: no React, no scene. Chunk 2 imports this into the room.
  *
- * ⛔ THE FORM IS AN INFERENCE FROM CARL'S TWO TARGETS (D-088, 3 October): a CURVED FRONT on a FLAT BACK — a convex
- * dome close to a half-round, on a thin flat lip and a short wall; the b's stem a flat face with bevelled edges; the
- * bowl flowing into the stem with no crease (seen in the gold target, zoomed). ⚠ No image shows the depth or the
- * back: the flat back is Carl's specification, the dome's height a dial set by his eye.
+ * ⛔ PASS 1 TAKE 2 (7 October 2026): A FLAT FACE FRAMED BY A NARROW CHAMFER — ONE PROFILE ALL ROUND.
+ * Carl, on the 3 October form in clay: *"That junction on the b is clearly a problem… The ends of the text is also a
+ * problem, that new design doesnt fit and is a departure from the original logo."* His answer, with a new shape target
+ * (`live-work/references/desk-mark-refs-7-october/flat-face-shape-target.png`; `flat-face-compare-engraved.png` to
+ * compare): *"Use this one, the face is a bit more flat and making curves out of triangles can be difficult especially
+ * when the geometry isnt uniform throughout the whole object. It was designed to look good, not to exist as a 3D
+ * object. Just observe the shape."*
+ *
+ * ⛔ WHY ONE NARROW CHAMFER FIXES BOTH FAULTS:
+ *   - THE JUNCTION. The 3 October form had two cross-sections — a dome on the strokes, a bevelled face on the stem — and
+ *     MORPHED between them inside a 0.04-unit band at the b; the tear was that morph (46.7°, baseline
+ *     `live-work/logo-pass1-baseline-7-october.md`). With ONE profile the stem and the bowl are the same surface at the
+ *     same height; the distance field turns the inside corner on its own, following the traced fillet.
+ *   - THE ENDS. A bevel as wide as the stroke's half-width meets itself in a POINT at every convex corner — the pyramid
+ *     ends. A bevel far narrower than the half-width leaves a flat face, so an end is a flat cut in a picture-frame of
+ *     chamfer, mitred at its corners — the stem's ends and the c's cut in the target.
+ *   ⚠ This SUPERSEDES step 3 of plan v2 (two solids, a rolling-ball fillet, a cap — Carl's option 2): the existing
+ *   mechanism with a different cross-section; nothing new. Plan v3: `live-work/desk-mark-pass1-mesh-plan-7-october.md`.
  *
  * ⛔ CONSTRUCTION — ONE MECHANISM, A SIGNED DISTANCE FIELD `d` TO THE TRACED OUTLINE (`logo-mark-outline.ts`):
- *   1. INTERIOR — a regular grid, clipped at the iso-level `d = dc` (marching triangles); z from the profile.
- *   2. EDGE BAND — from that clip loop out to the outline, RINGS swept along ∇d (the closest-point direction), so the
- *      half-round's steep foot is sampled by the profile itself, not by a grid that cannot hold a near-vertical side
- *      (Architect A8). Rings are spaced quadratically toward the foot.
- *   3. LIP, WALL, BACK — the band's outer ring gives the flat lip, the vertical wall and the flat back (earcut on that
- *      ring). Watertight by construction: ONE ring feeds all three.
- *   ⛔ THE OUTER RING IS PINNED TO THE OUTLINE AND ONLY ADVANCES ALONG IT (arc-length clamped monotonic). Found
- *   3 October: at the outline's five concave corners the closest-point offset folded back by a fraction of a pixel,
- *   and earcut left five sliver holes in the back (15 open edges). A collapsed point is a zero-length edge; a fold
- *   is a hole.
- *   ⚠ TWO LOOPS EXIST (Architect A8): the outline file, and the ring built from it. They agree only as far as the
- *   ring's samples reach — concave corners are cut by up to one sample spacing. The bench's edge-distance
- *   measurement is what keeps them together, not this comment.
+ *   1. INTERIOR — a regular grid, clipped at the iso-level `d = dc` (marching triangles). ⛔ dc lies BEYOND the profile's
+ *      last curvature by more than a grid step, so every interior node AND its neighbours sit on the flat face: the grid
+ *      carries no slope, no crease, nothing to stair-step (chunk 1's deviation 4 cannot recur).
+ *   2. EDGE BAND — from that clip loop out to the outline, RINGS swept along ∇d at explicit levels: through the round
+ *      (evenly in angle) and down the chamfer. All of the profile's curvature lives in rings PARALLEL TO THE OUTLINE.
+ *   3. LIP, WALL, BACK — the band's outer ring gives the lip, the vertical wall and the flat back (earcut on that ring).
+ *      Watertight by construction: ONE ring feeds all three.
+ *   ⛔ THE OUTER RING IS PINNED TO THE OUTLINE AND ONLY ADVANCES ALONG IT (arc-length clamped monotonic) — found
+ *   3 October: at concave corners the closest-point offset folded back and earcut left sliver holes. ⛔ Skipped outline
+ *   points are INSERTED at convex corners, so the lip, wall and back follow the real corner, not a chord.
+ *   ⚠ TWO LOOPS EXIST (Architect A8, chunk 1): the outline file and the ring built from it; the bench's edge-distance
+ *   measurement keeps them together, not this comment.
  *
- * ⛔ THE PROFILE (mark units, height = 1). `t = (d − lipW) / (R − lipW)` clamped to [0, 1]:
- *   z = wallH                                      for d < lipW   (the flat lip)
- *   z = wallH + crestH · mix(√(1 − (1 − t)²), t, c)  otherwise     (round when c = 0, a straight bevel when c = 1)
- *   crestH = domeH · (R_main − lipW) is GLOBAL, so the stem's face and the strokes' crest are one height.
- * ⛔ R ≤ THE MEASURED MINIMUM HALF-WIDTH (`LOGO_HALF_WIDTH.p5`) — Architect A2. Beyond R the crest is flat, so the
- * slope is exactly zero wherever a stroke's medial axis falls and ∇d's flip there cannot flip a normal: no seam down
- * a spine. ⚠ The medial axis ALSO runs into each convex corner (the terminal wedges, the stem's corners), where d < R:
- * there the field makes a MITRE — a crease between two bevelled faces. That is the bevelled terminal the target
- * shows, not a seam; the readouts separate the two (`maxNormalAngleCrestDeg` vs `maxNormalAngleDeg`).
+ * ⛔ THE PROFILE (mark units, height = 1), with B = bevel width, k = bevelRise (rise ÷ run; 1 = 45°), ρ = the round:
+ *   z = wallH                                  d < lipW              the lip (a hair — the base's double line is a later take)
+ *   z = wallH + k (d − lipW)                   lipW ≤ d ≤ d1         the straight chamfer
+ *   z = the circular arc of radius ρ           d1 ≤ d ≤ B + T        tangent to the chamfer AND the face — no crease
+ *   z = top = wallH + k (B − lipW)              d ≥ B + T             the flat face
+ *   with θ = atan k, T = ρ tan(θ/2), d1 = B + T − ρ sin θ; wallH = depth − k (B − lipW), so `depth` is the total thickness.
+ * ⛔ B + T ≤ 0.9 × `LOGO_R_CAP` (the narrowest stroke body): the face exists on every stroke, so no medial axis ever
+ * meets a slope — no spine seam. The medial axis still runs into each CONVEX corner, where the chamfers MITRE: that is
+ * the picture-frame corner the target shows.
  *
- * ⛔ THE STEM — Architect A3, met by a different route than the plan's wording (stated at the checkpoint): NOT a
- * second height field combined by smooth max (a smooth max adds a bump wherever the two are equal — along the whole
- * stem face). Instead R and c EASE from the strokes' values to the stem's inside the stem box, by a smoothstep on the
- * box's signed distance. z is continuous because it is continuous in R and c; at the junction both are at the
- * crest, so the bowl flows into the stem as the target shows.
- *
- * ⛔ THE STEM'S FACE IS CROWNED, NOT DEAD FLAT — Carl, 3 October, on the first render: *"part of thr b is the wrong
- * way round. showing the flat back"*. The heights were right (the face at the crest), but a dead-flat face square to
- * the camera reflects ONE direction of the light: a uniform matte plate in a black frame, read as the back seen
- * through a hole. The target's stem face carries a soft gradient. `stemCrown` lets the bevel rise to (1 − crown) and
- * a shallow curve take the centre line to the crest, with zero slope there.
- *
- * NORMALS come from the exact field, never from the mesh (`computeVertexNormals`): metal shows every facet.
- *   - the interior: central differences of the exact height at ±1 grid step; the clip loop: the same, from exact
- *     probes. ⚠ Corrected the same day from "analytic at each vertex": a crease (a mitre, the stem's bevel corners,
- *     the ease) falls between grid nodes, and per-vertex analytic normals jumped across it in a staircase that
- *     followed the grid. Differencing over one step either side turns the light across a crease over two cells.
- *   - the band: the chain rule through d, R, c and the crown, with ∇d averaged over ±3 loop neighbours.
+ * ⛔ NORMALS — ONE METHOD OVER THE WHOLE FRONT (Architect A4, plan v2): central differences of the exact height
+ * z = profile(d(x, y)) at a fixed step h (`NORMAL_H_PX`, ¼ source px). Never from the mesh. On the interior that is
+ * exactly (0, 0, 1), because dc keeps every node and its neighbours on the flat. ⚠ A mitre is a true crease: within h
+ * of it the difference straddles it. `flat` mode on the bench lights the triangles and is the check on all of this.
  */
 import * as THREE from "three";
-import { LOGO_ASPECT, LOGO_HALF_WIDTH, LOGO_OUTLINE, LOGO_OUTLINE_SOURCE, LOGO_STEM } from "./logo-mark-outline";
+import { LOGO_ASPECT, LOGO_OUTLINE, LOGO_OUTLINE_SOURCE, LOGO_R_CAP } from "./logo-mark-outline";
+
+/** One source pixel of the trace, in mark units. Dials are set in source px — the units the target is measured in. */
+export const SRC_PX = 1 / LOGO_OUTLINE_SOURCE.pxPerUnit;
+const NORMAL_H_PX = 0.25;
 
 export type LogoMarkParams = {
   /** model units per mark height (mm on the bench). */
   scale: number;
   /** interior grid step, mark units. */
   gridStep: number;
-  /** edge band depth as a fraction t of (R − lipW): the clip sits at d = lipW + bandT · (R − lipW). */
-  bandT: number;
-  /** rings in the edge band. */
-  bandRings: number;
-  /** the dome's radius, mark units — ⛔ clamped to LOGO_HALF_WIDTH.p5. */
-  R: number;
-  /** wall height, as a fraction of R. */
-  wallH: number;
-  /** flat lip width, as a fraction of R. */
+  /** the chamfer's width B, mark units — where the chamfer's line meets the face's plane. */
+  bevelW: number;
+  /** the chamfer's slope, rise ÷ run (1 = 45°). */
+  bevelRise: number;
+  /** the round between the chamfer and the face, radius, mark units (0 = a sharp edge). */
+  edgeRound: number;
+  /** the mark's total thickness, back to face, mark units. */
+  depth: number;
+  /** the flat lip at the wall's top, mark units (a hair: the band and the lip need it > 0). */
   lipW: number;
-  /** dome height as a fraction of (R − lipW): 1 = a half-round. */
-  domeH: number;
-  /** the stem's R, as a fraction of R (smaller = a wider flat face). */
-  stemR: number;
-  /** the stem edge's shape: 0 = round, 1 = a straight bevel. */
-  stemBevel: number;
-  /** the stem ease's width outside the stem box, mark units. */
-  stemBlend: number;
-  /** the stem face's crown, as a fraction of crestH: the bevel rises to (1 − crown), a shallow curve takes the centre
-   *  line to the crest. 0 = a dead-flat face. */
-  stemCrown: number;
+  /** rings down the chamfer. */
+  chamferRings: number;
+  /** rings through the round. */
+  roundRings: number;
 };
 
-/** ⚠ STARTING POINTS for Carl's eye, not proposals (the card precedent). */
+/** ⚠ STARTING POINTS for Carl's eye, not proposals. The bevel is MEASURED off the flat-face target (≈ 15 source px on the
+ *  stem's sides and ends); the depth keeps chunk 1's thickness (≈ 41 source px); 45° and the round are first guesses. */
 export const LOGO_MARK_DEFAULTS: LogoMarkParams = {
   scale: 1,
   gridStep: 1 / 280,
-  bandT: 0.5,
-  bandRings: 10,
-  R: LOGO_HALF_WIDTH.p5,
-  wallH: 0.15,
-  lipW: 0.1,
-  domeH: 0.85,
-  stemR: 0.45,
-  stemBevel: 0.8,
-  stemBlend: 0.04,
-  stemCrown: 0.25,
+  bevelW: 15 * SRC_PX,
+  bevelRise: 1,
+  edgeRound: 4 * SRC_PX,
+  depth: 41 * SRC_PX,
+  lipW: 1 * SRC_PX,
+  chamferRings: 4,
+  roundRings: 8,
 };
 
 export type LogoMarkStats = {
@@ -110,23 +103,91 @@ export type LogoMarkStats = {
   flippedBandTriangles: number;
   /** outer-ring samples clamped to stop a fold at a concave corner. */
   ringClamps: number;
-  /** highest point of the front, mark units, and ÷ the median half-width. */
+  /** the face's height (the total thickness), mark units. */
   crestHeight: number;
-  crestOverHalfWidth: number;
-  /** ⛔ max angle between an edge's end normals ON THE CREST (both ends at d ≥ 0.9 R, outside the stem ease) — a
-   *  spine seam shows here (A2). */
-  maxNormalAngleCrestDeg: number;
-  /** max angle inside the stem ease — a steep but continuous ramp where R eases to the stem's, not a seam. */
-  maxNormalAngleStemEaseDeg: number;
+  /** the lip's height, mark units — the window readouts are front-only, above it. */
+  lipHeight: number;
+  /** ⛔ max angle between an edge's end normals ON THE FACE (both ends at d ≥ B + T) — must be ~0: the face is flat. */
+  maxNormalAngleFaceDeg: number;
   /** max angle over the whole smooth front — includes the mitres at convex corners, which are intended. */
   maxNormalAngleDeg: number;
   /** smooth-front edges over 30° (the mitres). */
   edgesOver30Deg: number;
-  /** max |Δz| along an interior-grid edge, in source px of the trace (Architect A8). */
+  /** max |Δz| along an interior-grid edge, in source px — must be 0: the grid carries only the flat. */
   maxGridZStepSourcePx: number;
-  /** the R actually used (after the p5 clamp). */
-  rUsed: number;
+  /** the bevel width actually used (after the cap), mark units. */
+  bevelUsed: number;
 };
+
+// ── pass 1 (7 October 2026): readouts inside a window — the junction's before/after (Architect A6) ──────────────
+
+export type WindowReadouts = {
+  /** front triangles wholly inside the window and above the lip (`zFloor`). */
+  triangles: number;
+  /** max angle between an edge's two COMPUTED vertex normals — what clay, zebra and normals shade with. */
+  maxNormalAngleDeg: number;
+  /** max angle between two adjacent triangles' FACE normals — the mesh as built, what `flat` shows (Architect A4). */
+  maxDihedralDeg: number;
+  /** 99th percentile of the same — one sliver can own a max. */
+  p99DihedralDeg: number;
+};
+
+/**
+ * ⛔ The junction window's readings from ANY built mark (the 3 October mesh is the control, pass 1's the treatment), on
+ * WELDED positions so a split vertex does not hide a crease. Front triangles only: every vertex inside the window (mark
+ * units) and above `zFloor` (the lip) — the lip/wall foot is a 90° crease by design and would own every max.
+ */
+export function windowReadouts(
+  geometry: THREE.BufferGeometry,
+  win: { x0: number; y0: number; x1: number; y1: number },
+  scale: number,
+  zFloor: number,
+): WindowReadouts {
+  const P = geometry.getAttribute("position") as THREE.BufferAttribute;
+  const Nn = geometry.getAttribute("normal") as THREE.BufferAttribute;
+  const idx = geometry.getIndex()!;
+  const inWin = (v: number) => {
+    const x = P.getX(v) / scale, y = P.getY(v) / scale, z = P.getZ(v) / scale;
+    return x >= win.x0 && x <= win.x1 && y >= win.y0 && y <= win.y1 && z > zFloor + 1e-6;
+  };
+  const weld = new Map<string, number>();
+  const wid = (v: number) => {
+    const k = `${Math.round((P.getX(v) / scale) * 1e7)},${Math.round((P.getY(v) / scale) * 1e7)},${Math.round((P.getZ(v) / scale) * 1e7)}`;
+    let id = weld.get(k);
+    if (id === undefined) { id = weld.size; weld.set(k, id); }
+    return id;
+  };
+  const deg = (d: number) => (Math.acos(Math.min(1, Math.max(-1, d))) * 180) / Math.PI;
+  const faces: THREE.Vector3[] = [];
+  const edgeFaces = new Map<string, number[]>();
+  let maxN = 0;
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+  for (let t = 0; t < idx.count; t += 3) {
+    const v = [idx.getX(t), idx.getX(t + 1), idx.getX(t + 2)];
+    if (!v.every(inWin)) continue;
+    a.fromBufferAttribute(P, v[0]); b.fromBufferAttribute(P, v[1]); c.fromBufferAttribute(P, v[2]);
+    const n = new THREE.Vector3().crossVectors(b.clone().sub(a), c.clone().sub(a));
+    if (n.lengthSq() < 1e-24) continue; // degenerate
+    const f = faces.push(n.normalize()) - 1;
+    const w = v.map(wid);
+    for (let e = 0; e < 3; e++) {
+      const p = w[e], q = w[(e + 1) % 3];
+      const k = p < q ? `${p}_${q}` : `${q}_${p}`;
+      (edgeFaces.get(k) ?? edgeFaces.set(k, []).get(k)!).push(f);
+      const i = v[e], j = v[(e + 1) % 3];
+      maxN = Math.max(maxN, deg(Nn.getX(i) * Nn.getX(j) + Nn.getY(i) * Nn.getY(j) + Nn.getZ(i) * Nn.getZ(j)));
+    }
+  }
+  const dih: number[] = [];
+  for (const fs of edgeFaces.values()) if (fs.length === 2) dih.push(deg(faces[fs[0]].dot(faces[fs[1]])));
+  dih.sort((p, q) => p - q);
+  return {
+    triangles: faces.length,
+    maxNormalAngleDeg: maxN,
+    maxDihedralDeg: dih.length ? dih[dih.length - 1] : 0,
+    p99DihedralDeg: dih.length ? dih[Math.floor(0.99 * (dih.length - 1))] : 0,
+  };
+}
 
 // ── the outline: segments bucketed so each cell lists every segment within `cap` of it ─────────────────────────
 
@@ -182,18 +243,38 @@ function buildField(cap: number) {
   return { n, nearest, rowCrossings, at };
 }
 
-// ── the stem box: signed distance (inside +) and its gradient ───────────────────────────────────────────────────
+// ── the profile ─────────────────────────────────────────────────────────────────────────────────────────────────
 
-function stemBox(x: number, y: number): { e: number; ex: number; ey: number } {
-  const hx = (LOGO_STEM.x1 - LOGO_STEM.x0) / 2, hy = (LOGO_STEM.y1 - LOGO_STEM.y0) / 2;
-  const qx = x - (LOGO_STEM.x0 + hx), qy = y - (LOGO_STEM.y0 + hy);
-  const dx = Math.abs(qx) - hx, dy = Math.abs(qy) - hy;
-  if (dx > 0 || dy > 0) {
-    const ox = Math.max(dx, 0), oy = Math.max(dy, 0);
-    const L = Math.hypot(ox, oy) || 1e-12;
-    return { e: -L, ex: (-ox / L) * Math.sign(qx), ey: (-oy / L) * Math.sign(qy) };
-  }
-  return dx > dy ? { e: -dx, ex: -Math.sign(qx), ey: 0 } : { e: -dy, ex: 0, ey: -Math.sign(qy) };
+function makeProfile(p: LogoMarkParams) {
+  const k = p.bevelRise, lipW = p.lipW;
+  const theta = Math.atan(k);
+  // ⛔ cap: the face must exist on every stroke (B + T ≤ 0.9 × the narrowest body half-width)
+  const B0 = Math.min(p.bevelW, 0.9 * LOGO_R_CAP);
+  // the round can never take more than the chamfer it sits on: d1 = B + ρ (tan(θ/2) − sin θ) must stay ≥ lipW
+  const rho = Math.max(0, Math.min(p.edgeRound, (0.9 * (B0 - lipW)) / (Math.sin(theta) - Math.tan(theta / 2))));
+  const T = rho * Math.tan(theta / 2);
+  const B = Math.min(B0, 0.9 * LOGO_R_CAP - T);
+  const top = p.depth;
+  const wallH = top - k * (B - lipW);
+  const arcEnd = B + T;
+  const d1 = arcEnd - rho * Math.sin(theta);
+  const zc = top - rho;
+  const z = (d: number) => {
+    if (d < lipW) return wallH;
+    if (d <= d1) return wallH + k * (d - lipW);
+    if (d < arcEnd) { const u = d - arcEnd; return zc + Math.sqrt(Math.max(0, rho * rho - u * u)); }
+    return top;
+  };
+  /** the band's ring levels in d, from the face inward to the foot: through the round evenly in ANGLE (the round turns
+   *  the normal through θ; equal angles = equal turns per ring), then down the straight chamfer evenly. */
+  const levels = (roundRings: number, chamferRings: number) => {
+    const out: number[] = [];
+    for (let i = 0; i <= roundRings; i++) out.push(arcEnd - rho * Math.sin((theta * i) / Math.max(1, roundRings)));
+    for (let i = 1; i <= chamferRings; i++) out.push(d1 + ((lipW - d1) * i) / chamferRings);
+    // drop repeats (a zero round collapses its rings onto one level)
+    return out.filter((v, i) => i === 0 || v < out[i - 1] - 1e-9);
+  };
+  return { z, levels, B, T, rho, wallH, top, arcEnd, lipW };
 }
 
 // ── build ───────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -203,73 +284,39 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
   stats: LogoMarkStats;
 } {
   const p = { ...LOGO_MARK_DEFAULTS, ...input };
-  const R = Math.min(p.R, LOGO_HALF_WIDTH.p5);
-  const lipW = p.lipW * R, wallH = p.wallH * R;
-  const crestH = p.domeH * (R - lipW);
-  const Rs = Math.max(lipW * 1.5, p.stemR * R);
-  const dc = lipW + p.bandT * (R - lipW);
+  const prof = makeProfile(p);
+  const { wallH, arcEnd } = prof;
   const step = p.gridStep;
-  const cap = R + 3 * step;
+  // ⛔ the clip sits beyond the last curvature by MORE than a grid step: every interior node and its neighbours are flat
+  const dc = arcEnd + 1.5 * step;
+  const cap = dc + 3 * step;
   const field = buildField(cap);
+  const h = NORMAL_H_PX * SRC_PX;
 
-  /** local R, c and their gradients from the stem ease. */
-  const ease = (x: number, y: number) => {
-    const { e, ex, ey } = stemBox(x, y);
-    const u = (e + p.stemBlend) / p.stemBlend; // 0 at e = −blend, 1 at the box edge and inside
-    const uc = u < 0 ? 0 : u > 1 ? 1 : u;
-    const w = uc * uc * (3 - 2 * uc);
-    const dw = u <= 0 || u >= 1 ? 0 : (6 * uc * (1 - uc)) / p.stemBlend;
-    return {
-      r: R + (Rs - R) * w, c: p.stemBevel * w, k: p.stemCrown * w,
-      rx: (Rs - R) * dw * ex, ry: (Rs - R) * dw * ey,
-      cx: p.stemBevel * dw * ex, cy: p.stemBevel * dw * ey,
-      kx: p.stemCrown * dw * ex, ky: p.stemCrown * dw * ey,
-    };
-  };
-  // the crown runs from d = Rs to the stem's half-width, where it peaks with zero slope (the centre line: no seam)
-  const hwStem = (LOGO_STEM.x1 - LOGO_STEM.x0) / 2;
-  const profile = (d: number, r: number, c: number, k = 0) => {
-    if (d < lipW) return wallH;
-    let t = (d - lipW) / (r - lipW);
-    t = t > 1 ? 1 : t;
-    const s = 1 - t;
-    const edge = (1 - c) * Math.sqrt(Math.max(0, 1 - s * s)) + c * t;
-    let q = (d - Rs) / (hwStem - Rs);
-    q = q < 0 ? 0 : q > 1 ? 1 : q;
-    const crown = 1 - (1 - q) * (1 - q);
-    return wallH + crestH * ((1 - k) * edge + k * crown);
-  };
-  /** z, the normal, and the local R at (x, y), with distance d and ∇d = (gx, gy). */
-  const surface = (x: number, y: number, d: number, gx: number, gy: number) => {
-    const k = ease(x, y);
-    const z = profile(d, k.r, k.c, k.k);
-    const h = 1e-6;
-    const lo = Math.max(lipW, d - h);
-    let zd = d < lipW ? 0 : (profile(d + h, k.r, k.c, k.k) - profile(lo, k.r, k.c, k.k)) / (d + h - lo);
-    if (!isFinite(zd) || zd > 1e3) zd = 1e3;
-    const zr = (profile(d, k.r + h, k.c, k.k) - profile(d, k.r - h, k.c, k.k)) / (2 * h);
-    const zc = (profile(d, k.r, k.c + h, k.k) - profile(d, k.r, k.c - h, k.k)) / (2 * h);
-    const zk = (profile(d, k.r, k.c, k.k + h) - profile(d, k.r, k.c, k.k - h)) / (2 * h);
-    const zx = zd * gx + zr * k.rx + zc * k.cx + zk * k.kx;
-    const zy = zd * gy + zr * k.ry + zc * k.cy + zk * k.ky;
+  /** distance to the outline at (x, y) — the point is inside (band points are ≥ lipW from the edge, lipW > h). */
+  const dist = (x: number, y: number) => field.nearest(x, y)?.dist ?? cap;
+  /** ⛔ THE ONE NORMAL METHOD (A4): central differences of z = profile(d) at ±h. */
+  const fieldNormal = (x: number, y: number) => {
+    const zx = (prof.z(dist(x + h, y)) - prof.z(dist(x - h, y))) / (2 * h);
+    const zy = (prof.z(dist(x, y + h)) - prof.z(dist(x, y - h))) / (2 * h);
     const L = Math.hypot(zx, zy, 1);
-    return { z, nx: -zx / L, ny: -zy / L, nz: 1 / L, r: k.r };
+    return [-zx / L, -zy / L, 1 / L] as const;
   };
 
-  // vertex store (mark units until the end); vd/vr = each smooth vertex's d and local R, for the crest readout
-  const pos: number[] = [], nor: number[] = [], vd: number[] = [], vr: number[] = [];
-  const addV = (x: number, y: number, z: number, nx: number, ny: number, nz: number, d = -1, r = 1) => {
-    pos.push(x, y, z); nor.push(nx, ny, nz); vd.push(d); vr.push(r); return pos.length / 3 - 1;
+  // vertex store (mark units until the end); vd = each smooth vertex's d, for the face readout
+  const pos: number[] = [], nor: number[] = [], vd: number[] = [];
+  const addV = (x: number, y: number, z: number, nx: number, ny: number, nz: number, d = -1) => {
+    pos.push(x, y, z); nor.push(nx, ny, nz); vd.push(d); return pos.length / 3 - 1;
   };
   const smoothTris: number[] = []; // interior + band (one smooth surface)
   const otherTris: number[] = []; // lip, wall, back
   const gridTris: number[] = []; // the interior alone, for the z-step readout
 
-  // ── 1. interior: grid clipped at d = dc ──
+  // ── 1. interior: grid clipped at d = dc — all of it on the flat face ──
   const x0 = -LOGO_ASPECT / 2 - 3 * step, y0 = -3 * step;
   const nx = Math.ceil((LOGO_ASPECT + 6 * step) / step), ny = Math.ceil((1 + 6 * step) / step);
   const NX = nx + 1;
-  const D = new Float64Array(NX * (ny + 1)), GX = new Float32Array(D.length), GY = new Float32Array(D.length);
+  const D = new Float64Array(NX * (ny + 1));
   for (let j = 0; j <= ny; j++) {
     const y = y0 + j * step;
     const xs = field.rowCrossings(y);
@@ -279,26 +326,20 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
       while (k < xs.length && xs[k] < x) k++;
       const sign = k % 2 === 1 ? 1 : -1; // odd crossings to the left = inside
       const q = field.nearest(x, y);
-      const id = j * NX + i;
-      if (!q || q.dist < 1e-12) { D[id] = q ? 0 : sign * cap; continue; }
-      D[id] = sign * q.dist;
-      GX[id] = (sign * (x - q.cx)) / q.dist;
-      GY[id] = (sign * (y - q.cy)) / q.dist;
+      D[j * NX + i] = q ? sign * q.dist : sign * cap;
     }
   }
-  // the exact height at every node — the interior's normals are central differences of THIS, one step either side
-  const zAt = (x: number, y: number, d: number) => { const k = ease(x, y); return profile(d, k.r, k.c, k.k); };
   const Z = new Float64Array(D.length);
-  for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) { const id = j * NX + i; Z[id] = zAt(x0 + i * step, y0 + j * step, Math.max(0, D[id])); }
+  for (let id = 0; id < D.length; id++) Z[id] = prof.z(Math.max(0, D[id]));
   const nodeV = new Int32Array(D.length).fill(-1);
   const nodeVertex = (id: number) => {
     if (nodeV[id] >= 0) return nodeV[id];
     const i = id % NX, j = Math.floor(id / NX);
-    const x = x0 + i * step, y = y0 + j * step;
+    // central differences of the exact height on the grid — exactly flat here, by dc's margin
     const zx = (Z[j * NX + Math.min(nx, i + 1)] - Z[j * NX + Math.max(0, i - 1)]) / (step * (Math.min(nx, i + 1) - Math.max(0, i - 1)));
     const zy = (Z[Math.min(ny, j + 1) * NX + i] - Z[Math.max(0, j - 1) * NX + i]) / (step * (Math.min(ny, j + 1) - Math.max(0, j - 1)));
     const L = Math.hypot(zx, zy, 1);
-    return (nodeV[id] = addV(x, y, Z[id], -zx / L, -zy / L, 1 / L, D[id], ease(x, y).r));
+    return (nodeV[id] = addV(x0 + i * step, y0 + j * step, Z[id], -zx / L, -zy / L, 1 / L, D[id]));
   };
   const cross = new Map<number, number>();
   const crossVertex = (a: number, b: number) => {
@@ -309,11 +350,8 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
     const xa = x0 + (a % NX) * step, ya = y0 + Math.floor(a / NX) * step;
     const xb = x0 + (b % NX) * step, yb = y0 + Math.floor(b / NX) * step;
     const x = xa + t * (xb - xa), y = ya + t * (yb - ya);
-    // the clip sits at depth dc ≫ step, so the four probes are inside: unsigned distance is the signed one
-    const zp = (u: number, w: number) => zAt(u, w, field.nearest(u, w)?.dist ?? cap);
-    const zx = (zp(x + step, y) - zp(x - step, y)) / (2 * step), zy = (zp(x, y + step) - zp(x, y - step)) / (2 * step);
-    const L = Math.hypot(zx, zy, 1);
-    const v = addV(x, y, zAt(x, y, dc), -zx / L, -zy / L, 1 / L, dc, ease(x, y).r);
+    const [ux, uy, uz] = fieldNormal(x, y);
+    const v = addV(x, y, prof.z(dc), ux, uy, uz, dc);
     cross.set(key, v);
     return v;
   };
@@ -334,6 +372,7 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
   }
 
   // ── 2–3. chain the clip loop(s); sweep the band, the lip, the wall and the back from each ──
+  const levels = prof.levels(p.roundRings, p.chamferRings);
   let flipped = 0, clamps = 0;
   const loops: number[][] = [];
   const seen = new Set<number>();
@@ -353,23 +392,17 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
       const q = field.nearest(x, y)!;
       return { gx: (x - q.cx) / q.dist, gy: (y - q.cy) / q.dist, d0: q.dist, s: q.s };
     });
-    // ∇d averaged over ±3 loop neighbours — for the band's NORMALS only (positions use each vertex's own ∇d), so a
-    // mitre at a convex corner turns over a few samples instead of stepping
-    const Gs = G.map((_, i) => {
-      let sx = 0, sy = 0;
-      for (let o = -3; o <= 3; o++) { const g = G[(i + o + m) % m]; sx += g.gx; sy += g.gy; }
-      const l = Math.hypot(sx, sy) || 1;
-      return { gx: sx / l, gy: sy / l };
-    });
     let prev = L;
-    for (let r = 1; r <= p.bandRings; r++) {
-      const f = (p.bandRings - r) / p.bandRings;
-      const dk = lipW + (dc - lipW) * f * f;
+    levels.forEach((dk, r) => {
+      const foot = r === levels.length - 1;
       const ring = L.map((v, i) => {
         const { gx, gy, d0 } = G[i];
         const x = pos[3 * v] - gx * (d0 - dk), y = pos[3 * v + 1] - gy * (d0 - dk);
-        const s = surface(x, y, dk, Gs[i].gx, Gs[i].gy);
-        return addV(x, y, s.z, s.nx, s.ny, s.nz, dk, s.r);
+        // ⛔ z from the TRUE distance at the ring point (one surface, one normal method) — except the foot ring, which
+        // is pinned to the lip's height exactly: the lip's vertices are built at wallH and a mismatch is a crack.
+        const z = foot ? wallH : prof.z(dist(x, y));
+        const [ux, uy, uz] = fieldNormal(x, y);
+        return addV(x, y, z, ux, uy, uz, dk);
       });
       for (let i = 0; i < m; i++) {
         const j = (i + 1) % m;
@@ -379,7 +412,7 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
         }
       }
       prev = ring;
-    }
+    });
     // the outer ring: ON the outline, its arc parameter clamped so it only ever advances
     const nS = field.n;
     let sPrev = G[0].s;
@@ -395,10 +428,8 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
       const [x, y] = field.at(s);
       return { x, y, gx: g.gx, gy: g.gy };
     });
-    // ⛔ CONVEX CORNERS: where two neighbouring outer samples skip part of the outline (the rings jump from one side of
-    // a corner to the other), the skipped outline points are INSERTED — so the lip, the wall and the back follow the
-    // real corner instead of a chord across it (found 3 October: the stem's corners came out as 45° chamfers once the
-    // band deepened). The flat lip fans out from the foot ring to fill the gap.
+    // ⛔ CONVEX CORNERS: skipped outline points are INSERTED, so the lip, the wall and the back follow the real corner
+    // instead of a chord across it (found 3 October). The lip fans out from the foot ring to fill the gap.
     const sRing: number[] = [];
     { let t = G[0].s; sRing.push(t); for (let k = 1; k < m; k++) { let ds = G[k].s - t; ds -= nS * Math.round(ds / nS); t += Math.max(0, ds); sRing.push(t); } }
     const tangentOut = (sv: number) => {
@@ -408,7 +439,7 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
     };
     type OP = { x: number; y: number; ox: number; oy: number; ring: number };
     const expanded: OP[] = [];
-    const extrasAfter: number[][] = []; // per ring index: indices into `expanded` of the inserted points that follow it
+    const extrasAfter: number[][] = [];
     for (let i = 0; i < m; i++) {
       const o = outer[i];
       expanded.push({ x: o.x, y: o.y, ox: -o.gx, oy: -o.gy, ring: i });
@@ -424,15 +455,15 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
       extrasAfter.push(ex);
     }
     // lip: the foot ring again with UP normals, out to the outline
-    const foot = prev.map((v) => addV(pos[3 * v], pos[3 * v + 1], wallH, 0, 0, 1));
+    const footV = prev.map((v) => addV(pos[3 * v], pos[3 * v + 1], wallH, 0, 0, 1));
     const lipE = expanded.map(({ x, y }) => addV(x, y, wallH, 0, 0, 1));
     const ringAt = new Int32Array(m);
     expanded.forEach((e, k) => { if (e.ring >= 0) ringAt[e.ring] = k; });
     for (let i = 0; i < m; i++) {
       const j = (i + 1) % m;
       const fan = [ringAt[i], ...extrasAfter[i], ringAt[j]].map((k) => lipE[k]);
-      for (let f = 0; f < fan.length - 1; f++) otherTris.push(foot[i], fan[f], fan[f + 1]);
-      otherTris.push(foot[i], lipE[ringAt[j]], foot[j]);
+      for (let f = 0; f < fan.length - 1; f++) otherTris.push(footV[i], fan[f], fan[f + 1]);
+      otherTris.push(footV[i], lipE[ringAt[j]], footV[j]);
     }
     // wall: outward normal per point, around the expanded outline
     const E = expanded.length;
@@ -480,16 +511,14 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
   for (const c of edges.values()) { if (c === 1) open++; else if (c > 2) nonMan++; }
   let crest = 0;
   for (let i = 2; i < pos.length; i += 3) crest = Math.max(crest, pos[i]);
-  let maxAng = 0, maxCrest = 0, maxEase = 0, over30 = 0;
+  let maxAng = 0, maxFace = 0, over30 = 0;
   for (let t = 0; t < smoothTris.length; t += 3) for (let e = 0; e < 3; e++) {
     const a = smoothTris[t + e], b = smoothTris[t + ((e + 1) % 3)];
     const dot = nor[3 * a] * nor[3 * b] + nor[3 * a + 1] * nor[3 * b + 1] + nor[3 * a + 2] * nor[3 * b + 2];
     const ang = (Math.acos(Math.min(1, Math.max(-1, dot))) * 180) / Math.PI;
     maxAng = Math.max(maxAng, ang);
     if (ang > 30) over30++;
-    const eased = vr[a] < R - 1e-9 || vr[b] < R - 1e-9;
-    if (eased) maxEase = Math.max(maxEase, ang);
-    else if (vd[a] >= 0.9 * R && vd[b] >= 0.9 * R) maxCrest = Math.max(maxCrest, ang);
+    if (vd[a] >= arcEnd && vd[b] >= arcEnd) maxFace = Math.max(maxFace, ang);
   }
   let maxStep = 0;
   for (let t = 0; t < gridTris.length; t += 3) for (let e = 0; e < 3; e++) {
@@ -518,13 +547,12 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
       flippedBandTriangles: flipped,
       ringClamps: clamps,
       crestHeight: crest,
-      crestOverHalfWidth: crest / LOGO_HALF_WIDTH.median,
-      maxNormalAngleCrestDeg: maxCrest,
-      maxNormalAngleStemEaseDeg: maxEase,
+      lipHeight: wallH,
+      maxNormalAngleFaceDeg: maxFace,
       maxNormalAngleDeg: maxAng,
       edgesOver30Deg: over30,
       maxGridZStepSourcePx: maxStep * LOGO_OUTLINE_SOURCE.pxPerUnit,
-      rUsed: R,
+      bevelUsed: prof.B,
     },
   };
 }

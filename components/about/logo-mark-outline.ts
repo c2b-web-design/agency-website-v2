@@ -1,11 +1,12 @@
 /**
- * ⛔ GENERATED — DO NOT EDIT BY HAND. The C2B mark's outline, traced from Carl's GOLD TARGET (D-088 chunk 1).
+ * ⛔ GENERATED — DO NOT EDIT BY HAND. The C2B mark's outline, traced from Carl's GOLD TARGET (D-088 chunk 1), with the
+ * pass-1 additions (7 October 2026): R's cap at the narrowest stroke body, the junction, the stem corners.
  * Regenerate: node --no-warnings project-intelligence/live-work/scripts/logo-outline-extract.mjs
  *
  * Source: brand-assets/logo/c2b-logo-gold-relit-alpha-1671.png  (md5 4afca6d7b0ee7445559cd6fff717e535, 1671 × 941)
  * ⛔ NOT the white silhouette — a different, bolder drawing (IoU 0.84). Carl: "Yes, use the gold target and not
  * white silhouette." The cut-out's edge sits on the gold target's (c2b-logo-gold-relit-source-1671.png) edge.
- * Generated 2026-10-03 · iso 0.5 · corners > 30° kept · 4 smoothing passes · RDP 0.1 px · centripetal Catmull-Rom resampled every 1.5 px
+ * Generated 2026-10-07 · iso 0.5 · corners > 30° kept · 4 smoothing passes · RDP 0.1 px · centripetal Catmull-Rom resampled every 1.5 px
  * Raw iso-line 7424 points → RDP 662 → spline 4433; max deviation of the iso-line from this outline 0.302 source px.
  *
  * MARK UNITS: height = 1, x right, y UP, origin at the BOTTOM-CENTRE of the mark's box (where it stands).
@@ -34,6 +35,29 @@ export const LOGO_HALF_WIDTH = { p5: 0.08058, median: 0.08483, p95: 0.08668, max
 
 /** The b's stem, mark units — detected from the same pixels (Architect A3), not typed in. */
 export const LOGO_STEM = { x0: 0.35145, y0: 0.3008, x1: 0.52648, y1: 0.99019 } as const;
+
+/**
+ * ⛔ THE CAP ON THE PROFILE'S WIDTH — the narrowest stroke BODY's half-width, mark units (pass 1, 7 October 2026).
+ * Carl's option 2 on the width question ("Go with 2") made this the dome's R cap in place of p5: p5 left the b's top
+ * stroke beside the junction (43.5 px, the minimum, at source (1181, 408)) narrower than R.
+ * The dome is gone (v3: a flat face in a narrow chamfer); the cap now holds the chamfer narrow enough that the flat face
+ * exists on every stroke. The body minimum ignores the ridge's run-out into the terminals' tapers.
+ */
+export const LOGO_R_CAP = 0.07769;
+
+/**
+ * ⛔ THE JUNCTION — where the bowl joins the stem (pass 1). The two inside fillets as traced (radius = arc ÷ turn), the
+ * points where they meet the bowl's edges, and the WINDOW the before/after readings are taken in: the fillets, the run
+ * ends and the bevel band at its widest, grown by 4 × the larger inside radius. Never typed by hand (Architect).
+ */
+export const LOGO_JUNCTION = {
+  insideRadiiPx: { upper: 12.55872, lower: 24.46789 },
+  pu: [0.54345, 0.71492], pl: [0.55888, 0.5576],
+  window: { x0: 0.27399, y0: 0.35964, x1: 0.73368, y1: 0.89688 },
+} as const;
+
+/** The stem's four OUTER corners as traced, source px (radius = arc ÷ turn) — the box's corners are sharp (A3). */
+export const LOGO_STEM_CORNER_RADII_PX = { topLeft: 26.21886, topRight: 24.0166, bottomLeft: 21.9518, bottomRight: 22.20334 } as const;
 
 /** The outline, flattened [x0, y0, x1, y1, …], mark units. */
 export const LOGO_OUTLINE: readonly number[] = [
