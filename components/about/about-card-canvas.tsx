@@ -90,6 +90,7 @@ import {
   DESK_MARK,
   DESK_LED_STRIP,
   DESK_MARK_FALL,
+  DESK_MARK_SOMERSAULT,
   DESK_RIGHT_CORNER,
   deskMarkPlacement,
   roomPoint,
@@ -815,52 +816,141 @@ const DESK_MARK_TIP_HOLD_MS = 1500;
  */
 const DESK_MARK_FALL_SPEED = 1;
 const DESK_MARK_FALL_HOLD_MS = 2500;
-type MarkPose = { y: number; z: number; theta: number };
-/** The fall's state at `ms` after face down, interpolated from the simulation's rows; y/z = the centre of mass relative
- *  to the mark's rest origin (yaw frame, metres; z toward the camera). */
-function fallPose(ms: number, originOffMm: number): MarkPose {
+/** A pose of the mark: its centre of mass relative to the mark's rest origin (yaw frame — x along the letters / the
+ *  back wall, y up, z toward the camera; metres) and its orientation. */
+type MarkPose = { x: number; y: number; z: number; q: THREE.Quaternion };
+const X_AXIS = new THREE.Vector3(1, 0, 0);
+/** The 2D fall's state at `ms` after face down, interpolated from the simulation's rows (an angle about the letters). */
+function fallPose(ms: number, originOffMm: number, xc: number): MarkPose {
   const R = DESK_MARK_FALL.rows;
   let i = 0;
   while (i < R.length - 2 && R[i + 1][0] < ms) i++;
   const a = R[i], b = R[i + 1];
   const k = Math.min(1, Math.max(0, (ms - a[0]) / (b[0] - a[0] || 1)));
   const lerp = (j: number) => a[j] + (b[j] - a[j]) * k;
-  return { y: (lerp(2) - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT, z: (lerp(1) - originOffMm) / ROOM_MM_PER_UNIT, theta: lerp(3) };
+  return {
+    x: xc, y: (lerp(2) - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT, z: (lerp(1) - originOffMm) / ROOM_MM_PER_UNIT,
+    q: new THREE.Quaternion().setFromAxisAngle(X_AXIS, lerp(3)),
+  };
 }
-function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, fallFixed, tipMs, fallSpeed, com, depth, originOffMm }: {
+/**
+ * ⛔ THE SOMERSAULT (Carl, 8 October 2026: *"it needs to be facing us and the right way up… try it and show me"*) — a full
+ * 3D rigid-body run from UPRIGHT on the desk (`DESK_MARK_SOMERSAULT`, `about-room.ts`; the script and its search are named
+ * there): position and orientation at `ms` after the nudge, interpolated (positions linear, orientation slerp).
+ */
+function somersaultPose(ms: number, originOffMm: number): MarkPose {
+  const R = DESK_MARK_SOMERSAULT.rows;
+  let i = 0;
+  while (i < R.length - 2 && R[i + 1][0] < ms) i++;
+  const a = R[i], b = R[i + 1];
+  const k = Math.min(1, Math.max(0, (ms - a[0]) / (b[0] - a[0] || 1)));
+  const lerp = (j: number) => a[j] + (b[j] - a[j]) * k;
+  const qa = new THREE.Quaternion(a[4], a[5], a[6], a[7]), qb = new THREE.Quaternion(b[4], b[5], b[6], b[7]);
+  return {
+    x: (lerp(1) - DESK_RIGHT_CORNER.uMm / 2) / ROOM_MM_PER_UNIT,
+    y: (lerp(2) - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT,
+    z: (lerp(3) - originOffMm) / ROOM_MM_PER_UNIT,
+    q: qa.slerp(qb, k),
+  };
+}
+const DESK_MARK_SOMERSAULT_SPEED = 0.5;
+/**
+ * ⛔ THE CORNER — PLACED STEP BY STEP BY CARL (8 October 2026), `?markplay=corner`. His sketch: the desk's front and end
+ * edges meeting at the front-right corner, the mark STANDING between them — *"The bottom edge of the yellow is the bottom
+ * of the logo. so its standing upright. from there it must fall face down"* — then *"move it left so it is over the edge
+ * then stand it back up agaid and decide its size"*. Step 1: standing on the corner's bisector (`cornerpsi` −45°: 0 faces
+ * the end edge, −90 the front edge), its face's front-bottom edge `cornerd` mm in from BOTH edges (102: the closest its
+ * base stands on the desk — `live-work/scripts/desk-mark-corner-place-8-october.py`), slid LEFT by `cornerleft` mm
+ * (step 2's slider, 0 now), tipping 90° forward onto its face (stage 1's curve, gravity suspended) and holding there.
+ * Measured at 102 / 0: face down it hangs 135 mm past the front edge and 139 mm past the end, its centre of mass still
+ * 39 mm inside the front edge — it would lie there; > ~40 mm left and the left-side weight takes it over.
+ */
+const DESK_MARK_SOMERSAULT_END_HOLD_MS = 600;
+const DESK_MARK_CORNER = { psiDeg: -45, dMm: 102 };
+function cornerPose(p: number, psiDeg: number, dMm: number, leftMm: number, com: [number, number, number], depth: number, originOffMm: number): MarkPose {
+  const qY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), (psiDeg * Math.PI) / 180);
+  const th = (Math.PI / 2) * p * p;
+  const q = qY.clone().multiply(new THREE.Quaternion().setFromAxisAngle(X_AXIS, th));
+  // the pivot: the face's front-bottom edge at mid-letters, dMm in from the front edge (u) and the end edge (off), slid left
+  const pivot = new THREE.Vector3(
+    (DESK_RIGHT_CORNER.uMm + dMm - leftMm - DESK_RIGHT_CORNER.uMm / 2) / ROOM_MM_PER_UNIT,
+    0,
+    (DESK_RIGHT_CORNER.offWallMm - dMm - originOffMm) / ROOM_MM_PER_UNIT,
+  );
+  const c = new THREE.Vector3(com[0], com[1], com[2] - depth).applyQuaternion(q).add(pivot);
+  return { x: c.x, y: c.y, z: c.z, q };
+}
+function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, fallFixed, tipMs, fallSpeed, play, corner, com, depth, originOffMm }: {
   bodyRef: React.RefObject<THREE.Group | null>; followRef: React.RefObject<THREE.Group | null>;
   contactRef: React.RefObject<THREE.MeshBasicMaterial | null>; contactOpacity: number;
-  tipFixed: number | null; fallFixed: number | null; tipMs: number; fallSpeed: number;
-  com: [number, number]; depth: number; originOffMm: number;
+  tipFixed: number | null; fallFixed: number | null; tipMs: number; fallSpeed: number; play: "fall" | "somersault" | "corner";
+  corner: { psi: number; d: number; left: number; loop: boolean };
+  com: [number, number, number]; depth: number; originOffMm: number;
 }) {
   const clockRef = useRef(0);
-  const fallMs = DESK_MARK_FALL.restMs;
+  const start = useMemo(
+    () =>
+      play === "somersault"
+        ? somersaultPose(0, originOffMm)
+        : play === "corner"
+          ? cornerPose(0, corner.psi, corner.d, corner.left, com, depth, originOffMm)
+          : { x: com[0], y: com[1], z: com[2], q: new THREE.Quaternion() },
+    [play, originOffMm, com, corner, depth],
+  );
   useFrame((st, dt) => {
-    const [yc, zc] = com;
+    const [xc, yc, zc] = com;
     const tipPose = (p: number): MarkPose => {
       const th = (Math.PI / 2) * p * p;
       // rotation about the front-bottom edge (y 0, z depth): the centre of mass relative to the rest origin
-      return { theta: th, y: yc * Math.cos(th) - (zc - depth) * Math.sin(th), z: depth + yc * Math.sin(th) + (zc - depth) * Math.cos(th) };
+      return { x: xc, y: yc * Math.cos(th) - (zc - depth) * Math.sin(th), z: depth + yc * Math.sin(th) + (zc - depth) * Math.cos(th), q: new THREE.Quaternion().setFromAxisAngle(X_AXIS, th) };
     };
     let pose: MarkPose;
-    if (fallFixed !== null) pose = fallPose(fallFixed * fallMs, originOffMm);
-    else if (tipFixed !== null) pose = tipPose(tipFixed);
-    else {
-      const playMs = fallMs / fallSpeed;
-      const cycle = DESK_MARK_TIP_HOLD_MS + tipMs + playMs + DESK_MARK_FALL_HOLD_MS;
-      clockRef.current = (clockRef.current + dt * 1000) % cycle;
-      const t = clockRef.current;
-      if (t < DESK_MARK_TIP_HOLD_MS) pose = tipPose(0);
-      else if (t < DESK_MARK_TIP_HOLD_MS + tipMs) pose = tipPose((t - DESK_MARK_TIP_HOLD_MS) / tipMs);
-      else pose = fallPose(Math.min(fallMs, (t - DESK_MARK_TIP_HOLD_MS - tipMs) * fallSpeed), originOffMm);
-      st.invalidate();
+    if (play === "corner") {
+      let p: number;
+      // ⛔ STILL AND UPRIGHT by default — Carl, 8 October: "stop the animation and have it stand upright". The tip loop
+      // is `?cornerloop=1`; `?marktip=` holds any point of the tip.
+      if (tipFixed !== null) p = tipFixed;
+      else if (!corner.loop) p = 0;
+      else {
+        clockRef.current = (clockRef.current + dt * 1000) % (2 * (DESK_MARK_TIP_HOLD_MS + tipMs) + 1000);
+        const t = clockRef.current, Hd = DESK_MARK_TIP_HOLD_MS;
+        p = t < Hd ? 0 : t < Hd + tipMs ? (t - Hd) / tipMs : t < 2 * Hd + tipMs + 1000 ? 1 : 1 - (t - 2 * Hd - tipMs - 1000) / tipMs;
+        st.invalidate();
+      }
+      pose = cornerPose(p, corner.psi, corner.d, corner.left, com, depth, originOffMm);
+    } else if (play === "somersault") {
+      const total = DESK_MARK_SOMERSAULT.rows[DESK_MARK_SOMERSAULT.rows.length - 1][0];
+      if (fallFixed !== null) pose = somersaultPose(fallFixed * total, originOffMm);
+      else {
+        const cycle = DESK_MARK_TIP_HOLD_MS + total / fallSpeed + DESK_MARK_SOMERSAULT_END_HOLD_MS;
+        clockRef.current = (clockRef.current + dt * 1000) % cycle;
+        const t = clockRef.current - DESK_MARK_TIP_HOLD_MS;
+        pose = somersaultPose(Math.min(total, Math.max(0, t * fallSpeed)), originOffMm);
+        st.invalidate();
+      }
+    } else {
+      const fallMs = DESK_MARK_FALL.restMs;
+      if (fallFixed !== null) pose = fallPose(fallFixed * fallMs, originOffMm, xc);
+      else if (tipFixed !== null) pose = tipPose(tipFixed);
+      else {
+        const playMs = fallMs / fallSpeed;
+        const cycle = DESK_MARK_TIP_HOLD_MS + tipMs + playMs + DESK_MARK_FALL_HOLD_MS;
+        clockRef.current = (clockRef.current + dt * 1000) % cycle;
+        const t = clockRef.current;
+        if (t < DESK_MARK_TIP_HOLD_MS) pose = tipPose(0);
+        else if (t < DESK_MARK_TIP_HOLD_MS + tipMs) pose = tipPose((t - DESK_MARK_TIP_HOLD_MS) / tipMs);
+        else pose = fallPose(Math.min(fallMs, (t - DESK_MARK_TIP_HOLD_MS - tipMs) * fallSpeed), originOffMm, xc);
+        st.invalidate();
+      }
     }
     if (bodyRef.current) {
-      bodyRef.current.position.set(0, pose.y, pose.z);
-      bodyRef.current.rotation.x = pose.theta;
+      bodyRef.current.position.set(pose.x, pose.y, pose.z);
+      bodyRef.current.quaternion.copy(pose.q);
     }
-    if (followRef.current) followRef.current.position.set(0, pose.y, pose.z);
-    if (contactRef.current) contactRef.current.opacity = contactOpacity * Math.max(0, 1 - 4 * Math.min(1, pose.theta / (Math.PI / 2)));
+    if (followRef.current) followRef.current.position.set(pose.x, pose.y, pose.z);
+    // the contact shadow belongs to the mark AT REST in its starting pose: gone once it has turned 22.5° from it
+    const turned = pose.q.angleTo(start.q);
+    if (contactRef.current) contactRef.current.opacity = contactOpacity * Math.max(0, 1 - 4 * Math.min(1, turned / (Math.PI / 2)));
   });
   return null;
 }
@@ -870,6 +960,8 @@ function DeskMark() {
   const shadowOn = useMemo(() => deskMarkShadowOn(), []);
   const studioIntensity = useMemo(() => neonNumber("markenv", DESK_MARK_STUDIO_INTENSITY, 0, 2), []);
   const motion = useMemo(() => {
+    const mp = neonParam("markplay");
+    const play: "fall" | "somersault" | "corner" = mp === "fall" ? "fall" : mp === "corner" ? "corner" : "somersault";
     const fixed = (key: string) => {
       const raw = neonParam(key);
       return raw === null || raw.trim() === "" || !Number.isFinite(Number(raw)) ? null : Math.min(1, Math.max(0, Number(raw)));
@@ -878,7 +970,14 @@ function DeskMark() {
       tipFixed: fixed("marktip"),
       fallFixed: fixed("markfall"),
       tipMs: neonNumber("marktipms", DESK_MARK_TIP_MS, 100, 10000),
-      fallSpeed: neonNumber("markfallspeed", DESK_MARK_FALL_SPEED, 0.05, 1),
+      fallSpeed: neonNumber("markfallspeed", play === "somersault" ? DESK_MARK_SOMERSAULT_SPEED : DESK_MARK_FALL_SPEED, 0.05, 1),
+      play,
+      corner: {
+        psi: neonNumber("cornerpsi", DESK_MARK_CORNER.psiDeg, -90, 0),
+        d: neonNumber("cornerd", DESK_MARK_CORNER.dMm, 0, 600),
+        left: neonNumber("cornerleft", 0, -300, 300),
+        loop: neonParam("cornerloop") === "1",
+      },
     };
   }, []);
   const body = useRef<THREE.Group>(null);
@@ -942,8 +1041,20 @@ function DeskMark() {
       .applyAxisAngle(new THREE.Vector3(0, 1, 0), -place.rotationY);
     return { top, strip };
   }, [place]);
-  const comM = useMemo(() => [DESK_MARK_FALL.comLocal[0] * place.scale, DESK_MARK_FALL.comLocal[1] * place.scale] as [number, number], [place]);
+  const comM = useMemo(
+    () => DESK_MARK_SOMERSAULT.comLocal.map((v) => v * place.scale) as [number, number, number],
+    [place],
+  );
   const depthM = LOGO_MARK_DEFAULTS.depth * place.scale;
+  const startPose = useMemo(
+    () => {
+      const oo = DESK_RIGHT_CORNER.offWallMm - DESK_MARK.faceInFromEndMm - LOGO_MARK_DEFAULTS.depth * DESK_MARK.heightMm;
+      if (motion.play === "somersault") return somersaultPose(0, oo);
+      if (motion.play === "corner") return cornerPose(0, motion.corner.psi, motion.corner.d, motion.corner.left, comM, depthM, oo);
+      return null;
+    },
+    [motion.play, motion.corner, comM, depthM],
+  );
   const originOffMm = DESK_RIGHT_CORNER.offWallMm - DESK_MARK.faceInFromEndMm - LOGO_MARK_DEFAULTS.depth * DESK_MARK.heightMm;
   const faders = useMemo(
     () => ({
@@ -969,17 +1080,17 @@ function DeskMark() {
     <>
       <MarkMotion
         bodyRef={body} followRef={follow} contactRef={contactMat} contactOpacity={faders.contact}
-        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed}
+        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} play={motion.play} corner={motion.corner}
         com={comM} depth={depthM} originOffMm={originOffMm}
       />
       <group position={place.position}>
         {/* the mark's facing; inside it, `body` is placed at the CENTRE OF MASS and turned about X (the tip and the fall),
             and `follow` rides the centre of mass WITHOUT turning — the lights (Carl: they follow its position only) */}
         <group rotation={[0, place.rotationY, 0]}>
-          <group ref={body} position={[0, comM[0], comM[1]]}>
-            <mesh ref={mesh} geometry={built.geometry} material={built.gold} position={[0, -comM[0], -comM[1]]} castShadow={shadowOn} />
+          <group ref={body} position={comM}>
+            <mesh ref={mesh} geometry={built.geometry} material={built.gold} position={[-comM[0], -comM[1], -comM[2]]} castShadow={shadowOn} />
           </group>
-          <group ref={follow} position={[0, comM[0], comM[1]]}>
+          <group ref={follow} position={comM}>
             {shadowOn && faders.top > 0 && (
               <MarkShadowLight dir={shadowDirs.top} centreY={0} strength={faders.top} mapSize={DESK_MARK_SHADOW_MAP} />
             )}
@@ -990,10 +1101,12 @@ function DeskMark() {
         </group>
         {shadowOn && (
           <group rotation={[0, place.rotationY, 0]}>
-            <mesh position={[0, 0.0003, built.contact.centreZ]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
+            <group position={startPose ? [startPose.x, startPose.y, startPose.z] : comM} quaternion={startPose?.q}>
+            <mesh position={[-comM[0], 0.0003 - comM[1], built.contact.centreZ - comM[2]]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
               <planeGeometry args={[built.contact.width, built.contact.depth]} />
               <meshBasicMaterial ref={contactMat} color="#000000" alphaMap={built.contact.texture} transparent opacity={faders.contact} depthWrite={false} toneMapped={false} />
             </mesh>
+            </group>
           </group>
         )}
       </group>

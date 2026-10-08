@@ -1,71 +1,91 @@
-# Session Handoff — 8 October 2026. THE DESK MARK IS IN THE ROOM (`?mark=1`), LIT, SHADOWED, AND FALLING. NEXT: THE SOMERSAULT SEARCH.
+# Session Handoff — 8 October 2026 (end). THE DESK MARK IS IN THE ROOM AND FALLS. NEXT: §3 — THE WHOLE ANIMATION, END TO END.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
-The full record of today is **D-088's 8 October entries** (the end of `decisions.md`), R-036 and R-037.
+**The full record of 8 October is D-088's 8 October entries** at the END of `decisions.md` (long — read the last ~25
+bullets), with R-036 and R-037 in `reviews/review-log.md`.
 
 ---
 
 ## ⛔ WHERE THINGS STAND
 
-**Pushed:** `4ca518e` (the crossing on the bench, R-036), `26e3c3d` (the mark in the room, lit and shadowed, R-037).
-**NOT committed — everything after `26e3c3d`** (Carl has not asked):
-- the studio on the mark at 0.7 (*"a lot better, more natural"*);
-- the FALL: stage 1 the tip (gravity suspended), stage 2 over the desk's end to the rim (*"Outstanding"*), stage 3 onto
-  its back across the rim, the strike's energy (angular momentum about the strike point), real-time playback;
-- scripts: `desk-mark-fall-to-bin-8-october.py`, `desk-mark-roll-3d-8-october.py`, `desk-mark-somersault-3d-8-october.py`,
-  `desk-mark-somersault-to-room-8-october.py`, `desk-mark-tip-8-october.mjs`, `desk-mark-fall-8-october.mjs`, and the
-  extended `desk-right-end-measure-8-october.py` (strip, bin).
-`tsc` clean, lint at baseline (1 error) as of the last edit. The dev server is on :3000.
+**Committed and pushed:** `4ca518e` (the crossing on the bench, R-036), `26e3c3d` (the mark in the room, R-037),
+`400d9fd` (the fall, mid-session). **Committed, NOT pushed (Carl: "commit"):** this session's close — the somersault
+search, the corner placement, 10% smaller, the records. Push when Carl says.
+Everything is behind **`/about?mark=1`** — plain `/about` is unchanged and static. Lint baseline `1 problem (1 error,
+0 warnings)`; `tsc` clean; the production build compiled at `400d9fd` and again before this commit. No server running.
 
-## ⛔⛔ IN FLIGHT — THE SOMERSAULT (Carl's current target)
+**The mark in the room today (`?mark=1`), all switches:**
+- `?markplay=corner` — ⛔ **THE CURRENT WORK.** Standing still and upright on the desk's front-right corner (ψ −45°,
+  near square to the camera), its face's front-bottom edge 102 mm in from both edges, **205.1 mm tall** (10% smaller —
+  Carl). `&cornerleft=` mm slides it left (+), `&marktip=0..1` tips it (1 = face down), `&cornerloop=1` loops the
+  tip, `&cornerpsi=` `&cornerd=` adjust.
+- default (no `markplay`) — the 3D SOMERSAULT run (facing the front edge, 40 mm from it, 220 from the end, nudge 4;
+  at the frame's bottom facing +0.82, upright +0.83), 50% speed. Simulated at 227.9 mm — superseded, now off-size.
+- `?markplay=fall` — the 2D fall (tip, teeter, over the end, onto the bin's rim; *"Outstanding"*). Also 227.9.
+- Light/shadow faders: `?markenv=` (studio, 0.7), `?marktop=` `?markstrip=` `?markao=`, `?markshadow=0`,
+  `?marklight=room`. Speeds: `?markfallspeed=`, `?markfall=0..1`, `?marktipms=`.
 
-**Carl:** the mark must END **facing us and the right way up**; the bin is optional; the angle on the desk and the FRONT
-EDGE are levers; *"almost like a gymnast doing a somersault with a twist"*; *"try it and show me"*; **50% speed**.
-- Back-to-us-upside-down is HALF a somersault; finishing it (the same way) gives facing + upright. Needs ~690°/s from
-  face-down to finish by the floor; it leaves the edge at ~500°/s. It may finish below the frame (it goes on to §3).
-- **The search** (`desk-mark-somersault-3d-8-october.py <verts> search`, 63 starts: yaw ψ −45…+45, face 20/50/80 mm from
-  the end, nudge 1.5/3/5 rad/s, u −312.5) was RUNNING in the background, output to
-  `scratchpad/somersault-search.txt`. ⚠ **The scratchpad is session-specific — if it is gone, re-export the vertices and
-  re-run** (export: copy `logo-mark-outline.ts` + `logo-mark-geometry.ts` to a repo temp folder, add `.ts` to the import,
-  export every 3rd vertex at scale 1 as `{depth, v}` JSON — the 8 October run did this as `_tmp-fall`).
-- Early results: ψ −45, 20 mm, nudge 5 → facing +0.67, upright +0.28. The current pose (ψ 0, 65 mm, nudge 1.5) →
-  facing +0.78, upright −0.24.
-- **Then:** `run ψ faceIn uC nudge` on the best → `desk-mark-somersault-to-room-8-october.py <run.json> "<note>"` writes
-  `DESK_MARK_SOMERSAULT` into `about-room.ts` → apply `live-work/scripts/desk-mark-motion3d-edit-8-october.py <repo root>` (the room plays a full 3D pose:
-  position + quaternion; `?markplay=fall` keeps the approved 2D fall) → `tsc`/lint → shoot → show Carl at 50%.
-  (Saved into the repo so it survives the scratchpad.) What it does: `MarkPose` = {x, y, z, q}; `fallPose` returns a
-  quaternion about X; new `somersaultPose` (lerp + slerp of the rows); `MarkMotion` gets `play`; `comM` is 3D (x from
-  `DESK_MARK_SOMERSAULT.comLocal`); body/follow positioned at `comM`, mesh at `-comM`; the contact shadow sits under the
-  START pose and fades by angle from it.
-- ⚠ **Contact-model lesson (in the script):** per-point stiffness 4e6 EXPLODED on a flat-face landing; now per-point
-  2e5 with damping shared across the points in contact.
+## ⛔⛔ NEXT SESSION — THE AGREED TASK
+
+**Carl: *"to see the full animation we are going to have to venture into Sect 3 as well. We need to see it from
+beginning to end."***
+1. ⛔ **§3 is STRUCTURAL — STOP FIRST.** `live-work/structural-note-mark-into-section3-8-october.md` lays out: route 1
+   on `/about` (plan → Architect → Carl), a **`/proto` bench first** (the Builder's recommendation: the room's frame
+   over a §3 placeholder in ONE canvas, scroll- or scrub-driven), or the rejected overlay canvas. **Ask Carl which,
+   and whether the Architect reviews** (3 October: *"Full process — not waived"*; Carl waived it for the bench
+   crossing only). "Halfway down the viewport" needs the SCROLL link or a bench showing both sections.
+2. **The corner placement, Carl's steps** (he places by eye): step 1 DONE (standing on the corner; falls face down
+   across it — 135 / 139 mm over the edges, centre of mass 39 mm inside the front edge). **Step 2:** slide LEFT until,
+   face down, it goes over the front edge (> ~40 mm at 227.9; re-measure at 205.1 —
+   `desk-mark-corner-place-8-october.py`, which still has H = 227.9: change it). **Step 3:** stand it back up there =
+   the START. **Step 4:** size (done: 10% smaller — confirm).
+3. Then **SIMULATE the fall from that start** (`desk-mark-somersault-3d-8-october.py run ψ d_front d_end nudge` —
+   update its H to 205.1 and its placement to the corner start), target: facing us AND upright by §3 (it continues
+   past the frame into §3 — "a simple drop into the player"). Write it to the room with
+   `desk-mark-somersault-to-room-8-october.py`.
+
+## ⚠ PHYSICS FINDINGS — DO NOT RE-DERIVE (all in D-088, 8 October)
+
+- **A forward tip moves NO weight sideways** (it turns about the letters' own axis): an overhang over the front edge
+  is no less balanced face down than standing. The left-weight flip needs the TIP to carry the weight left — the
+  turn toward the front edge (Carl's corner).
+- From a teeter it leaves an edge with almost no outward speed (the centre of mass swings DOWN AND BACK); outward speed
+  needs a push (the scroll) or a diagonal tip.
+- Back-to-us-upside-down is HALF a somersault; finishing it gives facing + upright (needs ~690°/s by the floor; ~500
+  from the end-edge teeter).
+- An off-centre strike TWISTS it (the gymnast's somersault with a twist — Carl's image).
+- The bin is OUT of the physics (Carl); its size was never measurable (the plate's ellipse is cut; foot out of shot).
+- **Sim contact model:** per-point stiffness 2e5 with damping SHARED across the points in contact (4e6 per point
+  EXPLODED on a flat landing). **Yaw convention:** ψ 0 faces the desk's END, −90 its FRONT EDGE; `rot_y(ψ)` turns the
+  face to (sin ψ, 0, cos ψ) in (u, up, off) — the first search mislabelled it and turned the mark the wrong way.
+- **Vertex export for the sims:** copy `logo-mark-outline.ts` + `logo-mark-geometry.ts` into a temp folder INSIDE the
+  repo, add `.ts` to the import, `node` a script that writes every 3rd vertex at scale 1 as `{depth, v}` JSON; delete
+  the folder before `tsc`. (The scratchpad copy will be gone.)
 
 ## ⚠ OPEN — WITH OWNERS
 
-- **Carl:** the somersault's look; the final playback speed (*"somewhere between"* ¼ and real time); the bin's size (a
-  CHOICE — the plate cannot fix it; 280 mm is the only size the straight drop reaches, and it then wedges in a 34 mm
-  gap); the raking key (white with an orange tint; the Builder: let the tint cross with the metal) and its long shadow;
-  the face-down contact shadow; the gold's paleness; when to remove `?mark=1` and put the mark on plain `/about`.
-- **Builder:** the room's reflection map contributes NOTHING measurable to the mark although applied — cause not
-  found (may bear on RIM-DARK).
-- Carried from 7 October: the stem's corners, A13, the dials, the flat back's finish (now SEEN in the fall), the base
-  double line; two review entries share R-028.
+- **Carl:** §3's structure and the Architect; the corner steps 2–4; the final playback speed (*"somewhere between"*
+  ¼ and real time); the raking key (white, orange-tinted; the Builder: let the tint cross with the metal) and its
+  shadow; the face-down contact shadow; the gold's paleness; when `?mark=1` comes off and the mark goes on plain
+  `/about`; carried from 7 October — the stem's corners, A13, the dials, the flat back's finish (now SEEN in the fall),
+  the base double line; R-028 numbering.
+- **Builder:** the room's reflection map gives the mark nothing although applied — cause not found (may bear on
+  RIM-DARK).
 
 ## ⚠ STANDING / CORRECTIONS THIS SESSION
 
-- **Don't choose presentation values silently.** The quarter-speed playback was the Builder's choice, never asked for —
-  Carl: *"i said nothing originally about the speed it should fall."* State such values as choices.
-- **Builder corrections on the record:** "nearly edge-on" (it was 41° off face-on); the room-light A/B changed light AND
-  shadow at once (Carl: *"i nned to see them both in the same lighting"*); "lands a little more firmly" (it turned over too
-  SLOWLY — the falling speed had been dropped); the dark face "probably the shell" (unproven, now doubtful).
-- **Carl waived plan mode / the Architect** for the bench crossing and has led every room step directly; §5a still stops
-  a STRUCTURAL decision. Route 1 (one canvas into §3) is still undesigned.
-- Headed Playwright windows open on Carl's screen; his wheel can reach them (a 300 px "self-scroll" was three trusted
-  wheel events).
-- Lint baseline `1 problem (1 error, 0 warnings)`. Carl's machine: DPR 1.36, ~1412 × 700.
+- **State presentation choices; one variable per A/B** (memory saved): the quarter speed was the Builder's, never
+  asked for; an A/B changed light and shadow at once.
+- **Carl's sketches are the CAMERA's 2D view** (MS Paint): the yellow box was the mark STANDING, its bottom edge the
+  base. The Builder read it as lying flat; ⚠ a rejected Bash edit HAD already reached the file — check the file after
+  any rejection.
+- **Builder errors on the record:** "nearly edge-on" (41°); "lands more firmly" (it turned over too slowly); the dark
+  face "probably the shell" (unproven); the yaw sign. Each corrected in D-088.
+- Carl leads each room step directly; §5a still stops a structural decision (§3 now).
+- Headed Playwright windows open on Carl's screen. `git add` of `live-work/scripts/` needs `-f` (the folder is
+  ignored) — a plain add aborts the whole chain.
 
 ---
 
-*Written 8 October 2026, mid-session, ahead of a context compaction (Carl: 35% to compaction, 74% of the session limit).
-Replaces the 7 October handoff.*
+*Written 8 October 2026, end of session. Replaces the mid-session handoff of the same day.*

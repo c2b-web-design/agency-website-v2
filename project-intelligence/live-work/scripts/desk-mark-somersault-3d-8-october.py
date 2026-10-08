@@ -90,7 +90,11 @@ def _apply(F, mask, n, depth, Vp, C):
     F[mask] += N[:, None] * nn - (MU * N * np.tanh(spd / 2.0) / spd)[:, None] * vt
 
 E = np.eye(3)
-def contacts(P, Vp, use_bin=True):
+# ⛔ THE BIN IS OUT (Carl, 8 October: "The bin just adds to unneccersary physics we can do with out. Falls on its face and
+# lsft sided weight will provide the flip."). BIN=1 (env) puts it back.
+USE_BIN = os.environ.get("BIN", "0") == "1"
+def contacts(P, Vp, use_bin=None):
+    use_bin = USE_BIN if use_bin is None else use_bin
     F = np.zeros_like(P)
     u, up, off = P[:, 0], P[:, 1], P[:, 2]
     n = len(P)
@@ -124,17 +128,22 @@ def contacts(P, Vp, use_bin=True):
     resolve(F, Vp)
     return F
 
-def simulate(psi_deg, face_in, u_c, nudge, record=False, t_max=1.6, dt=4e-5):
+def simulate(psi_deg, d_front, d_end, nudge, record=False, t_max=1.6, dt=4e-5):
+    """⛔ CORRECTED 8 October (Carl: "you moved it to the opposite way i described"): psi is the face's bearing from
+    facing the desk's END (the camera side, +off) ROUND TO the FRONT EDGE (the room, -u): 0 = facing the end, -90 =
+    facing the front edge. rot_y(psi) turns the face (local +z) to (sin psi, 0, cos psi) in (u, up, off) — so NEGATIVE
+    psi faces the ROOM. (The first search called + "toward the room": it was toward the RIGHT WALL; its shown run, +15,
+    was turned the wrong way.) The camera's bearing from the desk's corner is ~-50: a mark at -50 faces it square-on.
+    Placement from the CORNER: the face's front-bottom edge, at mid-letters, d_front mm in from the front edge (u -625)
+    and d_end mm in from the end edge (off 1875). Returns None if any part of the mark's base is off the desk."""
     psi = math.radians(psi_deg)
     R = rot_y(psi)
-    # the base's front-bottom edge `face_in` from the desk's end along the facing direction; COM placed above the base
-    fwd = R @ np.array([0.0, 0.0, 1.0])
     base_centre_local = np.array([0.0, base_min, ZP])                      # the front-bottom edge, mid-letters
-    pos = np.array([u_c, DESK_TOP - base_min + 0.2, DESK_END - face_in]) - R @ (base_centre_local - com_l) * np.array([1, 0, 1])
-    pos[1] = DESK_TOP + (com_l[1] - base_min) + 0.2
-    # put the face's front-bottom edge face_in in from the end, measured along off at the mark's middle
-    edge_world = pos + R @ (base_centre_local - com_l)
-    pos[2] += (DESK_END - face_in) - edge_world[2]
+    target = np.array([DESK_FRONT + d_front, DESK_TOP + 0.2, DESK_END - d_end])
+    pos = target - R @ (base_centre_local - com_l)
+    base = pos + (V[V[:, 1] < base_min + 1.0] - com_l) @ R.T
+    if base[:, 0].min() < DESK_FRONT + 1 or base[:, 0].max() > DESK_WALL - 1 or base[:, 2].max() > DESK_END - 1:
+        return None, []
     vel = np.zeros(3)
     omega = (R @ np.array([1.0, 0.0, 0.0])) * nudge                       # tip forward about its own letters' axis
     L = R @ I_body @ R.T @ omega
@@ -180,7 +189,7 @@ def simulate(psi_deg, face_in, u_c, nudge, record=False, t_max=1.6, dt=4e-5):
 if __name__ == "__main__":
     mode = sys.argv[2] if len(sys.argv) > 2 else "search"
     if mode == "run":
-        psi, face_in, u_c, nudge = map(float, sys.argv[3:7])
+        psi, face_in, u_c, nudge = map(float, sys.argv[3:7])   # psi, d_front, d_end, nudge
         ex, rows = simulate(psi, face_in, u_c, nudge, record=True)
         print(json.dumps(ex))
         out = os.path.join(os.path.dirname(sys.argv[1]), f"somersault-{psi:g}-{face_in:g}-{u_c:g}-{nudge:g}.json")
@@ -190,17 +199,21 @@ if __name__ == "__main__":
         print("written", out, len(rows), "rows")
         sys.exit(0)
     results = []
-    grid = list(itertools.product([-45, -30, -15, 0, 15, 30, 45], [20, 50, 80], [-312.5], [1.5, 3.0, 5.0]))
-    print(f"searching {len(grid)} starts (psi, face in, u centre, nudge rad/s)", flush=True)
+    # ⛔ CARL'S OVERHANG (8 October): facing the end (or a little toward the room), the c hanging past the FRONT EDGE so
+    # that, face down, the left-side weight rolls it off the front edge. d_front = the face-edge midpoint's distance from
+    # the front edge: the c's outer edge is ~219 mm left of it, so d_front 100/140/180 hangs the c ~120/80/40 mm over.
+    # d_end far enough back that it lands face down ON the desk.
+    grid = list(itertools.product([0, -15], [100, 140, 180], [80, 160], [2.0, 4.0]))
+    print(f"searching {len(grid)} starts (psi, d_front, d_end, nudge rad/s); bin {'IN' if USE_BIN else 'OUT'}", flush=True)
     for k, (psi, fi, uc, nd) in enumerate(grid):
         ex, _ = simulate(psi, fi, uc, nd)
         if ex is None:
             continue
-        score = min(ex["facing"], ex["upright"]) - (0.5 if ex["px"] > 2560 or ex["px"] < 0 else 0)
+        score = min(ex["facing"], ex["upright"]) - (0.5 if ex["px"] > 2350 or ex["px"] < 150 else 0)
         results.append((score, psi, fi, uc, nd, ex))
-        print(f"{k + 1:3d}/{len(grid)} psi {psi:+3d} in {fi:3d} u {uc:7.1f} nudge {nd:.1f} -> facing {ex['facing']:+.2f} upright {ex['upright']:+.2f} "
+        print(f"{k + 1:3d}/{len(grid)} psi {psi:+3d} front {fi:3d} end {uc:5.0f} nudge {nd:.1f} -> facing {ex['facing']:+.2f} upright {ex['upright']:+.2f} "
               f"exit {ex['t'] * 1000:4.0f} ms at plate ({ex['px']:.0f},{ex['py']:.0f}){' FLOOR' if ex['floor'] else ''}", flush=True)
     results.sort(key=lambda r: -r[0])
     print("\nBEST:")
     for r in results[:8]:
-        print(f"  score {r[0]:+.2f}: psi {r[1]:+d} face-in {r[2]} u {r[3]} nudge {r[4]} — facing {r[5]['facing']:+.2f}, upright {r[5]['upright']:+.2f}, exit {r[5]['t'] * 1000:.0f} ms at plate x {r[5]['px']:.0f}")
+        print(f"  score {r[0]:+.2f}: psi {r[1]:+d} front {r[2]} end {r[3]} nudge {r[4]} — facing {r[5]['facing']:+.2f}, upright {r[5]['upright']:+.2f}, exit {r[5]['t'] * 1000:.0f} ms at plate x {r[5]['px']:.0f}")

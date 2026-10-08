@@ -1,6 +1,6 @@
 /** THE FALL, STAGE 2 — over the desk's end, down to just above the bin's rim (8 October 2026). /about?mark=1, Roles; a
  *  crop from the desk to the bin. Held points of the fall (?markfall=), the tip's end (?marktip=1) for the seam, and the
- *  loop sampled. `node … rest` shoots only the strike and the rest on the rim (stage 3). ⚠ NOT WATCHED: Carl's Chrome; the bin's real size (assumed 280 mm across). */
+ *  loop sampled. `node … pairs name=query …` shoots named states. `node … rest` shoots only the strike and the rest on the rim (stage 3). ⚠ NOT WATCHED: Carl's Chrome; the bin's real size (assumed 280 mm across). */
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
 const out = "project-intelligence/live-work/screenshots/desk-mark-fall-8-october";
@@ -20,7 +20,7 @@ const open = async (q) => {
   await p.waitForTimeout(4500);
   return p;
 };
-const sets = process.argv[2] === "rest" ? [["strike", "markfall=0.712"], ["rest", "markfall=1"]] : [["tip-end", "marktip=1"], ["fall-0", "markfall=0"], ["fall-0.4", "markfall=0.4"], ["fall-0.7", "markfall=0.7"], ["fall-1", "markfall=1"]];
+const sets = process.argv[2] === "pairs" ? process.argv.slice(3).map((x) => [x.slice(0, x.indexOf("=")), x.slice(x.indexOf("=") + 1)]) : process.argv[2] === "rest" ? [["strike", "markfall=0.712"], ["rest", "markfall=1"]] : [["tip-end", "marktip=1"], ["fall-0", "markfall=0"], ["fall-0.4", "markfall=0.4"], ["fall-0.7", "markfall=0.7"], ["fall-1", "markfall=1"]];
 for (const [n, q] of sets) {
   const p = await open(`?mark=1&${q}`); await shoot(p, n); await p.close();
 }

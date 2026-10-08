@@ -90,6 +90,9 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
   the gold metal"*, without a plan.
 - **The crossing:** an OUTSIDE-IN circular wipe, gold → platinum blue during the tumble, smooth and deliberate,
   ending at the mark's centre `logoMarkCentre()` (0, 0.5, depth/2). Measured: `live-work/logo-centre-measurement-7-october.md`.
+- ✔ **In the room (8 October, R-037):** placed, lit by the bench studio alone, three shadows on the desk; then the fall,
+  worked through by simulation and by Carl placing it by eye at the desk's front-right corner. **Next (Carl): §3 — the
+  whole animation end to end; structural, see `live-work/structural-note-mark-into-section3-8-october.md`.**
 - ✔ **The crossing, built on the bench and APPROVED (8 October, R-036):** an outside-in sphere about the centre in the
   mark's own space, one number 0 → 1, at HALF `/start`'s pace (~2.03 s). Open: the scroll mapping in the scene, and the
   look against the room's orange. Reasoning: D-088's 8 October entries.
@@ -111,6 +114,7 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
 |---|---|---|
 | The image scroll approved | — | R-032 |
 | Sprint 2 archived; this file rebuilt around the About section | `archive/sprint-2.md`, this file | Carl, 3 October 2026 |
+| D-088 desk mark, THE FALL (`?mark=1`, uncommitted work committed with the session's close) — the studio at 0.7 (*"a lot better, more natural"*); the fall SIMULATED (gravity, friction, the desk's edges): the teeter and the drop to the bin (*"Outstanding"*), the strike's energy, real time; the 3D twist found (an off-centre strike rolls it); the bin taken out; a 3D somersault search (best: facing the front edge, facing +0.82 / upright +0.83 at the frame's bottom); Carl's corner placement step 1 (standing on the corner, falls face down) and 10% smaller (205.1 mm) | `about-card-canvas.tsx` (`MarkMotion`, `DESK_MARK_CORNER`), `about-room.ts` (`DESK_MARK_FALL`, `DESK_MARK_SOMERSAULT`, `DESK_LED_STRIP`, `DESK_MIC_CLAMP`), scripts `desk-mark-*-8-october.*` | Verdicts in D-088's 8 October entries. Open: the corner steps 2–4, then the simulated fall from the chosen start, then §3 (structural — see the note) |
 | D-088 desk mark, IN THE ROOM (`?mark=1`) — placed on the right desk (facing the camera, centred, face 65 mm from the end so a tip carries it off), lit by the bench studio alone, three shadows on the desk (studio top, LED strip, contact). ✔ Carl: *"Yes, excellent. Now the logo really looks that its in the world."* (R-037) | `about-card-canvas.tsx` (`DeskMark`), `about-room.ts` (desk, clamp, strip measured), `logo-mark-material.ts` (shared studio) | Plain `/about` unchanged. Three placement takes; the fall described by Carl (tip → back to us → the bin flips it → drop into §3), recorded in D-088. Next: the fall, in chunks |
 | D-088 desk mark, THE CROSSING — gold → platinum blue, an outside-in sphere about `logoMarkCentre()`, on the bench, at half `/start`'s pace. ✔ Carl: *"That looks great. Approved."* (R-036) | `logo-mark-material.ts` (`createLogoCrossing`), `logo-mark-geometry.ts` (`logoMarkReach`), `logo-bench.tsx`, `app/proto/logo/page.tsx` | Built without plan or Architect on Carl's word. Window 547.4 → 19.5 px; `/start`'s pace 1.015 s, halved to ~2.03 s. `/start`'s two transitions filmed and noted first |
 | D-088 desk mark, PASS 2 — the gold and the platinum blue on the clay shape, in a fixed judging studio. ✔ Blue *"great"*, gold a positive read (R-035). The crossing's end point measured | `logo-mark-material.ts`, `logo-bench.tsx`, `logo-mark-geometry.ts` (`logoMarkCentre`) | Blue in three takes: platinum tinted → logo sample → swatch #3F6DB8. Commit `a3a3d75` |
@@ -134,7 +138,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-08 — the desk mark in the room, lit and shadowed (R-037).*
+*Last updated: 2026-10-08 (end of session) — the fall worked through; the corner placement begun; next: §3.*
+
+*Previously: 2026-10-08 — the desk mark in the room, lit and shadowed (R-037).*
 
 *Previously: 2026-10-08 — the crossing built on the bench and approved at half `/start`'s pace (R-036).*
 
