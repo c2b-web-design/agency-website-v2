@@ -11,7 +11,7 @@ mkdirSync(out, { recursive: true });
 const b = await chromium.launch({ headless: false, args: ["--enable-gpu", "--use-angle=default", "--ignore-gpu-blocklist"] });
 const ctx = await b.newContext({ viewport: { width: 1412, height: 700 }, deviceScaleFactor: 1.36 });
 const errs = [];
-const open = async (q, settle = 4500) => {
+const open = async (q) => {
   const p = await ctx.newPage();
   p.on("pageerror", (e) => errs.push(e.message.slice(0, 200)));
   p.on("console", (m) => { if (m.type() === "error") errs.push(m.text().slice(0, 200)); });

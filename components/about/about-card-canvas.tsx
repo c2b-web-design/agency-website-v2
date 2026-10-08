@@ -97,8 +97,8 @@ import {
   roomPoint,
   type RoomCardSpec,
 } from "./about-room";
-import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "./logo-mark-geometry";
-import { buildLogoStudioEnv, createLogoGold, environmentOnly, LOGO_STUDIO_TOP } from "./logo-mark-material";
+import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS, logoMarkCentre, logoMarkReach } from "./logo-mark-geometry";
+import { buildLogoStudioEnv, createLogoCrossing, environmentOnly, LOGO_STUDIO_TOP, type LogoCrossing } from "./logo-mark-material";
 import {
   CA_FACE_TRANSMISSION,
   CD_FACE_TRANSMISSION,
@@ -902,7 +902,22 @@ const DESK_MARK_FLIP = { riseMm: 200, leftMm: 150, outMm: 100, speed: 0.5 };
  * hovvering when the second flip happens. it should still travel left but wuth less momentum"*. `driftMs` 0 = the drift
  * slows evenly over the WHOLE second flip and stops as it completes (⚰️ was 600 ms — it stopped early and the mark hung).
  */
-const DESK_MARK_FLIP2 = { driftMs: 0, faceShare: 0.5 };
+/**
+ * ⛔ LEGATO — THE BOUNCE AND THE TWO FLIPS ARE ONE MOVEMENT (Carl, 8 October 2026, session 2: *"theres just the speed as it
+ * bounces off the bin its seems to be faster and out of proportion to the flips. i accept that its momentum will be greater
+ * but the bounce and flips should be smoother as a whole movement. If this was music i would say "legato""*).
+ * The first build was two pieces joined at the top of the rise: a gravity flight (~0.5 s carrying the whole rise, a
+ * quarter turn, ~40° of twist) then an evenly decelerating flip (~4 s). The spin matched at the join; the TWIST and the
+ * RISE changed pace there, and the burst read as out of proportion.
+ * ⛔ NOW ONE PROGRESS e(u) = 1 − (1 − u)^`curve` over the whole rebound (u: time from the slap to the end of the second
+ * flip, the same total length), and EVERY channel rides it: the spin (θ from the slap's 270° on 1¼ turns), the rise
+ * (topping out when it first comes upright), the drift (left, out), the twist (a smooth curve through the approved poses).
+ * ✔ THE APPROVED POSES ARE KEPT: at the top of the rise it is upright, oblique ("Perfect"), at the same place; at the end,
+ * halfway to face-on, at the same place.
+ * ⚠ `curve` 1.5 is the Builder's: 2 is an EVEN deceleration (front-loads the burst again), 1 a constant speed (no loss
+ * of momentum); 1.5 still loses speed to a stop, more evenly. Fader `?flipcurve=` (1–3).
+ */
+const DESK_MARK_FLIP2 = { driftMs: 0, faceShare: 0.5, curve: 1.5 };
 /**
  * ⛔ §3 — THE DROP ONTO THE BLUE LOGO, AND THE WIPE AT THE PLAYER'S BORDER (Carl, 8 October 2026, session 2: *"its just to
  * the right of the blue logo with less momentum carrying it left Perfect. From here it can fall down onto the blue logo.
@@ -920,7 +935,85 @@ const DESK_MARK_FLIP2 = { driftMs: 0, faceShare: 0.5 };
  *     when the reader has scrolled to where the stage stops; above that the extension is off-screen below the window.
  */
 const DESK_MARK_DROP = { speed: 0.5 };
-type DropSpec = { from: MarkPose; to: THREE.Vector3; ms: number };
+/**
+ * ⛔ SNAIL'S PACE — Carl, 8 October 2026, session 2: *"Slow the animation down to snails pace, i want to see whats
+ * happening."* One MASTER speed over the whole motion — the tip, the fall, the bounce, the second flip and the drop —
+ * multiplying their own speeds, so their proportions are kept; the holds (upright before, at the end) keep their length.
+ * ⚠ 0.1 (a tenth) was the Builder's figure for "snail's pace": the ~350 ms fall to the bin took ~3.5 s; the whole loop
+ * ~80 s. A VIEWING speed, not a design value. ⛔ BACK TO 1 the same session — Carl, after the growth: *"Put it at the
+ * speed you had it"*, then *"slow it down by 10%"* → 0.9 (every part 10% slower; the loop ~11 s → ~12 s).
+ * `?markslow=0.1` is snail's pace again. Fader `?markslow=` (0.02–1).
+ */
+const DESK_MARK_SLOW = 0.9;
+/**
+ * ⛔ THE CROSSING IN THE ROOM — gold → platinum blue (R-036's outside-in sphere about `logoMarkCentre()`, the bench's own
+ * material and mapping, radius = far − p·(far − near)). Carl, 8 October 2026, session 2: *"The colour transition wipe.
+ * Should start as its coming out of the face plant and end as its reaching the end of its 2nd flip"*. So p runs 0 → 1
+ * from FACE-DOWN (the fall's 0 ms: the teeter begins) to the END OF THE SECOND FLIP, and holds 1 (blue) through the drop.
+ * ⚠ LINEAR IN TIME — the Builder's choice, the plainest: with the bounce and the second flip slowed, ~80% of the
+ * crossing happens during the second flip (the fall to the slap is ~10% of the time). Gold before face-down.
+ */
+/**
+ * ⛔ THE MORE BLUE, THE MORE LIGHT — Carl, the same session, on the crossing in slow motion: *"the transition look great,
+ * even in slo mo. But, when nearly full blue is attained its a bit dark. could the light be slowly modified to be a little
+ * brighter as the transition happens"* → *"yes, but make it gradual. the more blue, the more loght e need"*.
+ * The studio's strength (`envMapIntensity`, the mark's only light) rises from `DESK_MARK_STUDIO_INTENSITY` (0.7, set for
+ * the GOLD — "a little too bright" at 1) to `blueMax` IN PROPORTION TO THE SHARE OF THE MARK's SURFACE THAT IS BLUE —
+ * measured from its own triangles (area-weighted, by each triangle's distance from the centre), so it follows the blue
+ * the eye sees, not the radius. ⚠ 1.0 is the blue's own bench value (R-035, "great"); a starting value. `?markenvblue=`.
+ * Why it reads dark: platinum blue reflects less than gold, so under one studio it is the darker metal.
+ */
+const DESK_MARK_BLUE_STUDIO_INTENSITY = 1.0;
+/** The blue share of the mark's surface at each sphere radius — triangles sorted by centroid distance, areas summed. */
+function blueShareByRadius(g: THREE.BufferGeometry, centre: readonly [number, number, number]) {
+  const P = g.getAttribute("position") as THREE.BufferAttribute;
+  const ix = g.getIndex();
+  const n = ix ? ix.count : P.count;
+  const A = new THREE.Vector3(), B = new THREE.Vector3(), C = new THREE.Vector3();
+  const tri = new THREE.Triangle(A, B, C);
+  const c = new THREE.Vector3(...centre);
+  const rows: [number, number][] = [];
+  let total = 0;
+  for (let t = 0; t < n; t += 3) {
+    const at = (k: number) => (ix ? ix.getX(t + k) : t + k);
+    A.fromBufferAttribute(P, at(0));
+    B.fromBufferAttribute(P, at(1));
+    C.fromBufferAttribute(P, at(2));
+    const area = tri.getArea();
+    total += area;
+    rows.push([tri.getMidpoint(new THREE.Vector3()).distanceTo(c), area]);
+  }
+  rows.sort((a, b) => a[0] - b[0]);
+  // cumulative area from the outside in: outside[i] = area of triangles at distance >= rows[i][0]
+  const d = rows.map((r) => r[0]);
+  const outside = new Float64Array(rows.length + 1);
+  for (let i = rows.length - 1; i >= 0; i--) outside[i] = outside[i + 1] + rows[i][1];
+  return (radius: number) => {
+    let lo = 0, hi = d.length;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (d[m] <= radius) lo = m + 1; else hi = m; }
+    return total > 0 ? outside[lo] / total : 0;
+  };
+}
+function deskMarkCrossingP(fallMs: number, flipDoneMs: number) {
+  return Math.min(1, Math.max(0, fallMs / Math.max(1, flipDoneMs)));
+}
+type DropSpec = { from: MarkPose; to: THREE.Vector3; ms: number; growTo: number };
+/**
+ * ⛔ THE GROWTH — THE BIN's BLOW TRIGGERS IT (Carl, 8 October 2026, session 2: *"Now for the growth. The contact with the
+ * bin triggers the growth, like a blow on the head. the target is in the player logo."*).
+ *   - It STARTS AT THE STRIKE (`DESK_MARK_FALL.contactMs`, the first touch of the rim) and reaches its full size as the
+ *     drop ARRIVES at the blue logo — `growTo`, measured: the logo's ink height on the page over the mark's own height
+ *     on screen where the drop ends (same depth, so the size on arrival IS the logo's).
+ *   - EASE-OUT (fast at the blow, slowing — a bump swelling) — ⚠ the Builder's curve, stated: 1 − (1 − t)².
+ *   - About the CENTRE OF MASS (`body` sits there; the lights ride it).
+ * ⚠ NOT PHYSICAL, AND IT SHOWS IN CONTACT: the fall onto the rim was simulated at life size, so from the strike to the slap
+ * (~140 ms) a growing mark passes INTO the rim. `?markgrow=0` keeps it life-size.
+ */
+function growAt(ms: number, endMs: number, growTo: number) {
+  if (ms <= DESK_MARK_FALL.contactMs) return 1;
+  const t = Math.min(1, (ms - DESK_MARK_FALL.contactMs) / Math.max(1, endMs - DESK_MARK_FALL.contactMs));
+  return 1 + (growTo - 1) * (1 - (1 - t) ** 2);
+}
 function dropPose(ms: number, d: DropSpec): MarkPose {
   const u = Math.min(1, Math.max(0, ms / d.ms)) ** 2; // from rest under gravity: distance grows with the square of time
   return {
@@ -932,7 +1025,7 @@ function dropPose(ms: number, d: DropSpec): MarkPose {
 }
 /** The flip starts at the slap — the flat back down across the rim. */
 const DESK_MARK_FLIP_FROM_MS = DESK_MARK_FALL.restMs;
-type FlipSpec = { riseMm: number; leftMm: number; outMm: number; speed: number; psiEnd: number; second: { on: boolean; driftMs: number; faceShare: number; psiFace: number } };
+type FlipSpec = { riseMm: number; leftMm: number; outMm: number; speed: number; psiEnd: number; second: { on: boolean; driftMs: number; faceShare: number; curve: number; psiFace: number } };
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 /** The flip's time aloft, ms: a gravity parabola rising `riseMm` takes √(2h/g) to its top. */
 function flipMs(riseMm: number) {
@@ -966,23 +1059,33 @@ function flipPlayed(f: FlipSpec) {
 function flipPose(ms: number, f: FlipSpec, originOffMm: number, xc: number): MarkPose {
   const fl = flipFlight(f);
   const { flight, second } = flipPlayed(f);
-  if (second > 0 && ms > flight) {
-    // ⛔ THE SECOND FLIP: ease-out matched to the flight's spin, the twist on to face-on, the drift easing out
-    const u = Math.min(1, (ms - flight) / second), e = 2 * u - u * u;
+  if (second > 0) {
+    // ⛔ LEGATO (`DESK_MARK_FLIP2.curve`): the bounce and both flips on ONE progress — see the constant
+    const D = flight + second;
+    const u = Math.min(1, Math.max(0, ms / D));
+    const e = 1 - (1 - u) ** f.second.curve;
+    const th0 = fallRow(DESK_MARK_FLIP_FROM_MS)[2];
+    const dTh = 2 * Math.PI - th0 + 2 * Math.PI;
+    const eTop = (2 * Math.PI - th0) / dTh; // first upright: the top of the rise
+    const r = Math.min(1, e / eTop);
     const driftMs = f.second.driftMs > 0 ? f.second.driftMs : second;
-    const ud = Math.min(1, (ms - flight) / driftMs), ed = 2 * ud - ud * ud;
-    const leftMm = f.leftMm + ((f.leftMm / flight) * driftMs * ed) / 2;
-    const outMm = fl.outMm + ((fl.outMm / flight) * driftMs * ed) / 2;
+    const leftTotal = f.leftMm + ((f.leftMm / flight) * driftMs) / 2;
+    const outTotal = fl.outMm + ((fl.outMm / flight) * driftMs) / 2;
+    // the twist: one smooth curve ψ(e) = a·e + b·e² through (0, 0), (eTop, psiEnd), (1, the end's)
+    const psiF = f.psiEnd + (f.second.psiFace - f.psiEnd) * f.second.faceShare;
+    const b = (f.psiEnd - psiF * eTop) / (eTop * eTop - eTop);
+    const a = psiF - b;
     const q = new THREE.Quaternion()
-      .setFromAxisAngle(Y_AXIS, f.psiEnd + (f.second.psiFace - f.psiEnd) * f.second.faceShare * e)
-      .multiply(new THREE.Quaternion().setFromAxisAngle(X_AXIS, 2 * Math.PI * e));
+      .setFromAxisAngle(Y_AXIS, a * e + b * e * e)
+      .multiply(new THREE.Quaternion().setFromAxisAngle(X_AXIS, th0 + dTh * e));
     return {
-      x: xc - leftMm / ROOM_MM_PER_UNIT,
-      y: (fl.up0 + fl.riseMm - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT,
-      z: (fl.off0 + outMm - originOffMm) / ROOM_MM_PER_UNIT,
+      x: xc - (leftTotal * e) / ROOM_MM_PER_UNIT,
+      y: (fl.up0 + fl.riseMm * (1 - (1 - r) ** 2) - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT,
+      z: (fl.off0 + outTotal * e - originOffMm) / ROOM_MM_PER_UNIT,
       q,
     };
   }
+  // (the second flip off — `?flip2=0`: the flight alone, ending at the top of the rise)
   const tau = Math.min(1, Math.max(0, ms / flight));
   const th0 = fallRow(DESK_MARK_FLIP_FROM_MS)[2];
   const q = new THREE.Quaternion()
@@ -1043,12 +1146,13 @@ function cornerPose(p: number, psiDeg: number, dMm: number, leftMm: number, com:
   const c = new THREE.Vector3(com[0], com[1], com[2] - depth).applyQuaternion(q).add(pivot);
   return { x: c.x, y: c.y, z: c.z, q };
 }
-function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, flip, drop, play, corner, com, depth, originOffMm }: {
+function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, flip, drop, crossing, play, corner, com, depth, originOffMm }: {
   bodyRef: React.RefObject<THREE.Group | null>; followRef: React.RefObject<THREE.Group | null>;
   contactRef: React.RefObject<THREE.MeshBasicMaterial | null>; contactOpacity: number;
   tipFixed: number | null; fallFixed: number | null; tipMs: number; fallSpeed: number; fallEndMs: number;
   flip: FlipSpec | null;
   drop: DropSpec | null;
+  crossing: { set: LogoCrossing["set"]; light: (radius: number) => void; centre: [number, number, number]; far: number; near: number } | null;
   play: "start" | "fall" | "somersault" | "corner";
   corner: { psi: number; d: number; left: number; loop: boolean };
   com: [number, number, number]; depth: number; originOffMm: number;
@@ -1071,6 +1175,8 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, 
       return { x: xc, y: yc * Math.cos(th) - (zc - depth) * Math.sin(th), z: depth + yc * Math.sin(th) + (zc - depth) * Math.cos(th), q: new THREE.Quaternion().setFromAxisAngle(X_AXIS, th) };
     };
     let pose: MarkPose;
+    let crossP = 0; // the crossing: gold until the fall starts (`deskMarkCrossingP`)
+    let grow = 1; // the growth (`growAt`): life-size until the bin's blow
     if (play === "start") {
       // ⛔ TAKE 3, STILL — the first fall's start (the default). `?marktip=` holds a point of the tip; no frames asked for.
       pose = tipPose(tipFixed ?? 0);
@@ -1107,7 +1213,12 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, 
           : flip && ms > DESK_MARK_FLIP_FROM_MS
             ? flipPose(ms - DESK_MARK_FLIP_FROM_MS, flip, originOffMm, xc)
             : fallPose(ms, originOffMm, xc);
-      if (fallFixed !== null) pose = fallOrFlip(fallFixed * fallMs);
+      const crossAt = (ms: number) => {
+        if (flip) crossP = deskMarkCrossingP(ms, flipDone);
+        if (flip && drop && drop.growTo !== 1) grow = growAt(ms, fallMs, drop.growTo);
+        return ms;
+      };
+      if (fallFixed !== null) pose = fallOrFlip(crossAt(fallFixed * fallMs));
       else if (tipFixed !== null) pose = tipPose(tipFixed);
       else {
         const playMs = fallMs / fallSpeed;
@@ -1116,15 +1227,21 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, 
         const t = clockRef.current;
         if (t < DESK_MARK_TIP_HOLD_MS) pose = tipPose(0);
         else if (t < DESK_MARK_TIP_HOLD_MS + tipMs) pose = tipPose((t - DESK_MARK_TIP_HOLD_MS) / tipMs);
-        else pose = fallOrFlip(Math.min(fallMs, (t - DESK_MARK_TIP_HOLD_MS - tipMs) * fallSpeed));
+        else pose = fallOrFlip(crossAt(Math.min(fallMs, (t - DESK_MARK_TIP_HOLD_MS - tipMs) * fallSpeed)));
         st.invalidate();
       }
     }
     if (bodyRef.current) {
       bodyRef.current.position.set(pose.x, pose.y, pose.z);
       bodyRef.current.quaternion.copy(pose.q);
+      bodyRef.current.scale.setScalar(grow);
     }
     if (followRef.current) followRef.current.position.set(pose.x, pose.y, pose.z);
+    if (crossing) {
+      const radius = crossing.far - crossP * (crossing.far - crossing.near);
+      crossing.set(crossing.centre, radius);
+      crossing.light(radius);
+    }
     // the contact shadow belongs to the mark AT REST in its starting pose: gone once it has turned 22.5° from it
     const turned = pose.q.angleTo(start.q);
     if (contactRef.current) contactRef.current.opacity = contactOpacity * Math.max(0, 1 - 4 * Math.min(1, turned / (Math.PI / 2)));
@@ -1136,11 +1253,13 @@ function DeskMark() {
   const roomLight = useMemo(() => deskMarkRoomLight(), []);
   const shadowOn = useMemo(() => deskMarkShadowOn(), []);
   const studioIntensity = useMemo(() => neonNumber("markenv", DESK_MARK_STUDIO_INTENSITY, 0, 2), []);
+  const blueMax = useMemo(() => neonNumber("markenvblue", DESK_MARK_BLUE_STUDIO_INTENSITY, 0, 3), []);
   const motion = useMemo(() => {
     // ⛔ THE FALL ONTO THE RIM IS THE DEFAULT (Carl, 8 October 2026, session 2 — first stopped before the bin,
     // `?markfallto=bin`), looping: upright, hold, the face plant, the teeter, the fall onto its back across the rim, hold. ⚰️ Earlier the same session: the
     // CORNER (`?markplay=corner`), then take 3's start standing still (`?markplay=start`). The somersault run is
     // `?markplay=somersault`.
+    const slow = neonNumber("markslow", DESK_MARK_SLOW, 0.02, 1);
     const mp = neonParam("markplay");
     const play: "start" | "fall" | "somersault" | "corner" =
       mp === "start" ? "start" : mp === "somersault" ? "somersault" : mp === "corner" ? "corner" : "fall";
@@ -1151,8 +1270,9 @@ function DeskMark() {
     return {
       tipFixed: fixed("marktip"),
       fallFixed: fixed("markfall"),
-      tipMs: neonNumber("marktipms", DESK_MARK_TIP_MS, 100, 10000),
-      fallSpeed: neonNumber("markfallspeed", play === "somersault" ? DESK_MARK_SOMERSAULT_SPEED : DESK_MARK_FALL_SPEED, 0.05, 1),
+      // the master speed (`DESK_MARK_SLOW`) scales the tip and everything after face-down; the holds keep their length
+      tipMs: neonNumber("marktipms", DESK_MARK_TIP_MS, 100, 10000) / slow,
+      fallSpeed: neonNumber("markfallspeed", play === "somersault" ? DESK_MARK_SOMERSAULT_SPEED : DESK_MARK_FALL_SPEED, 0.05, 1) * slow,
       fallEndMs: neonParam("markfallto") === "bin" ? DESK_MARK_FALL_STOP_MS : DESK_MARK_FALL.restMs,
       // ⛔ THE FLIP IS THE DEFAULT END (8 October, session 2); `?markfallto=rest` / `=bin` give the simulated ends
       flipOn: neonParam("markfallto") !== "rest" && neonParam("markfallto") !== "bin",
@@ -1166,6 +1286,7 @@ function DeskMark() {
         on: neonParam("flip2") !== "0",
         driftMs: neonNumber("flip2drift", DESK_MARK_FLIP2.driftMs, 0, 10000),
         faceShare: neonNumber("flip2face", DESK_MARK_FLIP2.faceShare, 0, 1),
+        curve: neonNumber("flipcurve", DESK_MARK_FLIP2.curve, 1, 3),
       },
       play,
       corner: {
@@ -1185,6 +1306,7 @@ function DeskMark() {
   const place = useMemo(() => deskMarkPlacement(DESK_MARK, LOGO_MARK_DEFAULTS.depth), []);
   type Built = {
     geometry: THREE.BufferGeometry; gold: THREE.MeshPhysicalMaterial; env: THREE.WebGLRenderTarget;
+    crossing: { set: LogoCrossing["set"]; light: (radius: number) => void; centre: [number, number, number]; far: number; near: number };
     contact: ReturnType<typeof buildContactShadow>;
   };
   const [built, setBuilt] = useState<Built | null>(null);
@@ -1196,10 +1318,22 @@ function DeskMark() {
     const id = window.setTimeout(() => {
       const geometry = buildLogoMarkGeometry({ ...LOGO_MARK_DEFAULTS, scale: place.scale }).geometry;
       const env = buildLogoStudioEnv(gl, place.rotationY);
-      const gold = roomLight ? createLogoGold() : environmentOnly(createLogoGold({ envMapIntensity: studioIntensity }));
+      // ⛔ THE CROSSING MATERIAL, not plain gold (R-036): one material, both metals, the sphere choosing per pixel. At
+      // p 0 (radius = the furthest surface) it IS the gold — same metalness, roughness and environment — so before the
+      // fall nothing changes. `gold` keeps its name: it is the mark's one material.
+      const cross = createLogoCrossing(roomLight ? {} : { envMapIntensity: studioIntensity });
+      const gold = roomLight ? cross.material : environmentOnly(cross.material);
       if (!roomLight) gold.envMap = env.texture;
       gold.clippingPlanes = [clip];
-      made = { geometry, gold, env, contact: buildContactShadow(geometry) };
+      const centre = logoMarkCentre({ ...LOGO_MARK_DEFAULTS, scale: place.scale });
+      const reach = logoMarkReach(geometry, centre);
+      cross.set(centre, reach.far);
+      // the more blue, the more light (`DESK_MARK_BLUE_STUDIO_INTENSITY`) — studio only; `?marklight=room` keeps its own
+      const share = blueShareByRadius(geometry, centre);
+      const light = roomLight
+        ? () => {}
+        : (radius: number) => { gold.envMapIntensity = studioIntensity + (blueMax - studioIntensity) * share(radius); };
+      made = { geometry, gold, env, contact: buildContactShadow(geometry), crossing: { set: cross.set, light, centre, ...reach } };
       setBuilt(made);
     }, 0);
     return () => {
@@ -1211,7 +1345,7 @@ function DeskMark() {
         made.contact.texture.dispose();
       }
     };
-  }, [gl, place, roomLight, studioIntensity, clip]);
+  }, [gl, place, roomLight, studioIntensity, blueMax, clip]);
   // the main camera must see the mark's layer (the neon pass sets its own mask and restores this one)
   useEffect(() => {
     camera.layers.enable(DESK_MARK_LAYER);
@@ -1312,13 +1446,18 @@ function DeskMark() {
       const [lx, ly] = ndc(l.left + l.width / 2 - c.left, yIn(l.top + l.height / 2));
       const toW = new THREE.Vector3(lx, ly, z).unproject(cam);
       const mm = fromW.distanceTo(toW) * ROOM_MM_PER_UNIT;
+      // the growth's target: the logo's INK height (the PNG's ink spans 494 of its 503 rows) over the mark's height on
+      // screen at the drop's end — the mark is `place.scale` tall in the world (its geometry is one height tall)
+      const px = (v: THREE.Vector3) => ((1 - v.clone().project(cam).y) / 2) * c.height;
+      const markPx = Math.abs(px(toW.clone().add(new THREE.Vector3(0, place.scale / 2, 0))) - px(toW.clone().add(new THREE.Vector3(0, -place.scale / 2, 0))));
+      const growTo = neonParam("markgrow") === "0" || markPx < 1 ? 1 : (l.height * (494 / 503)) / markPx;
       const ms = (1000 * Math.sqrt((2 * mm) / 9810)) / DESK_MARK_DROP.speed;
       // the wipe: the plane through the camera and the white rectangle's top edge, its kept side above
       const [, ty] = ndc(0, yIn(pl.top));
       const camW = cam.getWorldPosition(new THREE.Vector3());
       clip.setFromCoplanarPoints(camW, new THREE.Vector3(-1, ty, 0.5).unproject(cam), new THREE.Vector3(1, ty, 0.5).unproject(cam));
       if (clip.distanceToPoint(new THREE.Vector3(0, Math.min(1, ty + 0.2), 0.5).unproject(cam)) < 0) clip.negate();
-      setDrop({ from, to: unyaw(toW), ms });
+      setDrop({ from, to: unyaw(toW), ms, growTo });
       invalidate();
     };
     const raf = requestAnimationFrame(measure);
@@ -1355,7 +1494,7 @@ function DeskMark() {
     <>
       <MarkMotion
         bodyRef={body} followRef={follow} contactRef={contactMat} contactOpacity={faders.contact}
-        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} fallEndMs={motion.fallEndMs} flip={flip} drop={drop} play={motion.play} corner={motion.corner}
+        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} fallEndMs={motion.fallEndMs} flip={flip} drop={drop} crossing={built.crossing} play={motion.play} corner={motion.corner}
         com={comM} depth={depthM} originOffMm={originOffMm}
       />
       <group position={place.position}>
