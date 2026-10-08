@@ -57,6 +57,15 @@ verify/out/
 #
 # ⛔ REVERSIBLE BY DESIGN. If one of these is later chosen, delete its line here
 # and `git add` it — nothing else is needed. Ignoring never deleted anything.
+#
+# ⛔ ONE WAS CHOSEN, AND ITS ABSENCE BROKE EVERY DEPLOYMENT FOR FIVE DAYS — Carl,
+# 8 October 2026 ("Option 1"). `c2b-logo-gold-relit-alpha-1671.png` became the
+# gold TARGET the desk mark was traced from, and `components/about/logo-bench.tsx`
+# IMPORTS it (since 6302913, 3 October). Ignored, it was on this PC only: every
+# local build passed and every Vercel build failed ("Module not found") — 12
+# commits, three Vercel projects each, live site frozen at 67da4ef. Its line is
+# removed and the file tracked. ⚠ A local build cannot catch an import of an
+# untracked file; a build of a CLEAN checkout (git archive + npm ci) can.
+# The source PNG and the Gemini image are still unchosen and stay ignored.
 brand-assets/Gemini_Generated_Image_v709qev709qev709.jpg
-brand-assets/logo/c2b-logo-gold-relit-alpha-1671.png
 brand-assets/logo/c2b-logo-gold-relit-source-1671.png
