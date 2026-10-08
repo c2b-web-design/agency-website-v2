@@ -69,7 +69,7 @@
 
 import * as THREE from "three";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useLoader, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 /* ⛔ The old room's guide, rail, aspect, height and camera constants are no longer read here (the new
    room, 25 September 2026). They stay exported from `about-card-geometry.ts` — `/proto/wall` and the
    card bench still use the old plate and camera. */
@@ -89,6 +89,7 @@ import {
   roomCardPlacement,
   DESK_MARK,
   DESK_LED_STRIP,
+  DESK_MARK_FALL,
   DESK_RIGHT_CORNER,
   deskMarkPlacement,
   roomPoint,
@@ -677,6 +678,12 @@ const DESK_MARK_SHADOW_HALF_M = 0.4;
 /** ⚠ STARTING VALUES for Carl's eye (faders: `?marktop=`, `?markstrip=`, `?markao=`): the strip's shadow strength, and
  *  how dark the contact shadow is at its darkest. */
 const DESK_MARK_STRIP_SHADOW = 0.6;
+/**
+ * ⛔ THE STUDIO'S STRENGTH ON THE MARK IN THE ROOM — the gold's `envMapIntensity` (the bench keeps 1). Carl, 8 October
+ * 2026: *"For me the logo looks a little too bright can you try lowering the lights intensity first."* At 1 the mark's
+ * pixels averaged 155 of 255 in the room (measured). ⚠ A starting value for Carl's eye; fader `?markenv=` (0–2).
+ */
+const DESK_MARK_STUDIO_INTENSITY = 0.7;
 const DESK_MARK_CONTACT_OPACITY = 0.5;
 /** The shadow light's distance from the mark, metres — a directional light; only its direction matters. */
 const DESK_MARK_SHADOW_LIGHT_M = 1.5;
@@ -777,9 +784,106 @@ function buildContactShadow(geometry: THREE.BufferGeometry): { texture: THREE.Ca
   return { texture: new THREE.CanvasTexture(out), width: w, depth: d, centreZ: z0 + d / 2 };
 }
 
+/**
+ * ⛔ THE FALL, STAGE 1 — THE TIP ONTO ITS FACE (Carl, 8 October 2026): *"We can move on to the fall. lets do this in
+ * stages. No link to the scroll yet. have it fall on its face, We will suspend gravity for the moment."*
+ *   - It TIPS FORWARD 90° about its FRONT-BOTTOM EDGE (the bounding box's, z = depth, y = 0 — the chamfered lip is a few
+ *     mm behind it, so the lip lifts a hair as it starts; the face lands flat on the desk) and LIES FACE DOWN.
+ *   - ⚠ "GRAVITY SUSPENDED": no simulation, and it does NOT go on over the edge — at 65 mm from the end its centre of
+ *     mass lies past the edge face down (take 3's reckoning), so a real one would carry on. That is the next stage.
+ *   - The angle follows an ACCELERATING curve, θ = 90° · p² — slow off the vertical, fastest at landing, the shape of a
+ *     topple without its physics. `DESK_MARK_TIP_MS` is a starting value.
+ *   - No scroll: a LOOP for Carl's eye — upright, hold, tip, hold face down, back up (the reverse of the same curve).
+ *     `?marktip=0..1` holds it still at that point of the tip (for frames); `?marktipms=` sets the tip's length.
+ *   - The CONTACT shadow is the mark at rest: it fades over the first quarter of the tip. ⚠ A face-down contact shadow
+ *     is not built. The cast shadows follow the mark by themselves (the shadow lights render it every frame).
+ * ⚠ Calls `invalidate()` every frame while mounted (`?mark=1` only), so the loop runs with `frameloop="demand"`.
+ */
+const DESK_MARK_TIP_MS = 1200;
+const DESK_MARK_TIP_HOLD_MS = 1500;
+/**
+ * ⛔ THE FALL, STAGE 2 — PLAYED FROM THE SIMULATION (`DESK_MARK_FALL`, `about-room.ts`): straight on from the tip, over
+ * the desk's end and down, STRIKING THE BIN'S RIM and turning onto its BACK ACROSS IT, and holding there — Carl:
+ * *"i mmed to see it happrn"*, *"Outstanding. The speed is good."*, *"continue so that the flat back is on the rim. then
+ * stop, we need to see how much hangs over the edge of the bons rim"*. (Stage 2 first stopped 20 ms before the strike.)
+ * ⛔ IT PLAYS IN REAL TIME — `DESK_MARK_FALL_SPEED` 1: face down to the rest on the rim in ~0.49 s, as gravity times it.
+ * Carl: *"if its at a quarter of the speed put it at full speed. i said nothing originally about the speed it should
+ * fall."* The first take played at 0.25 — the Builder's viewing choice, never asked for. The scroll will drive it later.
+ * Faders: `?markfallspeed=` (0.05–1), `?markfall=0..1` holds a point of the fall (0 face down … 1 on its back on the rim),
+ * `?marktip=0..1` a point of the tip.
+ * ⚠ The tip (stage 1) is still "gravity suspended" (θ = 90° · p²); the fall starts from rest face down, as simulated.
+ */
+const DESK_MARK_FALL_SPEED = 1;
+const DESK_MARK_FALL_HOLD_MS = 2500;
+type MarkPose = { y: number; z: number; theta: number };
+/** The fall's state at `ms` after face down, interpolated from the simulation's rows; y/z = the centre of mass relative
+ *  to the mark's rest origin (yaw frame, metres; z toward the camera). */
+function fallPose(ms: number, originOffMm: number): MarkPose {
+  const R = DESK_MARK_FALL.rows;
+  let i = 0;
+  while (i < R.length - 2 && R[i + 1][0] < ms) i++;
+  const a = R[i], b = R[i + 1];
+  const k = Math.min(1, Math.max(0, (ms - a[0]) / (b[0] - a[0] || 1)));
+  const lerp = (j: number) => a[j] + (b[j] - a[j]) * k;
+  return { y: (lerp(2) - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT, z: (lerp(1) - originOffMm) / ROOM_MM_PER_UNIT, theta: lerp(3) };
+}
+function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, fallFixed, tipMs, fallSpeed, com, depth, originOffMm }: {
+  bodyRef: React.RefObject<THREE.Group | null>; followRef: React.RefObject<THREE.Group | null>;
+  contactRef: React.RefObject<THREE.MeshBasicMaterial | null>; contactOpacity: number;
+  tipFixed: number | null; fallFixed: number | null; tipMs: number; fallSpeed: number;
+  com: [number, number]; depth: number; originOffMm: number;
+}) {
+  const clockRef = useRef(0);
+  const fallMs = DESK_MARK_FALL.restMs;
+  useFrame((st, dt) => {
+    const [yc, zc] = com;
+    const tipPose = (p: number): MarkPose => {
+      const th = (Math.PI / 2) * p * p;
+      // rotation about the front-bottom edge (y 0, z depth): the centre of mass relative to the rest origin
+      return { theta: th, y: yc * Math.cos(th) - (zc - depth) * Math.sin(th), z: depth + yc * Math.sin(th) + (zc - depth) * Math.cos(th) };
+    };
+    let pose: MarkPose;
+    if (fallFixed !== null) pose = fallPose(fallFixed * fallMs, originOffMm);
+    else if (tipFixed !== null) pose = tipPose(tipFixed);
+    else {
+      const playMs = fallMs / fallSpeed;
+      const cycle = DESK_MARK_TIP_HOLD_MS + tipMs + playMs + DESK_MARK_FALL_HOLD_MS;
+      clockRef.current = (clockRef.current + dt * 1000) % cycle;
+      const t = clockRef.current;
+      if (t < DESK_MARK_TIP_HOLD_MS) pose = tipPose(0);
+      else if (t < DESK_MARK_TIP_HOLD_MS + tipMs) pose = tipPose((t - DESK_MARK_TIP_HOLD_MS) / tipMs);
+      else pose = fallPose(Math.min(fallMs, (t - DESK_MARK_TIP_HOLD_MS - tipMs) * fallSpeed), originOffMm);
+      st.invalidate();
+    }
+    if (bodyRef.current) {
+      bodyRef.current.position.set(0, pose.y, pose.z);
+      bodyRef.current.rotation.x = pose.theta;
+    }
+    if (followRef.current) followRef.current.position.set(0, pose.y, pose.z);
+    if (contactRef.current) contactRef.current.opacity = contactOpacity * Math.max(0, 1 - 4 * Math.min(1, pose.theta / (Math.PI / 2)));
+  });
+  return null;
+}
+
 function DeskMark() {
   const roomLight = useMemo(() => deskMarkRoomLight(), []);
   const shadowOn = useMemo(() => deskMarkShadowOn(), []);
+  const studioIntensity = useMemo(() => neonNumber("markenv", DESK_MARK_STUDIO_INTENSITY, 0, 2), []);
+  const motion = useMemo(() => {
+    const fixed = (key: string) => {
+      const raw = neonParam(key);
+      return raw === null || raw.trim() === "" || !Number.isFinite(Number(raw)) ? null : Math.min(1, Math.max(0, Number(raw)));
+    };
+    return {
+      tipFixed: fixed("marktip"),
+      fallFixed: fixed("markfall"),
+      tipMs: neonNumber("marktipms", DESK_MARK_TIP_MS, 100, 10000),
+      fallSpeed: neonNumber("markfallspeed", DESK_MARK_FALL_SPEED, 0.05, 1),
+    };
+  }, []);
+  const body = useRef<THREE.Group>(null);
+  const follow = useRef<THREE.Group>(null);
+  const contactMat = useRef<THREE.MeshBasicMaterial>(null);
   const invalidate = useThree((st) => st.invalidate);
   const gl = useThree((st) => st.gl);
   const camera = useThree((st) => st.camera);
@@ -794,7 +898,7 @@ function DeskMark() {
     const id = window.setTimeout(() => {
       const geometry = buildLogoMarkGeometry({ ...LOGO_MARK_DEFAULTS, scale: place.scale }).geometry;
       const env = buildLogoStudioEnv(gl, place.rotationY);
-      const gold = roomLight ? createLogoGold() : environmentOnly(createLogoGold());
+      const gold = roomLight ? createLogoGold() : environmentOnly(createLogoGold({ envMapIntensity: studioIntensity }));
       if (!roomLight) gold.envMap = env.texture;
       made = { geometry, gold, env, contact: buildContactShadow(geometry) };
       setBuilt(made);
@@ -808,7 +912,7 @@ function DeskMark() {
         made.contact.texture.dispose();
       }
     };
-  }, [gl, place, roomLight]);
+  }, [gl, place, roomLight, studioIntensity]);
   // the main camera must see the mark's layer (the neon pass sets its own mask and restores this one)
   useEffect(() => {
     camera.layers.enable(DESK_MARK_LAYER);
@@ -829,11 +933,18 @@ function DeskMark() {
    * its near end, with a coarser map for a softer edge, stands in for it.
    */
   const shadowDirs = useMemo(() => {
-    const top = new THREE.Vector3(...LOGO_STUDIO_TOP.position).applyAxisAngle(new THREE.Vector3(0, 1, 0), place.rotationY);
+    // ⚠ IN THE MARK'S (YAW) FRAME — the lights ride a group inside the mark's facing that follows its centre of mass
+    // (Carl: the light follows the mark's POSITION only), so a world direction is turned back by the yaw.
+    const top = new THREE.Vector3(...LOGO_STUDIO_TOP.position);
     const centre = new THREE.Vector3(...place.position).add(new THREE.Vector3(0, place.scale / 2, 0));
-    const strip = new THREE.Vector3(...roomPoint(DESK_LED_STRIP.uMm, DESK_LED_STRIP.upMm, DESK_LED_STRIP.offWallToMm)).sub(centre);
+    const strip = new THREE.Vector3(...roomPoint(DESK_LED_STRIP.uMm, DESK_LED_STRIP.upMm, DESK_LED_STRIP.offWallToMm))
+      .sub(centre)
+      .applyAxisAngle(new THREE.Vector3(0, 1, 0), -place.rotationY);
     return { top, strip };
   }, [place]);
+  const comM = useMemo(() => [DESK_MARK_FALL.comLocal[0] * place.scale, DESK_MARK_FALL.comLocal[1] * place.scale] as [number, number], [place]);
+  const depthM = LOGO_MARK_DEFAULTS.depth * place.scale;
+  const originOffMm = DESK_RIGHT_CORNER.offWallMm - DESK_MARK.faceInFromEndMm - LOGO_MARK_DEFAULTS.depth * DESK_MARK.heightMm;
   const faders = useMemo(
     () => ({
       top: neonNumber("marktop", 1, 0, 1),
@@ -856,19 +967,32 @@ function DeskMark() {
   if (!built) return null;
   return (
     <>
+      <MarkMotion
+        bodyRef={body} followRef={follow} contactRef={contactMat} contactOpacity={faders.contact}
+        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed}
+        com={comM} depth={depthM} originOffMm={originOffMm}
+      />
       <group position={place.position}>
-        <mesh ref={mesh} geometry={built.geometry} material={built.gold} rotation={[0, place.rotationY, 0]} castShadow={shadowOn} />
-        {shadowOn && faders.top > 0 && (
-          <MarkShadowLight dir={shadowDirs.top} centreY={place.scale / 2} strength={faders.top} mapSize={DESK_MARK_SHADOW_MAP} />
-        )}
-        {shadowOn && faders.strip > 0 && (
-          <MarkShadowLight dir={shadowDirs.strip} centreY={place.scale / 2} strength={faders.strip} mapSize={DESK_MARK_SHADOW_MAP / 2} />
-        )}
+        {/* the mark's facing; inside it, `body` is placed at the CENTRE OF MASS and turned about X (the tip and the fall),
+            and `follow` rides the centre of mass WITHOUT turning — the lights (Carl: they follow its position only) */}
+        <group rotation={[0, place.rotationY, 0]}>
+          <group ref={body} position={[0, comM[0], comM[1]]}>
+            <mesh ref={mesh} geometry={built.geometry} material={built.gold} position={[0, -comM[0], -comM[1]]} castShadow={shadowOn} />
+          </group>
+          <group ref={follow} position={[0, comM[0], comM[1]]}>
+            {shadowOn && faders.top > 0 && (
+              <MarkShadowLight dir={shadowDirs.top} centreY={0} strength={faders.top} mapSize={DESK_MARK_SHADOW_MAP} />
+            )}
+            {shadowOn && faders.strip > 0 && (
+              <MarkShadowLight dir={shadowDirs.strip} centreY={0} strength={faders.strip} mapSize={DESK_MARK_SHADOW_MAP / 2} />
+            )}
+          </group>
+        </group>
         {shadowOn && (
           <group rotation={[0, place.rotationY, 0]}>
             <mesh position={[0, 0.0003, built.contact.centreZ]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
               <planeGeometry args={[built.contact.width, built.contact.depth]} />
-              <meshBasicMaterial color="#000000" alphaMap={built.contact.texture} transparent opacity={faders.contact} depthWrite={false} toneMapped={false} />
+              <meshBasicMaterial ref={contactMat} color="#000000" alphaMap={built.contact.texture} transparent opacity={faders.contact} depthWrite={false} toneMapped={false} />
             </mesh>
           </group>
         )}

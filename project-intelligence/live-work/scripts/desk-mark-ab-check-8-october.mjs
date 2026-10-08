@@ -6,7 +6,7 @@ const out = "project-intelligence/live-work/screenshots/desk-mark-light-8-octobe
 mkdirSync(out, { recursive: true });
 const b = await chromium.launch({ headless: false, args: ["--enable-gpu", "--use-angle=default", "--ignore-gpu-blocklist"] });
 const ctx = await b.newContext({ viewport: { width: 1412, height: 700 }, deviceScaleFactor: 1.36 });
-for (const [name, q] of [["control", "?neon=none"], ["ab-studio", "?mark=1&neon=none"], ["ab-room", "?mark=1&neon=none&marklight=room"], ["ab-noshadow", "?mark=1&neon=none&markshadow=0"], ["ab-toponly", "?mark=1&neon=none&markstrip=0&markao=0"], ["ab-nocontact", "?mark=1&neon=none&markao=0"]]) {
+for (const [name, q] of [["control", "?neon=none"], ["env-1.0", "?mark=1&neon=none&markenv=1"], ["env-0.7", "?mark=1&neon=none"], ["env-0.5", "?mark=1&neon=none&markenv=0.5"]]) {
   const p = await ctx.newPage();
   await p.goto(`http://localhost:3000/about${q}`, { waitUntil: "networkidle" });
   await p.waitForTimeout(2000);

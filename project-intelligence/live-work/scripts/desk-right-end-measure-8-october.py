@@ -107,3 +107,37 @@ top = np.array([u0 / 2, 750 + h])
 strip = np.array([0.0, np.mean(ups)])
 dv = strip - np.array([u0 / 2, 750 + h / 2])
 print(f"from the mark's centre: {dv[0]:.0f} mm toward the wall, {dv[1]:.0f} mm up -> elevation {math.degrees(math.atan2(dv[1], dv[0])):.1f} deg")
+
+# ── THE BIN'S RIM (Carl, 8 October: "stop it before it hits the bin. i want to see where on the logo it will make contact
+# with the bins rim"). The rim is an ellipse at the plate's bottom-right, cut by the frame's right edge. Its highlight,
+# from column scans: far edge (2340,1318) (2380,1321) (2420,1324) (2460,1339) (2500,1351) (2540,1370); near edge
+# (2340,1370) (2380,1385) (2420,1396) (2460,1402) (2500,1405) (2540,1417); left tip ~(2290,1340). A horizontal circle
+# at height h: back-project every point onto the plane at h and fit a circle; the h whose fit is TRUEST is the rim's.
+print("\n-- the bin's rim --")
+rim = [(2340, 1318), (2380, 1321), (2420, 1324), (2460, 1339), (2500, 1351), (2540, 1370),
+       (2340, 1370), (2380, 1385), (2420, 1396), (2460, 1402), (2500, 1405), (2540, 1417), (2290, 1340)]
+def fit_at(hmm):
+    P = np.array([room(onplane(x, y, hmm)) for x, y in rim])  # (u, up, off)
+    A = np.c_[2 * P[:, 0], 2 * P[:, 2], np.ones(len(P))]
+    b = P[:, 0] ** 2 + P[:, 2] ** 2
+    (cu, co, k), *_ = np.linalg.lstsq(A, b, rcond=None)
+    r = math.sqrt(k + cu ** 2 + co ** 2)
+    res = np.sqrt(np.mean((np.hypot(P[:, 0] - cu, P[:, 2] - co) - r) ** 2))
+    return res, cu, co, r
+best = min((fit_at(h) + (h,) for h in range(100, 701, 5)), key=lambda t: t[0])
+res, cu, co, r, hb = best
+print(f"BIN RIM: {hb} mm up; centre u {cu:.0f} mm, off back wall {co:.0f} mm; radius {r:.0f} mm (rms {res:.1f} mm)")
+for h in (hb - 60, hb - 30, hb, hb + 30, hb + 60):
+    rr = fit_at(h); print(f"   h {h}: rms {rr[0]:.1f}, radius {rr[3]:.0f}, centre ({rr[1]:.0f}, {rr[2]:.0f})")
+print(f"relative to the desk: the rim's centre is {co - off0:.0f} mm beyond the desk's end (toward the camera), "
+      f"{cu - u0 / 2:+.0f} mm across from the mark's centre line; the rim is {750 - hb:.0f} mm below the desk top")
+# ⚠ THE FIT ABOVE IS ILL-CONDITIONED: the residual barely changes with h (the ellipse is cut by the frame, the bin's foot
+# is out of shot), so the "best" h runs to the search's edge. The plate alone cannot separate a small near bin from a big
+# far one. ⛔ So the height comes from a SIZE ASSUMPTION — the radius — and the plate gives the rest:
+print("  height for an assumed rim diameter (the fit's residual at each, for honesty):")
+for dia in (240, 260, 280, 300, 320):
+    hs = [h for h in range(150, 701, 2)]
+    fits = [(abs(fit_at(h)[3] - dia / 2), h) for h in hs]
+    _, h = min(fits)
+    rr = fit_at(h)
+    print(f"   rim {dia} mm across -> {h} mm up, centre u {rr[1]:.0f} (mark line {u0 / 2:.0f}), {rr[2] - off0:.0f} mm beyond the desk's end; rms {rr[0]:.1f}")
