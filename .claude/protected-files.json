@@ -103,6 +103,16 @@
     "file. That friction is the point."
   ],
 
+  "_comment_2026_10_08": [
+    "components/about/about-neon.ts ADDED 8 October 2026 by Carl: 'Lock after use",
+    "and test it is locked.' It holds the neon values, the brightness track and",
+    "roomWipe / roomWipeClearsCA (the approved \u00a72 strike, D-092). Used once that",
+    "day: the CA trigger and wallCardsInView now read the plate's height as the",
+    "canvas WIDTH / ROOM_PLATE_ASPECT, because the canvas runs one screen into \u00a73.",
+    "Run by Carl with the ! prefix: the Builder's own edit was refused by the",
+    "auto-mode classifier as self-modification, correctly."
+  ],
+
   "protected": [
     "CLAUDE.md",
 
@@ -139,6 +149,8 @@
     "components/ui/button.tsx",
     "lib/utils.ts",
 
-    "components/about/about-card-glass.ts"
+    "components/about/about-card-glass.ts",
+
+    "components/about/about-neon.ts"
   ]
 }

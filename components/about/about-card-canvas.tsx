@@ -68,7 +68,7 @@
  */
 
 import * as THREE from "three";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 /* ⛔ The old room's guide, rail, aspect, height and camera constants are no longer read here (the new
    room, 25 September 2026). They stay exported from `about-card-geometry.ts` — `/proto/wall` and the
@@ -903,6 +903,33 @@ const DESK_MARK_FLIP = { riseMm: 200, leftMm: 150, outMm: 100, speed: 0.5 };
  * slows evenly over the WHOLE second flip and stops as it completes (⚰️ was 600 ms — it stopped early and the mark hung).
  */
 const DESK_MARK_FLIP2 = { driftMs: 0, faceShare: 0.5 };
+/**
+ * ⛔ §3 — THE DROP ONTO THE BLUE LOGO, AND THE WIPE AT THE PLAYER'S BORDER (Carl, 8 October 2026, session 2: *"its just to
+ * the right of the blue logo with less momentum carrying it left Perfect. From here it can fall down onto the blue logo.
+ * So it on its way to cover it. Only when it meets the white rectangle a wipe will happen at the border as if to
+ * dissappear into the viewer. What happens after this will be in a later session."* — *"You are authorised to work in
+ * Sect. 3"*; the scroll link: *"There are 2 ways we can tie the scroll to this we will discuss at the end."*).
+ *   - From the second flip's end (at rest — no spin, no drift left) it FALLS FROM REST under gravity, straight down the
+ *     page to the blue logo's centre (`#examples-player-target`), measured where §3 sits once the stage stops pinning —
+ *     the canvas runs one screen past the stage (`RoomStage`, `AboutCardCanvas`). Its orientation is held.
+ *   - The 3D point is the logo's screen centre at the mark's own depth from the camera, so its SIZE does not change
+ *     (Carl: "no growth yet").
+ *   - THE WIPE: a clipping plane through the camera and the white rectangle's TOP EDGE (`#examples-player`): whatever
+ *     passes below that line on screen is not drawn — it disappears into the viewer at the border.
+ *   - TIME-DRIVEN for now (the loop), at `speed` of real time — the bounce's. ⚠ So it only lands on the logo on screen
+ *     when the reader has scrolled to where the stage stops; above that the extension is off-screen below the window.
+ */
+const DESK_MARK_DROP = { speed: 0.5 };
+type DropSpec = { from: MarkPose; to: THREE.Vector3; ms: number };
+function dropPose(ms: number, d: DropSpec): MarkPose {
+  const u = Math.min(1, Math.max(0, ms / d.ms)) ** 2; // from rest under gravity: distance grows with the square of time
+  return {
+    x: d.from.x + (d.to.x - d.from.x) * u,
+    y: d.from.y + (d.to.y - d.from.y) * u,
+    z: d.from.z + (d.to.z - d.from.z) * u,
+    q: d.from.q,
+  };
+}
 /** The flip starts at the slap — the flat back down across the rim. */
 const DESK_MARK_FLIP_FROM_MS = DESK_MARK_FALL.restMs;
 type FlipSpec = { riseMm: number; leftMm: number; outMm: number; speed: number; psiEnd: number; second: { on: boolean; driftMs: number; faceShare: number; psiFace: number } };
@@ -1016,11 +1043,12 @@ function cornerPose(p: number, psiDeg: number, dMm: number, leftMm: number, com:
   const c = new THREE.Vector3(com[0], com[1], com[2] - depth).applyQuaternion(q).add(pivot);
   return { x: c.x, y: c.y, z: c.z, q };
 }
-function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, flip, play, corner, com, depth, originOffMm }: {
+function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, flip, drop, play, corner, com, depth, originOffMm }: {
   bodyRef: React.RefObject<THREE.Group | null>; followRef: React.RefObject<THREE.Group | null>;
   contactRef: React.RefObject<THREE.MeshBasicMaterial | null>; contactOpacity: number;
   tipFixed: number | null; fallFixed: number | null; tipMs: number; fallSpeed: number; fallEndMs: number;
   flip: FlipSpec | null;
+  drop: DropSpec | null;
   play: "start" | "fall" | "somersault" | "corner";
   corner: { psi: number; d: number; left: number; loop: boolean };
   com: [number, number, number]; depth: number; originOffMm: number;
@@ -1071,9 +1099,14 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, 
       }
     } else {
       // with the flip, the fall runs to the slap onto the rim and the flip carries on from it
-      const fallMs = flip ? DESK_MARK_FLIP_FROM_MS + flipPlayed(flip).flight + flipPlayed(flip).second : fallEndMs;
+      const flipDone = flip ? DESK_MARK_FLIP_FROM_MS + flipPlayed(flip).flight + flipPlayed(flip).second : 0;
+      const fallMs = flip ? flipDone + (drop ? drop.ms : 0) : fallEndMs;
       const fallOrFlip = (ms: number) =>
-        flip && ms > DESK_MARK_FLIP_FROM_MS ? flipPose(ms - DESK_MARK_FLIP_FROM_MS, flip, originOffMm, xc) : fallPose(ms, originOffMm, xc);
+        flip && drop && ms > flipDone
+          ? dropPose(ms - flipDone, drop)
+          : flip && ms > DESK_MARK_FLIP_FROM_MS
+            ? flipPose(ms - DESK_MARK_FLIP_FROM_MS, flip, originOffMm, xc)
+            : fallPose(ms, originOffMm, xc);
       if (fallFixed !== null) pose = fallOrFlip(fallFixed * fallMs);
       else if (tipFixed !== null) pose = tipPose(tipFixed);
       else {
@@ -1155,6 +1188,9 @@ function DeskMark() {
     contact: ReturnType<typeof buildContactShadow>;
   };
   const [built, setBuilt] = useState<Built | null>(null);
+  /** ⛔ THE WIPE's PLANE (§3, below) — on the mark's material from birth; parked far below everything (keeps all) until
+   *  a drop is measured. Local clipping is switched on at the canvas's creation. */
+  const clip = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 1e6), []);
   useEffect(() => {
     let made: Built | null = null;
     const id = window.setTimeout(() => {
@@ -1162,6 +1198,7 @@ function DeskMark() {
       const env = buildLogoStudioEnv(gl, place.rotationY);
       const gold = roomLight ? createLogoGold() : environmentOnly(createLogoGold({ envMapIntensity: studioIntensity }));
       if (!roomLight) gold.envMap = env.texture;
+      gold.clippingPlanes = [clip];
       made = { geometry, gold, env, contact: buildContactShadow(geometry) };
       setBuilt(made);
     }, 0);
@@ -1174,7 +1211,7 @@ function DeskMark() {
         made.contact.texture.dispose();
       }
     };
-  }, [gl, place, roomLight, studioIntensity]);
+  }, [gl, place, roomLight, studioIntensity, clip]);
   // the main camera must see the mark's layer (the neon pass sets its own mask and restores this one)
   useEffect(() => {
     camera.layers.enable(DESK_MARK_LAYER);
@@ -1235,6 +1272,65 @@ function DeskMark() {
       second: { ...motion.flip2, psiFace: Math.atan2(-view.x, -view.z) },
     };
   }, [motion.flipOn, motion.flipBase, motion.flip2, originOffMm, comM, camera, place]);
+  /**
+   * ⛔ THE DROP'S TARGET AND THE WIPE'S LINE — measured from the page. Canvas pixels: x is the logo's offset from the
+   * canvas's left; y is where it lies once the stage STOPS (its bottom meets the end of its container, where §3 begins):
+   * (stage bottom − canvas top) + (y − container bottom) — both differences hold at any scroll. Re-measured on resize and
+   * once the fonts settle. `?markdrop=0` ends at the second flip, as before.
+   */
+  const size = useThree((st) => st.size);
+  const [measured, setDrop] = useState<DropSpec | null>(null);
+  const dropOn = !!flip && flip.second.on && !!built && neonParam("markdrop") !== "0";
+  const drop = dropOn ? measured : null;
+  useEffect(() => {
+    if (!dropOn || !flip) {
+      clip.set(new THREE.Vector3(0, 1, 0), 1e6); // parked: keeps everything
+      return;
+    }
+    const cam = camera as THREE.PerspectiveCamera;
+    const measure = () => {
+      const stage = gl.domElement.closest("[data-room-stage]");
+      const host = stage?.parentElement;
+      const logo = document.getElementById("examples-player-target");
+      const player = document.getElementById("examples-player");
+      if (!stage || !host || !logo || !player) return;
+      const c = gl.domElement.getBoundingClientRect();
+      const st = stage.getBoundingClientRect(), h = host.getBoundingClientRect();
+      const l = logo.getBoundingClientRect(), pl = player.getBoundingClientRect();
+      if (c.width < 1 || c.height < 1) return;
+      const yIn = (y: number) => st.bottom - c.top + (y - h.bottom);
+      const ndc = (x: number, y: number) => [(2 * x) / c.width - 1, 1 - (2 * y) / c.height] as const;
+      plateProjection(cam, c.width, c.height);
+      cam.updateMatrixWorld();
+      // where the second flip ends, in the world
+      const yaw = (v: THREE.Vector3) => v.applyAxisAngle(Y_AXIS, place.rotationY).add(new THREE.Vector3(...place.position));
+      const unyaw = (v: THREE.Vector3) => v.sub(new THREE.Vector3(...place.position)).applyAxisAngle(Y_AXIS, -place.rotationY);
+      const p = flipPlayed(flip);
+      const from = flipPose(p.flight + p.second, flip, originOffMm, comM[0]);
+      const fromW = yaw(new THREE.Vector3(from.x, from.y, from.z));
+      const z = fromW.clone().project(cam).z;
+      const [lx, ly] = ndc(l.left + l.width / 2 - c.left, yIn(l.top + l.height / 2));
+      const toW = new THREE.Vector3(lx, ly, z).unproject(cam);
+      const mm = fromW.distanceTo(toW) * ROOM_MM_PER_UNIT;
+      const ms = (1000 * Math.sqrt((2 * mm) / 9810)) / DESK_MARK_DROP.speed;
+      // the wipe: the plane through the camera and the white rectangle's top edge, its kept side above
+      const [, ty] = ndc(0, yIn(pl.top));
+      const camW = cam.getWorldPosition(new THREE.Vector3());
+      clip.setFromCoplanarPoints(camW, new THREE.Vector3(-1, ty, 0.5).unproject(cam), new THREE.Vector3(1, ty, 0.5).unproject(cam));
+      if (clip.distanceToPoint(new THREE.Vector3(0, Math.min(1, ty + 0.2), 0.5).unproject(cam)) < 0) clip.negate();
+      setDrop({ from, to: unyaw(toW), ms });
+      invalidate();
+    };
+    const raf = requestAnimationFrame(measure);
+    let alive = true;
+    document.fonts?.ready.then(() => alive && measure());
+    window.addEventListener("resize", measure);
+    return () => {
+      alive = false;
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", measure);
+    };
+  }, [dropOn, flip, gl, camera, place, originOffMm, comM, clip, invalidate, size.width, size.height]);
   const faders = useMemo(
     () => ({
       top: neonNumber("marktop", 1, 0, 1),
@@ -1259,7 +1355,7 @@ function DeskMark() {
     <>
       <MarkMotion
         bodyRef={body} followRef={follow} contactRef={contactMat} contactOpacity={faders.contact}
-        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} fallEndMs={motion.fallEndMs} flip={flip} play={motion.play} corner={motion.corner}
+        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} fallEndMs={motion.fallEndMs} flip={flip} drop={drop} play={motion.play} corner={motion.corner}
         com={comM} depth={depthM} originOffMm={originOffMm}
       />
       <group position={place.position}>
@@ -1297,6 +1393,30 @@ function DeskMark() {
       </group>
     </>
   );
+}
+
+/**
+ * ⛔⛔ THE CAMERA OVER THE TALLER CANVAS — 8 October 2026, session 2 (§3, the desk mark's drop). The canvas runs from the
+ * plate's top to one screen past the stage (`AboutCardCanvas`), so it is no longer the plate's box. The camera is MANUAL
+ * (R3F no longer sets its aspect from the canvas) and keeps the PLATE's projection: aspect = the plate's, and a view
+ * offset whose full view is the plate (canvas width × width ÷ aspect) while the rendered window is the whole canvas — the
+ * same frustum continued downward. ⛔ So every pixel of the plate region renders exactly as before (the photo, the cards,
+ * the camera solve); below it the room's space carries on, transparent where nothing is drawn.
+ */
+function plateProjection(camera: THREE.PerspectiveCamera, w: number, h: number) {
+  camera.aspect = ROOM_PLATE_ASPECT;
+  camera.setViewOffset(w, w / ROOM_PLATE_ASPECT, 0, 0, w, h);
+  camera.updateProjectionMatrix();
+}
+function PlateCamera() {
+  const camera = useThree((st) => st.camera) as THREE.PerspectiveCamera;
+  const size = useThree((st) => st.size);
+  const invalidate = useThree((st) => st.invalidate);
+  useLayoutEffect(() => {
+    plateProjection(camera, size.width, size.height);
+    invalidate();
+  }, [camera, size.width, size.height, invalidate]);
+  return null;
 }
 
 /** §1's faded room — Carl's 27 September take: *"That looks good. The navigation text stands out well against the
@@ -1339,6 +1459,19 @@ function wipeMask(solid: number, clear: number): string {
   return `linear-gradient(to bottom, ${stops.join(", ")})`;
 }
 
+/** The masked layer's second layer — the extension below the stage, always shown — and the two layers' boxes. */
+const MASK_SOLID = "linear-gradient(#000, #000)";
+const MASK_LAYOUT = (image: string): React.CSSProperties => ({
+  maskImage: image,
+  WebkitMaskImage: image,
+  maskSize: "100% 50%, 100% 50%",
+  WebkitMaskSize: "100% 50%, 100% 50%",
+  maskPosition: "0 0, 0 100%",
+  WebkitMaskPosition: "0 0, 0 100%",
+  maskRepeat: "no-repeat",
+  WebkitMaskRepeat: "no-repeat",
+});
+
 export function RoomStage({ faded, children }: { faded: React.ReactNode; children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -1353,8 +1486,8 @@ export function RoomStage({ faded, children }: { faded: React.ReactNode; childre
       el.style.setProperty("--wipe-solid", `${(w.solid * 100).toFixed(3)}%`);
       el.style.setProperty("--wipe-clear", `${(w.clear * 100).toFixed(3)}%`);
       const m = wipeMask(w.solid, w.clear);
-      masked.style.maskImage = m;
-      masked.style.webkitMaskImage = m;
+      masked.style.maskImage = `${m}, ${MASK_SOLID}`;
+      masked.style.webkitMaskImage = `${m}, ${MASK_SOLID}`;
     };
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(apply);
@@ -1368,7 +1501,7 @@ export function RoomStage({ faded, children }: { faded: React.ReactNode; childre
       if (raf) cancelAnimationFrame(raf);
     };
   }, []);
-  const mask = wipeMask(0, 0); // before JS: all faded — the server's state at the top of the page
+  const mask = `${wipeMask(0, 0)}, ${MASK_SOLID}`; // before JS: all faded — the server's state at the top of the page
   return (
     <div
       ref={ref}
@@ -1379,8 +1512,12 @@ export function RoomStage({ faded, children }: { faded: React.ReactNode; childre
       <div className="absolute inset-0" style={{ opacity: S1_ROOM_OPACITY }}>
         {faded}
       </div>
-      <div className="absolute inset-0" style={{ maskImage: mask, WebkitMaskImage: mask }}>
-        {children}
+      {/* ⛔ TWO SCREENS TALL SINCE 8 OCTOBER (session 2): the canvas runs one screen past the stage into §3 (the desk
+          mark's drop), and a mask clips everything outside its element's box. So this layer is 200vh: the wipe's
+          gradient over the TOP screen exactly as before (mask size/position), a solid layer over the second. The room's
+          children keep a one-screen box (`h-screen` inside), so nothing in them moves. */}
+      <div className="absolute inset-x-0 top-0 h-[200vh]" style={MASK_LAYOUT(mask)}>
+        <div className="relative h-screen">{children}</div>
       </div>
     </div>
   );
@@ -1747,7 +1884,22 @@ export default function AboutCardCanvas() {
         className="relative h-full max-h-full w-auto max-w-full"
         style={{ aspectRatio: ROOM_PLATE_ASPECT }}
       >
+        {/* ⛔⛔ THE CANVAS RUNS ONE SCREEN PAST THE STAGE — 8 October 2026, session 2 (§3, the desk mark's drop onto the
+            blue logo). From the plate's top: the plate (100%), the rest of the stage below it ((100vh − 100%) ÷ 2, the
+            letterbox) and one more screen (100vh) = 50% + 150vh. While the stage pins, the extension is off-screen below
+            the window; when it stops (its bottom meets its container's end) §3 begins there, so the extension lies
+            exactly over §3. ONE canvas, one context (§5a). What the old box provided by where it sat (§5b):
+              - the camera solve assumed canvas = plate → `PlateCamera` keeps the plate's projection;
+              - the wipe's mask clipped to one screen → `RoomStage`'s masked layer is two screens, solid below;
+              - `roomWipeClearsCA` / `wallCardsInView` read the canvas's height as the plate's → they read width ÷ aspect
+                (`about-neon.ts`, on Carl's word);
+              - hit-testing: R3F's wrapper takes pointer events by default and would sit over §3's copy → `none` (the
+                room canvas has no pointer handlers);
+              - ⚠ COST: about twice the pixels (and the bloom's targets) every frame — the frame owner renders every
+                frame while mounted. Not measured. */}
+        <div className="absolute left-0 top-0 w-full" style={{ height: "calc(50% + 150vh)" }}>
         <Canvas
+          style={{ pointerEvents: "none" }}
           frameloop="demand"
           dpr={[1, 2]}
           /* ⚠ Shadows ONLY while the extruded text is on — the letters' shadows on
@@ -1757,14 +1909,18 @@ export default function AboutCardCanvas() {
           shadows={extrude ? "soft" : false}
           gl={{ antialias: true, alpha: true }}
           /* ⚠ The extruded text's reveal/erase wipe is two clipping planes per line,
-             which need LOCAL clipping — a renderer switch, set only while the text
-             is on (by default since 24 September; off with `?extrude=0`).
-             It affects only materials that carry `clippingPlanes` (only the text's). */
-          onCreated={extrude ? ({ gl }) => { gl.localClippingEnabled = true; } : undefined}
+             which need LOCAL clipping — a renderer switch. ⚠ *Corrected in place, 8 October:* it
+             was "set only while the text is on"; it is now ALWAYS on, because the desk mark's §3
+             wipe is a clipping plane too. It affects only materials that carry `clippingPlanes`
+             (the text's, and the mark's — parked to keep everything until a drop is measured). */
+          onCreated={({ gl }) => { gl.localClippingEnabled = true; }}
           camera={{
             /* ⛔ VERTICAL FOV. `PerspectiveCamera.fov` is vertical and the plan
                carried the 89.91° HORIZONTAL figure — caught before it shipped.
                ⛔ The new room: 58.203° on the 2560 x 1435 plate, pitched UP 3.22° (`PITCH` > 0). */
+            /* ⛔ MANUAL since 8 October (session 2) — R3F must not set the aspect from the now-taller canvas;
+               `PlateCamera` keeps the plate's projection. */
+            manual: true,
             fov: ROOM_CAMERA_VFOV_DEG,
             near: 0.01,
             /* ⛔ DERIVED, not set — it was 100 and clipped the whole far plane (see `CAMERA_FAR`). */
@@ -2137,7 +2293,10 @@ export default function AboutCardCanvas() {
               sequenceRef={plan ? sequenceRef : undefined}
               sequenceEndMs={plan?.endMs}
             />
-          )}        </Canvas>
+          )}
+          <PlateCamera />
+        </Canvas>
+        </div>
       </div>
     </div>
   );

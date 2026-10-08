@@ -16,7 +16,7 @@
  */
 
 import * as THREE from "three";
-import { ROOM_CARD_GUIDES } from "./about-room";
+import { ROOM_CARD_GUIDES, ROOM_PLATE_ASPECT } from "./about-room";
 import type { Chase } from "./card-text-timeline";
 
 // ── Colour ──────────────────────────────────────────────────────────────────
@@ -723,11 +723,14 @@ export const WALL_BAND = {
 export function wallCardsInView(canvas: Element): boolean {
   if (typeof document === "undefined" || document.visibilityState !== "visible") return false;
   const r = canvas.getBoundingClientRect();
-  if (r.width < 1 || r.height < 1) return false;
+  // ⛔ THE PLATE'S HEIGHT FROM THE CANVAS's WIDTH — since 8 October 2026 (session 2) the canvas runs one screen past the
+  // plate into §3 (the desk mark's drop, D-088), so its own height is no longer the plate's. Its top and width still are.
+  const plateH = r.width / ROOM_PLATE_ASPECT;
+  if (r.width < 1 || plateH < 1) return false;
   const SLACK = 1;
   return (
-    r.top + WALL_BAND.top * r.height >= -SLACK &&
-    r.top + WALL_BAND.bottom * r.height <= window.innerHeight + SLACK &&
+    r.top + WALL_BAND.top * plateH >= -SLACK &&
+    r.top + WALL_BAND.bottom * plateH <= window.innerHeight + SLACK &&
     r.left + WALL_BAND.left * r.width >= -SLACK &&
     r.left + WALL_BAND.right * r.width <= window.innerWidth + SLACK
   );
@@ -770,8 +773,9 @@ const CA_BOTTOM = Math.max(...ROOM_CARD_GUIDES.CA.map(([, y]) => y));
 /**
  * ⛔ THE §2 TRIGGER SINCE 3 OCTOBER — *"When the wipe clears the bottom of CA, the rim is activated"* (D-092): true once
  * the wipe's FULLY OPAQUE part reaches CA's lowest corner. Replaces `wallCardsInView` as the trigger, because with the
- * room on screen behind §1 "the wall cards are in the window" is true from landing. The canvas's box is the plate's
- * (`RoomPlate`'s centred box), so CA's corner is `CA_BOTTOM` of its height. ⚠ Off the stage (no `[data-room-stage]`
+ * room on screen behind §1 "the wall cards are in the window" is true from landing. The canvas's TOP and WIDTH are the
+ * plate's (`RoomPlate`'s centred box) — its height is not since 8 October (it runs on into §3) — so CA's corner is
+ * `CA_BOTTOM` of the plate's height, width ÷ `ROOM_PLATE_ASPECT`. ⚠ Off the stage (no `[data-room-stage]`
  * ancestor) it falls back to `wallCardsInView`. A HIDDEN tab never counts.
  */
 export function roomWipeClearsCA(canvas: Element): boolean {
@@ -782,8 +786,10 @@ export function roomWipeClearsCA(canvas: Element): boolean {
   if (!w) return false;
   const s = stage.getBoundingClientRect();
   const r = canvas.getBoundingClientRect();
-  if (s.height < 1 || r.height < 1) return false;
-  const caBottom = (r.top - s.top + CA_BOTTOM * r.height) / s.height;
+  // ⛔ The plate's height from the canvas's WIDTH — the canvas runs one screen past the plate (see `wallCardsInView`).
+  const plateH = r.width / ROOM_PLATE_ASPECT;
+  if (s.height < 1 || plateH < 1) return false;
+  const caBottom = (r.top - s.top + CA_BOTTOM * plateH) / s.height;
   return w.solid >= caBottom - 0.002;
 }
 
