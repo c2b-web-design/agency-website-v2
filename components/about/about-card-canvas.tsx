@@ -87,8 +87,15 @@ import {
   ROOM_PLATE_SRC,
   ROOM_UP,
   roomCardPlacement,
+  DESK_MARK,
+  DESK_LED_STRIP,
+  DESK_RIGHT_CORNER,
+  deskMarkPlacement,
+  roomPoint,
   type RoomCardSpec,
 } from "./about-room";
+import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "./logo-mark-geometry";
+import { buildLogoStudioEnv, createLogoGold, environmentOnly, LOGO_STUDIO_TOP } from "./logo-mark-material";
 import {
   CA_FACE_TRANSMISSION,
   CD_FACE_TRANSMISSION,
@@ -621,6 +628,261 @@ function TakeLight({ s }: { s: TakeSettings }) {
   );
 }
 
+/**
+ * ⛔ THE DESK MARK, A STILL TAKE IN THE ROOM — D-088, 8 October 2026, ONLY WITH `?mark=1` (plain `/about` is unchanged).
+ * Carl: *"put the logo in the scene purpendicular to the right side angle of the desk"*; *"Behind ?mark=1 on /about"*.
+ * Take 2, the same day: turned 90° to face the camera, centred across the desk's depth, in front of the mic clamp.
+ * Take 3: its face 65 mm from the desk's end, so a tip onto its face carries it off the desk. Placement: `DESK_MARK`,
+ * `about-room.ts`. Pass 1's approved shape (R-034) in pass 2's gold (R-035).
+ *
+ * ⛔⛔ ITS LIGHT — THE FIRST LIGHTS CHUNK (Carl, 8 October): *"Light it on the desk first and enable shadows. Then stop."*
+ *   - **THE BENCH'S STUDIO, ON THIS MATERIAL ONLY** (`buildLogoStudioEnv`, `LOGO_JUDGING_STUDIO`) — *"i like the oblique
+ *     lighting that was on the proto bench"*. Turned with the mark's yaw, so it stands to the mark as on the bench.
+ *     A reflection environment: it follows the mark's POSITION and keeps its orientation — Carl: *"The light trajectory
+ *     can be vertical, the logos geometry will do all the work for us"*.
+ *   - **STUDIO ONLY** (Carl's choice): the room's take light and env map are kept off it (`environmentOnly`, and its own
+ *     `envMap` overrides `scene.environment`). Measured before this: the take light was ALL of its light, the room's map
+ *     none (D-088, 8 October).
+ *   - **ITS SHADOW** — a SHADOW-ONLY light (intensity 0: it lights nothing, the cards included) from the studio's TOP
+ *     softbox, inside the mark's group so it travels with it; its shadow camera sees ONLY `DESK_MARK_LAYER`, and the mark
+ *     is ONLY on that layer (plus the main camera's), so the take light's shadow map never holds the mark — one shadow,
+ *     not two. Received by an invisible CATCHER (`ShadowMaterial`) cut to the measured desk top.
+ * ⚠ Shadows render only while the canvas has them on — the extruded text's switch (`?extrude=0` turns them off).
+ * ⚠ What this is NOT: no fall, no scroll, no crossing (R-036, on the bench); not on the bloom's neon layer.
+ * ⚠ It lives in THIS canvas for the take. Route 1 (one canvas for the whole journey into §3) is still a structure to
+ * design and review (D-088, 3 October) — this does not decide it.
+ * ⚠ The geometry build and the studio's PMREM are synchronous, so they run in an effect after mount.
+ */
+const DESK_MARK_LAYER = 12;
+/**
+ * ⚠ A/B SWITCH for Carl's eye (8 October 2026: *"i will flip batween the 2 to see thw difference"*): `?marklight=room`
+ * restores the take BEFORE the lights chunk exactly — the plain gold lit by the room (take light + `scene.environment`),
+ * no shadow. Absent → the studio and the shadow.
+ */
+function deskMarkRoomLight(): boolean {
+  return neonParam("marklight") === "room";
+}
+/**
+ * ⚠ THE SHADOW'S A/B, IN THE SAME LIGHT — Carl, 8 October 2026: *"i nned to see them both in the same lighting, how can
+ * i judge the shadows under different conditions?"* (`?marklight=room` changed the light AND the shadow at once).
+ * `?markshadow=0` keeps the studio light and removes only the shadow.
+ */
+function deskMarkShadowOn(): boolean {
+  return neonParam("markshadow") !== "0" && !deskMarkRoomLight();
+}
+/** ⚠ STARTING VALUES for Carl's eye: how dark the shadow lies on the desk, and the shadow map over a 0.8 m square. */
+const DESK_MARK_SHADOW_OPACITY = 0.45;
+const DESK_MARK_SHADOW_MAP = 1024;
+const DESK_MARK_SHADOW_HALF_M = 0.4;
+/** ⚠ STARTING VALUES for Carl's eye (faders: `?marktop=`, `?markstrip=`, `?markao=`): the strip's shadow strength, and
+ *  how dark the contact shadow is at its darkest. */
+const DESK_MARK_STRIP_SHADOW = 0.6;
+const DESK_MARK_CONTACT_OPACITY = 0.5;
+/** The shadow light's distance from the mark, metres — a directional light; only its direction matters. */
+const DESK_MARK_SHADOW_LIGHT_M = 1.5;
+
+/**
+ * ⛔ A SHADOW-ONLY LIGHT THAT TRAVELS WITH THE MARK — intensity 0, so it lights nothing (the cards included); its shadow
+ * camera sees ONLY `DESK_MARK_LAYER`, so it shadows only the mark. `dir` points from the mark toward the light (world
+ * axes); `strength` is the shadow's own intensity (`LightShadow.intensity`, 0–1); a smaller `mapSize` over the same
+ * frustum gives a softer edge. Mounted inside the mark's group, aimed at the mark's centre.
+ */
+function MarkShadowLight({ dir, centreY, strength, mapSize }: { dir: THREE.Vector3; centreY: number; strength: number; mapSize: number }) {
+  const invalidate = useThree((st) => st.invalidate);
+  const light = useRef<THREE.DirectionalLight>(null);
+  const aim = useRef<THREE.Object3D>(null);
+  const position = useMemo(
+    () => dir.clone().normalize().multiplyScalar(DESK_MARK_SHADOW_LIGHT_M).add(new THREE.Vector3(0, centreY, 0)).toArray() as [number, number, number],
+    [dir, centreY],
+  );
+  useEffect(() => {
+    const l = light.current, t = aim.current;
+    if (!l || !t) return;
+    l.target = t;
+    l.shadow.intensity = strength;
+    const c = l.shadow.camera;
+    c.layers.set(DESK_MARK_LAYER);
+    c.left = -DESK_MARK_SHADOW_HALF_M;
+    c.right = DESK_MARK_SHADOW_HALF_M;
+    c.top = DESK_MARK_SHADOW_HALF_M;
+    c.bottom = -DESK_MARK_SHADOW_HALF_M;
+    c.near = 0.1;
+    c.far = DESK_MARK_SHADOW_LIGHT_M * 2;
+    c.updateProjectionMatrix();
+    invalidate();
+  }, [strength, invalidate]);
+  return (
+    <>
+      <object3D ref={aim} position={[0, centreY, 0]} />
+      <directionalLight
+        ref={light}
+        position={position}
+        intensity={0}
+        castShadow
+        shadow-mapSize-width={mapSize}
+        shadow-mapSize-height={mapSize}
+        shadow-bias={-0.0005}
+        shadow-normalBias={0.002}
+      />
+    </>
+  );
+}
+
+/**
+ * ⛔ THE CONTACT SHADOW — where the metal meets the wood. Carl, 8 October 2026: *"What would really sell it is if there
+ * even subtler shadows on the desk at the bottom of the logo… Seeing some shadows where yhe logo meets the desk would add
+ * more realism."* Every light in the room is partly blocked close to the base, so the wood darkens there and recovers
+ * within a centimetre or two — whatever the lights' directions. BAKED from the mark's own geometry: each vertex within
+ * `DESK_MARK_CONTACT_REACH_M` of the desk darkens the desk under it by (1 − height/reach)², then blurred and normalised.
+ * A still take — the mark AT REST; ⚠ the tip must fade it (a later chunk). In the mark's frame (x along the letters,
+ * z back → face), so it is a child of the mark's rotation.
+ */
+const DESK_MARK_CONTACT_REACH_M = 0.02;
+const DESK_MARK_CONTACT_BLUR_M = 0.006;
+const DESK_MARK_CONTACT_MARGIN_M = 0.03;
+function buildContactShadow(geometry: THREE.BufferGeometry): { texture: THREE.CanvasTexture; width: number; depth: number; centreZ: number } {
+  const pos = geometry.getAttribute("position") as THREE.BufferAttribute;
+  const bb = new THREE.Box3().setFromBufferAttribute(pos);
+  const M = DESK_MARK_CONTACT_MARGIN_M, PX = 2000; // px per metre — 0.5 mm
+  const x0 = bb.min.x - M, z0 = bb.min.z - M, w = bb.max.x - bb.min.x + 2 * M, d = bb.max.z - bb.min.z + 2 * M;
+  const W = Math.ceil(w * PX), H = Math.ceil(d * PX);
+  const acc = document.createElement("canvas");
+  acc.width = W;
+  acc.height = H;
+  const g = acc.getContext("2d")!;
+  g.fillStyle = "#000";
+  g.fillRect(0, 0, W, H);
+  g.fillStyle = "#fff";
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i) - bb.min.y;
+    if (y > DESK_MARK_CONTACT_REACH_M) continue;
+    g.globalAlpha = 0.06 * (1 - y / DESK_MARK_CONTACT_REACH_M) ** 2;
+    g.fillRect((pos.getX(i) - x0) * PX - 1, (pos.getZ(i) - z0) * PX - 1, 2, 2);
+  }
+  const out = document.createElement("canvas");
+  out.width = W;
+  out.height = H;
+  const o = out.getContext("2d")!;
+  o.filter = `blur(${DESK_MARK_CONTACT_BLUR_M * PX}px)`;
+  o.drawImage(acc, 0, 0);
+  // normalise: the darkest point is full strength; the material's `opacity` then sets how dark that is
+  const img = o.getImageData(0, 0, W, H);
+  let peak = 1;
+  for (let i = 1; i < img.data.length; i += 4) peak = Math.max(peak, img.data[i]);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = Math.min(255, Math.round((img.data[i + 1] * 255) / peak));
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+  }
+  o.putImageData(img, 0, 0);
+  return { texture: new THREE.CanvasTexture(out), width: w, depth: d, centreZ: z0 + d / 2 };
+}
+
+function DeskMark() {
+  const roomLight = useMemo(() => deskMarkRoomLight(), []);
+  const shadowOn = useMemo(() => deskMarkShadowOn(), []);
+  const invalidate = useThree((st) => st.invalidate);
+  const gl = useThree((st) => st.gl);
+  const camera = useThree((st) => st.camera);
+  const place = useMemo(() => deskMarkPlacement(DESK_MARK, LOGO_MARK_DEFAULTS.depth), []);
+  type Built = {
+    geometry: THREE.BufferGeometry; gold: THREE.MeshPhysicalMaterial; env: THREE.WebGLRenderTarget;
+    contact: ReturnType<typeof buildContactShadow>;
+  };
+  const [built, setBuilt] = useState<Built | null>(null);
+  useEffect(() => {
+    let made: Built | null = null;
+    const id = window.setTimeout(() => {
+      const geometry = buildLogoMarkGeometry({ ...LOGO_MARK_DEFAULTS, scale: place.scale }).geometry;
+      const env = buildLogoStudioEnv(gl, place.rotationY);
+      const gold = roomLight ? createLogoGold() : environmentOnly(createLogoGold());
+      if (!roomLight) gold.envMap = env.texture;
+      made = { geometry, gold, env, contact: buildContactShadow(geometry) };
+      setBuilt(made);
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+      if (made) {
+        made.geometry.dispose();
+        made.gold.dispose();
+        made.env.dispose();
+        made.contact.texture.dispose();
+      }
+    };
+  }, [gl, place, roomLight]);
+  // the main camera must see the mark's layer (the neon pass sets its own mask and restores this one)
+  useEffect(() => {
+    camera.layers.enable(DESK_MARK_LAYER);
+    invalidate();
+    return () => camera.layers.disable(DESK_MARK_LAYER);
+  }, [camera, invalidate]);
+
+  const mesh = useRef<THREE.Mesh>(null);
+  useEffect(() => {
+    mesh.current?.layers.set(DESK_MARK_LAYER);
+    invalidate();
+  }, [built, invalidate]);
+  /**
+   * ⛔ THE TWO SHADOWS' DIRECTIONS (world axes, mark → light). (1) The studio's TOP softbox, turned with the mark — the
+   * first lights chunk. (2) THE LED STRIP — toward the strip's nearest measured point (`DESK_LED_STRIP`, its end at
+   * 1634 mm off the back wall, 2162 mm up, on the right wall): ~76° up, from the wall side and slightly behind, so its
+   * shadow falls steeply, trailing toward the c and toward the camera. ⚠ A long strip is a LINE source; one direction to
+   * its near end, with a coarser map for a softer edge, stands in for it.
+   */
+  const shadowDirs = useMemo(() => {
+    const top = new THREE.Vector3(...LOGO_STUDIO_TOP.position).applyAxisAngle(new THREE.Vector3(0, 1, 0), place.rotationY);
+    const centre = new THREE.Vector3(...place.position).add(new THREE.Vector3(0, place.scale / 2, 0));
+    const strip = new THREE.Vector3(...roomPoint(DESK_LED_STRIP.uMm, DESK_LED_STRIP.upMm, DESK_LED_STRIP.offWallToMm)).sub(centre);
+    return { top, strip };
+  }, [place]);
+  const faders = useMemo(
+    () => ({
+      top: neonNumber("marktop", 1, 0, 1),
+      strip: neonNumber("markstrip", DESK_MARK_STRIP_SHADOW, 0, 1),
+      contact: neonNumber("markao", DESK_MARK_CONTACT_OPACITY, 0, 1),
+    }),
+    [],
+  );
+
+  // the catcher: the desk top from its front edge to the wall, and 600 mm back from the desk's end
+  const catcher = useMemo(() => {
+    const c = DESK_RIGHT_CORNER;
+    const lengthMm = 600;
+    return {
+      position: roomPoint(c.uMm / 2, c.topMm, c.offWallMm - lengthMm / 2),
+      size: [-c.uMm / ROOM_MM_PER_UNIT, lengthMm / ROOM_MM_PER_UNIT] as [number, number],
+    };
+  }, []);
+
+  if (!built) return null;
+  return (
+    <>
+      <group position={place.position}>
+        <mesh ref={mesh} geometry={built.geometry} material={built.gold} rotation={[0, place.rotationY, 0]} castShadow={shadowOn} />
+        {shadowOn && faders.top > 0 && (
+          <MarkShadowLight dir={shadowDirs.top} centreY={place.scale / 2} strength={faders.top} mapSize={DESK_MARK_SHADOW_MAP} />
+        )}
+        {shadowOn && faders.strip > 0 && (
+          <MarkShadowLight dir={shadowDirs.strip} centreY={place.scale / 2} strength={faders.strip} mapSize={DESK_MARK_SHADOW_MAP / 2} />
+        )}
+        {shadowOn && (
+          <group rotation={[0, place.rotationY, 0]}>
+            <mesh position={[0, 0.0003, built.contact.centreZ]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
+              <planeGeometry args={[built.contact.width, built.contact.depth]} />
+              <meshBasicMaterial color="#000000" alphaMap={built.contact.texture} transparent opacity={faders.contact} depthWrite={false} toneMapped={false} />
+            </mesh>
+          </group>
+        )}
+      </group>
+      <group position={catcher.position} rotation={[0, place.rotationY, 0]} visible={shadowOn}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <planeGeometry args={catcher.size} />
+          <shadowMaterial opacity={DESK_MARK_SHADOW_OPACITY} />
+        </mesh>
+      </group>
+    </>
+  );
+}
+
 /** §1's faded room — Carl's 27 September take: *"That looks good. The navigation text stands out well against the
     dark background, as does the logo."* The only opacity he has seen. */
 const S1_ROOM_OPACITY = 0.2;
@@ -744,6 +1006,8 @@ export default function AboutCardCanvas() {
   const showGuides =
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("guides") === "1";
+  /** ⛔ THE DESK MARK'S STILL TAKE — ON ONLY WITH `?mark=1` (Carl, 8 October 2026). See `DeskMark`. */
+  const showMark = neonParam("mark") === "1";
 
   /**
    * ⛔⛔ CD's FACE TRANSMISSION, OVERRIDABLE IN THE ROOM WITH `?cd=0.93` — added
@@ -1142,6 +1406,8 @@ export default function AboutCardCanvas() {
           <RoomEnvironmentFromPlate />
 
           {take.on && <TakeLight s={take} />}
+
+          {showMark && <DeskMark />}
 
           {/* ⛔ NO PROXY PLANE. An earlier build put one 1.6x the card's size
               behind it, which on `/about` is an OPAQUE SLAB BLACKING OUT THE ROOM.

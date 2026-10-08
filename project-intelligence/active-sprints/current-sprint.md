@@ -111,6 +111,7 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
 |---|---|---|
 | The image scroll approved | — | R-032 |
 | Sprint 2 archived; this file rebuilt around the About section | `archive/sprint-2.md`, this file | Carl, 3 October 2026 |
+| D-088 desk mark, IN THE ROOM (`?mark=1`) — placed on the right desk (facing the camera, centred, face 65 mm from the end so a tip carries it off), lit by the bench studio alone, three shadows on the desk (studio top, LED strip, contact). ✔ Carl: *"Yes, excellent. Now the logo really looks that its in the world."* (R-037) | `about-card-canvas.tsx` (`DeskMark`), `about-room.ts` (desk, clamp, strip measured), `logo-mark-material.ts` (shared studio) | Plain `/about` unchanged. Three placement takes; the fall described by Carl (tip → back to us → the bin flips it → drop into §3), recorded in D-088. Next: the fall, in chunks |
 | D-088 desk mark, THE CROSSING — gold → platinum blue, an outside-in sphere about `logoMarkCentre()`, on the bench, at half `/start`'s pace. ✔ Carl: *"That looks great. Approved."* (R-036) | `logo-mark-material.ts` (`createLogoCrossing`), `logo-mark-geometry.ts` (`logoMarkReach`), `logo-bench.tsx`, `app/proto/logo/page.tsx` | Built without plan or Architect on Carl's word. Window 547.4 → 19.5 px; `/start`'s pace 1.015 s, halved to ~2.03 s. `/start`'s two transitions filmed and noted first |
 | D-088 desk mark, PASS 2 — the gold and the platinum blue on the clay shape, in a fixed judging studio. ✔ Blue *"great"*, gold a positive read (R-035). The crossing's end point measured | `logo-mark-material.ts`, `logo-bench.tsx`, `logo-mark-geometry.ts` (`logoMarkCentre`) | Blue in three takes: platinum tinted → logo sample → swatch #3F6DB8. Commit `a3a3d75` |
 | D-088 desk mark, PASS 1 — the shape in clay on `/proto/logo`: a flat face in a narrow chamfer, one profile all round. ✔ Carl: *"Yes"* — passes (R-034) | `app/proto/logo/page.tsx`, `components/about/logo-bench.tsx`, `logo-mark-geometry.ts`, `logo-mark-outline.ts` | Junction 46.7° → 6.3°; IoU 0.9961, edges ≤ 1 px. Plan v2 → v3; request `live-work/checkpoint-desk-mark-pass1-7-october.md`. Open for Carl: the stem's corners (trace 22–26 px vs the target's crisp mitres), A13, the dials |
@@ -133,7 +134,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-08 — the crossing built on the bench and approved at half `/start`'s pace (R-036).*
+*Last updated: 2026-10-08 — the desk mark in the room, lit and shadowed (R-037).*
+
+*Previously: 2026-10-08 — the crossing built on the bench and approved at half `/start`'s pace (R-036).*
 
 *Previously: 2026-10-07 (end of session) — passes 1 and 2 of the desk mark done (R-034, R-035); the crossing's end point measured; next: the crossing on the bench, tied to the object.*
 

@@ -125,3 +125,73 @@ export const ROOM_CARD_GUIDES: Record<"CA" | "CB" | "CS" | "CD", readonly (reado
   CS: [[0.29472, 0.07061], [0.57265, 0.14821], [0.57313, 0.26339], [0.29289, 0.20749]],
   CD: [[0.31774, 0.73145], [0.52415, 0.70956], [0.52432, 0.86014], [0.31577, 0.90329]],
 };
+
+// ── THE DESK MARK — its place on the right desk (D-088), 8 October 2026 ─────────────────────────────────────────────
+
+/**
+ * ⛔ THE RIGHT DESK'S TOP, ITS FRONT-RIGHT CORNER — measured 8 October 2026
+ * (`live-work/scripts/desk-right-end-measure-8-october.py`). The desk top's two edges were scanned on the plate (front
+ * edge (1800, 1002)→(2080, 1066); right edge (2100, 1065.5)→(2380, 1038.5); corner (2086.6, 1066.5) — 3 October had
+ * (2085, 1067)) and projected through the solved camera onto the 750 mm plane.
+ * ✔ CHECKED: the two edges meet at 88–89° on that plane (half a plate px moves it ~1°), and they run with the room's
+ * walls — the front edge along `ROOM_INTO_WALL`, the right edge along `ROOM_BACK_DIR`. **The desk stands against the
+ * RIGHT wall, ~625 mm deep, its near end toward the camera.** ⚠ 750 mm is the room's scale assumption (above).
+ */
+export const DESK_RIGHT_CORNER = { uMm: -625, offWallMm: 1875, topMm: 750 } as const;
+
+/**
+ * ⛔ THE MIC ARM'S CLAMP — where the arm joins the desk, measured 8 October 2026 (same script): a dark column at plate
+ * x 2219–2243, its foot on the desk top at y ≈ 1023.5 → u −92 mm (≈ 92 mm from the wall), 1699 mm off the back wall,
+ * ~40 mm across. Its front face is the line the mark stands in front of.
+ */
+export const DESK_MIC_CLAMP = { uMm: -92, offWallMm: 1699 } as const;
+
+/**
+ * ⛔ THE MARK ON THE DESK — TAKE 2, Carl, 8 October 2026. Take 1 (*"Face along the desk"*) was *"in the way of the
+ * monitors, which is my fault. Turn it 90 deg and bring it close to the edge of the right hand side"*; then *"Can you see
+ * where the mic arm joins the desk? Place it in front of that but keep the same distance from the front of the desk as
+ * the back."* So:
+ *   - **FACING THE CAMERA**, out over the desk's near end — its baseline along the desk's right edge (3 October's
+ *     orientation, *"parallel to the desk's right edge"*), the c toward the desk's front, the b toward the wall;
+ *   - **CENTRED ACROSS THE DESK'S DEPTH** — as far from the front edge as from the back (the right wall): 93 mm each;
+ *   - **IN FRONT OF THE MIC CLAMP** — its back `gapToClampMm` in front of the clamp, which puts its face ~139 mm in
+ *     from the desk's end.
+ *   - `heightMm` — the APPROVED SIZE (D-088, 3 October: 144 plate px tall) held at this centre: 227.9 mm.
+ * ⛔ TAKE 3, THE SAME DAY — THE FACE 65 mm FROM THE DESK'S END, SO GRAVITY CAN TAKE IT OFF. Carl: *"The act of scrolling
+ * will tip the logo over on its face at first. If its too far back it will stay on the desk. There wont be enough
+ * "weight" in the logo for it to topple off the desk… it must obey the rules of gravity."* Measured: the centre of mass
+ * (the volume centroid, 7 October: 0.426 of the height, ~9 mm behind the front-bottom edge) stands 97 mm up; tipped
+ * onto its face it lands ~97 mm forward of where its face stood. At take 2's 139 mm it would land ~42 mm SHORT of the
+ * edge and stay on the desk; **under ~97 mm it goes over**. 65 mm puts it ~32 mm past the edge — a fall, not a teeter
+ * (Carl: *"yes, proceed"*). Still in front of the clamp, ~90 mm clear of it. ⚠ The height stays 227.9 mm (a real object
+ * does not change size when it is moved); on screen it is ~3% larger than 144 px here. ⚰️ Take 1 (face along the desk, 244.2 mm, face 150 mm behind the front edge,
+ * the b 120 mm in from the end) was never committed; its record is D-088's 8 October entries.
+ */
+export type DeskMarkSpec = { heightMm: number; faceInFromEndMm: number };
+/** ⚰️ Take 2 stood its back 20 mm in front of the clamp (`gapToClampMm: 20`; face ~139 mm in from the end). */
+export const DESK_MARK: DeskMarkSpec = { heightMm: 227.9, faceInFromEndMm: 65 };
+
+/**
+ * Where the mark's mesh goes. The mesh (`buildLogoMarkGeometry`, scale = height in metres) has its origin at the bottom
+ * centre of its FLAT BACK, x along the letters, face toward +Z. ⚠ The cards' own Y rotation (`ROOM_YAW_DEG`) maps local
+ * +X to `ROOM_BACK_DIR` (across the desk, toward the wall) and local +Z to −`ROOM_INTO_WALL` (toward the desk's near
+ * end and the camera) — so the mark faces the camera as the cards do. `depth` is the mark's thickness in mark heights;
+ * the origin is the BACK, so it sits one thickness behind the face.
+ */
+export function deskMarkPlacement(spec: DeskMarkSpec, depth: number) {
+  const c = DESK_RIGHT_CORNER;
+  return {
+    position: roomPoint(c.uMm / 2, c.topMm, c.offWallMm - spec.faceInFromEndMm - depth * spec.heightMm),
+    rotationY: (ROOM_YAW_DEG * Math.PI) / 180,
+    scale: spec.heightMm / ROOM_MM_PER_UNIT,
+  };
+}
+
+/**
+ * ⛔ THE LED STRIP ABOVE THE DESK — the orange line along the RIGHT wall, measured 8 October 2026
+ * (`live-work/scripts/desk-right-end-measure-8-october.py`): the brightest row per plate column, (1700, 431) … (2200, 225),
+ * projected onto the right wall's plane. ✔ CHECKED: it comes out LEVEL — 2152–2174 mm up at every point (mean 2162) —
+ * running along the wall from 195 mm off the back wall to at least 1634 mm, where it leaves the frame (behind the desk
+ * mark, which stands at ~1800). Carl: *"theres a neon strip above. It would be expected to have some effect."*
+ */
+export const DESK_LED_STRIP = { uMm: 0, upMm: 2162, offWallFromMm: 195, offWallToMm: 1634 } as const;

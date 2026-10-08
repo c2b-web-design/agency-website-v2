@@ -65,6 +65,24 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-037 — The Desk Mark In The Room: Placed, Lit By The Bench Studio, Shadowed On The Desk (D-088): "Excellent… In The World"
+
+**Date:** 2026-10-08
+**Reviewer:** Human Founder
+**Subject:** `/about?mark=1` (plain `/about` unchanged) — the desk mark as a STILL take on the right desk. Placement (take 3): facing the camera, centred across the desk's depth, its face 65 mm from the desk's end so a tip onto its face carries it off (gravity); 227.9 mm tall (`DESK_MARK`, `about-room.ts`; desk, clamp and LED strip measured from the plate). Light: the bench's judging studio on the mark's material only, following its position; the room's take light kept off it ("Studio only"). Shadows on an invisible catcher cut to the desk top: the studio top softbox's, the LED strip's (softer, 0.6), and a contact shadow baked from the mark's geometry (0.5). Code: `about-card-canvas.tsx` (`DeskMark`, `MarkShadowLight`, `buildContactShadow`), `logo-mark-material.ts` (`LOGO_JUDGING_STUDIO`, `buildLogoStudioEnv`, `environmentOnly`). Frames: `live-work/screenshots/desk-mark-room-8-october/`, `…/desk-mark-light-8-october/`.
+
+**Carl's verdicts, verbatim:**
+- Placement, take 2: *"Yrs, thats right."* Take 3 (65 mm, for the fall): *"That looks in the right position."*
+- The first shadow, against none in the same light: *"yes, i can see it, very subtle."*
+- With the strip's and the contact shadows: *"Yes, excellent. Now the logo really looks that its in the world."*
+
+**Findings:**
+
+- ✔ **"Excellent… in the world"** — the level given: a strong positive verdict on the lit, shadowed take on the desk. Not stated as "approved"; not a master (D-035); no fader value individually approved.
+- ⚠ **OPEN:** the gold reads pale (near ivory on the face) — not raised by Carl; the room's reflection map contributes nothing measurable to the mark although applied (cause not established; may bear on RIM-DARK); the contact shadow is the mark AT REST and must fade as it tips; the fall, the bin, the crossing's place in the fall and route 1's structure are the next chunks.
+
+---
+
 ## R-036 — The Desk Mark's Gold → Platinum-Blue Crossing On The Bench (D-088): APPROVED
 
 **Date:** 2026-10-08
@@ -941,7 +959,9 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-10-08 — **R-036 added**: the desk mark's gold → platinum-blue crossing on the bench, at half `/start`'s pace — APPROVED.*
+*Last updated: 2026-10-08 — **R-037 added**: the desk mark in the room, lit by the bench studio and shadowed on the desk — "excellent… in the world".*
+
+*Previously: 2026-10-08 — **R-036 added**: the desk mark's gold → platinum-blue crossing on the bench, at half `/start`'s pace — APPROVED.*
 
 *Previously: 2026-10-07 — **R-035 added**: the desk mark's two metals (pass 2) — the blue "great", the gold a positive read.*
 

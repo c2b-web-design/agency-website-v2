@@ -163,3 +163,82 @@ export function createLogoCrossing(input: Partial<LogoBlueParams> = {}): LogoCro
     },
   };
 }
+
+// ── THE JUDGING STUDIO, AS DATA — shared by the bench and the room (8 October 2026) ────────────────────────────────
+
+/**
+ * ⛔ THE BENCH'S GOLD/BLUE/CROSSING LIGHT, ONE DEFINITION. Chunk 1's Lightformer studio (`6302913`), restored on the bench
+ * for pass 2 as a fixed judging fixture; moved here VERBATIM on 8 October 2026 so the room can light the desk mark with
+ * the SAME studio — Carl: *"i like the oblique lighting that was on the proto bench"*, and *"The oblique light must be at
+ * a fixed position to the logo and tied to its trajectory"*. ⛔ The bench (`GoldStudio`) and the room (`buildLogoStudioEnv`)
+ * both read this list; there is no second copy to drift.
+ * After the gold target's light: two tall softboxes (the two streaks along each stroke), a broad top, a front fill, the
+ * warm bounce of the floor it stands on, and a very dark warm base so no face reflects pure black. Each former is a
+ * `rect` facing the origin (drei `Lightformer`: a 1 × 1 plane, `MeshBasicMaterial`, colour × intensity, double-sided,
+ * not tone-mapped). In the mark's frame: +Z is where its face points, +Y up.
+ * ⚠ It is a REFLECTION environment: only DIRECTION matters, so it follows the mark wherever it moves while keeping its
+ * orientation — Carl's "position only" (8 October): the tumble turns the metal through a still light.
+ */
+export type StudioFormer = { position: [number, number, number]; scale: [number, number, number]; intensity: number; color?: string };
+export const LOGO_JUDGING_STUDIO: { background: string; formers: readonly StudioFormer[] } = {
+  background: "#0d0b09",
+  formers: [
+    { position: [-4, 1, 3], scale: [2.5, 8, 1], intensity: 1.7, color: "#fff1d8" },
+    { position: [4, 1, 3], scale: [2.5, 8, 1], intensity: 1.7, color: "#fff1d8" },
+    { position: [0, 5, 1], scale: [8, 2.5, 1], intensity: 1.1, color: "#fff1d8" },
+    { position: [0, 0.5, 6], scale: [6, 3, 1], intensity: 0.45 },
+    { position: [0, -4, 2], scale: [8, 2.5, 1], intensity: 0.5, color: "#ffb060" },
+  ],
+};
+/** The broad TOP softbox — the studio's light from above, the one a shadow on the surface below would come from. */
+export const LOGO_STUDIO_TOP = LOGO_JUDGING_STUDIO.formers[2];
+
+/**
+ * The studio as a PMREM environment for ONE material (`material.envMap`) — so it lights the mark and nothing else in a
+ * shared scene. `yawRad` turns the whole studio about Y with the mark, so the studio stands to the mark as it did on the
+ * bench. Rendered once; the caller disposes the target. Equivalent to drei's `<Environment>` (a 256 cube from the origin,
+ * near 0.1, far 1000) without setting `scene.environment`.
+ */
+export function buildLogoStudioEnv(gl: THREE.WebGLRenderer, yawRad = 0): THREE.WebGLRenderTarget {
+  const studio = new THREE.Scene();
+  studio.background = new THREE.Color(LOGO_JUDGING_STUDIO.background);
+  const geo = new THREE.PlaneGeometry(1, 1);
+  const mats: THREE.Material[] = [];
+  const turn = new THREE.Matrix4().makeRotationY(yawRad);
+  for (const f of LOGO_JUDGING_STUDIO.formers) {
+    const mat = new THREE.MeshBasicMaterial({ color: f.color ?? "white", side: THREE.DoubleSide, toneMapped: false });
+    mat.color.multiplyScalar(f.intensity);
+    mats.push(mat);
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(...f.position).applyMatrix4(turn);
+    mesh.scale.set(...f.scale);
+    mesh.lookAt(0, 0, 0);
+    studio.add(mesh);
+  }
+  const pmrem = new THREE.PMREMGenerator(gl);
+  const rt = pmrem.fromScene(studio, 0, 0.1, 1000, { size: 256 });
+  pmrem.dispose();
+  geo.dispose();
+  mats.forEach((m) => m.dispose());
+  return rt;
+}
+
+/**
+ * ⛔ LIT BY ITS ENVIRONMENT ONLY — the scene's direct lights are zeroed on this material. Carl, 8 October 2026: the mark is
+ * lit by the bench studio ALONE ("Studio only"); the room's take light (the cards' warm key) is kept off it. A shared
+ * canvas cannot exclude one mesh from a light, so the material ignores them instead: direct diffuse and specular are
+ * cleared after the lights are summed. ⚠ Shadows from those lights are cleared with them (it has no direct light to shade).
+ */
+export function environmentOnly<M extends THREE.MeshPhysicalMaterial>(m: M): M {
+  const prev = m.onBeforeCompile;
+  m.onBeforeCompile = (s, r) => {
+    prev?.call(m, s, r);
+    s.fragmentShader = s.fragmentShader.replace(
+      "#include <lights_fragment_end>",
+      "#include <lights_fragment_end>\nreflectedLight.directDiffuse = vec3(0.0);\nreflectedLight.directSpecular = vec3(0.0);",
+    );
+  };
+  const key = m.customProgramCacheKey.bind(m);
+  m.customProgramCacheKey = () => `${key()}|environment-only`;
+  return m;
+}

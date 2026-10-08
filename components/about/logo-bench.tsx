@@ -46,6 +46,7 @@ import {
 } from "./logo-mark-geometry";
 import {
   createLogoCrossing, createLogoGold, createLogoPlatinumBlue, LOGO_BLUE_DEFAULTS, LOGO_CROSSING_PACE_OF_START, LOGO_CROSSING_SWEEP_PER_S, LOGO_GOLD_DEFAULTS,
+  LOGO_JUDGING_STUDIO,
   type LogoCrossing,
 } from "./logo-mark-material";
 import { LOGO_JUNCTION, LOGO_OUTLINE_SOURCE as SRC } from "./logo-mark-outline";
@@ -211,14 +212,14 @@ function makeZebra() {
  * ⚠ Pass 3 (the lights) designs the real light — the room's. Nothing here is that design.
  */
 function GoldStudio() {
+  // ⛔ The formers are `LOGO_JUDGING_STUDIO` (`logo-mark-material.ts`) — moved there verbatim on 8 October 2026 so the
+  // room lights the desk mark with the same studio. Change it there, not here.
   return (
     <Environment resolution={256} frames={1}>
-      <color attach="background" args={["#0d0b09"]} />
-      <Lightformer form="rect" intensity={1.7} color="#fff1d8" position={[-4, 1, 3]} scale={[2.5, 8, 1]} target={[0, 0, 0]} />
-      <Lightformer form="rect" intensity={1.7} color="#fff1d8" position={[4, 1, 3]} scale={[2.5, 8, 1]} target={[0, 0, 0]} />
-      <Lightformer form="rect" intensity={1.1} color="#fff1d8" position={[0, 5, 1]} scale={[8, 2.5, 1]} target={[0, 0, 0]} />
-      <Lightformer form="rect" intensity={0.45} position={[0, 0.5, 6]} scale={[6, 3, 1]} target={[0, 0, 0]} />
-      <Lightformer form="rect" intensity={0.5} color="#ffb060" position={[0, -4, 2]} scale={[8, 2.5, 1]} target={[0, 0, 0]} />
+      <color attach="background" args={[LOGO_JUDGING_STUDIO.background]} />
+      {LOGO_JUDGING_STUDIO.formers.map((f, i) => (
+        <Lightformer key={i} form="rect" intensity={f.intensity} color={f.color} position={f.position} scale={f.scale} target={[0, 0, 0]} />
+      ))}
     </Environment>
   );
 }
