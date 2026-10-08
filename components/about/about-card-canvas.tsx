@@ -93,6 +93,7 @@ import {
   DESK_MARK_SOMERSAULT,
   DESK_RIGHT_CORNER,
   deskMarkPlacement,
+  deskMarkOriginUMm,
   roomPoint,
   type RoomCardSpec,
 } from "./about-room";
@@ -631,7 +632,8 @@ function TakeLight({ s }: { s: TakeSettings }) {
 }
 
 /**
- * ⛔ THE DESK MARK, A STILL TAKE IN THE ROOM — D-088, 8 October 2026, ONLY WITH `?mark=1` (plain `/about` is unchanged).
+ * ⛔ THE DESK MARK, A STILL TAKE IN THE ROOM — D-088, 8 October 2026. First ONLY WITH `?mark=1`;
+ * ON PLAIN `/about` since session 2 the same day (Carl: *"i need to see the logo in localhost:3000/about#roles"*; `?mark=0` hides it).
  * Carl: *"put the logo in the scene purpendicular to the right side angle of the desk"*; *"Behind ?mark=1 on /about"*.
  * Take 2, the same day: turned 90° to face the camera, centred across the desk's depth, in front of the mic clamp.
  * Take 3: its face 65 mm from the desk's end, so a tip onto its face carries it off the desk. Placement: `DESK_MARK`,
@@ -798,7 +800,8 @@ function buildContactShadow(geometry: THREE.BufferGeometry): { texture: THREE.Ca
  *     `?marktip=0..1` holds it still at that point of the tip (for frames); `?marktipms=` sets the tip's length.
  *   - The CONTACT shadow is the mark at rest: it fades over the first quarter of the tip. ⚠ A face-down contact shadow
  *     is not built. The cast shadows follow the mark by themselves (the shadow lights render it every frame).
- * ⚠ Calls `invalidate()` every frame while mounted (`?mark=1` only), so the loop runs with `frameloop="demand"`.
+ * ⚠ Calls `invalidate()` every frame while a loop PLAYS (`?markplay=fall|somersault`, `?cornerloop=1`), so it runs with
+ * `frameloop="demand"`. The default (take 3's start, still) and the corner pose ask for no frames. (Was "while mounted, `?mark=1` only".)
  */
 const DESK_MARK_TIP_MS = 1200;
 const DESK_MARK_TIP_HOLD_MS = 1500;
@@ -810,27 +813,159 @@ const DESK_MARK_TIP_HOLD_MS = 1500;
  * ⛔ IT PLAYS IN REAL TIME — `DESK_MARK_FALL_SPEED` 1: face down to the rest on the rim in ~0.49 s, as gravity times it.
  * Carl: *"if its at a quarter of the speed put it at full speed. i said nothing originally about the speed it should
  * fall."* The first take played at 0.25 — the Builder's viewing choice, never asked for. The scroll will drive it later.
- * Faders: `?markfallspeed=` (0.05–1), `?markfall=0..1` holds a point of the fall (0 face down … 1 on its back on the rim),
+ * Faders: `?markfallspeed=` (0.05–1), `?markfall=0..1` holds a point of the fall (0 face down … 1 where the fall ENDS — on its
+ * back across the rim by default, just before the strike with `?markfallto=bin`),
  * `?marktip=0..1` a point of the tip.
  * ⚠ The tip (stage 1) is still "gravity suspended" (θ = 90° · p²); the fall starts from rest face down, as simulated.
  */
 const DESK_MARK_FALL_SPEED = 1;
+/**
+ * ⛔ WHERE THE FALL STOPS — JUST BEFORE THE BIN (Carl, 8 October 2026, session 2: *"the face plant was good, the teeter
+ * fantastic and the fall. i want you to recreate them but stop the fall just before it hits the bin. move it 50mm left"*).
+ * 20 ms before the strike (`DESK_MARK_FALL.contactMs` — 347.6 at 50 mm left, re-simulated), as stage 2 first stopped.
+ * ⛔ SUPERSEDED AS THE DEFAULT the same session: *"make it now so the flat back sits on the rim and stop.. i want to see how
+ * much of the logos left side is hanging over the rim."* → the fall plays on to its REST ACROSS THE RIM
+ * (`DESK_MARK_FALL.restMs`); `?markfallto=bin` still stops before the strike.
+ */
+const DESK_MARK_FALL_STOP_MS = DESK_MARK_FALL.contactMs - 20;
 const DESK_MARK_FALL_HOLD_MS = 2500;
 /** A pose of the mark: its centre of mass relative to the mark's rest origin (yaw frame — x along the letters / the
  *  back wall, y up, z toward the camera; metres) and its orientation. */
 type MarkPose = { x: number; y: number; z: number; q: THREE.Quaternion };
 const X_AXIS = new THREE.Vector3(1, 0, 0);
 /** The 2D fall's state at `ms` after face down, interpolated from the simulation's rows (an angle about the letters). */
-function fallPose(ms: number, originOffMm: number, xc: number): MarkPose {
+function fallRow(ms: number): [number, number, number] {
   const R = DESK_MARK_FALL.rows;
   let i = 0;
   while (i < R.length - 2 && R[i + 1][0] < ms) i++;
   const a = R[i], b = R[i + 1];
   const k = Math.min(1, Math.max(0, (ms - a[0]) / (b[0] - a[0] || 1)));
   const lerp = (j: number) => a[j] + (b[j] - a[j]) * k;
+  return [lerp(1), lerp(2), lerp(3)]; // off mm, up mm, theta rad
+}
+function fallPose(ms: number, originOffMm: number, xc: number): MarkPose {
+  const [off, up, th] = fallRow(ms);
   return {
-    x: xc, y: (lerp(2) - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT, z: (lerp(1) - originOffMm) / ROOM_MM_PER_UNIT,
-    q: new THREE.Quaternion().setFromAxisAngle(X_AXIS, lerp(3)),
+    x: xc, y: (up - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT, z: (off - originOffMm) / ROOM_MM_PER_UNIT,
+    q: new THREE.Quaternion().setFromAxisAngle(X_AXIS, th),
+  };
+}
+/**
+ * ⛔ THE FLIP OFF THE RIM — CREATIVE LICENCE, BUILT ON CARL'S WORD (8 October 2026, session 2): *"no growth yet. lets sort
+ * out the movement. It needs to flip and face us. lets stop there. You can take some licence. it could flip to ba a little
+ * higher than it is now. Im eventually going to slow it down. In demonstrating our capability as web designers it looking
+ * good is more important than sticking rigidly to the laws of physics."*
+ *   - UP TO THE SLAP: the simulated fall, unchanged (`DESK_MARK_FALL`, 85 mm left) — the strike on the rim (`contactMs`,
+ *     upside down, back to us), then its turn about the strike point until the FLAT BACK SLAPS DOWN ACROSS THE RIM
+ *     (`restMs`, θ 270°, face up).
+ *   - ⛔ THE REBOUND COMES FROM THAT SLAP. Carl, on the first take (which kicked it up at the first touch): *"its got to hit
+ *     the bin first, then the rise rebound. Its hitting the biv that makes it rise."* The first touch is one instant of an
+ *     upside-down mark and does not read as a hit; the flat back meeting the rim does.
+ *   - THE LICENCE: the slap KICKS it up, a little LEFT (the left weight and the curved rim both push that way, at this
+ *     start) and a little toward the camera (clear of the desk's end).
+ *   - THEN A REAL FLIGHT: the centre of mass on a gravity parabola (9.81 m/s²) up to TAKE 1's END — `riseMm` above the
+ *     STRIKE's centre of mass (so ~290 mm above the slap's), `leftMm` left, `outMm` out from the strike —
+ *     constant sideways speed, constant spin — the SOMERSAULT FINISHED (θ 270° on to 360°, the same way round: a quarter
+ *     turn) WITH A TWIST (yaw 0 → `psiEnd`, the face aimed at the camera's position — OBLIQUE on screen). It arrives
+ *     upright and facing us AT THE TOP OF THE RISE, and the take STOPS there (Carl: "lets stop there") — the one point of
+ *     a flight where stopping reads as natural.
+ *   - The spin follows from the rise: higher = longer in the air = slower turn. ~243 ms aloft, ~370°/s.
+ * ⚠ STARTING VALUES, the Builder's: rise 200, left 150, out 100 mm. Faders `?fliprise=` `?flipleft=` `?flipout=` (mm).
+ */
+/**
+ * ⛔ THE BOUNCE IS SLOWED — Carl, the same session: *"yes, but the bounce off the bin is too fast. slow it down"*. The
+ * flight from the slap plays at `speed` of real time (the fall before it stays real time). ⚠ 0.5 is the Builder's starting
+ * value — his earlier pick for stage 4's take, and inside his *"somewhere between"* ¼ and real time. Fader `?flipspeed=`.
+ */
+const DESK_MARK_FLIP = { riseMm: 200, leftMm: 150, outMm: 100, speed: 0.5 };
+/**
+ * ⛔ THE SECOND FLIP, LOSING MOMENTUM, ENDING FACE-ON — Carl, the same session, on the slowed bounce: *"Much better. It
+ * looks to me as if its slightly leaning forward. Perfect. We can get another flip forward out of it, but slower, it will
+ * be losing momentum. When its complete, then it can be face on."*
+ *   - From the top of the rise (upright, oblique — kept as it was, "Perfect") it carries on FORWARD one more full turn,
+ *     starting at the first flip's own spin and SLOWING EVENLY TO A STOP (constant deceleration — so its length follows
+ *     from that spin: twice the time the same turn would take at full speed, ~3.9 s at the bounce's half speed).
+ *   - Over the same turn the TWIST carries on from the oblique aim toward FACE-ON — the face parallel to the screen
+ *     (against the camera's viewing direction) — complete exactly as the flip completes. ⚰️ First take: all the way to
+ *     face-on; now HALFWAY (`faceShare`, below).
+ *   - Its drift (left, toward the camera) carries on from the flight's speed and slows evenly to a stop with the flip
+ *     (`driftMs`, below) — so nothing stops dead at the top of the rise. Height held (licence).
+ * `?flip2=0` ends at the top of the rise, as before; `?flip2drift=` (ms; 0 = the whole flip).
+ */
+/**
+ * ⛔ HALFWAY TO FACE-ON, NOT FACE-ON — Carl, on seeing it end face-on: *"it doesnt look right being face on. make the angle
+ * from its oblique position to halfway what it would be to its face on position when the flip is complete so it would
+ * look less oblique"*. The twist ends at `faceShare` of the way from the oblique aim to face-on. Fader `?flip2face=` (0–1).
+ */
+/**
+ * ⛔ THE DRIFT LASTS THE WHOLE SECOND FLIP — Carl: *"when it comes off the bin it appears to be travelling left but seems
+ * hovvering when the second flip happens. it should still travel left but wuth less momentum"*. `driftMs` 0 = the drift
+ * slows evenly over the WHOLE second flip and stops as it completes (⚰️ was 600 ms — it stopped early and the mark hung).
+ */
+const DESK_MARK_FLIP2 = { driftMs: 0, faceShare: 0.5 };
+/** The flip starts at the slap — the flat back down across the rim. */
+const DESK_MARK_FLIP_FROM_MS = DESK_MARK_FALL.restMs;
+type FlipSpec = { riseMm: number; leftMm: number; outMm: number; speed: number; psiEnd: number; second: { on: boolean; driftMs: number; faceShare: number; psiFace: number } };
+const Y_AXIS = new THREE.Vector3(0, 1, 0);
+/** The flip's time aloft, ms: a gravity parabola rising `riseMm` takes √(2h/g) to its top. */
+function flipMs(riseMm: number) {
+  return 1000 * Math.sqrt((2 * Math.max(1, riseMm)) / 9810);
+}
+/** Where the flip ends — the centre of mass at the top of the rise, in the mark's yaw frame (units). ⛔ Measured from the
+ *  STRIKE (`contactMs`), as take 1 was — Carl: *"The first position you had it was best, that combined with striking the
+ *  bin."* The flight to it starts at the slap (`DESK_MARK_FLIP_FROM_MS`), lower, so it rises further than `riseMm`. */
+function flipEnd(f: { riseMm: number; leftMm: number; outMm: number }, originOffMm: number, xc: number) {
+  const [off, up] = fallRow(DESK_MARK_FALL.contactMs);
+  return new THREE.Vector3(
+    xc - f.leftMm / ROOM_MM_PER_UNIT,
+    (up + f.riseMm - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT,
+    (off + f.outMm - originOffMm) / ROOM_MM_PER_UNIT,
+  );
+}
+/** The flight from the slap to take 1's end: the rise and the outward step it actually makes (mm). */
+function flipFlight(f: { riseMm: number; outMm: number }) {
+  const [offS, upS] = fallRow(DESK_MARK_FALL.contactMs);
+  const [off0, up0] = fallRow(DESK_MARK_FLIP_FROM_MS);
+  return { off0, up0, riseMm: upS + f.riseMm - up0, outMm: offS + f.outMm - off0 };
+}
+/** The flip's played lengths, ms: the flight (slowed by `speed`), and the second flip (0 when off). */
+function flipPlayed(f: FlipSpec) {
+  const flight = flipMs(flipFlight(f).riseMm) / f.speed;
+  const th0 = fallRow(DESK_MARK_FLIP_FROM_MS)[2];
+  // even deceleration from the flight's spin w0 to 0 over a full turn takes 2 · 2π / w0
+  const second = f.second.on ? (2 * 2 * Math.PI) / ((2 * Math.PI - th0) / flight) : 0;
+  return { flight, second };
+}
+function flipPose(ms: number, f: FlipSpec, originOffMm: number, xc: number): MarkPose {
+  const fl = flipFlight(f);
+  const { flight, second } = flipPlayed(f);
+  if (second > 0 && ms > flight) {
+    // ⛔ THE SECOND FLIP: ease-out matched to the flight's spin, the twist on to face-on, the drift easing out
+    const u = Math.min(1, (ms - flight) / second), e = 2 * u - u * u;
+    const driftMs = f.second.driftMs > 0 ? f.second.driftMs : second;
+    const ud = Math.min(1, (ms - flight) / driftMs), ed = 2 * ud - ud * ud;
+    const leftMm = f.leftMm + ((f.leftMm / flight) * driftMs * ed) / 2;
+    const outMm = fl.outMm + ((fl.outMm / flight) * driftMs * ed) / 2;
+    const q = new THREE.Quaternion()
+      .setFromAxisAngle(Y_AXIS, f.psiEnd + (f.second.psiFace - f.psiEnd) * f.second.faceShare * e)
+      .multiply(new THREE.Quaternion().setFromAxisAngle(X_AXIS, 2 * Math.PI * e));
+    return {
+      x: xc - leftMm / ROOM_MM_PER_UNIT,
+      y: (fl.up0 + fl.riseMm - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT,
+      z: (fl.off0 + outMm - originOffMm) / ROOM_MM_PER_UNIT,
+      q,
+    };
+  }
+  const tau = Math.min(1, Math.max(0, ms / flight));
+  const th0 = fallRow(DESK_MARK_FLIP_FROM_MS)[2];
+  const q = new THREE.Quaternion()
+    .setFromAxisAngle(Y_AXIS, f.psiEnd * tau)
+    .multiply(new THREE.Quaternion().setFromAxisAngle(X_AXIS, th0 + (2 * Math.PI - th0) * tau));
+  return {
+    x: xc - (f.leftMm * tau) / ROOM_MM_PER_UNIT,
+    y: (fl.up0 + fl.riseMm * (1 - (1 - tau) ** 2) - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT,
+    z: (fl.off0 + fl.outMm * tau - originOffMm) / ROOM_MM_PER_UNIT,
+    q,
   };
 }
 /**
@@ -847,7 +982,7 @@ function somersaultPose(ms: number, originOffMm: number): MarkPose {
   const lerp = (j: number) => a[j] + (b[j] - a[j]) * k;
   const qa = new THREE.Quaternion(a[4], a[5], a[6], a[7]), qb = new THREE.Quaternion(b[4], b[5], b[6], b[7]);
   return {
-    x: (lerp(1) - DESK_RIGHT_CORNER.uMm / 2) / ROOM_MM_PER_UNIT,
+    x: (lerp(1) - deskMarkOriginUMm(DESK_MARK)) / ROOM_MM_PER_UNIT, // absolute u: the somersault does not slide with `leftMm`
     y: (lerp(2) - DESK_RIGHT_CORNER.topMm) / ROOM_MM_PER_UNIT,
     z: (lerp(3) - originOffMm) / ROOM_MM_PER_UNIT,
     q: qa.slerp(qb, k),
@@ -855,7 +990,8 @@ function somersaultPose(ms: number, originOffMm: number): MarkPose {
 }
 const DESK_MARK_SOMERSAULT_SPEED = 0.5;
 /**
- * ⛔ THE CORNER — PLACED STEP BY STEP BY CARL (8 October 2026), `?markplay=corner`. His sketch: the desk's front and end
+ * ⛔ THE CORNER — PLACED STEP BY STEP BY CARL (8 October 2026), `?markplay=corner` (the default for part of session 2,
+ * then take 3's start was restored). His sketch: the desk's front and end
  * edges meeting at the front-right corner, the mark STANDING between them — *"The bottom edge of the yellow is the bottom
  * of the logo. so its standing upright. from there it must fall face down"* — then *"move it left so it is over the edge
  * then stand it back up agaid and decide its size"*. Step 1: standing on the corner's bisector (`cornerpsi` −45°: 0 faces
@@ -873,17 +1009,19 @@ function cornerPose(p: number, psiDeg: number, dMm: number, leftMm: number, com:
   const q = qY.clone().multiply(new THREE.Quaternion().setFromAxisAngle(X_AXIS, th));
   // the pivot: the face's front-bottom edge at mid-letters, dMm in from the front edge (u) and the end edge (off), slid left
   const pivot = new THREE.Vector3(
-    (DESK_RIGHT_CORNER.uMm + dMm - leftMm - DESK_RIGHT_CORNER.uMm / 2) / ROOM_MM_PER_UNIT,
+    (DESK_RIGHT_CORNER.uMm + dMm - leftMm - deskMarkOriginUMm(DESK_MARK)) / ROOM_MM_PER_UNIT, // absolute: not slid by `leftMm`
     0,
     (DESK_RIGHT_CORNER.offWallMm - dMm - originOffMm) / ROOM_MM_PER_UNIT,
   );
   const c = new THREE.Vector3(com[0], com[1], com[2] - depth).applyQuaternion(q).add(pivot);
   return { x: c.x, y: c.y, z: c.z, q };
 }
-function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, fallFixed, tipMs, fallSpeed, play, corner, com, depth, originOffMm }: {
+function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, flip, play, corner, com, depth, originOffMm }: {
   bodyRef: React.RefObject<THREE.Group | null>; followRef: React.RefObject<THREE.Group | null>;
   contactRef: React.RefObject<THREE.MeshBasicMaterial | null>; contactOpacity: number;
-  tipFixed: number | null; fallFixed: number | null; tipMs: number; fallSpeed: number; play: "fall" | "somersault" | "corner";
+  tipFixed: number | null; fallFixed: number | null; tipMs: number; fallSpeed: number; fallEndMs: number;
+  flip: FlipSpec | null;
+  play: "start" | "fall" | "somersault" | "corner";
   corner: { psi: number; d: number; left: number; loop: boolean };
   com: [number, number, number]; depth: number; originOffMm: number;
 }) {
@@ -905,7 +1043,10 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, 
       return { x: xc, y: yc * Math.cos(th) - (zc - depth) * Math.sin(th), z: depth + yc * Math.sin(th) + (zc - depth) * Math.cos(th), q: new THREE.Quaternion().setFromAxisAngle(X_AXIS, th) };
     };
     let pose: MarkPose;
-    if (play === "corner") {
+    if (play === "start") {
+      // ⛔ TAKE 3, STILL — the first fall's start (the default). `?marktip=` holds a point of the tip; no frames asked for.
+      pose = tipPose(tipFixed ?? 0);
+    } else if (play === "corner") {
       let p: number;
       // ⛔ STILL AND UPRIGHT by default — Carl, 8 October: "stop the animation and have it stand upright". The tip loop
       // is `?cornerloop=1`; `?marktip=` holds any point of the tip.
@@ -929,8 +1070,11 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, 
         st.invalidate();
       }
     } else {
-      const fallMs = DESK_MARK_FALL.restMs;
-      if (fallFixed !== null) pose = fallPose(fallFixed * fallMs, originOffMm, xc);
+      // with the flip, the fall runs to the slap onto the rim and the flip carries on from it
+      const fallMs = flip ? DESK_MARK_FLIP_FROM_MS + flipPlayed(flip).flight + flipPlayed(flip).second : fallEndMs;
+      const fallOrFlip = (ms: number) =>
+        flip && ms > DESK_MARK_FLIP_FROM_MS ? flipPose(ms - DESK_MARK_FLIP_FROM_MS, flip, originOffMm, xc) : fallPose(ms, originOffMm, xc);
+      if (fallFixed !== null) pose = fallOrFlip(fallFixed * fallMs);
       else if (tipFixed !== null) pose = tipPose(tipFixed);
       else {
         const playMs = fallMs / fallSpeed;
@@ -939,7 +1083,7 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, 
         const t = clockRef.current;
         if (t < DESK_MARK_TIP_HOLD_MS) pose = tipPose(0);
         else if (t < DESK_MARK_TIP_HOLD_MS + tipMs) pose = tipPose((t - DESK_MARK_TIP_HOLD_MS) / tipMs);
-        else pose = fallPose(Math.min(fallMs, (t - DESK_MARK_TIP_HOLD_MS - tipMs) * fallSpeed), originOffMm, xc);
+        else pose = fallOrFlip(Math.min(fallMs, (t - DESK_MARK_TIP_HOLD_MS - tipMs) * fallSpeed));
         st.invalidate();
       }
     }
@@ -960,8 +1104,13 @@ function DeskMark() {
   const shadowOn = useMemo(() => deskMarkShadowOn(), []);
   const studioIntensity = useMemo(() => neonNumber("markenv", DESK_MARK_STUDIO_INTENSITY, 0, 2), []);
   const motion = useMemo(() => {
+    // ⛔ THE FALL ONTO THE RIM IS THE DEFAULT (Carl, 8 October 2026, session 2 — first stopped before the bin,
+    // `?markfallto=bin`), looping: upright, hold, the face plant, the teeter, the fall onto its back across the rim, hold. ⚰️ Earlier the same session: the
+    // CORNER (`?markplay=corner`), then take 3's start standing still (`?markplay=start`). The somersault run is
+    // `?markplay=somersault`.
     const mp = neonParam("markplay");
-    const play: "fall" | "somersault" | "corner" = mp === "fall" ? "fall" : mp === "corner" ? "corner" : "somersault";
+    const play: "start" | "fall" | "somersault" | "corner" =
+      mp === "start" ? "start" : mp === "somersault" ? "somersault" : mp === "corner" ? "corner" : "fall";
     const fixed = (key: string) => {
       const raw = neonParam(key);
       return raw === null || raw.trim() === "" || !Number.isFinite(Number(raw)) ? null : Math.min(1, Math.max(0, Number(raw)));
@@ -971,6 +1120,20 @@ function DeskMark() {
       fallFixed: fixed("markfall"),
       tipMs: neonNumber("marktipms", DESK_MARK_TIP_MS, 100, 10000),
       fallSpeed: neonNumber("markfallspeed", play === "somersault" ? DESK_MARK_SOMERSAULT_SPEED : DESK_MARK_FALL_SPEED, 0.05, 1),
+      fallEndMs: neonParam("markfallto") === "bin" ? DESK_MARK_FALL_STOP_MS : DESK_MARK_FALL.restMs,
+      // ⛔ THE FLIP IS THE DEFAULT END (8 October, session 2); `?markfallto=rest` / `=bin` give the simulated ends
+      flipOn: neonParam("markfallto") !== "rest" && neonParam("markfallto") !== "bin",
+      flipBase: {
+        riseMm: neonNumber("fliprise", DESK_MARK_FLIP.riseMm, 0, 600),
+        leftMm: neonNumber("flipleft", DESK_MARK_FLIP.leftMm, -400, 600),
+        outMm: neonNumber("flipout", DESK_MARK_FLIP.outMm, -200, 600),
+        speed: neonNumber("flipspeed", DESK_MARK_FLIP.speed, 0.05, 1),
+      },
+      flip2: {
+        on: neonParam("flip2") !== "0",
+        driftMs: neonNumber("flip2drift", DESK_MARK_FLIP2.driftMs, 0, 10000),
+        faceShare: neonNumber("flip2face", DESK_MARK_FLIP2.faceShare, 0, 1),
+      },
       play,
       corner: {
         psi: neonNumber("cornerpsi", DESK_MARK_CORNER.psiDeg, -90, 0),
@@ -1056,6 +1219,22 @@ function DeskMark() {
     [motion.play, motion.corner, comM, depthM],
   );
   const originOffMm = DESK_RIGHT_CORNER.offWallMm - DESK_MARK.faceInFromEndMm - LOGO_MARK_DEFAULTS.depth * DESK_MARK.heightMm;
+  /** ⛔ THE FLIP's TWIST — the yaw that aims the face at the camera's POSITION from where the flip ends: the camera taken
+   *  into the mark's yaw frame (the placement's position and turn), its horizontal bearing from the end point. Near the
+   *  frame's right edge that is ~20° off the view axis, so on screen it ends OBLIQUE, not face-on — ✔ Carl's choice:
+   *  *"so its oblique to us… Not end up face on."* (⚰️ A take that turned it parallel to the screen was never shown.) */
+  const flip = useMemo<FlipSpec | null>(() => {
+    if (!motion.flipOn) return null;
+    const end = flipEnd(motion.flipBase, originOffMm, comM[0]);
+    const cam = camera.position.clone().sub(new THREE.Vector3(...place.position)).applyAxisAngle(Y_AXIS, -place.rotationY).sub(end);
+    // the second flip's end: FACE-ON — the face against the camera's viewing direction, so parallel to the screen
+    const view = camera.getWorldDirection(new THREE.Vector3()).applyAxisAngle(Y_AXIS, -place.rotationY);
+    return {
+      ...motion.flipBase,
+      psiEnd: Math.atan2(cam.x, cam.z),
+      second: { ...motion.flip2, psiFace: Math.atan2(-view.x, -view.z) },
+    };
+  }, [motion.flipOn, motion.flipBase, motion.flip2, originOffMm, comM, camera, place]);
   const faders = useMemo(
     () => ({
       top: neonNumber("marktop", 1, 0, 1),
@@ -1080,7 +1259,7 @@ function DeskMark() {
     <>
       <MarkMotion
         bodyRef={body} followRef={follow} contactRef={contactMat} contactOpacity={faders.contact}
-        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} play={motion.play} corner={motion.corner}
+        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} fallEndMs={motion.fallEndMs} flip={flip} play={motion.play} corner={motion.corner}
         com={comM} depth={depthM} originOffMm={originOffMm}
       />
       <group position={place.position}>
@@ -1243,8 +1422,9 @@ export default function AboutCardCanvas() {
   const showGuides =
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("guides") === "1";
-  /** ⛔ THE DESK MARK'S STILL TAKE — ON ONLY WITH `?mark=1` (Carl, 8 October 2026). See `DeskMark`. */
-  const showMark = neonParam("mark") === "1";
+  /** ⛔ THE DESK MARK — ON PLAIN `/about` (Carl, 8 October 2026, session 2: *"i need to see the logo in
+   *  localhost:3000/about#roles"*). It was behind `?mark=1` (8 October, session 1); `?mark=0` hides it for a control. */
+  const showMark = neonParam("mark") !== "0";
 
   /**
    * ⛔⛔ CD's FACE TRANSMISSION, OVERRIDABLE IN THE ROOM WITH `?cd=0.93` — added

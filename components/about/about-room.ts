@@ -167,15 +167,36 @@ export const DESK_MIC_CLAMP = { uMm: -92, offWallMm: 1699 } as const;
  * does not change size when it is moved); on screen it is ~3% larger than 144 px here. ⚰️ Take 1 (face along the desk, 244.2 mm, face 150 mm behind the front edge,
  * the b 120 mm in from the end) was never committed; its record is D-088's 8 October entries.
  */
-export type DeskMarkSpec = { heightMm: number; faceInFromEndMm: number };
+export type DeskMarkSpec = { heightMm: number; faceInFromEndMm: number; leftMm: number };
 /** ⚰️ Take 2 stood its back 20 mm in front of the clamp (`gapToClampMm: 20`; face ~139 mm in from the end). */
 /**
- * ⛔ 10% SMALLER — Carl, 8 October 2026: *"make it 10% smaller"* (earlier: *"if you have to make the logo a few mm smaller
- * im good with that so it doesnt cover too much of the monitor"*). 227.9 → **205.1 mm** (439 → 395 mm wide). ⚠ The 2D fall
- * (`DESK_MARK_FALL`) and the first somersault (`DESK_MARK_SOMERSAULT`) were SIMULATED at 227.9 — superseded takes, now
- * slightly inconsistent with this size; the corner pose (`?markplay=corner`) derives from this number.
+ * ⚰️ 10% SMALLER — Carl, 8 October 2026: *"make it 10% smaller"* — 227.9 → 205.1 mm (439 → 395 mm wide), for the corner
+ * placement. ⛔ RESTORED TO **227.9 mm** the same day (session 2), with take 3's start: *"move the logo into its original
+ * starting position and restore its size, i had it reduced by 10%."* The 2D fall (`DESK_MARK_FALL`) and the first
+ * somersault (`DESK_MARK_SOMERSAULT`) were simulated at 227.9, so they match this size again; the corner pose
+ * (`?markplay=corner`) derives from this number, and its 102 mm was found at 227.9.
  */
-export const DESK_MARK: DeskMarkSpec = { heightMm: 205.1, faceInFromEndMm: 65 };
+/**
+ * ⛔ 50 mm LEFT — Carl, 8 October 2026, session 2: *"the starting position of the logo was wrong, it should of been a
+ * little more left"* → *"move it 50mm left"*. LEFT on screen is toward the desk's FRONT EDGE (−u): the mark's centre goes
+ * from the desk's middle (u −312.5) to u −362.5, its c end 43 mm in from the front edge — still wholly on the desk. ✔ The
+ * fall is unchanged by it (`DESK_MARK_FALL`: its plane is the desk's end), and so is the strike's moment — re-simulated
+ * (`LEFT_MM=50`, `desk-mark-fall-to-bin-8-october.py`): the rim at 348 ms, 199°, as before; only the point that meets it
+ * moves along the b's bowl (x +0.218 → +0.526).
+ */
+/**
+ * ⛔ 85 mm LEFT — the same session, after the rest on the rim at 50 mm (Carl: *"Because more "weight" is now on the left
+ * would not that help move the logo left. Its right hand side would raise up as its left hand side goes dowm."* → *"Move
+ * the logos starting position, we will see how it looks."*). The Builder's figure: at 50 the centre of mass rests 31 mm
+ * INSIDE the rim's left edge (it stays); at 85 it rests 3 mm OUTSIDE it (u −398 against the left-most support at −395) —
+ * a real mark would tip off to the LEFT. Its c end stands 8 mm in from the desk's front edge (> ~93 mm and its base would
+ * hang off the front edge before it falls). ⚠ The 2D fall CANNOT show that tip — it has no sideways motion.
+ */
+export const DESK_MARK: DeskMarkSpec = { heightMm: 227.9, faceInFromEndMm: 65, leftMm: 85 };
+/** The mark's rest origin across the desk (u, mm) — the take's centre, slid left by `leftMm`. */
+export function deskMarkOriginUMm(spec: DeskMarkSpec) {
+  return DESK_RIGHT_CORNER.uMm / 2 - spec.leftMm;
+}
 
 /**
  * Where the mark's mesh goes. The mesh (`buildLogoMarkGeometry`, scale = height in metres) has its origin at the bottom
@@ -187,7 +208,7 @@ export const DESK_MARK: DeskMarkSpec = { heightMm: 205.1, faceInFromEndMm: 65 };
 export function deskMarkPlacement(spec: DeskMarkSpec, depth: number) {
   const c = DESK_RIGHT_CORNER;
   return {
-    position: roomPoint(c.uMm / 2, c.topMm, c.offWallMm - spec.faceInFromEndMm - depth * spec.heightMm),
+    position: roomPoint(deskMarkOriginUMm(spec), c.topMm, c.offWallMm - spec.faceInFromEndMm - depth * spec.heightMm),
     rotationY: (ROOM_YAW_DEG * Math.PI) / 180,
     scale: spec.heightMm / ROOM_MM_PER_UNIT,
   };
@@ -220,6 +241,17 @@ export const DESK_LED_STRIP = { uMm: 0, upMm: 2162, offWallFromMm: 195, offWallT
  * THE RIM at 489 ms (θ 270°), and stops (no bounce modelled). ✔ SUPPORTED: solid back crosses the rim on every
  * side of its centre of mass. OVERHANG past the rim's outer edge: 142 mm on the LEFT (the c end), 17 mm right, 28 mm
  * toward the desk, 0 toward the camera; ~45% of it outside the rim, ~48% over the opening.
+ * ⛔⛔ THE ROWS BELOW ARE THE 85 mm-LEFT RUN (session 2, `LEFT_MM=85`): the strike at 350.4 ms, the same point of the b's
+ * bowl (x +0.526, y 0.879); 366°/s after it; on its back at ~488 ms. ⛔ ITS CENTRE OF MASS RESTS 3 mm OUTSIDE THE RIM's LEFT
+ * EDGE (u −398 against −395): NOT SUPPORTED — a real mark tips off to the left here; the 2D model holds it. OVERHANG past
+ * the rim's outer edge: **227 mm LEFT**, 0 right, 31 toward the desk, 0 toward the camera; 58% of the back outside the rim.
+ * ⚰️ THE 50 mm-LEFT RUN (Carl, 8 October 2026, session 2: *"make it now so the flat back sits on the rim and stop..
+ * i want to see how much of the logos left side is hanging over the rim."*) — the figures above it are the centred take's
+ * (u −312.5); both kept as history. Stage 2 is identical (checked row for row). The strike: 347.6 ms, the
+ * back at the b's bowl further along (x +0.526, y 0.907, z 0); 352°/s after it, 12% of the energy kept. On its back across
+ * the rim at 490.0 ms. ✔ SUPPORTED, BUT NARROWLY ON THE LEFT: the back meets the rim from u −393 to −243 and the centre of
+ * mass is at u −362 — 31 mm inside the left-most support. OVERHANG past the rim's outer edge: **192 mm on the LEFT** (the c
+ * end; 142 centred), 0 right, 27 toward the desk, 0 toward the camera; 47% of the back outside the rim, 48% over the opening.
  * ⚠ THE RIM IS ASSUMED 280 mm ACROSS (a standard bin): the plate cannot fix the bin's size (its foot is out of shot); at
  * that size it sits 368 mm up, centred u −250, 174 mm out from the desk's end. Another size moves the strike and the rest.
  * Rows: [ms after face-down, centre of mass OFF mm, UP mm, theta rad] (θ 0 upright facing the camera, π/2 face down,
@@ -228,134 +260,133 @@ export const DESK_LED_STRIP = { uMm: 0, upMm: 2162, offWallFromMm: 195, offWallT
  */
 export const DESK_MARK_FALL = {
   comLocal: [0.42544, 0.03661] as const,
-  contactMs: 348.2,
-  restMs: 489.4,
-  contactLocal: [0.2180, 0.8991, 0.0000] as const,
+  contactMs: 350.4,
+  restMs: 488.4,
+  contactLocal: [0.5261, 0.8788, 0.0000] as const,
   rows: [
   [0, 1906.96, 758.34, 1.5708],
-  [4, 1906.96, 758.33, 1.5713],
-  [8, 1906.97, 758.28, 1.5728],
-  [12, 1906.99, 758.2, 1.5752],
-  [16, 1907.02, 758.09, 1.5785],
-  [20, 1907.05, 757.96, 1.5829],
-  [24, 1907.09, 757.79, 1.5882],
-  [28, 1907.14, 757.59, 1.5944],
-  [32, 1907.19, 757.35, 1.6016],
-  [36, 1907.25, 757.09, 1.6098],
-  [40, 1907.32, 756.8, 1.6189],
+  [4, 1906.96, 758.33, 1.57129],
+  [8, 1906.97, 758.28, 1.57275],
+  [12, 1906.99, 758.2, 1.57516],
+  [16, 1907.02, 758.09, 1.57853],
+  [20, 1907.05, 757.96, 1.58287],
+  [24, 1907.09, 757.79, 1.58816],
+  [28, 1907.14, 757.59, 1.59442],
+  [32, 1907.19, 757.35, 1.60163],
+  [36, 1907.25, 757.09, 1.60979],
+  [40, 1907.32, 756.8, 1.61891],
   [44, 1907.38, 756.47, 1.629],
-  [48, 1907.45, 756.11, 1.6401],
-  [52, 1907.53, 755.72, 1.6521],
-  [56, 1907.6, 755.3, 1.6651],
-  [60, 1907.67, 754.84, 1.679],
-  [64, 1907.74, 754.35, 1.694],
-  [68, 1907.81, 753.83, 1.7099],
-  [72, 1907.88, 753.28, 1.7268],
-  [76, 1907.93, 752.69, 1.7446],
-  [80, 1907.98, 752.06, 1.7635],
-  [84, 1908.03, 751.41, 1.7833],
-  [88, 1908.06, 750.72, 1.8041],
-  [92, 1908.08, 750, 1.8259],
-  [96, 1908.08, 749.24, 1.8486],
-  [100, 1908.08, 748.45, 1.8724],
-  [104, 1908.06, 747.62, 1.897],
-  [108, 1908.04, 746.76, 1.9227],
-  [112, 1908.02, 745.85, 1.9492],
-  [116, 1907.99, 744.9, 1.9767],
+  [48, 1907.45, 756.11, 1.64006],
+  [52, 1907.53, 755.72, 1.65208],
+  [56, 1907.6, 755.3, 1.66507],
+  [60, 1907.67, 754.84, 1.67903],
+  [64, 1907.74, 754.35, 1.69396],
+  [68, 1907.81, 753.83, 1.70987],
+  [72, 1907.88, 753.28, 1.72676],
+  [76, 1907.93, 752.69, 1.74462],
+  [80, 1907.98, 752.06, 1.76347],
+  [84, 1908.03, 751.41, 1.78329],
+  [88, 1908.06, 750.72, 1.80409],
+  [92, 1908.08, 750, 1.82588],
+  [96, 1908.08, 749.24, 1.84863],
+  [100, 1908.08, 748.45, 1.87236],
+  [104, 1908.06, 747.62, 1.89705],
+  [108, 1908.04, 746.76, 1.92267],
+  [112, 1908.02, 745.85, 1.94922],
+  [116, 1907.99, 744.9, 1.97667],
   [120, 1907.97, 743.91, 2.005],
-  [124, 1907.96, 742.86, 2.0342],
-  [128, 1907.95, 741.76, 2.0641],
-  [132, 1907.95, 740.59, 2.0949],
-  [136, 1907.97, 739.36, 2.1263],
-  [140, 1908, 738.04, 2.1585],
-  [144, 1908.04, 736.65, 2.1912],
+  [124, 1907.96, 742.86, 2.03417],
+  [128, 1907.95, 741.76, 2.06414],
+  [132, 1907.95, 740.59, 2.09488],
+  [136, 1907.97, 739.36, 2.12634],
+  [140, 1908, 738.04, 2.15847],
+  [144, 1908.04, 736.65, 2.19121],
   [148, 1908.1, 735.15, 2.2245],
-  [152, 1908.17, 733.56, 2.2582],
-  [156, 1908.26, 731.85, 2.2924],
-  [160, 1908.36, 730.01, 2.3268],
-  [164, 1908.47, 728.04, 2.3615],
-  [168, 1908.58, 725.92, 2.3962],
-  [172, 1908.69, 723.64, 2.431],
-  [176, 1908.8, 721.21, 2.4658],
-  [180, 1908.92, 718.62, 2.5006],
-  [184, 1909.03, 715.88, 2.5353],
-  [188, 1909.14, 712.98, 2.5701],
-  [192, 1909.25, 709.92, 2.6049],
-  [196, 1909.37, 706.7, 2.6396],
+  [152, 1908.17, 733.56, 2.25825],
+  [156, 1908.26, 731.85, 2.29239],
+  [160, 1908.36, 730.01, 2.32684],
+  [164, 1908.47, 728.04, 2.36149],
+  [168, 1908.58, 725.92, 2.39624],
+  [172, 1908.69, 723.64, 2.43101],
+  [176, 1908.8, 721.21, 2.46578],
+  [180, 1908.92, 718.62, 2.50055],
+  [184, 1909.03, 715.88, 2.53532],
+  [188, 1909.14, 712.98, 2.57009],
+  [192, 1909.25, 709.92, 2.60486],
+  [196, 1909.37, 706.7, 2.63963],
   [200, 1909.48, 703.33, 2.6744],
-  [204, 1909.59, 699.8, 2.7092],
-  [208, 1909.7, 696.11, 2.7439],
-  [212, 1909.81, 692.27, 2.7787],
-  [216, 1909.93, 688.26, 2.8135],
-  [220, 1910.04, 684.11, 2.8483],
-  [224, 1910.15, 679.79, 2.883],
-  [228, 1910.26, 675.32, 2.9178],
-  [232, 1910.38, 670.69, 2.9526],
-  [236, 1910.49, 665.9, 2.9873],
+  [204, 1909.59, 699.8, 2.70917],
+  [208, 1909.7, 696.11, 2.74394],
+  [212, 1909.81, 692.27, 2.77871],
+  [216, 1909.93, 688.26, 2.81348],
+  [220, 1910.04, 684.11, 2.84825],
+  [224, 1910.15, 679.79, 2.88302],
+  [228, 1910.26, 675.32, 2.91779],
+  [232, 1910.38, 670.69, 2.95256],
+  [236, 1910.49, 665.9, 2.98733],
   [240, 1910.6, 660.96, 3.0221],
-  [244, 1910.71, 655.86, 3.0569],
-  [248, 1910.82, 650.61, 3.0916],
-  [252, 1910.94, 645.19, 3.1264],
-  [256, 1911.05, 639.62, 3.1612],
-  [260, 1911.16, 633.89, 3.1959],
-  [264, 1911.27, 628.01, 3.2307],
-  [268, 1911.39, 621.97, 3.2655],
-  [272, 1911.5, 615.77, 3.3003],
-  [276, 1911.61, 609.41, 3.335],
-  [280, 1911.96, 602.99, 3.3636],
-  [284, 1913.12, 596.75, 3.3702],
-  [288, 1914.29, 590.34, 3.3769],
+  [244, 1910.71, 655.86, 3.05687],
+  [248, 1910.82, 650.61, 3.09164],
+  [252, 1910.94, 645.19, 3.12641],
+  [256, 1911.05, 639.62, 3.16118],
+  [260, 1911.16, 633.89, 3.19595],
+  [264, 1911.27, 628.01, 3.23072],
+  [268, 1911.39, 621.97, 3.26549],
+  [272, 1911.5, 615.77, 3.30026],
+  [276, 1911.61, 609.41, 3.33503],
+  [280, 1911.96, 602.99, 3.36358],
+  [284, 1913.12, 596.75, 3.37022],
+  [288, 1914.29, 590.34, 3.37686],
   [292, 1915.46, 583.78, 3.3835],
-  [296, 1916.62, 577.06, 3.3901],
-  [300, 1917.79, 570.19, 3.3968],
-  [304, 1918.96, 563.15, 3.4034],
-  [308, 1920.12, 555.96, 3.4101],
+  [296, 1916.62, 577.06, 3.39014],
+  [300, 1917.79, 570.19, 3.39678],
+  [304, 1918.96, 563.15, 3.40342],
+  [308, 1920.12, 555.96, 3.41006],
   [312, 1921.29, 548.62, 3.4167],
-  [316, 1922.46, 541.11, 3.4233],
-  [320, 1923.62, 533.45, 3.43],
-  [324, 1924.79, 525.64, 3.4366],
-  [328, 1925.96, 517.66, 3.4433],
+  [316, 1922.46, 541.11, 3.42334],
+  [320, 1923.62, 533.45, 3.42998],
+  [324, 1924.79, 525.64, 3.43662],
+  [328, 1925.96, 517.66, 3.44326],
   [332, 1927.12, 509.53, 3.4499],
-  [336, 1928.29, 501.24, 3.4565],
-  [340, 1929.46, 492.8, 3.4632],
-  [344, 1930.62, 484.2, 3.4698],
-  [348, 1931.79, 475.44, 3.4765],
-  [352.2, 1934.45, 474.4, 3.5018],
-  [356.3, 1937.09, 473.59, 3.5272],
-  [360.3, 1939.74, 472.71, 3.5531],
-  [364.3, 1942.41, 471.75, 3.5793],
-  [368.4, 1945.08, 470.7, 3.6058],
-  [372.4, 1947.77, 469.56, 3.6328],
-  [376.5, 1950.47, 468.33, 3.6602],
-  [380.5, 1953.18, 467, 3.688],
-  [384.5, 1955.87, 465.59, 3.7161],
-  [388.5, 1958.57, 464.07, 3.7447],
-  [392.5, 1961.28, 462.45, 3.7738],
-  [396.5, 1963.98, 460.71, 3.8035],
-  [400.5, 1966.69, 458.86, 3.8338],
-  [404.5, 1969.39, 456.89, 3.8647],
-  [408.5, 1972.09, 454.79, 3.8963],
-  [412.5, 1974.78, 452.55, 3.9287],
-  [416.6, 1977.48, 450.15, 3.9619],
-  [420.6, 1980.14, 447.62, 3.9959],
-  [424.6, 1982.78, 444.93, 4.0307],
-  [428.7, 1985.38, 442.09, 4.0662],
-  [432.7, 1987.93, 439.1, 4.1026],
-  [436.7, 1990.43, 435.93, 4.1398],
-  [440.8, 1992.86, 432.6, 4.1779],
-  [444.8, 1995.21, 429.1, 4.2168],
-  [448.9, 1997.48, 425.43, 4.2567],
-  [452.9, 1999.65, 421.57, 4.2976],
-  [456.9, 2001.7, 417.54, 4.3393],
-  [461, 2003.63, 413.33, 4.3821],
-  [465, 2005.41, 408.94, 4.4259],
-  [469.1, 2007.03, 404.37, 4.4707],
-  [473.1, 2008.48, 399.62, 4.5165],
-  [477.1, 2009.72, 394.76, 4.5629],
-  [481.1, 2010.75, 389.72, 4.6104],
-  [485.1, 2011.56, 384.54, 4.6589],
-  [489.1, 2012.13, 379.2, 4.7084],
-  [489.4, 2012.17, 378.77, 4.7124],
+  [336, 1928.29, 501.24, 3.45654],
+  [340, 1929.46, 492.8, 3.46318],
+  [344, 1930.62, 484.2, 3.46982],
+  [348, 1931.79, 475.44, 3.47646],
+  [353.4, 1934.4, 469.71, 3.49965],
+  [357.4, 1937, 468.93, 3.52582],
+  [361.5, 1939.61, 468.07, 3.55232],
+  [365.5, 1942.24, 467.14, 3.57919],
+  [369.6, 1944.87, 466.11, 3.60645],
+  [373.6, 1947.51, 465, 3.63412],
+  [377.6, 1950.17, 463.8, 3.66224],
+  [381.7, 1952.83, 462.5, 3.69083],
+  [385.7, 1955.47, 461.11, 3.71963],
+  [389.7, 1958.12, 459.62, 3.74895],
+  [393.7, 1960.78, 458.02, 3.77883],
+  [397.7, 1963.43, 456.32, 3.80928],
+  [401.7, 1966.08, 454.49, 3.84033],
+  [405.7, 1968.73, 452.55, 3.87201],
+  [409.7, 1971.36, 450.47, 3.90436],
+  [413.7, 1973.99, 448.27, 3.93748],
+  [417.7, 1976.62, 445.9, 3.97157],
+  [421.8, 1979.22, 443.4, 4.00642],
+  [425.8, 1981.79, 440.74, 4.04205],
+  [429.9, 1984.31, 437.93, 4.0785],
+  [433.9, 1986.79, 434.97, 4.11579],
+  [437.9, 1989.21, 431.84, 4.15395],
+  [442, 1991.56, 428.54, 4.19299],
+  [446, 1993.83, 425.08, 4.23296],
+  [450.1, 1996.01, 421.44, 4.27387],
+  [454.1, 1998.08, 417.63, 4.31575],
+  [458.1, 2000.04, 413.64, 4.35861],
+  [462.2, 2001.86, 409.47, 4.40249],
+  [466.2, 2003.54, 405.13, 4.44739],
+  [470.3, 2005.05, 400.61, 4.49334],
+  [474.3, 2006.37, 395.93, 4.54035],
+  [478.3, 2007.5, 391.11, 4.58808],
+  [482.3, 2008.4, 386.15, 4.63676],
+  [486.3, 2009.08, 381.03, 4.68652],
+  [488.4, 2009.33, 378.36, 4.71239],
   ] as readonly (readonly [number, number, number, number])[],
 };
 

@@ -1,4 +1,5 @@
 import Container from "@/components/layout/container";
+import Image from "next/image";
 /* ⛔ SCAFFOLDING — the /about §2 wall-card copy, projected onto the wall by a
    homography. A CLIENT component in its own file so THIS page stays a static
    prerendered server component. Delete with the guides. */
@@ -852,10 +853,30 @@ export default function About() {
           with an invisible orbital light."*
 
           ⛔ NO EXAMPLES ARE EMBEDDED YET. Their selection, recolouring and
-          recording is development-pass work and is not authorised. */}
+          recording is development-pass work and is not authorised.
+
+          ⛔ THE PLAYER'S PLACEHOLDER — Carl, 8 October 2026: *"put a large white
+          rectangle on the right hand side of the page in the middle. This is a
+          placeholder for the video player. it is the target area the logo must be
+          in."* White, 16:9 (a video's frame — the Builder's choice, stated), the
+          right half of the container, centred in the section's height. The desk
+          mark's fall ends INSIDE this box (D-088). `#examples-player` is the
+          handle its measurement will read.
+
+          ⛔ THE TARGET SIZE — Carl, the same day: *"in the player placeholder put
+          a larger version of the blue logo, That will be our target size."* The
+          site's blue mark (`/start`'s PNG — the outline the 3D mark was traced
+          from), centred, HALF THE PLAYER'S WIDTH: the Builder's choice, stated —
+          measured, the mark standing on the desk is 103 CSS px wide at 1412 × 700,
+          the player 608, so half of it is ~3× the desk size. A flat picture, not
+          the 3D mark: a live mark here would be a second WebGL canvas (§5a).
+          `next/image`, not `<img>`: nothing here is positioned by measured pixels
+          (the reason the gold marks keep `<img>`), and `<img>` would break the
+          zero-warning lint baseline. */}
       <section id="examples" className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
         <Container>
-          <div className="max-w-2xl">
+          <div className="flex items-center gap-12">
+          <div className="max-w-2xl flex-1">
             <h2 className="text-3xl font-semibold tracking-tight">
               What a website can actually do.
             </h2>
@@ -863,6 +884,12 @@ export default function About() {
               Most reference points are a decade old, so the current ceiling is
               hard to picture. This section will show it rather than describe it.
             </p>
+          </div>
+          <div id="examples-player" aria-hidden="true" className="w-1/2 shrink-0 aspect-video bg-white flex items-center justify-center">
+            <div id="examples-player-target" className="relative w-1/2 aspect-[969/503]">
+              <Image src="/c2b-logo-blue-mark.png" alt="" fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-contain" />
+            </div>
+          </div>
           </div>
         </Container>
       </section>

@@ -25,7 +25,11 @@ import sys
 import numpy as np
 
 H = 227.9
-U_C = -312.5
+# ⛔ THE MARK'S CENTRE ACROSS THE DESK (u). -312.5 is take 3 (centred). LEFT_MM (env) slides it LEFT (toward the desk's
+# front edge, -u) — Carl, 8 October 2026, session 2: "move it 50mm left". The fall's plane is unchanged by it; the RIM
+# test is not (the bin is round and sits off-centre).
+LEFT_MM = float(os.environ.get("LEFT_MM", "0"))
+U_C = -312.5 - LEFT_MM
 DESK_END, DESK_TOP, DESK_U = 1875.0, 750.0, (-625.0, 0.0)
 FACE_IN = 65.0
 # ⛔ THE BIN'S SIZE IS A CHOICE THE PLATE ALLOWS, NOT A MEASUREMENT (desk-right-end-measure-8-october.py): every size sits
@@ -34,7 +38,7 @@ BIN_TABLE = {240: dict(u=-539.0, off=1875.0 + 347.0, up=478.0), 260: dict(u=-397
              280: dict(u=-250.0, off=1875.0 + 174.0, up=368.0)}
 BIN_DIA = int(os.environ.get("BIN_DIA", "280"))
 RIM = dict(**BIN_TABLE[BIN_DIA], r=BIN_DIA / 2, tube=6.0)
-TAG = "" if BIN_DIA == 280 else f"-bin{BIN_DIA}"
+TAG = ("" if BIN_DIA == 280 else f"-bin{BIN_DIA}") + ("" if LEFT_MM == 0 else f"-left{LEFT_MM:g}")
 G = 9810.0
 MU = float(sys.argv[2]) if len(sys.argv) > 2 else 0.4
 K, C = 4e6, 2 * math.sqrt(4e6) * 0.7   # contact stiffness (per unit mass, mm/s^2 per mm) and damping
