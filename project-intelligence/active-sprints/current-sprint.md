@@ -47,7 +47,7 @@ lives; this file does not repeat it.
 | **§2, the light** | ONE take light (directional, still, room orange `#ff6528` at 0.25, 50° from upper-left); bevel highlight capped at 0.03, rim uncapped | ✔ *"both goals surpassed"* — a take | D-095 tail (3 Oct), R-031 |
 | **§2, the sequence** | Strikes when the wipe clears CA's bottom: CA → CB → CD → CS → CA, looping, each card two cycles | Approved by eye (27 Sep) | D-095 tail (27 Sep) |
 | **§2 copy (the four roles)** | Four seats | PROVISIONAL | D-077 |
-| **§3** | Placeholder heading and line. Intended: four FILMED builds of C2B's own work, selectors left, player right; the desk mark as the player's idle content | Brainstorm, not built | D-088, D-095 tail (27 Sep) |
+| **§3** | Placeholder heading and line; a white 16:9 PLAYER PLACEHOLDER right (`#examples-player`) holding the blue mark — the desk mark's target size. Intended (Carl, 8 Oct): FOUR BOXES stacked top to bottom, the viewport's height; the desk mark lands in the player | Placeholder; the drop lands there | D-088 (8 Oct, session 2), R-038 |
 | **§4** | Placeholder conclusion; the `Start a conversation` button, the pair of the home page's `Who we are` | Subject settled, wording not | `app/about/page.tsx` comments |
 
 **The code**, all in `components/about/` unless named:
@@ -92,7 +92,13 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
   ending at the mark's centre `logoMarkCentre()` (0, 0.5, depth/2). Measured: `live-work/logo-centre-measurement-7-october.md`.
 - ✔ **In the room (8 October, R-037):** placed, lit by the bench studio alone, three shadows on the desk; then the fall,
   worked through by simulation and by Carl placing it by eye at the desk's front-right corner. **Next (Carl): §3 — the
-  whole animation end to end; structural, see `live-work/structural-note-mark-into-section3-8-october.md`.**
+  whole animation end to end; structural, see `live-work/structural-note-mark-into-section3-8-october.md`.** ✔ *Done in session 2 (below), on Carl's override.*
+- ✔ **SESSION 2 (8 October, R-038) — the journey end to end on PLAIN `/about`, on Carl's override (no plan, no Architect;
+  *"You are authorised to work in Sect. 3"*):** 85 mm left; the fall onto the bin; the rebound from the slap (licence) and
+  two flips, legato; the crossing with the light rising with the blue; the growth from the bin's blow; ONE canvas run one
+  screen into §3, the drop onto the player placeholder's blue logo, wiped at its border. Time-driven. **Next (Carl's answer
+  next session): the SCROLL mechanism** — tied to the whole journey (chosen); whether the page holds while the logo moves,
+  by SPACE BEFORE §3 (*"we wont be able to lengthen the image"*). D-088's session-2 entries.
 - ✔ **The crossing, built on the bench and APPROVED (8 October, R-036):** an outside-in sphere about the centre in the
   mark's own space, one number 0 → 1, at HALF `/start`'s pace (~2.03 s). Open: the scroll mapping in the scene, and the
   look against the room's orange. Reasoning: D-088's 8 October entries.
@@ -112,6 +118,7 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
 
 | Task | Output | Notes |
 |---|---|---|
+| D-088 desk mark, THE JOURNEY END TO END on plain `/about` (session 2): 85 mm left; the rebound and two flips, legato; the crossing + light; the growth; the drop into §3 and the wipe; the canvas one screen into §3 (§5b checked); `about-neon.ts` fixed then LOCKED; the Vercel failures since 3 October found and fixed (an untracked imported PNG) | `about-card-canvas.tsx`, `about-room.ts`, `about-neon.ts`, `app/about/page.tsx`, `.gitignore`, `.claude/protected-files.json` | R-038; commits `07ad729`, `a7f512e`, `d9060bf`, `bad959b` — all three Vercel projects green. Open: the scroll mechanism |
 | The image scroll approved | — | R-032 |
 | Sprint 2 archived; this file rebuilt around the About section | `archive/sprint-2.md`, this file | Carl, 3 October 2026 |
 | D-088 desk mark, THE FALL (`?mark=1`, uncommitted work committed with the session's close) — the studio at 0.7 (*"a lot better, more natural"*); the fall SIMULATED (gravity, friction, the desk's edges): the teeter and the drop to the bin (*"Outstanding"*), the strike's energy, real time; the 3D twist found (an off-centre strike rolls it); the bin taken out; a 3D somersault search (best: facing the front edge, facing +0.82 / upright +0.83 at the frame's bottom); Carl's corner placement step 1 (standing on the corner, falls face down) and 10% smaller (205.1 mm) | `about-card-canvas.tsx` (`MarkMotion`, `DESK_MARK_CORNER`), `about-room.ts` (`DESK_MARK_FALL`, `DESK_MARK_SOMERSAULT`, `DESK_LED_STRIP`, `DESK_MIC_CLAMP`), scripts `desk-mark-*-8-october.*` | Verdicts in D-088's 8 October entries. Open: the corner steps 2–4, then the simulated fall from the chosen start, then §3 (structural — see the note) |
@@ -138,7 +145,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-08 (end of session) — the fall worked through; the corner placement begun; next: §3.*
+*Last updated: 2026-10-08 (session 2, end) — the journey built end to end on plain `/about`, into §3 (R-038); Vercel fixed; next: the scroll mechanism, Carl's answer.*
+
+*Previously: 2026-10-08 (end of session) — the fall worked through; the corner placement begun; next: §3.*
 
 *Previously: 2026-10-08 — the desk mark in the room, lit and shadowed (R-037).*
 

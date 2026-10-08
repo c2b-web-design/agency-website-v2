@@ -65,6 +65,29 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-038 — The Desk Mark's Journey On Plain `/about`: The Rebound, The Two Flips, The Crossing, Into §3 (D-088): "A Lot Better"
+
+**Date:** 2026-10-08 (session 2)
+**Reviewer:** Human Founder
+**Subject:** plain `/about` — the mark 85 mm left on the desk; the simulated fall onto the bin; the rebound from the slap (licence) to an oblique top of rise; a second forward flip losing momentum, drifting left, ending halfway to face-on; the bounce and flips LEGATO on one progress; the gold → blue crossing with the light rising with the blue; the growth from the bin's blow; the drop into §3's player placeholder, wiped at its border. Time-driven loop, master speed 0.9. Commits `07ad729`, `d9060bf`, `bad959b`.
+
+**Carl's verdicts, verbatim:**
+- §3's placeholder: *"ok, good."*
+- The rebound at half speed: *"Much better. It looks to me as if its slightly leaning forward. Perfect."*
+- The drift through the second flip: *"yes, much better. its just to the right of the blue logo with less momentum carrying it left Perfect."*
+- The crossing in the room: *"the transition look great, even in slo mo."*
+- The light rising with the blue: *"thats a better contrast against the orange background"*
+- Legato: *"Thats a lot better."*
+
+**Findings:**
+
+- ✔ Recorded at the level given — strong positives on each layer as it was added; none stated as "approved", none a master (D-035). The fall to the rim (stage 2) keeps its *"Outstanding"* (D-088, 8 October).
+- ⚠ **Not judged by Carl:** the growth (built, shown in frames; he moved straight to the speed); the drop and the wipe at the border; the ~140 ms the growing mark passes into the rim; the blue reading dark over §3's black.
+- ⚠ **Not measured:** the cost of the canvas now ~2× the pixels, rendered every frame.
+- ⛔ **OPEN:** the scroll mechanism (D-088, session 2's last entry) — Carl's answer next session.
+
+---
+
 ## R-037 — The Desk Mark In The Room: Placed, Lit By The Bench Studio, Shadowed On The Desk (D-088): "Excellent… In The World"
 
 **Date:** 2026-10-08
