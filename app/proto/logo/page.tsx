@@ -10,7 +10,10 @@ import LogoBench, { type LogoBenchFlags } from "@/components/about/logo-bench";
  * ⚠ The URL switches are read HERE, on the server, and passed down — so the bench's first render is the same on the
  * server and the client (a panel sized for `?view=roomsize` must not change size at hydration).
  *   ?view=front|oblique|junction|turntable|side|below|roomsize   ?mode=clay|flat|zebra|normals|gold|blue   ?wire=1
- *   ?shadows=0   ?az=-90..90   ?el=0..85   ?mask=1   ?overlay=0..1
+ *   ?shadows=0   ?az=-90..90   ?el=0..85   ?mask=1   ?overlay=0..1   ?cross=0..1 (the crossing's progress, mode=crossing)
+ *
+ * ⛔ THE CROSSING (8 October 2026): `?mode=crossing` — gold → platinum blue, an outside-in sphere about the mark's
+ * centre, played at `/start`'s pace in mark units. D-088, 8 October.
  */
 export const metadata = {
   title: "Mark bench — the desk mark (D-088)",
@@ -33,6 +36,7 @@ export default async function LogoBenchPage({
     az: num("az"),
     el: num("el"),
     overlay: num("overlay"),
+    cross: num("cross"),
   };
   return (
     <div className="min-h-screen bg-neutral-950 text-white p-6">
@@ -47,6 +51,11 @@ export default async function LogoBenchPage({
         <strong>normals</strong> shade with computed normals, which can smooth over a crease the triangles really
         have. Judge a crease in flat and continuity in zebra. Shadows are a switch, so you can rule them out as
         the cause of a stripe or a gap.
+      </p>
+      <p className="text-sm text-neutral-500 mb-2 max-w-4xl">
+        <strong>crossing</strong> turns the gold into the platinum blue from the outside in: a sphere about the
+        mark&apos;s centre, in the mark&apos;s own space, so the edge stays on the metal as the mark turns. Play it at
+        the /start logo&apos;s pace, or scrub it. Try it on the turntable.
       </p>
       <p className="text-sm text-amber-300/80 mb-4 max-w-4xl">
         The height in millimetres is a placeholder. The junction view&apos;s camera is fixed, so before and

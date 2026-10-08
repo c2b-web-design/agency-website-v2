@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-036 — The Desk Mark's Gold → Platinum-Blue Crossing On The Bench (D-088): APPROVED
+
+**Date:** 2026-10-08
+**Reviewer:** Human Founder
+**Subject:** `/proto/logo?mode=crossing` — the gold → platinum-blue crossing, built on the bench and tied to the object without a plan or the Architect (Carl: *"Nothing new is being built here"*). An OUTSIDE-IN SPHERE about `logoMarkCentre()` in the mark's own space (height, width and depth); one mesh, one material, the colour chosen per pixel with a hard edge; one number 0 → 1 over the measured window (furthest surface 547.4 px → nearest 19.5 px); looping by default. Pace: `/start`'s logo wipe in mark units (0.9292 heights/s, 1.015 s), then HALVED on Carl's word — **0.4646 heights/s, ~2.03 s**. Code: `logo-mark-material.ts` (`createLogoCrossing`, `LOGO_CROSSING_PACE_OF_START`), `logo-mark-geometry.ts` (`logoMarkReach`), `logo-bench.tsx`. Frames: `live-work/screenshots/logo-crossing-8-october/`. Models filmed: `live-work/start-logo-transition-observed-8-october.md`, `…/start-begin-transition-observed-8-october.md`.
+
+**Carl's verdicts, verbatim:**
+- At `/start`'s pace: *"That look great. can you halve the speed of the wipe?"*
+- At half pace: *"That looks great. Approved."*
+
+**Findings:**
+
+- ✔ **APPROVED** — the crossing's mechanism, form and half-`/start` pace, on the bench. Not a master (D-035); no dial is individually approved.
+- ⚠ **OPEN:** the bench drives the number by TIME; in the scene the reader's SCROLL drives it, and how the ~2 s maps onto the scroll is not settled. The crossing has not been judged against the room's orange (R-035's reason for the blue). The last gold sits against the 2's diagonal's upper-left chamfer, not mid-stroke (the measured centre is 22 px from that edge), and was approved as built. The two metals must keep the same roughness, or the per-pixel swap stops being exact (`createLogoCrossing`).
+
+---
+
 ## R-035 — The Desk Mark's Two Metals On The Clay Shape (D-088 Pass 2): The Blue "Great", The Gold A Positive Read
 
 **Date:** 2026-10-07
@@ -924,7 +941,9 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-10-07 — **R-035 added**: the desk mark's two metals (pass 2) — the blue "great", the gold a positive read.*
+*Last updated: 2026-10-08 — **R-036 added**: the desk mark's gold → platinum-blue crossing on the bench, at half `/start`'s pace — APPROVED.*
+
+*Previously: 2026-10-07 — **R-035 added**: the desk mark's two metals (pass 2) — the blue "great", the gold a positive read.*
 
 *Previously: 2026-10-07 — **R-034 added**: the desk mark's shape in clay (pass 1, take 2), PASSES.*
 

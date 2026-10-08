@@ -575,3 +575,39 @@ export function buildLogoMarkGeometry(input: Partial<LogoMarkParams> = {}): {
 export function logoMarkCentre(p: Pick<LogoMarkParams, "depth" | "scale"> = LOGO_MARK_DEFAULTS): [number, number, number] {
   return [0, 0.5 * p.scale, (p.depth / 2) * p.scale];
 }
+
+// ── the crossing's reach — how far the solid's SURFACE lies from the centre (Carl, 8 October 2026) ───────────────────
+
+/**
+ * ⛔ THE CROSSING'S VISIBLE WINDOW, measured from the BUILT mesh (model units, the geometry's own scale). The crossing is a
+ * SPHERE about `logoMarkCentre()` — Carl, 8 October: *"In the 3D world you account for height, width and depth"* —
+ * shrinking outside in. The edge is only ON the metal while the radius lies between these two:
+ *   - `far`  — the furthest surface point (a vertex: the furthest point of a triangle is always one of its corners).
+ *             Above it the whole mark is gold and nothing moves.
+ *   - `near` — the nearest surface point, on ANY triangle (vertices alone overstate it). The centre is INSIDE the
+ *             solid, so the last gold leaves the surface here, not at radius 0. Below it the whole mark is blue.
+ * Mapping the crossing's 0 → 1 onto [far → near] puts all of it on the metal — no dead lead-in (the `/start` logo's
+ * first ~300 ms) and no dead tail (Begin's last 4 s): `live-work/start-*-transition-observed-8-october.md`.
+ * At the defaults (depth 41 px), measured in Node on 8 October: far 0.9777 mark units (547.4 src px, the b's lower
+ * right, on the back); near 0.0348 (19.5 src px, on the chamfer). These follow the dials; nothing here is a constant.
+ */
+export function logoMarkReach(g: THREE.BufferGeometry, centre: readonly [number, number, number]): { far: number; near: number } {
+  const P = g.getAttribute("position") as THREE.BufferAttribute;
+  const a = P.array as ArrayLike<number>;
+  const [cx, cy, cz] = centre;
+  let far = 0;
+  for (let i = 0; i < a.length; i += 3) far = Math.max(far, Math.hypot(a[i] - cx, a[i + 1] - cy, a[i + 2] - cz));
+  const ix = g.getIndex();
+  const n = ix ? ix.count : P.count;
+  const A = new THREE.Vector3(), B = new THREE.Vector3(), C = new THREE.Vector3(), Q = new THREE.Vector3();
+  const tri = new THREE.Triangle();
+  const c = new THREE.Vector3(cx, cy, cz);
+  let near = Infinity;
+  for (let t = 0; t < n; t += 3) {
+    const i0 = ix ? ix.getX(t) : t, i1 = ix ? ix.getX(t + 1) : t + 1, i2 = ix ? ix.getX(t + 2) : t + 2;
+    A.fromBufferAttribute(P, i0); B.fromBufferAttribute(P, i1); C.fromBufferAttribute(P, i2);
+    tri.set(A, B, C).closestPointToPoint(c, Q);
+    near = Math.min(near, Q.distanceTo(c));
+  }
+  return { far, near };
+}

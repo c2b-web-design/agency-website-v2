@@ -13,6 +13,12 @@
  * ⛔ PASS 2 (7 October): `gold` — the chunk-1 gold (`logo-mark-material.ts`, physical F0) in a FIXED judging studio
  * (`GoldStudio`). Carl: *"just apply the gold metal."* The lights are pass 3.
  *
+ * ⛔ THE CROSSING (8 October): `crossing` — gold → platinum blue, an OUTSIDE-IN SPHERE about `logoMarkCentre()` in the
+ * mark's own space (`createLogoCrossing`), in the same judging studio. ONE progress number, 0 = gold, 1 = blue; the
+ * bench plays it at HALF `/start`'s pace in mark units (`LOGO_CROSSING_SWEEP_PER_S`, Carl 8 October) over the measured window
+ * (`logoMarkReach`), or scrubs it. The scene will later set the same number from the scroll. Carl: *"No need to go to
+ * plan mode or consult the Architect. Nothing new is being built here."* Proof of the tie: the turntable, scrubbing.
+ *
  * ⛔ THE MODES SEE DIFFERENT THINGS (Architect A4). `clay`, `zebra` and `normals` shade with the COMPUTED vertex normals —
  * and a computed normal can smooth over a crease the triangles really have. **`flat` lights the TRIANGLES**
  * (`flatShading`), so only `flat` shows the mesh as built. Judge a crease in `flat`; judge continuity in `zebra`.
@@ -35,19 +41,24 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, Lightformer, OrbitControls, OrthographicCamera, PerspectiveCamera } from "@react-three/drei";
 import goldTarget from "../../brand-assets/logo/c2b-logo-gold-relit-alpha-1671.png";
 import {
-  buildLogoMarkGeometry, LOGO_MARK_DEFAULTS, SRC_PX, windowReadouts,
+  buildLogoMarkGeometry, LOGO_MARK_DEFAULTS, logoMarkCentre, logoMarkReach, SRC_PX, windowReadouts,
   type LogoMarkParams, type LogoMarkStats, type WindowReadouts,
 } from "./logo-mark-geometry";
-import { createLogoGold, createLogoPlatinumBlue, LOGO_BLUE_DEFAULTS, LOGO_GOLD_DEFAULTS } from "./logo-mark-material";
+import {
+  createLogoCrossing, createLogoGold, createLogoPlatinumBlue, LOGO_BLUE_DEFAULTS, LOGO_CROSSING_PACE_OF_START, LOGO_CROSSING_SWEEP_PER_S, LOGO_GOLD_DEFAULTS,
+  type LogoCrossing,
+} from "./logo-mark-material";
 import { LOGO_JUNCTION, LOGO_OUTLINE_SOURCE as SRC } from "./logo-mark-outline";
 
 export type LogoBenchFlags = {
   view?: string; mask?: boolean; overlay?: number; mode?: string; wire?: boolean; shadows?: boolean; az?: number; el?: number;
+  /** the crossing's starting progress, 0 = gold … 1 = blue (`?cross=`). */
+  cross?: number;
 };
 
 const VIEWS = ["front", "oblique", "junction", "turntable", "side", "below", "roomsize"] as const;
 type View = (typeof VIEWS)[number];
-const MODES = ["clay", "flat", "zebra", "normals", "gold", "blue"] as const;
+const MODES = ["clay", "flat", "zebra", "normals", "gold", "blue", "crossing"] as const;
 type Mode = (typeof MODES)[number];
 
 /** ⚠ PLACEHOLDER — chunk 2 sets the real height in room millimetres from the plate target (144 plate px). */
@@ -71,14 +82,58 @@ const JUNCTION_TARGET: [number, number, number] = [(JW.x0 + JW.x1) / 2, (JW.y0 +
 const JUNCTION_CAMERA: [number, number, number] = [JUNCTION_TARGET[0] + 0.42, JUNCTION_TARGET[1] + 0.3, 1.0];
 
 type Built = { geometry: THREE.BufferGeometry; stats: LogoMarkStats; ms: number; junction: WindowReadouts };
+/** the crossing's window on THIS build, model units, and how long the measurement took. */
+type Reach = { geometry: THREE.BufferGeometry; far: number; near: number; ms: number };
 
 declare global {
   interface Window {
     __logoBench?: {
       ready: boolean; stats: LogoMarkStats; buildMs: number; params: LogoMarkParams; view: View; mask: boolean; mode: Mode;
       junction: WindowReadouts; junctionWindow: typeof JW; junctionCamera: { position: number[]; target: number[] };
+      crossing?: { farSrcPx: number; nearSrcPx: number; durationS: number; ratePerS: number; reachMs: number };
     };
+    /** live-work scripts: set the crossing's progress (stops any play). */
+    __logoBenchCross?: (p: number) => void;
   }
+}
+
+/** The loop's rest on each metal before it crosses again, seconds. ⚠ A bench convenience, not a design value. */
+const LOOP_HOLD_S = 1.5;
+
+/**
+ * ⛔ THE CROSSING'S ONE NUMBER, driven per frame. Playing moves it at `/start`'s pace: the radius falls at
+ * `LOGO_CROSSING_SWEEP_PER_S` mark units a second (half `/start`'s), so a full 0 → 1 lasts (far − near) ÷ that rate. It writes the uniforms
+ * every frame whether playing or not, so a scrub, a dial change or a rebuild lands on the next frame.
+ * ⚠ LOOP (on by default — Carl opened the bench and saw nothing move, 8 October: it waited for ▶, which sat below the
+ * fold): rest LOOP_HOLD_S on the metal, then cross to the other one — gold → blue outside in, blue → gold back out.
+ */
+function CrossingDriver({ crossing, reach, centre, S, progressRef, dirRef, loopRef, onTick }: {
+  crossing: LogoCrossing; reach: Reach | null; centre: [number, number, number]; S: number;
+  progressRef: React.RefObject<number>; dirRef: React.RefObject<number>; loopRef: React.RefObject<boolean>;
+  onTick: (p: number, playing: boolean) => void;
+}) {
+  const holdRef = useRef(0);
+  useFrame((_, dt) => {
+    if (!reach) return;
+    const durationS = (reach.far - reach.near) / S / LOGO_CROSSING_SWEEP_PER_S;
+    let p = progressRef.current;
+    if (dirRef.current === 0 && loopRef.current) {
+      holdRef.current += dt;
+      if (holdRef.current >= LOOP_HOLD_S) {
+        holdRef.current = 0;
+        dirRef.current = p >= 1 ? -1 : 1;
+      }
+    } else holdRef.current = 0;
+    if (dirRef.current !== 0) {
+      p = Math.min(1, Math.max(0, p + (dirRef.current * dt) / durationS));
+      progressRef.current = p;
+      const done = (dirRef.current > 0 && p === 1) || (dirRef.current < 0 && p === 0);
+      if (done) dirRef.current = 0;
+      onTick(p, !done);
+    }
+    crossing.set(centre, reach.far - p * (reach.far - reach.near));
+  });
+  return null;
 }
 
 function Turntable({ on, children }: { on: boolean; children: React.ReactNode }) {
@@ -195,6 +250,16 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
   const [roughness, setRoughness] = useState(LOGO_GOLD_DEFAULTS.roughness);
   const [envI, setEnvI] = useState(LOGO_GOLD_DEFAULTS.envMapIntensity);
   const [tint, setTint] = useState(LOGO_BLUE_DEFAULTS.tint);
+  const startCross = Number.isFinite(flags.cross) ? Math.min(1, Math.max(0, flags.cross as number)) : 0;
+  const [cross, setCross] = useState(startCross);
+  const [playing, setPlaying] = useState(false);
+  const crossRef = useRef(startCross);
+  const dirRef = useRef(0);
+  // loop by default; a URL that sets the progress (`?cross=`, the shot scripts) holds still
+  const [loop, setLoop] = useState(!Number.isFinite(flags.cross));
+  const loopRef = useRef(loop);
+  useEffect(() => { loopRef.current = loop; }, [loop]);
+  const [reach, setReach] = useState<Reach | null>(null);
 
   const params = useMemo(() => ({ ...geo, scale: heightMm }), [geo, heightMm]);
 
@@ -210,14 +275,51 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
     return () => window.clearTimeout(id);
   }, [params]);
   useEffect(() => () => built?.geometry.dispose(), [built]);
+  const centre = useMemo(() => logoMarkCentre(params), [params]);
+  // the crossing's window — measured on the BUILT mesh, in an effect, only when the crossing is on the bench
+  useEffect(() => {
+    if (!built || mode !== "crossing") return;
+    if (reach?.geometry === built.geometry) return;
+    const id = window.setTimeout(() => {
+      const t0 = performance.now();
+      const r = logoMarkReach(built.geometry, centre);
+      setReach({ geometry: built.geometry, ...r, ms: performance.now() - t0 });
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [built, mode, centre, reach]);
+  const scrub = (p: number) => {
+    setLoop(false);
+    loopRef.current = false;
+    dirRef.current = 0;
+    crossRef.current = p;
+    setPlaying(false);
+    setCross(p);
+  };
+  const play = (d: 1 | -1) => {
+    if ((d > 0 && crossRef.current >= 1) || (d < 0 && crossRef.current <= 0)) crossRef.current = d > 0 ? 0 : 1;
+    dirRef.current = d;
+    setPlaying(true);
+  };
+  useEffect(() => {
+    window.__logoBenchCross = scrub;
+    return () => { delete window.__logoBenchCross; };
+  });
   useEffect(() => {
     if (!built) return;
+    const live = reach && reach.geometry === built.geometry ? reach : null;
     window.__logoBench = {
       ready: true, stats: built.stats, buildMs: built.ms, params, view, mask, mode,
       junction: built.junction, junctionWindow: JW,
       junctionCamera: { position: JUNCTION_CAMERA, target: JUNCTION_TARGET },
+      crossing: live
+        ? {
+            farSrcPx: live.far / params.scale / SRC_PX, nearSrcPx: live.near / params.scale / SRC_PX,
+            durationS: (live.far - live.near) / params.scale / LOGO_CROSSING_SWEEP_PER_S, ratePerS: LOGO_CROSSING_SWEEP_PER_S,
+            reachMs: live.ms,
+          }
+        : undefined,
     };
-  }, [built, params, view, mask, mode]);
+  }, [built, params, view, mask, mode, reach]);
 
   const clay = useMemo(() => new THREE.MeshStandardMaterial({ ...CLAY, metalness: 0 }), []);
   const flat = useMemo(() => new THREE.MeshStandardMaterial({ ...CLAY, metalness: 0, flatShading: true }), []);
@@ -234,8 +336,11 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
   useEffect(() => () => gold.dispose(), [gold]);
   const blue = useMemo(() => createLogoPlatinumBlue({ roughness, envMapIntensity: envI, tint }), [roughness, envI, tint]);
   useEffect(() => () => blue.dispose(), [blue]);
-  const metal = mode === "gold" || mode === "blue";
-  const material = mask ? white : mode === "gold" ? gold : mode === "blue" ? blue : mode === "flat" ? flat : mode === "zebra" && zebra ? zebra : mode === "normals" ? normals : clay;
+  const crossing = useMemo(() => createLogoCrossing({ roughness, envMapIntensity: envI, tint }), [roughness, envI, tint]);
+  useEffect(() => () => crossing.material.dispose(), [crossing]);
+  const metal = mode === "gold" || mode === "blue" || mode === "crossing";
+  const liveReach = reach && built && reach.geometry === built.geometry ? reach : null;
+  const material = mask ? white : mode === "gold" ? gold : mode === "blue" ? blue : mode === "crossing" ? crossing.material : mode === "flat" ? flat : mode === "zebra" && zebra ? zebra : mode === "normals" ? normals : clay;
 
   const S = heightMm;
   const front = view === "front" || view === "roomsize";
@@ -282,11 +387,20 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
             <option value="normals">normals</option>
             <option value="gold">gold — pass 2, in the judging studio</option>
             <option value="blue">platinum blue — in the same studio</option>
+            <option value="crossing">crossing — gold → platinum blue, outside in</option>
           </select>
         </label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={wire} onChange={(e) => setWire(e.target.checked)} /> wireframe</label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={shadows} onChange={(e) => setShadows(e.target.checked)} /> shadows</label>
         <label className="flex items-center gap-2"><input type="checkbox" checked={mask} onChange={(e) => setMask(e.target.checked)} /> mask (measurement)</label>
+        {mode === "crossing" && (
+          <>
+            <button type="button" onClick={() => play(1)} className={`${select} hover:bg-neutral-800`}>▶ gold → blue</button>
+            <button type="button" onClick={() => play(-1)} className={`${select} hover:bg-neutral-800`}>◀ blue → gold</button>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={loop} onChange={(e) => setLoop(e.target.checked)} /> loop</label>
+            <Slider label="crossing" value={cross} min={0} max={1} step={0.001} onChange={scrub} fmt={(v) => `${v.toFixed(3)}${playing ? " ▸" : ""}`} />
+          </>
+        )}
         {front && !mask && (
           <Slider label="target overlay" value={overlay} min={0} max={1} step={0.05} onChange={setOverlay} fmt={(v) => v.toFixed(2)} />
         )}
@@ -305,6 +419,12 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
           {!front && <OrbitControls target={target} enableDamping={false} />}
           {!mask && !metal && <ShapeLight S={S} az={az} el={el} shadows={shadows} normalBias={0.5 * geo.gridStep * S} />}
           {!mask && metal && <GoldStudio />}
+          {mode === "crossing" && (
+            <CrossingDriver
+              crossing={crossing} reach={liveReach} centre={centre} S={S} progressRef={crossRef} dirRef={dirRef} loopRef={loopRef}
+              onTick={(p, on) => { setCross(p); setPlaying(on); }}
+            />
+          )}
           {built && (
             <Turntable on={view === "turntable"}>
               <mesh geometry={built.geometry} material={material} castShadow={shadows && !mask} receiveShadow={shadows && !mask} />
@@ -328,8 +448,8 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
         <div className="space-y-2">
           {metal && (
             <>
-              <div className="text-neutral-500">{mode === "gold" ? "gold — physical F0" : "platinum blue — the blue metal swatch, sampled"}; starting values for Carl&apos;s eye</div>
-              {mode === "blue" && <Slider label="blue tint" value={tint} min={0} max={1} step={0.05} onChange={setTint} fmt={(v) => (v === 0 ? "platinum" : v === 1 ? "swatch blue" : v.toFixed(2))} />}
+              <div className="text-neutral-500">{mode === "gold" ? "gold — physical F0" : mode === "crossing" ? "both metals, as pass 2 set them" : "platinum blue — the blue metal swatch, sampled"}; starting values for Carl&apos;s eye</div>
+              {(mode === "blue" || mode === "crossing") && <Slider label="blue tint" value={tint} min={0} max={1} step={0.05} onChange={setTint} fmt={(v) => (v === 0 ? "platinum" : v === 1 ? "swatch blue" : v.toFixed(2))} />}
               <Slider label="roughness" value={roughness} min={0.02} max={0.8} step={0.01} onChange={setRoughness} />
               <Slider label="env intensity" value={envI} min={0.2} max={3} step={0.05} onChange={setEnvI} fmt={(v) => v.toFixed(2)} />
             </>
@@ -360,6 +480,13 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
           <div className="text-neutral-500 pt-2">junction window (generated) — front triangles above the lip</div>
           <div>{jr?.triangles ?? "…"} triangles · computed-normal angle max {n(jr?.maxNormalAngleDeg, 1)}°</div>
           <div>dihedral (the triangles) max {n(jr?.maxDihedralDeg, 1)}° · 99th {n(jr?.p99DihedralDeg, 1)}°</div>
+          {mode === "crossing" && (
+            <>
+              <div className="text-neutral-500 pt-2">the crossing — measured on this build</div>
+              <div>sphere radius {n(liveReach ? liveReach.far / S / SRC_PX : undefined, 1)} → {n(liveReach ? liveReach.near / S / SRC_PX : undefined, 1)} src px (furthest → nearest surface)</div>
+              <div>pace {LOGO_CROSSING_SWEEP_PER_S.toFixed(4)} mark heights/s ({LOGO_CROSSING_PACE_OF_START} × /start&apos;s) · full crossing {n(liveReach ? (liveReach.far - liveReach.near) / S / LOGO_CROSSING_SWEEP_PER_S : undefined, 3)} s · measured in {n(liveReach?.ms, 0)} ms</div>
+            </>
+          )}
         </div>
       </div>
     </div>

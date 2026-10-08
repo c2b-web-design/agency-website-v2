@@ -82,3 +82,84 @@ export function createLogoPlatinumBlue(input: Partial<LogoBlueParams> = {}): THR
   m.color.setRGB(r, g, b, THREE.LinearSRGBColorSpace);
   return m;
 }
+
+// ── THE CROSSING — gold → platinum blue, an OUTSIDE-IN sphere tied to the mark (Carl, 7–8 October 2026) ─────────────
+
+/**
+ * ⛔ THE PACE IS `/start`'s, IN MARK UNITS. Carl, 8 October: *"The speed of the transition must be proportionate to the
+ * start logo given that the proto logo is slightly bigger."* `/start`'s gold mark (`app/start/page.tsx`, `MARK.gold`:
+ * frame 951 × 544, letterforms 481 tall) is clipped by `circle(75% → 0%)` in 1300 ms, linear (`enquiry-logo-radial-in`,
+ * `app/globals.css`). A `circle()` percentage resolves against hypot(w, h) / √2 of the box, so in LETTERFORM HEIGHTS —
+ * the bench's mark unit — the radius falls at 0.75 · hypot(951, 544) / √2 / 481 / 1.3 s = **0.9292 per second**.
+ * Measured in the mark's own units, it is the same pace at any size: the bench's bigger mark crosses in the same time.
+ * ⚠ UNASSERTED: these are `/start`'s numbers COPIED, not imported. If `/start`'s frame, its 75 % or its 1300 ms changes,
+ * change this. Record: D-088, 8 October; `live-work/start-logo-transition-observed-8-october.md`.
+ */
+export const START_LOGO_SWEEP_PER_S = (0.75 * Math.hypot(951, 544)) / Math.SQRT2 / 481 / 1.3;
+
+/**
+ * ⛔ THE CROSSING'S PACE AS A FRACTION OF `/start`'s — HALF. Carl, 8 October 2026, having watched it at `/start`'s pace
+ * (1.015 s): *"That look great. can you halve the speed of the wipe?"* So the radius falls at 0.4646 mark heights a
+ * second and the full crossing lasts ~2.03 s. `/start`'s rate above stays the MEASUREMENT; this is the ruling on it.
+ * ⚠ A take on the bench (time-driven). In the scene the reader's scroll drives the number.
+ */
+export const LOGO_CROSSING_PACE_OF_START = 0.5;
+export const LOGO_CROSSING_SWEEP_PER_S = START_LOGO_SWEEP_PER_S * LOGO_CROSSING_PACE_OF_START;
+
+export type LogoCrossing = {
+  material: THREE.MeshPhysicalMaterial;
+  /** set every frame: the sphere's centre and radius in the geometry's own (object) space, model units. */
+  set: (centre: readonly [number, number, number], radius: number) => void;
+};
+
+/**
+ * ⛔ ONE MESH, ONE MATERIAL, BOTH METALS — the sphere chooses per pixel. Carl's question (7 October) was whether to
+ * "overlay the 2 objects and tie the transition to the object"; this has the effect of the overlay without two coincident
+ * meshes (z-fighting, or each discarding the other's pixels). It is exact because the two metals differ ONLY in their
+ * colour (F0): same metalness 1, same roughness, same environment — so swapping `diffuseColor` per pixel IS the other
+ * material. ⚠ If the two metals ever get different roughness, this must carry it too.
+ *
+ * ⛔ TIED TO THE OBJECT: the distance is taken in OBJECT space (`position`, before the model matrix), so the edge rides
+ * the tumble and turntable with the metal, never sliding across it like a spotlight.
+ * ⛔ GOLD INSIDE THE SPHERE, BLUE OUTSIDE: as the radius shrinks the blue closes in from the furthest surface and the
+ * gold goes last at the centre (`/start`'s gesture on Begin, Carl 27 August).
+ * ⛔ THE EDGE IS HARD, as `/start`'s is (its crossfade was removed, 27 August): a step, smoothed over ONE SCREEN PIXEL
+ * (`fwidth`) only so it does not alias — the same width a browser's clip-path edge has.
+ */
+export function createLogoCrossing(input: Partial<LogoBlueParams> = {}): LogoCrossing {
+  const p = { ...LOGO_BLUE_DEFAULTS, ...input };
+  const m = new THREE.MeshPhysicalMaterial({ metalness: 1, roughness: p.roughness, envMapIntensity: p.envMapIntensity });
+  const gold = new THREE.Color().setRGB(GOLD_F0_LINEAR[0], GOLD_F0_LINEAR[1], GOLD_F0_LINEAR[2], THREE.LinearSRGBColorSpace);
+  const [r, g, b] = platinumBlueF0(p.tint);
+  const blue = new THREE.Color().setRGB(r, g, b, THREE.LinearSRGBColorSpace);
+  const uniforms = { uCrossCentre: { value: new THREE.Vector3() }, uCrossRadius: { value: 1e9 } };
+  m.onBeforeCompile = (s) => {
+    Object.assign(s.uniforms, uniforms, { uCrossGold: { value: gold }, uCrossBlue: { value: blue } });
+    s.vertexShader = s.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vCrossPos;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvCrossPos = position;");
+    s.fragmentShader = s.fragmentShader
+      .replace(
+        "#include <common>",
+        "#include <common>\nvarying vec3 vCrossPos;\nuniform vec3 uCrossCentre;\nuniform float uCrossRadius;\nuniform vec3 uCrossGold;\nuniform vec3 uCrossBlue;",
+      )
+      .replace(
+        "#include <color_fragment>",
+        [
+          "#include <color_fragment>",
+          "float crossD = distance(vCrossPos, uCrossCentre);",
+          "float crossAa = 0.5 * fwidth(crossD);",
+          "float crossGold = 1.0 - smoothstep(uCrossRadius - crossAa, uCrossRadius + crossAa, crossD);",
+          "diffuseColor.rgb = mix(uCrossBlue, uCrossGold, crossGold);",
+        ].join("\n"),
+      );
+  };
+  m.customProgramCacheKey = () => "logo-crossing";
+  return {
+    material: m,
+    set: (c, radius) => {
+      uniforms.uCrossCentre.value.set(c[0], c[1], c[2]);
+      uniforms.uCrossRadius.value = radius;
+    },
+  };
+}
