@@ -845,6 +845,17 @@ export default function About() {
           </div>
         </Container>
       </section>
+      {/* ⛔⛔ THE RUNWAY — THE SPACE BEFORE §3 (D-088, 10 October 2026). Carl, 8 October: *"we wont be able to lengthen
+          the image. We will have space before Sect 3."*; 10 October: *"my instinct is to tie it to the scroll. A user can
+          guide it into the viewer."* One screen of scroll INSIDE the stage's container, so the room stays pinned while
+          the reader scrolls through it — and that scroll drives the desk mark's journey in the room (the tip, the fall,
+          the flips, the growth); the page's move into §3 after it is the drop (`deskMarkJourney`,
+          `about-card-canvas.tsx`). Empty and `aria-hidden`: nothing in front of the room.
+          ⚠ ONE SCREEN is the Builder's take (proposed, not chosen by number). ⚠ What reads this container's END: the
+          stage's sticky lifetime (it now leaves one screen later — intended), the drop's measured target (`DeskMark` —
+          from the container's bottom, so it follows), the mark's scroll tie. The wipe and CA's trigger read `#roles`
+          and the stage only — unchanged. */}
+      <div aria-hidden="true" data-mark-runway="" className="h-screen" />
       </div>
 
       {/* ── 3. What modern websites can do ──────────────────────────────────

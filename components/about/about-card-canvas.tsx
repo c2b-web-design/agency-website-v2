@@ -98,7 +98,7 @@ import {
   type RoomCardSpec,
 } from "./about-room";
 import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS, logoMarkCentre, logoMarkReach } from "./logo-mark-geometry";
-import { buildLogoStudioEnv, createLogoCrossing, environmentOnly, LOGO_STUDIO_TOP, type LogoCrossing } from "./logo-mark-material";
+import { buildLogoStudioEnv, createLogoCrossing, environmentOnly, LOGO_JUDGING_STUDIO, LOGO_STUDIO_TOP, type LogoCrossing } from "./logo-mark-material";
 import {
   CA_FACE_TRANSMISSION,
   CD_FACE_TRANSMISSION,
@@ -576,6 +576,88 @@ function takeSettings(): TakeSettings {
     mix: neonNumber("takemix", 0.25, 0, 1),
   };
 }
+/**
+ * ⛔ THE LIGHTS, MADE VISIBLE — `?lighthelpers=1`, DEV ONLY, INERT WITHOUT IT. Carl, 10 October 2026: *"Show me the light
+ * module on the page, make it visble"* — *"When looking at moving light direction i asked for it to be shown"*: `/start`'s
+ * `?lighthelpers=1` (9 August, `answer-card-canvas.tsx` — *"i need to see where the light is moving, not just the
+ * effect"*), the same switch here, the same rules: BIG AND BRIGHT, drawn OVER everything (no depth test), and UPDATED
+ * EVERY FRAME — a helper that draws where a light USED to be lies (recorded on `/start`, twice).
+ *   - THE TAKE LIGHT (the cards' warm key) — amber: a square at the light, a line to the cards' centre.
+ *   - THE MARK's TWO SHADOW LIGHTS (the studio's top; the LED strip) — cyan, magenta: they ride the mark's position.
+ *   - THE STUDIO — the five softboxes the metal REFLECTS (`LOGO_JUDGING_STUDIO`), its actual light, outlined and faintly
+ *     filled, riding the mark's position and facing as the reflection does. ⚠ A REFLECTION environment has DIRECTION
+ *     only: the panels are drawn at HALF the bench's proportions (a mark one height tall → half this mark's height — at
+ *     full proportions they sliced across the room's right side), a UNIFORM scale, so each keeps its direction and the
+ *     size it has as the mark sees it. Where they sit is a picture of their directions, not a distance anything uses.
+ */
+function lightHelpersOn(): boolean {
+  return neonParam("lighthelpers") === "1";
+}
+/** Paints a helper over everything (`?lighthelpers=1`). */
+function overEverything(o: THREE.Object3D) {
+  o.traverse((c) => {
+    const m = (c as THREE.Mesh).material as THREE.Material | undefined;
+    if (m) {
+      m.depthTest = false;
+      m.transparent = true;
+      m.toneMapped = false;
+    }
+    c.renderOrder = 999;
+  });
+}
+function DirHelper({ lightRef, color, size }: { lightRef: React.RefObject<THREE.DirectionalLight | null>; color: string; size: number }) {
+  const scene = useThree((st) => st.scene);
+  const helper = useRef<THREE.DirectionalLightHelper | null>(null);
+  useEffect(() => {
+    const l = lightRef.current;
+    if (!l) return;
+    const h = new THREE.DirectionalLightHelper(l, size, color);
+    overEverything(h);
+    scene.add(h);
+    h.update();
+    helper.current = h;
+    return () => {
+      helper.current = null;
+      scene.remove(h);
+      h.dispose();
+    };
+  }, [lightRef, color, size, scene]);
+  useFrame(() => helper.current?.update());
+  return null;
+}
+/** The studio's softboxes around the mark (`?lighthelpers=1`) — mounted in the mark's `follow` group. */
+function StudioPanels({ scale }: { scale: number }) {
+  const panels = useMemo(
+    () =>
+      LOGO_JUDGING_STUDIO.formers.map((f) => {
+        const position = new THREE.Vector3(...f.position).multiplyScalar(scale);
+        const q = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(position, new THREE.Vector3(), new THREE.Vector3(0, 1, 0)));
+        return { position, q, size: [f.scale[0] * scale, f.scale[1] * scale] as [number, number], color: f.color ?? "#ffffff" };
+      }),
+    [scale],
+  );
+  const group = useRef<THREE.Group>(null);
+  useEffect(() => {
+    if (group.current) overEverything(group.current);
+  }, [panels]);
+  return (
+    <group ref={group}>
+      {panels.map((p, i) => (
+        <group key={i} position={p.position} quaternion={p.q}>
+          <mesh>
+            <planeGeometry args={p.size} />
+            <meshBasicMaterial color={p.color} opacity={0.18} side={THREE.DoubleSide} />
+          </mesh>
+          <lineSegments>
+            <edgesGeometry args={[new THREE.PlaneGeometry(...p.size)]} />
+            <lineBasicMaterial color={p.color} />
+          </lineSegments>
+        </group>
+      ))}
+    </group>
+  );
+}
+
 function TakeLight({ s }: { s: TakeSettings }) {
   const ref = useRef<THREE.DirectionalLight>(null);
   const scene = useThree((st) => st.scene);
@@ -616,18 +698,22 @@ function TakeLight({ s }: { s: TakeSettings }) {
       scene.remove(target);
     };
   }, [centre, scene, target, invalidate]);
+  const helpers = useMemo(() => lightHelpersOn(), []);
   return (
-    <directionalLight
-      ref={ref}
-      position={position}
-      color={color}
-      intensity={s.intensity}
-      castShadow
-      shadow-mapSize-width={4096}
-      shadow-mapSize-height={4096}
-      shadow-bias={-0.0001}
-      shadow-normalBias={0.0005}
-    />
+    <>
+      <directionalLight
+        ref={ref}
+        position={position}
+        color={color}
+        intensity={s.intensity}
+        castShadow
+        shadow-mapSize-width={4096}
+        shadow-mapSize-height={4096}
+        shadow-bias={-0.0001}
+        shadow-normalBias={0.0005}
+      />
+      {helpers && <DirHelper lightRef={ref} color="#ffb020" size={0.6} />}
+    </>
   );
 }
 
@@ -697,7 +783,7 @@ const DESK_MARK_SHADOW_LIGHT_M = 1.5;
  * axes); `strength` is the shadow's own intensity (`LightShadow.intensity`, 0–1); a smaller `mapSize` over the same
  * frustum gives a softer edge. Mounted inside the mark's group, aimed at the mark's centre.
  */
-function MarkShadowLight({ dir, centreY, strength, mapSize }: { dir: THREE.Vector3; centreY: number; strength: number; mapSize: number }) {
+function MarkShadowLight({ dir, centreY, strength, mapSize, helperColor }: { dir: THREE.Vector3; centreY: number; strength: number; mapSize: number; helperColor?: string }) {
   const invalidate = useThree((st) => st.invalidate);
   const light = useRef<THREE.DirectionalLight>(null);
   const aim = useRef<THREE.Object3D>(null);
@@ -734,6 +820,7 @@ function MarkShadowLight({ dir, centreY, strength, mapSize }: { dir: THREE.Vecto
         shadow-bias={-0.0005}
         shadow-normalBias={0.002}
       />
+      {helperColor && <DirHelper lightRef={light} color={helperColor} size={0.15} />}
     </>
   );
 }
@@ -1016,6 +1103,125 @@ const DESK_MARK_UNLIT = 0.1;
 // everyMs added 10 October (Carl: "Repeat the wobble every 20s")
 const DESK_MARK_WOBBLE = { atMs: 5000, ms: 2000, ampsDeg: [3.75, 2.25, 1.125, 0.5625], everyMs: 20000 };
 /**
+ * ⛔⛔ THE JOURNEY TIED TO THE SCROLL — D-088, built 10 October 2026 on Carl's override: *"my instinct is to tie it to the
+ * scroll. A user can guide it into the viewer. if they stop with the scroll the logo stops, scroll up etc"* … *"No need to
+ * plan or go to the architect"* — *"nothing new is required, no new build components. We are adding mechanisms to what is
+ * already there"*.
+ *   - TWO STRETCHES OF SCROLL, read from the page every frame (`deskMarkScroll`): ROOM — from §2's top at the window's top
+ *     to the stage stopping (§2's rest + THE RUNWAY, one screen, `app/about/page.tsx`), the room pinned throughout: the
+ *     tip, the fall, the flips, the growth; DROP — the stage's container leaving, one window: the drop into the viewer.
+ *   - IN PROPORTION TO THE TUNED TIMINGS: each stretch maps LINEARLY onto the journey's own play time (the tip at
+ *     `tipMs`, the fall and flips at `fallSpeed` — the loop's clock), so a steady scroll replays the legato.
+ *   - SMOOTHED: the mark CHASES the scroll's point with a `lagMs` time constant, so a wheel's notches do not jolt it.
+ *   - ⛔ LATCHED AT THE VIEWER — Carl: *"once the logo is in the player there is no "pulling" it out. The mechanism tying it
+ *     to the scroll has done its job."* Once it reaches the drop's end it stays there for the page view: scrolling back
+ *     up leaves the desk EMPTY (✔ *"Yes"*); a reload starts again on the desk (✔ *"Also yes. A user may go elsewhere and
+ *     return"*). Only with the drop measured — without it nothing latches.
+ *   - ⛔ A JUMP INTO §3 — Carl: *"If they are returning to /About and then go to Sect 3 the logo can drop in from the top
+ *     right of the page showing the last bit of the animation."* When the scroll's point leaps from the room stretch to
+ *     the drop or beyond in one step (more than half the room's play time at once — the Examples link, a reload restored
+ *     below the runway), the mark SKIPS the room, starts at the drop and plays it at its OWN speed (real time), then
+ *     latches. ⚠ A scroll fast enough to cross half the room's stretch between two frames reads as a jump too — unmeasured.
+ *   - THE WOBBLE only while the mark rests on the desk (play time 0); a scroll that starts mid-wobble takes over from it —
+ *     ⚠ a jump of up to 3.75° at that frame, unflagged.
+ *   - ⚠ Each frame's `dt` is capped at 50 ms: on-demand rendering hands a long gap to the first frame after idle.
+ *   Faders: `?marktie=0` (still on the desk, as before), `?marklag=` (ms).
+ */
+const DESK_MARK_TIE = { lagMs: 150 };
+/** The scroll's two stretches (`DESK_MARK_TIE`), 0 … 1 each — or null off `/about`'s layout. */
+function deskMarkScroll(): { room: number; drop: number } | null {
+  if (typeof document === "undefined") return null;
+  const roles = document.getElementById("roles");
+  const box = document.querySelector("[data-mark-runway]")?.parentElement;
+  if (!roles || !box) return null;
+  const vh = window.innerHeight || 1;
+  const r = roles.getBoundingClientRect(), b = box.getBoundingClientRect();
+  const pinned = b.bottom - r.top - vh; // §2's top at the window's top → the stage stops (the container's end at the window's bottom)
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
+  return { room: pinned > 1 ? clamp(-r.top / pinned) : 1, drop: clamp((vh - b.bottom) / vh) };
+}
+
+/**
+ * ⛔⛔ THE LIGHT, DIRECTED — D-088, 10 October 2026. Carl, with the studio made visible (`?lighthelpers=1`) and the dark
+ * frames in hand: *"i had the helpers visble so not only could i see the lights effects but know exactly when and where
+ * it was. Essentially "directing the light". … So we dont need constant movement of light, except on its movement
+ * downwards. We need to put it in position at various times so the logo geometry will do the work for us. … At other
+ * times the logo is too dark for too long. You wanna direct? … hopefully, you will realise what im after and put the
+ * light in its optimal position to bring our logo to life with light and shadow."* ⛔ Delegated: the Builder directs.
+ *   - WHY IT WENT DARK: the mark is mirror metal lit by its studio's REFLECTION alone. A flat side reads bright only
+ *     when the direction it mirrors toward the camera meets a softbox; the studio kept one orientation (8 October,
+ *     "position only"), so as the mark turned, its sides mirrored the gaps.
+ *   - ⛔ THE METHOD — POSITIONS HELD, NOT AN ORBIT: at rest (and through the tip) the APPROVED desk look, untouched. For
+ *     each movement — the fall, the first flip, the second flip — the whole studio is turned ONCE and HELD, and the
+ *     mark's own turning sweeps its sides through the light and out of it: the light and shadow come from the geometry.
+ *     Between movements the studio eases to its next position (`blendMs` of play time). ⛔ A long movement is held in
+ *     PARTS of at most `holdMs` of play time — measured, one hold per movement lit one stretch of the second flip and
+ *     left the rest dark (mark lit 41% of the journey; the flip's second half at 5–9%).
+ *   - ⛔ HOW A POSITION IS CHOSEN (`directStudio`): through the movement, the side facing the camera is sampled; for
+ *     each sample, the direction it mirrors. Every candidate turn (each strong softbox laid on each sampled mirror
+ *     direction, plus staying put) is scored by how much of the movement the visible side catches a softbox, weighted by
+ *     how squarely it faces the camera — less a cost for moving the light, so it moves no more than it must.
+ *   - ⛔ ON THE WAY DOWN IT MOVES (Carl's exception): the drop TRACKS — the key softbox held `dropOffsetDeg` off the
+ *     face's mirror direction, so the face shows a gradient across it rather than a flat mirror or black over §3.
+ *   - THE STUDIO ITSELF IS UNCHANGED — its boxes, their balance, their brightness (R-036, R-037); only its ORIENTATION
+ *     is directed, through the material's environment rotation (a per-frame uniform, no new build). The cast shadows on
+ *     the desk are separate and unchanged.
+ *   - ⚠ The mirror test treats each side as one flat mirror seen from one point and the boxes as sharp-edged; the
+ *     studio's blur softens both. It chooses positions; the eye judges them.
+ *   Faders: `?markdirect=0` (the studio held still, as before), `?markblend=` (ms), `?markdropoff=` (degrees).
+ */
+const DESK_MARK_DIRECTOR = { blendMs: 220, holdMs: 900, samples: 48, moveCost: 0.12, dropOffsetDeg: 12, minIntensity: 1 };
+/** One studio softbox, in the studio's own frame: centre, the plane's in-plane axes and size, its brightness. */
+type StudioBox = { p: THREE.Vector3; dist: number; x: THREE.Vector3; y: THREE.Vector3; sx: number; sy: number; intensity: number };
+const STUDIO_BOXES: StudioBox[] = LOGO_JUDGING_STUDIO.formers.map((f) => {
+  const p = new THREE.Vector3(...f.position);
+  // as `buildLogoStudioEnv` places it: a plane at `position` turned to face the origin (`lookAt`: +Z toward the target)
+  const m = new THREE.Matrix4().lookAt(new THREE.Vector3(), p, new THREE.Vector3(0, 1, 0));
+  const x = new THREE.Vector3().setFromMatrixColumn(m, 0), y = new THREE.Vector3().setFromMatrixColumn(m, 1);
+  return { p, dist: p.length(), x, y, sx: f.scale[0], sy: f.scale[1], intensity: f.intensity };
+});
+/** How much light the mirror direction `r` (the studio's frame) meets — a box's brightness, softened at its edges. */
+function studioLightAlong(r: THREE.Vector3): number {
+  let best = 0;
+  for (const b of STUDIO_BOXES) {
+    const along = r.dot(b.p) / b.dist;
+    if (along <= 1e-3) continue;
+    const h = r.clone().multiplyScalar(b.dist / along).sub(b.p);
+    const ex = Math.min(1, Math.max(0, (b.sx / 2 - Math.abs(h.dot(b.x))) / (0.15 * b.sx)));
+    const ey = Math.min(1, Math.max(0, (b.sy / 2 - Math.abs(h.dot(b.y))) / (0.15 * b.sy)));
+    best = Math.max(best, b.intensity * ex * ey);
+  }
+  return best;
+}
+/** A sample of a movement: the visible side's mirror direction (world) and how squarely that side faces the camera. */
+type MirrorSample = { r: THREE.Vector3; vis: number };
+/**
+ * The held studio turn for one movement (`DESK_MARK_DIRECTOR`): the candidate scoring best on light caught by the visible
+ * side through the movement, less the cost of moving from `from`. `yaw` turns the studio's frame into the world's.
+ */
+function directStudio(samples: MirrorSample[], from: THREE.Quaternion, yaw: THREE.Quaternion, moveCost: number): THREE.Quaternion {
+  const weight = samples.reduce((a, s) => a + s.vis, 0) || 1;
+  const toStudio = (q: THREE.Quaternion) => q.clone().premultiply(yaw).invert(); // world → the studio's frame, studio turned by q
+  const score = (q: THREE.Quaternion) => {
+    const inv = toStudio(q);
+    let lit = 0;
+    for (const s of samples) lit += s.vis * studioLightAlong(s.r.clone().applyQuaternion(inv));
+    return lit / weight - moveCost * 2 * Math.acos(Math.min(1, Math.abs(q.dot(from))));
+  };
+  let best = from.clone(), bestScore = score(from);
+  const strong = STUDIO_BOXES.filter((b) => b.intensity >= DESK_MARK_DIRECTOR.minIntensity);
+  for (let k = 0; k < samples.length; k += 2) {
+    if (samples[k].vis < 0.15) continue;
+    for (const b of strong) {
+      const boxWorld = b.p.clone().normalize().applyQuaternion(yaw);
+      const q = new THREE.Quaternion().setFromUnitVectors(boxWorld, samples[k].r);
+      const sc = score(q);
+      if (sc > bestScore) { best = q; bestScore = sc; }
+    }
+  }
+  return best;
+}
+/**
  * ⛔ THE CROSSING IN THE ROOM — gold → platinum blue (R-036's outside-in sphere about `logoMarkCentre()`, the bench's own
  * material and mapping, radius = far − p·(far − near)). Carl, 8 October 2026, session 2: *"The colour transition wipe.
  * Should start as its coming out of the face plant and end as its reaching the end of its 2nd flip"*. So p runs 0 → 1
@@ -1216,12 +1422,16 @@ function cornerPose(p: number, psiDeg: number, dMm: number, leftMm: number, com:
   const c = new THREE.Vector3(com[0], com[1], com[2] - depth).applyQuaternion(q).add(pivot);
   return { x: c.x, y: c.y, z: c.z, q };
 }
-function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, loop, lightUp, wobble, flip, drop, crossing, play, corner, com, depth, originOffMm }: {
+function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, loop, tie, director, lightUp, wobble, flip, drop, crossing, play, corner, com, depth, originOffMm }: {
   bodyRef: React.RefObject<THREE.Group | null>; followRef: React.RefObject<THREE.Group | null>;
   contactRef: React.RefObject<THREE.MeshBasicMaterial | null>; contactOpacity: number;
   /** the desk's cast-shadow catcher — its shadows come with the light (`DESK_MARK_LIGHT_MS`) */
   catcherRef: React.RefObject<THREE.ShadowMaterial | null>;
   tipFixed: number | null; fallFixed: number | null; tipMs: number; fallSpeed: number; fallEndMs: number; loop: boolean;
+  /** the scroll tie (`DESK_MARK_TIE`); null = still on the desk */
+  tie: { lagMs: number } | null;
+  /** the light, directed (`DESK_MARK_DIRECTOR`): the camera, the mark's placement, how to turn the studio; null = held still */
+  director: { camera: THREE.Camera; at: THREE.Vector3; yaw: THREE.Quaternion; blendMs: number; dropOffsetDeg: number; turn: (q: THREE.Quaternion) => void } | null;
   /** the light (`DESK_MARK_LIGHT_MS`): the §2 sequence's clock — null until CA strikes — or none (simply lit) */
   lightUp: { at: React.RefObject<number | null> | null; ms: number; unlit: number; catcherOpacity: number };
   /** the wobble (`DESK_MARK_WOBBLE`), timed from `lightUp.at`; null = none */
@@ -1234,6 +1444,10 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
   com: [number, number, number]; depth: number; originOffMm: number;
 }) {
   const clockRef = useRef(0);
+  /** the scroll tie's state (`DESK_MARK_TIE`): the mark's play time, the scroll's last point, a jump playing, the latch */
+  const journey = useRef<{ t: number; prev: number | null; jump: boolean; latched: boolean }>({ t: 0, prev: null, jump: false, latched: false });
+  /** the director's held positions (`DESK_MARK_DIRECTOR`), solved once per journey spec */
+  const directed = useRef<{ key: unknown[]; bounds: number[]; turns: THREE.Quaternion[]; dropBox: THREE.Vector3 | null } | null>(null);
   const start = useMemo(
     () =>
       play === "somersault"
@@ -1299,11 +1513,134 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
         if (flip && drop && drop.growTo !== 1) grow = growAt(ms, fallMs, drop.growTo);
         return ms;
       };
-      if (fallFixed !== null) pose = fallOrFlip(crossAt(fallFixed * fallMs));
-      else if (tipFixed !== null) pose = tipPose(tipFixed);
-      // ⛔ STILL AND UPRIGHT by default — Carl, 10 October 2026: "the logo loop is currently running. Stop it and then we
-      // will discuss the scroll behavior." The journey's specs stay built (flip, drop, crossing) for the scroll to drive;
-      // the time-driven loop is `?markloop=1`. No frames asked for while still.
+      // ⛔ THE SCROLL TIE (`DESK_MARK_TIE`) — the journey's PLAY TIME: the tip over `tipMs`, then the fall's ms at `fallSpeed`
+      const roomPlay = tipMs + (flip ? flipDone : fallEndMs) / fallSpeed;
+      const dropPlay = flip && drop ? drop.ms / fallSpeed : 0;
+      const journeyPose = (tp: number): MarkPose =>
+        tp <= tipMs ? tipPose(Math.max(0, tp) / tipMs) : fallOrFlip(crossAt(Math.min(fallMs, (tp - tipMs) * fallSpeed)));
+      // ── THE DIRECTOR (`DESK_MARK_DIRECTOR`) ──
+      /** The visible side's mirror direction (world) for a pose, and how squarely that side faces the camera. */
+      const mirrorOf = (ps: MarkPose): MirrorSample | null => {
+        if (!director) return null;
+        const at = new THREE.Vector3(ps.x, ps.y, ps.z).applyQuaternion(director.yaw).add(director.at);
+        const v = at.sub(director.camera.getWorldPosition(new THREE.Vector3())).normalize(); // camera → mark
+        const n = new THREE.Vector3(0, 0, 1).applyQuaternion(ps.q).applyQuaternion(director.yaw); // the face's normal
+        if (v.dot(n) > 0) n.negate(); // the side the camera sees: the face, or the flat back
+        const vis = -v.dot(n);
+        return { r: v.clone().sub(n.clone().multiplyScalar(2 * v.dot(n))).normalize(), vis };
+      };
+      /** The held turns, solved once per journey spec: identity at rest and through the tip, then one per movement. */
+      const solveDirector = () => {
+        const key = [flip, drop, tipMs, fallSpeed];
+        if (directed.current && directed.current.key.every((k, i) => k === key[i])) return directed.current;
+        const saved = [crossP, grow];
+        const P0 = tipMs, P1 = tipMs + DESK_MARK_FLIP_FROM_MS / fallSpeed, P3 = roomPlay;
+        const P2 = flip ? P1 + flipPlayed(flip).flight / fallSpeed : P3;
+        // each movement in parts of at most `holdMs` (play time): the parts' boundaries, then one held turn per part
+        const bounds = [P0];
+        for (const [a, z] of [[P0, P1], [P1, P2], [P2, P3]]) {
+          const n = Math.max(1, Math.ceil((z - a) / DESK_MARK_DIRECTOR.holdMs));
+          for (let k = 1; k <= n; k++) bounds.push(a + ((z - a) * k) / n);
+        }
+        const turns = [new THREE.Quaternion()];
+        for (let i = 0; i + 1 < bounds.length; i++) {
+          const samples: MirrorSample[] = [];
+          for (let k = 0; k < DESK_MARK_DIRECTOR.samples; k++) {
+            const m = mirrorOf(journeyPose(bounds[i] + ((k + 0.5) / DESK_MARK_DIRECTOR.samples) * (bounds[i + 1] - bounds[i])));
+            if (m) samples.push(m);
+          }
+          turns.push(director ? directStudio(samples, turns[i], director.yaw, DESK_MARK_DIRECTOR.moveCost) : new THREE.Quaternion());
+        }
+        const last = turns[turns.length - 1];
+        // the drop's key: of the strong boxes, the one the last held turn places nearest the drop's first mirror direction
+        const first = dropPlay > 0 ? mirrorOf(journeyPose(roomPlay + 1)) : null;
+        let dropBox: THREE.Vector3 | null = null;
+        if (first && director) {
+          let bestDot = -2;
+          for (const b of STUDIO_BOXES.filter((bx) => bx.intensity >= DESK_MARK_DIRECTOR.minIntensity)) {
+            const w = b.p.clone().normalize().applyQuaternion(director.yaw).applyQuaternion(last);
+            if (w.dot(first.r) > bestDot) { bestDot = w.dot(first.r); dropBox = b.p.clone().normalize(); }
+          }
+        }
+        [crossP, grow] = saved;
+        directed.current = { key, bounds, turns, dropBox };
+        return directed.current;
+      };
+      /** The studio's turn at play time `tp` (`DESK_MARK_DIRECTOR`): held per movement, eased between, tracking the drop. */
+      const studioTurnAt = (tp: number, ps: MarkPose): THREE.Quaternion => {
+        const d = solveDirector();
+        const ease = (u: number) => u * u * (3 - 2 * u);
+        const blend = director?.blendMs ?? 0;
+        // held: the movement `tp` is in, eased from the one before across `blend` around each boundary
+        let i = 0;
+        while (i < d.bounds.length && tp >= d.bounds[i]) i++;
+        let q = d.turns[Math.min(i, d.turns.length - 1)].clone();
+        for (let b = 0; b < d.bounds.length; b++) {
+          const lo = d.bounds[b] - blend / 2, hi = d.bounds[b] + blend / 2;
+          if (tp > lo && tp < hi && b + 1 < d.turns.length) {
+            q = d.turns[b].clone().slerp(d.turns[b + 1], ease((tp - lo) / (hi - lo)));
+          }
+        }
+        // the drop: the key held just off the face's mirror direction, moving with it (eased in from the last held turn)
+        if (director && d.dropBox && tp > roomPlay && dropPlay > 0) {
+          const m = mirrorOf(ps);
+          if (m) {
+            const axis = new THREE.Vector3(0, 1, 0).cross(m.r);
+            const target = axis.lengthSq() > 1e-6 ? m.r.clone().applyAxisAngle(axis.normalize(), THREE.MathUtils.degToRad(director.dropOffsetDeg)) : m.r;
+            const track = new THREE.Quaternion().setFromUnitVectors(d.dropBox.clone().applyQuaternion(director.yaw), target);
+            const u = blend > 0 ? Math.min(1, (tp - roomPlay) / blend) : 1;
+            q = d.turns[d.turns.length - 1].clone().slerp(track, ease(u));
+          }
+        }
+        return q;
+      };
+      /** Moves the mark's play time toward the scroll's point (or plays a jump, or holds the latch); returns it. */
+      const journeyAt = (dtS: number): number => {
+        const j = journey.current;
+        const end = roomPlay + dropPlay;
+        if (j.latched) return end;
+        const at = deskMarkScroll();
+        if (!at || !tie) return j.t;
+        const target = at.room * roomPlay + at.drop * dropPlay;
+        const step = Math.min(dtS, 0.05) * 1000;
+        if (j.prev === null || (j.prev < roomPlay && target >= roomPlay && target - j.prev > roomPlay / 2)) {
+          // the first frame, or a leap past the room: below the room → the drop from its start at its own speed
+          if (target >= roomPlay && dropPlay > 0) {
+            j.t = Math.max(j.t, roomPlay);
+            j.jump = true;
+          } else if (j.prev === null) j.t = target;
+        }
+        j.prev = target;
+        if (j.jump) {
+          j.t = Math.min(end, j.t + step);
+          if (j.t >= target) j.jump = false;
+        } else {
+          const k = 1 - Math.exp(-step / Math.max(1, tie.lagMs));
+          j.t += (target - j.t) * k;
+          if (Math.abs(target - j.t) < 0.5) j.t = target;
+        }
+        if (dropPlay > 0 && j.t >= end - 0.5) {
+          j.t = end;
+          j.latched = true;
+        }
+        if (!j.latched && (j.jump || j.t !== target)) st.invalidate(); // until it has caught the scroll
+        return j.t;
+      };
+      let playNow = 0; // the journey's play time this frame — what the director reads
+      if (fallFixed !== null) {
+        pose = fallOrFlip(crossAt(fallFixed * fallMs));
+        playNow = tipMs + (fallFixed * fallMs) / fallSpeed;
+      } else if (tipFixed !== null) {
+        pose = tipPose(tipFixed);
+        playNow = tipFixed * tipMs;
+      }
+      // ⛔ THE JOURNEY TIED TO THE SCROLL (`DESK_MARK_TIE`) — the default since 10 October 2026. ⚰️ Before it the same day:
+      // STILL AND UPRIGHT (Carl: "the logo loop is currently running. Stop it"); `?marktie=0` keeps that. The time-driven
+      // loop is `?markloop=1`. At play time 0 the mark rests on the desk and wobbles; no frames asked for between.
+      else if (!loop && tie && journeyAt(dt) > 0) {
+        pose = journeyPose(journey.current.t);
+        playNow = journey.current.t;
+      }
       else if (!loop) {
         // ⛔ THE WOBBLE (`DESK_MARK_WOBBLE`) — once, `atMs` after CA's strike; frames asked for until it has finished
         const struckAt = lightUp.at?.current ?? null;
@@ -1332,8 +1669,11 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
         if (t < DESK_MARK_TIP_HOLD_MS) pose = tipPose(0);
         else if (t < DESK_MARK_TIP_HOLD_MS + tipMs) pose = tipPose((t - DESK_MARK_TIP_HOLD_MS) / tipMs);
         else pose = fallOrFlip(crossAt(Math.min(fallMs, (t - DESK_MARK_TIP_HOLD_MS - tipMs) * fallSpeed)));
+        playNow = Math.min(tipMs + fallMs / fallSpeed, Math.max(0, t - DESK_MARK_TIP_HOLD_MS));
         st.invalidate();
       }
+      // ⛔ THE LIGHT, DIRECTED (`DESK_MARK_DIRECTOR`) — the studio's turn at this play time
+      if (director && flip) director.turn(studioTurnAt(playNow, pose));
     }
     if (bodyRef.current) {
       bodyRef.current.position.set(pose.x, pose.y, pose.z);
@@ -1422,6 +1762,8 @@ function DeskMark({ clock }: { clock: SequenceClock | null }) {
     geometry: THREE.BufferGeometry; gold: THREE.MeshPhysicalMaterial; env: THREE.WebGLRenderTarget;
     crossing: { set: LogoCrossing["set"]; light: (radius: number, lit: number) => void; centre: [number, number, number]; far: number; near: number };
     contact: ReturnType<typeof buildContactShadow>;
+    /** turns the studio (`DESK_MARK_DIRECTOR`); null with `?marklight=room` (no studio) */
+    turn: ((q: THREE.Quaternion) => void) | null;
   };
   const [built, setBuilt] = useState<Built | null>(null);
   /** ⛔ THE WIPE's PLANE (§3, below) — on the mark's material from birth; parked far below everything (keeps all) until
@@ -1448,7 +1790,9 @@ function DeskMark({ clock }: { clock: SequenceClock | null }) {
       const light = roomLight
         ? () => {}
         : (radius: number, lit: number) => { gold.envMapIntensity = lit * (studioIntensity + (blueMax - studioIntensity) * share(radius)); };
-      made = { geometry, gold, env, contact: buildContactShadow(geometry), crossing: { set: cross.set, light, centre, ...reach } };
+      // the studio's orientation (`DESK_MARK_DIRECTOR`): three.js applies the inverse in the lookup, so this turns the studio BY q
+      const turn = roomLight ? null : (q: THREE.Quaternion) => { gold.envMapRotation.setFromQuaternion(q); };
+      made = { geometry, gold, env, contact: buildContactShadow(geometry), crossing: { set: cross.set, light, centre, ...reach }, turn };
       setBuilt(made);
     }, 0);
     return () => {
@@ -1622,6 +1966,40 @@ function DeskMark({ clock }: { clock: SequenceClock | null }) {
     return () => window.clearTimeout(id);
   }, [clock, wobble, built, invalidate]);
   const catcherMat = useRef<THREE.ShadowMaterial>(null);
+  /** ⛔ THE SCROLL TIE (`DESK_MARK_TIE`): on by default; `?marktie=0` keeps the mark still on the desk */
+  const tieOn = useMemo(() => neonParam("marktie") !== "0", []);
+  const helpers = useMemo(() => lightHelpersOn(), []); // `?lighthelpers=1` — the lights made visible
+  const lagMs = useMemo(() => neonNumber("marklag", DESK_MARK_TIE.lagMs, 0, 2000), []);
+  const tie = useMemo(() => (tieOn ? { lagMs } : null), [tieOn, lagMs]);
+  /** ⛔ THE LIGHT, DIRECTED (`DESK_MARK_DIRECTOR`): on by default; `?markdirect=0` holds the studio still, as before */
+  const directOn = useMemo(() => neonParam("markdirect") !== "0", []);
+  const directBlend = useMemo(() => neonNumber("markblend", DESK_MARK_DIRECTOR.blendMs, 0, 3000), []);
+  const directDropOff = useMemo(() => neonNumber("markdropoff", DESK_MARK_DIRECTOR.dropOffsetDeg, -60, 60), []);
+  const director = useMemo(
+    () =>
+      directOn && built?.turn
+        ? {
+            camera,
+            at: new THREE.Vector3(...place.position),
+            yaw: new THREE.Quaternion().setFromAxisAngle(Y_AXIS, place.rotationY),
+            blendMs: directBlend,
+            dropOffsetDeg: directDropOff,
+            turn: built.turn,
+          }
+        : null,
+    [directOn, built, camera, place, directBlend, directDropOff],
+  );
+  // the canvas renders on demand: a scroll or a resize must ask for a frame, or the tie never sees it
+  useEffect(() => {
+    if (!tieOn) return;
+    const wake = () => invalidate();
+    document.addEventListener("scroll", wake, { capture: true, passive: true });
+    window.addEventListener("resize", wake);
+    return () => {
+      document.removeEventListener("scroll", wake, true);
+      window.removeEventListener("resize", wake);
+    };
+  }, [tieOn, invalidate]);
   const faders = useMemo(
     () => ({
       top: neonNumber("marktop", 1, 0, 1),
@@ -1646,7 +2024,7 @@ function DeskMark({ clock }: { clock: SequenceClock | null }) {
     <>
       <MarkMotion
         bodyRef={body} followRef={follow} contactRef={contactMat} contactOpacity={faders.contact} catcherRef={catcherMat}
-        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} fallEndMs={motion.fallEndMs} loop={motion.loop} flip={flip}
+        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} fallEndMs={motion.fallEndMs} loop={motion.loop} tie={drop || !dropOn ? tie : null} director={director} flip={flip}
         lightUp={{ at: clock, ms: lightUpMs, unlit, catcherOpacity: DESK_MARK_SHADOW_OPACITY }} wobble={wobble} drop={drop} crossing={built.crossing} play={motion.play} corner={motion.corner}
         com={comM} depth={depthM} originOffMm={originOffMm}
       />
@@ -1658,11 +2036,13 @@ function DeskMark({ clock }: { clock: SequenceClock | null }) {
             <mesh ref={mesh} geometry={built.geometry} material={built.gold} position={[-comM[0], -comM[1], -comM[2]]} castShadow={shadowOn} />
           </group>
           <group ref={follow} position={comM}>
+            {/* half the bench's proportions: a UNIFORM scale keeps each panel's direction and its size as the mark sees it */}
+            {helpers && <StudioPanels scale={place.scale * 0.5} />}
             {shadowOn && faders.top > 0 && (
-              <MarkShadowLight dir={shadowDirs.top} centreY={0} strength={faders.top} mapSize={DESK_MARK_SHADOW_MAP} />
+              <MarkShadowLight dir={shadowDirs.top} centreY={0} strength={faders.top} mapSize={DESK_MARK_SHADOW_MAP} helperColor={helpers ? "#30e0ff" : undefined} />
             )}
             {shadowOn && faders.strip > 0 && (
-              <MarkShadowLight dir={shadowDirs.strip} centreY={0} strength={faders.strip} mapSize={DESK_MARK_SHADOW_MAP / 2} />
+              <MarkShadowLight dir={shadowDirs.strip} centreY={0} strength={faders.strip} mapSize={DESK_MARK_SHADOW_MAP / 2} helperColor={helpers ? "#ff40d0" : undefined} />
             )}
           </group>
         </group>

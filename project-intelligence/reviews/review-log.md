@@ -65,6 +65,24 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-041 — The Desk Mark's Journey Tied To The Scroll, Its Light Directed (D-088): "Excellent… Extremely Good"
+
+**Date:** 2026-10-10
+**Reviewer:** Human Founder
+**Subject:** plain `/about` — the journey tied to the scroll (a one-screen runway, the drop on the page's move into §3, latched in the viewer, the Examples jump dropping in from the top right); the light DIRECTED by the Builder on Carl's delegation (the studio held per part of each movement, eased between, tracking the drop); `?lighthelpers=1`. `app/about/page.tsx`, `components/about/about-card-canvas.tsx` (`DESK_MARK_TIE`, `DESK_MARK_DIRECTOR`).
+
+**Carl's verdicts, verbatim:**
+- The directed light, watched with and without the helpers: *"it looks excellent. screenshots are my favourite bit. Apart from the light and shadows accross the fave look at that shine/glint on the rim. It moves quickly, like the glint on the gold rim in the client info section when the light passses round the back. At slow speed, edging forward almost frame by frame its niticable. At normal speed the glint is striking, almost a momentary flash with movement.. Excellent. The logos journey looks extremely good."*
+
+**Findings:**
+
+- ✔ Recorded at the level given — "excellent", not "approved", not a master (D-035). The scroll tie had no separate verdict; Carl moved straight to the light, then judged the journey as a whole: *"extremely good"*.
+- ⚠ **Takes inside it, not judged one by one:** the runway's one screen, the 150 ms lag, the 0.9 s holds, the 220 ms blend, the drop's 12° offset.
+- ⚠ **Raised, open:** a jump drops in dark; a scroll straight from §1 starts the journey as the light rises; a scroll mid-wobble jumps up to 3.75°.
+- ⚠ **Measured by the Builder on 41 held points, not filmed at speed** — Carl judged the motion.
+
+---
+
 ## R-040 — The Desk Mark's Wobble, The Clue That It Moves (D-088): "A Lot Better"
 
 **Date:** 2026-10-10
@@ -76,6 +94,8 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 - Take B (1 s, the angles × 0.375): *"The movement look right but its too fast"*
 - 2 s: *"Thats a lot better."*
 - Repeated every 20 s (start to start), added after the verdict above: committed on Carl's word (*"Commit and push"*) — ⚠ **no verdict stated**; filmed: movement only in 5.1–6.9 s and 25.1–27.0 s of 30 s.
+- The repeat, given after it was pushed: *"The looped wobble is good."*
+- The growth (from the bin's blow, R-038 — unjudged until now): *"Growth of the logo is good."*
 
 **Findings:**
 
