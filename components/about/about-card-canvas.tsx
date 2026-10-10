@@ -973,6 +973,41 @@ const DESK_MARK_LIGHT_MS = 1015;
 /** The share of its light the mark has BEFORE the strike — a TAKE (10 October 2026); `?markunlit=`. */
 const DESK_MARK_UNLIT = 0.1;
 /**
+ * ⛔ THE WOBBLE — THE CLUE THAT IT MOVES. Carl, 10 October 2026, before the scroll mechanism: *"lets have the logo wobble
+ * backwards and forwards to give the user a clue that is moves. So lets try it over 500ms ats first. 3x backwards and
+ * forwards by 10 deg, 6deg and then 3 deg. i will judge it by eye and tweak if needed.. The wobble can start after 5 secs
+ * from light actvation."* (Raised 8 October: *"Our logo cant jump (yet) but it can wobble!"*)
+ *   - ONCE, `atMs` after CA's strike (the same clock as the light, `DESK_MARK_LIGHT_MS`), lasting `ms`.
+ *   - ⛔ 1 s AND EASED — Carl, on the first take (500 ms, three sine cycles): *"That is way to fast. make a 1 second and use
+ *     easing"*. ⚰️ The sine cycles also LEFT and REACHED rest at full speed — no ease at either end.
+ *   - So the angle moves between TURNING POINTS: upright → back A₁ → forward A₁ → back A₂ → forward A₂ → back A₃ →
+ *     forward A₃ → upright, each swing an ease-in-out (`easeInOutSine` — a pendulum's own curve between its extremes):
+ *     still at each extreme, fastest through upright, a gentle start and a settle. Every full swing takes the same time,
+ *     the first and last (from and to upright) half of it — so the smaller rocks are slower in angle, a damped look.
+ *     The angle is about the mark's own X (the tip's axis).
+ *   - It ROCKS ON ITS EDGES, as a block on a desk does: forward about the FRONT-bottom edge (the tip's pivot), backward
+ *     about the BACK-bottom edge — the pivot changes side as it passes upright.
+ *   - ⚠ LICENCE: the 8 October measurement put its tipping points at ~5° forward and ~4.5° back (unverified since); a
+ *     real one rocked 10° would fall. Carl's numbers, built as given for his eye.
+ *   - ⚠ Equal swing times are the Builder's reading: a real rocking block's swings get QUICKER as they get smaller.
+ *   - ⛔ GENTLE AND PERIPHERAL — Carl, on the 1 s take: *"put a 4th wobble in there at 1.5 deg and keep the length a 1s but
+ *     slow it bown by 50%"*, and the intent: *"the 1st wobble should be the strongest one. After that it would lose
+ *     momentum. i want the user to be concentrating on the text and out of the corner of their eye detect movement. it
+ *     shouldnt be too violent and too long… Im after a gentle rocking movement thats says "im here" but doesnt draw
+ *     attention to itself."* ⚠ 10/6/3/1.5° in 1 s is ~82° of travel — FASTER than the take, not slower; the Builder put
+ *     two routes: (A) those angles at half speed, ~2 s; (B) 1 s with the angles scaled to half speed. Carl: *"i will go
+ *     with B. from my description if they are the angles that will do that then try it."*
+ *     So: Carl's 10 : 6 : 3 : 1.5 × 0.375 — four rocks in 1 s give each swing 125 ms (was 167 ms for three), and the first
+ *     full swing 7.5° (was 20°): its average speed 60°/s, HALF the take's 120°/s. The first rock (3.75°) sits under the
+ *     ~5° forward tipping point, so the licence note above no longer applies to the default.
+ *   - ⛔ SLOWER, THE SAME MOVEMENT — Carl, on take B: *"The movement look right but its too fast"*. Only the length moves:
+ *     1 s → 2 s (every swing 125 → 250 ms, every speed halved); the angles and the easing are unchanged. A take.
+ *   Faders: `?wobble=0` off, `?wobbleat=` (ms after the strike), `?wobblems=`, `?wobbleamp=10,6,3` (degrees).
+ */
+// ms 500 → 1000, 10 October (Carl: "way to fast"); amps 10/6/3 → Carl's 10/6/3/1.5 × 0.375 ("i will go with B")
+// ms 1000 → 2000, 10 October (Carl: "The movement look right but its too fast")
+const DESK_MARK_WOBBLE = { atMs: 5000, ms: 2000, ampsDeg: [3.75, 2.25, 1.125, 0.5625] };
+/**
  * ⛔ THE CROSSING IN THE ROOM — gold → platinum blue (R-036's outside-in sphere about `logoMarkCentre()`, the bench's own
  * material and mapping, radius = far − p·(far − near)). Carl, 8 October 2026, session 2: *"The colour transition wipe.
  * Should start as its coming out of the face plant and end as its reaching the end of its 2nd flip"*. So p runs 0 → 1
@@ -1173,7 +1208,7 @@ function cornerPose(p: number, psiDeg: number, dMm: number, leftMm: number, com:
   const c = new THREE.Vector3(com[0], com[1], com[2] - depth).applyQuaternion(q).add(pivot);
   return { x: c.x, y: c.y, z: c.z, q };
 }
-function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, loop, lightUp, flip, drop, crossing, play, corner, com, depth, originOffMm }: {
+function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, loop, lightUp, wobble, flip, drop, crossing, play, corner, com, depth, originOffMm }: {
   bodyRef: React.RefObject<THREE.Group | null>; followRef: React.RefObject<THREE.Group | null>;
   contactRef: React.RefObject<THREE.MeshBasicMaterial | null>; contactOpacity: number;
   /** the desk's cast-shadow catcher — its shadows come with the light (`DESK_MARK_LIGHT_MS`) */
@@ -1181,6 +1216,8 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
   tipFixed: number | null; fallFixed: number | null; tipMs: number; fallSpeed: number; fallEndMs: number; loop: boolean;
   /** the light (`DESK_MARK_LIGHT_MS`): the §2 sequence's clock — null until CA strikes — or none (simply lit) */
   lightUp: { at: React.RefObject<number | null> | null; ms: number; unlit: number; catcherOpacity: number };
+  /** the wobble (`DESK_MARK_WOBBLE`), timed from `lightUp.at`; null = none */
+  wobble: { atMs: number; ms: number; ampsDeg: number[] } | null;
   flip: FlipSpec | null;
   drop: DropSpec | null;
   crossing: { set: LogoCrossing["set"]; light: (radius: number, lit: number) => void; centre: [number, number, number]; far: number; near: number } | null;
@@ -1204,6 +1241,11 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
       const th = (Math.PI / 2) * p * p;
       // rotation about the front-bottom edge (y 0, z depth): the centre of mass relative to the rest origin
       return { x: xc, y: yc * Math.cos(th) - (zc - depth) * Math.sin(th), z: depth + yc * Math.sin(th) + (zc - depth) * Math.cos(th), q: new THREE.Quaternion().setFromAxisAngle(X_AXIS, th) };
+    };
+    // the wobble (`DESK_MARK_WOBBLE`): θ > 0 forward about the FRONT-bottom edge (z depth), θ < 0 back about the BACK (z 0)
+    const rockPose = (th: number): MarkPose => {
+      const pz = th >= 0 ? depth : 0;
+      return { x: xc, y: yc * Math.cos(th) - (zc - pz) * Math.sin(th), z: pz + yc * Math.sin(th) + (zc - pz) * Math.cos(th), q: new THREE.Quaternion().setFromAxisAngle(X_AXIS, th) };
     };
     let pose: MarkPose;
     let crossP = 0; // the crossing: gold until the fall starts (`deskMarkCrossingP`)
@@ -1254,7 +1296,24 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
       // ⛔ STILL AND UPRIGHT by default — Carl, 10 October 2026: "the logo loop is currently running. Stop it and then we
       // will discuss the scroll behavior." The journey's specs stay built (flip, drop, crossing) for the scroll to drive;
       // the time-driven loop is `?markloop=1`. No frames asked for while still.
-      else if (!loop) pose = tipPose(0);
+      else if (!loop) {
+        // ⛔ THE WOBBLE (`DESK_MARK_WOBBLE`) — once, `atMs` after CA's strike; frames asked for until it has finished
+        const struckAt = lightUp.at?.current ?? null;
+        const w = struckAt === null || !wobble ? -1 : performance.now() - struckAt - wobble.atMs;
+        let th = 0;
+        if (wobble && w >= 0 && w < wobble.ms) {
+          // the turning points (degrees, back negative) and each swing's share of the time: half for the first and last
+          const pts = [0, ...wobble.ampsDeg.flatMap((a) => [-a, a]), 0];
+          const shares = pts.slice(1).map((_, i) => (i === 0 || i === pts.length - 2 ? 0.5 : 1));
+          let u = (w / wobble.ms) * shares.reduce((a, b) => a + b, 0);
+          let i = 0;
+          while (i < shares.length - 1 && u > shares[i]) u -= shares[i++];
+          const e = (1 - Math.cos(Math.PI * Math.min(1, u / shares[i]))) / 2; // easeInOutSine
+          th = THREE.MathUtils.degToRad(pts[i] + (pts[i + 1] - pts[i]) * e);
+        }
+        if (wobble && struckAt !== null && w < wobble.ms) st.invalidate();
+        pose = rockPose(th);
+      }
       else {
         const playMs = fallMs / fallSpeed;
         const cycle = DESK_MARK_TIP_HOLD_MS + tipMs + playMs + DESK_MARK_FALL_HOLD_MS;
@@ -1518,6 +1577,16 @@ function DeskMark({ clock }: { clock: SequenceClock | null }) {
   }, [dropOn, flip, gl, camera, place, originOffMm, comM, clip, invalidate, size.width, size.height]);
   const lightUpMs = useMemo(() => neonNumber("marklit", DESK_MARK_LIGHT_MS, 0, 10000), []);
   const unlit = useMemo(() => neonNumber("markunlit", DESK_MARK_UNLIT, 0, 1), []);
+  const wobble = useMemo(() => {
+    if (neonParam("wobble") === "0") return null;
+    // ⚠ blanks dropped BEFORE `Number` — `Number("")` is 0, and an absent fader once read as one 0° rock (10 October)
+    const amps = (neonParam("wobbleamp") ?? "").split(",").filter((a) => a.trim() !== "").map(Number).filter((a) => Number.isFinite(a) && a >= 0 && a <= 45);
+    return {
+      atMs: neonNumber("wobbleat", DESK_MARK_WOBBLE.atMs, 0, 60000),
+      ms: neonNumber("wobblems", DESK_MARK_WOBBLE.ms, 50, 10000),
+      ampsDeg: amps.length ? amps : DESK_MARK_WOBBLE.ampsDeg,
+    };
+  }, []);
   const catcherMat = useRef<THREE.ShadowMaterial>(null);
   const faders = useMemo(
     () => ({
@@ -1544,7 +1613,7 @@ function DeskMark({ clock }: { clock: SequenceClock | null }) {
       <MarkMotion
         bodyRef={body} followRef={follow} contactRef={contactMat} contactOpacity={faders.contact} catcherRef={catcherMat}
         tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} fallEndMs={motion.fallEndMs} loop={motion.loop} flip={flip}
-        lightUp={{ at: clock, ms: lightUpMs, unlit, catcherOpacity: DESK_MARK_SHADOW_OPACITY }} drop={drop} crossing={built.crossing} play={motion.play} corner={motion.corner}
+        lightUp={{ at: clock, ms: lightUpMs, unlit, catcherOpacity: DESK_MARK_SHADOW_OPACITY }} wobble={wobble} drop={drop} crossing={built.crossing} play={motion.play} corner={motion.corner}
         com={comM} depth={depthM} originOffMm={originOffMm}
       />
       <group position={place.position}>

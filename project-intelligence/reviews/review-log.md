@@ -65,6 +65,26 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-040 — The Desk Mark's Wobble, The Clue That It Moves (D-088): "A Lot Better"
+
+**Date:** 2026-10-10
+**Reviewer:** Human Founder
+**Subject:** plain `/about` — once, 5 s after CA's strike, the mark rocks on its edges: four eased rocks, 3.75° → 2.25° → 1.125° → 0.5625° each way, over 2 s. `components/about/about-card-canvas.tsx` (`DESK_MARK_WOBBLE`).
+
+**Carl's verdicts, verbatim:**
+- 500 ms, 10/6/3°: *"That is way to fast. make a 1 second and use easing"*
+- Take B (1 s, the angles × 0.375): *"The movement look right but its too fast"*
+- 2 s: *"Thats a lot better."*
+
+**Findings:**
+
+- ✔ Recorded at the level given — *"a lot better"*, not "approved", not a master (D-035).
+- ⚠ **Not filmed at its real speed** — the shape and the pivots were filmed stretched to 6 s; the 2 s take differs from the filmed one only in its length.
+- ⚠ Equal swing times are the Builder's reading; a real rocking block quickens as it settles.
+- ⛔ **OPEN:** the scroll mechanism (D-088).
+
+---
+
 ## R-039 — The Desk Mark Lit On Card One's Strike, Both Ways Into §2 (D-088): "Look Good"
 
 **Date:** 2026-10-10

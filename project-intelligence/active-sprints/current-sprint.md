@@ -118,6 +118,7 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
 
 | Task | Output | Notes |
 |---|---|---|
+| D-088 desk mark, THE WOBBLE (10 October): once, 5 s after CA's strike, four eased rocks on its edges (3.75° → 0.5625°) over 2 s — the clue that it moves. ✔ Carl: *"Thats a lot better."* | `about-card-canvas.tsx` (`DESK_MARK_WOBBLE`) | R-040. Four takes. Open: the scroll mechanism |
 | D-088 desk mark, ARRIVING IN §2 (10 October): the loop stopped (`?markloop=1` runs it); the mark always on the desk UNLIT, its light and cast shadows brought up over 1.015 s on CA's strike — the same for Roles and the scroll, one clock (the §2 sequence's). ✔ Carl: *"Look good."* | `about-card-canvas.tsx` (`DESK_MARK_LIGHT_MS`, `DESK_MARK_UNLIT`) | R-039. Two takes superseded the same day (opacity fades). Open: the scroll mechanism, the wobble |
 | D-088 desk mark, THE JOURNEY END TO END on plain `/about` (session 2): 85 mm left; the rebound and two flips, legato; the crossing + light; the growth; the drop into §3 and the wipe; the canvas one screen into §3 (§5b checked); `about-neon.ts` fixed then LOCKED; the Vercel failures since 3 October found and fixed (an untracked imported PNG) | `about-card-canvas.tsx`, `about-room.ts`, `about-neon.ts`, `app/about/page.tsx`, `.gitignore`, `.claude/protected-files.json` | R-038; commits `07ad729`, `a7f512e`, `d9060bf`, `bad959b` — all three Vercel projects green. Open: the scroll mechanism |
 | The image scroll approved | — | R-032 |
@@ -146,7 +147,7 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-10 — the desk mark lit on card one's strike, both ways into §2 (R-039); the loop stopped; next: the scroll mechanism.*
+*Last updated: 2026-10-10 — the wobble (R-040), after the mark lit on card one's strike (R-039); next: the scroll mechanism.*
 
 *Previously: 2026-10-08 (session 2, end) — the journey built end to end on plain `/about`, into §3 (R-038); Vercel fixed; next: the scroll mechanism, Carl's answer.*
 
