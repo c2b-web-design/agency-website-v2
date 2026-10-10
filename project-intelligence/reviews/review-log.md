@@ -75,6 +75,7 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 - 500 ms, 10/6/3°: *"That is way to fast. make a 1 second and use easing"*
 - Take B (1 s, the angles × 0.375): *"The movement look right but its too fast"*
 - 2 s: *"Thats a lot better."*
+- Repeated every 20 s (start to start), added after the verdict above: committed on Carl's word (*"Commit and push"*) — ⚠ **no verdict stated**; filmed: movement only in 5.1–6.9 s and 25.1–27.0 s of 30 s.
 
 **Findings:**
 

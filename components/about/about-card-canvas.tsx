@@ -1002,11 +1002,19 @@ const DESK_MARK_UNLIT = 0.1;
  *     ~5° forward tipping point, so the licence note above no longer applies to the default.
  *   - ⛔ SLOWER, THE SAME MOVEMENT — Carl, on take B: *"The movement look right but its too fast"*. Only the length moves:
  *     1 s → 2 s (every swing 125 → 250 ms, every speed halved); the angles and the easing are unchanged. A take.
- *   Faders: `?wobble=0` off, `?wobbleat=` (ms after the strike), `?wobblems=`, `?wobbleamp=10,6,3` (degrees).
+ *   - ⛔ REPEATED EVERY 20 s — Carl, 10 October 2026, with the §2 sequence's length in hand (~109 s to CS's last word, a
+ *     loop every 85.3 s): *"Repeat the wobble every 20s"*. START TO START (the Builder's reading): 5 s after the strike,
+ *     then 25 s, 45 s… for as long as the page is open. ⚠ Not tied to the cards' own beats — a strike can land mid-wobble.
+ *   - ⛔ FRAMES: the canvas renders on demand, and nothing guarantees the neon or the text is asking for frames when a
+ *     wobble is due — so a TIMER wakes the canvas at each wobble's start (`DeskMark`), and the wobble asks for its own
+ *     frames until it settles. Between wobbles it asks for none (it had asked for every frame through the first 5 s).
+ *   Faders: `?wobble=0` off, `?wobbleat=` (ms after the strike), `?wobblems=`, `?wobbleamp=10,6,3` (degrees),
+ *   `?wobbleevery=` (ms, start to start; 0 = once).
  */
 // ms 500 → 1000, 10 October (Carl: "way to fast"); amps 10/6/3 → Carl's 10/6/3/1.5 × 0.375 ("i will go with B")
 // ms 1000 → 2000, 10 October (Carl: "The movement look right but its too fast")
-const DESK_MARK_WOBBLE = { atMs: 5000, ms: 2000, ampsDeg: [3.75, 2.25, 1.125, 0.5625] };
+// everyMs added 10 October (Carl: "Repeat the wobble every 20s")
+const DESK_MARK_WOBBLE = { atMs: 5000, ms: 2000, ampsDeg: [3.75, 2.25, 1.125, 0.5625], everyMs: 20000 };
 /**
  * ⛔ THE CROSSING IN THE ROOM — gold → platinum blue (R-036's outside-in sphere about `logoMarkCentre()`, the bench's own
  * material and mapping, radius = far − p·(far − near)). Carl, 8 October 2026, session 2: *"The colour transition wipe.
@@ -1217,7 +1225,7 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
   /** the light (`DESK_MARK_LIGHT_MS`): the §2 sequence's clock — null until CA strikes — or none (simply lit) */
   lightUp: { at: React.RefObject<number | null> | null; ms: number; unlit: number; catcherOpacity: number };
   /** the wobble (`DESK_MARK_WOBBLE`), timed from `lightUp.at`; null = none */
-  wobble: { atMs: number; ms: number; ampsDeg: number[] } | null;
+  wobble: { atMs: number; ms: number; ampsDeg: number[]; everyMs: number } | null;
   flip: FlipSpec | null;
   drop: DropSpec | null;
   crossing: { set: LogoCrossing["set"]; light: (radius: number, lit: number) => void; centre: [number, number, number]; far: number; near: number } | null;
@@ -1299,7 +1307,9 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
       else if (!loop) {
         // ⛔ THE WOBBLE (`DESK_MARK_WOBBLE`) — once, `atMs` after CA's strike; frames asked for until it has finished
         const struckAt = lightUp.at?.current ?? null;
-        const w = struckAt === null || !wobble ? -1 : performance.now() - struckAt - wobble.atMs;
+        const since = struckAt === null || !wobble ? -1 : performance.now() - struckAt - wobble.atMs;
+        // into the current wobble: repeats start to start every `everyMs` (0 = once)
+        const w = since < 0 || !wobble ? -1 : wobble.everyMs > 0 ? since % wobble.everyMs : since;
         let th = 0;
         if (wobble && w >= 0 && w < wobble.ms) {
           // the turning points (degrees, back negative) and each swing's share of the time: half for the first and last
@@ -1311,7 +1321,7 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
           const e = (1 - Math.cos(Math.PI * Math.min(1, u / shares[i]))) / 2; // easeInOutSine
           th = THREE.MathUtils.degToRad(pts[i] + (pts[i + 1] - pts[i]) * e);
         }
-        if (wobble && struckAt !== null && w < wobble.ms) st.invalidate();
+        if (wobble && w >= 0 && w < wobble.ms) st.invalidate(); // a wobble's own frames; the timer in `DeskMark` starts each
         pose = rockPose(th);
       }
       else {
@@ -1585,8 +1595,32 @@ function DeskMark({ clock }: { clock: SequenceClock | null }) {
       atMs: neonNumber("wobbleat", DESK_MARK_WOBBLE.atMs, 0, 60000),
       ms: neonNumber("wobblems", DESK_MARK_WOBBLE.ms, 50, 10000),
       ampsDeg: amps.length ? amps : DESK_MARK_WOBBLE.ampsDeg,
+      everyMs: neonNumber("wobbleevery", DESK_MARK_WOBBLE.everyMs, 0, 600000),
     };
   }, []);
+  /** ⛔ WAKES THE CANVAS AT EACH WOBBLE's START (`DESK_MARK_WOBBLE`): it renders on demand and nothing else is sure to be
+   *  asking for frames then. Waits for the strike (the clock is set in a frame, not an event — checked every 100 ms), then
+   *  sets one timeout per wobble; the wobble asks for its own frames until it settles. */
+  useEffect(() => {
+    if (!clock || !wobble || !built) return;
+    let id = 0;
+    const arm = () => {
+      const at = clock.current;
+      if (at === null) {
+        id = window.setTimeout(arm, 100);
+        return;
+      }
+      const since = performance.now() - at - wobble.atMs;
+      if (since >= 0 && wobble.everyMs <= 0) return; // once, and it has started
+      const next = since < 0 ? -since : wobble.everyMs - (since % wobble.everyMs);
+      id = window.setTimeout(() => {
+        invalidate();
+        arm();
+      }, next + 1);
+    };
+    arm();
+    return () => window.clearTimeout(id);
+  }, [clock, wobble, built, invalidate]);
   const catcherMat = useRef<THREE.ShadowMaterial>(null);
   const faders = useMemo(
     () => ({
