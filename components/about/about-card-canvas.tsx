@@ -800,8 +800,8 @@ function buildContactShadow(geometry: THREE.BufferGeometry): { texture: THREE.Ca
  *     `?marktip=0..1` holds it still at that point of the tip (for frames); `?marktipms=` sets the tip's length.
  *   - The CONTACT shadow is the mark at rest: it fades over the first quarter of the tip. ⚠ A face-down contact shadow
  *     is not built. The cast shadows follow the mark by themselves (the shadow lights render it every frame).
- * ⚠ Calls `invalidate()` every frame while a loop PLAYS (`?markplay=fall|somersault`, `?cornerloop=1`), so it runs with
- * `frameloop="demand"`. The default (take 3's start, still) and the corner pose ask for no frames. (Was "while mounted, `?mark=1` only".)
+ * ⚠ Calls `invalidate()` every frame while a loop PLAYS (`?markloop=1`, `?markplay=somersault`, `?cornerloop=1`), so it runs with
+ * `frameloop="demand"`. The default (the journey STILL and upright, since 10 October) and the corner pose ask for no frames. (Was "take 3's start, still"; before that "while mounted, `?mark=1` only".)
  */
 const DESK_MARK_TIP_MS = 1200;
 const DESK_MARK_TIP_HOLD_MS = 1500;
@@ -931,7 +931,7 @@ const DESK_MARK_FLIP2 = { driftMs: 0, faceShare: 0.5, curve: 1.5 };
  *     (Carl: "no growth yet").
  *   - THE WIPE: a clipping plane through the camera and the white rectangle's TOP EDGE (`#examples-player`): whatever
  *     passes below that line on screen is not drawn — it disappears into the viewer at the border.
- *   - TIME-DRIVEN for now (the loop), at `speed` of real time — the bounce's. ⚠ So it only lands on the logo on screen
+ *   - TIME-DRIVEN for now (the loop, `?markloop=1` since 10 October; still by default), at `speed` of real time — the bounce's. ⚠ So it only lands on the logo on screen
  *     when the reader has scrolled to where the stage stops; above that the extension is off-screen below the window.
  */
 const DESK_MARK_DROP = { speed: 0.5 };
@@ -945,6 +945,33 @@ const DESK_MARK_DROP = { speed: 0.5 };
  * `?markslow=0.1` is snail's pace again. Fader `?markslow=` (0.02–1).
  */
 const DESK_MARK_SLOW = 0.9;
+/**
+ * ⛔ THE MARK IS LIT ON CARD ONE's STRIKE — HOWEVER §2 IS REACHED. Carl, 10 October 2026, in steps the same session:
+ * *"Lets deal with pressing roles. The logo should be on the desk and fade in."* → *"Timing is good, as is mirroring the
+ * /start time. Now if a user scrolls to Sect 2 it should also fade in and it should be linked to when the cards are
+ * activated.. So both ways of getting to Sect 2 the arrival of the logo is the same"* → with the fade on a scroll leaving
+ * the desk EMPTY under the wipe until CA struck, the Builder proposed lighting it instead of fading it, and Carl: *"Sounds
+ * good. A light is being shone on the team by the info dump and also the logo. Proceed."* — then: *"Dont make the light
+ * suddenly come on. have it fade in and be brought up tho its intemsity."*
+ *   - ALWAYS ON THE DESK, UNLIT (`DESK_MARK_UNLIT` of its light) until CA strikes, then BROUGHT UP to its full light over
+ *     `DESK_MARK_LIGHT_MS` on a smootherstep — a dimmer, never a switch: it leaves unlit and arrives at full with zero
+ *     slope. The room's light coming on and the mark with it (§14a: caused by the world).
+ *   - ONE CLOCK: the §2 SEQUENCE's (`sequenceRef`) — NeonBloom sets it on the frame CA ignites; the cards' text reads the
+ *     same number. Roles and the scroll differ only in what fires the strike (`roomWipeClearsCA`); the mark cannot tell.
+ *   - WHAT COMES WITH THE LIGHT: the studio's light on the mark (its environment, `crossing.light`) and its two CAST
+ *     shadows (that light's shadows — the catcher is brought up from none on the same curve). ⛔ The CONTACT shadow stays
+ *     from the start: it is the object sitting on the desk, not the light.
+ *   - ⚰️ SUPERSEDED THE SAME DAY: an opacity FADE (first on a wipe-jump test, then on the strike) — the logo absent until
+ *     it faded in. The mark was transparent from birth for it; it is opaque again.
+ *   - With no sequence clock (`?neon=none`, the text off) the mark is simply lit, as before. ⚠ `?reignite=` restarts the
+ *     clock on every replay, so the mark is lit again with each — a tuning tool's side effect. ⚠ `?marklight=room` (the
+ *     A/B before the studio) is not dimmed — it has no studio light to bring up.
+ *   - /start's pace (1.015 s, R-036's reference). ✔ Carl, of the fade's timing: *"Timing is good, as is mirroring the
+ *     /start time."* Faders `?marklit=` (ms; 0 = at once), `?markunlit=` (0–1, the unlit share).
+ */
+const DESK_MARK_LIGHT_MS = 1015;
+/** The share of its light the mark has BEFORE the strike — a TAKE (10 October 2026); `?markunlit=`. */
+const DESK_MARK_UNLIT = 0.1;
 /**
  * ⛔ THE CROSSING IN THE ROOM — gold → platinum blue (R-036's outside-in sphere about `logoMarkCentre()`, the bench's own
  * material and mapping, radius = far − p·(far − near)). Carl, 8 October 2026, session 2: *"The colour transition wipe.
@@ -1146,13 +1173,17 @@ function cornerPose(p: number, psiDeg: number, dMm: number, leftMm: number, com:
   const c = new THREE.Vector3(com[0], com[1], com[2] - depth).applyQuaternion(q).add(pivot);
   return { x: c.x, y: c.y, z: c.z, q };
 }
-function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, flip, drop, crossing, play, corner, com, depth, originOffMm }: {
+function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, loop, lightUp, flip, drop, crossing, play, corner, com, depth, originOffMm }: {
   bodyRef: React.RefObject<THREE.Group | null>; followRef: React.RefObject<THREE.Group | null>;
   contactRef: React.RefObject<THREE.MeshBasicMaterial | null>; contactOpacity: number;
-  tipFixed: number | null; fallFixed: number | null; tipMs: number; fallSpeed: number; fallEndMs: number;
+  /** the desk's cast-shadow catcher — its shadows come with the light (`DESK_MARK_LIGHT_MS`) */
+  catcherRef: React.RefObject<THREE.ShadowMaterial | null>;
+  tipFixed: number | null; fallFixed: number | null; tipMs: number; fallSpeed: number; fallEndMs: number; loop: boolean;
+  /** the light (`DESK_MARK_LIGHT_MS`): the §2 sequence's clock — null until CA strikes — or none (simply lit) */
+  lightUp: { at: React.RefObject<number | null> | null; ms: number; unlit: number; catcherOpacity: number };
   flip: FlipSpec | null;
   drop: DropSpec | null;
-  crossing: { set: LogoCrossing["set"]; light: (radius: number) => void; centre: [number, number, number]; far: number; near: number } | null;
+  crossing: { set: LogoCrossing["set"]; light: (radius: number, lit: number) => void; centre: [number, number, number]; far: number; near: number } | null;
   play: "start" | "fall" | "somersault" | "corner";
   corner: { psi: number; d: number; left: number; loop: boolean };
   com: [number, number, number]; depth: number; originOffMm: number;
@@ -1220,6 +1251,10 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, 
       };
       if (fallFixed !== null) pose = fallOrFlip(crossAt(fallFixed * fallMs));
       else if (tipFixed !== null) pose = tipPose(tipFixed);
+      // ⛔ STILL AND UPRIGHT by default — Carl, 10 October 2026: "the logo loop is currently running. Stop it and then we
+      // will discuss the scroll behavior." The journey's specs stay built (flip, drop, crossing) for the scroll to drive;
+      // the time-driven loop is `?markloop=1`. No frames asked for while still.
+      else if (!loop) pose = tipPose(0);
       else {
         const playMs = fallMs / fallSpeed;
         const cycle = DESK_MARK_TIP_HOLD_MS + tipMs + playMs + DESK_MARK_FALL_HOLD_MS;
@@ -1237,11 +1272,18 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, 
       bodyRef.current.scale.setScalar(grow);
     }
     if (followRef.current) followRef.current.position.set(pose.x, pose.y, pose.z);
+    // ⛔ BROUGHT UP ON CA's STRIKE (`DESK_MARK_LIGHT_MS`): 0 unlit … 1 fully lit, smootherstep — the mark's light and its
+    // cast shadows together
+    const litAt = lightUp.at ? lightUp.at.current : 0;
+    const lt = litAt === null ? 0 : !lightUp.at || lightUp.ms <= 0 ? 1 : Math.min(1, Math.max(0, (performance.now() - litAt) / lightUp.ms));
+    const litShare = lt * lt * lt * (lt * (lt * 6 - 15) + 10);
+    if (litAt !== null && lt < 1) st.invalidate(); // the strike's own frames start it; this carries it to 1
     if (crossing) {
       const radius = crossing.far - crossP * (crossing.far - crossing.near);
       crossing.set(crossing.centre, radius);
-      crossing.light(radius);
+      crossing.light(radius, lightUp.unlit + (1 - lightUp.unlit) * litShare);
     }
+    if (catcherRef.current) catcherRef.current.opacity = lightUp.catcherOpacity * litShare;
     // the contact shadow belongs to the mark AT REST in its starting pose: gone once it has turned 22.5° from it
     const turned = pose.q.angleTo(start.q);
     if (contactRef.current) contactRef.current.opacity = contactOpacity * Math.max(0, 1 - 4 * Math.min(1, turned / (Math.PI / 2)));
@@ -1249,14 +1291,15 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, tipFixed, 
   return null;
 }
 
-function DeskMark() {
+/** `clock`: the §2 sequence's (`sequenceRef`) — the mark is lit when it is set (`DESK_MARK_LIGHT_MS`); null = simply lit. */
+function DeskMark({ clock }: { clock: SequenceClock | null }) {
   const roomLight = useMemo(() => deskMarkRoomLight(), []);
   const shadowOn = useMemo(() => deskMarkShadowOn(), []);
   const studioIntensity = useMemo(() => neonNumber("markenv", DESK_MARK_STUDIO_INTENSITY, 0, 2), []);
   const blueMax = useMemo(() => neonNumber("markenvblue", DESK_MARK_BLUE_STUDIO_INTENSITY, 0, 3), []);
   const motion = useMemo(() => {
     // ⛔ THE FALL ONTO THE RIM IS THE DEFAULT (Carl, 8 October 2026, session 2 — first stopped before the bin,
-    // `?markfallto=bin`), looping: upright, hold, the face plant, the teeter, the fall onto its back across the rim, hold. ⚰️ Earlier the same session: the
+    // `?markfallto=bin`), STILL AND UPRIGHT since 10 October (Carl: "Stop it") — `?markloop=1` loops it: upright, hold, the face plant, the teeter, the fall onto its back across the rim, hold. ⚰️ Earlier the same session: the
     // CORNER (`?markplay=corner`), then take 3's start standing still (`?markplay=start`). The somersault run is
     // `?markplay=somersault`.
     const slow = neonNumber("markslow", DESK_MARK_SLOW, 0.02, 1);
@@ -1274,6 +1317,8 @@ function DeskMark() {
       tipMs: neonNumber("marktipms", DESK_MARK_TIP_MS, 100, 10000) / slow,
       fallSpeed: neonNumber("markfallspeed", play === "somersault" ? DESK_MARK_SOMERSAULT_SPEED : DESK_MARK_FALL_SPEED, 0.05, 1) * slow,
       fallEndMs: neonParam("markfallto") === "bin" ? DESK_MARK_FALL_STOP_MS : DESK_MARK_FALL.restMs,
+      // the time-driven loop of the journey — OFF by default since 10 October 2026 (Carl: "Stop it"); `?markloop=1` runs it
+      loop: neonParam("markloop") === "1",
       // ⛔ THE FLIP IS THE DEFAULT END (8 October, session 2); `?markfallto=rest` / `=bin` give the simulated ends
       flipOn: neonParam("markfallto") !== "rest" && neonParam("markfallto") !== "bin",
       flipBase: {
@@ -1306,7 +1351,7 @@ function DeskMark() {
   const place = useMemo(() => deskMarkPlacement(DESK_MARK, LOGO_MARK_DEFAULTS.depth), []);
   type Built = {
     geometry: THREE.BufferGeometry; gold: THREE.MeshPhysicalMaterial; env: THREE.WebGLRenderTarget;
-    crossing: { set: LogoCrossing["set"]; light: (radius: number) => void; centre: [number, number, number]; far: number; near: number };
+    crossing: { set: LogoCrossing["set"]; light: (radius: number, lit: number) => void; centre: [number, number, number]; far: number; near: number };
     contact: ReturnType<typeof buildContactShadow>;
   };
   const [built, setBuilt] = useState<Built | null>(null);
@@ -1328,11 +1373,12 @@ function DeskMark() {
       const centre = logoMarkCentre({ ...LOGO_MARK_DEFAULTS, scale: place.scale });
       const reach = logoMarkReach(geometry, centre);
       cross.set(centre, reach.far);
-      // the more blue, the more light (`DESK_MARK_BLUE_STUDIO_INTENSITY`) — studio only; `?marklight=room` keeps its own
+      // the more blue, the more light (`DESK_MARK_BLUE_STUDIO_INTENSITY`) — studio only; `?marklight=room` keeps its own.
+      // × `lit`: the share of its light it has (`DESK_MARK_LIGHT_MS` — unlit until CA strikes, then brought up)
       const share = blueShareByRadius(geometry, centre);
       const light = roomLight
         ? () => {}
-        : (radius: number) => { gold.envMapIntensity = studioIntensity + (blueMax - studioIntensity) * share(radius); };
+        : (radius: number, lit: number) => { gold.envMapIntensity = lit * (studioIntensity + (blueMax - studioIntensity) * share(radius)); };
       made = { geometry, gold, env, contact: buildContactShadow(geometry), crossing: { set: cross.set, light, centre, ...reach } };
       setBuilt(made);
     }, 0);
@@ -1470,6 +1516,9 @@ function DeskMark() {
       window.removeEventListener("resize", measure);
     };
   }, [dropOn, flip, gl, camera, place, originOffMm, comM, clip, invalidate, size.width, size.height]);
+  const lightUpMs = useMemo(() => neonNumber("marklit", DESK_MARK_LIGHT_MS, 0, 10000), []);
+  const unlit = useMemo(() => neonNumber("markunlit", DESK_MARK_UNLIT, 0, 1), []);
+  const catcherMat = useRef<THREE.ShadowMaterial>(null);
   const faders = useMemo(
     () => ({
       top: neonNumber("marktop", 1, 0, 1),
@@ -1493,8 +1542,9 @@ function DeskMark() {
   return (
     <>
       <MarkMotion
-        bodyRef={body} followRef={follow} contactRef={contactMat} contactOpacity={faders.contact}
-        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} fallEndMs={motion.fallEndMs} flip={flip} drop={drop} crossing={built.crossing} play={motion.play} corner={motion.corner}
+        bodyRef={body} followRef={follow} contactRef={contactMat} contactOpacity={faders.contact} catcherRef={catcherMat}
+        tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} fallEndMs={motion.fallEndMs} loop={motion.loop} flip={flip}
+        lightUp={{ at: clock, ms: lightUpMs, unlit, catcherOpacity: DESK_MARK_SHADOW_OPACITY }} drop={drop} crossing={built.crossing} play={motion.play} corner={motion.corner}
         com={comM} depth={depthM} originOffMm={originOffMm}
       />
       <group position={place.position}>
@@ -1527,7 +1577,7 @@ function DeskMark() {
       <group position={catcher.position} rotation={[0, place.rotationY, 0]} visible={shadowOn}>
         <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <planeGeometry args={catcher.size} />
-          <shadowMaterial opacity={DESK_MARK_SHADOW_OPACITY} />
+          <shadowMaterial ref={catcherMat} opacity={DESK_MARK_SHADOW_OPACITY} />
         </mesh>
       </group>
     </>
@@ -2119,7 +2169,7 @@ export default function AboutCardCanvas() {
 
           {take.on && <TakeLight s={take} />}
 
-          {showMark && <DeskMark />}
+          {showMark && <DeskMark clock={plan ? sequenceRef : null} />}
 
           {/* ⛔ NO PROXY PLANE. An earlier build put one 1.6x the card's size
               behind it, which on `/about` is an OPAQUE SLAB BLACKING OUT THE ROOM.

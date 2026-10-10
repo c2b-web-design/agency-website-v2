@@ -22,6 +22,9 @@ blue share) → drops from rest into §3, onto the blue logo in the white player
 Switches: `?markslow=` (0.1 = snail's pace), `?flipspeed=`, `?flipcurve=`, `?flip2face=`, `?markenvblue=`,
 `?markgrow=0`, `?markdrop=0`, `?markfall=0..1` (hold a point), `?markplay=start|fall|corner|somersault`, `?mark=0`.
 
+**Carl's closing verdict on the whole journey (R-038):** *"The logo surpassed my original vision -exceptional work!"* ⚠ Uncommitted —
+commit it with the next session's first commit.
+
 ## ⛔⛔ NEXT SESSION — THE AGREED SUBJECT: THE SCROLL MECHANISM
 
 **Decided by Carl:** the scroll is tied to the WHOLE mechanism, reversible — *"If they scroll partway and stop and the

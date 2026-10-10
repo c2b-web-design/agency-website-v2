@@ -65,6 +65,25 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-039 — The Desk Mark Lit On Card One's Strike, Both Ways Into §2 (D-088): "Look Good"
+
+**Date:** 2026-10-10
+**Reviewer:** Human Founder
+**Subject:** plain `/about` — the journey's loop stopped (the mark still and upright; `?markloop=1` runs it); the mark always on the desk, UNLIT (10% of its studio light) until CA strikes, then its light and its two cast shadows brought up over 1.015 s (`/start`'s pace), smootherstep; the contact shadow throughout. One clock — the §2 sequence's — for Roles and the scroll. `components/about/about-card-canvas.tsx` (`DESK_MARK_LIGHT_MS`, `DESK_MARK_UNLIT`).
+
+**Carl's verdicts, verbatim:**
+- The fade on Roles (a superseded take): *"Timing is good, as is mirroring the /start time."*
+- The light brought up on the strike, both arrivals: *"Look good."*
+
+**Findings:**
+
+- ✔ Recorded at the level given — *"Look good"*, not "approved", not a master (D-035). The 1.015 s timing carries his *"Timing is good"* from the fade take.
+- ⚠ **Takes, not judged one by one:** the unlit level (10%); the cast shadows coming with the light while the contact shadow stays.
+- ⚠ **Not filmed:** frame-by-frame order at the strike (samples ~300 ms apart); trackpad flings; Carl's Chrome.
+- ⛔ **OPEN:** the scroll mechanism and the wobble (D-088, session 2's last entries).
+
+---
+
 ## R-038 — The Desk Mark's Journey On Plain `/about`: The Rebound, The Two Flips, The Crossing, Into §3 (D-088): "A Lot Better"
 
 **Date:** 2026-10-08 (session 2)
@@ -78,6 +97,7 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 - The crossing in the room: *"the transition look great, even in slo mo."*
 - The light rising with the blue: *"thats a better contrast against the orange background"*
 - Legato: *"Thats a lot better."*
+- ⛔ **Closing the session, on the whole:** *"Good work today. The logo surpassed my original vision -exceptional work!"*
 
 **Findings:**
 
