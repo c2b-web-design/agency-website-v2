@@ -1,95 +1,85 @@
-# Session Handoff — 8 October 2026, session 2 (end). THE JOURNEY RUNS END TO END ON PLAIN `/about`. NEXT: THE SCROLL MECHANISM — CARL'S ANSWER.
+# Session Handoff — 10 October 2026 (end). THE ABOUT SECTION IS DONE FOR NOW. NEXT: THE HOME PAGE's `Who we are` BUTTON — A DISCUSSION, THEN PLAN → ARCHITECT → BUILD.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
-**The full record is D-088's session-2 entries at the END of `decisions.md` (the last 8 bullets) and R-038.**
+**The full record is D-088's 10 October entries at the END of `decisions.md`, and R-039, R-040, R-041.**
 
 ---
 
 ## ⛔ WHERE THINGS STAND
 
-**Pushed, all three Vercel projects GREEN:** `07ad729` (the mark on plain `/about`, the fall at 85 mm left, §3's
-placeholder), `a7f512e` (the Vercel fix), `d9060bf` (§3: the canvas into §3, the drop, the wipe), `bad959b` (the crossing,
-the light, the growth, legato, speed 0.9). ⚠ **Uncommitted:** this session's records (`decisions.md`, `review-log.md`,
-`current-sprint.md`) and this handoff (force-added). Commit when Carl says.
+**Pushed (Vercel: Carl is notified on failure — do not poll; see the standing notes):** `e610155` (the loop stopped; the mark lit
+on CA's strike), `d753502` (the wobble), `9c3ff88` (the wobble every 20 s), `6c5171a` (the journey tied to the scroll; the light
+directed; `?lighthelpers=1`). ⚠ **Uncommitted:** `decisions.md` — this session's LAST entries (§3's four boxes and the button's film;
+Carl's answers; the button's geometry; the Next step revisit; the colours, the teal corrected) — and this handoff. Commit when Carl
+says. `brand-assets/images.jpg` (the teal swatch sheet, stock, watermarked) is UNTRACKED — whether it is committed is Carl's.
 Lint `1 problem (1 error, 0 warnings)`; `tsc` clean. Dev server STOPPED at session end.
 
-**The journey on plain `/about` today (time-driven loop, ~12 s at master speed 0.9):** standing 85 mm left on the desk
-→ face plant → teeter → simulated fall → strikes the bin's rim (350 ms; the GROWTH starts) → flat back slaps across the
-rim (488 ms) → LEGATO rebound: rise, finish the somersault oblique at the top, a second flip losing momentum while
-drifting left, ending halfway to face-on (gold → blue crossing over face-down → end of flip 2; the light rises with the
-blue share) → drops from rest into §3, onto the blue logo in the white player placeholder, wiped at its top border.
-Switches: `?markslow=` (0.1 = snail's pace), `?flipspeed=`, `?flipcurve=`, `?flip2face=`, `?markenvblue=`,
-`?markgrow=0`, `?markdrop=0`, `?markfall=0..1` (hold a point), `?markplay=start|fall|corner|somersault`, `?mark=0`.
+**Carl closed `/about`: *"we are done in this Section for now."*** Plain `/about` today, in order:
+- The mark stands on the desk UNLIT; on CA's strike (Roles or scroll — one clock) its light comes up over 1.015 s (R-039).
+- 5 s after, it WOBBLES (four eased rocks, 3.75° → 0.5625°, 2 s), and every 20 s while it rests (R-040: *"a lot better"*,
+  *"The looped wobble is good"*).
+- The scroll DRIVES the journey: a one-screen RUNWAY after §2 (room pinned) carries the tip, fall, flips and growth; the page's
+  move into §3 is the drop into the viewer; it LATCHES there (scrolling back leaves the desk empty; a reload starts again); a JUMP
+  into §3 (Examples, a reload below the runway) drops it in from the top right.
+- Its LIGHT is DIRECTED: the studio held per part of each movement, eased between, tracking the drop (lit 20% → 53%).
+  ✔ R-041: *"it looks excellent… The logos journey looks extremely good."* The growth: *"Growth of the logo is good."*
+- Switches: `?lighthelpers=1` (the lights drawn), `?markdirect=0`, `?marktie=0`, `?markloop=1`, `?marklag=`, `?marklit=`,
+  `?markunlit=`, `?wobble=0`, `?wobbleevery=`, `?wobblems=`, `?wobbleamp=`.
 
-**Carl's closing verdict on the whole journey (R-038):** *"The logo surpassed my original vision -exceptional work!"* ⚠ Uncommitted —
-commit it with the next session's first commit.
+## ⛔⛔ NEXT SESSION — THE AGREED SUBJECT: THE HOME PAGE's `Who we are` BUTTON (DISCUSSION FIRST)
 
-## ⛔⛔ NEXT SESSION — THE AGREED SUBJECT: THE SCROLL MECHANISM
+Carl: *"So we will build in chunks and document as we go."* ⛔ **The process is the FULL one:** discuss → plan → the Architect →
+implement. ⛔ Nothing is built until then. (Carl: *"Theres no need to mention the Rig, thats behind the scenes stuff"* — the capture
+set-up is Builder housekeeping, not a subject to put to him.)
 
-**Decided by Carl:** the scroll is tied to the WHOLE mechanism, reversible — *"If they scroll partway and stop and the
-logo comes with them they are going to realise."* Time-triggered playback and the Builder's hybrid are RAISED AND NOT
-CHOSEN. Also: arriving by Roles → the tie starts there, the logo FADES IN on card one's strike; arriving by scroll → the
-§1→§2 wipe already reveals it; release when the logo is in the player.
+**Settled (D-088, 10 October):**
+- **Geometry:** the Next step button's profile (sharp top rim, dome, lower bevel, bounce edge) at its own width — *"wider but the
+  geometry should stay the same."*
+- **Colour:** TEAL **#1FB2C4** — the first column of `brand-assets/images.jpg` (✔ *"thats the teal colour i want"*). ⚠ The Builder
+  first took #05FCEA from the 7 October sheet — the WRONG source, corrected; do not reuse it.
+- **Material method:** the desk mark's — a metal on a designed reflection studio, as the platinum blue was (R-035).
+- **The film:** §3's FOUR BOXES sit LEFT of the player, top to bottom; BOX 1 plays *"how we built this button"* — a FINISHED film
+  (*"choose and watch"*, pause/rewind controls); stills = screenshots of the Builder's conversation and the Architect's CLI as we go;
+  SUBTITLES first (narration later, Carl's); ⛔ **the voice is "WE"** (Carl: *"Theres no "I" in team… its WE"*). ⚠ Mask personal
+  details (paths with Carl's name, the taskbar, accounts) in every still.
 
-⛔ **CARL'S OPEN ANSWER (he will bring it):** does the page HOLD while the scroll drives the logo (readers move it, see
-it, go back to reading — the Builder's recommendation) or move with it (the existing one screen, no change)? His steer
-already given: *"Your reccomendation seems solid though except we wont be able to lengthen the image. We will have space
-before Sect 3."* → the runway is NOT a longer pinned room image; it is SPACE BEFORE §3. ⚠ Its form is undesigned — ASK:
-how tall, what it shows, and whether the room stays pinned over it or scrolls away. Any change to the stage or page
-lengths is structural (§5a/§5b) — Carl's override from this session covered "work in Sect. 3"; confirm scope.
-Inside it, the Builder's proposals (not yet approved): split the scroll between phases IN PROPORTION TO THE TUNED
-TIMINGS (a steady scroll replays the legato), and SMOOTH the wheel (the mark chases the scroll target with a short lag).
+**Open, Carl's:** the HEIGHT (today's pill 137 × 44 px vs Next step's 41 — keep 44, or match 41); the LIGHT (the home page has no
+room or moving light of its own); whether `/about` §4's `Start a conversation` (recorded as the pair: same dimensions) moves with
+it; the ORDER against Next step (below). ⚠ Structural (§5a): the FIRST WebGL canvas on the home page — count contexts (the Next step
+button's worked case). `app/page.tsx` is LOCKED — Carl names it to unlock.
 
-### ⛔ CARL'S IDEA, RAISED AT THE END — THE WOBBLE (to discuss; NOT decided, NOT built)
-
-Carl's thinking: *"A user will probably press "roles" We may have to tie it to when a user makes a more substantial
-movement of the scroll. If they see theres some info to digest are they more likely to have their hand on the mouse.
-What if they scroll up to put the top card centre screen?"* His clue: *"Does the user know that our logo is animated? For
-all intents and purposes its just sat on the desk."* Then: *"Our logo cant jump (yet) but it can wobble!"* He has a
-rough idea of his own and is still thinking it through — **bring HIS version first; do not lead with the Builder's.**
-
-- **The clue's consequence (Builder):** nobody knows it is animated, so DOING NOTHING COSTS NOTHING — until it moves it is
-  furniture; the trigger can be conservative; the FIRST movement is the reveal; once it has moved, scroll-tied rewinding
-  makes sense to the reader.
-- **The wobble (Builder's reading of it):** a small scroll NUDGES it — it rocks and settles on its base: the reader learns
-  it is alive without the journey starting, and goes back to reading. ⛔ **The threshold is the object's own TIPPING
-  POINT, not an invented number:** at 227.9 mm (centre of mass ~97 mm up, ~9 mm behind the front-bottom edge) it tips
-  FORWARD past ~5°; its back edge is ~8 mm behind the centre of mass, so ~4.5° BACKWARD. A nudge under that wobbles; a
-  substantial scroll past it tips it onto its face — the face plant we already have — and the journey begins.
-  ⚠ Figures from the 8 October measurement (uniform density, the volume centroid) — RE-MEASURE before building.
-- **The eventualities a plan must cover (Builder's list, given to Carl):** (1) Roles then reading — fidgety scrolls
-  both ways (→ wobbles); (2) scrolling UP to centre the top card — ⚠ that also runs the approved room wipe BACKWARDS
-  (D-092; already open in the sprint file: "scroll-up fades it again") — the mark could rock backward; (3) arriving by
-  scrolling from §1 without stopping — a big push may tip it at once; (4) big jumps — Space / Page Down, trackpad
-  momentum, the **Examples** nav link straight to §3 (lands with the journey complete); (5) scrolling back up after it
-  started, or after it is in the player; (6) touch (deferred to mastering), reload mid-page (scroll restored — the mark
-  must derive where it should be), window resize.
+**Next step itself — to be revisited by Carl** (*"If you think i will revisit this and change the material you would be right!"*):
+the desk mark's PLATINUM BLUE, colour and material. Its dark centre is the desk mark's cause (a mirror with nothing on its axis);
+the studio and the directed light are the answers. Approved work (D-030; D-031–D-032) in a locked file — re-tracking is Carl's word.
 
 ## ⚠ OPEN — WITH OWNERS
 
-- **Carl:** the scroll mechanism (above); §3's four boxes and which holds the player (the drop's target is measured live
-  from `#examples-player-target`, so it follows); the growth (not yet judged — large in the room by the end of flip 2;
-  passes into the rim ~140 ms); the blue reading dark over §3's black; the final speed; carried — the gold's paleness,
-  the stem's corners, A13, the flat back's finish, R-028 numbering.
-- **Builder:** the canvas's cost (~2× pixels every frame) is NOT measured; `card-extrude.tsx`'s `canvasOnScreen` still
-  reads the canvas height (only with text-on-landing off); the reflection map gives the mark nothing (from session 1).
-- **Housekeeping:** the scratchpad clean-build copy is deleted; `chunk-scope.json` still lists the pass-1 chunk with
-  this session's additions (`about-neon.ts` — now LOCKED, `.gitignore`).
+- **Carl:** the jump into §3 drops the mark in DARK (its light rises from CA's strike, which lands on arrival); a scroll straight
+  from §1 starts the journey as the light rises; a scroll mid-wobble jumps up to 3.75°; the runway's one screen and the 150 ms lag
+  are takes; whether to lock `about-card-canvas.tsx` (left unlocked on his "No").
+- **Carl:** `/start`'s client info orbit — its comments and the 9 September spec describe the front pass swinging DOWN past Send;
+  the maths arcs it OVER THE TOP (found by drawing it — D-088, 10 October). What runs is what he approved; only the description is
+  wrong. `contact-field-light-rig.tsx` is LOCKED. His: *"It doesnt matter where it starts, its circular."*
+- **Builder:** the canvas's cost (~2× pixels) still not measured; the desk mark's reflection map gives the mark nothing from the
+  room (from 8 October).
+- **Carried (Carl's):** §3's boxes 2–4; the blue reading dark over §3's black is now LIT by the director (re-judge); the gold's
+  paleness, the stem's corners, A13, R-028 numbering.
 
 ## ⚠ STANDING / CORRECTIONS THIS SESSION
 
-- ⛔ **"Can you…?" is a QUESTION** — answer how, then wait (memory saved): the growth was built uninvited and reverted.
-  "We will work it out" means together, later.
-- ⛔ **Before every push: build a CLEAN checkout** (`git checkout-index -a -f --prefix=<scratch>/` + `npm ci` once).
-  A local build passed for five days while Vercel failed on an untracked imported PNG.
-- **Locking a file** (`.claude/protected-files.json`) is refused to the Builder by auto mode as self-modification —
-  correctly. Carl runs the edit in VS Code's terminal (the `!` prefix does NOT run commands in the VS Code extension).
-- `git add` of `live-work/scripts/` needs `-f`; a plain add in the same command stages NOTHING.
-- GitHub's anonymous status API allows 60 requests an hour — a long history walk exhausts it; a rate-limited empty
-  answer is NOT a Vercel result. The live site (`agency-website-v2-awjv.vercel.app`) is a second witness.
-- After any rejected command, check the file: one this session HAD reached `about-neon.ts`.
+- ⛔ **Don't wait for Vercel after a push** — Carl gets a notification on failure (*"Its only happened once in 6 months"*). The
+  CLEAN-CHECKOUT BUILD before every push still stands (`git checkout-index -a -f --prefix=<scratch>/` + `npm ci` + `npm run build`).
+- ⛔ **The voice is "We"** — the Builder misquoted the 30 August ruling as "I"; it was first person against third.
+- ⛔ **Carl's overrides this session:** "work in Sect 3" style — the scroll tie with no plan/Architect (*"nothing new is required, no
+  new build components. We are adding mechanisms to what is already there"*); files named and permissions to be named, locked after
+  use, tested. The BUTTON is NOT covered — full process.
+- **Delegated creative:** the light's direction was handed to the Builder (*"You wanna direct?"*) — built in the spirit, then shown.
+- **Instruments:** an absent `?wobbleamp=` read as one 0° rock (`Number("")` is 0) — caught by a zero pixel difference. A test run
+  AFTER the latch proved nothing about stop/reverse — re-run on a fresh page. Both on the record.
+- `git add` of `live-work/scripts/` needs `-f`. Heredocs with nested quotes in one Bash call failed twice — write Python to the
+  scratchpad and run it.
 
 ---
 
-*Written 8 October 2026, session 2, end. Replaces session 1's handoff of the same day.*
+*Written 10 October 2026, end. Replaces 8 October session 2's handoff.*
