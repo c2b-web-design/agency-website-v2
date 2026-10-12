@@ -17,9 +17,20 @@ at the faces, fast edge-on), held on the nearest face by pointer proximity (60 p
 the fixed lamps, cyan = the moving lamp). Verified by `live-work/scripts/whoweare-home-verify-roll.mjs`, 9/9. Lint `1 problem
 (1 error, 0 warnings)`. All three unlocked files RELOCKED and tested.
 
-**Uncommitted at session end (Carl did not ask for a commit):** the record updates after `e905baa` (`decisions.md`,
-`current-sprint.md`, `review-log.md`), this handoff and `live-work/scripts/whoweare-selects-build.mjs` — staged, not committed.
-**Dev server LEFT RUNNING on :3000** (Carl: *"Keep the server running"*). The screen recording is ENDED.
+**Records committed and pushed as `c7c4518`** (Carl: *"Yes you can commit and push mow"*). This line edited after it.
+**Dev server STOPPED** at session end (Carl: *"You can stop the server"*; killed by PID tree, port 3000 confirmed free). The screen recording is ENDED.
+
+## ⛔⛔⛔ NEXT SESSION — ONE OF TWO, CARL CHOOSES (Carl, 12 October, end: *"Next session is either the button at the bottom of about. No filming same deal as the button we just built but a different colour OR the rework in the q + a."*)
+
+- **A. `/about` §4's `Start a conversation` button** — the third member of the button family, **the same treatment as `Who we
+  are`** (solid, rolling, painted metal, the clay's lamps + the moving lamp, the hold, the helpers) **in a different colour**
+  (not yet named — ask). **NO FILMING.** Reuse, don't rebuild: `whoweare-button-scene.tsx` (`WHOWEARE_LOOK`, `Roller`, `Ticker`,
+  `MovingSoftbox`), `button-family-geometry.ts`, `lib/canvas-on-screen.ts`; it was the home button's PAIR (`app/page.tsx` comment:
+  "same dimensions, colour and position") — knowingly out of step until now. ⚠ `app/about/page.tsx` — check its lock before
+  planning; §5a: a second instance of the button scene on `/about`, which already runs the room canvas (one WebGL context per
+  canvas — count them).
+- **B. "The rework in the Q + A"** (`/start`). ⚠ Not specified further — ask Carl what it covers. The records hold one candidate:
+  Next step REDONE in the family's profile and the platinum blue #3F6DB8 (the about logo's) — D-088, 12 October. Do not assume it.
 
 ## ⛔⛔ NEXT — CARL'S CHOICE OF SUBJECT. THE FILM IS PARKED UNTIL THE END OF THE SITE BUILD (Carl: *"Its a big job and im gonna have to dedicate a few sessions to it towards the end of the site building process."*)
 
