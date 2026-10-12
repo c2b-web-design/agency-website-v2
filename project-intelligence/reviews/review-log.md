@@ -65,6 +65,47 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-043 — The `Who we are` Button, Pass 2: Teal Metal, The Ice-Blue Label, Extruded (D-088): "Looks Good So Far, Approved"
+
+**Date:** 2026-10-12
+**Reviewer:** Human Founder
+**Subject:** `/proto/button` take 8 — teal #1FB2C4 as the metal's F0 (metalness 1, roughness 0.25) in the pill's own studio (`PILL_STUDIO`, the face kept deep behind the label); the label in ice blue #cfe6ff, extruded 0.6 px in Geist SemiBold, placed where the browser draws it, its back on the dome. Worst pixel behind the label 5.20:1 (median 6.93:1).
+
+**Carl's verdicts, verbatim:**
+- On take 4 (near-black ink): *"The text will not be black. We need a complementary colour, possibly light blue."*
+- *"Lets extrude the text slightly. Make it Three js"*; *"Dont make is as big as that. It must be proportionate to the pills size but take into account where i said the lights motion will be."*
+- On take 8: *"We will get a better idea of the extrusion height needed once we have a static light, at first, from the right shining accross its face. It looks good so far, approved."*
+
+**Findings:**
+
+- ✔ **Approved — pass 2 of this button**, at the level given (*"so far"*): the material and the label. Not a master (D-035).
+- ⚠ **The extrusion depth (0.6 px) is explicitly NOT settled** — Carl will judge it under a static light from the right, the first step of pass 3.
+- ⚠ **Not yet measured:** the label's contrast under any direct light (pass 3, along the whole path).
+- ⚠ Three takes rejected by the Builder before showing (green under the gold's studio; flat; 4.19:1), one ink overruled by Carl (near-black), one capture fault (take 7's tilt) — all kept in the film folder.
+
+---
+
+## R-042 — The `Who we are` Button, Pass 1: The Mesh In Clay, The Rim Made Smaller (D-088): "This Pass Is Approved"
+
+**Date:** 2026-10-12
+**Reviewer:** Human Founder
+**Subject:** `/proto/button` — the home page's `Who we are` pill as the second member of the button family, in clay: built to its measured label (129.5 × 41, Geist), on the family module (`components/ui/button-family-geometry.ts`) with the family's own cross-section (`FAMILY_PROFILE`: the rim made smaller, take 3). Plan v2 through the plan-review gate (the Architect: approve with amendments).
+
+**Carl's verdicts, verbatim:**
+- On take 2 (Next step's cross-section): *"The rim shouldnt be that big… Go by the mesh only… A better way would be to do by the numbers of the mesh."* Then: *"make the rim smaller. Also refer to the ivory button."*
+- On take 3, stating the family rule: *"so the l+r sides are the same. The height is the same. The width of the pill is determined by what text is on there"*; *"If the height is made taller we can alter the crowns accordingly. it must change proportionately to the height"*; and the verdict: *"For the "who we are " button- yes this pass is approved."*
+
+**Findings:**
+
+- ✔ **Approved — for the `Who we are` button, pass 1 (the shape).** Recorded at the level given: a pass of this button, not the family's master (D-035), and not Next step, which keeps its own cross-section until its redo.
+- ✔ **Parity, by browser readback against the live Next step:** zero difference at 116.3 × 41 under `NEXTSTEP_PROFILE`; the check proven able to fail (`PARITY_CONTROL=1`). ⚠ Proves the BUILDER; the family's shape now differs from today's Next step by design.
+- ✔ **The rim, measured off both meshes the same way:** 4.6 px → 2.2 px (the groove's slope dip). Reference: the ivory Begin button's ~3 px (1 px rim over a 3 px sub-rim).
+- ✔ **The family rule, built in:** ends and height the same for every member, width from the label, and the crown scaling with the height (8.5 per 41 px — exactly 8.5 at 41, nothing approved moved).
+- ⚠ **Known and kept:** ~2.3 px edge steps at 4× from the grid (Architect, point 4); invisible at real size.
+- ⚠ **Not judged here:** the material, the label colour (≥ 4.5:1 along the light's whole path — ruled), the light.
+
+---
+
 ## R-041 — The Desk Mark's Journey Tied To The Scroll, Its Light Directed (D-088): "Excellent… Extremely Good"
 
 **Date:** 2026-10-10

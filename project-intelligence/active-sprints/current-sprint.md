@@ -103,6 +103,10 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
   mark's own space, one number 0 → 1, at HALF `/start`'s pace (~2.03 s). Open: the scroll mapping in the scene, and the
   look against the room's orange. Reasoning: D-088's 8 October entries.
 
+## Current work — the home page's `Who we are` button (D-088, 12 October)
+
+The closing CTA the sprint goal named (*"After that we will return to the home page and deal with a CTA at its bottom"*). The white CSS pill becomes the second member of the BUTTON FAMILY — Next step's profile, 41 high, width from its label; teal #1FB2C4 metal; a global light + one moving light (top left aiming right → arcing out face-on → bottom right aiming left, looped). **Two tasks: build it, and film how it was built** (`/about` §3, box 1; the film folder is `Videos\C2B Films\01 Who we are button\`). Passes MESH → MATERIAL → LIGHT, each approved by eye; plan v2 through the gate (the Architect: approve with amendments). ✔ **Pass 1 approved (R-042); pass 2 approved (R-043).** Pass 3 step 1 (a static light from the right) built; the label settled (0.6 px, no bevel). ✔ **On the home page** (12 October, not pushed): one context, the CSS fallback, the link kept; `app/page.tsx` relocked. **Next: direct the light** (the moving light on Carl's path).
+
 ## Carried, open — Carl's
 
 - The image scroll: §1's last lines pass over the opaque room; scroll-up fades it again; phones not
@@ -118,6 +122,7 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
 
 | Task | Output | Notes |
 |---|---|---|
+| D-088 `Who we are` button, PASS 1 — the mesh in clay on `/proto/button`, built to its measured label (129.5 × 41, Geist) on the family module; the rim made smaller by the numbers (4.6 → 2.2 px; the ivory button's ~3 px as reference); the crown scaling with the height. ✔ Carl: *"yes this pass is approved."* | `app/proto/button/page.tsx`, `components/home/whoweare-bench.tsx`, `components/ui/button-family-geometry.ts`, `live-work/scripts/family-geometry-parity.mjs`, `whoweare-pass1-capture.mjs`, `family-profile-from-mesh.mjs` | R-042. Parity with the live Next step proven (builder); the family's cross-section now differs from Next step's by design |
 | D-088 desk mark, THE JOURNEY TIED TO THE SCROLL and ITS LIGHT DIRECTED (10 October, on Carl's override): a one-screen runway; the room part on the runway, the drop on the move into §3; latched in the viewer; a jump drops in from the top right; the studio held per part of each movement and tracking the drop (lit 20% → 53%); `?lighthelpers=1`. ✔ Carl: *"Excellent. The logos journey looks extremely good."* | `app/about/page.tsx`, `about-card-canvas.tsx` | R-041. Open: a jump drops in dark; the runway's length and the lag are takes |
 | D-088 desk mark, THE WOBBLE (10 October): once, 5 s after CA's strike, four eased rocks on its edges (3.75° → 0.5625°) over 2 s — the clue that it moves. ✔ Carl: *"Thats a lot better."* Then repeated every 20 s, start to start (committed on Carl's word, no verdict). | `about-card-canvas.tsx` (`DESK_MARK_WOBBLE`) | R-040. Four takes. Open: the scroll mechanism |
 | D-088 desk mark, ARRIVING IN §2 (10 October): the loop stopped (`?markloop=1` runs it); the mark always on the desk UNLIT, its light and cast shadows brought up over 1.015 s on CA's strike — the same for Roles and the scroll, one clock (the §2 sequence's). ✔ Carl: *"Look good."* | `about-card-canvas.tsx` (`DESK_MARK_LIGHT_MS`, `DESK_MARK_UNLIT`) | R-039. Two takes superseded the same day (opacity fades). Open: the scroll mechanism, the wobble |
@@ -148,7 +153,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-10 — the journey tied to the scroll and its light directed (R-041); before it the wobble (R-040) and the light on card one's strike (R-039).*
+*Last updated: 2026-10-12 — the `Who we are` button begun: plan v2 through the gate; pass 1 (the mesh) approved, R-042.*
+
+*Previously: 2026-10-10 — the journey tied to the scroll and its light directed (R-041); before it the wobble (R-040) and the light on card one's strike (R-039).*
 
 *Previously: 2026-10-08 (session 2, end) — the journey built end to end on plain `/about`, into §3 (R-038); Vercel fixed; next: the scroll mechanism, Carl's answer.*
 

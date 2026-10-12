@@ -1,5 +1,6 @@
 import Container from "@/components/layout/container";
 import SiteHeader from "@/components/layout/site-header";
+import WhoWeAreButton from "@/components/home/whoweare-button";
 
 export default function Home() {
   return (
@@ -481,14 +482,19 @@ export default function Home() {
                 `Start a conversation` to `/start`. The two are a PAIR: same
                 dimensions, colour and position, deliberately. Change one and the
                 other goes stale. Reasoning: `live-work/about-section-thinking.md`
-                → the navigation ruling.                                          */}
+                → the navigation ruling.
+                ⚠ *Overtaken 12 October 2026 — AND KNOWINGLY STALE:* this button is
+                no longer the white CSS pill (`bg-white … px-7 py-3`, 137.5 × 44).
+                It is the second member of the BUTTON FAMILY in three.js (D-088;
+                R-042, R-043): Next step's profile at 41 high, the width its label's
+                (129.5), teal metal, the label extruded in ice blue
+                (`components/home/whoweare-button.tsx`). Carl: *"We will do the
+                "start a conversation" button another time. That is wider still but
+                all come from the same "family"."* — so the pair is OUT OF STEP until
+                §4's button joins the family. The link, its words and `/about` are
+                unchanged.                                                        */}
             <div className="mt-10">
-              <a
-                href="/about"
-                className="inline-block bg-white text-black text-sm font-semibold px-7 py-3 rounded-full tracking-wide hover:bg-neutral-100 transition-colors duration-200"
-              >
-                Who we are
-              </a>
+              <WhoWeAreButton />
             </div>
 
           </div>
