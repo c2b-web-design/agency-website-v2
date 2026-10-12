@@ -425,14 +425,23 @@ export default function Home() {
           rather than against a shrunk flex item. Same class, different reason. */}
       <section id="contact" className="min-h-[calc(100vh-61px)] flex items-center [&>div]:w-full">
         <Container>
-          <div className="text-center max-w-2xl mx-auto">
+          {/* ⛔ THE SECTION SCALED WITH ITS BUTTON — Carl, 12 October 2026 (session 2), on the
+              button at 2×: *"looks good but the text and subtext look too small now, increase
+              the size so the page as a whole feels proportionaate."* → *"yes, that looks a lot
+              better."* (R-045). Was: block `max-w-2xl`, heading `text-3xl` (30 px), paragraph
+              `text-base` (16 px) `max-w-xl`, `mt-6`, button `mt-10`. Judged on the bench
+              (`/proto/button?context=home`) at 1440 × 900 only — ⚠ phone widths NOT looked at
+              (mobile deferred to mastering, D-094). And: *"if you have to move the text up to
+              achieve a good balance then do that. Dont try to cram it in at the bottom."* — the
+              section centres its content, so the larger gap above the button lifts the text. */}
+          <div className="text-center max-w-4xl mx-auto">
 
-            <h2 className="text-3xl font-semibold tracking-tight">
+            <h2 className="text-5xl leading-[1.15] font-semibold tracking-tight">
               Start with a sharper digital presence.
             </h2>
 
-            {/* max-w-xl mx-auto: center-aligned body copy needs a shorter line
-                measure than left-aligned copy — wide centered lines read as
+            {/* max-w-2xl mx-auto (was max-w-xl, scaled with the type): center-aligned body copy
+                needs a shorter line measure than left-aligned copy — wide centered lines read as
                 unintentional, not editorial.                                   */}
             {/* ⛔ "bespoke", NOT "premium" — Carl, 2 September 2026. THE ONLY CHANGE to this
                 section; its copy is otherwise APPROVED AS IT STOOD.
@@ -445,7 +454,7 @@ export default function Home() {
 
                 ⚠ AND "BESPOKE" IS ALREADY THE ARGUMENT card 1's body makes. A claim a
                 competitor cannot honestly copy, where "premium" only asks to be believed.    */}
-            <p className="mt-6 text-base text-neutral-400 leading-relaxed max-w-xl mx-auto">
+            <p className="mt-7 text-xl text-neutral-400 leading-relaxed max-w-2xl mx-auto">
               Whether you need a bespoke website, a stronger first impression, or a smarter
               way to handle enquiries, C2B begins with understanding what your business
               needs to become.
@@ -488,12 +497,15 @@ export default function Home() {
                 It is the second member of the BUTTON FAMILY in three.js (D-088;
                 R-042, R-043): Next step's profile at 41 high, the width its label's
                 (129.5), teal metal, the label extruded in ice blue
-                (`components/home/whoweare-button.tsx`). Carl: *"We will do the
+                (`components/home/whoweare-button.tsx`). ⚠ *And overtaken again the same
+                day (session 2):* now 2× (82 high, 28 px words), SOLID and ROLLING forward,
+                held still when the pointer comes near or the link has focus, painted teal
+                metal under a moving lamp (R-045; D-088). Carl: *"We will do the
                 "start a conversation" button another time. That is wider still but
                 all come from the same "family"."* — so the pair is OUT OF STEP until
                 §4's button joins the family. The link, its words and `/about` are
                 unchanged.                                                        */}
-            <div className="mt-10">
+            <div className="mt-18">
               <WhoWeAreButton />
             </div>
 

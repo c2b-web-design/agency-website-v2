@@ -43,6 +43,7 @@ import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { neonHex, neonNumber, neonParam, wallCardsInView, type SequenceClock } from "./about-neon";
 import { faceBaseZ, faceDome } from "./about-card-mesh";
+import { canvasOnScreen } from "@/lib/canvas-on-screen";
 import type { CardDims } from "./about-card-geometry";
 import { chase, easeCostMs, eraseLag, sentenceEnds, setBalanced, setJustified, type Chase, type LineState, type SentenceEase, type SetLine } from "./card-text-timeline";
 
@@ -398,12 +399,8 @@ export function layoutCardText(font: Font, body: string, s: ExtrudeSettings, dim
     which the neon's own trigger sets. This switch now governs only a card mounted without the neon. */
 const TEXT_START_ON_LANDING = false;
 
-/** Any part of the canvas inside the window, in a visible tab. */
-function canvasOnScreen(el: Element): boolean {
-  if (typeof document === "undefined" || document.visibilityState !== "visible") return false;
-  const r = el.getBoundingClientRect();
-  return r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth;
-}
+/* `canvasOnScreen` — any part of the canvas inside the window, in a visible tab — MOVED, unchanged, to
+   `lib/canvas-on-screen.ts` (12 October 2026) so the home page's button reuses this gating; imported above. */
 
 /** How far the letters' backs sink into the face, so the dome's curvature under
     a glyph never opens a gap. */

@@ -65,6 +65,66 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-046 — The `Who we are` Button Rolling On The Home Page (D-088): "That Look Excellent… It Works Extremely Well As It Is"
+
+**Date:** 2026-10-12 (session 2)
+**Reviewer:** Human Founder
+**Subject:** the home page `#contact` (not pushed): the button solid and rolling forward (slow at the faces, fast edge-on), held by pointer proximity or focus, in R-045's look (painted teal metal, roughness 0.4, the clay's lamps, the moving lamp with its lift and dip), 2×, the section's text scaled with it. Film: `06 On the page/2026-10-12_1721_page_roll2_{section,button-2x}.mp4`.
+
+**Carl's verdicts, verbatim:**
+- On the roll on the bench: *"the roll looks great."*
+- On the page: *"That look excellent. The flat back underneath the text is now only fleeting and i dont think it needs any adjustment with the light. It works extremely well as it is. Just put the light helpers on the page for explanation purposes."*
+
+**Findings:**
+
+- ✔ **A strong positive verdict, at the level given — "excellent", "works extremely well as it is"; the word "approved" was not used.** Not a master (D-035).
+- ✔✔ **APPROVED — then given explicitly, the same session, on the page with the helpers** (Carl asked *"is yellow global and blue moving?"* — yes): *"Yes, thats great. Most definately approved. Excellent work."* **The `Who we are` button's pass 3 (the light) and the reopened pass 1 (the roll) are APPROVED as on the home page, with the section's text sizes and the light helpers.** Still a take, not a master (D-035).
+- ✔ **The light needs no adjustment** — the lamp's lift and dip (tuned at 1× on a still pill) stand on the rolling 2× button. The flat strip under the words, raised earlier, now shows only in passing.
+- ✔ **Light helpers on the page** (`?lighthelpers=1`, explanation only — never on a plain visit): the clay's two lamps as gold suns (`ClayLightHelper`), the moving lamp as a cyan sun on its path with its aim line, both as bright as the lamp is. Film: `06 On the page/2026-10-12_1729_page_helpers1_section.mp4`.
+- ⚠ **Not pushed.** ⚠ **Open, Carl's:** the family's one height (41) — this member now leaves it; phones not looked at (D-094); whether `lib/canvas-on-screen.ts` joins the protected list; HOVER beyond the hold (none designed).
+
+---
+
+## R-045 — The `Who we are` Button, Pass 3: The Painted Metal, The Moving Lamp With Its Dip, 2× In A Rescaled Section (D-088): "A Lot Better"
+
+**Date:** 2026-10-12 (session 2)
+**Reviewer:** Human Founder
+**Subject:** `/proto/button?context=home&scale=2&h2=48&p=20&w=900&pw=680&pgap=28&gap=72&mode=teal&metalness=1&paintrough=0.4&mlkind=lamp&mli=1&mllift=120&mldip=0.9&mldipw=0.4` — the clay coloured teal, metalness 1, roughness 0.4, under the clay's lamps; one moving lamp on Carl's path, its arc lifted, dipped as it crosses the words; the button at 2× (259 × 82) under the home `#contact` section's heading (48 px) and paragraph (20 px), 72 px above it. Films and frames: `05 Pass 3 - Light/` (`metalness-ramp/`, `roughness-ramp/`, `…moving3-dip…`, `size/`).
+
+**Carl's verdicts, verbatim:**
+- On the roughness ramp's 0.4 frame: *"This is closer without becoming too dark and it still showing metalness. So the words are secondary to how i want it to look."*
+- On the flat strip: *"a flat strip under the text is ok, especially if the the text is flat."*
+- On moving3 (the dip): *"Thats a lot better."*
+- On 2× with gap 72: *"looks good but the text and subtext look too small now"*; on the rescaled section: *"yes, that looks a lot better."*
+
+**Findings:**
+
+- ✔ **A positive verdict on the take, at the level given — "a lot better", not "approved".** Pass 3 is not closed; nothing here is a master (D-035).
+- ⚠ **Words secondary (Carl's ruling):** worst 2.08–2.71:1 along the path — measured, reported, not gating.
+- ⚠ **Not yet on the home page.** `app/page.tsx` is locked; the scene's approved values (`WhoWeAreScene`) are still step 1. Rolling out the look, the 2× size and the section's text sizes needs Carl's word and a named unlock.
+- ⚠ **Open, Carl's:** the family's one height (41) — this member now leaves it; phone widths not looked at (D-094); the reduced-motion rest and the frame gating for the moving lamp (structural note, point 6) are owed at rollout.
+
+---
+
+## R-044 — The `Who we are` Button, Pass 3: The Logo's Studio In Teal And The Moving Softbox (D-088): "Its Not Looking Like A Pill"
+
+**Date:** 2026-10-12 (verdict given at 14:43, session 1; recorded in session 2, the first session's limit having run out before it was written)
+**Reviewer:** Human Founder
+**Subject:** `/proto/button?studio=teal&light=0&floor=0.6&fill=0.5` — light take 8 (the about logo's studio, cooled, end-cap catches × 0.5) with the moving softbox (moving1) on Carl's path. Measured: 0 blown pixels, label worst 4.68:1 along the path.
+
+**Carl's verdicts, verbatim:**
+- Session 1, 14:43: *"Heres the problem ive got. its not looking like a pill. There are 2 ugly black bands surroumding the text and 2 dark bands on the crown."*
+- Session 2, on the version he can see (his screenshot: the committed look, step 1 — the pill studio + the static key from the right): *"there is the 2 blown out shines on the crown. also there is the 2 dark bands on the face."*
+
+**Findings:**
+
+- ⛔ **Not approved — take 8 + moving1.** It does not read as a pill: the dome mirrors the studio's near-black gaps between its panels as dark bands either side of the words and on the ends.
+- ⛔ **The committed step 1 shows both faults too** — two blown-out shines on the end caps, two dark bands on the face. ⚠ The Builder's session-2 report called step 1 the best pill so far; Carl's eye corrected it.
+- ⚠ **The moving softbox, seen by the Builder at 4× (session 2):** nearly invisible along the path at strength 0.5 (the 4.5:1 cap); face-on, the flat top mirrors it as a thin hard rectangle round the words. Not yet put to Carl as a verdict.
+- ⚠ **Open:** the global light — see D-088's 12 October session-2 entry for the three options raised and the teal background Carl asked about.
+
+---
+
 ## R-043 — The `Who we are` Button, Pass 2: Teal Metal, The Ice-Blue Label, Extruded (D-088): "Looks Good So Far, Approved"
 
 **Date:** 2026-10-12

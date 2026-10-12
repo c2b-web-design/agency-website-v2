@@ -26,8 +26,38 @@ export default async function ButtonBenchPage({
 }) {
   const sp = await searchParams;
   const clay = sp.mode === "clay";
-  const unlit = sp.light === "0";
+  const painted = sp.mode === "teal"; // the clay, coloured teal (no metal)
+  // Pass 2's look is the pill's own studio with no key; with the logo's studio (?studio=) it is pass 3's light.
+  const unlit = sp.light === "0" && !sp.studio;
   const caption = { color: "#666", fontSize: 12, letterSpacing: "0.08em" } as const;
+  // ?context=home (12 October, session 2 — Carl: "look at the text as a whole in its container. Now look at our button. It
+  // can be bigger, much bigger."): the home `#contact` section's heading and paragraph above the one pill, in the home page's
+  // own classes, so its size is judged where it lives. ⚠ The copy is REPEATED from `app/page.tsx` — a bench, kept by hand.
+  if (sp.context === "home") {
+    return (
+      <main className="bg-neutral-950 text-white min-h-screen flex items-center">
+        <div className="w-full px-6">
+          {/* ?h2= ?p= (px) and ?w= ?pw= (max widths, px), ?pgap= (heading → paragraph): Carl, the same session, on the 2×
+              button — "the text and subtext look too small now, increase the size so the page as a whole feels
+              proportionate." Defaults are the home page's: text-3xl 30, text-base 16, max-w-2xl 672, max-w-xl 576, mt-6 24. */}
+          <div className="text-center mx-auto" style={{ maxWidth: Number(sp.w) || 672 }}>
+            <h2 className="font-semibold tracking-tight" style={{ fontSize: Number(sp.h2) || 30, lineHeight: 1.15 }}>Start with a sharper digital presence.</h2>
+            <p className="text-neutral-400 leading-relaxed mx-auto" style={{ fontSize: Number(sp.p) || 16, maxWidth: Number(sp.pw) || 576, marginTop: Number(sp.pgap) || 24 }}>
+              Whether you need a bespoke website, a stronger first impression, or a smarter
+              way to handle enquiries, C2B begins with understanding what your business
+              needs to become.
+            </p>
+            {/* ?gap= (px; the home page's `mt-10` = 40): Carl, the same session — "if you have to move the text up to achieve a
+                good balance then do that. Dont try to cram it in at the bottom." The section centres its content, so a
+                bigger gap lifts the heading and paragraph. */}
+            <div className="flex justify-center" style={{ marginTop: Number(sp.gap) || 40 }}>
+              <FamilyPill id="whoweare-pill" label="Who we are" />
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
   return (
     <main
       style={{
@@ -40,7 +70,7 @@ export default async function ButtonBenchPage({
         gap: "3.5rem",
       }}
     >
-      <div style={caption}>{clay ? "PASS 1: THE MESH, IN CLAY" : unlit ? "PASS 2: THE MATERIAL, TEAL METAL" : "PASS 3: THE LIGHT"}</div>
+      <div style={caption}>{clay ? "PASS 1: THE MESH, IN CLAY" : painted ? (Number(sp.metalness) > 0 ? `THE MESH IN TEAL, METALNESS ${sp.metalness}` : "THE MESH IN TEAL, NO METAL") : unlit ? "PASS 2: THE MATERIAL, TEAL METAL" : "PASS 3: THE LIGHT"}</div>
 
       <FamilyPill id="whoweare-pill" label="Who we are" />
       <div style={caption}>WHO WE ARE, BUILT TO ITS MEASURED LABEL</div>

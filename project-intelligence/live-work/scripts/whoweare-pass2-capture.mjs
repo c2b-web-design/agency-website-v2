@@ -71,6 +71,18 @@ const stats = await p.evaluate(async ({ b64, inks }) => {
   }
   return out;
 }, { b64: png.toString("base64"), inks: INKS });
+// ⛔ BLOWN-OUT CHECK (Carl: "It must be lit but not to the extent where parts are blown out"): over the WHOLE pill, label off,
+// the pixels with any channel ≥ 250 — clipped to white or to a pure channel. Target: 0.
+const pr = await p.evaluate(() => { const b = document.querySelector("#whoweare-pill").getBoundingClientRect(); return { x: b.x, y: b.y, w: b.width, h: b.height }; });
+const pillPng = await p.screenshot({ clip: { x: Math.round(pr.x), y: Math.round(pr.y), width: Math.round(pr.w), height: Math.round(pr.h) } });
+const blown = await p.evaluate(async (b64) => {
+  const img = new Image(); img.src = "data:image/png;base64," + b64; await img.decode();
+  const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+  const g = c.getContext("2d"); g.drawImage(img, 0, 0); const d = g.getImageData(0, 0, c.width, c.height).data;
+  let n = 0, peak = 0; for (let i = 0; i < d.length; i += 4) { const m = Math.max(d[i], d[i + 1], d[i + 2]); peak = Math.max(peak, m); if (m >= 250) n++; }
+  return { n, peak, total: d.length / 4 };
+}, pillPng.toString("base64"));
+console.log(`blown-out pixels on the pill: ${blown.n} of ${blown.total} (brightest channel ${blown.peak}) ${blown.n === 0 ? "✅ none" : "⛔ clipped"}`);
 const bgf = `${stamp}_material_${take}_label-area-bare-metal.png`;
 await p.screenshot({ path: join(dir, bgf), clip: { x: Math.round(tb.x) - 30, y: Math.round(tb.y) - 16, width: Math.round(tb.w) + 60, height: Math.round(tb.h) + 32 } });
 log(bgf, `${take}: the bare metal behind the label, the area the contrast is measured on`);

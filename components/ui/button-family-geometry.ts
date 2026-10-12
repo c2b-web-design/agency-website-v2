@@ -211,3 +211,29 @@ export function buildPillGeometry(w: number, h: number, profile: PillProfile = F
   g.setIndex(index);
   return g;
 }
+
+/**
+ * ⛔ THE BAND — THE PILL MADE SOLID (D-088, 12 October 2026, session 2). Carl: *"Is the back of the pill flat?"* — there was no
+ * back: `buildPillGeometry` is one height-field sheet. Then the forward roll: *"when it goes through 180deg you will see "who
+ * we are" again"*. The solid pill is THREE parts: the front dome (`buildPillGeometry`), the SAME dome turned 180° about the
+ * horizontal axis for the back (a rotation, not a mirror — the back's words read upright when they come round), and this
+ * band between them. Without it the two domes meet at z = 0 in a razor edge and edge-on the button is a hairline.
+ * A straight-sided slab of the pill's outline, `band` px thick, centred on z = 0; the domes sit on its two faces. ⚠ The
+ * dome's grid edge is a staircase inside the true outline (the known ~2.3 px steps at 4×, R-042): the slab's flat faces fill
+ * that sliver, at the dome's own edge height (0), so no gap opens round the edge.
+ * `FAMILY_BAND` — the band as a fraction of the height (a starting value, Carl's eye).
+ */
+export const FAMILY_BAND = 0.1;
+export function buildPillBand(w: number, h: number, band: number): THREE.BufferGeometry {
+  const r = h / 2;
+  const cx = w / 2 - r;
+  const shape = new THREE.Shape();
+  shape.moveTo(-cx, -r);
+  shape.lineTo(cx, -r);
+  shape.absarc(cx, 0, r, -Math.PI / 2, Math.PI / 2, false);
+  shape.lineTo(-cx, r);
+  shape.absarc(-cx, 0, r, Math.PI / 2, (3 * Math.PI) / 2, false);
+  const g = new THREE.ExtrudeGeometry(shape, { depth: band, bevelEnabled: false, curveSegments: 48 });
+  g.translate(0, 0, -band / 2);
+  return g;
+}

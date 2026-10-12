@@ -40,6 +40,7 @@
  *                  rim — the "before" for take 3, and the setting the parity check reads.
  */
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { FAMILY_BAND } from "@/components/ui/button-family-geometry";
 import {
   BEVEL_DEFAULT,
   EXTRUDE_DEPTH_DEFAULT,
@@ -83,27 +84,87 @@ export function FamilyPill({ label, fixed, id }: { label: string; fixed?: { w: n
   // ?profile=nextstep renders Next step's own cross-section (the parity check's setting; the "before").
   const legacy = useParam("profile", "family") === "nextstep";
   // Pass 2: teal metal by default; ?mode=clay is pass 1's look (approved, R-042), kept for comparison and the film.
-  const metal = useParam("mode", "metal") !== "clay";
+  // ?mode=teal (12 October, session 2): the clay, coloured — no metal (Carl: "take the metalness out for now and just colour
+  // it teal"); ?paint= (hex) sets the colour, the brand teal by default. The label shows, extruded, as on the metal.
+  const mode = useParam("mode", "metal");
+  const metal = mode !== "clay" && mode !== "teal";
+  const paintParam = useParam("paint", "1fb2c4");
+  const paintMetal = Math.min(1, Math.max(0, Number(useParam("metalness", "0")) || 0));
+  // ?paintrough= — the painted clay's roughness (the second ramp: 0.6, the clay's, down toward the metal's 0.25).
+  const paintRough = Math.min(1, Math.max(0.02, Number(useParam("paintrough", "0.6")) || 0.6));
+  const paint = mode === "teal" ? "#" + (/^[0-9a-f]{6}$/i.test(paintParam) ? paintParam : "1fb2c4") : undefined;
   const rough = Number(useParam("rough", String(TEAL_DEFAULTS.roughness)));
   const envInt = Number(useParam("envint", String(TEAL_DEFAULTS.envMapIntensity)));
   const ink = "#" + useParam("ink", INK_DEFAULT).replace(/[^0-9a-fA-F]/g, "").slice(0, 6);
   // The label shows on the metal unless ?label=0; on clay only with ?label=1.
   const labelParam = useParam("label", "");
-  const labelOn = metal ? labelParam !== "0" : labelParam === "1";
+  const labelOn = metal || paint ? labelParam !== "0" : labelParam === "1";
   // Since 12 October the label on the metal is EXTRUDED in three.js; ?text3d=0 is the flat DOM text (the "before").
   const text3dParam = useParam("text3d", "1");
-  const text3d = metal && text3dParam !== "0";
-  const depth = Number(useParam("depth", String(EXTRUDE_DEPTH_DEFAULT)));
+  // Clay with ?label=1 extrudes too (the roll: the words must come round on the back).
+  const text3d = (metal || !!paint || mode === "clay") && text3dParam !== "0";
+  // ⛔ THE ROLL (pass 1 reopened, 12 October, session 2): ?roll=1 makes the pill solid (?band=, a fraction of the height) and
+  // turns it forward — ?rollt= a half-turn's seconds, ?rolla= the speed curve (0 steady … 0.95 near-hold), ?rollat= degrees
+  // frozen; ?near= px: the pointer within it of the button holds it on the nearest face.
+  const rollOn = useParam("roll", "0") === "1";
+  const bandFrac = Number(useParam("band", String(FAMILY_BAND)));
+  const rollHalf = Number(useParam("rollt", "5")) || 5;
+  const rollEase = Number(useParam("rolla", "0.7"));
+  const rollAtParam = useParam("rollat", "");
+  const near = Number(useParam("near", "60"));
+  const [hold, setHold] = useState(false);
+  // ?scale= (12 October, session 2 — Carl: *"It can be bigger, much bigger."*): the box rule's font and padding × scale, so
+  // the pill (built to the measured box, its crown proportional to its height) and the letters grow together; the
+  // extrusion depth with them. 1 = the family's 41 px.
+  const scale = Math.min(4, Math.max(0.5, Number(useParam("scale", "1")) || 1));
+  const depth = Number(useParam("depth", String(EXTRUDE_DEPTH_DEFAULT))) * scale;
   const bevel = Number(useParam("bevel", String(BEVEL_DEFAULT)));
   // Pass 3, step 1: the static key from the right — on by default on the metal; ?light=0 is pass 2's look.
   const keyOn = useParam("light", "1") !== "0";
   const keyAngle = Number(useParam("lightang", String(KEY_DEFAULTS.angle)));
   const keyEl = Number(useParam("lightel", String(KEY_DEFAULTS.elevation)));
   const keyInt = Number(useParam("lightint", String(KEY_DEFAULTS.intensity)));
+  // Pass 3: ?studio=logo — the about logo's studio, turned by ?studioyaw= (degrees), the director's method.
+  const studioParam = useParam("studio", "pill");
+  const studio = studioParam === "logo" ? "logo" : studioParam === "teal" ? "teal" : "pill";
+  const glint = Number(useParam("glint", "0.5"));
+  const fill = Number(useParam("fill", "1"));
+  const floor = Number(useParam("floor", "1"));
+  const surround = Number(useParam("surround", "0"));
+  // ?bg=0f3a40 — the studio's background as a colour (light take 10: the gaps filled in teal); wins over ?surround=.
+  const bgParam = useParam("bg", "");
+  const fillSize = Number(useParam("fillsize", "1")); // the front fill's size (light take 11)
+  const top = Number(useParam("top", "1")); // the studio's broad top panel (light take 11)
+  const studioBg = /^[0-9a-f]{6}$/i.test(bgParam) ? "#" + bgParam : "";
+  const helpers = useParam("lighthelpers", "0") === "1";
+  // The moving softbox (option 2): on with the teal studio unless ?ml=0; ?mt=0…1 freezes it on its path.
+  const mlParam = useParam("ml", "1");
+  const mtParam = useParam("mt", "");
+  const mliParam = useParam("mli", "");
+  const mlSizeParam = useParam("mlsize", "1");
+  const mlKindParam = useParam("mlkind", "panel");
+  const mlLiftParam = useParam("mllift", "0");
+  const moving = { on: (studio === "teal" || mode === "teal") && mlParam !== "0", frozen: mtParam === "" ? null : Math.min(1, Math.max(0, Number(mtParam))), intensity: mliParam === "" ? undefined : Number(mliParam), size: Number(mlSizeParam) || 1, kind: mlKindParam === "lamp" ? ("lamp" as const) : ("panel" as const), lift: Number(mlLiftParam) || 0, dip: { depth: Number(useParam("mldip", "0")) || 0, at: Number(useParam("mldipat", "0.5")), width: Number(useParam("mldipw", "0.25")) } };
+  const studioYaw = Number(useParam("studioyaw", "0"));
 
   const span = useRef<HTMLSpanElement>(null);
   const [box, setBox] = useState<{ w: number; h: number; font: string; glyphs: Glyphs } | null>(null);
   const baseMark = useRef<HTMLSpanElement>(null);
+
+  // The pointer near the button holds the roll (Carl: "mouse proximity so its static when a user decides to press it").
+  useEffect(() => {
+    if (!rollOn || fixed) return;
+    const onMove = (e: PointerEvent) => {
+      const el = span.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
+      const dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
+      setHold(Math.hypot(dx, dy) <= near);
+    };
+    window.addEventListener("pointermove", onMove);
+    return () => window.removeEventListener("pointermove", onMove);
+  }, [rollOn, fixed, near]);
 
   useEffect(() => {
     if (fixed) return;
@@ -134,6 +195,7 @@ export function FamilyPill({ label, fixed, id }: { label: string; fixed?: { w: n
       data-box-w={w ?? ""}
       data-box-h={h ?? ""}
       data-font={fixed ? "fixed" : (box?.font ?? "")}
+      data-hold={rollOn ? (hold ? "1" : "0") : undefined}
       style={{
         position: "relative",
         display: "inline-block",
@@ -141,7 +203,12 @@ export function FamilyPill({ label, fixed, id }: { label: string; fixed?: { w: n
         height: fixed?.h,
         // ⚠ Zoom grows the canvas, not the layout — take 1's 4x view overlapped the other pill and the captions.
         // Reserve the zoomed box's extra room round the real-size footprint.
-        margin: w && h && zoom > 1 ? `${((zoom - 1) * h) / 2}px ${((zoom - 1) * w) / 2}px` : undefined,
+        margin:
+          w && h && helpers && !fixed
+            ? "110px 140px" // the studio's panels drawn round the button need the room (HELPER_PAD)
+            : w && h && zoom > 1
+              ? `${((zoom - 1) * h) / 2}px ${((zoom - 1) * w) / 2}px`
+              : undefined,
       }}
     >
       {w && h ? <PillCanvas
@@ -154,6 +221,22 @@ export function FamilyPill({ label, fixed, id }: { label: string; fixed?: { w: n
           metal={metal}
           rough={rough}
           envInt={envInt}
+          studio={studio}
+          studioYaw={studioYaw}
+          glint={glint}
+          fill={fill}
+          floor={floor}
+          surround={surround}
+          studioBg={studioBg}
+          top={top}
+          paint={paint}
+          paintMetal={paintMetal}
+          paintRough={paintRough}
+          band={rollOn && !fixed ? bandFrac * h : 0}
+          roll={{ on: rollOn && !fixed, half: rollHalf, ease: rollEase, hold, at: rollAtParam === "" ? null : Number(rollAtParam) }}
+          fillSize={fillSize}
+          helpers={helpers && !fixed}
+          moving={moving}
           label={{ glyphs: labelOn && text3d && !fixed ? (box?.glyphs ?? null) : null, depth, ink, bevel }}
           keyLight={{ on: keyOn, angle: keyAngle, elevation: keyEl, intensity: keyInt }}
         /> : null}
@@ -161,6 +244,7 @@ export function FamilyPill({ label, fixed, id }: { label: string; fixed?: { w: n
         ref={span}
         style={{
           ...BOX_RULE,
+          ...(scale !== 1 && !fixed ? { fontSize: 14 * scale, padding: `${10 * scale}px ${24 * scale}px` } : {}),
           position: "relative",
           color: ink,
           // The DOM text is shown only when the label is NOT extruded (the "before", or clay with ?label=1).
