@@ -81,7 +81,7 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 - ✔✔ **APPROVED — then given explicitly, the same session, on the page with the helpers** (Carl asked *"is yellow global and blue moving?"* — yes): *"Yes, thats great. Most definately approved. Excellent work."* **The `Who we are` button's pass 3 (the light) and the reopened pass 1 (the roll) are APPROVED as on the home page, with the section's text sizes and the light helpers.** Still a take, not a master (D-035).
 - ✔ **The light needs no adjustment** — the lamp's lift and dip (tuned at 1× on a still pill) stand on the rolling 2× button. The flat strip under the words, raised earlier, now shows only in passing.
 - ✔ **Light helpers on the page** (`?lighthelpers=1`, explanation only — never on a plain visit): the clay's two lamps as gold suns (`ClayLightHelper`), the moving lamp as a cyan sun on its path with its aim line, both as bright as the lamp is. Film: `06 On the page/2026-10-12_1729_page_helpers1_section.mp4`.
-- ⚠ **Not pushed.** ⚠ **Open, Carl's:** the family's one height (41) — this member now leaves it; phones not looked at (D-094); whether `lib/canvas-on-screen.ts` joins the protected list; HOVER beyond the hold (none designed).
+- ~~⚠ **Not pushed.**~~ → **Pushed `e905baa`; all three Vercel projects READY.** ⚠ **Open, Carl's:** the family's one height (41) — this member now leaves it; phones not looked at (D-094); whether `lib/canvas-on-screen.ts` joins the protected list; HOVER beyond the hold (none designed).
 
 ---
 

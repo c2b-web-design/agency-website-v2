@@ -1,85 +1,81 @@
-# Session Handoff — 12 October 2026 (end). THE `Who we are` BUTTON IS ON THE HOME PAGE (static light). NEXT: DIRECT THE LIGHT.
+# Session Handoff — 12 October 2026, session 2 (end). THE `Who we are` BUTTON IS APPROVED AND LIVE, ROLLING. THE FILM'S EDIT IS PLANNED AND PARKED.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
-**The full record: D-088's 12 October entries at the END of `decisions.md`; R-042, R-043 (`reviews/review-log.md`).**
+**The full record: D-088's 12 October session-2 entries at the END of `decisions.md`; R-044, R-045, R-046 (`reviews/review-log.md`).**
 
 ---
 
 ## ⛔ WHERE THINGS STAND
 
-**Committed and pushed at session end** (Carl: *"commit and push what we have so far"*). Lint `1 problem (1 error, 0 warnings)`;
-`tsc` clean. Dev server STOPPED. The desktop recording STOPPED (see the film, below).
+**The button — APPROVED (R-046, Carl: *"Most definately approved. Excellent work."*), committed `e905baa`, pushed, all three Vercel
+projects READY.** On the home page `#contact`: painted teal metal (metalness 1, roughness 0.4) under the clay's lamps; one moving
+LAMP on Carl's path (arc lifted 120 off the flat strip, dipped 0.9 as it crosses the words); 2× (259 × 82, 28 px words); the
+section's heading 48 px / paragraph 20 px; the pill SOLID (the front turned 180° for the back + a band) and ROLLING forward (slow
+at the faces, fast edge-on), held on the nearest face by pointer proximity (60 px) or keyboard focus; frames only while on screen
+(`/about`'s mechanism — `canvasOnScreen` moved to `lib/canvas-on-screen.ts`); reduced motion = still; `?lighthelpers=1` (gold =
+the fixed lamps, cyan = the moving lamp). Verified by `live-work/scripts/whoweare-home-verify-roll.mjs`, 9/9. Lint `1 problem
+(1 error, 0 warnings)`. All three unlocked files RELOCKED and tested.
 
-**The `Who we are` button — the second member of the BUTTON FAMILY — is on the home page** (`components/home/whoweare-button.tsx`,
-the scene in `components/home/whoweare-button-scene.tsx`, the shape in `components/ui/button-family-geometry.ts`, the bench
-`/proto/button`):
-- **Pass 1, the mesh — APPROVED (R-042).** Next step's builder (parity with the live Next step proven by browser readback, and
-  shown able to fail) with the FAMILY's own cross-section: the rim made smaller BY THE NUMBERS (6.6 px skirt → a ~3 px bead; the
-  ivory Begin button's shadow stack as the reference). The family rule: same ends, same height (41), width from the label,
-  the crown scaling with the height.
-- **Pass 2, the material and label — APPROVED (R-043, "so far").** Teal #1FB2C4 as the metal's F0 in the pill's OWN studio
-  (`PILL_STUDIO` — the desk mark's studio turned teal GREEN); the label ICE BLUE #cfe6ff (Carl overruled near-black), the face
-  darkened so it holds **5.20:1 at the worst pixel**; the label EXTRUDED in three.js, 0.6 px, Geist SemiBold (new
-  `public/fonts/geist-semibold.typeface.json`), placed where the browser draws it (0.03 / 0.44 px).
-- **Pass 3, the light — STEP 1 BUILT:** one STATIC light from the right (70° off normal, 8° up, 2.5). ⚠ **Finding (put to Carl,
-  settled "1"):** face-on, the label's extrusion CANNOT read at any depth (sides edge-on; a metal shows no shadow from a grazing
-  light; a bevel greys the 1.5 px strokes) — 0.6 px, NO bevel; the depth reads in tilt and close-ups.
-- **The rollout (structural note `live-work/structural-note-whoweare-rollout-12-october.md`, Carl: *"Structure is good. My word
-  is good for this one."*):** a real `<a href="/about">`, the scene behind it, lazy (`next/dynamic`, `ssr:false`), `frameloop
-  ="demand"`, the CSS fallback (teal pill, ice-blue words) until the letters are drawn / no WebGL / lost context. **Verified:**
-  1 WebGL context on the home page; letters drawn; one link named "Who we are"; focus ring; fallback with no WebGL;
-  `?lighthelpers=1` (a sun + a line). `app/page.tsx` used on Carl's named unlock, **RELOCKED and tested** (probe refused).
+**Uncommitted at session end (Carl did not ask for a commit):** the record updates after `e905baa` (`decisions.md`,
+`current-sprint.md`, `review-log.md`), this handoff and `live-work/scripts/whoweare-selects-build.mjs` — staged, not committed.
+**Dev server LEFT RUNNING on :3000** (Carl: *"Keep the server running"*). The screen recording is ENDED.
 
-## ⛔⛔ NEXT SESSION — THE AGREED SUBJECT: DIRECT THE LIGHT (Carl: *"Final step is to direct the light."*)
+## ⛔⛔ NEXT — CARL'S CHOICE OF SUBJECT. THE FILM IS PARKED UNTIL THE END OF THE SITE BUILD (Carl: *"Its a big job and im gonna have to dedicate a few sessions to it towards the end of the site building process."*)
 
-The moving light, as Carl set it (D-088, 12 October): **starts TOP LEFT of the button aiming RIGHT; arcs OUTWARD to FACE-ON; ends
-BOTTOM RIGHT aiming LEFT; LOOPED; fine-tuned in place.** Owed with it:
-- ⛔ **The label's contrast measured along the WHOLE path** — ≥ 4.5:1 at every pixel at every moment (Carl: *"On the light
-  motion"*). ⚠ With light ink on a dark face, the light's highlight crossing the words LOWERS contrast — at the arc's face-on
-  moment its reflection lands on the flat top, behind the words. Its strength and spread must keep the worst ≥ 4.5.
-  `whoweare-pass2-capture.mjs` measures a still; it must be extended to sample the path.
-- **Frames:** the scene is `demand` today; a moving light needs frames → **gate them by `/about`'s existing visibility
-  mechanism, not a new one** (structural note, point 6; §5a).
-- **Reduced motion:** a RESTING position for the light (`useSyncExternalStore`, not set-state-in-effect — Architect point 6);
-  the full pass stays with mastering (D-094).
-- **Light helpers** (`?lighthelpers=1`) must follow the moving light.
-- The static key from the right is step 1 — whether it stays as the "global" light under the moving one is Carl's.
+**The film (`/about` §3, box 1) — everything is in `C:\Users\Carl Buckley\Videos\C2B Films\01 Who we are button\`:**
+- Carl's rulings: **the PROCESS only**, no problem solving (*"I will let clients know personally how we are able to think on our
+  feet"*); ~7 min; start *"in the shire with the boring white button"*; **APPROVALS SHOWN**; **Step 1 RECREATED** as a mock
+  discussion (screenshots of the salient bits); **Step 5 carried by the subtitles**.
+- **The ten steps and their candidates:** `selects.md` (in/out points, checked against contact sheets). **`08 Selects/`**: 36
+  candidates, 1080p constant 30 fps. **`selects.fcpxml`** (story order, 31.9 min, a marker per clip) + `selects.edl` for **Resolve
+  21.1.1 FREE** — ⚠ the import is UNTESTED on Carl's machine. `chatgpt-edit-brief.md` (ChatGPT hit its daily file limit; Carl will
+  edit himself).
+- **Offered, not yet asked for:** a proposed ~7-min cut as a second timeline + an `.srt` for every step (voice "We", no em dashes —
+  extend `07 Subtitles/subtitles-draft.md`, which stops at chapter 7). **And the Step 1 mock discussion** (Carl: *"now we know exactly
+  where we are going with it"*).
+- **Sound (none in the footage):** Carl has **Pro Tools** (with a Claude integration through the SDK and **PTSL**, Claude READ-ONLY
+  for now) and **Sonar**; no copyright issues (his own music). Carl: *"I might let you off the leash in there especially as we now
+  have a "gig"."* ⚠ Widening Claude's access in Pro Tools is a permission change: state the real capability surface before it is
+  applied (CLAUDE.md, Authority).
+  ⚠ **Looked at Carl's `Music Production` project (read only):** a separate Claude Code project with its own rules (Claude =
+  production consultant; `governance.md` levels 0 Read → 3 File, Carl in the read-only learning phase; `ALLOW_WRITES` empty;
+  nothing from there crosses into this repo). **Its research: Pro Tools Artist has NO video track (Studio has); Carl is on Intro,
+  below Artist — scoring to picture inside Pro Tools is likely impossible (Intro itself unchecked; Sonar's video unchecked).**
+  Route that needs no writes: Carl scores first; Claude READS his markers/onsets (the connector's audio analysis) and re-times
+  the cut to them, rebuilding the FCPXML. The sound work runs as a Music Production session, under its rules.
+  ⛔ **CORRECTED (Carl): NOT a score.** *"I am not lookin to score the video, the visuals and info are the most important. But if a
+  user is not watching in silence it makes the experience better."* → a background MUSIC BED, under the film, not cut to it. **Sonar
+  has video** (*"I have video in Sonar and can import there"*) — the bed can be checked against the cut there. ⚠ On the site the
+  film will autoplay MUTED if it autoplays at all (browsers block autoplay with sound): it must work silent first; the bed is for
+  whoever unmutes — the player needs a visible sound control.
+  **Polish in Resolve's Fairlight page** (Carl: *"Resolve has Fairlight for polishing"*): the bed is built in Sonar against the
+  video, then levelled and finished under the cut in Fairlight.
+- Footage: two screen recordings (session 1, 1 h 47 m, 15 fps; session 2, 2 h 18 m, ~29 fps variable) + 37 clips. ⚠ No screen
+  footage 14:05–15:27. Shot list current; the first home-page film take (`roll1`) is a MISS, kept and marked.
 
 ## ⚠ OPEN — WITH OWNERS
 
-- **Carl:** HOVER (none designed — the white pill's went with it); the button's push is DONE but nothing is judged "on the
-  site" yet; `/about` §4 `Start a conversation` joins the family later (knowingly out of step); Next step is REDONE later in the
-  platinum blue #3F6DB8 (the about logo's) on `FAMILY_PROFILE`; whether Next step's mesh was ever approved by eye (its header
-  says PROTOTYPE; R-012–R-017 approved the CSS button).
-- **Builder:** `overlap-check` (self-crossing outlines) not yet shown red on a known-bad font; a bevelled label would need its
-  RENDERED letters measured, not ink-vs-metal (moot while no bevel).
-- **Carried from 10 October (Carl's):** the desk mark's open points; the client info orbit description; the canvas cost on `/about`.
-
-## ⛔ THE FILM — `C:\Users\Carl Buckley\Videos\C2B Films\01 Who we are button\` (§3, box 1: "how we built this button")
-
-**Two tasks (Carl): build it AND show how we built it. ⛔ CAPTURE INDEPENDENTLY — Carl: *"A user mustnt see me messaging you with
-'screenshot this, video that'"*; act without being asked.** Bins 00 References → 07 Subtitles; `shot-list.md` logs every file
-(misses kept, marked); `07 Subtitles/subtitles-draft.md` runs to chapter 7 ("On the site") — voice "We", NO em dashes. Tools:
-`live-work/scripts/film-snap.ps1` (a desktop still, logged); `whoweare-pass1-capture.mjs`, `whoweare-pass2-capture.mjs` (`BIN=`
-for pass 3), `whoweare-home-capture.mjs`, `whoweare-home-verify.mjs`. Screen video: `ffmpeg -f gdigrab … -movflags
-+frag_keyframe+empty_moov` survives a kill. ⚠ The 1 h 47 min recording `02 Plan and review/…_architect-review_screen.mp4` (340 MB)
-covers 12:17 → 14:05 — the plan, the review AND every pass after; it shows Carl's own messages, which he will cut.
+- **Carl:** the family's one height (41) — this button now leaves it (Next step keeps 41 until its redo); phones never looked at
+  (D-094); whether `lib/canvas-on-screen.ts` joins `.claude/protected-files.json`; HOVER beyond the hold (none designed); whether
+  4.5:1 returns as a requirement at mastering (Carl ruled the words SECONDARY to the look — measured 2.08–2.71:1, reported, not
+  gating); `/about` §4 `Start a conversation` joins the family later; Next step redone later in platinum blue.
+- **Builder:** the bench's `?mode=teal` caption reads metalness from the URL only; `08 Selects` re-buildable by script after any
+  in/out change.
 
 ## ⚠ STANDING / CORRECTIONS THIS SESSION
 
-- **`/doctor` done** (both seats): Claude Code 2.1.296; `npm install *` narrowed to `Bash(npm install)`; CLAUDE.md's lint history
-  → D-096; Claude Docs + Google Drive disconnected here; the Vercel CLI logged in (`npx vercel inspect <dpl>` gives a failure's
-  reason — the 12 October failure was Vercel's: "Git information retrieval failed").
-- ⛔ **The `!` prefix does not run in the VS Code panel** — protected-file edits Carl authorises go via a checked script he runs in
-  VS Code's terminal (memory). Unlocking via `chunk-scope.json` with the EDIT tool worked this session; via Bash it was refused.
-- ⚠ **Builder errors caught and fixed:** overwrote the tracked `architect-plan-response.md` (restored from git; the new one is
-  `…-whoweare-12-october.md`) — LOOK BEFORE WRITING a file that exists; a Python string turned `\01` into a control byte in
-  `current-sprint.md` (fixed by byte value) — backslash paths in Python heredocs are unsafe; two groove-detector misses and a
-  placement reading inflated by the light's glint — instruments re-checked before trusting a moved number.
-- **Carl's process this session:** no plan needed in practice, but the plan + Architect gate RUN GENUINELY for the film (*"to show
-  the process, we will go through it"*); the Architect: approve with 8 amendments + 3 corrections, all verified and taken.
+- ⛔ **The first session's work after its handoff was unrecorded** (its limit ran out): Carl pasted the exchange; recorded as R-044.
+  **Write the record AS the work lands, not at the end.**
+- ⛔ **`page.screenshot()` fires stray `pointermove` events** that release a hover/proximity state — `live-work/screenshot-fires-pointermove-12-october.md`.
+  Check pointer-driven state with a probe or a `data-` attribute, not by comparing screenshots.
+- ⚠ **A check that cannot run reads as a pass:** `grep -P` refused the shell's locale and the "no control bytes" line printed anyway;
+  redone in Node with a failing control. Prove a check can fail.
+- **"Git information retrieval failed" on Vercel = Vercel's, not the code** (same commit passed elsewhere and on redeploy). The REST
+  API via the CLI's login gives each deployment's commit (memory: `reference_vercel_failure_diagnosis`).
+- **Builder misreads caught:** called step 1 "the best pill so far" — Carl's eye found both faults in it; a hold read "broken" from
+  screenshots — it worked.
 
 ---
 
-*Written 12 October 2026, end. Replaces 10 October's handoff.*
+*Written 12 October 2026, session 2, end. Replaces session 1's handoff (which predated session 1's last hour of work).*
