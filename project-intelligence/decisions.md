@@ -6500,3 +6500,41 @@ At the body pace one pass of CA takes ~22 s, and of CB ~29 s. ⚠ **Carl holds t
     - ⛔ **THE `Who we are` BUTTON's GEOMETRY (10 October 2026), after the Next step button was looked at in the corridor** (`live-work/scripts/nextstep-look-10-october.mjs`; 116 × 41 px, chrome blue, the domed pill read from the CSS shadow stack): Carl — *"The who we are button is wider but the geometry should stay the same."* ⛔ The SAME PROFILE (the sharp top rim, the dome, the lower bevel turning back, the bounce edge), at its own width — the Next step mesh already builds to its measured box (Send's width, 10 August). ⚠ **Open, Carl's:** the HEIGHT — today's pill is 137 × 44 px against Next step's 41 (keep 44: the profile scaled ~7% taller; or 41: Next step's exact profile, the button slightly smaller); and whether `/about` §4's `Start a conversation` (recorded as the pair: same dimensions) moves with it. The material and the light: still to discuss — the home page has no moving light or room of its own.
     - ⚠ **THE NEXT STEP BUTTON's MATERIAL — TO BE REVISITED BY CARL (10 October 2026). RAISED, NOT SCHEDULED.** Carl: *"the next step was supposed ro be blue chrome. That was the best we could get it a few months ago. It can be improved coz weve just done it. If you think i will revisit this and change the material you would be right!"* ⚠ **The Builder's reading, for when it is taken up:** its dark centre is the SAME cause as the desk mark's dark frames — chrome reports only what it mirrors, and its record already names it (*"the flat top of the pill reflects straight back along +Z… with no source on that axis it mirrors the shell and the button reads as a picture frame"*); the desk mark now carries the answers — a designed reflection studio (`LOGO_JUDGING_STUDIO`), the platinum blue #3F6DB8 on it (R-035), and directed light (`DESK_MARK_DIRECTOR`, R-041). ⚠ `nextstep-geometry.ts` is LOCKED; the Next step button is approved work (D-030, its blue-platinum foundation; D-031–D-032, its warm reflection) — re-tracking it is Carl's word. ⚠ The `Who we are` button is a variation on it: whether Next step is improved FIRST, or the home button is built on the improved material and Next step follows, is Carl's order.
     - ⛔ **THE COLOURS (10 October 2026). Carl:** *"So it will be the same solour and material as the about logo blue animation. the who we are will be teal. Look in the repo for an image with 4 metal colours in it."* ⛔ **NEXT STEP** (when Carl revisits it): the desk mark's PLATINUM BLUE, colour and material. ⛔ **`Who we are`: TEAL — #1FB2C4, from `brand-assets/images.jpg` (CORRECTED the same session, see the end of this entry).** ⚰️ The Builder first took it from the four-column stock swatch sheet Carl supplied on 7 October (`live-work/references/desk-mark-refs-7-october/metal-swatches-carl-download.jpg`, kept local). Its column headers, sampled (median of each header block): blue **#3F6DB8** — EXACTLY the platinum blue's F0, which confirms the method; sky blue #05CEFA; **teal #05FCEA**; champagne #DAD8C1 (sky blue and champagne not chosen). ⚠ The Builder's note: #05FCEA is far brighter and more saturated than the blue — as a metal's base it would read near neon aqua; the sheet's own teal bars run deep (dark sea green in shadow) because of their reflections. The blue took three bench takes (R-035); the teal is expected to need the same tuning by eye. ⛔ **CORRECTION — Carl: *"there an image in brand assts- grab it"*:** `brand-assets/images.jpg` (added 10 October; another four-column stock sheet, dreamstime-watermarked) — teal, silver, steel, indigo. Its headers, sampled the same way: **teal #1FB2C4**, silver #DFE0E2, steel #748398, indigo #3D425F; its teal bars run #030009 (shadow) → #6BEDFD (highlight). ⛔ **The teal is #1FB2C4** — a grounded metal teal; the 7 October sheet's #05FCEA was the wrong source. ✔ **Carl, on the sheet's first column: *"yrs, thats the teal colour i want."*** (the swatch chosen; how it reads as the button's metal is still to be judged on the bench, as the blue was). ⚠ A stock image: kept as REFERENCE, like the 7 October sheet (kept local) — whether it is tracked in git is Carl's (it is untracked now, and imported by nothing).
+
+---
+
+## D-096 — The Lint Baseline's HISTORY Leaves CLAUDE.md. The Rule Stays
+
+**Date:** 2026-10-12
+**Status:** APPROVED
+**Authority:** Human Founder — Carl. *"npm install * CLAUDE.md decisions.md you have permission to use these files and to act on your recommendations."* Scope confirmed the same day.
+
+**Decision:** `CLAUDE.md`'s `Error handling` keeps the RULE — the baseline is `1 problem (1 error, 0 warnings)`, any warning is a regression, the four suppressions are a debt named at their lines — and points here. The HISTORY below moved out of it verbatim, because `CLAUDE.md` loads into every session and the history is needed only when the baseline is in question.
+**Rationale:** Found by `/doctor`, run in both seats and cross-referenced on 12 October: ~3.1k characters (~780 est. tokens) of always-loaded record in the one file whose own rule is *"Do not embed implementation detail in CLAUDE.md."* The Architect proposed `decisions.md` as the destination; the Builder proposed a new file and withdrew it (no new file in the map). Re-verified the same day: `npm run lint` → `1 problem (1 error, 0 warnings)`.
+
+**The history, as it stood in `CLAUDE.md` (4 September 2026):**
+
+**How the six warnings went, because the reasoning must survive the count:**
+- ⛔ **The room image (`app/about/page.tsx`) was CONVERTED to `next/image`** — the one case with a
+  real win: the whole 2560px / **459KB** file was going to every device. ⚠ **MEASURED against the
+  running server, 4 September: a 1440 screen now gets 105KB of WebP (−77%) and a 750px phone gets
+  22KB (−95%).** ⛔ **The crop is unchanged; `fill` + `object-cover` alters delivery, not framing.**
+- ⛔ **The four gold marks stay `<img>` and are SUPPRESSED BY DECISION, per-line.** ⚠ **The mark is
+  positioned by measured pixel constants Carl tuned by eye (D-065/D-066) and `next/image` wraps and
+  re-sizes its output** — there is nothing to win on a small, already-optimal PNG and an approved
+  alignment to lose. **The full reasoning lives at the mark in `app/about/page.tsx`**; the other
+  three point to it. ⚠ **`site-header.tsx`'s mark is in flow, not nail-hung, so only half that
+  argument applies there — its comment says so.**
+- ⛔ **`showBlue` was DELETED, and it was dead.** ⚠⚠ **The previous baseline flagged it as
+  possibly-not-cosmetic — *"a transition computed and never applied"*. THAT CONCERN IS ANSWERED AND
+  WAS UNFOUNDED:** it was declared once and referenced nowhere but the comment explaining why a
+  two-state boolean could not choose between the two radials. **`goldMask` superseded it with three
+  states derived from `stage`.** ⛔ **The explanatory comment is kept; only the binding went.**
+
+⚠⚠ **THIS FIGURE WAS STALE FOR SIX WEEKS AND THE STALENESS WAS ITSELF LOAD-BEARING.** It read `1 problem (1 error, 0 warnings)`, verified 24 July 2026 — true when written. The warnings arrived with later work and **every session since had to re-derive that the extra output was not a regression.** ⛔ **A recorded baseline that no longer matches the tool is worse than none: it makes a correct run look like a failure.** Corrected on Carl's instruction, 2 September 2026, and **corrected again on 4 September** — that
+2 September figure had itself gone stale within two days, when the room image added a sixth warning.
+⚠⚠ **TWICE IN A WEEK IS THE ARGUMENT FOR ZERO.** ⛔ **A non-zero baseline is a number someone must
+remember to update; zero is a number the tool maintains.** **Nothing in code checks this figure —
+it goes stale silently and only a run of `npm run lint` can confirm it.**
+
+**The same session, same authority:** `.claude/settings.json`'s `Bash(npm install *)` is narrowed to the exact `Bash(npm install)` (found by the Architect's `/doctor`: the wildcard pre-approved installing ANY registry package and running its install scripts, unchecked by auto mode; `npm install` was not run once in this project's sessions 14 September → 12 October). And `CLAUDE.md`'s required-reading word count is re-measured.

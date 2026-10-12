@@ -64,9 +64,9 @@ distinction between them, so everything read as equally mandatory: **35,703 word
 quietly stop completing** — and a rule nobody completes is not a rule, it is a fiction that makes
 the record look safer than it is.
 
-### Read before touching anything — 7,255 words
+### Read before touching anything — 7,722 words, plus the handoff
 
-⚠ **Measured 3 October 2026 (session 2), with a 1,015-word handoff.** It had drifted to **19,675**
+⚠ **Re-measured 12 October 2026: 7,722 words, 8,911 with that day's 1,189-word handoff** (3 October: 7,255 with a 1,015-word handoff; the growth is mostly `current-sprint.md`). It had drifted to **19,675**
 because Sprint 2 closed on 14 June and was never archived, so four months of work stacked onto
 `current-sprint.md` (14,577 words). ⛔ **Run the sprint boundary when a sprint closes**
 (`handoff-protocol.md`). Sprint 2's record: `active-sprints/archive/sprint-2.md`.
@@ -177,38 +177,19 @@ If repeated friction or a solved pattern creates a reusable lesson, recommend a 
 
 Distinguish between:
 - **New errors** caused by current work — fix before committing.
-- **Known pre-existing errors** — do not suppress, do not increase. **One** accepted lint error exists in `components/enquiry/enquiry-opening.tsx` (`react-hooks/set-state-in-effect`) — the reduced-motion media-query effect, which calls `setReducedMotion` and `setBeginActive` synchronously. **Verified by running `npm run lint` on 4 September 2026: `1 problem (1 error, 0 warnings)`.** Line numbers deliberately omitted — they shift with every edit above, and a stale baseline cannot be checked. Verify by running lint, not by trusting a recorded line number.
+- **Known pre-existing errors** — do not suppress, do not increase. **One** accepted lint error exists in `components/enquiry/enquiry-opening.tsx` (`react-hooks/set-state-in-effect`) — the reduced-motion media-query effect, which calls `setReducedMotion` and `setBeginActive` synchronously. **Verified by running `npm run lint` on 12 October 2026: `1 problem (1 error, 0 warnings)`.** Line numbers deliberately omitted — they shift with every edit above, and a stale baseline cannot be checked. Verify by running lint, not by trusting a recorded line number.
 
   ⚠⚠ **THE BASELINE IS NOW ZERO WARNINGS, AND THAT IS THE POINT OF IT.** ⛔ **ANY warning is now a
   regression and is visible on sight** — no session has to re-derive whether a given count is
   expected. **Taken to zero on Carl's instruction, 4 September 2026.**
 
-  **How the six warnings went, because the reasoning must survive the count:**
-  - ⛔ **The room image (`app/about/page.tsx`) was CONVERTED to `next/image`** — the one case with a
-    real win: the whole 2560px / **459KB** file was going to every device. ⚠ **MEASURED against the
-    running server, 4 September: a 1440 screen now gets 105KB of WebP (−77%) and a 750px phone gets
-    22KB (−95%).** ⛔ **The crop is unchanged; `fill` + `object-cover` alters delivery, not framing.**
-  - ⛔ **The four gold marks stay `<img>` and are SUPPRESSED BY DECISION, per-line.** ⚠ **The mark is
-    positioned by measured pixel constants Carl tuned by eye (D-065/D-066) and `next/image` wraps and
-    re-sizes its output** — there is nothing to win on a small, already-optimal PNG and an approved
-    alignment to lose. **The full reasoning lives at the mark in `app/about/page.tsx`**; the other
-    three point to it. ⚠ **`site-header.tsx`'s mark is in flow, not nail-hung, so only half that
-    argument applies there — its comment says so.**
-  - ⛔ **`showBlue` was DELETED, and it was dead.** ⚠⚠ **The previous baseline flagged it as
-    possibly-not-cosmetic — *"a transition computed and never applied"*. THAT CONCERN IS ANSWERED AND
-    WAS UNFOUNDED:** it was declared once and referenced nowhere but the comment explaining why a
-    two-state boolean could not choose between the two radials. **`goldMask` superseded it with three
-    states derived from `stage`.** ⛔ **The explanatory comment is kept; only the binding went.**
-
   ⚠ **A SUPPRESSION IS A DEBT, NOT A FIX.** Four `eslint-disable-next-line` comments now exist. **Each
   names its reason at the line.** ⛔ **If the mark ever stops being positioned by measured pixels, the
   suppressions lose their justification and should be revisited rather than inherited.**
 
-  ⚠⚠ **THIS FIGURE WAS STALE FOR SIX WEEKS AND THE STALENESS WAS ITSELF LOAD-BEARING.** It read `1 problem (1 error, 0 warnings)`, verified 24 July 2026 — true when written. The warnings arrived with later work and **every session since had to re-derive that the extra output was not a regression.** ⛔ **A recorded baseline that no longer matches the tool is worse than none: it makes a correct run look like a failure.** Corrected on Carl's instruction, 2 September 2026, and **corrected again on 4 September** — that
-  2 September figure had itself gone stale within two days, when the room image added a sixth warning.
-  ⚠⚠ **TWICE IN A WEEK IS THE ARGUMENT FOR ZERO.** ⛔ **A non-zero baseline is a number someone must
-  remember to update; zero is a number the tool maintains.** **Nothing in code checks this figure —
-  it goes stale silently and only a run of `npm run lint` can confirm it.**
+  **The history — how the six warnings went, and why a stale non-zero figure is worse than zero — is
+  D-096 in `decisions.md`.** ⛔ **Nothing in code checks this figure; only a run of `npm run lint`
+  can confirm it.**
 - **Unrelated pre-existing errors** — flag to Carl; do not silently fix.
 - **Environment/tool errors** — stop, diagnose, report before continuing.
 
