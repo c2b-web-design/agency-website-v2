@@ -28,6 +28,7 @@ import RoomPlate from "@/components/about/room-plate";
    THIS page stays a static prerendered server component. ⛔ NOT `SiteHeader`:
    that would place the links in flow, at a different point from `/start`. */
 import AboutNav from "@/components/layout/about-nav";
+import FamilyButton from "@/components/home/whoweare-button";
 
 /* ⚠⚠ THIS PAGE IS SCAFFOLDING. IT IS NOT THE ABOUT SECTION.
    Carl's instruction, 28 August 2026: *"we must 'set up' the about page in the
@@ -933,6 +934,13 @@ export default function About() {
           three sections above use. ⚠ THE TWO BUTTONS ARE A DELIBERATE PAIR:
           `Who we are` opens this page, `Start a conversation` closes it. Change
           one and the other goes stale.
+          ⚠ OVERTAKEN, 13 October 2026 (D-088): "same dimensions, colour" no longer
+          holds. Both are now members of the BUTTON FAMILY (one shape, one roll,
+          one lamp; the colour per member): `Who we are` teal at 2×, this one GOLD
+          with #1E1E24 words at 1× (R-047 – R-049). Carl: *"We will build it the
+          the size it is on the page. then see how it looks. may be made bigger."*
+          If it is, the heading and paragraph scale in proportion (the home page's
+          precedent, R-045). Still true: the position, and the pairing itself.
 
           ⛔ THE JOURNEY THIS COMPLETES:
               Home  = who we are and what we do
@@ -954,27 +962,36 @@ export default function About() {
           is the only consumer; both moved in one change. */}
       <section id="start" className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
         <Container>
-          <div className="text-center max-w-2xl mx-auto py-24">
+          {/* ⛔ THE SECTION SCALED WITH ITS BUTTON — Carl, 13 October 2026, on the gold button at 1×:
+              *"the gold button is too small. make it the same height as the teal button and adjust its
+              size proportionately. Also adjust the text and subtext proportionately and try to achieve a
+              good balance in the section."* The button went to 2× (82 high, as `Who we are`), and the
+              text took the home `#contact`'s approved scaling (R-045), which started from these same
+              values. Was: block `max-w-2xl`, heading `text-3xl` (30 px), paragraph `text-base` (16 px)
+              `max-w-xl`, `mt-6`, button `mt-10`. The larger gap above the button lifts the text — the
+              section centres its content (Carl, 12 October: *"Dont try to cram it in at the bottom."*). */}
+          <div className="text-center max-w-4xl mx-auto py-24">
 
-            <h2 className="text-3xl font-semibold tracking-tight">
+            <h2 className="text-5xl leading-[1.15] font-semibold tracking-tight">
               That is how the work gets done.
             </h2>
 
-            {/* max-w-xl mx-auto: matches the landing page's centred body measure —
-                centre-aligned copy needs a shorter line than left-aligned copy. */}
-            <p className="mt-6 text-base text-neutral-400 leading-relaxed max-w-xl mx-auto">
+            {/* max-w-2xl mx-auto (was max-w-xl, scaled with the type, 13 October): matches the
+                landing page's centred body measure — centre-aligned copy needs a shorter line
+                than left-aligned copy. */}
+            <p className="mt-7 text-xl text-neutral-400 leading-relaxed max-w-2xl mx-auto">
               A team with defined roles, a process that does not skip a stage, and
               nothing built before it is agreed. If that is the way you would want
               your own site made, the next step is a conversation.
             </p>
 
-            <div className="mt-10">
-              <a
-                href="/start"
-                className="inline-block bg-white text-black text-sm font-semibold px-7 py-3 rounded-full tracking-wide hover:bg-neutral-100 transition-colors duration-200"
-              >
-                Start a conversation
-              </a>
+            {/* ⛔ The gold family button (D-088, 13 October 2026): a real link to
+                `/start` with its three.js scene behind it — a second WebGL canvas on
+                this page beside the room's, drawing only while on screen (structural
+                note `live-work/structural-note-start-button-rollout-13-october.md`).
+                Was the white CSS pill (`bg-white text-black px-7 py-3`, 198.6 × 44). */}
+            <div className="mt-18">
+              <FamilyButton member="start" />
             </div>
 
           </div>

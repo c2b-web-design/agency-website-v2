@@ -35,6 +35,8 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { MipmapBlurPass } from "postprocessing";
+import { canvasOnScreen } from "@/lib/canvas-on-screen";
+import { deskMarkBuilt, isRoomWarm, markRoomWarm, resetRoomWarm } from "@/lib/room-warm";
 import {
   BLOOM_LEVELS,
   BLOOM_RADIUS,
@@ -362,11 +364,18 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
     return stop;
   }, [mode, ignite, gl, sequenceEndMs]);
 
-  /* On unmount the rims go dark, so a remount never inherits a lit tube. */
+  /* On unmount the rims go dark, so a remount never inherits a lit tube. And the room is no longer warm: a new canvas must
+     compile again (`lib/room-warm.ts`). */
   useEffect(() => {
     const chs = channelsRef.current;
-    return () => darken(chs);
+    return () => {
+      darken(chs);
+      resetRoomWarm();
+    };
   }, []);
+
+  /** The off-screen precompile (below): the scene's object count when it last ran, and whether one is in flight. */
+  const precompile = useRef({ objects: -1, busy: false });
 
   // ── The frame ────────────────────────────────────────────────────────────
 
@@ -453,6 +462,80 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
       }
     }
 
+    /* ⛔ OFF SCREEN, NOTHING IS DRAWN (13 October 2026 — Carl: *"Yes, entering 4 could stop the process."*). With the
+       whole canvas out of the window (the reader in §4) the room drew on regardless — ~2,300 draw calls a second, the
+       glass's transmission pass (`blitFramebuffer` + `generateMipmap`) and the bloom on every frame — and the GPU was
+       shared with §4's gold button, which hitched every ~0.37 s (`live-work/scripts/family-button-roll-smoothness.mjs`;
+       with the room's GPU work dropped in a test browser, 0 late frames). So steps 2–5 are skipped while no part of the
+       canvas is in the window (`canvasOnScreen`, the same test the buttons' frames use). Step 1 above still runs: the
+       tracks keep their clock, the text keeps its own, so the first frame back is where they would have been. Scrolling
+       back wakes the canvas (the journey's scroll tie, `DeskMark`). ⚠ The `neon:strike` / `neon:out` instrument marks
+       still fire off screen (step 1); nothing measured from a RENDERED frame is taken off screen. This is step 1 of
+       Carl's return rules (D-088, 13 October); what §2 does when the reader comes back is step 2, not built. */
+    if (!canvasOnScreen(r.domElement)) {
+      /* ⛔ …BUT ITS SHADERS ARE STILL COMPILED (13 October 2026, the same day — Carl: *"yes, go ahead"*). Step 1 alone
+         left a page opened straight at `#start` with a room that had NEVER rendered, so nothing was compiled, and the
+         first scroll up into view compiled everything at once: a 1.6 s freeze (`start-button-layout-shift-probe.mjs`).
+         So while off screen the scene is compiled WITHOUT DRAWING — `compileAsync`, which uses the browser's parallel
+         shader compile and polls for readiness instead of blocking — whenever its object count changes (at load; again
+         when the desk mark's geometry arrives from its worker). ⚠ It covers every material in the scene for the main
+         camera's lights; the neon pass's variants, the shadow-map and the bloom's own shaders still compile on the first
+         visible frame (a few, small). `room:precompiled` is marked when a pass completes (an instrument hook). */
+      const pc = precompile.current;
+      let n = 0;
+      scene.traverse(() => {
+        n++;
+      });
+      if (!pc.busy) {
+        if (n !== pc.objects) {
+          pc.objects = n;
+          pc.busy = true;
+          /* ⚠ THREE VARIANTS, not one — measured (`about-scrollup-freeze-profile.mjs`): with only the screen's variant
+             compiled, 19 more programs (1.5 s of `getProgramInfoLog`) still compiled on the first visible frame. A
+             material drawn into a RENDER TARGET is a different program (no tone mapping, linear output — three's
+             `getParameters`): the glass's transmission pass and the neon pass both draw into one. So: (1) the screen;
+             (2) a half-float target with the main camera's layers — the transmission pass's variant; (3) the same target
+             with the camera on NEON_LAYER — the neon pass's own lights. `compile()` builds the programs synchronously
+             (non-blocking under parallel compile), so the target and the mask are set around each call and restored. */
+          const passes: Promise<unknown>[] = [r.compileAsync(scene, camera)];
+          const b = bloomRef.current;
+          if (b) {
+            const prevTarget = r.getRenderTarget();
+            const prevMask = camera.layers.mask;
+            try {
+              r.setRenderTarget(b.neonTarget);
+              passes.push(r.compileAsync(scene, camera));
+              camera.layers.set(NEON_LAYER);
+              passes.push(r.compileAsync(scene, camera));
+            } finally {
+              camera.layers.mask = prevMask;
+              r.setRenderTarget(prevTarget);
+            }
+          }
+          Promise.all(passes)
+            .then(() => performance.mark("room:precompiled"))
+            .catch(() => {})
+            .finally(() => {
+              pc.busy = false;
+              // a frame, so the hidden full render below can follow on a page that is otherwise sitting still
+              invalidate();
+            });
+        }
+      }
+      /* ⛔ ONE HIDDEN FULL RENDER — Carl's option A (13 October 2026: *"lets go with option A - proceed"*). Nine shaders
+         cannot be precompiled (the clipping-plane count three sets only during a real render — the wall text's
+         reveal/erase, the mark's wipe — the shadow map's, the bloom's): measured, they froze the first scroll up for
+         0.98 s. So once the desk mark is in the scene and the precompile of the current scene has finished, the frame
+         falls through and draws ONCE, off screen, and the room is marked warm (`lib/room-warm.ts`); §4's gold button
+         waits on its still for that (`whoweare-button.tsx`, `MEMBERS.start.waitForRoom`), so the block lands before
+         its roll. After that, off screen draws nothing again. */
+      const warmNow = !isRoomWarm() && deskMarkBuilt() && !pc.busy && n === pc.objects;
+      if (!warmNow) {
+        if (changing) state.invalidate();
+        return;
+      }
+    }
+
     // 2. THE BASE RENDER — the same call R3F makes (`gl.render(scene, camera)`).
     r.setRenderTarget(null);
     r.render(scene, camera);
@@ -491,6 +574,10 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
         r.setRenderTarget(null);
       }
     }
+
+    /* The room has drawn a full frame with the desk mark in it — on screen (a reader arriving from §1) or the hidden one
+       above (a page opened at `#start`): every shader it uses is compiled. */
+    if (!isRoomWarm() && deskMarkBuilt()) markRoomWarm();
 
     // 6. Keep ticking only while a track moves; then back to `frameloop="demand"`.
     if (changing) state.invalidate();

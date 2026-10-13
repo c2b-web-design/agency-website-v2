@@ -33,6 +33,21 @@ export default async function ButtonBenchPage({
   // ?context=home (12 October, session 2 — Carl: "look at the text as a whole in its container. Now look at our button. It
   // can be bigger, much bigger."): the home `#contact` section's heading and paragraph above the one pill, in the home page's
   // own classes, so its size is judged where it lives. ⚠ The copy is REPEATED from `app/page.tsx` — a bench, kept by hand.
+  // ?member=start (13 October 2026): `/about` §4's `Start a conversation`, the family's third member — GOLD (Carl). Built in
+  // the teal button's passes, MESH → MATERIAL → LIGHT, each approved by eye; this view is the member alone, on the same
+  // dials (?mode=clay ?roll=1 ?label=1 ?zoom= …). One pill only (Carl: one image of the current state, not a comparison).
+  if (sp.member === "start") {
+    return (
+      <main style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "3.5rem" }}>
+        {/* Pass 2 (13 October): the gold as PAINT on the clay's material and lamps, turned to metal — the teal's method
+            (R-045): ?mode=teal&paint=ffe39e (the desk mark's gold F0, linear 1.0/0.77/0.34, as sRGB)&metalness=1&paintrough=0.4,
+            ?ml=0 (the moving lamp is pass 3), ?ink=121212 or 1e1e24. */}
+        <div style={caption}>{clay ? "PASS 1: THE MESH, IN CLAY" : painted ? "PASS 2: THE MATERIAL, GOLD" : "START A CONVERSATION"}</div>
+        <FamilyPill id="start-pill" label="Start a conversation" />
+        <div style={caption}>START A CONVERSATION, BUILT TO ITS MEASURED LABEL</div>
+      </main>
+    );
+  }
   if (sp.context === "home") {
     return (
       <main className="bg-neutral-950 text-white min-h-screen flex items-center">

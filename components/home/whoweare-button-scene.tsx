@@ -86,6 +86,9 @@ export const TYPE_PX = 14;
 const EM_UNITS = 100000 / 72;
 const FONT_URL = "/fonts/geist-semibold.typeface.json";
 export const SIDE_INK = "#58779a";
+// ⛔ `side` (13 October 2026, the gold `Start a conversation`, R-048; Carl: "proceed"): the letters' SIDE colour, per member.
+// SIDE_INK was set for the teal's ice-blue words; under dark words (#1E1E24) on gold it showed blue-grey edges mid-roll.
+// Optional: the teal passes nothing and keeps SIDE_INK.
 
 let fontLoad: Promise<Font> | null = null;
 function loadFont(): Promise<Font> {
@@ -102,7 +105,7 @@ function loadFont(): Promise<Font> {
  * the measured box, not the family's fixed 14). Absent → `TYPE_PX`. */
 export type Glyphs = { chars: string; x: number[]; baseline: number; px?: number };
 
-export function ExtrudedLabel({ glyphs, w, h, legacy, depth, ink, bevel, onDrawn }: { glyphs: Glyphs; w: number; h: number; legacy: boolean; depth: number; ink: string; bevel: number; onDrawn?: () => void }) {
+export function ExtrudedLabel({ glyphs, w, h, legacy, depth, ink, bevel, side = SIDE_INK, onDrawn }: { glyphs: Glyphs; w: number; h: number; legacy: boolean; depth: number; ink: string; bevel: number; side?: string; onDrawn?: () => void }) {
   const [font, setFont] = useState<Font | null>(null);
   useEffect(() => {
     let live = true;
@@ -160,9 +163,9 @@ export function ExtrudedLabel({ glyphs, w, h, legacy, depth, ink, bevel, onDrawn
   const mats = useMemo(
     () => [
       new THREE.MeshBasicMaterial({ color: ink, toneMapped: false }),
-      new THREE.MeshStandardMaterial({ color: SIDE_INK, roughness: 0.45, metalness: 0 }),
+      new THREE.MeshStandardMaterial({ color: side, roughness: 0.45, metalness: 0 }),
     ],
-    [ink],
+    [ink, side],
   );
   useEffect(() => () => mats.forEach((m) => m.dispose()), [mats]);
 
@@ -390,7 +393,7 @@ export function useStudio(enabled: boolean, studio: "pill" | "logo" | "teal" = "
 }
 
 export type PillProps = { w: number; h: number; tilt: boolean; legacy: boolean; metal: boolean; rough: number; envInt: number; studio?: "pill" | "logo" | "teal"; studioYaw?: number; glint?: number; fill?: number; floor?: number; surround?: number; studioBg?: string; top?: number; fillSize?: number; paint?: string; paintMetal?: number; paintRough?: number; band?: number };
-export type LabelProps = { glyphs: Glyphs | null; depth: number; ink: string; bevel: number; onDrawn?: () => void };
+export type LabelProps = { glyphs: Glyphs | null; depth: number; ink: string; bevel: number; side?: string; onDrawn?: () => void };
 export type KeyProps = { on: boolean; angle: number; elevation: number; intensity: number };
 
 // `tilt` is the Rocker's (the pill and its letters rock together), so the pill itself ignores it.
@@ -555,7 +558,7 @@ export function PillCanvas({
   roll?: RollProps;
   /** On a `demand` canvas: keep drawing while something moves and the canvas is on screen (`Ticker`). */
   ticking?: boolean;
-  moving?: { on: boolean; frozen: number | null; intensity?: number; size?: number; kind?: "panel" | "lamp"; lift?: number; dip?: LightDip };
+  moving?: { on: boolean; running?: boolean; frozen: number | null; intensity?: number; size?: number; kind?: "panel" | "lamp"; lift?: number; dip?: LightDip };
 }) {
   const { w, h, tilt, metal, legacy } = pill;
   const helperPad = helpers ? HELPER_PAD : 0;
@@ -592,7 +595,7 @@ export function PillCanvas({
         {metal && keyLight.on && helpers && <LightHelper angle={keyLight.angle} elevation={keyLight.elevation} reach={w / 2 + HELPER_PAD * 0.6} />}
         {/* the moving softbox lights the painted pill too (Carl, session 2, on roughness 0.4: "If adding a moving light source
             would help then tuning then do that") — a RectAreaLight lights any MeshStandardMaterial, metal or not */}
-        {(metal || !!pill.paint) && moving?.on && <MovingSoftbox w={w} h={h} frozen={moving.frozen} helpers={helpers} intensity={moving.intensity} size={moving.size} kind={moving.kind} lift={moving.lift} dip={moving.dip} />}
+        {(metal || !!pill.paint) && moving?.on && <MovingSoftbox w={w} h={h} running={moving.running ?? true} frozen={moving.frozen} helpers={helpers} intensity={moving.intensity} size={moving.size} kind={moving.kind} lift={moving.lift} dip={moving.dip} />}
         {metal && helpers && (pill.studio === "teal" || pill.studio === "logo") && (
           <StudioHelper
             yawDeg={pill.studioYaw ?? 0}
@@ -607,14 +610,14 @@ export function PillCanvas({
             <Pill {...pill} />
             {label.glyphs && (
               <group position-z={(pill.band ?? 0) / 2}>
-                <ExtrudedLabel glyphs={label.glyphs} w={w} h={h} legacy={legacy} depth={label.depth} ink={label.ink} bevel={label.bevel} onDrawn={label.onDrawn} />
+                <ExtrudedLabel glyphs={label.glyphs} w={w} h={h} legacy={legacy} depth={label.depth} ink={label.ink} bevel={label.bevel} side={label.side} onDrawn={label.onDrawn} />
               </group>
             )}
             {/* the back's words: the front's, turned 180° about x with the back dome — upright when they come round */}
             {label.glyphs && (pill.band ?? 0) > 0 && (
               <group rotation-x={Math.PI}>
                 <group position-z={(pill.band ?? 0) / 2}>
-                  <ExtrudedLabel glyphs={label.glyphs} w={w} h={h} legacy={legacy} depth={label.depth} ink={label.ink} bevel={label.bevel} />
+                  <ExtrudedLabel glyphs={label.glyphs} w={w} h={h} legacy={legacy} depth={label.depth} ink={label.ink} bevel={label.bevel} side={label.side} />
                 </group>
               </group>
             )}
@@ -764,7 +767,7 @@ export function dipAt(s: number, dip?: LightDip): number {
   return d >= 1 ? 1 : 1 - dip.depth * 0.5 * (1 + Math.cos(Math.PI * d));
 }
 
-export function MovingSoftbox({ w, h, frozen, helpers, intensity = MOVING_SOFTBOX.intensity, size = 1, kind = "panel", lift = 0, dip }: { w: number; h: number; frozen: number | null; helpers: boolean; intensity?: number; size?: number; kind?: "panel" | "lamp"; lift?: number; dip?: LightDip }) {
+export function MovingSoftbox({ w, h, running = true, frozen, helpers, intensity = MOVING_SOFTBOX.intensity, size = 1, kind = "panel", lift = 0, dip }: { w: number; h: number; running?: boolean; frozen: number | null; helpers: boolean; intensity?: number; size?: number; kind?: "panel" | "lamp"; lift?: number; dip?: LightDip }) {
   useRectAreaLights();
   const light = useRef<THREE.RectAreaLight | THREE.DirectionalLight>(null);
   const outline = useRef<THREE.LineLoop>(null);
@@ -788,10 +791,26 @@ export function MovingSoftbox({ w, h, frozen, helpers, intensity = MOVING_SOFTBO
   }, [size]);
   useEffect(() => () => { path.dispose(); rect.dispose(); aim.dispose(); }, [path, rect, aim]);
 
+  // ⛔ THE LAMP'S OWN CLOCK STARTS WHEN IT RUNS (13 October 2026, the cold-load fix): on the site the lamp is MOUNTED with
+  // the canvas but held dark (`running` false) until the live button has taken over from its still; then its path begins
+  // at s = 0 (faded out) — not mid-path, wherever the canvas's clock had got to while it was hidden. ⚠ Mounted, not added at
+  // the swap: adding a light changes every material's light count, so the button's shaders recompiled AT the swap — a
+  // measured 93–100 ms hitch as the roll began (`family-button-roll-smoothness.mjs`). A light at 0 adds exactly nothing, so
+  // the held frame is still the still. On the bench (`running` absent = true) this is the old timing.
+  const started = useRef<number | null>(null);
   useFrame(({ clock }) => {
     const l = light.current;
     if (!l) return;
-    const s = frozen ?? travelAt(clock.getElapsedTime());
+    if (!running) {
+      started.current = null;
+      l.intensity = 0;
+      if (outline.current) outline.current.visible = false;
+      if (sun.current) sun.current.visible = false;
+      if (aimMat.current) aimMat.current.opacity = 0;
+      return;
+    }
+    if (started.current === null) started.current = clock.getElapsedTime();
+    const s = frozen ?? travelAt(clock.getElapsedTime() - started.current);
     if (s === null) {
       l.intensity = 0;
       if (outline.current) outline.current.visible = false;
@@ -943,7 +962,27 @@ export const WHOWEARE_LOOK = {
   band: FAMILY_BAND,
   roll: { half: 5, ease: 0.7 },
   lamp: { kind: "lamp" as const, intensity: 1, lift: 120, dip: { depth: 0.9, at: 0.5, width: 0.4 } },
+  ink: "#" + INK_DEFAULT,
+  side: SIDE_INK,
 };
+
+/**
+ * ⛔ `/about` §4's LOOK — `Start a conversation`, the family's third member (D-088, 13 October 2026; passes R-047 mesh,
+ * R-048 material, R-049 light — Carl: *"Looks fantastic. approved"*). The teal's method and lamp exactly; only the colours
+ * differ: the desk mark's gold F0 (linear 1.0, 0.77, 0.34; `GOLD_F0_LINEAR`) as sRGB paint #FFE39E, the words and the
+ * letters' sides #1E1E24 (Carl's pick over #121212, #0B132B, #1C2541). Built at 1× (*"We will build it the the size it is on
+ * the page. then see how it looks. may be made bigger."*).
+ */
+export const START_LOOK: typeof WHOWEARE_LOOK = {
+  ...WHOWEARE_LOOK,
+  paint: "#ffe39e",
+  ink: "#1e1e24",
+  side: "#1e1e24",
+};
+
+/** The family's members as they ship, by name — the button component picks one (its CSS fallback keeps its own copy). */
+export const FAMILY_LOOKS = { whoweare: WHOWEARE_LOOK, start: START_LOOK } as const;
+export type FamilyMember = keyof typeof FAMILY_LOOKS;
 
 /**
  * ⛔ THE HOME PAGE's SCENE — so the home button passes only what it measured and its two states (the hold, reduced motion),
@@ -951,15 +990,26 @@ export const WHOWEARE_LOOK = {
  * module loads). ⛔ REDUCED MOTION: no roll, no moving lamp, no frames — the pill rests face-on under the base lamps.
  */
 export function WhoWeAreScene({
+  member = "whoweare",
   w,
   h,
   glyphs,
   helpers,
   hold,
   reduced,
+  live = true,
   onDrawn,
   onLost,
 }: {
+  member?: FamilyMember;
+  /**
+   * ⛔ THE COLD-LOAD FIX (13 October 2026 — Carl: *"i cant have a button that loads in this way. It looks like a glitch and a
+   * mistake."*). The button shows a STILL of this scene's first frame from the first paint (`family-button-stills.mjs`);
+   * this canvas stays hidden until its first frame WITH the letters, then replaces the still on that frame. So that frame
+   * must BE the still: face-on (no roll), the moving lamp held dark (mounted, at 0 — see `MovingSoftbox`) — `live` false. Once the parent has swapped
+   * (`live` true) the roll begins from 0 and the lamp's own clock from the start of its path (faded out).
+   */
+  live?: boolean;
   w: number;
   h: number;
   glyphs: Glyphs;
@@ -969,7 +1019,7 @@ export function WhoWeAreScene({
   onDrawn: () => void;
   onLost: () => void;
 }) {
-  const L = WHOWEARE_LOOK;
+  const L = FAMILY_LOOKS[member];
   return (
     <PillCanvas
       w={w}
@@ -987,10 +1037,10 @@ export function WhoWeAreScene({
       envInt={TEAL_DEFAULTS.envMapIntensity}
       frameloop="demand"
       ticking={!reduced}
-      roll={{ on: !reduced, half: L.roll.half, ease: L.roll.ease, hold, at: null }}
-      moving={{ on: !reduced, frozen: null, intensity: L.lamp.intensity, kind: L.lamp.kind, lift: L.lamp.lift, dip: L.lamp.dip }}
+      roll={{ on: !reduced && live, half: L.roll.half, ease: L.roll.ease, hold, at: null }}
+      moving={{ on: !reduced, running: live, frozen: null, intensity: L.lamp.intensity, kind: L.lamp.kind, lift: L.lamp.lift, dip: L.lamp.dip }}
       helpers={helpers}
-      label={{ glyphs, depth: EXTRUDE_DEPTH_DEFAULT * (glyphs.px ? glyphs.px / 14 : 1), ink: "#" + INK_DEFAULT, bevel: BEVEL_DEFAULT, onDrawn }}
+      label={{ glyphs, depth: EXTRUDE_DEPTH_DEFAULT * (glyphs.px ? glyphs.px / 14 : 1), ink: L.ink, side: L.side, bevel: BEVEL_DEFAULT, onDrawn }}
       keyLight={{ on: false, angle: KEY_DEFAULTS.angle, elevation: KEY_DEFAULTS.elevation, intensity: KEY_DEFAULTS.intensity }}
       onLost={onLost}
     />

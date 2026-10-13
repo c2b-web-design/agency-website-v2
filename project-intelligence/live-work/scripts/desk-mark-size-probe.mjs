@@ -1,0 +1,10 @@
+import { createJiti } from "jiti";
+const jiti = createJiti(process.cwd() + "/");
+const g = await jiti.import("./components/about/logo-mark-geometry.ts");
+const room = await jiti.import("./components/about/about-room.ts");
+const place = room.deskMarkPlacement(room.DESK_MARK, g.LOGO_MARK_DEFAULTS.depth);
+const t = performance.now();
+const r = g.buildLogoMarkGeometry({ ...g.LOGO_MARK_DEFAULTS, scale: place.scale });
+const ms = performance.now() - t;
+const P = r.geometry.attributes.position.array, N = r.geometry.attributes.normal.array, I = r.geometry.index.array;
+console.log({ scale: place.scale, ms: ms.toFixed(0), vertices: P.length / 3, indices: I.length, indexType: I.constructor.name, bytes: P.byteLength + N.byteLength + I.byteLength });

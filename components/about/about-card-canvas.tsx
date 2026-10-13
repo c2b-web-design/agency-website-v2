@@ -98,6 +98,8 @@ import {
   type RoomCardSpec,
 } from "./about-room";
 import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS, logoMarkCentre, logoMarkReach } from "./logo-mark-geometry";
+import type { DeskMarkRequest, DeskMarkResult } from "./desk-mark.worker";
+import { markDeskMarkBuilt } from "@/lib/room-warm";
 import { buildLogoStudioEnv, createLogoCrossing, environmentOnly, LOGO_JUDGING_STUDIO, LOGO_STUDIO_TOP, type LogoCrossing } from "./logo-mark-material";
 import {
   CA_FACE_TRANSMISSION,
@@ -1771,8 +1773,20 @@ function DeskMark({ clock }: { clock: SequenceClock | null }) {
   const clip = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 1e6), []);
   useEffect(() => {
     let made: Built | null = null;
-    const id = window.setTimeout(() => {
-      const geometry = buildLogoMarkGeometry({ ...LOGO_MARK_DEFAULTS, scale: place.scale }).geometry;
+    let cancelled = false;
+    let id = 0;
+    let worker: Worker | null = null;
+    /**
+     * ⛔ THE GEOMETRY IS BUILT IN A WEB WORKER (13 October 2026, Carl: *"proceed"*) — `desk-mark.worker.ts` runs the SAME
+     * `buildLogoMarkGeometry` with the same input and transfers the arrays back. Until then it ran here (deferred one tick by
+     * `setTimeout(0)`) and held the main thread ~1 s on every load, so nothing else on the page drew — `/about` §4's gold
+     * button sat on its still (Carl: *"there is a delay before it start to move"*). The mark itself is unchanged; it appears
+     * when its geometry arrives, as before. ⚠ If the worker cannot start or errors, the inline build below runs instead.
+     * `?markcheck=1` (dev only): builds inline too and logs whether the two are identical, array by array.
+     */
+    const inline = () => buildLogoMarkGeometry({ ...LOGO_MARK_DEFAULTS, scale: place.scale }).geometry;
+    const finish = (geometry: THREE.BufferGeometry) => {
+      if (cancelled) { geometry.dispose(); return; }
       const env = buildLogoStudioEnv(gl, place.rotationY);
       // ⛔ THE CROSSING MATERIAL, not plain gold (R-036): one material, both metals, the sphere choosing per pixel. At
       // p 0 (radius = the furthest surface) it IS the gold — same metalness, roughness and environment — so before the
@@ -1794,8 +1808,49 @@ function DeskMark({ clock }: { clock: SequenceClock | null }) {
       const turn = roomLight ? null : (q: THREE.Quaternion) => { gold.envMapRotation.setFromQuaternion(q); };
       made = { geometry, gold, env, contact: buildContactShadow(geometry), crossing: { set: cross.set, light, centre, ...reach }, turn };
       setBuilt(made);
-    }, 0);
+    };
+    const fallback = () => {
+      worker?.terminate();
+      worker = null;
+      id = window.setTimeout(() => finish(inline()), 0);
+    };
+    try {
+      worker = new Worker(new URL("./desk-mark.worker.ts", import.meta.url), { type: "module" });
+      worker.onmessage = (e: MessageEvent<DeskMarkResult>) => {
+        worker?.terminate();
+        worker = null;
+        const { position, normal, index } = e.data;
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute("position", new THREE.BufferAttribute(position, 3));
+        geometry.setAttribute("normal", new THREE.BufferAttribute(normal, 3));
+        geometry.setIndex(new THREE.BufferAttribute(index, 1));
+        geometry.computeBoundingBox();
+        geometry.computeBoundingSphere();
+        if (process.env.NODE_ENV !== "production" && new URLSearchParams(window.location.search).has("markcheck")) {
+          const ref = inline();
+          const same = (a: ArrayLike<number>, b: ArrayLike<number>) => a.length === b.length && Array.prototype.every.call(a, (v: number, i: number) => Object.is(v, b[i]));
+          const verdict = {
+            position: same(position, ref.getAttribute("position").array),
+            normal: same(normal, ref.getAttribute("normal").array),
+            index: same(index, ref.getIndex()!.array) && index.constructor === ref.getIndex()!.array.constructor,
+          };
+          console.log(`[markcheck] worker vs inline: ${JSON.stringify(verdict)} ${Object.values(verdict).every(Boolean) ? "IDENTICAL" : "DIFFERENT"}`);
+          ref.dispose();
+        }
+        finish(geometry);
+      };
+      worker.onerror = (e) => {
+        e.preventDefault();
+        if (process.env.NODE_ENV !== "production") console.warn("[desk mark] the worker failed; building inline", e.message);
+        fallback();
+      };
+      worker.postMessage({ scale: place.scale } satisfies DeskMarkRequest);
+    } catch {
+      fallback();
+    }
     return () => {
+      cancelled = true;
+      worker?.terminate();
       window.clearTimeout(id);
       if (made) {
         made.geometry.dispose();
@@ -1815,6 +1870,9 @@ function DeskMark({ clock }: { clock: SequenceClock | null }) {
   const mesh = useRef<THREE.Mesh>(null);
   useEffect(() => {
     mesh.current?.layers.set(DESK_MARK_LAYER);
+    // ⛔ The mark is in the scene — the room may now draw its one hidden warm frame (`lib/room-warm.ts`, Carl's option A,
+    // 13 October 2026); `NeonBloom` resets this when the canvas unmounts.
+    if (built) markDeskMarkBuilt();
     invalidate();
   }, [built, invalidate]);
   /**
@@ -2578,7 +2636,12 @@ export default function AboutCardCanvas() {
              CA's and CB's faces. ⚠ *Corrected in place:* this read "ONLY under `?extrude=1`…
              so plain `/about` is unchanged"; the text is now plain `/about`'s
              default, so `?extrude=0` is what gives `false` (R3F's own default). */
-          shadows={extrude ? "soft" : false}
+          /* ⚠ "percentage" (PCFShadowMap), was "soft" (13 October 2026). three 0.185 has RETIRED PCFSoftShadowMap: on the
+             first shadow render it swaps it for PCFShadowMap with a console warning (`WebGLShadowMap.render`), so the
+             room has always DRAWN with PCF — no visible change. But every shader compiled before that swap carried the
+             old type and was thrown away, so the off-screen precompile (`neon-bloom.tsx`) compiled 11 programs for
+             nothing and the first visible frame compiled them again (`about-shader-variants-probe.mjs`). */
+          shadows={extrude ? "percentage" : false}
           gl={{ antialias: true, alpha: true }}
           /* ⚠ The extruded text's reveal/erase wipe is two clipping planes per line,
              which need LOCAL clipping — a renderer switch. ⚠ *Corrected in place, 8 October:* it

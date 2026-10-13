@@ -96,6 +96,9 @@ export function FamilyPill({ label, fixed, id }: { label: string; fixed?: { w: n
   const rough = Number(useParam("rough", String(TEAL_DEFAULTS.roughness)));
   const envInt = Number(useParam("envint", String(TEAL_DEFAULTS.envMapIntensity)));
   const ink = "#" + useParam("ink", INK_DEFAULT).replace(/[^0-9a-fA-F]/g, "").slice(0, 6);
+  // ?side=1e1e24 — the letters' side colour (13 October, the gold member); absent = the teal's SIDE_INK.
+  const sideParam = useParam("side", "");
+  const sideInk = /^[0-9a-f]{6}$/i.test(sideParam) ? "#" + sideParam : undefined;
   // The label shows on the metal unless ?label=0; on clay only with ?label=1.
   const labelParam = useParam("label", "");
   const labelOn = metal || paint ? labelParam !== "0" : labelParam === "1";
@@ -237,7 +240,7 @@ export function FamilyPill({ label, fixed, id }: { label: string; fixed?: { w: n
           fillSize={fillSize}
           helpers={helpers && !fixed}
           moving={moving}
-          label={{ glyphs: labelOn && text3d && !fixed ? (box?.glyphs ?? null) : null, depth, ink, bevel }}
+          label={{ glyphs: labelOn && text3d && !fixed ? (box?.glyphs ?? null) : null, depth, ink, bevel, side: sideInk }}
           keyLight={{ on: keyOn, angle: keyAngle, elevation: keyEl, intensity: keyInt }}
         /> : null}
       <span

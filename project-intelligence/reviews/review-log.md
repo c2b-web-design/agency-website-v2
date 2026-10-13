@@ -65,6 +65,87 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-051 — The Gold Button At 2× On `/about` §4, The Room Off-Screen Rules And Option A (D-088): "Looks Great"
+
+**Date:** 2026-10-13
+**Reviewer:** Human Founder
+**Subject:** `/about` on the dev server: the gold button at 2× (381.1 × 82) with §4's text scaled as the home `#contact` (R-045); the room drawing nothing while off screen (step 1 of Carl's return rules), compiling its shaders off screen (`compileAsync`, shadows "percentage"), and — Carl's option A — one hidden warm render before the gold button goes live on a direct `#start` load; the button's lamp mounted dark from the start.
+
+**Carl's verdict, verbatim:** *"Looks great. Commit and push"*
+
+**Findings:**
+
+- ✔ **A positive verdict, at the level given — "looks great"; the word "approved" was not used.** With an instruction to commit and push. Not a master (D-035).
+- Behind it: the roll's steady window 0 late frames at §4 (was 16–21); no freeze scrolling up from a direct `#start` load (was 1.57 s); both pages' verify 9/9.
+- ⚠ Open: one unexplained 133 ms frame in 1 of 3 direct-load runs (GPU-side); step 2 of the return rules (3 s linger re-arms; passing through → static + a restart) and the restart control — not built; the mock conversation for the film's `01 Discussion/`.
+
+---
+
+## R-050 — The Gold `Start a conversation` Button On `/about` §4, After The Cold-Load And Smoothness Fixes (D-088): "Looking Good"
+
+**Date:** 2026-10-13
+**Reviewer:** Human Founder
+**Subject:** `/about` §4 on the dev server: the gold family button (R-047 – R-049) on the page at 1×; its STILL from the first paint, handing over pixel-identically to the live canvas (`family-button-swap-match.mjs`); the desk mark's geometry built in a Web Worker; the room drawing nothing while off screen (step 1 of Carl's return rules). Earlier the same day Carl had rejected the cold load (*"It looks like a glitch and a mistake"*) and then the roll (*"the rotation is not smooth"*).
+
+**Carl's verdict, verbatim:** *"the gold button is looking good"*
+
+**Findings:**
+
+- ✔ **A positive verdict, at the level given — "looking good"; the word "approved" was not used.** Not a master (D-035).
+- Measured behind it: production swap 1.17–1.57 s on a refresh (was 2.4–5.5 s); the roll's steady window 0 late frames (was 16–21). ⚠ Left: one ~240 ms freeze ~0.75 s after the swap on a DIRECT `#start` load only.
+- ⚠ Not committed. The home page's teal carries the same still fix (Carl: *"the who we are button is good"*).
+
+---
+
+## R-049 — The `Start a conversation` Button, Pass 3: The Light (D-088): "Looks Fantastic. Approved"
+
+**Date:** 2026-10-13
+**Reviewer:** Human Founder
+**Subject:** `/proto/button?member=start&mode=teal&paint=ffe39e&metalness=1&paintrough=0.4&ink=1e1e24&side=1e1e24&roll=1&mlkind=lamp&mli=1&mllift=120&mldip=0.9&mldipat=0.5&mldipw=0.4` (plain and `&lighthelpers=1`), live in Carl's browser: R-048's gold under the clay's lamps and the teal's moving lamp exactly as approved (R-045/R-046), its path scaled to the width; the letters' sides #1E1E24 (the new optional `side`, the teal unchanged). Frames: `live-work/screenshots/gold-button-13-october/pass3/`.
+
+**Carl's verdict, verbatim:** *"Looks fantastic. approved"*
+
+**Findings:**
+
+- ✔ **APPROVED — pass 3, the light, with the sides #1E1E24.** All three passes of the gold member are approved on the bench (R-047, R-048, R-049). A take, not a master (D-035).
+- Not yet on `/about`: the rollout is a second WebGL canvas on that page (CLAUDE.md §5a) — its structure goes to Carl before it is built.
+
+---
+
+## R-048 — The `Start a conversation` Button, Pass 2: Gold, The Words #1E1E24 (D-088): "#1E1E24 Gets The Approval"
+
+**Date:** 2026-10-13
+**Reviewer:** Human Founder
+**Subject:** `/proto/button?member=start&mode=teal&paint=ffe39e&metalness=1&paintrough=0.4&ml=0&roll=1&ink=…`: the desk mark's gold (#FFE39E as paint = F0 1.0/0.77/0.34) on the clay's material and lamps, metalness 1, roughness 0.4 (the teal's method, R-045); four inks shown. Frames: `live-work/screenshots/gold-button-13-october/pass2/`.
+
+**Carl's verdicts, verbatim:**
+- On #121212 and #1E1E24: *"the 1e1e24 looks great. before its approved i want to try something. Try #0B132B and #1C2541"*
+- After seeing both navies live: *"#1E1E24 gets the approval. the others were similar and good but lets go with #1E1E24"*
+
+**Findings:**
+
+- ✔ **APPROVED — the words #1E1E24 on the gold as built.** A take, not a master (D-035).
+- **Raised and not chosen:** #121212; the navies #0B132B and #1C2541 (*"similar and good"*).
+- ⚠ **Open:** the letters' SIDES are still the teal's fixed `SIDE_INK` #58779a (blue-grey, seen only off-face in the roll) — a change to `whoweare-button-scene.tsx`, put to Carl.
+
+---
+
+## R-047 — The `Start a conversation` Button, Pass 1: The Mesh In Clay (D-088): "It Looks Good… Approved"
+
+**Date:** 2026-10-13
+**Reviewer:** Human Founder
+**Subject:** `/proto/button?member=start&mode=clay&roll=1&label=1` (and `&zoom=4`): `/about` §4's button, the family's third member, built to its measured label at 1× (190.5 × 41, Geist) on the family module, solid and rolling like `Who we are`; no new geometry. Frames: `live-work/screenshots/gold-button-13-october/pass1/`.
+
+**Carl's verdict, verbatim:** *"It looks good. the text isnt a problem, its more noticable at 4x. it wont be that big on the page. approved."*
+
+**Findings:**
+
+- ✔ **APPROVED — pass 1, the mesh.** A take, not a master (D-035).
+- ✔ **The words standing off the pill edge-on (~80°) are not a problem** — noticeable at 4×, not at page size; inherited from the approved teal clay.
+- Next: pass 2, the material — gold, the words #121212 or #1E1E24.
+
+---
+
 ## R-046 — The `Who we are` Button Rolling On The Home Page (D-088): "That Look Excellent… It Works Extremely Well As It Is"
 
 **Date:** 2026-10-12 (session 2)

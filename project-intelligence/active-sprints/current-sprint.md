@@ -107,6 +107,10 @@ need discussion, a plan and consultation with the Architect."* ⛔ **Full proces
 
 The closing CTA the sprint goal named (*"After that we will return to the home page and deal with a CTA at its bottom"*). The white CSS pill becomes the second member of the BUTTON FAMILY — Next step's profile, 41 high, width from its label; teal #1FB2C4 metal; a global light + one moving light (top left aiming right → arcing out face-on → bottom right aiming left, looped). **Two tasks: build it, and film how it was built** (`/about` §3, box 1; the film folder is `Videos\C2B Films\01 Who we are button\`). Passes MESH → MATERIAL → LIGHT, each approved by eye; plan v2 through the gate (the Architect: approve with amendments). ✔ **Pass 1 approved (R-042); pass 2 approved (R-043).** Pass 3 step 1 (a static light from the right) built; the label settled (0.6 px, no bevel). ✔ **On the home page** (12 October, not pushed): one context, the CSS fallback, the link kept; `app/page.tsx` relocked. **Next: direct the light** (the moving light on Carl's path). ✔ **Session 2 (12 October):** the metal re-found by ramps (painted teal → metalness 1 → roughness 0.4, Carl's pick), a moving LAMP on his path with a lifted arc and a dip over the words, the button 2× and the `#contact` text scaled with it (R-045, *"a lot better"*); pass 1 REOPENED — the pill made SOLID and ROLLING forward, held by pointer proximity or focus (*"the roll looks great"*); **on the home page**, frames gated by `/about`'s mechanism. ✔ **APPROVED** (R-046, *"Most definately approved. Excellent work."*), no light adjustments needed; committed `e905baa`, pushed, all three Vercel projects green. **The film: edit planned and PARKED** — ten process steps, selects built for Resolve (D-088's last entry); the editing is deferred to a few dedicated sessions towards the END of the site build (Carl).
 
+## Current work — `/about` §4's `Start a conversation` button, and the room's running cost (D-088, 13 October)
+
+The family's third member: GOLD (the desk mark's gold as paint, metalness 1, roughness 0.4), words and letter sides #1E1E24, built on the bench in the teal's passes without a plan (Carl: *"Thers no need to plan"*) — mesh R-047, material R-048, light R-049 — then on `/about` §4 through ONE family button component (`whoweare-button.tsx`, `MEMBERS`), and at 2× with §4's text scaled as the home `#contact` (R-045). ⛔ **What is approved is what loads** (Carl, on the cold load: *"It looks like a glitch and a mistake… otherwise im approving under false pretenses"*): both buttons paint a STILL of their own first frame from the first paint and hand over pixel-identically; the desk mark's geometry builds in a Web Worker; the room draws nothing while off screen, compiles off screen, and (option A) warms with one hidden render before the gold button goes live. ✔ Carl: *"Looks great"* (R-051). **Designed, not built:** §2's return rules — off at §4; a 3 s linger in §3 re-arms; passing through → static (neon off, cards empty) with a "start"/"restart" control (place open), card 1's flicker first (D-088, 13 October). **Parked:** the mock conversation for the film's `01 Discussion/` (Carl: when the button is done and on the page).
+
 ## Carried, open — Carl's
 
 - The image scroll: §1's last lines pass over the opaque room; scroll-up fades it again; phones not
@@ -154,7 +158,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-12 (session 2, end) — the `Who we are` button approved on the home page, rolling (R-046), pushed `e905baa`; the film's edit planned and parked.*
+*Last updated: 2026-10-13 — the gold `Start a conversation` button on `/about` §4 at 2× (R-047 – R-051); both buttons load as their still; the room off screen draws nothing and warms before the gold button goes live (option A). Committed and pushed on Carl's word.*
+
+*Previously: 2026-10-12 (session 2, end) — the `Who we are` button approved on the home page, rolling (R-046), pushed `e905baa`; the film's edit planned and parked.*
 
 *Previously: 2026-10-12 — the `Who we are` button begun: plan v2 through the gate; pass 1 (the mesh) approved, R-042.*
 
