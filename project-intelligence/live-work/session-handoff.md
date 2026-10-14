@@ -1,48 +1,45 @@
-# Session Handoff — 13 October 2026 (end). THE GOLD `Start a conversation` BUTTON IS LIVE ON `/about` §4. NEXT: STEP 2 OF §2's RETURN RULES, THEN THE MOCK CONVERSATION.
+# Session Handoff — 14 October 2026 (end). §2's RETURN RULES BUILT; THE FILM'S DISCUSSION CAPTURED; `Next step` REDONE IN PLATINUM BLUE AND ON `/start`. NEXT: THE BUTTON'S LIGHT ON THE CARDS, AND THE CARDS' GLOW ON THE BUTTON.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
 **Delete this file at the end of the session that reads it, once its replacement is written.**
-**The full record: D-088's 13 October entries at the END of `decisions.md` (from "THE THIRD MEMBER OF THE BUTTON FAMILY: GOLD"); R-047 – R-051 (`reviews/review-log.md`).**
+**The full record: D-088's 14 October entries at the END of `decisions.md` (from "14 OCTOBER 2026 — §2's RETURN RULES, STEP 2"); R-052 – R-056 (`reviews/review-log.md`).**
 
 ---
 
 ## ⛔ WHERE THINGS STAND
 
-**Committed and pushed `b9f19ba`** (Carl: *"Looks great. Commit and push"*, R-051), after a clean-checkout build. ⚠ ONE LINE IS NOT COMMITTED: the last bullet of `decisions.md` (the record of `b9f19ba` itself) — commit it with the next change. This handoff is force-added (staged), not committed.
+**Pushed today:** `d81effa` (§2's return rules + card 1's prompt, R-052) and `351813b` (`Next step` redone, R-053 – R-056). ⚠ ONE LINE IS NOT COMMITTED: the last bullet of `decisions.md` (`351813b` itself and the relock) — commit it with the next change. This handoff is force-added (staged), not committed.
 
 **What is on the site now:**
-- **`/about` §4: the gold button** — the family's third member: the desk mark's gold as paint (#FFE39E, metalness 1, roughness 0.4) under the clay's lamps + the teal's moving lamp; words AND letter sides #1E1E24; **2×, 381.1 × 82** (the teal's height); §4's text scaled as the home `#contact` (h2 48, p 20, `max-w-4xl`, button `mt-18`). One component for both buttons: `FamilyButton` in `components/home/whoweare-button.tsx` (`MEMBERS`; the file keeps its first member's name).
-- **Both buttons load as themselves (the cold-load fix):** each paints a STILL of its own first frame from the first paint (`public/buttons/<member>-rest@{1,2}x.png`) and the live canvas takes over on the identical frame (pixel-proven). ⛔ **Re-run `live-work/scripts/family-button-stills.mjs` after ANY change to a button's look, geometry, label or size.**
-- **The desk mark's geometry builds in a Web Worker** (`components/about/desk-mark.worker.ts`; inline fallback).
-- **The room draws nothing while its canvas is off screen** (`neon-bloom.tsx`) — the cause of the gold button's stutter at §4 (a GPU-shared running cost, not loading). Off screen it **precompiles** its shaders (`compileAsync`), and — **Carl's option A** — does ONE hidden full render once the desk mark is in; the gold button waits on its still for that (`lib/room-warm.ts`, the one coupling; 6 s backstop). `shadows` "soft" → "percentage" (three 0.185 already drew PCF).
-- Dev server RUNNING on :3000 (PID 3204 at start) — stop it by PID tree and confirm the port free if a checkpoint opens.
+- **`/about` §2's return rules** (`neon-bloom.tsx` owns three states — fresh / playing / static): reaching §4 sends a playing §2 STATIC (neon off, cards empty); a 3 s linger in §3 re-arms it; the trigger reads both directions (the wipe past CA AND the wall in full view — a page opened at `#start` no longer strikes §2 unseen). **Card 1's FACE is the restart** (an invisible button cut to CA's outline; `#roles` and the runway `pointer-events-none`); "click to restart" large on the face in the cards' Geist (`CardPrompt`), flickering OFF with CA's ignition reversed as the rim strikes. The desk mark holds its first strike (stays lit in the player).
+- **`/start`'s `Next step`** is the button family's PLATINUM BLUE member (`NEXT_LOOK`: #3F6DB8 paint, metalness 1, roughness 0.4, ice blue #CFE6FF words, the teal's lamp), drawn by the UNCHANGED `NextStepSurfaceHost`; it rolls at every question, holds near the pointer or on focus, draws nothing while hidden. `NextStepCanvas` (the August pill) is still in the file, unused on `/start` — for `/proto/nextstep`; remove once the redo is settled.
+- **The traveller (the moving light over the Q&A cards) is DARK by default** — mounted and moving at intensity 0; `?traveller=1` restores it. Carl: *"The travelling light will be repositioned because ot the new button we are adding, I dont want to see its effects on the page, not yet."*
+- **Locks:** every code file touched today is RELOCKED and tested. `chunk-scope.json` is on `nextstep-family-bench` with only the governance files open — replace it for the next chunk; Carl names the files.
+- **Dev server RUNNING on :3000** (started this session) — stop it by PID and confirm the port free if a checkpoint opens.
 
-## ⛔⛔ NEXT SESSION — IN THIS ORDER (Carl: *"The mock convo will be in the next session. We will implement Step 2 first though."*)
+## ⛔⛔ NEXT SESSION — CARL'S NEXT SUBJECT
 
-**1. STEP 2 — §2's RETURN RULES (designed by Carl, 13 October; not built).** Step 1 (off when out of sight) is built. Step 2:
-- **Lingering in §3 = 3 s** (Carl: *"3s it is"*): §3 covering ≥ ~60% of the window for 3 s re-arms §2 — **§1's rules**: the ignition fires again when the wipe clears CA. The timer resets if the reader leaves §3 first. (A video pressed in §3 also re-arms/stops — later, the player is a placeholder.)
-- **Passing through §3 from §4 to §2 (or a Roles jump)** → §2 **STATIC: neon OFF, cards EMPTY, nothing animating**, re-armed in the background.
-- **A "start" or "restart" control** activates it — *"doesnt have to be on the desk"*; on press the FIRST thing is **card 1's neon flicker**, then the text reveal and card 2 *"in the normal way"* (the existing sequence from its start). ⚠ The control is a NEW ELEMENT — its own brainstorm, then mesh → material → light; Carl decides its place and form. Step 2's logic can be built before it (a temporary trigger), Carl's call.
-- **The sequence, measured** (`about-s2-sequence-look.mjs`): CA strikes 0 s → text 2.4 s → CB 23.9 s → CD 49.5 s → CA out 56.2 s → CS 66.9 s → CB out 84.4 s → CA again 85.3 s (loop ~85 s). **Restart = the cards reset, then the SAME `ignite()`** (`neon-bloom.tsx` — the only way a track starts). ⚠ §5a/§5b: state that now survives a boundary (the static / re-armed state) and the text's clock — enumerate what depends on the current behaviour before building.
-- New chunk scope needed (`live-work/chunk-scope.json` is still on `about-room-warm` — replace it; Carl names the files).
-
-**2. THE MOCK CONVERSATION for the film** (`C:\Users\Carl Buckley\Videos\C2B Films\01 Who we are button\01 Discussion\`, EMPTY). Carl opens with what we are doing and a brainstorm; **the Builder answers ONLY about the TEAL button** (as decided 2 Sept → 12 Oct: D-088's entries — three.js with existing geometry; filmed by stage; Next step's profile, wider; teal #1FB2C4 from `brand-assets/images.jpg`; one moving light + a global light; height 41; the family). It ends where Plan mode would begin (Step 2's footage exists). **The Builder takes 2–3 screenshots** of the chat panel into `01 Discussion/` — a PowerShell `CopyFromScreen` of the 1920 × 1080 screen works (tested); crop the explorer/taskbar; write the reply, THEN capture. No em dashes in those replies (they may become stills).
+**The button's light on the cards, and the cards' warm glow on the button** (Carl: *"thats what we are going to look at next"*). The facts to start from (`live-work/structural-note-nextstep-rollout-14-october.md` §5):
+- **Today the button's light reaches the cards NOT AT ALL, by construction** — the button's lamps live in its own scene and canvas; a WebGL light lights only its own scene. For it to fall on the cards, a twin of the lamp must be placed in the cards' scene (same path in page space, same clock) — the natural role for the traveller, which is dark and due to be repositioned.
+- **The cards' glow on the button** (D-031/D-032, the CSS era) has been dead since the mesh took over and its 3D equivalent (`AmberSource`) was parked at 0 by Carl in August (*"something i will return to"*). The new button has no amber source at all — it would go into the family scene (a light or the environment), not CSS.
+- A frame with both sets of helpers (the button's lamp path, the cards' scene) would show where a twin light would land — offered, not built.
+- ⚠ Structural (§5a) if a light is shared or a clock is coupled across the two canvases — write it up first.
 
 ## ⚠ OPEN — WITH OWNERS
 
-- **Carl:** the restart control's form and place; the gold/teal "approved" wording (R-050/R-051 recorded as "looking good"/"looks great", not "approved"); the desk mark arriving ~2.7 s after load (a fast Roles jump sees CA strike before the mark — pre-existing, reported); the three stills of 13 Oct 12:37 in the film's `06 On the page/` + 3 `shot-list.md` lines (verification frames from `whoweare-home-verify-roll.mjs`, not takes — keep or remove?).
-- **Builder:** one unexplained 133 ms frame in 1 of 3 direct-`#start` runs (no main-thread task — GPU-side); a ~240 ms freeze on a DIRECT `#start` load was covered by option A (the button waits) — re-measure if anything changes; older `/about` scripts using `networkidle` will time out (below).
+- **Carl:** whether the platinum button's roughness should move toward the desk mark's 0.25 (the same base blue #3F6DB8, lit differently — asked, not answered); the traveller's new position; the restart prompt's 60% "in §4" share (the Builder's reuse of §3's figure); the player's idle content (undecided — R-052's notes); the word "approved" for R-050/R-051/R-052/R-054/R-055/R-056 (all recorded at "looks good").
+- **Builder:** reduced motion, phones and production not looked at for either of today's builds; the words' keyboard focus ring on card 1's face is clipped by the outline (mastering); `NextStepCanvas` and its diagnostics (`?nobtnmesh`, `?mounttrace`) to retire with the old pill.
 
 ## ⚠ STANDING / CORRECTIONS THIS SESSION
 
-- ⛔ **WHAT IS APPROVED IS WHAT LOADS** (Carl: *"otherwise im approving under false pretenses"*). Before asking for any visual approval, show a COLD LOAD (a fresh refresh, and production) and report the time to the final look. Memory: `feedback_approval_includes_the_cold_load`.
-- ⛔ **"No plan" for the gold button** (*"we have the teal button as reference"*) — passes still each approved by eye. Structure (§5a) still went to Carl: the second canvas, the worker, the room off screen, option A.
-- **`/about` never reaches Playwright's `networkidle` now** (the worker is terminated after answering; the test browser never sees its request end). Open `/about` with `waitUntil: "load"`.
-- **Lint covers `live-work/scripts/`** — `const cv = this` trips `no-this-alias`; use the WebGL context's own `c.canvas`.
-- **Git Bash rewrites a `/about#start` argument into a Windows path** — prefix `MSYS_NO_PATHCONV=1`.
-- **Builder slips this session:** a bench variable named `side` (taken) broke `/proto/button` for a minute; the first stills were 1 px short (a screenshot clip rounds — read the canvas's own pixels); step 1 caused a 1.6 s scroll-up freeze on a direct `#start` load (fixed by precompile + option A); reported "one still" in the film folder when it was three.
-- Carl's design principle, his words: *"the staggered sequence"* hides loading — card 1's stutter covers the text's preparation; `/start`'s opening waits for its compile (`openingArmed`).
+- **The film:** `Videos\C2B Films\01 Who we are button\01 Discussion\` holds three clean stills (the family; the 3D world; the build brief + HDRI, Carl's own capture), misses kept and logged in `shot-list.md`. ⛔ **From film 2, Carl screen-records the discussion LIVE** (memory `feedback_film_capture_independently`). The chat panel pins the current prompt, collapses long messages to three lines, and a reply written before a tool call may not render before a capture.
+- **Carl's rule, restated:** *"the use of WebGL lighting should differ depending on the environment a particular button is in"* — each button lit by its world.
+- **The desk mark's latch (Carl):** it stays in the player once the SCROLL crosses the §2/§3 boundary (the line reaching the window's top); between disappearing into the player and that point it can be pulled back. ⛔ **No fault** — the Builder's "jump fault" was withdrawn (its evidence was the player's placeholder picture, which is always there).
+- **`page.screenshot()` fires stray pointer events** — read hover/hold state after they settle (bit check 6 once today).
+- **A focused element removed from the DOM fires no blur** — any focus store must clear on unmount (the "only rolls on Q5" bug).
+- **The React Compiler lint lets a component write only to a prop it recognises as a ref** — name it `…Ref` (`restartRef`).
+- **Builder slips this session:** a control-byte check that silently checked nothing (`grep -P` refused the locale — redone in Python with a planted control); a "fault" asserted from a frame that could not show it (the placeholder picture); a first-run 1,017 ms reveal frame that was the dev server rebuilding (not reproduced in six runs — A/B interleaved before believing a cost).
 
 ---
 
-*Written 13 October 2026, end of session. Replaces the 12 October session-2 handoff.*
+*Written 14 October 2026, end of session. Replaces the 13 October handoff.*
