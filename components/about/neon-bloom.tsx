@@ -48,10 +48,13 @@ import {
   neonNumber,
   neonSettled,
   patternMs,
+  reversePattern,
   roomWipeClearsCA,
+  wallCardsInView,
   type NeonCardId,
   type NeonChannel,
   type NeonMode,
+  type NeonPattern,
   type NeonSchedule,
   type SequenceClock,
 } from "./about-neon";
@@ -90,6 +93,54 @@ const COMPOSITE_FRAG = /* glsl */ `
   }
 `;
 
+/**
+ * ⛔⛔ §2's RETURN RULES, STEP 2 — designed by Carl, 13 October 2026; built 14 October (D-088). Structural note:
+ * `live-work/structural-note-s2-return-step2-14-october.md`. Three states, ONE owner (this component — it owns `ignite()`):
+ *   - `fresh`   — neon off, cards empty (as before the first strike). The trigger starts it.
+ *   - `playing` — the sequence, looping.
+ *   - `static`  — the same look as fresh; only card 1's button starts it (Carl, 14 October: *"A plain button should be
+ *                 on card 1 saying "click to restart". It can then disappear as the neon ignites."*).
+ * Moves: playing → static on REACHING §4 (`#start` covering ≥ `share` of the window — set there, off screen, so nobody
+ * coming back sees a lit card go out); playing/static → fresh after a LINGER in §3 (`#examples` ≥ `share` for `lingerMs`,
+ * Carl: *"3s it is"*; the timer resets if the reader leaves first; a hidden tab never counts). ⚠ A first visit is always
+ * fresh: §4 sends only a PLAYING §2 to static, so a page opened at `#start` still gets §2's first ignition (the button is
+ * for a reader who *"would of been in this section previously"*). §2 → §3 and back inside 3 s, or the runway: runs on.
+ * ⚠ The 60% share is §3's figure from Carl's design, used for §4 as well — the Builder's choice, stated.
+ */
+const S2_RETURN = { lingerMs: 3000, share: 0.6 } as const;
+
+/**
+ * ⛔ CARD 1's PROMPT GOES OUT WITH THE RIM'S OWN REVERSE FLICKER — Carl, 14 October 2026: *"it could use the same
+ * reversed flicker that is used on the rim."* That is `reversePattern` (the ignition played backwards, its dark
+ * lead-in trimmed — the flicker a card goes out on), taken of CA's IGNITION: its schedule's segments up to the first
+ * that reaches full (the sequence appends a hold and its own going-out after that). ⚠ THE PAIRING, the Builder's
+ * choice, stated: the words' reverse flicker STARTS on the rim's first blip (after the ignition's dark lead-in) and
+ * ENDS as the rim reaches full — the same window, mirrored, so as one comes on the other goes. Under reduced motion
+ * the ignition is the fade-up, so the words fade down.
+ */
+function promptOutOf(ca: NeonSchedule): { pattern: NeonPattern; atMs: number } | null {
+  const segs = ca.pattern.segments;
+  const end = segs.findIndex((x) => x.to >= 1);
+  if (end < 0) return null;
+  const ignition = segs.slice(0, end + 1);
+  let lead = 0;
+  for (const x of ignition) {
+    if (x.ramp || x.to !== 0) break;
+    lead += x.ms;
+  }
+  return { pattern: reversePattern({ segments: ignition, tail: { hold: true } }), atMs: ca.startMs + lead };
+}
+export type S2State = "fresh" | "playing" | "static";
+/** How much of the window a section covers, 0 … 1 (0 if it is missing or the tab is hidden). */
+function windowShare(id: string): number {
+  if (typeof document === "undefined" || document.visibilityState !== "visible") return 0;
+  const el = document.getElementById(id);
+  if (!el) return 0;
+  const r = el.getBoundingClientRect();
+  const vh = window.innerHeight || 1;
+  return Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0)) / vh;
+}
+
 type Props = {
   channels: NeonChannel[];
   mode: Exclude<NeonMode, { kind: "none" }>;
@@ -103,6 +154,20 @@ type Props = {
   sequenceRef?: SequenceClock;
   /** When the sequence's last word is written — `?reignite=` waits at least this long plus a second. */
   sequenceEndMs?: number;
+  /**
+   * §2's return rules (`S2_RETURN`) — on the §2 sequence only. `restartRef` is filled here with the restart (the
+   * `sequenceRef` pattern, read by card 1's button in `AboutCardCanvas`; ⚠ a separate prop named `…Ref`, because the
+   * React Compiler's lint lets a component write only to what it recognises as a ref); `onS2State` hears each change
+   * of state. Absent → the old behaviour (one strike per visit).
+   */
+  restartRef?: { current: (() => void) | null };
+  onS2State?: (s: S2State) => void;
+  /**
+   * Card 1's prompt, "click to restart" (`CardPrompt`, `card-extrude.tsx`) — its level is written HERE, on the frame
+   * CA's rim is written (one track, one clock — D-091): 1 while static; on a restart, CA's ignition REVERSED
+   * (`promptOutOf`); 0 otherwise.
+   */
+  promptRef?: { current: { setLevel: (level: number) => void } | null };
 };
 
 /** The bloom's GPU resources — see `createBloom`. */
@@ -181,7 +246,7 @@ function darken(channels: NeonChannel[]) {
  * the `state` `useFrame` hands in rather than hook values. The lint baseline is
  * ZERO warnings; this is how it stays there without a suppression.
  */
-export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, sequenceEndMs = 0 }: Props) {
+export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, sequenceEndMs = 0, restartRef, onS2State, promptRef }: Props) {
   const gl = useThree((s) => s.gl);
   const size = useThree((s) => s.size);
   const dpr = useThree((s) => s.viewport.dpr);
@@ -270,7 +335,15 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
     disabled: false,
     /** Cards whose rim has struck in the current ignition — one `neon:strike:<id>` mark each, for measurement. */
     struck: new Set<string>(),
+    /** §2's state under the return rules (`S2_RETURN`); `playing` from the ignition's first frame. */
+    state: "fresh" as S2State,
+    /** This ignition started from STATIC — card 1's prompt flickers out with it (`promptOutOf`). */
+    promptOut: false,
   });
+  const onStateRef = useRef(onS2State);
+  useEffect(() => {
+    onStateRef.current = onS2State;
+  }, [onS2State]);
 
   /**
    * ⛔⛔ THE BOOTSTRAP — Architect F1, THE BUILD BLOCKER.
@@ -305,6 +378,29 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
   }, [invalidate]);
 
   /**
+   * ⛔ §2 BACK TO DARK AND EMPTY — `fresh` or `static` (`S2_RETURN`). The tracks stop (`started` false → every level 0),
+   * the shared clock is cleared (the text hides its lines while it is null, `card-extrude.tsx`), and a frame is asked
+   * for so the dark levels are WRITTEN — off screen too (step 1 still runs the track write), so the first frame back
+   * shows no lit rim. ⚠ The desk mark's light does NOT follow: it holds its first strike (`DeskMark`, Carl 14 October:
+   * *"Once its in the video player it stays there."*).
+   */
+  const settle = useCallback(
+    (to: Exclude<S2State, "playing">) => {
+      const c = clock.current;
+      if (c.state === to) return;
+      c.started = false;
+      c.pending = false;
+      c.struck.clear();
+      if (sequenceRef) sequenceRef.current = null;
+      c.state = to;
+      performance.mark(`s2:${to}`);
+      onStateRef.current?.(to);
+      invalidate();
+    },
+    [invalidate, sequenceRef],
+  );
+
+  /**
    * ⛔⛔ THE TRIGGER — THE WALL CARDS IN FULL VIEW, ONCE PER VISIT. D-092,
    * Carl 23 September 2026. It REPLACES the first-ready-frame stand-in, which
    * struck on landing and played the ignition to a reader still in §1 — Carl:
@@ -319,15 +415,26 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
    * seen the on effect theres no need to labour the point."* (D-092 had warned
    * that a re-strike on every pass becomes wallpaper.) ⚠ Built first as the
    * Builder's default, then confirmed. **Do not re-arm on scroll-back.**
+   * ⛔ *Amended 14 October 2026 (D-088) by Carl's return rules (`S2_RETURN`):* still no re-arm on a plain scroll-back;
+   * it re-arms only after a 3 s linger in §3, and a reader returning from §4 without one finds §2 STATIC, with card
+   * 1's button. Without `restartRef` (off the sequence) the 23 September behaviour stands unchanged.
+   *
+   * ⛔ THE TRIGGER READS BOTH DIRECTIONS — 14 October 2026, Carl: *"i take your recommendation"*: the wipe past CA
+   * AND the wall cards in full view. From §1 the wall is in view from landing (the room is behind §1), so the wipe
+   * governs — the approved path, unchanged. From below, `roomWipe` reads fully opaque anywhere under §2's top, so
+   * the wall coming into view governs. ⚠ MEASURED before (`live-work/scripts/about-s2-unseen-strike-probe.mjs`): on
+   * the wipe alone a page opened at `#examples` struck at 1.6 s and at `#start` at 1.0 s with the room OFF SCREEN.
    *
    * ⚠ The check is coalesced to one per animation frame and listens in CAPTURE
-   * on `document`, so a scroll inside any container counts. It stops listening
-   * after the strike. `visibilitychange` re-checks, so a tab opened in the
+   * on `document`, so a scroll inside any container counts. ⚠ *Corrected in place, 14 October:* it "stops listening
+   * after the strike" only without `restartRef`; with it it keeps listening (the §3 linger, §4, the re-armed
+   * trigger) — one rect read per section per scroll frame. `visibilitychange` re-checks, so a tab opened in the
    * background strikes when it is shown, not while hidden.
    *
    * ⚠ `?reignite=` keeps the old behaviour ON PURPOSE — strike on load, then
-   * every N ms — because it is a tuning tool for watching the ignition.
+   * every N ms — because it is a tuning tool for watching the ignition. The return rules do not apply under it.
    */
+  const ruled = !!restartRef;
   useEffect(() => {
     if (mode.kind !== "ignite") return;
     if (mode.reigniteMs !== null) {
@@ -339,19 +446,38 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
     }
     const el = gl.domElement;
     let raf = 0;
+    let linger = 0;
     function stop() {
       document.removeEventListener("scroll", schedule, true);
       window.removeEventListener("resize", schedule);
       document.removeEventListener("visibilitychange", schedule);
       if (raf) cancelAnimationFrame(raf);
+      if (linger) window.clearTimeout(linger);
     }
     function check() {
       raf = 0;
+      const c = clock.current;
       /* ⛔ Since 3 October 2026 the trigger is the ROOM'S WIPE clearing CA's bottom (D-092; `roomWipeClearsCA`), not
-         "the wall cards in the window" — the room is on screen behind §1 now, so that read true from landing. */
-      if (roomWipeClearsCA(el)) {
-        stop();
+         "the wall cards in the window" — the room is on screen behind §1 now, so that read true from landing.
+         Since 14 October both together (above). */
+      if (c.state === "fresh" && !c.pending && roomWipeClearsCA(el) && wallCardsInView(el)) {
+        if (!ruled) stop();
         ignite();
+        return;
+      }
+      if (!ruled) return;
+      // §4 reached with §2 playing → static, set here while it is off screen
+      if (c.state === "playing" && windowShare("start") >= S2_RETURN.share) settle("static");
+      // the §3 linger → fresh (re-armed); the timer resets if the reader leaves §3 first
+      const inS3 = c.state !== "fresh" && windowShare("examples") >= S2_RETURN.share;
+      if (inS3 && !linger) {
+        linger = window.setTimeout(() => {
+          linger = 0;
+          if (windowShare("examples") >= S2_RETURN.share) settle("fresh");
+        }, S2_RETURN.lingerMs);
+      } else if (!inS3 && linger) {
+        window.clearTimeout(linger);
+        linger = 0;
       }
     }
     function schedule() {
@@ -362,7 +488,20 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
     document.addEventListener("visibilitychange", schedule);
     check();
     return stop;
-  }, [mode, ignite, gl, sequenceEndMs]);
+  }, [mode, ignite, gl, sequenceEndMs, ruled, settle]);
+
+  /* Card 1's button reaches the restart through this ref (`AboutCardCanvas`). Only a STATIC §2 restarts: the cards are
+     already dark and empty, so "reset, then ignite" is `ignite()` — the existing sequence from its start, card 1's
+     flicker first. */
+  useEffect(() => {
+    if (!restartRef) return;
+    restartRef.current = () => {
+      if (clock.current.state === "static" && !clock.current.pending) ignite();
+    };
+    return () => {
+      restartRef.current = null;
+    };
+  }, [restartRef, ignite]);
 
   /* On unmount the rims go dark, so a remount never inherits a lit tube. And the room is no longer warm: a new canvas must
      compile again (`lib/room-warm.ts`). */
@@ -405,6 +544,12 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
           c.struck.clear();
           /* ⛔ THE SEQUENCE'S DOWNBEAT — the text's clock is THIS moment, not a second reading of the trigger. */
           if (sequenceRef) sequenceRef.current = now;
+          /* ⛔ PLAYING FROM THIS FRAME — card 1's button goes as the neon ignites (Carl, 14 October), not on the click. */
+          c.promptOut = c.state === "static";
+          if (c.state !== "playing") {
+            c.state = "playing";
+            onStateRef.current?.("playing");
+          }
           /* ⚠ AN INSTRUMENT HOOK: `verify/about-neon.mjs frames` splits frame
              pacing on this mark, so a long frame during LOAD is not read as one
              during the IGNITION. Cheap, and one per strike. */
@@ -457,6 +602,25 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
              (Architect F1). Not on NEON_LAYER: it glows, it does not bloom. */
           ch.textGlow?.color.copy(ch.textColor).multiplyScalar(k * ch.textDepth);
         }
+        /* ⛔ CARD 1's PROMPT — on the same frame as CA's rim. Static → shown; a restart → the rim flickers ON with its
+           ignition while the words flicker OFF with the same ignition REVERSED, the two exchanging (Carl, 14 October:
+           *"pressing sees the rim flicker on and the large text flicker off before the text copy starts"*). */
+        const pr = promptRef?.current;
+        if (pr) {
+          let pl = 0;
+          if (c.state === "static") pl = 1;
+          else if (c.state === "playing" && c.promptOut && m.kind === "ignite" && c.started) {
+            const ca = schedulesRef.current.ca;
+            const out = ca ? promptOutOf(ca) : null;
+            const since = out ? now - c.start - out.atMs : Infinity;
+            if (!out || since >= patternMs(out.pattern)) c.promptOut = false;
+            else {
+              pl = since < 0 ? 1 : neonLevel(out.pattern, since);
+              changing = true;
+            }
+          }
+          pr.setLevel(pl);
+        }
       } catch (e) {
         failOnce("the track", e);
       }
@@ -471,7 +635,8 @@ export function NeonBloom({ channels, mode, schedules: planned, sequenceRef, seq
        tracks keep their clock, the text keeps its own, so the first frame back is where they would have been. Scrolling
        back wakes the canvas (the journey's scroll tie, `DeskMark`). ⚠ The `neon:strike` / `neon:out` instrument marks
        still fire off screen (step 1); nothing measured from a RENDERED frame is taken off screen. This is step 1 of
-       Carl's return rules (D-088, 13 October); what §2 does when the reader comes back is step 2, not built. */
+       Carl's return rules (D-088, 13 October); what §2 does when the reader comes back is step 2 — ⚠ *corrected in
+       place:* built 14 October (`S2_RETURN`). */
     if (!canvasOnScreen(r.domElement)) {
       /* ⛔ …BUT ITS SHADERS ARE STILL COMPILED (13 October 2026, the same day — Carl: *"yes, go ahead"*). Step 1 alone
          left a page opened straight at `#start` with a room that had NEVER rendered, so nothing was compiled, and the

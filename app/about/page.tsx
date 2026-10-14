@@ -812,7 +812,11 @@ export default function About() {
       {/* ⛔ NO RULE BETWEEN §1 AND §2 — 3 October 2026. The `border-t` this section carried ran across the travelling
           room mid-scroll (D-092). Carl: *"It looks good apart from the thin black line."* Removed; §3 and §4 keep
           theirs (the room ends with §2, so they never cross it). */}
-      <section id="roles" className="relative min-h-screen flex flex-col justify-center [&>div]:w-full">
+      {/* ⛔ `pointer-events-none` — 14 October 2026 (§2's return rules, D-088): this section paints OVER the room's
+          stage, and its empty box took every click meant for card 1's "click to restart" button (`AboutCardCanvas`).
+          It holds nothing selectable or clickable (empty of copy on purpose, below). ⚠ If copy or a control ever
+          goes in here, give that element `pointer-events-auto` — or the button is under it again. */}
+      <section id="roles" className="relative min-h-screen flex flex-col justify-center [&>div]:w-full pointer-events-none">
         <Container>
           <div className="relative max-w-2xl">
             {/* ⛔⛔ THE SECTION IS DELIBERATELY EMPTY OF COPY. Carl, 3 September
@@ -855,8 +859,9 @@ export default function About() {
           ⚠ ONE SCREEN is the Builder's take (proposed, not chosen by number). ⚠ What reads this container's END: the
           stage's sticky lifetime (it now leaves one screen later — intended), the drop's measured target (`DeskMark` —
           from the container's bottom, so it follows), the mark's scroll tie. The wipe and CA's trigger read `#roles`
-          and the stage only — unchanged. */}
-      <div aria-hidden="true" data-mark-runway="" className="h-screen" />
+          and the stage only — unchanged. ⛔ `pointer-events-none` (14 October 2026): it paints over the stage too, and
+          card 1's restart button is in view while the room is pinned through it (see `#roles` above). */}
+      <div aria-hidden="true" data-mark-runway="" className="h-screen pointer-events-none" />
       </div>
 
       {/* ── 3. What modern websites can do ──────────────────────────────────

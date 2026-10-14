@@ -130,10 +130,12 @@ import {
   type NeonChannel,
   type SequenceClock,
 } from "./about-neon";
-import { NeonBloom } from "./neon-bloom";
+import { NeonBloom, type S2State } from "./neon-bloom";
 import { etchEnabled, etchSettings, type EtchSettings } from "./card-etch";
 import {
   CardExtrudedText,
+  CardPrompt,
+  type PromptHandle,
   extrudeCards,
   layoutCardText,
   loadFont,
@@ -1053,7 +1055,9 @@ const DESK_MARK_SLOW = 0.9;
  *   - ⚰️ SUPERSEDED THE SAME DAY: an opacity FADE (first on a wipe-jump test, then on the strike) — the logo absent until
  *     it faded in. The mark was transparent from birth for it; it is opaque again.
  *   - With no sequence clock (`?neon=none`, the text off) the mark is simply lit, as before. ⚠ `?reignite=` restarts the
- *     clock on every replay, so the mark is lit again with each — a tuning tool's side effect. ⚠ `?marklight=room` (the
+ *     clock on every replay, so the mark is lit again with each — a tuning tool's side effect. ⛔ *Corrected in place,
+ *     14 October 2026:* no longer — the mark holds its FIRST strike (`DeskMark`), because §2's return rules clear the
+ *     clock and the mark must stay lit in the player. ⚠ `?marklight=room` (the
  *     A/B before the studio) is not dimmed — it has no studio light to bring up.
  *   - /start's pace (1.015 s, R-036's reference). ✔ Carl, of the fade's timing: *"Timing is good, as is mirroring the
  *     /start time."* Faders `?marklit=` (ms; 0 = at once), `?markunlit=` (0–1, the unlit share).
@@ -1702,8 +1706,31 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
   return null;
 }
 
-/** `clock`: the §2 sequence's (`sequenceRef`) — the mark is lit when it is set (`DESK_MARK_LIGHT_MS`); null = simply lit. */
-function DeskMark({ clock }: { clock: SequenceClock | null }) {
+/** `sequence`: the §2 sequence's (`sequenceRef`) — the mark is lit when it is first set (`DESK_MARK_LIGHT_MS`); null = simply lit. */
+function DeskMark({ clock: sequence }: { clock: SequenceClock | null }) {
+  /**
+   * ⛔ THE MARK HOLDS ITS FIRST STRIKE — 14 October 2026 (§2's return rules, `S2_RETURN` in `neon-bloom.tsx`). §2 now
+   * clears the sequence clock when it settles fresh or static, and the mark's light, cast shadows and wobble all read
+   * it — so on the live clock the mark, latched in the player (`DESK_MARK_TIE`), would drop back to its unlit share
+   * there. Carl: *"After the first visit to sect 2 the logo is in the video player as a user navigates to Sect 3. It
+   * has done its job and should not be there if a user returns. Once its in the video player it stays there."* So this
+   * reads the clock until it is first set and keeps that time for the mount: lit once, lit for the page view. ⚠ The
+   * wobble reads the same held time; it plays only at play time 0 (on the desk), never once the mark has latched.
+   * ⚠ *Corrected by this:* `?reignite=` no longer re-lights the mark on each replay (the note at `DESK_MARK_LIGHT_MS`).
+   */
+  const clock = useMemo<SequenceClock | null>(() => {
+    if (!sequence) return null;
+    let held: number | null = null;
+    return {
+      get current() {
+        if (held === null) held = sequence.current;
+        return held;
+      },
+      set current(_v) {
+        /* read only — the sequence's own clock is written by `NeonBloom` */
+      },
+    };
+  }, [sequence]);
   const roomLight = useMemo(() => deskMarkRoomLight(), []);
   const shadowOn = useMemo(() => deskMarkShadowOn(), []);
   const studioIntensity = useMemo(() => neonNumber("markenv", DESK_MARK_STUDIO_INTENSITY, 0, 2), []);
@@ -2253,6 +2280,9 @@ export function RoomStage({ faded, children }: { faded: React.ReactNode; childre
   );
 }
 
+/** CA's face on the plate as a CSS polygon — its APPROVED outline (`ROOM_CARD_GUIDES.CA`, fractions); card 1's click area. */
+const CA_FACE_CLIP = `polygon(${ROOM_CARD_GUIDES.CA.map(([x, y]) => `${(x * 100).toFixed(3)}% ${(y * 100).toFixed(3)}%`).join(", ")})`;
+
 export default function AboutCardCanvas() {
   /**
    * ⛔ THE GUIDES ARE ON BY DEFAULT WHILE PLACEMENT IS BEING VERIFIED, and off
@@ -2585,6 +2615,19 @@ export default function AboutCardCanvas() {
   const onSeq = (id: NeonChannel["id"]) => !plan || plan.textAtMs[id] !== undefined;
   const seqProps = (id: NeonChannel["id"]) =>
     plan ? { startAtMs: plan.textAtMs[id], endAtMs: plan.textEndMs[id], loopMs: plan.loopMs } : {};
+  /**
+   * ⛔ §2's RETURN RULES — card 1 restarts it (`S2_RETURN`, `neon-bloom.tsx`; D-088, 14 October 2026). Carl: *"A
+   * plain button should be on card 1 saying "click to restart". It can then disappear as the neon ignites."* and
+   * *"Putting the button on Card 1 makes sense because you are literallt clicking the location that starts the
+   * process."* `NeonBloom` owns the state and fills `restartRef` (the `sequenceRef` pattern); `s2` is only what the
+   * click area needs to know — present while §2 is STATIC. On the sequence only.
+   * ⛔ THE WHOLE FACE, THE WORDS ON THE GLASS — the same day, the HTML button replaced (*"the look of the button looks
+   * out of place"*; *"Can the whole of the face be a button, albeit temporarily?"*): the click area is CA's face
+   * (below) and the words are `CardPrompt` in CA's group, their level written by `NeonBloom` through `promptRef`.
+   */
+  const restartRef = useRef<(() => void) | null>(null);
+  const promptRef = useRef<PromptHandle | null>(null);
+  const [s2, setS2] = useState<S2State>("fresh");
   const neonFor = (id: NeonChannel["id"]) => liveNeon.find((ch) => ch.id === id);
   const [caNeon, cbNeon, cdNeon, csNeon] = [neonFor("ca"), neonFor("cb"), neonFor("cd"), neonFor("cs")];
   /* ⛔ CS is not rendered while the left card is being got right — Carl,
@@ -2964,6 +3007,11 @@ export default function AboutCardCanvas() {
                 {...seqProps("ca")}
               />
             )}
+            {/* ⛔ CARD 1's PROMPT — "click to restart", large, on CA's face in the copy's own lettering (14 October 2026;
+                see `CardPrompt`). Hidden unless §2 is STATIC; `NeonBloom` drives it (`promptRef`). On the sequence only. */}
+            {plan && textCards.has("ca") && extrude?.ca && (
+              <CardPrompt text="click to restart" dims={ca.dims} crownMm={ca.crownMm} settings={extrude.ca} promptRef={promptRef} />
+            )}
           </group>
           <group
             position={cb.position}
@@ -3027,11 +3075,36 @@ export default function AboutCardCanvas() {
               schedules={plan?.schedules}
               sequenceRef={plan ? sequenceRef : undefined}
               sequenceEndMs={plan?.endMs}
+              restartRef={plan ? restartRef : undefined}
+              onS2State={plan ? setS2 : undefined}
+              promptRef={plan ? promptRef : undefined}
             />
           )}
           <PlateCamera />
         </Canvas>
         </div>
+        {/* ⛔ CARD 1's FACE IS THE BUTTON — "click to restart" (the words themselves are `CardPrompt`, on the glass),
+            present only while §2 is STATIC (see `restartRef`). Carl, 14 October 2026: *"Can the whole of the face be a
+            button, albeit temporarily?"* An invisible HTML button over the plate (this box IS the plate's), CUT to CA's
+            APPROVED outline by `clip-path` — a browser hit-tests inside the clip only, so the face and nothing else
+            takes the click. No canvas, no raycast (§5a worked cases 1 and 2). Replaces the first take the same day, a
+            bordered HTML button at CA's centre (*"looks out of place"*).
+            ⚠⚠ CLICKABLE ONLY BECAUSE `#roles` AND THE RUNWAY ARE `pointer-events-none` (`app/about/page.tsx`): both
+            paint over this stage, and their empty boxes took the click (the 14 August worked case — five cards
+            unclickable, every instrument green). `pointer-events-auto` here undoes the stage's `none` for this
+            element only. ⚠ Asserted by `live-work/scripts/about-s2-return-verify.mjs` (`elementFromPoint` inside the
+            face must be the button, and outside it must not). It goes on the IGNITION FRAME, not the click.
+            ⚠ Its keyboard focus ring is clipped by the same outline — accessibility is mastering's (D-094). */}
+        {s2 === "static" && (
+          <button
+            type="button"
+            data-s2-restart=""
+            aria-label="click to restart"
+            onClick={() => restartRef.current?.()}
+            className="pointer-events-auto absolute inset-0 cursor-pointer bg-transparent"
+            style={{ clipPath: CA_FACE_CLIP }}
+          />
+        )}
       </div>
     </div>
   );

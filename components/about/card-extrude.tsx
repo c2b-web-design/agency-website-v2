@@ -654,6 +654,19 @@ export function CardExtrudedText({
     const group = groupRef.current;
     const seqStart = sequenceRef?.current ?? null;
     const start = sequenceRef ? (seqStart === null ? null : seqStart + startAtMs) : startRef.current;
+    /* ⛔ ON THE SEQUENCE, NO CLOCK = AN EMPTY CARD — 14 October 2026 (§2's return rules, `S2_RETURN` in
+       `neon-bloom.tsx`). The clock is null before the first strike AND again whenever §2 settles fresh or static
+       (Carl: *"neon OFF, cards EMPTY"*). ⚠ Before this the frame simply returned, which LEFT every line as it was:
+       harmless before the first strike (nothing shown yet), but a reset mid-sequence would have frozen the text
+       mid-word. A forEach over a few slots per frame. */
+    if (sequenceRef && seqStart === null && !s.still) {
+      slotsRef.current.forEach((sl) => {
+        sl.mesh.visible = false;
+      });
+      markedStart.current = -1;
+      markedEnd.current = -1;
+      return;
+    }
     if (!b || !group || (start === null && !s.still)) return;
     /* ⛔ THE CARD'S OWN TIME. On a looping sequence it folds back every `loopMs` — the card comes round again, from
        its first word, as the card before it reaches its third-last. `round` counts the laps (for the marks). */
@@ -762,6 +775,127 @@ export function CardExtrudedText({
       />}
     </group>
   );
+}
+
+/**
+ * ⛔⛔ CARD 1's PROMPT — "click to restart", LARGE ON THE FACE. D-088, 14 October 2026 (§2's return rules, step 2).
+ * Carl, replacing the HTML button (*"the look of the button looks out of place"*): *"The words "cick to restart" should
+ * be put larger on the face. The text then would be angled correctly, using the same font type. Rather than
+ * disappearing abruptly when pressen it could use the same reversed flicker that is used on the rim. So pressing sees
+ * the rim flicker on and the large text flicker off before the text copy starts."*
+ *   - THE COPY'S OWN MAKING: the cards' Geist, extruded, every vertex lifted onto the domed face (`faceDome`), so the
+ *     words sit at the face's angle exactly as the copy does. One line, centred, `widthShare` of the face's width — a
+ *     TAKE for Carl's eye. The depth scales with the size from the card's own (`depthMm × em ÷ emMm`): the depth rule
+ *     (D-094) keeps the side wall a share of the stem, and the stem grows with the em.
+ *   - ⛔ THE COPY'S OWN MATERIAL, PARAMETER FOR PARAMETER (colour, roughness, metalness 0, TWO clipping planes,
+ *     `clipShadows`, casting shadows) — so it is the SAME shader program the copy already compiled and drew, and its
+ *     first appearance compiles nothing (the 13 October freezes were all first-time compiles). The planes are set to
+ *     pass everything. ⚠ Asserted only by that reasoning plus the verify script's frame timing, not by a program count.
+ *   - ⛔ DRIVEN BY THE NEON, NOT BY ITSELF: `NeonBloom` sets its level on the SAME frame it writes CA's rim (one
+ *     track, one clock — D-091), through `promptRef`. ⛔ ON OR OFF, NOT DIMMED: shown while the level is ≥ `PROMPT_ON`,
+ *     gone below it. ⚰️ The first build scaled the colour with the level, and a lit colour scaled toward zero is BLACK —
+ *     the words read as dark letters printed on the glass through the low stretches of the flicker (frames 14 October,
+ *     `s2-return-step2-14-october/C_exchange_*`). A tube going out reads as dark; lettering going out must vanish. The
+ *     stutter's steps sit high (0.5–1) or low (0.08–0.18), so the threshold turns them into on/off flicks; each ramp
+ *     crosses it once. Its shadow goes with it.
+ *   - Built once, at mount, hidden — never at the moment it is needed.
+ */
+export type PromptHandle = { setLevel: (level: number) => void };
+/** The level at which the prompt shows — between the reverse flicker's high steps (≥ 0.5) and its low ones (≤ 0.18). */
+const PROMPT_ON = 0.3;
+export function CardPrompt({
+  text,
+  dims,
+  crownMm,
+  settings: s,
+  widthShare = 0.75,
+  promptRef,
+}: {
+  text: string;
+  dims: CardDims;
+  crownMm: number;
+  settings: ExtrudeSettings;
+  widthShare?: number;
+  promptRef: { current: PromptHandle | null };
+}) {
+  const invalidate = useThree((st) => st.invalidate);
+  const groupRef = useRef<THREE.Group>(null);
+  /* ⚠ NUMBERS, NOT `dims`: the canvas places the card afresh on every render (`placeRoomCard`), so `dims` is a new
+     object each time — as a dependency it rebuilt the words on every render, including the one §2 going STATIC causes
+     (found 14 October: three builds in one load). The copy depends on the same numbers for the same reason. */
+  const fw = dims.faceWidthMm;
+  const fh = dims.faceHeightMm;
+  const baseZ = faceBaseZ(dims);
+  useEffect(() => {
+    const group = groupRef.current;
+    if (!group) return;
+    let cancelled = false;
+    let made: { mesh: THREE.Mesh; mat: THREE.MeshStandardMaterial } | null = null;
+    loadFont()
+      .then((font) => {
+        if (cancelled) return;
+        const glyphs = font.data.glyphs;
+        const res = font.data.resolution;
+        // the line's width at 1 mm em, from the font's own advances — then the em that makes it `widthShare` of the face
+        const perEm = [...text].reduce((a, c) => a + (glyphs[c]?.ha ?? 0), 0) / EM_UNITS;
+        const emMm = (widthShare * fw) / Math.max(perEm, 1e-6);
+        const depthMm = (s.depthMm * emMm) / s.emMm;
+        const flat = new TextGeometry(text, { font, size: (emMm * res) / EM_UNITS, depth: depthMm, curveSegments: 6, bevelEnabled: false });
+        const g = flat.index ? flat.toNonIndexed() : flat;
+        const hw = fw / 2;
+        const hh = fh / 2;
+        const left = -(perEm * emMm) / 2;
+        const baseline = -0.35 * emMm; // as the copy's slots: capitals and x-height centre on the face's middle
+        const src = g.attributes.position;
+        const pos = new Float32Array(src.count * 3);
+        for (let i = 0; i < src.count; i++) {
+          const x = left + src.getX(i);
+          const y = baseline + src.getY(i);
+          pos[i * 3] = x;
+          pos[i * 3 + 1] = y;
+          pos[i * 3 + 2] = baseZ + crownMm * faceDome(x, y, hw, hh) + src.getZ(i) - SINK_MM;
+        }
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+        if (g.attributes.normal) geo.setAttribute("normal", (g.attributes.normal as THREE.BufferAttribute).clone());
+        if (g !== flat) g.dispose();
+        flat.dispose();
+        const pass = () => new THREE.Plane(new THREE.Vector3(1, 0, 0), 1e9); // keeps every point
+        const mat = new THREE.MeshStandardMaterial({
+          color: s.color,
+          roughness: s.roughness,
+          metalness: 0,
+          clippingPlanes: [pass(), pass()],
+          clipShadows: true,
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.castShadow = true;
+        mesh.visible = false;
+        group.add(mesh);
+        made = { mesh, mat };
+        promptRef.current = {
+          setLevel: (level) => {
+            const on = level >= PROMPT_ON;
+            if (mesh.visible !== on) mesh.visible = on;
+          },
+        };
+        console.info(`card prompt: "${text}" at ${emMm.toFixed(1)} mm (${Math.round(widthShare * 100)}% of the face), depth ${depthMm.toFixed(1)} mm, ${Math.round(src.count / 3).toLocaleString()} tris`);
+        invalidate();
+      })
+      .catch(() => {
+        /* the copy reports a failed font load, loudly */
+      });
+    return () => {
+      cancelled = true;
+      promptRef.current = null;
+      if (made) {
+        group.remove(made.mesh);
+        made.mesh.geometry.dispose();
+        made.mat.dispose();
+      }
+    };
+  }, [text, fw, fh, baseZ, crownMm, s, widthShare, promptRef, invalidate]);
+  return <group ref={groupRef} />;
 }
 
 /** A line's flat geometry placed in a slot: moved to its baseline, and every

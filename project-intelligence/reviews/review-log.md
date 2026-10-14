@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-052 — §2's Return Rules, Step 2, And Card 1's Prompt On `/about` (D-088): "Functions And Mechanisms Are Good"
+
+**Date:** 2026-10-14
+**Reviewer:** Human Founder
+**Subject:** `/about` on the dev server: §2's three states (fresh / playing / static — reaching §4 sends a playing §2 static; a 3 s linger in §3 re-arms it); the trigger reading both directions (the wipe past CA AND the wall cards in full view — the unseen deep-link strike gone); card 1's face as the restart (an invisible button cut to CA's approved outline); "click to restart" large on the face in the cards' Geist, at the face's angle; on a click the rim flickers on with CA's ignition while the words flicker off with its reverse; the desk mark holding its first strike. Structural note `live-work/structural-note-s2-return-step2-14-october.md`.
+
+**Carl's verdict, verbatim:** *"Functions and mechanisms are good. So is text size and the timing of its exit. Connit and push."*
+
+**Findings:**
+
+- ✔ **A positive verdict, at the level given — "good" for the functions and mechanisms, the text size and the exit timing; the word "approved" was not used.** With an instruction to commit and push. Not a master (D-035).
+- Superseded the same day by Carl's eye: the first restart control, a bordered HTML button at CA's centre (*"the look of the button looks out of place"*).
+- Behind it: `about-s2-return-verify.mjs` 20/20 (test browser); the words' first appearance 34 ms longest frame.
+- ⚠ Open: the words' keyboard focus ring clipped by the face's outline (mastering, D-094); the 60% share for "in §4" is the Builder's reuse of §3's figure; the player's idle content undecided (Carl); the mock conversation for the film's `01 Discussion/`.
+
+---
+
 ## R-051 — The Gold Button At 2× On `/about` §4, The Room Off-Screen Rules And Option A (D-088): "Looks Great"
 
 **Date:** 2026-10-13
@@ -1225,7 +1242,9 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-10-08 — **R-037 added**: the desk mark in the room, lit by the bench studio and shadowed on the desk — "excellent… in the world".*
+*Last updated: 2026-10-14 — **R-052 added**: §2's return rules (step 2) and card 1's prompt on `/about` — "Functions and mechanisms are good". ⚠ This footer had stood at R-037 while R-038 – R-051 were filed; corrected here.*
+
+*Previously: 2026-10-08 — **R-037 added**: the desk mark in the room, lit by the bench studio and shadowed on the desk — "excellent… in the world".*
 
 *Previously: 2026-10-08 — **R-036 added**: the desk mark's gold → platinum-blue crossing on the bench, at half `/start`'s pace — APPROVED.*
 
