@@ -980,6 +980,20 @@ export const START_LOOK: typeof WHOWEARE_LOOK = {
   side: "#1e1e24",
 };
 
+/**
+ * ⛔ `/start`'s LOOK — `Next step`, REDONE as the family's PLATINUM BLUE member (D-088, 14 October 2026; passes R-053 mesh,
+ * R-054 material, R-055 light). Carl: *"make it a platinum blue version of the Teal and Gold pill."* The teal's method and
+ * lamp exactly; the colours: the desk mark's platinum blue, the swatch #3F6DB8 (R-035), as paint; the words ICE BLUE
+ * #CFE6FF (the teal's ink — *"Lets go with ice blue for the text"*, worst pixel 6.07:1, 4.79:1 along the lamp's path); the
+ * letters' sides the teal's `SIDE_INK`. ⚠ NOT in `FAMILY_LOOKS`: that map's keys type `whoweare-button.tsx`'s `MEMBERS`
+ * (a locked file), and this member is not a `FamilyButton` — it is drawn by `/start`'s persistent host
+ * (`nextstep-canvas.tsx`), which passes it to `WhoWeAreScene` as `look`.
+ */
+export const NEXT_LOOK: typeof WHOWEARE_LOOK = {
+  ...WHOWEARE_LOOK,
+  paint: "#3f6db8",
+};
+
 /** The family's members as they ship, by name — the button component picks one (its CSS fallback keeps its own copy). */
 export const FAMILY_LOOKS = { whoweare: WHOWEARE_LOOK, start: START_LOOK } as const;
 export type FamilyMember = keyof typeof FAMILY_LOOKS;
@@ -991,6 +1005,8 @@ export type FamilyMember = keyof typeof FAMILY_LOOKS;
  */
 export function WhoWeAreScene({
   member = "whoweare",
+  look,
+  paused = false,
   w,
   h,
   glyphs,
@@ -1002,6 +1018,10 @@ export function WhoWeAreScene({
   onLost,
 }: {
   member?: FamilyMember;
+  /** A look given whole (`NEXT_LOOK` — `/start`'s host), in place of `member`'s. */
+  look?: typeof WHOWEARE_LOOK;
+  /** No frames asked for (the roll and lamp stand still) — `/start`'s host while it cannot be seen. */
+  paused?: boolean;
   /**
    * ⛔ THE COLD-LOAD FIX (13 October 2026 — Carl: *"i cant have a button that loads in this way. It looks like a glitch and a
    * mistake."*). The button shows a STILL of this scene's first frame from the first paint (`family-button-stills.mjs`);
@@ -1019,7 +1039,7 @@ export function WhoWeAreScene({
   onDrawn: () => void;
   onLost: () => void;
 }) {
-  const L = FAMILY_LOOKS[member];
+  const L = look ?? FAMILY_LOOKS[member];
   return (
     <PillCanvas
       w={w}
@@ -1036,7 +1056,7 @@ export function WhoWeAreScene({
       rough={TEAL_DEFAULTS.roughness}
       envInt={TEAL_DEFAULTS.envMapIntensity}
       frameloop="demand"
-      ticking={!reduced}
+      ticking={!reduced && !paused}
       roll={{ on: !reduced && live, half: L.roll.half, ease: L.roll.ease, hold, at: null }}
       moving={{ on: !reduced, running: live, frozen: null, intensity: L.lamp.intensity, kind: L.lamp.kind, lift: L.lamp.lift, dip: L.lamp.dip }}
       helpers={helpers}

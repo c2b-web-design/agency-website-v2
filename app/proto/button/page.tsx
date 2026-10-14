@@ -48,6 +48,21 @@ export default async function ButtonBenchPage({
       </main>
     );
   }
+  // ?member=next (14 October 2026): the `Next step` button REDONE as the family's PLATINUM BLUE member. Carl: *"make it a
+  // platinum blue version of the Teal and Gold pill. It was made a few months ago, we both can do better now."* The gold's
+  // method — MESH → MATERIAL → LIGHT on this bench, each approved by eye, the teal and gold as reference — at Next step's own
+  // label (the box rule measures "Next step" at 116.3 × 41, the size it has in the Q&A), on the same dials. ⚠ The bench only:
+  // the live Next step on /start (`nextstep-canvas.tsx`, its persistent surface host) is untouched until the rollout.
+  if (sp.member === "next") {
+    return (
+      <main style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "3.5rem" }}>
+        {/* The caption follows the pass: ?ml=0 (no moving lamp) is pass 2's look, the lamp on is pass 3's. */}
+        <div style={caption}>{clay ? "PASS 1: THE MESH, IN CLAY" : painted ? (sp.ml === "0" ? "PASS 2: THE MATERIAL, PLATINUM BLUE" : "PASS 3: THE LIGHT") : "NEXT STEP"}</div>
+        <FamilyPill id="next-pill" label="Next step" />
+        <div style={caption}>NEXT STEP, BUILT TO ITS MEASURED LABEL</div>
+      </main>
+    );
+  }
   if (sp.context === "home") {
     return (
       <main className="bg-neutral-950 text-white min-h-screen flex items-center">

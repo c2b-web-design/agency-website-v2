@@ -112,6 +112,10 @@ The closing CTA the sprint goal named (*"After that we will return to the home p
 
 The family's third member: GOLD (the desk mark's gold as paint, metalness 1, roughness 0.4), words and letter sides #1E1E24, built on the bench in the teal's passes without a plan (Carl: *"Thers no need to plan"*) — mesh R-047, material R-048, light R-049 — then on `/about` §4 through ONE family button component (`whoweare-button.tsx`, `MEMBERS`), and at 2× with §4's text scaled as the home `#contact` (R-045). ⛔ **What is approved is what loads** (Carl, on the cold load: *"It looks like a glitch and a mistake… otherwise im approving under false pretenses"*): both buttons paint a STILL of their own first frame from the first paint and hand over pixel-identically; the desk mark's geometry builds in a Web Worker; the room draws nothing while off screen, compiles off screen, and (option A) warms with one hidden render before the gold button goes live. ✔ Carl: *"Looks great"* (R-051). ~~**Designed, not built:** §2's return rules~~ ✔ **BUILT 14 October** (step 2 + card 1's prompt, R-052 — the table above). **Parked:** the mock conversation for the film's `01 Discussion/` (Carl: when the button is done and on the page).
 
+## Current work — `Next step` redone as the family's platinum blue member (D-088, 14 October)
+
+Carl: *"make it a platinum blue version of the Teal and Gold pill."* Bench passes on `/proto/button?member=next`: mesh R-053 (approved), material R-054 (platinum blue #3F6DB8, ice blue words), light R-055 (the teal's lamp). On `/start` (R-056, *"looks good"*): the persistent host unchanged, drawing the family scene; rolling at every question; the traveller dark for now (`?traveller=1`). **Next (Carl): the button's light on the cards, and the cards' warm glow on the button; the traveller repositioned.**
+
 ## Carried, open — Carl's
 
 - The image scroll: §1's last lines pass over the opaque room; scroll-up fades it again; phones not
@@ -127,6 +131,7 @@ The family's third member: GOLD (the desk mark's gold as paint, metalness 1, rou
 
 | Task | Output | Notes |
 |---|---|---|
+| D-088 `Next step` REDONE, platinum blue (14 October): bench passes mesh/material/light; on `/start` in the unchanged persistent host; rolls at every question (a stale-focus hold found and fixed); no frames while hidden; the traveller dark by default. ✔ Carl: *"yes looks good"* | `components/enquiry/nextstep-canvas.tsx`, `components/enquiry/answer-card-canvas.tsx`, `components/home/whoweare-button-scene.tsx`, `app/proto/button/page.tsx` | R-053 – R-056. Verified `nextstep-rollout-verify.mjs` 11/11 ×2; Q5 reveal 17 ms vs the old pill's 50 ms |
 | D-088 §2's RETURN RULES, STEP 2 + CARD 1's PROMPT (14 October): three states owned by `NeonBloom` (fresh / playing / static); §4 → static, a 3 s §3 linger → fresh; the trigger reads both directions (the unseen deep-link strike fixed); the desk mark holds its first strike; card 1's FACE is the restart (`clip-path` over CA's outline; `#roles` and the runway `pointer-events-none`); "click to restart" large on the face (`CardPrompt`), off with CA's reverse flicker as the rim strikes. ✔ Carl: *"Functions and mechanisms are good. So is text size and the timing of its exit."* | `components/about/neon-bloom.tsx`, `card-extrude.tsx`, `about-card-canvas.tsx`, `app/about/page.tsx` | R-052. Verified `about-s2-return-verify.mjs` 20/20. First control (a bordered HTML button) superseded the same day |
 | D-088 `Who we are` button, PASS 3 + THE ROLL, ON THE HOME PAGE (12 October, session 2): painted teal metal (metalness 1, roughness 0.4) under the clay's lamps; a moving lamp on Carl's path (arc lifted, dipped over the words); 2×; the `#contact` text scaled with it; the pill SOLID and ROLLING forward (slow at the faces, fast edge-on), held by pointer proximity or focus; frames gated by `/about`'s mechanism; reduced motion still; `?lighthelpers=1`. ✔ Carl: *"Most definately approved. Excellent work."* | `components/home/whoweare-button.tsx`, `whoweare-button-scene.tsx`, `whoweare-bench.tsx`, `components/ui/button-family-geometry.ts`, `app/page.tsx`, `lib/canvas-on-screen.ts`, `components/about/card-extrude.tsx`, `app/proto/button/page.tsx` | R-044 (not a pill), R-045, R-046. Verified: `whoweare-home-verify-roll.mjs` 9/9. Not committed |
 | D-088 `Who we are` button, PASS 1 — the mesh in clay on `/proto/button`, built to its measured label (129.5 × 41, Geist) on the family module; the rim made smaller by the numbers (4.6 → 2.2 px; the ivory button's ~3 px as reference); the crown scaling with the height. ✔ Carl: *"yes this pass is approved."* | `app/proto/button/page.tsx`, `components/home/whoweare-bench.tsx`, `components/ui/button-family-geometry.ts`, `live-work/scripts/family-geometry-parity.mjs`, `whoweare-pass1-capture.mjs`, `family-profile-from-mesh.mjs` | R-042. Parity with the live Next step proven (builder); the family's cross-section now differs from Next step's by design |
@@ -160,7 +165,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-14 — §2's return rules (step 2) and card 1's prompt built (R-052); committed and pushed on Carl's word.*
+*Last updated: 2026-10-14 (later) — `Next step` redone as the platinum blue family member and on `/start` (R-053 – R-056); the traveller dark for now. Committed and pushed on Carl's word.*
+
+*Previously: 2026-10-14 — §2's return rules (step 2) and card 1's prompt built (R-052); committed and pushed on Carl's word.*
 
 *Previously: 2026-10-13 — the gold `Start a conversation` button on `/about` §4 at 2× (R-047 – R-051); both buttons load as their still; the room off screen draws nothing and warms before the gold button goes live (option A). Committed and pushed on Carl's word.*
 

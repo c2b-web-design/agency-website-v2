@@ -65,6 +65,67 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-056 — The Platinum Blue `Next step` On `/start`, Rolling At Every Question (D-088): "Looks Good"
+
+**Date:** 2026-10-14
+**Reviewer:** Human Founder
+**Subject:** `/start` on the dev server: `NextStepSurfaceHost` unchanged, drawing the family's platinum blue member (`NEXT_LOOK`, R-053 – R-055) in place of the August chrome pill; the letters from a hidden copy of the box rule; rolling at every question (after the stale-focus hold was found and fixed), holding near the pointer or on focus; no frames while hidden; the traveller dark (`?traveller=1` restores it). Structural note `live-work/structural-note-nextstep-rollout-14-october.md`.
+
+**Carl's verdict, verbatim:** *"yes looks good. Commit and push"*
+
+**Findings:**
+
+- ✔ **A positive verdict, at the level given — "looks good"; "approved" was not used.** With an instruction to commit and push. Not a master (D-035).
+- Behind it: `nextstep-rollout-verify.mjs` 11/11 twice; the Q5 reveal 17 ms longest frame (the old pill 50–51 ms, A/B interleaved).
+- ⚠ Open: the button's light on the cards and the cards' warm glow on the button — Carl's next subject; the traveller to be repositioned; the button's roughness vs the desk mark's (the same base blue, lit differently — Carl not yet asked to choose); `NextStepCanvas` (the old pill) still in the file for `/proto/nextstep`; reduced motion, phones, production not looked at.
+
+---
+
+## R-055 — The `Next step` Button Redone, Pass 3: The Light (D-088): "It Looks Good"
+
+**Date:** 2026-10-14
+**Reviewer:** Human Founder
+**Subject:** `/proto/button?member=next…&mlkind=lamp&mli=1&mllift=120&mldip=0.9&mldipat=0.5&mldipw=0.4` — R-054's platinum blue with ice blue words under the clay's lamps plus the teal's moving lamp exactly as approved (R-045/R-046). Measured frozen at 9 points: the words' worst pixel 4.79:1; at most 21 px with a channel ≥ 250 (the left end's blue glint). Frames: `live-work/screenshots/nextstep-family-14-october/pass3/`.
+
+**Carl's verdict, verbatim:** *"It looks good. Put it on the page. We also need to see what the light for the button has on the cards, if any."*
+
+**Findings:**
+
+- ✔ **A positive verdict, at the level given — "looks good"; "approved" was not used.** With the instruction to put it on the page: a structural step, written up first (`live-work/structural-note-nextstep-rollout-14-october.md`).
+- Carl's question on the button's light reaching the cards: none today, by construction (separate scene and canvas) — answered in the note, §5.
+
+---
+
+## R-054 — The `Next step` Button Redone, Pass 2: Platinum Blue, The Words Ice Blue (D-088): "It Looks Good"
+
+**Date:** 2026-10-14
+**Reviewer:** Human Founder
+**Subject:** `/proto/button?member=next&mode=teal&paint=3f6db8&metalness=1&paintrough=0.4&ml=0&roll=1` — the desk mark's platinum blue (#3F6DB8) as paint, metalness 1, roughness 0.4 (the teal's and gold's recipe) under the clay's lamps; the moving lamp off (pass 3). Three inks measured worst-pixel against the bare metal: white 7.77:1, #F2F4F7 7.05:1, ice blue #CFE6FF 6.07:1. Frames: `live-work/screenshots/nextstep-family-14-october/pass2/`.
+
+**Carl's verdict, verbatim:** *"It looks good. Lets go with ice blue for the text."*
+
+**Findings:**
+
+- ✔ **A positive verdict on the material, at the level given — "looks good"; "approved" was not used.** The words: ICE BLUE #CFE6FF (the teal's ink; worst pixel 6.07:1). White and #F2F4F7 RAISED AND NOT CHOSEN.
+- ⚠ Reported with it: a 3 × 3 px glint on the left end at blue 250–251 (R ~120, G ~165 — not white). Next: pass 3, the light (the contrast owed along the moving lamp's whole path).
+
+---
+
+## R-053 — The `Next step` Button Redone, Pass 1: The Mesh In Clay (D-088): "Approved"
+
+**Date:** 2026-10-14
+**Reviewer:** Human Founder
+**Subject:** `/proto/button?member=next&mode=clay&roll=1&label=1` — `Next step` as the button family's fourth member (platinum blue to come): the family pill built to its measured label (116.3 × 41 in Geist, the size it has in the Q&A), the family's narrower rim (the old wide skirt gone), solid and rolling forward, the words extruded. Frames: `live-work/screenshots/nextstep-family-14-october/pass1/`.
+
+**Carl's verdict, verbatim:** *"Looks good. In propotion and one of the family. Approved"*
+
+**Findings:**
+
+- ✔ **Approved, at the level given: THIS button's shape pass** (as R-042, R-047). Next: pass 2, the material — the platinum blue as paint (#3F6DB8, metalness 1, roughness 0.4) and the words' colour.
+- ⚠ The live Next step on `/start` is unchanged (the rollout is a separate structural step). The traveller is dark by default on `/start` the same day (not yet judged).
+
+---
+
 ## R-052 — §2's Return Rules, Step 2, And Card 1's Prompt On `/about` (D-088): "Functions And Mechanisms Are Good"
 
 **Date:** 2026-10-14
@@ -1242,7 +1303,15 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-10-14 — **R-052 added**: §2's return rules (step 2) and card 1's prompt on `/about` — "Functions and mechanisms are good". ⚠ This footer had stood at R-037 while R-038 – R-051 were filed; corrected here.*
+*Last updated: 2026-10-14 — **R-056 added**: the platinum blue `Next step` on `/start`, rolling at every question — "looks good".*
+
+*Previously: 2026-10-14 — **R-055 added**: the `Next step` button redone, pass 3 (the light) — "It looks good. Put it on the page."*
+
+*Previously: 2026-10-14 — **R-054 added**: the `Next step` button redone, pass 2 (platinum blue, the words ice blue) — "It looks good".*
+
+*Previously: 2026-10-14 — **R-053 added**: the `Next step` button redone, pass 1 (the mesh in clay) — "Approved".*
+
+*Previously: 2026-10-14 — **R-052 added**: §2's return rules (step 2) and card 1's prompt on `/about` — "Functions and mechanisms are good". ⚠ This footer had stood at R-037 while R-038 – R-051 were filed; corrected here.*
 
 *Previously: 2026-10-08 — **R-037 added**: the desk mark in the room, lit by the bench studio and shadowed on the desk — "excellent… in the world".*
 

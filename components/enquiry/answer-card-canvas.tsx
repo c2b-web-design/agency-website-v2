@@ -3753,12 +3753,24 @@ function CardScene({
       const n = Number(raw);
       return raw !== null && Number.isFinite(n) ? n : fallback;
     };
+    /* ⛔⛔ THE TRAVELLER IS DARK BY DEFAULT — 14 October 2026. Carl: *"The moving light over the cards - turn it off for
+       now."* then *"The travelling light will be repositioned because ot the new button we are adding, I dont want to see
+       its effects on the page, not yet. Deal with it as you see fit"* (the new button: `Next step` redone as the button
+       family's platinum blue member, D-088). ⛔ DARK, NOT REMOVED — the Builder's choice, stated: the light stays MOUNTED
+       and MOVING at intensity 0. Unmounting it would change the scene's light count (every card material recompiles to a
+       new program) and would stop its rAF loop, which keeps this canvas drawing every frame — other things may rely on
+       that (`nextstep-canvas.tsx` records one masked fault the loop hides) and none of them is in this change. It casts no
+       shadow, so at 0 it adds nothing. ⚠ `?traveller=1` brings it back at its judged brightness; an explicit `?travint=`
+       does too. ⚠ The OLD Next step reproduces this light in its own canvas (a rotating env map, `nextstep-canvas.tsx`) —
+       that copy still turns; it goes when the button is replaced. The approved sweep (path, timing, brightness) is
+       unchanged underneath: restoring it is this one line. */
+    const travellerOn = q.get("traveller") === "1" || q.get("travint") !== null;
     return {
       sag: num("sag", d.sag),
       forward: num("fwd", d.forward),
       travelMs: num("travelms", d.travelMs),
       returnMs: num("returnms", d.returnMs),
-      intensity: num("travint", d.intensity),
+      intensity: travellerOn ? num("travint", d.intensity) : 0,
     };
   }, []);
 

@@ -110,6 +110,27 @@ import {
   ENV_FILL_COLOR,
   ENV_FILL_INTENSITY,
 } from "./answer-card-glass";
+import { BOX_RULE, NEXT_LOOK, WhoWeAreScene, measureLabel, type Glyphs } from "@/components/home/whoweare-button-scene";
+
+/**
+ * ⛔ THE BUTTON'S FOCUS, FOR THE HOST'S HOLD — 14 October 2026 (the platinum blue `Next step`, D-088). The family's roll
+ * holds on a face when the pointer comes near OR the button has keyboard focus (the home page's rule). The real `<button>`
+ * lives in the keyed phrase and the host outside it, so the button reports focus here and the host reads it — one tiny
+ * store, in this file, beside both. (The pointer the host reads for itself, against the rect it is given.)
+ */
+let nextFocused = false;
+const nextFocusSubs = new Set<() => void>();
+function setNextFocused(on: boolean) {
+  if (nextFocused === on) return;
+  nextFocused = on;
+  nextFocusSubs.forEach((f) => f());
+}
+function subscribeNextFocus(f: () => void) {
+  nextFocusSubs.add(f);
+  return () => {
+    nextFocusSubs.delete(f);
+  };
+}
 
 /**
  * Chrome's roughness.
@@ -1325,6 +1346,13 @@ export function NextStepMeshButton({
     return () => onRect(null);
   }, [onRect, box, suppressMesh]);
 
+  /* ⛔ A REMOVED BUTTON TAKES ITS FOCUS WITH IT — 14 October 2026. Clicking Next step focuses it; the phrase is then torn
+     down and a focused element removed from the DOM fires NO blur, so the host's hold read "focused" for the rest of the
+     walk and the roll stood still from Q4 on (Carl: *"it only rolls on Q5, it should roll for all the Qs"*; measured,
+     `live-work/scripts/nextstep-roll-q4-probe.mjs`: Q4 hold=1 with the focus on BODY). So the store is cleared as the
+     button unmounts. */
+  useEffect(() => () => setNextFocused(false), []);
+
   /**
    * ⚠ COMPONENT 1's START STAMP, and the INSTRUMENTATION FLOOR.
    *
@@ -1401,7 +1429,19 @@ export function NextStepMeshButton({
          * enough here, and adding one would create a stacking context that the
          * corridor's own layering would then have to reason about.
          */
-        style={{ position: "relative", ...buttonProps.style }}
+        /* ⛔ THE WORDS ARE DRAWN BY THE MESH — 14 October 2026 (the platinum blue member): the family scene extrudes "Next
+           step" in 3D (`FamilyNextStep`), so while the mesh is shown the DOM text is TRANSPARENT — still the button's
+           accessible name, still its box (the host measures a hidden copy of the same rule). ⚠ Without the mesh (`?nobtnmesh=1`,
+           before the box is measured) the text paints as before. */
+        style={{ position: "relative", ...buttonProps.style, ...(box && !suppressMesh ? { color: "transparent" } : null) }}
+        onFocus={(e) => {
+          setNextFocused(true);
+          buttonProps.onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setNextFocused(false);
+          buttonProps.onBlur?.(e);
+        }}
       >
         {children}
       </button>
@@ -1649,11 +1689,126 @@ export function NextStepSurfaceHost({
         rebuilt if the measured box differs, but the box has been stable at
         116x41 across every measurement, so in practice this bakes once.
       */}
-      <NextStepCanvas
-        width={rect ? rect.w : NEXTSTEP_WIDTH_PX}
-        height={rect ? rect.h : NEXTSTEP_HEIGHT_PX}
-        active={active}
-      />
+      {/* ⛔ THE FAMILY'S PLATINUM BLUE MEMBER — 14 October 2026 (D-088; R-053 – R-055; structural note
+          `live-work/structural-note-nextstep-rollout-14-october.md`). Carl: *"make it a platinum blue version of the Teal
+          and Gold pill"* → *"It looks good. Put it on the page."* This host is UNCHANGED — its lifetime (mounted once, so the
+          context, the compile and the letters are built during the OPENING, not in Q5's reveal), its position, its fade,
+          its containing-block assertion; only what it draws is swapped. ⚰️ It drew `NextStepCanvas` (the August chrome pill,
+          the traveller reproduced as a rotating env map, the amber parked at 0) — kept below for `/proto/nextstep` until
+          the redo is approved, then removed. */}
+      <FamilyNextStep rect={rect} active={active} opacity={opacity} transitionMs={transitionMs} />
     </div>
+  );
+}
+
+/**
+ * ⛔ THE PLATINUM BLUE `Next step`, IN THE HOST — the family's scene (`WhoWeAreScene` with `NEXT_LOOK`), as on the bench
+ * (R-055) and the home page:
+ *   - THE LETTERS from a HIDDEN COPY of the label in the family's box rule (`BOX_RULE` IS `.enquiry-nextstep-btn`'s rule),
+ *     measured here once the webfont is in — so the scene is built during the opening rather than when Q5's button first
+ *     renders. ⚠ That the copy sets the words where the real button does is ASSERTED by
+ *     `live-work/scripts/nextstep-rollout-verify.mjs` (each glyph's x against the real button's, and the box), not assumed.
+ *   - IT ROLLS (Carl: *"1. Yes"*) and HOLDS on a face when the pointer is within `NEAR` of the button or it has focus.
+ *   - ⛔ PAUSED WHILE IT CANNOT BE SEEN: the family's ticker draws every frame while the canvas is on screen, and this host
+ *     sits on screen at opacity 0 before an answer is chosen and between questions. So it pauses when `active` is false
+ *     (nothing selected, or reduced motion) and once a fade to 0 has finished; the roll clamps its step, so it resumes
+ *     smoothly. ⚠ Asserted by the verify script (no frames while hidden).
+ *   - REDUCED MOTION: face-on, no roll, no lamp (the family scene's own rule).
+ */
+const NEAR = 60;
+function FamilyNextStep({
+  rect,
+  active,
+  opacity,
+  transitionMs,
+}: {
+  rect: { left: number; top: number; w: number; h: number } | null;
+  active: boolean;
+  opacity: number;
+  transitionMs: number;
+}) {
+  const words = useRef<HTMLSpanElement | null>(null);
+  const baseMark = useRef<HTMLSpanElement | null>(null);
+  const [label, setLabel] = useState<{ w: number; h: number; glyphs: Glyphs } | null>(null);
+  useEffect(() => {
+    let live = true;
+    void (async () => {
+      // ⚠ After the webfont, never before: a fallback face measures a different width.
+      await document.fonts.ready;
+      if (live && words.current) setLabel(measureLabel(words.current, baseMark.current));
+    })();
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  const [reduced] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  const [helpers] = useState(
+    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("lighthelpers") === "1",
+  );
+  const focused = useSyncExternalStore(subscribeNextFocus, () => nextFocused, () => false);
+
+  // The pointer near the button holds the roll — read against the rect this host is drawn at.
+  const [near, setNear] = useState(false);
+  const rectRef = useRef(rect);
+  useEffect(() => {
+    rectRef.current = rect;
+  }, [rect]);
+  useEffect(() => {
+    if (reduced) return;
+    const onMove = (e: PointerEvent) => {
+      const r = rectRef.current;
+      if (!r || e.pointerType === "touch") return setNear(false);
+      const dx = Math.max(r.left - e.clientX, 0, e.clientX - (r.left + r.w));
+      const dy = Math.max(r.top - e.clientY, 0, e.clientY - (r.top + r.h));
+      setNear(Math.hypot(dx, dy) <= NEAR);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, [reduced]);
+
+  // Hidden = faded to 0 and the fade finished (`transitionMs` after the opacity went to 0).
+  const [faded, setFaded] = useState(true);
+  useEffect(() => {
+    const id = window.setTimeout(() => setFaded(opacity <= 0), opacity > 0 ? 0 : transitionMs + 50);
+    return () => window.clearTimeout(id);
+  }, [opacity, transitionMs]);
+  const paused = !active || faded || !rect;
+
+  return (
+    <>
+      {/* The hidden copy the letters are measured from: the family's box rule, the button's words. */}
+      <span
+        ref={words}
+        aria-hidden="true"
+        style={{ ...BOX_RULE, position: "absolute", left: 0, top: 0, visibility: "hidden", pointerEvents: "none" }}
+      >
+        Next step
+        <span ref={baseMark} style={{ display: "inline-block", width: 0, height: 0, verticalAlign: "baseline" }} />
+      </span>
+      {label && (
+        <div
+          data-family-next=""
+          data-paused={paused ? "1" : "0"}
+          data-hold={near || focused ? "1" : "0"}
+          style={{ position: "absolute", left: 0, top: 0, width: label.w, height: label.h }}
+        >
+          <WhoWeAreScene
+            look={NEXT_LOOK}
+            w={label.w}
+            h={label.h}
+            glyphs={label.glyphs}
+            helpers={helpers}
+            hold={near || focused}
+            reduced={reduced}
+            paused={paused}
+            onDrawn={() => undefined}
+            onLost={() => console.error("[FamilyNextStep] the WebGL context was lost.")}
+          />
+        </div>
+      )}
+    </>
   );
 }
