@@ -65,6 +65,21 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-068 — The Cards' Travelling Light Back On, Dipping At The Two Bends (D-051, D-088): "A Lot Better. Approved"
+
+**Date:** 2026-10-15 (session 3)
+**Reviewer:** Human Founder
+**Subject:** `/start` Q5 — the traveller back on at its judged brightness on its approved path and pace (the 14 October dark default reversed), with `restTravelLevel` dipping it at the ring's two bends: 0.35 over card 1's left end (held to 18% of the pass, full by 40%), 0.2 over card 3's right end (from 55% → by 80%, held through the bend). Measured on the faces' end quarters: card 1's left end 85, card 3's right end 92, against 86–90 at the middle cards' ends (floor ~66–69). Helpers at `?lighthelpers=1`.
+
+**Carl's verdict, verbatim:** *"That looks a lot better. approved"*
+
+**Findings:**
+
+- ✔ **APPROVED** — the word used. The dip's depths and windows as built (third take). The trajectory kept (Carl: *"i think the trajectory is good"*). Not a master (D-035).
+- ⚠ The glass tube takes no direct light, so the traveller lights the faces only. Not committed.
+
+---
+
 ## R-067 — The Answer Cards' Tube Take Made The Default On `/start` (D-051): "Yes Put It On Start"
 
 **Date:** 2026-10-15 (session 3)

@@ -1863,6 +1863,50 @@ export function restTravelPhase(elapsedMs: number): number {
 }
 
 /**
+ * ⛔ THE TRAVELLER DIPS AT THE TWO BENDS — 15 October 2026, session 3. Carl: *"On the card that says "better quality
+ * enquiries" the light starts to bloom. Can it be decreased at this point to stop it blooming then turned back up. The
+ * same problem happens on "premium new website" card"* → *"make it dip, i think the trajectory is good"*.
+ *
+ * ⚠ MEASURED FIRST (`live-work/scripts/traveller-bloom-measure-15-october.mjs`, each face's mean luma): card 3 72 → 98
+ * through the LAST ~45% of the pass and the bend's hold; card 1 70 → 85 through the FIRST ~third; cards 2, 4, 5 rise
+ * ~12 and pass. The light EASES at both bends (`restEase`), so it lingers over the top row's outer ends.
+ *
+ * A multiplier on the traveller's brightness, on the SAME clock as `restTravelPhase` (one cycle, the same segments):
+ * the pass's progress `u` 0 → 1 — at `REST_DIP_LEFT` from the start, held to `REST_DIP_LEFT_HOLD` (past card 1's peak at
+ * u ≈ 0.13 — a first take that ramped up from 0 cut only 17% there and left the patch), back to 1 by `REST_DIP_LEFT_UNTIL`; full through the
+ * middle; down from `REST_DIP_RIGHT_FROM` to `REST_DIP_RIGHT` by `REST_DIP_RIGHT_AT`, held through the end and the bend's
+ * hold; then the hidden return eases it from the right's level to the left's (it lights nothing, so the change is unseen).
+ * Smootherstep ramps, so no step in brightness is ever visible. ⚠ The depths are FIRST VALUES from the measured rises
+ * (the traveller adds ~26 to card 3 and ~15 to card 1 against ~12 elsewhere); Carl judges them.
+ */
+// ⚠ DEPTHS FROM THE END PATCHES, NOT THE FACE's MEAN: the bloom is a concentrated highlight in the face's END QUARTER.
+// Measured over the floor (`?travint=0`): at 0.5 / 0.45 card 1's left end still rose +25 and card 3's right end +43,
+// against ~+18 at a middle card's end — so the depths are scaled to bring both to ~+18. Linear response assumed.
+export const REST_DIP_LEFT = 0.35;
+export const REST_DIP_LEFT_HOLD = 0.18;
+export const REST_DIP_LEFT_UNTIL = 0.4;
+export const REST_DIP_RIGHT_FROM = 0.55;
+export const REST_DIP_RIGHT_AT = 0.8;
+export const REST_DIP_RIGHT = 0.2;
+
+export function restTravelLevel(elapsedMs: number): number {
+  const cycle = elapsedMs % (REST_TRAVEL_MS + REST_BEND_HOLD_MS + REST_RETURN_MS);
+  const smooth = (x: number) => {
+    const c = Math.min(1, Math.max(0, x));
+    return c * c * c * (c * (c * 6 - 15) + 10);
+  };
+  if (cycle >= REST_TRAVEL_MS + REST_BEND_HOLD_MS) {
+    const r = (cycle - REST_TRAVEL_MS - REST_BEND_HOLD_MS) / REST_RETURN_MS;
+    return REST_DIP_RIGHT + (REST_DIP_LEFT - REST_DIP_RIGHT) * smooth(r);
+  }
+  if (cycle >= REST_TRAVEL_MS) return REST_DIP_RIGHT;
+  const u = cycle / REST_TRAVEL_MS;
+  if (u < REST_DIP_RIGHT_FROM)
+    return REST_DIP_LEFT + (1 - REST_DIP_LEFT) * smooth((u - REST_DIP_LEFT_HOLD) / (REST_DIP_LEFT_UNTIL - REST_DIP_LEFT_HOLD));
+  return 1 - (1 - REST_DIP_RIGHT) * smooth((u - REST_DIP_RIGHT_FROM) / (REST_DIP_RIGHT_AT - REST_DIP_RIGHT_FROM));
+}
+
+/**
  * The easing both halves share.
  *
  * ⚠⚠ IT MUST NOT REACH ZERO VELOCITY, AND A SMOOTHERSTEP DOES. Measured before

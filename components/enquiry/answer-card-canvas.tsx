@@ -43,7 +43,7 @@
  * filament, no text.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
@@ -93,6 +93,7 @@ import {
   // derivation. See `restTravelPoint`.
   restTravelPoint,
   restTravelPhase,
+  restTravelLevel,
   // ⚠ THE KEYFRAMED AIM. The cone turns as the light travels — see `restAimAt`.
   restAimAt,
   REST_TRAVEL_CONE_ANGLE,
@@ -690,6 +691,20 @@ function TravellingLight({
   const invalidate = useThree((s) => s.invalidate);
 
   /**
+   * ⛔ THE DIP AT THE BENDS (15 October 2026, session 3 — `restTravelLevel`). The JSX sets the BASE brightness; the loop
+   * multiplies it by the dip every frame. `dipRef` is the current dip (1 when parked), shared with the helper's ball.
+   * The base is synced in a layout effect — a re-render that changes it (the level fading) re-applies the dip before
+   * paint, so the light is never drawn undipped.
+   */
+  const dipRef = useRef(1);
+  const baseIntensity = intensity * level * REST_TRAVEL_NEAREST_SQ;
+  const baseIntensityRef = useRef(baseIntensity);
+  useLayoutEffect(() => {
+    baseIntensityRef.current = baseIntensity;
+    if (ref.current) ref.current.intensity = baseIntensity * dipRef.current;
+  }, [baseIntensity]);
+
+  /**
    * ⚠ THE CONE IS AIMED BY A REAL OBJECT, AND IT MUST BE IN THE SCENE GRAPH.
    * three.js reads a spot's direction from `target.matrixWorld`, so a target
    * that is never added to the scene never gets its world matrix updated and the
@@ -748,6 +763,9 @@ function TravellingLight({
     // rather than growing a second, subtly-different park.
     if (reducedMotion || !animating) {
       place(0.25);
+      // Parked mid-pass: no dip (a canvas parked mid-bend must not keep the bend's level).
+      dipRef.current = 1;
+      light.intensity = baseIntensityRef.current;
       invalidate();
       return;
     }
@@ -785,7 +803,12 @@ function TravellingLight({
       // ⚠ PHASE COMES FROM `restTravelPhase`, which owns BOTH the fast hidden
       // half and the easing at the tight curves. Duplicating either here is how
       // the two would drift apart.
-      place(restTravelPhase(performance.now() - start));
+      const elapsed = performance.now() - start;
+      place(restTravelPhase(elapsed));
+      // ⛔ THE DIP AT THE BENDS (`restTravelLevel`, same clock as the phase) — on the base the JSX sets, read from a ref
+      // so a re-render (the level fading) cannot leave the light at an undipped value until the next frame.
+      dipRef.current = restTravelLevel(elapsed);
+      light.intensity = baseIntensityRef.current * dipRef.current;
       invalidate();
       raf = requestAnimationFrame(tick);
     };
@@ -857,6 +880,8 @@ function TravellingLight({
     const follow = () => {
       const l = ref.current;
       if (l) ball.position.copy(l.position);
+      // The ball dims with the light's dip at the bends, so where it is turned down is visible on the path.
+      (ball.material as THREE.MeshBasicMaterial).opacity = 0.9 * dipRef.current;
       raf = requestAnimationFrame(follow);
     };
     raf = requestAnimationFrame(follow);
@@ -899,7 +924,7 @@ function TravellingLight({
          * short. The distance is measured from the curve, never assumed from the
          * constants that shaped it.
          */
-        intensity={intensity * level * REST_TRAVEL_NEAREST_SQ}
+        intensity={baseIntensity}
         decay={REST_TRAVEL_DECAY}
         distance={0}
       />
@@ -3949,17 +3974,20 @@ function CardScene({
        and MOVING at intensity 0. Unmounting it would change the scene's light count (every card material recompiles to a
        new program) and would stop its rAF loop, which keeps this canvas drawing every frame — other things may rely on
        that (`nextstep-canvas.tsx` records one masked fault the loop hides) and none of them is in this change. It casts no
-       shadow, so at 0 it adds nothing. ⚠ `?traveller=1` brings it back at its judged brightness; an explicit `?travint=`
-       does too. ⚠ The OLD Next step reproduces this light in its own canvas (a rotating env map, `nextstep-canvas.tsx`) —
+       shadow, so at 0 it adds nothing. ⚠ `?traveller=1` brought it back at its judged brightness (removed, below); an
+       explicit `?travint=` did too. ⚠ The OLD Next step reproduces this light in its own canvas (a rotating env map, `nextstep-canvas.tsx`) —
        that copy still turns; it goes when the button is replaced. The approved sweep (path, timing, brightness) is
-       unchanged underneath: restoring it is this one line. */
-    const travellerOn = q.get("traveller") === "1" || q.get("travint") !== null;
+       unchanged underneath: restoring it is this one line.
+       ✔ ON AGAIN — 15 October 2026, session 3. Carl: *"Turn back on the cards travelling light. Show the light helpers on
+       the page. We will change the lights trajectory."* The approved sweep restored as it was; the `?traveller=1` door
+       removed with the dark default. ⚠ The glass tube takes NO direct light (`uUniformRim`), so the traveller lights the
+       FACES only — not the rim it once raked. */
     return {
       sag: num("sag", d.sag),
       forward: num("fwd", d.forward),
       travelMs: num("travelms", d.travelMs),
       returnMs: num("returnms", d.returnMs),
-      intensity: travellerOn ? num("travint", d.intensity) : 0,
+      intensity: num("travint", d.intensity),
     };
   }, []);
 
