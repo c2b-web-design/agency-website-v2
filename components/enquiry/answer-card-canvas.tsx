@@ -109,7 +109,7 @@ import {
 import { AnswerCardBackdrop } from "./answer-card-backdrop";
 import { CARD_BOXES, cardBoxesAt, GRID_WIDTH_PX } from "./answer-card-backdrop-geometry";
 import { pageZoom } from "@/lib/site-scale";
-import { useCanvasDpr, useSiteScale } from "@/lib/use-site-scale";
+import { useCanvasDpr } from "@/lib/use-site-scale";
 import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
@@ -140,6 +140,7 @@ import {
   BEVEL_RISE_RATIO,
   FACE_PROUD_OF_RIM,
   FACE_RISE_FROM,
+  RIM_TUBE_RADIUS_DRAWN,
 } from "./answer-card-geometry";
 
 /**
@@ -1204,17 +1205,17 @@ function useCardRig(): {
       new URLSearchParams(window.location.search).get("cardrig") === "1",
   );
   /**
-   * ⛔ `?tube=` — THE GLASS TUBE's RADIUS (layout px; the rig's range 0.5–6). 15 October 2026, session 2. Carl: *"i think
+   * ⛔ THE GLASS TUBE's RADIUS — `RIM_TUBE_RADIUS_DRAWN` (1.5, layout px). Carl, 15 October 2026, session 2: *"i think
    * it may be the thickness of the tube. i gave instruction to make the "white" the tube. You are auhorised to change the
-   * parameters of the tube"*. The face's crown FOLLOWS (`FACE_CROWN_RISE`'s own rule — the face's apex `FACE_PROUD_OF_RIM`
-   * above the tube's), and so does the bevel's rise; the label keeps its approved size (`convexFaceGeometry`'s `labelRef`).
+   * parameters of the tube"* — chosen behind a `?tube=` door (4 raised and not chosen), made the default in session 3
+   * (*"Yes put it on start"*, R-067) and the door removed. The face's crown FOLLOWS (`FACE_CROWN_RISE`'s own rule — the
+   * face's apex `FACE_PROUD_OF_RIM` above the tube's), and so does the bevel's rise; the label keeps its approved size
+   * (`convexFaceGeometry`'s `labelRef`). ⚠ The server render returns `DEFAULT_TUNING` (tube 2) — nothing draws before
+   * the client mounts.
    */
   const [tuning, setTuning] = useState<AnswerCardTuning>(() => {
     if (typeof window === "undefined") return DEFAULT_TUNING;
-    const raw = new URLSearchParams(window.location.search).get("tube");
-    const t = raw === null || raw === "" ? NaN : Number(raw);
-    if (!Number.isFinite(t)) return DEFAULT_TUNING;
-    const tube = Math.min(6, Math.max(0.5, t));
+    const tube = RIM_TUBE_RADIUS_DRAWN;
     return {
       ...DEFAULT_TUNING,
       tubeRadius: tube,
@@ -3254,10 +3255,11 @@ function CardLighting({
  * ⚠ WHY SCREEN PIXELS, NOT CSS: at 1.36 no CSS width is whole screen pixels (186.66 → 253.86; 186 → 252.96), and visitors
  * bring every ratio. So: (1) the canvas is placed on the screen's pixel grid and sized so its backing IS its displayed size
  * (no resample); (2) every card is the same whole number of screen pixels wide and tall, each edge on a pixel. At most
- * ⅔ of a CSS px per card. The DOM hit boxes are unchanged. `?cardsnap=0` restores the old placement for comparison.
+ * ⅔ of a CSS px per card. The DOM hit boxes are unchanged. (Its `?cardsnap=0` comparison door was removed 15 October 2026,
+ * session 3, on Carl's word: *"you can remove what is not used"*.)
  */
 /**
- * ⛔ THE CANVAS ON THE SCREEN's PIXEL GRID, APPLIED ON THE ELEMENT (`cardSnapOn`, 15 October 2026). After hydration, on the
+ * ⛔ THE CANVAS ON THE SCREEN's PIXEL GRID, APPLIED ON THE ELEMENT (15 October 2026). After hydration, on the
  * wrapper itself: its page position is read, and a `translate` moves it by the fraction to the nearest whole SCREEN pixel;
  * its width and height become a whole number of screen pixels (`snapToScreen`), so the renderer's backing IS its displayed
  * size — no resample. ⚠ WHY NOT IN THE JSX: a value from `devicePixelRatio` mismatches the server HTML, and React does not
@@ -3270,7 +3272,7 @@ function CardLighting({
  */
 function useScreenPixelSnap(el: HTMLElement | null, width: number, height: number, deps: unknown) {
   useEffect(() => {
-    if (!el || !cardSnapOn()) return;
+    if (!el) return;
     let raf = 0;
     let still = 0;
     let last = "";
@@ -3315,22 +3317,10 @@ function useScreenPixelSnap(el: HTMLElement | null, width: number, height: numbe
 
 /** A CSS length → the nearest whole number of SCREEN pixels, back in CSS px (+ 0.02 screen px: see the wrapper). */
 function snapToScreen(css: number): number {
-  if (typeof window === "undefined" || !cardSnapOn()) return css;
+  if (typeof window === "undefined") return css;
   // ⛔ D-097: screen pixels per LAYOUT px are the device ratio × the site's zoom.
   const dpr = (window.devicePixelRatio || 1) * pageZoom();
   return (Math.round(css * dpr) + 0.02) / dpr;
-}
-
-function cardSnapOn(): boolean {
-  return !(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("cardsnap") === "0");
-}
-
-/** The cards' canvas resolution: `?carddpr=` (a number, 1–3) fixes it; absent, `[1, 2]` as before (see the `<Canvas>`). */
-function cardDpr(): number | [number, number] {
-  if (typeof window === "undefined") return [1, 2];
-  const raw = new URLSearchParams(window.location.search).get("carddpr");
-  const n = raw === null ? NaN : Number(raw);
-  return Number.isFinite(n) ? Math.min(3, Math.max(1, n)) : [1, 2];
 }
 
 type CardEnvDoor = { mode: "studio" | "shell"; room: number; yaw: number; gain: number } | null;
@@ -4026,7 +4016,7 @@ function CardScene({
   const cardScale = gridWidth / GRID_WIDTH_PX;
 
   /**
-   * ⛔ EACH CARD ON THE SCREEN's PIXEL GRID (`cardSnapOn`, 15 October 2026). `k` is SCREEN pixels per world unit, read from
+   * ⛔ EACH CARD ON THE SCREEN's PIXEL GRID (15 October 2026). `k` is SCREEN pixels per world unit, read from
    * the renderer's backing (floor(css × dpr)) against its CSS size (so it is exact whatever rounding the wrapper got). Every card the SAME
    * whole number of screen pixels wide (`wd`) and tall (`hd`), its top-left corner on a screen pixel; the world centre
    * and a per-axis scale follow. ⚠ THE SCALE IS NO LONGER EXACTLY UNIFORM — x and y differ by under one screen pixel over
@@ -4039,7 +4029,7 @@ function CardScene({
   const viewDpr = useThree((st) => st.viewport.dpr);
   const pixelSlots = useMemo(() => {
     const plain = slots.map((sl) => ({ x: sl.x, y: sl.y, sx: cardScale, sy: cardScale }));
-    if (!cardSnapOn() || size.width <= 0 || size.height <= 0) return plain;
+    if (size.width <= 0 || size.height <= 0) return plain;
     const kx = Math.floor(size.width * viewDpr) / size.width;
     const ky = Math.floor(size.height * viewDpr) / size.height;
     const wd = Math.round(CARD_WIDTH_PX * cardScale * kx);
@@ -4768,12 +4758,9 @@ export default function AnswerCardCanvas({
     return gridWidth === null ? b : { ...b, width: gridWidth };
   }, [gridWidth]);
 
-  // ⛔ D-097: the canvas's resolution × the site's zoom (the `?carddpr=` door's fixed ratio too) — paired with the
-  // `<Canvas>`'s `resize={{ offsetSize: true }}`, so the world stays in layout px and the drawing stays sharp.
-  const siteZoom = useSiteScale();
-  const rangeDpr = useCanvasDpr([1, 2]);
-  const fixedDpr = cardDpr();
-  const canvasDpr = typeof fixedDpr === "number" ? fixedDpr * siteZoom : rangeDpr;
+  // ⛔ D-097: the canvas's resolution × the site's zoom — paired with the `<Canvas>`'s `resize={{ offsetSize: true }}`, so
+  // the world stays in layout px and the drawing stays sharp.
+  const canvasDpr = useCanvasDpr([1, 2]);
 
   // ⛔ The canvas on the screen's pixel grid — after hydration, on the element (see `useScreenPixelSnap`).
   useScreenPixelSnap(gridEl, box.width, box.height, `${gridNonce}|${gridOffset?.left}|${gridOffset?.top}`);
@@ -5052,11 +5039,9 @@ export default function AnswerCardCanvas({
         */
         camera={{ zoom: 1, position: [0, 0, 1000], near: 0.1, far: 4000 }}
         /*
-          ⛔ `?carddpr=` — SUPERSAMPLING, UNDER TEST (15 October 2026). Carl, on the glass tube's corners: *"its still
-          there. i can see it from 2ft away on a 27" monitor."* At 1× the tube is 4 px wide and the glass (roughness 0.1)
-          draws a sub-pixel highlight along it; MSAA (4 samples, measured) smooths only geometric EDGES, not shading, so the
-          highlight stair-steps round the corners — worst at the left, where the top-left key puts the brightest, thinnest
-          line. Drawing at 2× and letting the browser scale down averages the shading too.
+          ⚠ A `?carddpr=` SUPERSAMPLING DOOR WAS TRIED HERE (15 October 2026) AND REMOVED (session 3, Carl: *"you can
+          remove what is not used"*). Drawing at 2× on a 1× screen did NOT cure the corners (*"no, still there"*) — the
+          cause was the tube's reflection (D-051).
         */
         // ⛔ D-097: measured in LAYOUT px — without it R3F takes the zoomed rect and draws the cards twice as large.
         resize={{ offsetSize: true }}

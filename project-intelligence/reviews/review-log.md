@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-067 — The Answer Cards' Tube Take Made The Default On `/start` (D-051): "Yes Put It On Start"
+
+**Date:** 2026-10-15 (session 3)
+**Reviewer:** Human Founder
+**Subject:** R-066's take (`?tube=1.5&rimuniform=1&tubebloom=1`) as plain `/start`'s default. Measured pixel-identical to the door URL at rest and selected (`live-work/scripts/tube-default-parity-15-october.mjs`).
+
+**Carl's verdict, verbatim:** *"Yes put it on start"*
+
+**Findings:**
+
+- ✔ **An instruction on R-066's look**; the default proven to draw what he judged.
+- ✔ **Then, on plain `/start` at his own setting (Windows Text size 100%, DPR 1 — the site's zoom 1.36 on his 1920 screen, D-097):** *"The page looks good"*. Recorded at the level given — not "approved". Not a master (D-035).
+- ⚠ Open: Next step beside the new tube. Phones are NOT this chunk's — the whole site's, in the mastering pass (D-094; Carl: *"we will do the whole site after completion"*). (The unused doors were removed the same session on Carl's word — D-051's session 3 entry.) ⛔ **The corner radius is NOT open** — tried at 0–30 last session, the defect found to be the reflection; 14 stands (corrected the same session, on Carl's word).
+
+---
+
 ## R-066 — The Answer Cards' Tube: Thinner, Uniform, With A Bloom In The Filament's Colour (D-051, D-029): "Looking A Lot Better"
 
 **Date:** 2026-10-15

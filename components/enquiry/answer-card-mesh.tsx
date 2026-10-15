@@ -48,7 +48,7 @@ import * as THREE from "three";
 import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
-  cardRadiusPx,
+  CARD_RADIUS_PX,
   RIM_TUBE_RADIUS,
   BEVEL_WIDTH,
   BEVEL_RISE,
@@ -850,7 +850,7 @@ function RimMaterial({
   color,
   roughness,
   metalness = RIM_METALNESS,
-  symmetric = false,
+  uniform = false,
   envMap,
   envMapIntensity,
   filament,
@@ -860,16 +860,15 @@ function RimMaterial({
   /** `RIM_METALNESS` (tungsten); 0 for the glass tube (`?cardrim=glass`, `rimIsGlass`). */
   metalness?: number;
   /**
-   * ⛔ THE RIM LIT LEFT–RIGHT SYMMETRIC (the glass tube; Carl, 15 October 2026: *"the right hand side looks ok. Can the card
-   * be mirrored so the left side looks like the right side"*, then *"Go with 2"* — the rim alone, the face's approved
-   * top-left key untouched). With the card on the screen's pixel grid the strips still differed because of the LIGHT
-   * (measured: the left strip's bright line on the tube's OUTER side, the right's on its INNER side — a light from the
-   * left). So: the reflection is the AVERAGE of itself and its mirror in x (the studio seen the same from both strips),
-   * and the rim takes NO direct light (the top-left key is the other asymmetric source) — lit by its reflection alone,
-   * which is also the logo's method. ⚠ The filament's own glow (emissive) is untouched; a lit NEIGHBOUR's filament point
-   * light no longer reaches this rim directly.
+   * ⛔ THE TUBE THE SAME EVERYWHERE (the glass tube; `uUniformRim` below). The rim takes NO direct light — the top-left key
+   * was the asymmetric source (Carl, 15 October 2026: *"Can the card be mirrored so the left side looks like the right
+   * side"*) — lit by its reflection alone, which is also the logo's method. ⚠ The filament's own glow (emissive) is
+   * untouched; a lit NEIGHBOUR's filament point light does not reach this rim directly.
+   * ⚠ HISTORY: first built as `symmetric` (the reflection averaged with its mirror in x, session 1), superseded by the
+   * uniform reflection (session 2) and REMOVED 15 October 2026, session 3, on Carl's word (*"you can remove what is not
+   * used"*). The tungsten rim (`?cardrim=metal`) passes false and keeps August's direction-dependent studio and key.
    */
-  symmetric?: boolean;
+  uniform?: boolean;
   envMap: THREE.Texture | null;
   envMapIntensity: number;
   filament: FilamentState;
@@ -901,18 +900,18 @@ function RimMaterial({
      * where the filament's colour could not survive the metal's brightness.
      */
     uQuench: { value: urlNumber("quench", FILAMENT_QUENCH) },
-    /** 1 = the rim lit left–right symmetric (`symmetric`); 0 = as before. Read at construction. */
-    uSymmetric: { value: symmetric ? 1 : 0 },
     /**
-     * ⛔ `?rimuniform=1` — THE TUBE THE SAME EVERYWHERE (15 October 2026, session 2). Carl, at every corner radius:
+     * ⛔ THE TUBE THE SAME EVERYWHERE (15 October 2026, session 2; first behind `?rimuniform=1`). Carl, at every corner radius:
      * *"Look in the middle of the curve, theres still a defect, that is not light. The glass tube should look the same
      * everywhere"* (a curved glass bulb as the reference), then *"Something is fundamentally wrong."* The cause: the tube
      * reflected the studio IN THE DIRECTION IT FACES — up along the top, left at the left end — so round a curve its
      * bands slid through the studio. ON: each point's reflection depends only on where it sits ACROSS the tube (outer
      * edge → crest → inner edge), averaged over eight directions round the card, so every stretch sees the same studio.
-     * Supersedes `uSymmetric`'s left–right average where both are on. Read at construction.
+     * Superseded the left–right average (`uSymmetric`, removed). Read at construction.
+     * ⛔ THE DEFAULT since 15 October 2026, session 3 (Carl: *"Yes put it on start"*, R-067); the door removed the same
+     * session — on with the glass tube (`uniform`), off with the tungsten.
      */
-    uUniformRim: { value: urlNumber("rimuniform", 0) > 0 ? 1 : 0 },
+    uUniformRim: { value: uniform ? 1 : 0 },
   });
 
   // Keep the uniforms in step with the live filament state. Refs rather than
@@ -938,7 +937,6 @@ function RimMaterial({
       uniform float uBloomGain;
       uniform float uGlow;
       uniform float uQuench;
-      uniform float uSymmetric;
       uniform float uUniformRim;
       varying vec2 vPathNormal;
 
@@ -1042,21 +1040,13 @@ function RimMaterial({
          }
          radiance += uRad / 8.0 - getIBLRadiance( geometryViewDir, geometryNormal, material.roughness );
          iblIrradiance += uIrr / 8.0 - getIBLIrradiance( geometryNormal );
-       } else if ( uSymmetric > 0.5 ) {
-         // THE STUDIO SEEN THE SAME FROM BOTH STRIPS: the reflection replaced by the mean of itself and its mirror in x.
-         // View-space x is world x under this unrotated orthographic camera, and a reflection depends on direction only,
-         // so mirroring the view and the normal in x mirrors what the tube sees about the card's vertical axis.
-         vec3 symMx = vec3( -1.0, 1.0, 1.0 );
-         radiance += 0.5 * ( getIBLRadiance( geometryViewDir * symMx, geometryNormal * symMx, material.roughness )
-                           - getIBLRadiance( geometryViewDir, geometryNormal, material.roughness ) );
-         iblIrradiance += 0.5 * ( getIBLIrradiance( geometryNormal * symMx ) - getIBLIrradiance( geometryNormal ) );
        }
        #endif`,
     ).replace(
       "#include <lights_fragment_end>",
       `#include <lights_fragment_end>
-       // THE TOP-LEFT KEY IS THE OTHER ASYMMETRIC SOURCE: a symmetric (or uniform) rim takes no direct light.
-       if ( uSymmetric > 0.5 || uUniformRim > 0.5 ) {
+       // THE TOP-LEFT KEY IS THE OTHER ASYMMETRIC SOURCE: a uniform rim takes no direct light.
+       if ( uUniformRim > 0.5 ) {
          reflectedLight.directDiffuse = vec3( 0.0 );
          reflectedLight.directSpecular = vec3( 0.0 );
        }
@@ -1243,10 +1233,10 @@ const PATH_STRAIGHT_STEP = 1.85; // px — the old even spacing (445 px / 240)
 const TUBE_PROFILE_SEGMENTS = 10;
 
 /**
- * ⛔ THE TUBE's BLOOM (`?tubebloom=`, 15 October 2026, session 2 — see the band in the card assembly). REACH: how far
+ * ⛔ THE TUBE's BLOOM (15 October 2026, session 2 — see the band in the card assembly). REACH: how far
  * each side of the tube's centre-line the glow runs (layout px). SIGMA: its gaussian width — at the original tube's
  * half-width (2) it is still ~a third of its peak, so the glow reads to the old size. COLOUR / GAIN: a cool white at a
- * strength the `?tubebloom=` number multiplies. ⚠ First values, set by eye on one capture; Carl judges.
+ * strength the bloom's `strength` (1 with the glass tube) multiplies. ⚠ First values, set by eye on one capture; Carl judges.
  */
 const TUBE_BLOOM_REACH = 3.5;
 const TUBE_BLOOM_SIGMA = 1.8;
@@ -1955,7 +1945,7 @@ function sweptBand(
   const normals = new Float32Array(rings * cols * 3);
   // ⛔ THE PATH's OWN OUTWARD DIRECTION AT EVERY VERTEX (15 October 2026, session 2) — so a shader can tell WHERE ACROSS
   // the band a point is (its normal's component along this) from WHICH WAY the band runs (this). Read by the rim's
-  // uniform reflection (`RimMaterial`, `?rimuniform=1`); unused by everything else.
+  // uniform reflection (`RimMaterial`, `uUniformRim`); unused by everything else.
   const pathNormals = new Float32Array(rings * cols * 2);
 
   for (let i = 0; i < rings; i++) {
@@ -2020,7 +2010,7 @@ function convexFaceGeometry(
   plateauU: number,
   /**
    * ⛔ THE LABEL's FRAME, in layout px — 15 October 2026, session 2. The UVs map the label texture onto THIS rectangle,
-   * centred, not onto whatever size the face is: so a thicker glass tube (`?tube=`) shrinks the face but NOT the
+   * centred, not onto whatever size the face is: so a different glass tube (`RIM_TUBE_RADIUS_DRAWN`) changes the face but NOT the
    * approved answer text, and does not squash it. Default: the face at the shipped tube (`cardBudget()`), where this is
    * exactly the old whole-face mapping in every full-width row. ⚠ The face's rounded ends sample the texture by their
    * true position now (before: compressed by row), which moves only label BACKGROUND there — no text reaches them.
@@ -2142,7 +2132,7 @@ function convexFaceGeometry(
 
 /** Dispose a geometry when the component unmounts. */
 /**
- * ⛔ THE TUBE's BLOOM, AND ITS COLOUR IS THE TUBE's OWN LIGHT (`?tubebloom=`, 15 October 2026, session 2). Carl, on the
+ * ⛔ THE TUBE's BLOOM, AND ITS COLOUR IS THE TUBE's OWN LIGHT (15 October 2026, session 2). Carl, on the
  * first take: *"the tube looks better, glow is good, yellow colour is awful"* — a FIXED cool white added over the lit
  * filament's amber washed it to a pale yellow (measured: the approved selected card is amber; with the white glow,
  * cream). So the glow is the filament's colour when it burns — the same black-body ramp the rim's shader uses
@@ -2348,8 +2338,9 @@ export function AnswerCardMesh({
   // `2 * tubeRadius + bevelWidth`, so it widens on its own as the rim comes down.
 
   const path = useMemo(
-    // ⛔ `cardRadiusPx()` — 14, or `?cardradius=` (Carl's right-angle-first method, 15 October, session 2).
-    () => sampleRoundedRectPath(CARD_WIDTH_PX, CARD_HEIGHT_PX, cardRadiusPx()),
+    // ⛔ 14 — `CARD_RADIUS_PX`. Carl's right-angle-first method was tried at 0–30 (15 October, session 2) and the radius
+    // left as it was: the defect was the tube's reflection, not the curve. Its `?cardradius=` door removed in session 3.
+    () => sampleRoundedRectPath(CARD_WIDTH_PX, CARD_HEIGHT_PX, CARD_RADIUS_PX),
     [],
   );
 
@@ -2382,14 +2373,15 @@ export function AnswerCardMesh({
     });
   }, [path, tubeRadius]);
 
-  // ── ⛔ THE TUBE's BLOOM — `?tubebloom=` (strength; 0/absent = none). 15 October 2026, session 2. ──
+  // ── ⛔ THE TUBE's BLOOM — 15 October 2026, session 2 (first behind `?tubebloom=`). THE DEFAULT since session 3 (Carl:
+  // *"Yes put it on start"*, R-067), the door removed the same session; on with the glass tube, off with the tungsten. ──
   // Carl, on the thicker tube: *"seems out of proportion to the card. Lets go the other way. Make the tube a little bit
   // smaller than it was, to hide the look, but give it a bloom so it looks the original size."* A soft ADDITIVE band
   // swept along the tube's own centre-line — the same at every point of the path, as the tube now is
-  // (`?rimuniform=1`) — reaching `TUBE_BLOOM_REACH` each side and falling off as a gaussian (`TUBE_BLOOM_SIGMA`), just in
+  // (`uUniformRim`) — reaching `TUBE_BLOOM_REACH` each side and falling off as a gaussian (`TUBE_BLOOM_SIGMA`), just in
   // front of the tube's apex. A band, not a post-process: no second pass on this canvas (the structural route). It sits
   // in the card's group, so the entrance and exit fade it with everything else.
-  const tubeBloom = useMemo(() => urlNumber("tubebloom", 0), []);
+  const tubeBloom = useMemo(() => (rimIsGlass() ? 1 : 0), []);
   const bloomGeometry = useMemo(() => {
     if (tubeBloom <= 0) return null;
     const centred = path.map((p) => ({ x: p.x - p.nx * tubeRadius, y: p.y - p.ny * tubeRadius, nx: p.nx, ny: p.ny }));
@@ -2612,7 +2604,7 @@ export function AnswerCardMesh({
             color={rimIsGlass() ? RIM_GLASS_COLOR : (RIM_METALS[glassTuning.rimMetal]?.color ?? RIM_METAL_COLOR)}
             roughness={rimIsGlass() ? RIM_GLASS_ROUGHNESS : glassTuning.rimRoughness}
             metalness={rimIsGlass() ? 0 : RIM_METALNESS}
-            symmetric={rimIsGlass()}
+            uniform={rimIsGlass()}
             envMap={envMap}
             envMapIntensity={RIM_ENV_INTENSITY * lightLevel}
             filament={filament}
