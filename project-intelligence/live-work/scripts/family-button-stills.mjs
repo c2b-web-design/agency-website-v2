@@ -55,7 +55,11 @@ for (const m of MEMBERS) {
     const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: dpr, reducedMotion: "reduce" });
     await ctx.addInitScript(grabber);
     const p = await ctx.newPage();
-    await p.goto(m.url, { waitUntil: "networkidle" });
+    // ⚠ "load", not "networkidle" (15 October 2026): /about at 2× never went network-idle within 30 s — the grabber reads back
+    // EVERY frame of EVERY context, the room's full-window canvas included, and the desk mark's worker chunk stayed pending
+    // (`about-netwatch-15-october.mjs`). Nothing here depends on the network being idle: the still is read only once the
+    // button reports `data-drawn` (below), which already waits for the font, the label and the reflection.
+    await p.goto(m.url, { waitUntil: "load" });
     await p.evaluate((s) => document.querySelector(s).scrollIntoView({ block: "center" }), m.section);
     await p.waitForFunction((l) => document.querySelector(l)?.dataset.drawn === "1", m.link, { timeout: 30000 });
     await p.waitForTimeout(1000);

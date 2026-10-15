@@ -116,6 +116,10 @@ The family's third member: GOLD (the desk mark's gold as paint, metalness 1, rou
 
 Carl: *"make it a platinum blue version of the Teal and Gold pill."* Bench passes on `/proto/button?member=next`: mesh R-053 (approved), material R-054 (platinum blue #3F6DB8, ice blue words), light R-055 (the teal's lamp). On `/start` (R-056, *"looks good"*): the persistent host unchanged, drawing the family scene; rolling at every question; the traveller dark for now (`?traveller=1`). **Next (Carl): the button's light on the cards, and the cards' warm glow on the button; the traveller repositioned.**
 
+## Current work — the logo is the standard for metal (D-088, 15 October)
+
+Carl: *"If theres a standard for building metal then the logo is it. All other similar objects should meet that standard."* — refined the same day: *"settings may or may not have to be tweaked depending on the colour and text."* The family buttons were painted metal under lamps, reflecting nothing; the teal and gold now carry the reflection of a studio HDRI (Poly Haven "Monochrome Studio 02", CC0, `public/env/`) as DETAIL over the page's lamp-lit look — its room darkened to 0.1, turned 150° so its dark side sits behind the words. ✔ **Teal approved on the home page (R-058, R-059); gold approved on `/about` §4 (R-060).** **The platinum blue `Next step` is HELD** at no reflection (Carl). Roughness kept at 0.4 (the logo's 0.25 not taken).
+
 ## Carried, open — Carl's
 
 - The image scroll: §1's last lines pass over the opaque room; scroll-up fades it again; phones not
@@ -131,6 +135,7 @@ Carl: *"make it a platinum blue version of the Teal and Gold pill."* Bench passe
 
 | Task | Output | Notes |
 |---|---|---|
+| D-088 THE LOGO STANDARD — the teal and gold family buttons given the reflection of a studio HDRI as detail (room 0.1, turned 150°, strength 1, roughness 0.4), the blue held. ✔ Carl, teal: *"Button looks great. Approved."*; gold: *"Approved. Put it on the page then commit and push."* | `components/home/whoweare-button-scene.tsx`, `whoweare-bench.tsx`, `public/env/monochrome_studio_02_1k.hdr`, `public/buttons/*-rest@{1,2}x.png` | R-058 – R-060. Verified: swap match 0.00 both; home 9/9, `/about` 9/9, `/start` 11/11; the `.hdr` on `/` and `/about` only |
 | D-088 `Next step` REDONE, platinum blue (14 October): bench passes mesh/material/light; on `/start` in the unchanged persistent host; rolls at every question (a stale-focus hold found and fixed); no frames while hidden; the traveller dark by default. ✔ Carl: *"yes looks good"* | `components/enquiry/nextstep-canvas.tsx`, `components/enquiry/answer-card-canvas.tsx`, `components/home/whoweare-button-scene.tsx`, `app/proto/button/page.tsx` | R-053 – R-056. Verified `nextstep-rollout-verify.mjs` 11/11 ×2; Q5 reveal 17 ms vs the old pill's 50 ms |
 | D-088 §2's RETURN RULES, STEP 2 + CARD 1's PROMPT (14 October): three states owned by `NeonBloom` (fresh / playing / static); §4 → static, a 3 s §3 linger → fresh; the trigger reads both directions (the unseen deep-link strike fixed); the desk mark holds its first strike; card 1's FACE is the restart (`clip-path` over CA's outline; `#roles` and the runway `pointer-events-none`); "click to restart" large on the face (`CardPrompt`), off with CA's reverse flicker as the rim strikes. ✔ Carl: *"Functions and mechanisms are good. So is text size and the timing of its exit."* | `components/about/neon-bloom.tsx`, `card-extrude.tsx`, `about-card-canvas.tsx`, `app/about/page.tsx` | R-052. Verified `about-s2-return-verify.mjs` 20/20. First control (a bordered HTML button) superseded the same day |
 | D-088 `Who we are` button, PASS 3 + THE ROLL, ON THE HOME PAGE (12 October, session 2): painted teal metal (metalness 1, roughness 0.4) under the clay's lamps; a moving lamp on Carl's path (arc lifted, dipped over the words); 2×; the `#contact` text scaled with it; the pill SOLID and ROLLING forward (slow at the faces, fast edge-on), held by pointer proximity or focus; frames gated by `/about`'s mechanism; reduced motion still; `?lighthelpers=1`. ✔ Carl: *"Most definately approved. Excellent work."* | `components/home/whoweare-button.tsx`, `whoweare-button-scene.tsx`, `whoweare-bench.tsx`, `components/ui/button-family-geometry.ts`, `app/page.tsx`, `lib/canvas-on-screen.ts`, `components/about/card-extrude.tsx`, `app/proto/button/page.tsx` | R-044 (not a pill), R-045, R-046. Verified: `whoweare-home-verify-roll.mjs` 9/9. Not committed |
@@ -165,7 +170,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-14 (later) — `Next step` redone as the platinum blue family member and on `/start` (R-053 – R-056); the traveller dark for now. Committed and pushed on Carl's word.*
+*Last updated: 2026-10-15 — the logo standard: the teal and gold buttons given a studio's reflection (R-058 – R-060); the blue held. Committed and pushed on Carl's word.*
+
+*Previously: 2026-10-14 (later) — `Next step` redone as the platinum blue family member and on `/start` (R-053 – R-056); the traveller dark for now. Committed and pushed on Carl's word.*
 
 *Previously: 2026-10-14 — §2's return rules (step 2) and card 1's prompt built (R-052); committed and pushed on Carl's word.*
 

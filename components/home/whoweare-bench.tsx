@@ -149,6 +149,12 @@ export function FamilyPill({ label, fixed, id }: { label: string; fixed?: { w: n
   const mlLiftParam = useParam("mllift", "0");
   const moving = { on: (studio === "teal" || mode === "teal") && mlParam !== "0", frozen: mtParam === "" ? null : Math.min(1, Math.max(0, Number(mtParam))), intensity: mliParam === "" ? undefined : Number(mliParam), size: Number(mlSizeParam) || 1, kind: mlKindParam === "lamp" ? ("lamp" as const) : ("panel" as const), lift: Number(mlLiftParam) || 0, dip: { depth: Number(useParam("mldip", "0")) || 0, at: Number(useParam("mldipat", "0.5")), width: Number(useParam("mldipw", "0.25")) } };
   const studioYaw = Number(useParam("studioyaw", "0"));
+  // ⛔ THE LOGO STANDARD (15 October 2026): ?env=hdri — the studio's REFLECTION on the painted metal (`FAMILY_HDRI_SRC`);
+  // ?envint= its strength (shared with the metal path), ?envyaw= (degrees) the studio turned about the vertical.
+  const env = useParam("env", "none") === "hdri" ? ("hdri" as const) : ("none" as const);
+  const envYaw = Number(useParam("envyaw", "0")) || 0;
+  // ?envroom= — the studio's ROOM (everything below luminance 1) multiplied by this; the softboxes untouched (`loadHdri`).
+  const envRoom = Math.min(1, Math.max(0, Number(useParam("envroom", "1"))));
 
   const span = useRef<HTMLSpanElement>(null);
   const [box, setBox] = useState<{ w: number; h: number; font: string; glyphs: Glyphs } | null>(null);
@@ -235,6 +241,9 @@ export function FamilyPill({ label, fixed, id }: { label: string; fixed?: { w: n
           paint={paint}
           paintMetal={paintMetal}
           paintRough={paintRough}
+          env={env}
+          envYaw={envYaw}
+          envRoom={envRoom}
           band={rollOn && !fixed ? bandFrac * h : 0}
           roll={{ on: rollOn && !fixed, half: rollHalf, ease: rollEase, hold, at: rollAtParam === "" ? null : Number(rollAtParam) }}
           fillSize={fillSize}

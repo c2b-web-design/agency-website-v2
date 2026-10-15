@@ -10,9 +10,10 @@
  * Passes: 1 the mesh (R-042), 2 the material and the label (R-043), 3 the light — step 1, ONE STATIC LIGHT FROM THE RIGHT
  * (built); the moving light, directed, is the final step.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, use, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 import { buildPillBand, buildPillGeometry, familySurfaceZ, FAMILY_BAND, FAMILY_PROFILE, NEXTSTEP_PROFILE } from "@/components/ui/button-family-geometry";
 import { canvasOnScreen } from "@/lib/canvas-on-screen";
 import { FontLoader, type Font } from "three/addons/loaders/FontLoader.js";
@@ -392,12 +393,98 @@ export function useStudio(enabled: boolean, studio: "pill" | "logo" | "teal" = "
   return rt?.texture ?? null;
 }
 
-export type PillProps = { w: number; h: number; tilt: boolean; legacy: boolean; metal: boolean; rough: number; envInt: number; studio?: "pill" | "logo" | "teal"; studioYaw?: number; glint?: number; fill?: number; floor?: number; surround?: number; studioBg?: string; top?: number; fillSize?: number; paint?: string; paintMetal?: number; paintRough?: number; band?: number };
+/**
+ * ⛔⛔ THE LOGO IS THE STANDARD FOR METAL — Carl, 15 October 2026: *"If theres a standard for building metal then the logo is
+ * it. All other similar objects should meet that standard."* The desk mark is full metal lit by the REFLECTION of a studio
+ * (`logo-mark-material.ts`); the family buttons were painted metal under lamps, reflecting nothing (D-088, 15 October).
+ * ⛔ WHY A PHOTOGRAPHED STUDIO, NOT THE LOGO's PANELS: the logo's face is FLAT (it mirrors one direction); the pill is a DOME
+ * (it mirrors every direction from face-on to edge-on), so a studio of panels on black put its GAPS on the face as black
+ * bands (R-044, takes 4–11, 12 October). An HDRI is CONTINUOUS — every direction holds something — so there are no gaps.
+ * ⛔ THE STUDIO: Poly Haven "Monochrome Studio 02" (Grzegorz Wronkowski, CC0), 1k equirect `.hdr`, 1.56 MB — two tall strip
+ * softboxes either side (the logo studio's two tall softboxes), a neutral grey cyclorama, no warm cast (the logo studio's
+ * warm floor turned the teal GREEN). three turns an equirect env map into its PMREM on first use, per renderer.
+ */
+export const FAMILY_HDRI_SRC = "/env/monochrome_studio_02_1k.hdr";
+
+/**
+ * ⛔ THE ROOM DARKENED, THE SOFTBOXES KEPT (`room`, 15 October 2026 — Carl, on the studio at strength 0.4: *"it does not
+ * improve it. The page text extrusion is clearly visible as it rotates and i like the contrast it has with the dark
+ * background. If it can be turned down but have the added reflection detail that would be great."*). Measured
+ * (`live-work/scripts/hdr-stats.mjs`): the studio's ROOM — walls, cyclorama, floor — sits at luminance 0.02–0.8; its
+ * SOFTBOXES above 2 (3% of the pixels, 58% of the light). The logo's studio is softboxes on NEAR-BLACK; this one's grey room
+ * lifted the whole face. So every pixel below luminance 1 is multiplied by `room`, blending back to untouched by 2: the
+ * face keeps the lamps' darkness, the softboxes' reflections stay as detail. Still continuous (dark, not black — no gaps).
+ */
+const ROOM_KNEE = [1, 2] as const;
+const hdriBase = new Map<string, Promise<THREE.DataTexture>>();
+const hdriCache = new Map<string, Promise<THREE.DataTexture>>();
+/** One fetch and decode per URL (and one derived copy per `room`) for the whole page, shared by every canvas (each renderer
+ *  still builds its own PMREM). */
+function loadHdri(url: string, room = 1): Promise<THREE.DataTexture> {
+  const key = `${url}|${room}`;
+  let p = hdriCache.get(key);
+  if (p) return p;
+  let base = hdriBase.get(url);
+  if (!base) {
+    const loader = new HDRLoader();
+    loader.setDataType(THREE.FloatType);
+    base = loader.loadAsync(url);
+    hdriBase.set(url, base);
+  }
+  p = base.then((src) => {
+    if (room === 1) {
+      src.mapping = THREE.EquirectangularReflectionMapping;
+      return src;
+    }
+    const { width, height } = src.image;
+    const from = src.image.data as Float32Array;
+    const data = new Float32Array(from.length);
+    for (let i = 0; i < from.length; i += 4) {
+      const L = 0.2126 * from[i] + 0.7152 * from[i + 1] + 0.0722 * from[i + 2];
+      const t = Math.min(1, Math.max(0, (L - ROOM_KNEE[0]) / (ROOM_KNEE[1] - ROOM_KNEE[0])));
+      const k = room + (1 - room) * t * t * (3 - 2 * t);
+      data[i] = from[i] * k;
+      data[i + 1] = from[i + 1] * k;
+      data[i + 2] = from[i + 2] * k;
+      data[i + 3] = from[i + 3];
+    }
+    const t = new THREE.DataTexture(data, width, height, THREE.RGBAFormat, THREE.FloatType);
+    t.colorSpace = src.colorSpace;
+    t.minFilter = src.minFilter;
+    t.magFilter = src.magFilter;
+    t.generateMipmaps = false;
+    t.flipY = src.flipY;
+    t.mapping = THREE.EquirectangularReflectionMapping;
+    t.needsUpdate = true;
+    return t;
+  });
+  hdriCache.set(key, p);
+  return p;
+}
+
+/** The family's environment: `"none"` (lamps only — the 12 October recipe) or `"hdri"` (the studio's reflection). */
+export type FamilyEnv = "none" | "hdri";
+
+export type PillProps = { w: number; h: number; tilt: boolean; legacy: boolean; metal: boolean; rough: number; envInt: number; studio?: "pill" | "logo" | "teal"; studioYaw?: number; glint?: number; fill?: number; floor?: number; surround?: number; studioBg?: string; top?: number; fillSize?: number; paint?: string; paintMetal?: number; paintRough?: number; band?: number; env?: FamilyEnv; envYaw?: number; envRoom?: number };
 export type LabelProps = { glyphs: Glyphs | null; depth: number; ink: string; bevel: number; side?: string; onDrawn?: () => void };
 export type KeyProps = { on: boolean; angle: number; elevation: number; intensity: number };
 
+/**
+ * The pill with the studio's reflection: suspends until the HDRI is decoded (React `use`), so the canvas draws NOTHING until
+ * the reflection is there — on the site the still stays up until then (the cold-load rule: the first frame IS the look).
+ */
+function HdriPill(props: PillProps) {
+  const hdri = use(loadHdri(FAMILY_HDRI_SRC, props.envRoom ?? 1));
+  return <Pill {...props} hdri={hdri} />;
+}
+
+/** The pill, with or without the studio's reflection (`env`). */
+export function FamilyPillMesh(props: PillProps) {
+  return props.env === "hdri" && !props.metal ? <HdriPill {...props} /> : <Pill {...props} />;
+}
+
 // `tilt` is the Rocker's (the pill and its letters rock together), so the pill itself ignores it.
-export function Pill({ w, h, legacy, metal, rough, envInt, studio = "pill", studioYaw = 0, glint = 0.5, fill = 1, floor = 1, surround = 0, studioBg = "", top = 1, fillSize = 1, paint, paintMetal = 0, paintRough = CLAY.roughness, band = 0 }: PillProps) {
+export function Pill({ w, h, legacy, metal, rough, envInt, studio = "pill", studioYaw = 0, glint = 0.5, fill = 1, floor = 1, surround = 0, studioBg = "", top = 1, fillSize = 1, paint, paintMetal = 0, paintRough = CLAY.roughness, band = 0, envYaw = 0, hdri = null }: PillProps & { hdri?: THREE.Texture | null }) {
   const geometry = useMemo(() => buildPillGeometry(w, h, legacy ? NEXTSTEP_PROFILE : FAMILY_PROFILE), [w, h, legacy]);
   const env = useStudio(metal, studio, studioYaw, glint, fill, floor, surround, studioBg, top, fillSize);
   const material = useMemo(() => {
@@ -406,12 +493,22 @@ export function Pill({ w, h, legacy, metal, rough, envInt, studio = "pill", stud
     // pill (*"the clay version is quite clearly a pill shape"*), in a colour instead of grey. Bench `?mode=teal`.
     // `paintMetal` (same session: *"we need to turn up the metalness gradually, at least then we will have an idea when the
     // ptoblems start"*) — the ONE variable stepped from 0; everything else is the painted clay's. Bench `?metalness=`.
-    if (!metal) return new THREE.MeshStandardMaterial({ ...CLAY, color: paint ?? CLAY.color, metalness: paint ? paintMetal : 0, roughness: paint ? paintRough : CLAY.roughness });
+    // ⛔ `hdri` (15 October 2026, the logo standard): the studio's reflection on the painted metal — `envInt` its strength,
+    // `envYaw` (degrees) the studio turned about the vertical, as the logo's director turns its studio.
+    if (!metal) {
+      const m = new THREE.MeshStandardMaterial({ ...CLAY, color: paint ?? CLAY.color, metalness: paint ? paintMetal : 0, roughness: paint ? paintRough : CLAY.roughness });
+      if (hdri) {
+        m.envMap = hdri;
+        m.envMapIntensity = envInt;
+        m.envMapRotation.set(0, (envYaw * Math.PI) / 180, 0);
+      }
+      return m;
+    }
     // The studio goes in at construction (react-hooks/immutability forbids setting it on the memoised material after).
     const m = new THREE.MeshPhysicalMaterial({ metalness: 1, roughness: rough, envMapIntensity: envInt, envMap: env });
     m.color.setRGB(TEAL_F0_LINEAR[0], TEAL_F0_LINEAR[1], TEAL_F0_LINEAR[2], THREE.LinearSRGBColorSpace);
     return m;
-  }, [metal, rough, envInt, env, paint, paintMetal, paintRough]);
+  }, [metal, rough, envInt, env, paint, paintMetal, paintRough, hdri, envYaw]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   useEffect(() => () => material.dispose(), [material]);
   const bandGeo = useMemo(() => (band > 0 ? buildPillBand(w, h, band) : null), [w, h, band]);
@@ -605,9 +702,12 @@ export function PillCanvas({
           />
         )}
         {ticking && <Ticker />}
+        {/* ⛔ ONE BOUNDARY ROUND THE PILL AND ITS LETTERS: with the studio's reflection (`env="hdri"`) the pill waits for the
+            HDRI, and the letters must wait WITH it — a frame of letters without their pill would end the still's hold early. */}
+        <Suspense fallback={null}>
         <Rocker tilt={tilt}>
           <Roller roll={roll}>
-            <Pill {...pill} />
+            <FamilyPillMesh {...pill} />
             {label.glyphs && (
               <group position-z={(pill.band ?? 0) / 2}>
                 <ExtrudedLabel glyphs={label.glyphs} w={w} h={h} legacy={legacy} depth={label.depth} ink={label.ink} bevel={label.bevel} side={label.side} onDrawn={label.onDrawn} />
@@ -623,6 +723,7 @@ export function PillCanvas({
             )}
           </Roller>
         </Rocker>
+        </Suspense>
       </Canvas>
     </div>
   );
@@ -964,7 +1065,19 @@ export const WHOWEARE_LOOK = {
   lamp: { kind: "lamp" as const, intensity: 1, lift: 120, dip: { depth: 0.9, at: 0.5, width: 0.4 } },
   ink: "#" + INK_DEFAULT,
   side: SIDE_INK,
+  /**
+   * ⛔ THE STUDIO's REFLECTION AS DETAIL (15 October 2026, the logo standard — R-058, Carl on the bench: *"That looks a lot
+   * better. theres no white band behind the text and its legible and the extrusion is visible as it rotates."*; then *"keep
+   * 0.4 and put it on the page. i will judge it in its proper environment."*). The lamps above stay the BASE (Carl: *"i like
+   * the contrast it has with the dark background"*); the HDRI (`FAMILY_HDRI_SRC`) adds the reflection: strength 1, its room
+   * darkened to 0.1 (`loadHdri`), turned 150° so its dark side sits behind the words (at 240° and 300° a softbox lands there —
+   * the white band). ⚠ A take, to be judged on the home page.
+   */
+  env: { kind: "hdri" as FamilyEnv, intensity: 1, room: 0.1, yaw: 150 },
 };
+
+/** No reflection — the 12 October recipe (the clay's lamps only). The gold and the blue keep it until judged with one. */
+const ENV_NONE = { kind: "none" as FamilyEnv, intensity: 1, room: 1, yaw: 0 };
 
 /**
  * ⛔ `/about` §4's LOOK — `Start a conversation`, the family's third member (D-088, 13 October 2026; passes R-047 mesh,
@@ -978,6 +1091,12 @@ export const START_LOOK: typeof WHOWEARE_LOOK = {
   paint: "#ffe39e",
   ink: "#1e1e24",
   side: "#1e1e24",
+  // ⛔ THE TEAL's STUDIO, UNCHANGED (15 October 2026, judged on its own on the bench — Carl: *"A brighter gold does bring the
+  // text out more. So even though i mentioned a standard, which is generally true, settings may or may not have to be tweaked
+  // depending on the colour and text. Approved."*). On gold the words are DARK on a bright face, so the reflection's lift
+  // RAISES their contrast (worst 2.62 → 3.28:1) — the reverse of the teal. A copy of the values, not a reference: the two
+  // members are tuned separately.
+  env: { kind: "hdri" as FamilyEnv, intensity: 1, room: 0.1, yaw: 150 },
 };
 
 /**
@@ -992,6 +1111,9 @@ export const START_LOOK: typeof WHOWEARE_LOOK = {
 export const NEXT_LOOK: typeof WHOWEARE_LOOK = {
   ...WHOWEARE_LOOK,
   paint: "#3f6db8",
+  // ⛔ HELD (Carl, 15 October 2026: *"implement it on the gold and teal buttons but hold off on the blue"*): this member
+  // spreads the teal's look, so the teal's reflection would reach it — pinned to none, as approved (R-055/R-056, R-057).
+  env: ENV_NONE,
 };
 
 /** The family's members as they ship, by name — the button component picks one (its CSS fallback keeps its own copy). */
@@ -1054,7 +1176,10 @@ export function WhoWeAreScene({
       paintRough={L.paintRough}
       band={L.band * h}
       rough={TEAL_DEFAULTS.roughness}
-      envInt={TEAL_DEFAULTS.envMapIntensity}
+      env={L.env.kind}
+      envInt={L.env.kind === "hdri" ? L.env.intensity : TEAL_DEFAULTS.envMapIntensity}
+      envRoom={L.env.room}
+      envYaw={L.env.yaw}
       frameloop="demand"
       ticking={!reduced && !paused}
       roll={{ on: !reduced && live, half: L.roll.half, ease: L.roll.ease, hold, at: null }}

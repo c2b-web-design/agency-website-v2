@@ -65,6 +65,71 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-060 — The Gold `Start a conversation` With The Studio's Reflection, Bench And `/about` §4 (D-088): "Approved"
+
+**Date:** 2026-10-15
+**Reviewer:** Human Founder
+**Subject:** `/proto/button?member=start…&env=hdri&envroom=0.1&envyaw=150` — the gold's approved look (R-049/R-051) with the teal's studio settings applied unchanged; then on `/about` §4 (`START_LOOK.env`) with its stills re-rendered.
+
+**Carl's verdict, verbatim:** *"i agree. A brighter gold does bring the text out more. So even though i mentioned a standard, which is generally true, settings may or may not have to be tweaked depending on the colour and text. Approved. Put it on the page then commit and push."*
+
+**Findings:**
+
+- ✔ **APPROVED** — the gold member under the logo standard. Not a master (D-035).
+- ⛔ **The standard refined:** the logo sets the method; the settings are tuned per member, by colour and words' colour.
+- Measured on the bench (face-on, scale 2): median L 0.203 → 0.242; the dark words' worst 2.62 → 3.28:1 (the reflection's lift raises dark-ink contrast). On `/about`: swap match 0.00; `start-button-about-verify.mjs` 9/9; roll 0 frames over 34 ms.
+- ⚠ Open: production's arrival not measured; the blue `Next step` still held at no reflection.
+
+---
+
+## R-059 — The Teal `Who we are` With The Studio's Reflection, On The Home Page (D-088): "Approved"
+
+**Date:** 2026-10-15
+**Reviewer:** Human Founder
+**Subject:** The home page `#contact` on the dev server: the approved teal (R-046) with the studio HDRI's reflection as detail — R-058's bench take (`WHOWEARE_LOOK.env`: strength 1, room 0.1, turned 150°), roughness kept at 0.4 (Carl: *"keep 0.4 and put it on the page. i will judge it in its proper environment."*); its stills re-rendered; the gold and the blue pinned to no reflection.
+
+**Carl's verdict, verbatim:** *"Button looks great. Approved. Move onto the gold button."*
+
+**Findings:**
+
+- ✔ **APPROVED** — the teal member under the logo standard (D-088, 15 October). Not a master (D-035).
+- Behind it: the swap pixel-identical to the new still (0.00); `whoweare-home-verify-roll.mjs` 9/9; roll smoothness 0 frames over 20 ms; the gold's stills byte-identical; `nextstep-rollout-verify.mjs` 11/11; the `.hdr` fetched on `/` only.
+- ⚠ Open: the take-over from the still ~2.2 s (dev) vs ~1.1 s on 13 October — production to be measured before the push; not committed.
+
+---
+
+## R-058 — The Teal `Who we are` With The Studio's Reflection, Turned And Darkened, On The Bench (D-088): "That Looks A Lot Better"
+
+**Date:** 2026-10-15
+**Reviewer:** Human Founder
+**Subject:** `/proto/button?mode=teal&paint=1fb2c4&metalness=1&paintrough=0.4&roll=1&mlkind=lamp&mli=1&mllift=120&mldip=0.9&mldipat=0.5&mldipw=0.4&scale=2&env=hdri&envroom=0.1&envyaw=150` — the home page's approved teal (R-046: painted metal, the clay's lamps, the moving lamp, rolling) with the reflection of a studio HDRI added as detail (Poly Haven "Monochrome Studio 02", CC0), its room darkened to 0.1 and the studio turned 150° so its dark side sits behind the words. The re-track under Carl's ruling that the logo is the standard for metal (D-088, 15 October). Frames: `live-work/screenshots/metal-standard-15-october/`.
+
+**Carl's verdict, verbatim:** *"That looks a lot better. theres no white band behind the text and its legible and the extrusion is visible as it rotates."*
+
+**Findings:**
+
+- ✔ **A positive verdict, at the level given — "a lot better"; the word "approved" was not used.** Bench only; the home page is unchanged.
+- Measured face-on (home size, DPR 2): median L 0.116 (the page 0.096), blown 507 px (365), words worst 2.32:1 (2.41:1).
+- Superseded the same day by Carl's eye: the studio at strength 1 (*"too bright. The text is on the way to being blown out"*) and at 0.4 (*"it does not improve it"*).
+- ⚠ Open: roughness (0.4) vs the logo's 0.25; the gold with the same studio; the live pages (the stills, the cold load, the roll's smoothness, the blue unchanged).
+
+---
+
+## R-057 — R-050 – R-052 And R-054 – R-056 Raised From "Looks Good" To Approved (D-088): "Yes, Approved"
+
+**Date:** 2026-10-15
+**Reviewer:** Human Founder
+**Subject:** The six verdicts recorded at the level given (*"looking good"*, *"looks great"*, *"good"*, *"looks good"*) and listed as open in the 14 October handoff: R-050 and R-051 (the gold `Start a conversation` button on `/about` §4, the room's off-screen rules, option A), R-052 (§2's return rules, step 2, card 1's prompt), R-054 – R-056 (the platinum blue `Next step`: material, light, on `/start`).
+
+**Carl's verdict, verbatim:** *"Yes, approved."*
+
+**Findings:**
+
+- ✔ **APPROVED — all six, as built on 13–14 October.** The original entries keep their wording (no retroactive rewriting); this entry raises them. Not a master (D-035).
+- ⚠ Not covered by this approval: the 60% share for "in §4" (R-052's open item — explained to Carl the same day); the player's idle content, **PARKED by Carl** (*"parked, we will come back to this"*).
+
+---
+
 ## R-056 — The Platinum Blue `Next step` On `/start`, Rolling At Every Question (D-088): "Looks Good"
 
 **Date:** 2026-10-14
@@ -1303,7 +1368,15 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-10-14 — **R-056 added**: the platinum blue `Next step` on `/start`, rolling at every question — "looks good".*
+*Last updated: 2026-10-15 — **R-060 added**: the gold with the studio's reflection, bench and `/about` §4 — "Approved".*
+
+*Previously: 2026-10-15 — **R-059 added**: the teal with the studio's reflection on the home page — "Approved".*
+
+*Previously: 2026-10-15 — **R-058 added**: the teal with the studio's reflection, turned and darkened, on the bench — "a lot better".*
+
+*Previously: 2026-10-15 — **R-057 added**: R-050 – R-052 and R-054 – R-056 raised to approved — "Yes, approved".*
+
+*Previously: 2026-10-14 — **R-056 added**: the platinum blue `Next step` on `/start`, rolling at every question — "looks good".*
 
 *Previously: 2026-10-14 — **R-055 added**: the `Next step` button redone, pass 3 (the light) — "It looks good. Put it on the page."*
 
