@@ -185,7 +185,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-15 (session 2, end) — D-097: the whole site scaled to the window it was composed in (R-063 – R-065), site-wide; the Q&A tube thinner, uniform, with a filament-coloured bloom behind doors (R-066). Committed and pushed on Carl's word with session 1's card work.*
+*Last updated: 2026-10-15 (session 3, end) — the Q&A tube default (R-067); the travelling light back on with its dip (R-068); Next step's studio and the cards' warmth on it (R-069, R-070); the space behind /start (R-071); files relocked and the chunk closed to code. Next (Carl): the corridor text as extruded three.js. Pushed.*
+
+*Previously: 2026-10-15 (session 2, end) — D-097 site-wide; the Q&A tube behind doors (R-066).*
 
 *Previously: 2026-10-15 (end) — the Q&A cards' glass tube, filled studio, held filament approved (R-061, R-062) and made the default, NOT committed; the corners and pixel grid worked through; next: the cards bigger.*
 
