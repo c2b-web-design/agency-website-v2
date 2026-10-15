@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import ContactFieldCanvas, { FIELD_ENTRANCE_END_MS } from "./contact-field-canvas";
 import ContactFieldInputs, { type FieldStateSnapshot } from "./contact-field-inputs";
 import { FIELD_SLOTS } from "./contact-field-geometry";
@@ -382,6 +383,51 @@ type MemoryItem = {
 type EnquiryOpeningProps = {
   onStageChange?: (stage: "opening" | "active" | "complete") => void;
 };
+
+/**
+ * ⛔ THE SPACE BEHIND `/start` — D-023's crawl homage (15 October 2026, session 3). Carl chose, from four takes:
+ *   - THE CORRIDOR — the exoplanet GJ 9827d (heic2403a): *"a clear and unambiguous nod to Star Wars. There is a light source
+ *     bottom left… The logo works well against the dark background as do the navigation headers against the blue planet."*
+ *   - THE CLIENT INFO — the galactic centre (opo0928f): *"The logo is back to gold. Good contrast against the blue of space. As
+ *     is the gold rims. The card colour with its changing shades works well in the scene."*
+ * The planet fades out and the galactic centre in at `stage === "complete"` — the beat the crawl's fade and the logo's return
+ * to gold already start on — over the crawl's own fade (`--enquiry-crawl-fade`, `globals.css`). No new timing.
+ * THE FILES (`public/space/`): 3840 wide, DARKENED BY A CURVE baked in (each value raised to a power — white stays white, so the
+ * stars and the planet's rim stay crisp; Carl: *"can you sharpen it?"*), then a light unsharp mask; the powers (1.2, 1.5) put the
+ * mid-tones where the judged veils (0.2, 0.45) had them. Made by the session's export from the archive's 4000 px JPEGs.
+ * ⛔ THE CREDIT IS MANDATORY (CC BY 4.0): visible, unaltered, our changes noted — each rides its image's layer.
+ */
+const SPACE = {
+  corridor: {
+    src: "/space/exoplanet-gj9827d.jpg",
+    credit: "Exoplanet GJ 9827d (artist's concept): NASA, ESA, Leah Hustak and Ralf Crawford (STScI), via ESA/Hubble. Darkened and sharpened.",
+  },
+  clientInfo: {
+    src: "/space/galactic-centre.jpg",
+    credit: "Galactic centre region: NASA, CXC, D. Wang (University of Massachusetts, Amherst, USA) and STScI, via ESA/Hubble. Darkened and sharpened.",
+  },
+} as const;
+
+/** One image of the space, full window, behind everything in the root (`z-index: -1` in the root's isolated context). */
+function SpaceLayer({ src, credit, shown, first }: { src: string; credit: string; shown: boolean; first: boolean }) {
+  return (
+    <div
+      aria-hidden="true"
+      className="enquiry-space-layer"
+      style={{ position: "fixed", inset: 0, zIndex: -1, opacity: shown ? 1 : 0, pointerEvents: "none" }}
+    >
+      {/* ⚠ `preload` for the corridor's image (the first thing seen — Next 16 replaces `priority`); the client info's loads
+          eagerly, long before the questions end. */}
+      {/* `quality={90}` — allowed in `next.config.ts`; the default 75 softens the stars. */}
+      <Image src={src} alt="" fill sizes="100vw" quality={90} className="object-cover" preload={first} loading={first ? undefined : "eager"} />
+      <p
+        style={{ position: "absolute", left: 0, right: 0, bottom: 10, textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.45)", padding: "0 24px" }}
+      >
+        {credit}
+      </p>
+    </div>
+  );
+}
 
 export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = {}) {
   /**
@@ -2276,8 +2322,13 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
     <div
       // ⛔ D-097 (`lib/site-scale.ts`): one window tall in layout px (`var(--vh)` — `100vh` would be drawn × the zoom).
       className="min-h-[calc(100*var(--vh))] flex flex-col items-center px-6"
-      style={{ background: "radial-gradient(ellipse at 50% 40%, #141414 0%, #080808 100%)" }}
+      // ⛔ `isolation: isolate` — the root's own stacking context, so the space's `z-index: -1` layers paint ABOVE this
+      // background and BELOW everything else in the root. ⚠ It creates no containing block (only transform, filter,
+      // perspective, contain, will-change do), so the `fixed` hosts below still place against the window.
+      style={{ background: "radial-gradient(ellipse at 50% 40%, #141414 0%, #080808 100%)", isolation: "isolate" }}
     >
+      <SpaceLayer {...SPACE.corridor} shown={stage !== "complete"} first />
+      <SpaceLayer {...SPACE.clientInfo} shown={stage === "complete"} first={false} />
       {/*
         ⚠⚠ THE SHARED CARD HOST — ONE CONTEXT, CREATED ONCE, NEVER UNMOUNTED.
         Rebuilt 14 August 2026 after the 12 August version was reverted for a

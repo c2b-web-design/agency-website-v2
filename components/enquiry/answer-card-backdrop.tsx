@@ -50,6 +50,20 @@ export function AnswerCardBackdrop({ clay = false }: { clay?: boolean }) {
     invalidate();
   }, [invalidate]);
 
+  /**
+   * ⛔⛔ THE GROUND PLANE IS GONE FROM THE PAGE — 15 October 2026, session 3 (Carl: *"components/enquiry/answer-card-backdrop.tsx
+   * Authorised to use"*, for an image behind `/start`, D-023's crawl homage). Its reason was the face's TRANSMISSION, and
+   * nothing on this canvas transmits any more: the face has been `transmission={0}` since 9 August; the glass tube is
+   * reflect-only. MEASURED before removing it (`live-work/scripts/ground-plane-parity-15-october.mjs`, Q5, rest and
+   * selected, the traveller held at 0): with the plane vs without — the cards' boxes 0.39% of pixels by ≤ 6 levels, the gaps
+   * 4.6% by ≤ 6 (mean 0.66): the page's own gradient showing where #101010 was, in the gaps and the boxes' rounded corners.
+   * Nothing went white (August: 0.0% dark inside the card). The control (the plane twice) 0.000%.
+   * ⚠ THE NOTE ABOVE ("WHAT IS LEFT IS NOT OPTIONAL") WAS TRUE WHILE THE FACE TRANSMITTED, and is kept as history. ⛔ If a
+   * transmissive material is ever added to this canvas again, the white clear returns — the plane (below, kept for clay)
+   * is the fix. ⚠ Unasserted in code: nothing checks that no material transmits.
+   */
+  if (!clay) return null;
+
   return (
     /*
       ⚠ THE GROUND PLANE, AND IT IS THE DIFFERENCE BETWEEN GLASS AND A BLOWN-OUT

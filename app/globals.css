@@ -2033,9 +2033,23 @@
 /* Completion — fade the phrase with the rest of the corridor. The old question */
 /* stack dissolves well before the contact form arrives, so there is no visual */
 /* competition (form fields begin at ~3600ms; the stack is clear by ~2600ms). */
+/* ⛔ `--enquiry-crawl-fade` — ONE VALUE, READ BY THE CRAWL'S FADE AND BY THE SPACE IMAGES' CROSS-FADE (15 October 2026,
+   session 3; Carl: "when the text crawl fades out, have that image fade out and another fade in for the client info
+   section" → "use existing timings"). Was a literal 2600ms here; the value is unchanged.
+   ⚠ After editing this file, CHECK THE SERVED CSS — the dev server has served a stale copy after writes (15 October). */
+:root {
+  --enquiry-crawl-fade: 2600ms;
+}
 .enquiry-phrase-complete {
   opacity: 0;
-  transition: opacity 2600ms linear;
+  transition: opacity var(--enquiry-crawl-fade) linear;
+}
+
+/* ⛔ THE SPACE BEHIND /start (D-023's crawl homage): the corridor's planet, the client info's galactic centre. Both mounted
+   from the first paint; at `stage === "complete"` — the same beat the crawl's fade and the logo's return to gold start on —
+   the planet fades out and the galactic centre in, over the crawl's own fade. */
+.enquiry-space-layer {
+  transition: opacity var(--enquiry-crawl-fade) linear;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2047,6 +2061,9 @@
     transition: none;
   }
   .enquiry-phrase-complete {
+    transition: none;
+  }
+  .enquiry-space-layer {
     transition: none;
   }
 }

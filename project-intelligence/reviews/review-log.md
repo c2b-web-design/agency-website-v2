@@ -65,6 +65,21 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-071 — The Space Behind `/start`: The Planet For The Corridor, The Galactic Centre For The Client Info (D-023): "Looks Great. Approved"
+
+**Date:** 2026-10-15 (session 3)
+**Reviewer:** Human Founder
+**Subject:** `/start` — the exoplanet GJ 9827d (heic2403a, an artist's concept) behind the opening and the corridor; at `stage === "complete"` it fades out and the galactic centre (opo0928f) fades in, over the crawl's own fade (`--enquiry-crawl-fade`, 2600 ms — no new timing). Both ESA/Hubble, CC BY 4.0, each credit visible at the foot, changes noted. 3840 wide, darkened by a curve (white kept), lightly sharpened, served at quality 90. The cards' opaque ground plane removed first (nothing on that canvas transmits — measured). Cross-fade measured riding the crawl sample for sample; both images loaded before first paint on three cold loads (dev).
+
+**Carl's verdict, verbatim:** *"File size is worth it, theres more definition in the sun. Looks great. Approved. Commit and push."*
+
+**Findings:**
+
+- ✔ **APPROVED** — the word used. The pairing and the reasons are Carl's (D-023's session 3 entries). Not a master (D-035).
+- ⚠ Not watched: production's network, reduced motion, phones (mastering). The corridor text becoming 3D in three.js is Carl's stated intention — future work, not this.
+
+---
+
 ## R-070 — The Selected Cards' Warmth On `Next step` (D-088, D-051): "This Is The Subtlety I Was After… Approved"
 
 **Date:** 2026-10-15 (session 3)
