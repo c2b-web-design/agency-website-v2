@@ -93,6 +93,12 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* ⛔ ONE HUNDREDTH OF THE WINDOW's HEIGHT, IN LAYOUT PX — D-097. Under the site's zoom `1vh` is drawn × the zoom
+     (measured: `100vh` = 1.36 windows tall), so anything sized to the window uses `calc(N * var(--vh))` instead.
+     Unscaled (1), it is exactly `1vh`. `--site-zoom` is the zoom APPLIED (`html`, below) — kept as its own name
+     from the rollout gate, when it could differ from `--site-scale`. */
+  --vh: calc(1vh / var(--site-zoom, 1));
 }
 
 .dark {
@@ -138,6 +144,16 @@
   }
   html {
     @apply font-sans;
+
+    /* ⛔ THE SITE'S SCALE — D-097, 15 October 2026. Carl composed every page in a ~1412 × 608 window (Windows Text
+       size 136%); above it the whole page is zoomed so a wide screen shows what was approved: "Yes, scale it all."
+       `--site-scale` is set before first paint by the inline script in `app/layout.tsx` (`lib/site-scale.ts`, the one
+       source); unset — the server, or no script — it is 1 and nothing changes. ⚠ Read `lib/site-scale.ts` before
+       measuring anything on the page: rects are screen px, CSS lengths are layout px, and they differ by this.
+       ⚠ SITE-WIDE since 15 October 2026 (session 2). It was rolled out behind a per-page gate (`data-site-scaled`,
+       home → /about → /start); Carl, once all three were judged: "Implement 1" — the gate removed. */
+    --site-zoom: var(--site-scale, 1);
+    zoom: var(--site-zoom);
 
     /* ⚠⚠ RESERVE THE SCROLLBAR GUTTER ON EVERY PAGE, SCROLLING OR NOT.
        Carl's instruction, 27 August 2026: the logo must sit in EXACTLY the same
@@ -316,7 +332,7 @@
 
 /* Opening/start-page anchor — original vertical position (pre-Begin). */
 .enquiry-shell-opening {
-  transform: translateY(calc(38vh - 5rem));
+  transform: translateY(calc(38 * var(--vh) - 5rem)); /* `38vh` before D-097 — `var(--vh)` is the window under the zoom */
 }
 
 /* Active enquiry anchor — matches the opening anchor so the heading does not */
@@ -327,7 +343,7 @@
 /* transform is removed). Used only after Begin (Q5..Q1). */
 .enquiry-shell-active {
   position: relative;
-  transform: translateY(calc(38vh - 5rem));
+  transform: translateY(calc(38 * var(--vh) - 5rem)); /* `38vh` before D-097 — `var(--vh)` is the window under the zoom. */
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -562,7 +562,7 @@ export default function WallPinningTool() {
     `    reports geometry and nothing else.`;
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white p-6">
+    <div className="min-h-[calc(100*var(--vh))] bg-neutral-950 text-white p-6">
       <h1 className="text-lg font-semibold mb-1">Card pinning tool — throwaway</h1>
       <p className="text-sm text-neutral-400 mb-1">
         Drag the corners. Handles are TL, TR, BR, BL. The card follows exactly;

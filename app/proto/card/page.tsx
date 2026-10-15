@@ -35,7 +35,7 @@ export const metadata = {
 
 export default function CardBenchPage() {
   return (
-    <div className="min-h-screen bg-neutral-950 text-white p-6">
+    <div className="min-h-[calc(100*var(--vh))] bg-neutral-950 text-white p-6">
       <h1 className="text-lg font-semibold mb-1">
         CD — left floor card — geometry bench
       </h1>

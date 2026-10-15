@@ -65,6 +65,98 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-066 — The Answer Cards' Tube: Thinner, Uniform, With A Bloom In The Filament's Colour (D-051, D-029): "Looking A Lot Better"
+
+**Date:** 2026-10-15
+**Reviewer:** Human Founder
+**Subject:** `/start?tube=1.5&rimuniform=1&tubebloom=1` at the restored scale (D-097) — the glass tube 1.5 (was 2), its reflection the same at every point of the path (`?rimuniform=1`), a soft bloom reading at the old tube's width (`?tubebloom=1`) whose lit part takes the filament's colour and whose over-the-tube part fades as the filament lights. Measured: selected 249/193/131 against the approved 247/195/144; rest 220/221/224. Corner radius 14 (`?cardradius=` door, untouched).
+
+**Carl's verdict, verbatim:** *"Thats looking a lot better."*
+
+**Findings:**
+
+- ✔ **A positive read, at the level given — "a lot better"; not "approved".** All three behind doors; the page's DEFAULT is unchanged (the tube 2, direction-dependent reflection, no bloom). Not a master (D-035).
+- ⚠ Open: making it the default (Carl's word); the corner radius (the door exists, no value chosen); the thick tube (`?tube=4`) RAISED AND NOT CHOSEN; the Next step button and phones unchecked with the new tube; a cold load.
+
+---
+
+## R-065 — The Site's Scale, Step 3: `/start` At 1.36 On A 1920 Screen (D-097): "Looks Good"
+
+**Date:** 2026-10-15
+**Reviewer:** Human Founder
+**Subject:** `/start` scaled — the opening, Q5 → Q1, the cards, Next step, the contact field and Send. Measured: `live-work/scripts/site-scale-verify-15-october.mjs start` (every 3D layer on its page box, 0/0/0/0; Next step's guard green; the canvases identical in both arms; first paint 1.36).
+
+**Carl's verdict, verbatim:** *"looks good. Implement 1 and the card corners still dont look right"*
+
+**Findings:**
+
+- ✔ **A positive read for the scale on `/start`, at the level given — "looks good"; not "approved".** With an instruction: **remove the rollout gate** (the scale site-wide). Not a master (D-035).
+- ⚠ **The answer cards' corners: *"still dont look right"*** — at the restored size (the cards drawn 1.36× on his 1920 screen, as he composed them). The corner work of 15 October (the symmetric path, the pixel grid, the symmetric rim light) stays BUILT, NOT APPROVED. Next subject.
+
+---
+
+## R-064 — The Site's Scale, Step 2: `/about` At 1.36 On A 1920 Screen (D-097): "All Good"
+
+**Date:** 2026-10-15
+**Reviewer:** Human Founder
+**Subject:** `/about` scaled — the room, the wipe, the four cards and their neon, the desk mark's journey into §3, the §4 gold button, the return rules and card 1's restart. Measured: `live-work/scripts/site-scale-verify-15-october.mjs about` (5 stops; the room canvas 1476 × 1654 screen px in both arms; the stage and every section one window ✅; first paint 1.36; scale 1 below 1412).
+
+**Carl's verdict, verbatim:** *"All good"*
+
+**Findings:**
+
+- ✔ **A positive read, at the level given — "all good"; the word "approved" was not used.** The go for step 3 (`/start`). Not a master (D-035).
+- ⚠ Open: the motion between stops was judged by Carl's eye only (no harness watches it); the TV; a production cold load; not committed.
+
+---
+
+## R-063 — The Site's Scale, Step 1: The Mechanism And The Home Page At 1.36 On A 1920 Screen (D-097): "Looking Good Now"
+
+**Date:** 2026-10-15
+**Reviewer:** Human Founder
+**Subject:** `/` at Carl's TRUE density for the first time (Windows Text size back to 100%, `devicePixelRatio` 1) — the whole page zoomed by `--site-scale` (1.36 on his 1920 × 1080), so it reads as it did while he built it at 136% text. After the `--vh` fix (his first look: *"viewports are messed up"* — every section collapsed). Measured: `live-work/scripts/site-scale-verify-15-october.mjs` (first paint at 1.36; the hero ends at the window's bottom, `#contact` + footer = one window, ✅ both arms; the button canvas 390 × 150 screen px in both arms; scale 1 below 1412).
+
+**Carl's verdict, verbatim:** *"Looking good now."*
+
+**Findings:**
+
+- ✔ **A positive read, at the level given — "looking good"; the word "approved" was not used.** It is the go for step 2 (`/about`) under the approved plan (`live-work/plan-site-scale-15-october.md`). Not a master (D-035).
+- ⚠ **Every verdict from R-001 to R-062 was given at 1.36** (D-097). On a 1920 screen the scale now reproduces that; below 1412 px wide the site is as it always was.
+- ⚠ Open: the TV; a production cold load; `/about` and `/start` unscaled until their steps (the rollout gate); not committed.
+
+---
+
+## R-062 — The Answer Cards: Glass Tube, Filled Studio, The Filament Holding At Its Flare (D-051, D-029): "Approved"
+
+**Date:** 2026-10-15
+**Reviewer:** Human Founder
+**Subject:** `/start?cardrim=glass&cardenv=shell&cardroom=1&cardgain=4` at Q5 — R-061's glass tube and filled studio, with the filament's settle removed (Carl: *"the slight decrease after it has warmed up is not needed now"*): it rises to its flare (× 1.7, temperature 0.70) and holds. Frame: `live-work/screenshots/cards-material-15-october/rim-glass-hold/3-card1-selected.png`.
+
+**Carl's verdict, verbatim:** *"yes a lot better. approved"*
+
+**Findings:**
+
+- ✔ **APPROVED** — the cards' new edge and light as a set, behind doors. Not a master (D-035).
+- ⚠ Open: the doors to the page's defaults; the opening, Q5 reveal and cold load with the HDRI fetched on `/start`; Carl's fresh refresh; not committed.
+
+---
+
+## R-061 — The Answer Cards: The Rim As A Clear Glass Tube, The Face's Gaps Filled, Behind Doors On `/start` (D-051, D-029): "A Helluva Lot Better"
+
+**Date:** 2026-10-15
+**Reviewer:** Human Founder
+**Subject:** `/start?cardrim=glass&cardenv=shell&cardroom=1&cardgain=4` at Q5 — the rim (a 4 px half-tube, tungsten) as ONE clear glass tube, reflect-only (`RIM_GLASS_COLOR` #0c0e12, roughness 0.1, metalness 0), after Carl's *"the glass tube going around the cards should be the same as the about cards tube. just one element"*; the face's environment with the two-panel studio's black shell replaced by the studio HDRI (room 1, × 4) — the face's ends 21.4 → 44.3 against its middle. Frames: `live-work/screenshots/cards-material-15-october/`.
+
+**Carl's verdict, verbatim:** *"That looks a helluva lot better."* (on the face's fix alone, earlier: *"The card faces look a lot better."*)
+
+**Findings:**
+
+- ✔ **A positive verdict, at the level given; the word "approved" was not used.** Behind doors; the page unchanged.
+- Measured: the rim peak 241 → 162; the selected filament reads saturated amber across the tube.
+- ⚠ Open: pass 3 (the filament as a bulb filling the tube); a transmitting tube as `/about`'s (a new pass on `/start`, measured); the doors to defaults; the opening, Q5 reveal and cold load with the HDRI on `/start`; the platinum blue `Next step`'s shade (*"a little jarring"*).
+
+---
+
 ## R-060 — The Gold `Start a conversation` With The Studio's Reflection, Bench And `/about` §4 (D-088): "Approved"
 
 **Date:** 2026-10-15
@@ -1368,7 +1460,11 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
-*Last updated: 2026-10-15 — **R-060 added**: the gold with the studio's reflection, bench and `/about` §4 — "Approved".*
+*Last updated: 2026-10-15 — **R-062 added**: the answer cards' glass tube, filled studio and held filament — "approved".*
+
+*Previously: 2026-10-15 — **R-061 added**: the answer cards' glass rim and filled studio, behind doors — "a helluva lot better".*
+
+*Previously: 2026-10-15 — **R-060 added**: the gold with the studio's reflection, bench and `/about` §4 — "Approved".*
 
 *Previously: 2026-10-15 — **R-059 added**: the teal with the studio's reflection on the home page — "Approved".*
 

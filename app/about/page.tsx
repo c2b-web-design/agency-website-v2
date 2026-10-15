@@ -155,7 +155,7 @@ export default function About() {
     /* Same page-level treatment as `/` and `/start`. ⚠ `app/layout.tsx` sets NO
        background on <body>, so a route that omits this renders on the default
        ground. Every existing route sets it at page level. */
-    <div className="bg-neutral-950 text-white min-h-screen">
+    <div className="bg-neutral-950 text-white min-h-[calc(100*var(--vh))]">
 
       {/* ⚠⚠ THE MARK — GOLD, AND IT MUST NOT MOVE. D-065: *"No movement, only
           change."* The mark occupies the same point on every route; colour may
@@ -599,9 +599,9 @@ export default function About() {
 
       </RoomStage>
 
-      {/* ⚠ `-mt-[100vh]`: §1 is pulled up over the stage (one window tall) so the page lays out as before. ⛔ The margin
+      {/* ⚠ `-mt-[calc(100*var(--vh))]` (one window — `100vh` before D-097's scale; `var(--vh)` is the window under the zoom): §1 is pulled up over the stage (one window tall) so the page lays out as before. ⛔ The margin
           belongs HERE, not on the stage — see `RoomStage`. */}
-      <section className="relative -mt-[100vh] min-h-screen flex flex-col justify-center [&>div]:w-full">
+      <section className="relative -mt-[calc(100*var(--vh))] min-h-[calc(100*var(--vh))] flex flex-col justify-center [&>div]:w-full">
         <Container>
           {/* ⚠⚠ TWO EQUAL COLUMNS — Carl, 3 September 2026, and the SYMMETRY IS
               THE POINT: *"make both headline font size the same. Space them out
@@ -816,7 +816,7 @@ export default function About() {
           stage, and its empty box took every click meant for card 1's "click to restart" button (`AboutCardCanvas`).
           It holds nothing selectable or clickable (empty of copy on purpose, below). ⚠ If copy or a control ever
           goes in here, give that element `pointer-events-auto` — or the button is under it again. */}
-      <section id="roles" className="relative min-h-screen flex flex-col justify-center [&>div]:w-full pointer-events-none">
+      <section id="roles" className="relative min-h-[calc(100*var(--vh))] flex flex-col justify-center [&>div]:w-full pointer-events-none">
         <Container>
           <div className="relative max-w-2xl">
             {/* ⛔⛔ THE SECTION IS DELIBERATELY EMPTY OF COPY. Carl, 3 September
@@ -861,7 +861,7 @@ export default function About() {
           from the container's bottom, so it follows), the mark's scroll tie. The wipe and CA's trigger read `#roles`
           and the stage only — unchanged. ⛔ `pointer-events-none` (14 October 2026): it paints over the stage too, and
           card 1's restart button is in view while the room is pinned through it (see `#roles` above). */}
-      <div aria-hidden="true" data-mark-runway="" className="h-screen pointer-events-none" />
+      <div aria-hidden="true" data-mark-runway="" className="h-[calc(100*var(--vh))] pointer-events-none" />
       </div>
 
       {/* ── 3. What modern websites can do ──────────────────────────────────
@@ -890,7 +890,7 @@ export default function About() {
           `next/image`, not `<img>`: nothing here is positioned by measured pixels
           (the reason the gold marks keep `<img>`), and `<img>` would break the
           zero-warning lint baseline. */}
-      <section id="examples" className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
+      <section id="examples" className="min-h-[calc(100*var(--vh))] flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
         <Container>
           <div className="flex items-center gap-12">
           <div className="max-w-2xl flex-1">
@@ -965,7 +965,7 @@ export default function About() {
           ⚠ It is the anchor the header's `Start` entry targets — the label and
           the target must not drift apart again. `components/layout/about-nav.tsx`
           is the only consumer; both moved in one change. */}
-      <section id="start" className="min-h-screen flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
+      <section id="start" className="min-h-[calc(100*var(--vh))] flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
         <Container>
           {/* ⛔ THE SECTION SCALED WITH ITS BUTTON — Carl, 13 October 2026, on the gold button at 1×:
               *"the gold button is too small. make it the same height as the teal button and adjust its

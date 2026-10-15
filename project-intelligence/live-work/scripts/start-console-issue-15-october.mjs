@@ -1,0 +1,10 @@
+import { chromium } from "playwright";
+const b = await chromium.launch({ headless: false, args: ["--enable-gpu","--use-angle=default","--ignore-gpu-blocklist"] });
+const p = await (await b.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 })).newPage();
+p.on("console", (m) => { if (["error","warning"].includes(m.type())) console.log(`[${m.type()}]`, m.text().slice(0, 6000)); });
+p.on("pageerror", (e) => console.log("[pageerror]", e.message.slice(0, 600)));
+await p.goto("http://localhost:3000/start", { waitUntil: "load" });
+await p.waitForTimeout(9000);
+await p.getByRole("button", { name: /begin/i }).click();
+await p.waitForTimeout(5000);
+await b.close();

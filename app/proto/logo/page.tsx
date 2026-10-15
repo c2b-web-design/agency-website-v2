@@ -39,7 +39,7 @@ export default async function LogoBenchPage({
     cross: num("cross"),
   };
   return (
-    <div className="min-h-screen bg-neutral-950 text-white p-6">
+    <div className="min-h-[calc(100*var(--vh))] bg-neutral-950 text-white p-6">
       <h1 className="text-lg font-semibold mb-1">The desk mark, pass 1: the shape in clay</h1>
       <p className="text-sm text-neutral-400 mb-2 max-w-4xl">
         The mark alone, traced from Carl&apos;s gold target (<code>c2b-logo-gold-relit-source-1671.png</code>, via

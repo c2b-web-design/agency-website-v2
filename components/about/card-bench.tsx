@@ -104,6 +104,7 @@ import {
 } from "./about-card-glass";
 import { AboutCardMesh } from "./about-card-mesh";
 import { RoomEnvironment } from "./room-environment";
+import { useCanvasDpr } from "@/lib/use-site-scale";
 
 /**
  * ⛔ CHUNK: THE LEFT FLOOR CARD (CD) — 14 September 2026, Carl: *"Lets start with
@@ -197,6 +198,7 @@ type Treatment = "curved" | "flat";
  */
 
 export default function CardBench() {
+  const benchDpr = useCanvasDpr([1, 2]);
   const [treatment, setTreatment] = useState<Treatment>("curved");
   const [heightMm, setHeightMm] = useState(CD_CARD_HEIGHT_MM);
   const [aspect, setAspect] = useState(FLOOR_CARD_ASPECT);
@@ -667,7 +669,9 @@ export default function CardBench() {
             far: camDist * 8,
           }}
           key={view}
-          dpr={[1, 2]}
+          // ⛔ D-097 (`lib/site-scale.ts`): layout px + resolution × the site's zoom, or the bench is zoomed twice.
+          resize={{ offsetSize: true }}
+          dpr={benchDpr}
           /**
            * ⚠ `alpha: false` ON THE BENCH. ⛔ IT IS NOT THE FIX FOR THE BLACK
            * FACE AND MUST NOT BE RECORDED AS ONE — see the open defect in this

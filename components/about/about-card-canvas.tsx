@@ -146,6 +146,7 @@ import {
   LIGHT_DISTANCE_MM as EXTRUDE_LIGHT_DISTANCE_MM,
 } from "./card-extrude";
 import { aboutCardCopy } from "./about-card-copy";
+import { useCanvasDpr } from "@/lib/use-site-scale";
 import type { Chase } from "./card-text-timeline";
 
 /**
@@ -2263,7 +2264,7 @@ export function RoomStage({ faded, children }: { faded: React.ReactNode; childre
     <div
       ref={ref}
       data-room-stage=""
-      className="sticky top-0 h-screen pointer-events-none"
+      className="sticky top-0 h-[calc(100*var(--vh))] pointer-events-none"
       style={{ ["--wipe-solid" as string]: "0%", ["--wipe-clear" as string]: "0%" }}
     >
       <div className="absolute inset-0" style={{ opacity: S1_ROOM_OPACITY }}>
@@ -2273,8 +2274,8 @@ export function RoomStage({ faded, children }: { faded: React.ReactNode; childre
           mark's drop), and a mask clips everything outside its element's box. So this layer is 200vh: the wipe's
           gradient over the TOP screen exactly as before (mask size/position), a solid layer over the second. The room's
           children keep a one-screen box (`h-screen` inside), so nothing in them moves. */}
-      <div className="absolute inset-x-0 top-0 h-[200vh]" style={MASK_LAYOUT(mask)}>
-        <div className="relative h-screen">{children}</div>
+      <div className="absolute inset-x-0 top-0 h-[calc(200*var(--vh))]" style={MASK_LAYOUT(mask)}>
+        <div className="relative h-[calc(100*var(--vh))]">{children}</div>
       </div>
     </div>
   );
@@ -2284,6 +2285,8 @@ export function RoomStage({ faded, children }: { faded: React.ReactNode; childre
 const CA_FACE_CLIP = `polygon(${ROOM_CARD_GUIDES.CA.map(([x, y]) => `${(x * 100).toFixed(3)}% ${(y * 100).toFixed(3)}%`).join(", ")})`;
 
 export default function AboutCardCanvas() {
+  // ⛔ D-097 (`lib/site-scale.ts`): the room's resolution × the site's zoom — paired with `resize={{ offsetSize: true }}`.
+  const canvasDpr = useCanvasDpr([1, 2]);
   /**
    * ⛔ THE GUIDES ARE ON BY DEFAULT WHILE PLACEMENT IS BEING VERIFIED, and off
    * with `?guides=0`. Carl, 18 September: *"the guide lines should be in the
@@ -2670,11 +2673,14 @@ export default function AboutCardCanvas() {
                 room canvas has no pointer handlers);
               - ⚠ COST: about twice the pixels (and the bloom's targets) every frame — the frame owner renders every
                 frame while mounted. Not measured. */}
-        <div className="absolute left-0 top-0 w-full" style={{ height: "calc(50% + 150vh)" }}>
+        <div className="absolute left-0 top-0 w-full" style={{ height: "calc(50% + 150 * var(--vh))" }}>
         <Canvas
           style={{ pointerEvents: "none" }}
           frameloop="demand"
-          dpr={[1, 2]}
+          // ⛔ D-097: measured in LAYOUT px (the room's world and the plate projection unchanged under the zoom), drawn at
+          // the device ratio × the zoom. Without both the room is zoomed twice (measured: 2591 × 3522 screen px).
+          resize={{ offsetSize: true }}
+          dpr={canvasDpr}
           /* ⚠ Shadows ONLY while the extruded text is on — the letters' shadows on
              CA's and CB's faces. ⚠ *Corrected in place:* this read "ONLY under `?extrude=1`…
              so plain `/about` is unchanged"; the text is now plain `/about`'s

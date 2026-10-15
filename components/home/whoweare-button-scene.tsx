@@ -13,9 +13,11 @@
 import { Suspense, use, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
+import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 import { buildPillBand, buildPillGeometry, familySurfaceZ, FAMILY_BAND, FAMILY_PROFILE, NEXTSTEP_PROFILE } from "@/components/ui/button-family-geometry";
 import { canvasOnScreen } from "@/lib/canvas-on-screen";
+import { pageZoom } from "@/lib/site-scale";
+import { useCanvasDpr } from "@/lib/use-site-scale";
 import { FontLoader, type Font } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 import { buildLogoStudioEnv, LOGO_JUDGING_STUDIO } from "@/components/about/logo-mark-material";
@@ -397,70 +399,11 @@ export function useStudio(enabled: boolean, studio: "pill" | "logo" | "teal" = "
  * ⛔⛔ THE LOGO IS THE STANDARD FOR METAL — Carl, 15 October 2026: *"If theres a standard for building metal then the logo is
  * it. All other similar objects should meet that standard."* The desk mark is full metal lit by the REFLECTION of a studio
  * (`logo-mark-material.ts`); the family buttons were painted metal under lamps, reflecting nothing (D-088, 15 October).
- * ⛔ WHY A PHOTOGRAPHED STUDIO, NOT THE LOGO's PANELS: the logo's face is FLAT (it mirrors one direction); the pill is a DOME
- * (it mirrors every direction from face-on to edge-on), so a studio of panels on black put its GAPS on the face as black
- * bands (R-044, takes 4–11, 12 October). An HDRI is CONTINUOUS — every direction holds something — so there are no gaps.
- * ⛔ THE STUDIO: Poly Haven "Monochrome Studio 02" (Grzegorz Wronkowski, CC0), 1k equirect `.hdr`, 1.56 MB — two tall strip
- * softboxes either side (the logo studio's two tall softboxes), a neutral grey cyclorama, no warm cast (the logo studio's
- * warm floor turned the teal GREEN). three turns an equirect env map into its PMREM on first use, per renderer.
+ * ⛔ THE STUDIO AND ITS LOADER LIVE IN `lib/studio-hdri.ts` (moved there the same day, verbatim, so the answer cards share
+ * one file, one fetch and one darkening rule) — the reasoning for the HDRI, the studio chosen and `room` is recorded there.
  */
-export const FAMILY_HDRI_SRC = "/env/monochrome_studio_02_1k.hdr";
-
-/**
- * ⛔ THE ROOM DARKENED, THE SOFTBOXES KEPT (`room`, 15 October 2026 — Carl, on the studio at strength 0.4: *"it does not
- * improve it. The page text extrusion is clearly visible as it rotates and i like the contrast it has with the dark
- * background. If it can be turned down but have the added reflection detail that would be great."*). Measured
- * (`live-work/scripts/hdr-stats.mjs`): the studio's ROOM — walls, cyclorama, floor — sits at luminance 0.02–0.8; its
- * SOFTBOXES above 2 (3% of the pixels, 58% of the light). The logo's studio is softboxes on NEAR-BLACK; this one's grey room
- * lifted the whole face. So every pixel below luminance 1 is multiplied by `room`, blending back to untouched by 2: the
- * face keeps the lamps' darkness, the softboxes' reflections stay as detail. Still continuous (dark, not black — no gaps).
- */
-const ROOM_KNEE = [1, 2] as const;
-const hdriBase = new Map<string, Promise<THREE.DataTexture>>();
-const hdriCache = new Map<string, Promise<THREE.DataTexture>>();
-/** One fetch and decode per URL (and one derived copy per `room`) for the whole page, shared by every canvas (each renderer
- *  still builds its own PMREM). */
-function loadHdri(url: string, room = 1): Promise<THREE.DataTexture> {
-  const key = `${url}|${room}`;
-  let p = hdriCache.get(key);
-  if (p) return p;
-  let base = hdriBase.get(url);
-  if (!base) {
-    const loader = new HDRLoader();
-    loader.setDataType(THREE.FloatType);
-    base = loader.loadAsync(url);
-    hdriBase.set(url, base);
-  }
-  p = base.then((src) => {
-    if (room === 1) {
-      src.mapping = THREE.EquirectangularReflectionMapping;
-      return src;
-    }
-    const { width, height } = src.image;
-    const from = src.image.data as Float32Array;
-    const data = new Float32Array(from.length);
-    for (let i = 0; i < from.length; i += 4) {
-      const L = 0.2126 * from[i] + 0.7152 * from[i + 1] + 0.0722 * from[i + 2];
-      const t = Math.min(1, Math.max(0, (L - ROOM_KNEE[0]) / (ROOM_KNEE[1] - ROOM_KNEE[0])));
-      const k = room + (1 - room) * t * t * (3 - 2 * t);
-      data[i] = from[i] * k;
-      data[i + 1] = from[i + 1] * k;
-      data[i + 2] = from[i + 2] * k;
-      data[i + 3] = from[i + 3];
-    }
-    const t = new THREE.DataTexture(data, width, height, THREE.RGBAFormat, THREE.FloatType);
-    t.colorSpace = src.colorSpace;
-    t.minFilter = src.minFilter;
-    t.magFilter = src.magFilter;
-    t.generateMipmaps = false;
-    t.flipY = src.flipY;
-    t.mapping = THREE.EquirectangularReflectionMapping;
-    t.needsUpdate = true;
-    return t;
-  });
-  hdriCache.set(key, p);
-  return p;
-}
+export const FAMILY_HDRI_SRC = STUDIO_HDRI_SRC;
+const loadHdri = loadStudioHdri;
 
 /** The family's environment: `"none"` (lamps only — the 12 October recipe) or `"hdri"` (the studio's reflection). */
 export type FamilyEnv = "none" | "hdri";
@@ -658,6 +601,7 @@ export function PillCanvas({
   moving?: { on: boolean; running?: boolean; frozen: number | null; intensity?: number; size?: number; kind?: "panel" | "lamp"; lift?: number; dip?: LightDip };
 }) {
   const { w, h, tilt, metal, legacy } = pill;
+  const canvasDpr = useCanvasDpr([1, 2]);
   const helperPad = helpers ? HELPER_PAD : 0;
   const boxW = w * zoom + (PAD + helperPad) * 2;
   // A tilted dome needs more room vertically than a face-on one.
@@ -670,7 +614,10 @@ export function PillCanvas({
       <Canvas
         orthographic
         camera={{ zoom, position: [0, 0, 1000], near: 0.1, far: 4000 }}
-        dpr={[1, 2]}
+        // ⛔ D-097 (`lib/site-scale.ts`): measured in LAYOUT px (the world unchanged under the site's zoom), drawn at the
+        // device ratio × the zoom so the bigger button stays sharp. Without both it is zoomed twice and blurred.
+        resize={{ offsetSize: true }}
+        dpr={canvasDpr}
         // The family's renderer (Next step's): Neutral tone mapping, so Pass 2's metal is judged on
         // the same curve the family will ship on.
         gl={{ antialias: true, alpha: true, toneMapping: THREE.NeutralToneMapping }}
@@ -1025,6 +972,9 @@ export function measureLabel(
   /** The element whose box IS the button (the bench: `el` itself; the home page: the link around the words). */
   boxEl: HTMLElement = el,
 ): { w: number; h: number; font: string; glyphs: Glyphs } {
+  // ⛔ SCREEN px → LAYOUT px (D-097, `lib/site-scale.ts`): every rect here is drawn × the site's zoom, while the mesh is
+  // built in layout px (one world unit each). Unscaled, `z` is 1 and nothing changes.
+  const z = pageZoom();
   const r = boxEl.getBoundingClientRect();
   const cx = r.left + r.width / 2;
   const cy = r.top + r.height / 2;
@@ -1035,13 +985,13 @@ export function measureLabel(
     for (let i = 0; i < (node.textContent ?? "").length; i++) {
       range.setStart(node, i);
       range.setEnd(node, i + 1);
-      xs.push(range.getBoundingClientRect().left - cx);
+      xs.push((range.getBoundingClientRect().left - cx) / z);
     }
   }
-  const baseline = baseMark ? -(baseMark.getBoundingClientRect().top - cy) : 0;
+  const baseline = baseMark ? -(baseMark.getBoundingClientRect().top - cy) / z : 0;
   return {
-    w: Math.round(r.width * 10) / 10,
-    h: Math.round(r.height * 10) / 10,
+    w: Math.round((r.width / z) * 10) / 10,
+    h: Math.round((r.height / z) * 10) / 10,
     font: getComputedStyle(el).fontFamily,
     glyphs: { chars: node?.textContent ?? "", x: xs, baseline, px: parseFloat(getComputedStyle(el).fontSize) || TYPE_PX },
   };

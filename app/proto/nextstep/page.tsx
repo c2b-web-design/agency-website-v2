@@ -29,7 +29,7 @@ export default function NextStepProtoPage({
   return (
     <main
       style={{
-        minHeight: "100vh",
+        minHeight: "calc(100 * var(--vh))",
         background: "#101010",
         display: "flex",
         flexDirection: "column",

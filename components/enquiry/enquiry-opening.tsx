@@ -23,6 +23,7 @@ import {
 // maps one world unit to one CSS pixel from its measured size, so a zero box
 // would destroy that mapping before the first real rect arrives.
 import { GRID_WIDTH_PX, GRID_HEIGHT_PX } from "./answer-card-backdrop-geometry";
+import { toLayoutPx } from "@/lib/site-scale";
 
 // How long after entering `complete` the ENTIRE completion choreography has
 // cleared — acknowledgement, all four boxes, AND the opal.
@@ -2273,7 +2274,8 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
         here. */
   return (
     <div
-      className="min-h-screen flex flex-col items-center px-6"
+      // ⛔ D-097 (`lib/site-scale.ts`): one window tall in layout px (`var(--vh)` — `100vh` would be drawn × the zoom).
+      className="min-h-[calc(100*var(--vh))] flex flex-col items-center px-6"
       style={{ background: "radial-gradient(ellipse at 50% 40%, #141414 0%, #080808 100%)" }}
     >
       {/*
@@ -2284,7 +2286,7 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
         ⚠⚠ IT IS A SIBLING OF THE SHELL, NOT A CHILD OF IT, AND THAT PLACEMENT
         IS LOAD-BEARING. **A transformed ancestor becomes the containing block
         for `position: fixed`.** Both shells carry
-        `transform: translateY(calc(38vh - 5rem))` (`globals.css`), so a host
+        `transform: translateY(calc(38 * var(--vh) - 5rem))` (`globals.css`; `38vh` before D-097), so a host
         placed inside one would resolve `fixed` against the SHELL rather than
         the viewport — silently reintroducing the exact class of bug that sank
         12 August, where two literal zeros quietly changed what they were
@@ -2322,10 +2324,12 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
         data-testid="answer-card-host"
         style={{
           position: "fixed",
-          left: hostRect ? `${hostRect.left}px` : 0,
-          top: hostRect ? `${hostRect.top}px` : 0,
-          width: hostRect ? `${hostRect.width}px` : GRID_WIDTH_PX,
-          height: hostRect ? `${hostRect.height}px` : GRID_HEIGHT_PX,
+          // ⛔ D-097: `hostRect` is SCREEN px (`getBoundingClientRect`); a `fixed` length is drawn × the site's zoom, so
+          // it is WRITTEN in layout px (`toLayoutPx`). Unscaled, the division is by 1.
+          left: hostRect ? `${toLayoutPx(hostRect.left)}px` : 0,
+          top: hostRect ? `${toLayoutPx(hostRect.top)}px` : 0,
+          width: hostRect ? `${toLayoutPx(hostRect.width)}px` : GRID_WIDTH_PX,
+          height: hostRect ? `${toLayoutPx(hostRect.height)}px` : GRID_HEIGHT_PX,
           visibility: hostRect ? "visible" : "hidden",
           pointerEvents: "none",
           /**
@@ -2406,8 +2410,8 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
         THIS WRONG, WHICH IS WHY IT IS SPELLED OUT.
 
         **A transformed ancestor becomes the containing block for
-        `position: fixed`.** Both shells carry `transform: translateY(calc(38vh -
-        5rem))`. The first version of this host was mounted INSIDE the shell, so
+        `position: fixed`.** Both shells carry `transform: translateY(calc(38 *
+        var(--vh) - 5rem))` (`38vh` before D-097). The first version of this host was mounted INSIDE the shell, so
         its `fixed` coordinates resolved against the shell instead of the
         viewport: computed `left/top` read **654.7 / 616.8** — correct — while it
         painted at **1080 / 879**. **Carl saw a flat white DOM pill with the

@@ -38,7 +38,7 @@ export default async function ButtonBenchPage({
   // dials (?mode=clay ?roll=1 ?label=1 ?zoom= …). One pill only (Carl: one image of the current state, not a comparison).
   if (sp.member === "start") {
     return (
-      <main style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "3.5rem" }}>
+      <main style={{ minHeight: "calc(100 * var(--vh))", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "3.5rem" }}>
         {/* Pass 2 (13 October): the gold as PAINT on the clay's material and lamps, turned to metal — the teal's method
             (R-045): ?mode=teal&paint=ffe39e (the desk mark's gold F0, linear 1.0/0.77/0.34, as sRGB)&metalness=1&paintrough=0.4,
             ?ml=0 (the moving lamp is pass 3), ?ink=121212 or 1e1e24. */}
@@ -55,7 +55,7 @@ export default async function ButtonBenchPage({
   // the live Next step on /start (`nextstep-canvas.tsx`, its persistent surface host) is untouched until the rollout.
   if (sp.member === "next") {
     return (
-      <main style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "3.5rem" }}>
+      <main style={{ minHeight: "calc(100 * var(--vh))", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "3.5rem" }}>
         {/* The caption follows the pass: ?ml=0 (no moving lamp) is pass 2's look, the lamp on is pass 3's. */}
         <div style={caption}>{clay ? "PASS 1: THE MESH, IN CLAY" : painted ? (sp.ml === "0" ? "PASS 2: THE MATERIAL, PLATINUM BLUE" : "PASS 3: THE LIGHT") : "NEXT STEP"}</div>
         <FamilyPill id="next-pill" label="Next step" />
@@ -65,7 +65,7 @@ export default async function ButtonBenchPage({
   }
   if (sp.context === "home") {
     return (
-      <main className="bg-neutral-950 text-white min-h-screen flex items-center">
+      <main className="bg-neutral-950 text-white min-h-[calc(100*var(--vh))] flex items-center">
         <div className="w-full px-6">
           {/* ?h2= ?p= (px) and ?w= ?pw= (max widths, px), ?pgap= (heading → paragraph): Carl, the same session, on the 2×
               button — "the text and subtext look too small now, increase the size so the page as a whole feels
@@ -91,7 +91,7 @@ export default async function ButtonBenchPage({
   return (
     <main
       style={{
-        minHeight: "100vh",
+        minHeight: "calc(100 * var(--vh))",
         background: "#0a0a0a",
         display: "flex",
         flexDirection: "column",

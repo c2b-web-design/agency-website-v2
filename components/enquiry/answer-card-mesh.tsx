@@ -48,7 +48,7 @@ import * as THREE from "three";
 import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
-  CARD_RADIUS_PX,
+  cardRadiusPx,
   RIM_TUBE_RADIUS,
   BEVEL_WIDTH,
   BEVEL_RISE,
@@ -90,6 +90,9 @@ import {
   RIM_METALNESS,
   RIM_ROUGHNESS,
   RIM_ENV_INTENSITY,
+  RIM_GLASS_COLOR,
+  RIM_GLASS_ROUGHNESS,
+  RIM_IS_GLASS,
   FILAMENT_INTENSITY,
   FILAMENT_LIGHT_DISTANCE,
   FILAMENT_LIGHT_POWER,
@@ -846,12 +849,27 @@ function FaceMaterial({
 function RimMaterial({
   color,
   roughness,
+  metalness = RIM_METALNESS,
+  symmetric = false,
   envMap,
   envMapIntensity,
   filament,
 }: {
   color: string;
   roughness: number;
+  /** `RIM_METALNESS` (tungsten); 0 for the glass tube (`?cardrim=glass`, `rimIsGlass`). */
+  metalness?: number;
+  /**
+   * ⛔ THE RIM LIT LEFT–RIGHT SYMMETRIC (the glass tube; Carl, 15 October 2026: *"the right hand side looks ok. Can the card
+   * be mirrored so the left side looks like the right side"*, then *"Go with 2"* — the rim alone, the face's approved
+   * top-left key untouched). With the card on the screen's pixel grid the strips still differed because of the LIGHT
+   * (measured: the left strip's bright line on the tube's OUTER side, the right's on its INNER side — a light from the
+   * left). So: the reflection is the AVERAGE of itself and its mirror in x (the studio seen the same from both strips),
+   * and the rim takes NO direct light (the top-left key is the other asymmetric source) — lit by its reflection alone,
+   * which is also the logo's method. ⚠ The filament's own glow (emissive) is untouched; a lit NEIGHBOUR's filament point
+   * light no longer reaches this rim directly.
+   */
+  symmetric?: boolean;
   envMap: THREE.Texture | null;
   envMapIntensity: number;
   filament: FilamentState;
@@ -883,6 +901,18 @@ function RimMaterial({
      * where the filament's colour could not survive the metal's brightness.
      */
     uQuench: { value: urlNumber("quench", FILAMENT_QUENCH) },
+    /** 1 = the rim lit left–right symmetric (`symmetric`); 0 = as before. Read at construction. */
+    uSymmetric: { value: symmetric ? 1 : 0 },
+    /**
+     * ⛔ `?rimuniform=1` — THE TUBE THE SAME EVERYWHERE (15 October 2026, session 2). Carl, at every corner radius:
+     * *"Look in the middle of the curve, theres still a defect, that is not light. The glass tube should look the same
+     * everywhere"* (a curved glass bulb as the reference), then *"Something is fundamentally wrong."* The cause: the tube
+     * reflected the studio IN THE DIRECTION IT FACES — up along the top, left at the left end — so round a curve its
+     * bands slid through the studio. ON: each point's reflection depends only on where it sits ACROSS the tube (outer
+     * edge → crest → inner edge), averaged over eight directions round the card, so every stretch sees the same studio.
+     * Supersedes `uSymmetric`'s left–right average where both are on. Read at construction.
+     */
+    uUniformRim: { value: urlNumber("rimuniform", 0) > 0 ? 1 : 0 },
   });
 
   // Keep the uniforms in step with the live filament state. Refs rather than
@@ -908,6 +938,9 @@ function RimMaterial({
       uniform float uBloomGain;
       uniform float uGlow;
       uniform float uQuench;
+      uniform float uSymmetric;
+      uniform float uUniformRim;
+      varying vec2 vPathNormal;
 
       /**
        * ⚠ CARRIED FROM emissivemap_fragment TO lights_fragment_end. The quench
@@ -990,8 +1023,43 @@ function RimMaterial({
          gFilamentQuench = 1.0 - uQuench * uIntensity * core;
        }`,
     ).replace(
+      "#include <lights_fragment_maps>",
+      `#include <lights_fragment_maps>
+       #if defined( USE_ENVMAP ) && defined( RE_IndirectSpecular )
+       if ( uUniformRim > 0.5 ) {
+         // THE TUBE THE SAME EVERYWHERE: the normal is (across the tube) x (the path's outward direction) + z. Keep the
+         // across-the-tube part, drop the direction, and average the studio over eight directions round the card -- so a
+         // point's reflection depends on WHERE ACROSS the tube it is, never on which way that stretch of tube runs.
+         vec2 pOut = normalize( vPathNormal );
+         float across = dot( geometryNormal.xy, pOut );
+         vec3 uRad = vec3( 0.0 );
+         vec3 uIrr = vec3( 0.0 );
+         for ( int k = 0; k < 8; k++ ) {
+           float az = float( k ) * 0.7853981634;
+           vec3 nk = normalize( vec3( across * cos( az ), across * sin( az ), geometryNormal.z ) );
+           uRad += getIBLRadiance( geometryViewDir, nk, material.roughness );
+           uIrr += getIBLIrradiance( nk );
+         }
+         radiance += uRad / 8.0 - getIBLRadiance( geometryViewDir, geometryNormal, material.roughness );
+         iblIrradiance += uIrr / 8.0 - getIBLIrradiance( geometryNormal );
+       } else if ( uSymmetric > 0.5 ) {
+         // THE STUDIO SEEN THE SAME FROM BOTH STRIPS: the reflection replaced by the mean of itself and its mirror in x.
+         // View-space x is world x under this unrotated orthographic camera, and a reflection depends on direction only,
+         // so mirroring the view and the normal in x mirrors what the tube sees about the card's vertical axis.
+         vec3 symMx = vec3( -1.0, 1.0, 1.0 );
+         radiance += 0.5 * ( getIBLRadiance( geometryViewDir * symMx, geometryNormal * symMx, material.roughness )
+                           - getIBLRadiance( geometryViewDir, geometryNormal, material.roughness ) );
+         iblIrradiance += 0.5 * ( getIBLIrradiance( geometryNormal * symMx ) - getIBLIrradiance( geometryNormal ) );
+       }
+       #endif`,
+    ).replace(
       "#include <lights_fragment_end>",
       `#include <lights_fragment_end>
+       // THE TOP-LEFT KEY IS THE OTHER ASYMMETRIC SOURCE: a symmetric (or uniform) rim takes no direct light.
+       if ( uSymmetric > 0.5 || uUniformRim > 0.5 ) {
+         reflectedLight.directDiffuse = vec3( 0.0 );
+         reflectedLight.directSpecular = vec3( 0.0 );
+       }
        {
          /**
           * ⚠⚠ THE REFLECTION GIVES WAY TO THE INCANDESCENCE, AND WITHOUT THIS
@@ -1021,13 +1089,24 @@ function RimMaterial({
          reflectedLight.directSpecular   *= gFilamentQuench;
        }`,
     );
+
+    // The path's outward direction (`sweptBand`'s `pathNormal`), into view space for the uniform reflection.
+    shader.vertexShader = `
+      attribute vec2 pathNormal;
+      varying vec2 vPathNormal;
+      ${shader.vertexShader}
+    `.replace(
+      "#include <beginnormal_vertex>",
+      `#include <beginnormal_vertex>
+       vPathNormal = ( normalMatrix * vec3( pathNormal, 0.0 ) ).xy;`,
+    );
   }, []);
 
   return (
     <meshStandardMaterial
       color={color}
       roughness={roughness}
-      metalness={RIM_METALNESS}
+      metalness={metalness}
       envMap={envMap}
       envMapIntensity={envMapIntensity}
       // See `ENTRANCE_NEEDS_ALPHA` — set at construction so the entrance's
@@ -1145,11 +1224,34 @@ function BevelMaterial({
   );
 }
 
-/** Samples around the perimeter. Corners need the density; straights do not suffer. */
-const PATH_SAMPLES = 240;
+/**
+ * ⛔ THE PATH IS BUILT SEGMENT BY SEGMENT, SYMMETRIC (15 October 2026). Carl, on the glass tube: *"look at the corners of the
+ * cards. They look jagged, especially on the left hand sides. its not so bad on the right. It should be smoother where
+ * curvature meets a stright line on the glass tube."* then *"it is symmetrical, make them identical"*.
+ * ⚰️ WAS `PATH_SAMPLES = 240` spread EVENLY BY DISTANCE round the whole perimeter from the middle of the right edge: ~12
+ * samples per corner (7.5°) and NO sample on the eight arc/straight joins — a chord cut across each join, landing at a
+ * different phase at every corner (closest at the right, worst at the left). The matte tungsten hid it; the glossy glass
+ * tube's highlights show every step.
+ * NOW: a ring ON every join; `PATH_CORNER_STEPS` per quarter-turn at every corner; the straights at `PATH_STRAIGHT_STEP`
+ * px, the top and bottom edges the same count, the left edge exactly the right edge's two halves — mirror-identical in x and
+ * in y. ⚠ The tessellation only: the outline's SHAPE is unchanged (the same radius, the same exact normals).
+ */
+const PATH_CORNER_STEPS = 32;
+const PATH_STRAIGHT_STEP = 1.85; // px — the old even spacing (445 px / 240)
 
 /** Segments around the half-tube's semicircular profile. */
 const TUBE_PROFILE_SEGMENTS = 10;
+
+/**
+ * ⛔ THE TUBE's BLOOM (`?tubebloom=`, 15 October 2026, session 2 — see the band in the card assembly). REACH: how far
+ * each side of the tube's centre-line the glow runs (layout px). SIGMA: its gaussian width — at the original tube's
+ * half-width (2) it is still ~a third of its peak, so the glow reads to the old size. COLOUR / GAIN: a cool white at a
+ * strength the `?tubebloom=` number multiplies. ⚠ First values, set by eye on one capture; Carl judges.
+ */
+const TUBE_BLOOM_REACH = 3.5;
+const TUBE_BLOOM_SIGMA = 1.8;
+const TUBE_BLOOM_COLOR = "#dfe6f0";
+const TUBE_BLOOM_GAIN = 0.08; // ⚠ 0.35 first: burnt the tube to a solid white outline (linear light — far brighter on screen)
 
 /** Tessellation of the convex face. */
 const FACE_SEGMENTS_U = 96;
@@ -1180,102 +1282,44 @@ type PathPoint = {
  * arc centre. Differencing would round the corners' normals slightly and show up
  * as a faint facet ring under a moving light.
  */
-function sampleRoundedRectPath(
-  width: number,
-  height: number,
-  radius: number,
-  samples: number,
-): PathPoint[] {
+function sampleRoundedRectPath(width: number, height: number, radius: number): PathPoint[] {
   const hw = width / 2;
   const hh = height / 2;
   const r = Math.max(0, Math.min(radius, hw, hh));
-
-  const straightX = 2 * (width - 2 * r); // top + bottom
-  const straightY = 2 * (height - 2 * r); // left + right
-  const arcs = 2 * Math.PI * r; // four quarter-turns
-  const total = straightX + straightY + arcs;
-
   const pts: PathPoint[] = [];
 
-  for (let i = 0; i < samples; i++) {
-    // Distance travelled anticlockwise from the middle of the right edge.
-    let d = (i / samples) * total;
-
-    // 1. Right edge, upward from centre-right to the top-right arc.
-    const rightHalf = hh - r;
-    if (d < rightHalf) {
-      pts.push({ x: hw, y: d, nx: 1, ny: 0 });
-      continue;
+  // A straight from (x0, y0) toward (x1, y1): `n` rings, the START included, the end left to the next segment.
+  const straight = (x0: number, y0: number, x1: number, y1: number, n: number, nx: number, ny: number) => {
+    for (let k = 0; k < n; k++) {
+      const t = k / n;
+      pts.push({ x: x0 + (x1 - x0) * t, y: y0 + (y1 - y0) * t, nx, ny });
     }
-    d -= rightHalf;
-
-    // 2. Top-right corner arc, 0 -> 90 degrees.
-    const quarter = (Math.PI / 2) * r;
-    if (d < quarter) {
-      const a = (d / quarter) * (Math.PI / 2);
+  };
+  // A quarter-turn about (cx, cy) from angle a0: `PATH_CORNER_STEPS` rings, the join at its start included.
+  const corner = (cx: number, cy: number, a0: number) => {
+    for (let k = 0; k < PATH_CORNER_STEPS; k++) {
+      const a = a0 + (k / PATH_CORNER_STEPS) * (Math.PI / 2);
       const nx = Math.cos(a);
       const ny = Math.sin(a);
-      pts.push({ x: hw - r + nx * r, y: hh - r + ny * r, nx, ny });
-      continue;
+      pts.push({ x: cx + nx * r, y: cy + ny * r, nx, ny });
     }
-    d -= quarter;
+  };
 
-    // 3. Top edge, rightward to leftward.
-    const topRun = width - 2 * r;
-    if (d < topRun) {
-      pts.push({ x: hw - r - d, y: hh, nx: 0, ny: 1 });
-      continue;
-    }
-    d -= topRun;
+  // Counts chosen ONCE per kind of straight, so mirrored edges are identical.
+  const half = Math.max(1, Math.round((hh - r) / PATH_STRAIGHT_STEP)); // half a side edge
+  const run = Math.max(1, Math.round((width - 2 * r) / PATH_STRAIGHT_STEP)); // top / bottom
 
-    // 4. Top-left corner arc, 90 -> 180 degrees.
-    if (d < quarter) {
-      const a = Math.PI / 2 + (d / quarter) * (Math.PI / 2);
-      const nx = Math.cos(a);
-      const ny = Math.sin(a);
-      pts.push({ x: -hw + r + nx * r, y: hh - r + ny * r, nx, ny });
-      continue;
-    }
-    d -= quarter;
-
-    // 5. Left edge, downward.
-    const leftRun = height - 2 * r;
-    if (d < leftRun) {
-      pts.push({ x: -hw, y: hh - r - d, nx: -1, ny: 0 });
-      continue;
-    }
-    d -= leftRun;
-
-    // 6. Bottom-left corner arc, 180 -> 270 degrees.
-    if (d < quarter) {
-      const a = Math.PI + (d / quarter) * (Math.PI / 2);
-      const nx = Math.cos(a);
-      const ny = Math.sin(a);
-      pts.push({ x: -hw + r + nx * r, y: -hh + r + ny * r, nx, ny });
-      continue;
-    }
-    d -= quarter;
-
-    // 7. Bottom edge, leftward to rightward.
-    if (d < topRun) {
-      pts.push({ x: -hw + r + d, y: -hh, nx: 0, ny: -1 });
-      continue;
-    }
-    d -= topRun;
-
-    // 8. Bottom-right corner arc, 270 -> 360 degrees.
-    if (d < quarter) {
-      const a = (3 * Math.PI) / 2 + (d / quarter) * (Math.PI / 2);
-      const nx = Math.cos(a);
-      const ny = Math.sin(a);
-      pts.push({ x: hw - r + nx * r, y: -hh + r + ny * r, nx, ny });
-      continue;
-    }
-    d -= quarter;
-
-    // 9. Right edge, up to the starting point.
-    pts.push({ x: hw, y: -hh + r + d, nx: 1, ny: 0 });
-  }
+  // Anticlockwise from the middle of the right edge, as before (the order the filament shader never depended on).
+  straight(hw, 0, hw, hh - r, half, 1, 0); // right edge, upper half
+  corner(hw - r, hh - r, 0); // top-right
+  straight(hw - r, hh, -hw + r, hh, run, 0, 1); // top edge
+  corner(-hw + r, hh - r, Math.PI / 2); // top-left
+  straight(-hw, hh - r, -hw, 0, half, -1, 0); // left edge, upper half
+  straight(-hw, 0, -hw, -hh + r, half, -1, 0); // left edge, lower half — the right edge's halves, mirrored
+  corner(-hw + r, -hh + r, Math.PI); // bottom-left
+  straight(-hw + r, -hh, hw - r, -hh, run, 0, -1); // bottom edge
+  corner(hw - r, -hh + r, (3 * Math.PI) / 2); // bottom-right
+  straight(hw, -hh + r, hw, 0, half, 1, 0); // right edge, lower half — back to the start
 
   return pts;
 }
@@ -1589,6 +1633,19 @@ const LABEL_INK_NEUTRAL = 1.0;
  */
 const LABEL_TEAL_STRENGTH = 1.7;
 
+/**
+ * ⛔ `?cardrim=glass` — THE RIM AS ONE CLEAR GLASS TUBE (D-051/D-029 reopened by Carl, 15 October 2026: *"the glass tube
+ * going around the cards should be the same as the about cards tube. just one element"*; *"What is more white should be
+ * the glass tube"*). The same half-tube, the same filament shader; the tungsten (metalness 1, the env at full strength —
+ * the white) becomes a dark, glossy dielectric (`RIM_GLASS_COLOR`, `RIM_GLASS_ROUGHNESS`), reflect-only. Reasoning:
+ * `answer-card-glass.ts`. ⛔ THE DEFAULT SINCE 15 OCTOBER 2026 (R-062, `RIM_IS_GLASS`) — written as a door "off by default"
+ * the same day, overtaken by Carl's approval; `?cardrim=metal` restores the tungsten rim for comparison.
+ */
+function rimIsGlass(): boolean {
+  const door = typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("cardrim");
+  return door === "glass" ? true : door === "metal" ? false : RIM_IS_GLASS;
+}
+
 /** Read a positive number from the query string, for the two dials above. */
 function urlNumber(key: string, fallback: number): number {
   if (typeof window === "undefined") return fallback;
@@ -1896,6 +1953,10 @@ function sweptBand(
 
   const positions = new Float32Array(rings * cols * 3);
   const normals = new Float32Array(rings * cols * 3);
+  // ⛔ THE PATH's OWN OUTWARD DIRECTION AT EVERY VERTEX (15 October 2026, session 2) — so a shader can tell WHERE ACROSS
+  // the band a point is (its normal's component along this) from WHICH WAY the band runs (this). Read by the rim's
+  // uniform reflection (`RimMaterial`, `?rimuniform=1`); unused by everything else.
+  const pathNormals = new Float32Array(rings * cols * 2);
 
   for (let i = 0; i < rings; i++) {
     const p = path[i];
@@ -1903,6 +1964,8 @@ function sweptBand(
       const t = j / profileSegments;
       const { inward, forward, nIn, nFwd } = profile(t);
       const idx = (i * cols + j) * 3;
+      pathNormals[(i * cols + j) * 2] = p.nx;
+      pathNormals[(i * cols + j) * 2 + 1] = p.ny;
 
       // Move inward along the path's own outward normal, negated.
       positions[idx] = p.x - p.nx * inward;
@@ -1933,6 +1996,7 @@ function sweptBand(
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geo.setAttribute("normal", new THREE.BufferAttribute(normals, 3));
+  geo.setAttribute("pathNormal", new THREE.BufferAttribute(pathNormals, 2));
   geo.setIndex(indices);
   geo.computeBoundingBox();
   geo.computeBoundingSphere();
@@ -1954,6 +2018,14 @@ function convexFaceGeometry(
   radius: number,
   crownHeight: number,
   plateauU: number,
+  /**
+   * ⛔ THE LABEL's FRAME, in layout px — 15 October 2026, session 2. The UVs map the label texture onto THIS rectangle,
+   * centred, not onto whatever size the face is: so a thicker glass tube (`?tube=`) shrinks the face but NOT the
+   * approved answer text, and does not squash it. Default: the face at the shipped tube (`cardBudget()`), where this is
+   * exactly the old whole-face mapping in every full-width row. ⚠ The face's rounded ends sample the texture by their
+   * true position now (before: compressed by row), which moves only label BACKGROUND there — no text reaches them.
+   */
+  labelRef: { w: number; h: number } = { w: cardBudget().faceWidth, h: cardBudget().faceHeight },
 ): THREE.BufferGeometry {
   const halfW = width / 2;
   const halfH = height / 2;
@@ -2002,8 +2074,8 @@ function convexFaceGeometry(
       positions[idx + 2] = crownZ(u, v, crownHeight, plateauU);
 
       const uvIdx = (iy * cols + ix) * 2;
-      uvs[uvIdx] = ix / FACE_SEGMENTS_U;
-      uvs[uvIdx + 1] = iy / FACE_SEGMENTS_V;
+      uvs[uvIdx] = 0.5 + x / labelRef.w;
+      uvs[uvIdx + 1] = 0.5 + y / labelRef.h;
 
       /**
        * ⚠ THE TANGENT IS THE SURFACE'S OWN, NOT A CONSTANT +X. Along the long
@@ -2069,6 +2141,72 @@ function convexFaceGeometry(
 }
 
 /** Dispose a geometry when the component unmounts. */
+/**
+ * ⛔ THE TUBE's BLOOM, AND ITS COLOUR IS THE TUBE's OWN LIGHT (`?tubebloom=`, 15 October 2026, session 2). Carl, on the
+ * first take: *"the tube looks better, glow is good, yellow colour is awful"* — a FIXED cool white added over the lit
+ * filament's amber washed it to a pale yellow (measured: the approved selected card is amber; with the white glow,
+ * cream). So the glow is the filament's colour when it burns — the same black-body ramp the rim's shader uses
+ * (`uTemp`: red → orange → the hot end), × its intensity — and the cool white only when it is cold, mixed by the
+ * filament's intensity. Updated per frame from the refs; no React render.
+ */
+function TubeBloom({
+  parts,
+  strength,
+  filament,
+}: {
+  parts: { over: THREE.BufferGeometry; beyond: THREE.BufferGeometry };
+  strength: number;
+  filament: FilamentState;
+}) {
+  const material = useRef<THREE.MeshBasicMaterial>(null);
+  const overMaterial = useRef<THREE.MeshBasicMaterial>(null);
+  const cold = useMemo(() => new THREE.Color(TUBE_BLOOM_COLOR), []);
+  const ramp = useMemo(() => ({ red: new THREE.Color(HEAT_RED), orange: new THREE.Color(HEAT_ORANGE), white: new THREE.Color(HEAT_WHITE) }), []);
+  const heat = useMemo(() => new THREE.Color(), []);
+  useFrame(() => {
+    const m = material.current;
+    if (!m) return;
+    const t = filament.temperature.current ?? 0;
+    // How LIT, against the filament's own working level — NOT against 1: lit is `FILAMENT_INTENSITY` (0.45), × the
+    // surge's 1.7 at the flare. ⚠ Read raw first, the glow over the tube faded only to ~¼ and still washed the amber to
+    // cream (measured: over-part off → 249/193/131, the approved 247/195/144; on → 255/224/163).
+    const k = Math.min(1, Math.max(0, (filament.intensity.current ?? 0) / FILAMENT_INTENSITY));
+    const s = (a: number, b: number, x: number) => {
+      const u = Math.min(1, Math.max(0, (x - a) / (b - a)));
+      return u * u * (3 - 2 * u);
+    };
+    if (t < 0.5) heat.copy(ramp.red).lerp(ramp.orange, s(0, 0.5, t));
+    else heat.copy(ramp.orange).lerp(ramp.white, s(0.5, 1, t));
+    m.color.copy(cold).lerp(heat, k).multiplyScalar(TUBE_BLOOM_GAIN * strength);
+    // Over the tube: the cold glow only, gone as the filament lights (its own light is not added to itself).
+    overMaterial.current?.color.copy(cold).multiplyScalar(TUBE_BLOOM_GAIN * strength * (1 - k));
+  });
+  return (
+    <>
+      <mesh geometry={parts.beyond} renderOrder={2}>
+        <meshBasicMaterial
+          ref={material}
+          vertexColors
+          transparent
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+      <mesh geometry={parts.over} renderOrder={2}>
+        <meshBasicMaterial
+          ref={overMaterial}
+          vertexColors
+          transparent
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
+    </>
+  );
+}
+
 function useDisposable(geo: THREE.BufferGeometry) {
   useEffect(() => () => geo.dispose(), [geo]);
 }
@@ -2210,7 +2348,8 @@ export function AnswerCardMesh({
   // `2 * tubeRadius + bevelWidth`, so it widens on its own as the rim comes down.
 
   const path = useMemo(
-    () => sampleRoundedRectPath(CARD_WIDTH_PX, CARD_HEIGHT_PX, CARD_RADIUS_PX, PATH_SAMPLES),
+    // ⛔ `cardRadiusPx()` — 14, or `?cardradius=` (Carl's right-angle-first method, 15 October, session 2).
+    () => sampleRoundedRectPath(CARD_WIDTH_PX, CARD_HEIGHT_PX, cardRadiusPx()),
     [],
   );
 
@@ -2242,6 +2381,62 @@ export function AnswerCardMesh({
       };
     });
   }, [path, tubeRadius]);
+
+  // ── ⛔ THE TUBE's BLOOM — `?tubebloom=` (strength; 0/absent = none). 15 October 2026, session 2. ──
+  // Carl, on the thicker tube: *"seems out of proportion to the card. Lets go the other way. Make the tube a little bit
+  // smaller than it was, to hide the look, but give it a bloom so it looks the original size."* A soft ADDITIVE band
+  // swept along the tube's own centre-line — the same at every point of the path, as the tube now is
+  // (`?rimuniform=1`) — reaching `TUBE_BLOOM_REACH` each side and falling off as a gaussian (`TUBE_BLOOM_SIGMA`), just in
+  // front of the tube's apex. A band, not a post-process: no second pass on this canvas (the structural route). It sits
+  // in the card's group, so the entrance and exit fade it with everything else.
+  const tubeBloom = useMemo(() => urlNumber("tubebloom", 0), []);
+  const bloomGeometry = useMemo(() => {
+    if (tubeBloom <= 0) return null;
+    const centred = path.map((p) => ({ x: p.x - p.nx * tubeRadius, y: p.y - p.ny * tubeRadius, nx: p.nx, ny: p.ny }));
+    const segs = 16;
+    const geo = sweptBand(centred, segs, (t) => ({
+      inward: (t * 2 - 1) * TUBE_BLOOM_REACH,
+      forward: tubeRadius + 0.05,
+      nIn: 0,
+      nFwd: 1,
+    }));
+    const cols = segs + 1;
+    /**
+     * ⛔ TWO PARTS OF ONE GLOW — `over` (on the tube itself) and `beyond` (past its edges), split by a soft step at the
+     * tube's radius. The tube's own light must not be added to itself: measured, the selected tube alone 249/193/134
+     * (amber), with the whole glow on top 255/239/174 (cream — red clips, green climbs). So `TubeBloom` fades `over`
+     * out as the filament lights and keeps `beyond`. At rest both show, as Carl judged the first take.
+     */
+    const part = (over: boolean) => {
+      const g = geo.clone();
+      const colour = new Float32Array(centred.length * cols * 4);
+      for (let i = 0; i < centred.length; i++) {
+        for (let j = 0; j < cols; j++) {
+          const d = Math.abs((j / segs) * 2 - 1) * TUBE_BLOOM_REACH;
+          // The step runs from the tube's edge OUTWARD (1.0 → 1.5 R): `beyond` adds nothing onto the tube itself.
+          // ⚠ 0.7 → 1.3 R first: `beyond` overlapped the tube's outer pixels and the lit tube still read cream (255/224/163).
+          const u = Math.min(1, Math.max(0, (d - tubeRadius) / (tubeRadius * 0.5)));
+          const onTube = 1 - u * u * (3 - 2 * u); // 1 over the tube, 0 past its edges
+          const k = (i * cols + j) * 4;
+          colour[k] = colour[k + 1] = colour[k + 2] = 1;
+          colour[k + 3] =
+            Math.exp(-((d / TUBE_BLOOM_SIGMA) ** 2)) * (over ? onTube : 1 - onTube) * (j === 0 || j === segs ? 0 : 1);
+        }
+      }
+      g.setAttribute("color", new THREE.BufferAttribute(colour, 4));
+      return g;
+    };
+    const parts = { over: part(true), beyond: part(false) };
+    geo.dispose();
+    return parts;
+  }, [path, tubeRadius, tubeBloom]);
+  useEffect(
+    () => () => {
+      bloomGeometry?.over.dispose();
+      bloomGeometry?.beyond.dispose();
+    },
+    [bloomGeometry],
+  );
 
   // ── BEVEL — a swept band sloping inward and TOWARD THE VIEWER. ──
   //
@@ -2384,6 +2579,10 @@ export function AnswerCardMesh({
     <group ref={groupRef}>
       {children}
       {/*
+        ⛔⛔ OVERTAKEN 15 OCTOBER 2026 (R-062): THE RIM IS NOW A CLEAR GLASS TUBE by default (`RIM_IS_GLASS`,
+        `rimIsGlass`) — Carl: *"the glass tube going around the cards should be the same as the about cards tube"*. The
+        tungsten described below is `?cardrim=metal`. Still true: the half-tube's shape, the filament shader, its quench.
+
         ⚠ THE RIM IS TUNGSTEN AT REST — the filament before any current. Carl,
         4 August: *"Filaments are usually grey metal... if its metal, the light
         would have some interaction with it before it is active."*
@@ -2406,11 +2605,14 @@ export function AnswerCardMesh({
           `onCreated` note in `answer-card-canvas.tsx`. Every surface both casts
           and receives, because the question is whether the BEVEL shadows the
           face at the seam. */}
+      {bloomGeometry && <TubeBloom parts={bloomGeometry} strength={tubeBloom} filament={filament} />}
       <mesh geometry={rimGeometry} castShadow={!glass} receiveShadow={!glass}>
         {glass ? (
           <RimMaterial
-            color={RIM_METALS[glassTuning.rimMetal]?.color ?? RIM_METAL_COLOR}
-            roughness={glassTuning.rimRoughness}
+            color={rimIsGlass() ? RIM_GLASS_COLOR : (RIM_METALS[glassTuning.rimMetal]?.color ?? RIM_METAL_COLOR)}
+            roughness={rimIsGlass() ? RIM_GLASS_ROUGHNESS : glassTuning.rimRoughness}
+            metalness={rimIsGlass() ? 0 : RIM_METALNESS}
+            symmetric={rimIsGlass()}
             envMap={envMap}
             envMapIntensity={RIM_ENV_INTENSITY * lightLevel}
             filament={filament}

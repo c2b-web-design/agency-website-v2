@@ -35,6 +35,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { FamilyMember, Glyphs } from "./whoweare-button-scene";
 import { isRoomWarm } from "@/lib/room-warm";
+import { pageZoom } from "@/lib/site-scale";
 
 const WhoWeAreScene = dynamic(() => import("./whoweare-button-scene").then((m) => m.WhoWeAreScene), { ssr: false });
 
@@ -197,7 +198,8 @@ export default function FamilyButton({ member = "whoweare" }: { member?: FamilyM
       const r = a.getBoundingClientRect();
       const dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
       const dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
-      setNear(Math.hypot(dx, dy) <= NEAR);
+      // ⛔ `NEAR` is layout px; the rect and the pointer are screen px — × the site's zoom keeps the hold the size it was approved at (D-097).
+      setNear(Math.hypot(dx, dy) <= NEAR * pageZoom());
     };
     window.addEventListener("pointermove", onMove, { passive: true });
     return () => window.removeEventListener("pointermove", onMove);

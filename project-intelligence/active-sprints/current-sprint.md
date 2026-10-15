@@ -120,6 +120,16 @@ Carl: *"make it a platinum blue version of the Teal and Gold pill."* Bench passe
 
 Carl: *"If theres a standard for building metal then the logo is it. All other similar objects should meet that standard."* — refined the same day: *"settings may or may not have to be tweaked depending on the colour and text."* The family buttons were painted metal under lamps, reflecting nothing; the teal and gold now carry the reflection of a studio HDRI (Poly Haven "Monochrome Studio 02", CC0, `public/env/`) as DETAIL over the page's lamp-lit look — its room darkened to 0.1, turned 150° so its dark side sits behind the words. ✔ **Teal approved on the home page (R-058, R-059); gold approved on `/about` §4 (R-060).** **The platinum blue `Next step` is HELD** at no reflection (Carl). Roughness kept at 0.4 (the logo's 0.25 not taken).
 
+## Current work — the Q&A answer cards' edge and light (D-051, D-029 reopened, 15 October)
+
+Carl: *"If the button can be improved then maybe the card material can."* — *"i am not looking at redesign but improvements"*, then *"So yes, a small redesign"*. ✔ **R-061 / R-062 (approved):** the rim as ONE clear glass tube (as `/about`'s, reflect-only), the face's studio with its black shell filled by the studio HDRI (the face's ends 21 → 44), the filament holding at its flare (no settle) — made the DEFAULT, NOT COMMITTED. Then the corners (jagged at the left): the path rebuilt symmetric (a ring on every join), the canvas and every card snapped to the screen's pixel grid (`useScreenPixelSnap`, `pixelSlots`), the rim lit left–right symmetric — all built, not approved; Carl, at 100%: *"it stll doesnt look right"* — a 4 px tube cannot read as glass. **Next (Carl): the cards BIGGER — "a rework in this section".** Handoff: `live-work/session-handoff.md`.
+
+## Current work — the whole site scales to the window it was composed in (D-097, 15 October, session 2)
+
+Carl's `devicePixelRatio` read 1.36 for the whole build: **Windows Text size 136%** (not zoom — Chrome and Windows display Scale were 100%). Every page was composed and approved in a ~1412 × 608 window; at 1.0 it drew at ~74%. Carl: *"Yes, scale it all."* Text size now 100%. **Built and judged page by page:** a root `zoom` from ONE accessor (`lib/site-scale.ts` + `lib/use-site-scale.ts`), set before first paint (`app/layout.tsx`), design width 1412, ceiling 2.0, scale 1 below; `--vh` for window heights; every canvas measured in LAYOUT px (`offsetSize`, `dpr × zoom`); rects written into CSS via `toLayoutPx`. ✔ Home *"Looking good now"* (R-063), `/about` *"All good"* (R-064), `/start` *"looks good"* (R-065); the rollout gate then removed and the `/proto` benches converted (*"Implement 1"*). Plan: `live-work/plan-site-scale-15-october.md`. Harness: `live-work/scripts/site-scale-verify-15-october.mjs`.
+
+**Then the Q&A cards at the restored size (D-051):** the corner shape measured true (a 90° quarter-circle — the defect was the tube's REFLECTION sliding through the studio round a curve). Behind doors, NOT the default: `?cardradius=`, `?rimuniform=1` (the tube the same at every point), `?tube=` (radius; 4 raised and not chosen), `?tubebloom=` (a glow in the filament's colour). ✔ `?tube=1.5&rimuniform=1&tubebloom=1`: *"Thats looking a lot better."* (R-066). Next: Carl's word on making it the default.
+
 ## Carried, open — Carl's
 
 - The image scroll: §1's last lines pass over the opaque room; scroll-up fades it again; phones not
@@ -135,6 +145,7 @@ Carl: *"If theres a standard for building metal then the logo is it. All other s
 
 | Task | Output | Notes |
 |---|---|---|
+| D-097 THE SITE's SCALE — the whole site zoomed above 1412 px to the window Carl composed in (Windows Text size 136% found and set to 100%); every canvas in layout px; window heights on `--vh`; first paint at scale; the `/proto` benches converted. ✔ Home *"Looking good now"*, `/about` *"All good"*, `/start` *"looks good. Implement 1"* | `lib/site-scale.ts`, `lib/use-site-scale.ts`, `app/layout.tsx`, `app/globals.css`, `app/page.tsx`, `app/about/page.tsx`, the five shipped canvases, `enquiry-opening.tsx`, `nextstep-canvas.tsx`, `pillarbox-plate.tsx`, benches | R-063 – R-065. Verified per page: canvases identical to Carl's 1.36 setup, absolute window checks ✅, scale 1 below 1412. ⚠ The "< 0.5% pixels" target was the wrong test (scrollbar, text AA) — recorded not met |
 | D-088 THE LOGO STANDARD — the teal and gold family buttons given the reflection of a studio HDRI as detail (room 0.1, turned 150°, strength 1, roughness 0.4), the blue held. ✔ Carl, teal: *"Button looks great. Approved."*; gold: *"Approved. Put it on the page then commit and push."* | `components/home/whoweare-button-scene.tsx`, `whoweare-bench.tsx`, `public/env/monochrome_studio_02_1k.hdr`, `public/buttons/*-rest@{1,2}x.png` | R-058 – R-060. Verified: swap match 0.00 both; home 9/9, `/about` 9/9, `/start` 11/11; the `.hdr` on `/` and `/about` only |
 | D-088 `Next step` REDONE, platinum blue (14 October): bench passes mesh/material/light; on `/start` in the unchanged persistent host; rolls at every question (a stale-focus hold found and fixed); no frames while hidden; the traveller dark by default. ✔ Carl: *"yes looks good"* | `components/enquiry/nextstep-canvas.tsx`, `components/enquiry/answer-card-canvas.tsx`, `components/home/whoweare-button-scene.tsx`, `app/proto/button/page.tsx` | R-053 – R-056. Verified `nextstep-rollout-verify.mjs` 11/11 ×2; Q5 reveal 17 ms vs the old pill's 50 ms |
 | D-088 §2's RETURN RULES, STEP 2 + CARD 1's PROMPT (14 October): three states owned by `NeonBloom` (fresh / playing / static); §4 → static, a 3 s §3 linger → fresh; the trigger reads both directions (the unseen deep-link strike fixed); the desk mark holds its first strike; card 1's FACE is the restart (`clip-path` over CA's outline; `#roles` and the runway `pointer-events-none`); "click to restart" large on the face (`CardPrompt`), off with CA's reverse flicker as the rim strikes. ✔ Carl: *"Functions and mechanisms are good. So is text size and the timing of its exit."* | `components/about/neon-bloom.tsx`, `card-extrude.tsx`, `about-card-canvas.tsx`, `app/about/page.tsx` | R-052. Verified `about-s2-return-verify.mjs` 20/20. First control (a bordered HTML button) superseded the same day |
@@ -170,7 +181,11 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-15 — the logo standard: the teal and gold buttons given a studio's reflection (R-058 – R-060); the blue held. Committed and pushed on Carl's word.*
+*Last updated: 2026-10-15 (session 2, end) — D-097: the whole site scaled to the window it was composed in (R-063 – R-065), site-wide; the Q&A tube thinner, uniform, with a filament-coloured bloom behind doors (R-066). Committed and pushed on Carl's word with session 1's card work.*
+
+*Previously: 2026-10-15 (end) — the Q&A cards' glass tube, filled studio, held filament approved (R-061, R-062) and made the default, NOT committed; the corners and pixel grid worked through; next: the cards bigger.*
+
+*Previously: 2026-10-15 — the logo standard: the teal and gold buttons given a studio's reflection (R-058 – R-060); the blue held. Committed and pushed on Carl's word.*
 
 *Previously: 2026-10-14 (later) — `Next step` redone as the platinum blue family member and on `/start` (R-053 – R-056); the traveller dark for now. Committed and pushed on Carl's word.*
 

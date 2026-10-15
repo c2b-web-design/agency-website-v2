@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { SITE_SCALE_SCRIPT } from "@/lib/site-scale";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +35,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    // ⛔ `suppressHydrationWarning` ON <html> ONLY (D-097): the head script below writes `--site-scale` into its `style`
+    // before React hydrates — the server cannot know the window — so the one attribute is expected to differ. It does
+    // not reach any child (React suppresses one level).
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <head>
+        {/* ⛔ THE SITE'S SCALE, BEFORE FIRST PAINT (D-097, `lib/site-scale.ts`). A plain inline script, not `next/script`:
+            `beforeInteractive` does not promise to run before paint, and a first frame at the wrong size is a jump. */}
+        <script dangerouslySetInnerHTML={{ __html: SITE_SCALE_SCRIPT }} />
+      </head>
       <body>
         {children}
       </body>

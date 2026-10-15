@@ -213,7 +213,7 @@ export default function PillarboxPlate() {
   return (
     <div className="absolute inset-0 overflow-hidden">
       {/* ⛔⛔ EACH BAND IS EXACTLY THE PILLARBOX, NOT HALF THE SECTION.
-          `calc((100% - 150vh) / 2)` is the gap beside a 3:2 plate in a
+          `calc((100% - 150 * var(--vh)) / 2)` (`150vh` before D-097 — `var(--vh)` is the window under the site's zoom) is the gap beside a 3:2 plate in a
           full-height box — the same geometry `object-contain` resolves to.
 
           ⚠⚠ AN EARLIER VERSION USED `w-1/2` AND THE TILE WOULD HAVE BEEN SIZED
@@ -244,14 +244,14 @@ export default function PillarboxPlate() {
           inner edge lands on a half pixel; the overlap covers it. */}
       <div
         className="pointer-events-none absolute inset-y-0 right-0"
-        style={{ ...bandRight, width: "max(0px, calc((100% - 150vh) / 2 + 1px))" }}
+        style={{ ...bandRight, width: "max(0px, calc((100% - 150 * var(--vh)) / 2 + 1px))" }}
         aria-hidden="true"
       />
 
       {/* ⛔ THE LEFT BAND — the wall column, then the skirting corner over it. */}
       <div
         className="pointer-events-none absolute inset-y-0 left-0"
-        style={{ ...bandLeft, width: "max(0px, calc((100% - 150vh) / 2))" }}
+        style={{ ...bandLeft, width: "max(0px, calc((100% - 150 * var(--vh)) / 2))" }}
         aria-hidden="true"
       />
 
@@ -331,7 +331,7 @@ export default function PillarboxPlate() {
              * the skirting's own content at the seam, which is what the plate
              * draws there anyway.
              */
-            left: "max(0px, calc((100% - 150vh) / 2 - 150vh * 114 / 2560))",
+            left: "max(0px, calc((100% - 150 * var(--vh)) / 2 - 150 * var(--vh) * 114 / 2560))",
             /**
              * ⛔⛔ 90.80%, NOT 88.64% — AND THE 2.16% ERROR WAS VISIBLE AT ONCE.
              * Carl: *"the bottom of the new skirting is sitting at the top of
@@ -478,7 +478,7 @@ export default function PillarboxPlate() {
              * against the picture's 93-100. **Uncorrected, both read 104** — the
              * source ratio did not survive to the screen. Measure there.
              */
-            width: "calc(150vh * 114 / 2560 + 1px)",
+            width: "calc(150 * var(--vh) * 114 / 2560 + 1px)",
             height: "22.64%",
             backgroundImage: 'url("/about-skirting-left.png")',
             backgroundSize: "100% 100%",

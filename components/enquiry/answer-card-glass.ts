@@ -269,6 +269,10 @@ import { CARD_RISE_DURATION_MS, CROWN_HEIGHT } from "./answer-card-geometry";
 
 // ── The rim: tungsten, unlit ─────────────────────────────────────────────────
 //
+// ⛔⛔ OVERTAKEN 15 OCTOBER 2026 (R-062): the rim's DEFAULT is now a clear glass tube (`RIM_IS_GLASS`, the section after
+// `RIM_ENV_INTENSITY`). Everything below describes the tungsten, kept as `?cardrim=metal`; its reasoning was right for the
+// card it was written for and is not called mistaken.
+//
 // ⚠ THE RIM IS THE FILAMENT AT REST, NOT GREY WAITING TO BE COVERED. Carl, 4
 // August, with three photographs of unlit tungsten: *"Filaments are usually grey
 // metal... if its metal, the light would have some interaction with it before it
@@ -367,6 +371,50 @@ export const RIM_ROUGHNESS = 0.34;
  * property that makes *"the light would have some interaction with it"* possible.
  */
 export const RIM_ENV_INTENSITY = 1.6;
+
+// ── ⛔ THE RIM AS A GLASS TUBE — `?cardrim=glass` (D-051/D-029 reopened by Carl, 15 October 2026) ────────────────
+//
+// Carl: *"i think the glass tube going around the cards should be the same as the about cards tube. just one element.
+// That would get rid of the white problem and larger clear glass will be more recognisable. So yes, a small redesign."*
+// and *"What is more white should be the glass tube"* — the whole rim (the unlit cards *"comes accross as all white"*).
+// ⚠ WHY THE TUNGSTEN READS WHITE: metal, `RIM_ENV_INTENSITY` 1.6 — the env map IS its appearance, at full strength.
+// Glass is a dielectric: ~4% reflectance face-on (F0 0.04), rising only at grazing angles, so the tube reads as an
+// OUTLINE of highlights along its curve rather than a band.
+//
+// ⚠ REFLECT-ONLY, NOT `/about`'s TRANSMISSION — put to Carl, not objected to. `/about`'s rim transmits (the room seen
+// through it); here the only thing behind the tube is the dark ground and the face's edge, and the transmission pass
+// would be NEW on this canvas (the face went to `transmission: 0` on 9 August) — the cost behind the August opening and
+// Q5 stalls. A transmitting tube is the comparison to make next, measured.
+// ⚠ SO THE BODY IS DARK. With `transmission` 0, `color` is the DIFFUSE ALBEDO, not a tint of what passes through:
+// `/about`'s `#ffffff` here would be a white plastic tube — the white problem again. Clear glass over a dark ground
+// shows the dark ground; this stands in for it.
+
+/** The tube's body — what clear glass shows over the near-black ground (`GROUND_COLOR` #101010), as diffuse albedo. */
+export const RIM_GLASS_COLOR = "#0c0e12";
+/** `/about`'s clear rim (`GLASS_RIM_ROUGHNESS` 0.1 — Carl, 18 September: *"clear glass with a roughness value of around
+ *  0.10"*), copied as a value: the two card families are tuned separately. */
+export const RIM_GLASS_ROUGHNESS = 0.1;
+
+// ── ⛔⛔ THE DEFAULTS SINCE 15 OCTOBER 2026 (R-062 — Carl: *"yes a lot better. approved"*, then *"proceed"*) ─────────
+//
+// The glass tube, the face's filled studio and the filament holding at its flare were judged behind doors
+// (`?cardrim=glass`, `?cardenv=shell&cardroom=1&cardgain=4`) and are now the page. The August look stays reachable for
+// comparison: `?cardrim=metal` (the tungsten rim AND the filament's settle) and `?cardenv=panels` (the black shell).
+
+/** The rim is the glass tube, not tungsten (`?cardrim=metal` restores the tungsten for comparison). */
+export const RIM_IS_GLASS = true;
+
+/**
+ * ⛔ THE FACE's STUDIO: the two panels KEPT, their BLACK SHELL replaced by the studio HDRI (`lib/studio-hdri.ts`) — Carl:
+ * *"The card faces look a lot better."* Measured (`live-work/scripts/card-env-sweep-15-october.mjs`): the face's END
+ * 21.4 → 44.3 against its middle 56.9 → 66.2 — the ends no longer mirror black. The room UNDARKENED (1) and × 4: at the
+ * buttons' room 0.1 the backdrop was too dim to reach the ends (0.38 → 0.41); whole-studio replacement
+ * (`?cardenv=studio`) took the key panel's top band and whitened the then-metal rims — ruled out as a redesign.
+ * ⚠ The rim and bevel reflect this SAME environment; with the rim as glass (dielectric) it no longer floods white.
+ */
+export const CARD_ENV_SHELL_ROOM = 1;
+export const CARD_ENV_SHELL_GAIN = 4;
+export const CARD_ENV_SHELL_YAW = 0;
 
 // ── The bevel: glass, as the filament's mount ────────────────────────────────
 //

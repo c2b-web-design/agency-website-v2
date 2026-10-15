@@ -71,6 +71,15 @@ export const CARD_BOXES = [
  * `min-height: 3rem` — a FIXED 48px at every width, which the measurements above
  * confirm. Scaling y by the width ratio would lift the cards off the rows the
  * CSS actually puts them on.
+ *
+ * ⚠ THE WIDTH IS LAYOUT PX, NOT SCREEN PX (D-097, 15 October 2026). The site is
+ * `zoom`ed above 1412 px (`lib/site-scale.ts`); a grid measured with
+ * `getBoundingClientRect` would read 576 × the zoom and scale every card a
+ * second time. Its caller (`answer-card-canvas.tsx`) divides the rect by the
+ * zoom (`pageZoom`) — a rect rather than `offsetWidth`, because the receding
+ * grid is transformed during a corridor move and only the rect sees that.
+ * (A camera-zoom route for wider grids was built and reverted the same session —
+ * one scale mechanism, D-097.)
  */
 export function cardBoxesAt(gridWidthPx: number): Array<{ x: number; y: number; w: number; h: number }> {
   const s = gridWidthPx / GRID_WIDTH_PX;

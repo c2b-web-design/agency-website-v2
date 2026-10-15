@@ -44,6 +44,7 @@ import { ContactField, GOLD_BEVEL_ENV_INTENSITY } from "./contact-field-mesh";
 // the geometry question is answered, which is why it is a separate file and why
 // this is the only place the canvas refers to it.
 import { LightRigScene, useLightRig, BASE_LIGHT_SCALE } from "./contact-field-light-rig";
+import { useCanvasDpr } from "@/lib/use-site-scale";
 
 // ── The entrance cascade ─────────────────────────────────────────────────────
 // ⚠ RETIMED 30 July 2026 ON CARL'S INSTRUCTION — a TRIAL, to be judged by eye.
@@ -2138,6 +2139,7 @@ export default function ContactFieldCanvas({
    */
   filled?: boolean[];
 }) {
+  const canvasDpr = useCanvasDpr([1, 2]);
   const [reducedMotion] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -2206,7 +2208,10 @@ export default function ContactFieldCanvas({
       <Canvas
         orthographic
         camera={{ zoom: 1, position: [0, 0, 1000], near: 0.1, far: 4000 }}
-        dpr={[1, 2]}
+        // ⛔ D-097 (`lib/site-scale.ts`): measured in LAYOUT px and drawn at the device ratio × the site's zoom. Without
+        // both this canvas — INSIDE the zoomed page — is zoomed twice (measured: 1296 × 414 on an 863 × 275 backing).
+        resize={{ offsetSize: true }}
+        dpr={canvasDpr}
         gl={{ antialias: true, alpha: true }}
         // Still DEMAND, not "always". The scene is static before the cascade
         // starts and static again once it finishes; `useEntranceCascade`

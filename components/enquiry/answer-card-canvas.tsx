@@ -46,6 +46,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 import {
   AnswerCardMesh,
   DEFAULT_TUNING,
@@ -69,6 +70,10 @@ import {
   FILAMENT_SURGE_PEAK,
   FILAMENT_PEAK_TEMP,
   FILAMENT_SETTLE_TEMP,
+  RIM_IS_GLASS,
+  CARD_ENV_SHELL_ROOM,
+  CARD_ENV_SHELL_GAIN,
+  CARD_ENV_SHELL_YAW,
   REST_KEY_POSITION,
   REST_KEY_INTENSITY,
   REST_FILL_POSITION,
@@ -103,6 +108,8 @@ import {
 // card fade in"*), so nothing about the filament's clock changes here.
 import { AnswerCardBackdrop } from "./answer-card-backdrop";
 import { CARD_BOXES, cardBoxesAt, GRID_WIDTH_PX } from "./answer-card-backdrop-geometry";
+import { pageZoom } from "@/lib/site-scale";
+import { useCanvasDpr, useSiteScale } from "@/lib/use-site-scale";
 import {
   CARD_WIDTH_PX,
   CARD_HEIGHT_PX,
@@ -130,6 +137,9 @@ import {
   checkBudget,
   maxFaceTiltDegrees,
   MIN_FACE_TILT_DEGREES,
+  BEVEL_RISE_RATIO,
+  FACE_PROUD_OF_RIM,
+  FACE_RISE_FROM,
 } from "./answer-card-geometry";
 
 /**
@@ -1193,7 +1203,25 @@ function useCardRig(): {
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("cardrig") === "1",
   );
-  const [tuning, setTuning] = useState<AnswerCardTuning>(DEFAULT_TUNING);
+  /**
+   * ⛔ `?tube=` — THE GLASS TUBE's RADIUS (layout px; the rig's range 0.5–6). 15 October 2026, session 2. Carl: *"i think
+   * it may be the thickness of the tube. i gave instruction to make the "white" the tube. You are auhorised to change the
+   * parameters of the tube"*. The face's crown FOLLOWS (`FACE_CROWN_RISE`'s own rule — the face's apex `FACE_PROUD_OF_RIM`
+   * above the tube's), and so does the bevel's rise; the label keeps its approved size (`convexFaceGeometry`'s `labelRef`).
+   */
+  const [tuning, setTuning] = useState<AnswerCardTuning>(() => {
+    if (typeof window === "undefined") return DEFAULT_TUNING;
+    const raw = new URLSearchParams(window.location.search).get("tube");
+    const t = raw === null || raw === "" ? NaN : Number(raw);
+    if (!Number.isFinite(t)) return DEFAULT_TUNING;
+    const tube = Math.min(6, Math.max(0.5, t));
+    return {
+      ...DEFAULT_TUNING,
+      tubeRadius: tube,
+      bevelRise: tube * BEVEL_RISE_RATIO,
+      crownHeight: tube + FACE_PROUD_OF_RIM - FACE_RISE_FROM,
+    };
+  });
   /**
    * ⚠ `?roughness=` AND `?standin=0` EXIST FOR THE HARNESS, not for tuning by
    * hand. The chunk's product is a table of "at what roughness does each stroke
@@ -2599,6 +2627,15 @@ function useFilament(lit: boolean, intensityTarget: number): FilamentState {
       peak: urlFloat("surgepeak", FILAMENT_SURGE_PEAK),
       peakTemp: urlFloat("peaktemp", FILAMENT_PEAK_TEMP),
       settleTemp: urlFloat("settle", FILAMENT_SETTLE_TEMP),
+      /**
+       * ⛔ NO SETTLE WITH THE GLASS TUBE (`?cardrim=glass`) — Carl, 15 October 2026: *"i think the slight decrease after it
+       * has warmed up is not needed now"*. The rush up to the flare is kept; the fall back to the working point is not —
+       * the filament holds at the flare (`peak`, `peakTemp`). ⚠ The 10 August surge (the inrush, then the settle) stands
+       * for the tungsten rim. ⛔ The default since 15 October (R-062, `RIM_IS_GLASS`); `?cardrim=metal` brings back both.
+       */
+      hold: RIM_IS_GLASS
+        ? !(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("cardrim") === "metal")
+        : typeof window !== "undefined" && new URLSearchParams(window.location.search).get("cardrim") === "glass",
     }),
     [],
   );
@@ -2717,6 +2754,10 @@ function useFilament(lit: boolean, intensityTarget: number): FilamentState {
         const e = 1 - Math.pow(1 - u, 3);
         intensity.current = intensityTarget * surge.peak * e;
         temperature.current = surge.peakTemp * e;
+      } else if (surge.hold) {
+        // The glass tube: no settle — it holds at the flare (see `surge.hold`).
+        intensity.current = intensityTarget * surge.peak;
+        temperature.current = surge.peakTemp;
       } else {
         // The settle. Falls from the flare to the working point and stays.
         const u = (t - surgeAt) / (1 - surgeAt);
@@ -3185,9 +3226,149 @@ function CardLighting({
  * between canvases** — it is a GPU texture and dies with its context — so
  * shrinking is the only lever short of a host that never unmounts (D-048).
  */
+/**
+ * ⛔ `?cardenv=studio` — THE CARDS IN THE BUTTONS' STUDIO (D-051, 15 October 2026). Carl: *"At the edges, especially the
+ * sides, it seems that some of the geometry is lost. This was worse at one point as the face appeared disconnected from the
+ * rim."* — *"i am not looking at redesign but improvements."* Measured (`live-work/scripts/card-edge-profile-15-october.mjs`,
+ * `card-face-drivers-15-october.mjs`): the face's END reads 21.4 against its middle 56.9 — where the face turns down at its
+ * ends it mirrors the two-panel studio's BLACK SHELL (the environment gives 9.1 there, 45.3 mid), the buttons' bands again.
+ * ⛔ ONE CHANGE: the studio's SOURCE — the continuous HDRI (`lib/studio-hdri.ts`) on a sphere in place of the two panels on
+ * black, through the SAME `fromScene` (so `?pmrem=`, the `ready` gate and every material's env strength are untouched).
+ * `?cardroom=` its room (default 0.1, the buttons'), `?cardyaw=` (degrees) its turn, `?cardgain=` its exposure.
+ * ⛔ `?cardenv=shell` — THE NARROWER FIX: today's two panels KEPT, only the BLACK SHELL behind them replaced by the HDRI (at
+ * `cardgain`) — the gaps filled, the approved key/fill kept. Taken after `studio` (the whole studio swapped) turned the rims
+ * flat white all round and took the face's top band with the key panel — a redesign, not Carl's "improvements".
+ * ⛔ THE DEFAULT SINCE 15 OCTOBER 2026 (R-062): `shell` at `CARD_ENV_SHELL_*` — the defaults' values live in
+ * `answer-card-glass.ts`; `?cardenv=panels` is the August studio (the black shell), `?cardenv=studio` the ruled-out swap.
+ * (Written as a door "off by default" the same day; overtaken by Carl's approval.) ⚠ The HDRI arrives over the network —
+ * the cards' env waits for it (null until then), which past `ready` would be the "grey then brighter" rebuild: measured on
+ * the opening, see D-051's 15 October entries.
+ */
+/**
+ * ⛔ THE CARDS ON THE SCREEN's PIXEL GRID (15 October 2026). Carl, at `devicePixelRatio` 1.36 on a 27" monitor: *"it looks as
+ * if the left hand side vertical strip is misaligned"* — then *"if you have to change the size of the cards to make it right
+ * then do that."* Measured (`live-work/scripts/card-edge-alignment-15-october.mjs`): the canvas sat at a FRACTIONAL page
+ * position (x 424.86, y 492.77) with a backing of 575 × 103 for 575.99 × 104 CSS px — the browser RESAMPLED it on both axes
+ * — and every card's edges fell at a different phase within a pixel (card 1: left .86, right .51), so the tube's left and
+ * right strips rasterised differently: at the left 16 → 154 then flat, at the right 30, 86, 125, 143, 203.
+ * ⚠ WHY SCREEN PIXELS, NOT CSS: at 1.36 no CSS width is whole screen pixels (186.66 → 253.86; 186 → 252.96), and visitors
+ * bring every ratio. So: (1) the canvas is placed on the screen's pixel grid and sized so its backing IS its displayed size
+ * (no resample); (2) every card is the same whole number of screen pixels wide and tall, each edge on a pixel. At most
+ * ⅔ of a CSS px per card. The DOM hit boxes are unchanged. `?cardsnap=0` restores the old placement for comparison.
+ */
+/**
+ * ⛔ THE CANVAS ON THE SCREEN's PIXEL GRID, APPLIED ON THE ELEMENT (`cardSnapOn`, 15 October 2026). After hydration, on the
+ * wrapper itself: its page position is read, and a `translate` moves it by the fraction to the nearest whole SCREEN pixel;
+ * its width and height become a whole number of screen pixels (`snapToScreen`), so the renderer's backing IS its displayed
+ * size — no resample. ⚠ WHY NOT IN THE JSX: a value from `devicePixelRatio` mismatches the server HTML, and React does not
+ * patch a hydration mismatch (measured: the page kept 576 while the client computed 575.75). ⚠ WHY NOT `gridOffset`: the
+ * wrapper's offset parent is the shared host, which another component places at the grid's fractional position — the
+ * offset this component computes is ~0. The page position is the only true one.
+ * ⚠ THE GRID MOVES (a resize, each question step's corridor move): re-snapped on resize, when the HOST's style changes,
+ * and whenever `deps` change, by a short rAF watch that stops once the position has been still for 30 frames — never a
+ * loop for the life of the page.
+ */
+function useScreenPixelSnap(el: HTMLElement | null, width: number, height: number, deps: unknown) {
+  useEffect(() => {
+    if (!el || !cardSnapOn()) return;
+    let raf = 0;
+    let still = 0;
+    let last = "";
+    const snap = () => {
+      el.style.transform = "";
+      const r = el.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const dx = Math.round(r.left * dpr) / dpr - r.left;
+      const dy = Math.round(r.top * dpr) / dpr - r.top;
+      // ⛔ D-097: `dx/dy` are SCREEN px; a `translate` is drawn × the site's zoom, so it is written ÷ the zoom.
+      const z = pageZoom();
+      el.style.transform = `translate(${dx / z}px, ${dy / z}px)`;
+      el.style.width = `${snapToScreen(width)}px`;
+      el.style.height = `${snapToScreen(height)}px`;
+      return `${r.left},${r.top},${dpr}`;
+    };
+    const watch = () => {
+      const key = snap();
+      still = key === last ? still + 1 : 0;
+      last = key;
+      raf = still < 30 ? requestAnimationFrame(watch) : 0;
+    };
+    const restart = () => {
+      still = 0;
+      if (!raf) raf = requestAnimationFrame(watch);
+    };
+    restart();
+    window.addEventListener("resize", restart);
+    // ⚠ THE HOST MOVES BY ITS OWN INLINE left/top (`enquiry-opening.tsx`, `hostRect`) — at the reveal and each question
+    // step — and nothing here re-renders when it does: a first build snapped during the opening (the host not yet
+    // placed), went still, and sat at translate(0, 0) after Begin. So the host's style restarts the watch.
+    const host = el.parentElement;
+    const mo = host ? new MutationObserver(restart) : null;
+    if (host && mo) mo.observe(host, { attributes: true, attributeFilter: ["style", "class"] });
+    return () => {
+      window.removeEventListener("resize", restart);
+      mo?.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [el, width, height, deps]);
+}
+
+/** A CSS length → the nearest whole number of SCREEN pixels, back in CSS px (+ 0.02 screen px: see the wrapper). */
+function snapToScreen(css: number): number {
+  if (typeof window === "undefined" || !cardSnapOn()) return css;
+  // ⛔ D-097: screen pixels per LAYOUT px are the device ratio × the site's zoom.
+  const dpr = (window.devicePixelRatio || 1) * pageZoom();
+  return (Math.round(css * dpr) + 0.02) / dpr;
+}
+
+function cardSnapOn(): boolean {
+  return !(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("cardsnap") === "0");
+}
+
+/** The cards' canvas resolution: `?carddpr=` (a number, 1–3) fixes it; absent, `[1, 2]` as before (see the `<Canvas>`). */
+function cardDpr(): number | [number, number] {
+  if (typeof window === "undefined") return [1, 2];
+  const raw = new URLSearchParams(window.location.search).get("carddpr");
+  const n = raw === null ? NaN : Number(raw);
+  return Number.isFinite(n) ? Math.min(3, Math.max(1, n)) : [1, 2];
+}
+
+type CardEnvDoor = { mode: "studio" | "shell"; room: number; yaw: number; gain: number } | null;
+function readCardEnvDoor(): CardEnvDoor {
+  if (typeof window === "undefined") return null;
+  const q = new URLSearchParams(window.location.search);
+  // ⛔ "shell" IS THE DEFAULT since 15 October 2026 (R-062; `CARD_ENV_SHELL_*`); `?cardenv=panels` is the August studio.
+  const mode = q.get("cardenv") ?? "shell";
+  if (mode !== "studio" && mode !== "shell") return null;
+  const num = (k: string, d: number) => {
+    const v = q.get(k);
+    const n = v === null ? NaN : Number(v);
+    return Number.isFinite(n) ? n : d;
+  };
+  return {
+    mode,
+    room: Math.min(1, Math.max(0, num("cardroom", CARD_ENV_SHELL_ROOM))),
+    yaw: num("cardyaw", CARD_ENV_SHELL_YAW),
+    gain: Math.max(0, num("cardgain", CARD_ENV_SHELL_GAIN)),
+  };
+}
+
 function useLocalEnvMap(ready: boolean): THREE.Texture | null {
   const gl = useThree((state) => state.gl);
   const invalidate = useThree((state) => state.invalidate);
+
+  const cardEnv = useMemo(() => readCardEnvDoor(), []);
+  const [studioHdri, setStudioHdri] = useState<THREE.DataTexture | null>(null);
+  useEffect(() => {
+    if (!cardEnv) return;
+    let live = true;
+    void loadStudioHdri(STUDIO_HDRI_SRC, cardEnv.room).then((t) => {
+      if (live) setStudioHdri(t);
+    });
+    return () => {
+      live = false;
+    };
+  }, [cardEnv]);
 
   const target = useMemo(() => {
     /**
@@ -3211,44 +3392,62 @@ function useLocalEnvMap(ready: boolean): THREE.Texture | null {
      * 256/128/64 side by side. **Deferral costs nothing to look at.**
      */
     if (!ready) return null;
+    // `?cardenv=studio`: nothing until the HDRI is here (see `readCardEnvDoor`).
+    if (cardEnv && !studioHdri) return null;
 
     const studio = new THREE.Scene();
     const disposables: Array<THREE.BufferGeometry | THREE.Material> = [];
 
-    // Panels are things to be SEEN IN a reflection, not lights: colour
-    // pre-multiplied by intensity, `toneMapped: false`. Large rather than
-    // fierce — a curved face reflects a wide arc, so a big soft source reads as
-    // a satin sweep rather than a hot pinpoint.
-    const panel = (
-      color: string,
-      intensity: number,
-      position: [number, number, number],
-      size: [number, number],
-    ) => {
-      const geometry = new THREE.PlaneGeometry(size[0], size[1]);
-      const material = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(color).multiplyScalar(intensity),
-        side: THREE.DoubleSide,
+    if (cardEnv?.mode === "studio" && studioHdri) {
+      // The HDRI on the inside of a sphere — an equirect on three's sphere UVs — turned by `yaw`, exposure × `gain`.
+      const geometry = new THREE.SphereGeometry(ENV_SHELL_RADIUS, 64, 32);
+      const material = new THREE.MeshBasicMaterial({ map: studioHdri, side: THREE.BackSide, toneMapped: false });
+      material.color.setScalar(cardEnv.gain);
+      const sphere = new THREE.Mesh(geometry, material);
+      sphere.rotation.y = (cardEnv.yaw * Math.PI) / 180;
+      studio.add(sphere);
+      disposables.push(geometry, material);
+    } else {
+      // Panels are things to be SEEN IN a reflection, not lights: colour
+      // pre-multiplied by intensity, `toneMapped: false`. Large rather than
+      // fierce — a curved face reflects a wide arc, so a big soft source reads as
+      // a satin sweep rather than a hot pinpoint.
+      const panel = (
+        color: string,
+        intensity: number,
+        position: [number, number, number],
+        size: [number, number],
+      ) => {
+        const geometry = new THREE.PlaneGeometry(size[0], size[1]);
+        const material = new THREE.MeshBasicMaterial({
+          color: new THREE.Color(color).multiplyScalar(intensity),
+          side: THREE.DoubleSide,
+          toneMapped: false,
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(position[0], position[1], position[2]);
+        mesh.lookAt(0, 0, 0);
+        studio.add(mesh);
+        disposables.push(geometry, material);
+      };
+
+      // `?cardenv=shell`: the black shell becomes the HDRI (× `cardgain`), turned by `cardyaw`; the panels stay in front of it.
+      const shellHdri = cardEnv?.mode === "shell" ? studioHdri : null;
+      const shellGeometry = new THREE.SphereGeometry(ENV_SHELL_RADIUS, shellHdri ? 64 : 16, shellHdri ? 32 : 16);
+      const shellMaterial = new THREE.MeshBasicMaterial({
+        color: shellHdri ? new THREE.Color().setScalar(cardEnv?.gain ?? 1) : 0x000000,
+        map: shellHdri,
+        side: THREE.BackSide,
         toneMapped: false,
       });
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(position[0], position[1], position[2]);
-      mesh.lookAt(0, 0, 0);
-      studio.add(mesh);
-      disposables.push(geometry, material);
-    };
+      const shell = new THREE.Mesh(shellGeometry, shellMaterial);
+      if (shellHdri) shell.rotation.y = ((cardEnv?.yaw ?? 0) * Math.PI) / 180;
+      studio.add(shell);
+      disposables.push(shellGeometry, shellMaterial);
 
-    const shellGeometry = new THREE.SphereGeometry(ENV_SHELL_RADIUS, 16, 16);
-    const shellMaterial = new THREE.MeshBasicMaterial({
-      color: 0x000000,
-      side: THREE.BackSide,
-      toneMapped: false,
-    });
-    studio.add(new THREE.Mesh(shellGeometry, shellMaterial));
-    disposables.push(shellGeometry, shellMaterial);
-
-    panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY, [-16, 22, 18], [70, 38]);
-    panel(ENV_FILL_COLOR, ENV_FILL_INTENSITY, [18, -16, 14], [48, 26]);
+      panel(ENV_KEY_COLOR, ENV_KEY_INTENSITY, [-16, 22, 18], [70, 38]);
+      panel(ENV_FILL_COLOR, ENV_FILL_INTENSITY, [18, -16, 14], [48, 26]);
+    }
 
     /**
      * ⚠ THE FOURTH ARGUMENT IS `far`, NOT THE RESOLUTION — and a comment here
@@ -3312,7 +3511,7 @@ function useLocalEnvMap(ready: boolean): THREE.Texture | null {
     studio.clear();
 
     return built;
-  }, [gl, ready]);
+  }, [gl, ready, cardEnv, studioHdri]);
 
   // Dispose the previous target when a new one is built, and on unmount. This
   // is what replaces the effect-based allocation: a Strict Mode double-invoke
@@ -3826,6 +4025,38 @@ function CardScene({
    */
   const cardScale = gridWidth / GRID_WIDTH_PX;
 
+  /**
+   * ⛔ EACH CARD ON THE SCREEN's PIXEL GRID (`cardSnapOn`, 15 October 2026). `k` is SCREEN pixels per world unit, read from
+   * the renderer's backing (floor(css × dpr)) against its CSS size (so it is exact whatever rounding the wrapper got). Every card the SAME
+   * whole number of screen pixels wide (`wd`) and tall (`hd`), its top-left corner on a screen pixel; the world centre
+   * and a per-axis scale follow. ⚠ THE SCALE IS NO LONGER EXACTLY UNIFORM — x and y differ by under one screen pixel over
+   * the card (≤ ~0.5% at 1.36); the cross-section's circle becomes an ellipse by that much, below sight. Off: the old
+   * uniform `cardScale` and the measured centres.
+   */
+  const size = useThree((st) => st.size);
+  // The renderer's own resolution: its backing is floor(css × dpr) — computed the same way here, never read off the
+  // element (which could still hold the PREVIOUS size on the render that brings a new one).
+  const viewDpr = useThree((st) => st.viewport.dpr);
+  const pixelSlots = useMemo(() => {
+    const plain = slots.map((sl) => ({ x: sl.x, y: sl.y, sx: cardScale, sy: cardScale }));
+    if (!cardSnapOn() || size.width <= 0 || size.height <= 0) return plain;
+    const kx = Math.floor(size.width * viewDpr) / size.width;
+    const ky = Math.floor(size.height * viewDpr) / size.height;
+    const wd = Math.round(CARD_WIDTH_PX * cardScale * kx);
+    const hd = Math.round(CARD_HEIGHT_PX * cardScale * ky);
+    return slots.map((sl) => {
+      // The slot's measured centre → its top-left in screen px from the canvas's top-left, rounded.
+      const left = Math.round((sl.x + size.width / 2) * kx - wd / 2);
+      const top = Math.round((size.height / 2 - sl.y) * ky - hd / 2);
+      return {
+        x: (left + wd / 2) / kx - size.width / 2,
+        y: size.height / 2 - (top + hd / 2) / ky,
+        sx: wd / kx / CARD_WIDTH_PX,
+        sy: hd / ky / CARD_HEIGHT_PX,
+      };
+    });
+  }, [slots, cardScale, size.width, size.height, viewDpr]);
+
   // ⚠ THE `?cards=N` DIAGNOSTIC IS REMOVED. It existed to separate "does ANY
   // transmissive card cost this" from "do FIVE cost five times", and it answered
   // that — but the answer was taken on a SOFTWARE RASTERISER (headless
@@ -4094,9 +4325,9 @@ function CardScene({
         the pointer targets use.
       */}
       {slots.map((slot, i) => (
-        <group key={i} scale={[cardScale, cardScale, 1]}>
+        <group key={i} scale={[pixelSlots[i].sx, pixelSlots[i].sy, 1]}>
           <AnswerCard
-            slot={{ x: slot.x / cardScale, y: slot.y / cardScale }}
+            slot={{ x: pixelSlots[i].x / pixelSlots[i].sx, y: pixelSlots[i].y / pixelSlots[i].sy }}
             delayMs={CARD_RISE_LADDER_MS[i]}
             active={active}
             reducedMotion={reducedMotion}
@@ -4469,7 +4700,12 @@ export default function AnswerCardCanvas({
       gridEl.parentElement;
     if (!target) return;
     const apply = () => {
-      const r = target.getBoundingClientRect();
+      // ⛔ D-097: rects are SCREEN px; the grid's width and offset are WRITTEN as CSS (the canvas box, `left/top`) and
+      // build the world (`cardBoxesAt`), so both are taken in LAYOUT px — ÷ the site's zoom. Kept as a rect (not
+      // `offsetWidth`) because the receding grid is TRANSFORMED during a corridor move and only the rect sees that.
+      const z = pageZoom();
+      const sr = target.getBoundingClientRect();
+      const r = { left: sr.left / z, top: sr.top / z, width: sr.width / z };
       // Ignore a zero width — it means the element is display:none or not yet
       // laid out, and committing it would collapse every card to a point.
       if (r.width > 0) {
@@ -4484,8 +4720,8 @@ export default function AnswerCardCanvas({
          */
         const host = gridEl.offsetParent as HTMLElement | null;
         const hr = host?.getBoundingClientRect();
-        const left = r.left - (hr?.left ?? 0);
-        const top = r.top - (hr?.top ?? 0);
+        const left = r.left - (hr?.left ?? 0) / z;
+        const top = r.top - (hr?.top ?? 0) / z;
         setGridOffset((prev) =>
           prev && Math.abs(prev.left - left) < 0.5 && Math.abs(prev.top - top) < 0.5
             ? prev
@@ -4531,6 +4767,16 @@ export default function AnswerCardCanvas({
     const b = protoCanvasBox();
     return gridWidth === null ? b : { ...b, width: gridWidth };
   }, [gridWidth]);
+
+  // ⛔ D-097: the canvas's resolution × the site's zoom (the `?carddpr=` door's fixed ratio too) — paired with the
+  // `<Canvas>`'s `resize={{ offsetSize: true }}`, so the world stays in layout px and the drawing stays sharp.
+  const siteZoom = useSiteScale();
+  const rangeDpr = useCanvasDpr([1, 2]);
+  const fixedDpr = cardDpr();
+  const canvasDpr = typeof fixedDpr === "number" ? fixedDpr * siteZoom : rangeDpr;
+
+  // ⛔ The canvas on the screen's pixel grid — after hydration, on the element (see `useScreenPixelSnap`).
+  useScreenPixelSnap(gridEl, box.width, box.height, `${gridNonce}|${gridOffset?.left}|${gridOffset?.top}`);
 
   // The pointer targets, on the same measured layout the scene uses.
   const boxes = useMemo(() => cardBoxesAt(gridWidth ?? GRID_WIDTH_PX), [gridWidth]);
@@ -4788,6 +5034,9 @@ export default function AnswerCardCanvas({
         // `gridOffset === null` guard below, which renders nothing until then.
         left: box.left + (gridOffset?.left ?? 0),
         top: box.top + (gridOffset?.top ?? 0),
+        // ⚠ The SERVER's size: the screen-pixel snap is applied on the element after hydration (`useScreenPixelSnap`) —
+        // a value computed from `devicePixelRatio` here would mismatch the server HTML, which React does NOT patch
+        // (measured 15 October: the page kept 576 while the client computed 575.75).
         width: box.width,
         height: box.height,
         pointerEvents: "none",
@@ -4802,7 +5051,16 @@ export default function AnswerCardCanvas({
           camera wrongly and put the card off screen entirely.
         */
         camera={{ zoom: 1, position: [0, 0, 1000], near: 0.1, far: 4000 }}
-        dpr={[1, 2]}
+        /*
+          ⛔ `?carddpr=` — SUPERSAMPLING, UNDER TEST (15 October 2026). Carl, on the glass tube's corners: *"its still
+          there. i can see it from 2ft away on a 27" monitor."* At 1× the tube is 4 px wide and the glass (roughness 0.1)
+          draws a sub-pixel highlight along it; MSAA (4 samples, measured) smooths only geometric EDGES, not shading, so the
+          highlight stair-steps round the corners — worst at the left, where the top-left key puts the brightest, thinnest
+          line. Drawing at 2× and letting the browser scale down averages the shading too.
+        */
+        // ⛔ D-097: measured in LAYOUT px — without it R3F takes the zoomed rect and draws the cards twice as large.
+        resize={{ offsetSize: true }}
+        dpr={canvasDpr}
         gl={{ antialias: true, alpha: true }}
         frameloop="demand"
         style={{ pointerEvents: "none" }}

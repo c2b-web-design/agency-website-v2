@@ -50,6 +50,7 @@ import {
   type LogoCrossing,
 } from "./logo-mark-material";
 import { LOGO_JUNCTION, LOGO_OUTLINE_SOURCE as SRC } from "./logo-mark-outline";
+import { useCanvasDpr } from "@/lib/use-site-scale";
 
 export type LogoBenchFlags = {
   view?: string; mask?: boolean; overlay?: number; mode?: string; wire?: boolean; shadows?: boolean; az?: number; el?: number;
@@ -237,6 +238,7 @@ function Slider({ label, value, min, max, step, onChange, fmt }: {
 }
 
 export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
+  const benchDpr = useCanvasDpr([1, 2]);
   const [view, setView] = useState<View>(VIEWS.includes(flags.view as View) ? (flags.view as View) : "oblique");
   const [mode, setMode] = useState<Mode>(MODES.includes(flags.mode as Mode) ? (flags.mode as Mode) : "clay");
   const [mask, setMask] = useState(!!flags.mask);
@@ -411,7 +413,7 @@ export default function LogoBench({ flags }: { flags: LogoBenchFlags }) {
         className={`relative border border-neutral-700 ${view === "roomsize" ? "" : "w-full"}`}
         style={{ ...panelStyle, background: mask ? "#000000" : "#121212", maxWidth: view === "roomsize" ? undefined : "100%" }}
       >
-        <Canvas key={front ? "ortho" : `persp-${view}`} gl={{ antialias: true, alpha: true }} dpr={[1, 2]} shadows="soft" frameloop="always">
+        <Canvas key={front ? "ortho" : `persp-${view}`} gl={{ antialias: true, alpha: true }} resize={{ offsetSize: true }} dpr={benchDpr} shadows="soft" frameloop="always">
           {front ? (
             <OrthographicCamera makeDefault position={[0, 0, 10 * S]} near={0.1} far={40 * S} {...frame} manual />
           ) : (

@@ -43,6 +43,25 @@ export const CARD_HEIGHT_PX = 48;
  */
 export const CARD_RADIUS_PX = 14;
 
+/**
+ * ⛔ THE CORNER's RADIUS, WITH A DOOR — `?cardradius=` (layout px, 0 … half the card's height). 15 October 2026,
+ * session 2. Carl, on the corners at the restored size: *"its the shape of the curve. it should be 90deg… What i would
+ * do is make the corners right angles at first and then measure on the vertical and horizontal lines where the curvature
+ * would start."* `?cardradius=0` is the right angle; a value is where the curve starts on BOTH edges, measured from
+ * the corner — a true quarter-circle between them.
+ * ⚠ MEASURED BEFORE BUILDING: the mesh's corner IS already a true 90° quarter-circle (32 rings, exact normals; clay at
+ * 8× — `live-work/screenshots/card-corners-scaled-15-october/`). What fails at 1× is the PIXEL COUNT — at 14 the curve
+ * is ~19 screen px on a 1920 screen, the tube ~5 — so this door chooses the shape; it cannot add pixels.
+ * ⚠ Below `rimConsumption()` (4) the tube cannot turn a square INNER corner: its inner edge keeps a radius of the tube's
+ * own width. The OUTER corner is square at 0. Read client-side only (the mesh never builds on the server).
+ */
+export function cardRadiusPx(): number {
+  if (typeof window === "undefined") return CARD_RADIUS_PX;
+  const raw = new URLSearchParams(window.location.search).get("cardradius");
+  const n = raw === null || raw === "" ? NaN : Number(raw);
+  return Number.isFinite(n) ? Math.min(CARD_HEIGHT_PX / 2, Math.max(0, n)) : CARD_RADIUS_PX;
+}
+
 /** Grid gap (`gap-2` = 0.5rem), between cards and between rows. */
 export const CARD_GAP_PX = 8;
 
@@ -446,7 +465,7 @@ export function cardBudget(
     inset,
     faceWidth: CARD_WIDTH_PX - 2 * inset,
     faceHeight,
-    faceRadius: Math.max(0, CARD_RADIUS_PX - inset),
+    faceRadius: Math.max(0, cardRadiusPx() - inset),
     faceHeightRatio: faceHeight / CARD_HEIGHT_PX,
   };
 }

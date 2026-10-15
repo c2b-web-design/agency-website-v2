@@ -6,8 +6,10 @@ export default function Home() {
   return (
     // bg-neutral-950: forces a near-black background regardless of system dark mode
     // text-white: sets the default text color for the whole page
-    // min-h-screen: ensures the dark background fills the viewport even on short pages
-    <div className="bg-neutral-950 text-white min-h-screen">
+    // min-h (one window, `100 * var(--vh)`): ensures the dark background fills the viewport even on short pages
+    // ⛔ D-097: every window-height size here is `var(--vh)`, not `vh` — under the site's zoom `1vh` is drawn × the zoom
+    // (`app/globals.css`, `lib/site-scale.ts`).
+    <div className="bg-neutral-950 text-white min-h-[calc(100*var(--vh))]">
 
       <SiteHeader />
 
@@ -23,7 +25,7 @@ export default function Home() {
           header 81 (in flow) + hero 564; #contact 900 + footer 101 = 1001 in a
           900 window.
 
-          ⛔ `min-h-[calc(100vh-81px)]` — 81px is the header's MEASURED height in
+          ⛔ `min-h-[calc(100*var(--vh)-81px)]` (written `100vh` before D-097) — 81px is the header's MEASURED height in
           flow (`border-b` + `py-5`), not a guess. ⚠ IT IS UNASSERTED: nothing in
           code checks that the header is still 81px. If the header's padding,
           border or font changes, THIS VALUE GOES STALE AND THE HERO OVERSHOOTS
@@ -54,7 +56,7 @@ export default function Home() {
           it, and every `/about` section already carries this guard. It was not
           carried across with the flex change. ⛔ ANY FUTURE SECTION THAT GAINS
           `flex` NEEDS THIS TOO.                                                 */}
-      <section className="min-h-[calc(100vh-81px)] flex items-center [&>div]:w-full">
+      <section className="min-h-[calc(100*var(--vh)-81px)] flex items-center [&>div]:w-full">
         <Container>
 
           {/* Headline — three-step responsive scale:
@@ -140,7 +142,7 @@ export default function Home() {
           pair `pt-16 pb-24` is replaced by `flex items-center`, which centres the
           block in the full-height frame; fixed padding would push it off-centre.
           ⛔ THE LAYOUT INSIDE IS UNTOUCHED.                                     */}
-      <section id="services" className="min-h-screen flex items-center [&>div]:w-full border-t border-neutral-800">
+      <section id="services" className="min-h-[calc(100*var(--vh))] flex items-center [&>div]:w-full border-t border-neutral-800">
         <Container>
 
           {/* Section intro block: max-w-2xl keeps the heading and paragraph from stretching
@@ -309,7 +311,7 @@ export default function Home() {
       {/* ⛔ ONE VIEWPORT, NO CHROME — the same change as `#services` above.
           ⚠ MEASURED BEFORE: 587.25px, the shortest screen on the page and
           312.75px short of the window.                                          */}
-      <section id="work" className="min-h-screen flex items-center [&>div]:w-full border-t border-neutral-800">
+      <section id="work" className="min-h-[calc(100*var(--vh))] flex items-center [&>div]:w-full border-t border-neutral-800">
         <Container>
 
           <div className="max-w-2xl">
@@ -411,8 +413,8 @@ export default function Home() {
           top 101px was off-screen and the footer's `border-t` was the thin grey
           line Carl saw sitting where the screen should have ended.
 
-          ⛔ `min-h-[calc(100vh-61px)]` — 61px is the footer's height below, and
-          the two MUST sum to exactly 100vh. ⚠ UNASSERTED, AND IT IS A PAIR:
+          ⛔ `min-h-[calc(100*var(--vh)-61px)]` (written `100vh` before D-097) — 61px is the footer's height below, and
+          the two MUST sum to exactly one window (`100 * var(--vh)`). ⚠ UNASSERTED, AND IT IS A PAIR:
           nothing in code checks that the footer is still 61px. Change one and
           this screen overshoots or leaves a gap. THEY MOVE TOGETHER.
 
@@ -423,7 +425,7 @@ export default function Home() {
           inner block, unchanged since it was built). The guard makes the
           Container fill the width so that centring happens against the PAGE
           rather than against a shrunk flex item. Same class, different reason. */}
-      <section id="contact" className="min-h-[calc(100vh-61px)] flex items-center [&>div]:w-full">
+      <section id="contact" className="min-h-[calc(100*var(--vh)-61px)] flex items-center [&>div]:w-full">
         <Container>
           {/* ⛔ THE SECTION SCALED WITH ITS BUTTON — Carl, 12 October 2026 (session 2), on the
               button at 2×: *"looks good but the text and subtext look too small now, increase
@@ -522,8 +524,8 @@ export default function Home() {
           shorter box. THAT IS INTENTIONAL — Carl asked for a smaller footer, not
           an identical one.
 
-          ⚠⚠ 61px IS PAIRED WITH `#contact`'s `calc(100vh-61px)` ABOVE. The two
-          must sum to exactly 100vh, and NOTHING IN CODE ASSERTS IT. Change this
+          ⚠⚠ 61px IS PAIRED WITH `#contact`'s `calc(100*var(--vh)-61px)` ABOVE. The two
+          must sum to exactly one window, and NOTHING IN CODE ASSERTS IT. Change this
           padding and that calc goes stale silently — the page will overshoot the
           window again, which is the exact fault this chunk fixed.               */}
       <footer className="border-t border-neutral-800 py-5">

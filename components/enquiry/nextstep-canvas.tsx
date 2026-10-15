@@ -111,6 +111,8 @@ import {
   ENV_FILL_INTENSITY,
 } from "./answer-card-glass";
 import { BOX_RULE, NEXT_LOOK, WhoWeAreScene, measureLabel, type Glyphs } from "@/components/home/whoweare-button-scene";
+import { pageZoom, toLayoutPx } from "@/lib/site-scale";
+import { useCanvasDpr } from "@/lib/use-site-scale";
 
 /**
  * ⛔ THE BUTTON'S FOCUS, FOR THE HOST'S HOLD — 14 October 2026 (the platinum blue `Next step`, D-088). The family's roll
@@ -1012,6 +1014,7 @@ export default function NextStepCanvas({
    */
   active?: boolean;
 }) {
+  const benchDpr = useCanvasDpr([1, 2]);
   const pad = NEXTSTEP_CANVAS_PAD_PX;
   /**
    * ⚠ THE WRAPPER MUST GROW WITH `?zoom=`, OR ZOOM CROPS INSTEAD OF MAGNIFYING.
@@ -1087,7 +1090,9 @@ export default function NextStepCanvas({
         // ⚠ THE SAME `zoom` THE WRAPPER USES, so the box and the render can never
         // disagree. Reading the URL separately here would reintroduce the crop.
         camera={{ zoom, position: [0, 0, 1000], near: 0.1, far: 4000 }}
-        dpr={[1, 2]}
+        // ⛔ D-097 (`lib/site-scale.ts`): layout px + resolution × the site's zoom (only the `/proto/nextstep` bench draws this now).
+        resize={{ offsetSize: true }}
+        dpr={benchDpr}
         /**
          * ⚠ NEUTRAL TONE MAPPING, NOT ACES — Architect, 10 August 2026.
          *
@@ -1631,10 +1636,12 @@ export function NextStepSurfaceHost({
         // a resize on the next reveal. The contact layer one file over is hidden
         // the same way, for the same reason.
         visibility: rect ? "visible" : "hidden",
-        left: rect ? rect.left : 0,
-        top: rect ? rect.top : 0,
-        width: rect ? rect.w : 0,
-        height: rect ? rect.h : 0,
+        // ⛔ D-097: `rect` is SCREEN px and stays so (the guard below and the hold compare it with screen values); a
+        // `fixed` length is drawn × the site's zoom, so it is WRITTEN in layout px. Unscaled, the division is by 1.
+        left: rect ? toLayoutPx(rect.left) : 0,
+        top: rect ? toLayoutPx(rect.top) : 0,
+        width: rect ? toLayoutPx(rect.w) : 0,
+        height: rect ? toLayoutPx(rect.h) : 0,
         // ⚠⚠ THE REPRODUCED FADE — commit 2. See the `opacity` prop's header for
         // the three sources this replaces and why the child governs the exit.
         // ⚠ `linear`, matching both original transitions. Neither used an easing
@@ -1763,7 +1770,8 @@ function FamilyNextStep({
       if (!r || e.pointerType === "touch") return setNear(false);
       const dx = Math.max(r.left - e.clientX, 0, e.clientX - (r.left + r.w));
       const dy = Math.max(r.top - e.clientY, 0, e.clientY - (r.top + r.h));
-      setNear(Math.hypot(dx, dy) <= NEAR);
+      // ⛔ `NEAR` is layout px; the rect and the pointer are screen px — × the site's zoom keeps the hold its approved size (D-097).
+      setNear(Math.hypot(dx, dy) <= NEAR * pageZoom());
     };
     window.addEventListener("pointermove", onMove, { passive: true });
     return () => window.removeEventListener("pointermove", onMove);
