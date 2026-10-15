@@ -15,6 +15,8 @@
 - **Precedent:** `/about`'s extruded card text (`components/about/card-extrude.tsx`, D-094: text in the scene, an `sr-only` copy MANDATORY; troika measured unable to guarantee a crafted setting).
 - ⛔ **The scope is CLOSED TO CODE** (`chunk-scope.json`, chunk `closed-to-code`: records only). Carl must name every file the new chunk touches. ⚠ Do NOT close a chunk with `active: false` or an empty `files` list — the guard reads both as "allow everything".
 
+**The order after it (Carl):** `/about` §3 → the home page → **the hero, last** → mastering. ⛔ **The hero's preliminary direction is now IN THE REPO — D-098** (a scoped exception to D-038, on Carl's word): the 10 s Fusion film (the logo travels forward growing, stops, the wipe in the film), the swap to the code logo, a light pinned to the logo lighting the extruded headline — ONE scene. Carl's Fusion numbers: `live-work/hero-fusion-spec-15-october.md`. `/start`'s three.js is its forerunner — *"variations on a theme."*
+
 ## WHERE THINGS STAND — all PUSHED
 
 | commit | what | verdict |

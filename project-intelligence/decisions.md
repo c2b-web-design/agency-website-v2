@@ -546,6 +546,7 @@ from Carl.** The corridor's current colour and material are approved as built.
 **Rationale:** The hero as-built holds the layout and tone. The empty space is reserved for a future creative milestone that requires its own brief and production assets. Without this record, a session reads the gap as a defect and fills it.  
 **Authority:** Human Founder  
 **Status:** APPROVED and binding. **Do not fill the hero space without a brief from Carl.**
+**→ The hero's preliminary direction is recorded again (15 October 2026, on Carl's word) — D-098.** The guard above still stands until the hero is the chunk.
 
 **2026-07-28 — future direction removed on Carl's instruction.** This entry previously described the planned cinematic hero in detail. **Carl keeps the future-work record outside this repository**, so a session reading these files is not distracted by work it does not yet need. **The constraint above survives; the description of what will eventually fill the space does not.** If and when it becomes current scope, Carl introduces it as a chunk with its own brief.
 
@@ -955,6 +956,8 @@ A fourth status, **`PROVISIONAL`**, is added to the schema for work that is **in
 ## D-038 — Governance: Future Work Is Not Recorded In This Repository
 
 **Date:** 2026-07-28
+
+**→ ONE SCOPED EXCEPTION (15 October 2026): the hero.** Carl: *"You can put it in the repo now. We are getting close to building it and this is preliminary work."* — see **D-098**. This decision stands for everything else.
 
 **Decision:** **Future work is deliberately not recorded in `project-intelligence/` or anywhere else in this repository.** Carl keeps that record outside it — for the website and for the wider business. Forward-looking roadmaps, unbuilt directions, speculative tooling and "planned but not designed" items are removed from the repo and are not to be reconstructed in it.
 
@@ -6850,3 +6853,30 @@ Carl, approving: *"make sure the Text colour is 4.5:1. It must clearly be legibl
 - **THE CHUNK CLOSED TO CODE AND TESTED (Carl: *"Yes, lock them, test and then commit and push."*).** ⚠ **Found first:** the guard ALLOWS every non-protected edit when a chunk is `active: false` or its `files` list is empty (`chunk-scope-guard-match.js`) — so "closing" the chunk that way would have UNLOCKED the code. Instead the chunk stays active as `closed-to-code`, its files cut to the RECORDS only (`decisions.md`, `current-sprint.md`, `review-log.md`, `live-work/`), `unlocked` empty. **Tested with a valid probe edit on each of the 20 non-protected code files removed from the scope** (the enquiry, home, about, `lib/` and `/proto` files, `globals.css`, `next.config.ts`): **all 20 DENIED as outside the scope**; the nine protected files denied as PERMANENTLY PROTECTED (above). Working tree unchanged. ⚠ **The capability, stated:** the guard watches Edit/Write only — a shell write (`sed -i`, a redirect, a script) still reaches any file. The lock is enforced on the edit tools and BEHAVIOURAL on the shell. A new chunk needs Carl to widen the scope by naming files.
 
 **D-023 (the corridor) — NEXT SUBJECT, set by Carl at the end of 15 October 2026, session 3:** *"Next session we will convert the corridor text to extruded three js. Movement and behaviour will stay untouched. We might look at the colour given the new environment."* — the corridor's TEXT (the opening heading, the Q labels, the questions, the memory rail) as extruded three.js text; its movement and behaviour UNCHANGED; its colour possibly re-judged against the space images (R-071). ⚠ Structural (CLAUDE.md §5a/§5b): text moving from the DOM into a canvas — the plan-review gate applies unless Carl waives it. Precedent: `/about`'s extruded card text (`components/about/card-extrude.tsx`; D-094 — text in the scene with an `sr-only` copy mandatory; troika measured unable to guarantee a crafted setting).
+
+---
+
+## D-098 — The Hero: Preliminary Direction, In The Repository Now
+
+**Date:** 2026-10-15 (session 3). **Status: PRELIMINARY — direction and numbers recorded; NOT designed in full, NOT built.**
+**Authority:** Human Founder — Carl: *"You can put it in the repo now. We are getting close to building it and this is preliminary work. As you have rightly deduced the start three js is a forerunner and you can see how other elements of the site fit in. Variations on a theme."* Restated and confirmed: *"Confirmation given."* ⛔ **A scoped exception to D-038 for the hero alone;** D-038 stands for everything else. **D-026's guard stands:** the right-side space stays empty until the hero is the chunk.
+
+**The order (Carl):** `/start` is completed (the corridor text as extruded three.js, next session) → `/about` §3 → the home page → **the hero, last** → the mastering pass over the whole site (D-035).
+
+**The idea, and how it grew:**
+- **June (D-026's original text, struck 28 July on Carl's instruction, recovered from `1f35a9a^`):** *"a cinematic dark studio world featuring the C2B logo as the central object. The logo begins in a video/film world and transitions seamlessly into a code-driven interactive object."* Constraints kept: no sci-fi, fantasy, landscape or over-flashy motion — *"more David Gilmour, less Yngwie Malmsteen."*
+- **Since:** video is the hero's alone (*"the 'killer' feature"* — `/about` §1 got a still); the hero is *"the showpiece of the site"*, so the section after it follows and does not compete (D-069); the desk mark is its **dress rehearsal** — *"though it will be even more sophisticated"* (D-088: the flat-face form, the two metals, the studio's reflection, the gold → platinum-blue crossing, a scroll-driven journey); the logo is the standard for metal (D-088, 15 October); the hero button is not navigational (D-070).
+
+**The film (Carl, 15 October 2026):**
+- 10 s, made in DaVinci Resolve's Fusion. It fills the **whole hero; the text covers it** (the scene not yet decided).
+- *"The logo starts small in the video and makes its way forward, growing in size. Just before it bursts forth into code world it will stop. A wipe will happen."* **The wipe is IN THE FILM.** Reference (Carl's screenshots, 24–25 July, a Resolve tutorial — a REFERENCE, translated not copied): a colour change that travels ACROSS THE OBJECT'S OWN SURFACE behind a LIVE EDGE (electric tendrils and sparks; a flowing ribbon), with a speed ramp braking into it. ⚠ Read against the desk mark: its approved crossing (R-036) is already a wipe over the mark's own surface; the reference adds the edge.
+- **The swap:** *"After the wipe, code logo can be overlaid over it, video logo will disappear."* — the family buttons' still-to-live hand-off at the hero's scale (swap match 0.00 there). ⛔ Registration measured at runtime from the film's rendered box.
+- *"The logo wont just move, i have direction and behaviour for it"* — **Carl's, to come.**
+
+**The code world:** the logo *"will burst forth on the right side where there is a space. It will have movement and colour transition when it comes out. The light source will be pinned to the logo and it will affect the extruded text on the left."* ⛔ **Structural consequence (learned 15 October — a light lights only its own scene):** the code logo and the extruded headline must share ONE three.js scene over the film. `/start`'s corridor text, extruded next session, is the technique's first proof.
+
+**Variations on a theme (Carl; ethos §14a):** `/start`'s three.js is the hero's FORERUNNER — the extruded text, metal by reflection, a light moving through a scene and catching what it passes, colour crossing on an existing beat.
+
+**The Fusion numbers:** `live-work/hero-fusion-spec-15-october.md` — canvas 3840 × 1920 (2:1), 30 fps, 300 frames; safe band y 240–1680 and x 190–3650; the right-side space x 2097–3593; the logo's end centred at (2845, 960), up to ~1050 px wide (the size Carl's); the last frame held. Measured from TODAY's hero layout — re-measure if the hero text changes.
+
+**Open (Carl's):** the scene; the logo's direction and behaviour; its end size; the master question (the film's last logo frame rendered FROM the 3D model, or the 3D logo tuned to the film).
