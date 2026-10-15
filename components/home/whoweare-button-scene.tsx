@@ -10,7 +10,7 @@
  * Passes: 1 the mesh (R-042), 2 the material and the label (R-043), 3 the light — step 1, ONE STATIC LIGHT FROM THE RIGHT
  * (built); the moving light, directed, is the final step.
  */
-import { Suspense, use, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, use, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
@@ -581,8 +581,11 @@ export function PillCanvas({
   moving,
   roll,
   ticking = false,
+  extra,
   ...pill
 }: PillProps & {
+  /** See `WhoWeAreScene`'s `extra` — mounted from the canvas's creation, outside the Suspense. */
+  extra?: ReactNode;
   zoom: number;
   side: "left" | "right";
   label: LabelProps;
@@ -649,6 +652,7 @@ export function PillCanvas({
           />
         )}
         {ticking && <Ticker />}
+        {extra}
         {/* ⛔ ONE BOUNDARY ROUND THE PILL AND ITS LETTERS: with the studio's reflection (`env="hdri"`) the pill waits for the
             HDRI, and the letters must wait WITH it — a frame of letters without their pill would end the still's hold early. */}
         <Suspense fallback={null}>
@@ -1026,8 +1030,8 @@ export const WHOWEARE_LOOK = {
   env: { kind: "hdri" as FamilyEnv, intensity: 1, room: 0.1, yaw: 150 },
 };
 
-/** No reflection — the 12 October recipe (the clay's lamps only). The gold and the blue keep it until judged with one. */
-const ENV_NONE = { kind: "none" as FamilyEnv, intensity: 1, room: 1, yaw: 0 };
+/* (`ENV_NONE` — no reflection, the 12 October recipe — removed 15 October 2026, session 3: all three members now carry the
+   studio. `env: { kind: "none" }` is still the family's lamps-only route.) */
 
 /**
  * ⛔ `/about` §4's LOOK — `Start a conversation`, the family's third member (D-088, 13 October 2026; passes R-047 mesh,
@@ -1063,7 +1067,10 @@ export const NEXT_LOOK: typeof WHOWEARE_LOOK = {
   paint: "#3f6db8",
   // ⛔ HELD (Carl, 15 October 2026: *"implement it on the gold and teal buttons but hold off on the blue"*): this member
   // spreads the teal's look, so the teal's reflection would reach it — pinned to none, as approved (R-055/R-056, R-057).
-  env: ENV_NONE,
+  // ✔ RELEASED, session 3 (Carl: *"next step is good. as is the shade, it should have its HDRI equivalent"*): the teal's
+  // studio, unchanged as a first take — strength 1, room 0.1, turned 150°. A copy of the values, not a reference (the
+  // members are tuned separately; *"settings may or may not have to be tweaked depending on the colour and text"*).
+  env: { kind: "hdri" as FamilyEnv, intensity: 1, room: 0.1, yaw: 150 },
 };
 
 /** The family's members as they ship, by name — the button component picks one (its CSS fallback keeps its own copy). */
@@ -1088,7 +1095,14 @@ export function WhoWeAreScene({
   live = true,
   onDrawn,
   onLost,
+  extra,
 }: {
+  /**
+   * More of the WORLD around the pill, mounted in its canvas from creation (outside the HDRI's Suspense, so any lights are
+   * in the scene before the pill's program compiles — a light added later recompiles it). `/start`'s Next step passes the
+   * selected cards' warmth (`CardGlowLights`, `nextstep-canvas.tsx`); the teal and the gold pass nothing.
+   */
+  extra?: ReactNode;
   member?: FamilyMember;
   /** A look given whole (`NEXT_LOOK` — `/start`'s host), in place of `member`'s. */
   look?: typeof WHOWEARE_LOOK;
@@ -1138,6 +1152,7 @@ export function WhoWeAreScene({
       label={{ glyphs, depth: EXTRUDE_DEPTH_DEFAULT * (glyphs.px ? glyphs.px / 14 : 1), ink: L.ink, side: L.side, bevel: BEVEL_DEFAULT, onDrawn }}
       keyLight={{ on: false, angle: KEY_DEFAULTS.angle, elevation: KEY_DEFAULTS.elevation, intensity: KEY_DEFAULTS.intensity }}
       onLost={onLost}
+      extra={extra}
     />
   );
 }

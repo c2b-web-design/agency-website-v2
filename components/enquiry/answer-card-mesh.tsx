@@ -2131,6 +2131,21 @@ function convexFaceGeometry(
 }
 
 /** Dispose a geometry when the component unmounts. */
+const HEAT_RAMP = { red: new THREE.Color(HEAT_RED), orange: new THREE.Color(HEAT_ORANGE), white: new THREE.Color(HEAT_WHITE) };
+/**
+ * THE FILAMENT's COLOUR AT A TEMPERATURE, IN JS — the rim shader's black-body ramp (red → orange below 0.5, orange → the
+ * hot end above, smoothstep each half), written into `out`. ONE copy for everything outside the shader that wears the
+ * filament's colour: the tube's bloom, and the selected cards' warmth on `Next step` (`nextstep-canvas.tsx`).
+ */
+export function filamentHeatColor(out: THREE.Color, t: number): THREE.Color {
+  const s = (a: number, b: number, x: number) => {
+    const u = Math.min(1, Math.max(0, (x - a) / (b - a)));
+    return u * u * (3 - 2 * u);
+  };
+  if (t < 0.5) return out.copy(HEAT_RAMP.red).lerp(HEAT_RAMP.orange, s(0, 0.5, t));
+  return out.copy(HEAT_RAMP.orange).lerp(HEAT_RAMP.white, s(0.5, 1, t));
+}
+
 /**
  * ⛔ THE TUBE's BLOOM, AND ITS COLOUR IS THE TUBE's OWN LIGHT (15 October 2026, session 2). Carl, on the
  * first take: *"the tube looks better, glow is good, yellow colour is awful"* — a FIXED cool white added over the lit
@@ -2151,7 +2166,6 @@ function TubeBloom({
   const material = useRef<THREE.MeshBasicMaterial>(null);
   const overMaterial = useRef<THREE.MeshBasicMaterial>(null);
   const cold = useMemo(() => new THREE.Color(TUBE_BLOOM_COLOR), []);
-  const ramp = useMemo(() => ({ red: new THREE.Color(HEAT_RED), orange: new THREE.Color(HEAT_ORANGE), white: new THREE.Color(HEAT_WHITE) }), []);
   const heat = useMemo(() => new THREE.Color(), []);
   useFrame(() => {
     const m = material.current;
@@ -2161,12 +2175,7 @@ function TubeBloom({
     // surge's 1.7 at the flare. ⚠ Read raw first, the glow over the tube faded only to ~¼ and still washed the amber to
     // cream (measured: over-part off → 249/193/131, the approved 247/195/144; on → 255/224/163).
     const k = Math.min(1, Math.max(0, (filament.intensity.current ?? 0) / FILAMENT_INTENSITY));
-    const s = (a: number, b: number, x: number) => {
-      const u = Math.min(1, Math.max(0, (x - a) / (b - a)));
-      return u * u * (3 - 2 * u);
-    };
-    if (t < 0.5) heat.copy(ramp.red).lerp(ramp.orange, s(0, 0.5, t));
-    else heat.copy(ramp.orange).lerp(ramp.white, s(0.5, 1, t));
+    filamentHeatColor(heat, t);
     m.color.copy(cold).lerp(heat, k).multiplyScalar(TUBE_BLOOM_GAIN * strength);
     // Over the tube: the cold glow only, gone as the filament lights (its own light is not added to itself).
     overMaterial.current?.color.copy(cold).multiplyScalar(TUBE_BLOOM_GAIN * strength * (1 - k));

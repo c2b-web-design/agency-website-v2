@@ -65,6 +65,35 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-070 — The Selected Cards' Warmth On `Next step` (D-088, D-051): "This Is The Subtlety I Was After… Approved"
+
+**Date:** 2026-10-15 (session 3)
+**Reviewer:** Human Founder
+**Subject:** `/start`, Q5 — the button in the FOREGROUND, the five cards `CARD_GLOW_DEPTH` 250 layout px behind it at their real page offsets; five point lights in the button's scene (`CardGlowLights`) in the filament's own colour, × each card's filament (`publishCardGlow`), `CARD_GLOW_GAIN` 1.75. Judged LIVE by Carl, pass by pass (one card; 4 + 5; 1 + 2 + 3; 1 + 3; all five), then on his own browser. The rule (Carl): *"as the card sits in front no effect on the face is expected. But as the rim rolls and as the face comes up from behind."*
+
+**Carl's verdict, verbatim:** *"It is as before but the effect is a tiny bit more noticable. This is the subtlety i was after. It looks great. approved"*
+
+**Findings:**
+
+- ✔ **APPROVED** — the word used — at gain 1.75, depth 250. Not a master (D-035). Not committed.
+- ⚠ Stills could not judge it (the light lands only as the pill rolls); the burst harness reads the roll's phase from the pill's shape to compare on and off.
+
+---
+
+## R-069 — The Platinum Blue `Next step` With The Studio's Reflection, On `/start` (D-088): "Looks Good… No White Banding"
+
+**Date:** 2026-10-15 (session 3)
+**Reviewer:** Human Founder
+**Subject:** `NEXT_LOOK.env` = the teal's studio, copied (HDRI strength 1, room 0.1, turned 150°), on the approved platinum blue (#3F6DB8, ice blue words). Bench face-on: median L 0.028 → 0.035, words worst 5.52 → 5.34:1, blown 316 → 459. `nextstep-rollout-verify.mjs` 11/11. Before it, Carl: *"next step is good. as is the shade"* — the 15 October *"a little jarring"* hold closed.
+
+**Carl's verdict, verbatim:** *"It looks good and crucially there is no white banding behind the text."*
+
+**Findings:**
+
+- ✔ **A positive verdict at the level given — "looks good"; "approved" not used.** The teal's failure (a white band behind the words) checked by his eye and absent. All three family members now carry the studio. Not a master (D-035). Not committed.
+
+---
+
 ## R-068 — The Cards' Travelling Light Back On, Dipping At The Two Bends (D-051, D-088): "A Lot Better. Approved"
 
 **Date:** 2026-10-15 (session 3)

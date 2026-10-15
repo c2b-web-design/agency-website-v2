@@ -55,6 +55,7 @@ import {
   type GlassTuning,
   type FilamentState,
 } from "./answer-card-mesh";
+import { publishCardBox, publishCardGlow } from "./nextstep-canvas";
 import {
   ENV_SHELL_RADIUS,
   ENV_KEY_COLOR,
@@ -2938,6 +2939,18 @@ function AnswerCard({
    * Rather than pick arbitrary figures. We bring the numbers up."*
    */
   const filament = useFilament(lit, glassTuning.filamentIntensity);
+  // ⛔ THE CARD's WARMTH, PUBLISHED FOR `Next step` (15 October 2026, session 3 — `publishCardGlow`, `nextstep-canvas.tsx`):
+  // this filament's level (1 = its flare, the held level under the glass tube) and temperature, every frame this canvas
+  // draws. The filament's own refs — the button never keeps a second copy of its timing.
+  const glowPeak = glassTuning.filamentIntensity * FILAMENT_SURGE_PEAK;
+  useFrame(() => {
+    publishCardGlow(
+      index,
+      glowPeak > 0 ? Math.min(1, Math.max(0, (filament.intensity.current ?? 0) / glowPeak)) : 0,
+      filament.temperature.current ?? 0,
+    );
+  });
+  useEffect(() => () => publishCardGlow(index, 0, 0), [index]);
 
   const litRef = useRef<number>(0);
   const groupRef = useCardEntrance(
@@ -5264,6 +5277,8 @@ export default function AnswerCardCanvas({
         {boxes.map((b, i) => (
           <div
             key={i}
+            // ⛔ This card's place on the page, for the warmth it casts on `Next step` (`publishCardBox`).
+            ref={(el) => publishCardBox(i, el)}
             data-testid={`answer-card-hover-${i}`}
             onPointerEnter={() => setHovered(i)}
             onPointerLeave={() => setHovered((h) => (h === i ? null : h))}

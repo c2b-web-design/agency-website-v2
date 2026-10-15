@@ -52,7 +52,12 @@ function grabber() {
 const b = await chromium.launch({ headless: false, args: ["--enable-gpu", "--use-angle=default", "--ignore-gpu-blocklist"] });
 for (const m of MEMBERS) {
   for (const dpr of [1, 2]) {
-    const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: dpr, reducedMotion: "reduce" });
+    // ⛔ 1412, NOT 1440 (15 October 2026, session 3): since D-097 the site zooms above 1412 px (1440 → 1.0198), and the pad
+    // check below is in SCREEN px — at 1440 it failed (14.28 ≠ 14). At 1412 the zoom is exactly 1 and the check passes.
+    // ⚠ BUT 1412 DOES NOT REPRODUCE THE COMMITTED STILLS (measured the same day): the canvases come out 1 px larger
+    // (287 × 110 vs 286 × 109) and, aligned, differ by a mean 2–4 levels per channel — sub-pixel layout, not the scene. A
+    // re-run is a NEW still, to be judged on a cold load; it cannot prove a look unchanged against the old ones.
+    const ctx = await b.newContext({ viewport: { width: 1412, height: 900 }, deviceScaleFactor: dpr, reducedMotion: "reduce" });
     await ctx.addInitScript(grabber);
     const p = await ctx.newPage();
     // ⚠ "load", not "networkidle" (15 October 2026): /about at 2× never went network-idle within 30 s — the grabber reads back

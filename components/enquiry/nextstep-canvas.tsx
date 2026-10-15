@@ -22,7 +22,7 @@
  */
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 /**
@@ -111,6 +111,7 @@ import {
   ENV_FILL_INTENSITY,
 } from "./answer-card-glass";
 import { BOX_RULE, NEXT_LOOK, WhoWeAreScene, measureLabel, type Glyphs } from "@/components/home/whoweare-button-scene";
+import { filamentHeatColor } from "./answer-card-mesh";
 import { pageZoom, toLayoutPx } from "@/lib/site-scale";
 import { useCanvasDpr } from "@/lib/use-site-scale";
 
@@ -132,6 +133,102 @@ function subscribeNextFocus(f: () => void) {
   return () => {
     nextFocusSubs.delete(f);
   };
+}
+
+/**
+ * ⛔ THE SELECTED CARDS' WARMTH ON `Next step` — THE STORE (15 October 2026, session 3; structural note
+ * `live-work/structural-note-card-glow-on-button-15-october.md`, Carl: *"Just build it, lets see how it looks."*).
+ * The cards' canvas WRITES each card's filament here every frame it draws (`publishCardGlow`, from each card's own
+ * `useFilament` — the one source of the filament's timing) and registers each card's hover box (`publishCardBox`, its real
+ * place on the page). The button's scene READS it every frame it draws (`CardGlowLights`). Plain numbers, no React state.
+ * ⚠ Five slots — the shared 3 + 2 grid every question uses.
+ */
+const CARD_GLOW_SLOTS = 5;
+const cardGlow = {
+  /** 0 = unlit, 1 = the filament at its flare (its held level under the glass tube). */
+  lit: new Float32Array(CARD_GLOW_SLOTS),
+  temperature: new Float32Array(CARD_GLOW_SLOTS),
+  box: new Array<HTMLElement | null>(CARD_GLOW_SLOTS).fill(null),
+};
+export function publishCardGlow(i: number, lit: number, temperature: number) {
+  if (i < 0 || i >= CARD_GLOW_SLOTS) return;
+  cardGlow.lit[i] = lit;
+  cardGlow.temperature[i] = temperature;
+}
+export function publishCardBox(i: number, el: HTMLElement | null) {
+  if (i < 0 || i >= CARD_GLOW_SLOTS) return;
+  if (el) cardGlow.box[i] = el;
+  else if (cardGlow.box[i] && !cardGlow.box[i]!.isConnected) cardGlow.box[i] = null;
+}
+
+/**
+ * ⛔ THE WORLD AROUND THE BUTTON: the button in the FOREGROUND, the cards `CARD_GLOW_DEPTH` (layout px) behind it, each a
+ * warm source at its REAL offset on the page (Carl: *"The text goes backwards. The cards are in the middle ground. If the
+ * button was in the foreground all 5 cards rim might have an effect"*; the depth *"enough for one card to have influence"*).
+ * GAIN: the brightness one card at its flare DELIVERS at the depth's distance. ⚠ First values, set by measurement for Carl's
+ * band: *"subtle. If all 5 cards are pressed we dont want it to radically alter the blue colour, just enough to say 'same
+ * world'"* — one card visible, five still blue.
+ */
+// ⛔ CARL, watching it live (15 October 2026, session 3): *"as the card sits in front no effect on the face is expected. But
+// as the rim rolls and as the face comes up from behind"* — the light is FROM BEHIND by design; held face-on it is absent.
+// GAIN 1 → 1.75 on *"try it with a bit more strength"* (1: one corner card "extremely minimal"; card 2 alone the most;
+// all five the rim's ends, its middle and across the face as it rolls).
+const CARD_GLOW_DEPTH = 250;
+const CARD_GLOW_GAIN = 1.75;
+
+/**
+ * Five point lights, ONE PER SLOT, mounted from the canvas's creation at 0 (a light added later would recompile the pill's
+ * program mid-Q&A — the stall family). Each frame: its place from the card's box against the button's own (both screen px →
+ * layout px by the site's zoom; y up), `CARD_GLOW_DEPTH` behind; its colour the filament's ramp at the card's temperature
+ * (`filamentHeatColor`, shared with the tube's bloom); its strength × the card's filament. Coming from behind, they land on
+ * the pill's top and back edges; the roll carries that edge over the face. Metal: the light IS the reflection (a soft
+ * highlight at roughness 0.4). `?cardglow=` multiplies the gain (0 = off) — for judging against none.
+ */
+function CardGlowLights({ anchor }: { anchor: React.RefObject<HTMLElement | null> }) {
+  const lights = useRef<(THREE.PointLight | null)[]>([]);
+  const heat = useMemo(() => new THREE.Color(), []);
+  const gain = useMemo(() => {
+    if (typeof window === "undefined") return CARD_GLOW_GAIN;
+    const raw = new URLSearchParams(window.location.search).get("cardglow");
+    const n = raw === null ? NaN : Number(raw);
+    return Number.isFinite(n) && n >= 0 ? CARD_GLOW_GAIN * n : CARD_GLOW_GAIN;
+  }, []);
+  useFrame(() => {
+    const a = anchor.current?.getBoundingClientRect();
+    const z = pageZoom() || 1;
+    for (let i = 0; i < CARD_GLOW_SLOTS; i++) {
+      const l = lights.current[i];
+      if (!l) continue;
+      const k = cardGlow.lit[i];
+      const box = cardGlow.box[i];
+      if (k <= 0 || !a || !box) {
+        l.intensity = 0;
+        continue;
+      }
+      const b = box.getBoundingClientRect();
+      const dx = (b.left + b.width / 2 - (a.left + a.width / 2)) / z;
+      const dy = -(b.top + b.height / 2 - (a.top + a.height / 2)) / z;
+      l.position.set(dx, dy, -CARD_GLOW_DEPTH);
+      filamentHeatColor(heat, cardGlow.temperature[i]);
+      l.color.copy(heat);
+      l.intensity = gain * k * CARD_GLOW_DEPTH * CARD_GLOW_DEPTH;
+    }
+  });
+  return (
+    <>
+      {Array.from({ length: CARD_GLOW_SLOTS }, (_, i) => (
+        <pointLight
+          key={i}
+          ref={(l) => {
+            lights.current[i] = l;
+          }}
+          intensity={0}
+          decay={2}
+          distance={0}
+        />
+      ))}
+    </>
+  );
 }
 
 /**
@@ -1735,6 +1832,8 @@ function FamilyNextStep({
   transitionMs: number;
 }) {
   const words = useRef<HTMLSpanElement | null>(null);
+  /** The pill's own box on the page — where the cards' warmth is measured FROM (`CardGlowLights`). */
+  const pillBox = useRef<HTMLDivElement | null>(null);
   const baseMark = useRef<HTMLSpanElement | null>(null);
   const [label, setLabel] = useState<{ w: number; h: number; glyphs: Glyphs } | null>(null);
   useEffect(() => {
@@ -1798,12 +1897,15 @@ function FamilyNextStep({
       </span>
       {label && (
         <div
+          ref={pillBox}
           data-family-next=""
           data-paused={paused ? "1" : "0"}
           data-hold={near || focused ? "1" : "0"}
           style={{ position: "absolute", left: 0, top: 0, width: label.w, height: label.h }}
         >
           <WhoWeAreScene
+            // ⛔ The selected cards' warmth (`CardGlowLights`) — in this canvas from its creation.
+            extra={<CardGlowLights anchor={pillBox} />}
             look={NEXT_LOOK}
             w={label.w}
             h={label.h}
