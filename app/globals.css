@@ -2046,8 +2046,10 @@
 }
 
 /* ⛔ THE SPACE BEHIND /start (D-023's crawl homage): the corridor's planet, the client info's galactic centre. Both mounted
-   from the first paint; at `stage === "complete"` — the same beat the crawl's fade and the logo's return to gold start on —
-   the planet fades out and the galactic centre in, over the crawl's own fade. */
+   from the first paint, both HIDDEN through the opening (16 October 2026 — Carl: the opening's text, subtext and button
+   are the essentials); the planet fades IN on Begin (`stage === "active"`); at `stage === "complete"` — the same beat the
+   crawl's fade and the logo's return to gold start on — the planet fades out and the galactic centre in. Every fade over
+   the crawl's own fade. */
 .enquiry-space-layer {
   transition: opacity var(--enquiry-crawl-fade) linear;
 }

@@ -65,6 +65,21 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-072 — The Planet Leaves The Opening And Fades In On Begin (D-023): "Fade Is Good… Approved"
+
+**Date:** 2026-10-16
+**Reviewer:** Human Founder
+**Subject:** `/start` — the opening (heading, subtext, Begin) stands on the root's gradient with no planet and no credit; on Begin (`stage === "active"`, the beat the logo starts its gold → blue crossing on) the planet fades in over the crawl's 2.6 s, while Q5 is revealed and the cards enter. One condition in `enquiry-opening.tsx`; loading unchanged. Measured: opacity 0 through the opening, 0 → 1 linear over 2.6 s from the click; reduced motion at once (`live-work/scripts/planet-at-begin-16-october.mjs`). Amends R-071's "behind the opening".
+
+**Carl's verdict, verbatim:** *"fade is good, timed with the logo transition- good choice. approved."*
+
+**Findings:**
+
+- ✔ **APPROVED** — the word used. Not a master (D-035). Not committed.
+- ⚠ Not watched: production's network; whether the planet still needs `preload` (open, to be measured before it changes).
+
+---
+
 ## R-071 — The Space Behind `/start`: The Planet For The Corridor, The Galactic Centre For The Client Info (D-023): "Looks Great. Approved"
 
 **Date:** 2026-10-15 (session 3)

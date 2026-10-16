@@ -390,6 +390,12 @@ type EnquiryOpeningProps = {
  *     bottom left… The logo works well against the dark background as do the navigation headers against the blue planet."*
  *   - THE CLIENT INFO — the galactic centre (opo0928f): *"The logo is back to gold. Good contrast against the blue of space. As
  *     is the gold rims. The card colour with its changing shades works well in the scene."*
+ * ⛔ THE OPENING HAS NO PLANET (16 October 2026, Carl: *"the text, subtext and button are essential. This gives the user
+ * infomation."* — *"it doesnt have to be on the page at this point. but when the button is pressed and only the text remains it
+ * should fade in at this point as the first question is revealed and the cards make their appearance."*). The opening stands
+ * on the root's gradient; the planet FADES IN at `stage === "active"` (Begin — the instant the logo starts its gold → blue
+ * crossing), over the crawl's own fade, while Q5 is revealed (1.3 s) and the cards enter (0.65 → 4.89 s). Was: shown from the
+ * first paint (R-071's take). Its credit rides the layer, so it is hidden with it.
  * The planet fades out and the galactic centre in at `stage === "complete"` — the beat the crawl's fade and the logo's return
  * to gold already start on — over the crawl's own fade (`--enquiry-crawl-fade`, `globals.css`). No new timing.
  * THE FILES (`public/space/`): 3840 wide, DARKENED BY A CURVE baked in (each value raised to a power — white stays white, so the
@@ -408,18 +414,29 @@ const SPACE = {
   },
 } as const;
 
-/** One image of the space, full window, behind everything in the root (`z-index: -1` in the root's isolated context). */
-function SpaceLayer({ src, credit, shown, first }: { src: string; credit: string; shown: boolean; first: boolean }) {
+/**
+ * One image of the space, full window, behind everything in the root (`z-index: -1` in the root's isolated context).
+ *
+ * ⛔ `load` — WHEN THE IMAGE IS REQUESTED (16 October 2026; Carl: *"the planets proiority is changed. As long as it aeeives as
+ * it does mow, that is the goal. how that is achieced is down to you."*). Neither image is seen in the opening, and the
+ * opening ARMS on the fonts and the page's script — which both images used to share the line with from the first request.
+ * So the `<Image>` mounts on an existing beat, not at first paint: the planet when the opening arms (it then has the Begin
+ * reveal's 7.4 s to arrive before Begin can be pressed), the galactic centre on Begin (it has the five questions). The layer
+ * and its credit stay mounted throughout; only the `<img>` waits. ⚠ Unasserted in code that the planet beats Begin —
+ * measured (`live-work/scripts/space-priority-ab-16-october.mjs`); re-measure if the Begin reveal's 7.4 s delay shortens.
+ */
+function SpaceLayer({ src, credit, shown, load }: { src: string; credit: string; shown: boolean; load: boolean }) {
   return (
     <div
       aria-hidden="true"
       className="enquiry-space-layer"
       style={{ position: "fixed", inset: 0, zIndex: -1, opacity: shown ? 1 : 0, pointerEvents: "none" }}
     >
-      {/* ⚠ `preload` for the corridor's image (the first thing seen — Next 16 replaces `priority`); the client info's loads
-          eagerly, long before the questions end. */}
+      {/* ⚰️ `preload` (the planet) and `loading="eager"` (the galactic centre) stood here until 16 October 2026: both images
+          were requested with the page, the planet at high priority, when the planet was the first thing seen. Now `load`
+          (above) decides when; `eager` so a mounted image is fetched at once. */}
       {/* `quality={90}` — allowed in `next.config.ts`; the default 75 softens the stars. */}
-      <Image src={src} alt="" fill sizes="100vw" quality={90} className="object-cover" preload={first} loading={first ? undefined : "eager"} />
+      {load && <Image src={src} alt="" fill sizes="100vw" quality={90} className="object-cover" loading="eager" />}
       <p
         style={{ position: "absolute", left: 0, right: 0, bottom: 10, textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.45)", padding: "0 24px" }}
       >
@@ -2327,8 +2344,8 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
       // perspective, contain, will-change do), so the `fixed` hosts below still place against the window.
       style={{ background: "radial-gradient(ellipse at 50% 40%, #141414 0%, #080808 100%)", isolation: "isolate" }}
     >
-      <SpaceLayer {...SPACE.corridor} shown={stage !== "complete"} first />
-      <SpaceLayer {...SPACE.clientInfo} shown={stage === "complete"} first={false} />
+      <SpaceLayer {...SPACE.corridor} shown={stage === "active"} load={openingArmed || stage !== "opening"} />
+      <SpaceLayer {...SPACE.clientInfo} shown={stage === "complete"} load={stage !== "opening"} />
       {/*
         ⚠⚠ THE SHARED CARD HOST — ONE CONTEXT, CREATED ONCE, NEVER UNMOUNTED.
         Rebuilt 14 August 2026 after the 12 August version was reverted for a
