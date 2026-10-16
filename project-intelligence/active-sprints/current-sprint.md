@@ -122,7 +122,7 @@ Carl: *"If theres a standard for building metal then the logo is it. All other s
 
 ## Current work — the space behind `/start` (D-023, 15 October 2026, session 3)
 
-The corridor's inspiration recorded: the *Star Wars* (1977) opening crawl, translated face-on (Carl: *"the user can see previous answers and they dont disappear in the ether and a tip of the hat to George Lucas"*). From the ESA/Hubble gallery (CC BY 4.0), Carl chose **the exoplanet GJ 9827d behind the corridor** and **the galactic centre behind the client info**, crossing on the crawl's own fade at `stage === "complete"`. The cards' opaque ground plane removed first (nothing transmits — measured). Darkened by a curve, sharpened, quality 90. ✔ **APPROVED** (R-071, *"Looks great. Approved."*). **16 October:** the arrival measured on PRODUCTION (at first paint on a fast line; ~0.8 s late on Fast 4G, ~4.5 s and drawn in strips on Slow 4G — D-023's space entry); then Carl took the planet OUT of the opening (*"the text, subtext and button are essential"*): it fades in on Begin over the crawl's 2.6 s, with the logo's crossing. ✔ **APPROVED** (R-072, *"fade is good, timed with the logo transition- good choice. approved."*). Not committed.
+The corridor's inspiration recorded: the *Star Wars* (1977) opening crawl, translated face-on (Carl: *"the user can see previous answers and they dont disappear in the ether and a tip of the hat to George Lucas"*). From the ESA/Hubble gallery (CC BY 4.0), Carl chose **the exoplanet GJ 9827d behind the corridor** and **the galactic centre behind the client info**, crossing on the crawl's own fade at `stage === "complete"`. The cards' opaque ground plane removed first (nothing transmits — measured). Darkened by a curve, sharpened, quality 90. ✔ **APPROVED** (R-071, *"Looks great. Approved."*). **16 October:** the arrival measured on PRODUCTION (at first paint on a fast line; ~0.8 s late on Fast 4G, ~4.5 s and drawn in strips on Slow 4G — D-023's space entry); then Carl took the planet OUT of the opening (*"the text, subtext and button are essential"*): it fades in on Begin over the crawl's 2.6 s, with the logo's crossing. ✔ **APPROVED** (R-072, *"fade is good, timed with the logo transition- good choice. approved."*). Then the images' loading moved onto existing beats (the planet when the opening arms, the galactic centre on Begin; method delegated by Carl, A/B measured). ⚠ *Corrected in place:* this read "Not committed" — committed and pushed `653ca99` the same day. **Next (Carl, 16 October): the corridor text's COLOUR — it stays DOM; the three.js conversion was withdrawn (D-023, 16 October).**
 
 ## Current work — the Q&A answer cards' edge and light (D-051, D-029 reopened, 15 October)
 
@@ -185,7 +185,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-15 (session 3, end) — the Q&A tube default (R-067); the travelling light back on with its dip (R-068); Next step's studio and the cards' warmth on it (R-069, R-070); the space behind /start (R-071); files relocked and the chunk closed to code. Next (Carl): the corridor text as extruded three.js. Pushed.*
+*Last updated: 2026-10-16 — the planet out of the opening, fading in on Begin (R-072), and the space images' loading on existing beats, pushed `653ca99`; the corridor text's three.js conversion WITHDRAWN by Carl — next: a colour change only (D-023, 16 October).*
+
+*Previously: 2026-10-15 (session 3, end) — the Q&A tube default (R-067); the travelling light back on with its dip (R-068); Next step's studio and the cards' warmth on it (R-069, R-070); the space behind /start (R-071); files relocked and the chunk closed to code. Next (Carl): the corridor text as extruded three.js. Pushed.*
 
 *Previously: 2026-10-15 (session 2, end) — D-097 site-wide; the Q&A tube behind doors (R-066).*
 

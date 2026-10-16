@@ -6,7 +6,13 @@
 
 ---
 
-## ⛔⛔ NEXT SESSION (Carl's words)
+## ⛔⛔ CORRECTED 16 OCTOBER 2026 — THE NEXT SUBJECT IS A COLOUR CHANGE, NOT THREE.JS
+
+**Carl withdrew the three.js conversion** after a session attempting it; its code, plan and discussion were deleted on his instruction. Carl: *"what this section needs is just a colour change to the text."* **The corridor text STAYS DOM.** The colours (Carl: *"the colours decided on today are right"*) and the problems they answer are in `decisions.md`, D-023 "THE THREE.JS CONVERSION WITHDRAWN; A COLOUR CHANGE ONLY" — focus question + number ICE BLUE #CFE6FF (Next step's words); answered question + number PLATINUM BLUE #3F6DB8; its answer a shade paler; teal and gold retired; the cards' labels ice blue at rest, platinum on hover and while selected (`answer-card-mesh.tsx`, PROTECTED — Carl names it). Also done 16 October and pushed (`653ca99`): the planet out of the opening, fading in on Begin (R-072); the space images' loading on existing beats. ⚠ `enquiry-opening.tsx` and `globals.css` are OPEN (`chunk-scope.json`, chunk `planet-at-begin`) until Carl says lock and test. Lesson (memory): not every section needs three.js.
+
+⚠ *The rest of this file is 15 October's handoff, kept as written; where it says "convert the corridor text to extruded three js", read the correction above.*
+
+## ⛔⛔ NEXT SESSION (Carl's words, 15 October — SUPERSEDED, above)
 
 *"Next session we will convert the corridor text to extruded three js. Movement and behaviour will stay untouched. We might look at the colour given the new environment."*
 
