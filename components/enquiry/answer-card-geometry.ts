@@ -957,16 +957,39 @@ export const ENTRANCE_END_MS =
  *
  * ⚠ MEASURED, NOT ASSUMED: `verify/card-exit.mjs` reads the phase edges as
  * `leaving@0ms -> arriving@1153ms`, so the stored value is right within 3ms.
+ * (That was the 1150 below; see the 17 October note.)
+ *
+ * ⛔ 17 October 2026 — THE RECESSION AT HALF SPEED, AND THE STEP GROWS WITH IT
+ * (D-023). Carl: *"we can afford to slow the heading movement and the receddion
+ * down by 50%. Note: Not the question reveal… a slower movement will be
+ * better"*; *"it happens longer and slower, not as rushed."* The recession (the
+ * lines and the heading travelling back, `globals.css`) goes 900 → 1800ms, and
+ * this step keeps the next question waiting until the lines have SETTLED, with
+ * the same 250ms beat after them it had before (900 → 1150). WAS 1150. Carl:
+ * *"if it doesnt look and feel right we will revert back"* — reverting is
+ * `CORRIDOR_RECESSION_MS = 900`, and the CSS durations with it.
  */
-export const CORRIDOR_STEP_MS = 1150;
+export const CORRIDOR_RECESSION_MS = 1800;
+/** The settled beat between the recession ending and the next question's reveal (was 1150 − 900). */
+export const CORRIDOR_SETTLE_BEAT_MS = 250;
+export const CORRIDOR_STEP_MS = CORRIDOR_RECESSION_MS + CORRIDOR_SETTLE_BEAT_MS;
 
 /**
  * The Q1 -> complete hold. That path is different in kind: 900ms, `enterComplete`,
  * and NO `setActiveQ` — no question is arriving.
  *
  * ⚠ NAMED FOR THE GUARD BELOW, not for its own sake. See `CARD_EXIT_Q1_HEADROOM_MS`.
+ *
+ * ⛔ 17 October 2026 — THE SAME PRINCIPLE AS EVERY OTHER STEP (D-023). Carl:
+ * *"lets keep the same principle, same flow"*. It was 900ms — the old recession's
+ * length, so completion began as Q1 settled. With the recession at 1800ms that
+ * hold cut the LAST phrase short: completion began mid-recession, and the heading
+ * snapped 7.6 → 7.0px at ~947ms (its deepening class dropped with the hold) and
+ * the line took a 2.5px frame step at ~1024ms as completion's work landed. Now
+ * completion waits for the recession AND the settle beat, exactly as a question
+ * would. WAS 900.
  */
-export const COMPLETE_HOLD_MS = 900;
+export const COMPLETE_HOLD_MS = CORRIDOR_STEP_MS;
 
 /**
  * Each card's own departure. ⚠ THE ONE CHOSEN NUMBER IN THE EXIT — everything
@@ -1032,6 +1055,14 @@ export const CARD_EXIT_END_MS =
  * ⚠ 249 HERE vs 252 MEASURED: this derives from the stored `CORRIDOR_STEP_MS`
  * (1150); the measured edge lands at 1153. The 3ms is the boundary's own
  * overshoot. Deriving from the stored value is correct — do not "fix" it to 252.
+ *
+ * ⛔ 17 October 2026 — THIS NOW READS 1149, NOT 249, AND THE BEAT IT NAMES HAS
+ * CHANGED SHAPE (D-023, the recession at half speed). The cards still clear at
+ * ~901ms, but the step is 2050ms: for the first ~899ms of the interval the
+ * question lines and the heading are STILL TRAVELLING BACK; the empty, settled
+ * beat before the reveal is `CORRIDOR_SETTLE_BEAT_MS` (250ms) — the 18 August
+ * figure's length, now after the recession rather than after the cards. Carl
+ * judges it by eye; the paragraphs above are the 18 August record.
  */
 export const CARD_EXIT_HEADROOM_MS = CORRIDOR_STEP_MS - CARD_EXIT_END_MS;
 
@@ -1041,6 +1072,9 @@ export const CARD_EXIT_HEADROOM_MS = CORRIDOR_STEP_MS - CARD_EXIT_END_MS;
  * On the Q1 -> complete path the exit gets only `COMPLETE_HOLD_MS` before `stage`
  * flips, `hostCardsVisible` goes false, and the `!active` branch hides the cards
  * outright. Exceed it and the last card is TRUNCATED MID-FADE.
+ *
+ * ⛔ 17 October 2026: +1149ms now — `COMPLETE_HOLD_MS` is the full step (2050),
+ * so the cliff is far off. The paragraph below describes the 900ms hold.
  *
  * ⚠ IT IS NEGATIVE (-1ms) AT THE APPROVED VALUES, AND THAT IS CORRECT, NOT A
  * FAILURE. 1ms is far below one frame and cannot be seen. **So a harness must

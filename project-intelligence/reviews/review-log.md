@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-077 — The Corridor's Recession At Half Speed, With The Heading Travelling (D-023): "It's A Lot Better"
+
+**Date:** 2026-10-17
+**Reviewer:** Human Founder
+**Subject:** `/start` — the recession (the lines and the heading travelling back) 900 → 1800 ms, the step 1150 → 2050 ms so the next question waits for the lines to settle; the question's reveal untouched. Includes the heading as ONE travelling element, ice blue from Begin, on the corridor's opacity ladder (committed `07dfb01` without a verdict). Measured: `live-work/scripts/recession-half-speed-17-october.mjs`.
+
+**Carl's verdict, verbatim:** *"Its a lot better. Whats the phrase in the files, in the ethos 'more Gilmour, less Malmsteen' it feels smoother, more relaxed. The top level view of this section is to gently guide and lead the user through what is essentially admin. i think that has been achieved."* Earlier, on the heading's colour: *"the heading colour transition looks really good. the contrast against the planet makes the text pop and owerall the text balance on the page at this point is great."*
+
+**Findings:**
+
+- ✔ **"A lot better"** — the words used; NOT promoted to "approved". Not a master (D-035).
+- ⛔ The section's purpose, in Carl's words: **to gently guide and lead the user through what is essentially admin.**
+- ⚠ Open for Carl's eye: the Q1 → complete hold (900 ms) now starts completion while the last recession moves (a 0.6 px heading jump at 3% opacity; one 2.5 px line step at ~1 s).
+
+---
+
 ## R-076 — The Cards' Labels On Hover And While Selected, The Answer Shade (D-023): "Approved"
 
 **Date:** 2026-10-17

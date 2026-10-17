@@ -172,10 +172,24 @@ export default function StartPage() {
      no delay of its own. Measured at +966ms from the Q1 Next step click (900ms
      plus click-to-timer overhead).
 
+     ⛔ CORRECTED 17 October 2026 (D-023; Carl: "please correct the record"):
+     `COMPLETE_HOLD_MS` is now the full corridor step, 2050ms (was 900) — the
+     recession went to half speed and the last step waits for it to settle like
+     every other. MEASURED: the return to gold starts +2088 / +2088 / +2094ms
+     from the Q1 Next step click (`live-work/scripts/logo-return-timing-17-
+     october.mjs`). The beat is still the stage flip — this callback still
+     needs no delay of its own. The paragraph above records the 900ms hold.
+
      ⚠ THE ARITHMETIC THAT MAKES IT WORK: the cross runs the same 1300ms as
      gold->blue, so gold is fully established at ~+2266ms. The Name box's
      entrance does not begin until +3600ms. ⛔ 1334ms OF MARGIN — "thats enough
      time to become established before card 1 with its gold rim appears."
+     ⛔ CORRECTED 17 October 2026: those two figures count from DIFFERENT
+     points — +2266 from the Q1 click, +3600 from the stage flip (the field's
+     delays start at `complete`: `FIELD_ENTRANCES`, `contact-field-canvas.tsx`).
+     On one clock, from the flip: gold established +1300, Name box +3600 — a
+     2300ms margin, then and now; the longer hold moves both together. (Read
+     from the code, not measured.)
      ⚠ UNASSERTED: nothing in code checks that 3600ms field delay against this.
      If the field cascade is re-timed, verify this margin still holds. */
   /* ⚠⚠ THE MASK NEEDS THE DIRECTION, NOT JUST THE STATE — a two-state boolean

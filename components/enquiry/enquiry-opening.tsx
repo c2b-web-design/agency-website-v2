@@ -548,9 +548,9 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
    *
    * | Phase | Begins | Means |
    * |---|---|---|
-   * | `settled`  | t = 1150 (and at Begin) | a question is up and interactive |
+   * | `settled`  | t = CORRIDOR_STEP_MS — 2050 since 17 Oct 2026, was 1150 (and at Begin) | a question is up and interactive |
    * | `leaving`  | **t = 0**, at the Next-step click | this question's cards are departing |
-   * | `arriving` | **t = 1150**, with `setActiveQ` | the next question's cards are entering |
+   * | `arriving` | **t = CORRIDOR_STEP_MS** (2050; was 1150), with `setActiveQ` | the next question's cards are entering |
    *
    * ⚠ NAMED FOR WHAT IS HAPPENING, NOT FOR A BOOLEAN'S DIRECTION. An earlier
    * dialog called one edge "rising" in its title and "falling" in its body; that
@@ -588,7 +588,7 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
    *
    * ⚠ THE SEMANTICS ARE PRESERVED EXACTLY. It was true from the Next-step click
    * until the step timeout fired, and both non-`settled` phases sit inside that
-   * window — `leaving` from t=0 and `arriving` at t=1150, which ends in the same
+   * window — `leaving` from t=0 and `arriving` at t=CORRIDOR_STEP_MS (2050 since 17 October 2026; 1150 when written), which ends in the same
    * React batch that returns the machine to `settled`. **Reduced motion never
    * set it and still never does**: that path leaves the phase at `settled`.
    */
@@ -1751,11 +1751,11 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
       }
       // ⚠⚠ THE Q1 PATH PUBLISHES THE LEAVING EDGE TOO, and this is the call site
       // that strands the machine if it is forgotten — it is a different code
-      // path (900ms, `enterComplete`, no `setActiveQ`), so nothing downstream
+      // path (`COMPLETE_HOLD_MS` — the full step, 2050ms, since 17 Oct 2026; was 900ms — `enterComplete`, no `setActiveQ`), so nothing downstream
       // would re-arm the cards and they would simply blink out at `complete`.
       publishLeavingEdge(fromQ);
       // ⚠ THE COMPLETION EDGE GOES `leaving` AND STOPS — NOTHING ARRIVES.
-      // Q1 -> complete is a different code path (900ms, `enterComplete`, no
+      // Q1 -> complete is a different code path (`COMPLETE_HOLD_MS`, 2050ms; was 900ms — `enterComplete`, no
       // `setActiveQ`) and it is the one that would strand the machine mid-cycle
       // if it were forgotten. It returns to `settled` because the corridor is no
       // longer moving; there is no `arriving` because no question is entering.
@@ -2260,7 +2260,7 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
   // The first recede (full opening heading -> d2) TRAVELS — the heading itself moves and
   // shrinks (`enquiry-heading-travelling`; was a ghost cross-fade until 17 October 2026);
   // later steps deepen via the transition. memory.length === 1 while the first step is in
-  // flight (corridorMoving holds for the step's 1150ms, longer than the 900ms travel).
+  // flight (corridorMoving holds for the step, CORRIDOR_STEP_MS = 2050ms, longer than the 1800ms travel).
   const firstRecede = corridorMoving && memory.length === 1;
 
   // One ordered list of every rendered phrase (answered questions + the active one), built
@@ -2453,7 +2453,7 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
             walk; `useCardEntrance` compares it by VALUE, never by ordering.
           */
           entranceEpoch={activeQ}
-          // ⚠ THE OTHER EDGE. `entranceEpoch` above is bumped at t=1150 by
+          // ⚠ THE OTHER EDGE. `entranceEpoch` above is bumped at t=CORRIDOR_STEP_MS (2050; was 1150) by
           // `setActiveQ`; this is bumped at t=0 by `publishLeavingEdge`. Two
           // edges, two epochs, one owner — and note this one IS a counter,
           // because `activeQ` has not changed yet when the exit must fire.

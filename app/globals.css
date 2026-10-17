@@ -1656,11 +1656,12 @@
 /* `color` is carried in the list so a step taken inside Begin's 2.6s does not cut it short. */
 /* WAS: two aria-hidden ghost copies cross-fading (a large one out 80–760ms, a small one in   */
 /* 0–600ms, their letters under 10px apart — measured) while the real h1 hid at opacity 0.   */
+/* (1800ms since the recession went to half speed the same day — the lines' own number.)     */
 .enquiry-heading-d2.enquiry-heading-travelling {
-  transition: font-size 900ms cubic-bezier(0.37, 0, 0.63, 1),
-              line-height 900ms cubic-bezier(0.37, 0, 0.63, 1),
-              transform 900ms cubic-bezier(0.37, 0, 0.63, 1),
-              opacity 900ms linear,
+  transition: font-size 1800ms cubic-bezier(0.37, 0, 0.63, 1),
+              line-height 1800ms cubic-bezier(0.37, 0, 0.63, 1),
+              transform 1800ms cubic-bezier(0.37, 0, 0.63, 1),
+              opacity 1800ms linear,
               color var(--enquiry-crawl-fade) linear;
 }
 /* Used by .enquiry-phrase-answers-enter (summary fade-in as a phrase recedes). */
@@ -1710,10 +1711,11 @@
 .enquiry-heading-deepening.enquiry-heading-d6 {
   /* ⛔ THE QUESTION LINES' OWN TIMING — Carl, 17 October 2026 (D-023), so the heading recedes
      WITH them at every step: size and place eased over 900ms (`cubic-bezier(0.37, 0, 0.63, 1)`),
-     opacity linear over 900ms, as `.enquiry-phrase-anim` does. Was 840ms linear on all three. */
-  transition: font-size 900ms cubic-bezier(0.37, 0, 0.63, 1),
-              transform 900ms cubic-bezier(0.37, 0, 0.63, 1),
-              opacity 900ms linear;
+     opacity linear over 900ms, as `.enquiry-phrase-anim` does. Was 840ms linear on all three.
+     ⛔ 1800ms since the same day — the recession at half speed (the lines' own number). */
+  transition: font-size 1800ms cubic-bezier(0.37, 0, 0.63, 1),
+              transform 1800ms cubic-bezier(0.37, 0, 0.63, 1),
+              opacity 1800ms linear;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1793,24 +1795,30 @@
 }
 
 /* Morph driver — bottom/opacity on the travel wrapper, size/colour/weight on the spans. */
+/* ⛔ 1800ms — THE RECESSION AT HALF SPEED, Carl, 17 October 2026 (D-023): "it happens longer   */
+/* and slower, not as rushed." WAS 900ms. The SAME number as `CORRIDOR_RECESSION_MS`            */
+/* (`answer-card-geometry.ts`), which the step is built from (+250ms settle beat) — CSS cannot   */
+/* import it, so the two are kept equal by hand: ⚠ UNASSERTED in code; the heading's            */
+/* `-travelling`/`-deepening` rules and the summary's fade-in move with it. The question's       */
+/* reveal is NOT this and is untouched (Carl: "calculated at the speed an average human reads"). */
 .enquiry-phrase-anim .enquiry-phrase-travel {
-  transition: bottom 900ms cubic-bezier(0.37, 0, 0.63, 1),
-              opacity 900ms linear;
+  transition: bottom 1800ms cubic-bezier(0.37, 0, 0.63, 1),
+              opacity 1800ms linear;
 }
 .enquiry-phrase-anim .enquiry-phrase-cue,
 .enquiry-phrase-anim .enquiry-phrase-question {
-  transition: font-size 900ms cubic-bezier(0.37, 0, 0.63, 1),
-              letter-spacing 900ms cubic-bezier(0.37, 0, 0.63, 1),
-              line-height 900ms cubic-bezier(0.37, 0, 0.63, 1),
-              font-weight 900ms linear,
-              color 900ms linear;
+  transition: font-size 1800ms cubic-bezier(0.37, 0, 0.63, 1),
+              letter-spacing 1800ms cubic-bezier(0.37, 0, 0.63, 1),
+              line-height 1800ms cubic-bezier(0.37, 0, 0.63, 1),
+              font-weight 1800ms linear,
+              color 1800ms linear;
 }
 .enquiry-phrase-anim .enquiry-phrase-qrow {
-  transition: gap 900ms cubic-bezier(0.37, 0, 0.63, 1),
-              line-height 900ms cubic-bezier(0.37, 0, 0.63, 1);
+  transition: gap 1800ms cubic-bezier(0.37, 0, 0.63, 1),
+              line-height 1800ms cubic-bezier(0.37, 0, 0.63, 1);
 }
 .enquiry-phrase-anim .enquiry-phrase-answers {
-  transition: font-size 900ms cubic-bezier(0.37, 0, 0.63, 1);
+  transition: font-size 1800ms cubic-bezier(0.37, 0, 0.63, 1);
 }
 
 .enquiry-phrase-qrow {
@@ -1961,7 +1969,9 @@
 }
 .enquiry-phrase-answers-enter {
   opacity: 0;
-  animation: eq-q5q4-content-in 500ms linear 200ms both;
+  /* The answer appears under its question AS it recedes — doubled with the recession, 17 October
+     2026 (D-023), so it keeps its place in the phrase. WAS 500ms after 200ms. */
+  animation: eq-q5q4-content-in 1000ms linear 400ms both;
 }
 
 /* Cards + Next live below the qrow as an absolute layer, so they do not affect   */
@@ -2015,7 +2025,15 @@
 .enquiry-pdepth-1 .enquiry-phrase-extras {
   opacity: 0.78;
 }
-/* ⚠⚠ 900ms IS DERIVED FROM THE RECESSION, NOT PICKED — Carl, 15 August 2026.
+/* ⛔ 17 October 2026 — DECOUPLED, ON PURPOSE: the recession went to 1800ms (D-023) and this
+   STAYS 900ms. The paragraph below ("the two numbers are the same number and must move
+   together") was true when the cards and the button were DOM inside this layer. Today the
+   cards are WebGL and leave on their own ladder (`CARD_EXIT_*`, `answer-card-geometry.ts`,
+   gone by ~901ms) and Next step is drawn in the hoisted host with its own 600ms fade — neither
+   is faded by this rule. Carl's 18 August reasoning governs their exit: clear the cards FASTER
+   so the next set arrives calmly. What this rule still fades is the layer's DOM (the grid box);
+   ⚠ that it paints nothing visible is read from the code, not measured.
+   ⚠⚠ 900ms IS DERIVED FROM THE RECESSION, NOT PICKED — Carl, 15 August 2026.
    It is the same 900ms as `bottom 900ms cubic-bezier(0.37, 0, 0.63, 1)` on
    `.enquiry-phrase-travel`, so the extras fade across PRECISELY the span the
    question travels, and are gone as the space vacates. **The two numbers are the

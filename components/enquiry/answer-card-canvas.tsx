@@ -1664,7 +1664,7 @@ function useCardEntrance(
   entranceEpoch: number = 0,
   /**
    * ⚠ THE LEAVING EDGE'S OWN EPOCH — bumped at t=0 on the Next-step click, where
-   * `entranceEpoch` is bumped at t=1150. **Two edges, two epochs, one owner**
+   * `entranceEpoch` is bumped at t=CORRIDOR_STEP_MS (2050 since 17 October 2026; was 1150). **Two edges, two epochs, one owner**
    * (`handleNextStep` publishes both). Its only job is to make this effect re-run
    * at the click; the CLOCK comes from `__leavingEdgeAt`, not from this number.
    */
@@ -1864,7 +1864,7 @@ function useCardEntrance(
         const at = w.__leavingEdgeAt;
         const stamp = w.__leavingEdgeQ;
         // The outgoing question IS the one still active — `setActiveQ` does not
-        // run until the arriving edge, 1150ms later.
+        // run until the arriving edge, CORRIDOR_STEP_MS later (2050ms; was 1150).
         if (typeof at === "number" && stamp === w.__activeQ) {
           exitStartRef.current = at;
           // ⚠ The exit re-arms the loop, so `playedRef` must not short-circuit it
@@ -4517,7 +4517,7 @@ export default function AnswerCardCanvas({
   /**
    * ⚠⚠ THE LEAVING EDGE'S EPOCH — the OTHER half of the per-question lifetime.
    *
-   * `entranceEpoch` changes at t=1150, when the next question arrives.
+   * `entranceEpoch` changes at t=CORRIDOR_STEP_MS (2050; was 1150), when the next question arrives.
    * **The exit needs t=0, when the current one starts leaving**, so it cannot
    * reuse that number: two edges, two epochs. Both are published by the same
    * owner (`handleNextStep`), which is what keeps this from becoming two sources
