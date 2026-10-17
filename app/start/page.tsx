@@ -414,8 +414,16 @@ export default function StartPage() {
               work Carl has deferred, and inventing one here would settle it.
               ⚠ A user on a narrow viewport cannot currently leave `/start` by
               the nav — the corridor is still fully usable. */}
+          {/* ⛔ ICE BLUE FROM BEGIN — Carl, 17 October 2026 (D-023): "The navigation
+              text in the header as we transition into the q+a is still white. It
+              will look great ice blue against the dark of the planet. same timing as
+              the header." `start-nav-ice` starts the links' fade (globals.css):
+              neutral-400 in the opening, #cfe6ff once `stage` leaves it, over the
+              heading's 2.6s; it stays ice through completion. An ANIMATION on the
+              links (not an inherited colour — that chased the links' own 200ms hover
+              transition and pulsed at the end), so their hover is unchanged. */}
           <div
-            className="absolute left-0 right-0 -translate-y-1/2 hidden md:flex items-center justify-end gap-6"
+            className={`start-nav${stage !== "opening" ? " start-nav-ice" : ""} absolute left-0 right-0 -translate-y-1/2 hidden md:flex items-center justify-end gap-6`}
             style={{ top: `${NAV_CENTRE_Y}px` }}
           >
             {/* ⛔ `Contact` IS FILTERED HERE. Carl, 1 September 2026: *"on the

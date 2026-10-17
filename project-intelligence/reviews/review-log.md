@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-078 — `/start`'s Last White Texts To Ice Blue, And The Nav's Fade Made Smooth (D-023): "That's Fixed It"
+
+**Date:** 2026-10-17
+**Reviewer:** Human Founder
+**Subject:** `/start` — the nav links fade neutral-400 → ice blue from Begin over the heading's 2.6 s (as an animation on the links; the first take's inherited fade chased the links' own 200 ms hover transition and pulsed at the end — measured 37% behind, then a 34% catch-up; now within 2.6% of linear); "Understood." and its subtext, the client-info field labels (full ice, option b — were white at 0.75) and the Send pill's text all `#cfe6ff`. Measured: `live-work/scripts/start-ice-blue-texts-17-october.mjs`, `nav-ice-smoothness-17-october.mjs`.
+
+**Carl's verdict, verbatim:** *"Thats fixed it. commit and push then lock all protected files and test."* (on the nav's pulse). Earlier: *"The grey subtext under 'understood' is the only thing looking out of place. It should also be ice blue."*
+
+**Findings:**
+
+- ✔ **"That's fixed it"** — the words used, about the nav; recorded at that level, not promoted to "approved". Not a master (D-035). Committed and pushed on his word.
+- ⚠ The field labels at FULL ice are a take ("try b, we will see how it looks") — no separate verdict.
+- ⚠ Not watched: phones; Carl's GPU/Chrome.
+
+---
+
 ## R-077 — The Corridor's Recession At Half Speed, With The Heading Travelling (D-023): "It's A Lot Better"
 
 **Date:** 2026-10-17

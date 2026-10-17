@@ -3022,8 +3022,11 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
                   Understood.
                 </span>
               </div>
+              {/* ICE BLUE — Carl, 17 October 2026 (D-023): "The grey subtext under
+                  'understood' is the only thing looking out of place. It should also
+                  be ice blue." WAS `text-neutral-400`. */}
               <p
-                className="text-sm text-neutral-400 leading-relaxed"
+                className="text-sm text-[#cfe6ff] leading-relaxed"
                 style={reducedMotion ? undefined : { animation: "enquiry-mask-reveal-horizontal 3600ms cubic-bezier(0.37, 0, 0.63, 1) 800ms both" }}
               >
                 We&apos;re on it. Add your details and we&apos;ll turn this into a clearer direction for your site.

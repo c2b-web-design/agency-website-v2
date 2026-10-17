@@ -359,6 +359,34 @@
   transition: color var(--enquiry-crawl-fade) linear;
 }
 
+/* ⛔ /start's NAV LINKS FOLLOW THE HEADING — Carl, 17 October 2026 (D-023): "It will look great
+   ice blue against the dark of the planet. same timing as the header." neutral-400 as before in
+   the opening → ice blue from Begin, over the heading's 2.6s, linear; ice through completion.
+
+   ⚠⚠ AN ANIMATION ON THE LINKS, NOT AN INHERITED TRANSITION — corrected the same day. The first
+   take faded the WRAPPER's colour and let the links inherit it. But the links carry their own
+   `transition-colors duration-200` (Tailwind's ease, which starts SLOW) for hover: every frame
+   the inherited colour moved, each link restarted that 200ms transition, barely moved, and fell
+   behind — measured 12% at 33% of the fade, 66% at 99% — then caught up 34% in ~0.2s as the
+   wrapper stopped. Carl saw that catch-up: "it seems to jerk as it reaches full ice blue… a sort
+   of pulse." An ANIMATION's frame-by-frame changes do not start transitions (CSS Transitions),
+   so the chase cannot happen. The hover colour is `!important` because an animation outranks
+   normal declarations; an !important value still transitions, so the links' own 200ms hover
+   stays exactly as it was, both ways.  */
+.start-nav-ice a {
+  animation: start-nav-ice var(--enquiry-crawl-fade) linear both;
+}
+.start-nav a:hover {
+  color: var(--color-neutral-100) !important;
+}
+@keyframes start-nav-ice {
+  from { color: var(--color-neutral-400); }
+  to   { color: #cfe6ff; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .start-nav-ice a { animation-duration: 0s; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .enquiry-shell-opening,
   .enquiry-shell-active {
@@ -415,7 +443,9 @@
 .enquiry-q5-question {
   font-size: 1.375rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 1.0);
+  /* ICE BLUE — Carl, 17 October 2026 (D-023): "after Q1, the understood text, change to ice
+     blue." This class now dresses "Understood." alone (its only use). WAS rgba(255,255,255,1). */
+  color: #cfe6ff;
   line-height: 1.4;
 }
 
@@ -1355,7 +1385,9 @@
       #071a42 100%
     );
   background-color: #114aa5;
-  color: #eef6ff;
+  /* ICE BLUE — Carl, 17 October 2026 (D-023): "The same for … the text on the send pill." The
+     family's ice (Next step's words). WAS #eef6ff. */
+  color: #cfe6ff;
   box-shadow:
     inset 0  1px 0    rgba(150, 200, 255, 0.55),
     inset 0  3px 3px  rgba( 10,  40,  96, 0.42),
@@ -1447,7 +1479,7 @@
 .enquiry-send-btn:disabled {
   background-image: linear-gradient(#34507e, #1d335c);
   background-color: #1d335c;
-  color: rgba(238, 246, 255, 0.42);
+  color: rgba(207, 230, 255, 0.42); /* ice blue at the same 0.42 (17 Oct 2026); WAS rgba(238, 246, 255, 0.42) */
   box-shadow: none;
   cursor: default;
 }

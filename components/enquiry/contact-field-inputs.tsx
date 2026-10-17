@@ -667,7 +667,14 @@ export default function ContactFieldInputs({
               //
               // Bracketed by eye at 1.0 / 0.85 / 0.75 / 0.65: 0.85 was
               // indistinguishable from full white and did not do the job.
-              className="absolute text-xs leading-4 text-white/75 pointer-events-auto"
+              //
+              // ⛔ ICE BLUE, FULL — Carl, 17 October 2026 (D-023): "The same for
+              // the client info card headings" → offered ice at 0.75 (the hue
+              // alone) or full ice (softer than white, so the reason for 0.75 may
+              // be gone): "try b , we will see how it looks." A TAKE. WAS
+              // `text-white/75` — the paragraphs above are its record; if full ice
+              // competes as full white did, 0.75 is the way back.
+              className="absolute text-xs leading-4 text-[#cfe6ff] pointer-events-auto"
               style={{ left: p.left, top: p.labelTop, height: LABEL_BLOCK_PX }}
             >
               {slot.label}
