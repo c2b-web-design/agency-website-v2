@@ -1469,7 +1469,10 @@ const LABEL_TEX_ASPECT = 4;
  * white is what keeps the glyph mask clean and the hover's hue swap exact. What
  * the eye sees at rest is now ICE BLUE (`LABEL_REST_ICE`), put on after
  * lighting. The paragraphs below are the 10 August brief; the hue they argue
- * for is superseded, the "no blue cast from the rig" mechanism is not.
+ * for is superseded, the "no blue cast from the rig" mechanism is not. ⚠ The
+ * CSS they quote is gone too: `.enquiry-pdepth-0 .enquiry-phrase-question` is
+ * #cfe6ff since 17 October — the Q5 reference and the label match again, in
+ * ice blue.
  *
  * ⚠⚠ CARL SET THE REFERENCE, 10 August 2026: *"The Q5 white text is the
  * reference here... It should be white though, not this cast of blue."*

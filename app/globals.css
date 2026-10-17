@@ -1838,16 +1838,18 @@
 .enquiry-pdepth-0 .enquiry-phrase-cue {
   font-size: 1.375rem;
   letter-spacing: 0.18em;
-  /* Active Q label reads as white, one step under the question text so the
-     question still leads the line. Was 0.28, which read as grey rather than
-     quiet. The label turns gold once answered (depth 1+) — that transition is
-     what marks memory, and it is unaffected. */
-  color: rgba(255, 255, 255, 0.75);
+  /* ICE BLUE #CFE6FF, THE SAME AS ITS QUESTION — Carl, 17 October 2026 (D-023):
+     "the same colours". Next step's words and the cards' resting labels wear it
+     too. History: white at 0.75, one step under the question so the question led
+     the line (and 0.28 before that, which read as grey) — that step is RETIRED.
+     The label's colour once answered (depth 1+) is a later chunk. */
+  color: #cfe6ff;
 }
 .enquiry-pdepth-0 .enquiry-phrase-question {
   font-size: 1.375rem;
   font-weight: 500;
-  color: rgba(255, 255, 255, 1);
+  /* ICE BLUE, was rgba(255, 255, 255, 1) — Carl, 17 October 2026 (D-023). */
+  color: #cfe6ff;
   line-height: 1.4;
 }
 

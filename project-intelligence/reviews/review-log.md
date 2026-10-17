@@ -65,6 +65,21 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-074 — The Question In Focus And Its Q Number, Ice Blue (D-023): "Looks A Lot Better"
+
+**Date:** 2026-10-17
+**Reviewer:** Human Founder
+**Subject:** `/start` — `.enquiry-pdepth-0`'s question (was white) and Q number (was white at 0.75, one step under) both `#cfe6ff`, the same as the cards' resting labels (R-073); the corridor colour change's chunk 2. Measured at Q5 and Q4: both rendered rgb(207, 230, 255) (`live-work/scripts/focus-line-ice-17-october.mjs`).
+
+**Carl's verdict, verbatim:** *"I think that looks alot better. Its a good contrast betwwen the text and the space enviroment..commit and push."*
+
+**Findings:**
+
+- ✔ **"A lot better"** — the words used; recorded at that level, not promoted to "approved". Not a master (D-035). Committed and pushed on his word.
+- ⚠ Not watched: mid-transition frames; Carl's GPU/Chrome. The answered lines are still teal and gold — the next chunks.
+
+---
+
 ## R-073 — The Q&A Cards' Labels At Rest, Ice Blue (D-023, D-051): "They Look Good"
 
 **Date:** 2026-10-17
