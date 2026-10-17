@@ -77,7 +77,7 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 - ✔ **APPROVED** — the word used. Not a master (D-035). Committed and pushed on his word.
 - Carl's reasoning for a hover quieter than rest: the answer is read at rest; hover confirms; the press and the rim make the choice, cancellable.
-- ⚠ **Open, not fixed:** under a still pointer the hover can switch itself off with no pointer event — an existing fault, present on the teal too (D-023, 17 October).
+- ~~⚠ **Open, not fixed:** under a still pointer the hover can switch itself off with no pointer event — an existing fault, present on the teal too (D-023, 17 October).~~ ⛔ **Corrected the same day — not a product fault.** Carl, with his own mouse: *"it can stay still or move around inside the card, hovver colour doesnt change. Move the pointer out of the cards and it reverts to resting state colour. Exactly as described and built."* The drop is seen only under Playwright's driven pointer (D-023).
 - ⚠ Not watched: Q4–Q1; the chosen card's exit; Carl's GPU/Chrome.
 
 ---

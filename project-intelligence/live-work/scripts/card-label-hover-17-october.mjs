@@ -32,8 +32,9 @@ await core("rest");
 // The pointer at the HOVER BOX's centre (was 20 px above the label row, near the box's edge — the hover let go there).
 const hb = await p.getByTestId("answer-card-hover-0").boundingBox();
 await p.mouse.move(hb.x + hb.width / 2, hb.y + hb.height / 2);
-// ⚠ The pointer nudged 1 px before each sample: a perfectly still pointer can lose the hover with no pointer event (an
-// EXISTING fault, found 17 Oct on the committed teal too — not this chunk's); a real hand is never that still.
+// ⚠ The pointer nudged 1 px before each sample: a perfectly still pointer can lose the hover with no pointer event (a
+// behaviour seen ONLY under this driven pointer — Carl's own mouse holds the hover still or moving, 17 Oct: NOT a
+// product fault). ⚠ So a still-pointer hover reading here is untrustworthy; read the colour settled through SELECTION.
 for (let i = 1; i <= 12; i++) { await p.waitForTimeout(500); await p.mouse.move(hb.x + hb.width / 2 + (i % 2), hb.y + hb.height / 2); await core(`hovered ${(i * 0.5).toFixed(1)}s`); }
 await p.mouse.move(5, 5); await p.waitForTimeout(2500); await core("left-2.5s");
 await b.close();
