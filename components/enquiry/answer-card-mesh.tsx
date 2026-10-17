@@ -417,6 +417,17 @@ function FaceMaterial({
     uInkLift: { value: urlNumber("inklift", LABEL_INK_LIFT) },
     uTealStrength: { value: urlNumber("tealstrength", LABEL_TEAL_STRENGTH) },
     uInkNeutral: { value: urlNumber("inkneutral", LABEL_INK_NEUTRAL) },
+    /**
+     * The resting labels' ICE BLUE (Carl, 17 October 2026) — and ⚠ NOT CONVERTED
+     * TO LINEAR, unlike `uLabelTealInk` above. It is mixed in after
+     * dithering_fragment, where the pixel is already sRGB-encoded (three r185:
+     * tonemapping → colorspace → dithering, and this canvas draws to the screen,
+     * not a render target), so it must arrive as the sRGB triple itself.
+     */
+    uLabelRestInk: {
+      value: new THREE.Color().setStyle(LABEL_REST_ICE, THREE.SRGBColorSpace).convertLinearToSRGB(),
+    },
+    uRestCoreLum: { value: LABEL_REST_CORE_LUM },
   });
 
   const invalidate = useThree((s) => s.invalidate);
@@ -527,6 +538,8 @@ function FaceMaterial({
       uniform float uInkLift;
       uniform float uTealStrength;
       uniform float uInkNeutral;
+      uniform vec3  uLabelRestInk;
+      uniform float uRestCoreLum;
 
       /**
        * ⚠ THE GLYPH MASK, CARRIED FROM map_fragment TO THE END OF THE CHAIN.
@@ -705,10 +718,20 @@ function FaceMaterial({
           * ⚠ AFTER dithering_fragment — the LAST chunk in the fragment chain,
           * so this sees the final lit, tone-mapped, colour-space-encoded pixel.
           * Anything earlier would be re-tinted by a stage further down.
+          *
+          * ⚠⚠ ICE BLUE AT REST, NOT NEUTRAL — Carl, 17 October 2026 (D-023,
+          * 16 October): the resting labels are ICE BLUE, the same colour as the
+          * question in focus. The white brief above is SUPERSEDED for the hue;
+          * its mechanism stands — the cast is still removed after lighting, and
+          * each glyph pixel now takes ICE BLUE at its own lit brightness instead
+          * of grey. Scaled by uRestCoreLum so a SETTLED core lands on the ice
+          * blue itself (see LABEL_REST_CORE_LUM); the traveller still brightens
+          * it, which Carl accepted on 10 August.
           */
          float litLum = dot(gl_FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
          float neutralise = uInkNeutral * gGlyphMask * (1.0 - uHover);
-         gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(litLum), neutralise);
+         vec3 restInk = uLabelRestInk * (litLum / uRestCoreLum);
+         gl_FragColor.rgb = mix(gl_FragColor.rgb, restInk, neutralise);
        }
        #endif`,
     );
@@ -1442,6 +1465,12 @@ const LABEL_TEX_ASPECT = 4;
 /**
  * The label's resting colour — PURE WHITE, matching the Q5 phrase text.
  *
+ * ⚠ AMENDED 17 October 2026: this is the TEXTURE's ink, and it stays white —
+ * white is what keeps the glyph mask clean and the hover's hue swap exact. What
+ * the eye sees at rest is now ICE BLUE (`LABEL_REST_ICE`), put on after
+ * lighting. The paragraphs below are the 10 August brief; the hue they argue
+ * for is superseded, the "no blue cast from the rig" mechanism is not.
+ *
  * ⚠⚠ CARL SET THE REFERENCE, 10 August 2026: *"The Q5 white text is the
  * reference here... It should be white though, not this cast of blue."*
  *
@@ -1586,6 +1615,33 @@ const LABEL_INK_WEIGHT = 600;
  * **His call, not a value to defend.**
  */
 const LABEL_INK_NEUTRAL = 1.0;
+
+/**
+ * ⚠⚠ THE RESTING LABELS ARE ICE BLUE — Carl, 17 October 2026 (D-023, 16 October:
+ * *"the ice blue that should be used is the same as the text on the next step
+ * button"*; *"start with the card text in resting state and the question in
+ * focus. Both are the same colour."*). #CFE6FF is Next step's words
+ * (`whoweare-button-scene.tsx`, the blue member) and the question in focus.
+ *
+ * ⚠ SO `LABEL_INK_NEUTRAL` NO LONGER PULLS TO GREY: at 1.0 it now pulls each
+ * resting glyph fully to this ice blue at the glyph's own lit brightness. The
+ * cast is still removed; the target hue changed.
+ */
+const LABEL_REST_ICE = "#CFE6FF";
+
+/**
+ * The luminance of a SETTLED resting glyph core, in the encoded output —
+ * 235 / 255, MEASURED 17 October 2026 (`live-work/scripts/card-label-measure-
+ * 17-october.mjs`: all five cards rgb(235, 235, 235) at rest, the traveller
+ * lifting them to 244 at most). Dividing by it lands a settled core ON the ice
+ * blue rather than at the ice blue's hue with white's brightness (which read
+ * ~rgb(214, 238, 255) — lighter, its blue clipped).
+ *
+ * ⚠ UNASSERTED — a measurement of today's lift, light and weight. If
+ * `LABEL_INK_LIFT`, `LABEL_INK_WEIGHT`, the face's light or the tone mapping
+ * moves, the settled core moves with it: re-run the measurer, do not trust this.
+ */
+const LABEL_REST_CORE_LUM = 235 / 255;
 
 /**
  * How far the hover travels toward the rail's teal — `?tealstrength=`.

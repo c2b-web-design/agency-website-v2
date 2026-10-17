@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-073 — The Q&A Cards' Labels At Rest, Ice Blue (D-023, D-051): "They Look Good"
+
+**Date:** 2026-10-17
+**Reviewer:** Human Founder
+**Subject:** `/start` — the answer cards' resting labels pulled to ICE BLUE #CFE6FF after lighting (was neutral white), the corridor colour change's chunk 1. One uniform in `answer-card-mesh.tsx`; the texture's ink and the hover untouched. Measured at 1920 × 952, DPR 1, Q5: settled core rgb(207, 230, 253) on all five cards (was 235, 235, 235), the traveller lifting it to 215 / 239 / 255; hover teal and its return intact (`live-work/scripts/card-label-*-17-october.mjs`).
+
+**Carl's verdict, verbatim:** *"They look good. Brightening the text is not a probplem, as long as it is legible and not blowing out we are good. You can commit and push."*
+
+**Findings:**
+
+- ✔ **"Look good"** — the words used; recorded at that level, not promoted to "approved". Not a master (D-035). Committed and pushed on his word.
+- ⛔ **Carl's bound for the traveller on the labels:** brightening is fine **as long as the text stays legible and does not blow out.**
+- ⚠ Not watched: selection (a later chunk); Q4–Q1; Carl's GPU/Chrome. Until chunk 2 the focus question is still white.
+
+---
+
 ## R-072 — The Planet Leaves The Opening And Fades In On Begin (D-023): "Fade Is Good… Approved"
 
 **Date:** 2026-10-16
