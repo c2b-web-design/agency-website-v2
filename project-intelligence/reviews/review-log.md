@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-075 — The Answered Lines, Platinum Blue (D-023): "Approved"
+
+**Date:** 2026-10-17
+**Reviewer:** Human Founder
+**Subject:** `/start` — the corridor's answered lines (depths 1–5): question and Q number `#3f6db8` (the brand's platinum blue), the answer `#5f88c8` (a shade lighter, to sit just in front); teal and gold retired; opacities unchanged. The corridor colour change's chunk 3. Verified at Q1 (`live-work/scripts/answered-lines-platinum-17-october.mjs`).
+
+**Carl's verdict, verbatim:** *"I think it looks better. The overall aethetic of blue button, cards and receeding text looks and feels more connected. Appoved, commit and push and we will move on to the hovver text."*
+
+**Findings:**
+
+- ✔ **APPROVED** — the word used. Not a master (D-035). Committed and pushed on his word.
+- Carl's reading: the blue button, the cards and the receding text now feel like one world (§14a, *"a recurring theme with variations"*).
+- ⚠ Not watched: mid-transition; Carl's GPU/Chrome. Next: the cards' hover text.
+
+---
+
 ## R-074 — The Question In Focus And Its Q Number, Ice Blue (D-023): "Looks A Lot Better"
 
 **Date:** 2026-10-17

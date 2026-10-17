@@ -1504,6 +1504,11 @@ const LABEL_INK_REST = "rgb(255, 255, 255)";
  * the first teal, the answers lose their opacity as more questions are
  * answered."*
  *
+ * ⚠ NO LONGER TRUE OF THE RAIL, 17 October 2026: the rail's answers are
+ * platinum-blue `#5f88c8` now (D-023) and its teal is retired. This hover stays
+ * teal until its own chunk (Carl: platinum blue on hover AND while selected).
+ * What follows was true when written:
+ *
  * Read from `app/globals.css` — `.enquiry-pdepth-1` through `-5`
  * `.enquiry-phrase-answers` all set `color: rgb(160, 220, 218)`. **The depth
  * fade is opacity, applied separately**, so this is the single teal the rail

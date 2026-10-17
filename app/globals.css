@@ -1908,25 +1908,36 @@
 
 /* Memory rail colour pass — depth 1–5 only.                                        */
 /* Active depth-0 and heading layers are untouched.                                 */
-/* Text colours are opaque — parent wrapper opacity (0.72→0.50→0.34→0.22→0.14)     */
-/* is the sole fading mechanism so hues stay readable at all depths.                */
+/* Text colours are opaque — the travel wrapper's opacity                           */
+/* (0.78→0.42→0.22→0.10→0.045, above) is the sole fading mechanism.                 */
+/* ⚠ Corrected 17 Oct 2026: it read 0.72→0.50→0.34→0.22→0.14, long since retuned.   */
+/*                                                                                  */
+/* ⛔ PLATINUM BLUE — Carl, 17 October 2026 (D-023). An answered question AND its Q  */
+/* number #3F6DB8, the brand's platinum blue (the logo's and Next step's metal);    */
+/* its answer a shade LIGHTER, #5F88C8 (same hue, HSL lightness 48% → 58%), so at   */
+/* its smaller size it reads as sitting just in front of its question. TEAL and     */
+/* GOLD RETIRED (were rgb(125,210,205) question, rgb(214,166,77) Q number,          */
+/* rgb(160,220,218) answer). Why platinum: over the planet's bright limb teal and   */
+/* gold vanished; the far lines need only REGISTER as lines, not be read — Carl:    */
+/* "It only has to register as being there far off in this distance." Platinum is  */
+/* darker than the limb's glow and lighter than space (D-023, 16 Oct, measured).    */
 .enquiry-pdepth-1 .enquiry-phrase-question,
 .enquiry-pdepth-2 .enquiry-phrase-question,
 .enquiry-pdepth-3 .enquiry-phrase-question,
 .enquiry-pdepth-4 .enquiry-phrase-question,
-.enquiry-pdepth-5 .enquiry-phrase-question { color: rgb(125, 210, 205); }
+.enquiry-pdepth-5 .enquiry-phrase-question { color: #3f6db8; }
 
 .enquiry-pdepth-1 .enquiry-phrase-cue,
 .enquiry-pdepth-2 .enquiry-phrase-cue,
 .enquiry-pdepth-3 .enquiry-phrase-cue,
 .enquiry-pdepth-4 .enquiry-phrase-cue,
-.enquiry-pdepth-5 .enquiry-phrase-cue { color: rgb(214, 166, 77); }
+.enquiry-pdepth-5 .enquiry-phrase-cue { color: #3f6db8; }
 
 .enquiry-pdepth-1 .enquiry-phrase-answers,
 .enquiry-pdepth-2 .enquiry-phrase-answers,
 .enquiry-pdepth-3 .enquiry-phrase-answers,
 .enquiry-pdepth-4 .enquiry-phrase-answers,
-.enquiry-pdepth-5 .enquiry-phrase-answers { color: rgb(160, 220, 218); }
+.enquiry-pdepth-5 .enquiry-phrase-answers { color: #5f88c8; }
 
 /* Answer summary — absolutely positioned just beneath the question (top: 100%)   */
 /* so it never contributes to the phrase box height. This keeps the box at qrow   */
