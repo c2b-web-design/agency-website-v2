@@ -2985,7 +2985,13 @@ function AnswerCard({
           // Undefined on the clay study, which exists to show the FORM and
           // would be answering a different question with text on it.
           label={clay ? undefined : label}
-          hovered={hovered}
+          // ⛔ HOVERED OR SELECTED — Carl, 17 October 2026 (D-023): the label
+          // wears the hover colour (the corridor's answer shade) on hover AND
+          // while the card is chosen (`lit`, the filament's own state), so the
+          // choice keeps the colour it will wear in the corridor. The mesh reads
+          // this ONLY for the label's colour ease (`uHover`); the rim's filament
+          // is driven by `lit` separately, unchanged.
+          hovered={hovered || lit}
         />
       </CardLighting>
 

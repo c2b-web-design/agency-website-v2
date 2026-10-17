@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-076 — The Cards' Labels On Hover And While Selected, The Answer Shade (D-023): "Approved"
+
+**Date:** 2026-10-17
+**Reviewer:** Human Founder
+**Subject:** `/start` — the answer cards' labels on hover AND while selected wear the corridor's answer shade `#5F88C8` (first take platinum `#3F6DB8`, judged too dark by Carl). The hover moved after lighting beside the ice blue, so it settles on its colour and the traveller lifts it; the teal and its 1.7 strength retired; selection holds it (`hovered || lit`). Measured selected 106/140/196 (target 95/136/200), cancel back to ice (`live-work/scripts/card-label-selected-17-october.mjs`, `card-label-hover-17-october.mjs`). The corridor colour change's chunk 4.
+
+**Carl's verdict, verbatim:** *"The lighter answer text on hovver does make a marginal improvement. It was the right call for more than one reson. Approved. Commit and push."*
+
+**Findings:**
+
+- ✔ **APPROVED** — the word used. Not a master (D-035). Committed and pushed on his word.
+- Carl's reasoning for a hover quieter than rest: the answer is read at rest; hover confirms; the press and the rim make the choice, cancellable.
+- ⚠ **Open, not fixed:** under a still pointer the hover can switch itself off with no pointer event — an existing fault, present on the teal too (D-023, 17 October).
+- ⚠ Not watched: Q4–Q1; the chosen card's exit; Carl's GPU/Chrome.
+
+---
+
 ## R-075 — The Answered Lines, Platinum Blue (D-023): "Approved"
 
 **Date:** 2026-10-17

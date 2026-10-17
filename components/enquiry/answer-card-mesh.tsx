@@ -362,7 +362,9 @@ function FaceMaterial({
    * because building it was the Q5 stall. See `buildLabelTexture`.
    */
   labelMap: THREE.Texture | null;
-  /** Whether the pointer is over this card. Drives `uHover` through an ease. */
+  /** Whether the pointer is over this card — OR, since 17 October 2026, the card is
+   *  SELECTED (`answer-card-canvas.tsx` passes `hovered || lit`, D-023). Drives `uHover`
+   *  through an ease; nothing else reads it. */
   hovered: boolean;
   /** Satin's smear along the tangent. Inert without a `tangent` attribute. */
   anisotropy: number;
@@ -396,30 +398,26 @@ function FaceMaterial({
      */
     uHover: { value: 0 },
     /**
-     * The rail's teal as a linear-space colour, tinted onto the glyphs.
-     *
-     * ⚠ THIS UNIFORM IS THE RAIL'S TEAL; THE RENDERED GLYPH IS NOT. The mix
-     * below runs at `uTealStrength` 1.7 (Carl, 20 August 2026), which
-     * extrapolates PAST this colour rather than stopping at it. See
-     * `LABEL_TEAL_STRENGTH`.
-     *
-     * ⚠ CONVERTED, NOT PASSED RAW. `LABEL_INK_HOVER` is an sRGB string; the
-     * fragment shader works in linear space, so handing it the sRGB triple
-     * would land a noticeably lighter, flatter teal than the rail's. THREE's
-     * `Color` does the conversion when told the working space.
+     * The hovered labels' colour — the corridor's ANSWER shade #5F88C8
+     * (`LABEL_INK_HOVER`; platinum was the first take) (Carl, 17 October 2026, D-023) — raw
+     * sRGB, like `uLabelRestInk` below and for the same reason: it is mixed in
+     * after lighting, on the encoded pixel. ⚠ It replaces `uLabelTealInk` (the
+     * rail's teal, CONVERTED to linear because it tinted the albedo) and
+     * `uTealStrength` (`?tealstrength=`, 1.7) — both retired with the teal.
      */
-    uLabelTealInk: { value: new THREE.Color().setStyle(LABEL_INK_HOVER, THREE.SRGBColorSpace) },
+    uLabelHoverInk: {
+      value: new THREE.Color().setStyle(LABEL_INK_HOVER, THREE.SRGBColorSpace).convertLinearToSRGB(),
+    },
     /**
-     * The two ACES-correction dials. Read once at construction — a URL door
+     * The ACES-correction dials. Read once at construction — a URL door
      * that had to be re-read per frame would be a knob that appears to work and
      * changes nothing, which this file has already been caught by twice.
      */
     uInkLift: { value: urlNumber("inklift", LABEL_INK_LIFT) },
-    uTealStrength: { value: urlNumber("tealstrength", LABEL_TEAL_STRENGTH) },
     uInkNeutral: { value: urlNumber("inkneutral", LABEL_INK_NEUTRAL) },
     /**
      * The resting labels' ICE BLUE (Carl, 17 October 2026) — and ⚠ NOT CONVERTED
-     * TO LINEAR, unlike `uLabelTealInk` above. It is mixed in after
+     * TO LINEAR (the retired teal uniform was). It is mixed in after
      * dithering_fragment, where the pixel is already sRGB-encoded (three r185:
      * tonemapping → colorspace → dithering, and this canvas draws to the screen,
      * not a render target), so it must arrive as the sRGB triple itself.
@@ -534,9 +532,8 @@ function FaceMaterial({
       uniform float uAmber;
       uniform vec3  uGlassFilter;
       uniform float uHover;
-      uniform vec3 uLabelTealInk;
+      uniform vec3  uLabelHoverInk;
       uniform float uInkLift;
-      uniform float uTealStrength;
       uniform float uInkNeutral;
       uniform vec3  uLabelRestInk;
       uniform float uRestCoreLum;
@@ -653,7 +650,9 @@ function FaceMaterial({
           * value, so the teal is as saturated as the white is white.
           *
           * ⚠ BOTH DIALS ARE CONSTANTS AND BOTH ARE CARL'S TO MOVE BY EYE —
-          * see LABEL_INK_LIFT and LABEL_TEAL_STRENGTH.
+          * see LABEL_INK_LIFT and LABEL_TEAL_STRENGTH. (17 October 2026: the
+          * teal and its strength are RETIRED; the hover is platinum, after
+          * lighting. LABEL_INK_LIFT stands.)
           *
           * ⚠ AFTER map_fragment, NOT BEFORE. That chunk samples the map into
           * diffuseColor; injecting ahead of it would be overwritten.
@@ -667,13 +666,11 @@ function FaceMaterial({
 
          diffuseColor.rgb *= 1.0 + (uInkLift - 1.0) * gGlyphMask;
 
-         // The teal, at the glyph's own brightness. uTealStrength scales how
-         // far it travels — and ⚠ IT IS 1.7, SO THIS OVERSHOOTS tealInk rather
-         // than landing on it. mix() does not clamp above 1.0.
+         // ⚠ THE TEAL HOVER THAT WAS HERE IS RETIRED, 17 October 2026 (D-023):
+         // it tinted the ALBEDO, which changed the lit brightness the final
+         // stage scales by. The hover is now the platinum blue, applied after
+         // lighting beside the ice blue (dithering_fragment, below).
          // ⚠ NO BACKTICKS IN THIS COMMENT — see the block-comment above.
-         float liftedLum = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-         vec3 tealInk = uLabelTealInk * liftedLum;
-         diffuseColor.rgb = mix(diffuseColor.rgb, tealInk, uHover * gGlyphMask * uTealStrength);
        }
        #endif`,
     ).replace(
@@ -714,6 +711,7 @@ function FaceMaterial({
           * ⚠ THE HOVER TEAL IS PROTECTED. Neutralising at full strength would
           * cancel the teal too, so the amount is scaled by (1.0 - uHover): a
           * resting glyph is fully neutralised, a hovered one keeps its teal.
+          * (RETIRED 17 October 2026 with the teal — see the end of this comment.)
           *
           * ⚠ AFTER dithering_fragment — the LAST chunk in the fragment chain,
           * so this sees the final lit, tone-mapped, colour-space-encoded pixel.
@@ -727,11 +725,21 @@ function FaceMaterial({
           * of grey. Scaled by uRestCoreLum so a SETTLED core lands on the ice
           * blue itself (see LABEL_REST_CORE_LUM); the traveller still brightens
           * it, which Carl accepted on 10 August.
+          *
+          * ⚠⚠ AND THE HOVER IS HERE TOO NOW — Carl, 17 October 2026 (D-023):
+          * the hover moves from the albedo stage to this one, so a hovered
+          * glyph settles ON its colour (LABEL_INK_HOVER: the corridor's answer
+          * shade, #5F88C8; platinum #3F6DB8 was the first take) rather than
+          * near it. The SAME brightness scale as the ice blue, so the
+          * traveller lifts both alike — Carl: "The ice blue changes and so should
+          * the platinum blue to feel part of the world." The (1.0 - uHover)
+          * guard above is RETIRED: nothing upstream tints the glyph any more, so
+          * there is nothing to protect.
           */
          float litLum = dot(gl_FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
-         float neutralise = uInkNeutral * gGlyphMask * (1.0 - uHover);
-         vec3 restInk = uLabelRestInk * (litLum / uRestCoreLum);
-         gl_FragColor.rgb = mix(gl_FragColor.rgb, restInk, neutralise);
+         float inkScale = litLum / uRestCoreLum;
+         vec3 ink = mix(uLabelRestInk, uLabelHoverInk, uHover) * inkScale;
+         gl_FragColor.rgb = mix(gl_FragColor.rgb, ink, uInkNeutral * gGlyphMask);
        }
        #endif`,
     );
@@ -1498,6 +1506,32 @@ const LABEL_TEX_ASPECT = 4;
 const LABEL_INK_REST = "rgb(255, 255, 255)";
 
 /**
+ * ⛔⛔ THE HOVER IS THE ANSWER SHADE #5F88C8 — Carl, 17 October 2026, on the
+ * first take below: *"I think its too dark Some of the legibility is getting
+ * lost against the blue background. On the cards are possible answers to the
+ * focus question… the slightly lighter shade as the answers rather than the
+ * shade of the question."* — the corridor's ANSWER colour (`globals.css`,
+ * `.enquiry-pdepth-* .enquiry-phrase-answers`), so the hover previews exactly
+ * what the choice becomes. 3.9 : 1 on the satin body (platinum 2.75, ice 11.1).
+ * ⛔ Carl's reasoning for a hover quieter than rest: *"we can assume that the
+ * user has read the answer in the resting state first. Simply hovvering is
+ * confirmation of the users choice. pressing and the rim activation indicates a
+ * choice has been made with the possibility to cancel that choice."*
+ *
+ * The first take, superseded the same day:
+ *
+ * ⛔ THE HOVER IS PLATINUM BLUE #3F6DB8 — Carl, 17 October 2026 (D-023: *"the
+ * cards' labels: ice blue at rest; platinum blue on hover AND while selected"* —
+ * the colour the choice will wear in the corridor's answered lines). Applied
+ * after lighting at the glyph's own lit brightness, so it settles ON this value
+ * and the traveller lifts it a few points, as it lifts the ice blue (Carl: *"The
+ * ice blue changes and so should the platinum blue to feel part of the
+ * world."*). Measured contrast on the satin body rgb(19, 41, 88): 2.75 : 1 —
+ * put to Carl before the build. ⚠ Selection does not hold it yet: `hovered`
+ * is the pointer only (`answer-card-canvas.tsx`, outside this chunk).
+ *
+ * **Everything below is the TEAL this replaced (RETIRED), kept as history:**
+ *
  * ⚠ THE HOVER TEAL, TAKEN FROM THE RAIL AND NOT INVENTED. Carl: *"answer text
  * turns teal slowly when hovered. This echoes the rail system"*, and when asked
  * which teal: *"the same teal that is in the text in the rail system... It is
@@ -1532,10 +1566,11 @@ const LABEL_INK_REST = "rgb(255, 255, 255)";
  * Measured, not argued — the closest clamped ink `rgb(0,190,186)` reaches 68.1%
  * and a maximal `rgb(0,255,250)` only 47.9%, both short of 79.4%.
  */
-const LABEL_INK_HOVER = "rgb(160, 220, 218)";
+const LABEL_INK_HOVER = "#5F88C8"; // the ANSWER shade; was #3F6DB8 (first take, 17 Oct), rgb(160, 220, 218) the rail's teal before
 
 /**
- * How slowly the teal arrives, as an exponential time constant in seconds.
+ * How slowly the hover colour arrives, as an exponential time constant in seconds.
+ * (Written for the teal; unchanged for the platinum, 17 October 2026.)
  *
  * ⚠ *"SLOWLY"* IS CARL'S WORD AND THIS IS THE DIAL FOR IT. 0.42s reaches ~63%
  * of the way in that time and settles around a second — a deliberate colour
@@ -1652,6 +1687,12 @@ const LABEL_REST_ICE = "#CFE6FF";
 const LABEL_REST_CORE_LUM = 235 / 255;
 
 /**
+ * ⛔ RETIRED 17 October 2026 WITH THE TEAL (D-023) — the constant and its
+ * `?tealstrength=` door are removed. An extrapolation past the ink was needed
+ * only because the teal tinted the albedo, where ACES crushed it; the platinum
+ * is applied after lighting and lands on its value with no dial. Its history,
+ * kept:
+ *
  * How far the hover travels toward the rail's teal — `?tealstrength=`.
  *
  * ⚠⚠ 1.7 — CARL'S VALUE, SET BY EYE ON 20 AUGUST 2026. Tested across all five
@@ -1684,8 +1725,9 @@ const LABEL_REST_CORE_LUM = 235 / 255;
  * the glyph's ACES-crushed luminance, so it arrived at about a quarter of its
  * intended shift — red moved 22 against a target of 78, and Carl saw it: *"The
  * teal colour isnt strong enough."* It is now driven from the LIFTED value.
+ *
+ * (was: const LABEL_TEAL_STRENGTH = 1.7 — Carl's, by eye, 20 August 2026)
  */
-const LABEL_TEAL_STRENGTH = 1.7;
 
 /**
  * ⛔ `?cardrim=glass` — THE RIM AS ONE CLEAR GLASS TUBE (D-051/D-029 reopened by Carl, 15 October 2026: *"the glass tube
