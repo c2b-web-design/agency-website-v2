@@ -346,6 +346,19 @@
   transform: translateY(calc(38 * var(--vh) - 5rem)); /* `38vh` before D-097 — `var(--vh)` is the window under the zoom. */
 }
 
+/* ⛔ THE HEADING TURNS ICE BLUE ON BEGIN — Carl, 17 October 2026 (D-023): "The white problem.
+   have it transition to ice blue using the same timing as the logo transition and image fade
+   in"; on being shown the two differ (the logo's wipe 1.3s, the planet's fade 2.6s): "Lets
+   make it the slower value. the change should be incremental from white to ice blue." So:
+   white in the opening, #cfe6ff from Begin (the shell's class flips on `stage !== "opening"`,
+   the planet's beat), over the planet's own value, `--enquiry-crawl-fade`, linear as the
+   planet's. Ice blue = the question in focus and the cards' resting labels. Outranks the h1's
+   `text-white` utility. */
+.enquiry-shell-active .enquiry-heading {
+  color: #cfe6ff;
+  transition: color var(--enquiry-crawl-fade) linear;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .enquiry-shell-opening,
   .enquiry-shell-active {
@@ -1616,55 +1629,39 @@
 /* sits one rung below the deepest memory at each step (d2 below depth-1, d3 below    */
 /* depth-2, ...). translateY is set so the 2-line heading's BOTTOM clears the deepest */
 /* memory's question-row top with air. */
-.enquiry-heading-d2 { font-size: 14px; line-height: 1.2; opacity: 0.34; transform: translateY(5rem); }
-.enquiry-heading-d3 { font-size: 12px; line-height: 1.2; opacity: 0.22; transform: translateY(2.9rem); }
-.enquiry-heading-d4 { font-size: 10px; line-height: 1.2; opacity: 0.14; transform: translateY(1.5rem); }
-.enquiry-heading-d5 { font-size: 8px;  line-height: 1.2; opacity: 0.08; transform: translateY(0.5rem); }
-.enquiry-heading-d6 { font-size: 7px;  line-height: 1.2; opacity: 0.05; transform: translateY(0.1rem); }
+/* ⛔ OPACITY = THE CORRIDOR'S LADDER AT THE SAME DEPTH — Carl, 17 October 2026 (D-023): "the     */
+/* heading much match the rules of perspective weve set with its opacity." Heading dN sits at     */
+/* corridor depth N, so it takes `.enquiry-pdepth-N .enquiry-phrase-travel`'s opacity: d2 0.42,    */
+/* d3 0.22, d4 0.10, d5 0.045. d6 has no corridor rung (the corridor stops at depth 5): 0.02       */
+/* continues the ladder's last ratio (×0.45) so it stays BELOW d5 — the old 0.05 sat above it.    */
+/* WAS 0.34 / 0.22 / 0.14 / 0.08 / 0.05 — its own ladder, brighter than the lines it sits behind  */
+/* at every depth but d3. ⚠ The phone block (max-width 639px) keeps its own heading values:      */
+/* phones are the mastering pass's (D-094).                                                        */
+.enquiry-heading-d2 { font-size: 14px; line-height: 1.2; opacity: 0.42;  transform: translateY(5rem); }
+.enquiry-heading-d3 { font-size: 12px; line-height: 1.2; opacity: 0.22;  transform: translateY(2.9rem); }
+.enquiry-heading-d4 { font-size: 10px; line-height: 1.2; opacity: 0.10;  transform: translateY(1.5rem); }
+.enquiry-heading-d5 { font-size: 8px;  line-height: 1.2; opacity: 0.045; transform: translateY(0.5rem); }
+.enquiry-heading-d6 { font-size: 7px;  line-height: 1.2; opacity: 0.02;  transform: translateY(0.1rem); }
 
 /* Q5 -> Q4 transition ─────────────────────────────────────────────────── */
 
-/* Ghost: absolutely overlays the opening heading, fades out 80-520ms */
-.enquiry-opening-ghost {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  text-align: center;
-  pointer-events: none;
-  animation: eq-q5q4-ghost-out 680ms linear 80ms both;
-}
-
-/* Corridor ghost — absolutely positioned so it does not contribute layout height. */
-/* Real h1 keeps the layout space; this ghost handles the corridor fade-in visual. */
-.enquiry-corridor-ghost {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  text-align: center;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Real h1 hidden throughout q5Transition (headingDepth 0 or >0) */
-.enquiry-heading-hidden { opacity: 0; }
-
-/* Corridor heading fades in at its final d2 position, 0-360ms. */
-/* opacity: 0 here wins over enquiry-heading-d2's 0.34 (higher specificity), */
-/* preventing a one-frame flash before the animation initializes on mount. */
-.enquiry-heading-d2.enquiry-heading-entering {
-  opacity: 0;
-  animation: eq-q5q4-heading-in 600ms linear 0ms both;
-}
-
-@keyframes eq-q5q4-ghost-out {
-  from { opacity: 1; }
-  to   { opacity: 0; }
-}
-@keyframes eq-q5q4-heading-in {
-  from { opacity: 0; }
-  to   { opacity: 0.34; }
+/* ⛔ THE HEADING TRAVELS — Carl, 17 October 2026 (D-023): "if the heading can move to that  */
+/* position, shrinking as it goes it will look as if its 'travelled' back to take its        */
+/* position 'overseeing' the q+a"; "use ease in/out as the other travelling text does."      */
+/* ONE element: on the first step the real h1 goes from the opening's size and place         */
+/* (text-4xl, leading 1.15, opacity 1, no transform) to d2's (14px, 1.2, 0.42, 5rem down),    */
+/* on the question lines' own timing (`.enquiry-phrase-anim`, below): size and place eased    */
+/* over 900ms, OPACITY LINEAR over 900ms — as the lines' `.enquiry-phrase-travel` does.       */
+/* Two classes so it outranks `.enquiry-shell-active .enquiry-heading`'s colour transition;  */
+/* `color` is carried in the list so a step taken inside Begin's 2.6s does not cut it short. */
+/* WAS: two aria-hidden ghost copies cross-fading (a large one out 80–760ms, a small one in   */
+/* 0–600ms, their letters under 10px apart — measured) while the real h1 hid at opacity 0.   */
+.enquiry-heading-d2.enquiry-heading-travelling {
+  transition: font-size 900ms cubic-bezier(0.37, 0, 0.63, 1),
+              line-height 900ms cubic-bezier(0.37, 0, 0.63, 1),
+              transform 900ms cubic-bezier(0.37, 0, 0.63, 1),
+              opacity 900ms linear,
+              color var(--enquiry-crawl-fade) linear;
 }
 /* Used by .enquiry-phrase-answers-enter (summary fade-in as a phrase recedes). */
 @keyframes eq-q5q4-content-in {
@@ -1673,12 +1670,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .enquiry-opening-ghost,
-  .enquiry-heading-d2.enquiry-heading-entering {
-    animation: none;
-    opacity: 1;
+  /* The travel and the colour change land at once. (`corridorMoving` never sets under reduced
+     motion, so the travelling class never applies there; this is the belt to that brace.) */
+  .enquiry-heading-d2.enquiry-heading-travelling,
+  .enquiry-shell-active .enquiry-heading {
+    transition: none;
   }
-  /* .enquiry-heading-hidden intentionally excluded: must stay opacity 0 */
   .enquiry-m-heading-line1-mask,
   .enquiry-m-heading-line2-mask,
   .enquiry-m-heading-line3-mask,
@@ -1711,7 +1708,12 @@
 .enquiry-heading-deepening.enquiry-heading-d4,
 .enquiry-heading-deepening.enquiry-heading-d5,
 .enquiry-heading-deepening.enquiry-heading-d6 {
-  transition: font-size 840ms linear, opacity 840ms linear, transform 840ms linear;
+  /* ⛔ THE QUESTION LINES' OWN TIMING — Carl, 17 October 2026 (D-023), so the heading recedes
+     WITH them at every step: size and place eased over 900ms (`cubic-bezier(0.37, 0, 0.63, 1)`),
+     opacity linear over 900ms, as `.enquiry-phrase-anim` does. Was 840ms linear on all three. */
+  transition: font-size 900ms cubic-bezier(0.37, 0, 0.63, 1),
+              transform 900ms cubic-bezier(0.37, 0, 0.63, 1),
+              opacity 900ms linear;
 }
 
 @media (prefers-reduced-motion: reduce) {

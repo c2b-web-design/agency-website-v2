@@ -2257,8 +2257,10 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
    * Q5 carries real selection again — see the `?skip=` note above.**
    */
   const skipDoorHeadingHidden = stage === "complete" && headingDepth === 0;
-  // The first recede (full opening heading -> d2) uses the ghost crossfade; later steps just
-  // deepen via the transition. memory.length === 1 while the first step is in flight.
+  // The first recede (full opening heading -> d2) TRAVELS — the heading itself moves and
+  // shrinks (`enquiry-heading-travelling`; was a ghost cross-fade until 17 October 2026);
+  // later steps deepen via the transition. memory.length === 1 while the first step is in
+  // flight (corridorMoving holds for the step's 1150ms, longer than the 900ms travel).
   const firstRecede = corridorMoving && memory.length === 1;
 
   // One ordered list of every rendered phrase (answered questions + the active one), built
@@ -2588,28 +2590,23 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
         {/* Heading — normal flow at the top of the shell (anchored). In active */}
         {/* states its size changes via depth classes, but it never moves the */}
         {/* absolutely-positioned active slot below it. */}
-        {firstRecede && (
-          <h1
-            className="font-semibold tracking-tight text-white text-3xl sm:text-4xl leading-[1.15] enquiry-opening-ghost"
-            aria-hidden="true"
-          >
-            <div>{HEADING_LINE1}</div>
-            <div>{HEADING_LINE2}</div>
-          </h1>
-        )}
-        {firstRecede && headingDepth > 0 && (
-          <h1
-            className={`font-semibold tracking-tight text-white enquiry-heading-d${headingDepth} enquiry-heading-entering enquiry-corridor-ghost`}
-            aria-hidden="true"
-          >
-            <div>{HEADING_LINE1}</div>
-            <div>{HEADING_LINE2}</div>
-          </h1>
-        )}
+        {/* ⛔ ONE HEADING, NO GHOSTS — Carl, 17 October 2026 (D-023). The first
+            recede was a cross-fade between two aria-hidden copies (a large one
+            fading out 80–760ms over a small one fading in 0–600ms, under 10px
+            apart, measured) while this h1 hid. Carl: "We have a start position
+            and an end position. if the heading can move to that position,
+            shrinking as it goes it will look as if its 'travelled' back to take
+            its position 'overseeing' the q+a." So THIS h1 now travels: on the
+            first step it takes `enquiry-heading-travelling`, whose transition
+            carries it from the opening's size and place to d2's, eased as the
+            question lines travel (globals.css). Later steps deepen on that same
+            timing, and at every depth its opacity is the corridor's own.
+            `enquiry-heading` names it for its colour (white → ice blue on
+            Begin, globals.css). */}
         <h1
-          className={`font-semibold tracking-tight text-white${
+          className={`enquiry-heading font-semibold tracking-tight text-white${
             headingDepth > 0
-              ? ` enquiry-heading-d${headingDepth}${firstRecede ? " enquiry-heading-hidden" : ""}${corridorMoving && !firstRecede ? " enquiry-heading-deepening" : ""}${stage === "complete" ? " enquiry-heading-complete" : ""}`
+              ? ` enquiry-heading-d${headingDepth}${firstRecede ? " enquiry-heading-travelling" : ""}${corridorMoving && !firstRecede ? " enquiry-heading-deepening" : ""}${stage === "complete" ? " enquiry-heading-complete" : ""}`
               : " text-3xl sm:text-4xl leading-[1.15]"
           }`}
           // ⛔ THE DEV DOOR ONLY — see `skipDoorHeadingHidden`. Hidden rather
