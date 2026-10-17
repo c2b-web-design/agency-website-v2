@@ -107,6 +107,16 @@ Possible future areas include:
 
 The goal is not to sell AI for its own sake. The goal is to help businesses use technology carefully, profitably, and under human control.
 
+### 4a\. The business plan, in Carl's words (17 October 2026)
+
+Added on Carl's instruction. Three points the section above did not carry:
+
+* **Fewer clients, deeper relationships.** *"My business plan is simple. Its not to get 100 clients its to get fewer and build relationships."*
+* **Web design is how the door is knocked on.** *"A website is my front door and a clients front door. Web Design is a way to knock on that door."*
+* **The origin, and the target.** *"I first got this idea last year when everyone was using N8N. Im fully aware of the functionalty and improvements AI can bring to business. I want to target small to medium size businesses, who AI will reach last."*
+
+Read with §5: businesses reached last are often reached by careless implementations — *"Careless AI implementation can damage confidence and make a business less likely to adopt useful technology in future."* Reaching them first, calmly and under human control, is the position.
+
 \---
 
 ## 5\. Human-First AI Ethos

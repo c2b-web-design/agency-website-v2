@@ -517,3 +517,35 @@ is the difference between *we build it this way* and *here is the tool that prov
 way*.**
 
 ⛔ **NOT DECIDED. Recorded so the question is on the table when the extraction is planned.**
+
+---
+
+# ⛔ WHEN, AND THE QUALITY BAR — Carl, 17 October 2026
+
+> *"Thats why after the 'mastering' of our site we will need to workout the template extraction
+> or the extraction of c2b info. The idea is to have a template always empty, we clone it for each
+> client. In doing that we must make sure the template is as error free as is possible."*
+
+**When:** the extraction is worked out **after the mastering pass** (D-035) — which itself comes
+after the 19 November 2026 deadline. Not before; nothing here changes current work.
+
+**The bar: the template as error-free as possible.** ⚠ **The reason it matters more for the
+template than for any one site: a template defect is CLONED into every client.** A bug in a site
+is one bug; a bug in the blueprint is one bug per client, found separately, by each.
+
+**What "error-free" will have to mean for an EMPTY template — the Builder's reading, for the
+planning session, not decided:**
+- **A clean baseline of its own.** Today's accepted lint error (`enquiry-opening.tsx`) is C2B site
+  code and leaves with the extraction — the empty template should start at **zero errors, zero
+  warnings**, with no inherited exceptions.
+- **The guards point at nothing that has left.** `.claude/protected-files.json` lists C2B site files
+  (`enquiry-opening.tsx`, `answer-card-mesh.tsx`, …). In an empty template those paths are gone;
+  the list must be rebuilt for what the template actually holds, or the guard protects nothing.
+- **Proven instruments.** `verify/proven.json` is EMPTY today (VERIFY-UNPROVEN, D-064) and most
+  harnesses are welded to this site (Open question 2). The template needs checks that prove the
+  TEMPLATE works when empty — not C2B's corridor.
+- **No stale records.** Governance files, comments and memory that name C2B's site would mislead a
+  client workshop exactly as a stale comment misleads here (`context-rules.md`, "A stale comment is
+  an instrument").
+- **A clone test before it is ever used.** Clone it fresh, `npm ci`, build, lint, run the hooks,
+  then the .wav test above — the clean-checkout lesson of 8 October, applied to the template itself.
