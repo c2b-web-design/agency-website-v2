@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-079 — `/start`'s Three Open Takes: Field Labels, Hover Text, Card Exit (D-023): "Meet Approval"
+
+**Date:** 2026-10-19
+**Reviewer:** Human Founder
+**Subject:** `/start` — the client-info field labels at full ice `#cfe6ff` (R-078's take, option b); the cards' hover/selected label shade `#5F88C8` replacing the teal (R-076); the card exit with `CARD_EXIT_HEADROOM_MS` at 1149 ms (was 249 ms on 18 August) and the settled beat before the reveal at 250 ms.
+
+**Carl's verdict, verbatim:** *"The labels are good and meet approval, the teal hocer text has been changed. again approved. The card exit is good, the start section needs only mastering and optimising for phone and tablet etc. That will be done at site completion."*
+
+**Findings:**
+
+- ✔ **Field labels: "meet approval"**. ✔ **Hover text: "again approved"**. ✔ **Card exit: "good"**, the word he used, recorded at that level.
+- ⛔ **`/start` waits only for mastering and phone/tablet, at site completion** (D-035, D-094). Not a master.
+- `verify/hover-teal.mjs`, `verify/teal-core.mjs` (tested the retired teal) deleted on Carl's word; in git history at `9455be9`.
+
+---
+
 ## R-078 — `/start`'s Last White Texts To Ice Blue, And The Nav's Fade Made Smooth (D-023): "That's Fixed It"
 
 **Date:** 2026-10-17
