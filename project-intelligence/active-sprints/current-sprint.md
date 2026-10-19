@@ -194,7 +194,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-17 — `/start` closed out (R-073 – R-078): the corridor text's colour in chunks, the heading travelling as one element, the recession at half speed; protected files relocked, the chunk closed to code. Carl: complete for all intents and purposes; activating Send open (needs C2B's domain and mailbox first).*
+*Last updated: 2026-10-19 — home §2 and §3 rewritten as us and centred (R-080); the ornate corners designed on `/proto/corner` — shape, gold and platinum blue approved (R-081 – R-083); the structural note with the Architect. Not on the page.*
+
+*Previously: 2026-10-17 — `/start` closed out (R-073 – R-078): the corridor text's colour in chunks, the heading travelling as one element, the recession at half speed; protected files relocked, the chunk closed to code. Carl: complete for all intents and purposes; activating Send open (needs C2B's domain and mailbox first).*
 
 *Previously: 2026-10-16 — the planet out of the opening, fading in on Begin (R-072), and the space images' loading on existing beats, pushed `653ca99`; the corridor text's three.js conversion WITHDRAWN by Carl — next: a colour change only (D-023, 16 October).*
 

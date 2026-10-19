@@ -1,8 +1,8 @@
-# Structural note — the ornate corners on the home page (19 October 2026) — VERSION 2
+# Structural note — the ornate corners on the home page (19 October 2026) — VERSION 3
 
 **For:** Carl, to route to the Architect (Carl: *"we will consult the architect, get another pair of eyes on it."*).
 **Status:** PROPOSED — nothing built on the page. The bench (`/proto/corner`) is approved through pass 2.
-**Version 2 (+ Carl's two answers, the same day):** amended after a PRE-REVIEW Carl pasted in (19 October) — its points 1–9 and 11 are folded in below, each
+**Version 3:** REVIEW 2 folded in (the section at the end; decision 4 rewritten). **Version 2 (+ Carl's two answers, the same day):** amended after a PRE-REVIEW Carl pasted in (19 October) — its points 1–9 and 11 are folded in below, each
 checked against the code first (marked ✔ where verified, ⚠ where corrected). Its point 10 (the hero) is Carl's to answer.
 Version 1 is in git at `f2a6aff`.
 **CLAUDE.md §5a triggers:** new instances of an expensive resource (WebGL contexts) on a page that has one today; a new
@@ -69,11 +69,15 @@ per object for a negative determinant; 28 draw calls is trivial; an `InstancedMe
 3. **FRAMES — the button's `Ticker`, reused (pre-review 11).** Not "`frameloop="demand"`" alone, which would read as a
    contradiction beside a moving light: `demand` plus the `Ticker` — continuous only while that grid is on screen; still
    under reduced motion.
-4. **⛔ WHO OWNS THE BORDER AT RUNTIME (pre-review 4).** `app/page.tsx` is a SERVER component; the borders are static classes.
-   **Proposed:** the server HTML KEEPS the 1-px `border-neutral-800` (so no-JS, no-WebGL and the moment before the first
-   frame all show the approved pre-D-100 box); the corner canvas, once it has drawn its first frame, sets a data attribute on
-   its wrapper and a CSS rule hides the borders under it. A lost context removes the attribute → the border returns.
-   ⚠ **Rejected:** making the boxes client components — it changes their lifetime (§5a).
+4. **⛔ WHO OWNS THE BORDER AT RUNTIME — REWRITTEN IN VERSION 3 around the per-box sequence (review 2, points 2–4).**
+   `app/page.tsx` is a SERVER component; the borders are static classes. **Proposed:** the server HTML KEEPS each box's 1-px
+   `border-neutral-800` and MARKS each box explicitly (`data-corner-box`, not a structural selector). The new `relative`
+   wrapper round each grid is the CLIENT component, the server grid passed in as `children`; it owns the reveal through an
+   attribute React controls (e.g. `data-revealed="2"`), and a CSS rule hides the borders of the first n boxes — no
+   server-rendered node is changed imperatively. ⛔ **Hidden with `border-color: transparent`, NEVER `border: none` /
+   `border-width: 0`** — removing it shrinks each box 2 px, fires the observer and re-places the corners mid-fade. The trigger
+   is ARRIVAL (decision 5), box by box — not the first frame. A lost context resets the attribute → the borders return.
+   ⚠ **Rejected:** making the boxes themselves client components — it changes their lifetime (§5a).
 5. **THE COLD LOAD (pre-review 5).** ✔ Smaller than version 1 implied: §2 and §3 sit below a full-window hero, and `demand`
    draws one frame on mount whether on screen or not (the `Ticker` gates only the frames after), so on a normal arrival the
    corners are drawn long before anyone scrolls there. **The case that matters is the DEEP LINK** — the header nav from
@@ -132,6 +136,53 @@ per object for a negative determinant; 28 draw calls is trivial; an `InstancedMe
 material values out of the bench so the page and the bench read one copy), `components/home/corner-geometry.ts`,
 `corner-bench.tsx`; and — if (b) — a bake script and its outputs in `public/`.
 
+## VERSION 3 — REVIEW 2 FOLDED IN (19 October)
+
+Carl's two answers (the hero is WebGL; the corners fade in box by box) create the new issues. Each checked.
+
+- **⛔ THE FADE'S METHOD (review 2.1) — a plain `opacity` fade would ERODE, not fade.** ✔ Verified in three.js: `diffuseColor.a`
+  starts as `opacity`, the alpha map multiplies into it, then `alphaTest` (0.5) discards — so nothing shows until ~0.5, then
+  the outline grows out from the mask's thick parts. **Method:** a per-box FADE UNIFORM multiplied into the alpha AFTER the
+  test (one program; a material or uniform per box — four in §2, three in §3), with transparency on for the fade's duration.
+- **Decisions 4 and 5 reconciled (review 2.2–2.4):** decision 4 above, rewritten. *"Drawn long before anyone scrolls there"*
+  now means only that the corners are READY by arrival — not what is seen.
+- **"ARRIVED AT" DEFINED (review 2.5) — for Carl and the build:** not `canvasOnScreen` (one pixel visible — most of the
+  sequence would play below the fold). Proposed: the grid's CENTRE crossing a line in the window (a threshold to tune). Open
+  for Carl: does it replay on scrolling back within the page, on navigating back, both, or neither? Under reduced motion: an
+  instant swap, or one short fade of everything at once? (Opacity fades are usually acceptable under reduced motion — Carl's
+  call, not a default.)
+- **THE HANDOVER IS DESIGNED, SO IT IS JUDGED (review 2.6, R-051):** per box, does the border FADE OUT as its corners fade in
+  (a crossfade), or switch off at the start of its fade? ⛔ **Judged on the bench before the page.**
+- **⛔ STARTUP COLLIDES WITH THE HERO'S OPENING (review 2.7 — the one most likely to change the structure).** At load, the
+  corners' SETUP (not drawing) lands in the first seconds of the hero: up to two more context creations (~67 ms each, the
+  Next step button's figure), their PMREMs, the relief build (60–90 ms; more on a phone), the HDRI decode. The arrival-
+  triggered fade removes the need to draw early, so **the corner canvases can MOUNT ON APPROACH** — an `IntersectionObserver`
+  with ~one window of margin, and/or not before the hero's first frame. ⚠ **A small new mechanism, stated as one.** The deep
+  link still mounts at once (the grid is already on screen).
+- **THE DEEP LINK'S WAIT, STATED (review 2.8):** on `/#services` or `/#work` the sequence starts only after the context, the
+  HDRI, the build and the first frame; the BORDER carries that wait. Acceptable — the build's measurement reports the time
+  from navigation to the first box starting.
+- **Smaller (review 2.10):** ✔ the mask has no mipmaps (`LinearFilter`) and is shrunk ~4× (406 texels → ~97 screen px) — a
+  cut-out under that can step; approved at true size, so watched only if a coarser-mesh take changes the edge. **Four
+  contexts on PHONES (memory per context; iOS Safari) are untested** — flagged with D-094.
+
+## CARL'S ANSWERS TO REVIEW 2 (19 October) — these SETTLE the open points above
+
+Carl: *"1. I agree 2. no, just once. When they arrive they stay there. 3. Whatever is best for visitors in that paryicular
+situation. 4. The line border doesnt have to be there now. The box shape is implied by the corners."*
+
+1. **"Arrived at" = the grid's CENTRE crossing a line in the window** (the line a tuning value) — agreed.
+2. **ONCE PER PAGE LOAD — no replay.** *"When they arrive they stay there."* Scrolling back or away leaves them in place.
+3. **Reduced motion — delegated to the Builder ("whatever is best for visitors"):** no sequence and no stagger; all of a
+   section's corners appear together with ONE SHORT OPACITY FADE (~300 ms). Reduced-motion guidance targets movement (travel,
+   scaling, parallax), not a gentle fade; a fade is kinder than a pop. A take, stated so it can be changed.
+4. ⛔ **NO BORDER AT ALL — the line border is REMOVED from the boxes, not handed over.** *"The box shape is implied by the
+   corners."* → **This SUPERSEDES decision 4's border handling and the handover question:** there is nothing to hide, so no
+   `border-color` rule, no per-box handover to judge, and the reveal state drives only the corners' fade.
+   ⚠ **Consequence, stated so it is not discovered:** with no border in the server HTML, a visitor WITHOUT WebGL or JS, and the
+   deep link's wait before the first frame, see the boxes' TEXT with nothing round it — no box shape until the corners arrive.
+   Recorded as accepted by Carl's ruling; the build reports how long the deep link's bare moment lasts.
+
 ## Asked of the Architect
 
 1. B (grid-scoped) vs C — **weighed with the hero's canvas in view: four contexts under B, three under C** (Carl: the hero is
@@ -140,6 +191,9 @@ material values out of the bench so the page and the bench read one copy), `comp
 3. The ~687k sub-pixel triangles: is a coarser mesh (a bench take for Carl) the right lever, or does the frame time on the page
    decide it?
 4. Anything §5b still misses.
+5. **(v3)** The fade's method (a per-box uniform after the alpha test) and who owns the reveal state (the client wrapper,
+   attributes React controls).
+6. **(v3)** Does the corners' SETUP wait for the hero — mount on approach, after the hero's first frame, or both?
 
 ## Asked of Carl — ANSWERED 19 October
 
