@@ -1,94 +1,136 @@
-# Structural note — the ornate corners on the home page (19 October 2026)
+# Structural note — the ornate corners on the home page (19 October 2026) — VERSION 2
 
 **For:** Carl, to route to the Architect (Carl: *"we will consult the architect, get another pair of eyes on it."*).
 **Status:** PROPOSED — nothing built on the page. The bench (`/proto/corner`) is approved through pass 2.
+**Version 2:** amended after a PRE-REVIEW Carl pasted in (19 October) — its points 1–9 and 11 are folded in below, each
+checked against the code first (marked ✔ where verified, ⚠ where corrected). Its point 10 (the hero) is Carl's to answer.
+Version 1 is in git at `f2a6aff`.
 **CLAUDE.md §5a triggers:** new instances of an expensive resource (WebGL contexts) on a page that has one today; a new
-mechanism (runtime relief-building from an image) that every page load would pay for; an overlay placed over approved
+mechanism (runtime relief-building from an image); state that outlives a page (a module cache); an overlay over approved
 sections. §5b enumeration below.
 
 ## What is being put on the page
 
 D-100: four ornate corners per box instead of the border — **§2's four boxes in gold (16 pieces), §3's three in platinum blue
-(12 pieces): 28.** One shape for all of them (pass 1, R-081: Carl's acanthus bracket traced as a relief, a 24-layout-px reach,
-the long arm along the top), the colour and material per section (pass 2: satin gilt R-082; enamel over metal R-083, *"a bit
-dark… on the page… we should be able to remedy that"*). Pass 3, the light — *"very subtle light… very little motion"* — is
-designed on the page, which is why the structure comes first.
+(12 pieces): 28.** One shape (pass 1, R-081: Carl's acanthus bracket traced as a relief, a 24-layout-px reach, the long arm
+along the top), the colour and material per section (pass 2: satin gilt R-082; enamel over metal R-083 — *"a bit dark… on the
+page… we should be able to remedy that"*). Pass 3, the light — *"very subtle light… very little motion"* — is designed on the
+page, which is why the structure comes first.
 
-**What one corner is:** a 12,697-vertex / 24,520-triangle mesh (the mass), a 406 × 201 object-space normal map (the carving),
-a 406 × 201 mask (the outline, `alphaTest`), and the family buttons' studio HDRI as its reflection (`lib/studio-hdri.ts`). The
-four corners of a box are ONE mesh under mirroring transforms. Built today in the browser from the source photo
-(`brand-assets/c4bf3a09-…jpg`) by `buildCornerRelief` in ~60–90 ms.
+**What one corner is today:** a 12,697-vertex / 24,520-triangle mesh (the mass), a 406 × 201 object-space normal map (the
+carving), a 406 × 201 mask (the outline, `alphaTest`), the family buttons' studio HDRI as its reflection. Built in the browser
+from the source photo (`brand-assets/c4bf3a09-…jpg`, **50 KB**) by `buildCornerRelief` in ~60–90 ms on Carl's machine.
+
+**⚠ THE TOTAL, which version 1 never multiplied (pre-review 6):** 28 × 24,520 = **≈ 687,000 triangles (≈ 355,000 vertices)**
+every frame while the light moves. And they are SMALLER THAN A PIXEL: the mesh steps 2 photo px at `stats.scale` = 0.176
+layout px per photo px — **0.35 layout px a cell, ≈ 0.48 screen px at Carl's zoom 1.36.** The normal map already carries that
+detail. A coarser step (6 photo px ≈ 1 layout px) would cut the count by about nine — ⛔ **but pass 1's shape is approved, so
+that is a BENCH TAKE for Carl's eye, not a quiet optimisation.** A frame time measured on the page goes in the build's record.
 
 **What the home page runs today:** ONE WebGL context — the teal `Who we are` button (§4). It rolls and carries a moving lamp,
-so it draws continuously WHILE ON SCREEN (gated by `canvasOnScreen`; still under reduced motion), a still painted first and
-swapped pixel-identically (the cold-load rule, R-051). (`whoweare-button.tsx`'s header; its `frameloop="demand"` line is
-marked overtaken there.)
+so it draws continuously WHILE ON SCREEN (the `Ticker`, `whoweare-button-scene.tsx`, gated by `canvasOnScreen`; still under
+reduced motion), a still painted first and swapped pixel-identically (R-051). ✔ It reaches the page as a `next/dynamic` chunk
+with `ssr: false` (`whoweare-button.tsx`), so three.js is not in the first-load bundle.
 
 ## Options for how the 28 are drawn
 
 | | Contexts on home | For | Against |
 |---|---|---|---|
-| **A. A canvas per box** (7) | 8 | Each canvas the box's size; trivial placement | ⛔ The mistake this file's rule exists for: 7 more contexts, each paying context creation (the Next step button measured **67 ms** blocked in `CommandBufferProxyImpl::Initialize`, CLAUDE.md §5a worked case 2), 7 PMREMs of the same studio, 7 copies of the textures. **Rejected.** |
-| **B. A canvas per section** (2) — **proposed** | 3 | Each canvas absolute inside its section, scrolling WITH it (no scroll sync), one scene, one PMREM, the corner's geometry/textures uploaded once per context; placement from the boxes' measured rects; each section gated on screen independently | Two contexts, not one; the two sections' scenes are separate (so one light cannot cross from §2 into §3 — not asked for) |
-| **C. One fixed canvas over both sections** (1) | 2 | Fewest contexts | A `position: fixed` canvas must re-place every corner every scroll frame from DOM rects — the corners lag the text by a frame while scrolling (the class of fault `/start`'s persistent host had to engineer around, D-046/D-048), and §5b's `fixed`-containing-block trap (context-rules, 18 August) applies. More machinery for one context saved. |
-| **D. No WebGL — pre-rendered stills** | 1 | Cheapest | Against the brief (*"3D with Three js and very subtle light… very little motion"*): a still cannot carry pass 3's moving light. Stills ARE still needed — see the cold load — but as the first frame, not the design. |
+| **A. A canvas per box** (7) | 8 | Each canvas the box's size | ⛔ 7 more contexts, each paying context creation (the Next step button measured **67 ms** blocked in `CommandBufferProxyImpl::Initialize`, §5a worked case 2), 7 PMREMs of one studio, 7 copies of the textures. **Rejected.** |
+| **B. A canvas per section's GRID** (2) — **proposed** | 3 | Each canvas absolute over its section's grid of boxes, scrolling WITH it (no scroll sync); one scene, one PMREM, one upload of the corner per context; each gated on screen independently | Two contexts, not one; the two scenes are separate (one light cannot cross §2 → §3 — not asked for) |
+| **C. One fixed canvas over both sections** (1) | 2 | Fewest contexts | A `position: fixed` canvas must re-place every corner every scroll frame from DOM rects — the corners lag the text by a frame (the class of fault `/start`'s persistent host had to engineer around, D-046/D-048), and the `fixed`-containing-block trap (context-rules, 18 August) applies. Machinery out of proportion to one context saved. |
+| **D. No WebGL — pre-rendered stills** | 1 | Cheapest | Against the brief: a still cannot carry pass 3's moving light. |
 
-**Proposed: B.** Two canvases, one per section, each `absolute inset-0` inside its `<section>`, `pointer-events-none`,
-`aria-hidden`, drawing its section's 16 or 12 pieces (four meshes per box — the TL/TR/BL/BR mirrors — so mirrored winding is
-handled per object as three.js does today; an `InstancedMesh` would need its own handling for negative determinants).
+⚠ **THE HERO (pre-review 10 — Carl's to answer):** the hero is *"the killer feature… we are going to pull out all the stops"*
+(D-099) and D-098 already records a film with a code logo laid over it — the extruded headline and the logo sharing ONE three.js
+scene. **If the hero is WebGL, B means FOUR contexts on the home page, not three.** B vs C is answered here WITHOUT the hero's
+canvas in view; ⛔ **the Architect should weigh it with the hero, and Carl confirms whether the hero's brief includes a canvas
+— nobody infers it.**
 
-## Decisions inside B that need a second pair of eyes
+**Proposed: B.** Two canvases, each a sibling of its section's grid inside a `relative` wrapper around the grid,
+`absolute inset-0`, `pointer-events-none`, `aria-hidden`; 28 separate meshes (four mirrors per box — three.js turns the winding
+per object for a negative determinant; 28 draw calls is trivial; an `InstancedMesh` would need its own handling).
 
-1. **Where the relief is built.** (a) **At runtime from the photo, once per page, cached at module level** and shared by both
-   canvases (the GPU uploads are still per context) — one source of truth (the photo), ~60–90 ms of main thread once, off the
-   first paint. (b) **Baked offline** into `public/` (normal map, mask, mesh) by a script — no runtime cost, but a SECOND COPY
-   of the relief that must be re-baked after any change (the family stills' rule, R-051: *"RE-RUN THE STILLS SCRIPT AFTER ANY
-   CHANGE"*). **Leaning (a)**, measured on the page before committing to it.
-2. **Placement — one source of truth for the boxes' geometry.** The corners are placed from `getBoundingClientRect()` of each
-   box (layout px via `toLayoutPx`, D-097), re-measured on `ResizeObserver` — never typed. The bench's box size is a bench
-   constant only.
-3. **Frames.** `frameloop="demand"`, gated by `canvasOnScreen` per section; pass 3's slow light motion runs only while that
-   section is on screen; under reduced motion the light is still.
-4. **The cold load (R-051, *"What is approved is what loads"*).** The boxes have NO border once the corners replace it, so until
-   the first frame the boxes are bare. Options: (i) the corners simply arrive with the first frame (a fade, on an existing
-   beat); (ii) a per-section still — ⚠ but the boxes move with the window width, so a pre-rendered still cannot match at every
-   width the way the button's can. **Carl's call; flagged now so it is not discovered at approval.**
-5. **No WebGL / a lost context.** The fallback is the old 1-px `border-neutral-800` — the approved state before D-100 — so a box
-   is never left bare.
-6. **The HDRI.** Already fetched on the home page by the teal button; `loadStudioHdri` caches the decode, so the corners add no
-   download. Each context builds its own PMREM (as the button's does).
+## Decisions inside B
+
+1. **⛔ THE CANVAS IS SCOPED TO THE GRID, NOT THE SECTION (pre-review 1, adopted).** Version 1 put it `inset-0` in the
+   `min-h-[100*var(--vh)]` section — a FULL WINDOW per canvas, antialiased, mostly empty, cleared and composited every frame of
+   pass 3. ⚠ *Corrected figure:* at Carl's window (1920 × 952, DPR 1, zoom 1.36) that is ≈ 1905 × 952 device px each (the
+   pre-review's "1440 × 900 at DPR 2" is not Carl's setup; the point stands). Over the grid, §3's canvas is about a quarter of
+   that. The corners only ever sit inside the boxes' rects.
+2. **PLACEMENT, ONE SOURCE OF TRUTH — and the observer's blind spot (pre-review 2, adopted).** `ResizeObserver` does NOT fire
+   when a box MOVES without resizing — and in a `flex items-center` section the grid's position depends on everything above it
+   (the heading's wrap, `text-balance`, the webfont swap, the intro). Scoped to the grid, the corners' positions depend only
+   on the boxes' sizes and the column tracks, which the observer does cover. ✔ And re-measure after `document.fonts.ready`,
+   as the button does (`whoweare-button.tsx`). Rects via `getBoundingClientRect` → `toLayoutPx` (D-097); never typed.
+3. **FRAMES — the button's `Ticker`, reused (pre-review 11).** Not "`frameloop="demand"`" alone, which would read as a
+   contradiction beside a moving light: `demand` plus the `Ticker` — continuous only while that grid is on screen; still
+   under reduced motion.
+4. **⛔ WHO OWNS THE BORDER AT RUNTIME (pre-review 4).** `app/page.tsx` is a SERVER component; the borders are static classes.
+   **Proposed:** the server HTML KEEPS the 1-px `border-neutral-800` (so no-JS, no-WebGL and the moment before the first
+   frame all show the approved pre-D-100 box); the corner canvas, once it has drawn its first frame, sets a data attribute on
+   its wrapper and a CSS rule hides the borders under it. A lost context removes the attribute → the border returns.
+   ⚠ **Rejected:** making the boxes client components — it changes their lifetime (§5a).
+5. **THE COLD LOAD (pre-review 5).** ✔ Smaller than version 1 implied: §2 and §3 sit below a full-window hero, and `demand`
+   draws one frame on mount whether on screen or not (the `Ticker` gates only the frames after), so on a normal arrival the
+   corners are drawn long before anyone scrolls there. **The case that matters is the DEEP LINK** — the header nav from
+   `/about` to `/#services` or `/#work` lands cold on the section. Design and measure for that. With point 4, what is seen
+   first is the BORDER, then the corners replace it at their first frame. ⚠ Version 1's *"a fade, on an existing beat"* is
+   dropped — these sections have no beat. **Border → corners: an instant swap or a short cross-fade is Carl's call.**
+6. **WHERE THE RELIEF IS BUILT — weighed on equal terms (pre-review 7).**
+   - **(a) Runtime from the photo, module cache.** One source of truth. ⚠ Costs: a NEW download (the 50 KB JPG — version 1's
+     "no download" was true of the HDRI only); its decode and `getImageData`; then ~60–90 ms as ONE long task on Carl's
+     machine, several times that on a phone — unmeasured.
+   - **(b) Baked offline into `public/`** (normal map, mask, mesh). No runtime cost. ⚠ Version 1 weighed it unfairly against
+     R-051's stills: those are rendered pixels compared by eye; a baked relief is a DETERMINISTIC function of the photo and
+     `CORNER_DEFAULTS`, so a verify script can rebuild and byte-compare it — drift becomes detectable.
+   - **(c) A Web Worker** — one source, off the main thread. A new mechanism; §5a review if chosen.
+   **No recommendation pressed** — for the Architect. Whichever: measured on the page, phone throttling included.
+7. **⛔ THE CACHE'S LIFETIME (pre-review 8).** A module-level cache OUTLIVES the page: home → `/about` → home reuses it. Right,
+   but it is *"state that survives a boundary"* (§5a) — stated here. **Disposal: never — it lives for the browser session.**
+   (The bench disposes on unmount, `corner-bench.tsx`; a shared cache cannot, or it would free objects other renderers hold.)
+   GPU uploads stay per context and are freed with their renderer.
+8. **LAZY LOADING (pre-review 9).** The corner canvas is a `next/dynamic` chunk with `ssr: false`, as the button's is — or
+   three.js joins the home page's first-load bundle.
+9. **THE HDRI.** ✔ Already fetched by the teal button at the SAME `room` (0.1) — `loadStudioHdri` caches one fetch and one
+   decode per URL and room; each context builds its own PMREM.
 
 ## §5b — what the current structure provides, and how each is preserved
 
 | Provided today | How it is preserved |
 |---|---|
-| The boxes' 1-px border separating them | Replaced by the corners (the brief); restored as the fallback (point 5) |
-| The sections' layout, centring and measured vertical balance (`home-s3-vertical-balance-19-october.mjs`) | The canvas is absolutely positioned — out of flow; no box, padding or gap changes. Re-measured after the build |
-| Text selection, reading order, screen readers | `pointer-events-none`, `aria-hidden` on the canvas; the boxes' text untouched |
-| The clearance between ornament and text | The 24-px reach inside the measured 35-px gap (§3's tightest box); ⚠ re-measured on §2's wider boxes and at other widths |
-| The `#services` / `#work` anchors and the header nav | Unchanged — the canvas is inside the sections, not around them |
-| D-097's zoom | Canvases in LAYOUT px (`offsetSize`), DPR × zoom (`useCanvasDpr`), rects via `toLayoutPx` — as every canvas on the site |
-| The teal button's own context, still and swap in §4 | Untouched; a separate component in a separate section |
-| Phones (one column under 768 px) | Placement is from measured rects, so stacked boxes still get their corners; ⚠ judged at mastering (D-094) |
-
-⚠ **Not enumerable from the code alone:** paint order relative to anything Carl adds to these sections later. Stated as a
-limit, not an answer.
+| The boxes' 1-px border separating them | Kept in the server HTML; hidden only once the corners have drawn (decision 4) |
+| The sections' layout, centring and measured vertical balance | The canvas is absolute — out of flow. ⚠ The wrapper is new markup round the grid: re-measured after the build |
+| ⛔ **No section or grid is `position: relative` today** (pre-review 3) | Adding it to the grid's wrapper makes `inset-0` work — and makes the wrapper the containing block for ANY future absolute descendant. Stated so it is not discovered |
+| ⛔ **Paint order** (pre-review 3) | A positioned canvas paints ABOVE the non-positioned text. Harmless here (`pointer-events-none`, no overlap) — but it is the "provided by where it sits" case: anything later placed under it in the grid paints beneath the corners |
+| Text selection, reading order, screen readers | `pointer-events-none`, `aria-hidden`; the text untouched |
+| The clearance between ornament and text | ✔ **MEASURED NOW, not at mastering (pre-review 11)** (`home-box-corner-space-19-october.mjs <width>x<height>`): Carl's window 35 layout px; tablet 768 px 35; ⛔ **phone 390 px: 27 — the 24-px reach leaves ~3 px of air.** Below 768 px the boxes' padding drops from `p-8` to `p-6`. A known risk, measured |
+| §3 at tablet width | At 768 px §3's boxes are 219 px wide (three columns): two 71.5-px long arms take 143 of 219 — measured, judged at mastering (D-094) |
+| The `#services` / `#work` anchors and the header nav | Unchanged |
+| D-097's zoom | Canvases in LAYOUT px (`offsetSize`), DPR × zoom (`useCanvasDpr`), rects via `toLayoutPx` |
+| The teal button's own context, still and swap in §4 | Untouched — a separate component in a separate section |
 
 ## What it couples to
 
-`lib/studio-hdri.ts` (the shared studio), `lib/canvas-on-screen.ts` (frame gating), `lib/site-scale.ts` / `use-site-scale.ts`
-(layout px), `components/home/corner-geometry.ts` (the relief), `app/page.tsx` (two mounts, the boxes' border classes),
-`brand-assets/c4bf3a09-…jpg` (the source, now tracked).
+`lib/studio-hdri.ts`, `lib/canvas-on-screen.ts` and the `Ticker` (`whoweare-button-scene.tsx`), `lib/site-scale.ts` /
+`use-site-scale.ts`, `components/home/corner-geometry.ts`, `app/page.tsx` (two grid wrappers, two mounts), `app/globals.css`
+(the border-hiding rule), `brand-assets/c4bf3a09-…jpg` (tracked).
 
 ## Files the build would touch (for Carl to name)
 
-`app/page.tsx` (mounts; border → fallback), a new `components/home/corner-canvas.tsx` (the section canvas), and
-`components/home/corner-geometry.ts` / `corner-bench.tsx` (the material values moved out of the bench into a shared module
-so the page and the bench read one copy — a new `components/home/corner-material.ts`).
+`app/page.tsx`, `app/globals.css`, a new `components/home/corner-canvas.tsx`, a new `components/home/corner-material.ts` (the
+material values out of the bench so the page and the bench read one copy), `components/home/corner-geometry.ts`,
+`corner-bench.tsx`; and — if (b) — a bake script and its outputs in `public/`.
 
 ## Asked of the Architect
 
-1. Is **B** right, or does C's single context justify its scroll-sync machinery here?
-2. Runtime-built relief with a module cache (a) vs an offline bake (b)?
-3. Anything in §5b this misses.
-4. The cold-load option (point 4) — a view to put beside Carl's.
+1. B (grid-scoped) vs C — **weighed with the hero's canvas in view**, once Carl has answered whether there is one.
+2. The relief: (a) runtime with a cache, (b) an offline bake with a byte-compare check, or (c) a worker.
+3. The ~687k sub-pixel triangles: is a coarser mesh (a bench take for Carl) the right lever, or does the frame time on the page
+   decide it?
+4. Anything §5b still misses.
+
+## Asked of Carl
+
+1. **Does the hero's brief include a canvas?** (pre-review 10)
+2. Border → corners at the first frame: an instant swap, or a short cross-fade?
