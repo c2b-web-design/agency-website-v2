@@ -20,20 +20,30 @@
  * `mesh` lights the triangles as built (`flatShading`, no map, no cut outline) — the mass alone. Mirrored corners are the same mesh under a
  * mirroring transform (three.js turns the winding for a negative determinant; the object-space map turns with it).
  * Stats on `window.__cornerBench` for the live-work scripts.
+ *
+ * ⛔ PASS 2 — THE MATERIAL, GOLD FIRST (19 October 2026; Carl: *"lets do ona at a time"*). §2's gold as SATIN GILT — the
+ * soft sheen of gessoed gold leaf that Carl's bracket shows, not the logo's polish (his doubt: *"Im not sure if metal will be
+ * the right choice here"* — answered by roughness: rough metal shows broad soft sheens, not mirror reflections). Starts from
+ * THE LOGO STANDARD (D-088, 15 October): physical gold's F0 (`GOLD_F0_LINEAR`), metalness 1, reflecting the family buttons'
+ * studio (`lib/studio-hdri.ts`) at their values — room 0.1, strength 1, turned 150° — with ONE change: roughness 0.45
+ * (the logo's 0.25, the buttons' 0.4). ⚠ That studio is the JUDGING light for this pass; the real light and its small motion
+ * are pass 3. The clay's lamps are off in `gold` (metal is lit by what it reflects).
  */
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, use, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, OrthographicCamera, PerspectiveCamera } from "@react-three/drei";
 import bracket from "../../brand-assets/c4bf3a09-80f3-4b2c-b88a-925f08e9c26f.jpg";
 import { buildCornerRelief, CORNER_DEFAULTS, CORNER_LIMIT_PX, type CornerParams, type CornerStats } from "./corner-geometry";
 import { useCanvasDpr } from "@/lib/use-site-scale";
+import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
+import { GOLD_F0_LINEAR } from "@/components/about/logo-mark-material";
 
 export type CornerBenchFlags = { view?: string; mode?: string; border?: boolean; guides?: boolean; az?: number; el?: number; orient?: string };
 
 const VIEWS = ["box", "close", "oblique"] as const;
 type View = (typeof VIEWS)[number];
-const MODES = ["clay", "mesh", "zebra", "normals"] as const;
+const MODES = ["gold", "clay", "mesh", "zebra", "normals"] as const;
 type Mode = (typeof MODES)[number];
 
 /** ⛔ §3's centre box at Carl's window, measured 530 × 267 screen px at zoom 1.36 → layout px. The tightest box: 48
@@ -45,6 +55,30 @@ const TEXT_EDGE_PX = 35;
 const CLOSE_ZOOM = 7;
 
 const CLAY = { color: "#8a8a8a", roughness: 0.6 } as const;
+/** ⛔ PASS 2's first take — the logo standard's studio values; roughness the one change (satin gilt). For Carl's eye. */
+const GOLD_DEFAULTS = { roughness: 0.45, envInt: 1, yaw: 150, room: 0.1 };
+type Gold = typeof GOLD_DEFAULTS;
+type Placement = { key: string; position: [number, number, number]; scale: [number, number, number] };
+
+/** The gold pieces: suspend until the studio is decoded, so nothing draws black first. */
+function GoldPieces({ built, gold, placements }: { built: Built; gold: Gold; placements: Placement[] }) {
+  const hdri = use(loadStudioHdri(STUDIO_HDRI_SRC, gold.room));
+  const material = useMemo(() => {
+    const m = new THREE.MeshPhysicalMaterial({
+      metalness: 1, roughness: gold.roughness, envMap: hdri, envMapIntensity: gold.envInt,
+      normalMap: built.normalMap, normalMapType: THREE.ObjectSpaceNormalMap, alphaMap: built.alphaMap, alphaTest: 0.5,
+    });
+    m.envMapRotation.set(0, (gold.yaw * Math.PI) / 180, 0);
+    m.color.setRGB(GOLD_F0_LINEAR[0], GOLD_F0_LINEAR[1], GOLD_F0_LINEAR[2], THREE.LinearSRGBColorSpace);
+    return m;
+  }, [hdri, gold, built]);
+  useEffect(() => () => material.dispose(), [material]);
+  return (
+    <>
+      {placements.map((p) => <mesh key={p.key} geometry={built.geometry} material={material} position={p.position} scale={p.scale} />)}
+    </>
+  );
+}
 const KEY_DEFAULT = { az: -55, el: 32 };
 
 declare global {
@@ -126,7 +160,9 @@ type Built = ReturnType<typeof buildCornerRelief> & { ms: number };
 export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
   const dpr = useCanvasDpr([1, 2]);
   const [view, setView] = useState<View>(VIEWS.includes(flags.view as View) ? (flags.view as View) : "box");
-  const [mode, setMode] = useState<Mode>(MODES.includes(flags.mode as Mode) ? (flags.mode as Mode) : "clay");
+  const [mode, setMode] = useState<Mode>(MODES.includes(flags.mode as Mode) ? (flags.mode as Mode) : "gold");
+  const [gold, setGold] = useState<Gold>(GOLD_DEFAULTS);
+  const setG = (k: keyof Gold, v: number) => setGold((g) => ({ ...g, [k]: v }));
   const [border, setBorder] = useState(!!flags.border);
   const [guides, setGuides] = useState(flags.guides ?? true);
   const [az, setAz] = useState(Number.isFinite(flags.az) ? (flags.az as number) : KEY_DEFAULT.az);
@@ -177,7 +213,8 @@ export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
   }, [built, matcap]);
   useEffect(() => () => { for (const m of Object.values(materials)) m.dispose(); }, [materials]);
   useEffect(() => () => { matcap?.dispose(); }, [matcap]);
-  const material = materials[mode];
+  const material = mode === "gold" ? materials.clay : materials[mode];
+  const isGold = mode === "gold";
 
   useEffect(() => {
     if (!built || !stats) return;
@@ -201,7 +238,8 @@ export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
         <label className="flex items-center gap-2">
           mode
           <select value={mode} onChange={(e) => setMode(e.target.value as Mode)} className={select}>
-            <option value="clay">clay</option>
+            <option value="gold">gold — pass 2, satin gilt in the judging studio</option>
+            <option value="clay">clay — pass 1</option>
             <option value="mesh">mesh — the mass alone, triangles as built</option>
             <option value="zebra">zebra — surface continuity</option>
             <option value="normals">normals</option>
@@ -230,8 +268,13 @@ export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
           </div>
           <Canvas className="!absolute inset-0 pointer-events-none" gl={{ antialias: true, alpha: true }} resize={{ offsetSize: true }} dpr={dpr} frameloop="demand">
             <OrthographicCamera makeDefault position={[0, 0, 200]} near={1} far={1000} />
-            <ShapeLight az={az} el={el} />
-            {built && CORNERS.map(({ c, at, s }) => (
+            {!isGold && <ShapeLight az={az} el={el} />}
+            {built && isGold && (
+              <Suspense fallback={null}>
+                <GoldPieces built={built} gold={gold} placements={CORNERS.map(({ c, at, s }) => ({ key: c, position: at(BOX.w, BOX.h), scale: s }))} />
+              </Suspense>
+            )}
+            {built && !isGold && CORNERS.map(({ c, at, s }) => (
               <mesh key={c} geometry={built.geometry} material={material} position={at(BOX.w, BOX.h)} scale={s} />
             ))}
           </Canvas>
@@ -245,8 +288,13 @@ export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
               <PerspectiveCamera makeDefault position={[95, -80, 75]} fov={30} near={1} far={2000} />
             )}
             {view === "oblique" && <OrbitControls target={[30, -16, 0]} enableDamping={false} />}
-            <ShapeLight az={az} el={el} />
-            {built && <mesh geometry={built.geometry} material={material} />}
+            {!isGold && <ShapeLight az={az} el={el} />}
+            {built && isGold && (
+              <Suspense fallback={null}>
+                <GoldPieces built={built} gold={gold} placements={[{ key: "tl", position: [0, 0, 0], scale: [1, 1, 1] }]} />
+              </Suspense>
+            )}
+            {built && !isGold && <mesh geometry={built.geometry} material={material} />}
             {view === "close" && guides && <Guides />}
           </Canvas>
         </div>
@@ -254,7 +302,16 @@ export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2 text-sm">
         <div className="space-y-2">
-          <div className="text-neutral-500">light — rake it across the relief</div>
+          {isGold && (
+            <>
+              <div className="text-neutral-500">gold — physical F0, the logo standard&apos;s studio; ⚠ starting values for Carl&apos;s eye</div>
+              <Slider label="roughness" value={gold.roughness} min={0.05} max={0.9} step={0.01} onChange={(v) => setG("roughness", v)} fmt={(v) => `${v.toFixed(2)}${v === GOLD_DEFAULTS.roughness ? " satin" : ""}`} />
+              <Slider label="studio strength" value={gold.envInt} min={0.2} max={3} step={0.05} onChange={(v) => setG("envInt", v)} />
+              <Slider label="studio turned" value={gold.yaw} min={0} max={359} step={1} onChange={(v) => setG("yaw", v)} fmt={(v) => `${v}°`} />
+              <Slider label="studio room" value={gold.room} min={0.02} max={1} step={0.01} onChange={(v) => setG("room", v)} fmt={(v) => (v === 1 ? "as shot" : v.toFixed(2))} />
+            </>
+          )}
+          <div className="text-neutral-500">light — rake it across the relief (clay modes)</div>
           <Slider label="key azimuth" value={az} min={-90} max={90} step={1} onChange={setAz} fmt={(v) => `${v}°`} />
           <Slider label="key elevation" value={el} min={0} max={85} step={1} onChange={setEl} fmt={(v) => `${v}°`} />
           <div className="text-neutral-500 pt-2">form — ⚠ starting points for Carl&apos;s eye</div>

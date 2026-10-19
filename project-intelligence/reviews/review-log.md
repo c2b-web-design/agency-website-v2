@@ -65,6 +65,21 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-082 — The Ornate Corner, Pass 2: §2's Gold, Satin Gilt (D-100): "Approved"
+
+**Date:** 2026-10-19
+**Reviewer:** Human Founder
+**Subject:** `/proto/corner` `gold` — physical gold F0, metalness 1, roughness 0.45 (satin), reflecting the family buttons' studio (room 0.1, strength 1, turned 150°) as a judging light. Captures: `live-work/screenshots/corner-bench-19-october/gold1-*.png`.
+
+**Carl's verdict, verbatim:** *"The Satin gilt look is very good. There is a difference in the look of the metal we have used for the logo. Approved."*
+
+**Findings:**
+
+- ✔ **Approved** — §2's material. The difference from the logo's polish is noted and kept.
+- ⚠ Judged in the studio only; the real light and its small motion are pass 3. §3's platinum blue is still to come.
+
+---
+
 ## R-081 — The Ornate Corner, Pass 1: The Shape In Clay (D-100): "Approved"
 
 **Date:** 2026-10-19
