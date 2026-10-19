@@ -24,6 +24,25 @@ export const CORNER_GOLD: CornerLook = { roughness: 0.45, envInt: 1, yaw: 150, r
 export const CORNER_BLUE: CornerLook = { roughness: 0.35, envInt: 2, yaw: 150, room: 0.1, coat: 1, coatRough: 0.06, tint: 0.75 };
 export const CORNER_LOOKS: Record<CornerColour, CornerLook> = { gold: CORNER_GOLD, blue: CORNER_BLUE };
 
+/**
+ * ⛔ PASS 3 — THE LIGHT ON THE PAGE (19 October 2026, session 2). Carl: *"On the corners you can see the highlights and
+ * shadows.. All that is needed is simple movement from a light to indicate that the geometry is 3d. Not as dramatic as the
+ * q+a or the client info. just emough to say what these objects are. To give them a little life. The blue corners must be
+ * less dark."*
+ * - ⛔ THE MOVEMENT IS THE STUDIO's, NOT A LAMP's: metal is lit by what it reflects (the logo standard, D-088), so the studio
+ *   drifts in a slow small circle about its approved turn (150°) — `yawDeg` side to side, `pitchDeg` up and down, a quarter
+ *   period apart, once per `periodS`. The softboxes' reflections slide across the carving; the pieces never move.
+ *   Under reduced motion the studio holds at its approved turn.
+ * - ⛔ THE BLUE, LIGHTER BY ITS LIGHT, NOT ITS MATERIAL (R-083's caveat: *"subject it to different lighting conditions we
+ *   should be able to remedy that"*): the page's studio gain per section multiplies the approved strength. The bench keeps
+ *   the approved pass-2 look (gain 1).
+ * ⚠ All takes, for Carl's eye.
+ */
+export const CORNER_LIGHT = {
+  sway: { yawDeg: 20, pitchDeg: 10, periodS: 12 },
+  gain: { gold: 1, blue: 2 } as Record<CornerColour, number>,
+};
+
 /** The metal's colour (linear F0) for a section. */
 export function cornerF0(colour: CornerColour, look: CornerLook): readonly [number, number, number] {
   return colour === "gold" ? GOLD_F0_LINEAR : platinumBlueF0(look.tint);
@@ -65,6 +84,7 @@ export function createCornerMaterial(colour: CornerColour, look: CornerLook, map
 export function createCornerFadeMaterial(colour: CornerColour, maps: CornerMaps, hdri: THREE.Texture): { material: THREE.MeshPhysicalMaterial; fade: { value: number } } {
   const material = createCornerMaterial(colour, CORNER_LOOKS[colour], maps, hdri);
   const fade = { value: 0 };
+  material.envMapIntensity *= CORNER_LIGHT.gain[colour];
   material.transparent = true;
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uCornerFade = fade;

@@ -14,8 +14,11 @@
  *   section's boxes sharing one program. ⛔ RENDERED FROM THE FIRST FRAME AT FADE 0, never `visible={false}` until the reveal —
  *   three.js skips invisible objects, so their programs would link on the frame the fade starts (the answer cards' "Q5 stalls").
  *   `onReady` fires after that first frame: the shaders are compiled by then.
- * - ⛔ FRAMES: `frameloop="demand"` — the light does not move yet (pass 3 is the light), so a frame is asked for only while a
- *   fade is running, on resize, and when the boxes move. On the fallback the frame UNMOUNTS this canvas (one-way).
+ * - ⛔ FRAMES: `frameloop="demand"`. ⛔ PASS 3 (19 October 2026, session 2): the studio DRIFTS (`CORNER_LIGHT`,
+ *   `corner-material.ts`), so while `moving` the family button's `Ticker` is mounted — `/about`'s mechanism, REUSED (the
+ *   structural note, decision 3): continuous frames ONLY while this canvas is on screen in a visible tab. Under reduced
+ *   motion it is not mounted and frames come only from a fade, a resize or the boxes moving. On the fallback the frame
+ *   UNMOUNTS this canvas (one-way).
  * - ⛔ FAILURE → `onFailed` (the frame then falls back to the border, one-way): anything thrown inside the canvas (the photo,
  *   the HDRI, the build — R3F rethrows to its parent, caught by `Guard`), or a lost context. ⚠ A browser with no usable WebGL
  *   fails INSIDE R3F's async setup and may throw nothing here — the frame's DEADLINE is the net for that.
@@ -24,7 +27,8 @@ import { Component, Suspense, use, useEffect, useMemo, useRef, type ReactNode } 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import bracket from "../../brand-assets/c4bf3a09-80f3-4b2c-b88a-925f08e9c26f.jpg";
 import { buildCornerRelief } from "./corner-geometry";
-import { CORNER_LOOKS, createCornerFadeMaterial, type CornerColour } from "./corner-material";
+import { CORNER_LIGHT, CORNER_LOOKS, createCornerFadeMaterial, type CornerColour } from "./corner-material";
+import { Ticker } from "./whoweare-button-scene";
 import { useCanvasDpr } from "@/lib/use-site-scale";
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 
@@ -76,7 +80,7 @@ function fadeAt(i: number, reveal: CornerReveal, now: number): number {
   return 1 - (1 - f) ** 3;
 }
 
-function Pieces({ colour, boxes, reveal, onReady }: { colour: CornerColour; boxes: CornerBox[]; reveal: CornerReveal; onReady: () => void }) {
+function Pieces({ colour, boxes, reveal, moving, onReady }: { colour: CornerColour; boxes: CornerBox[]; reveal: CornerReveal; moving: boolean; onReady: () => void }) {
   const built = use(loadRelief());
   const hdri = use(loadStudioHdri(STUDIO_HDRI_SRC, CORNER_LOOKS[colour].room));
   const size = useThree((s) => s.size);
@@ -93,6 +97,12 @@ function Pieces({ colour, boxes, reveal, onReady }: { colour: CornerColour; boxe
   const reported = useRef(false);
   useFrame(() => {
     const now = performance.now();
+    // ⛔ the light: the studio's slow small circle about its approved turn (still under reduced motion)
+    const { yawDeg, pitchDeg, periodS } = CORNER_LIGHT.sway;
+    const a = moving ? (now / 1000 / periodS) * Math.PI * 2 : 0;
+    const yaw = ((CORNER_LOOKS[colour].yaw + yawDeg * Math.sin(a)) * Math.PI) / 180;
+    const pitch = moving ? (pitchDeg * Math.cos(a) * Math.PI) / 180 : 0;
+    perBox.forEach((p) => p.material.envMapRotation.set(pitch, yaw, 0));
     let running = false;
     perBox.forEach((p, i) => {
       p.fade.value = fadeAt(i, reveal, now);
@@ -135,10 +145,12 @@ class Guard extends Component<{ onFailed: () => void; children: ReactNode }, { f
   }
 }
 
-export default function CornerCanvas({ colour, boxes, reveal, onReady, onFailed }: {
+export default function CornerCanvas({ colour, boxes, reveal, moving, onReady, onFailed }: {
   colour: CornerColour;
   boxes: CornerBox[];
   reveal: CornerReveal;
+  /** the light drifts (false under reduced motion) */
+  moving: boolean;
   onReady: () => void;
   onFailed: () => void;
 }) {
@@ -157,8 +169,9 @@ export default function CornerCanvas({ colour, boxes, reveal, onReady, onFailed 
         }}
       >
         <Suspense fallback={null}>
-          <Pieces colour={colour} boxes={boxes} reveal={reveal} onReady={onReady} />
+          <Pieces colour={colour} boxes={boxes} reveal={reveal} moving={moving} onReady={onReady} />
         </Suspense>
+        {moving && <Ticker />}
       </Canvas>
     </Guard>
   );

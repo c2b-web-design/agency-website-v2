@@ -65,6 +65,21 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-085 — The Ornate Corners, Pass 3: The Light — The Studio Drifting, The Blue Lighter (D-100): "Approved"
+
+**Date:** 2026-10-19
+**Reviewer:** Human Founder
+**Subject:** Home `#services` / `#work` — the studio the corners reflect drifts in a slow small circle (±20° / ±10°, 12 s) about its approved turn; the pieces never move; still under reduced motion. §3's studio gain ×2 (the enamel unchanged). Measured: blue / gold lit luminance 0.91; 60 fps on this machine with the light moving.
+
+**Carl's verdict, verbatim:** *"That looks great. The effect it has is for the corners to grow lighter and darker over the time period. The effect is very subtle, different to how we have used light before. The goal was to have them 'caused by the world' They are not simply there, thet are doing something. Approved."*
+
+**Findings:**
+
+- ✔ **Approved** — read by Carl as the corners growing lighter and darker over the period: very subtle, *"caused by the world"* (ethos §14a); the blue's darkness (R-083's caveat) remedied by the light.
+- ⚠ Not watched: Carl's GPU frame time, phones.
+
+---
+
 ## R-084 — The Ornate Corners On The Home Page: §2 Gold, §3 Platinum Blue, Faded In Box By Box (D-100): "Approved"
 
 **Date:** 2026-10-19

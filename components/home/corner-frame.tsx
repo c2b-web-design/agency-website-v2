@@ -62,6 +62,16 @@ export default function CornerFrame({ colour, className = "", children }: { colo
   const noWebGL = useSyncExternalStore(() => () => {}, () => typeof window.WebGLRenderingContext === "undefined", () => false);
   const failed = lost || noWebGL;
   const fail = useCallback(() => setLost(true), []);
+  // ⛔ pass 3's moving light holds still under reduced motion
+  const reduced = useSyncExternalStore(
+    (on) => {
+      const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      mq.addEventListener("change", on);
+      return () => mq.removeEventListener("change", on);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  );
 
   // ⛔ THE REVEAL: arrived AND ready, once — the sequence if the grid is on screen, else set in place. Called from the two
   //   callbacks that complete the pair (never from an effect's body).
@@ -171,7 +181,7 @@ export default function CornerFrame({ colour, className = "", children }: { colo
           and it frees the context and stops every frame. */}
       {approached && boxes && !failed && (
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <CornerCanvas colour={colour} boxes={boxes} reveal={reveal} onReady={onReady} onFailed={fail} />
+          <CornerCanvas colour={colour} boxes={boxes} reveal={reveal} moving={!reduced} onReady={onReady} onFailed={fail} />
         </div>
       )}
     </div>
