@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-081 — The Ornate Corner, Pass 1: The Shape In Clay (D-100): "Approved"
+
+**Date:** 2026-10-19
+**Reviewer:** Human Founder
+**Subject:** `/proto/corner` — take 3: Carl's carved acanthus bracket (`brand-assets/c4bf3a09-…jpg`) traced as a relief (mass by distance from the outline, carving by the photo's light, the moulding drawn clean and mitred), at a 24-px reach, the long arm along the top. Takes 1 (bent tubes) and 2 (banded tubes) rejected on the way. Captures: `live-work/screenshots/corner-bench-19-october/take3b-*.png`.
+
+**Carl's verdict, verbatim:** *"I think the numbers are right as youve called them I originally thought same length for vertical and horizontal bot because of the shape of the recrangle it works better as tou have set it up. Approved."* Earlier, on first sight: *"Ha Ha, now we are talking!"*
+
+**Findings:**
+
+- ✔ **Approved** — the shape pass only. Material and light are passes 2 and 3.
+- ⛔ Takes 1–2 rejected: *"screams old, almost Victorian… like a railing"*; *"if it was more solid… engraving and topology"*.
+- ⚠ Not watched: §2's wider boxes; other widths; the page (the 28-piece structure is a §5a note still to write).
+
+---
+
 ## R-080 — Home §2 (`#services`): The Copy Rewritten As Us, The Section Centred (D-099): "Looks Better"
 
 **Date:** 2026-10-19
