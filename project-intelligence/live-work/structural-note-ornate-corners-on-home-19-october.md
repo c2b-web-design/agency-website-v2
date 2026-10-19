@@ -2,7 +2,7 @@
 
 **For:** Carl, to route to the Architect (Carl: *"we will consult the architect, get another pair of eyes on it."*).
 **Status:** PROPOSED — nothing built on the page. The bench (`/proto/corner`) is approved through pass 2.
-**Version 2:** amended after a PRE-REVIEW Carl pasted in (19 October) — its points 1–9 and 11 are folded in below, each
+**Version 2 (+ Carl's two answers, the same day):** amended after a PRE-REVIEW Carl pasted in (19 October) — its points 1–9 and 11 are folded in below, each
 checked against the code first (marked ✔ where verified, ⚠ where corrected). Its point 10 (the hero) is Carl's to answer.
 Version 1 is in git at `f2a6aff`.
 **CLAUDE.md §5a triggers:** new instances of an expensive resource (WebGL contexts) on a page that has one today; a new
@@ -43,9 +43,12 @@ with `ssr: false` (`whoweare-button.tsx`), so three.js is not in the first-load 
 
 ⚠ **THE HERO (pre-review 10 — Carl's to answer):** the hero is *"the killer feature… we are going to pull out all the stops"*
 (D-099) and D-098 already records a film with a code logo laid over it — the extruded headline and the logo sharing ONE three.js
-scene. **If the hero is WebGL, B means FOUR contexts on the home page, not three.** B vs C is answered here WITHOUT the hero's
-canvas in view; ⛔ **the Architect should weigh it with the hero, and Carl confirms whether the hero's brief includes a canvas
-— nobody infers it.**
+scene. **If the hero is WebGL, B means FOUR contexts on the home page, not three.**
+✔ **ANSWERED BY CARL (19 October): YES.** *"as the logo comes into code world it will have a light attached to it. It will be
+animated and change colour from gold to blue. The subsequent colour changes will affect yhe text on the Left."* ⛔ **So under B
+the home page runs FOUR contexts: the hero, §2's grid, §3's grid, the teal button** — and under C three. ⛔ **The Architect weighs
+B vs C with the hero's canvas in view.** (The hero's canvas is full-window and continuous while on screen; the corners' are
+gated on their own grids — at most two of the four draw at once, by scroll position. Stated, not measured.)
 
 **Proposed: B.** Two canvases, each a sibling of its section's grid inside a `relative` wrapper around the grid,
 `absolute inset-0`, `pointer-events-none`, `aria-hidden`; 28 separate meshes (four mirrors per box — three.js turns the winding
@@ -76,7 +79,14 @@ per object for a negative determinant; 28 draw calls is trivial; an `InstancedMe
    corners are drawn long before anyone scrolls there. **The case that matters is the DEEP LINK** — the header nav from
    `/about` to `/#services` or `/#work` lands cold on the section. Design and measure for that. With point 4, what is seen
    first is the BORDER, then the corners replace it at their first frame. ⚠ Version 1's *"a fade, on an existing beat"* is
-   dropped — these sections have no beat. **Border → corners: an instant swap or a short cross-fade is Carl's call.**
+   dropped — these sections have no beat.
+   ✔ **ANSWERED BY CARL (19 October) — A FADE, BOX BY BOX:** *"We have used fading before to get round problems. Yes, they can
+   fade in and even be viewed sequentially. There are 4 and 3 boxes. This is feasible, in fact it would add to the effect
+   instead of them all just being there when navigated to."* → the corners FADE IN, ONE BOX AFTER ANOTHER (§2's four, §3's
+   three), when the grid is arrived at — so the sections GAIN a beat of their own. ⚠ **New for the build to settle (pass 3):**
+   the order, the pace (`/start`'s phrasing, D-023, is the precedent), whether it replays on a return, reduced motion (all at
+   once), and how the border hands over to each box's corners in turn — the border-hiding rule (decision 4) per BOX, not per
+   grid.
 6. **WHERE THE RELIEF IS BUILT — weighed on equal terms (pre-review 7).**
    - **(a) Runtime from the photo, module cache.** One source of truth. ⚠ Costs: a NEW download (the 50 KB JPG — version 1's
      "no download" was true of the HDRI only); its decode and `getImageData`; then ~60–90 ms as ONE long task on Carl's
@@ -124,13 +134,15 @@ material values out of the bench so the page and the bench read one copy), `comp
 
 ## Asked of the Architect
 
-1. B (grid-scoped) vs C — **weighed with the hero's canvas in view**, once Carl has answered whether there is one.
+1. B (grid-scoped) vs C — **weighed with the hero's canvas in view: four contexts under B, three under C** (Carl: the hero is
+   WebGL).
 2. The relief: (a) runtime with a cache, (b) an offline bake with a byte-compare check, or (c) a worker.
 3. The ~687k sub-pixel triangles: is a coarser mesh (a bench take for Carl) the right lever, or does the frame time on the page
    decide it?
 4. Anything §5b still misses.
 
-## Asked of Carl
+## Asked of Carl — ANSWERED 19 October
 
-1. **Does the hero's brief include a canvas?** (pre-review 10)
-2. Border → corners at the first frame: an instant swap, or a short cross-fade?
+1. **Does the hero's brief include a canvas?** — **Yes** (a lit, animated code logo crossing gold → blue, its colour changes
+   lighting the text on the left). Four contexts under B.
+2. **Border → corners?** — **A fade, box by box, in sequence** (decision 5).
