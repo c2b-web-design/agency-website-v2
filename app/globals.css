@@ -2319,3 +2319,25 @@
 
 /* Text above filament SVG */
 .enquiry-card-filament-host > :not(.filament-svg) { position: relative; z-index: 4; }
+
+/* ⛔ THE ORNATE CORNERS' FALLBACK BORDER — D-100 (19 October 2026; `components/home/corner-frame.tsx`; the structural note v6).
+   Carl: *"no matter how the page renders or the users device limitations the text shouldnt be borderless. In this case
+   which is an info dump it shows order, pattern etc."* — *"Fallback border is colour dependent. Gold for 2 blue for 3."*
+   Each box keeps a 1-px `border-transparent` (the geometry the corners were judged against); when the corners did NOT draw
+   (`data-corners="none"`, set by the frame — one-way) or there is NO JS at all, that border takes the section's colour.
+   ⛔ UNLAYERED ON PURPOSE: Tailwind's `border-transparent` lives in `@layer utilities`, and unlayered CSS beats any layer.
+   ⚠ `scripting: none` — no-JS visitors (the frame's attribute needs JS). Support checked in the build (see D-100).
+   ⚠ The colours are TAKES for Carl's eye (`live-work/scripts/corner-fallback-colour-19-october.mjs`, at his window): GOLD is
+   the drawn gilt's lit body (90th percentile by luminance, #a17b43; median #60411b — too dark for a hairline). BLUE is the
+   enamel's swatch, the site's platinum #3F6DB8 — the drawn blue's highlights are the studio's white and sample GREY
+   (#727185), which would not read as blue in one pixel. */
+[data-corner-colour="gold"][data-corners="none"] [data-corner-box] { border-color: var(--corner-fallback-gold); }
+[data-corner-colour="blue"][data-corners="none"] [data-corner-box] { border-color: var(--corner-fallback-blue); }
+@media (scripting: none) {
+  [data-corner-colour="gold"] [data-corner-box] { border-color: var(--corner-fallback-gold); }
+  [data-corner-colour="blue"] [data-corner-box] { border-color: var(--corner-fallback-blue); }
+}
+:root {
+  --corner-fallback-gold: #a17b43;
+  --corner-fallback-blue: #3f6db8;
+}

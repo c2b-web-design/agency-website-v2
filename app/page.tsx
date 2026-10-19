@@ -1,6 +1,7 @@
 import Container from "@/components/layout/container";
 import SiteHeader from "@/components/layout/site-header";
 import WhoWeAreButton from "@/components/home/whoweare-button";
+import CornerFrame from "@/components/home/corner-frame";
 
 export default function Home() {
   return (
@@ -193,19 +194,28 @@ export default function Home() {
               intentional and balanced. One column on desktop would feel stretched; four
               columns would feel cramped and lose the card structure entirely.
               gap-8: 32px between cards — consistent with the premium, spacious page feel. */}
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* ⛔⛔ THE ORNATE CORNERS, GOLD — D-100 (19 October 2026; the structural note v6). `CornerFrame` is the grid's
+              `relative` wrapper (SSR'd; the canvas inside it is the only client-only part) and takes the grid's `mt-12`.
+              Each box: `data-corner-box` (what the frame measures) and a 1-px `border-transparent` — Carl: *"The box shape
+              is implied by the corners"*; the border is kept INVISIBLE, not removed, so the geometry the corners were
+              judged against is unchanged, and it turns GOLD only when the corners cannot draw (`app/globals.css`). */}
+          <CornerFrame colour="gold" className="mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             {/* Card: border border-neutral-800 uses the same hairline-rule vocabulary as
                 section separators, unifying the visual system. p-6 md:p-8 matches the
                 Work card padding rhythm — generous on desktop, compact on mobile.
-                No border-radius — sharp corners feel more architectural on a dark background. */}
+                No border-radius — sharp corners feel more architectural on a dark background.
+                ⚠ OVERTAKEN 19 October 2026 (D-100): the hairline is no longer SEEN — the ornate corners imply the
+                box; the border stays `border-transparent` (the geometry) and is the fallback, gold. Still true: the
+                padding rhythm and the square corners (the ornaments sit on them). */}
             {/* ⛔ CENTRED, A TAKE — Carl, 19 October 2026 (D-099): *"on first look, left aligned
                 text in the boses. lets see what it looks like centred."* Each card `text-center`, its
                 paragraph `mx-auto` in the same `max-w-sm` column and `text-balance`d. Was left-
                 aligned, the column leaving whitespace to its right (the `max-w-sm` note below
                 describes that day-1 arrangement). The way back: drop the three classes.     */}
 
-            <div className="border border-neutral-800 p-6 md:p-8 text-center">
+            <div data-corner-box className="border border-transparent p-6 md:p-8 text-center">
               <h3 className="text-lg font-semibold tracking-tight">Bespoke Website Design</h3>
               {/* max-w-sm (384px) constrains the line length on wide desktop cards —
                   the card stays architecturally wide but the text sits in a controlled
@@ -243,7 +253,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="border border-neutral-800 p-6 md:p-8 text-center">
+            <div data-corner-box className="border border-transparent p-6 md:p-8 text-center">
               <h3 className="text-lg font-semibold tracking-tight">Website Transformation</h3>
               {/* ⛔ CARL'S WORDS, 2 September 2026 — approved verbatim.
 
@@ -276,7 +286,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="border border-neutral-800 p-6 md:p-8 text-center">
+            <div data-corner-box className="border border-transparent p-6 md:p-8 text-center">
               <h3 className="text-lg font-semibold tracking-tight">Guided Enquiries</h3>
               {/* "Intelligent Enquiry Systems" is the one service that ventures furthest from
                   traditional web design. The copy describes business outcomes only — faster
@@ -297,7 +307,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="border border-neutral-800 p-6 md:p-8 text-center">
+            <div data-corner-box className="border border-transparent p-6 md:p-8 text-center">
               {/* ⛔ CARL'S HEADING, 2 September 2026. Was "Ongoing Growth & Improvement".
 
                   ⚠ "IMPROVEMENT" WAS THE FAULT, and Carl named it: *"Are we shipping a product
@@ -344,6 +354,7 @@ export default function Home() {
             </div>
 
           </div>
+          </CornerFrame>
         </Container>
       </section>
 
@@ -460,10 +471,15 @@ export default function Home() {
           {/* ⛔⛔ BOXED AGAIN — Carl, 19 October 2026: *"the 4 subjects have boxes round then in sect
               2 we can see visually, sect 3 does not. can you give them boxes. this will become
               important when you see what i have in mind for them."* `#services`' exact card style
-              (border-neutral-800, p-6 md:p-8) and its gap-6 (was gap-12, open columns). ⚠ D-068's
+              (border-neutral-800 — now `border-transparent`, the corners below; p-6 md:p-8) and its gap-6 (was gap-12, open columns). ⚠ D-068's
               reason (a second bordered grid makes the eye skim) is OVERTAKEN by Carl's plan for
               these boxes, which is still to come — not contradicted, and not yet known here.  */}
-          <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          {/* ⛔⛔ THE ORNATE CORNERS, PLATINUM BLUE — D-100: "what i have in mind for them" (above) is these. As `#services`:
+              the frame takes the grid's `mt-24`; each box `data-corner-box` with a 1-px `border-transparent`, BLUE only when
+              the corners cannot draw. ⚠ The note above ("THE LAYOUT IN 3 WILL BE REDESIGNED AT A LATER DATE") is OVERTAKEN —
+              the redesign is the boxes (19 October) and their corners; still true: the copy is Carl's. */}
+          <CornerFrame colour="blue" className="mt-24">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
 
             {/* ⛔ WHAT "BESPOKE" MEANS — Carl, 19 October 2026: *"People and website designers
                 especially see websites made with AI and they think Templates… If they were going
@@ -472,7 +488,7 @@ export default function Home() {
                 "materials, light and the way it moves" is the weft — literal on this site.
                 ⚠ HONEST BECAUSE the planned template extraction is the WORKSHOP (tools, always
                 empty), not a site design (`live-work/references/workshop-template-and-client-delivery.md`). */}
-            <div className="border border-neutral-800 p-6 md:p-8">
+            <div data-corner-box className="border border-transparent p-6 md:p-8">
               <h3 className="text-lg font-semibold tracking-tight">Made from scratch</h3>
               <p className="mt-3 mx-auto text-sm text-neutral-400 leading-relaxed max-w-sm text-balance">
                 Look closely. Nothing here came from a template. It was made the way your website
@@ -484,7 +500,7 @@ export default function Home() {
             {/* ⛔ WALKING THE WALK — Carl: *"to a great extent it will be working along AI, as we
                 are doing. Walking the walk."* The centre, where the eye lands first. Names no
                 technology; promises nothing beyond what we use ourselves.                   */}
-            <div className="border border-neutral-800 p-6 md:p-8">
+            <div data-corner-box className="border border-transparent p-6 md:p-8">
               <h3 className="text-lg font-semibold tracking-tight">Proven on ourselves first</h3>
               <p className="mt-3 mx-auto text-sm text-neutral-400 leading-relaxed max-w-sm text-balance">
                 We work alongside modern technology every day, and only recommend what has proved
@@ -495,7 +511,7 @@ export default function Home() {
 
             {/* ⛔ "An asset, as well as a brochure" — CARL'S AMENDMENT (2 September), kept. "Worth
                 as much in years to come" carries the old "what it is still worth years from now". */}
-            <div className="border border-neutral-800 p-6 md:p-8">
+            <div data-corner-box className="border border-transparent p-6 md:p-8">
               <h3 className="text-lg font-semibold tracking-tight">Built to last</h3>
               <p className="mt-3 mx-auto text-sm text-neutral-400 leading-relaxed max-w-sm text-balance">
                 A website is an asset, as well as a brochure, made to be worth as much in years to
@@ -505,6 +521,7 @@ export default function Home() {
             </div>
 
           </div>
+          </CornerFrame>
         </Container>
       </section>
 

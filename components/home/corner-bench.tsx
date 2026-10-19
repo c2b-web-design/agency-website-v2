@@ -47,7 +47,7 @@ import bracket from "../../brand-assets/c4bf3a09-80f3-4b2c-b88a-925f08e9c26f.jpg
 import { buildCornerRelief, CORNER_DEFAULTS, CORNER_LIMIT_PX, type CornerParams, type CornerStats } from "./corner-geometry";
 import { useCanvasDpr } from "@/lib/use-site-scale";
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
-import { GOLD_F0_LINEAR, platinumBlueF0 } from "@/components/about/logo-mark-material";
+import { CORNER_BLUE, CORNER_GOLD, createCornerMaterial, type CornerLook } from "./corner-material";
 
 export type CornerBenchFlags = { view?: string; mode?: string; border?: boolean; guides?: boolean; az?: number; el?: number; orient?: string };
 
@@ -65,32 +65,17 @@ const TEXT_EDGE_PX = 35;
 const CLOSE_ZOOM = 7;
 
 const CLAY = { color: "#8a8a8a", roughness: 0.6 } as const;
-/** ⛔ PASS 2's first take — the logo standard's studio values; roughness the one change (satin gilt). For Carl's eye. */
-const GOLD_DEFAULTS = { roughness: 0.45, envInt: 1, yaw: 150, room: 0.1, coat: 0, coatRough: 0.06, tint: 1 };
-type Gold = typeof GOLD_DEFAULTS;
-/** ⛔ §3's first take — the enamel: the platinum blue body a touch smoother than the gilt, a clear coat over it. */
-/** ⚠ The swatch blue as the metal (tint 1, strength 1) measured at 0.014 mean linear luminance against the approved gold's
- *  0.042 and nearly vanished at true size — a DARK metal (logo-mark-material.ts says so). Enamel's own physics gives the way:
- *  translucent blue glass over BRIGHT metal, so the body leans from the swatch towards platinum (tint 0.75) and the studio is
- *  raised (strength 2): 0.025, ~60% of the gold's — a saturated blue reads brighter than its luminance, so not matched.
- *  `live-work/scripts/corner-brightness-19-october.mjs`. */
-const BLUE_DEFAULTS: Gold = { roughness: 0.35, envInt: 2, yaw: 150, room: 0.1, coat: 1, coatRough: 0.06, tint: 0.75 };
+/** ⛔ The APPROVED looks — ONE copy, shared with the home page (`corner-material.ts`, 19 October 2026, session 2). The
+ *  sliders start from them; what Carl approved is what the page draws. */
+const GOLD_DEFAULTS = CORNER_GOLD;
+type Gold = CornerLook;
+const BLUE_DEFAULTS: Gold = CORNER_BLUE;
 type Placement = { key: string; position: [number, number, number]; scale: [number, number, number] };
 
 /** The metal pieces (§2's gold, §3's enamelled blue): suspend until the studio is decoded, so nothing draws black first. */
 function MetalPieces({ built, gold, placements, colour }: { built: Built; gold: Gold; placements: Placement[]; colour: "gold" | "blue" }) {
   const hdri = use(loadStudioHdri(STUDIO_HDRI_SRC, gold.room));
-  const material = useMemo(() => {
-    const m = new THREE.MeshPhysicalMaterial({
-      metalness: 1, roughness: gold.roughness, envMap: hdri, envMapIntensity: gold.envInt,
-      normalMap: built.normalMap, normalMapType: THREE.ObjectSpaceNormalMap, alphaMap: built.alphaMap, alphaTest: 0.5,
-      clearcoat: gold.coat, clearcoatRoughness: gold.coatRough,
-    });
-    m.envMapRotation.set(0, (gold.yaw * Math.PI) / 180, 0);
-    const f0 = colour === "gold" ? GOLD_F0_LINEAR : platinumBlueF0(gold.tint);
-    m.color.setRGB(f0[0], f0[1], f0[2], THREE.LinearSRGBColorSpace);
-    return m;
-  }, [hdri, gold, built, colour]);
+  const material = useMemo(() => createCornerMaterial(colour, gold, built, hdri), [hdri, gold, built, colour]);
   useEffect(() => () => material.dispose(), [material]);
   return (
     <>

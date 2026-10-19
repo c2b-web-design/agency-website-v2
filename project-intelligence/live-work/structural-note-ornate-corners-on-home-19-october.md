@@ -346,3 +346,9 @@ fallback, if it can be coloured gold, all the btter. The text should be framed f
 **⚠ CARRIED INTO THE BUILD (review 5.4) — not answered before the rounds closed; Carl judges it when `N` is measured:**
 6. **The deadline:** up to ~1–1.5 s of bare text after arrival (not only *"the few hundred ms"*) — and a device or connection
    too slow for it gets the gold / blue BORDER for that visit, never the corners. OK?
+
+## AS BUILT (19 October 2026, session 2) — Carl: *"Build on the page, we will take it from there"*
+
+Built without the Architect's review, on Carl's word; the Builder's calls: B, (a), the approved mesh, mount on approach. One
+departure from decision 4: on fallback the canvas is UNMOUNTED rather than hidden (hidden, R3F retried the context on every
+re-render). Measurements and takes: D-100, the 19 October session-2 build entry.

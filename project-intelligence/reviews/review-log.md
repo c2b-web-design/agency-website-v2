@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-084 — The Ornate Corners On The Home Page: §2 Gold, §3 Platinum Blue, Faded In Box By Box (D-100): "Approved"
+
+**Date:** 2026-10-19
+**Reviewer:** Human Founder
+**Subject:** Home `#services` and `#work` — the 28 corners on the page (`corner-frame.tsx`, `corner-canvas.tsx`, `corner-material.ts`): the boxes' border invisible (`border-transparent`); the corners fade in box by box when each grid arrives, at the Q&A card entrance's timing (2000 ms, the next 28% in, cubic ease-out — not linked to it), once per load; a gold / blue 1-px border wherever the corners cannot draw. Judged scrolling and by the header nav. The light is the bench's judging studio (pass 3 to come). Captures: `live-work/screenshots/corners-on-home-19-october/`.
+
+**Carl's verdicts, verbatim:** take 1 — *"The sequence is good. howver, it runs a little fast."* Take 2 — *"It looks good whether scrolling to or button nav to… The page is more active, more alive."* Then: *"the corners activate has the headers for each section are approaching the top of the viewport. Looks great. Approved."*
+
+**Findings:**
+
+- ✔ **Approved**: the structure on the page, the sequence (take 2), the arrival point (each section's heading nearing the top of the window), arriving by scroll and by the header nav.
+- ✔ Measured by the Builder: the approved edge holds on the page (mean |Δ| 4.75/255 against the bench); the fallback border in all four failure cases (`scripting: none` in Chromium only); reduced motion.
+- ⚠ Open: pass 3, the light (and the blue's darkness, R-083); the deadline `N` on a cold deep link, then put to Carl; phones (D-094).
+
+---
+
 ## R-083 — The Ornate Corner, Pass 2: §3's Platinum Blue, Enamel Over Metal (D-100): "Approved"
 
 **Date:** 2026-10-19
