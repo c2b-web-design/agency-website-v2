@@ -65,6 +65,21 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-083 — The Ornate Corner, Pass 2: §3's Platinum Blue, Enamel Over Metal (D-100): "Approved"
+
+**Date:** 2026-10-19
+**Reviewer:** Human Founder
+**Subject:** `/proto/corner` `blue` — translucent enamel over metal: a platinum-blue body (the swatch leaned towards platinum, tint 0.75; roughness 0.35) under a clear coat (1, roughness 0.06), the studio at strength 2. Measured at ~60% of the gold's brightness (the swatch blue alone ~33%, nearly vanishing). Captures: `live-work/screenshots/corner-bench-19-october/blue2-*.png`.
+
+**Carl's verdict, verbatim:** *"The blue does look a bit dark, some of the detail is being lost. however is we get it on the page and subject it to different lighting conditions we should be able to remedy that. spproved."*
+
+**Findings:**
+
+- ✔ **Approved**, with a caveat Carl carries forward: a little dark, some detail lost — **for the light on the page (pass 3) to remedy**, not the material.
+- ⚠ Judged in the studio only, on the bench.
+
+---
+
 ## R-082 — The Ornate Corner, Pass 2: §2's Gold, Satin Gilt (D-100): "Approved"
 
 **Date:** 2026-10-19

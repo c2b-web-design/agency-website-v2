@@ -7,7 +7,7 @@ import CornerBench, { type CornerBenchFlags } from "@/components/home/corner-ben
  * a `"use client"` bench.
  *
  * ⚠ The URL switches are read HERE and passed down, so the first render matches on server and client.
- *   ?view=box|close|oblique   ?mode=gold|clay|mesh|zebra|normals   ?border=1 (the box's old border, for reference)
+ *   ?view=box|close|oblique   ?mode=blue|gold|clay|mesh|zebra|normals   ?border=1 (the box's old border, for reference)
  *   ?orient=along|down (the long arm along the top, or down the side as photographed)
  *   ?guides=0 (hide the limit lines in the close view)   ?az=-90..90   ?el=0..85
  */
@@ -34,11 +34,11 @@ export default async function CornerBenchPage({
   };
   return (
     <div className="min-h-[calc(100*var(--vh))] bg-neutral-950 text-white p-6">
-      <h1 className="text-lg font-semibold mb-1">The ornate corner, pass 2: the gold (pass 1, the shape, approved)</h1>
+      <h1 className="text-lg font-semibold mb-1">The ornate corner, pass 2: the platinum blue (the shape and the gold approved)</h1>
       <p className="text-sm text-neutral-400 mb-2 max-w-4xl">
         One design for all 28 corners of the home page&apos;s boxes. Its back is the box&apos;s own corner, a clean
-        90°; everything ornate grows inward. The shape is approved (pass 1, the clay modes). This pass is §2&apos;s
-        gold: satin gilt, reflecting the logo standard&apos;s studio. The real light and its small motion are the next pass.
+        90°; everything ornate grows inward. The shape is approved (pass 1, the clay modes). §2&apos;s gold is
+        approved (satin gilt). This pass is §3&apos;s platinum blue: enamel over metal, in the same studio. The real light and its small motion are the next pass.
       </p>
       <p className="text-sm text-neutral-500 mb-4 max-w-4xl">
         <strong>box</strong> is true size: §3&apos;s tightest box with its own text, as on the page.{" "}

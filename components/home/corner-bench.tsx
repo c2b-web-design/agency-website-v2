@@ -28,6 +28,16 @@
  * studio (`lib/studio-hdri.ts`) at their values — room 0.1, strength 1, turned 150° — with ONE change: roughness 0.45
  * (the logo's 0.25, the buttons' 0.4). ⚠ That studio is the JUDGING light for this pass; the real light and its small motion
  * are pass 3. The clay's lamps are off in `gold` (metal is lit by what it reflects).
+ * ✔ APPROVED (R-082): *"The Satin gilt look is very good. There is a difference in the look of the metal we have used for
+ * the logo. Approved."*
+ *
+ * ⛔ PASS 2 — §3's PLATINUM BLUE (19 October 2026). Carl: *"We could use different material in each section. material guided
+ * by what works best with the colour."* There is no blue gilt, so the blue is not the gold's material recoloured. TAKE 1:
+ * TRANSLUCENT ENAMEL OVER ENGRAVED METAL — the Fabergé way of putting a deep blue on a carved, engraved surface. The body is
+ * the logo's platinum blue METAL (the swatch's #3F6DB8 as F0, `platinumBlueF0(1)`, a touch smoother than the gold at 0.35);
+ * over it a CLEAR GLASSY COAT (`clearcoat` 1, roughness 0.06). ⚠ The coat follows the MESH's normals — the mass, not the
+ * carving (no `clearcoatNormalMap`) — so it reads as glass pooled over the carving, with one crisp highlight on each form,
+ * while the carving shows THROUGH it in the body's sheen. Same judging studio as the gold.
  */
 import { Suspense, use, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
@@ -37,13 +47,13 @@ import bracket from "../../brand-assets/c4bf3a09-80f3-4b2c-b88a-925f08e9c26f.jpg
 import { buildCornerRelief, CORNER_DEFAULTS, CORNER_LIMIT_PX, type CornerParams, type CornerStats } from "./corner-geometry";
 import { useCanvasDpr } from "@/lib/use-site-scale";
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
-import { GOLD_F0_LINEAR } from "@/components/about/logo-mark-material";
+import { GOLD_F0_LINEAR, platinumBlueF0 } from "@/components/about/logo-mark-material";
 
 export type CornerBenchFlags = { view?: string; mode?: string; border?: boolean; guides?: boolean; az?: number; el?: number; orient?: string };
 
 const VIEWS = ["box", "close", "oblique"] as const;
 type View = (typeof VIEWS)[number];
-const MODES = ["gold", "clay", "mesh", "zebra", "normals"] as const;
+const MODES = ["blue", "gold", "clay", "mesh", "zebra", "normals"] as const;
 type Mode = (typeof MODES)[number];
 
 /** ⛔ §3's centre box at Carl's window, measured 530 × 267 screen px at zoom 1.36 → layout px. The tightest box: 48
@@ -56,22 +66,31 @@ const CLOSE_ZOOM = 7;
 
 const CLAY = { color: "#8a8a8a", roughness: 0.6 } as const;
 /** ⛔ PASS 2's first take — the logo standard's studio values; roughness the one change (satin gilt). For Carl's eye. */
-const GOLD_DEFAULTS = { roughness: 0.45, envInt: 1, yaw: 150, room: 0.1 };
+const GOLD_DEFAULTS = { roughness: 0.45, envInt: 1, yaw: 150, room: 0.1, coat: 0, coatRough: 0.06, tint: 1 };
 type Gold = typeof GOLD_DEFAULTS;
+/** ⛔ §3's first take — the enamel: the platinum blue body a touch smoother than the gilt, a clear coat over it. */
+/** ⚠ The swatch blue as the metal (tint 1, strength 1) measured at 0.014 mean linear luminance against the approved gold's
+ *  0.042 and nearly vanished at true size — a DARK metal (logo-mark-material.ts says so). Enamel's own physics gives the way:
+ *  translucent blue glass over BRIGHT metal, so the body leans from the swatch towards platinum (tint 0.75) and the studio is
+ *  raised (strength 2): 0.025, ~60% of the gold's — a saturated blue reads brighter than its luminance, so not matched.
+ *  `live-work/scripts/corner-brightness-19-october.mjs`. */
+const BLUE_DEFAULTS: Gold = { roughness: 0.35, envInt: 2, yaw: 150, room: 0.1, coat: 1, coatRough: 0.06, tint: 0.75 };
 type Placement = { key: string; position: [number, number, number]; scale: [number, number, number] };
 
-/** The gold pieces: suspend until the studio is decoded, so nothing draws black first. */
-function GoldPieces({ built, gold, placements }: { built: Built; gold: Gold; placements: Placement[] }) {
+/** The metal pieces (§2's gold, §3's enamelled blue): suspend until the studio is decoded, so nothing draws black first. */
+function MetalPieces({ built, gold, placements, colour }: { built: Built; gold: Gold; placements: Placement[]; colour: "gold" | "blue" }) {
   const hdri = use(loadStudioHdri(STUDIO_HDRI_SRC, gold.room));
   const material = useMemo(() => {
     const m = new THREE.MeshPhysicalMaterial({
       metalness: 1, roughness: gold.roughness, envMap: hdri, envMapIntensity: gold.envInt,
       normalMap: built.normalMap, normalMapType: THREE.ObjectSpaceNormalMap, alphaMap: built.alphaMap, alphaTest: 0.5,
+      clearcoat: gold.coat, clearcoatRoughness: gold.coatRough,
     });
     m.envMapRotation.set(0, (gold.yaw * Math.PI) / 180, 0);
-    m.color.setRGB(GOLD_F0_LINEAR[0], GOLD_F0_LINEAR[1], GOLD_F0_LINEAR[2], THREE.LinearSRGBColorSpace);
+    const f0 = colour === "gold" ? GOLD_F0_LINEAR : platinumBlueF0(gold.tint);
+    m.color.setRGB(f0[0], f0[1], f0[2], THREE.LinearSRGBColorSpace);
     return m;
-  }, [hdri, gold, built]);
+  }, [hdri, gold, built, colour]);
   useEffect(() => () => material.dispose(), [material]);
   return (
     <>
@@ -160,9 +179,9 @@ type Built = ReturnType<typeof buildCornerRelief> & { ms: number };
 export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
   const dpr = useCanvasDpr([1, 2]);
   const [view, setView] = useState<View>(VIEWS.includes(flags.view as View) ? (flags.view as View) : "box");
-  const [mode, setMode] = useState<Mode>(MODES.includes(flags.mode as Mode) ? (flags.mode as Mode) : "gold");
-  const [gold, setGold] = useState<Gold>(GOLD_DEFAULTS);
-  const setG = (k: keyof Gold, v: number) => setGold((g) => ({ ...g, [k]: v }));
+  const [mode, setMode] = useState<Mode>(MODES.includes(flags.mode as Mode) ? (flags.mode as Mode) : "blue");
+  const [goldM, setGoldM] = useState<Gold>(GOLD_DEFAULTS);
+  const [blueM, setBlueM] = useState<Gold>(BLUE_DEFAULTS);
   const [border, setBorder] = useState(!!flags.border);
   const [guides, setGuides] = useState(flags.guides ?? true);
   const [az, setAz] = useState(Number.isFinite(flags.az) ? (flags.az as number) : KEY_DEFAULT.az);
@@ -213,8 +232,12 @@ export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
   }, [built, matcap]);
   useEffect(() => () => { for (const m of Object.values(materials)) m.dispose(); }, [materials]);
   useEffect(() => () => { matcap?.dispose(); }, [matcap]);
-  const material = mode === "gold" ? materials.clay : materials[mode];
-  const isGold = mode === "gold";
+  const isGold = mode === "gold" || mode === "blue";
+  const material = isGold ? materials.clay : materials[mode as Exclude<Mode, "gold" | "blue">];
+  const colour = mode === "blue" ? "blue" : "gold";
+  const gold = colour === "blue" ? blueM : goldM;
+  const defaults = colour === "blue" ? BLUE_DEFAULTS : GOLD_DEFAULTS;
+  const setG = (k: keyof Gold, v: number) => (colour === "blue" ? setBlueM : setGoldM)((g) => ({ ...g, [k]: v }));
 
   useEffect(() => {
     if (!built || !stats) return;
@@ -238,7 +261,8 @@ export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
         <label className="flex items-center gap-2">
           mode
           <select value={mode} onChange={(e) => setMode(e.target.value as Mode)} className={select}>
-            <option value="gold">gold — pass 2, satin gilt in the judging studio</option>
+            <option value="blue">platinum blue — pass 2, enamel over metal (§3)</option>
+            <option value="gold">gold — pass 2, satin gilt (§2) — approved</option>
             <option value="clay">clay — pass 1</option>
             <option value="mesh">mesh — the mass alone, triangles as built</option>
             <option value="zebra">zebra — surface continuity</option>
@@ -271,7 +295,7 @@ export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
             {!isGold && <ShapeLight az={az} el={el} />}
             {built && isGold && (
               <Suspense fallback={null}>
-                <GoldPieces built={built} gold={gold} placements={CORNERS.map(({ c, at, s }) => ({ key: c, position: at(BOX.w, BOX.h), scale: s }))} />
+                <MetalPieces built={built} gold={gold} colour={colour} placements={CORNERS.map(({ c, at, s }) => ({ key: c, position: at(BOX.w, BOX.h), scale: s }))} />
               </Suspense>
             )}
             {built && !isGold && CORNERS.map(({ c, at, s }) => (
@@ -291,7 +315,7 @@ export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
             {!isGold && <ShapeLight az={az} el={el} />}
             {built && isGold && (
               <Suspense fallback={null}>
-                <GoldPieces built={built} gold={gold} placements={[{ key: "tl", position: [0, 0, 0], scale: [1, 1, 1] }]} />
+                <MetalPieces built={built} gold={gold} colour={colour} placements={[{ key: "tl", position: [0, 0, 0], scale: [1, 1, 1] }]} />
               </Suspense>
             )}
             {built && !isGold && <mesh geometry={built.geometry} material={material} />}
@@ -304,8 +328,11 @@ export default function CornerBench({ flags }: { flags: CornerBenchFlags }) {
         <div className="space-y-2">
           {isGold && (
             <>
-              <div className="text-neutral-500">gold — physical F0, the logo standard&apos;s studio; ⚠ starting values for Carl&apos;s eye</div>
-              <Slider label="roughness" value={gold.roughness} min={0.05} max={0.9} step={0.01} onChange={(v) => setG("roughness", v)} fmt={(v) => `${v.toFixed(2)}${v === GOLD_DEFAULTS.roughness ? " satin" : ""}`} />
+              <div className="text-neutral-500">{colour === "gold" ? "gold — physical F0" : "platinum blue — enamel: the swatch blue leaned towards platinum, a clear coat over it"}; the logo standard&apos;s studio; ⚠ starting values for Carl&apos;s eye</div>
+              <Slider label="roughness" value={gold.roughness} min={0.05} max={0.9} step={0.01} onChange={(v) => setG("roughness", v)} fmt={(v) => `${v.toFixed(2)}${v === defaults.roughness ? " (take)" : ""}`} />
+              {colour === "blue" && <Slider label="blue tint" value={gold.tint} min={0} max={1} step={0.05} onChange={(v) => setG("tint", v)} fmt={(v) => (v === 0 ? "platinum" : v === 1 ? "swatch blue" : v.toFixed(2))} />}
+              <Slider label="clear coat" value={gold.coat} min={0} max={1} step={0.05} onChange={(v) => setG("coat", v)} fmt={(v) => (v === 0 ? "none" : v.toFixed(2))} />
+              <Slider label="coat roughness" value={gold.coatRough} min={0} max={0.6} step={0.01} onChange={(v) => setG("coatRough", v)} />
               <Slider label="studio strength" value={gold.envInt} min={0.2} max={3} step={0.05} onChange={(v) => setG("envInt", v)} />
               <Slider label="studio turned" value={gold.yaw} min={0} max={359} step={1} onChange={(v) => setG("yaw", v)} fmt={(v) => `${v}°`} />
               <Slider label="studio room" value={gold.room} min={0.02} max={1} step={0.01} onChange={(v) => setG("room", v)} fmt={(v) => (v === 1 ? "as shot" : v.toFixed(2))} />
