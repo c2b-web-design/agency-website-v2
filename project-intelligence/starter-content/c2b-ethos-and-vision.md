@@ -111,6 +111,8 @@ The goal is not to sell AI for its own sake. The goal is to help businesses use 
 
 Added on Carl's instruction. Three points the section above did not carry:
 
+⛔ **INTERNAL — not client-facing copy** (Carl, 19 October 2026, D-099): *"a Client base no matter how large or small should always get full attention... im not sure we should shate that info with clients."*
+
 * **Fewer clients, deeper relationships.** *"My business plan is simple. Its not to get 100 clients its to get fewer and build relationships."*
 * **Web design is how the door is knocked on.** *"A website is my front door and a clients front door. Web Design is a way to knock on that door."*
 * **The origin, and the target.** *"I first got this idea last year when everyone was using N8N. Im fully aware of the functionalty and improvements AI can bring to business. I want to target small to medium size businesses, who AI will reach last."*

@@ -148,26 +148,39 @@ export default function Home() {
           {/* Section intro block: max-w-2xl keeps the heading and paragraph from stretching
               full-width on desktop. A constrained column reads as considered and editorial —
               the same principle applied to the hero headline above.                         */}
-          <div className="max-w-2xl">
+          {/* ⛔ CENTRED — Carl, 19 October 2026 (D-099): *"make it centred, less like a word
+              document and more balanced aetheitically."* Was left-aligned in `max-w-2xl`, the day-1
+              layout (*"i like the layout of each section. Keep it."*, 1 September) — reopened by
+              him for this block only; the cards below stay as they were. `text-balance` evens the
+              line lengths so a centred block does not end on a short ragged line.            */}
+          <div className="max-w-3xl mx-auto text-center">
 
             {/* Section heading: text-3xl is clearly secondary to the hero's md:text-6xl,
                 but large enough to anchor the section. The period makes the heading read
                 as a confident statement rather than a label. tracking-tight is consistent
                 with all headings on the page.                                              */}
-            <h2 className="text-3xl font-semibold tracking-tight">
-              Websites built for how business works today.
+            {/* ⛔ CARL'S PICK, 19 October 2026 (D-099). Was "Websites built for how business
+                works today." — day-1 placeholder copy. The door is his own: *"A website is my
+                front door and a clients front door. Web Design is a way to knock on that door."*
+                (ethos §4a). Carl: *"The door idea is great,. A recognition of that from one
+                selling front doors."*                                                       */}
+            <h2 className="text-3xl font-semibold tracking-tight text-balance">
+              A front door worth knocking on.
             </h2>
 
             {/* Intro paragraph: same text-base / neutral-400 / leading-relaxed pattern as
                 the hero subtext — this creates a consistent hierarchy language across the
                 page so visitors learn the visual system without noticing it.
-                max-w-lg (512px): constrains the paragraph independently of the wrapper's
-                max-w-2xl (672px), keeping the heading wide while bringing the paragraph
-                measure into the card text rhythm (card paragraphs are max-w-sm = 384px). */}
-            <p className="mt-4 text-base text-neutral-400 leading-relaxed max-w-lg">
-              A modern website should do more than look good online. We build premium websites
-              and intelligent digital systems that help businesses make a stronger impression,
-              respond to enquiries faster, and turn more interest into real opportunities.
+                max-w-xl, centred under the heading (was max-w-lg, left).                    */}
+            {/* ⛔ D-099 (19 October 2026): the four cards' subjects in one sentence — design,
+                enquiries, care. ⛔ "FEWER CLIENTS" WAS CUT AND MUST NOT RETURN: a third sentence
+                said "Fewer clients, so each one has our full attention." Carl: *"a Client base no
+                matter how large or small should always get full attention... im not sure we
+                should shate that info with clients."* The business plan is internal (ethos §4a). */}
+            <p className="mt-4 mx-auto text-base text-neutral-400 leading-relaxed max-w-xl text-balance">
+              Your website is often the first place a customer meets your business. We design and
+              build it with care, take the effort out of every enquiry, and stay with you once it
+              is live.
             </p>
           </div>
 
@@ -186,9 +199,14 @@ export default function Home() {
                 section separators, unifying the visual system. p-6 md:p-8 matches the
                 Work card padding rhythm — generous on desktop, compact on mobile.
                 No border-radius — sharp corners feel more architectural on a dark background. */}
+            {/* ⛔ CENTRED, A TAKE — Carl, 19 October 2026 (D-099): *"on first look, left aligned
+                text in the boses. lets see what it looks like centred."* Each card `text-center`, its
+                paragraph `mx-auto` in the same `max-w-sm` column and `text-balance`d. Was left-
+                aligned, the column leaving whitespace to its right (the `max-w-sm` note below
+                describes that day-1 arrangement). The way back: drop the three classes.     */}
 
-            <div className="border border-neutral-800 p-6 md:p-8">
-              <h3 className="text-lg font-semibold tracking-tight">Premium Website Design</h3>
+            <div className="border border-neutral-800 p-6 md:p-8 text-center">
+              <h3 className="text-lg font-semibold tracking-tight">Bespoke Website Design</h3>
               {/* max-w-sm (384px) constrains the line length on wide desktop cards —
                   the card stays architecturally wide but the text sits in a controlled
                   column, leaving intentional whitespace to the right. */}
@@ -212,13 +230,20 @@ export default function Home() {
                   ⚠ "YOUR brand identity" — the ownership matters. An earlier draft read "our",
                   which reverses the promise: the client's site shaped by C2B's identity rather
                   than their own.                                                             */}
-              <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
-                Custom, tailor-made architecture designed specifically around your brand identity.
-                Bespoke quality designed to make your business look trusted, credible, and unique.
+              {/* ⚠ OVERTAKEN 19 October 2026 (D-099) — the day-1 wording replaced; Carl: *"the
+                  wording is good, avoids jargon."* Was: "Custom, tailor-made architecture designed
+                  specifically around your brand identity. Bespoke quality designed to make your
+                  business look trusted, credible, and unique." The heading's "Premium" → "Bespoke",
+                  his 2 September argument for §4 (a claim a competitor cannot honestly copy).
+                  ⛔ STILL TRUE: the two-register rule above — this card STATES, no "we". "Trust is
+                  earned before a word is exchanged" came here from `#work`'s paragraph.        */}
+              <p className="mt-3 mx-auto text-sm text-neutral-400 leading-relaxed max-w-sm text-balance">
+                Designed around your business, the people you serve and the way you work. Every
+                detail considered, because trust is earned before a word is exchanged.
               </p>
             </div>
 
-            <div className="border border-neutral-800 p-6 md:p-8">
+            <div className="border border-neutral-800 p-6 md:p-8 text-center">
               <h3 className="text-lg font-semibold tracking-tight">Website Transformation</h3>
               {/* ⛔ CARL'S WORDS, 2 September 2026 — approved verbatim.
 
@@ -239,26 +264,40 @@ export default function Home() {
                   ⚠ "Same business, stronger first impression" is UNCHANGED from the original
                   and was the strongest line in the section — it tells a client who fears a
                   redesign means becoming someone else that it does not.                      */}
-              <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
-                We turn a tired or underperforming website into a sharper, more persuasive
-                digital presence. Same business, stronger first impression.
+              {/* ⚠ OVERTAKEN 19 October 2026 (D-099). Was: "We turn a tired or underperforming
+                  website into a sharper, more persuasive digital presence." ⚠ "Tired" (Carl's
+                  2 September pick) gives way to "no longer reflects the business behind it" — the
+                  business has OUTGROWN its site, a compliment rather than a diagnosis. "Tired" is
+                  the way back if he wants it. ⛔ "Same business, stronger first impression." KEPT
+                  VERBATIM — still the line that tells a client they will not become someone else. */}
+              <p className="mt-3 mx-auto text-sm text-neutral-400 leading-relaxed max-w-sm text-balance">
+                When a website no longer reflects the business behind it, we rebuild it to the
+                standard you have reached. Same business, stronger first impression.
               </p>
             </div>
 
-            <div className="border border-neutral-800 p-6 md:p-8">
-              <h3 className="text-lg font-semibold tracking-tight">Intelligent Enquiry Systems</h3>
+            <div className="border border-neutral-800 p-6 md:p-8 text-center">
+              <h3 className="text-lg font-semibold tracking-tight">Guided Enquiries</h3>
               {/* "Intelligent Enquiry Systems" is the one service that ventures furthest from
                   traditional web design. The copy describes business outcomes only — faster
                   response, less admin, better opportunities — without naming any specific tool
                   or technology. This is intentional: the mechanism is irrelevant to the client. */}
-              <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
-                Smarter forms, faster follow-up, and qualification journeys that help you
-                respond to interest sooner, reduce manual admin, and turn more enquiries
-                into real opportunities.
+              {/* ⚠ OVERTAKEN 19 October 2026 (D-099). Heading was "Intelligent Enquiry Systems"
+                  (brochure language); body was "Smarter forms, faster follow-up, and qualification
+                  journeys that help you respond to interest sooner, reduce manual admin, and turn
+                  more enquiries into real opportunities." ⛔ STILL TRUE: no tool or technology is
+                  named. "Guided" is what `/start` does (D-023: *"gently guide and lead the user
+                  through what is essentially admin"*) — a reader can go and try it.
+                  ⛔ "SMART WHERE IT HELPS, HUMAN WHERE IT MATTERS" — Carl: *"a brilliant phrase…
+                  to a great extent it will be working along AI, as we are doing. Walking the
+                  walk."* The human-first AI ethos (§5) in eight words. This card STATES, no "we". */}
+              <p className="mt-3 mx-auto text-sm text-neutral-400 leading-relaxed max-w-sm text-balance">
+                A calm, guided first conversation for your customers, and clear, complete
+                enquiries for you. Smart where it helps, human where it matters.
               </p>
             </div>
 
-            <div className="border border-neutral-800 p-6 md:p-8">
+            <div className="border border-neutral-800 p-6 md:p-8 text-center">
               {/* ⛔ CARL'S HEADING, 2 September 2026. Was "Ongoing Growth & Improvement".
 
                   ⚠ "IMPROVEMENT" WAS THE FAULT, and Carl named it: *"Are we shipping a product
@@ -292,9 +331,15 @@ export default function Home() {
 
                   ⚠ TONE FOR THE WHOLE SECTION, Carl's words: *"businesslike but not corporate.
                   Personal, confident that says in every way 'we got your back'."*             */}
-              <p className="mt-3 text-sm text-neutral-400 leading-relaxed max-w-sm">
-                We offer ongoing maintenance, updates and support. In an ever changing world we
-                endeavour to keep your site current, capable, and ready for whatever comes next.
+              {/* ⚠ OVERTAKEN 19 October 2026 (D-099); the heading is Carl's and KEPT. Was: "We
+                  offer ongoing maintenance, updates and support. In an ever changing world we
+                  endeavour to keep your site current, capable, and ready for whatever comes next."
+                  ⛔ STILL TRUE: an OFFER, not a diagnosis — "for as long as you want them" keeps it
+                  declinable; no prediction, no fear; "ready for whatever comes next" survives.
+                  "We stay." is the "we got your back" in two words.                            */}
+              <p className="mt-3 mx-auto text-sm text-neutral-400 leading-relaxed max-w-sm text-balance">
+                We stay. Maintenance, updates and support for as long as you want them, keeping
+                your site current, capable and ready for whatever comes next.
               </p>
             </div>
 
@@ -453,6 +498,11 @@ export default function Home() {
                 "Premium" survives TWICE on this page — the `#services` intro and the `#work`
                 subtext — and this was the third. ⛔ Card 1's heading "Premium Website Design"
                 also keeps it, so the word is not being retired; only the third body mention is.
+                ⚠ *Overtaken 19 October 2026 (D-099):* the `#services` intro and card 1's heading
+                no longer carry "premium" — card 1 now reads "Bespoke Website Design" — so
+                "premium" survives ONCE (the `#work` subtext, itself due for re-reading), and
+                "bespoke" now appears TWICE (card 1's heading and this paragraph): Carl's
+                "reinforces", not yet "labour the point".
 
                 ⚠ AND "BESPOKE" IS ALREADY THE ARGUMENT card 1's body makes. A claim a
                 competitor cannot honestly copy, where "premium" only asks to be believed.    */}

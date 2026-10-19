@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-080 — Home §2 (`#services`): The Copy Rewritten As Us, The Section Centred (D-099): "Looks Better"
+
+**Date:** 2026-10-19
+**Reviewer:** Human Founder
+**Subject:** `app/page.tsx` `#services` — the day-1 placeholder copy replaced: heading *"A front door worth knocking on."*, a two-sentence intro, cards *Bespoke Website Design* / *Website Transformation* / *Guided Enquiries* / *Ongoing Long Term Care*; the heading, intro and card text centred and `text-balance`d. Captures: `live-work/screenshots/home-services-work-19-october/services-take{1,2}.png`.
+
+**Carl's verdicts, verbatim:** *"The door idea is great,. A recognition of that from one selling front doors."* — *"I think the wording is good, avoids jargon. Smart where it helps and human where is matters is a brilliant phrase."* — on the centring: *"I think it looks better, more like a hierarchy or family tree that leads from the opening statement."*
+
+**Findings:**
+
+- ✔ **"Looks better"** for the layout, the words used; the copy praised, not stamped "approved". Not a master (D-035).
+- ⛔ "Fewer clients" cut: the business plan is not client-facing (ethos §4a).
+- ⚠ Not watched: phones and tablets (mastering, D-094); the boxes' visual design (still day-1 CSS).
+
+---
+
 ## R-079 — `/start`'s Three Open Takes: Field Labels, Hover Text, Card Exit (D-023): "Meet Approval"
 
 **Date:** 2026-10-19
