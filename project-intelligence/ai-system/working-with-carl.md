@@ -196,6 +196,12 @@ whole point of growing it.
   Lune* over Beethoven's Fifth: the flourish lands *because* everything before
   it held back. He will discard something for being "cheesy" (overt,
   self-announcing) and keep the same mechanism when it is earned and placed.
+  ⚠ *Restated by Carl, 19 October 2026, of the hero:* less Beethoven's Fifth or
+  *Thus Spake Zarathustra*, more *Clair de Lune* **with its arpeggio flourish
+  in the middle** — the flourish is in the piece, placed, not absent. The same
+  day's hero beats map onto it: the lean and the waddle are the quiet bars, the
+  edge wipe the arpeggio rising, the burst the release (D-098). Carl: *"our
+  sites are not just built, they are composed."*
 - **The creative process moves, and he expects it to.** *"Rarely does what I
   hear in my head come out the speakers at the end."* Ideas change on the fly;
   inspiration arrives mid-process. The unexpected turns (the hero and
