@@ -194,7 +194,7 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-19 (session 2) — the ornate corners ON THE HOME PAGE, approved (R-084); the structural note closed at v6.*
+*Last updated: 2026-10-19 (session 2, end) — the ornate corners ON THE HOME PAGE, approved (R-084), lit (R-085); the deadline measured on production (D-100); the hero's behaviour raised (D-098); film 02 captured. Next: Carl's order — Send (domain + mailbox first) → `/about` §3 → the hero.*
 
 *Previously: 2026-10-19 — home §2 and §3 rewritten as us and centred (R-080); the ornate corners designed on `/proto/corner` — shape, gold and platinum blue approved (R-081 – R-083); the structural note with the Architect. Not on the page.*
 
