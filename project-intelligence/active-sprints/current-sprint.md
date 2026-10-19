@@ -130,7 +130,7 @@ Built in chunks on the site page, each judged by Carl. **Ice blue #CFE6FF** (Nex
 
 ## Current work — the home page's §2 and §3 copy, re-read as us (D-099, 19 October 2026)
 
-Carl: the day-1 copy was placeholder, *"Generic descriptions of a future Agency. Now we have meat on the bone"*; §2 and §3 are *"the shire after the opening monologue"* — restraint after the hero. ✔ **§2 rewritten and centred** (R-080, *"looks better, more like a hierarchy or family tree"*): *"A front door worth knocking on."*, the four subjects kept, *"Smart where it helps, human where it matters."* ⛔ The business plan (*fewer clients*) is not client-facing. **Next: §3.**
+Carl: the day-1 copy was placeholder, *"Generic descriptions of a future Agency. Now we have meat on the bone"*; §2 and §3 are *"the shire after the opening monologue"* — restraint after the hero. ✔ **§2 rewritten and centred** (R-080, *"looks better, more like a hierarchy or family tree"*): *"A front door worth knocking on."*, the four subjects kept, *"Smart where it helps, human where it matters."* ⛔ The business plan (*fewer clients*) is not client-facing. ✔ **§3 rewritten** — heading and subtext top and centre; the 140-word paragraph split into three boxed subjects, *Made from scratch* (what bespoke means: not a template) / *Proven on ourselves first* / *Built to last*, at §2's lengths (*"looks better"*); boxed for a plan of Carl's still to come.
 
 ## Current work — the Q&A answer cards' edge and light (D-051, D-029 reopened, 15 October)
 

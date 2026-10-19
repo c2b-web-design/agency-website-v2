@@ -359,7 +359,12 @@ export default function Home() {
       <section id="work" className="min-h-[calc(100*var(--vh))] flex items-center [&>div]:w-full border-t border-neutral-800">
         <Container>
 
-          <div className="max-w-2xl">
+          {/* ⛔ TOP AND CENTRE, AS IN `#services` — Carl, 19 October 2026 (D-099): *"I think the
+              Heading and subtext can be used like in Sect 2, top and centre. If the paragraph can be
+              broken down into 3 subjects, more concise that can be left, right and centre under the
+              main heading that would make it better for the user, a variation on 2 and the info dump
+              would be less "busy"."* ⛔ Supersedes the provisional left column (2 September). */}
+          <div className="max-w-3xl mx-auto text-center">
             {/* ⛔ CARL'S WORDS, 2 September 2026 — approved verbatim. Was "Built to set the
                 standard." over a two-sentence intro.
 
@@ -385,16 +390,28 @@ export default function Home() {
                 Principle" — it is the same claim as the body's, so heading and paragraph make
                 ONE argument rather than two. ⛔ "Guided by Principle" was ruled out as METHOD
                 language: how the work is done is /about's subject, not the landing page's.    */}
-            <h2 className="text-3xl font-semibold tracking-tight">
-              Quality Without Exception.
+            {/* ⚠ OVERTAKEN 19 October 2026 (D-099): sentence case to match `#services` and
+                `#contact` ("Quality Without Exception." before) — Carl's words otherwise kept.
+                ⛔ STILL TRUE: no "we"; the possessives carry the speaker.                    */}
+            <h2 className="text-3xl font-semibold tracking-tight text-balance">
+              Quality without exception.
             </h2>
-            {/* max-w-lg: mirrors the Services intro paragraph constraint —
-                heading stays wide (672px via wrapper), paragraph pulls in to
-                512px, consistent with the established hierarchy language.   */}
-            <p className="mt-4 text-base text-neutral-400 leading-relaxed max-w-lg">
-              One standard, applied to our own work and to yours — clear positioning, premium
-              design, intelligent enquiry thinking, and careful ongoing refinement.
+            {/* ⚠ OVERTAKEN 19 October 2026 (D-099): the subtext stops at the philosophy. Was
+                "One standard, applied to our own work and to yours — clear positioning, premium
+                design, intelligent enquiry thinking, and careful ongoing refinement." — the list
+                repeated `#services`' four cards one screen later, and carried an em dash and the
+                page's last body "premium".                                                  */}
+            {/* ⛔ SAY ENOUGH — Carl, 19 October 2026: *"The heading subtext is sparse. so is boxes 2
+                and 3. sometimes not saying enough can be bad. This is an info dump, but after the
+                visual spectacle of the Hero, this text section is where we must sell ourselves
+                verbally. Wordcount should be similar to 2, only the layout is different."* So the
+                subtext and columns match `#services`' intro and cards in length (~30 words each).
+                ⛔ Still no "we" here: "this site is the proof" lets the site speak.           */}
+            <p className="mt-4 mx-auto text-base text-neutral-400 leading-relaxed max-w-xl text-balance">
+              One standard, applied to our own work and to yours. This site is the proof: every page,
+              every detail and every line of code held to the care your business would receive.
             </p>
+          </div>
 
             {/* ⛔⛔ THE THREE CARDS ARE GONE. Carl's decision, 2 September 2026: *"cards will be
                 gone, that is a decision."* Their content is MERGED into the paragraph below —
@@ -427,17 +444,66 @@ export default function Home() {
                 ⚠ "An asset, as well as a brochure" is CARL'S AMENDMENT to the draft's "an asset,
                 not a brochure". It concedes the presentational role on purpose rather than
                 denying it.                                                                    */}
-            <p className="mt-6 text-base text-neutral-400 leading-relaxed max-w-lg">
-              Our design standards come down to restraint and deliberate detail: nothing on a page
-              that has not earned its place. Trust gets built before a word is exchanged, and that
-              only happens when the work is careful enough to notice. In business thinking we begin
-              with what the site has to do — how the business is seen, how enquiries come in, how
-              fast they are answered, and what it is still worth years from now. A website is an
-              asset, as well as a brochure. We apply modern capabilities where they earn their keep,
-              so the site can qualify interest, reduce admin, and take on more without taking more
-              of your time. We hold our own work to this, which is the only honest way to offer it
-              to anyone else. Everything here was built the way we would build your website.
-            </p>
+          {/* ⚠⚠ OVERTAKEN 19 October 2026 (D-099) — THE PARAGRAPH IS NOW THREE SUBJECTS, IN OPEN
+              COLUMNS, NOT BOXES. Carl asked for the split (above). ⛔ D-068's reason STILL HOLDS
+              and is why there are NO BORDERS: a second grid of bordered boxes after `#services`'
+              2×2 makes the eye skim. `#services` is boxes; this is open columns and space — the
+              same family tree, a different form. ⛔ The 140-word paragraph it replaces:
+              "Our design standards come down to restraint and deliberate detail: nothing on a page
+              that has not earned its place. Trust gets built before a word is exchanged… We hold our
+              own work to this, which is the only honest way to offer it to anyone else. Everything
+              here was built the way we would build your website." (full text in git, `6c011d6`).
+              The two registers: LEFT and RIGHT state; CENTRE speaks — "we" once.             */}
+          {/* `mt-24` (was `mt-16`) — Carl, 19 October 2026: *"Move the heading and subtext up
+              slightly. it looks a bit cramped, give the boxes some space to breathe."* The section
+              centres its content, so the larger gap lifts the heading by half of it.        */}
+          {/* ⛔⛔ BOXED AGAIN — Carl, 19 October 2026: *"the 4 subjects have boxes round then in sect
+              2 we can see visually, sect 3 does not. can you give them boxes. this will become
+              important when you see what i have in mind for them."* `#services`' exact card style
+              (border-neutral-800, p-6 md:p-8) and its gap-6 (was gap-12, open columns). ⚠ D-068's
+              reason (a second bordered grid makes the eye skim) is OVERTAKEN by Carl's plan for
+              these boxes, which is still to come — not contradicted, and not yet known here.  */}
+          <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+
+            {/* ⛔ WHAT "BESPOKE" MEANS — Carl, 19 October 2026: *"People and website designers
+                especially see websites made with AI and they think Templates… If they were going
+                for a fitting for a suit we offer them not just the type of pinstripe, but the
+                material and weft of the fabric too."* "Look closely" invites the developer's eye;
+                "materials, light and the way it moves" is the weft — literal on this site.
+                ⚠ HONEST BECAUSE the planned template extraction is the WORKSHOP (tools, always
+                empty), not a site design (`live-work/references/workshop-template-and-client-delivery.md`). */}
+            <div className="border border-neutral-800 p-6 md:p-8">
+              <h3 className="text-lg font-semibold tracking-tight">Made from scratch</h3>
+              <p className="mt-3 mx-auto text-sm text-neutral-400 leading-relaxed max-w-sm text-balance">
+                Look closely. Nothing here came from a template. It was made the way your website
+                would be: cut for one business only, down to its materials, its light and the way it
+                moves.
+              </p>
+            </div>
+
+            {/* ⛔ WALKING THE WALK — Carl: *"to a great extent it will be working along AI, as we
+                are doing. Walking the walk."* The centre, where the eye lands first. Names no
+                technology; promises nothing beyond what we use ourselves.                   */}
+            <div className="border border-neutral-800 p-6 md:p-8">
+              <h3 className="text-lg font-semibold tracking-tight">Proven on ourselves first</h3>
+              <p className="mt-3 mx-auto text-sm text-neutral-400 leading-relaxed max-w-sm text-balance">
+                We work alongside modern technology every day, and only recommend what has proved
+                itself in our own work first. Nothing untested reaches your business, and a person
+                always stands behind it.
+              </p>
+            </div>
+
+            {/* ⛔ "An asset, as well as a brochure" — CARL'S AMENDMENT (2 September), kept. "Worth
+                as much in years to come" carries the old "what it is still worth years from now". */}
+            <div className="border border-neutral-800 p-6 md:p-8">
+              <h3 className="text-lg font-semibold tracking-tight">Built to last</h3>
+              <p className="mt-3 mx-auto text-sm text-neutral-400 leading-relaxed max-w-sm text-balance">
+                A website is an asset, as well as a brochure, made to be worth as much in years to
+                come as on the day it goes live, and to grow with your business rather than be
+                outgrown by it.
+              </p>
+            </div>
+
           </div>
         </Container>
       </section>
