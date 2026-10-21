@@ -14,6 +14,11 @@ play along with the blue transition."*
 - → The ROOM's desk mark (the §2 "Roles" logo) falls INTO the player: the top-edge wipe (a clipping plane,
   `about-card-canvas.tsx`, `DESK_MARK_DROP`) replaced by a temporary mask to the player's edges. It lands (Carl, earlier: *"hit
   its position, bounce slightly and become face on"*), then the viewer's 2D outline takes over with the blue transition.
+- ⛔ **Carl, after the push:** *"It makes sense to carry on with the Roles Logo inside the player. We have its trajectory and
+  angles. When it hiys its mark thats when outline logo will come in."* → the room's mark keeps its own trajectory and angles
+  INTO the player; the viewer's outline (and the blue transition) begins at the HIT, not before. Carl: *"Everything is
+  already there to complete the logo journey. Thr readout was neccersary because its outcome determined which logo we should
+  use initially inside the player. It pushed us in the right direction."*
 - ⚠ That is the structural note's option B in part — measure its costs, don't assume them: the room's whole pipeline renders
   on every frame it is asked for; its camera is perspective, so its silhouette vs the 2D outline must be measured at the hand-over.
 - ⚠ **Today's attempt, BUILT AND NOT WORKING (pushed in progress):** the room publishes the mark's pose
