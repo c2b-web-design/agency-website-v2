@@ -2954,6 +2954,14 @@ space top and bottom.** **NOTED, NOT DECIDED.**
 
 # ⛔⛔ THE SHOWROOM SCREEN — WHAT PLAYS BEFORE A SELECTION. CARL'S BRIEF TO THE BUILDER
 
+> ⚠ **OVERTAKEN IN PARTS — read `decisions.md` D-088 first (noted 21 October 2026).** **3 October (session 2):** inside the
+> viewer is *"the digital world"* — the Builder's to CREATE, not pitch (*"You wanna get creative with the C2B screensaver
+> animated logo- go for it"*); ⛔ **BANNED: bouncing Microsoft-like logos.** Carl designs up to the viewer's edge. So the
+> "abstract, no subject" reading below is no longer the only route — an animated mark is invited. **8 October:** the 3D desk
+> mark lands in the player. **14 October:** what stays in view at rest is undecided; **15 October:** parked. **21 October:**
+> the four examples are the `Who we are` button, the corners, the hero and extruded lettering (the table above is stale), and
+> "not a video" applies to the RESTING screen only — the four films play in it.
+
 ⛔⛔ **ITS OWN SESSION, AT THE APPROPRIATE TIME. Carl: *"We will spend a session on this at the
 appropriate time."*** ⚠ **NOTHING IS BUILT FROM THIS ENTRY. It is recorded so the brief is not lost
 and not misremembered.**

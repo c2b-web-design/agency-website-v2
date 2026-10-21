@@ -69,3 +69,10 @@ verify/out/
 # The source PNG and the Gemini image are still unchosen and stay ignored.
 brand-assets/Gemini_Generated_Image_v709qev709qev709.jpg
 brand-assets/logo/c2b-logo-gold-relit-source-1671.png
+
+# Local-only media for the /proto benches — Carl, 21 October 2026 (".gitignore is
+# authorised"). The player bench (/proto/player) plays a stand-in reel cut from
+# film 01's selects, which live on Carl's PC (Videos\C2B Films). Never tracked,
+# never deployed: on Vercel the bench shows its no-film state. ⚠ Nothing may
+# IMPORT a file from here (the 8 October lesson above) — reference by URL only.
+public/proto-local/

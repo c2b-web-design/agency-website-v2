@@ -1,5 +1,5 @@
 import Container from "@/components/layout/container";
-import Image from "next/image";
+import { ExamplesRow } from "@/components/about/player-bench";
 /* ⛔ SCAFFOLDING — the /about §2 wall-card copy, projected onto the wall by a
    homography. A CLIENT component in its own file so THIS page stays a static
    prerendered server component. Delete with the guides. */
@@ -143,6 +143,7 @@ const GOLD_H = parseFloat(GOLD.height);
 const NAV_DROP_PX = 0.5;
 
 const NAV_CENTRE_Y = GOLD_TOP + GOLD_H / 2 + NAV_DROP_PX;
+
 
 export const metadata = {
   title: "About — C2B Web Design",
@@ -869,8 +870,17 @@ export default function About() {
           wireframe like is used in video games with a material put on it and lit
           with an invisible orbital light."*
 
-          ⛔ NO EXAMPLES ARE EMBEDDED YET. Their selection, recolouring and
-          recording is development-pass work and is not authorised.
+          ⛔ THE HEADING AND SUBTEXT DELETED — Carl, 21 October 2026: *"First, the
+          heading and subtext can be deleted."* (Were "What a website can actually
+          do." / "Most reference points are a decade old…".) The left half is now
+          EMPTY, reserved for the four boxes (D-088: stacked top to bottom, left of
+          the player). ⛔ `justify-end` keeps the player on the RIGHT, where it was —
+          the desk mark's drop measures its target from `#examples-player`.
+          ⚠ The section has no heading now (accessibility is mastering's, D-094).
+
+          ⛔ THE FOUR FILMS (Carl, 21 October 2026, D-088): the `Who we are`
+          button; the home page's corners on the bench; the hero; extruded
+          lettering not on the site (also a client template). None is in yet.
 
           ⛔ THE PLAYER'S PLACEHOLDER — Carl, 8 October 2026: *"put a large white
           rectangle on the right hand side of the page in the middle. This is a
@@ -892,22 +902,20 @@ export default function About() {
           zero-warning lint baseline. */}
       <section id="examples" className="min-h-[calc(100*var(--vh))] flex flex-col justify-center [&>div]:w-full border-t border-neutral-800">
         <Container>
-          <div className="flex items-center gap-12">
-          <div className="max-w-2xl flex-1">
-            <h2 className="text-3xl font-semibold tracking-tight">
-              What a website can actually do.
-            </h2>
-            <p className="mt-4 text-base text-neutral-400 leading-relaxed max-w-lg">
-              Most reference points are a decade old, so the current ceiling is
-              hard to picture. This section will show it rather than describe it.
-            </p>
-          </div>
-          <div id="examples-player" aria-hidden="true" className="w-1/2 shrink-0 aspect-video bg-white flex items-center justify-center">
-            <div id="examples-player-target" className="relative w-1/2 aspect-[969/503]">
-              <Image src="/c2b-logo-blue-mark.png" alt="" fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-contain" />
-            </div>
-          </div>
-          </div>
+          {/* ⛔ THE FOUR BOXES, 2 × 2 ON THE LEFT — Carl, 21 October 2026: *"On reflection i think the boxes should be in a
+              2x2 configuration on the left. Keep tham balanced within the viewport…"* (R-086, *"That looks good"*). Each box
+              16:9, a film's frame; centred on the viewer's middle. ⚠ Each will show a STILL of its film at rest, with a
+              short description UNDER it (Carl, the same day) — not built: today a box holds its film's name. */}
+          {/* ⛔ THE BOXES AND THE VIEWER — take 4, "the mark becomes the player" (D-088, 21 October 2026). Carl: *"Just
+              build it"* — the structural note `live-work/structural-note-viewer-on-about-21-october.md`, option A, built on
+              his word without the Architect's review. `ExamplesRow` (`components/about/player-bench.tsx`): the boxes are
+              now buttons (hover = preview, click = play); the viewer's screen carries `#examples-player` (the desk mark's
+              WIPE line, §2's 3 s linger) and the empty `#examples-player-target` (the drop's target AND the viewer's
+              placement of the mark — one source). ⚰️ The white placeholder and the blue PNG are gone. ⚠ No film plays on
+              the page yet: Carl's edits do not exist and the bench's stand-in is local only — each box says its state.
+              ⚠ Follow-ups outside this build's files: the room's latch starting the viewer (`about-card-canvas.tsx`; today
+              it starts when the viewer is in view); a played film re-arming §2 (`neon-bloom.tsx`, Carl 13 October). */}
+          <ExamplesRow onPage />
         </Container>
       </section>
 

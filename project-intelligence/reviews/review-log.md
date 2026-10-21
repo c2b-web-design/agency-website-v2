@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-086 — `/about` §3: The Four Boxes, 2 × 2 Left Of The Player, Heading Deleted (D-088): "That looks good"
+
+**Date:** 2026-10-21
+**Reviewer:** Human Founder
+**Subject:** `/about` §3 — the heading and subtext deleted; four 16:9 boxes in a 2 × 2 grid filling the column left of the player, each holding its film's name (placeholder); the player unchanged on the right. Measured at 1920 × 952: grid 762 × 443, player 827 × 465, one centre line.
+
+**Carl's verdict, verbatim:** *"That looks good. Doing it this way leaves some real estate on the top left should we wish to insert a heading and subtext."*
+
+**Findings:**
+
+- ✔ **Looks good** — the layout, at the level given (not "approved"); the boxes are placeholders, not yet clickable, no stills.
+- ⚠ **Raised, not chosen:** a heading and subtext may return in the space above the grid, top left.
+- ⚠ Not watched: phones, other widths.
+
+---
+
 ## R-085 — The Ornate Corners, Pass 3: The Light — The Studio Drifting, The Blue Lighter (D-100): "Approved"
 
 **Date:** 2026-10-19

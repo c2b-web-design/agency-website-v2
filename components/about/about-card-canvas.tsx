@@ -1429,6 +1429,68 @@ function cornerPose(p: number, psiDeg: number, dMm: number, leftMm: number, com:
   const c = new THREE.Vector3(com[0], com[1], com[2] - depth).applyQuaternion(q).add(pivot);
   return { x: c.x, y: c.y, z: c.z, q };
 }
+/**
+ * ⛔ THE READ-OUT FOR §3's VIEWER — where the desk mark is ON SCREEN during its drop (21 October 2026). Carl, seeing the
+ * viewer draw its own mark before this one arrived: *"it isnt the same logo. This connection, continuity and resolution is
+ * not there because its built before the logo drops in. When the logo drops in, then it must start… Have the logo while
+ * in the player follow the trajectory and hit its position."* — then: *"The logo comes in at an angle. Thats ok, it could
+ * hit its position, bounce slightly and become face on."*
+ * So the room REPORTS, it does not change: each frame of the drop it writes the mark's centre (client px), its height on
+ * screen (one mark height at its depth, × the growth), its orientation in the CAMERA's frame, and the studio's orientation
+ * in the camera's frame, to `window.__c2bDeskMark`. The viewer (`components/about/player-bench.tsx`) draws the same mark
+ * BELOW the player's top edge — where this one is clipped — so the two read as one object crossing into the screen.
+ * ⚠ The room's camera is perspective and the viewer's orthographic: the silhouettes agree closely, not exactly (unmeasured).
+ */
+export type DeskMarkReadout = {
+  inDrop: boolean;
+  latched: boolean;
+  /** the mark's centre, client px */
+  cx: number;
+  cy: number;
+  /** one mark height on screen, client px */
+  hPx: number;
+  /** the mark's orientation in the camera's frame (x, y, z, w) */
+  q: [number, number, number, number];
+  /** the studio's orientation in the camera's frame (the room's env yaw, then the director's turn), or null */
+  env: [number, number, number, number] | null;
+};
+const RO = { c: new THREE.Vector3(), a: new THREE.Vector3(), b: new THREE.Vector3(), up: new THREE.Vector3(), qc: new THREE.Quaternion(), qb: new THREE.Quaternion(), qe: new THREE.Quaternion() };
+function publishDeskMark(camera: THREE.Camera, el: HTMLCanvasElement, body: THREE.Group | null, com: [number, number, number], depth: number, inDrop: boolean, latched: boolean, turn: THREE.Quaternion | null, yaw: THREE.Quaternion | null) {
+  if (typeof window === "undefined") return;
+  const w = window as unknown as { __c2bDeskMark?: DeskMarkReadout };
+  if (!body || (!inDrop && !latched)) {
+    if (w.__c2bDeskMark) w.__c2bDeskMark = { ...w.__c2bDeskMark, inDrop: false, latched: false };
+    return;
+  }
+  const scale = depth / LOGO_MARK_DEFAULTS.depth; // the mark's height in the world (its geometry is one height tall)
+  body.updateWorldMatrix(true, false);
+  camera.updateMatrixWorld();
+  // the geometry's centre (0, h/2, depth/2) in the body's frame (the mesh sits at −com inside it)
+  RO.c.set(-com[0], scale / 2 - com[1], depth / 2 - com[2]);
+  body.localToWorld(RO.c);
+  const r = el.getBoundingClientRect();
+  const toClient = (v: THREE.Vector3) => {
+    const p = v.clone().project(camera);
+    return [r.left + ((p.x + 1) / 2) * r.width, r.top + ((1 - p.y) / 2) * r.height] as const;
+  };
+  const [cx, cy] = toClient(RO.c);
+  camera.getWorldQuaternion(RO.qc);
+  RO.up.set(0, 1, 0).applyQuaternion(RO.qc).multiplyScalar((scale * body.scale.x) / 2);
+  const [, ya] = toClient(RO.a.copy(RO.c).add(RO.up));
+  const [, yb] = toClient(RO.b.copy(RO.c).sub(RO.up));
+  body.getWorldQuaternion(RO.qb);
+  const inv = RO.qc.clone().invert();
+  const q = inv.clone().multiply(RO.qb);
+  let env: DeskMarkReadout["env"] = null;
+  if (turn) {
+    RO.qe.copy(turn);
+    if (yaw) RO.qe.multiply(yaw);
+    const e = inv.clone().multiply(RO.qe);
+    env = [e.x, e.y, e.z, e.w];
+  }
+  w.__c2bDeskMark = { inDrop, latched, cx, cy, hPx: Math.abs(yb - ya), q: [q.x, q.y, q.z, q.w], env };
+}
+
 function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, loop, tie, director, lightUp, wobble, flip, drop, crossing, play, corner, com, depth, originOffMm }: {
   bodyRef: React.RefObject<THREE.Group | null>; followRef: React.RefObject<THREE.Group | null>;
   contactRef: React.RefObject<THREE.MeshBasicMaterial | null>; contactOpacity: number;
@@ -1479,6 +1541,8 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
     let pose: MarkPose;
     let crossP = 0; // the crossing: gold until the fall starts (`deskMarkCrossingP`)
     let grow = 1; // the growth (`growAt`): life-size until the bin's blow
+    let inDrop = false; // the journey is in its drop into §3's viewer (the read-out, below)
+    let turnNow: THREE.Quaternion | null = null; // the studio's turn this frame (the read-out)
     if (play === "start") {
       // ⛔ TAKE 3, STILL — the first fall's start (the default). `?marktip=` holds a point of the tip; no frames asked for.
       pose = tipPose(tipFixed ?? 0);
@@ -1647,6 +1711,7 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
       else if (!loop && tie && journeyAt(dt) > 0) {
         pose = journeyPose(journey.current.t);
         playNow = journey.current.t;
+        inDrop = dropPlay > 0 && journey.current.t >= roomPlay;
       }
       else if (!loop) {
         // ⛔ THE WOBBLE (`DESK_MARK_WOBBLE`) — once, `atMs` after CA's strike; frames asked for until it has finished
@@ -1680,7 +1745,7 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
         st.invalidate();
       }
       // ⛔ THE LIGHT, DIRECTED (`DESK_MARK_DIRECTOR`) — the studio's turn at this play time
-      if (director && flip) director.turn(studioTurnAt(playNow, pose));
+      if (director && flip) director.turn((turnNow = studioTurnAt(playNow, pose)));
     }
     if (bodyRef.current) {
       bodyRef.current.position.set(pose.x, pose.y, pose.z);
@@ -1688,6 +1753,7 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
       bodyRef.current.scale.setScalar(grow);
     }
     if (followRef.current) followRef.current.position.set(pose.x, pose.y, pose.z);
+    publishDeskMark(st.camera, st.gl.domElement, bodyRef.current, com, depth, inDrop, journey.current.latched, turnNow, director?.yaw ?? null);
     // ⛔ BROUGHT UP ON CA's STRIKE (`DESK_MARK_LIGHT_MS`): 0 unlit … 1 fully lit, smootherstep — the mark's light and its
     // cast shadows together
     const litAt = lightUp.at ? lightUp.at.current : 0;
