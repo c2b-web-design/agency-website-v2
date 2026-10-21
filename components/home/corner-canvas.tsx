@@ -11,9 +11,22 @@
  *   module level. ⚠ STATE THAT OUTLIVES THE PAGE (§5a, stated in the note): home → `/about` → home reuses it. NEVER disposed —
  *   both canvases (and a later visit) hold its geometry and maps; each renderer uploads its own copy and frees it with itself.
  * - ⛔ THE FADE: one material per BOX (`createCornerFadeMaterial` — alpha = the fade alone after the alpha test), all of a
- *   section's boxes sharing one program. ⛔ RENDERED FROM THE FIRST FRAME AT FADE 0, never `visible={false}` until the reveal —
- *   three.js skips invisible objects, so their programs would link on the frame the fade starts (the answer cards' "Q5 stalls").
- *   `onReady` fires after that first frame: the shaders are compiled by then.
+ *   section's boxes sharing one program. ⛔ RENDERED AT FADE 0 BEFORE THE REVEAL, never first drawn on the frame the fade
+ *   starts — three.js skips invisible objects, so their programs would link then (the answer cards' "Q5 stalls").
+ * - ⛔ THE SHADERS COMPILE WITHOUT BLOCKING (21 October 2026 — Carl: *"On the corners issue. Implement your
+ *   recommendation."*, D-100): `renderer.compile` hands the programs to the driver and the canvas POLLS each program's
+ *   `isReady()` (three's `compileAsync` method, its loop written here so the fallback's unmount can stop it — three's own
+ *   polls a lost context for ever). The pieces stay `visible={false}` until then: `compile` walks invisible objects too, so
+ *   nothing links on a frame. Before this, the first draw waited ~1 s for the driver in ONE main-thread task — on a cold
+ *   deep link the corners missed the deadline every time, and on the reader's path that freeze landed DURING THE HERO
+ *   (measured, D-100). `onReady` fires after the first frame drawn with them: the programs are linked by then.
+ * - ⛔ AND THE STUDIO's PREFILTER (PMREM) FIRST, THE SAME WAY (`usePrefilteredStudio`). Measured after the compile above
+ *   (21 October): ~570–650 ms still blocked on ONE call — three's GGX prefilter shader, linked and drawn SYNCHRONOUSLY inside
+ *   `compile` when it meets an equirect `envMap`. So the canvas prefilters the studio itself: its programs compiled into the
+ *   same target type they draw into and polled ready, THEN `fromEquirectangular`, and the pieces get the finished cube-UV
+ *   map (three passes it straight through — the same map it would have made). ⚠ THIS READS `PMREMGenerator`'s PRIVATE
+ *   FIELDS (`_setSize`, `_allocateTargets`, `_equirectMaterial`, `_ggxMaterial`, `_pingPongRenderTarget`, three 0.185.1); if a
+ *   three upgrade moves them it FALLS BACK to the synchronous prefilter — slower, never wrong. Re-measure on any upgrade.
  * - ⛔ FRAMES: `frameloop="demand"`. ⛔ PASS 3 (19 October 2026, session 2): the studio DRIFTS (`CORNER_LIGHT`,
  *   `corner-material.ts`), so while `moving` the family button's `Ticker` is mounted — `/about`'s mechanism, REUSED (the
  *   structural note, decision 3): continuous frames ONLY while this canvas is on screen in a visible tab. Under reduced
@@ -23,8 +36,9 @@
  *   the HDRI, the build — R3F rethrows to its parent, caught by `Guard`), or a lost context. ⚠ A browser with no usable WebGL
  *   fails INSIDE R3F's async setup and may throw nothing here — the frame's DEADLINE is the net for that.
  */
-import { Component, Suspense, use, useEffect, useMemo, useRef, type ReactNode } from "react";
+import { Component, Suspense, use, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import * as THREE from "three";
 import bracket from "../../brand-assets/c4bf3a09-80f3-4b2c-b88a-925f08e9c26f.jpg";
 import { buildCornerRelief } from "./corner-geometry";
 import { CORNER_LIGHT, CORNER_LOOKS, createCornerFadeMaterial, type CornerColour } from "./corner-material";
@@ -71,6 +85,68 @@ const CORNERS = [
   { c: "br", at: (b: CornerBox) => [b.x + b.w, -(b.y + b.h)] as const, s: [-1, -1, 1] as const },
 ];
 
+type Ready = { currentProgram?: { isReady(): boolean } };
+/** Poll until every material's program reports linked (`KHR_parallel_shader_compile`; without it three reports ready at
+ *  once). Returns the cancel. */
+function whenLinked(gl: THREE.WebGLRenderer, pending: Set<THREE.Material>, done: () => void): () => void {
+  let id = 0;
+  const poll = () => {
+    for (const m of pending) if ((gl.properties.get(m) as Ready).currentProgram?.isReady()) pending.delete(m);
+    if (pending.size === 0) done();
+    else id = window.setTimeout(poll, 10);
+  };
+  poll();
+  return () => window.clearTimeout(id);
+}
+
+/** `PMREMGenerator`'s private surface this file reads (three 0.185.1 — see the header). */
+type PmremInside = {
+  _setSize?: (cubeSize: number) => void;
+  _allocateTargets?: () => THREE.WebGLRenderTarget;
+  _equirectMaterial?: THREE.Material | null;
+  _ggxMaterial?: THREE.Material | null;
+  _pingPongRenderTarget?: THREE.WebGLRenderTarget | null;
+};
+
+/** ⛔ The studio prefiltered for THIS renderer without a main-thread compile stall (see the header). Null until done. */
+function usePrefilteredStudio(gl: THREE.WebGLRenderer, hdri: THREE.DataTexture): THREE.Texture | null {
+  const [env, setEnv] = useState<{ from: THREE.DataTexture; map: THREE.Texture } | null>(null);
+  useEffect(() => {
+    const gen = new THREE.PMREMGenerator(gl);
+    const inside = gen as unknown as PmremInside;
+    let target: THREE.WebGLRenderTarget | null = null;
+    let cancel = () => {};
+    const finish = () => {
+      target = gen.fromEquirectangular(hdri);
+      setEnv({ from: hdri, map: target.texture });
+    };
+    if (typeof inside._setSize === "function" && typeof inside._allocateTargets === "function") {
+      // the sizes `fromEquirectangular` will choose (width / 4), so the materials made here are the ones it draws with
+      inside._setSize(hdri.image.width / 4);
+      inside._allocateTargets().dispose();
+      gen.compileEquirectangularShader();
+      const mats = [inside._equirectMaterial, inside._ggxMaterial].filter((m): m is THREE.Material => !!m);
+      const into = inside._pingPongRenderTarget ?? null;
+      if (mats.length === 2 && into) {
+        // compiled while bound to a target of the type they draw into (half float, linear — no tone mapping, no sRGB out)
+        const was = gl.getRenderTarget();
+        gl.setRenderTarget(into);
+        const pending = new Set<THREE.Material>();
+        const flat = new THREE.OrthographicCamera();
+        for (const m of mats) gl.compile(new THREE.Mesh(new THREE.BufferGeometry(), m), flat).forEach((x) => pending.add(x));
+        gl.setRenderTarget(was);
+        cancel = whenLinked(gl, pending, finish);
+      } else cancel = whenLinked(gl, new Set(), finish);
+    } else cancel = whenLinked(gl, new Set(), finish);
+    return () => {
+      cancel();
+      target?.dispose();
+      gen.dispose();
+    };
+  }, [gl, hdri]);
+  return env && env.from === hdri ? env.map : null;
+}
+
 function fadeAt(i: number, reveal: CornerReveal, now: number): number {
   if (reveal.at === null) return 0;
   const t = (now - reveal.at - i * reveal.stagger) / reveal.dur;
@@ -85,15 +161,27 @@ function Pieces({ colour, boxes, reveal, moving, onReady }: { colour: CornerColo
   const hdri = use(loadStudioHdri(STUDIO_HDRI_SRC, CORNER_LOOKS[colour].room));
   const size = useThree((s) => s.size);
   const invalidate = useThree((s) => s.invalidate);
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
   const n = boxes.length;
+  const env = usePrefilteredStudio(gl, hdri);
   const perBox = useMemo(
-    () => Array.from({ length: n }, () => createCornerFadeMaterial(colour, built, hdri)),
-    [n, colour, built, hdri],
+    () => (env ? Array.from({ length: n }, () => createCornerFadeMaterial(colour, built, env)) : []),
+    [n, colour, built, env],
   );
   useEffect(() => () => perBox.forEach((p) => p.material.dispose()), [perBox]);
 
+  // ⛔ THE COMPILE, OFF THE MAIN THREAD (see the header): drawn only once every program reports ready
+  const [compiled, setCompiled] = useState<typeof perBox | null>(null);
+  const linked = perBox.length > 0 && compiled === perBox;
+  useEffect(() => {
+    if (perBox.length === 0) return;
+    return whenLinked(gl, gl.compile(scene, camera), () => setCompiled(perBox));
+  }, [gl, scene, camera, perBox]);
+
   // a frame whenever what is drawn changes; the sequence keeps asking while a fade runs
-  useEffect(() => invalidate(), [boxes, reveal, size, invalidate]);
+  useEffect(() => invalidate(), [boxes, reveal, size, linked, invalidate]);
   const reported = useRef(false);
   useFrame(() => {
     const now = performance.now();
@@ -109,9 +197,9 @@ function Pieces({ colour, boxes, reveal, moving, onReady }: { colour: CornerColo
       if (reveal.at !== null && p.fade.value < 1) running = true;
     });
     if (running) invalidate();
-    if (!reported.current) {
+    if (linked && !reported.current) {
       reported.current = true;
-      // this frame renders (and links the programs) straight after the callbacks — ready once it has
+      // this frame draws the pieces (their programs already linked) straight after the callbacks — ready once it has
       window.setTimeout(onReady, 0);
     }
   });
@@ -120,14 +208,14 @@ function Pieces({ colour, boxes, reveal, moving, onReady }: { colour: CornerColo
   const ox = -size.width / 2;
   const oy = size.height / 2;
   return (
-    <>
-      {boxes.map((b, i) =>
+    <group visible={linked}>
+      {perBox.length > 0 && boxes.map((b, i) =>
         CORNERS.map(({ c, at, s }) => {
           const [x, y] = at(b);
           return <mesh key={`${i}-${c}`} geometry={built.geometry} material={perBox[i].material} position={[ox + x, oy + y, 0]} scale={s} />;
         }),
       )}
-    </>
+    </group>
   );
 }
 

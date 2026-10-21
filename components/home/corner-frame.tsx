@@ -30,8 +30,12 @@ const CornerCanvas = dynamic(() => import("./corner-canvas"), { ssr: false });
 
 /** The grid has ARRIVED when its centre is above this fraction of the window's height. ⚠ A tuning value (the note). */
 const ARRIVAL_LINE = 2 / 3;
-/** ⛔ The deadline: arrived but not ready this long → the border, for good. ⚠ A take (~1–1.5 s, the note) — to be measured on
- *  a COLD deep link over a throttled connection, then put to Carl. */
+/** ⛔ The deadline: arrived but not ready this long → the border, for good. ⛔ KEPT AT 1500 ms (Carl, 21 October 2026: *"On
+ *  the corners issue. Implement your recommendation."* — keep `N`, compile without blocking, `corner-canvas.tsx`). Measured on
+ *  production, 19 October: a cold deep link missed it EVERY time, on a ~1 s shader-compile freeze, not the network.
+ *  ⚠ MEASURED AFTER THE CHANGE (21 October, local production, D-100): the corners' own main-thread waits ~600 → ~10–75 ms,
+ *  but a cold deep link STILL misses 1500 ms — ready ~2.0 s after navigation, because the GPU's compile takes that long
+ *  whether or not it blocks. Slow ≠ failed: a device slower than this gets the border, never the corners. */
 const DEADLINE_MS = 1500;
 /** ⛔ THE SEQUENCE — THE Q&A CARD ENTRANCE's TIMING, TAKEN WHOLE (Carl, 19 October 2026, session 2: *"it runs a little fast.
  *  Go look at the card entrance in the q+a. As one fades in slower the next one fades in before it has completed. It has
