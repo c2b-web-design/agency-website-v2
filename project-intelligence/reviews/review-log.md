@@ -71,7 +71,7 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 **Reviewer:** Human Founder
 **Subject:** `/about` §3 — the room's own desk mark falls INTO the player (the room painted over §3, `z-[1]`; masked to the player's left, right and bottom edges); THE HIT in stages: the b's first contact with a solid line (the face-on logo's base), the c's swing to full contact (half the remaining turn to face-on); THE SHOCK at full contact (3D and colour knocked out, the white outline in the mark's exact projected shape); THE BOUNCE (white outline, slow, toward the player's top, face-on at the zenith, floating down 2.8 s); THE CODE RAIN on the descent (blue, inside the letters, glowing, two layers, sparks); STAGE 5 (the white fades once the last code has left; take 4's lap → the drain → the blue metal re-forms).
 
-**Carl's verdicts, verbatim, in order:** stage 2 *"Yes, good."*; the bounce *"That looks excellent."*; the rain, take 2 *"that looks fantastic."*; the whole: *"Approved. Commit and push."*
+**Carl's verdicts, verbatim, in order:** stage 2 *"Yes, good."*; the bounce *"That looks excellent."*; the rain, take 2 *"that looks fantastic."*; the whole: *"Approved. Commit and push."* — then, the verdict: *"This was your concept. Go look at the files. Your idea. I may of added the icing but this is your cake. Outstansing. More than pleased with the result. Well done, extremely well done."* (Attribution recorded in D-088, 22 October.)
 
 **Findings:**
 
