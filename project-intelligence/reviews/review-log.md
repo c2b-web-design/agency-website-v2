@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-087 — `/about` §3: The Same Logo — The Drop Into The Player, The Hit, The Shock, The Bounce, The Code Rain, The Restoration (D-088): "Approved"
+
+**Date:** 2026-10-22
+**Reviewer:** Human Founder
+**Subject:** `/about` §3 — the room's own desk mark falls INTO the player (the room painted over §3, `z-[1]`; masked to the player's left, right and bottom edges); THE HIT in stages: the b's first contact with a solid line (the face-on logo's base), the c's swing to full contact (half the remaining turn to face-on); THE SHOCK at full contact (3D and colour knocked out, the white outline in the mark's exact projected shape); THE BOUNCE (white outline, slow, toward the player's top, face-on at the zenith, floating down 2.8 s); THE CODE RAIN on the descent (blue, inside the letters, glowing, two layers, sparks); STAGE 5 (the white fades once the last code has left; take 4's lap → the drain → the blue metal re-forms).
+
+**Carl's verdicts, verbatim, in order:** stage 2 *"Yes, good."*; the bounce *"That looks excellent."*; the rain, take 2 *"that looks fantastic."*; the whole: *"Approved. Commit and push."*
+
+**Findings:**
+
+- ✔ **Approved** — the whole journey from the drop to the restored logo, at Carl's window (1920 × 952), dev server.
+- ✔ Measured: the b's contact within 1 px of the line; full contact both ends within 1 px; the shock's first frame covers 100% of the 3D metal (right/bottom edges ≤ 1 px); the blink at the hand-over found and fixed; the rain 165 frames at median 16.7 ms (2 frames > 33 ms at its start; the shock frame 66 ms); every §3 control and card 1's restart still clickable (`about-s2-return-verify.mjs` 20/20).
+- ⚠ Takes inside the viewer (the Builder's): the flash, the glow, the line 1.5 px, 1.7 s up / 2.8 s down, 7% margin, the rain's sizes and speeds, the fade 2.2 s. The first lap after the hit is take 4's full 16 s (the full logo ~26 s after the shock) — offered shorter, not asked for.
+- ⚠ Not watched: Carl's GPU and Chrome, production, phones, keyboard focus.
+
+---
+
 ## R-086 — `/about` §3: The Four Boxes, 2 × 2 Left Of The Player, Heading Deleted (D-088): "That looks good"
 
 **Date:** 2026-10-21

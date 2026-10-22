@@ -396,7 +396,157 @@ const smoother = (x: number) => x * x * x * (x * (x * 6 - 15) + 10);
  *  the rebound's height (a share of the mark's height). ⚠ Takes. */
 const LAND_MS = 900;
 const LAND_BOUNCE = 0.045;
-type Arrival = "empty" | "enter" | "land" | "cycle";
+/**
+ * ⛔⛔ THE SHOCK AND THE BOUNCE — the hit's stages 3–4 (D-088, 22 October 2026; `DESK_MARK_HIT`, `about-card-canvas.tsx`).
+ * Carl: *"Now it needs to bounce up towards the top of the player… It should be just the outline, in white. As it reaches
+ * its zenith the turn can be completed so its face on. The bounce can be much slower, theres hardly any mass in the logo…
+ * The moment the c makes contact, thats when the "shock" happens."*
+ *   - THE SHOCK, at full contact (the room's latch — the room hides its mark that frame): the silhouette flashes WHITE and
+ *     hollows (`flashMs`), the outline flaring wide and glowing (`shockMs`) and settling to a steady white line (`width`).
+ *     The 3D and the colour gone in one blow.
+ *   - THE BOUNCE: it starts in the room's EXACT shape (the read-out's projected `outline`, perspective and all); over the
+ *     rise it turns to face-on — complete AT THE ZENITH — drifts to its place, and the room's perspective fades out. Up
+ *     to `topMargin` of the screen's height below its top. ALMOST NO MASS: the hit's impulse dies in drag — a quick start
+ *     easing into a long hang (ease-out cubic over `upMs`), then a gentle descent that settles (smoothstep over `downMs`),
+ *     far slower than the fall. It lands face-on in its place on the line and HOLDS (stage 5, the fade and the lap, not
+ *     built). Under reduced motion it is simply in its place.
+ * ⚠ The Builder's takes: the times, the margin, the flash, the line's width.
+ * ⛔ THE DESCENT SLOWER — Carl, 22 October 2026: *"That looks excellent… The logo on its descent should be a bit slower,
+ * almost floating."* → `downMs` 1900 → 2800 (the Builder's figure for "a bit slower"); the curve unchanged.
+ */
+/**
+ * ⛔ STAGE 5 — THE FADE, THEN THE OUTLINE ANIMATION (Carl, 22 October 2026: *"When the last symbol of code has ran through
+ * the logo, thats when the slow fade should start. When its completely gone the outline animation should start
+ * transitioning into the full logo."*). The white outline fades (`fadeMs`, smoothstep) from the moment the LAST code has
+ * left the logo (`rainEndMs` — and not before it is in place); when it is gone, take 4's cycle is entered AT THE LAP (no
+ * metal rest, no recede — there is no metal yet): the light runs the outline, drains to blue, and the blue metal re-forms
+ * — the full logo, restored. ⚠ `fadeMs` the Builder's take for "slow".
+ */
+const HIT_BOUNCE = { upMs: 1700, downMs: 2800, topMargin: 0.07, flashMs: 180, shockMs: 450, width: 1.5, fadeMs: 2200 };
+/**
+ * ⛔⛔ THE CODE RAIN — THE LOGO FIXING ITSELF (D-088, 22 October 2026). Carl's idea: *"something to indicate the logo is
+ * fixing itself. How would something digital do that?… Whats the most famous green visual that indicates code? Which i
+ * believe was Sushi recipes?"* — *The Matrix*'s digital rain (its characters scanned from sushi recipes); the nod pairs
+ * with the hero's line, "There is no spoon" (D-098). *"They should be blue and happen on the downward journey. Its your
+ * call on the characters and timing."* The Builder's design:
+ *   - IT RAINS INSIDE THE LOGO's OWN SHAPE (clipped to the outline), in the logo's frame — falling WITH the logo as it
+ *     floats down, and faster than it: the broken mark re-filled by its own code. Nothing outside the letters.
+ *   - THE CHARACTERS: half-width katakana MIRRORED, as the film's were, with numerals — and now and then the logo's own
+ *     c, 2 and b, unmirrored (the code that rebuilds it contains it: `cOdds`). Drawn once into atlases (`rainAtlas`);
+ *     where the device has no Japanese glyphs, numerals and c 2 b alone.
+ *   - THE COLOURS, OURS: the head ice (#CFE6FF), the trail the light blue (#5F88C8) then the platinum (#3F6DB8), fading.
+ *   - THE TIMING: from the zenith; full within `rampMs`; each drop's start chosen so that it has LEFT the shape by the
+ *     landing — the rain drains as the logo settles, and it lands whole. The characters flicker as they fall.
+ * ⚠ Takes: the glyph size (mark heights), the speeds (mark heights a second, relative to the logo), the trails (glyphs),
+ * the drops per column, the flicker (ms).
+ * ⛔ TAKE 2 — LIGHT, NOT PAINT (Carl, 22 October 2026, two images: "Inspiration." — the film's green rain, and a blue
+ * binary rain with glowing flares; principles taken, the design ours — `feedback`: boards are "something like this"):
+ *   - the HEAD is white and GLOWS (a halo), as the film's; the whole rain carries a soft GLOW (`glowDiv`) that bleeds a
+ *     little past the outline, as light would — the rain stays inside the letters, its light does not;
+ *   - DEPTH: a second, finer, slower, fainter layer behind (`layers[1]`), as the film's dim background columns;
+ *   - SPARKS: ~1 head in 6 FLARES (`flareOdds`) — the blue board's points of light — a soft burst riding the head.
+ *   The glow is a downsampled bloom (no canvas `filter` — measured too slow), so it works everywhere.
+ */
+const CODE_RAIN = {
+  rampMs: 400, flicker: [90, 260], cOdds: 0.06, seed: 1999, glowDiv: 5, glow: 1, flareOdds: 0.16,
+  layers: [
+    { glyph: 0.075, speed: [1.1, 1.9], trail: [8, 16], drops: 5, alpha: 1 },
+    { glyph: 0.046, speed: [0.7, 1.15], trail: [10, 22], drops: 6, alpha: 0.4 },
+  ],
+};
+type RainDrop = { speed: number; trail: number; start: number; flare: boolean };
+type RainColumn = { x: number; glyph: number; layer: number; flick: number; drops: RainDrop[] };
+/** A seeded generator (mulberry32) — the same rain every time, so it can be filmed and judged. */
+function seeded(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+/** The rain's columns across the mark (mark units), each with its drops timed to leave the shape before the landing. */
+function makeRain(downMs: number): RainColumn[] {
+  const R = CODE_RAIN;
+  const rnd = seeded(R.seed);
+  const out: RainColumn[] = [];
+  R.layers.forEach((L, layer) => {
+    const cols = Math.floor(LOGO_ASPECT / L.glyph);
+    const off = layer ? L.glyph * 0.5 : 0; // the back layer's columns fall between the front's
+    for (let c = 0; c < cols; c++) {
+      const drops: RainDrop[] = [];
+      for (let d = 0; d < L.drops; d++) {
+        const speed = L.speed[0] + rnd() * (L.speed[1] - L.speed[0]);
+        const trail = Math.round(L.trail[0] + rnd() * (L.trail[1] - L.trail[0]));
+        const travel = (1.1 + trail * L.glyph) / speed; // s: from above the mark until its tail has left the bottom
+        const span = Math.max(0, downMs / 1000 - travel); // the starts that still leave the shape by the landing
+        drops.push({ speed, trail, start: rnd() * span, flare: layer === 0 && rnd() < R.flareOdds });
+      }
+      out.push({ x: -LOGO_ASPECT / 2 + (c + 0.5) * L.glyph + off, glyph: L.glyph, layer, flick: R.flicker[0] + rnd() * (R.flicker[1] - R.flicker[0]), drops });
+    }
+  });
+  return out;
+}
+/** When the LAST code has left the logo, ms into the descent: the latest drop's tail passing the mark's bottom (y 0). */
+function rainEndMs(cols: RainColumn[]): number {
+  let end = 0;
+  for (const col of cols) for (const d of col.drops) end = Math.max(end, 1000 * (d.start + (1.05 + (d.trail + 1) * col.glyph) / d.speed));
+  return end;
+}
+type RainAtlas = { cell: number; n: number; own: number; white: HTMLCanvasElement; head: HTMLCanvasElement; light: HTMLCanvasElement; deep: HTMLCanvasElement };
+let rainAtlasCache: RainAtlas | null = null;
+/** The characters, drawn once per colour into a strip: [katakana…, 0–9] mirrored, then c 2 b unmirrored (the last `own`). */
+function rainAtlas(): RainAtlas {
+  if (rainAtlasCache) return rainAtlasCache;
+  const cell = 48;
+  const font = `${Math.round(cell * 0.86)}px "MS Gothic", "Yu Gothic", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans Mono CJK JP", monospace`;
+  // does the device draw katakana? compare one against an unassigned code point (drawn as nothing, or as a box)
+  const probe = (ch: string) => {
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = cell;
+    const g = cv.getContext("2d")!;
+    g.font = font;
+    g.fillText(ch, 4, cell * 0.8);
+    return g.getImageData(0, 0, cell, cell).data.join(",");
+  };
+  const hasKana = probe("ﾊ") !== probe("͸");
+  const kana = hasKana ? Array.from({ length: 0xff9d - 0xff66 + 1 }, (_, i) => String.fromCharCode(0xff66 + i)) : [];
+  const mirrored = [...kana, ..."0123456789"];
+  const own = ["c", "2", "b"];
+  const strip = (colour: string) => {
+    const cv = document.createElement("canvas");
+    cv.width = cell * (mirrored.length + own.length);
+    cv.height = cell;
+    const g = cv.getContext("2d")!;
+    g.font = font;
+    g.fillStyle = colour;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    mirrored.forEach((ch, i) => {
+      g.save();
+      g.translate(cell * (i + 0.5), cell / 2);
+      g.scale(-1, 1);
+      g.fillText(ch, 0, 0);
+      g.restore();
+    });
+    own.forEach((ch, i) => g.fillText(ch, cell * (mirrored.length + i + 0.5), cell / 2));
+    return cv;
+  };
+  rainAtlasCache = { cell, n: mirrored.length, own: own.length, white: strip("#FFFFFF"), head: strip("#CFE6FF"), light: strip("#5F88C8"), deep: strip("#3F6DB8") };
+  return rainAtlasCache;
+}
+type Arrival = "empty" | "enter" | "land" | "bounce" | "placed" | "cycle";
+/** A point of the outline (mark units: origin bottom-centre, y up) about the mark's centre, turned by `q` (the camera's
+ *  frame) and seen straight on: its offset from the centre in mark heights, y up. */
+function turnPoint(x: number, y: number, q: readonly [number, number, number, number]): [number, number] {
+  const [qx, qy, qz, qw] = q;
+  const vy = y - 0.5;
+  // v' = v + w·t + q × t, t = 2 q × v (v's z is 0: the mark's mid-depth, where the room projected it)
+  const tx = -2 * qz * vy, ty = 2 * qz * x, tz = 2 * (qx * vy - qy * x);
+  return [x + qw * tx + (qy * tz - qz * ty), vy + qw * ty + (qz * tx - qx * tz)];
+}
 /** A quaternion turned toward face-on (the identity) by t — plain maths, so takes 1 and 2 never load three.js. */
 function slerpToFaceOn(q: readonly [number, number, number, number], t: number): [number, number, number, number] {
   let [x, y, z, w] = q;
@@ -433,6 +583,18 @@ function MarkTimeline({ preview, t, choose, metal, active = true }: { preview: n
     io.observe(el);
     return () => io.disconnect();
   }, [metal]);
+  // ⛔ the code rain's characters (`rainAtlas`) are drawn in an IDLE moment after load — measured, building them on the
+  //   rain's first frame cost ~100–125 ms (the probe and five strips) at the zenith; the page's top is still then
+  useEffect(() => {
+    if (!metal) return;
+    const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+    const id = ric ? ric(() => rainAtlas(), { timeout: 4000 }) : window.setTimeout(() => rainAtlas(), 2000);
+    return () => {
+      const cic = (window as unknown as { cancelIdleCallback?: (n: number) => void }).cancelIdleCallback;
+      if (ric && cic) cic(id);
+      else window.clearTimeout(id);
+    };
+  }, [metal]);
   const reducedMq = useRef<MediaQueryList | null>(null);
   const metalLevel = useCallback(() => drive.current.m, []);
   const metalKick = useCallback((kick: () => void) => {
@@ -444,7 +606,7 @@ function MarkTimeline({ preview, t, choose, metal, active = true }: { preview: n
   const fill = useRef<HTMLDivElement>(null);
   const head = useRef<HTMLDivElement>(null);
   const [seg, setSeg] = useState(0);
-  const state = useRef({ t0: 0, seg: 0, held: null as number | null, m: 1, lastM: 1, last: 0, phase: "empty" as Arrival, landAt: 0, seenAt: 0, from: null as MarkPlace | null, landed: false });
+  const state = useRef({ t0: 0, seg: 0, held: null as number | null, m: 1, lastM: 1, last: 0, phase: "empty" as Arrival, landAt: 0, seenAt: 0, from: null as MarkPlace | null, landed: false, bounceAt: 0, bounceHold: undefined as number | undefined, rain: null as RainColumn[] | null, fadeFrom: 0, rainCv: null as HTMLCanvasElement | null, glowCv: null as HTMLCanvasElement | null, shock: null as { s: number; cx: number; cy: number; q: readonly [number, number, number, number]; corr: Float32Array } | null });
   const ref = useCanvas2D((g, w, h, k, now) => {
     const st = state.current;
     const dt = st.last ? now - st.last : 16;
@@ -476,8 +638,31 @@ function MarkTimeline({ preview, t, choose, metal, active = true }: { preview: n
     let arrival: Arrival = "cycle";
     if (metal && tgt && box) {
       const ro = (window as unknown as { __c2bDeskMark?: DeskMarkReadout }).__c2bDeskMark;
-      if (st.phase !== "cycle") {
-        if (ro?.latched) {
+      if (st.phase !== "cycle" && st.phase !== "bounce" && st.phase !== "placed") {
+        if (ro?.latched && ro.outline) {
+          // ⛔ THE SHOCK (`HIT_BOUNCE`): the room's mark is gone this frame; its outline starts here in its exact shape —
+          //   each point's offset from this viewer's own straight-on turn of it is kept (`corr`), and fades as it turns
+          const z = pageZoom();
+          const c = box.getBoundingClientRect();
+          const from = { s: ro.hPx / z, cx: (ro.cx - c.left) / z, cy: (ro.cy - c.top) / z, q: ro.q };
+          const n = ro.outline.length / 2;
+          const corr = new Float32Array(2 * n);
+          for (let i = 0; i < n; i++) {
+            const [ox, oy] = turnPoint(LOGO_OUTLINE[2 * i], LOGO_OUTLINE[2 * i + 1], from.q);
+            corr[2 * i] = target.cx + ro.outline[2 * i] / z - (from.cx + ox * from.s);
+            corr[2 * i + 1] = target.cy + ro.outline[2 * i + 1] / z - (from.cy - oy * from.s);
+          }
+          st.shock = { ...from, corr };
+          st.rain = makeRain(HIT_BOUNCE.downMs); // the code rain, for the descent (`CODE_RAIN`)
+          // stage 5: the fade starts when the last code has left AND the logo is in place (ms after the shock)
+          st.fadeFrom = HIT_BOUNCE.upMs + Math.max(HIT_BOUNCE.downMs, rainEndMs(st.rain));
+          st.bounceAt = now;
+          performance.mark("hit:shock"); // against the room's `hit:latch`: the hand-over's gap
+          (window as unknown as { __c2bHitShock?: boolean }).__c2bHitShock = true; // the room hides its mark on this
+          st.phase = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "placed" : "bounce";
+        }
+        // (the hit's stages 1–2, `ro.hold`: the room holds its mark — no landing here)
+        else if (ro?.latched && !ro.hold) {
           if (st.phase !== "land") {
             st.phase = "land";
             st.landAt = now;
@@ -502,6 +687,13 @@ function MarkTimeline({ preview, t, choose, metal, active = true }: { preview: n
           st.landed = true;
         }
       }
+      if (st.phase === "bounce" && now - st.bounceAt >= HIT_BOUNCE.upMs + HIT_BOUNCE.downMs) st.phase = "placed";
+      // stage 5: the white gone → take 4's cycle, entered AT THE LAP (its `u` = RECEDE_MS: p 0, the outline lit from its
+      // start). Not while `?bounceat=` holds the bounce.
+      if (st.phase === "placed" && (st.bounceHold ?? -1) < 0 && now - st.bounceAt >= st.fadeFrom + HIT_BOUNCE.fadeMs) {
+        st.phase = "cycle";
+        st.t0 = now - ARRIVE_MS - RECEDE_MS;
+      }
       arrival = st.phase;
     } else if (metal && (!drive.current.ready || (!st.t0 && !seen))) st.t0 = 0;
     else if (!st.t0) st.t0 = now;
@@ -515,7 +707,11 @@ function MarkTimeline({ preview, t, choose, metal, active = true }: { preview: n
     let drain = 0; // the lap is done: the head's light drains into the blue (0 → 1 over the hold)
     if (arrival !== "cycle") {
       // empty → the room's mark entering → its landing (see above); a hover waits until the mark has landed
-      if (arrival === "empty") {
+      // ⛔ 22 October 2026: "enter" draws NOTHING too — the room's own mark is seen falling into the player now (the room
+      //   paints over §3, `app/about/page.tsx`; masked to the player's edges, `about-card-canvas.tsx`). ⚰️ 21 October: the
+      //   viewer drew a copy of it below the edge from the read-out. The read-out still gives the landing its start.
+      if (arrival === "empty" || arrival === "enter" || arrival === "bounce" || arrival === "placed") {
+        // (the shock and the bounce draw their own white outline — below, after the hair)
         line = 0;
         fade = 0;
       } else {
@@ -523,8 +719,7 @@ function MarkTimeline({ preview, t, choose, metal, active = true }: { preview: n
         line = 0;
         fade = 0;
         const from = st.from ?? target;
-        if (arrival === "enter") place.current = from;
-        else {
+        {
           const u = Math.min(1, (now - st.landAt) / LAND_MS);
           const e = 1 - (1 - u) ** 3;
           // the hit: one slight rebound (up, then settled), turning face-on as it settles
@@ -622,6 +817,149 @@ function MarkTimeline({ preview, t, choose, metal, active = true }: { preview: n
     g.beginPath();
     tracePart(g, 0, L, X, Y);
     g.stroke();
+    // ⚰️ THE HIT's GUIDE LINE (stages 1–4, 22 October 2026) — where the face-on logo stands, drawn while the hit was built in
+    //   stages so each contact could be judged; removed with stage 5 (a guide, not the design). The line is still SOLID —
+    //   the room's contact search and the outline's landing both read it (`DESK_MARK_HIT`).
+    // ⛔ THE SHOCK AND THE BOUNCE (`HIT_BOUNCE`) — the white outline, from the room's shape to its place
+    if ((arrival === "bounce" || arrival === "placed") && st.shock) {
+      const HB = HIT_BOUNCE;
+      const sh = st.shock;
+      // `?bounceat=<ms>` holds the bounce at that point (0 = the shock's first frame) — for frames, as `?marktip=` holds the tip
+      st.bounceHold ??= (() => {
+        const v = new URLSearchParams(window.location.search).get("bounceat");
+        return v !== null && v !== "" && Number.isFinite(+v) ? Math.max(0, +v) : -1;
+      })();
+      const tt = st.bounceHold >= 0 ? st.bounceHold : arrival === "placed" ? Math.max(HB.upMs + HB.downMs, now - st.bounceAt) : now - st.bounceAt;
+      const up = Math.min(1, tt / HB.upMs);
+      const eUp = 1 - (1 - up) ** 3;
+      const dn = Math.min(1, Math.max(0, (tt - HB.upMs) / HB.downMs));
+      const eDn = dn * dn * (3 - 2 * dn);
+      const ss = sh.s + (target.s - sh.s) * eUp;
+      const gx = sh.cx + (target.cx - sh.cx) * eUp;
+      const gy = sh.cy + (target.cy - sh.cy) * eUp; // its centre, were it on the line, at this point of its turn
+      const rise = gy - (HB.topMargin * h + ss / 2); // the zenith: its top `topMargin` of the screen below the top
+      const lift = rise * (tt < HB.upMs ? eUp : 1 - eDn);
+      const qq = slerpToFaceOn(sh.q, eUp);
+      const keep = 1 - eUp; // the room's perspective, fading as it turns
+      const n = LOGO_OUTLINE.length / 2;
+      const shape = new Path2D();
+      for (let i = 0; i < n; i++) {
+        const [ox, oy] = turnPoint(LOGO_OUTLINE[2 * i], LOGO_OUTLINE[2 * i + 1], qq);
+        const x = gx + ox * ss + sh.corr[2 * i] * keep;
+        const y = gy - lift - oy * ss + sh.corr[2 * i + 1] * keep;
+        if (i) shape.lineTo(x, y);
+        else shape.moveTo(x, y);
+      }
+      shape.closePath();
+      const flash = Math.max(0, 1 - tt / HB.flashMs);
+      if (flash > 0) {
+        g.fillStyle = `rgba(255,255,255,${0.85 * flash})`;
+        g.fill(shape);
+      }
+      // ⛔ THE CODE RAIN (`CODE_RAIN`) — on the descent only, inside the shape, in the logo's frame (face-on by now)
+      const td = (tt - HB.upMs) / 1000; // s into the descent
+      if (td > 0 && td < HB.downMs / 1000 && st.rain) {
+        const R = CODE_RAIN;
+        const A = rainAtlas();
+        const ramp = Math.min(1, (1000 * td) / R.rampMs);
+        const X = (x: number) => gx + x * ss;
+        const Y = (y: number) => gy - lift - (y - 0.5) * ss;
+        // the rain on a layer of its own (device px, the same transform), clipped to the letters
+        const cv = (st.rainCv ??= document.createElement("canvas"));
+        if (cv.width !== g.canvas.width || cv.height !== g.canvas.height) {
+          cv.width = g.canvas.width;
+          cv.height = g.canvas.height;
+        }
+        const r2 = cv.getContext("2d")!;
+        r2.setTransform(1, 0, 0, 1, 0, 0);
+        r2.clearRect(0, 0, cv.width, cv.height);
+        r2.setTransform(k, 0, 0, k, 0, 0);
+        r2.save();
+        const flares: [number, number][] = [];
+        st.rain.forEach((col, c) => {
+          const L = R.layers[col.layer];
+          const G = col.glyph;
+          const size = G * ss;
+          const tick = Math.floor(now / col.flick);
+          for (const d of col.drops) {
+            if (td < d.start) continue;
+            const headY = 1.05 - d.speed * (td - d.start);
+            const hr = Math.floor(headY / G); // cell by cell, as the film's do
+            for (let k2 = 0; k2 <= d.trail; k2++) {
+              const r = hr + k2; // the trail lies ABOVE the head
+              const y = (r + 0.5) * G;
+              if (y < 0 || y > 1) continue;
+              const h1 = Math.imul(c * 73856093 ^ r * 19349663 ^ (tick + k2) * 83492791, 2654435761) >>> 0;
+              const idx = h1 % 1000 < R.cOdds * 1000 ? A.n + (h1 % A.own) : h1 % A.n;
+              const strip = k2 === 0 ? (col.layer ? A.head : A.white) : k2 === 1 ? A.head : k2 <= d.trail * 0.5 ? A.light : A.deep;
+              r2.globalAlpha = ramp * L.alpha * (k2 === 0 ? 1 : 0.95 * (1 - k2 / (d.trail + 1)));
+              r2.drawImage(strip, idx * A.cell, 0, A.cell, A.cell, X(col.x) - size / 2, Y(y) - size / 2, size, size);
+              if (k2 === 0 && d.flare) flares.push([X(col.x), Y(y)]);
+            }
+          }
+        });
+        // cut to the letters ONCE: keep only what lies inside the shape. ⚠ Measured: clipping every glyph to the 4,433-point
+        // outline (`clip()`) left 31 frames of 75 over 33 ms in the rain (max 117) with the JS at ≤ 12 ms — the cost was on
+        // the GPU, per draw; one masking fill per frame is the cheap form
+        r2.globalAlpha = 1;
+        r2.globalCompositeOperation = "destination-in";
+        r2.fillStyle = "#fff";
+        r2.fill(shape);
+        r2.restore();
+        // the glow: the same layer shrunk (÷`glowDiv`) and stretched back, smoothed, and ADDED — light, bleeding a little
+        // past the outline. ⚠ Measured: a canvas `filter: blur()` over the whole layer cost 32 frames of 71 over 33 ms
+        // (max 117) during the rain on Carl's machine — this downsampled bloom is the cheap form (and needs no `filter`)
+        const gw = Math.max(1, Math.round(cv.width / R.glowDiv)), gh = Math.max(1, Math.round(cv.height / R.glowDiv));
+        const sm = (st.glowCv ??= document.createElement("canvas"));
+        if (sm.width !== gw || sm.height !== gh) {
+          sm.width = gw;
+          sm.height = gh;
+        }
+        const s2 = sm.getContext("2d")!;
+        s2.clearRect(0, 0, gw, gh);
+        s2.imageSmoothingEnabled = true;
+        s2.drawImage(cv, 0, 0, gw, gh);
+        g.save();
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        g.imageSmoothingEnabled = true;
+        g.globalCompositeOperation = "lighter";
+        g.globalAlpha = R.glow;
+        g.drawImage(sm, 0, 0, cv.width, cv.height);
+        g.globalAlpha = 1;
+        g.globalCompositeOperation = "source-over";
+        g.drawImage(cv, 0, 0);
+        g.restore();
+        // the sparks: a soft burst riding ~1 head in 6, pulsing
+        g.save();
+        g.globalCompositeOperation = "lighter";
+        const rad = 0.06 * ss;
+        for (const [fx, fy] of flares) {
+          // only a head INSIDE the letters (the columns span the mark's whole box; the rain is cut to the shape, a spark is
+          // not — seen: sparks floating in the gaps between the letters). `isPointInPath` reads device px.
+          if (!g.isPointInPath(shape, fx * k, fy * k)) continue;
+          const pulse = 0.7 + 0.3 * Math.sin(now / 70 + fx);
+          const gr = g.createRadialGradient(fx, fy, 0, fx, fy, rad);
+          gr.addColorStop(0, `rgba(207,230,255,${0.55 * ramp * pulse})`);
+          gr.addColorStop(0.35, `rgba(95,136,200,${0.25 * ramp * pulse})`);
+          gr.addColorStop(1, "rgba(63,109,184,0)");
+          g.fillStyle = gr;
+          g.fillRect(fx - rad, fy - rad, 2 * rad, 2 * rad);
+        }
+        g.restore();
+      }
+      const shock = Math.max(0, 1 - tt / HB.shockMs) ** 2;
+      // stage 5: the SLOW FADE, from when the last code has left (and it is in place)
+      const f5 = Math.min(1, Math.max(0, (tt - st.fadeFrom) / HB.fadeMs));
+      g.save();
+      g.globalAlpha = 1 - f5 * f5 * (3 - 2 * f5);
+      g.lineJoin = "round";
+      g.strokeStyle = "#ffffff";
+      g.lineWidth = HB.width + 2.5 * shock;
+      g.shadowColor = "rgba(255,255,255,0.9)";
+      g.shadowBlur = 18 * shock * k;
+      g.stroke(shape);
+      g.restore();
+    }
     // ⛔ NO CHAPTER MARKS ON THE OUTLINE (Carl, 21 October 2026: "Go with 1"). Dots at ¼, ½, ¾ of its length read as
     //   random specks — equal lengths land on nothing in the mark; the scrubber's four segments carry the films.
     // ⛔ THE PLAYHEAD AND WHAT HAS PLAYED — ONE LINE, ONE GRADIENT (Carl, 21 October 2026: *"The glowing head is great,
@@ -1110,7 +1448,7 @@ export default function PlayerBench({ take }: { take: PlayerTake }) {
  * ⛔ §3's ROW — the four boxes and the viewer, shared by the bench and `/about` (21 October 2026, take 4 on the page; Carl:
  * *"Just build it"* — the structural note `live-work/structural-note-viewer-on-about-21-october.md`, option A, built on his
  * word without the Architect's review). On the page (`onPage`): the viewer's screen carries `#examples-player` (the desk
- * mark's WIPE line and §2's linger both read it) and the empty `#examples-player-target` (the drop's target — and, the
+ * mark's MASK — its wipe line until 22 October 2026 — and §2's linger both read it) and the empty `#examples-player-target` (the drop's target — and, the
  * note's Decision 2, the viewer's own placement of the mark: one source).
  */
 export function ExamplesRow({ take = 4, onPage = false }: { take?: PlayerTake; onPage?: boolean }) {

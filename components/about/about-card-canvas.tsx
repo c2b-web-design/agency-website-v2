@@ -98,6 +98,7 @@ import {
   type RoomCardSpec,
 } from "./about-room";
 import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS, logoMarkCentre, logoMarkReach } from "./logo-mark-geometry";
+import { LOGO_OUTLINE } from "./logo-mark-outline";
 import type { DeskMarkRequest, DeskMarkResult } from "./desk-mark.worker";
 import { markDeskMarkBuilt } from "@/lib/room-warm";
 import { buildLogoStudioEnv, createLogoCrossing, environmentOnly, LOGO_JUDGING_STUDIO, LOGO_STUDIO_TOP, type LogoCrossing } from "./logo-mark-material";
@@ -1021,8 +1022,9 @@ const DESK_MARK_FLIP2 = { driftMs: 0, faceShare: 0.5, curve: 1.5 };
  *     the canvas runs one screen past the stage (`RoomStage`, `AboutCardCanvas`). Its orientation is held.
  *   - The 3D point is the logo's screen centre at the mark's own depth from the camera, so its SIZE does not change
  *     (Carl: "no growth yet").
- *   - THE WIPE: a clipping plane through the camera and the white rectangle's TOP EDGE (`#examples-player`): whatever
- *     passes below that line on screen is not drawn — it disappears into the viewer at the border.
+ *   - ⚰️ THE WIPE: a clipping plane through the camera and the white rectangle's TOP EDGE (`#examples-player`): whatever
+ *     passes below that line on screen is not drawn — it disappears into the viewer at the border. ⛔ SUPERSEDED
+ *     22 October 2026: the mark falls INTO the player, masked to its left, right and bottom edges (`DeskMark`'s mask).
  *   - TIME-DRIVEN for now (the loop, `?markloop=1` since 10 October; still by default), at `speed` of real time — the bounce's. ⚠ So it only lands on the logo on screen
  *     when the reader has scrolled to where the stage stops; above that the extension is off-screen below the window.
  */
@@ -1280,7 +1282,61 @@ function blueShareByRadius(g: THREE.BufferGeometry, centre: readonly [number, nu
 function deskMarkCrossingP(fallMs: number, flipDoneMs: number) {
   return Math.min(1, Math.max(0, fallMs / Math.max(1, flipDoneMs)));
 }
-type DropSpec = { from: MarkPose; to: THREE.Vector3; ms: number; growTo: number };
+/** `ms`: gravity's time to carry the centre from `from` to `to` (the target's centre); `endMs`: where the drop STOPS — the
+ *  first contact with the line (`DESK_MARK_HIT`); `mask`: the player's left, right and bottom edges as planes, kept side
+ *  inside (`DeskMark`'s measure, §3 below) */
+type DropSpec = { from: MarkPose; to: THREE.Vector3; ms: number; endMs: number; growTo: number; mask: THREE.Plane[]; swing: HitSwing | null };
+/** The c's swing (`DESK_MARK_HIT`, stage 2): from the b's contact (`DropSpec.endMs`) to FULL CONTACT at `endMs`, about
+ *  `pivot` (the b's contact point, the mark's yaw frame): a turn toward face-on, `yaw` (rad, about the vertical), then
+ *  `roll` (rad, about the camera's line of sight through the pivot, `axis`) — both on the drop's own gravity curve. */
+type HitSwing = { endMs: number; pivot: THREE.Vector3; yaw: number; axis: THREE.Vector3; roll: number };
+/**
+ * ⛔⛔ THE HIT — IN STAGES, as the fall was (Carl, 22 October 2026: *"The player logo will sit on a horizontal line. the
+ * falling logos right side, letter b will hit it first… We made the falling logos movement in stages. I suggest we do the
+ * same to the "hit"."*; then his concept: *"have the hit take a dramatic effect on the logo. It could knock the 3d out of
+ * it and the colour so what bounces up is just the outline… When it falls into its location woe could start the outline
+ * animation which leads onto the 3d blue logo, restoring it."* — D-088, 22 October).
+ *   - THE LINE: where the viewer's face-on logo stands — the target's centre + half its ink height (494 of 503 rows), the
+ *     bottom of the outline (mark y 0) as `player-bench.tsx` places it. SOLID AS THE EYE SEES IT: a plane through the camera
+ *     and that screen line, as the mask's edges are. ⚠ The Builder's reading, stated: in the room the mark is UPRIGHT and
+ *     turned (the second flip's end); the b reads lower only by the camera looking down — on a level floor its whole edge
+ *     would land at once. Licence, as the rebound.
+ *   - ⛔ STAGE 1 — THE FIRST CONTACT, AND STOP (as the fall first stopped before the bin: *"i want to see where on the logo
+ *     it will make contact"*). The drop's `endMs` is the moment the mark's lowest point on screen first meets the line —
+ *     found by bisection over the drop's own poses (its vertices projected); the growth completes there (the logo's size
+ *     at the hit). The room HOLDS its mark at the contact; the viewer drew the line as a guide (removed with stage 5) and did not take over (`hold` in the
+ *     read-out). ✔ Built and measured: the b's bowl meets the line to within 1 px.
+ *   - ⛔ STAGE 2 — THE c's SWING TO FULL CONTACT (Carl: *"with the b stopped suddenly in its tracks… the c would hit the
+ *     line but not totally face on. the action of the b suddenly stopping could propel the c slightly forward, say half of
+ *     what it would be to be face on. With full contact now achieved, that would be the point it loses its integrity."*).
+ *     The b's contact point is the PIVOT (it stays put); about it the mark turns toward face-on by `forward` of what
+ *     remains (the second flip left it at `faceShare` — halfway), and rolls about the camera's line of sight through the
+ *     pivot until the c's lowest point meets the line — the roll SOLVED (bisection), not set. ⛔ ITS TIMING IS THE c's OWN
+ *     MOMENTUM: the swing lasts as long as the c, carrying on as if the b were not stopped, would take to reach the line,
+ *     and both turns ride the drop's gravity curve over it (accelerating — no ease-out: it is still falling). Licence, as
+ *     the rebound: a real pivot would slow it a little. Then it HOLDS at full contact (stage 3, the knock-out, not built).
+ *   - ⛔ STAGES 3–4 — THE SHOCK AND THE BOUNCE (Carl: *"it needs to bounce up towards the top of the player… It should be
+ *     just the outline, in white. As it reaches its zenith the turn can be completed so its face on. The bounce can be much
+ *     slower, theres hardly any mass in the logo… The moment the c makes contact, thats when the "shock" happens."*). AT
+ *     FULL CONTACT (the latch) the room HIDES its mark and publishes its outline as the camera sees it (`outline` in the
+ *     read-out, projected once); the VIEWER draws the shock and the white outline's bounce from that exact shape
+ *     (`player-bench.tsx`, `HIT_BOUNCE`) and lands it in its place on the line. STAGE 5 (`player-bench.tsx`): the white fades once the last code has left; then take 4's lap → the full logo.
+ */
+const DESK_MARK_HIT = { stage: 3, forward: 0.5 } as const;
+/** The c's swing at drop time `t` (between the b's contact and full contact) — see `HitSwing`. */
+function swingPose(t: number, d: Pick<DropSpec, "from" | "to" | "ms" | "endMs">, s: HitSwing): MarkPose {
+  const D = (x: number) => (x / d.ms) ** 2; // the drop's distance share — gravity from rest (`dropPose`), not clamped
+  const u = Math.min(1, Math.max(0, (D(t) - D(d.endMs)) / Math.max(1e-9, D(s.endMs) - D(d.endMs))));
+  return swingAt(u, dropPose(d.endMs, d), s);
+}
+/** The swing's pose at share `u` (0 the b's contact, 1 full contact) from the contact pose `at`. */
+function swingAt(u: number, at: MarkPose, s: Pick<HitSwing, "pivot" | "yaw" | "axis" | "roll">): MarkPose {
+  const r = new THREE.Quaternion().setFromAxisAngle(s.axis, s.roll * u).multiply(new THREE.Quaternion().setFromAxisAngle(Y_AXIS, s.yaw * u));
+  const p = new THREE.Vector3(at.x, at.y, at.z).sub(s.pivot).applyQuaternion(r).add(s.pivot);
+  return { x: p.x, y: p.y, z: p.z, q: r.multiply(at.q) };
+}
+/** a mask plane parked far below everything: keeps all */
+const MASK_PARKED = new THREE.Plane(new THREE.Vector3(0, 1, 0), 1e6);
 /**
  * ⛔ THE GROWTH — THE BIN's BLOW TRIGGERS IT (Carl, 8 October 2026, session 2: *"Now for the growth. The contact with the
  * bin triggers the growth, like a blow on the head. the target is in the player logo."*).
@@ -1297,7 +1353,7 @@ function growAt(ms: number, endMs: number, growTo: number) {
   const t = Math.min(1, (ms - DESK_MARK_FALL.contactMs) / Math.max(1, endMs - DESK_MARK_FALL.contactMs));
   return 1 + (growTo - 1) * (1 - (1 - t) ** 2);
 }
-function dropPose(ms: number, d: DropSpec): MarkPose {
+function dropPose(ms: number, d: Pick<DropSpec, "from" | "to" | "ms">): MarkPose {
   const u = Math.min(1, Math.max(0, ms / d.ms)) ** 2; // from rest under gravity: distance grows with the square of time
   return {
     x: d.from.x + (d.to.x - d.from.x) * u,
@@ -1437,8 +1493,9 @@ function cornerPose(p: number, psiDeg: number, dMm: number, leftMm: number, com:
  * hit its position, bounce slightly and become face on."*
  * So the room REPORTS, it does not change: each frame of the drop it writes the mark's centre (client px), its height on
  * screen (one mark height at its depth, × the growth), its orientation in the CAMERA's frame, and the studio's orientation
- * in the camera's frame, to `window.__c2bDeskMark`. The viewer (`components/about/player-bench.tsx`) draws the same mark
- * BELOW the player's top edge — where this one is clipped — so the two read as one object crossing into the screen.
+ * in the camera's frame, to `window.__c2bDeskMark`. ⚰️ The viewer (`components/about/player-bench.tsx`) drew the same mark
+ * BELOW the player's top edge — where this one was clipped. ⛔ Since 22 October 2026 THIS mark is seen inside the player
+ * (the room paints over §3) and the viewer draws nothing until the hit; the read-out gives its landing its start.
  * ⚠ The room's camera is perspective and the viewer's orthographic: the silhouettes agree closely, not exactly (unmeasured).
  */
 export type DeskMarkReadout = {
@@ -1453,6 +1510,13 @@ export type DeskMarkReadout = {
   q: [number, number, number, number];
   /** the studio's orientation in the camera's frame (the room's env yaw, then the director's turn), or null */
   env: [number, number, number, number] | null;
+  /** the hit's stages 1–2 (`DESK_MARK_HIT`): the room HOLDS its mark where the built stages end (the contact, then full contact) — the viewer does
+   *  not take over */
+  hold: boolean;
+  /** THE SHOCK (`DESK_MARK_HIT` stage 3): at full contact, the mark's outline (`LOGO_OUTLINE`, its order) projected through
+   *  the room's camera at the mark's mid-depth — client px RELATIVE TO THE TARGET's CENTRE (so a scroll between the
+   *  room's frame and the viewer's cannot move it); null before the contact */
+  outline: Float32Array | null;
 };
 const RO = { c: new THREE.Vector3(), a: new THREE.Vector3(), b: new THREE.Vector3(), up: new THREE.Vector3(), qc: new THREE.Quaternion(), qb: new THREE.Quaternion(), qe: new THREE.Quaternion() };
 function publishDeskMark(camera: THREE.Camera, el: HTMLCanvasElement, body: THREE.Group | null, com: [number, number, number], depth: number, inDrop: boolean, latched: boolean, turn: THREE.Quaternion | null, yaw: THREE.Quaternion | null) {
@@ -1488,10 +1552,28 @@ function publishDeskMark(camera: THREE.Camera, el: HTMLCanvasElement, body: THRE
     const e = inv.clone().multiply(RO.qe);
     env = [e.x, e.y, e.z, e.w];
   }
-  w.__c2bDeskMark = { inDrop, latched, cx, cy, hPx: Math.abs(yb - ya), q: [q.x, q.y, q.z, q.w], env };
+  // the shock's outline: projected ONCE, on the first latched frame (4,433 points), and kept
+  let outline: Float32Array | null = null;
+  if (latched && DESK_MARK_HIT.stage >= 3) {
+    outline = w.__c2bDeskMark?.outline ?? null;
+    const tg = outline ? null : document.getElementById("examples-player-target")?.getBoundingClientRect();
+    if (tg) {
+      const tx = tg.left + tg.width / 2, ty = tg.top + tg.height / 2;
+      const n = LOGO_OUTLINE.length / 2;
+      outline = new Float32Array(2 * n);
+      for (let i = 0; i < n; i++) {
+        RO.a.set(LOGO_OUTLINE[2 * i] * scale - com[0], LOGO_OUTLINE[2 * i + 1] * scale - com[1], depth / 2 - com[2]);
+        body.localToWorld(RO.a);
+        const [x, y] = toClient(RO.a);
+        outline[2 * i] = x - tx;
+        outline[2 * i + 1] = y - ty;
+      }
+    }
+  }
+  w.__c2bDeskMark = { inDrop, latched, cx, cy, hPx: Math.abs(yb - ya), q: [q.x, q.y, q.z, q.w], env, hold: DESK_MARK_HIT.stage <= 2, outline };
 }
 
-function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, loop, tie, director, lightUp, wobble, flip, drop, crossing, play, corner, com, depth, originOffMm }: {
+function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef, tipFixed, fallFixed, tipMs, fallSpeed, fallEndMs, loop, tie, director, lightUp, wobble, flip, drop, mask, crossing, play, corner, com, depth, originOffMm }: {
   bodyRef: React.RefObject<THREE.Group | null>; followRef: React.RefObject<THREE.Group | null>;
   contactRef: React.RefObject<THREE.MeshBasicMaterial | null>; contactOpacity: number;
   /** the desk's cast-shadow catcher — its shadows come with the light (`DESK_MARK_LIGHT_MS`) */
@@ -1507,12 +1589,15 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
   wobble: { atMs: number; ms: number; ampsDeg: number[]; everyMs: number } | null;
   flip: FlipSpec | null;
   drop: DropSpec | null;
+  /** the mark's live mask planes (on its material); set from `drop.mask` while it drops or rests in the player, else parked */
+  mask: THREE.Plane[];
   crossing: { set: LogoCrossing["set"]; light: (radius: number, lit: number) => void; centre: [number, number, number]; far: number; near: number } | null;
   play: "start" | "fall" | "somersault" | "corner";
   corner: { psi: number; d: number; left: number; loop: boolean };
   com: [number, number, number]; depth: number; originOffMm: number;
 }) {
   const clockRef = useRef(0);
+  const shockKeep = useMemo(() => neonParam("shockkeep") === "1", []); // the hit's check: the 3D mark kept under the shock
   /** the scroll tie's state (`DESK_MARK_TIE`): the mark's play time, the scroll's last point, a jump playing, the latch */
   const journey = useRef<{ t: number; prev: number | null; jump: boolean; latched: boolean }>({ t: 0, prev: null, jump: false, latched: false });
   /** the director's held positions (`DESK_MARK_DIRECTOR`), solved once per journey spec */
@@ -1572,21 +1657,25 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
     } else {
       // with the flip, the fall runs to the slap onto the rim and the flip carries on from it
       const flipDone = flip ? DESK_MARK_FLIP_FROM_MS + flipPlayed(flip).flight + flipPlayed(flip).second : 0;
-      const fallMs = flip ? flipDone + (drop ? drop.ms : 0) : fallEndMs;
+      // the drop plays to the b's contact, then the c's swing to full contact (`DESK_MARK_HIT`)
+      const dropEnd = drop ? (drop.swing ? drop.swing.endMs : drop.endMs) : 0;
+      const fallMs = flip ? flipDone + dropEnd : fallEndMs;
       const fallOrFlip = (ms: number) =>
         flip && drop && ms > flipDone
-          ? dropPose(ms - flipDone, drop)
+          ? drop.swing && ms - flipDone > drop.endMs
+            ? swingPose(ms - flipDone, drop, drop.swing)
+            : dropPose(ms - flipDone, drop)
           : flip && ms > DESK_MARK_FLIP_FROM_MS
             ? flipPose(ms - DESK_MARK_FLIP_FROM_MS, flip, originOffMm, xc)
             : fallPose(ms, originOffMm, xc);
       const crossAt = (ms: number) => {
         if (flip) crossP = deskMarkCrossingP(ms, flipDone);
-        if (flip && drop && drop.growTo !== 1) grow = growAt(ms, fallMs, drop.growTo);
+        if (flip && drop && drop.growTo !== 1) grow = growAt(ms, flipDone + drop.endMs, drop.growTo); // full size at the b's contact
         return ms;
       };
       // ⛔ THE SCROLL TIE (`DESK_MARK_TIE`) — the journey's PLAY TIME: the tip over `tipMs`, then the fall's ms at `fallSpeed`
       const roomPlay = tipMs + (flip ? flipDone : fallEndMs) / fallSpeed;
-      const dropPlay = flip && drop ? drop.ms / fallSpeed : 0;
+      const dropPlay = flip && drop ? dropEnd / fallSpeed : 0;
       const journeyPose = (tp: number): MarkPose =>
         tp <= tipMs ? tipPose(Math.max(0, tp) / tipMs) : fallOrFlip(crossAt(Math.min(fallMs, (tp - tipMs) * fallSpeed)));
       // ── THE DIRECTOR (`DESK_MARK_DIRECTOR`) ──
@@ -1692,6 +1781,7 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
         }
         if (dropPlay > 0 && j.t >= end - 0.5) {
           j.t = end;
+          if (!j.latched) performance.mark("hit:latch"); // full contact — the shock's hand-over starts here (`DESK_MARK_HIT`)
           j.latched = true;
         }
         if (!j.latched && (j.jump || j.t !== target)) st.invalidate(); // until it has caught the scroll
@@ -1754,6 +1844,20 @@ function MarkMotion({ bodyRef, followRef, contactRef, contactOpacity, catcherRef
     }
     if (followRef.current) followRef.current.position.set(pose.x, pose.y, pose.z);
     publishDeskMark(st.camera, st.gl.domElement, bodyRef.current, com, depth, inDrop, journey.current.latched, turnNow, director?.yaw ?? null);
+    // ⛔ THE MASK (22 October 2026) — only while the mark drops into the player or rests there; on the desk and through the
+    // room it is parked, so no edge can cut it (the bin sits past the player's right edge). ⚠ The time-driven loop
+    // (`?markloop=1`, a fader) never sets `inDrop`, so it runs unmasked.
+    const masked = !!drop && (inDrop || journey.current.latched);
+    mask.forEach((m, i) => m.copy(masked ? drop.mask[i] : MASK_PARKED));
+    // ⛔ AT THE HIT (`DESK_MARK_HIT`): stages 1–2 held the mark at full contact. From stage 3 the SHOCK takes it — the room
+    // hides its mark only once the viewer has STARTED the shock (`window.__c2bHitShock`, `player-bench.tsx`), asking for
+    // frames until then: measured, hiding on the latch itself left the player EMPTY for ~30 ms (the viewer sees the latch
+    // a frame or two later) — a blink. Now at worst one frame shows both, under the shock's white flash.
+    // `?shockkeep=1` keeps the mark (for laying the shock's outline over it). ⚰️ Earlier on 22 October (interim): the
+    // mark hid on the latch and the viewer's landing took it over.
+    const shockTaken = (window as unknown as { __c2bHitShock?: boolean }).__c2bHitShock === true;
+    if (journey.current.latched && DESK_MARK_HIT.stage >= 3 && !shockTaken) st.invalidate();
+    if (bodyRef.current) bodyRef.current.visible = !journey.current.latched || DESK_MARK_HIT.stage <= 2 || !shockTaken || shockKeep;
     // ⛔ BROUGHT UP ON CA's STRIKE (`DESK_MARK_LIGHT_MS`): 0 unlit … 1 fully lit, smootherstep — the mark's light and its
     // cast shadows together
     const litAt = lightUp.at ? lightUp.at.current : 0;
@@ -1862,9 +1966,14 @@ function DeskMark({ clock: sequence }: { clock: SequenceClock | null }) {
     turn: ((q: THREE.Quaternion) => void) | null;
   };
   const [built, setBuilt] = useState<Built | null>(null);
-  /** ⛔ THE WIPE's PLANE (§3, below) — on the mark's material from birth; parked far below everything (keeps all) until
-   *  a drop is measured. Local clipping is switched on at the canvas's creation. */
-  const clip = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 1e6), []);
+  /** ⛔ THE MASK's PLANES (§3, below) — the player's left, right and bottom edges, on the mark's material from birth;
+   *  parked (keeps all) except while the mark drops or rests in the player (`MarkMotion`). Three, always: a change in
+   *  the COUNT recompiles the material. Local clipping is switched on at the canvas's creation.
+   *  ⚰️ Until 22 October 2026 ONE plane at the player's TOP edge (the wipe, 8 October): the room's canvas then painted
+   *  UNDER the viewer, so the mark vanished at the edge. Now the room paints over §3 (`app/about/page.tsx`, `z-[1]`) and
+   *  the mark falls INTO the player (Carl: "have the Roles logo fall in the player. it could be masked temporarily at
+   *  the edges"). */
+  const mask = useMemo(() => [0, 1, 2].map(() => MASK_PARKED.clone()), []);
   useEffect(() => {
     let made: Built | null = null;
     let cancelled = false;
@@ -1888,7 +1997,7 @@ function DeskMark({ clock: sequence }: { clock: SequenceClock | null }) {
       const cross = createLogoCrossing(roomLight ? {} : { envMapIntensity: studioIntensity });
       const gold = roomLight ? cross.material : environmentOnly(cross.material);
       if (!roomLight) gold.envMap = env.texture;
-      gold.clippingPlanes = [clip];
+      gold.clippingPlanes = mask;
       const centre = logoMarkCentre({ ...LOGO_MARK_DEFAULTS, scale: place.scale });
       const reach = logoMarkReach(geometry, centre);
       cross.set(centre, reach.far);
@@ -1953,7 +2062,7 @@ function DeskMark({ clock: sequence }: { clock: SequenceClock | null }) {
         made.contact.texture.dispose();
       }
     };
-  }, [gl, place, roomLight, studioIntensity, blueMax, clip]);
+  }, [gl, place, roomLight, studioIntensity, blueMax, mask]);
   // the main camera must see the mark's layer (the neon pass sets its own mask and restores this one)
   useEffect(() => {
     camera.layers.enable(DESK_MARK_LAYER);
@@ -2018,7 +2127,7 @@ function DeskMark({ clock: sequence }: { clock: SequenceClock | null }) {
     };
   }, [motion.flipOn, motion.flipBase, motion.flip2, originOffMm, comM, camera, place]);
   /**
-   * ⛔ THE DROP'S TARGET AND THE WIPE'S LINE — measured from the page. Canvas pixels: x is the logo's offset from the
+   * ⛔ THE DROP'S TARGET AND THE MASK's EDGES (the wipe's line until 22 October 2026) — measured from the page. Canvas pixels: x is the logo's offset from the
    * canvas's left; y is where it lies once the stage STOPS (its bottom meets the end of its container, where §3 begins):
    * (stage bottom − canvas top) + (y − container bottom) — both differences hold at any scroll. Re-measured on resize and
    * once the fonts settle. `?markdrop=0` ends at the second flip, as before.
@@ -2027,9 +2136,10 @@ function DeskMark({ clock: sequence }: { clock: SequenceClock | null }) {
   const [measured, setDrop] = useState<DropSpec | null>(null);
   const dropOn = !!flip && flip.second.on && !!built && neonParam("markdrop") !== "0";
   const drop = dropOn ? measured : null;
+  const geometry = built?.geometry ?? null; // the hit's contact search projects its vertices
   useEffect(() => {
-    if (!dropOn || !flip) {
-      clip.set(new THREE.Vector3(0, 1, 0), 1e6); // parked: keeps everything
+    if (!dropOn || !flip || !geometry) {
+      mask.forEach((m) => m.copy(MASK_PARKED)); // parked: keeps everything
       return;
     }
     const cam = camera as THREE.PerspectiveCamera;
@@ -2063,12 +2173,99 @@ function DeskMark({ clock: sequence }: { clock: SequenceClock | null }) {
       const markPx = Math.abs(px(toW.clone().add(new THREE.Vector3(0, place.scale / 2, 0))) - px(toW.clone().add(new THREE.Vector3(0, -place.scale / 2, 0))));
       const growTo = neonParam("markgrow") === "0" || markPx < 1 ? 1 : (l.height * (494 / 503)) / markPx;
       const ms = (1000 * Math.sqrt((2 * mm) / 9810)) / DESK_MARK_DROP.speed;
-      // the wipe: the plane through the camera and the white rectangle's top edge, its kept side above
-      const [, ty] = ndc(0, yIn(pl.top));
+      // the mask: a plane through the camera and each of the player's left, right and bottom edges, its kept side
+      // inside (the player's centre). No top edge — the mark falls in through it.
       const camW = cam.getWorldPosition(new THREE.Vector3());
-      clip.setFromCoplanarPoints(camW, new THREE.Vector3(-1, ty, 0.5).unproject(cam), new THREE.Vector3(1, ty, 0.5).unproject(cam));
-      if (clip.distanceToPoint(new THREE.Vector3(0, Math.min(1, ty + 0.2), 0.5).unproject(cam)) < 0) clip.negate();
-      setDrop({ from, to: unyaw(toW), ms, growTo });
+      const [lx0, pcy] = ndc(pl.left - c.left, yIn(pl.top + pl.height / 2));
+      const [rx0] = ndc(pl.right - c.left, 0);
+      const [pcx, by] = ndc(pl.left + pl.width / 2 - c.left, yIn(pl.bottom));
+      const inside = new THREE.Vector3(pcx, pcy, 0.5).unproject(cam);
+      const edge = (ax: number, ay: number, bx: number, bY: number) => {
+        const pln = new THREE.Plane().setFromCoplanarPoints(camW, new THREE.Vector3(ax, ay, 0.5).unproject(cam), new THREE.Vector3(bx, bY, 0.5).unproject(cam));
+        return pln.distanceToPoint(inside) < 0 ? pln.negate() : pln;
+      };
+      // ⛔ THE HIT's FIRST CONTACT (`DESK_MARK_HIT`): the drop's earliest moment at which the mark's lowest point on
+      // screen meets the line — the viewer's face-on logo's bottom (the target's centre + half its ink height). Each pose
+      // is the drop's own (`dropPose`, the growth at that moment), the mesh's vertices (sampled) placed as the JSX places
+      // them — `place.position` ∘ yaw ∘ body (pose, q, grow) ∘ −com — and projected. The growth ends at the contact, so
+      // the search runs again on its own answer (three passes; it settles in two).
+      const spec = { from, to: unyaw(toW), ms };
+      const [, lineNdc] = ndc(0, yIn(l.top + l.height / 2 + (l.height * (494 / 503)) / 2));
+      const pos = geometry.getAttribute("position");
+      const stride = Math.max(1, Math.floor(pos.count / 3000));
+      const comV = new THREE.Vector3(...comM), placeV = new THREE.Vector3(...place.position), v = new THREE.Vector3();
+      const pts: THREE.Vector3[] = [];
+      const onC: boolean[] = []; // the c's half: mark x < 0 (origin bottom-centre, the c on the left face-on)
+      for (let i = 0; i < pos.count; i += stride) {
+        pts.push(new THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i)).sub(comV));
+        onC.push(pos.getX(i) < 0);
+      }
+      const flipDone = DESK_MARK_FLIP_FROM_MS + p.flight + p.second;
+      /** The lowest point on screen (NDC y) of the mark in pose `ps` at growth `g` — over the c's half alone with `cOnly`;
+       *  `at` receives that point in the yaw frame. */
+      const lowestOf = (ps: MarkPose, g: number, cOnly = false, at?: THREE.Vector3) => {
+        let m = Infinity;
+        for (let i = 0; i < pts.length; i++) {
+          if (cOnly && !onC[i]) continue;
+          v.copy(pts[i]).multiplyScalar(g).applyQuaternion(ps.q);
+          v.x += ps.x; v.y += ps.y; v.z += ps.z;
+          const local = at ? v.clone() : null;
+          const y = v.applyAxisAngle(Y_AXIS, place.rotationY).add(placeV).project(cam).y;
+          if (y < m) {
+            m = y;
+            if (at && local) at.copy(local);
+          }
+        }
+        return m;
+      };
+      const lowest = (t: number, endMs: number) => lowestOf(dropPose(t, spec), growTo === 1 ? 1 : growAt(flipDone + t, flipDone + endMs, growTo));
+      let endMs = ms;
+      for (let pass = 0; pass < 3; pass++) {
+        if (lowest(endMs, endMs) > lineNdc) break; // never reaches the line: the drop runs to the target, as before
+        let lo = 0, hi = endMs;
+        for (let k = 0; k < 30; k++) {
+          const mid = (lo + hi) / 2;
+          if (lowest(mid, endMs) > lineNdc) lo = mid;
+          else hi = mid;
+        }
+        endMs = hi;
+      }
+      // ⛔ STAGE 2, THE c's SWING (`DESK_MARK_HIT`) — solved from the contact pose: the pivot is the contact point; the
+      // turn toward face-on is set (`forward` of what the second flip left); the ROLL is found — the c's lowest point on
+      // the line; the LENGTH is the c's own: the time the c, falling on as if the b had not stopped, takes to reach the line.
+      let swing: HitSwing | null = null;
+      const atContact = dropPose(endMs, spec);
+      const pivot = new THREE.Vector3();
+      if (DESK_MARK_HIT.stage >= 2 && Math.abs(lowestOf(atContact, growTo, false, pivot) - lineNdc) < 0.01) {
+        const psiF = flip.psiEnd + (flip.second.psiFace - flip.psiEnd) * flip.second.faceShare;
+        const yaw = DESK_MARK_HIT.forward * (flip.second.psiFace - psiF);
+        const axis = pivot.clone().sub(unyaw(camW.clone())).normalize(); // the camera's line of sight through the pivot
+        const cLow = (roll: number) => lowestOf(swingAt(1, atContact, { pivot, yaw, axis, roll }), growTo, true);
+        const sign = cLow(0.02) < cLow(-0.02) ? 1 : -1; // the way that brings the c DOWN
+        let hi = 0;
+        while (hi < 1 && cLow(sign * hi) > lineNdc) hi += 0.05;
+        if (cLow(sign * hi) <= lineNdc) {
+          let lo = Math.max(0, hi - 0.05);
+          for (let k = 0; k < 30; k++) {
+            const mid = (lo + hi) / 2;
+            if (cLow(sign * mid) > lineNdc) lo = mid;
+            else hi = mid;
+          }
+          const free = (t: number): MarkPose => {
+            const k = (t / ms) ** 2; // the drop carried on, not clamped at the target
+            return { x: spec.from.x + (spec.to.x - spec.from.x) * k, y: spec.from.y + (spec.to.y - spec.from.y) * k, z: spec.from.z + (spec.to.z - spec.from.z) * k, q: spec.from.q };
+          };
+          let tLo = endMs, tHi = endMs;
+          while (tHi < 4 * ms && lowestOf(free(tHi), growTo, true) > lineNdc) tHi += ms / 20;
+          for (let k = 0; k < 30; k++) {
+            const mid = (tLo + tHi) / 2;
+            if (lowestOf(free(mid), growTo, true) > lineNdc) tLo = mid;
+            else tHi = mid;
+          }
+          swing = { endMs: tHi, pivot, yaw, axis, roll: sign * hi };
+        }
+      }
+      setDrop({ ...spec, endMs, growTo, swing, mask: [edge(lx0, -1, lx0, 1), edge(rx0, -1, rx0, 1), edge(-1, by, 1, by)] });
       invalidate();
     };
     const raf = requestAnimationFrame(measure);
@@ -2080,7 +2277,7 @@ function DeskMark({ clock: sequence }: { clock: SequenceClock | null }) {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", measure);
     };
-  }, [dropOn, flip, gl, camera, place, originOffMm, comM, clip, invalidate, size.width, size.height]);
+  }, [dropOn, flip, gl, camera, place, originOffMm, comM, mask, invalidate, size.width, size.height, geometry]);
   const lightUpMs = useMemo(() => neonNumber("marklit", DESK_MARK_LIGHT_MS, 0, 10000), []);
   const unlit = useMemo(() => neonNumber("markunlit", DESK_MARK_UNLIT, 0, 1), []);
   const wobble = useMemo(() => {
@@ -2177,7 +2374,7 @@ function DeskMark({ clock: sequence }: { clock: SequenceClock | null }) {
       <MarkMotion
         bodyRef={body} followRef={follow} contactRef={contactMat} contactOpacity={faders.contact} catcherRef={catcherMat}
         tipFixed={motion.tipFixed} fallFixed={motion.fallFixed} tipMs={motion.tipMs} fallSpeed={motion.fallSpeed} fallEndMs={motion.fallEndMs} loop={motion.loop} tie={drop || !dropOn ? tie : null} director={director} flip={flip}
-        lightUp={{ at: clock, ms: lightUpMs, unlit, catcherOpacity: DESK_MARK_SHADOW_OPACITY }} wobble={wobble} drop={drop} crossing={built.crossing} play={motion.play} corner={motion.corner}
+        lightUp={{ at: clock, ms: lightUpMs, unlit, catcherOpacity: DESK_MARK_SHADOW_OPACITY }} wobble={wobble} drop={drop} mask={mask} crossing={built.crossing} play={motion.play} corner={motion.corner}
         com={comM} depth={depthM} originOffMm={originOffMm}
       />
       <group position={place.position}>
@@ -2761,8 +2958,8 @@ export default function AboutCardCanvas() {
           /* ⚠ The extruded text's reveal/erase wipe is two clipping planes per line,
              which need LOCAL clipping — a renderer switch. ⚠ *Corrected in place, 8 October:* it
              was "set only while the text is on"; it is now ALWAYS on, because the desk mark's §3
-             wipe is a clipping plane too. It affects only materials that carry `clippingPlanes`
-             (the text's, and the mark's — parked to keep everything until a drop is measured). */
+             mask is clipping planes too (a wipe until 22 October). It affects only materials that carry `clippingPlanes`
+             (the text's, and the mark's — parked to keep everything except while it drops into the player). */
           onCreated={({ gl }) => { gl.localClippingEnabled = true; }}
           camera={{
             /* ⛔ VERTICAL FOV. `PerspectiveCamera.fov` is vertical and the plan

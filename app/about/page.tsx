@@ -330,7 +330,15 @@ export default function About() {
           faded under §1's copy (0.2, his 27 September take), opaque in §2, a wipe with a gradient edge descending the
           room as §2 arrives — and the sequence strikes when the wipe clears CA's bottom (`roomWipeClearsCA`). `Roles`
           lands on §2 with the room opaque. ⛔ The block below is §2's room, MOVED here unchanged with its notes. */}
-      <div className="relative">
+      {/* ⛔ `z-[1]` — THE ROOM PAINTS OVER §3's VIEWER (D-088, 22 October 2026; Carl, "Go with A"). The room's canvas runs one
+          screen into §3 (`AboutCardCanvas`); at `z-index: auto` the viewer (`#examples-player`, positioned, opaque, later in
+          the DOM) painted over it, so the desk mark falling into the player was hidden there — measured,
+          `live-work/drop-trace-22-october.md`. This makes the wrapper ONE stacking context above §3 and §4: inside it the
+          order is unchanged (§1 and §2 still over the stage). What now sits under the canvas's overhang: §3's boxes and
+          viewer — the canvas draws nothing there but the mark, masked to the player's edges (`DeskMark`), and the stage is
+          `pointer-events-none`, so clicks pass through (checked per control, `live-work/scripts/drop-into-player-22-october.mjs`).
+          The nailed mark (`z-10`, outside this wrapper) stays above. */}
+      <div className="relative z-[1]">
       <RoomStage faded={<RoomPlate />}>
         {/* ⚠⚠ `next/image`, AND IT IS THE FIRST USE IN THIS PROJECT — 4 September
             2026. It replaces a plain <img> that shipped the full 2560px file to
@@ -910,7 +918,7 @@ export default function About() {
               build it"* — the structural note `live-work/structural-note-viewer-on-about-21-october.md`, option A, built on
               his word without the Architect's review. `ExamplesRow` (`components/about/player-bench.tsx`): the boxes are
               now buttons (hover = preview, click = play); the viewer's screen carries `#examples-player` (the desk mark's
-              WIPE line, §2's 3 s linger) and the empty `#examples-player-target` (the drop's target AND the viewer's
+              MASK — its wipe line until 22 October 2026 — §2's 3 s linger) and the empty `#examples-player-target` (the drop's target AND the viewer's
               placement of the mark — one source). ⚰️ The white placeholder and the blue PNG are gone. ⚠ No film plays on
               the page yet: Carl's edits do not exist and the bench's stand-in is local only — each box says its state.
               ⚠ Follow-ups outside this build's files: the room's latch starting the viewer (`about-card-canvas.tsx`; today
