@@ -65,6 +65,40 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-089 — Film 4's Showcase, Pass 1 Re-tracked: The Restaurant Lockup As An Arch (`/proto/showcase`, D-088): "Thats got it"
+
+**Date:** 2026-10-22
+**Reviewer:** Human Founder
+**Subject:** `/proto/showcase` take 5 — the client set as an established, higher-end restaurant; "YOUR" the straight lintel, "COMPANY" over a 180° arch in CAPITALS (take 3), every letter UPRIGHT, at EQUAL ANGLE STEPS with the P at the crown and each pair level (take 4), the P nudged +0.11 em optically (take 5); each letter take 1's approved shape (R-088), built once and moved. Plan `live-work/film04-pass1-take2-arch-plan-22-october.md` (v2.1, three Architect rounds).
+
+**Carl's verdicts, verbatim, in order:** take 2 *"I think it would work better if the letters were all capitalised…"*; take 3 *"Thats better, but the P should be centred. The M and A should sit on the same horizontal line… So the shape of the arch is more implied rather than spelt out."*; take 4 *"Just move the P a touch to the right. There is too much space from the A…"*; take 5 *"Thats got it, theres more balance there now."*
+
+**Findings:**
+
+- ✔ **Approved** — the lockup's shape at take 5 (capitals, equal steps, the P nudged), seen at Carl's window, dev server.
+- ✔ Measured: the arch's size by the collision check (red run C–O, O–M, A–N overlapping at 0; 0.21 em clears every pair, closest O–M 0.039 em); the P's nudge balancing its closest distances (M–P 60.1 / P–A 60.0 px); both lines' font proofs ≤ 0.065 px; feet exactly 180° / 0°; the bend 20°→180° ≤ 19.5 ms per tick; takes 1–3 unchanged at their switches.
+- ⚠ The faceted side walls (R-088's open point) still unruled — carried to the material pass.
+- ⚠ Not watched: Carl's GPU and Chrome, production, phones, any words but "Your company", any font but Geist SemiBold.
+
+---
+
+## R-088 — Film 4's Showcase, Pass 1: The Lettering's Mesh, In Clay (`/proto/showcase`, D-088): Approved
+
+**Date:** 2026-10-22
+**Reviewer:** Human Founder
+**Subject:** `/proto/showcase` take 1 — "Your company" in Geist SemiBold, set by the browser (`measureLabel`, the font's own kerning) and extruded per character at those positions (`components/showcase/lettering-geometry.ts`); 160 layout px, depth 0.2 em, a straight chamfer 0.018 em holding the outline (`bevelOffset = −size`), curveSegments 12; clay under the shape light; the word box rebuilds as it is typed. Plan v4.1 (`live-work/film04-pass1-mesh-plan-22-october.md`), four Architect rounds.
+
+**Carl's verdict, verbatim:** *"Thats a great start. Size is good to really showcase the lettering. The bevel looks good. lets move on to the next stage."*
+
+**Findings:**
+
+- ✔ **Approved** — the shape: the size and the chamfer named. Seen at Carl's window, dev server.
+- ✔ Measured: overlap check red (28 glyphs, all ten known) and green (SemiBold, all ASCII, curveSegments 4–24); font proof worst 0.061 px, right edge 0.028 px; 8 of 9 pairs kerned (Yo −11.19 px); the chamfer moves no silhouette gap (0.000 px; builds proven different); 45 ms, 13,676 triangles.
+- ⚠ **Open, carried to pass 2 — not answered:** the curved side walls are FACETED (per-triangle normals); faint in clay, would band under metal. The Builder offered smoothing (creased normals, chamfer edges kept sharp); Carl moved on without ruling.
+- ⚠ Not watched: Carl's GPU and Chrome, production, phones, any font but Geist SemiBold.
+
+---
+
 ## R-087 — `/about` §3: The Same Logo — The Drop Into The Player, The Hit, The Shock, The Bounce, The Code Rain, The Restoration (D-088): "Approved"
 
 **Date:** 2026-10-22

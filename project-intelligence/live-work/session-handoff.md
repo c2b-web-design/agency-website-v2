@@ -1,62 +1,71 @@
-# Session Handoff — 21 October 2026. THE CORNERS' COMPILE NON-BLOCKING. `/about` §3: THE FOUR FILMS, THE BOXES, THE VIEWER (TAKE 4) — ON THE PAGE, UNFINISHED.
+# Session Handoff — 22 October 2026, session 2. FILM 4: THE SHOWCASE BENCH, PASS 1 APPROVED AS THE RESTAURANT'S ARCH. NEXT: PASS 2, THE MATERIAL.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
-**Delete this file at the end of the session that reads it, once its replacement is written.** Replaces 19 October session 2's.
+**Delete this file at the end of the session that reads it, once its replacement is written.** Replaces 22 October session 1's.
 
 ---
 
-## ⛔⛔ NEXT SUBJECT — Carl's, named: make it THE SAME LOGO
+## ⛔⛔ NEXT SUBJECT — FILM 4, PASS 2: THE MATERIAL (Carl: *"we will pick it up in the bext session"*)
 
-Carl: *"it isnt the same logo. This connection, continuity and resolution is not there because its built before the logo
-drops in. When the logo drops in, then it must start."* Then, closing: *"We will fix it next session.. One way to do this is
-have the Roles logo fall in the player. it could be masked temporarily at the edges.. Then the outline logo will come into
-play along with the blue transition."*
-- → The ROOM's desk mark (the §2 "Roles" logo) falls INTO the player: the top-edge wipe (a clipping plane,
-  `about-card-canvas.tsx`, `DESK_MARK_DROP`) replaced by a temporary mask to the player's edges. It lands (Carl, earlier: *"hit
-  its position, bounce slightly and become face on"*), then the viewer's 2D outline takes over with the blue transition.
-- ⛔ **Carl, after the push:** *"It makes sense to carry on with the Roles Logo inside the player. We have its trajectory and
-  angles. When it hiys its mark thats when outline logo will come in."* → the room's mark keeps its own trajectory and angles
-  INTO the player; the viewer's outline (and the blue transition) begins at the HIT, not before. Carl: *"Everything is
-  already there to complete the logo journey. Thr readout was neccersary because its outcome determined which logo we should
-  use initially inside the player. It pushed us in the right direction."*
-- ⚠ That is the structural note's option B in part — measure its costs, don't assume them: the room's whole pipeline renders
-  on every frame it is asked for; its camera is perspective, so its silhouette vs the 2D outline must be measured at the hand-over.
-- ⚠ **Today's attempt, BUILT AND NOT WORKING (pushed in progress):** the room publishes the mark's pose
-  (`publishDeskMark` → `window.__c2bDeskMark`); the viewer is empty until the drop, draws that mark under the edge, lands, then
-  cycles. Measured faults: the published centre stays near y ≈ 400 client px while the edge scrolls past (no crossing frame
-  found; cause not found), and the colour (room blue above, dark navy below). Carl's route may make the read-out and the
-  viewer's own metal unnecessary — decide after measuring.
-- Then Carl's order: Send (domain + mailbox — his purchases) → … the hero → mastering; ⛔ deadline **19 November 2026**.
+**Through the normal process** (Carl: *"Discusion. Plan. Architect. Development. Implementation."*): discuss → plan in
+Plan Mode → Carl routes it to the Architect (he pastes the responses back) → Carl approves → build → judged by eye.
 
-## WHAT HAPPENED — all PUSHED (this commit)
+- **The materials are RULED:** **brushed brass leads, gold leaf second** (blackened bronze and copper raised, not chosen).
+  Chosen for the business — *an established, higher-end restaurant* — not for novelty. Carl on his gilded arch
+  reference: *"the aesthetic is good"* (gilt) — a note for gold leaf.
+- ⚠ **OPEN, Carl's, carried since R-088:** the curved side walls are FACETED (three's text gives each triangle its own
+  normal) — faint in clay, it will band under metal. The Builder's offer: smooth them (creased normals, chamfer edges kept
+  sharp) as part of this pass. Not yet ruled.
+- The template rule stands: every part swappable (the material becomes a part of `LetteringSpec`).
+
+## WHAT HAPPENED — the build, all on `/proto/showcase` (to be pushed with this handoff)
 
 | | what | verdict |
 |---|---|---|
-| `8837478` | the corners' shaders + studio PMREM compile WITHOUT BLOCKING; `N` kept 1500 ms (D-100) | Carl: hero optimised later *"as the About section"* |
-| §3 | heading/subtext deleted; boxes 2 × 2 left of the player | R-086 *"That looks good"* |
-| films | the four: `Who we are` button, the corners (bench), the hero, extruded lettering (off-site, a client TEMPLATE of interchangeable parts) | ruled |
-| `/proto/player` | the viewer, the Builder's design: takes 1 test card, 2 the mark as the timeline, 3 the ident, **4 = 2 + 3** (Carl's combination) | 4 developed with Carl: dots removed (*"looks better"*), the gradient + drain (*"really good"*), land → beat → transition (*"a lot better… caused by it"*) |
-| `/about` §3 | `ExamplesRow onPage` — boxes as buttons + take 4; the PNG and white placeholder gone | in progress (above) |
+| Discussion | Film 4 widened to a two-viewport showcase of modern web dev (three.js text + WebGL light first; themed stock images later); a `/proto` bench a client can be sent; "Your company", never invented names | recorded, D-088 |
+| Pass 1 | "Your company", Geist SemiBold, set by the BROWSER (`measureLabel`, full kerning), extruded per character; a narrow chamfer holding the outline; the overlap check `scripts/check-typeface-overlaps.mjs` (red on Google Fonts' Geist after a first-take miss, then fixed); plan v4.1 through FOUR Architect rounds | **R-088** *"a great start… The bevel looks good"* |
+| Takes 2–5 | The restaurant's lockup: "YOUR" the lintel, "COMPANY" an arch (Carl's reference: `live-work/references/film04/arch-form-reference-22-october.png`); every letter UPRIGHT; CAPITALS (take 3); EQUAL ANGLE STEPS, P at the crown, pairs level (take 4); the P nudged +0.11 em (take 5). The arch's size set by a collision check that can SEE an overlap (red run first). Plan v2.1, three Architect rounds | **R-089** *"Thats got it, theres more balance there now."* |
+
+Records: D-088's 22 October session-2 entries (the whole trail, every measurement), R-088, R-089; plans
+`live-work/film04-pass1-mesh-plan-22-october.md`, `live-work/film04-pass1-take2-arch-plan-22-october.md`; Architect
+responses (the Builder's transcriptions) `live-work/architect-plan-response-film04-*.md`.
+
+**Switches** (`/proto/showcase`): `?layout=line` take 1 · `?caps=0&steps=font&archtrack=0.16` take 2 ·
+`?steps=font&archtrack=0.26` take 3 · `?nudge=` take 4 · default = take 5. Measuring: `live-work/scripts/film04-*.mjs`
+(`window.__showcaseBench.probe(track, patch)` runs the same layout and check).
+
+**The film:** `Videos\C2B Films\04 Extruded lettering\` — bins 00–04, every take captured (stills, orbits, the bend,
+the swap, the measurements), `shot-list.md` with subtitle drafts. Carl records the discussions live.
 
 ## OPEN — with owners
 
-- The same-logo fix — Builder, next session, on Carl's route.
-- The films' HOSTING (the stand-in is local, `public/proto-local/`, gitignored) — Carl asked to be asked before web research.
-- `neon-bloom.tsx`: a played film re-arms §2 (Carl, 13 October) — not built.
-- The structural note `live-work/structural-note-viewer-on-about-21-october.md` v1 — built past on *"Just build it"*; amend it to the route taken.
-- Phones — mastering (D-094).
+- The faceted side walls — **Carl** (above).
+- **Sending the link to a client** conflicts with the 28 July position in `app/robots.ts` (*"no one sees the site until it
+  is finished"*) — **Carl** to reconcile; nothing sent yet.
+- **At launch:** `/proto` must stay out of search when the site-wide blocks are removed — the bench's own `robots` is set.
+- The lintel ("YOUR", ~340 px) is narrower than the arch (~550 px); Carl's reference spans it — raised, not ruled.
+- The film's discussion and plan beats are captured; Carl's own recordings of the discussion are his.
+- Carried from session 1 (unchanged): the structural note `structural-note-viewer-on-about-21-october.md` to amend
+  (Builder); Send (domain, mailbox) after the films' edit; the films' hosting (ask before research); `neon-bloom.tsx`
+  re-arm; phones in mastering (D-094).
 
-## ⚠ STANDING / LESSONS FROM 21 OCTOBER
+## ⚠ STANDING / LESSONS FROM THIS SESSION
 
-- ⛔ **Inside the viewer the design is the Builder's** (Carl: *"its not my design- its yours"*); he takes suggestions both ways.
-  ⛔ **The viewer must make it OBVIOUS to visitors it is a player and what to do** — the transport visible at rest.
-- ⛔ **The SAME object, not a copy:** a second drawing of the mark shown before the real one arrives broke continuity.
-- Scope OPEN (not locked): `app/about/page.tsx`, `about-card-canvas.tsx`, the bench files, `.gitignore`, the corner files.
-  Protected files: locked and probed 31/31 this morning; `unlocked` is empty.
-- Measuring caught real faults twice today (a hidden video taking clicks; a drain whose last half-second was dead time) —
-  film the motion and look at frames before saying it's right.
-- Lint baseline **1 error, 0 warnings**; `tsc` clean. **Servers STOPPED** at the end.
+- **The Architect round is part of the film** — Carl pastes each response; the Builder saves them as transcriptions.
+- **An identical result is the moment to check the comparison changed something** (the chamfer's 0.000 px: the two builds
+  were proven different, 13,676 vs 6,828 triangles).
+- **A check must be seen red** — the overlap check's first red run MISSED h, r, B (a tolerance that depended on where
+  flattening put a point); the arch's collision check fired before its pick was trusted.
+- **"Measured, it was centred. Seen, it wasn't."** — the P's ink already sat right of centre; the gap was optical. Carl's
+  eye set the bar; the measurement found the value.
+- ⛔ **Shell-written text:** a `\04` in a Python string inside a Bash heredoc wrote a 0x04 BYTE into `current-sprint.md`
+  (and again into the memory index). Found by a control-character scan, fixed with `chr()`. Use Edit/Write for text with
+  backslashes; scan after scripted writes. **No Prettier in this repo** — it reflowed a file once today.
+- Scope OPEN (Carl: *"keep open until i ask you to lock and test them"*): `scripts/check-typeface-overlaps.mjs`,
+  `components/showcase/lettering-geometry.ts`, `components/showcase/showcase-bench.tsx`, `app/proto/showcase/page.tsx`.
+  Protected files untouched; `unlocked` empty.
+- Lint baseline **1 error, 0 warnings**; `tsc` clean. **Servers STOPPED** (port 3000 confirmed free).
 
 ---
 
-*Written 21 October 2026, end of session. Replaces 19 October session 2's.*
+*Written 22 October 2026, end of session 2. Replaces 22 October session 1's.*
