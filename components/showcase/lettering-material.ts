@@ -63,6 +63,17 @@ export const BRUSHED_BRASS: Extract<LetteringMaterial, { kind: "brushed-metal" }
   edge: { strength: 1, roughness: 0.12 },
 };
 
+/**
+ * ⛔ THE JUDGING STUDIO — the studio HDRI's room and turn each piece is judged under until pass 3 lights it. Bench state on
+ * `/proto/showcase` (its dials start here) and the page `/proto/your-words`'s light until then — ONE source, so the page
+ * shows what the bench measured. ⚠ A JUDGING FIXTURE, not a design value. Room 0.1: the logo standard's softboxes on
+ * near-black (15 October). The turns: the line 305° (centred and widened, 23 October), the arch 355° (its lintel level with
+ * its feet, session 2) — the reasoning at the bench's `yaw` state.
+ * ⚠ Measured under the bench's FRONT framing (perspective, fov 30, the piece at 70% of the canvas — `frontDistance`); the page
+ * frames the same way, so the reflection's angles match; another framing re-measures.
+ */
+export const JUDGING_STUDIO = { room: 0.1, yawDeg: { line: 305, arch: 355 } } as const;
+
 /** The metal's colour at `tone`: 0 = its F0, 1 = its own luminance (no colour), linear. */
 export function toneF0(f0: readonly [number, number, number], tone: number): [number, number, number] {
   const L = 0.2126 * f0[0] + 0.7152 * f0[1] + 0.0722 * f0[2];

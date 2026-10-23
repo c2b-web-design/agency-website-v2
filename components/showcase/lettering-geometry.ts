@@ -68,7 +68,8 @@ export type LetteringSpec = {
   creaseDeg: number;
   /** how the words are set: one straight line (take 1, R-088), or the restaurant lockup's ARCH (take 2) */
   layout: LetteringLayout;
-  /** ⛔ PASS 2 — the material, a PART (`lettering-material.ts`). Applied to the LINE only this pass; the arch stays clay. */
+  /** ⛔ PASS 2 — the material, a PART (`lettering-material.ts`). The LINE first; since session 2 (23 October) the arch too —
+   *  ONE look on both (was: "the arch stays clay"). */
   material: LetteringMaterial;
 };
 
@@ -183,7 +184,7 @@ export const LETTERING_DEFAULTS: LetteringSpec = {
     kind: "arch", top: "Your", arch: "company logo", caps: true, steps: "equal", nudgeEm: {}, form: "round", radiusEm: 1.8, clearEm: 0.2,
     sweepDeg: 180, archTrackingEm: 0.21, topScale: 1, gapEm: 0.25,
   },
-  // ⛔ PASS 2: the LINE's material (the arch ignores it this pass and stays clay)
+  // ⛔ PASS 2: the material — the line's, and since session 2 the arch's too (was: "the arch ignores it and stays clay")
   material: BRUSHED_BRASS,
 };
 

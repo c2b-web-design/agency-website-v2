@@ -65,6 +65,24 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-092 — Film 4's Page, Viewport 1: "Your Company" Lit From The Wings And Out Front (`/proto/your-words`, D-088): "Yes, its approved"
+
+**Date:** 2026-10-23
+**Reviewer:** Human Founder
+**Subject:** `/proto/your-words` take 4, viewport 1 — "Your company" in the brushed brass, its centre at the middle of the upper third (moved in the world, seen from a little below), the 70% framing; lit by TWO PAIRS of spotlights: the WINGS (x ±0.9, y +0.35, z +0.15 of the word's width, intensity 3) as the base, the FRONT pair (30° off centre, 45° up, 1.5 widths) brought up to 0.5; the studio HDRI as the face's reflection detail; Neutral tone mapping. One canvas per viewport (structural note v2, option A).
+
+**Carl's verdicts, verbatim, in order:** *"Size is good. Move the your company into the upper third and light it from the upper left and right."*; *"almost as if its on stage and its being lit from stage left and right. We are looking for balance and to highlight its geometry."*; take 3 (front only): *"The light shouldnt be in the wings, it should be out front like in a theatre."* (said of take 2); *"the wing lights on the first pass made the face too dark but brought out the highlights and shadows inside. Start from there and then bring up the other pair to an adequate level."*; take 4: *"Thats a lot better. The face is lighter and letter depth is clearly visible. The naterial is also clearly reading as Brass"*; *"Yes, its approved, commit and push"*.
+
+**Findings:**
+
+- ✔ **Approved** — viewport 1's placement and light (take 4), and the brass as it reads under it, seen at Carl's window, dev server.
+- ✔ Measured (fixed mask, fifths across the word): 102.8 · 106.2 · 102.4 · 106.0 · 100.8, mean 103.4, blown 2.6% (the edges' glints); the wings alone 82.6; balanced within ~7% at every front level swept.
+- ✔ The page: both viewports drawn, 2 WebGL contexts, 0 console errors; without WebGL both fall back to the words as text (2.3 s); the bench 24/24 frames identical after the shared-code lift.
+- ⚠ Every value set under Neutral tone mapping (a judging choice). Viewport 2 (the arch) is still lit by the judging studio alone — its travelling light and animation are undescribed.
+- ⚠ Not watched: Carl's GPU; production; phones (mastering, D-094).
+
+---
+
 ## R-091 — Film 4's Showcase: The Faceted Side Walls Smoothed (`/proto/showcase`, D-088): "This looks better"
 
 **Date:** 2026-10-23

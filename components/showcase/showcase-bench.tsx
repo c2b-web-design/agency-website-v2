@@ -11,58 +11,30 @@
  * not be filmed). Take 2 set "company" over a half-circle; ⚠ since take 7 (23 October, R-090) the default is "company
  * logo" on a ROUND-HEADED arch (`ArchLayout.form`) — the half-circle takes are at `?form=half&arch=company`.
  *
- * ⛔ HOW THE WORDS ARE MEASURED. For EACH line, two hidden spans in the site's Geist, on ONE line (`white-space: nowrap`,
- * inside a `position: relative; overflow: clip` wrapper — without it the words wrap at display size and every reading is
- * taken from two lines with no error, and the wide box scrolls the page sideways):
- *   - KERN-ON (`font-kerning: normal`, the line's tracking) — the setting the letters are built at. ⛔ The kern-on spans ARE
- *     the words' accessible text, in reading order ("Your", then "company"): the canvas has none, and D-051-A11Y's
- *     baked-text defect must not repeat (D-088). Hidden by `opacity: 0` (not `sr-only`, whose 1 px box would give the wrong
- *     right edge; not `visibility: hidden`, which would take the words from screen readers).
- *   - KERN-OFF (`font-kerning: none`, no tracking, `aria-hidden`) — the FONT PROOF only.
- * All `font-variant-ligatures: none`: a ligature would collapse two characters onto one x the per-character build never
- * draws. In each, the text node is the FIRST child and the zero-size baseline mark comes AFTER it (`measureLabel` reads
- * `el.firstChild`).
- *
- * ⛔ THE FONT IS THE FONT — asserted before anything is built, and shown on the bench in plain words if not:
- *   1. `document.fonts.load()` for the FIRST family in the span's computed list (next/font adds an Arial-based "Fallback"
- *      family that could load when Geist has not) returns a face with status `loaded` whose family matches, quotes
- *      stripped. ⛔ Not `document.fonts.check`, which is true for a family that does not exist.
- *   2. `fontProof`, per line: the kern-off gaps equal the outline file's advances within 0.1 layout px (calibrated on
- *      take 1: worst 0.061 px).
- *   3. At least one kerned pair in each line (kern-on gap minus kern-off gap MINUS THE TRACKING).
+ * ⛔ HOW THE WORDS ARE MEASURED AND BUILT — `lettering-hooks.tsx` (LIFTED there 23 October, session 2, so the bench and the
+ * page `/proto/your-words` share ONE mechanism; the bench's 24 frames compared pixel-for-pixel before and after). On the
+ * bench the kern-on spans ARE the words' accessible text, in reading order (`MeasureSpans accessible`). The font check's
+ * failures are shown here in plain words (calibrated on take 1: worst 0.061 px).
  *
  * ⛔ THE ARCH's COLLISION CHECK runs when the sliders STOP (debounced), never per tick; its time is recorded apart from the
  * layout's. A collision, or a clearance under the margin, is shown on the bench in plain words. `__showcaseBench.probe(em)`
  * runs the SAME layout and check at another arch tracking, positions derived from the current reading (letter-spacing
  * adds index × tracking × size) — the tracking script uses it, then confirms its pick with a real browser reading.
  *
- * ⛔ `measureLabel` IS LOADED BY DYNAMIC IMPORT, as the home button does (`whoweare-button.tsx`), so this page does not carry
- * the button's geometry, the logo studio and `RectAreaLightUniformsLib` in its first load. ⚠ A COUPLING: the bench now
- * depends on that export; a change to `measureLabel` reaches here.
- *
  * WHY CLAY FIRST: mesh → material → light, each judged by Carl's eye (the desk mark's lesson, D-088, 7 October). The clay
  * and the shape light are COPIES of `corner-bench.tsx`'s (its `ShapeLight` is local). Stats on `window.__showcaseBench`.
  */
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, OrthographicCamera, PerspectiveCamera } from "@react-three/drei";
-import { FontLoader, type Font } from "three/addons/loaders/FontLoader.js";
 import { useCanvasDpr } from "@/lib/use-site-scale";
-import { pageZoom } from "@/lib/site-scale";
 import type { Glyphs } from "@/components/home/whoweare-button-scene";
 import {
-  buildLettering,
   checkCollisions,
   COLLISION_MARGIN_EM,
-  fontProof,
-  glyphGeometry,
-  glyphOutline,
-  kernReadings,
   layoutArch,
   LETTERING_DEFAULTS,
-  outlineBounds,
-  setFaceGrain,
   SHOWCASE_FONTS,
   SWEEP_MAX,
   SWEEP_MIN,
@@ -70,14 +42,27 @@ import {
   type ArchLayout,
   type ArchReading,
   type CollisionReport,
-  type FontProof,
   type LetteringSpec,
   type LetteringStats,
-  type LineGeometryKey,
-  type LockupLetter,
   type ShowcaseFont,
 } from "./lettering-geometry";
-import { applyBrushedMetal, BRUSHED_BRASS, createBrushedMetal, type BrushedMetal } from "./lettering-material";
+import {
+  ArchGrain,
+  archShapeKey,
+  frontDistance,
+  FRONT_FILL,
+  FRONT_FOV,
+  MeasureSpans,
+  useArchCollisions,
+  useArchLetters,
+  useArchPlacement,
+  useLineBuild,
+  useLines,
+  useMeasured,
+  useShowcaseFont,
+  type FontCheck,
+} from "./lettering-hooks";
+import { applyBrushedMetal, BRUSHED_BRASS, createBrushedMetal, JUDGING_STUDIO, type BrushedMetal } from "./lettering-material";
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 
 export type ShowcaseBenchFlags = {
@@ -99,25 +84,8 @@ type Mode = (typeof MODES)[number];
 
 const CLAY = { color: "#8a8a8a", roughness: 0.6 } as const;
 const KEY_DEFAULT = { az: -35, el: 40 } as const;
-/** the words fill this share of the canvas, in either view (width AND height — the arch is tall) */
-const FILL = 0.7;
-
-type LineKey = "line" | "top" | "arch";
-type LineDef = { key: LineKey; words: string; sizePx: number; trackingEm: number };
-type LineCheck = { key: LineKey; words: string; proof: FontProof; kerns: { pair: string; kernPx: number }[]; kernedPairs: number };
-
-type FontCheck = {
-  family: string;
-  faceLoaded: boolean;
-  /** the MAIN line's readings (the line, or the arch) — take 1's fields, kept for its scripts */
-  proof: FontProof | null;
-  kerns: { pair: string; kernPx: number }[];
-  kernedPairs: number;
-  lines: LineCheck[];
-  /** the reasons nothing was built, in plain words; empty when the checks hold */
-  stops: string[];
-};
-type Measured = { glyphs: Partial<Record<LineKey, Glyphs>>; check: FontCheck; lines: LineDef[] };
+/** the words fill this share of the canvas, in either view (width AND height — the arch is tall) — the shared `FRONT_FILL` */
+const FILL = FRONT_FILL;
 
 type ArchStats = {
   triangles: number;
@@ -153,7 +121,6 @@ declare global {
   }
 }
 
-const stripQuotes = (s: string) => s.trim().replace(/^["']|["']$/g, "");
 const clamp = (v: number | undefined, lo: number, hi: number, d: number) => (v === undefined ? d : Math.min(hi, Math.max(lo, v)));
 
 /** A copy of `corner-bench.tsx`'s shape light: a key you can rake, a soft fill, a hemisphere so no face goes black. */
@@ -199,14 +166,12 @@ const FRONT_Z = 100000;
  * framed to `FILL` like the orthographic view. The clay modes keep the orthographic front — the shape's inspection view and
  * step 0's regression baseline.
  */
-const FRONT_FOV = 30;
 function FrontCamera({ widthPx, heightPx, perspective }: { widthPx: number; heightPx: number; perspective: boolean }) {
   const size = useThree((s) => s.size);
   const zoom = widthPx > 0 ? Math.min((FILL * size.width) / widthPx, heightPx > 0 ? (FILL * size.height) / heightPx : Infinity) : 1;
   if (perspective) {
-    const vHalf = ((FRONT_FOV / 2) * Math.PI) / 180;
-    const hHalf = Math.atan(Math.tan(vHalf) * (size.width / Math.max(1, size.height)));
-    const d = widthPx > 0 ? Math.max(widthPx / FILL / 2 / Math.tan(hHalf), heightPx / FILL / 2 / Math.tan(vHalf)) : 1000;
+    // the shared framing (`lettering-hooks.tsx`) — the page `/proto/your-words` frames each piece the same way
+    const d = frontDistance(widthPx, heightPx, size);
     return <PerspectiveCamera makeDefault position={[0, 0, d]} fov={FRONT_FOV} near={1} far={d * 10} />;
   }
   return <OrthographicCamera makeDefault position={[0, 0, FRONT_Z]} zoom={zoom} near={FRONT_Z - 5000} far={FRONT_Z + 5000} />;
@@ -266,23 +231,6 @@ function MetalApply({ metal, look, yawDeg, sizePx }: { metal: BrushedMetal; look
     applyBrushedMetal(metal, look, yawDeg, sizePx);
     invalidate();
   }, [metal, look, yawDeg, sizePx, invalidate]);
-  return null;
-}
-
-/**
- * ⛔ THE ARCH's GRAIN, LAID AS BRICKS (`layoutArch`'s `grain`): each letter's face UVs from its PLACED position, turned to its
- * brick angle. Written whenever the placement moves — the letters are built once and only moved, so the UVs follow here,
- * not in the build. A few thousand vertices; then one frame (`frameloop="demand"`). Harmless in the clay modes (no map).
- */
-function ArchGrain({ shown }: { shown: { placed: ReturnType<typeof layoutArch>; letters: { list: LockupLetter[]; geos: Map<LockupLetter, THREE.BufferGeometry> } } }) {
-  const invalidate = useThree((s) => s.invalidate);
-  useEffect(() => {
-    for (const l of shown.letters.list) {
-      const g = shown.letters.geos.get(l), p = shown.placed.placements.get(l);
-      if (g && p) setFaceGrain(g, p.x, p.y, shown.placed.grain.get(l) ?? 0);
-    }
-    invalidate();
-  }, [shown, invalidate]);
   return null;
 }
 
@@ -400,7 +348,7 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
     setSpec((s) => (s.material.kind === "brushed-metal" ? { ...s, material: patch(s.material) } : s));
   // the judging studio — bench state, NOT a spec part (the Architect): room applies on release (each value caches its own
   // ~8 MB float copy and PMREM, never freed — `studio-hdri.ts`), yaw per tick
-  const [roomShown, setRoomShown] = useState(clamp(flags.room, 0, 1, 0.1));
+  const [roomShown, setRoomShown] = useState(clamp(flags.room, 0, 1, JUDGING_STUDIO.room));
   const [room, setRoom] = useState(roomShown);
   // ⛔ 305° — THE REFLECTION CENTRED AND BALANCED (Carl, 23 October: "the reflection from the HDRI should be more balanced.
   // Centred on the middle the edges are getting lost"). MEASURED across the word in fifths, perspective front, 5° steps
@@ -415,7 +363,8 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
   // 89 against the line's 95 — AT THE LINE's OWN STRENGTH, so the material stays one and only the light differs (Carl's
   // "same material… differ with the use of light"). 345° and 265° are evener (0.94–0.95 against 0.89) but sit at ~59 and
   // would need the face's strength doubled. ⚠ A judging fixture, not a design value.
-  const [yaw, setYaw] = useState(clamp(flags.yaw, -360, 360, flags.layout === "line" ? 305 : 355));
+  // ⛔ the values live in `JUDGING_STUDIO` (`lettering-material.ts`), shared with the page `/proto/your-words`
+  const [yaw, setYaw] = useState(clamp(flags.yaw, -360, 360, JUDGING_STUDIO.yawDeg[flags.layout === "line" ? "line" : "arch"]));
   // device px per layout px on the face, from the front camera's framing — the grain's floor (`FramingReport`)
   const [devicePxPerUnit, setDevicePxPerUnit] = useState<number | null>(null);
   const camPose = (() => {
@@ -438,172 +387,21 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
   const round = arch?.form === "round";
   const crown = arch && !round && arch.steps === "equal" && archSet.length % 2 === 1 ? archSet[(archSet.length - 1) / 2] : null;
 
-  // the lines to set: one (take 1), or the lintel and the arch (take 2)
-  const lines: LineDef[] = useMemo(
-    () =>
-      arch
-        ? [
-            { key: "top", words: setCase(arch.top, arch), sizePx: spec.sizePx * arch.topScale, trackingEm: spec.trackingEm },
-            { key: "arch", words: setCase(arch.arch, arch), sizePx: spec.sizePx, trackingEm: arch.archTrackingEm },
-          ]
-        : [{ key: "line", words: spec.words, sizePx: spec.sizePx, trackingEm: spec.trackingEm }],
-    [arch, spec.sizePx, spec.trackingEm, spec.words],
-  );
-  const linesKey = JSON.stringify(lines);
-
-  // the outline file
-  const [font, setFont] = useState<Font | null>(null);
-  useEffect(() => {
-    let live = true;
-    new FontLoader().loadAsync(SHOWCASE_FONTS[spec.font].url).then((f) => live && setFont(f));
-    return () => {
-      live = false;
-    };
-  }, [spec.font]);
-
-  // the measurement: per line, the font proved, then the kern-on setting read — re-taken when a line's words, size or
-  // tracking move
-  const spans = useRef<Record<string, HTMLSpanElement | null>>({});
-  const [measured, setMeasured] = useState<Measured | null>(null);
-  useEffect(() => {
-    if (!font) return;
-    let live = true;
-    const defs: LineDef[] = JSON.parse(linesKey);
-    const id = window.setTimeout(async () => {
-      const first = spans.current[`${defs[0].key}:on`];
-      if (!first || defs.some((d) => !d.words)) return;
-      const family = stripQuotes(getComputedStyle(first).fontFamily.split(",")[0] ?? "");
-      const weight = SHOWCASE_FONTS[spec.font].weight;
-      const faces = await document.fonts.load(`${weight} ${spec.sizePx}px "${family}"`);
-      const faceLoaded = faces.some((f) => f.status === "loaded" && stripQuotes(f.family) === family);
-      const { measureLabel } = await import("@/components/home/whoweare-button-scene");
-      if (!live) return;
-      const z = pageZoom();
-      const glyphs: Partial<Record<LineKey, Glyphs>> = {};
-      const checks: LineCheck[] = [];
-      const stops: string[] = [];
-      if (!faceLoaded) stops.push(`The browser has not loaded the font "${family}". Nothing is built on a stand-in font.`);
-      for (const d of defs) {
-        const on = spans.current[`${d.key}:on`], off = spans.current[`${d.key}:off`];
-        if (!on || !off) return;
-        const onG = measureLabel(on, spans.current[`${d.key}:onBase`] ?? null).glyphs;
-        const offG = measureLabel(off, spans.current[`${d.key}:offBase`] ?? null).glyphs;
-        // the whole text's right edge, from a Range over the text node (measureLabel's `w` is rounded to 0.1)
-        const box = off.getBoundingClientRect();
-        const node = off.firstChild;
-        let rightEdge = NaN;
-        if (node && node.nodeType === Node.TEXT_NODE) {
-          const range = document.createRange();
-          range.setStart(node, 0);
-          range.setEnd(node, (node.textContent ?? "").length);
-          rightEdge = (range.getBoundingClientRect().right - (box.left + box.width / 2)) / z;
-        }
-        const proof = fontProof(font, offG, rightEdge, d.sizePx);
-        const kerns = kernReadings(onG, offG, d.trackingEm * d.sizePx);
-        const kernedPairs = kerns.filter((k) => Math.abs(k.kernPx) > 0.01).length;
-        const name = defs.length > 1 ? `"${d.words}"` : "these words";
-        if (!proof.ok)
-          stops.push(
-            `In ${name}, the browser's font and the outline file disagree: worst ${proof.worstPx.toFixed(3)} px at "${proof.worstChar}", right edge ` +
-              `${proof.rightEdgeResidualPx.toFixed(3)} px (tolerance ${proof.tolerancePx} px${proof.uniform ? "; the miss is uniform, so read it as a calibration" : ""}).`,
-          );
-        if (kernedPairs === 0 && kerns.length > 0) stops.push(`No pair in ${name} is kerned. The spacing has not been proved, so nothing is built.`);
-        glyphs[d.key] = onG;
-        checks.push({ key: d.key, words: d.words, proof, kerns, kernedPairs });
-      }
-      const main = checks[checks.length - 1];
-      setMeasured({
-        glyphs,
-        lines: defs,
-        check: { family, faceLoaded, proof: main.proof, kerns: main.kerns, kernedPairs: main.kernedPairs, lines: checks, stops },
-      });
-    }, 60);
-    return () => {
-      live = false;
-      window.clearTimeout(id);
-    };
-  }, [font, linesKey, spec.font, spec.sizePx]);
+  // ⛔ THE MEASUREMENT AND THE BUILD — `lettering-hooks.tsx` (lifted 23 October, session 2; the same timings and keys)
+  const lines = useLines(spec);
+  const font = useShowcaseFont(spec.font);
+  const { spans, measured } = useMeasured(font, lines, spec.font, spec.sizePx);
   const ok = !!measured && !measured.check.stops.length;
-
-  // TAKE 1 — the line, one merged mesh; built in an effect, timed there, never in render
-  // ⛔ KEYED ON ITS GEOMETRY FIELDS ONLY (the Architect, pass 2): it used to depend on the whole `spec`, so a material or
-  // studio slider would re-extrude every triangle a tick. `LineGeometryKey` is the type `buildLettering` takes, so the key
-  // and what the build reads cannot drift apart; the words, font and tracking reach it through `measured`.
-  const lineKey = JSON.stringify({ sizePx: spec.sizePx, depthEm: spec.depthEm, bevel: spec.bevel, curveSegments: spec.curveSegments, creaseDeg: spec.creaseDeg } satisfies LineGeometryKey);
-  const [made, setMade] = useState<{ geometry: THREE.BufferGeometry | null; stats: LetteringStats } | null>(null);
-  useEffect(() => {
-    if (arch || !font || !measured || measured.check.stops.length || !measured.glyphs.line) return;
-    const line = measured.glyphs.line;
-    const key: LineGeometryKey = JSON.parse(lineKey);
-    const id = window.setTimeout(() => {
-      const t0 = performance.now();
-      const r = buildLettering(key, font, line);
-      performance.measure("showcase:build", { start: t0, end: performance.now() });
-      setMade(r);
-    }, 30);
-    return () => window.clearTimeout(id);
-  }, [arch, font, measured, lineKey]);
-  useEffect(() => () => made?.geometry?.dispose(), [made]);
-
-  // TAKE 2 — the arch's letters, each BUILT ONCE per shape (words, sizes, depth, edge, smoothness); sweep, gap and
-  // tracking only move them
-  // ⚠ the build reads ONLY what is in this key, so a sweep, gap or tracking change cannot re-extrude
-  const shapeKey = arch
-    ? JSON.stringify({ top: setCase(arch.top, arch), arch: setCase(arch.arch, arch), sizePx: spec.sizePx, topScale: arch.topScale, depthEm: spec.depthEm, bevel: spec.bevel, curveSegments: spec.curveSegments, creaseDeg: spec.creaseDeg })
-    : "";
-  const [letters, setLetters] = useState<{ key: string; list: LockupLetter[]; geos: Map<LockupLetter, THREE.BufferGeometry>; buildMs: number; triangles: number; missing: string[] } | null>(null);
-  useEffect(() => {
-    if (!shapeKey || !font) return;
-    const k: { top: string; arch: string; sizePx: number; topScale: number } & Pick<LetteringSpec, "depthEm" | "bevel" | "curveSegments" | "creaseDeg"> = JSON.parse(shapeKey);
-    const id = window.setTimeout(() => {
-      const t0 = performance.now();
-      const list: LockupLetter[] = [];
-      const geos = new Map<LockupLetter, THREE.BufferGeometry>();
-      const missing: string[] = [];
-      let triangles = 0;
-      const parts: [LockupLetter["line"], string, number][] = [["top", k.top, k.sizePx * k.topScale], ["arch", k.arch, k.sizePx]];
-      for (const [line, words, px] of parts)
-        words.split("").forEach((ch, index) => {
-          if (ch.trim() === "") return;
-          if (!font.data.glyphs[ch]) {
-            if (!missing.includes(ch)) missing.push(ch);
-            return;
-          }
-          const outline = glyphOutline(font, ch, px, k.curveSegments);
-          const l: LockupLetter = { line, index, ch, outline, bounds: outlineBounds(outline), sizePx: px };
-          const g = glyphGeometry(font, ch, px, k);
-          triangles += g.attributes.position.count / 3;
-          list.push(l);
-          geos.set(l, g);
-        });
-      const buildMs = performance.now() - t0;
-      performance.measure("showcase:arch-build", { start: t0, end: performance.now() });
-      setLetters({ key: shapeKey, list, geos, buildMs, triangles, missing });
-    }, 30);
-    return () => window.clearTimeout(id);
-  }, [font, shapeKey]);
-  useEffect(() => () => letters?.geos.forEach((g) => g.dispose()), [letters]);
-
-  // the arch's placement — positions only, cheap, every tick
+  // TAKE 1 — the line, one merged mesh
+  const made = useLineBuild(!!arch, font, measured, spec);
+  // TAKE 2 — the arch's letters, each built once per shape; sweep, gap and tracking only move them
+  const shapeKey = archShapeKey(arch, spec);
+  const letters = useArchLetters(shapeKey, font);
   const archGlyphs = measured?.glyphs.arch;
   const topGlyphs = measured?.glyphs.top;
-  const placed = useMemo(() => {
-    if (!arch || !font || !letters || letters.key !== shapeKey || !archGlyphs || !topGlyphs) return null;
-    return layoutArch(arch, font, spec.sizePx, letters.list, archGlyphs.x, topGlyphs);
-  }, [arch, font, letters, shapeKey, archGlyphs, topGlyphs, spec.sizePx]);
-
+  const placed = useArchPlacement(arch, font, letters, shapeKey, measured, spec.sizePx);
   // the collision check — once the sliders STOP
-  const [collisions, setCollisions] = useState<{ for: typeof placed; report: CollisionReport } | null>(null);
-  useEffect(() => {
-    if (!placed || !letters) return;
-    const id = window.setTimeout(() => {
-      const report = checkCollisions(letters.list, placed.placements, COLLISION_MARGIN_EM * spec.sizePx);
-      performance.measure("showcase:collisions", { start: performance.now() - report.checkMs, end: performance.now() });
-      setCollisions({ for: placed, report });
-    }, 250);
-    return () => window.clearTimeout(id);
-  }, [placed, letters, spec.sizePx]);
-  const report = collisions && collisions.for === placed ? collisions.report : null;
+  const report = useArchCollisions(placed, letters, spec.sizePx);
 
   const matcap = useMemo(() => (typeof document === "undefined" ? null : makeMatcap()), []);
   const materials = useMemo(
@@ -692,45 +490,15 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
   }, [arch, archShown, report, lineBuilt, stats, spec, measured, probe, mode, metalReady]);
 
   const check = measured?.check;
-  const fontCss = SHOWCASE_FONTS[spec.font];
-  const span = (d: LineDef, kern: boolean): CSSProperties => ({
-    position: "absolute",
-    left: 0,
-    top: 0,
-    whiteSpace: "nowrap",
-    opacity: 0,
-    pointerEvents: "none",
-    fontFamily: fontCss.css,
-    fontWeight: fontCss.weight,
-    fontSize: d.sizePx,
-    lineHeight: 1.2,
-    fontKerning: kern ? "normal" : "none",
-    fontVariantLigatures: "none",
-    letterSpacing: kern ? `${d.trackingEm}em` : 0,
-  });
   const select = "bg-neutral-900 border border-neutral-700 px-2 py-1";
-  const mark = { display: "inline-block", width: 0, height: 0 } as const;
   const em = (px: number) => (px / spec.sizePx).toFixed(3);
   const short = !!stats && "arch" in stats && !stats.arch.fits;
   const blocked = (check && check.stops.length > 0) || (report && (report.collisions > 0 || report.tight > 0)) || short;
 
   return (
     <div className="space-y-4">
-      {/* ⛔ the measuring spans — on one line each, clipped; the kern-on ones are the words' accessible text, in order */}
-      <div className="relative h-0 overflow-clip">
-        {lines.map((d) => (
-          <span key={`${d.key}:on`} ref={(e) => { spans.current[`${d.key}:on`] = e; }} style={span(d, true)}>
-            {d.words}
-            <span ref={(e) => { spans.current[`${d.key}:onBase`] = e; }} style={mark} />
-          </span>
-        ))}
-        {lines.map((d) => (
-          <span key={`${d.key}:off`} ref={(e) => { spans.current[`${d.key}:off`] = e; }} style={span(d, false)} aria-hidden>
-            {d.words}
-            <span ref={(e) => { spans.current[`${d.key}:offBase`] = e; }} style={mark} />
-          </span>
-        ))}
-      </div>
+      {/* ⛔ the measuring spans (`lettering-hooks.tsx`) — the kern-on ones are the words' accessible text, in order */}
+      <MeasureSpans lines={lines} fontKey={spec.font} spans={spans} accessible />
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
         {arch ? (

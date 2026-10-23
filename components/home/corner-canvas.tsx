@@ -87,8 +87,9 @@ const CORNERS = [
 
 type Ready = { currentProgram?: { isReady(): boolean } };
 /** Poll until every material's program reports linked (`KHR_parallel_shader_compile`; without it three reports ready at
- *  once). Returns the cancel. */
-function whenLinked(gl: THREE.WebGLRenderer, pending: Set<THREE.Material>, done: () => void): () => void {
+ *  once). Returns the cancel. ⚠ EXPORTED (23 October 2026) — REUSED by film 4's page (`your-words-canvas.tsx`), not copied:
+ *  a change here reaches it. */
+export function whenLinked(gl: THREE.WebGLRenderer, pending: Set<THREE.Material>, done: () => void): () => void {
   let id = 0;
   const poll = () => {
     for (const m of pending) if ((gl.properties.get(m) as Ready).currentProgram?.isReady()) pending.delete(m);
@@ -108,8 +109,10 @@ type PmremInside = {
   _pingPongRenderTarget?: THREE.WebGLRenderTarget | null;
 };
 
-/** ⛔ The studio prefiltered for THIS renderer without a main-thread compile stall (see the header). Null until done. */
-function usePrefilteredStudio(gl: THREE.WebGLRenderer, hdri: THREE.DataTexture): THREE.Texture | null {
+/** ⛔ The studio prefiltered for THIS renderer without a main-thread compile stall (see the header). Null until done.
+ *  ⚠ EXPORTED (23 October 2026) — REUSED by film 4's page (`your-words-canvas.tsx`); its reading of three's private fields
+ *  now serves both. */
+export function usePrefilteredStudio(gl: THREE.WebGLRenderer, hdri: THREE.DataTexture): THREE.Texture | null {
   const [env, setEnv] = useState<{ from: THREE.DataTexture; map: THREE.Texture } | null>(null);
   useEffect(() => {
     const gen = new THREE.PMREMGenerator(gl);
