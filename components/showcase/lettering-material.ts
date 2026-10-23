@@ -1,6 +1,8 @@
 /**
  * ⛔ FILM 4's LETTERING — PASS 2: THE MATERIAL (D-088, 23 October 2026). Plan `live-work/film04-pass2-material-plan-23-october.md`
- * (v2.1, four Architect rounds, approved by Carl). Brushed brass on "Your company" (the line) first; the arch stays clay.
+ * (v2.1, four Architect rounds, approved by Carl). Brushed brass on "Your company" (the line) first; then the SAME look on
+ * the arch (session 2 — Carl: "its the same material"), its grain laid as an arch's bricks (`layoutArch`'s `grain`).
+ * ⚠ The strengths, roughness and the studio's 305° were measured on the LINE's framing.
  *
  * ⛔ THE SHAPE FOLLOWS `components/home/corner-material.ts` (the Architect): a LOOK as data, built into `MeshPhysicalMaterial`s,
  * the F0 set LINEAR with `setRGB(…, LinearSRGBColorSpace)`, `envMapIntensity` as the strength — with no lamps it is the

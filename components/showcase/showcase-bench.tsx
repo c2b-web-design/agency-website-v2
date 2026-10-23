@@ -62,6 +62,7 @@ import {
   layoutArch,
   LETTERING_DEFAULTS,
   outlineBounds,
+  setFaceGrain,
   SHOWCASE_FONTS,
   SWEEP_MAX,
   SWEEP_MIN,
@@ -269,6 +270,23 @@ function MetalApply({ metal, look, yawDeg, sizePx }: { metal: BrushedMetal; look
 }
 
 /**
+ * ⛔ THE ARCH's GRAIN, LAID AS BRICKS (`layoutArch`'s `grain`): each letter's face UVs from its PLACED position, turned to its
+ * brick angle. Written whenever the placement moves — the letters are built once and only moved, so the UVs follow here,
+ * not in the build. A few thousand vertices; then one frame (`frameloop="demand"`). Harmless in the clay modes (no map).
+ */
+function ArchGrain({ shown }: { shown: { placed: ReturnType<typeof layoutArch>; letters: { list: LockupLetter[]; geos: Map<LockupLetter, THREE.BufferGeometry> } } }) {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    for (const l of shown.letters.list) {
+      const g = shown.letters.geos.get(l), p = shown.placed.placements.get(l);
+      if (g && p) setFaceGrain(g, p.x, p.y, shown.placed.grain.get(l) ?? 0);
+    }
+    invalidate();
+  }, [shown, invalidate]);
+  return null;
+}
+
+/**
  * ⛔ THE GRAIN's FLOOR, FROM THE CURRENT FRAMING (the Architect): a pitch below ~2 DEVICE px mips away to an average. One
  * layout px on the face spans `zoom × pixelRatio` device px under the front camera (the orthographic zoom IS css px per
  * world unit, one world unit one layout px), so the floor in em is 2 / (zoom × pixelRatio × size). Under the material
@@ -390,7 +408,14 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
   // lit, both ends held at ~70% of it. 15° (23.2 / 52.0 / 23.5) is centred too but its ends fall below half — lost; 30°
   // (the brightest, the take-2 setting) was right-heavy, 24.8 / 31.7 / 49.6. ⚠ A judging fixture, not a design value —
   // pass 3 lights it. History: 15° (orthographic, step 1), 30° (perspective brightest, take 2).
-  const [yaw, setYaw] = useState(clamp(flags.yaw, -360, 360, 305));
+  // ⛔ THE ARCH's TURN IS ITS OWN — 355° (session 2, 23 October): the arch is TALL, so its balance runs feet to lintel, not
+  // left to right. MEASURED on the FACE alone over a fixed mask, in bands bottom-up — lower legs · upper legs · head · lintel
+  // (`live-work/scripts/film04-pass2-arch-balance-23-october.mjs`): at the line's 305° 141 · 130 · 144 · 81, the lintel
+  // lost (the top of a tall piece reflects another height of the studio); at 355° 83 · 94 · 87 · 93, the face's whole
+  // 89 against the line's 95 — AT THE LINE's OWN STRENGTH, so the material stays one and only the light differs (Carl's
+  // "same material… differ with the use of light"). 345° and 265° are evener (0.94–0.95 against 0.89) but sit at ~59 and
+  // would need the face's strength doubled. ⚠ A judging fixture, not a design value.
+  const [yaw, setYaw] = useState(clamp(flags.yaw, -360, 360, flags.layout === "line" ? 305 : 355));
   // device px per layout px on the face, from the front camera's framing — the grain's floor (`FramingReport`)
   const [devicePxPerUnit, setDevicePxPerUnit] = useState<number | null>(null);
   const camPose = (() => {
@@ -593,8 +618,9 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
   );
   useEffect(() => () => { for (const m of Object.values(materials)) m.dispose(); matcap?.dispose(); }, [materials, matcap]);
 
-  // PASS 2 — the studio and the metal: only in the material mode, only on the LINE (the arch stays clay this pass)
-  const metalOn = mode === "material" && !arch && !!metalLook;
+  // PASS 2 — the studio and the metal, in the material mode: the LINE first (23 October), then the ARCH (session 2, Carl:
+  // "its the same material" — one look on both, no plan round), its grain laid as bricks (`ArchGrain`)
+  const metalOn = mode === "material" && !!metalLook;
   const [hdri, setHdri] = useState<{ room: number; tex: THREE.Texture } | null>(null);
   useEffect(() => {
     if (!metalOn) return;
@@ -657,7 +683,7 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
 
   useEffect(() => {
     window.__showcaseBench = {
-      ready: arch ? !!archShown && !!report : !!lineBuilt?.geometry && (mode !== "material" || metalReady),
+      ready: (arch ? !!archShown && !!report : !!lineBuilt?.geometry) && (mode !== "material" || metalReady),
       stats,
       spec,
       fontCheck: measured?.check ?? null,
@@ -758,11 +784,6 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
           </select>
         </label>
       </div>
-      {mode === "material" && arch && (
-        <p className="text-sm text-neutral-400 max-w-4xl">
-          The arch stays in clay for now. The material goes on one piece at a time, and the straight line is first.
-        </p>
-      )}
 
       {(fontRejected || blocked || (stats && stats.missing.length > 0)) && (
         <div className="border border-red-900 bg-red-950/40 text-red-200 text-sm p-3 space-y-1 max-w-4xl">
@@ -802,10 +823,13 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
             // the line's two groups: the brushed FACE (materialIndex 0), the polished SIDES — walls and chamfer (1)
             <mesh geometry={lineBuilt.geometry} material={metalOn ? (metal ? [metal.face, metal.edge] : materials.clay) : materials[mode === "material" ? "clay" : mode]} />
           )}
+          {archShown && <ArchGrain shown={archShown} />}
           {archShown &&
             archShown.letters.list.map((l) => {
               const p = archShown.placed.placements.get(l)!;
-              return <mesh key={`${l.line}${l.index}`} geometry={archShown.letters.geos.get(l)} material={materials[mode === "material" ? "clay" : mode]} position={[p.x, p.y, 0]} />;
+              // each letter keeps three's own groups: the brushed FACE (materialIndex 0), the polished SIDES (1)
+              const material = metalOn ? (metal ? [metal.face, metal.edge] : materials.clay) : materials[mode === "material" ? "clay" : mode];
+              return <mesh key={`${l.line}${l.index}`} geometry={archShown.letters.geos.get(l)} material={material} position={[p.x, p.y, 0]} />;
             })}
         </Canvas>
       </div>
@@ -850,7 +874,7 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
           <Slider label="edge steps" value={spec.bevel.segments} min={1} max={8} step={1} onChange={(v) => set("bevel", { ...spec.bevel, segments: v })} fmt={(v) => (v === 1 ? "1, a chamfer" : `${v}, rounded`)} />
           <Slider label="smoothness" value={spec.curveSegments} min={2} max={32} step={1} onChange={(v) => set("curveSegments", v)} fmt={(v) => `${v} per curve`} />
           <Slider label="crease" value={spec.creaseDeg} min={0} max={44} step={0.5} onChange={(v) => set("creaseDeg", v)} fmt={(v) => (v === 0 ? "none, faceted" : `smooth below ${v}°`)} />
-          {metalLook && !arch && (
+          {metalLook && (
             <>
               <div className="text-neutral-500 pt-2">the material (⚠ starting values, judged under Neutral tone mapping)</div>
               <Slider label="tone" value={metalLook.tone} min={0} max={1} step={0.01} onChange={(v) => setLook((m) => ({ ...m, tone: v }))} fmt={(v) => (v === 0 ? "brass" : `${(v * 100).toFixed(0)}% to no colour`)} />

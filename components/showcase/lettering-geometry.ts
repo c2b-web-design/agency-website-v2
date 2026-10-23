@@ -278,6 +278,28 @@ export function splitByMaterial(g: THREE.BufferGeometry): [THREE.BufferGeometry,
   return out;
 }
 
+/**
+ * ⛔ THE FACE's GRAIN, LAID AT AN ANGLE — the face UVs from the letter's PLACED position (its own x, y plus `ox`, `oy`, in
+ * layout px), turned so the streaks run along `angle` (radians from +x). The grain texture's rows run along u, and three
+ * builds the brushing's tangent frame from the SAME uv attribute when no normal map is set (`normal_fragment_begin`:
+ * `getTangentFrame(…, vUv)`), so turning the UVs turns the streaks AND the brushing together; `anisotropyRotation` stays
+ * relative to the grain. Only the FACE group (materialIndex 0) is written when the geometry has groups; a geometry without
+ * groups (the line's split faces) is all face. At angle 0 with no offset this is uv = position.xy — the line's sheet exactly.
+ */
+export function setFaceGrain(g: THREE.BufferGeometry, ox: number, oy: number, angle: number) {
+  // the groups' ranges are VERTEX ranges only on a non-indexed geometry (three's text geometry, and the crease's output)
+  if (g.index) throw new Error("setFaceGrain: an indexed geometry's groups count indices, not vertices");
+  const p =g.attributes.position, uv = g.attributes.uv as THREE.BufferAttribute;
+  const c = Math.cos(angle), s = Math.sin(angle);
+  const ranges = g.groups.length ? g.groups.filter((gr) => gr.materialIndex === 0) : [{ start: 0, count: p.count }];
+  for (const { start, count } of ranges)
+    for (let v = start; v < start + count; v++) {
+      const x = p.getX(v) + ox, y = p.getY(v) + oy;
+      uv.setXY(v, x * c + y * s, -x * s + y * c);
+    }
+  uv.needsUpdate = true;
+}
+
 /** ⛔ The fields the build reads — the bench keys the line's build on exactly these (with the words' reading), so a material
  *  or studio change cannot re-extrude (the Architect, pass 2). The type IS the list: reading another field is a type error. */
 export type LineGeometryKey = Pick<LetteringSpec, "sizePx" | "depthEm" | "bevel" | "curveSegments" | "creaseDeg">;
@@ -304,8 +326,7 @@ export function buildLettering(spec: LineGeometryKey, font: Font, glyphs: Glyphs
     // would start the grain at its own origin and repeat the same streaks. Set to the PLACED position instead — face
     // uv = position.xy exactly, in layout px — so the streaks run through the word as if cut from one brushed plate.
     // (A shift of the UVs moves no tangent: the brushing's frame comes from their derivatives.)
-    const fp = face.attributes.position, fuv = face.attributes.uv;
-    for (let v = 0; v < fp.count; v++) fuv.setXY(v, fp.getX(v), fp.getY(v));
+    setFaceGrain(face, 0, 0, 0);
     faces.push(face);
     sides.push(side);
     g.dispose();
@@ -476,6 +497,8 @@ export type ArchReading = {
   legPx: number;
   /** round only: false when the letters cannot span the half-circle at this width — the last stops short of the foot */
   fits: boolean;
+  /** the arch letters' GRAIN angles, degrees from +x, in order — 0 on the legs, the radius on the curve (`grainAngles`) */
+  grainDeg: number[];
   widthPx: number;
   heightPx: number;
   layoutMs: number;
@@ -496,8 +519,18 @@ export function layoutArch(
   letters: LockupLetter[],
   archX: number[],
   top: Glyphs,
-): { placements: Map<LockupLetter, Placement>; reading: ArchReading } {
+): { placements: Map<LockupLetter, Placement>; grain: Map<LockupLetter, number>; reading: ArchReading } {
   const t0 = performance.now();
+  /**
+   * ⛔ THE GRAIN LAID AS AN ARCH's BRICKS (Carl, 23 October, session 2: *"On the left and right columns it should run
+   * horizontal, Where the curve happens it should point inwards, following the geometry of the curve"* — *"if you imagine an
+   * arch made of bricks, thats how its constructed. It would really emphasise the arch as its shape is implied by letters."*).
+   * Each letter is ONE brick: one direction across the whole letter, taken at its centre on the path (not a fan within it).
+   * On a leg, horizontal (0); over the curve, the RADIUS through the letter's centre toward the circle's centre. At the
+   * spring line the radius IS horizontal, so the courses run into the voussoirs without a step. The lintel is horizontal.
+   * A grain is a line, not an arrow: θ and θ + π are the same grain.
+   */
+  const grain = new Map<LockupLetter, number>();
   // the reference height: the middle of the capitals (the "H") when set in capitals, else of the lowercase (the "x")
   const half = glyphTopPx(font, layout.caps ? "H" : "x", sizePx) / 2;
   const arch = letters.filter((l) => l.line === "arch");
@@ -514,7 +547,12 @@ export function layoutArch(
     R = r.R;
     legPx = r.H;
     fits = r.fits;
-    arch.forEach((l, k) => placements.set(l, at(l, r.centres[k])));
+    arch.forEach((l, k) => {
+      const c = r.centres[k];
+      placements.set(l, at(l, c));
+      // the half-circle's centre is (0, H); at or below the spring line the letter is on a leg
+      grain.set(l, c.y <= r.H ? 0 : Math.atan2(c.y - r.H, c.x));
+    });
   } else {
     const S = (Math.min(SWEEP_MAX, Math.max(SWEEP_MIN, layout.sweepDeg)) * Math.PI) / 180;
     const span = arch.length > 1 ? centres[centres.length - 1] - centres[0] : 0;
@@ -525,6 +563,7 @@ export function layoutArch(
       const theta = Math.PI / 2 + S / 2 - (layout.steps === "equal" ? (n > 1 ? (k * S) / (n - 1) : S / 2) : (centres[k] - centres[0]) / (R || 1));
       angles.push(theta);
       placements.set(l, at(l, { x: R * Math.cos(theta), y: R * Math.sin(theta) }));
+      grain.set(l, theta);
     });
   }
   // the lintel: straight, centred, its lowest ink gapEm above the arch's highest ink
@@ -534,7 +573,10 @@ export function layoutArch(
   let topLow = Infinity;
   for (const l of tops) topLow = Math.min(topLow, l.bounds.minY);
   const baseY = (archTop === -Infinity ? 0 : archTop) + layout.gapEm * sizePx - (topLow === Infinity ? 0 : topLow);
-  for (const l of tops) placements.set(l, { x: top.x[l.index], y: baseY });
+  for (const l of tops) {
+    placements.set(l, { x: top.x[l.index], y: baseY });
+    grain.set(l, 0);
+  }
   // centre the whole lockup on its bounds
   const all = {
     minX: Infinity,
@@ -557,11 +599,13 @@ export function layoutArch(
   const deg = (r: number) => (r * 180) / Math.PI;
   return {
     placements,
+    grain,
     reading: {
       radiusPx: R,
       feetDeg: [angles.length ? deg(angles[0]) : NaN, angles.length ? deg(angles[angles.length - 1]) : NaN],
       legPx,
       fits,
+      grainDeg: arch.map((l) => deg(grain.get(l)!)),
       widthPx: all.maxX - all.minX,
       heightPx: all.maxY - all.minY,
       layoutMs: performance.now() - t0,
