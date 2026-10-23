@@ -27,7 +27,7 @@
 import * as THREE from "three";
 import type { Font } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
-import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { mergeGeometries, toCreasedNormals } from "three/addons/utils/BufferGeometryUtils.js";
 import type { Glyphs } from "@/components/home/whoweare-button-scene";
 
 /** The fonts the bench may load — a FIXED list, so a URL a client is sent cannot point it anywhere else. Each has been
@@ -54,6 +54,17 @@ export type LetteringSpec = {
   bevel: { sizeEm: number; thicknessEm: number; segments: number };
   /** the flattening of each curve — the same number the overlap check was run at */
   curveSegments: number;
+  /**
+   * ⛔ THE CREASE, degrees (23 October 2026 — Carl: *"Let us resolve the banding issue."*). Three's text geometry gives
+   * every triangle its own normal, so a curve's side wall shades as a row of flat facets — faint in clay, it bands under
+   * metal (the R-088 finding). Normals are averaged across edges whose faces meet at less than this angle and kept split
+   * above it (`toCreasedNormals`): the curves read round, the corners and the chamfer stay sharp. 0 = faceted, as built.
+   * ⚠ MEASURED for 160 px, curveSegments 12, the 0.018 em chamfer (`live-work/scripts/film04-crease-angles-23-october.mjs`):
+   * curve facets meet at ≤ 7.5° (most ≤ 6°), wall corners at ≥ 30° (the Y), the chamfer at 45° to face and wall. 10° smooths
+   * every curve facet and keeps every wall corner; it also softens the chamfer at a few shallow joins (6–10°, the A and Y).
+   * ⚠ Coupled to `curveSegments`: fewer segments make larger facet angles, which a fixed crease may leave faceted.
+   */
+  creaseDeg: number;
   /** how the words are set: one straight line (take 1, R-088), or the restaurant lockup's ARCH (take 2) */
   layout: LetteringLayout;
 };
@@ -128,6 +139,7 @@ export const LETTERING_DEFAULTS: LetteringSpec = {
   depthEm: 0.2,
   bevel: { sizeEm: 0.018, thicknessEm: 0.018, segments: 1 },
   curveSegments: 12,
+  creaseDeg: 10,
   // ⛔ archTrackingEm 0.26 — MEASURED for CAPITALS (take 3, 22 October 2026, `live-work/scripts/film04-arch-tracking-22-october.mjs`):
   // the smallest that clears every pair by COLLISION_MARGIN_EM at 180°, 160 px. At 0, C–O, O–M, A–N and N–Y OVERLAP (the
   // red run); A–N is the last to clear (0.25 leaves it 0.0131 em); at 0.26 the closest pair is the lintel's Y–O, 0.1061 em
@@ -187,7 +199,7 @@ export type LetteringStats = {
  * ONE LETTER, extruded at its pen origin (x 0, baseline 0), centred on the depth — shared by both layouts. The edge holds
  * the outline (`bevelOffset = −size`) and the straight depth gives up twice the thickness, so the total holds.
  */
-export function glyphGeometry(font: Font, ch: string, sizePx: number, spec: Pick<LetteringSpec, "depthEm" | "bevel" | "curveSegments">): THREE.BufferGeometry {
+export function glyphGeometry(font: Font, ch: string, sizePx: number, spec: Pick<LetteringSpec, "depthEm" | "bevel" | "curveSegments" | "creaseDeg">): THREE.BufferGeometry {
   const size = (sizePx * font.data.resolution) / EM_UNITS;
   const depth = spec.depthEm * sizePx;
   const bevelSize = spec.bevel.sizeEm * sizePx;
@@ -207,7 +219,8 @@ export function glyphGeometry(font: Font, ch: string, sizePx: number, spec: Pick
   });
   // centred on the depth: the extrusion runs from −thick to straight + thick
   g.translate(0, 0, -straight / 2);
-  return g;
+  // the crease: three's text geometry is non-indexed, so this rewrites `g`'s normals in place and returns `g`
+  return spec.creaseDeg > 0 ? toCreasedNormals(g, (spec.creaseDeg * Math.PI) / 180) : g;
 }
 
 /**

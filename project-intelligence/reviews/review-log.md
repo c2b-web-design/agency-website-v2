@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-091 — Film 4's Showcase: The Faceted Side Walls Smoothed (`/proto/showcase`, D-088): "This looks better"
+
+**Date:** 2026-10-23
+**Reviewer:** Human Founder
+**Subject:** `/proto/showcase` take 8 — R-088's open finding resolved before the material pass: each letter's normals creased at 10° (`LetteringSpec.creaseDeg`), so the curved side walls and chamfer shade round while the face, the chamfer's edges and every wall corner stay sharp. Geometry unchanged; `?crease=0` is the faceted build.
+
+**Carl's verdicts, verbatim, in order:** *"Let us resolve the banding issue."*; take 8 *"This looks better. commit and push."*
+
+**Findings:**
+
+- ✔ **Approved** — the creased walls at 10°, seen at Carl's window, dev server.
+- ✔ Measured: curve facets ≤ 7.5°, wall corners ≥ 30°, chamfer 45°; at 10° the face untouched (0 of 6,888 vertices), no normal bent past 5.02°; seen red at 0° (nothing smoothed) and 60° (the face smeared).
+- ⚠ The chamfer is softened at a few shallow joins (6–10°, the A and Y); the crease is coupled to `curveSegments` 12.
+- ⚠ Not watched: how the walls read under metal — that is pass 2's.
+
+---
+
 ## R-090 — Film 4's Showcase, Pass 1 Re-tracked Again: "Your Company Logo", A Round-Headed Arch (`/proto/showcase`, D-088): "This looks good"
 
 **Date:** 2026-10-23

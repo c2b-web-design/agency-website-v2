@@ -80,7 +80,7 @@ export type ShowcaseBenchFlags = {
   words?: string; size?: number; track?: number; depth?: number; bevel?: number; bevelseg?: number; curve?: number;
   font?: string; view?: string; mode?: string; az?: number; el?: number;
   layout?: string; top?: string; arch?: string; caps?: string; steps?: string; nudge?: string; sweep?: number; archtrack?: number; topscale?: number; gap?: number;
-  form?: string; radius?: number; clear?: number;
+  form?: string; radius?: number; clear?: number; crease?: number;
 };
 
 const VIEWS = ["front", "oblique"] as const;
@@ -246,6 +246,7 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
       segments: Math.round(clamp(flags.bevelseg, 1, 8, D.bevel.segments)),
     },
     curveSegments: Math.round(clamp(flags.curve, 2, 32, D.curveSegments)),
+    creaseDeg: clamp(flags.crease, 0, 44, D.creaseDeg),
     layout:
       flags.layout === "line"
         ? { kind: "line" }
@@ -387,12 +388,12 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
   // tracking only move them
   // ⚠ the build reads ONLY what is in this key, so a sweep, gap or tracking change cannot re-extrude
   const shapeKey = arch
-    ? JSON.stringify({ top: setCase(arch.top, arch), arch: setCase(arch.arch, arch), sizePx: spec.sizePx, topScale: arch.topScale, depthEm: spec.depthEm, bevel: spec.bevel, curveSegments: spec.curveSegments })
+    ? JSON.stringify({ top: setCase(arch.top, arch), arch: setCase(arch.arch, arch), sizePx: spec.sizePx, topScale: arch.topScale, depthEm: spec.depthEm, bevel: spec.bevel, curveSegments: spec.curveSegments, creaseDeg: spec.creaseDeg })
     : "";
   const [letters, setLetters] = useState<{ key: string; list: LockupLetter[]; geos: Map<LockupLetter, THREE.BufferGeometry>; buildMs: number; triangles: number; missing: string[] } | null>(null);
   useEffect(() => {
     if (!shapeKey || !font) return;
-    const k: { top: string; arch: string; sizePx: number; topScale: number } & Pick<LetteringSpec, "depthEm" | "bevel" | "curveSegments"> = JSON.parse(shapeKey);
+    const k: { top: string; arch: string; sizePx: number; topScale: number } & Pick<LetteringSpec, "depthEm" | "bevel" | "curveSegments" | "creaseDeg"> = JSON.parse(shapeKey);
     const id = window.setTimeout(() => {
       const t0 = performance.now();
       const list: LockupLetter[] = [];
@@ -669,6 +670,7 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
           <Slider label="edge" value={spec.bevel.sizeEm} min={0} max={0.08} step={0.002} onChange={setEdge} fmt={(v) => (v === 0 ? "none" : `${v.toFixed(3)} em · ${(v * spec.sizePx).toFixed(1)} px`)} />
           <Slider label="edge steps" value={spec.bevel.segments} min={1} max={8} step={1} onChange={(v) => set("bevel", { ...spec.bevel, segments: v })} fmt={(v) => (v === 1 ? "1, a chamfer" : `${v}, rounded`)} />
           <Slider label="smoothness" value={spec.curveSegments} min={2} max={32} step={1} onChange={(v) => set("curveSegments", v)} fmt={(v) => `${v} per curve`} />
+          <Slider label="crease" value={spec.creaseDeg} min={0} max={44} step={0.5} onChange={(v) => set("creaseDeg", v)} fmt={(v) => (v === 0 ? "none, faceted" : `smooth below ${v}°`)} />
           <div className="text-neutral-500 pt-2">light, to rake across the shape</div>
           <Slider label="key azimuth" value={az} min={-90} max={90} step={1} onChange={setAz} fmt={(v) => `${v}°`} />
           <Slider label="key elevation" value={el} min={0} max={85} step={1} onChange={setEl} fmt={(v) => `${v}°`} />

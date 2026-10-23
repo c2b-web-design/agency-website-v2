@@ -19,6 +19,7 @@ import ShowcaseBench, { type ShowcaseBenchFlags } from "@/components/showcase/sh
  *   ?archtrack= (em) ?topscale= ?gap= (em)
  *   ⛔ TAKE 7 (23 October 2026) is the default: "company logo", ROUND-HEADED — ?form=round|half ?radius= (em) ?clear= (em).
  *   The half-circle takes need `?form=half&arch=company` added (take 5: `&nudge=P:0.11`; take 4: nothing more).
+ *   ?crease= (deg; default 10 — the side walls smoothed, 23 October; `?crease=0` is faceted, as every take before it)
  */
 export const metadata = {
   title: "Your words, given form: the showcase bench",
@@ -59,6 +60,7 @@ export default async function ShowcaseBenchPage({
     form: one("form"),
     radius: num("radius"),
     clear: num("clear"),
+    crease: num("crease"),
   };
   return (
     <div className="min-h-[calc(100*var(--vh))] bg-neutral-950 text-white p-6">
