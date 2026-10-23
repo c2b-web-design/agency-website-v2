@@ -1,0 +1,27 @@
+A. THE YAW SWEEP — mean luminance above the ground (0–245), room 0.1, strength 1, rotation π/2, anisotropy 0.8
+  front: 0:8.55 15:8.98 30:8.77 45:3.77 60:1.61 75:1.44 90:1.44 105:2.32 120:1.44 135:1.63 150:2.21 165:1.28 180:1.42 195:2.03 210:5.01 225:8.86 240:8.89 255:7.95 270:4.02 285:7.00 300:8.66 315:8.67 330:5.51 345:4.25
+  front brightest: 15° (8.98), 240° (8.89), 225° (8.86)   [paper predicted 15° / 240°]
+  oblique: 0:7.66 15:7.64 30:5.36 45:3.35 60:2.73 75:2.75 90:2.58 105:2.42 120:2.46 135:2.80 150:3.74 165:3.79 180:4.80 195:5.92 210:7.61 225:7.91 240:7.15 255:6.54 270:7.78 285:9.42 300:8.60 315:7.71 330:6.58 345:6.84
+  oblique brightest: 285° (9.42), 300° (8.60), 225° (7.91)   [paper predicted 345° / 210°]
+B. THE WIRING — oblique (cam 28,16), yaw 285° (the sweep's brightest)
+  PREDICTION (written before the run): R = ΣGx²/ΣGy² is LOWER at rotation 0 (smear along x) than at π/2 (smear along y).
+  ✅ RED RUN rotation 0 vs 0: 0 channel values differ (must be 0)
+  ✅ rotation 0 vs π/2: 137954 channel values differ, mean |Δ| 4.359
+  ✅ anisotropy 0.8 vs 0 (rotation 0): 124707 channel values differ, mean |Δ| 1.854
+  ✅ yaw 285° vs 465°: 268065 channel values differ, mean |Δ| 5.346
+  ✅ pure-black pixels, rot 0: 0
+  ✅ pure-black pixels, rot π/2: 0
+  ✅ pure-black pixels, aniso 0: 0
+  ✅ pure-black pixels, yaw +180: 0
+  ORIENTATION R = ΣGx²/ΣGy²: rotation 0 1.9914 · π/2 1.5321 · anisotropy 0 2.9023
+  ⛔ the prediction FAILS: rotation 0 not lower than π/2
+C. THE TONE MAPPING, PRINTED, AND THE ROUND TRIP
+  front: material → Neutral · clay after the switch → ACESFilmic · ✅
+  ✅ round trip material → clay vs step 0's line_front_clay.png: 0 channel values differ
+  oblique: material → Neutral · clay after the switch → ACESFilmic · ✅
+  ✅ round trip material → clay vs step 0's line_oblique_clay.png: 0 channel values differ
+D. THE BUILD MARK — seen firing on a geometry change, then not on a material change
+  ✅ POSITIVE CONTROL: depth change → build marks 1 → 2
+  ✅ material changes (tone, face roughness) → build marks 2 → 2
+console errors: 0
+⚠ NOT WATCHED: whether it looks right (Carl's eye); Carl's GPU; views other than front and the oblique 28,16.

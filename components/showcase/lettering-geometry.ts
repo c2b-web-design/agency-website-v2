@@ -252,13 +252,42 @@ export function glyphGeometry(font: Font, ch: string, sizePx: number, spec: Pick
  * Build the words. `glyphs` is `measureLabel`'s reading of the kern-on span (x per character, the baseline, relative to the
  * span's centre). Spaces take their place in the setting and build nothing.
  */
+/**
+ * ⛔ ONE LETTER's TRIANGLES SPLIT BY MATERIAL — [face, sides] (pass 2, step 2). Three's text geometry adds a FACE group
+ * (materialIndex 0: the front and back) and a SIDES group (materialIndex 1: walls AND chamfer) FOR EACH SHAPE
+ * (`ExtrudeGeometry.js:65–68, 626, 650`), so a glyph of two shapes — "i", "j", ":", "!", "%" — runs 0, 1, 0, 1.
+ * ⛔ SPLIT BY `materialIndex`, NEVER BY A GROUP's POSITION (the Architect): position would hand the "i"'s dot to the wrong
+ * material and every check on "Your company" would still pass. Non-indexed in, non-indexed out; every attribute copied.
+ */
+export function splitByMaterial(g: THREE.BufferGeometry): [THREE.BufferGeometry, THREE.BufferGeometry] {
+  const src = g.index ? g.toNonIndexed() : g;
+  const out = [new THREE.BufferGeometry(), new THREE.BufferGeometry()] as [THREE.BufferGeometry, THREE.BufferGeometry];
+  const groups = src.groups.length ? src.groups : [{ start: 0, count: src.attributes.position.count, materialIndex: 0 }];
+  for (const name of Object.keys(src.attributes)) {
+    const a = src.attributes[name] as THREE.BufferAttribute;
+    const parts: number[][] = [[], []];
+    for (const grp of groups) {
+      const k = grp.materialIndex === 1 ? 1 : 0;
+      const from = grp.start * a.itemSize, to = (grp.start + grp.count) * a.itemSize;
+      for (let i = from; i < to; i++) parts[k].push(a.array[i]);
+    }
+    out[0].setAttribute(name, new THREE.BufferAttribute(new Float32Array(parts[0]), a.itemSize));
+    out[1].setAttribute(name, new THREE.BufferAttribute(new Float32Array(parts[1]), a.itemSize));
+  }
+  if (src !== g) src.dispose();
+  return out;
+}
+
 /** ⛔ The fields the build reads — the bench keys the line's build on exactly these (with the words' reading), so a material
  *  or studio change cannot re-extrude (the Architect, pass 2). The type IS the list: reading another field is a type error. */
 export type LineGeometryKey = Pick<LetteringSpec, "sizePx" | "depthEm" | "bevel" | "curveSegments" | "creaseDeg">;
 export function buildLettering(spec: LineGeometryKey, font: Font, glyphs: Glyphs): { geometry: THREE.BufferGeometry | null; stats: LetteringStats } {
   const t0 = performance.now();
   const missing: string[] = [];
-  const parts: THREE.BufferGeometry[] = [];
+  // ⛔ PASS 2, STEP 2: each letter split BY MATERIAL into its face and its sides, so the merged line keeps the two groups
+  // the brushed face and the polished edge need (a merge of whole letters drops them)
+  const faces: THREE.BufferGeometry[] = [];
+  const sides: THREE.BufferGeometry[] = [];
   const boxes: { ch: string; box: THREE.Box3 }[] = [];
   glyphs.chars.split("").forEach((ch, i) => {
     if (ch.trim() === "") return;
@@ -270,7 +299,10 @@ export function buildLettering(spec: LineGeometryKey, font: Font, glyphs: Glyphs
     g.translate(glyphs.x[i], glyphs.baseline, 0);
     g.computeBoundingBox();
     boxes.push({ ch, box: g.boundingBox!.clone() });
-    parts.push(g.index ? g.toNonIndexed() : g);
+    const [face, side] = splitByMaterial(g);
+    faces.push(face);
+    sides.push(side);
+    g.dispose();
   });
 
   // pairs of NEIGHBOURING characters only (a space between breaks the pair); `boxes` holds one entry per built character,
@@ -292,8 +324,17 @@ export function buildLettering(spec: LineGeometryKey, font: Font, glyphs: Glyphs
     });
   }
 
-  const geometry = parts.length ? mergeGeometries(parts) : null;
-  parts.forEach((g) => g.dispose());
+  // faces first, then sides: `useGroups` gives group 0 (the faces, materialIndex 0) and group 1 (the sides, materialIndex 1).
+  // ⚠ The triangles are REORDERED (all faces, then all sides). A single material draws the whole geometry and ignores the
+  // groups, so the clay/flat/mesh/normals/zebra modes are unchanged — asserted pixel-identical against step 0's frames.
+  let geometry: THREE.BufferGeometry | null = null;
+  if (faces.length) {
+    const f = mergeGeometries(faces), s = mergeGeometries(sides);
+    geometry = mergeGeometries([f, s], true);
+    f.dispose();
+    s.dispose();
+  }
+  [...faces, ...sides].forEach((g) => g.dispose());
   const all = new THREE.Box3();
   boxes.forEach(({ box }) => all.union(box));
   const stats: LetteringStats = {

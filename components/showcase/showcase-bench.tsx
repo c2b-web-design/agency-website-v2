@@ -750,7 +750,8 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
           {metalOn && metal && metalLook && <MetalApply metal={metal} look={metalLook} yawDeg={yaw} />}
           {mirrorGeo && metal && <mesh geometry={mirrorGeo} material={metal.face} />}
           {lineBuilt?.geometry && !mirrorGeo && (
-            <mesh geometry={lineBuilt.geometry} material={metalOn ? (metal ? metal.face : materials.clay) : materials[mode === "material" ? "clay" : mode]} />
+            // the line's two groups: the brushed FACE (materialIndex 0), the polished SIDES — walls and chamfer (1)
+            <mesh geometry={lineBuilt.geometry} material={metalOn ? (metal ? [metal.face, metal.edge] : materials.clay) : materials[mode === "material" ? "clay" : mode]} />
           )}
           {archShown &&
             archShown.letters.list.map((l) => {
