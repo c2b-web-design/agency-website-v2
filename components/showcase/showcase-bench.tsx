@@ -6,9 +6,10 @@
  * `live-work/film04-pass1-take2-arch-plan-22-october.md` (v2.1). The geometry: `lettering-geometry.ts`.
  *
  * ⛔ TWO LAYOUTS. `?layout=line` is take 1 exactly (one line, one merged mesh — its R-088 numbers are the regression).
- * The default is take 2's ARCH: the restaurant lockup, "Your" as the lintel, "company" over a half-circle, every letter
- * UPRIGHT (Carl), each letter ITS OWN MESH, built once and only MOVED when sweep, gap or tracking change (re-merging on a
- * slider tick would stutter and could not be filmed).
+ * The default is the ARCH: the restaurant lockup, "Your" as the lintel, every letter UPRIGHT (Carl), each letter ITS OWN
+ * MESH, built once and only MOVED when the layout's sliders change (re-merging on a slider tick would stutter and could
+ * not be filmed). Take 2 set "company" over a half-circle; ⚠ since take 7 (23 October, R-090) the default is "company
+ * logo" on a ROUND-HEADED arch (`ArchLayout.form`) — the half-circle takes are at `?form=half&arch=company`.
  *
  * ⛔ HOW THE WORDS ARE MEASURED. For EACH line, two hidden spans in the site's Geist, on ONE line (`white-space: nowrap`,
  * inside a `position: relative; overflow: clip` wrapper — without it the words wrap at display size and every reading is
@@ -79,6 +80,7 @@ export type ShowcaseBenchFlags = {
   words?: string; size?: number; track?: number; depth?: number; bevel?: number; bevelseg?: number; curve?: number;
   font?: string; view?: string; mode?: string; az?: number; el?: number;
   layout?: string; top?: string; arch?: string; caps?: string; steps?: string; nudge?: string; sweep?: number; archtrack?: number; topscale?: number; gap?: number;
+  form?: string; radius?: number; clear?: number;
 };
 
 const VIEWS = ["front", "oblique"] as const;
@@ -254,6 +256,9 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
             caps: flags.caps === undefined ? DA.caps : flags.caps !== "0",
             steps: flags.steps === "font" ? "font" : flags.steps === "equal" ? "equal" : DA.steps,
             nudgeEm: flags.nudge !== undefined ? parseNudge(flags.nudge) : DA.nudgeEm,
+            form: flags.form === "half" ? "half" : flags.form === "round" ? "round" : DA.form,
+            radiusEm: clamp(flags.radius, 0.5, 4, DA.radiusEm),
+            clearEm: clamp(flags.clear, 0, 0.6, DA.clearEm),
             sweepDeg: clamp(flags.sweep, SWEEP_MIN, SWEEP_MAX, DA.sweepDeg),
             archTrackingEm: clamp(flags.archtrack, 0, 0.3, DA.archTrackingEm),
             topScale: clamp(flags.topscale, 0.3, 2, DA.topScale),
@@ -270,9 +275,11 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
   const setArch = <K extends keyof ArchLayout>(k: K, v: ArchLayout[K]) =>
     setSpec((s) => (s.layout.kind === "arch" ? { ...s, layout: { ...s.layout, [k]: v } } : s));
   const arch = spec.layout.kind === "arch" ? spec.layout : null;
-  // the crown letter: the middle of an odd-length arch word (equal steps put it at the top) — the one Carl nudged
+  // the crown letter: the middle of an odd-length arch word (equal steps put it at the top) — the one Carl nudged. A
+  // round arch has no fixed crown letter (the spacing decides where each stands).
   const archSet = arch ? setCase(arch.arch, arch).replace(/\s/g, "") : "";
-  const crown = arch && arch.steps === "equal" && archSet.length % 2 === 1 ? archSet[(archSet.length - 1) / 2] : null;
+  const round = arch?.form === "round";
+  const crown = arch && !round && arch.steps === "equal" && archSet.length % 2 === 1 ? archSet[(archSet.length - 1) / 2] : null;
 
   // the lines to set: one (take 1), or the lintel and the arch (take 2)
   const lines: LineDef[] = useMemo(
@@ -512,7 +519,8 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
   const select = "bg-neutral-900 border border-neutral-700 px-2 py-1";
   const mark = { display: "inline-block", width: 0, height: 0 } as const;
   const em = (px: number) => (px / spec.sizePx).toFixed(3);
-  const blocked = (check && check.stops.length > 0) || (report && (report.collisions > 0 || report.tight > 0));
+  const short = !!stats && "arch" in stats && !stats.arch.fits;
+  const blocked = (check && check.stops.length > 0) || (report && (report.collisions > 0 || report.tight > 0)) || short;
 
   return (
     <div className="space-y-4">
@@ -547,8 +555,17 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
               <input type="checkbox" checked={arch.caps} onChange={(e) => setArch("caps", e.target.checked)} /> capitals
             </label>
             <label className="flex items-center gap-2">
-              <input type="checkbox" checked={arch.steps === "equal"} onChange={(e) => setArch("steps", e.target.checked ? "equal" : "font")} /> equal steps
+              form
+              <select value={arch.form} onChange={(e) => setArch("form", e.target.value as ArchLayout["form"])} className={select}>
+                <option value="round">round-headed, on upright legs</option>
+                <option value="half">half-circle</option>
+              </select>
             </label>
+            {!round && (
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={arch.steps === "equal"} onChange={(e) => setArch("steps", e.target.checked ? "equal" : "font")} /> equal steps
+              </label>
+            )}
           </>
         ) : (
           <label className="flex items-center gap-2">
@@ -591,6 +608,7 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
               {report.pairs.filter((p) => !p.collide && p.clearancePx < report.marginPx).map((p) => `${p.pair} ${em(p.clearancePx)} em`).join(", ")}.
             </p>
           )}
+          {short && <p>At this width the letters cannot reach round the arch to the right foot. Narrow the arch or open the spacing.</p>}
           {stats && stats.missing.length > 0 && <p>This font has no {stats.missing.map((c) => `"${c}"`).join(", ")}, so those characters are left out.</p>}
         </div>
       )}
@@ -618,8 +636,17 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
           <Slider label="size" value={spec.sizePx} min={40} max={400} step={1} onChange={(v) => set("sizePx", v)} fmt={(v) => `${v} px`} />
           {arch ? (
             <>
-              <Slider label="arch sweep" value={arch.sweepDeg} min={SWEEP_MIN} max={SWEEP_MAX} step={1} onChange={(v) => setArch("sweepDeg", v)} fmt={(v) => `${v}°`} />
-              <Slider label={arch.steps === "equal" ? "arch size" : "arch spacing"} value={arch.archTrackingEm} min={0} max={0.3} step={0.005} onChange={(v) => setArch("archTrackingEm", v)} fmt={(v) => `${v.toFixed(3)} em`} />
+              {round ? (
+                <>
+                  <Slider label="arch width" value={arch.radiusEm} min={0.5} max={4} step={0.01} onChange={(v) => setArch("radiusEm", v)} fmt={(v) => `radius ${v.toFixed(2)} em`} />
+                  <Slider label="letter spacing" value={arch.clearEm} min={0} max={0.6} step={0.005} onChange={(v) => setArch("clearEm", v)} fmt={(v) => `${v.toFixed(3)} em · ${(v * spec.sizePx).toFixed(1)} px`} />
+                </>
+              ) : (
+                <>
+                  <Slider label="arch sweep" value={arch.sweepDeg} min={SWEEP_MIN} max={SWEEP_MAX} step={1} onChange={(v) => setArch("sweepDeg", v)} fmt={(v) => `${v}°`} />
+                  <Slider label={arch.steps === "equal" ? "arch size" : "arch spacing"} value={arch.archTrackingEm} min={0} max={0.3} step={0.005} onChange={(v) => setArch("archTrackingEm", v)} fmt={(v) => `${v.toFixed(3)} em`} />
+                </>
+              )}
               {crown && (
                 <Slider
                   label={`${crown} nudge`}
@@ -664,8 +691,11 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
               {"arch" in stats ? (
                 <>
                   <div className="text-neutral-400">
-                    radius {stats.arch.radiusPx.toFixed(1)} px ({em(stats.arch.radiusPx)} em) · feet at {stats.arch.feetDeg[0].toFixed(2)}° and {stats.arch.feetDeg[1].toFixed(2)}° ·
-                    laid out in {stats.arch.layoutMs.toFixed(2)} ms
+                    radius {stats.arch.radiusPx.toFixed(1)} px ({em(stats.arch.radiusPx)} em) ·{" "}
+                    {round
+                      ? `legs ${stats.arch.legPx.toFixed(1)} px (${em(stats.arch.legPx)} em)${stats.arch.fits ? "" : ", none: too wide"}`
+                      : `feet at ${stats.arch.feetDeg[0].toFixed(2)}° and ${stats.arch.feetDeg[1].toFixed(2)}°`}{" "}
+                    · laid out in {stats.arch.layoutMs.toFixed(2)} ms
                   </div>
                   {stats.collisions && (
                     <div className="text-neutral-400">

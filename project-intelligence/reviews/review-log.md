@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-090 — Film 4's Showcase, Pass 1 Re-tracked Again: "Your Company Logo", A Round-Headed Arch (`/proto/showcase`, D-088): "This looks good"
+
+**Date:** 2026-10-23
+**Reviewer:** Human Founder
+**Subject:** `/proto/showcase` take 7 — the arch reads "COMPANY LOGO" (Carl's addition); the form ROUND-HEADED: upright legs under a half-circle (radius 1.8 em), C O M / O G O standing on the legs, P A N Y L over the curve, the N at the crown; every neighbour the same closest distance (0.2 em, 32 px), the word gap adding the font's space (Y–L 69.8 px); the legs solved so the feet are level; letters upright; the P's nudge off. Built as a bench take on Carl's direction, without a plan or Architect round.
+
+**Carl's verdicts, verbatim, in order:** on take 5 *"What we should do is add the word "logo" to the arch. That would make the arch bigger…"*; on take 6 (the words as-is on the half-circle) *"Some of the letters should be vertical with the curve at the top. That would make it thinner, Space the letters so it looks balanced."*; take 7 *"This looks good. The addition of the word logo gives us more to work with and its looking more like the geometry of the arch reference image i sent. We can commit and push this."*
+
+**Findings:**
+
+- ✔ **Approved** — the lockup's shape at take 7, seen at Carl's window, dev server.
+- ✔ Measured: every neighbour 32.0 px, confirmed by the independent collision check; no overlap; lockup 690 × 858 px (take 6: 1082 wide); layout 20–31 ms a tick; take 5 reproduces R-089's numbers at `?form=half&arch=company&nudge=P:0.11`.
+- ⚠ The faceted side walls (R-088's open point) still unruled — carried to the material pass.
+- ⚠ Not watched: Carl's GPU and Chrome, production, phones, any words but "Your company logo", any font but Geist SemiBold.
+
+---
+
 ## R-089 — Film 4's Showcase, Pass 1 Re-tracked: The Restaurant Lockup As An Arch (`/proto/showcase`, D-088): "Thats got it"
 
 **Date:** 2026-10-22

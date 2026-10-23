@@ -95,6 +95,20 @@ export type ArchLayout = {
    * leg slopes away, so P–A reads more open than M–P (two upright stems). A part, so a client's word takes its own.
    */
   nudgeEm: Record<string, number>;
+  /**
+   * ⛔ THE ARCH's FORM (take 7, 23 October 2026 — Carl, with "logo" added to the arch: *"Some of the letters should be
+   * vertical with the curve at the top. That would make it thinner, Space the letters so it looks balanced."*).
+   * `"round"`: a ROUND-HEADED arch, the reference's piers — two upright LEGS under a half-circle of `radiusEm`. The letters
+   * follow it from the left foot, each the same CLOSEST DISTANCE (`clearEm`) from the one before, a word gap adding the
+   * font's own space; the legs grow until the last letter lands on the right foot, so the feet are level by construction.
+   * ⚠ Closest distance is the PROXY for optical space take 5 used; Carl's eye judges the balance. `sweepDeg`, `steps` and
+   * `archTrackingEm` do not apply. `"half"`: takes 2–5, a half-circle to the feet.
+   */
+  form: "half" | "round";
+  /** round only: the half-circle's radius to the letters' centres, em — the arch's width */
+  radiusEm: number;
+  /** round only: the closest distance between neighbouring letters' outlines, em */
+  clearEm: number;
   sweepDeg: number;
   archTrackingEm: number;
   topScale: number;
@@ -125,7 +139,15 @@ export const LETTERING_DEFAULTS: LetteringSpec = {
   // ⛔ TAKE 5, THE P NUDGED +0.11 em (17.6 px): MEASURED as the value at which the P's closest distance to the M equals its
   // closest distance to the A (60.1 / 60.0 px; take 4 was 42.5 / 76.5) — `live-work/scripts/film04-crown-nudge-22-october.mjs`.
   // ⚠ Closest distance is a PROXY for optical space; Carl asked for "a touch" — his eye sets it (the bench's P slider).
-  layout: { kind: "arch", top: "Your", arch: "company", caps: true, steps: "equal", nudgeEm: { P: 0.11 }, sweepDeg: 180, archTrackingEm: 0.21, topScale: 1, gapEm: 0.25 },
+  // ⛔ TAKE 7 (23 October 2026): the arch reads "company logo", ROUND-HEADED (`form`). The P's nudge was a CROWN correction
+  // and the P no longer stands there, so it is off (take 5 is `?form=half&arch=company&nudge=P:0.11`).
+  // ⚠ radiusEm 1.8 and clearEm 0.2 (32 px) are the Builder's pick by eye from 1.2–2.2 and 0.12–0.3 (frames in the session
+  // scratchpad): at 1.8 three letters stand on each leg (C O M / O G O) and P A N Y L run over the curve, the N at the crown;
+  // 1.6 lifts P and L onto the legs and flattens the top, 2.2 lifts M and the first O onto the curve. Carl's eye judges.
+  layout: {
+    kind: "arch", top: "Your", arch: "company logo", caps: true, steps: "equal", nudgeEm: {}, form: "round", radiusEm: 1.8, clearEm: 0.2,
+    sweepDeg: 180, archTrackingEm: 0.21, topScale: 1, gapEm: 0.25,
+  },
 };
 
 /** Sweep limits: below 20° the radius runs away (the line layout serves that); above 200° the feet curl under. */
@@ -360,8 +382,12 @@ export type Placement = { x: number; y: number };
 
 export type ArchReading = {
   radiusPx: number;
-  /** the first and last arch letters' centre angles, degrees (expected 180 and 0 for a 180° sweep) */
+  /** the first and last arch letters' centre angles, degrees (expected 180 and 0 for a 180° sweep); NaN for a round arch */
   feetDeg: [number, number];
+  /** round only: the legs' height under the half-circle, to the letters' centres (0 for a half-circle) */
+  legPx: number;
+  /** round only: false when the letters cannot span the half-circle at this width — the last stops short of the foot */
+  fits: boolean;
   widthPx: number;
   heightPx: number;
   layoutMs: number;
@@ -389,21 +415,30 @@ export function layoutArch(
   const arch = letters.filter((l) => l.line === "arch");
   const centres = arch.map((l) => archX[l.index] + (advancePx(font, l.ch, sizePx) ?? 0) / 2);
   const placements = new Map<LockupLetter, Placement>();
-  const S = (Math.min(SWEEP_MAX, Math.max(SWEEP_MIN, layout.sweepDeg)) * Math.PI) / 180;
-  const span = arch.length > 1 ? centres[centres.length - 1] - centres[0] : 0;
-  const R = span > 0 ? span / S : 0;
-  const angles: number[] = [];
-  const n = arch.length;
-  arch.forEach((l, k) => {
-    // equal steps: the k-th letter at k/(n−1) of the sweep (mirrored levels, the middle letter at the crown); font: arc length
-    const theta = Math.PI / 2 + S / 2 - (layout.steps === "equal" ? (n > 1 ? (k * S) / (n - 1) : S / 2) : (centres[k] - centres[0]) / (R || 1));
-    angles.push(theta);
-    const adv = advancePx(font, l.ch, sizePx) ?? 0;
-    placements.set(l, {
-      x: R * Math.cos(theta) - adv / 2 + (layout.nudgeEm[l.ch] ?? 0) * sizePx,
-      y: R * Math.sin(theta) - half,
-    });
+  const at = (l: LockupLetter, c: V2): Placement => ({
+    x: c.x - (advancePx(font, l.ch, sizePx) ?? 0) / 2 + (layout.nudgeEm[l.ch] ?? 0) * sizePx,
+    y: c.y - half,
   });
+  let R: number, legPx = 0, fits = true;
+  const angles: number[] = [];
+  if (layout.form === "round") {
+    const r = roundArch(layout, font, sizePx, arch, at);
+    R = r.R;
+    legPx = r.H;
+    fits = r.fits;
+    arch.forEach((l, k) => placements.set(l, at(l, r.centres[k])));
+  } else {
+    const S = (Math.min(SWEEP_MAX, Math.max(SWEEP_MIN, layout.sweepDeg)) * Math.PI) / 180;
+    const span = arch.length > 1 ? centres[centres.length - 1] - centres[0] : 0;
+    R = span > 0 ? span / S : 0;
+    const n = arch.length;
+    arch.forEach((l, k) => {
+      // equal steps: the k-th letter at k/(n−1) of the sweep (mirrored levels, the middle letter at the crown); font: arc length
+      const theta = Math.PI / 2 + S / 2 - (layout.steps === "equal" ? (n > 1 ? (k * S) / (n - 1) : S / 2) : (centres[k] - centres[0]) / (R || 1));
+      angles.push(theta);
+      placements.set(l, at(l, { x: R * Math.cos(theta), y: R * Math.sin(theta) }));
+    });
+  }
   // the lintel: straight, centred, its lowest ink gapEm above the arch's highest ink
   let archTop = -Infinity;
   for (const l of arch) archTop = Math.max(archTop, placements.get(l)!.y + l.bounds.maxY);
@@ -437,11 +472,101 @@ export function layoutArch(
     reading: {
       radiusPx: R,
       feetDeg: [angles.length ? deg(angles[0]) : NaN, angles.length ? deg(angles[angles.length - 1]) : NaN],
+      legPx,
+      fits,
       widthPx: all.maxX - all.minX,
       heightPx: all.maxY - all.minY,
       layoutMs: performance.now() - t0,
     },
   };
+}
+
+/**
+ * ⛔ THE ROUND-HEADED ARCH (take 7). The path the letters' centres follow: up the left leg (x = −R, from 0 to H), over the
+ * half-circle (centre (0, H)), down the right leg — `s` is the distance along it. From the left foot, each letter is
+ * placed at the smallest `s` that keeps its OUTLINE `clearEm` from the one before (`pairTest`, the collision check's own
+ * test; the bounds rule out the far cases first) — a word gap adds the font's space. `H` is then found so the last letter
+ * lands on the right foot (`s` = 2H + πR). If even H = 0 leaves the letters short of the right foot, the arch is too wide
+ * for them: `fits` is false and they stop where they stop.
+ * ⚠ Only NEIGHBOURS are spaced; the full collision check still runs over every pair.
+ */
+function roundArch(
+  layout: ArchLayout,
+  font: Font,
+  sizePx: number,
+  arch: LockupLetter[],
+  at: (l: LockupLetter, c: V2) => Placement,
+): { centres: V2[]; R: number; H: number; fits: boolean } {
+  const R = layout.radiusEm * sizePx;
+  const clear = layout.clearEm * sizePx;
+  const space = advancePx(font, " ", sizePx) ?? 0.25 * sizePx;
+  const n = arch.length;
+  const path = (s: number, H: number): V2 => {
+    if (s <= H) return { x: -R, y: s };
+    if (s <= H + Math.PI * R) {
+      const th = Math.PI - (s - H) / R;
+      return { x: R * Math.cos(th), y: H + R * Math.sin(th) };
+    }
+    return { x: R, y: H - (s - H - Math.PI * R) };
+  };
+  // is B, centred at cb, at least `target` from A, centred at ca?
+  const clearOf = (A: LockupLetter, ca: V2, B: LockupLetter, cb: V2, target: number) => keepsClear(A, at(A, ca), B, at(B, cb), target);
+  const walk = (H: number) => {
+    const s = [0];
+    for (let k = 1; k < n; k++) {
+      const target = clear + (arch[k].index - arch[k - 1].index > 1 ? space : 0);
+      const prev = path(s[k - 1], H);
+      const ok = (x: number) => clearOf(arch[k - 1], prev, arch[k], path(x, H), target);
+      let lo = s[k - 1], hi = lo + 2 * sizePx;
+      for (let i = 0; i < 8 && !ok(hi); i++) hi += sizePx;
+      for (let i = 0; i < 14; i++) {
+        const mid = (lo + hi) / 2;
+        if (ok(mid)) hi = mid;
+        else lo = mid;
+      }
+      s.push(hi);
+    }
+    return s;
+  };
+  // how far the last letter overshoots (+) or falls short of (−) the right foot
+  const over = (H: number) => {
+    const s = walk(H);
+    return s[s.length - 1] - (2 * H + Math.PI * R);
+  };
+  let H = 0;
+  let fits = true;
+  const f0 = n > 1 ? over(0) : 0;
+  if (f0 <= 0) fits = n <= 1;
+  else {
+    // bracket, then the Illinois method (a false position that does not stall)
+    let a = 0, fa = f0, b = f0, fb = over(b);
+    for (let i = 0; i < 8 && fb > 0; i++) {
+      a = b;
+      fa = fb;
+      b *= 2;
+      fb = over(b);
+    }
+    let side = 0;
+    H = b;
+    for (let i = 0; i < 40 && Math.abs(b - a) > 0.01; i++) {
+      H = (fa * b - fb * a) / (fa - fb);
+      const fh = over(H);
+      if (Math.abs(fh) < 0.01) break;
+      if (fh * fb > 0) {
+        b = H;
+        fb = fh;
+        if (side === -1) fa /= 2;
+        side = -1;
+      } else {
+        a = H;
+        fa = fh;
+        if (side === 1) fb /= 2;
+        side = 1;
+      }
+    }
+  }
+  const s = walk(H);
+  return { centres: s.map((x) => path(x, H)), R, H, fits };
 }
 
 export type PairClearance = {
@@ -529,6 +654,41 @@ export function checkCollisions(letters: LockupLetter[], placements: Map<LockupL
     tested,
     neighbours,
   };
+}
+
+/**
+ * The round arch's spacing test (`pairTest`'s answer to one question, fast enough to run thousands of times a layout):
+ * does B, pen at `pb`, keep at least `gap` from A, pen at `pa`? False on a crossing, on one letter inside the other, or on
+ * any vertex nearer than `gap` to the other's edges. Only the edges inside the two letters' shared box (each grown by
+ * `gap`) can decide it, so only those are tested; nothing is copied (B is read through its offset from A).
+ */
+function keepsClear(A: LockupLetter, pa: Placement, B: LockupLetter, pb: Placement, gap: number): boolean {
+  const dx = pb.x - pa.x, dy = pb.y - pa.y;
+  const bx0 = B.bounds.minX + dx, bx1 = B.bounds.maxX + dx, by0 = B.bounds.minY + dy, by1 = B.bounds.maxY + dy;
+  const gx = Math.max(A.bounds.minX - bx1, bx0 - A.bounds.maxX, 0), gy = Math.max(A.bounds.minY - by1, by0 - A.bounds.maxY, 0);
+  if (Math.hypot(gx, gy) >= gap) return true;
+  // the shared box, in A's frame
+  const qx0 = Math.max(A.bounds.minX, bx0) - gap, qx1 = Math.min(A.bounds.maxX, bx1) + gap;
+  const qy0 = Math.max(A.bounds.minY, by0) - gap, qy1 = Math.min(A.bounds.maxY, by1) + gap;
+  const near = (outline: V2[][], ox: number, oy: number) => {
+    const segs: [V2, V2][] = [];
+    for (const c of outline)
+      for (let i = 0; i < c.length; i++) {
+        const p = c[i], q = c[(i + 1) % c.length];
+        const s0: V2 = { x: p.x + ox, y: p.y + oy }, s1: V2 = { x: q.x + ox, y: q.y + oy };
+        if (Math.max(s0.x, s1.x) < qx0 || Math.min(s0.x, s1.x) > qx1 || Math.max(s0.y, s1.y) < qy0 || Math.min(s0.y, s1.y) > qy1) continue;
+        segs.push([s0, s1]);
+      }
+    return segs;
+  };
+  const sa = near(A.outline, 0, 0), sb = near(B.outline, dx, dy);
+  for (const [a1, a2] of sa) for (const [b1, b2] of sb) if (segsCross(a1, a2, b1, b2)) return false;
+  for (const [p] of sa) for (const [b1, b2] of sb) if (pointSeg(p, b1, b2) < gap) return false;
+  for (const [p] of sb) for (const [a1, a2] of sa) if (pointSeg(p, a1, a2) < gap) return false;
+  const b0 = B.outline.find((c) => c.length)?.[0], a0 = A.outline.find((c) => c.length)?.[0];
+  if (b0 && inside({ x: b0.x + dx, y: b0.y + dy }, A.outline)) return false;
+  if (a0 && inside({ x: a0.x - dx, y: a0.y - dy }, B.outline)) return false;
+  return true;
 }
 
 /** Intersection first (crossing segments, or a point of one inside the other), then the clearance both ways. */

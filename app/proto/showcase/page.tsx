@@ -17,6 +17,8 @@ import ShowcaseBench, { type ShowcaseBenchFlags } from "@/components/showcase/sh
  *   ?steps=font (take 3's spacing; default equal steps, take 4) ?nudge=P:0.02 (optical nudges, em; empty clears)
  *   ?sweep= (deg, 20–200)
  *   ?archtrack= (em) ?topscale= ?gap= (em)
+ *   ⛔ TAKE 7 (23 October 2026) is the default: "company logo", ROUND-HEADED — ?form=round|half ?radius= (em) ?clear= (em).
+ *   The half-circle takes need `?form=half&arch=company` added (take 5: `&nudge=P:0.11`; take 4: nothing more).
  */
 export const metadata = {
   title: "Your words, given form: the showcase bench",
@@ -54,6 +56,9 @@ export default async function ShowcaseBenchPage({
     archtrack: num("archtrack"),
     topscale: num("topscale"),
     gap: num("gap"),
+    form: one("form"),
+    radius: num("radius"),
+    clear: num("clear"),
   };
   return (
     <div className="min-h-[calc(100*var(--vh))] bg-neutral-950 text-white p-6">
