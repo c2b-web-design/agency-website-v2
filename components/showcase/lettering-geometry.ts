@@ -86,10 +86,10 @@ export type LetteringMaterial =
       kind: "brushed-metal";
       f0: readonly [number, number, number];
       tone: number;
-      /** `envMapIntensity` — with no lamps, the metal's brightness control (the corners' strength) */
-      strength: number;
-      face: { roughness: number; anisotropy: number; anisotropyRotation: number; grainEm: number; grainContrast: number };
-      edge: { roughness: number };
+      /** each part's `strength` is its `envMapIntensity` — with no lamps, the metal's brightness control (the corners' strength).
+       *  ⛔ SEPARATE for the face and the edge (Carl, 23 October, route 1): a bright polished outline against a calmer face. */
+      face: { strength: number; roughness: number; anisotropy: number; anisotropyRotation: number; grainEm: number; grainContrast: number };
+      edge: { strength: number; roughness: number };
     };
 
 /**
@@ -300,6 +300,12 @@ export function buildLettering(spec: LineGeometryKey, font: Font, glyphs: Glyphs
     g.computeBoundingBox();
     boxes.push({ ch, box: g.boundingBox!.clone() });
     const [face, side] = splitByMaterial(g);
+    // ⛔ ONE SHEET ACROSS THE WORD (step 3): three's face UVs are each shape's own x, y (`generateTopUV`), so every letter
+    // would start the grain at its own origin and repeat the same streaks. Set to the PLACED position instead — face
+    // uv = position.xy exactly, in layout px — so the streaks run through the word as if cut from one brushed plate.
+    // (A shift of the UVs moves no tangent: the brushing's frame comes from their derivatives.)
+    const fp = face.attributes.position, fuv = face.attributes.uv;
+    for (let v = 0; v < fp.count; v++) fuv.setXY(v, fp.getX(v), fp.getY(v));
     faces.push(face);
     sides.push(side);
     g.dispose();

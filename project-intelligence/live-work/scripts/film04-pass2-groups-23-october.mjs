@@ -65,4 +65,29 @@ const words = ["Your company", "Bistro"];
 const results = words.map((w) => check(w, G.buildLettering(spec, font, glyphsFor(w)).geometry, own(w)));
 console.log(`${own("Your company") === 13676 ? "✅" : "⛔"} "Your company" letters total ${own("Your company")} (take 1, R-088: 13,676)`);
 console.log(!red && results.every(Boolean) ? "✅ VERDICT: faces and sides split by material, Bistro's i included" : "⛔ VERDICT: FAILED");
+
+// ⛔ STEP 3 — ONE SHEET: every FACE vertex's uv equals its position's x, y EXACTLY (the grain runs through the word).
+// Seen red first on three's own UVs (each letter from its own origin, before the placement is applied).
+const sheet = (geo, start, count) => {
+  const p = geo.attributes.position, uv = geo.attributes.uv;
+  let off = 0, worst = 0;
+  for (let v = start; v < start + count; v++) {
+    const d = Math.max(Math.abs(uv.getX(v) - p.getX(v)), Math.abs(uv.getY(v) - p.getY(v)));
+    if (d !== 0) off++;
+    worst = Math.max(worst, d);
+  }
+  return { off, worst };
+};
+{
+  const g = G.glyphGeometry(font, "m", spec.sizePx, spec);
+  g.translate(500, 40, 0);
+  const [face] = G.splitByMaterial(g);
+  const r = sheet(face, 0, face.attributes.position.count);
+  console.log(`${r.off > 0 ? "   (red, as it must)" : "⛔ the red run did NOT fail"} RED RUN three's own face UVs on a placed "m": ${r.off} vertices off, worst ${r.worst.toFixed(1)} px`);
+}
+for (const w of words) {
+  const geo = G.buildLettering(spec, font, glyphsFor(w)).geometry;
+  const r = sheet(geo, geo.groups[0].start, geo.groups[0].count);
+  console.log(`${r.off === 0 ? "✅" : "⛔"} ONE SHEET "${w}": face vertices with uv ≠ position.xy: ${r.off} of ${geo.groups[0].count} (worst ${r.worst})`);
+}
 console.log("⚠ NOT WATCHED: the browser's kerned x (advances stand in — groups do not depend on x); the render.");

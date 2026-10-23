@@ -85,7 +85,7 @@ export type ShowcaseBenchFlags = {
   layout?: string; top?: string; arch?: string; caps?: string; steps?: string; nudge?: string; sweep?: number; archtrack?: number; topscale?: number; gap?: number;
   form?: string; radius?: number; clear?: number; crease?: number;
   // pass 2 — the material's dials, and the judging studio's (bench state, NOT spec parts) and the oblique pose
-  tone?: number; strength?: number; froughness?: number; aniso?: number; anisorot?: number; eroughness?: number;
+  tone?: number; strength?: number; estrength?: number; froughness?: number; aniso?: number; anisorot?: number; eroughness?: number; grainem?: number; grain?: number;
   room?: number; yaw?: number; cam?: string;
   /** an INSTRUMENT: `mirror` shows a flat panel in the face material in place of the words (see `MirrorProbe`) */
   probe?: string;
@@ -191,9 +191,23 @@ function makeMatcap() {
  *  orthographic camera; at z 2000 a flat face read as a light-to-dark band across the words (the first zebra still,
  *  22 October). At 1e5 the direction is constant to ~0.5°, and an orthographic view does not change with distance. */
 const FRONT_Z = 100000;
-function FrontCamera({ widthPx, heightPx }: { widthPx: number; heightPx: number }) {
+/**
+ * ⛔ IN THE MATERIAL MODE THE FRONT IS A PERSPECTIVE VIEW (Carl, 23 October: route 2). Orthographic, every point of a flat
+ * face reflects the IDENTICAL direction of the studio, so the face can only be one even colour — a bench artifact; a page
+ * shows it in perspective, where the reflection varies across the word. Face-on, still (no orbit: the line is STATIC, Carl),
+ * framed to `FILL` like the orthographic view. The clay modes keep the orthographic front — the shape's inspection view and
+ * step 0's regression baseline.
+ */
+const FRONT_FOV = 30;
+function FrontCamera({ widthPx, heightPx, perspective }: { widthPx: number; heightPx: number; perspective: boolean }) {
   const size = useThree((s) => s.size);
   const zoom = widthPx > 0 ? Math.min((FILL * size.width) / widthPx, heightPx > 0 ? (FILL * size.height) / heightPx : Infinity) : 1;
+  if (perspective) {
+    const vHalf = ((FRONT_FOV / 2) * Math.PI) / 180;
+    const hHalf = Math.atan(Math.tan(vHalf) * (size.width / Math.max(1, size.height)));
+    const d = widthPx > 0 ? Math.max(widthPx / FILL / 2 / Math.tan(hHalf), heightPx / FILL / 2 / Math.tan(vHalf)) : 1000;
+    return <PerspectiveCamera makeDefault position={[0, 0, d]} fov={FRONT_FOV} near={1} far={d * 10} />;
+  }
   return <OrthographicCamera makeDefault position={[0, 0, FRONT_Z]} zoom={zoom} near={FRONT_Z - 5000} far={FRONT_Z + 5000} />;
 }
 
@@ -245,12 +259,35 @@ function ToneMapping({ neutral }: { neutral: boolean }) {
 }
 
 /** The look onto the two materials when it changes, then one frame (`frameloop="demand"`). */
-function MetalApply({ metal, look, yawDeg }: { metal: BrushedMetal; look: Extract<LetteringSpec["material"], { kind: "brushed-metal" }>; yawDeg: number }) {
+function MetalApply({ metal, look, yawDeg, sizePx }: { metal: BrushedMetal; look: Extract<LetteringSpec["material"], { kind: "brushed-metal" }>; yawDeg: number; sizePx: number }) {
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => {
-    applyBrushedMetal(metal, look, yawDeg);
+    applyBrushedMetal(metal, look, yawDeg, sizePx);
     invalidate();
-  }, [metal, look, yawDeg, invalidate]);
+  }, [metal, look, yawDeg, sizePx, invalidate]);
+  return null;
+}
+
+/**
+ * ⛔ THE GRAIN's FLOOR, FROM THE CURRENT FRAMING (the Architect): a pitch below ~2 DEVICE px mips away to an average. One
+ * layout px on the face spans `zoom × pixelRatio` device px under the front camera (the orthographic zoom IS css px per
+ * world unit, one world unit one layout px), so the floor in em is 2 / (zoom × pixelRatio × size). Under the material
+ * mode's PERSPECTIVE front, the same at the face's plane (z 0): size.height / (2 · d · tan(fov/2)) css px per unit. Reported
+ * up whenever it changes. ⚠ The FRONT view's: the oblique's perspective varies across the word, so there it is an estimate.
+ */
+function FramingReport({ onDevicePxPerUnit }: { onDevicePxPerUnit: (v: number) => void }) {
+  const camera = useThree((s) => s.camera);
+  const size = useThree((s) => s.size);
+  const pixelRatio = useThree((s) => s.viewport.dpr);
+  const persp = camera as THREE.PerspectiveCamera;
+  const cssPerUnit = (camera as THREE.OrthographicCamera).isOrthographicCamera
+    ? (camera as THREE.OrthographicCamera).zoom
+    : persp.isPerspectiveCamera
+      ? size.height / (2 * persp.position.z * Math.tan(((persp.fov / 2) * Math.PI) / 180))
+      : NaN;
+  useEffect(() => {
+    if (Number.isFinite(cssPerUnit) && cssPerUnit > 0) onDevicePxPerUnit(cssPerUnit * pixelRatio);
+  }, [cssPerUnit, pixelRatio, onDevicePxPerUnit]);
   return null;
 }
 
@@ -325,14 +362,19 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
     material: {
       ...BRUSHED_BRASS,
       tone: clamp(flags.tone, 0, 1, BRUSHED_BRASS.tone),
-      strength: clamp(flags.strength, 0, 4, BRUSHED_BRASS.strength),
       face: {
         ...BRUSHED_BRASS.face,
+        strength: clamp(flags.strength, 0, 4, BRUSHED_BRASS.face.strength),
         roughness: clamp(flags.froughness, 0, 1, BRUSHED_BRASS.face.roughness),
         anisotropy: clamp(flags.aniso, 0, 1, BRUSHED_BRASS.face.anisotropy),
         anisotropyRotation: clamp(flags.anisorot, -Math.PI, Math.PI, BRUSHED_BRASS.face.anisotropyRotation),
+        grainEm: clamp(flags.grainem, 0.002, 0.2, BRUSHED_BRASS.face.grainEm),
+        grainContrast: clamp(flags.grain, 0, 1, BRUSHED_BRASS.face.grainContrast),
       },
-      edge: { roughness: clamp(flags.eroughness, 0, 1, BRUSHED_BRASS.edge.roughness) },
+      edge: {
+        strength: clamp(flags.estrength, 0, 4, BRUSHED_BRASS.edge.strength),
+        roughness: clamp(flags.eroughness, 0, 1, BRUSHED_BRASS.edge.roughness),
+      },
     },
   }));
   const metalLook = spec.material.kind === "brushed-metal" ? spec.material : null;
@@ -342,9 +384,15 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
   // ~8 MB float copy and PMREM, never freed — `studio-hdri.ts`), yaw per tick
   const [roomShown, setRoomShown] = useState(clamp(flags.room, 0, 1, 0.1));
   const [room, setRoom] = useState(roomShown);
-  // ⛔ 15° — MEASURED, the front view's brightest (step 1's sweep; the paper predicted 15° / 240°, and held for the front).
-  // ⚠ The oblique pose's brightest is 285° (the paper said 345° / 210° — off by 60°). A judging fixture, not a design value.
-  const [yaw, setYaw] = useState(clamp(flags.yaw, -360, 360, 15));
+  // ⛔ 305° — THE REFLECTION CENTRED AND BALANCED (Carl, 23 October: "the reflection from the HDRI should be more balanced.
+  // Centred on the middle the edges are getting lost"). MEASURED across the word in fifths, perspective front, 5° steps
+  // (`live-work/scripts/film04-pass2-balance-23-october.mjs`): 305° left 26.2 · middle 39.3 · right 29.1 — the middle
+  // lit, both ends held at ~70% of it. 15° (23.2 / 52.0 / 23.5) is centred too but its ends fall below half — lost; 30°
+  // (the brightest, the take-2 setting) was right-heavy, 24.8 / 31.7 / 49.6. ⚠ A judging fixture, not a design value —
+  // pass 3 lights it. History: 15° (orthographic, step 1), 30° (perspective brightest, take 2).
+  const [yaw, setYaw] = useState(clamp(flags.yaw, -360, 360, 305));
+  // device px per layout px on the face, from the front camera's framing — the grain's floor (`FramingReport`)
+  const [devicePxPerUnit, setDevicePxPerUnit] = useState<number | null>(null);
   const camPose = (() => {
     const [a, e] = (flags.cam ?? "").split(",").map(Number);
     return Number.isFinite(a) && Number.isFinite(e) ? { az: a, el: e } : OBLIQUE_POSE;
@@ -740,14 +788,15 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
       <div className="relative w-full border border-neutral-800" style={{ height: "calc(60 * var(--vh))", background: "#0a0a0a" }} aria-hidden>
         <Canvas key={view} gl={{ antialias: true, alpha: true }} resize={{ offsetSize: true }} dpr={dpr} frameloop="demand">
           {view === "front" ? (
-            <FrontCamera widthPx={stats?.widthPx ?? 0} heightPx={stats?.heightPx ?? 0} />
+            <FrontCamera widthPx={stats?.widthPx ?? 0} heightPx={stats?.heightPx ?? 0} perspective={metalOn} />
           ) : (
             <ObliqueCamera widthPx={stats?.widthPx ?? 0} heightPx={stats?.heightPx ?? 0} azDeg={camPose.az} elDeg={camPose.el} />
           )}
           <ToneMapping neutral={metalOn} />
           {/* lit by the studio ALONE in the material mode, as the desk mark's pass 2 was judged */}
           {!metalOn && <ShapeLight az={az} el={el} />}
-          {metalOn && metal && metalLook && <MetalApply metal={metal} look={metalLook} yawDeg={yaw} />}
+          {metalOn && metal && metalLook && <MetalApply metal={metal} look={metalLook} yawDeg={yaw} sizePx={spec.sizePx} />}
+          {view === "front" && <FramingReport onDevicePxPerUnit={setDevicePxPerUnit} />}
           {mirrorGeo && metal && <mesh geometry={mirrorGeo} material={metal.face} />}
           {lineBuilt?.geometry && !mirrorGeo && (
             // the line's two groups: the brushed FACE (materialIndex 0), the polished SIDES — walls and chamfer (1)
@@ -805,11 +854,21 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
             <>
               <div className="text-neutral-500 pt-2">the material (⚠ starting values, judged under Neutral tone mapping)</div>
               <Slider label="tone" value={metalLook.tone} min={0} max={1} step={0.01} onChange={(v) => setLook((m) => ({ ...m, tone: v }))} fmt={(v) => (v === 0 ? "brass" : `${(v * 100).toFixed(0)}% to no colour`)} />
-              <Slider label="strength" value={metalLook.strength} min={0} max={4} step={0.05} onChange={(v) => setLook((m) => ({ ...m, strength: v }))} fmt={(v) => `× ${v.toFixed(2)}`} />
+              <Slider label="face strength" value={metalLook.face.strength} min={0} max={2} step={0.01} onChange={(v) => setLook((m) => ({ ...m, face: { ...m.face, strength: v } }))} fmt={(v) => `× ${v.toFixed(2)}`} />
+              <Slider label="edge strength" value={metalLook.edge.strength} min={0} max={4} step={0.05} onChange={(v) => setLook((m) => ({ ...m, edge: { ...m.edge, strength: v } }))} fmt={(v) => `× ${v.toFixed(2)}`} />
               <Slider label="face roughness" value={metalLook.face.roughness} min={0} max={1} step={0.01} onChange={(v) => setLook((m) => ({ ...m, face: { ...m.face, roughness: v } }))} />
               <Slider label="brushing" value={metalLook.face.anisotropy} min={0} max={1} step={0.01} onChange={(v) => setLook((m) => ({ ...m, face: { ...m.face, anisotropy: v } }))} fmt={(v) => (v === 0 ? "none" : v.toFixed(2))} />
               <Slider label="brush turn" value={metalLook.face.anisotropyRotation} min={-Math.PI} max={Math.PI} step={0.01} onChange={(v) => setLook((m) => ({ ...m, face: { ...m.face, anisotropyRotation: v } }))} fmt={(v) => `${((v * 180) / Math.PI).toFixed(0)}°`} />
-              <Slider label="edge roughness" value={metalLook.edge.roughness} min={0} max={1} step={0.01} onChange={(v) => setLook((m) => ({ ...m, edge: { roughness: v } }))} />
+              <Slider
+                label="grain pitch" value={metalLook.face.grainEm} min={0.002} max={0.1} step={0.001}
+                onChange={(v) => setLook((m) => ({ ...m, face: { ...m.face, grainEm: v } }))}
+                fmt={(v) => {
+                  const floor = devicePxPerUnit ? 2 / (devicePxPerUnit * spec.sizePx) : null;
+                  return `${v.toFixed(3)} em${floor ? (v < floor ? " ⚠ below floor" : ` (floor ${floor.toFixed(3)})`) : ""}`;
+                }}
+              />
+              <Slider label="grain contrast" value={metalLook.face.grainContrast} min={0} max={1} step={0.01} onChange={(v) => setLook((m) => ({ ...m, face: { ...m.face, grainContrast: v } }))} fmt={(v) => (v === 0 ? "none" : v.toFixed(2))} />
+              <Slider label="edge roughness" value={metalLook.edge.roughness} min={0} max={1} step={0.01} onChange={(v) => setLook((m) => ({ ...m, edge: { ...m.edge, roughness: v } }))} />
               <div className="text-neutral-500 pt-2">the judging studio (not part of the design)</div>
               <Slider label="studio turn" value={yaw} min={-360} max={360} step={1} onChange={setYaw} fmt={(v) => `${v}°`} />
               <Slider label="studio room" value={roomShown} min={0} max={1} step={0.01} onChange={setRoomShown} onCommit={setRoom} fmt={(v) => `${v.toFixed(2)} (on release)`} />
