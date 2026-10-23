@@ -1,0 +1,31 @@
+PREDICTION (written before the run): rotation 0 → fx < fy (horizontal stretch); π/2 → fy < fx (vertical stretch).
+  cam 28,16 yaw   0: rot0 fx 0.016 fy 0.962 · π/2 fx 2.050 fy 2.640
+  cam 28,16 yaw  30: rot0 fx 133.584 fy 10.249 · π/2 fx 0.257 fy 1.179
+  cam 28,16 yaw  60: rot0 fx 870.668 fy 15.965 · π/2 fx 0.603 fy 3.868
+  cam 28,16 yaw  90: rot0 fx 4.359 fy 0.828 · π/2 fx 0.518 fy 2.002
+  cam 28,16 yaw 120: rot0 fx 0.535 fy 0.956 · π/2 fx 0.725 fy 1.808
+  cam 28,16 yaw 150: rot0 fx 0.892 fy 0.890 · π/2 fx 0.681 fy 1.365
+  cam 28,16 yaw 180: rot0 fx 0.047 fy 0.504 · π/2 fx 0.198 fy 0.656
+  cam 28,16 yaw 210: rot0 fx 0.001 fy 0.040 · π/2 fx 0.636 fy 1.811
+  cam 28,16 yaw 240: rot0 fx 48.808 fy 0.631 · π/2 fx 0.426 fy 1.262
+  cam 28,16 yaw 270: rot0 fx 286.981 fy 0.955 · π/2 fx 157.892 fy 2.647
+  cam 28,16 yaw 300: rot0 fx 0.545 fy 0.997 · π/2 fx 101.552 fy 5.106
+  cam 28,16 yaw 330: rot0 fx 0.011 fy 1.156 · π/2 fx 1.441 fy 1.718
+  cam -24,22 yaw   0: rot0 fx 52.796 fy 3.899 · π/2 fx 12.063 fy 8.563
+  cam -24,22 yaw  30: rot0 fx 0.008 fy 1.281 · π/2 fx 0.459 fy 85.068
+  cam -24,22 yaw  60: rot0 fx 0.006 fy 0.014 · π/2 fx 0.543 fy 0.118
+  cam -24,22 yaw  90: rot0 fx 0.874 fy 2.322 · π/2 fx 0.617 fy 1.449
+  cam -24,22 yaw 120: rot0 fx 1.035 fy 0.762 · π/2 fx 0.807 fy 0.833
+  cam -24,22 yaw 150: rot0 fx 0.684 fy 0.531 · π/2 fx 0.743 fy 0.756
+  cam -24,22 yaw 180: rot0 fx 1.299 fy 0.927 · π/2 fx 1.088 fy 1.052
+  cam -24,22 yaw 210: rot0 fx 478.386 fy 3.513 · π/2 fx 0.634 fy 0.585
+  cam -24,22 yaw 240: rot0 fx 0.080 fy 0.406 · π/2 fx 0.516 fy 15.027
+  cam -24,22 yaw 270: rot0 fx 0.005 fy 0.007 · π/2 fx 0.266 fy 0.570
+  cam -24,22 yaw 300: rot0 fx 0.987 fy 0.557 · π/2 fx 19.021 fy 1.747
+  cam -24,22 yaw 330: rot0 fx 88.289 fy 306.199 · π/2 fx 169.624 fy 87.346
+✅ RED RUN no brushing vs no brushing: fx 1.000000 fy 1.000000 (must be exactly 1)
+SUMMED over 24 frames: rotation 0 → fx 0.937 fy 0.548 → stretches VERTICALLY
+                       rotation π/2 → fx 1.205 fy 0.945 → stretches VERTICALLY
+⚠ INCONCLUSIVE: both rotations stretch the same way
+console errors: 0
+⚠ NOT WATCHED: the letters (the probe stands in for their faces); the edge material; how it looks (Carl's eye).

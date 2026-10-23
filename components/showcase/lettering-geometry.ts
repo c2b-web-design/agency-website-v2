@@ -29,6 +29,7 @@ import type { Font } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 import { mergeGeometries, toCreasedNormals } from "three/addons/utils/BufferGeometryUtils.js";
 import type { Glyphs } from "@/components/home/whoweare-button-scene";
+import { BRUSHED_BRASS } from "./lettering-material";
 
 /** The fonts the bench may load — a FIXED list, so a URL a client is sent cannot point it anywhere else. Each has been
  *  through `scripts/check-typeface-overlaps.mjs` (✅ geist-semibold: 95 glyphs, curveSegments 4–24, 22 October 2026). */
@@ -67,7 +68,29 @@ export type LetteringSpec = {
   creaseDeg: number;
   /** how the words are set: one straight line (take 1, R-088), or the restaurant lockup's ARCH (take 2) */
   layout: LetteringLayout;
+  /** ⛔ PASS 2 — the material, a PART (`lettering-material.ts`). Applied to the LINE only this pass; the arch stays clay. */
+  material: LetteringMaterial;
 };
+
+/**
+ * ⛔ THE MATERIAL AS DATA (pass 2, 23 October 2026; plan `live-work/film04-pass2-material-plan-23-october.md` v2.1). Carl:
+ * a BRUSHED FACE with a POLISHED EDGE, the grain HORIZONTAL; brushed brass leads. `f0` is the metal's reflectance at normal
+ * incidence, LINEAR; `tone` 0 = that metal, 1 = its own luminance (no colour) — the road to a pale satin. `face` is three's
+ * materialIndex 0 (the letters' fronts), `edge` materialIndex 1 (walls and chamfer together).
+ * ⚠⚠ EVERY VALUE CARL SETS THIS PASS IS SET UNDER NEUTRAL TONE MAPPING, JUDGING (Architect C1, D-046/D-048): the page's
+ * tone mapping is pass 3's; if it is ACES, these values are to be re-checked, not trusted.
+ */
+export type LetteringMaterial =
+  | { kind: "clay" }
+  | {
+      kind: "brushed-metal";
+      f0: readonly [number, number, number];
+      tone: number;
+      /** `envMapIntensity` — with no lamps, the metal's brightness control (the corners' strength) */
+      strength: number;
+      face: { roughness: number; anisotropy: number; anisotropyRotation: number; grainEm: number; grainContrast: number };
+      edge: { roughness: number };
+    };
 
 /**
  * ⛔ THE ARCH (take 2, D-088, 22 October 2026; plan `live-work/film04-pass1-take2-arch-plan-22-october.md`). Carl: *"Your
@@ -160,6 +183,8 @@ export const LETTERING_DEFAULTS: LetteringSpec = {
     kind: "arch", top: "Your", arch: "company logo", caps: true, steps: "equal", nudgeEm: {}, form: "round", radiusEm: 1.8, clearEm: 0.2,
     sweepDeg: 180, archTrackingEm: 0.21, topScale: 1, gapEm: 0.25,
   },
+  // ⛔ PASS 2: the LINE's material (the arch ignores it this pass and stays clay)
+  material: BRUSHED_BRASS,
 };
 
 /** Sweep limits: below 20° the radius runs away (the line layout serves that); above 200° the feet curl under. */
@@ -227,7 +252,10 @@ export function glyphGeometry(font: Font, ch: string, sizePx: number, spec: Pick
  * Build the words. `glyphs` is `measureLabel`'s reading of the kern-on span (x per character, the baseline, relative to the
  * span's centre). Spaces take their place in the setting and build nothing.
  */
-export function buildLettering(spec: LetteringSpec, font: Font, glyphs: Glyphs): { geometry: THREE.BufferGeometry | null; stats: LetteringStats } {
+/** ⛔ The fields the build reads — the bench keys the line's build on exactly these (with the words' reading), so a material
+ *  or studio change cannot re-extrude (the Architect, pass 2). The type IS the list: reading another field is a type error. */
+export type LineGeometryKey = Pick<LetteringSpec, "sizePx" | "depthEm" | "bevel" | "curveSegments" | "creaseDeg">;
+export function buildLettering(spec: LineGeometryKey, font: Font, glyphs: Glyphs): { geometry: THREE.BufferGeometry | null; stats: LetteringStats } {
   const t0 = performance.now();
   const missing: string[] = [];
   const parts: THREE.BufferGeometry[] = [];

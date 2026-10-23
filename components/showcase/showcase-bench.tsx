@@ -72,20 +72,28 @@ import {
   type FontProof,
   type LetteringSpec,
   type LetteringStats,
+  type LineGeometryKey,
   type LockupLetter,
   type ShowcaseFont,
 } from "./lettering-geometry";
+import { applyBrushedMetal, BRUSHED_BRASS, createBrushedMetal, type BrushedMetal } from "./lettering-material";
+import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 
 export type ShowcaseBenchFlags = {
   words?: string; size?: number; track?: number; depth?: number; bevel?: number; bevelseg?: number; curve?: number;
   font?: string; view?: string; mode?: string; az?: number; el?: number;
   layout?: string; top?: string; arch?: string; caps?: string; steps?: string; nudge?: string; sweep?: number; archtrack?: number; topscale?: number; gap?: number;
   form?: string; radius?: number; clear?: number; crease?: number;
+  // pass 2 — the material's dials, and the judging studio's (bench state, NOT spec parts) and the oblique pose
+  tone?: number; strength?: number; froughness?: number; aniso?: number; anisorot?: number; eroughness?: number;
+  room?: number; yaw?: number; cam?: string;
+  /** an INSTRUMENT: `mirror` shows a flat panel in the face material in place of the words (see `MirrorProbe`) */
+  probe?: string;
 };
 
 const VIEWS = ["front", "oblique"] as const;
 type View = (typeof VIEWS)[number];
-const MODES = ["clay", "flat", "mesh", "normals", "zebra"] as const;
+const MODES = ["clay", "flat", "mesh", "normals", "zebra", "material"] as const;
 type Mode = (typeof MODES)[number];
 
 const CLAY = { color: "#8a8a8a", roughness: 0.6 } as const;
@@ -139,6 +147,8 @@ declare global {
       fontCheck: FontCheck | null;
       probe?: (trackEm: number, patch?: Partial<ArchLayout>) => ProbeResult | null;
     };
+    /** the live renderer's tone mapping (three's constant), published by `ToneMapping` for harnesses to print */
+    __showcaseToneMapping?: number;
   }
 }
 
@@ -187,14 +197,17 @@ function FrontCamera({ widthPx, heightPx }: { widthPx: number; heightPx: number 
   return <OrthographicCamera makeDefault position={[0, 0, FRONT_Z]} zoom={zoom} near={FRONT_Z - 5000} far={FRONT_Z + 5000} />;
 }
 
-/** Oblique: a perspective camera turned to show the depth and the edge, the same framing; orbit to look round. */
-function ObliqueCamera({ widthPx, heightPx }: { widthPx: number; heightPx: number }) {
+/** Oblique: a perspective camera turned to show the depth and the edge, the same framing; orbit to look round.
+ *  ⛔ The pose is FIXED until a hand orbits it — `?cam=az,el` (degrees, default 28,16) names it, so a harness's "the same
+ *  view" across two renders is guaranteed (the Architect, pass 2). */
+const OBLIQUE_POSE = { az: 28, el: 16 } as const;
+function ObliqueCamera({ widthPx, heightPx, azDeg, elDeg }: { widthPx: number; heightPx: number; azDeg: number; elDeg: number }) {
   const aspect = useThree((s) => s.size.width / Math.max(1, s.size.height));
   const fov = 30;
   const vHalf = ((fov / 2) * Math.PI) / 180;
   const hHalf = Math.atan(Math.tan(vHalf) * aspect);
   const d = widthPx > 0 ? Math.max(widthPx / FILL / 2 / Math.tan(hHalf), heightPx / FILL / 2 / Math.tan(vHalf)) : 1000;
-  const az = (28 * Math.PI) / 180, el = (16 * Math.PI) / 180;
+  const az = (azDeg * Math.PI) / 180, el = (elDeg * Math.PI) / 180;
   return (
     <>
       <PerspectiveCamera makeDefault position={[Math.sin(az) * Math.cos(el) * d, Math.sin(el) * d, Math.cos(az) * Math.cos(el) * d]} fov={fov} near={1} far={d * 10} />
@@ -203,13 +216,57 @@ function ObliqueCamera({ widthPx, heightPx }: { widthPx: number; heightPx: numbe
   );
 }
 
-function Slider({ label, value, min, max, step, onChange, fmt }: {
+/**
+ * ⛔ NEUTRAL TONE MAPPING IN THE MATERIAL MODE — A JUDGING CHOICE ONLY (Carl, 23 October: *"Judging choice only"*; the
+ * page's tone mapping is pass 3's). The family buttons — the metal standard's — render under Neutral; the bench's clay
+ * modes keep R3F's default ACES, so their frames stay the regression baseline. ⛔ SET HERE, ON THE LIVE RENDERER, not by a
+ * changed Canvas `gl` prop (which may not reach a renderer that already exists — the Architect): saved, set, RESTORED on
+ * leaving (the save/restore of `answer-card-canvas.tsx:3715–3731`), then `invalidate()` — the bench is `frameloop="demand"`.
+ * Three recompiles each program for the new tone mapping by itself (its cache key carries it). The live value is published
+ * as `window.__showcaseToneMapping` so every harness PRINTS it, not assumes it.
+ */
+function ToneMapping({ neutral }: { neutral: boolean }) {
+  // the renderer read through `get()` inside the effect: React's immutability rule forbids writing to a value a hook returns
+  const get = useThree((s) => s.get);
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    const gl = get().gl;
+    const prev = gl.toneMapping;
+    if (neutral) gl.toneMapping = THREE.NeutralToneMapping;
+    window.__showcaseToneMapping = gl.toneMapping;
+    invalidate();
+    return () => {
+      gl.toneMapping = prev;
+      window.__showcaseToneMapping = gl.toneMapping;
+      invalidate();
+    };
+  }, [get, invalidate, neutral]);
+  return null;
+}
+
+/** The look onto the two materials when it changes, then one frame (`frameloop="demand"`). */
+function MetalApply({ metal, look, yawDeg }: { metal: BrushedMetal; look: Extract<LetteringSpec["material"], { kind: "brushed-metal" }>; yawDeg: number }) {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    applyBrushedMetal(metal, look, yawDeg);
+    invalidate();
+  }, [metal, look, yawDeg, invalidate]);
+  return null;
+}
+
+function Slider({ label, value, min, max, step, onChange, fmt, onCommit }: {
   label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; fmt?: (v: number) => string;
+  /** called on RELEASE (pointer up, key up, blur) — for a value too costly to apply per tick */
+  onCommit?: (v: number) => void;
 }) {
+  const commit = onCommit ? (e: { currentTarget: HTMLInputElement }) => onCommit(Number(e.currentTarget.value)) : undefined;
   return (
     <label className="flex items-center gap-2">
       <span className="w-28">{label}</span>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-36" />
+      <input
+        type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))}
+        onPointerUp={commit} onKeyUp={commit} onBlur={commit} className="w-36"
+      />
       <span className="tabular-nums text-neutral-400 w-28">{fmt ? fmt(value) : value.toFixed(3)}</span>
     </label>
   );
@@ -265,7 +322,33 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
             topScale: clamp(flags.topscale, 0.3, 2, DA.topScale),
             gapEm: clamp(flags.gap, 0, 1.5, DA.gapEm),
           },
+    material: {
+      ...BRUSHED_BRASS,
+      tone: clamp(flags.tone, 0, 1, BRUSHED_BRASS.tone),
+      strength: clamp(flags.strength, 0, 4, BRUSHED_BRASS.strength),
+      face: {
+        ...BRUSHED_BRASS.face,
+        roughness: clamp(flags.froughness, 0, 1, BRUSHED_BRASS.face.roughness),
+        anisotropy: clamp(flags.aniso, 0, 1, BRUSHED_BRASS.face.anisotropy),
+        anisotropyRotation: clamp(flags.anisorot, -Math.PI, Math.PI, BRUSHED_BRASS.face.anisotropyRotation),
+      },
+      edge: { roughness: clamp(flags.eroughness, 0, 1, BRUSHED_BRASS.edge.roughness) },
+    },
   }));
+  const metalLook = spec.material.kind === "brushed-metal" ? spec.material : null;
+  const setLook = (patch: (m: NonNullable<typeof metalLook>) => NonNullable<typeof metalLook>) =>
+    setSpec((s) => (s.material.kind === "brushed-metal" ? { ...s, material: patch(s.material) } : s));
+  // the judging studio — bench state, NOT a spec part (the Architect): room applies on release (each value caches its own
+  // ~8 MB float copy and PMREM, never freed — `studio-hdri.ts`), yaw per tick
+  const [roomShown, setRoomShown] = useState(clamp(flags.room, 0, 1, 0.1));
+  const [room, setRoom] = useState(roomShown);
+  // ⛔ 15° — MEASURED, the front view's brightest (step 1's sweep; the paper predicted 15° / 240°, and held for the front).
+  // ⚠ The oblique pose's brightest is 285° (the paper said 345° / 210° — off by 60°). A judging fixture, not a design value.
+  const [yaw, setYaw] = useState(clamp(flags.yaw, -360, 360, 15));
+  const camPose = (() => {
+    const [a, e] = (flags.cam ?? "").split(",").map(Number);
+    return Number.isFinite(a) && Number.isFinite(e) ? { az: a, el: e } : OBLIQUE_POSE;
+  })();
   const fontRejected = flags.font !== undefined && !(flags.font in SHOWCASE_FONTS);
   const [view, setView] = useState<View>(VIEWS.includes(flags.view as View) ? (flags.view as View) : "front");
   const [mode, setMode] = useState<Mode>(MODES.includes(flags.mode as Mode) ? (flags.mode as Mode) : "clay");
@@ -370,18 +453,23 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
   const ok = !!measured && !measured.check.stops.length;
 
   // TAKE 1 — the line, one merged mesh; built in an effect, timed there, never in render
+  // ⛔ KEYED ON ITS GEOMETRY FIELDS ONLY (the Architect, pass 2): it used to depend on the whole `spec`, so a material or
+  // studio slider would re-extrude every triangle a tick. `LineGeometryKey` is the type `buildLettering` takes, so the key
+  // and what the build reads cannot drift apart; the words, font and tracking reach it through `measured`.
+  const lineKey = JSON.stringify({ sizePx: spec.sizePx, depthEm: spec.depthEm, bevel: spec.bevel, curveSegments: spec.curveSegments, creaseDeg: spec.creaseDeg } satisfies LineGeometryKey);
   const [made, setMade] = useState<{ geometry: THREE.BufferGeometry | null; stats: LetteringStats } | null>(null);
   useEffect(() => {
     if (arch || !font || !measured || measured.check.stops.length || !measured.glyphs.line) return;
     const line = measured.glyphs.line;
+    const key: LineGeometryKey = JSON.parse(lineKey);
     const id = window.setTimeout(() => {
       const t0 = performance.now();
-      const r = buildLettering(spec, font, line);
+      const r = buildLettering(key, font, line);
       performance.measure("showcase:build", { start: t0, end: performance.now() });
       setMade(r);
     }, 30);
     return () => window.clearTimeout(id);
-  }, [arch, font, measured, spec]);
+  }, [arch, font, measured, lineKey]);
   useEffect(() => () => made?.geometry?.dispose(), [made]);
 
   // TAKE 2 — the arch's letters, each BUILT ONCE per shape (words, sizes, depth, edge, smoothness); sweep, gap and
@@ -457,6 +545,35 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
   );
   useEffect(() => () => { for (const m of Object.values(materials)) m.dispose(); matcap?.dispose(); }, [materials, matcap]);
 
+  // PASS 2 — the studio and the metal: only in the material mode, only on the LINE (the arch stays clay this pass)
+  const metalOn = mode === "material" && !arch && !!metalLook;
+  const [hdri, setHdri] = useState<{ room: number; tex: THREE.Texture } | null>(null);
+  useEffect(() => {
+    if (!metalOn) return;
+    let live = true;
+    loadStudioHdri(STUDIO_HDRI_SRC, room).then((tex) => live && setHdri({ room, tex }));
+    return () => {
+      live = false;
+    };
+  }, [metalOn, room]);
+  // the shared texture is the studio module's (cached per page) — never disposed here; the materials are ours
+  const metal = useMemo(() => (hdri ? createBrushedMetal(hdri.tex) : null), [hdri]);
+  useEffect(() => () => metal?.dispose(), [metal]);
+  const metalReady = metalOn && !!metal && hdri?.room === room;
+  /**
+   * ⛔ THE MIRROR PROBE — an INSTRUMENT, not the design (`?mode=material&probe=mirror`). A flat panel in the FACE material,
+   * its UVs oriented as the letters' faces are (u along +x, v along +y — `PlaneGeometry`), the size of the words, in their
+   * place. Step 1's first orientation reading was measured on the LETTERS and flipped between two yaws: whole-word gradients
+   * depend on where a softbox edge happens to fall. A panel reflects the studio ITSELF, so how a rotation softens its
+   * vertical vs horizontal edges, against no brushing and over a full turn of the studio, says which way it smears.
+   */
+  const probeMirror = metalOn && flags.probe === "mirror";
+  const mirrorGeo = useMemo(
+    () => (probeMirror && made?.stats ? new THREE.PlaneGeometry(made.stats.widthPx, made.stats.heightPx * 2) : null),
+    [probeMirror, made],
+  );
+  useEffect(() => () => mirrorGeo?.dispose(), [mirrorGeo]);
+
   // what is shown: a mesh built before a check failed is never shown (derived, not cleared in an effect)
   const lineBuilt = !arch && ok ? made : null;
   const archShown = useMemo(() => (arch && ok && placed && letters ? { placed, letters } : null), [arch, ok, placed, letters]);
@@ -492,13 +609,13 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
 
   useEffect(() => {
     window.__showcaseBench = {
-      ready: arch ? !!archShown && !!report : !!lineBuilt?.geometry,
+      ready: arch ? !!archShown && !!report : !!lineBuilt?.geometry && (mode !== "material" || metalReady),
       stats,
       spec,
       fontCheck: measured?.check ?? null,
       probe,
     };
-  }, [arch, archShown, report, lineBuilt, stats, spec, measured, probe]);
+  }, [arch, archShown, report, lineBuilt, stats, spec, measured, probe, mode, metalReady]);
 
   const check = measured?.check;
   const fontCss = SHOWCASE_FONTS[spec.font];
@@ -589,9 +706,15 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
             <option value="mesh">mesh, the triangles as built</option>
             <option value="normals">normals</option>
             <option value="zebra">zebra, surface continuity</option>
+            <option value="material">material, in the studio</option>
           </select>
         </label>
       </div>
+      {mode === "material" && arch && (
+        <p className="text-sm text-neutral-400 max-w-4xl">
+          The arch stays in clay for now. The material goes on one piece at a time, and the straight line is first.
+        </p>
+      )}
 
       {(fontRejected || blocked || (stats && stats.missing.length > 0)) && (
         <div className="border border-red-900 bg-red-950/40 text-red-200 text-sm p-3 space-y-1 max-w-4xl">
@@ -619,14 +742,20 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
           {view === "front" ? (
             <FrontCamera widthPx={stats?.widthPx ?? 0} heightPx={stats?.heightPx ?? 0} />
           ) : (
-            <ObliqueCamera widthPx={stats?.widthPx ?? 0} heightPx={stats?.heightPx ?? 0} />
+            <ObliqueCamera widthPx={stats?.widthPx ?? 0} heightPx={stats?.heightPx ?? 0} azDeg={camPose.az} elDeg={camPose.el} />
           )}
-          <ShapeLight az={az} el={el} />
-          {lineBuilt?.geometry && <mesh geometry={lineBuilt.geometry} material={materials[mode]} />}
+          <ToneMapping neutral={metalOn} />
+          {/* lit by the studio ALONE in the material mode, as the desk mark's pass 2 was judged */}
+          {!metalOn && <ShapeLight az={az} el={el} />}
+          {metalOn && metal && metalLook && <MetalApply metal={metal} look={metalLook} yawDeg={yaw} />}
+          {mirrorGeo && metal && <mesh geometry={mirrorGeo} material={metal.face} />}
+          {lineBuilt?.geometry && !mirrorGeo && (
+            <mesh geometry={lineBuilt.geometry} material={metalOn ? (metal ? metal.face : materials.clay) : materials[mode === "material" ? "clay" : mode]} />
+          )}
           {archShown &&
             archShown.letters.list.map((l) => {
               const p = archShown.placed.placements.get(l)!;
-              return <mesh key={`${l.line}${l.index}`} geometry={archShown.letters.geos.get(l)} material={materials[mode]} position={[p.x, p.y, 0]} />;
+              return <mesh key={`${l.line}${l.index}`} geometry={archShown.letters.geos.get(l)} material={materials[mode === "material" ? "clay" : mode]} position={[p.x, p.y, 0]} />;
             })}
         </Canvas>
       </div>
@@ -671,6 +800,20 @@ export default function ShowcaseBench({ flags }: { flags: ShowcaseBenchFlags }) 
           <Slider label="edge steps" value={spec.bevel.segments} min={1} max={8} step={1} onChange={(v) => set("bevel", { ...spec.bevel, segments: v })} fmt={(v) => (v === 1 ? "1, a chamfer" : `${v}, rounded`)} />
           <Slider label="smoothness" value={spec.curveSegments} min={2} max={32} step={1} onChange={(v) => set("curveSegments", v)} fmt={(v) => `${v} per curve`} />
           <Slider label="crease" value={spec.creaseDeg} min={0} max={44} step={0.5} onChange={(v) => set("creaseDeg", v)} fmt={(v) => (v === 0 ? "none, faceted" : `smooth below ${v}°`)} />
+          {metalLook && !arch && (
+            <>
+              <div className="text-neutral-500 pt-2">the material (⚠ starting values, judged under Neutral tone mapping)</div>
+              <Slider label="tone" value={metalLook.tone} min={0} max={1} step={0.01} onChange={(v) => setLook((m) => ({ ...m, tone: v }))} fmt={(v) => (v === 0 ? "brass" : `${(v * 100).toFixed(0)}% to no colour`)} />
+              <Slider label="strength" value={metalLook.strength} min={0} max={4} step={0.05} onChange={(v) => setLook((m) => ({ ...m, strength: v }))} fmt={(v) => `× ${v.toFixed(2)}`} />
+              <Slider label="face roughness" value={metalLook.face.roughness} min={0} max={1} step={0.01} onChange={(v) => setLook((m) => ({ ...m, face: { ...m.face, roughness: v } }))} />
+              <Slider label="brushing" value={metalLook.face.anisotropy} min={0} max={1} step={0.01} onChange={(v) => setLook((m) => ({ ...m, face: { ...m.face, anisotropy: v } }))} fmt={(v) => (v === 0 ? "none" : v.toFixed(2))} />
+              <Slider label="brush turn" value={metalLook.face.anisotropyRotation} min={-Math.PI} max={Math.PI} step={0.01} onChange={(v) => setLook((m) => ({ ...m, face: { ...m.face, anisotropyRotation: v } }))} fmt={(v) => `${((v * 180) / Math.PI).toFixed(0)}°`} />
+              <Slider label="edge roughness" value={metalLook.edge.roughness} min={0} max={1} step={0.01} onChange={(v) => setLook((m) => ({ ...m, edge: { roughness: v } }))} />
+              <div className="text-neutral-500 pt-2">the judging studio (not part of the design)</div>
+              <Slider label="studio turn" value={yaw} min={-360} max={360} step={1} onChange={setYaw} fmt={(v) => `${v}°`} />
+              <Slider label="studio room" value={roomShown} min={0} max={1} step={0.01} onChange={setRoomShown} onCommit={setRoom} fmt={(v) => `${v.toFixed(2)} (on release)`} />
+            </>
+          )}
           <div className="text-neutral-500 pt-2">light, to rake across the shape</div>
           <Slider label="key azimuth" value={az} min={-90} max={90} step={1} onChange={setAz} fmt={(v) => `${v}°`} />
           <Slider label="key elevation" value={el} min={0} max={85} step={1} onChange={setEl} fmt={(v) => `${v}°`} />

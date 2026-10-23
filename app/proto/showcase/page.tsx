@@ -20,6 +20,9 @@ import ShowcaseBench, { type ShowcaseBenchFlags } from "@/components/showcase/sh
  *   ⛔ TAKE 7 (23 October 2026) is the default: "company logo", ROUND-HEADED — ?form=round|half ?radius= (em) ?clear= (em).
  *   The half-circle takes need `?form=half&arch=company` added (take 5: `&nudge=P:0.11`; take 4: nothing more).
  *   ?crease= (deg; default 10 — the side walls smoothed, 23 October; `?crease=0` is faceted, as every take before it)
+ *   PASS 2, THE MATERIAL (`?mode=material`, the line only): ?tone= ?strength= ?froughness= ?aniso= ?anisorot= (rad)
+ *   ?eroughness= — and the judging studio, NOT design parts: ?room= ?yaw= (deg); the oblique pose ?cam=az,el (deg, 28,16)
+ *   ?probe=mirror — an INSTRUMENT: a flat panel in the face material in place of the words (the brushing's orientation test)
  */
 export const metadata = {
   title: "Your words, given form: the showcase bench",
@@ -61,6 +64,16 @@ export default async function ShowcaseBenchPage({
     radius: num("radius"),
     clear: num("clear"),
     crease: num("crease"),
+    tone: num("tone"),
+    strength: num("strength"),
+    froughness: num("froughness"),
+    aniso: num("aniso"),
+    anisorot: num("anisorot"),
+    eroughness: num("eroughness"),
+    room: num("room"),
+    yaw: num("yaw"),
+    cam: one("cam"),
+    probe: one("probe"),
   };
   return (
     <div className="min-h-[calc(100*var(--vh))] bg-neutral-950 text-white p-6">
