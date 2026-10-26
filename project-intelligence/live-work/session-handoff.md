@@ -1,93 +1,80 @@
-# Session Handoff — 26 October 2026. FILM 4's PAGE BUILT, VIEWPORT 1 APPROVED; CARL LEARNING THREE.JS; THE HERO IS ALL CODE. NEXT: THE ARCH.
+# Session Handoff — 26 October 2026 (session 2). FILM 4 APPROVED WHOLE; THE CAMERA BENCH CHUNK 1 MID-BUILD.
 
-⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
-**Delete this file at the end of the session that reads it, once its replacement is written.** Replaces 23 October's (the
-session ran 23 October → 26 October with a break; the 23 October handoff was read at its start).
+⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Written MID-CHUNK, early, because Carl flagged the usage limit
+(90%) — a session limit lost an hour's record on 12 October. **Delete it at the end of the session that reads it, once its
+replacement is written.** Replaces 26 October's (session 1) handoff.
 
 ---
 
-## ⛔⛔ NEXT SUBJECT — VIEWPORT 2: THE ARCH, "YOUR COMPANY LOGO" (Carl)
+## ⛔⛔ IN PROGRESS — THE CAMERA BENCH, CHUNK 1 (`/proto/camera`; D-104; structural note v3)
 
-On `/proto/your-words` the arch is lit by the JUDGING STUDIO ALONE (305°/355° — `JUDGING_STUDIO`). Carl's line for it, all
-that is on record: *"Travelling light with logo animation."* **Neither the light's path nor the animation is described —
-ask Carl to describe it, verbally AND technically** (he now wants to talk in technique — see LEARNING below). Put to him
-last time, unanswered: where the light travels / its pace / loop or one pass; what the logo itself does; a stage base under
-it (as viewport 1) or the travelling light alone.
+**Carl:** *"If you have all you need you can proceed."* Files named by Carl (*"Authorisation given to use. Lock and test
+after use."*): `components/showcase/your-words-canvas.tsx`, `app/proto/camera/page.tsx`, `components/showcase/lettering-piece.tsx`,
+`components/showcase/camera-bench.tsx`, `components/showcase/camera-pad.ts`, `components/showcase/shot-format.ts`; and
+`project-intelligence/ai-system/architect-role.md` (*"added to the list to use"*). All in `live-work/chunk-scope.json`.
+⛔ **LOCK AND TEST AFTER USE:** remove those seven from `files`, probe each with a valid edit (expect denial).
 
-**What the Builder can offer when he asks (not pitched):**
-- **The brick grain was built for a travelling light** — anisotropy stretches highlights along each letter's grain, and every
-  letter's grain points a different way (radial over the head, horizontal on the legs), so a light following the curve should
-  catch the letters IN TURN. A prediction from the shader, untested.
-- **The collapse** — RAISED, NOT CHOSEN (D-088, 26 October): held (kinematic) then released (dynamic), the keystone N first;
-  baked (reversible, the scroll plays it) or live (forward only). Physics on a page is §5a.
-- Viewport 1's method, which Carl set and approved: **get one element right, then bring the others up slowly, one variable
-  at a time** (the wings first, the front pair brought up under them — R-092).
+**DONE (uncommitted):**
+- ✔ **THE LIFT** — `Scene` moved VERBATIM (by script) from `your-words-canvas.tsx` into `lettering-piece.tsx` (`LetteringPiece`,
+  `usePieceBuild`, `measurePiece` — the interface; `Guard`, `NeutralToneMapping`, `SPECS`, `crownUnderside` exported). The
+  page keeps `PageCamera`, `Journey` (now applies a frozen `?t=` pose from the first frame; the live clock starts on
+  `onReady`), `ArchJourney`, the words' assertion. ⛔ **PROVED PIXEL-IDENTICAL:** 8 frames (viewport 1; viewport 2 `?cam=0`,
+  `?t=` 1, 9, 15.75, 20, 23.5, 28) — 0 of 2,058,480 px differ on every frame; the instrument noise-free (two captures of
+  unchanged code identical) and SEEN RED (a swapped frame: 100,014 px). Script `live-work/scripts/film04-lift-compare-26-october.mjs`;
+  frames in the session scratchpad (`lift/before-1`, `after`).
+- ✔ `shot-format.ts` (v1 format: tracks of value-vs-time, auto tangents through keys, HOLD, both ends at rest; reserved
+  tracks; `shotRefusal` fails loudly), `camera-pad.ts` (Gamepad API read, dead zone 0.15, power-2 curve, weighted rig τ 0.22 s,
+  speeds in d/s, `focalMm` on a FIXED 36 mm-wide sensor — a default, Carl's Unreal filmback NOT named),
+  `camera-bench.tsx` (`BenchStore` — one mutable store, `frame()` the one frame callback; `frameloop="always"`; capture /
+  remove / play / to-start / step / scrub / key time + hold editing; keyboard + mouse fallback; autosave in localStorage;
+  `dynamic(…, { ssr: false })`), `app/proto/camera/page.tsx` (noindex). `tsc` clean, eslint clean on `components/showcase`.
 
-## WHAT HAPPENED
+**⛔ THE OPEN FAULT (being debugged when this was written):** `/proto/camera` shows *"The bench cannot draw: the WebGL
+context was lost."* Trace: `shown` goes true → **FALSE** (1.79 s) → true → `THREE.WebGLRenderer: Context Lost` → the bench's
+`webglcontextlost` handler sets `failed` for good. One `getContext` call only. ⚠ Likely cause (UNVERIFIED): `usePieceBuild`'s
+`shown` flips to null mid-build (a hook re-running — the font/measure in a strict-mode double mount?), unmounting
+`BenchScene`; the context loss probably from R3F disposing on an unmount/remount. `/proto/your-words` does NOT show it (its
+canvas mounts later, on approach). **Next:** find why `shown` flips (log `measured`, `placed`, `report` per render), make the
+bench tolerate it (don't treat a remount's context loss as failure, or keep the scene mounted), then run
+`live-work/scripts/camera-bench-verify-26-october.mjs` (a STUBBED pad drives every control, the keyboard, the autosave).
+⛔ **A `// TEMP-DEBUG` effect is in `camera-bench.tsx` (after `const why = …`) — REMOVE IT.**
 
-| | what | verdict |
+**Chunk 0 defaults stated to Carl (not objected to):** positions in units of d; film 4's journey stays code, shots are data;
+the lens on the D-pad up/down; persistence A-or-B deferred to chunk 3 (the Builder recommends B — download + the Builder's
+import, no new write path). Filmback preset: Carl not yet named — 36 mm full-frame default, labelled.
+
+## WHAT HAPPENED THIS SESSION (all recorded in the canonical files)
+
+| | what | record |
 |---|---|---|
-| Arch material | the line's brass on the arch, the grain laid as BRICKS — one direction per letter, horizontal on the legs, the radius over the head, the crown N vertical; studio 355° for the arch (lintel measured as the lost band at 305°) | *"It looks good"* — not approval — `8ddb2ec` |
-| The page | `/proto/your-words`, "Your words, given form": two viewports, a canvas per viewport (structural note v2, option A, built on *"Build it now"*); the bench's measuring/build LIFTED to `lettering-hooks.tsx` (24/24 bench frames identical); `JUDGING_STUDIO` + `frontDistance` shared; no-WebGL fallback via `webglcontextcreationerror` | built |
-| Viewport 1 | the line in the upper third (moved in the world); STAGE LIGHT: the WINGS pair (x ±0.9, y +0.35, z +0.15 of the word width, intensity 3) as base, the FRONT pair (McCandless, 30° off centre, 45° up, 1.5 widths) at 0.5 | **R-092 APPROVED** — `e8aeda6` |
-| The hero | ⛔ **D-101: THE HERO IS BUILT ENTIRELY IN CODE** — the film plan superseded as MEDIUM (the wipe survives as an idea, in code if needed — R-036's crossing is already one) | Carl's decision |
-
-Records: D-088's 23 Oct session-2 entries (the arch, the lift, the page, the lamps), R-092; D-098 (the camera "game changer",
-the reverse angle), D-101; structural note `live-work/structural-note-showcase-two-viewports-23-october.md` (built).
-Scripts: `live-work/scripts/film04-*-23-october.mjs` (arch balance, lift compare, page check incl. `nowebgl`, lamps sweep,
-stills), `look-threejs-example-26-october.mjs` (screenshots any URL). Film: `Videos\C2B Films\04 Extruded lettering\`
-— `04 Pass 2 - Material` (arch takes), `05 Page - Two viewports` (takes 1–4, fallback).
-**Switches:** `/proto/your-words?wing= &front=` (the two pairs' intensities). The bench `/proto/showcase` unchanged.
-
-## ⛔ LEARNING AND TECHNIQUES — CARL's NEW FOOTING (26 October; memories saved)
-
-Carl: *"going forward i have to learn more about threejs and webgpu. From a design perpective its important to have
-choice."* He spent ~3 months in **Unreal Engine** before AI (knows materials and meshes); watching **Bobby Roe**'s YouTube
-(@robotbobby9; code at github.com/bobbyroe — read the repo when he cites a video). ⛔ **STANDING: when presenting bench
-parameters, say what each IS physically, what it does, its cost, and its UNREAL equivalent** — *"its important i know the
-functionaly. Not just move sliders and see what happens."* *"Coding is and always will be your department."*
-
-Covered in the session (so not re-explained cold — build on it): **clearcoat** (two-layer reflection; the corners already
-use it; LACQUERED BRASS is a material option for film 4, not proposed); **WebGPU / `three/webgpu` / TSL** (the material code
-carries across; our three 0.185.1 has it, latest 0.186.1; gain = compute: particles, simulation); **matcap vs PBR texture set
-vs HDRI** (matcap ignores the scene's lights and follows the camera — wrong for the brass); **material libraries**: Poly
-Haven (CC0, ours), ambientCG (CC0, unchecked), `nidorx/matcaps` (NO LICENCE — bench only), licence before client use;
-**Rapier** (rigid-body physics, WASM, Apache-2.0; BAKE vs LIVE — the desk mark's fall is a baked sim); **Babylon.js** (an
-engine vs three's library; Node Material Editor ≈ Unreal's; mix engines at the ASSET level via glTF, never in one scene);
-**quaternions** (one turn about one axis; slerp takes the SHORTEST way — turns > 180° need waypoints); **generative art**
-(rules + seed + noise + palette; Bobby's grid and mandala — InstancedMesh, `Matrix4.compose`, HSL stepping); **cameras**
-(orbit, path, scroll-driven, CUTS between several, blends, the DOLLY ZOOM — `frontDistance` is its formula; a photo/video
-backdrop LOCKS the camera, all-code frees it).
+| Governance | `current-sprint.md` pruned (7,407 → 1,626; verbatim to `archive/sprint-3-detail.md`); CLAUDE.md pruned (2,851 → 1,993; verbatim to `ai-system/claude-md-worked-cases.md`) | `76495ee` |
+| Hooks | both hooks `onFailure: "block"` (fail closed), tested with a probe | D-103, `27fa818` |
+| Mods | Builder seat only; the Architect always read-only | D-102 |
+| ⛔ Writing | **ONLY THE BUILDER EVER WRITES FILES**; the Architect never offers a route (it offered a subagent — Carl *"with alarm"*) | D-102 amended; `architect-role.md` (uncommitted) |
+| Film 4 | viewport 2's camera journey (orbit, tilt under the N, pull-out) **R-093**; the page APPROVED WHOLE **R-094**; the link NOT sent (*"We will just use the film in About"*); final take filmed | `d43ae96`, `06b718f` |
+| Camera method | Carl describes → performs on the Xbox pad → we refine | D-104; note v3 (the Architect's text verbatim + the Builder's response on persistence) |
 
 ## OPEN — with owners
 
-- **Viewport 2 (the arch): light and animation undescribed** — Carl.
-- **The hero (D-101): to be designed** — camera language and triggers Carl's; the build is §5a (structural note first).
-  Brainstorm on record in D-098: the logo's 19 October behaviour, the camera, the REVERSE ANGLE (six requirements listed).
-- Pass 2 on the line and on the arch: positive verdicts, not approved on their own; viewport 1 approved under the light (R-092).
-- ⚠ Every material/light value set under NEUTRAL tone mapping (a judging choice); the page's tone mapping not ruled.
-- **Flag only (Carl):** `components/about/about-card-glass.ts:491` says anisotropy "NEEDS A tangent ATTRIBUTE" — untrue on
-  three r185 with UVs (proven on film 4). Not edited.
-- Carried: sending the `/proto/your-words` link vs `app/robots.ts`'s 28 July position (Carl); `/proto` noindex at launch;
-  `structural-note-viewer-on-about-21-october.md` to amend (Builder); Send after the films' edit; the films' hosting;
-  `neon-bloom.tsx` re-arm; phones in mastering (D-094).
+- **The bench's context-loss fault** (above) — Builder, next.
+- **The film 4 EDIT** — Carl: *"we will come back to talk about editing after we have done with the architect."* Footage:
+  ~4:22 unique + the approved page's final take (39.5 s), `Videos\C2B Films\04 Extruded lettering\`.
+- Carl's: the Unreal filmback preset; persistence A or B (chunk 3).
+- Carried: the hero (D-101) after the bench; Send after the hero; `structural-note-viewer-on-about-21-october.md` to amend
+  (Builder); `neon-bloom.tsx` re-arm; phones in mastering (D-094); `about-card-glass.ts:491` anisotropy comment untrue (flag).
 
-## ⚠ STANDING / LESSONS FROM THIS SESSION
+## STANDING / LESSONS
 
-- **Carl's lighting method:** start from the element that is right, bring the others up slowly, one variable — and cut the
-  dials to one per element. Theatre vocabulary lands with him (wings, front of house, McCandless).
-- **The McCandless 45° did not balance on a perspective metal face** — measured; 30° did. A textbook value is a hypothesis.
-- **R3F's renderer setup fails OUTSIDE React** with WebGL disabled (the `Guard` never sees it; it retries every render) —
-  `webglcontextcreationerror` in the CAPTURE phase is the net. Reuse it on any new canvas.
-- **sed with `\n` in a replacement wrote a literal newline** into a script (26 Oct) — the shell-text hazard again; use Edit.
-- **"I read the frame as X" needs measuring before it goes in a record** — the arch's "dark legs" were measured false.
-- Scope OPEN (keep until Carl asks to lock and test): `scripts/check-typeface-overlaps.mjs`, `components/showcase/*`
-  (geometry, bench, material, hooks, section, canvas), `app/proto/showcase/page.tsx`, `app/proto/your-words/page.tsx`.
-  `components/home/corner-canvas.tsx` gained two EXPORTS only (`whenLinked`, `usePrefilteredStudio`). Protected files untouched.
-- Lint baseline **1 error, 0 warnings**; `tsc` clean. **Server STOPPED** (port 3000 checked free).
-- ⚠ **NOT COMMITTED at writing:** `decisions.md` (the collapse, D-098's camera/reverse angle, D-101),
-  `live-work/hero-fusion-spec-15-october.md` (superseded notice), this handoff, `look-threejs-example-26-october.mjs`.
+- **Settings reload ~one tool call late**; a call sent in parallel with a settings edit runs on the old settings.
+- **`next dev` listens on the network** (`0.0.0.0`; `Network: http://192.168.0.60:3000`) — any dev route is LAN-reachable.
+- **The React compiler lint** (`react-hooks/refs`, `immutability`): mutating props or hook values, or reading refs in render,
+  is flagged — share frame-loop state through a class with methods (`BenchStore`), use `st.camera` in `useFrame`.
+- Carl's camera principle: *"sparingly and appropriately"*; orbit-vs-rotation ambiguity is a dial (memory).
+- Lint baseline **1 error, 0 warnings** (re-check after the bench). Dev server RUNNING (background task) — stop by PID and
+  confirm port 3000 free before any checkpoint.
+- ⚠ **NOT COMMITTED:** the lift + bench files, `decisions.md` (D-102 amendments), `architect-role.md`, the structural note
+  (live-work, gitignored), the scripts (force-add), this handoff.
 
 ---
 
-*Written 26 October 2026, end of session. Replaces 23 October's.*
+*Written 26 October 2026, session 2, mid-chunk. Replaces session 1's.*
