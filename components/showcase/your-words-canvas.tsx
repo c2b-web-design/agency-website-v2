@@ -24,114 +24,28 @@
  *   `corner-canvas.tsx` (D-100: a ~1 s main-thread freeze otherwise). The piece stays `visible={false}` until every program
  *   reports linked; `onReady` fires after the first frame drawn with it.
  * - ⛔ FAILURE → `onFailed`: anything thrown inside the canvas (`Guard`), a lost context, the font check, a collision.
+ * - ⛔ LIFTED (26 October 2026, the camera bench's note v3): the build, the brass, the compile gate and the lamps now live in
+ *   `lettering-piece.tsx` (`LetteringPiece`, `usePieceBuild`, `measurePiece`), shared with `/proto/camera`. THIS file keeps
+ *   what is the PAGE's: its camera (`PageCamera`), the journey (`journeyPose`, `Journey`), the words' assertion, the canvas.
+ *   Proved pixel-identical before and after (eight frames — `live-work/scripts/film04-lift-compare-26-october.mjs`).
  */
-import { Component, Suspense, use, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
-import * as THREE from "three";
 import { useCanvasDpr } from "@/lib/use-site-scale";
-import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
-import { usePrefilteredStudio, whenLinked } from "@/components/home/corner-canvas";
 import { Ticker } from "@/components/home/whoweare-button-scene";
-import { LETTERING_DEFAULTS, type LetteringSpec, type LetteringStats } from "./lettering-geometry";
-import { applyBrushedMetal, BRUSHED_BRASS, createBrushedMetal, JUDGING_STUDIO } from "./lettering-material";
+import { FRONT_FOV, MeasureSpans } from "./lettering-hooks";
 import {
-  ArchGrain,
-  archShapeKey,
-  frontDistance,
-  FRONT_FOV,
-  MeasureSpans,
-  useArchCollisions,
-  useArchLetters,
-  useArchPlacement,
-  useLineBuild,
-  useLines,
-  useMeasured,
-  useShowcaseFont,
-  type ArchLetters,
-  type ArchPlaced,
-} from "./lettering-hooks";
+  Guard,
+  LetteringPiece,
+  measurePiece,
+  NeutralToneMapping,
+  usePieceBuild,
+  type Built,
+  type Piece,
+} from "./lettering-piece";
 
-export type Piece = "line" | "arch";
-
-/** The two pieces: the bench's defaults — the line is take 1's layout (R-088), the arch take 7/8 (R-090, R-091). */
-const SPECS: Record<Piece, LetteringSpec> = {
-  line: { ...LETTERING_DEFAULTS, layout: { kind: "line" } },
-  arch: LETTERING_DEFAULTS,
-};
-const LOOK = BRUSHED_BRASS;
-
-/**
- * ⛔ WHERE EACH PIECE STANDS — its centre's height, a fraction of the viewport from the top (Carl, 23 October 2026, session 2:
- * *"Size is good. Move the your company into the upper third"* — the middle of the upper third). ⛔ MOVED IN THE WORLD, the
- * camera kept: the word is seen from a little below, as a sign set high on a wall (the alternative, a lens shift, would
- * slide the picture and change nothing in it — stated to Carl as the Builder's choice). ⚠ So the studio's reflection on the
- * line is no longer the one measured at the centre.
- */
-const PLACE: Record<Piece, number> = { line: 1 / 6, arch: 0.5 };
-
-/**
- * ⛔ VIEWPORT 1's STATIC LIGHT — PASS 3 BEGUN ON THE LINE: TWO PAIRS (Carl, 23 October 2026, session 2). The trail: *"light it
- * from the upper left and right"*; *"almost as if its on stage and its being lit from stage left and right. We are looking
- * for balance and to highlight its geometry."*; on the WINGS take: *"The light shouldnt be in the wings, it should be out
- * front like in a theatre."*; on the FRONT take: *"the wing lights on the first pass made the face too dark but brought out
- * the highlights and shadows inside. Start from there and then bring up the other pair to an adequate level. rather than
- * tweaking 4 parameters we get it close to how we want it and then slowly bring up the others."*
- *
- * ⛔ THE WINGS ARE THE BASE — take 2 EXACTLY: beyond the word's ends, high, just in front (x ±0.9, y +0.35, z +0.15 of the
- *   word's width), intensity 3. Raking side light: it misses the metal face and catches the chamfers facing each wing — the
- *   highlights and shadows INSIDE the letters (Carl). Too dark on the face by itself.
- * ⛔ THE FRONT PAIR IS BROUGHT UP UNDER IT — take 3's McCANDLESS placement, kept as measured balanced: out front, 30° off the
- *   centre line each side, 45° up, 1.5 word-widths' throw, crossing on the word's centre. ONLY ITS INTENSITY MOVES (Carl: not
- *   four parameters at once). Take 3 had it alone at 2 — the face lit, paler, the grain quieter.
- * Both: spotlights aimed at the word's centre, no distance falloff (`decay` 0 — the scene's units are layout px), 35°
- * soft-edged cones (penumbra 0.8). The studio stays the face's reflection DETAIL (the logo standard, 15 October).
- * Dials: `?wing=` `?front=` (intensities) — one per pair. Still — `frameloop="demand"` holds.
- */
-// ⛔ APPROVED (R-092, *"Yes, its approved"*): the wings at 3, the front pair at 0.5 — *"The face is lighter and letter depth is
-// clearly visible. The naterial is also clearly reading as Brass"*. MEASURED (fixed mask, fifths): 102.8 · 106.2 · 102.4 ·
-// 106.0 · 100.8, mean 103.4, blown 2.6% (the edges' glints); the wings alone 82.6. ⚠ Set under Neutral tone mapping.
-const WINGS = { intensity: 3, x: 0.9, y: 0.35, z: 0.15 };
-const FRONT = { intensity: 0.5, azDeg: 30, elDeg: 45, distW: 1.5 };
-const CONE = { angleDeg: 35, penumbra: 0.8 };
-function readIntensities(): { wing: number; front: number } {
-  const q = new URLSearchParams(window.location.search);
-  const n = (k: string, d: number) => (q.get(k) !== null && Number.isFinite(Number(q.get(k))) ? Number(q.get(k)) : d);
-  return { wing: n("wing", WINGS.intensity), front: n("front", FRONT.intensity) };
-}
-
-/** The two pairs, aimed at the word's centre (`at`); `w` the word's width, layout px. */
-function SignLamps({ w, at }: { w: number; at: [number, number, number] }) {
-  const [level] = useState(readIntensities);
-  const target = useMemo(() => new THREE.Object3D(), []);
-  const r = (deg: number) => (deg * Math.PI) / 180;
-  const D = FRONT.distW * w;
-  // each lamp's offset from the word's centre, by side (−1 stage left of the viewer, +1 right)
-  const lamps = [-1, 1].flatMap((side) => [
-    { key: `wing${side}`, intensity: level.wing, off: [side * WINGS.x * w, WINGS.y * w, WINGS.z * w] },
-    {
-      key: `front${side}`,
-      intensity: level.front,
-      off: [side * D * Math.sin(r(FRONT.azDeg)) * Math.cos(r(FRONT.elDeg)), D * Math.sin(r(FRONT.elDeg)), D * Math.cos(r(FRONT.azDeg)) * Math.cos(r(FRONT.elDeg))],
-    },
-  ]);
-  return (
-    <>
-      <primitive object={target} position={at} />
-      {lamps.map((l) => (
-        <spotLight
-          key={l.key}
-          position={[at[0] + l.off[0], at[1] + l.off[1], at[2] + l.off[2]]}
-          target={target}
-          intensity={l.intensity}
-          angle={r(CONE.angleDeg)}
-          penumbra={CONE.penumbra}
-          decay={0}
-        />
-      ))}
-    </>
-  );
-}
+export type { Piece } from "./lettering-piece";
 
 /**
  * ⛔ VIEWPORT 2's CAMERA — THE JOURNEY (Carl, 26 October 2026, after learning the camera can move — D-098, D-101): *"The
@@ -225,7 +139,10 @@ function readJourney(): { on: boolean; frozen: number | null } {
   return { on: !still, frozen: t !== null && Number.isFinite(Number(t)) ? Number(t) : null };
 }
 
-/** Drives the default camera along the journey once the arch is drawn (`running`) — `journeyPose`'s arguments. */
+/** Drives the default camera along the journey once the arch is drawn (`running`) — `journeyPose`'s arguments.
+ *  ⚠ SINCE THE LIFT (26 October): `running` is the piece's `onReady` (it no longer shares the scene's `linked`), so a FROZEN
+ *  pose (`?t=`) is applied from the first frame — before the piece shows, while it is invisible — and the live clock starts
+ *  on the frame after the first drawn one (a frame's difference; the pixel check covers the frozen frames). */
 function Journey({ running, r, zc, cy, n, frozen }: {
   running: boolean;
   r: number;
@@ -236,9 +153,11 @@ function Journey({ running, r, zc, cy, n, frozen }: {
 }) {
   const clock = useRef(0);
   useFrame((st, delta) => {
-    if (!running) return;
-    // ⚠ the clock advances only on drawn frames, and never by more than a frame's worth — no jump after time off screen
-    if (frozen === null) clock.current += Math.min(delta, 0.05);
+    if (frozen === null) {
+      if (!running) return;
+      // ⚠ the clock advances only on drawn frames, and never by more than a frame's worth — no jump after time off screen
+      clock.current += Math.min(delta, 0.05);
+    }
     const p = journeyPose(frozen ?? clock.current, r, zc, cy, n);
     st.camera.position.set(p.x, p.y, p.z);
     // YXZ: turn about the vertical first, then tilt — the tilt stays a tilt whichever way the camera faces
@@ -248,171 +167,26 @@ function Journey({ running, r, zc, cy, n, frozen }: {
   return null;
 }
 
-/** The crown letter's underside — the arch letter whose lowest ink stands highest (the N) — its middle, layout px. */
-function crownUnderside(built: { placed: ArchPlaced; letters: ArchLetters }): { x: number; y: number } {
-  let best: { x: number; y: number } | null = null;
-  for (const l of built.letters.list) {
-    if (l.line !== "arch") continue;
-    const p = built.placed.placements.get(l)!;
-    const under = p.y + l.bounds.minY;
-    if (!best || under > best.y) best = { x: p.x + (l.bounds.minX + l.bounds.maxX) / 2, y: under };
-  }
-  return best ?? { x: 0, y: 0 };
-}
-
-/**
- * ⛔ VIEWPORT 2's LIGHT — LAMPS ON THE ORBIT's AXIS, ONE ABOVE, ONE BELOW (the Builder, on Carl's *"light it appropriately
- * for the cameras journey"* — his *"hemisphere lights, top and bottom"* the starting point). Why on the axis: the camera
- * orbits about the VERTICAL, so a lamp straight above and one straight below are the SAME to it from every point of the
- * orbit. Why lamps and not three's `HemisphereLight`: that feeds only the DIFFUSE term, which a metal (metalness 1) does
- * not have — on this brass it adds exactly nothing (three r185, `lights_physical_fragment`: diffuse × (1 − metalness)).
- * On the metal these lamps catch the CHAMFERS: a 45° chamfer facing up reflects the top lamp straight out along the face's
- * normal, toward a camera anywhere on the orbit — the bottom lamp the same for the chamfers facing down. The studio stays the
- * faces' reflection (the logo standard), fixed in the world, so what the faces show changes as the camera moves.
- * Directional (no position falloff), white. Dials: `?top=` `?bottom=` (intensities).
- *
- * ⛔ AND A BACK PAIR — the arch is THEATRE IN THE ROUND (take 2). Measured on take 1: from behind, the faces read darker
- * (lit mean 60 against the front's 86) — they reflect the studio's dark side. Viewport 1's McCANDLESS front pair (30° off
- * centre, 45° up, 1.5 widths — R-092's placement) MIRRORED BEHIND the arch lifts the backs; from the front the pair sits
- * behind the letters and is seen only as edge light. `?back=` (intensity).
- */
-const AXIS_LAMPS = { top: 2, bottom: 1, back: 0.7 };
-function AxisLamps({ at, w }: { at: [number, number, number]; w: number }) {
-  const [level] = useState(() => {
-    const q = new URLSearchParams(window.location.search);
-    const n = (k: string, d: number) => (q.get(k) !== null && Number.isFinite(Number(q.get(k))) ? Number(q.get(k)) : d);
-    return { top: n("top", AXIS_LAMPS.top), bottom: n("bottom", AXIS_LAMPS.bottom), back: n("back", AXIS_LAMPS.back) };
-  });
-  const target = useMemo(() => new THREE.Object3D(), []);
-  const r = (deg: number) => (deg * Math.PI) / 180;
-  const D = FRONT.distW * w;
-  return (
-    <>
-      <primitive object={target} position={at} />
-      <directionalLight position={[at[0], at[1] + 1000, at[2]]} target={target} intensity={level.top} />
-      <directionalLight position={[at[0], at[1] - 1000, at[2]]} target={target} intensity={level.bottom} />
-      {[-1, 1].map((side) => (
-        <spotLight
-          key={side}
-          position={[
-            at[0] + side * D * Math.sin(r(FRONT.azDeg)) * Math.cos(r(FRONT.elDeg)),
-            at[1] + D * Math.sin(r(FRONT.elDeg)),
-            at[2] - D * Math.cos(r(FRONT.azDeg)) * Math.cos(r(FRONT.elDeg)),
-          ]}
-          target={target}
-          intensity={level.back}
-          angle={r(CONE.angleDeg)}
-          penumbra={CONE.penumbra}
-          decay={0}
-        />
-      ))}
-    </>
-  );
-}
-
-type Built =
-  | { kind: "line"; geometry: THREE.BufferGeometry; stats: LetteringStats }
-  | { kind: "arch"; placed: ArchPlaced; letters: ArchLetters };
-
-/** Neutral tone mapping on the live renderer, set before anything compiles (three keys its programs on it). */
-function NeutralToneMapping() {
-  const get = useThree((s) => s.get);
-  useEffect(() => {
-    get().gl.toneMapping = THREE.NeutralToneMapping;
-  }, [get]);
-  return null;
-}
-
-function Scene({ piece, built, onReady }: { piece: Piece; built: Built; onReady: () => void }) {
-  const hdri = use(loadStudioHdri(STUDIO_HDRI_SRC, JUDGING_STUDIO.room));
-  const gl = useThree((s) => s.gl);
-  const scene = useThree((s) => s.scene);
-  const camera = useThree((s) => s.camera);
+/** The page's camera — the lifted `Scene`'s, unchanged: face-on at the piece's front distance, the bench's 30° lens,
+ *  `near` 1, `far` d × 10. Made default here, BEFORE `LetteringPiece` compiles against it (it renders first). */
+function PageCamera({ piece, built }: { piece: Piece; built: Built }) {
   const size = useThree((s) => s.size);
-  const invalidate = useThree((s) => s.invalidate);
-  const env = usePrefilteredStudio(gl, hdri);
-  const metal = useMemo(() => (env ? createBrushedMetal(env) : null), [env]);
-  useEffect(() => () => metal?.dispose(), [metal]);
-  useEffect(() => {
-    if (!metal) return;
-    applyBrushedMetal(metal, LOOK, JUDGING_STUDIO.yawDeg[piece], SPECS[piece].sizePx);
-    invalidate();
-  }, [metal, piece, invalidate]);
-
-  // ⛔ THE COMPILE, OFF THE MAIN THREAD: drawn only once every program reports ready
-  const [compiled, setCompiled] = useState<object | null>(null);
-  const linked = !!metal && compiled === metal;
-  useEffect(() => {
-    if (!metal) return;
-    return whenLinked(gl, gl.compile(scene, camera), () => setCompiled(metal));
-  }, [gl, scene, camera, metal, built]);
-
-  useEffect(() => invalidate(), [size, linked, built, invalidate]);
-  const reported = useRef(false);
-  useFrame(() => {
-    if (linked && !reported.current) {
-      reported.current = true;
-      // this frame draws the piece (its programs already linked) straight after the callbacks — ready once it has
-      window.setTimeout(onReady, 0);
-    }
-  });
-
-  const w = built.kind === "line" ? built.stats.widthPx : built.placed.reading.widthPx;
-  const h = built.kind === "line" ? built.stats.heightPx : built.placed.reading.heightPx;
-  const d = frontDistance(w, h, size);
-  // the piece's centre raised to its place: at the face's plane the window spans 2·d·tan(fov/2) — `PLACE` from the top
-  const up = (0.5 - PLACE[piece]) * 2 * d * Math.tan(((FRONT_FOV / 2) * Math.PI) / 180);
-  const material = metal ? [metal.face, metal.edge] : undefined;
-  const [journey] = useState(readJourney);
-  // the orbit's centre: the arch's centre, at the middle of its depth (the letters run from z 0 to the depth); the radius
-  // keeps the camera's start exactly where the still front stood
-  const zc = (SPECS[piece].depthEm * SPECS[piece].sizePx) / 2;
-  const moving = piece === "arch" && journey.on;
-  return (
-    <>
-      <PerspectiveCamera makeDefault position={[0, 0, d]} fov={FRONT_FOV} near={1} far={d * 10} />
-      {built.kind === "arch" && <ArchGrain shown={built} />}
-      {piece === "line" && <SignLamps w={w} at={[0, up, 0]} />}
-      {built.kind === "arch" && <AxisLamps at={[0, up, zc]} w={w} />}
-      {moving && built.kind === "arch" && (
-        <>
-          {journey.frozen === null && <Ticker />}
-          <Journey
-            running={linked}
-            r={d - zc}
-            zc={zc}
-            cy={up + built.placed.reading.curveCentre.y}
-            n={(({ x, y }) => ({ x, y: up + y }))(crownUnderside(built))}
-            frozen={journey.frozen}
-          />
-        </>
-      )}
-      <group visible={linked} position={[0, up, 0]}>
-        {material && built.kind === "line" && <mesh geometry={built.geometry} material={material} />}
-        {material &&
-          built.kind === "arch" &&
-          built.letters.list.map((l) => {
-            const p = built.placed.placements.get(l)!;
-            // each letter keeps three's own groups: the brushed FACE (materialIndex 0), the polished SIDES (1)
-            return <mesh key={`${l.line}${l.index}`} geometry={built.letters.geos.get(l)} material={material} position={[p.x, p.y, 0]} />;
-          })}
-      </group>
-    </>
-  );
+  const { d } = measurePiece(piece, built, size);
+  return <PerspectiveCamera makeDefault position={[0, 0, d]} fov={FRONT_FOV} near={1} far={d * 10} />;
 }
 
-/** Anything thrown inside the canvas (R3F rethrows it here) → the fallback. Renders nothing after. */
-class Guard extends Component<{ onFailed: () => void; children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  componentDidCatch() {
-    this.props.onFailed();
-  }
-  render() {
-    return this.state.failed ? null : this.props.children;
-  }
+/** Viewport 2's journey, from the piece's measurements (`measurePiece`). */
+function ArchJourney({ built, running }: { built: Built; running: boolean }) {
+  const size = useThree((s) => s.size);
+  const [journey] = useState(readJourney);
+  if (!journey.on) return null;
+  const m = measurePiece("arch", built, size);
+  return (
+    <>
+      {journey.frozen === null && <Ticker />}
+      <Journey running={running} r={m.d - m.zc} zc={m.zc} cy={m.curveCentre!.y} n={m.crown!} frozen={journey.frozen} />
+    </>
+  );
 }
 
 export default function YourWordsCanvas({ piece, words, onReady, onFailed }: {
@@ -423,46 +197,19 @@ export default function YourWordsCanvas({ piece, words, onReady, onFailed }: {
   onFailed: (why: string) => void;
 }) {
   const dpr = useCanvasDpr([1, 2]);
-  const spec = SPECS[piece];
-  const arch = spec.layout.kind === "arch" ? spec.layout : null;
-  const lines = useLines(spec);
-  const font = useShowcaseFont(spec.font);
-  const { spans, measured } = useMeasured(font, lines, spec.font, spec.sizePx);
-  const ok = !!measured && !measured.check.stops.length;
-  const made = useLineBuild(!!arch, font, measured, spec);
-  const shapeKey = archShapeKey(arch, spec);
-  const letters = useArchLetters(shapeKey, font);
-  const placed = useArchPlacement(arch, font, letters, shapeKey, measured, spec.sizePx);
-  const report = useArchCollisions(placed, letters, spec.sizePx);
+  const { spec, lines, spans, shown, failure, words: builtWords } = usePieceBuild(piece);
+  const [drawn, setDrawn] = useState(false);
+  const ready = useCallback(() => {
+    setDrawn(true);
+    onReady();
+  }, [onReady]);
 
   // ⛔ the words asserted, the checks enforced — each a failure in plain words (the section logs it and shows the text)
-  const built = lines.map((l) => l.words).join(" ").toLowerCase();
-  const why =
-    built !== words.toLowerCase()
-      ? `the words built ("${built}") are not the words shown ("${words}")`
-      : measured?.check.stops.length
-        ? measured.check.stops.join(" ")
-        : report && (report.collisions > 0 || report.tight > 0)
-          ? `${report.collisions} overlapping and ${report.tight} tight pairs of letters`
-          : null;
+  const built = builtWords.toLowerCase();
+  const why = built !== words.toLowerCase() ? `the words built ("${built}") are not the words shown ("${words}")` : failure;
   useEffect(() => {
     if (why) onFailed(why);
   }, [why, onFailed]);
-
-  // one object per build — the compile and the grain re-run only when what is drawn changes
-  const shown = useMemo<Built | null>(
-    () =>
-      !ok
-        ? null
-        : arch
-          ? placed && letters && report
-            ? { kind: "arch", placed, letters }
-            : null
-          : made?.geometry
-            ? { kind: "line", geometry: made.geometry, stats: made.stats }
-            : null,
-    [ok, arch, placed, letters, report, made],
-  );
 
   return (
     <>
@@ -478,7 +225,15 @@ export default function YourWordsCanvas({ piece, words, onReady, onFailed }: {
           }}
         >
           <NeutralToneMapping />
-          <Suspense fallback={null}>{shown && <Scene piece={piece} built={shown} onReady={onReady} />}</Suspense>
+          <Suspense fallback={null}>
+            {shown && (
+              <>
+                <PageCamera piece={piece} built={shown} />
+                {piece === "arch" && <ArchJourney built={shown} running={drawn} />}
+                <LetteringPiece piece={piece} built={shown} onReady={ready} />
+              </>
+            )}
+          </Suspense>
         </Canvas>
       </Guard>
     </>
