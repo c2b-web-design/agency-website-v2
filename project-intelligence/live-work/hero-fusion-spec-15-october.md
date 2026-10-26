@@ -1,7 +1,8 @@
 # The hero's film — the numbers for Fusion (15 October 2026, session 3)
 
 **For:** Carl, making the 10 s film in DaVinci Resolve's Fusion. **Decision:** D-098 (`decisions.md`).
-**Status:** PRELIMINARY — measured from TODAY's hero layout. Re-measure if the hero text changes.
+**Status:** ⛔ **SUPERSEDED 26 October 2026 — the hero is built ENTIRELY IN CODE (D-101, Carl: *"Decision. We will make the Hero entirely with code."*). There is no hero film; these numbers are kept as history.** The right-side space measurements (x 2097–3593 at 3840 wide) still describe TODAY's layout and may serve the code hero's composition — re-measure before relying on them.
+~~PRELIMINARY — measured from TODAY's hero layout. Re-measure if the hero text changes.~~
 
 ## What the film must do (Carl)
 

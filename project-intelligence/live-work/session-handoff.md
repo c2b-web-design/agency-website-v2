@@ -1,79 +1,93 @@
-# Session Handoff — 23 October 2026. FILM 4: THE ARCH RE-TRACKED, THE WALLS SMOOTHED, BRUSHED BRASS ON THE LINE. NEXT: THE ARCH's MATERIAL.
+# Session Handoff — 26 October 2026. FILM 4's PAGE BUILT, VIEWPORT 1 APPROVED; CARL LEARNING THREE.JS; THE HERO IS ALL CODE. NEXT: THE ARCH.
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Chat history is not canonical (D-006).
-**Delete this file at the end of the session that reads it, once its replacement is written.** Replaces 22 October session 2's.
+**Delete this file at the end of the session that reads it, once its replacement is written.** Replaces 23 October's (the
+session ran 23 October → 26 October with a break; the 23 October handoff was read at its start).
 
 ---
 
-## ⛔⛔ NEXT SUBJECT — "SESSION 2 AND THE ARCH MATERIAL" (Carl)
+## ⛔⛔ NEXT SUBJECT — VIEWPORT 2: THE ARCH, "YOUR COMPANY LOGO" (Carl)
 
-**The same brushed brass on "Your company logo" (the arch).** Carl: *"2 different elements with the same material that will
-differ with the use of light and movement."* **The line is STATIC (lettering and light); the arch gets a ROVING LIGHT and is
-ANIMATED** — ⚠ how it animates is NOT yet described, and the light and movement are PASS 3's, not this one.
+On `/proto/your-words` the arch is lit by the JUDGING STUDIO ALONE (305°/355° — `JUDGING_STUDIO`). Carl's line for it, all
+that is on record: *"Travelling light with logo animation."* **Neither the light's path nor the animation is described —
+ask Carl to describe it, verbally AND technically** (he now wants to talk in technique — see LEARNING below). Put to him
+last time, unanswered: where the light travels / its pace / loop or one pass; what the logo itself does; a stage base under
+it (as viewport 1) or the travelling light alone.
 
-**Process:** Carl ran pass 2 on the line as discussion → plan (Plan Mode) → the Architect (Carl pastes; the Builder transcribes)
-→ approval → build in steps, each shown. ⚠ Whether the arch's material needs its own plan round is **Carl's to say** — ask.
-
-**What the arch needs that the line did not (the Builder's reading, for the plan — not ruled):**
-- The arch's letters are SEPARATE meshes, each `glyphGeometry` placed by `layoutArch` (the line is one merged geometry). Three's
-  groups are native there (materialIndex 0 face, 1 sides) — a `[face, edge]` material array works per mesh.
-- **One sheet of grain:** each arch letter's face UV must be offset by its PLACEMENT (x, y) — today the arch letters keep
-  three's per-letter UVs. ⚠ Whether the grain runs as one horizontal sheet across an arch, or follows the curve, is a
-  design question for Carl.
-- The bench's material mode currently shows the arch in CLAY with a note (`showcase-bench.tsx`).
-- The studio's 305° and the face roughness / strength were measured for the LINE's framing — the arch is tall (690 × 858);
-  re-measure balance for it rather than inherit.
+**What the Builder can offer when he asks (not pitched):**
+- **The brick grain was built for a travelling light** — anisotropy stretches highlights along each letter's grain, and every
+  letter's grain points a different way (radial over the head, horizontal on the legs), so a light following the curve should
+  catch the letters IN TURN. A prediction from the shader, untested.
+- **The collapse** — RAISED, NOT CHOSEN (D-088, 26 October): held (kinematic) then released (dynamic), the keystone N first;
+  baked (reversible, the scroll plays it) or live (forward only). Physics on a page is §5a.
+- Viewport 1's method, which Carl set and approved: **get one element right, then bring the others up slowly, one variable
+  at a time** (the wings first, the front pair brought up under them — R-092).
 
 ## WHAT HAPPENED
 
 | | what | verdict |
 |---|---|---|
-| Take 6 | "company logo" on the half-circle, as-is (no code) | led to Carl's form |
-| Take 7 | the ROUND-HEADED arch: upright legs, a half-circle over, equal closest distances, feet level by construction; radius 1.8 em, spacing 0.2 em | **R-090** *"This looks good"* — `8876617` |
-| Take 8 | the faceted side walls CREASED at 10° (measured: curve facets ≤ 7.5°, corners ≥ 30°, chamfer 45°) | **R-091** *"This looks better"* — `88e1c3c` |
-| Pass 2 plan | v2.1, four Architect rounds; tone mapping NEUTRAL as a **judging choice only** (Carl) | approved |
-| Steps 0–2 | baseline; the dials proven; brushed face / polished edge split by `materialIndex` | `ca380be`, `1ebadf6` |
-| Steps 3–4 | the grain (one sheet); face 0.13 / edge 1 strengths; perspective front; the reflection centred (305°) and widened (roughness 0.5) | *"a lot better, more balanced"* — **NOT approved**: *"We wont really get the full effect until we get it in a viewport and light it up"* |
+| Arch material | the line's brass on the arch, the grain laid as BRICKS — one direction per letter, horizontal on the legs, the radius over the head, the crown N vertical; studio 355° for the arch (lintel measured as the lost band at 305°) | *"It looks good"* — not approval — `8ddb2ec` |
+| The page | `/proto/your-words`, "Your words, given form": two viewports, a canvas per viewport (structural note v2, option A, built on *"Build it now"*); the bench's measuring/build LIFTED to `lettering-hooks.tsx` (24/24 bench frames identical); `JUDGING_STUDIO` + `frontDistance` shared; no-WebGL fallback via `webglcontextcreationerror` | built |
+| Viewport 1 | the line in the upper third (moved in the world); STAGE LIGHT: the WINGS pair (x ±0.9, y +0.35, z +0.15 of the word width, intensity 3) as base, the FRONT pair (McCandless, 30° off centre, 45° up, 1.5 widths) at 0.5 | **R-092 APPROVED** — `e8aeda6` |
+| The hero | ⛔ **D-101: THE HERO IS BUILT ENTIRELY IN CODE** — the film plan superseded as MEDIUM (the wipe survives as an idea, in code if needed — R-036's crossing is already one) | Carl's decision |
 
-Records: D-088's 23 October entries (every measurement), R-090, R-091; plan `live-work/film04-pass2-material-plan-23-october.md`;
-Architect transcription `live-work/architect-plan-response-film04-pass2-23-october.md`; scripts `live-work/scripts/film04-*-23-october.*`;
-baseline `live-work/shots/film04-pass2-baseline-23-october/` (20 frames — `film04-pass2-baseline-23-october.mjs compare`).
-Film: `Videos\C2B Films\04 Extruded lettering\` — `03 Pass 1 - Mesh` (take6–8), `04 Pass 2 - Material` (step1–step4 take4).
+Records: D-088's 23 Oct session-2 entries (the arch, the lift, the page, the lamps), R-092; D-098 (the camera "game changer",
+the reverse angle), D-101; structural note `live-work/structural-note-showcase-two-viewports-23-october.md` (built).
+Scripts: `live-work/scripts/film04-*-23-october.mjs` (arch balance, lift compare, page check incl. `nowebgl`, lamps sweep,
+stills), `look-threejs-example-26-october.mjs` (screenshots any URL). Film: `Videos\C2B Films\04 Extruded lettering\`
+— `04 Pass 2 - Material` (arch takes), `05 Page - Two viewports` (takes 1–4, fallback).
+**Switches:** `/proto/your-words?wing= &front=` (the two pairs' intensities). The bench `/proto/showcase` unchanged.
 
-**Switches:** `/proto/showcase` default = the arch (take 7/8); `?layout=line&mode=material` = the brass; `?form=half&arch=company&nudge=P:0.11`
-= take 5; `?crease=0` faceted; material dials `?strength= ?estrength= ?froughness= ?aniso= ?anisorot= ?grain= ?grainem= ?tone=`;
-studio `?yaw= ?room=`; `?cam=az,el`; `?probe=mirror` (an instrument).
+## ⛔ LEARNING AND TECHNIQUES — CARL's NEW FOOTING (26 October; memories saved)
+
+Carl: *"going forward i have to learn more about threejs and webgpu. From a design perpective its important to have
+choice."* He spent ~3 months in **Unreal Engine** before AI (knows materials and meshes); watching **Bobby Roe**'s YouTube
+(@robotbobby9; code at github.com/bobbyroe — read the repo when he cites a video). ⛔ **STANDING: when presenting bench
+parameters, say what each IS physically, what it does, its cost, and its UNREAL equivalent** — *"its important i know the
+functionaly. Not just move sliders and see what happens."* *"Coding is and always will be your department."*
+
+Covered in the session (so not re-explained cold — build on it): **clearcoat** (two-layer reflection; the corners already
+use it; LACQUERED BRASS is a material option for film 4, not proposed); **WebGPU / `three/webgpu` / TSL** (the material code
+carries across; our three 0.185.1 has it, latest 0.186.1; gain = compute: particles, simulation); **matcap vs PBR texture set
+vs HDRI** (matcap ignores the scene's lights and follows the camera — wrong for the brass); **material libraries**: Poly
+Haven (CC0, ours), ambientCG (CC0, unchecked), `nidorx/matcaps` (NO LICENCE — bench only), licence before client use;
+**Rapier** (rigid-body physics, WASM, Apache-2.0; BAKE vs LIVE — the desk mark's fall is a baked sim); **Babylon.js** (an
+engine vs three's library; Node Material Editor ≈ Unreal's; mix engines at the ASSET level via glTF, never in one scene);
+**quaternions** (one turn about one axis; slerp takes the SHORTEST way — turns > 180° need waypoints); **generative art**
+(rules + seed + noise + palette; Bobby's grid and mandala — InstancedMesh, `Matrix4.compose`, HSL stepping); **cameras**
+(orbit, path, scroll-driven, CUTS between several, blends, the DOLLY ZOOM — `frontDistance` is its formula; a photo/video
+backdrop LOCKS the camera, all-code frees it).
 
 ## OPEN — with owners
 
-- **Pass 2 on the line: not approved** — waits for the viewport (the two-viewport layout — STRUCTURAL, §5a note before
-  building) and the light (pass 3) — **Carl**.
-- **The line's light (pass 3):** a NEAR light (a picture light) was raised for the static line — RAISED, not ruled. The arch's
-  roving light and its animation — undescribed. The page's tone mapping — pass 3's (the corners' gold was approved under ACES). — **Carl**.
-- ⚠ **Every material value is "set under Neutral, judging"** (Architect C1) — re-check if pass 3 is not Neutral.
-- **Flag only (Carl):** `components/about/about-card-glass.ts:491` records anisotropy as *"NEEDS A tangent ATTRIBUTE"* — on three
-  r185 with UVs it does not (proven on this geometry). Outside this chunk; not edited.
-- Carried: sending the bench link vs `app/robots.ts`'s 28 July position (Carl); `/proto` must stay noindex at launch; the
-  structural note `structural-note-viewer-on-about-21-october.md` to amend (Builder); Send after the films' edit; the films'
-  hosting; `neon-bloom.tsx` re-arm; phones in mastering (D-094).
+- **Viewport 2 (the arch): light and animation undescribed** — Carl.
+- **The hero (D-101): to be designed** — camera language and triggers Carl's; the build is §5a (structural note first).
+  Brainstorm on record in D-098: the logo's 19 October behaviour, the camera, the REVERSE ANGLE (six requirements listed).
+- Pass 2 on the line and on the arch: positive verdicts, not approved on their own; viewport 1 approved under the light (R-092).
+- ⚠ Every material/light value set under NEUTRAL tone mapping (a judging choice); the page's tone mapping not ruled.
+- **Flag only (Carl):** `components/about/about-card-glass.ts:491` says anisotropy "NEEDS A tangent ATTRIBUTE" — untrue on
+  three r185 with UVs (proven on film 4). Not edited.
+- Carried: sending the `/proto/your-words` link vs `app/robots.ts`'s 28 July position (Carl); `/proto` noindex at launch;
+  `structural-note-viewer-on-about-21-october.md` to amend (Builder); Send after the films' edit; the films' hosting;
+  `neon-bloom.tsx` re-arm; phones in mastering (D-094).
 
 ## ⚠ STANDING / LESSONS FROM THIS SESSION
 
-- **A written prediction is TESTED, not picked — and a test can be confounded.** The brushing's direction: the first reading
-  "failed" the prediction, a re-run flipped it (the sweep had chosen its yaw at the default rotation, which had just changed), a
-  mirror probe was inconclusive. Three's IBL anisotropy BENDS THE NORMAL (`envmap_physical_pars_fragment.glsl.js:52–56`) — it
-  SHIFTS the reflection, and a gradient statistic measures BLUR. Settled from source + the probe's direction of swing; recorded so.
-- **A harness must not take its operating point from the value it is testing** (the sweep above).
-- **Clipping share is the reading; a mean over a thresholded pixel SET is not** (the set changes with the brightness).
-- **An orthographic front makes a flat mirror face one colour by construction** — a bench artifact; material mode is perspective.
-- **The grain's map doubles roughness — 0.5 is the face roughness ceiling** while the grain is on.
-- Carl: *"the brushed effect really comes alive on the bevel"* — the bevel is the POLISHED material (no anisotropy); what lives
-  there is curvature sweeping the softboxes. Read "more like the bevel" as polish and curve.
-- Scope OPEN (Carl: keep open until asked to lock and test): `scripts/check-typeface-overlaps.mjs`,
-  `components/showcase/lettering-geometry.ts`, `showcase-bench.tsx`, `lettering-material.ts` (named 23 October),
-  `app/proto/showcase/page.tsx`. Protected files untouched; `unlocked` empty.
-- Lint baseline **1 error, 0 warnings**; `tsc` clean. **Servers STOPPED** at the end of this session (port 3000 checked).
+- **Carl's lighting method:** start from the element that is right, bring the others up slowly, one variable — and cut the
+  dials to one per element. Theatre vocabulary lands with him (wings, front of house, McCandless).
+- **The McCandless 45° did not balance on a perspective metal face** — measured; 30° did. A textbook value is a hypothesis.
+- **R3F's renderer setup fails OUTSIDE React** with WebGL disabled (the `Guard` never sees it; it retries every render) —
+  `webglcontextcreationerror` in the CAPTURE phase is the net. Reuse it on any new canvas.
+- **sed with `\n` in a replacement wrote a literal newline** into a script (26 Oct) — the shell-text hazard again; use Edit.
+- **"I read the frame as X" needs measuring before it goes in a record** — the arch's "dark legs" were measured false.
+- Scope OPEN (keep until Carl asks to lock and test): `scripts/check-typeface-overlaps.mjs`, `components/showcase/*`
+  (geometry, bench, material, hooks, section, canvas), `app/proto/showcase/page.tsx`, `app/proto/your-words/page.tsx`.
+  `components/home/corner-canvas.tsx` gained two EXPORTS only (`whenLinked`, `usePrefilteredStudio`). Protected files untouched.
+- Lint baseline **1 error, 0 warnings**; `tsc` clean. **Server STOPPED** (port 3000 checked free).
+- ⚠ **NOT COMMITTED at writing:** `decisions.md` (the collapse, D-098's camera/reverse angle, D-101),
+  `live-work/hero-fusion-spec-15-october.md` (superseded notice), this handoff, `look-threejs-example-26-october.mjs`.
 
 ---
 
-*Written 23 October 2026, end of session. Replaces 22 October session 2's.*
+*Written 26 October 2026, end of session. Replaces 23 October's.*

@@ -202,7 +202,9 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-23 (end) — film 4: "Your company logo" on a round-headed arch (R-090); the side walls smoothed (R-091); pass 2's brushed brass on the line, built and balanced, its full judgement waiting for the viewport and the light; next session: the arch's material.*
+*Last updated: 2026-10-26 (end) — film 4: the arch in brass, its grain as bricks; the page `/proto/your-words` built (a canvas per viewport), viewport 1 lit like a stage and APPROVED (R-092); Carl learning three.js (techniques in the handoff); ⛔ the hero is built ENTIRELY IN CODE (D-101). Next: viewport 2, the arch's travelling light and animation.*
+
+*Previously: 2026-10-23 (end) — film 4: "Your company logo" on a round-headed arch (R-090); the side walls smoothed (R-091); pass 2's brushed brass on the line, built and balanced, its full judgement waiting for the viewport and the light; next session: the arch's material.*
 
 *Previously: 2026-10-23 — film 4's lockup re-tracked: "Your company logo" on a round-headed arch (R-090); the faceted side walls smoothed (R-091); next, pass 2 the material.*
 
