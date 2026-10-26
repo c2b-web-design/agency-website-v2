@@ -12,7 +12,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"C:/Program Files/nodejs/node.exe\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/chunk-scope-guard.js\""
+            "command": "\"C:/Program Files/nodejs/node.exe\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/chunk-scope-guard.js\"",
+            "onFailure": "block"
           }
         ]
       },
@@ -21,7 +22,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"C:/Program Files/nodejs/node.exe\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/verify-front-door.js\""
+            "command": "\"C:/Program Files/nodejs/node.exe\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/verify-front-door.js\"",
+            "onFailure": "block"
           }
         ]
       }

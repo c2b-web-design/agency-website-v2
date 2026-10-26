@@ -7165,3 +7165,29 @@ Carl, approving: *"make sure the Text colour is 4.5:1. It must clearly be legibl
 
 **Unaffected:** the hero is still FILMED as it is built — `/about` §3's film 3 is the PROCESS film of building the hero (Carl curates what is shown), not footage on the page.
 
+
+---
+
+## D-102 — Claude Code Mods: The Builder's Seat Only; The Architect Stays Read-Only
+
+**Date:** 2026-10-26. **Status: APPROVED — a standing rule. No mod is installed or built.**
+**Authority:** Human Founder — Carl: *"The architect will always be read only. Its importance is another pair of eyes and ears. If any mods are to be used or built only you will have access."*
+
+**The rule.** If any Claude Code mod (a plugin running inside Claude Code, released 1 October 2026 in v2.1.287) is used or built, it is loaded in the **Builder's seat only**. ⛔ **Never in the Architect's seat** — a mod runs unsandboxed with the user's full permissions (files, processes, network), so a mod there would give the Architect write capability in fact while its deny rules still read as read-only (the behavioural-boundary case, `ai-system/architect-settings.reference.json.md`).
+
+**Why it matters for the Builder's seat too.** On a personal login (no managed settings, no Team/Enterprise login) a mod can approve a tool call that a `PreToolUse` hook refused — i.e. a mod can get past `.claude/hooks/chunk-scope-guard.js`. ⚠ So a third-party mod is a route around the protected-files lock; any mod is a §5a structural decision and goes to Carl first (docs: code.claude.com/docs/en/plugins/mods/overview, read 26 October 2026).
+
+**Raised, not chosen (the Builder's ranking, 26 October):** a mod of our own holding Carl-run commands (`/servers` to free port 3000 by PID, `/lock-test` to probe the protected files); a governance pane (chunk, locks, handoff, reading count); a build log for the §3 films (timestamped steps → chapter list for Resolve); a hold-and-show guard for risky shell commands.
+
+---
+
+## D-103 — The Two Hooks Fail CLOSED (`onFailure: "block"`)
+
+**Date:** 2026-10-26. **Status: APPROVED — built and tested.**
+**Authority:** Human Founder — Carl: *".claude/settings.json   Please fix."*, then *"Confimation given, proceed."*
+
+**What changed.** Both PreToolUse hooks in `.claude/settings.json` (the scope guard on Edit/Write/NotebookEdit, the verify front door on Bash) carry `"onFailure": "block"` (Claude Code 2.1.295). Before, a hook that crashed, failed to start or timed out ALLOWED the call — the 19 August finding (`live-work/hook-fails-open-finding-19-august.md`): a broken guard was silently absent.
+
+**Tested, one variable at a time, with a temporary probe hook (removed afterwards):** a crash without the setting → the command ran (the finding reproduced); with it → blocked; a missing script → blocked; ordinary commands, an allowed edit → ran; protected files (`.claude/settings.json`, `CLAUDE.md`) → still denied after relocking.
+
+⚠ **The cost, accepted by Carl:** a broken or missing hook now blocks every edit (or every Bash command) until fixed. **Recovery: delete the two `onFailure` lines in `.claude/settings.json` by hand.** ⚠ Settings reload about one tool call late; a call sent in parallel with a settings edit can run on the old settings.
