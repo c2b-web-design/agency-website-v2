@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-093 — Film 4's Page, Viewport 2: The Camera's Journey Round And Through The Arch (`/proto/your-words`, D-088): "Yes, its approved"
+
+**Date:** 2026-10-26
+**Reviewer:** Human Founder
+**Subject:** `/proto/your-words` take 3, viewport 2 — "Your company logo" (the arch) under a moving camera, a ~30.5 s loop on screen only: hold face-on 3 s → orbit 180° 12 s → rest 1.5 s → the flight 14 s: from behind, the aim sliding up to the N's underside, straight up beneath it, the 180° made overhead (≥ 80° up) so the N turns in place, then backing away and tilting level to the start. The 30° lens throughout, no cuts. Light: TOP and BOTTOM directional lamps on the orbit's axis (2, 1) and a BACK PAIR (viewport 1's McCandless placement mirrored behind, 0.7); the studio HDRI the faces' reflection; Neutral tone mapping. The travelling light PARKED.
+
+**Carl's verdicts, verbatim, in order:** *"park the travelling light for now. With me recently discovering cameras can move i think we should implement hemisphere lights, top and bottom."*; *"The camera can start face on and orbit the object. When it reaches the same position but at the back, try flying it through the arch. as it goes through have the camera turn to face the object as move backwards to its original position. As for lights, light it apprpriately for the cameras journey."*; on take 2's doorway: *"As it approaches the arch/doorway from behind there will come a point when the letters are out of view. so as it approaches, tilt the camera upwards to focus on the underside of the N and then as its immediately underneath the N reverse the process…"*; take 3: *"For all intents and purposes to the viewer the logo could be rotating. Its ambiguous. Onlt when the camera moves forward, lokks up and spins and thens puuls out is all ambiguity lost. This looks so good an both unlocks and unleashes bags of potential. To be used both sparingly and appropriately. This was with no cuts or zooming and is nevt level."*; *"Yes, its approved, lol"*.
+
+**Findings:**
+
+- ✔ **Approved** — viewport 2's camera journey (take 3) and its light, seen at Carl's window, dev server. Viewport 1 unchanged (R-092).
+- ✔ Measured (lit mean): front 85.8, back 84.2 with the back pair (60.2 without), side 78.6 (63.7 without the axis lamps); no flight frame black (lowest 7.9% of the frame lit); a real-time recording, no jumps (ffmpeg scene detection); the loop closes on its first frame. Lint at baseline, `tsc` clean.
+- ⚠ The principle, Carl's: camera moves SPARINGLY and APPROPRIATELY. Mid-orbit the 32 px-deep arch reads as a thin line (the geometry). Pace, eases, the linger and thresholds are the Builder's presentation choices.
+- ⚠ Not watched: Carl's GPU; production's frame pacing; phones (mastering, D-094); reduced motion shows the still front (built, not looked at).
+
+---
+
 ## R-092 — Film 4's Page, Viewport 1: "Your Company" Lit From The Wings And Out Front (`/proto/your-words`, D-088): "Yes, its approved"
 
 **Date:** 2026-10-23

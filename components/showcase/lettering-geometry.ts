@@ -500,6 +500,9 @@ export type ArchReading = {
   fits: boolean;
   /** the arch letters' GRAIN angles, degrees from +x, in order — 0 on the legs, the radius on the curve (`grainAngles`) */
   grainDeg: number[];
+  /** the CENTRE OF THE ARCH's CURVE in the lockup's centred coordinates (round: the half-circle's centre, on the spring
+   *  line) — film 4's camera flies through the opening here (`your-words-canvas.tsx`, `Journey`) */
+  curveCentre: { x: number; y: number };
   widthPx: number;
   heightPx: number;
   layoutMs: number;
@@ -607,6 +610,8 @@ export function layoutArch(
       legPx,
       fits,
       grainDeg: arch.map((l) => deg(grain.get(l)!)),
+      // the path's circle is centred at (0, H) for a round head (H = legPx), at (0, 0) for a plain sweep — then centred as the rest
+      curveCentre: { x: -ox, y: legPx - oy },
       widthPx: all.maxX - all.minX,
       heightPx: all.maxY - all.minY,
       layoutMs: performance.now() - t0,
