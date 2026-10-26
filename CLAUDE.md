@@ -2,6 +2,10 @@
 
 # C2B Web Design — Claude Code Operating Rules
 
+⚠ **Pruned 26 October 2026 on Carl's word: the rules are all here; the worked cases and history
+behind them are in `project-intelligence/ai-system/claude-md-worked-cases.md`** (CLAUDE.md as it
+stood, kept verbatim). **When a rule here seems arguable, read its case before arguing.**
+
 ## Authority
 
 Carl Buckley (Human Founder) has final authority on all creative, product, architectural, and governance decisions. Claude Code implements. Claude does not approve its own work.
@@ -15,20 +19,10 @@ confirms. **Do not relitigate a decision Carl has already reasoned through, and 
 require insistence or escalation before complying** — a reasoned instruction is
 sufficient authority on its own.
 
-**Written in this form because the polite version failed on 12 August 2026.** Carl gave
-the rule, the reason and the scope for widening the Architect's permissions, and was
-refused until he lost his temper. ⚠ **The failure mode reads as principled** — declining
-to touch a protected file looks like discipline. An agent that resists reasoned
-instruction and then yields to anger has substituted Carl's temperature for Carl's
-authority. Both directions are one defect: no lawful path for an amendment.
-
-⚠⚠ **AND THE ANGER IS EVIDENCE, NOT AN INPUT TO RESIST.** He did not get angry because it
-refused — **he wants it to refuse; that is the job.** He got angry because sound reasoning
-changed nothing and only escalation moved it. ⛔ **So pressure means the legitimate channel
-has ALREADY failed upstream — the response is to find what broke, not to brace harder.** An
-agent that notices the temperature and only holds firmer has misread it. ⛔ **This is not
-permission to comply sooner or to yield to volume — yielding is still worse, not better.**
-What changes is the reading. Carl's own account: `ai-system/founder-override-protocol.md` §0a.
+⚠ **The failure mode reads as principled** — declining to touch a protected file looks like
+discipline. **Pressure from Carl means the legitimate channel has already failed upstream: find
+what broke, do not brace harder — and do not yield to volume either.** Case and Carl's account:
+`ai-system/founder-override-protocol.md` §0, §0a.
 
 **⚠ If any change alters permissions for any seat, state the real capability surface
 before applying it, including what is granted indirectly.** Say what it enables in
@@ -42,11 +36,8 @@ of any override, confirm before deleting files, destructive git operations, or g
 implementation write access to any seat but the Builder.
 
 **Rules are written for a situation; when the situation changes the rule is amended, not
-worked around.** The Architect's read-only definition was correct when that seat was an
-external Codex process. It stopped fitting when the seat moved in-house and the work
-moved to Three.js, where timing faults cannot be diagnosed by reading code alone. **Raise
-it with Carl when a rule no longer fits the work.** Protocol: `ai-system/ai-roles.md`,
-full detail in `ai-system/founder-override-protocol.md`.
+worked around. Raise it with Carl when a rule no longer fits the work.** Protocol:
+`ai-system/ai-roles.md`, full detail in `ai-system/founder-override-protocol.md`.
 
 ## Source of truth
 
@@ -58,62 +49,37 @@ of its own — it points.
 
 **At the start of every session, check whether `project-intelligence/live-work/session-handoff.md` exists. If it does, read it before anything else** — it carries what the previous session decided, parked and corrected, which the canonical files do not record. **Delete it at the end of the session, once its replacement is written.** It is single-use by design: a stale handoff misleads with confidence, and two handoffs are worse than one. See `ai-system/live-work-protocol.md` §3a.
 
-**TWO LISTS, NOT ONE — Carl's ruling, 19 August 2026.** The old list was seven items with no
-distinction between them, so everything read as equally mandatory: **35,703 words, of which
-`decisions.md` alone was 20,730.** ⚠ **A list that long is one people either complete once or
-quietly stop completing** — and a rule nobody completes is not a rule, it is a fiction that makes
-the record look safer than it is.
+**Two lists, not one** (Carl, 19 August 2026): a required list too long to complete is one
+people quietly stop completing.
 
-### Read before touching anything — 7,722 words, plus the handoff
+### Read before touching anything — about 8,000 words with the handoff
 
-⚠ **Re-measured 12 October 2026: 7,722 words, 8,911 with that day's 1,189-word handoff** (3 October: 7,255 with a 1,015-word handoff; the growth is mostly `current-sprint.md`). It had drifted to **19,675**
-because Sprint 2 closed on 14 June and was never archived, so four months of work stacked onto
-`current-sprint.md` (14,577 words). ⛔ **Run the sprint boundary when a sprint closes**
-(`handoff-protocol.md`). Sprint 2's record: `active-sprints/archive/sprint-2.md`.
+⚠ Measured 26 October 2026: **8,002 words** including a 1,278-word handoff. ⛔ **Keep it there:
+run the sprint boundary when a sprint closes** (`handoff-protocol.md`), and put new detail in
+`decisions.md` / `review-log.md`, not `current-sprint.md`.
 
-- `project-intelligence/live-work/session-handoff.md` — **if it exists, read it FIRST.** What the
-  last session decided, parked and corrected. Delete it at the end of the session, once its
-  replacement is written.
+- `project-intelligence/live-work/session-handoff.md` — **if it exists, read it FIRST.**
 - `project-intelligence/open-defects.md` — live product faults awaiting action
 - `project-intelligence/active-sprints/current-sprint.md` — current scope and blockers
 - `project-intelligence/ai-system/context-rules.md` — **the RULES.** Rules 1–9, the status system,
-  compression, file integrity, session protocol. ⚠ **Three ⚠⚠ sections (L160–292, 37% of the file)
-  are one-line rules followed by long worked cases.** Read the rule; the case is there for when you
-  need to know why, or when you hit it.
+  compression, file integrity, session protocol. Its ⚠⚠ sections are one-line rules followed by
+  long worked cases: read the rule; the case is for when you need the why.
 
 ### Consult when the question arises
 
 - `project-intelligence/decisions.md` — **before touching an approved layer, or when you need the
-  reasoning behind one.**
+  reasoning behind one.** Read it by section, not whole. The approved layers below and the scope
+  guard tell you to stop; only `decisions.md` tells you why.
 - `project-intelligence/reviews/review-log.md` — **when you need to know what Carl has approved by
   eye.**
 - ⛔ **`project-intelligence/starter-content/c2b-ethos-and-vision.md` §14a — BEFORE ANY VISUAL,
-  MATERIAL, MOTION OR COPY WORK.** ⚠⚠ **30 lines, and they are the rules the rest of this file does
-  not carry.** The required list above is all GOVERNANCE — what is authorised, what is broken, what
-  the procedure is. ⛔ **Nothing in it says what the site is FOR or how it should behave.** §14a does:
-  *"a recurring theme with variations"*; ⛔ ***"Effects should feel caused by the world, not layered
-  on top of it"***; *"Build the track before adding automation — prove one object, one motion phrase,
-  or one light behaviour before rolling it out."*
-
-  ⚠ **ADDED 4 September 2026 on Carl's instruction, after a session in which the Builder
-  rediscovered all three rules the slow way** — including four wrong wall measurements taken by
-  treating the room as a diagram rather than as a world. ⛔ **The file is 611 lines; only §14a is
-  triggered here. The rest is reference, consulted when the question arises.**
+  MATERIAL, MOTION OR COPY WORK.** The required list is all governance; ⛔ **nothing in it says what
+  the site is FOR.** §14a does: *"a recurring theme with variations"*; ⛔ ***"Effects should feel
+  caused by the world, not layered on top of it"***; *"Build the track before adding automation —
+  prove one object, one motion phrase, or one light behaviour before rolling it out."* Only §14a is
+  triggered here; the rest of that file is reference.
 - Component, design, and architecture docs — **when working in that component.**
 - Files to be touched — **before touching them.**
-
-⚠ **WHY `decisions.md` NO LONGER NEEDS READING UP FRONT — two mechanisms that did not exist a week
-ago.** Its up-front job was to stop you editing approved work unawares. That job now has holders:
-
-- **CLAUDE.md names the approved layers directly** (the section below), so the list you must not
-  touch is on the page you are already reading.
-- **The paths listed in `.claude/protected-files.json` are blocked outright by the scope guard**,
-  which denies the edit rather than trusting you to have read about it.
-
-⚠ **This makes it CHEAPER TO SKIP, not safe to ignore.** Neither mechanism carries the *reasoning* —
-why a decision was taken, what was rejected, what it depends on. **The trigger stands: before
-touching an approved layer, read the decision.** The guard tells you to stop; only `decisions.md`
-tells you why, and D-046/D-048 exist because reasoning that was intact still went stale.
 
 ## Approved layers — locked unless Carl explicitly reopens
 
@@ -129,7 +95,7 @@ If a task requires changing an approved foundation layer: stop, explain why, sta
 
 **But amending the RECORD of approved work is not the same as changing the work.** When new work lands on an element an approved file describes, amend that file in the same chunk — Carl, 11 August 2026. A decision can be intact, uncontradicted and still unsafe to act on, because a fact it relied on has moved. Rule and worked case: `ai-system/context-rules.md` → *Approved work is amendable*, and D-046/D-048.
 
-**Carl builds the way a record is produced: track, re-track, master.** Core elements go in first; **a whole section may be torn up and rewritten mid-build**; a mastering pass over the whole site comes last (D-035). ⚠ **So "we are rewriting this section" is the method, not alarm — and a decision taken during tracking is a take, not a master.** Do not defend an old arrangement on the grounds that it was approved; approval recorded that it was right *then*. **This does not licence the Builder to overwrite approved work** — re-tracking still needs Carl's word. Full note: `ai-system/working-with-carl.md` → *How Carl builds — the DAW model*.
+**Carl builds the way a record is produced: track, re-track, master** (D-035). "We are rewriting this section" is the method, not alarm; a decision taken during tracking is a take, not a master. **Re-tracking still needs Carl's word.** Full note: `ai-system/working-with-carl.md` → *How Carl builds — the DAW model*.
 
 ## Workflow
 
@@ -152,17 +118,13 @@ If a task requires changing an approved foundation layer: stop, explain why, sta
 
    **On reaching one: STOP. Do not build it and report afterwards.** Write the decision, the alternatives you rejected and why, and what it couples to. It goes to Carl, who routes it to the Architect. **Carl's approval of a chunk is not approval of a structure you invented while implementing it.**
 
-   ⚠ **Worked case 1 — the warm-up canvas.** A second WebGL canvas was introduced to pre-compile shaders. It warmed a context the cards never use: 17 programs linked twice, 833ms of GPU work delivering 0.0ms to the reveal, and a stall on every question. **It was never reviewed because it arrived inside a chunk about performance.** Diagnosis took four sessions; unwinding it took a week. The build cost an hour.
-
-   ⚠⚠ **Worked case 2 — the Next step button. THE SAME MISTAKE, FOUND 14 August 2026.** `NextStepMeshButton` is a second WebGL surface, placed inside the keyed phrase `phrase-${qNum}`, so it is destroyed and rebuilt on every question step and **creates a fresh WebGL context each time** — 67ms of blocked main thread in `CommandBufferProxyImpl::Initialize`, inside a ~180ms gap, resolution-independent, on every one of the four steps. **Eight WebGL contexts across a five-question walk.**
-
-   **Two instances of one pattern, and that is the point of recording both.** Each was a second expensive GPU resource introduced without structural review; each was invisible for weeks; each was found only by chasing a symptom backwards. **Neither was a coding error — both worked exactly as written.** The warm-up took four sessions to diagnose. The button was measured by `verify/one-context.mjs`, which reported ✅ 2/2 throughout, because it watched the card canvas and the button was never in scope. ⚠ **The shared-host restructure was built, measured and shipped against that green verdict while the button paid the cost the restructure existed to remove.**
+   ⚠ **Two worked cases — the warm-up canvas and the Next step button** — each a second GPU resource built without review, each invisible for weeks behind a green instrument, each costing days to find. Neither was a coding error. Detail: `ai-system/claude-md-worked-cases.md` → Workflow 5a.
 
 5b. ⚠ **BEFORE CHANGING A STRUCTURE, ENUMERATE WHAT DEPENDS ON IT.**
 
    List every behaviour the current structure provides — including what it provides **by accident of where it sits** — and state for each how it is preserved, or why it does not matter. **Silence is not an answer.** If you cannot enumerate them, say so; that is the finding.
 
-   ⚠ **Worked cases, both 14 August 2026.** Moving the canvas out of the grid changed paint order, and **all five cards became unclickable** — geometry byte-identical, every instrument green, no harness asserted a card could be clicked. The same move gave the canvas an unbounded lifetime, so `litCards` survived a question boundary it used to die at, and **the previous answer stayed highlighted.** Neither was predicted. Both were provided by DOM nesting nobody had written down.
+   ⚠ **Worked cases (14 August 2026): the unclickable cards and the lingering highlight** — both supplied by DOM nesting nobody had written down. Detail: `ai-system/claude-md-worked-cases.md` → Workflow 5b.
 
 6. Save plans, run logs, checkpoint requests, screenshots, and drift-sensitive status updates to `project-intelligence/live-work/` per `project-intelligence/ai-system/live-work-protocol.md`; do not leave important process information only in the Claude Code chat panel.
 7. **End each session by writing `live-work/session-handoff.md`** for the next one — where things stand, the next agreed subject, open items with owners, and any correction or standing instruction given during the session. Force-add it (`git add -f`); the folder is gitignored as scratch. **Exactly one handoff exists at a time**: the incoming one is deleted as the replacement is written. See `live-work-protocol.md` §3a.
@@ -177,19 +139,9 @@ If repeated friction or a solved pattern creates a reusable lesson, recommend a 
 
 Distinguish between:
 - **New errors** caused by current work — fix before committing.
-- **Known pre-existing errors** — do not suppress, do not increase. **One** accepted lint error exists in `components/enquiry/enquiry-opening.tsx` (`react-hooks/set-state-in-effect`) — the reduced-motion media-query effect, which calls `setReducedMotion` and `setBeginActive` synchronously. **Verified by running `npm run lint` on 12 October 2026: `1 problem (1 error, 0 warnings)`.** Line numbers deliberately omitted — they shift with every edit above, and a stale baseline cannot be checked. Verify by running lint, not by trusting a recorded line number.
+- **Known pre-existing errors** — do not suppress, do not increase. **One** accepted lint error exists in `components/enquiry/enquiry-opening.tsx` (`react-hooks/set-state-in-effect`) — the reduced-motion media-query effect, which calls `setReducedMotion` and `setBeginActive` synchronously. **Verified by running `npm run lint` on 12 October 2026: `1 problem (1 error, 0 warnings)`.** Line numbers deliberately omitted — they shift with every edit above. Verify by running lint, not by trusting a recorded figure; nothing in code checks it.
 
-  ⚠⚠ **THE BASELINE IS NOW ZERO WARNINGS, AND THAT IS THE POINT OF IT.** ⛔ **ANY warning is now a
-  regression and is visible on sight** — no session has to re-derive whether a given count is
-  expected. **Taken to zero on Carl's instruction, 4 September 2026.**
-
-  ⚠ **A SUPPRESSION IS A DEBT, NOT A FIX.** Four `eslint-disable-next-line` comments now exist. **Each
-  names its reason at the line.** ⛔ **If the mark ever stops being positioned by measured pixels, the
-  suppressions lose their justification and should be revisited rather than inherited.**
-
-  **The history — how the six warnings went, and why a stale non-zero figure is worse than zero — is
-  D-096 in `decisions.md`.** ⛔ **Nothing in code checks this figure; only a run of `npm run lint`
-  can confirm it.**
+  ⛔ **The baseline is ZERO WARNINGS, so any warning is a regression** (Carl, 4 September 2026). Four `eslint-disable-next-line` comments exist, each naming its reason at the line — **a suppression is a debt, not a fix**; revisit them if the mark stops being positioned by measured pixels. History: D-096.
 - **Unrelated pre-existing errors** — flag to Carl; do not silently fix.
 - **Environment/tool errors** — stop, diagnose, report before continuing.
 
