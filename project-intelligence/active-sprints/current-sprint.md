@@ -77,7 +77,8 @@ and pushed as of 26 October 2026** (tree clean, level with `origin/main`) — ch
 
 | Workstream | State | Record | Open |
 |---|---|---|---|
-| ⛔ **Film 4 — "Your words, given form"** (`/proto/your-words`, `/proto/showcase`) — CURRENT | The arch and the line in brushed brass; two viewports, a canvas each; **viewport 1 APPROVED** under stage light | D-088 (22–26 Oct), R-088 – R-092 | **Viewport 2 (the arch): its travelling light and animation — Carl to describe.** Sending the link vs `app/robots.ts` (Carl); `/proto` noindex at launch |
+| ✔ **Film 4 — "Your words, given form"** (`/proto/your-words`, `/proto/showcase`) | **THE PAGE APPROVED WHOLE** (R-094): viewport 1 the line under stage light (R-092); viewport 2 the arch under a moving camera — orbit, the tilt under the N, the pull-out — lit by lamps on the orbit's axis and a back pair (R-093); the brushed brass approved under both. The travelling light PARKED | D-088 (22–26 Oct), R-088 – R-094 | ✔ The link is NOT sent — Carl: *"We will just use the film in About."* (26 Oct; `app/robots.ts`'s 28 July position stands); `/proto` noindex at launch; the film's edit (~4:22 unique footage + the approved page's final take, 39.5 s) |
+| **The camera bench** (`/proto/camera`, proposed) | Carl's method for every shot — describe, perform on the Xbox pad, refine (D-104); the bench's structural note v2 (reserved tracks) | D-104; `live-work/structural-note-camera-bench-26-october.md` | **With Carl for the Architect** — nothing built |
 | **The hero** (home) | **D-101: built ENTIRELY IN CODE**; the film plan superseded as medium | D-098, D-101 | To be designed — camera and triggers Carl's; the build is §5a. Carries the cold-deep-link freeze (~0.75 s, D-100) |
 | The desk mark (`/about` §2 → §3) | The journey end to end, tied to the scroll, its light directed | D-088, R-033 – R-041 | A jump drops in dark; the runway's length and the lag are takes |
 | `/about` §3, the films and the viewer | Boxes 2 × 2, the viewer, the same logo falling in | D-088, R-086, R-087 | `structural-note-viewer-on-about-21-october.md` to amend (Builder) |
@@ -119,6 +120,6 @@ None. The four 18 September blockers (all resolved or withdrawn) are preserved i
 
 ---
 
-*Last updated: 2026-10-26 — PRUNED on Carl's instruction: 7,407 words → one summary per workstream; the
-narrative, the Completed table and the update footers moved verbatim to `archive/sprint-3-detail.md`. Next:
-film 4's viewport 2, the arch's travelling light and animation.*
+*Last updated: 2026-10-26 (later) — film 4 APPROVED WHOLE (R-092 – R-094): viewport 2 the camera journey; the camera bench proposed (D-104). Before that: PRUNED on Carl's instruction: 7,407 words → one summary per workstream; the
+narrative, the Completed table and the update footers moved verbatim to `archive/sprint-3-detail.md`. Next: Carl's — the camera bench's note is with him for the
+Architect; the order on record (22 October) is film 4 → the hero → the films' edit → Send → mastering.*

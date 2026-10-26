@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-094 — Film 4's Page Whole: Both Viewports, The Brass Under Their Light (`/proto/your-words`, D-088): "They Are Approved"
+
+**Date:** 2026-10-26
+**Reviewer:** Human Founder
+**Subject:** `/proto/your-words` as it stands at `d43ae96` — viewport 1 (R-092: "Your company", static, the wings and front pair) and viewport 2 (R-093: "Your company logo", the camera's journey, the axis lamps and back pair) together, and the brushed brass (pass 2 on the line and the arch) as it reads under each light.
+
+**Carl's verdict, verbatim:** *"I an happy with the logo viewports. they are approved."*
+
+**Findings:**
+
+- ✔ **Approved** — the page whole. ⚠ This also settles pass 2's material (the line's and the arch's brushed brass, brick grain on the arch), which had positive verdicts only: Carl's 23 October condition — *"Its only when a combination of the HDRI and light are applied will will get a true indication"* — is now met and approved under both lights.
+- ✔ The link is NOT sent (Carl, the same day: *"We will just use the film in About."*) — `app/robots.ts`'s 28 July position stands; film 4 is seen through `/about` §3's box 4. The approved page filmed as one clean take (viewport 1 held, the scroll, the full journey; 39.5 s, 1080p30): `Videos\C2B Films\04 Extruded lettering\05 Page - Two viewports\2026-10-26_page-APPROVED-R094_final-take_1080p30.mp4`.
+- ⚠ Still Carl's: `/proto` noindex at launch; the page's tone mapping (Neutral, a judging choice — approved as seen).
+- ⚠ Not watched: Carl's GPU; production; phones (mastering, D-094).
+
+---
+
 ## R-093 — Film 4's Page, Viewport 2: The Camera's Journey Round And Through The Arch (`/proto/your-words`, D-088): "Yes, its approved"
 
 **Date:** 2026-10-26

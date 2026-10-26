@@ -7196,3 +7196,14 @@ Carl, approving: *"make sure the Text colour is 4.5:1. It must clearly be legibl
 **Tested, one variable at a time, with a temporary probe hook (removed afterwards):** a crash without the setting → the command ran (the finding reproduced); with it → blocked; a missing script → blocked; ordinary commands, an allowed edit → ran; protected files (`.claude/settings.json`, `CLAUDE.md`) → still denied after relocking.
 
 ⚠ **The cost, accepted by Carl:** a broken or missing hook now blocks every edit (or every Bash command) until fixed. **Recovery: delete the two `onFailure` lines in `.claude/settings.json` by hand.** ⚠ Settings reload about one tool call late; a call sent in parallel with a settings edit can run on the old settings.
+
+---
+
+## D-104 — How A Camera Shot Is Made: Carl Describes, Performs On The Pad, Then We Refine
+
+**Date:** 2026-10-26. **Status: APPROVED — the working method (Carl's). The tool for it is PROPOSED, not built.**
+**Authority:** Human Founder — Carl: *"Heres how we should do it. i explain to you verbally what the shot is. If it uses multiple cameras we break it down in chunks. I execute the movement to get us in the ballpark. We then discuss, fine tune and edit."*
+
+**The method.** (1) Carl describes the shot in words — recorded as given; (2) a shot with several cameras is broken into chunks, one camera each; (3) Carl PERFORMS the move on his Xbox controller to get it into the ballpark; (4) together: discuss, fine-tune, edit (keyframes, timing, eases, the lens). The camera's direction is Carl's; the Builder builds the instrument and the playback. Camera moves are used *"sparingly and appropriately"* (R-093).
+
+**The instrument:** a camera bench driven by the pad (Gamepad API), the shot as DATA the page plays — structural note `live-work/structural-note-camera-bench-26-october.md` (v2, PROPOSED, for the Architect; v2 reserves the lens, roll, shift, exposure, shake, focus, aperture and look-at tracks). ⚠ Answered with it: a camera CAN be zoomed after the event — nothing is baked; the lens is one more editable track (a zoom and a dolly frame alike but are not the same picture).
