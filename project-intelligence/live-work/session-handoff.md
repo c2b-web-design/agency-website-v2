@@ -5,12 +5,19 @@ end of the session that reads it, once its replacement is written. Detail: **D-1
 CARL") — read it, it is the session's record.
 
 
+## ⛔ NEXT SESSION — Carl's words
+
+*"Ive got more ideas how we can improve this tool, we will discuss next session. One of them is the ability to put the camera
+in third person mode. If i could view its movement from afar, much like the light helpers that would be a great benefit."*
+→ START BY DISCUSSING his ideas; the THIRD-PERSON VIEW first (a second viewpoint in the one canvas = §5a, as T2's PiP).
+Locks: no protected file opened; tested (a probe of `about-card-glass.ts` REFUSED). The five bench files LOCKED and tested (5 of 5 probes refused).
+
 ## ⛔ THE PROCESS THAT WORKS (found late, Carl: "i describe, you show me in clay we iterate")
 
 Carl describes a move → the Builder calculates → edits `components/showcase/bench-builder-take.ts` (bump `version`) → the bench
 puts the take on his timeline BY ITSELF (a new version replaces the last) → Carl iterates. ⛔ NEVER console, file picker or a
 list (all rejected). **✔ THE VADER MOVE APPROVED at take 4** (R-096; Carl: *"thats fixed it. 4 takes and weve got it to where it wanrs to
-be"*): a BARREL shape (roll added to the bench); takes 2–4 were his notes. ⚠ Uncommitted; the harnesses carry no barrel
+be"*): a BARREL shape (roll added to the bench); takes 2–4 were his notes. ✔ COMMITTED AND PUSHED `3bf5c6f` (clean-checkout build passed). The harnesses carry no barrel
 checks yet; motion blur raised, not chosen. Next: Carl's.
 
 ## ⛔ WHERE THINGS STAND (earlier in the session)
@@ -27,7 +34,7 @@ checks yet; motion blur raised, not chosen. Next: Carl's.
   (*"Get creative, you decide"*): "Your company" — out and square on to YOUR, down past P / M, landing on the C; 16.6 s.
 - ⚠ At the landing the C rises out of the top of the frame (old clip 1's end is 10 cm up, level) — an obvious iteration.
 
-## BUILT THIS SESSION — ALL UNCOMMITTED (`git status`: the four bench files, decisions.md, current-sprint.md, the harnesses)
+## BUILT THIS SESSION — committed and pushed in `3bf5c6f` (`git status`: the four bench files, decisions.md, current-sprint.md, the harnesses)
 
 1. **Shape clips, chain v3** (note `structural-note-shape-clips-27-october.md` v3.2, three reviews; plan
    `plan-shape-clips-27-october.md` v2.1, two reviews): a clip carries samples OR a shape; the chain carries its units
@@ -47,7 +54,7 @@ checks yet; motion blur raised, not chosen. Next: Carl's.
 ## ⛔ OPEN — with owners
 
 - **Carl:** fly take 1, iterate. Then: commit? (not asked yet — **do not commit without his word**; clean-checkout build first).
-- **Scope:** `chunk-scope.json` chunk `shape-clips`, the four bench files OPEN (the moves route was added, then deleted — remove it from `files` at close) (Carl: *"Keep open until i ask you to close.
+- **Scope:** the bench files LOCKED and tested at hand-over (Carl: "yes, close them"); `chunk-scope.json` stays LOCAL.
   Then lock and test."*) — close + probe when he says.
 - **Raised for later (Carl's):** the third-person camera view (*"Like the light helpers in WebGL"*); a speed spline editor;
   signature moves (a drop-down); T1b; R2; the PiP. The inspector runs below the fold at full length (for his eye).
