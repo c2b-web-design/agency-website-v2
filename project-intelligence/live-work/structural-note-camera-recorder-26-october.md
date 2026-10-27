@@ -1,6 +1,11 @@
-# Structural note: THE CAMERA BENCH REDESIGNED AS A RECORDER (record / stop, chunks as clips, punch-in), 26 October 2026, VERSION 3
+# Structural note: THE CAMERA BENCH REDESIGNED AS A RECORDER (record / stop, chunks as clips, punch-in), 26 October 2026, VERSION 3.1
 
-**For:** Carl, to route to the Architect. **Status:** **v3 PROPOSED, nothing of it built.** v2.2 (below the v3 section)
+**For:** Carl, to route to the Architect. **Status:** **v3.1 PROPOSED, nothing of it built; Carl's five answers folded in
+(27 October, "Carl's answers" at the end of the v3 section); the Architect's review of v3 (C1–C11) folded in as v3.1,
+transcribed by the Builder in `live-work/architect-plan-response-camera-tracks-27-october.md`.** Its three points for
+Carl (C3, C8, C11) ANSWERED, 27 October: Overwrite retired, a run-on covers as a new take, a selection plays solo, T1
+split into T1a / T1b; and D5 (the v1 copy kept until Carl says otherwise). The Architect's check of the fold-in (D1–D5)
+folded in. All of Carl's words: "Carl's answers", answers 1–10. v2.2 (below the v3 section)
 was APPROVED and is BUILT as R1 (D-104); it stays as the record of what R1 is. The DESIGN is Carl's; this note is the
 Builder's account of what it changes structurally, the alternatives, and what the current bench provides that must
 survive (CLAUDE.md §5b). It amends `structural-note-camera-bench-26-october.md` (v3).
@@ -38,22 +43,22 @@ DISCARDS its tail; later clips SHIFT in time by the difference. Both are what Ca
 | **Clips at times** | A clip has its own START time on the shot's clock. Nothing ripples: recording, moving or deleting one clip never moves another (Resolve's overwrite edit, not a ripple) |
 | **⛔ PRECEDENCE** | At any moment, the HIGHEST track with a clip there plays. Cam 2 over Cam 1, Cam 3 over both. Every change of playing track is a CUT. Cam 1's clips underneath are untouched: delete or trim the Cam 2 clip and Cam 1 is seen again (Carl: *"Cam 1 is non destructive"*) |
 | **Recording** | Arm a track (its header, as a DAW's record-arm), put the playhead, fly to frame, **A**. The take lands on the ARMED track at the PLAYHEAD and may run past every other clip (Carl: *"2. yes"*). The camera is still the ONE bench camera; a track is a label on the clips it holds |
-| **Same track, over a clip: a NEW TAKE** | Recording where the armed track already has a clip makes a NEW TAKE ON TOP of it; the old one is KEPT underneath. Inside a track the NEWEST take covering a moment plays (Logic's default comp), and the old take plays again where the new one ends. ⛔ Not R1's punch-in: nothing is cut or discarded. **Overwrite** stays as the deliberate step for THIS case only (Carl: *"a deliberate act"*). Recording onto an empty stretch, or onto a HIGHER track, needs no Overwrite: that is Carl's "put the playhead ... record" |
-| **Expandable** | A track collapses to one row (what it plays) or expands into its TAKE LANES, one per recording pass, oldest at the bottom (Carl: *"Are the take lanes expandable"*: yes). Lanes are a VIEW of the takes, packed for display; there is no separate "take" record |
+| **Same track, over a clip: a NEW TAKE** | Recording where the armed track already has a clip makes a NEW TAKE ON TOP of it; the old one is KEPT underneath. Inside a track the NEWEST take covering a moment plays (Logic's default comp), and the old take plays again where the new one ends. ⛔ Not R1's punch-in: nothing is cut or discarded. **(v3.1) OVERWRITE IS RETIRED** (Carl, [C3]: *"Drop it (Recommended)"*): A on the armed track ALWAYS records at the playhead, and a recording that RUNS ON into a clip covers it as a new take (Carl: *"Cover it, as a new take (Recommended)"*) |
+| **Expandable** **(v3.1, [C4])** | A track collapses to one row (what it plays) or expands into its TAKE LANES: **ONE LANE PER RECORDING PASS** (each clip its own lane, by `order`, the newest on top), as Logic's take folder (Carl: *"Are the take lanes expandable"*). ⛔ NOT packed (v3 said both; packing would put takes that do not overlap on one lane). Still a VIEW of `order`; no separate "take" record |
 | **⛔ MOVABLE** | Drag a clip along its track to change its start. **Snapping** to the playhead and to every clip edge on any track (Resolve's snap), the Builder's default |
-| **Gaps** | A moment with NO clip on any track is MARKED on the timeline. Playback through a gap HOLDS the last picture and the status says "gap" (the Builder's reading of *"As long as theres an image there"*). The hand-off reports gaps; it does not invent a picture |
-| **Joins** | Between tracks: a CUT. Inside a track, two clips that touch: a MISMATCH as R1 shows it, which the Builder compensates at hand-off |
+| **Gaps** | A moment with NO clip on any track is MARKED on the timeline. Playback through a gap HOLDS the last picture and the status says "gap" (the Builder's reading of *"As long as theres an image there"*; Carl's answer 4). **(v3.1, [C6]) No picture before T → the first one AFTER T.** The hand-off reports gaps; it does not invent a picture |
+| **Joins** **(v3.1, [C2])** | A JOIN is any moment where `sourceAt` CHANGES what plays, never "two neighbouring clips". Three kinds: **between tracks**, a CUT; **inside a track, a new take's START and END over an older take** (the old one is left mid-move and resumes mid-move: the commonest joins in the take model); **inside a track, two clips that touch**. The last two are MISMATCHES (distance, angle), shown on the timeline as R1 shows them, and compensated by the Builder at hand-off |
 | **Numbering** | Per track, in time order: "Cam 2 · 3". Renumbered after a move or a delete (Carl: *"sequential"*) |
-| **Selection, Delete, Play** | As R1, across tracks. Play plays the shot with precedence, or the selection |
+| **Selection, Delete, Play** | As R1, across tracks. Play with nothing selected plays the shot WITH PRECEDENCE; **(v3.1, [C8]) a selection plays SOLO** (what was selected, even where a higher track covers it, as a clip opened in Resolve's SOURCE VIEWER; the timeline, nothing selected, plays the edit. Carl: *"The clip solo (Recommended)"*). ⚠ *Corrected by the Architect, 27 October [D1]: Resolve has no solo-on-select; its timeline always plays the edit* |
 | **To the end / step** | The end is the latest clip end on any track; `,` `.` step between every clip edge on every track (the edit points) |
 
 ### ⛔ The structural decisions (§5a)
 
 **v3-1. The data: clips PLACED IN TIME, in a flat list, plus the list of tracks.** A clip becomes
 `{ id, cam, start, order, samples }`: `start` its place on the shot's clock, `order` its recording order (the take
-precedence inside a track). The timeline holds `tracks` (camera numbers, bottom to top) so an empty, armed track exists.
-- **Rejected: nested tracks → takes → clips.** A take is a view (lanes are packed for display), so storing it would be
-  a second source of truth for what overlaps what.
+precedence inside a track). **With trim (Carl's answer 1): plus `in` / `out`**, the span of its samples it shows. The timeline holds `tracks` (camera numbers, bottom to top) so an empty, armed track exists.
+- **Rejected: nested tracks → takes → clips.** A take is a view (the lanes are a view of `order`, [C4]), so storing it
+  would be a second source of truth for what overlaps what.
 - **Rejected: keep R1's end-to-end chain and add a track field.** Precedence needs clips that OVERLAP in time; an
   end-to-end list cannot hold two clips at the same moment.
 
@@ -63,13 +68,15 @@ timeline's "what plays" row all read it, never their own copy.
 
 **v3-3. The version moves: `CHAIN_VERSION` 2, and R1's chains are MIGRATED, not refused.** A v1 reader would misread v2
 (the [A2] rule for moving it). The bench reads v1 by laying its clips end to end at their summed starts, each on its
-camera's track, `order` = its index: **R1 takes play exactly as before.** The v1 key is read once and the v2 key written,
-the v1 copy LEFT, so nothing is lost if v2 has a fault.
+camera's track, `order` = its index: **R1 takes play exactly as before** (proven by number, [C5]). The v1 key is read once
+and the v2 key written. ⛔ **(v3.1, [D5]) THE v1 COPY STAYS UNTIL CARL SAYS OTHERWISE** (Carl: *"Only when I say so
+(Recommended)"*, answer 10): it holds his pad flights, and until R2's download exists it is the only way back from a
+migration fault the parity check missed. The bench NEVER removes it on its own; the doubling is accepted (C7 counts it).
 
 **v3-4. Trim, the Builder's recommendation for Carl.** *"Cuts can be made easier"* is, in Resolve, dragging a clip's EDGE
 as well as the clip: shorten Cam 2's clip and the cut to Cam 1 comes earlier. That needs a clip to show PART of its
 samples: `in` and `out` over the samples, the samples never cut (non-destructive). **Without trim, a cut can only be moved
-by moving the whole clip.** Carl's call whether it is in the first stage.
+by moving the whole clip.** ANSWERED: in T1 (Carl's answer 1), built in T1b; the data carries `in` / `out` from T1a.
 
 **v3-5. The PICTURE-IN-PICTURE: a second three.js CAMERA in the ONE canvas, drawn by SCISSOR.** While recording a higher
 track, a small inset shows what the tracks BELOW play at the same moment (the A-roll under the B-roll), so Carl can time
@@ -93,33 +100,83 @@ stick clicks. **The Builder recommends Start cycles the armed track**, so a B-ro
 | Clip time = the sum of the lengths before it (`clipStarts`, `locate`) | **Replaced** by each clip's `start`; `locate` becomes `sourceAt` (v3-2) |
 | The punch-in cuts the clip under T and DISCARDS its tail; later clips SHIFT | **Replaced**: a new take on top, nothing cut, nothing shifts. ⚠ A real change Carl will feel: a long punch-in over clip 3 now COVERS clips 4 and 5 on that track where it once pushed them later |
 | "New camera" labels the next clip Cam 2 | **Becomes ADD A TRACK** (Cam 2 above, armed) |
-| Overwrite: required to record anywhere inside the chain | **Narrowed**: only over a clip on the ARMED track |
+| Overwrite: required to record anywhere inside the chain | **(v3.1) RETIRED** (Carl, [C3]): nothing is destroyed, so A always records; the button, its arm state, its status lines and its harness checks go |
 | One lane, renumbered globally | Per-track numbering; tracks collapse / expand |
 | Joins: a cut where the camera changes, otherwise a mismatch | **Kept**, read from what plays (precedence) |
 | The halt where a clip ends (the next clip starts where the last stopped) | **Kept** |
 | The Sampler (60 a second, the clamped clock), hidden tab stops a recording, a failed save shown | **Kept unchanged** |
 | `refined` / `comp` reserved for R2 | **Kept reserved.** Comping (choosing which take plays across a range, a cut or a crossfade) writes into `comp` later; until then the newest take plays |
 | The fly rig, the pad map (27 October), the floor, the grid, the readouts | **Unchanged** |
-| `window.__cameraBench` (`clips`), the 58-check page harness, the 17-check chain check | Extended with tracks, start, order; the punch-in checks REWRITTEN for takes; new: precedence, gaps, move, migration |
-| The autosave key `c2b-camera-bench-chain-v1` | A v2 key; v1 migrated, left in place (v3-3) |
+| **(v3.1, [C1]) R3F's AUTOMATIC RENDER** (it draws after the frame callbacks) | **T1: unchanged.** ⚠ **T2 (the PiP) TAKES IT OVER**: a priority `useFrame` calling `gl.render` twice stops R3F's own render for the whole canvas. Dependants: `LetteringPiece`'s ready report (`lettering-piece.tsx`, the `useFrame` that reports "this frame draws the piece ... straight after the callbacks"). And the canvas's CONTEXT-LOSS history (`camera-bench.tsx`, the `webglcontextlost` handler; the fault the 26 October handoff left open) is a reason to change render ownership carefully. ⛔ **T2's plan must list every value set per frame FROM THE CAMERA** (today: the 10 cm lines' thickness from `st.camera`'s distance to the focus object) and, for each, re-set it between the two passes or accept it wrong AND SAY SO on screen |
+| `window.__cameraBench` (`clips`), the 58-check page harness (52 at R1; six added 27 October for the re-mapped pad, the trigger pace and the floor stop: run 58/58, D-104), the 17-check chain check | Extended with tracks, start, order; the punch-in checks REWRITTEN for takes; new: precedence, gaps, move, migration |
+| The autosave key `c2b-camera-bench-chain-v1` | A v2 key; v1 migrated and KEPT until Carl says otherwise (v3-3, [D5]) |
 | Film 4's page, `LetteringPiece`, `shot-format.ts` | **Untouched**. ⚠ The format's "N cameras + a cut track" now MATCHES the bench: each track a camera, the cut track read from precedence. The hand-off becomes simpler, not harder |
+
+### (v3.1) The Architect's review of v3, folded in
+
+Verdict: *"Sound in principle, but not ready to build."* C2 (joins) and C4 (take lanes) are in the Behaviour table, C1 in
+§5b. The rest:
+
+- **[C3] OVERWRITE — ANSWERED (answers 6, 7): RETIRED; a run-on covers as a new take.** It guarded a DESTRUCTIVE act
+  (R1's punch-in discarded a tail); in v3 nothing is lost.
+- **[C5] Edges:** every clip's span is HALF-OPEN, `[start, end)`, trimmed spans too, with `EDGE_S` (R1's boundaries are
+  sums of sixtieths, 2e-15 s off). ⛔ **THE MIGRATION PROVED BY NUMBER:** v1 `poseAt` against v2 `sourceAt` at every
+  sample time and every boundary of a real R1 chain: **"identical" = every field within 1e-9** (degrees, `d` units,
+  seconds; v1 sums `clipStarts` where v2 stores `start`, so the arithmetic paths differ and bit-exactness is not
+  promised). A wider difference FAILS the check.
+- **[C6] A gap with no picture before it:** hold the last picture BEFORE T; if there is none, the first one AFTER T.
+- **[C7] Storage. MEASURED 27 October:** `localStorage` holds **5,242,880 characters per origin** (keys + values;
+  Playwright's Chromium, Carl's Chrome's engine, not his browser). At ~260 KB per recorded minute: ~20 minutes per origin,
+  and covered takes are KEPT, so the chain only grows. ⚠ **Carl's current chain size: not yet measured** (it is in his
+  browser; a console line, to Carl; carried in the handoff with Carl as owner). **A failed v2 write during migration:**
+  v1 is KEPT, the failure SHOWN on screen, and the bench runs on the migrated chain IN MEMORY (nothing is lost; the next
+  good save writes v2). ⚠ **The v1 copy is never removed by the bench** ([D5], answer 10), so the quota holds v1 + v2:
+  Carl's R1 takes count TWICE against the ~20 minutes until he says v1 may go.
+- **[C8] Play the selection — ANSWERED (answer 8): SOLO**, as a clip opened in Resolve's Source viewer (⚠ [D1]: not
+  "Resolve's solo-on-select", which does not exist).
+- **[C9] Limits:** `start ≥ 0` on a move and a left-edge trim; a trimmed clip at least ONE SAMPLE INTERVAL (1/60 s) long;
+  T1 never stores an empty clip (as R1).
+- **[C10] Start while recording** does nothing, and the status says why (as A does).
+- **[C11] T1 split — ANSWERED (answer 9): yes.** **T1a, the model** (v3-1 to v3-3, `sourceAt`, the migration, arm and record at the
+  playhead, precedence, takes on top, gaps; proven by the chain check and the R1 parity check; Carl flies it), then
+  **T1b, the editing** (expand to take lanes, move with snapping, trim, per-track numbers). The Builder agrees: T1a is
+  where a structural fault would show.
+- **Track REORDERING** (dragging a whole track up or down, which changes precedence; one reading of *"be movable"*) is
+  **OUT of T1**, the Builder's reading of Carl's answer 2 (*"Along its track only"*); Carl to correct.
 
 ### Stages (the Builder's proposal: prove the track before the extras, ethos §14a)
 
 | Stage | Builds |
 |---|---|
-| **T1, THE TRACKS** | v3-1 to v3-3; tracks, arming, record at the playhead, precedence, takes on top (newest plays), expand to take lanes, move with snapping, gaps marked, per-track numbers, migration. Trim if Carl puts it here (v3-4) |
+| **T1a, THE MODEL** **(v3.1, Carl: *"Yes: T1a then T1b (Recommended)"*)** | v3-1 to v3-3; `sourceAt`, the migration (proven by the R1 parity check, [C5]), tracks, arming (and Start), record at the playhead, precedence, takes on top (newest plays), the three joins ([C2]), gaps marked and held, Overwrite retired. The data carries `in` / `out` from the start (T1b uses them). **Carl flies it** |
+| **T1b, THE EDITING** | Expand to take lanes (one per pass, [C4]), move along a track with snapping, TRIM, per-track numbers. Track REORDERING out of T1 |
 | **T2, THE PiP** | v3-5, measured |
 | **Then** | Comping (R2's `comp`), the hand-off and return (R2), as before. Order Carl's |
 
-### Open (Carl's)
+### Carl's answers (27 October 2026, the question dialog; his choices verbatim)
 
-1. **Trim (v3-4)** in T1, or later?
-2. **Move between tracks:** dragging a clip up from Cam 1 to Cam 2 (Resolve allows it; it changes which camera the move
-   belongs to). The Builder's default: **time only in T1**.
-3. **Arming on the pad (v3-6):** Start cycles the armed track?
-4. **Gaps (above):** hold the last picture and say "gap", or show black as Resolve does?
-5. The order of T1 / T2 against the hand-off (R2).
+1. **Trim (v3-4): *"Yes, in T1 (Recommended)"*.** A clip is `{ id, cam, start, order, in, out, samples }`: `in` / `out`
+   over its samples, the samples never cut; dragging an edge moves `in` or `out` (and `start` with `in`, so the picture
+   under the playhead does not slide). Precedence (v3-2) reads the TRIMMED span.
+2. **Move between tracks: *"Along its track only (Recommended)"*.** T1 moves a clip in time on its own track.
+3. **Arming on the pad (v3-6): *"Start cycles the armed track (Recommended)"*.** Start steps the record-arm Cam 1 → Cam 2
+   → … → back; the track header arms it too. ⚠ A track can be ADDED only on screen (Start never creates one).
+4. **Gaps: *"Hold the last picture (Recommended)"*.** The picture holds, the status says "gap", the timeline marks it.
+5. **The order:** Carl, after the client film: *"we will move on to additional camera take lanes"* — **T1 next**; T2 (the
+   PiP) and R2 after, order his.
+
+On the Architect's review of v3 (C3, C8, C11), the same dialog, 27 October:
+
+6. **Overwrite ([C3]): *"Drop it (Recommended)"*.** Retired.
+7. **A run-on into a clip ([C3]): *"Cover it, as a new take (Recommended)"*.**
+8. **Play a selection ([C8]): *"The clip solo (Recommended)"*.** (The option's description cited "Resolve's
+   solo-on-select"; ⚠ corrected by the Architect [D1]: the parallel is Resolve's Source viewer. Carl chose on the
+   behaviour.)
+9. **Chunking ([C11]): *"Yes: T1a then T1b (Recommended)"*.** Track reordering out of T1 (stated in the option).
+
+On the Architect's check of the fold-in ([D5]):
+
+10. **The v1 copy: *"Only when I say so (Recommended)"*.** Kept alongside v2; never removed by the bench.
 
 ---
 

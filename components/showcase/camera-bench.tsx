@@ -1,11 +1,13 @@
 "use client";
 
 /**
- * ⛔ THE CAMERA BENCH — R1, THE RECORDER (`/proto/camera`; D-104). The plan `live-work/plan-camera-recorder-r1-26-october.md`
- * v2.3 (five rounds of the Architect's review; Carl: *"Approved and proceed"*), under the approved note
- * `live-work/structural-note-camera-recorder-26-october.md` v2.2. Carl's design: *"A should start the tracking of the movement
- * and pressing it again should stop it"*; chunks as CLIPS; a deliberate OVERWRITE before a punch-in; new cameras as cuts; the
- * chain handed to the Builder to refine (R2). Chunk 1's keyframes are RETIRED (the keys, the key table, the key clock).
+ * ⛔ THE CAMERA BENCH — the RECORDER (`/proto/camera`; D-104). R1 (`live-work/plan-camera-recorder-r1-26-october.md` v2.3):
+ * Carl's *"A should start the tracking of the movement and pressing it again should stop it"*; chunks as CLIPS. ⛔ T1a, CAMERA
+ * TRACKS (`live-work/plan-camera-tracks-t1a-27-october.md` v2, under the note `structural-note-camera-recorder-26-october.md`
+ * v3.1; Carl: *"Approved. Proceed"*): a TRACK PER CAMERA, clips PLACED IN TIME, the TOP track plays (Resolve's A / B roll),
+ * a recording over a clip is a NEW TAKE on top (nothing destroyed; R1's Overwrite and punch-in RETIRED), a selection plays
+ * SOLO, gaps HOLD the last picture. R1's saved chains are MIGRATED and PROVEN on load (`loadChain`). The chain is handed to
+ * the Builder to refine in R2. Chunk 1's keyframes are RETIRED.
  *
  * - ⛔ THE ARCH (R-093's scene) is drawn by the SHARED `LetteringPiece` — one mechanism with the page.
  * - ⛔ ONE FRAME CALLBACK (`BenchStore.frame`): the pad polled, the rig, the recording, playback. The ONE thing outside it is a
@@ -32,8 +34,8 @@ import { FRONT_FOV, MeasureSpans } from "./lettering-hooks";
 import { Guard, LetteringPiece, measurePiece, NeutralToneMapping, usePieceBuild, type Built, type PieceMeasure } from "./lettering-piece";
 import { BTN, Edges, focalMm, readPad, rigAt, SENSOR_MM, stepRig, FEEL, type Intent, type Rig } from "./camera-pad";
 import {
-  appendClip, chainDuration, clampDt, clipLength, clipStarts, deleteClips, EDGE_S, emptyChain, locate, maxCam, newClipId, parseChain, poseAt,
-  punchIn, Sampler, type Chain, type Pose,
+  addTrack, chainEnd, clampDt, clipEnd, clipLength, clipPoseAt, deleteClips, EDGE_S, editPoints, emptyChain, gapsOf, joinsOf, numberClips, parityV1,
+  parseChain, poseAtT, recordClip, Sampler, sourceAt, takesAt, type Chain, type Clip, type Pose,
 } from "./bench-chain";
 import { BenchTransport, type Tone, type TransportView } from "./bench-transport";
 import { BenchTimeline } from "./bench-timeline";
@@ -159,10 +161,17 @@ function measureArch(built: Built, m: PieceMeasure): ArchWorld | null {
   };
 }
 
-/** ⛔ THE CHAIN's KEY — its own version inside (`CHAIN_VERSION`, never the shot format's). Chunk 1's keyed take
- *  (`c2b-camera-bench-take-v1`) is left UNREAD, so nothing written before R1 is reinterpreted. */
-const CHAIN_KEY = "c2b-camera-bench-chain-v1";
+/** ⛔ THE CHAIN's KEYS — each with its own version inside (`CHAIN_VERSION`, never the shot format's). v2 (T1a's tracks) is
+ *  read first; ONLY when it is ABSENT is v1 (R1's) read, migrated and proven. ⛔ v1 is NEVER removed or written by the bench
+ *  (Carl: *"Only when I say so"*). Chunk 1's keyed take (`c2b-camera-bench-take-v1`) is left UNREAD. */
+const CHAIN_KEY = "c2b-camera-bench-chain-v2";
+const CHAIN_KEY_V1 = "c2b-camera-bench-chain-v1";
+/** `localStorage` per origin, keys + values — MEASURED 27 October 2026 in Playwright's Chromium (Carl's Chrome's engine,
+ *  not his browser): for the carry-over's report of how much both copies use */
+const STORAGE_CHARS = 5_242_880;
 const MOUSE_DEG_PER_PX = 0.15;
+/** what the store derives from a chain ON CHANGE, never per frame */
+const derive = (chain: Chain) => ({ points: editPoints(chain), end: chainEnd(chain), numbers: numberClips(chain) });
 const NOTICE_MS = 4000;
 const clamp = (v: number) => Math.max(-1, Math.min(1, v));
 
@@ -173,29 +182,33 @@ const toUnits = (m: PieceMeasure, w: { x: number; y: number; z: number }) => ({ 
 const front = (m: PieceMeasure): Pose => ({ ...toUnits(m, { x: 0, y: 0, z: m.d }), yaw: 0, pitch: 0, fov: FRONT_FOV });
 
 /**
- * ⛔ THE BENCH's ONE MUTABLE STORE — the chain (mirrored), the playhead, the recording, the rig, the inputs; changed only
- * through these methods. React holds what the page SHOWS (the chain, the selection, the view); the store COMMITS a changed
- * chain to it (a stop, a delete) and nothing else. `frame()` is the whole of the one frame callback.
+ * ⛔ THE BENCH's ONE MUTABLE STORE — the chain (mirrored), the playhead, the armed track, the recording, the rig, the
+ * inputs; changed only through these methods. React holds what the page SHOWS (the chain, the selection, the view); the
+ * store COMMITS a changed chain to it (a stop, a delete, a new track) and nothing else. `frame()` is the whole of the one
+ * frame callback.
  *
- * ⛔ THE PLAYHEAD `T` and `atEnd`: "AT THE END" IS A FACT THE STORE KEEPS ([A5]) — set ONLY when no clip follows the
- * playhead: a stop that appended; a punch-in's stop with no clip after it ([B1]); To the end; an empty chain; a play that
- * reaches the CHAIN's end ([B4]); a delete leaving no clip after T ([B5]). Cleared by a scrub, Y, a step, a play stopped
- * inside. A at the end RECORDS; A inside the chain does nothing unless OVERWRITE is armed (Carl: *"a deliberate act"*).
+ * ⛔ T1a, CAMERA TRACKS (the plan `live-work/plan-camera-tracks-t1a-27-october.md` v2): A ALWAYS RECORDS, on the ARMED
+ * track, at the PLAYHEAD (Carl: Overwrite *"Drop it"*; a recording over or into a clip is a NEW TAKE on top, the old kept).
+ * ⛔ The playhead STAYS PARKED at the scrubbed moment while Carl re-frames (note v2.1): it decides where a take LANDS.
+ * "At the end" is DERIVED (`T` at the shot's end), no longer a stored fact with four special cases (R1's [A5]–[B5]).
  */
 class BenchStore {
   private chain: Chain;
+  /** derived from the chain ON CHANGE, never per frame: the edit points, the end, the clip numbers */
+  private derived: { points: number[]; end: number; numbers: Map<string, number> };
   private selection: string[] = [];
   private mode: Mode = "fly";
   private T: number;
-  private atEnd = true;
   /** the camera HELD at the playhead's pose (after a scrub, a step, a play) until a fly input moves it */
   private posed = false;
-  private armed = { overwrite: false, newCam: false };
-  private rec: { sampler: Sampler; punchAt: number | null; cam: number } | null = null;
-  private queue: [number, number][] = [];
+  /** the track A records on — the TOP track on load (the Builder's default, stated in the status before A) */
+  private armedCam: number;
+  private rec: { sampler: Sampler; at: number; cam: number } | null = null;
+  /** the play queue: the EDIT (`clip` null — precedence, gaps held) or one clip SOLO (Carl: "The clip solo") */
+  private queue: { clip: Clip | null; a: number; b: number }[] = [];
   private queueIdx = 0;
   private queueLabel = "";
-  private queueToEnd = false;
+  private inGap = false;
   private jumpTo: Pose | "front" | null = null;
   private keys = new Set<string>();
   private mouse = { dx: 0, dy: 0 };
@@ -209,7 +222,9 @@ class BenchStore {
 
   constructor(chain: Chain) {
     this.chain = chain;
-    this.T = chainDuration(chain);
+    this.derived = derive(chain);
+    this.T = this.derived.end;
+    this.armedCam = chain.tracks[chain.tracks.length - 1];
   }
   bind(ui: BenchStore["ui"]) {
     this.ui = ui;
@@ -230,56 +245,49 @@ class BenchStore {
     this.mouse.dx += dx;
     this.mouse.dy += dy;
   }
+  private get atEnd() {
+    return this.T >= this.derived.end - EDGE_S;
+  }
   private say(text: string) {
     this.notice = { text, until: performance.now() + NOTICE_MS };
   }
-  /** ⛔ AN ACTION CLEARS AN OLD NOTICE — a 4 s message ("Inside the chain: press Overwrite…") had hidden the very state its
-   *  advice produced ("Overwrite armed"; measured 26 October) */
+  /** ⛔ AN ACTION CLEARS AN OLD NOTICE — a 4 s message had hidden the very state its advice produced (measured 26 October) */
   private acted() {
     this.notice = null;
   }
   private commit(chain: Chain) {
     this.chain = chain;
+    this.derived = derive(chain);
     this.selection = this.selection.filter((id) => chain.clips.some((c) => c.id === id));
+    if (!chain.tracks.includes(this.armedCam)) this.armedCam = chain.tracks[chain.tracks.length - 1];
     this.ui?.commit(chain);
   }
   private pose(): Pose | null {
     const r = this.rig, m = this.m;
     return r && m ? { ...toUnits(m, r), yaw: r.yaw, pitch: r.pitch, fov: r.fov } : null;
   }
-  /** the camera a recording goes on: a NEW one if armed; a punch-in continues the PUNCHED clip's camera ([A1]); at the end,
-   *  the last clip's */
-  private camFor(punchAt: number | null) {
-    if (this.armed.newCam) return maxCam(this.chain) + 1;
-    if (punchAt !== null) return this.chain.clips[locate(this.chain, punchAt)!.index].cam;
-    return this.chain.clips[this.chain.clips.length - 1]?.cam ?? 1;
+  private num(c: Clip) {
+    return this.derived.numbers.get(c.id) ?? 0;
   }
 
-  /** A / Space / the record button */
+  /** A / Space / the record button: stop a recording, stop a play, else RECORD on the armed track at the playhead */
   pressA() {
     if (this.rec) return this.stopRecording(null);
     if (this.mode === "play") return this.stopPlay(true);
     const pose = this.pose();
     if (!pose) return;
-    if (!this.chain.clips.length || this.atEnd) return this.startRec(null, pose);
-    if (this.armed.overwrite) return this.startRec(this.T, pose);
-    const at = locate(this.chain, this.T)!;
-    this.say(`Inside the chain: press Overwrite, then A, to record over clip ${at.index + 1} from ${at.local.toFixed(1)} s`);
-  }
-  private startRec(punchAt: number | null, pose: Pose) {
     this.acted();
-    this.rec = { sampler: new Sampler(pose), punchAt, cam: this.camFor(punchAt) };
+    this.rec = { sampler: new Sampler(pose), at: this.chain.clips.length ? this.T : 0, cam: this.armedCam };
     this.mode = "rec";
     this.posed = false;
   }
-  /** ⛔ STOP — the clip reaches React and storage ONCE. `reason` (a hidden tab, a lost pad, View) is shown. */
+  /** ⛔ STOP — the take reaches React and storage ONCE. `reason` (a hidden tab, a lost pad, View) is shown. */
   stopRecording(reason: string | null) {
     const rec = this.rec;
     const pose = this.pose();
     if (!rec || !pose) return;
     this.rec = null;
     this.mode = "fly";
-    this.armed = { overwrite: false, newCam: false };
     // ⛔ THE CAMERA HALTS WHERE THE CLIP ENDED — the rig's weight (`FEEL.smoothS`) would carry it on ~0.3 m after a stop at
     // walking pace, so the next clip began away from this one's end (measured 26 October: a 0.23 m "mismatch" with no
     // move between). Carl: "If its pressed again the 2 take should start from that point". Nothing is filmed between clips.
@@ -289,102 +297,94 @@ class BenchStore {
       this.say(reason ? `${reason}; nothing was recorded` : "Nothing was recorded");
       return;
     }
-    const clip = { id: newClipId(), cam: rec.cam, samples };
-    if (rec.punchAt === null) {
-      const chain = appendClip(this.chain, clip);
-      this.T = chainDuration(chain);
-      this.atEnd = true;
-      this.commit(chain);
-    } else {
-      const { chain, index } = punchIn(this.chain, rec.punchAt, clip);
-      this.T = clipStarts(chain)[index] + clipLength(clip);
-      // ⛔ [B1] a punch-in's stop is "at the end" ONLY if no clip follows the new one
-      this.atEnd = index === chain.clips.length - 1;
-      this.commit(chain);
-    }
+    const chain = recordClip(this.chain, rec.cam, rec.at, samples);
+    this.T = rec.at + samples[samples.length - 1][0];
+    this.commit(chain);
     if (reason) this.say(reason);
   }
   togglePlay() {
     if (this.rec) return;
     if (this.mode === "play") return this.stopPlay(true);
-    const starts = clipStarts(this.chain);
-    const dur = chainDuration(this.chain);
-    if (dur <= EDGE_S) return;
-    const sel = this.chain.clips.map((c, i) => ({ c, i })).filter(({ c }) => this.selection.includes(c.id));
+    const end = this.derived.end;
+    if (end <= EDGE_S) return;
+    const sel = this.chain.clips.filter((c) => this.selection.includes(c.id)).sort((a, b) => a.start - b.start || a.order - b.order);
     if (sel.length) {
-      this.queue = sel.map(({ c, i }) => [starts[i], starts[i] + clipLength(c)]);
-      this.queueToEnd = sel[sel.length - 1].i === this.chain.clips.length - 1;
-      const nums = sel.map(({ i }) => i + 1);
-      this.queueLabel = nums.length === 1 ? `clip ${nums[0]}` : `clips ${nums.join(", ")}`;
+      // ⛔ A SELECTION PLAYS SOLO (Carl: "The clip solo") — as a clip opened in Resolve's Source viewer; precedence ignored
+      this.queue = sel.map((c) => ({ clip: c, a: c.start, b: clipEnd(c) }));
+      const nums = sel.map((c) => this.num(c));
+      this.queueLabel = nums.length === 1 ? `clip ${nums[0]} solo` : `clips ${nums.join(", ")} solo`;
     } else {
-      const from = this.atEnd || this.T >= dur - EDGE_S ? 0 : this.T;
-      this.queue = [[from, dur]];
-      this.queueToEnd = true;
-      this.queueLabel = "the chain";
+      this.queue = [{ clip: null, a: this.atEnd ? 0 : this.T, b: end }];
+      this.queueLabel = "the edit";
     }
     this.acted();
     this.queueIdx = 0;
-    this.T = this.queue[0][0];
+    this.T = this.queue[0].a;
     this.mode = "play";
     this.posed = true;
   }
-  /** a play stopped INSIDE the chain parks the playhead there; `hold` keeps the camera at the playhead's pose */
+  /** a play stopped INSIDE parks the playhead there; `hold` keeps the camera at the playhead's pose */
   private stopPlay(hold: boolean) {
     this.mode = "fly";
     this.posed = hold;
-    this.atEnd = false;
   }
   private advancePlay(dt: number) {
     this.T += dt;
-    while (this.T >= this.queue[this.queueIdx][1]) {
+    while (this.T >= this.queue[this.queueIdx].b) {
       if (this.queueIdx < this.queue.length - 1) {
-        const over = this.T - this.queue[this.queueIdx][1];
+        const over = this.T - this.queue[this.queueIdx].b;
         this.queueIdx++;
-        this.T = this.queue[this.queueIdx][0] + over;
+        this.T = this.queue[this.queueIdx].a + over;
       } else {
-        this.T = this.queue[this.queueIdx][1];
+        this.T = this.queue[this.queueIdx].b;
         this.mode = "fly";
         this.posed = true;
-        // ⛔ [B4] only a play that reaches the CHAIN's end is "at the end"
-        this.atEnd = this.queueToEnd;
         break;
       }
     }
   }
+  /** the picture at the playhead: a SOLO clip's own pose while one plays, else the edit (precedence; a gap HELD) */
+  private playheadPose(): Pose | null {
+    const solo = this.mode === "play" ? this.queue[this.queueIdx]?.clip : null;
+    if (solo) {
+      this.inGap = false;
+      return clipPoseAt(solo, this.T);
+    }
+    const p = poseAtT(this.chain, this.T);
+    this.inGap = !!p?.gap;
+    return p?.pose ?? null;
+  }
   toStart() {
     if (this.rec) return;
-    if (!this.chain.clips.length) return this.home(); // [A5] Y on an empty chain: the default view
+    if (!this.chain.clips.length) return this.home(); // [A5] Y on an empty shot: the default view
     this.acted();
     this.mode = "fly";
     this.T = 0;
     this.posed = true;
-    this.atEnd = false;
   }
   toEnd() {
     if (this.rec) return;
     this.acted();
     this.mode = "fly";
-    this.T = chainDuration(this.chain);
+    this.T = this.derived.end;
     this.posed = this.chain.clips.length > 0;
-    this.atEnd = true;
   }
   scrub(T: number) {
     if (this.rec || !this.chain.clips.length) return;
     this.acted();
     this.mode = "fly";
-    this.T = Math.max(0, Math.min(T, chainDuration(this.chain)));
+    this.T = Math.max(0, Math.min(T, this.derived.end));
     this.posed = true;
-    this.atEnd = false;
   }
-  /** comma / full stop: between clip starts; right past the last clip is To the end (the D-pad's until 27 October 2026) */
+  /** comma / full stop: between the EDIT POINTS on every track; right past the last is To the end */
   step(dir: number) {
     if (this.rec || !this.chain.clips.length) return;
-    const starts = clipStarts(this.chain);
+    const pts = this.derived.points;
     if (dir > 0) {
-      const next = starts.find((s) => s > this.T + EDGE_S);
+      const next = pts.find((s) => s > this.T + EDGE_S);
       return next === undefined ? this.toEnd() : this.scrub(next);
     }
-    const prev = [...starts].reverse().find((s) => s < this.T - EDGE_S);
+    const prev = [...pts].reverse().find((s) => s < this.T - EDGE_S);
     this.scrub(prev ?? 0);
   }
   /** ⛔ HOME — the DEFAULT view (0, 4.29, 22.71 m, square on, 30°), the playhead untouched. ⛔ [B2] while recording it STOPS
@@ -395,45 +395,55 @@ class BenchStore {
     this.posed = false;
     this.jumpTo = "front";
   }
-  toggleOverwrite() {
-    if (this.rec || !this.chain.clips.length) return;
+  /** a new camera track ON TOP, armed (was "New camera", which only labelled the next clip) */
+  addCamera() {
+    if (this.rec) return this.say("A camera track cannot be added while recording: stop first (A)");
     this.acted();
-    this.armed = { ...this.armed, overwrite: !this.armed.overwrite };
+    const chain = addTrack(this.chain);
+    this.armedCam = chain.tracks[chain.tracks.length - 1];
+    this.commit(chain);
   }
-  toggleNewCam() {
-    if (this.rec) return;
+  /** arm a track (its header) */
+  arm(cam: number) {
+    if (this.rec) return this.say("The armed track cannot change while recording: stop first (A)");
+    if (!this.chain.tracks.includes(cam)) return;
     this.acted();
-    this.armed = { ...this.armed, newCam: !this.armed.newCam };
+    this.armedCam = cam;
+  }
+  /** ⛔ START (pad) / C (keyboard): the armed track, bottom → top → bottom (Carl: "Start cycles the armed track"). ⛔ [C10]
+   *  while recording it does nothing, and says why */
+  cycleArm() {
+    if (this.rec) return this.say("Start does nothing while recording: stop first (A)");
+    const t = this.chain.tracks;
+    this.acted();
+    this.armedCam = t[(t.indexOf(this.armedCam) + 1) % t.length];
   }
   deleteSelected() {
     if (this.rec || !this.selection.length) return;
     this.acted();
     const chain = deleteClips(this.chain, new Set(this.selection));
-    const dur = chainDuration(chain);
-    // ⛔ [A5] the playhead CLAMPED to the new end; [B5] "at the end" whenever no clip remains after it
-    if (this.T > dur) this.T = dur;
-    this.atEnd = this.T >= dur - EDGE_S;
     this.selection = [];
     this.commit(chain);
+    // nothing ripples: a deleted middle clip leaves a GAP; the playhead only clamps to a shorter shot
+    if (this.T > this.derived.end) this.T = this.derived.end;
   }
 
+  /** ⛔ THE STATUS — what A will do, in plain words, BEFORE it is pressed (no em dashes) */
   private status(): { status: string; tone: Tone } {
     if (this.notice && performance.now() < this.notice.until) return { status: this.notice.text, tone: "warn" };
-    const n = this.chain.clips.length;
-    if (this.rec) {
-      const L = this.rec.sampler.length.toFixed(1);
-      if (this.rec.punchAt === null) return { status: `● Recording clip ${n + 1} (Cam ${this.rec.cam}) · ${L} s · A stops`, tone: "rec" };
-      const at = locate(this.chain, this.rec.punchAt)!;
-      return { status: `● Recording over clip ${at.index + 1} from ${at.local.toFixed(1)} s (Cam ${this.rec.cam}) · ${L} s · A stops`, tone: "rec" };
-    }
-    if (this.mode === "play") return { status: `Playing ${this.queueLabel} · X or any stick stops`, tone: "play" };
-    if (!n) return { status: `Ready · A records clip 1 (Cam ${this.camFor(null)}) from here`, tone: "idle" };
-    if (this.atEnd) return { status: `At the end · A records clip ${n + 1} (Cam ${this.camFor(null)}) from here`, tone: "idle" };
-    const at = locate(this.chain, this.T)!;
-    if (this.armed.overwrite) {
-      return { status: `Overwrite armed · A records over clip ${at.index + 1} from ${at.local.toFixed(1)} s (Cam ${this.camFor(this.T)})`, tone: "warn" };
-    }
-    return { status: `In clip ${at.index + 1} at ${at.local.toFixed(1)} s · Overwrite then A records over the rest of it · End adds after the last clip`, tone: "idle" };
+    const cam = this.armedCam;
+    if (this.rec) return { status: `● Recording Cam ${this.rec.cam} · ${this.rec.sampler.length.toFixed(1)} s · A stops`, tone: "rec" };
+    if (this.mode === "play") return { status: `Playing ${this.queueLabel}${this.inGap ? " · Gap" : ""} · X or any stick stops`, tone: "play" };
+    if (!this.chain.clips.length) return { status: `Ready · Cam ${cam} armed · A records clip 1 from here`, tone: "idle" };
+    if (this.atEnd) return { status: `At the end · Cam ${cam} armed · A records here`, tone: "idle" };
+    const at = `Cam ${cam} armed · A records at ${this.T.toFixed(1)} s`;
+    const rank = (c: number) => this.chain.tracks.indexOf(c);
+    const plays = sourceAt(this.chain, this.T);
+    const own = takesAt(this.chain, this.T).find((c) => c.cam === cam);
+    if (plays && rank(plays.cam) > rank(cam)) return { status: `${at}, under Cam ${plays.cam} (Cam ${plays.cam} plays there)`, tone: "idle" };
+    if (own) return { status: `${at}, a new take over clip ${this.num(own)} (the old is kept)`, tone: "idle" };
+    if (plays) return { status: `${at}, over Cam ${plays.cam}'s clip ${this.num(plays)}: Cam ${cam} will play there`, tone: "idle" };
+    return { status: `${at}, in a gap`, tone: "idle" };
   }
 
   /** ⛔ ONE FRAME: the pad (polled here and nowhere else), the keyboard and mouse, the rig, the recording, playback. */
@@ -463,6 +473,7 @@ class BenchStore {
       if (hit(BTN.X)) this.togglePlay();
       if (hit(BTN.Y)) this.toStart();
       if (hit(BTN.VIEW)) this.home();
+      if (hit(BTN.START)) this.cycleArm();
       // the D-pad MOVES now (below); stepping between clips is the keyboard's ( , . ) and the timeline's
     }
 
@@ -504,14 +515,14 @@ class BenchStore {
       if (active) this.stopPlay(false); // a fly input STOPS playback and flies from where it stopped
       else {
         this.advancePlay(dt);
-        const p = poseAt(this.chain, this.T);
+        const p = this.playheadPose();
         if (p) setRig(p);
       }
     }
     if (this.mode === "fly" && this.posed) {
       if (active) this.posed = false; // a fly input leaves the playhead's pose; the playhead stays PARKED
       else {
-        const p = poseAt(this.chain, this.T);
+        const p = this.playheadPose();
         if (p) setRig(p);
       }
     }
@@ -537,14 +548,12 @@ class BenchStore {
     this.hudAt += rawDt;
     if (this.hudAt < 0.1) return null;
     this.hudAt = 0;
-    const dur = chainDuration(this.chain);
-    const recAt = this.rec ? (this.rec.punchAt ?? dur) : 0;
     const view: View = {
       mode: this.mode,
       T: this.T,
-      duration: dur,
+      duration: this.derived.end,
       recLength: this.rec?.sampler.length ?? 0,
-      armed: this.armed,
+      armedCam: this.armedCam,
       ...this.status(),
       chainEmpty: !this.chain.clips.length,
       hasSelection: this.selection.length > 0,
@@ -553,7 +562,7 @@ class BenchStore {
       fov: r.fov,
       at: { x: r.x, y: r.y, z: r.z },
       units: { d: m.d, up: m.up, zc: m.zc },
-      rec: this.rec ? { at: recAt, length: this.rec.sampler.length, cam: this.rec.cam } : null,
+      rec: this.rec ? { at: this.rec.at, length: this.rec.sampler.length, cam: this.rec.cam } : null,
     };
     // for harnesses: the bench's state, read-only
     (window as unknown as { __cameraBench?: object }).__cameraBench = {
@@ -562,7 +571,13 @@ class BenchStore {
       posed: this.posed,
       selection: this.selection,
       chain: this.chain,
-      clips: this.chain.clips.map((c, i) => ({ n: i + 1, id: c.id, cam: c.cam, len: clipLength(c), samples: c.samples.length })),
+      tracks: this.chain.tracks,
+      clips: [...this.chain.clips]
+        .sort((a, b) => this.num(a) - this.num(b))
+        .map((c) => ({ n: this.num(c), id: c.id, cam: c.cam, start: c.start, order: c.order, in: c.in, out: c.out, len: clipLength(c), samples: c.samples.length })),
+      source: sourceAt(this.chain, this.T)?.id ?? null,
+      gap: poseAtT(this.chain, this.T)?.gap ?? false,
+      takes: takesAt(this.chain, this.T).map((c) => c.id),
       pose: this.pose(),
       d: m.d,
       front: front(m),
@@ -681,22 +696,87 @@ function BenchScene({
   );
 }
 
-/** The saved chain, read through `parseChain`. ⛔ One that cannot be read is KEPT ASIDE (`…-refused`), never overwritten
- *  unread, and the reason is shown. */
-function loadChain(): { chain: Chain; refusal: string | null } {
-  let raw: string | null = null;
+type Loaded = { chain: Chain; error: string | null; carry: { text: string; persist: boolean } | null };
+/** the chain written to storage; a failure in plain words (never `catch {}`) */
+function saveChain(c: Chain): string | null {
   try {
-    raw = window.localStorage.getItem(CHAIN_KEY);
-    if (!raw) return { chain: emptyChain(), refusal: null };
-    const r = parseChain(JSON.parse(raw));
-    if ("chain" in r) return { chain: r.chain, refusal: null };
-    throw new Error(r.refusal);
+    window.localStorage.setItem(CHAIN_KEY, JSON.stringify(c));
+    return null;
   } catch (e) {
-    try {
-      if (raw) window.localStorage.setItem(`${CHAIN_KEY}-refused`, raw);
-    } catch {}
-    return { chain: emptyChain(), refusal: `The saved recording could not be read (${(e as Error).message}); it is kept aside, unread.` };
+    const full = (e as Error).name === "QuotaExceededError";
+    return full ? "Not saved: the browser's storage is full. The recording is safe until this page is closed." : `Not saved: ${(e as Error).message}`;
   }
+}
+/**
+ * ⛔ THE SAVED CHAIN, LOADED ONCE PER PAGE LOAD (React's Strict Mode runs a state initializer twice in development; the
+ * migration WRITES v2, so a second run would read that v2 and lose the carry-over's report — hence the cache).
+ * - v2 present and readable → it. ⛔ [E3] v2 present but UNREADABLE → kept aside (`…-v2-refused`), the bench starts EMPTY
+ *   and says so, naming both kept copies; ⛔ it NEVER falls back to v1 (R1's state would be shown as current, then saved
+ *   over Carl's v2 work).
+ * - v2 ABSENT → v1 (R1) migrated and ⛔ PROVEN ON CARL's OWN CHAIN (`parityV1`: every sample, every boundary exactly and
+ *   ± PROBE, within 1e-9). Identical → v2 written, the report shown. ⛔ [E2] Different → v2 STILL written (his new work is
+ *   never held or lost), v1 untouched, and a PERSISTENT line until Carl decides. A failed v2 write is shown; the bench runs
+ *   in memory. ⛔ v1 is never written or removed (Carl: "Only when I say so").
+ */
+let loaded: Loaded | null = null;
+function loadChain(): Loaded {
+  if (loaded) return loaded;
+  return (loaded = readChain());
+}
+function readChain(): Loaded {
+  const empty = (error: string | null): Loaded => ({ chain: emptyChain(), error, carry: null });
+  let raw2: string | null = null;
+  try {
+    raw2 = window.localStorage.getItem(CHAIN_KEY);
+  } catch (e) {
+    return empty(`This browser's storage cannot be read (${(e as Error).message}); the bench starts empty.`);
+  }
+  if (raw2 !== null) {
+    let why: string;
+    try {
+      const r = parseChain(JSON.parse(raw2));
+      if ("chain" in r && !r.migrated) return { chain: r.chain, error: null, carry: differences(r.chain) };
+      why = "refusal" in r ? r.refusal : "it holds an older version under the new name";
+    } catch (e) {
+      why = (e as Error).message;
+    }
+    try {
+      window.localStorage.setItem(`${CHAIN_KEY}-refused`, raw2);
+    } catch {}
+    return empty(
+      `The saved recording could not be read (${why}). It is kept aside, unread, as "${CHAIN_KEY}-refused", and your R1 recordings are kept as "${CHAIN_KEY_V1}". The bench starts empty.`,
+    );
+  }
+  const raw1 = window.localStorage.getItem(CHAIN_KEY_V1);
+  if (raw1 === null) return empty(null);
+  let r: ReturnType<typeof parseChain>;
+  try {
+    r = parseChain(JSON.parse(raw1));
+  } catch (e) {
+    r = { refusal: (e as Error).message };
+  }
+  if ("refusal" in r) return empty(`Your R1 recordings could not be read (${r.refusal}); they are kept, unread. The bench starts empty.`);
+  if (!r.migrated) return empty(`The R1 key holds a newer chain (version ${r.chain.version}); it is kept, unread. The bench starts empty.`);
+  // ⚠ HARNESS ONLY: `__cameraBenchParityTol` < 0 forces the "differences" path. Valid R1 data cannot reach it (proven in
+  // Node: the migration is the same arithmetic), so the harness has no other way to exercise [E2]. Never set by the page.
+  const tol = (window as unknown as { __cameraBenchParityTol?: number }).__cameraBenchParityTol ?? 1e-9;
+  const p = parityV1(r.migrated, r.chain, tol);
+  const chain: Chain = { ...r.chain, migration: { from: 1, moments: p.moments, maxDiff: Number.isFinite(p.maxDiff) ? p.maxDiff : null, ok: p.ok } };
+  const error = saveChain(chain);
+  const both = ((raw1.length + JSON.stringify(chain).length + CHAIN_KEY.length + CHAIN_KEY_V1.length) / STORAGE_CHARS) * 100;
+  const carry = p.ok
+    ? {
+        text: `Your R1 recordings were carried over to tracks: ${chain.clips.length} clips, checked at ${p.moments} moments, identical. The old copy is kept (both copies use ${both.toFixed(1)}% of this browser's storage).`,
+        persist: false,
+      }
+    : differences(chain);
+  return { chain, error, carry };
+}
+/** ⛔ [E2] the carry-over's DIFFERENCES line — persistent, from the verdict saved with the chain, until Carl decides */
+function differences(chain: Chain): Loaded["carry"] {
+  const m = chain.migration;
+  if (!m || m.ok) return null;
+  return { text: `Carried over with differences: largest ${m.maxDiff === null ? "a moment one rule could not pose" : m.maxDiff.toPrecision(3)} (the old copy is kept).`, persist: true };
 }
 
 const noFocus = (e: { preventDefault: () => void }) => e.preventDefault();
@@ -731,7 +811,8 @@ function CameraBenchInner() {
   const [chain, setChain] = useState<Chain>(initial.chain);
   const [selection, setSelection] = useState<string[]>([]);
   const [view, setView] = useState<View | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(initial.refusal);
+  const [saveError, setSaveError] = useState<string | null>(initial.error);
+  const [carry, setCarry] = useState(initial.carry);
   const [failed, setFailed] = useState<string | null>(null);
   const [drawn, setDrawn] = useState(false);
   const [grid, setGrid] = useState(true);
@@ -741,18 +822,14 @@ function CameraBenchInner() {
   const drag = useRef<{ x: number; y: number } | null>(null);
   const why = failed ?? failure;
 
-  /** ⛔ THE ONE PLACE A CHANGED CHAIN ENTERS REACT AND STORAGE — called by the store at a stop or a delete. A failed write is
-   *  SHOWN (never `catch {}`) until the next good one. */
+  /** ⛔ THE ONE PLACE A CHANGED CHAIN ENTERS REACT AND STORAGE — called by the store at a stop, a delete, a new track. A
+   *  failed write is SHOWN until the next good one. The carry-over's report goes at the first change; its DIFFERENCES line
+   *  stays ([E2]). */
   const commit = useCallback((c: Chain) => {
     setChain(c);
     setSelection((sel) => sel.filter((id) => c.clips.some((k) => k.id === id)));
-    try {
-      window.localStorage.setItem(CHAIN_KEY, JSON.stringify(c));
-      setSaveError(null);
-    } catch (e) {
-      const full = (e as Error).name === "QuotaExceededError";
-      setSaveError(full ? "Not saved: the browser's storage is full. The recording is safe until this page is closed." : `Not saved: ${(e as Error).message}`);
-    }
+    setSaveError(saveChain(c));
+    setCarry((k) => (k?.persist ? k : null));
   }, []);
   useEffect(() => {
     store.bind({ commit });
@@ -785,6 +862,7 @@ function CameraBenchInner() {
       else if (e.code === "KeyH") store.home();
       else if (e.code === "Comma") store.step(-1);
       else if (e.code === "Period") store.step(1);
+      else if (e.code === "KeyC") store.cycleArm();
     };
     const up = (e: KeyboardEvent) => store.keyUp(e.code);
     const blur = () => store.keysClear();
@@ -816,6 +894,9 @@ function CameraBenchInner() {
   const recording = view?.mode === "rec";
   const units = view?.units;
   const metresPerD = units ? (units.d * CM_PER_PX) / 100 : 0;
+  // ⛔ the joins and gaps derived ON CHAIN CHANGE, never per frame (the plan v2)
+  const joins = useMemo(() => joinsOf(chain, metresPerD), [chain, metresPerD]);
+  const gaps = useMemo(() => gapsOf(chain), [chain]);
   const toMetres = units && world
     ? (p: Pose) => ({
         right: (p.x * units.d * CM_PER_PX) / 100,
@@ -826,9 +907,9 @@ function CameraBenchInner() {
   const transportView: TransportView = view ?? {
     mode: "fly",
     T: 0,
-    duration: chainDuration(chain),
+    duration: chainEnd(chain),
     recLength: 0,
-    armed: { overwrite: false, newCam: false },
+    armedCam: chain.tracks[chain.tracks.length - 1],
     status: "Starting…",
     tone: "idle",
     chainEmpty: !chain.clips.length,
@@ -932,21 +1013,25 @@ function CameraBenchInner() {
                     <dt className="text-neutral-500">A</dt>
                     <dd>record / stop</dd>
                     <dt className="text-neutral-500">X</dt>
-                    <dd>play / stop (the selected clips, else the chain)</dd>
+                    <dd>play / stop (the selected clips solo, else the edit)</dd>
                     <dt className="text-neutral-500">Y</dt>
                     <dd>to the start</dd>
+                    <dt className="text-neutral-500">Start</dt>
+                    <dd>arm the next camera track</dd>
                     <dt className="text-neutral-500">View</dt>
                     <dd>default view</dd>
                   </dl>
                   <h2 className="mb-2 mt-4 text-sm font-semibold text-white">How it records</h2>
                   <p>
-                    Fly to frame the shot; nothing records until A. A again stops: that is a clip. At the end of the chain A adds the next clip. Inside it,
-                    press Overwrite first, then A: the clip is cut there and the new recording follows; later clips stay. New camera makes the next clip a cut.
+                    Each camera has its own track; the armed one (red) is where A records, at the playhead. Fly to frame first; nothing records until A,
+                    and A again stops. The top track plays wherever it has a clip, like Resolve&apos;s A and B roll, so a Cam 2 clip over Cam 1 is a cut
+                    and Cam 1 is untouched underneath. Recording over a clip on the armed track makes a new take on top; the old one is kept. Selected
+                    clips play solo. Nothing ripples: delete a clip and its time becomes a gap, which holds the last picture.
                   </p>
                   <h2 className="mb-2 mt-4 text-sm font-semibold text-white">Keyboard</h2>
                   <p>
                     W S forward / back · A D slide · E Q rise / sink · arrows turn / tilt · drag to look · [ ] lens · Shift fast · Alt slow · Space record · P play ·
-                    Home start · End end · H default · , . step · Delete delete
+                    Home start · End end · H default · , . step · C arm the next track · Delete delete
                   </p>
                 </>
               ) : (
@@ -987,7 +1072,10 @@ function CameraBenchInner() {
                     names his Unreal filmback.
                   </p>
                   <h2 className="mb-2 mt-4 text-sm font-semibold text-white">Saving</h2>
-                  <p>Recordings are saved in this browser when a clip stops or is deleted.</p>
+                  <p>
+                    Recordings are saved in this browser when a clip stops or is deleted, or a track is added. Recordings made before camera tracks are kept
+                    under their old name as well; the bench never removes them.
+                  </p>
                 </>
               )}
             </div>
@@ -997,14 +1085,14 @@ function CameraBenchInner() {
             <BenchTransport
               v={transportView}
               saveError={saveError}
+              carry={carry ? { text: carry.text, warn: carry.persist } : null}
               act={{
                 record: () => store.pressA(),
                 play: () => store.togglePlay(),
                 toStart: () => store.toStart(),
                 toEnd: () => store.toEnd(),
                 home: () => store.home(),
-                newCam: () => store.toggleNewCam(),
-                overwrite: () => store.toggleOverwrite(),
+                addCam: () => store.addCamera(),
                 remove: () => store.deleteSelected(),
               }}
             />
@@ -1014,13 +1102,16 @@ function CameraBenchInner() {
 
       <BenchTimeline
         chain={chain}
-        T={view?.T ?? chainDuration(chain)}
+        joins={joins}
+        gaps={gaps}
+        T={view?.T ?? chainEnd(chain)}
+        armedCam={transportView.armedCam}
         rec={view?.rec ?? null}
         selection={selection}
         disabled={recording}
-        metresPerD={metresPerD}
         toMetres={toMetres}
         onSelect={select}
+        onArm={(cam) => store.arm(cam)}
         onScrub={(T) => store.scrub(T)}
       />
     </div>

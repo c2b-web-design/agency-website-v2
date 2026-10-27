@@ -7,8 +7,10 @@
  *  storage limits (the quota is simulated by a throwing setItem). The chain's arithmetic: `bench-chain-check-26-october.mjs`. */
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
 
-const [BASE = "http://localhost:3000", OUT = "."] = process.argv.slice(2);
+// the screenshot goes to the OS temp folder unless an OUT is given (it once defaulted to "." and left a PNG in the repo root)
+const [BASE = "http://localhost:3000", OUT = tmpdir()] = process.argv.slice(2);
 mkdirSync(OUT, { recursive: true });
 const b = await chromium.launch({ headless: false, args: ["--enable-gpu", "--use-angle=default", "--ignore-gpu-blocklist"] });
 const ctx = await b.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
@@ -42,7 +44,7 @@ const press = async (i) => {
 const hold = (i, on) => pad(([i, on]) => (window.__fakePad.buttons[i] = { pressed: on, value: on ? 1 : 0 }), [i, on]);
 const axes = (a) => pad((a) => (window.__fakePad.axes = a), a);
 const metres = (s, dUnits) => (dUnits * s.d) / 100;
-const A = 0, B = 1, X = 2, LB = 4, RB = 5, LT = 6, RT = 7, VIEW = 8, UP = 12, DRIGHT = 15;
+const A = 0, B = 1, X = 2, LB = 4, RB = 5, LT = 6, RT = 7, VIEW = 8, START = 9, UP = 12, DRIGHT = 15;
 const btn = (label) => p.click(`button[aria-label="${label}"]`);
 const count = async () => (await state()).clips.length;
 /** scrub by the timeline's ruler (custom pointer handling, [C3]) to chain time T */
@@ -248,95 +250,135 @@ await wait(300);
 const seams = await p.$$eval("[data-join]", (e) => e.map((x) => `${x.dataset.join}:${x.textContent}`));
 check((await count()) === 3 && seams.some((t) => t.startsWith("mismatch")), `framing between clips → clip 3, its join SHOWN: ${JSON.stringify(seams)}`);
 
-// ── INSIDE THE CHAIN: A alone does nothing; OVERWRITE then A punches in
+// ── T1a: A NEW TAKE OVER A CLIP — A always records at the playhead; nothing is destroyed (Carl: Overwrite "Drop it")
 await scrubTo(1.0);
 s = await state();
 check(s.mode === "fly" && !s.atEnd && Math.abs(s.T - 1.0) < 0.15, `scrubbed into clip 1 at ${s.T.toFixed(2)} s, parked`);
-await press(A);
-s = await state();
-check(s.clips.length === 3 && s.mode === "fly" && /Overwrite/.test(s.status), `inside the chain A ALONE does nothing: "${s.status}"`);
+check(/new take over clip 1/.test(s.status), `the status says what A will do before it is pressed: "${s.status}"`);
 const ids0 = s.clips.map((c) => c.id);
-await btn("Overwrite: arm a punch-in");
-await wait(200);
-check((await state()).armed.overwrite && /Overwrite armed/.test((await state()).status), "Overwrite arms it (the status says so)");
+const old1 = JSON.stringify(s.chain.clips.find((c) => c.id === ids0[0]).samples);
+const T1 = s.T;
 await press(A);
-await wait(400);
-await press(A);
-await wait(300);
-s = await state();
-check(s.clips.length === 4 && s.clips[0].id === ids0[0] && s.clips[0].len < 1.2 && s.clips[2].id === ids0[1] && s.clips[3].id === ids0[2], `OVERWRITE + A → clip 1 cut (${s.clips[0].len.toFixed(2)} s), the new clip 2, the old 2 and 3 now 3 and 4`);
-check(!s.atEnd && !s.armed.overwrite, "[B1] the punch-in's stop is NOT at the end (clips follow); Overwrite disarmed");
-await press(A);
-s = await state();
-check(s.clips.length === 4 && s.mode === "fly" && /Overwrite/.test(s.status), `[B1] a third A does nothing: "${s.status}"`);
-
-// ── NEW CAMERA → a cut; [A1] a punch-in keeps the punched clip's camera
-await p.keyboard.press("End");
-await wait(200);
-await btn("New camera for the next clip");
-await press(A);
-await wait(500);
-await press(A);
-await wait(300);
-s = await state();
-check(s.clips[4]?.cam === 2 && (await p.$$eval('[data-join="cut"]', (e) => e.length)) === 1, `New camera → clip 5 on Cam ${s.clips[4]?.cam}, its join a CUT`);
-const starts = (cl) => cl.reduce((a, c, i) => (a.push(i ? a[i - 1] + cl[i - 1].len : 0), a), []);
-const st = starts(s.clips);
-await scrubTo(st[3] + s.clips[3].len / 2);
-await btn("Overwrite: arm a punch-in");
-await press(A);
-await wait(400);
-await press(A);
-await wait(300);
-s = await state();
-check(s.clips[4]?.cam === 1 && s.clips[5]?.cam === 2, `[A1] a punch into a Cam 1 clip with Cam 2 after it records on Cam ${s.clips[4]?.cam}`);
-
-// ── PLAY: the chain; a stick stops it and parks; [B4] a selection's play parks inside
-await press(X);
-await wait(300);
-check((await state()).mode === "play", "X plays the chain");
-await axes([0, -1, 0, 0]);
-await wait(300);
+await axes([0, 0, 1, 0]);
+await wait(600);
 await axes([0, 0, 0, 0]);
-s = await state();
-check(s.mode === "fly" && !s.atEnd, "a stick during play STOPS it and parks");
-await p.click('[data-clip="1"]');
-await press(X);
-await wait(1800);
-s = await state();
-check(s.mode === "fly" && !s.atEnd, `[B4] playing a selection of clip 1 ends parked INSIDE (T ${s.T.toFixed(2)})`);
-const n0 = s.clips.length;
 await press(A);
-check((await count()) === n0 && (await state()).mode === "fly", "[B4] …so A alone does nothing");
+await wait(300);
+s = await state();
+const take = s.chain.clips.reduce((m, c) => (c.order > m.order ? c : m));
+check(
+  s.clips.length === 4 && take.cam === 1 && Math.abs(take.start - T1) < 1e-6 && JSON.stringify(s.chain.clips.find((c) => c.id === ids0[0]).samples) === old1,
+  `A records a NEW TAKE at the playhead (${take.start.toFixed(2)} s); clip 1 KEPT, its samples untouched`,
+);
+const takeEnd = take.start + (take.out - take.in);
+await scrubTo(takeEnd + 0.15);
+s = await state();
+check(s.source === ids0[0], `after the take ends (${takeEnd.toFixed(2)} s) the OLD take plays again`);
+const mism = await p.$$eval('[data-join="mismatch"]', (e) => e.length);
+check(mism >= 2, `[C2] the take's start and end over the older take are shown as MISMATCHES (${mism})`);
+// [E4] the covered take reachable WITHOUT deleting: the inspector lists both takes under the playhead
+await scrubTo(take.start + 0.2);
+s = await state();
+check(s.takes[0] === take.id && s.takes.includes(ids0[0]), `[E4] under the playhead: ${s.takes.length} takes, the new one plays`);
+await p.click(`[data-take="${ids0[0]}"]`);
+await wait(250);
+check((await state()).selection.join() === ids0[0], "[E4] the COVERED take selected from the inspector, nothing deleted");
 
-// ── DELETE: select + Delete renumbers; [B5] deleting the clips after T with T at the new end → A records
-await p.click('[data-clip="2"]'); // selection: clip 2 only (a click without shift replaces)
+// ── CAMERA TRACKS: Cam 2 on top PLAYS over Cam 1 (Resolve's A / B roll); a CUT; non-destructive
+await p.click(`[data-take="${ids0[0]}"]`); // clear the selection
+await btn("Add a camera track");
+await wait(250);
 s = await state();
-const keep = s.clips.filter((_, i) => i !== 1).map((c) => c.id);
-await p.keyboard.press("Delete");
+check(s.tracks.join() === "1,2" && s.armedCam === 2, `Add a camera track → tracks ${s.tracks.join(", ")}, Cam ${s.armedCam} armed`);
+await scrubTo(0.4);
+s = await state();
+check(/over Cam 1's clip 1: Cam 2 will play there/.test(s.status), `the status before A: "${s.status}"`);
+await press(A);
+await axes([0, 0, -1, 0]);
+await wait(500);
+await axes([0, 0, 0, 0]);
+await press(A);
 await wait(300);
 s = await state();
-check(s.clips.length === n0 - 1 && s.clips.map((c) => c.id).join() === keep.join() && s.clips.every((c, i) => c.n === i + 1), `select + Delete → ${s.clips.length} clips, numbered 1–${s.clips.length}`);
-await p.keyboard.press("End");
-await p.keyboard.press("Comma"); // T at the last clip's start = the new end once it goes
+const cam2 = s.chain.clips.find((c) => c.cam === 2);
+check(!!cam2 && Math.abs(cam2.start - s.chain.clips.find((c) => c.id === ids0[0]).start - 0.4) < 0.15, `A on Cam 2 → a Cam 2 clip at ${cam2?.start.toFixed(2)} s`);
+await scrubTo(cam2.start + 0.15);
+s = await state();
+check(s.source === cam2.id && s.takes.includes(ids0[0]), "Cam 2 PLAYS where it has a clip; Cam 1's clip is still there under it");
+const cuts = await p.$$eval('[data-join="cut"]', (e) => e.length);
+check(cuts >= 2, `the switches to and from Cam 2 are CUTS (${cuts})`);
+// Start: cycles the arm; does nothing while recording ([C10]); "under Cam 2" said before A
+await press(START);
+await wait(250);
+s = await state();
+check(s.armedCam === 1 && /under Cam 2 \(Cam 2 plays there\)/.test(s.status), `Start cycles the arm to Cam 1; the status: "${s.status}"`);
+await press(A);
+await press(START);
+await wait(250);
+s = await state();
+check(s.mode === "rec" && s.armedCam === 1 && /Start does nothing while recording/.test(s.status), `[C10] Start while recording does nothing: "${s.status}"`);
+await press(A);
+await wait(300);
+await press(START);
 await wait(200);
-await p.click(`[data-clip="${s.clips.length}"]`);
+check((await state()).armedCam === 2, "Start again → Cam 2 (bottom → top → bottom)");
+// SOLO (Carl: "The clip solo"): the covered Cam 1 clip plays ITS OWN moves, not Cam 2's
+const poseOf = (clip, T) => {
+  const local = Math.min(clip.out, Math.max(clip.in, clip.in + (T - clip.start)));
+  const sm = clip.samples;
+  const k = sm.findIndex((x) => x[0] >= local);
+  if (k <= 0) return sm[k < 0 ? sm.length - 1 : 0];
+  const a = sm[k - 1], b2 = sm[k], f = (local - a[0]) / (b2[0] - a[0]);
+  return a.map((v, i) => v + (b2[i] - v) * f);
+};
+// clip 1 is COVERED at its centre (by the new take, then Cam 2): it is selected through the inspector ([E4]), never by a
+// click on the row, which lands on whatever is on top
+await scrubTo(cam2.start + 0.15);
+await p.click(`[data-take="${ids0[0]}"]`);
+await wait(250);
+check((await state()).selection.join() === ids0[0], "the covered clip 1 selected from the inspector");
+await press(X);
+await wait(450);
+s = await state();
+const c1 = s.chain.clips.find((c) => c.id === ids0[0]);
+const want = poseOf(c1, s.T);
+check(s.mode === "play" && /solo/.test(s.status) && Math.abs(want[1] - s.pose.x) < 0.02 && Math.abs(want[3] - s.pose.z) < 0.02, `a selected, COVERED clip plays SOLO: its own pose at ${s.T.toFixed(2)} s (x ${s.pose.x.toFixed(3)} ≈ ${want[1].toFixed(3)})`);
+await press(X);
+// delete every Cam 2 clip → Cam 1 plays there again
+// the Cam 2 row holds only Cam 2 clips: the first click REPLACES the selection, the rest add to it
+for (const [i, c] of s.chain.clips.filter((k) => k.cam === 2).sort((a, b) => b.order - a.order).entries()) {
+  await p.click(`[data-clip-id="${c.id}"]`, { modifiers: i ? ["Shift"] : [] });
+}
+await wait(250);
+s = await state();
+const sel2 = s.selection.slice();
+await p.keyboard.press("Delete");
+await wait(300);
+await scrubTo(cam2.start + 0.15);
+s = await state();
+check(sel2.length >= 1 && s.chain.clips.every((c) => c.cam === 1) && s.source !== null && s.chain.clips.find((c) => c.id === s.source)?.cam === 1, "delete the Cam 2 clips → Cam 1 plays there again (non-destructive)");
+
+// ── GAPS: nothing ripples — delete a middle clip and its time is a GAP, which HOLDS the last picture
+await p.click(`[data-clip-id="${ids0[1]}"]`, { force: true });
+s = await state();
+const gone = s.chain.clips.find((c) => c.id === ids0[1]);
 await p.keyboard.press("Delete");
 await wait(300);
 s = await state();
-check(s.atEnd && Math.abs(s.T - s.duration) < 1e-6, `[B5] the last clip deleted with T at the new end → at the end (T ${s.T.toFixed(2)} = ${s.duration.toFixed(2)})`);
-const n1 = s.clips.length;
-await press(A);
-await wait(300);
-await press(A);
-await wait(300);
-check((await count()) === n1 + 1, "[B5] …and A records");
+const gapEls = await p.$$eval("[data-gap]", (e) => e.map((x) => x.dataset.gap));
+check(gapEls.length === 1 && s.chain.clips.find((c) => c.id === ids0[2]).start > gone.start, `delete clip 2 → a GAP (${gapEls.join()}); the clips after it do not move`);
+await scrubTo(gone.start + 0.2);
+const g1 = await state();
+await scrubTo(gone.start + gone.out - 0.2);
+const g2 = await state();
+check(g1.gap && g2.gap && Math.abs(g1.pose.x - g2.pose.x) < 1e-9 && Math.abs(g1.pose.z - g2.pose.z) < 1e-9 && /in a gap/.test(g1.status), `in the gap the picture HOLDS (the same pose at two moments); "${g1.status}"`);
 
 // ── WHILE RECORDING: everything else disabled ([A5])
+await p.keyboard.press("End");
 await press(A);
 await wait(200);
 const dis = await p.$$eval('[data-transport] button[disabled]', (e) => e.map((x) => x.getAttribute("aria-label")));
-check(["Play", "To the start", "To the end", "New camera for the next clip", "Overwrite: arm a punch-in", "Delete the selected clips"].every((l) => dis.includes(l)), `while recording these are disabled: ${dis.join(", ")}`);
+check(["Play", "To the start", "To the end", "Add a camera track", "Delete the selected clips"].every((l) => dis.includes(l)), `while recording these are disabled: ${dis.join(", ")}`);
 const Trec = (await state()).T;
 await scrubTo(0.5);
 await p.click('[data-clip="1"]', { force: true }).catch(() => {});
@@ -394,7 +436,7 @@ await p.mouse.up();
 await wait(300);
 check(Math.abs((await state()).pose.yaw - yaw0) > 5, "a drag on bare picture turns the camera");
 yaw0 = (await state()).pose.yaw;
-for (const sel of ['button[aria-label="Controls"]', 'button[aria-label="Controls"]', 'button[aria-label="Scene information"]', 'button[aria-label="Floor grid"]', 'button[aria-label="Floor grid"]', 'button[aria-label="Scene information"]', 'button[aria-label="New camera for the next clip"]', 'button[aria-label="New camera for the next clip"]']) {
+for (const sel of ['button[aria-label="Controls"]', 'button[aria-label="Controls"]', 'button[aria-label="Scene information"]', 'button[aria-label="Floor grid"]', 'button[aria-label="Floor grid"]', 'button[aria-label="Scene information"]', 'button[aria-label="Add a camera track"]', 'button[aria-label="Add a camera track"]']) {
   await p.click(sel);
   await wait(80);
 }
@@ -403,8 +445,8 @@ check(Math.abs((await state()).pose.yaw - yaw0) < 1e-6, "clicks on the HUD, draw
 
 // ── [A4] [B3] Space / Enter never fire twice
 let n2 = await count();
-await btn("New camera for the next clip");
-await btn("New camera for the next clip");
+await btn("Add a camera track");
+await btn("Add a camera track");
 await p.keyboard.press("Space");
 await wait(300);
 check((await state()).mode === "rec", "after a mouse click on a transport button, Space RECORDS");
@@ -413,7 +455,9 @@ await wait(300);
 check((await count()) === n2 + 1, "…exactly one recording (one clip)");
 n2 = await count();
 await p.keyboard.press("End");
-await p.click('[data-clip="1"]');
+// the NEWEST take (always on top of its row): clip 1 is covered by newer takes by now
+const newest = (await state()).chain.clips.reduce((m, c) => (c.order > m.order ? c : m));
+await p.click(`[data-clip-id="${newest.id}"]`);
 await wait(250); // the store publishes its state every 0.1 s
 const selAfterClick = (await state()).selection.length;
 await p.keyboard.press("Space");
@@ -469,7 +513,87 @@ const nSaved = await count();
 await reload();
 check((await count()) === nSaved, `a reload keeps the chain (${nSaved} clips)`);
 
-await p.screenshot({ path: `${OUT}/camera-bench-r1.png` });
+// ── THE MIGRATION (T1a): R1's chain carried over, PROVEN in the page, v1 never touched (Carl: "Only when I say so")
+const V1 = "c2b-camera-bench-chain-v1", V2 = "c2b-camera-bench-chain-v2";
+const v1Samples = (secs, a, b) => {
+  const n = Math.round(secs * 60);
+  return Array.from({ length: n + 1 }, (_, i) => [i / 60, a + ((b - a) * i) / n, 0, 1, 0, 0, 30]);
+};
+const v1json = JSON.stringify({
+  kind: "c2b-camera-chain",
+  version: 1,
+  clips: [
+    { id: "r1a", cam: 1, samples: v1Samples(1.5, 0, 0.2) },
+    { id: "r1b", cam: 2, samples: v1Samples(1.0, 0.5, 0.6) },
+  ],
+  refined: null,
+  comp: null,
+});
+const keys = () => p.evaluate(([a, b]) => ({ v1: localStorage.getItem(a), v2: localStorage.getItem(b), refused: localStorage.getItem(`${b}-refused`) }), [V1, V2]);
+const seed = (entries, flags = []) =>
+  p.evaluate(
+    ([e, f]) => {
+      localStorage.clear();
+      sessionStorage.clear();
+      for (const [k, v] of e) localStorage.setItem(k, v);
+      for (const k of f) sessionStorage.setItem(k, "1");
+    },
+    [entries, flags],
+  );
+const carryLine = () => p.$eval("[data-carry]", (e) => ({ kind: e.dataset.carry, text: e.textContent })).catch(() => null);
+const saveLine = () => p.$eval("[data-save-error]", (e) => e.textContent).catch(() => null);
+// ⚠ HARNESS-ONLY SWITCHES (read before the page's scripts): fail the v2 write; force the parity "differences" path —
+// valid R1 data cannot reach it (proven in Node: the migration is R1's own arithmetic), so [E2] has no other way in
+await p.addInitScript(([v2key]) => {
+  if (sessionStorage.getItem("t1a-failSave")) {
+    const orig = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (k, v) {
+      if (k === v2key) throw new DOMException("quota", "QuotaExceededError");
+      return orig.call(this, k, v);
+    };
+  }
+  if (sessionStorage.getItem("t1a-forceDiff")) window.__cameraBenchParityTol = -1;
+}, [V2]);
+await seed([[V1, v1json]]);
+await reload();
+s = await state();
+let k = await keys();
+let cl = await carryLine();
+check(s.tracks.join() === "1,2" && s.clips.length === 2 && cl?.kind === "identical" && /identical/.test(cl.text), `an R1 chain CARRIED OVER: tracks ${s.tracks.join(", ")}, ${s.clips.length} clips; "${cl?.text}"`);
+check(k.v1 === v1json && JSON.parse(k.v2).migration?.ok === true, "v1 BYTE-IDENTICAL; v2 written with the parity verdict");
+await seed([[V1, v1json]], ["t1a-failSave"]);
+await reload();
+s = await state();
+k = await keys();
+check(/Not saved/.test((await saveLine()) ?? "") && s.clips.length === 2 && k.v2 === null && k.v1 === v1json, `a v2 write that fails during the carry-over is SHOWN; the bench runs in memory; v1 kept: "${await saveLine()}"`);
+// [E2] the parity FAILS (forced): v2 STILL written, new work saved, the differences line SURVIVES a reload
+await seed([[V1, v1json]], ["t1a-forceDiff"]);
+await reload();
+cl = await carryLine();
+k = await keys();
+check(cl?.kind === "differences" && JSON.parse(k.v2).migration?.ok === false, `[E2] a parity failure (forced): "${cl?.text}"; v2 written`);
+await p.evaluate(() => sessionStorage.clear());
+await p.keyboard.press("End");
+await p.keyboard.press("Space");
+await wait(400);
+await p.keyboard.press("Space");
+await wait(400);
+await reload();
+s = await state();
+k = await keys();
+cl = await carryLine();
+check(s.clips.length === 3 && k.v1 === v1json && cl?.kind === "differences", `[E2] …a take recorded, reloaded: ${s.clips.length} clips kept, v1 byte-identical, the differences line still showing`);
+// [E3] an UNREADABLE v2 beside a valid v1: the bench starts EMPTY, says so, NEVER falls back to v1
+await seed([[V1, v1json], [V2, "{not json"]]);
+await reload();
+s = await state();
+k = await keys();
+const e3 = (await saveLine()) ?? "";
+check(s.clips.length === 0 && /could not be read/.test(e3) && e3.includes(`${V2}-refused`) && e3.includes(V1), `[E3] an unreadable v2: the bench EMPTY, "${e3}"`);
+check(k.v1 === v1json && k.v2 === "{not json" && k.refused === "{not json", "[E3] …both keys byte-identical; the unreadable v2 kept aside");
+await seed([]);
+
+await p.screenshot({ path: `${OUT}/camera-bench-t1a.png` });
 check(errors.length === 0, `no console errors${errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""}`);
 console.log(`\nVERDICT ${fail ? "✖" : "✔"} ${pass}/${pass + fail}`);
 console.log("⚠ NOT WATCHED: how the pad FEELS (Carl's hands only); a real pad's connection; the secure-page rule; production; real storage limits.");
