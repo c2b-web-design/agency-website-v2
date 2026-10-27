@@ -16,6 +16,7 @@ const b = await chromium.launch({ headless: false, args: ["--enable-gpu", "--use
 const ctx = await b.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
 await ctx.addInitScript(() => {
   window.__fakePad = null;
+  window.__benchNoBuilderTake = true; // test chains stay free of the Builder's take (bench-builder-take.ts)
   navigator.getGamepads = () => [window.__fakePad];
 });
 const p = await ctx.newPage();
@@ -513,8 +514,9 @@ const nSaved = await count();
 await reload();
 check((await count()) === nSaved, `a reload keeps the chain (${nSaved} clips)`);
 
-// ── THE MIGRATION (T1a): R1's chain carried over, PROVEN in the page, v1 never touched (Carl: "Only when I say so")
-const V1 = "c2b-camera-bench-chain-v1", V2 = "c2b-camera-bench-chain-v2";
+// ── THE MIGRATION (T1a; re-pointed for SHAPE CLIPS' v3): R1's chain carried over, PROVEN in the page, v1 never touched
+//    (Carl: "Only when I say so"); ⛔ only v3 is ever written — v2 and v1 byte-identical throughout
+const V1 = "c2b-camera-bench-chain-v1", V2 = "c2b-camera-bench-chain-v2", V3 = "c2b-camera-bench-chain-v3";
 const v1Samples = (secs, a, b) => {
   const n = Math.round(secs * 60);
   return Array.from({ length: n + 1 }, (_, i) => [i / 60, a + ((b - a) * i) / n, 0, 1, 0, 0, 30]);
@@ -529,7 +531,8 @@ const v1json = JSON.stringify({
   refined: null,
   comp: null,
 });
-const keys = () => p.evaluate(([a, b]) => ({ v1: localStorage.getItem(a), v2: localStorage.getItem(b), refused: localStorage.getItem(`${b}-refused`) }), [V1, V2]);
+const keys = () =>
+  p.evaluate(([a, b, c]) => ({ v1: localStorage.getItem(a), v2: localStorage.getItem(b), v3: localStorage.getItem(c), refused: localStorage.getItem(`${c}-refused`) }), [V1, V2, V3]);
 const seed = (entries, flags = []) =>
   p.evaluate(
     ([e, f]) => {
@@ -544,34 +547,37 @@ const carryLine = () => p.$eval("[data-carry]", (e) => ({ kind: e.dataset.carry,
 const saveLine = () => p.$eval("[data-save-error]", (e) => e.textContent).catch(() => null);
 // ⚠ HARNESS-ONLY SWITCHES (read before the page's scripts): fail the v2 write; force the parity "differences" path —
 // valid R1 data cannot reach it (proven in Node: the migration is R1's own arithmetic), so [E2] has no other way in
-await p.addInitScript(([v2key]) => {
+await p.addInitScript(([v3key]) => {
   if (sessionStorage.getItem("t1a-failSave")) {
     const orig = Storage.prototype.setItem;
     Storage.prototype.setItem = function (k, v) {
-      if (k === v2key) throw new DOMException("quota", "QuotaExceededError");
+      if (k === v3key) throw new DOMException("quota", "QuotaExceededError");
       return orig.call(this, k, v);
     };
   }
   if (sessionStorage.getItem("t1a-forceDiff")) window.__cameraBenchParityTol = -1;
-}, [V2]);
+}, [V3]);
 await seed([[V1, v1json]]);
 await reload();
 s = await state();
 let k = await keys();
 let cl = await carryLine();
 check(s.tracks.join() === "1,2" && s.clips.length === 2 && cl?.kind === "identical" && /identical/.test(cl.text), `an R1 chain CARRIED OVER: tracks ${s.tracks.join(", ")}, ${s.clips.length} clips; "${cl?.text}"`);
-check(k.v1 === v1json && JSON.parse(k.v2).migration?.ok === true, "v1 BYTE-IDENTICAL; v2 written with the parity verdict");
+check(
+  k.v1 === v1json && k.v2 === null && JSON.parse(k.v3).migrations?.[0]?.ok === true && JSON.parse(k.v3).units?.d === s.d,
+  "v1 BYTE-IDENTICAL; NO v2 written; v3 written on the first measured frame, with the parity verdict and the chain's units",
+);
 await seed([[V1, v1json]], ["t1a-failSave"]);
 await reload();
 s = await state();
 k = await keys();
-check(/Not saved/.test((await saveLine()) ?? "") && s.clips.length === 2 && k.v2 === null && k.v1 === v1json, `a v2 write that fails during the carry-over is SHOWN; the bench runs in memory; v1 kept: "${await saveLine()}"`);
-// [E2] the parity FAILS (forced): v2 STILL written, new work saved, the differences line SURVIVES a reload
+check(/Not saved/.test((await saveLine()) ?? "") && s.clips.length === 2 && k.v3 === null && k.v1 === v1json, `a v3 write that fails during the carry-over is SHOWN; the bench runs in memory; v1 kept: "${await saveLine()}"`);
+// [E2] the parity FAILS (forced): v3 STILL written, new work saved, the differences line SURVIVES a reload
 await seed([[V1, v1json]], ["t1a-forceDiff"]);
 await reload();
 cl = await carryLine();
 k = await keys();
-check(cl?.kind === "differences" && JSON.parse(k.v2).migration?.ok === false, `[E2] a parity failure (forced): "${cl?.text}"; v2 written`);
+check(cl?.kind === "differences" && JSON.parse(k.v3).migrations?.[0]?.ok === false, `[E2] a parity failure (forced): "${cl?.text}"; v3 written`);
 await p.evaluate(() => sessionStorage.clear());
 await p.keyboard.press("End");
 await p.keyboard.press("Space");
@@ -583,14 +589,217 @@ s = await state();
 k = await keys();
 cl = await carryLine();
 check(s.clips.length === 3 && k.v1 === v1json && cl?.kind === "differences", `[E2] …a take recorded, reloaded: ${s.clips.length} clips kept, v1 byte-identical, the differences line still showing`);
-// [E3] an UNREADABLE v2 beside a valid v1: the bench starts EMPTY, says so, NEVER falls back to v1
-await seed([[V1, v1json], [V2, "{not json"]]);
+// [E3] an UNREADABLE v3 beside a valid v2 and v1: the bench starts EMPTY, says so, NEVER falls back
+const v2json = JSON.stringify({
+  kind: "c2b-camera-chain",
+  version: 2,
+  tracks: [1],
+  clips: [{ id: "t1", cam: 1, start: 0, order: 0, in: 0, out: 1.5, samples: v1Samples(1.5, 0, 0.2) }],
+  refined: null,
+  comp: null,
+  migration: { from: 1, moments: 9, maxDiff: 0.25, ok: false },
+});
+await seed([[V1, v1json], [V2, v2json], [V3, "{not json"]]);
 await reload();
 s = await state();
 k = await keys();
 const e3 = (await saveLine()) ?? "";
-check(s.clips.length === 0 && /could not be read/.test(e3) && e3.includes(`${V2}-refused`) && e3.includes(V1), `[E3] an unreadable v2: the bench EMPTY, "${e3}"`);
-check(k.v1 === v1json && k.v2 === "{not json" && k.refused === "{not json", "[E3] …both keys byte-identical; the unreadable v2 kept aside");
+check(s.clips.length === 0 && /could not be read/.test(e3) && e3.includes(`${V3}-refused`) && e3.includes(V2) && e3.includes(V1), `[E3] an unreadable v3: the bench EMPTY, "${e3}"`);
+check(k.v1 === v1json && k.v2 === v2json && k.v3 === "{not json" && k.refused === "{not json", "[E3] …every key byte-identical; the unreadable v3 kept aside");
+
+// ── ⛔ SHAPE CLIPS, STEP 2 (the plan v2.1): v2 → v3, the save rule, the units, Home, the hook
+{
+// v2 → v3 on load: the units filled on the first frame and SAVED (it has clips); v2 byte-identical; both verdicts kept; R1's
+// persistent differences line still showing (a v2 carrying `from: 1, ok: false`)
+await seed([[V2, v2json]]);
+await reload();
+s = await state();
+k = await keys();
+cl = await carryLine();
+const v3a = k.v3 ? JSON.parse(k.v3) : null;
+check(
+  s.clips.length === 1 && k.v2 === v2json && v3a?.version === 3 && v3a.units?.d === s.d && v3a.migrations?.[0]?.ok === false && v3a.migrations?.[1]?.from === 2,
+  `v2 → v3 on load: units saved on the first frame (d ${v3a?.units?.d?.toFixed(1)}), v2 BYTE-IDENTICAL, migrations ${JSON.stringify(v3a?.migrations)}`,
+);
+check(cl?.kind === "differences", `[E2] R1's verdict carried through v2 → v3: the persistent line shows: "${cl?.text}"`);
+// the GREEN carry-over line survives the quiet units save, and goes at the first ACTION
+const v2ok = v2json.replace('"ok":false', '"ok":true').replace('"maxDiff":0.25', '"maxDiff":0');
+await seed([[V2, v2ok]]);
+await reload();
+await wait(400);
+cl = await carryLine();
+check(!!cl && /carried over/.test(cl.text) && JSON.parse((await keys()).v3).units, `the green carry-over line STILL SHOWN after the quiet units save: "${cl?.text}"`);
+await p.keyboard.press("End");
+await p.keyboard.press("Space");
+await wait(300);
+await p.keyboard.press("Space");
+await wait(400);
+check((await carryLine()) === null, "…and gone at Carl's first action (a recording)");
+// an EMPTY first visit writes NO v3; an unreadable v2 shows its refusal on a SECOND load too
+await seed([]);
+await reload();
+k = await keys();
+check(k.v3 === null, "an EMPTY first visit writes no v3 (the units filled in memory only)");
+await seed([[V2, "{not json"]]);
+await reload();
+await reload();
+k = await keys();
+const e2 = (await saveLine()) ?? "";
+check(k.v3 === null && k.v2 === "{not json" && /could not be read/.test(e2) && e2.includes(V2), `an unreadable v2: no v3 written, the refusal shown AGAIN on a second load: "${e2}"`);
+// deleting the last clip SAVES (an action), even empty
+await seed([]);
+await reload();
+await p.keyboard.press("Space");
+await wait(300);
+await p.keyboard.press("Space");
+await wait(400);
+s = await state();
+await p.click(`[data-clip-id="${s.clips[0].id}"]`);
+await p.keyboard.press("Delete");
+await wait(300);
+k = await keys();
+check(k.v3 && JSON.parse(k.v3).clips.length === 0, "deleting the LAST clip saves an empty v3 (an action)");
+
+// ⛔ HOME and a RECORDING with the chain's units ≠ the live d (the deliberate second value of d)
+s = await state();
+const live = s.d;
+const skewed = JSON.stringify({ kind: "c2b-camera-chain", version: 3, tracks: [1], clips: [], units: { d: live * 1.1, up: 0, zc: s.chainUnits.zc }, refined: null, comp: null, migrations: [] });
+await seed([[V3, skewed]]);
+await reload();
+s = await state();
+check(Math.abs(s.chainUnits.d - live * 1.1) < 1e-6 && Math.abs(s.d - live) < 1e-6, `a chain whose units differ from the live measure loads with ITS units (d ${s.chainUnits.d.toFixed(1)} vs live ${s.d.toFixed(1)})`);
+await connect();
+await axes([0, -1, 0, 0]);
+await wait(600);
+await axes([0, 0, 0, 0]);
+await wait(300);
+await p.keyboard.press("KeyH");
+await wait(300);
+s = await state();
+check(Math.abs(s.at.x) < 0.01 && Math.abs(s.at.y) < 0.01 && Math.abs(s.at.z - s.d) < 0.01, `HOME lands at the front on the LIVE d (world ${s.at.x.toFixed(2)}, ${s.at.y.toFixed(2)}, ${s.at.z.toFixed(1)} = d ${s.d.toFixed(1)}) — off the clips' conversion`);
+const flownFrom = { ...s.at };
+await p.keyboard.press("Space");
+await axes([0, -1, 0, 0]);
+await wait(800);
+await axes([0, 0, 0, 0]);
+await p.keyboard.press("Space");
+await wait(400);
+const flownTo = (await state()).at;
+await p.keyboard.press("Home");
+await wait(300);
+const playedFrom = (await state()).at;
+await p.keyboard.press("End");
+await wait(300);
+const playedTo = (await state()).at;
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+check(dist(playedFrom, flownFrom) < 0.01 && dist(playedTo, flownTo) < 0.01, `a recording made under the chain's units PLAYS BACK WHERE IT WAS FLOWN (start ${dist(playedFrom, flownFrom).toExponential(1)} px, end ${dist(playedTo, flownTo).toExponential(1)} px)`);
+
+// ⛔ THE HOOK: a shape placed at the playhead — the newest take, played from its own numbers, solo, deleted to a gap
+const BC = await import(new URL("../../../components/showcase/bench-chain.ts", import.meta.url).href);
+await seed([]);
+await reload();
+await connect();
+await p.keyboard.press("Space");
+await wait(300);
+await axes([0, -1, 0, 0]);
+await wait(1500);
+await axes([0, 0, 0, 0]);
+await p.keyboard.press("Space");
+await wait(400);
+s = await state();
+const u = s.chainUnits;
+const c1 = s.chain.clips[0];
+const T1 = c1.start + c1.out - c1.in;
+const at1 = BC.clipPoseAt(c1, T1);
+const v = BC.startSpeed(s.chain, T1, at1, 280 / u.d, u.d);
+const axis = { x: -285.2 / u.d, z: (0 - u.zc) / u.d };
+const shape = BC.helixFrom({ start: at1, end: { x: (-285.2 - 675.8) / u.d, y: (-429.05 + 948 - u.up) / u.d, z: axis.z, yaw: 0, pitch: 0, fov: at1.fov }, axisX: axis.x, axisZ: axis.z, laps: 2, dir: 1, v0: v.v0, pace: 280 / u.d, rampS: 3, aimS: 1 });
+const placed = await p.evaluate((sh) => window.__benchPlace(sh), shape);
+await wait(300); // the bench publishes its state every 0.1 s
+s = await state();
+const sc = s.clips.find((c) => c.id === placed.id);
+check(!!sc && sc.source === "shape" && Math.abs(sc.start - T1) < 1e-9 && sc.order === 1 && Math.abs(sc.len - BC.shapeLength(shape)) < 1e-9, `the HOOK placed a shape at the playhead (${sc?.start.toFixed(2)} s, ${sc?.len.toFixed(1)} s long), the newest take, saved: ${JSON.parse((await keys()).v3).clips.length} clips in v3`);
+const bad = await p.evaluate((sh) => window.__benchPlace({ ...sh, r0: 0 }), shape);
+await wait(300);
+check(typeof bad.refusal === "string" && (await count()) === 2, `the hook REFUSES a bad shape in words: "${bad.refusal}"`);
+await scrubTo(T1 + 6);
+s = await state();
+const want = BC.poseInShape(shape, s.T - T1);
+check(s.source === placed.id && Math.abs(s.pose.x - want.x) < 1e-9 && Math.abs(s.pose.z - want.z) < 1e-9 && Math.abs(s.pose.yaw - want.yaw) < 1e-6, `scrubbed to ${s.T.toFixed(2)} s, the camera IS the shape's own pose (Δx ${(s.pose.x - want.x).toExponential(1)}, Δyaw ${(s.pose.yaw - want.yaw).toExponential(1)}°)`);
+await p.click(`[data-clip-id="${placed.id}"]`);
+await p.keyboard.press("KeyP");
+await wait(700);
+s = await state();
+check(s.mode === "play" && /solo/.test(s.status) && s.source === placed.id, `the shape plays SOLO when selected: "${s.status}"`);
+await p.keyboard.press("KeyP"); // stops the solo play
+await wait(200);
+s = await state();
+if (!s.selection.includes(placed.id)) await p.click(`[data-clip-id="${placed.id}"]`);
+await p.keyboard.press("Delete");
+await wait(300);
+s = await state();
+check((await count()) === 1 && !s.clips.some((c) => c.id === placed.id), "a deleted shape is gone; clip 1 kept");
+}
+await seed([]);
+
+// ── ⛔ SHAPE CLIPS, STEP 3: a corkscrew placed by the hook from clip 1's end to Carl's end pose; selected, its NUMBERS in
+//    the inspector; an edit by number; the clash warning; one image. (The Corkscrew PANEL was built and REMOVED — Carl:
+//    "It a good idea but not needed" — so nothing selected shows no panel.)
+{
+  const BC = await import(new URL("../../../components/showcase/bench-chain.ts", import.meta.url).href);
+  await reload();
+  await connect();
+  await p.keyboard.press("Space");
+  await axes([0, -1, 0, 0]);
+  await wait(1500);
+  await axes([0, 0, 0, 0]);
+  await p.keyboard.press("Space");
+  await wait(400);
+  let s3 = await state();
+  const u3 = s3.chainUnits;
+  const k1 = s3.chain.clips[0];
+  const T3 = k1.start + k1.out - k1.in;
+  const at3 = BC.clipPoseAt(k1, T3);
+  const ax = { x: -285.2 / u3.d, z: -u3.zc / u3.d };
+  const sh = BC.helixFrom({
+    start: at3,
+    end: { x: (-285.2 - 675.8) / u3.d, y: (-429.05 + 948 - u3.up) / u3.d, z: ax.z, yaw: 0, pitch: 0, fov: at3.fov },
+    axisX: ax.x, axisZ: ax.z, laps: 2, dir: 1, v0: BC.startSpeed(s3.chain, T3, at3, 280 / u3.d, u3.d).v0, pace: 280 / u3.d, rampS: 3, aimS: 1,
+  });
+  const put = await p.evaluate((x) => window.__benchPlace(x), sh);
+  await wait(300);
+  await p.click(`[data-clip-id="${put.id}"]`);
+  await wait(300);
+  s3 = await state();
+  const placed3 = s3.clips.find((c) => c.id === put.id);
+  const v0shown = await p.$eval("[data-shape-fields]", (e) => e.textContent).catch(() => "");
+  check(!!placed3 && s3.selection.includes(placed3.id) && /Corkscrew/.test(v0shown) && /Laps/.test(v0shown), `a hook-placed corkscrew on Cam ${placed3?.cam} at ${placed3?.start.toFixed(2)} s, selected: its NUMBERS shown in the inspector`);
+  check(Math.abs(placed3.start - s3.clips[0].len) < 1e-6, `it starts where clip 1 ends (${placed3.start.toFixed(2)} s)`);
+  const clash = await p.$eval("[data-clash]", (e) => e.textContent).catch(() => null);
+  check(!!clash, `the clash warning shows (warning only): "${clash}"`);
+  const len0 = placed3.len;
+  const pace = await p.$("[data-shape-field=Pace]");
+  const was = Number(await pace.inputValue());
+  await pace.fill((was / 2).toFixed(2));
+  await pace.press("Enter");
+  await wait(400);
+  s3 = await state();
+  const after = s3.clips.find((c) => c.id === placed3.id);
+  check(after.len > len0 * 1.5 && /longer/.test(s3.status), `an EDIT by number: pace ${was} → ${(was / 2).toFixed(2)} m/s, ${len0.toFixed(1)} → ${after.len.toFixed(1)} s; "${s3.status}"`);
+  const savedPace = JSON.parse((await keys()).v3).clips.find((c) => c.id === placed3.id)?.shape?.pace;
+  const livePace = s3.chain.clips.find((c) => c.id === placed3.id).shape.pace;
+  check(savedPace === livePace && Math.abs((livePace * s3.chainUnits.d) / 100 - was / 2) < 0.005, `…SAVED as the shape's numbers (v3's pace ${((savedPace * s3.chainUnits.d) / 100).toFixed(2)} m/s = the bench's)`);
+  await p.click(`[data-clip-id="${placed3.id}"]`); // deselect
+  await wait(300);
+  check((await p.$("[data-corkscrew-panel]")) === null && (await p.$("[data-shape-fields]")) === null, "nothing selected: NO Corkscrew panel (removed, Carl), no shape fields");
+  await p.click(`[data-clip-id="${placed3.id}"]`);
+  await scrubTo(placed3.start + 4);
+  await wait(500);
+  await p.screenshot({ path: `${OUT}/camera-bench-shape-clips.png` });
+}
+await seed([]);
+
+// ── (the Moves drop-down and Open were built and REMOVED — Carl: "remove the moves, i said we will come back to it")
 await seed([]);
 
 await p.screenshot({ path: `${OUT}/camera-bench-t1a.png` });

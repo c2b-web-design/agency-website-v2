@@ -8,14 +8,17 @@
  *  ⚠ NOT WATCHED: the bench's store, its UI, the pad, storage — the page harness does those; Carl's own chain — the bench
  *  checks it in his browser on the first load (`parityV1`) and shows the verdict. */
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import vm from "node:vm";
 import {
-  EDGE_S, PROBE, Sampler, addTrack, chainEnd, clipPoseAt, deleteClips, emptyChain, gapsOf, joinsOf, migrateV1, parityV1, parseChain,
-  poseAtT, recordClip, sourceAt, takesAt, v1PoseAt,
+  EDGE_S, PROBE, Sampler, addTrack, chainEnd, clipPoseAt, deleteClips, emptyChain, gapsOf, helixFrom, joinsOf, migrateV1, parityV1,
+  moveFromFile, parseChain, placeShape, poseAtT, poseInShape, recaptureStart, recordClip, replaceShape, shapeLength, shapeRefusal, sourceAt, startSpeed,
+  takesAt, v1PoseAt, wrapDeg,
 } from "../../../components/showcase/bench-chain.ts";
+const here = dirname(fileURLToPath(import.meta.url));
 
 const tmp = mkdtempSync(join(tmpdir(), "bench-r1-"));
 const r1File = join(tmp, "bench-chain-r1.ts");
@@ -148,21 +151,32 @@ ch = recordClip(addTrack(ch), 2, 1, S(1, 50, 51), "B2"); // Cam 2 over 1–2 s
   check(z.clips[0].start === 0, "[C9] a start before 0 s is clamped to 0");
 }
 
-// ── parseChain: v2 round trip; v1 migrated; refusals in words; unknown optional fields accepted
+// ── parseChain: v3 round trip; v2 and v1 migrated; refusals in words; unknown optional fields accepted
 {
-  const good = JSON.parse(JSON.stringify(ch));
+  const good = JSON.parse(JSON.stringify({ ...ch, units: { d: 2287.49, up: 0, zc: 16 } }));
   const r = parseChain(good);
-  check("chain" in r && r.migrated === null && r.chain.clips.length === 2, "a saved v2 chain reads back");
+  check("chain" in r && r.from === 3 && r.migrated === null && r.chain.clips.length === 2 && r.chain.units?.d === 2287.49, "a saved v3 chain reads back, its units with it");
   const v1 = JSON.parse(JSON.stringify(r1Chains["three clips"]));
   const m = parseChain(v1);
-  check("chain" in m && m.migrated?.length === 3 && m.chain.version === 2, "a v1 (R1) chain is MIGRATED, its R1 clips returned for the parity check");
+  check("chain" in m && m.from === 1 && m.migrated?.length === 3 && m.chain.version === 3 && m.chain.units === null, "a v1 (R1) chain is MIGRATED to v3 (units null until the first measured frame), its R1 clips returned for the parity check");
   check("chain" in parseChain({ ...good, refined: { future: true }, somethingNew: 1 }), "an unknown optional field is ACCEPTED [A2]");
-  const kept = parseChain({ ...good, migration: { from: 1, moments: 12, maxDiff: 0.5, ok: false } });
-  check("chain" in kept && kept.chain.migration?.ok === false && kept.chain.migration.maxDiff === 0.5, "[E2] the carry-over's verdict survives a save and a read (a differences line outlives a reload)");
+  // ⛔ v2 → v3: R1's verdict carried UNCHANGED as migrations[0] (its persistent line survives), the step appended
+  const r1Verdict = { from: 1, moments: 12, maxDiff: 0.5, ok: false };
+  const v2 = { ...good, version: 2, migration: r1Verdict };
+  delete v2.units;
+  delete v2.migrations;
+  const k2 = parseChain(JSON.parse(JSON.stringify(v2)));
+  check(
+    "chain" in k2 && k2.from === 2 && k2.chain.units === null && JSON.stringify(k2.chain.migrations[0]) === JSON.stringify(r1Verdict) && k2.chain.migrations[1]?.from === 2 && k2.chain.migrations[1].clips === 2,
+    `[E2] v2 → v3: R1's verdict carried byte-for-byte as migrations[0], the step appended: ${"chain" in k2 ? JSON.stringify(k2.chain.migrations) : k2.refusal}`,
+  );
+  const back = "chain" in k2 ? parseChain(JSON.parse(JSON.stringify(k2.chain))) : null;
+  check(back && "chain" in back && JSON.stringify(back.chain.migrations) === JSON.stringify(k2.chain.migrations), "both verdicts survive a v3 save and read (a differences line outlives a reload)");
   const c0 = good.clips[0];
   const bad = [
     [{ ...good, kind: "x" }, "kind"],
-    [{ ...good, version: 3 }, "version"],
+    [{ ...good, version: 4 }, "version"],
+    [{ ...good, units: { d: 0, up: 0, zc: 0 } }, "units"],
     [{ ...good, clips: [{ ...c0, samples: [[0, 1, 2]] }] }, "sample shape"],
     [{ ...good, clips: [{ ...c0, cam: 9 }] }, "camera (not a track)"],
     [{ ...good, clips: [{ ...c0, out: c0.out + 5 }] }, "in / out"],
@@ -176,6 +190,204 @@ ch = recordClip(addTrack(ch), 2, 1, S(1, 50, 51), "B2"); // Cam 2 over 1–2 s
   }
 }
 
+// ── ⛔ SHAPE CLIPS (the plan `plan-shape-clips-27-october.md` v2.1, Step 1)
+const D = 2287.490381354744, UP = 0, ZC = 16; // the bench's measure, read from the running page 27 October
+const U = (x, y, z) => [x / D, (y - UP) / D, (z - ZC) / D];
+const AX = -285.2, AZ = 0, FLOOR = -429.05; // the snippet's constants (cm)
+/** take 2's stand-in clip 1, as tested in Playwright: 21 m out / 4 m up → face on to the C, 2 m from the face, 10 cm up,
+ *  DECELERATING to rest (6.8 s at 60 a second) */
+const clip1Samples = Array.from({ length: 409 }, (_, k) => {
+  const f = 1 - (1 - k / 408) ** 2;
+  return [k / 60, ...U(-285.2 * f, -429.05 + 400 + (10 - 400) * f, 16 + 2100 + (200 - 2100) * f), 0, 0, 30];
+});
+const v2Of = (clips) => ({ kind: "c2b-camera-chain", version: 2, tracks: [1], clips, refined: null, comp: null });
+
+/** ⛔ PARITY A — THE SNIPPET FILE RUN UNCHANGED (as `v1PoseAt` keeps R1's arithmetic): its baked samples are the reference */
+function runSnippet(clips) {
+  const src = readFileSync(join(here, "clip2-corkscrew-snippet-27-october.js"), "utf8");
+  const store = new Map([["c2b-camera-bench-chain-v2", JSON.stringify(v2Of(clips))]]);
+  const ctx = {
+    localStorage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)) },
+    window: { __cameraBench: { units: { d: D, up: UP, zc: ZC } } },
+    location: { reload() {} },
+    setTimeout() {},
+    console: { log() {} },
+  };
+  vm.runInNewContext(src, ctx);
+  return JSON.parse(store.get("c2b-camera-bench-chain-v2")).clips.find((c) => String(c.id).startsWith("clip2-corkscrew"));
+}
+/** the shape for clip 2 BY THE BENCH's OWN RULES from clip 1's end, ⛔ its END from the snippet's constants (5π, R1, Y1) */
+function shapeForClip2(chain, pace = 280 / D) {
+  const c1 = chain.clips[0];
+  const T = c1.start + c1.out - c1.in;
+  const at = clipPoseAt(c1, T);
+  const { v0 } = startSpeed(chain, T, at, pace, D);
+  const [ex, ey, ez] = U(AX - 675.8, FLOOR + 948, AZ);
+  const axis = U(AX, 0, AZ);
+  return helixFrom({ start: at, end: { x: ex, y: ey, z: ez, yaw: 0, pitch: 0, fov: 30 }, axisX: axis[0], axisZ: axis[2], laps: 2, dir: 1, v0, pace, rampS: 3, aimS: 1 });
+}
+{
+  const baked = runSnippet([{ id: "c1", cam: 1, start: 0, order: 0, in: 0, out: clip1Samples.at(-1)[0], samples: clip1Samples }]);
+  const parsed = parseChain(v2Of([{ id: "c1", cam: 1, start: 0, order: 0, in: 0, out: clip1Samples.at(-1)[0], samples: clip1Samples }]));
+  const shape = shapeForClip2(parsed.chain);
+  const cmp = (s) => {
+    let mm = 0, dg = 0;
+    for (const x of baked.samples) {
+      const q = poseInShape(s, x[0]);
+      mm = Math.max(mm, Math.hypot(q.x - x[1], q.y - x[2], q.z - x[3]) * D * 10);
+      dg = Math.max(dg, Math.abs(wrapDeg(q.yaw - x[4])), Math.abs(q.pitch - x[5]), Math.abs(q.fov - x[6]));
+    }
+    return { mm, dg };
+  };
+  const p = cmp(shape);
+  check(Math.abs(shape.theta1 - 5 * Math.PI) < 1e-12, `the end angle by "End here"'s rule from the snippet's end: θ1 = ${(shape.theta1 / Math.PI).toFixed(12)}π (5π: 2¼ laps from face-on, left first)`);
+  check(p.mm <= 0.01 && p.dg <= 0.001, `⛔ PARITY A — the shape against the snippet's ${baked.samples.length} baked samples (the file run unchanged): position ${p.mm.toFixed(5)} mm (≤ 0.01), aim ${p.dg.toExponential(2)}° (≤ 0.001)`);
+  check(Math.abs(shapeLength(shape) - baked.out) < 1e-6, `the length: ${shapeLength(shape).toFixed(9)} s against the snippet's ${baked.out.toFixed(9)} s (within 1e-6)`);
+  const planted = cmp({ ...shape, pace: shape.pace * 1.01 });
+  check(planted.mm > 0.01, `RED FIRST: a planted pace +1 % FAILS parity (${planted.mm.toFixed(2)} mm)`);
+  // the closed form against a fine chord sum
+  let L = 0;
+  const span = shape.theta1 - shape.theta0, k = (shape.r1 - shape.r0) / span, h = (shape.y1 - shape.y0) / span;
+  const P = (phi) => [shape.axisX + (shape.r0 + k * phi) * Math.cos(shape.theta0 + phi), shape.y0 + h * phi, shape.axisZ + (shape.r0 + k * phi) * Math.sin(shape.theta0 + phi)];
+  let a = P(0);
+  for (let i = 1; i <= 200000; i++) {
+    const b = P((span * i) / 200000);
+    L += Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+    a = b;
+  }
+  const even = { ...shape, rampS: 0, v0: shape.pace };
+  check(Math.abs(shapeLength(even) * even.pace - L) * D * 10 < 0.001, `the closed-form length ${(shapeLength(even) * even.pace * D / 100).toFixed(4)} m against a 200,000-chord sum: ${(Math.abs(shapeLength(even) * even.pace - L) * D * 10).toExponential(2)} mm`);
+  const s0 = poseInShape(shape, 0), sEnd = poseInShape(shape, shapeLength(shape));
+  check(Math.hypot(s0.x - clip1Samples.at(-1)[1], s0.y - clip1Samples.at(-1)[2], s0.z - clip1Samples.at(-1)[3]) * D < 1e-9 && s0.yaw === 0, "the shape STARTS exactly where clip 1 ends (no jump at the join)");
+  const endHud = { right: (sEnd.x * D) / 100, up: (sEnd.y * D + UP - FLOOR) / 100 };
+  check(Math.abs(endHud.right + 9.61) < 0.005 && Math.abs(endHud.up - 9.48) < 0.005 && Math.abs(wrapDeg(sEnd.yaw + 90)) < 1e-9, `the END is Carl's pose: ${endHud.right.toFixed(3)} m right, ${endHud.up.toFixed(3)} m up, looking right (yaw ${sEnd.yaw.toFixed(1)}°)`);
+  // the shape on the tracks
+  const withShape = placeShape(parsed.chain, 1, parsed.chain.clips[0].out, shape, "S");
+  const mid = parsed.chain.clips[0].out + 10;
+  check(sourceAt(withShape, mid)?.id === "S" && Math.abs(clipPoseAt(withShape.clips[1], mid).x - poseInShape(shape, 10).x) < 1e-15, "a placed shape PLAYS: sourceAt finds it, clipPoseAt asks the shape");
+  check(joinsOf(withShape, D / 100).every((j) => j.kind !== "mismatch" || (j.metres < 1e-9 && j.degrees < 1e-9)), "no mismatch at the join into the shape");
+  const over = placeShape(recordClip(emptyChain(), 1, 0, S(30, 0, 1), "R"), 1, 2, shape, "S2");
+  check(sourceAt(over, 5)?.id === "S2" && sourceAt(over, 2 + shapeLength(shape) + 1)?.id === "R", "a shape over a recorded clip is the NEWER TAKE on top; the recording resumes after it");
+  const longer = replaceShape(withShape, "S", { ...shape, pace: shape.pace / 2 });
+  check(longer.clips[1].out > withShape.clips[1].out && longer.clips[1].order === withShape.clips[1].order && longer.clips[1].start === withShape.clips[1].start, `an edit RE-DERIVES the length (${withShape.clips[1].out.toFixed(1)} → ${longer.clips[1].out.toFixed(1)} s), id, start and take order kept`);
+  check(sourceAt(deleteClips(withShape, new Set(["S"])), mid) === null, "a deleted shape leaves a gap");
+  // v3 round trip with a shape; refusals
+  const saved = parseChain(JSON.parse(JSON.stringify({ ...withShape, units: { d: D, up: UP, zc: ZC } })));
+  check("chain" in saved && saved.chain.clips[1].shape?.theta1 === shape.theta1 && saved.chain.clips[1].samples === undefined, "a shape clip survives a save and a read, as its numbers");
+  const sc = JSON.parse(JSON.stringify(withShape.clips[1]));
+  for (const [b, what] of [
+    [{ ...withShape, clips: [withShape.clips[0], { ...sc, samples: clip1Samples }] }, "clip with BOTH sources"],
+    [{ ...withShape, version: 2, clips: [withShape.clips[0], sc] }, "shape in a version 2 chain"],
+    [{ ...withShape, clips: [withShape.clips[0], { ...sc, shape: { ...sc.shape, r1: 0 } }] }, "radius of 0 (the camera on the axis)"],
+    [{ ...withShape, clips: [withShape.clips[0], { ...sc, shape: { ...sc.shape, v0: sc.shape.pace * 2 } }] }, "start speed above the pace"],
+    [{ ...withShape, clips: [withShape.clips[0], { ...sc, shape: { ...sc.shape, theta1: sc.shape.theta0 } }] }, "shape that goes nowhere"],
+  ]) {
+    const x = parseChain(b);
+    check("refusal" in x && x.refusal.length > 5, `a ${what} is refused: "${x.refusal}"`);
+  }
+  check(shapeRefusal({ ...shape, pace: 0 }) !== null && shapeRefusal(shape) === null, "the shape check refuses a zero pace and accepts the corkscrew");
+}
+{
+  // ⛔ the constant-radius branch, and a radius change just above its threshold: both agree with a chord sum
+  for (const dr of [0, 1e-8, 1e-6]) {
+    const s = { kind: "helix", axisX: 0, axisZ: 0, theta0: 0, theta1: 4 * Math.PI, r0: 0.1, r1: 0.1 + dr, y0: 0, y1: 0.3, fov: 30, yaw0: 90, pitch0: 0, aimS: 0, pace: 0.1, v0: 0.1, rampS: 0 };
+    let L = 0, a = [0.1, 0, 0];
+    for (let i = 1; i <= 200000; i++) {
+      const phi = (4 * Math.PI * i) / 200000, r = 0.1 + (dr * phi) / (4 * Math.PI);
+      const b = [r * Math.cos(phi), (0.3 * phi) / (4 * Math.PI), r * Math.sin(phi)];
+      L += Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+      a = b;
+    }
+    check(Math.abs(shapeLength(s) * 0.1 - L) * D * 10 < 0.001, `radius change ${dr} d-units: length within ${(Math.abs(shapeLength(s) * 0.1 - L) * D * 10).toExponential(1)} mm of a chord sum (the constant-radius branch below 4e-7)`);
+  }
+}
+{
+  // ⛔ the ±180° jump: a re-captured start just across it gains or loses NO lap; "End here" right first at θ ≈ π
+  const base = helixFrom({ start: { x: -0.1, y: 0, z: 0.0001, yaw: 0, pitch: 0, fov: 30 }, end: { x: 0.1, y: 0.3, z: 0, yaw: 0, pitch: 0, fov: 30 }, axisX: 0, axisZ: 0, laps: 2, dir: 1, v0: 0, pace: 0.1, rampS: 3, aimS: 1 });
+  const again = recaptureStart(base, { x: -0.1, y: 0, z: -0.0001, yaw: 0, pitch: 0, fov: 30 }, 0);
+  check(Math.abs(again.theta1 - again.theta0 - (base.theta1 - base.theta0)) < 0.01, `a start re-captured across ±180° keeps its laps: ${((base.theta1 - base.theta0) / (2 * Math.PI)).toFixed(3)} → ${((again.theta1 - again.theta0) / (2 * Math.PI)).toFixed(3)} laps`);
+  const right = helixFrom({ start: { x: 0, y: 0, z: 0.1, yaw: 0, pitch: 0, fov: 30 }, end: { x: -0.1, y: 0.3, z: 0.000003, yaw: 0, pitch: 0, fov: 30 }, axisX: 0, axisZ: 0, laps: 2, dir: -1, v0: 0, pace: 0.1, rampS: 3, aimS: 1 });
+  const laps = (right.theta0 - right.theta1) / (2 * Math.PI);
+  check(right.theta1 < right.theta0 && laps > 2 && laps < 3, `"End here" RIGHT FIRST with the end on the atan2 jump: ${laps.toFixed(4)} laps the other way (2 to 3)`);
+}
+{
+  // ⛔ v0: in a gap 0; a re-framed start 0 (and said); at a parked clip end the clip's own speed
+  const g = recordClip(emptyChain(), 1, 0, S(2, 0, 2), "A");
+  check(startSpeed(g, 3, { x: 2, y: 0, z: 1, yaw: 0, pitch: 0, fov: 30 }, 5, D).v0 === 0, "v0 in a GAP is 0");
+  const off = startSpeed(g, 2, { x: 2.001, y: 0, z: 1, yaw: 0, pitch: 0, fov: 30 }, 5, D);
+  check(off.v0 === 0 && !!off.why, `a start RE-FRAMED after parking (2.3 cm off): v0 0 — "${off.why}"`);
+  const on = startSpeed(g, 2, clipPoseAt(g.clips[0], 2), 5, D);
+  check(Math.abs(on.v0 - 1) < 1e-6 && on.why === null, `at a parked clip end: the clip's own speed (${on.v0.toFixed(6)} units/s, its 1 unit/s)`);
+  // joins across whole turns read 0°
+  let t = recordClip(emptyChain(), 1, 0, [[0, 0, 0, 1, 0, 0, 30], [1, 1, 0, 1, 720, 0, 30]], "A");
+  t = recordClip(t, 1, 1, [[0, 1, 0, 1, 0, 0, 30], [1, 2, 0, 1, 0, 0, 30]], "B");
+  const j = joinsOf(t, 1)[0];
+  check(j?.kind === "mismatch" && j.degrees < 1e-9, `a join across 720° of yaw reads ${j?.degrees}° (wrapped)`);
+}
+
+// ── ⛔ THE GLIDE and the MOVE FILE (`structural-note-glide-and-open-27-october.md`; Carl: "Approved, build it")
+{
+  const file = JSON.parse(readFileSync(join(here, "..", "moves", "your-company-take-1.move.json"), "utf8"));
+  const units = { d: D, up: UP, zc: ZC };
+  // Carl's start, roughly: beyond YOUR's left end, a little higher than before, in the letters' plane, looking right
+  const cam = { x: -961 / D, y: (560 - UP) / D, z: (5 - ZC) / D, yaw: -90, pitch: 0, fov: 30 };
+  const m = moveFromFile(file, cam, units);
+  check("shape" in m && m.shape.kind === "glide" && m.shape.points.length === 6, `the move file reads: "${m.name ?? m.refusal}", a glide of ${"shape" in m ? m.shape.points.length : 0} waypoints from the CAMERA`);
+  const g = m.shape;
+  const T = shapeLength(g);
+  const s0 = poseInShape(g, 0), sT = poseInShape(g, T);
+  check(Math.hypot(s0.x - cam.x, s0.y - cam.y, s0.z - cam.z) < 1e-12 && s0.yaw === -90 && s0.pitch === 0, "it STARTS exactly where the camera is, aimed as the camera is (no jump)");
+  const endW = [sT.x * D, sT.y * D + UP, sT.z * D + ZC];
+  check(Math.hypot(endW[0] + 285.2, endW[1] + 419, endW[2] - 216) < 1e-6 && Math.abs(wrapDeg(sT.yaw)) < 1e-6 && Math.abs(sT.pitch) < 1e-6, `it LANDS at the C's base face on: (${endW.map((v) => v.toFixed(2)).join(", ")}) cm, yaw ${sT.yaw.toFixed(4)}°, pitch ${sT.pitch.toFixed(4)}°`);
+  // the length: the quadrature against an independent 200,000-chord sum of the same spline (sampled through poseInShape's
+  // own knots is circular — so the chord sum walks the spline by its knot parameter, from first principles here)
+  const P = [g.points[0].map((v, i) => 2 * v - g.points[1][i]), ...g.points, g.points.at(-1).map((v, i) => 2 * v - g.points.at(-2)[i])];
+  const cr = (p0, p1, p2, p3, t) => {
+    const dd = (a, b) => Math.sqrt(Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]));
+    const t1 = dd(p0, p1), t2 = t1 + dd(p1, p2), t3 = t2 + dd(p2, p3), u = t1 + (t2 - t1) * t;
+    const L = (a, b, ta, tb) => a.map((v, i) => v + (b[i] - v) * ((u - ta) / (tb - ta)));
+    const a1 = L(p0, p1, 0, t1), a2 = L(p1, p2, t1, t2), a3 = L(p2, p3, t2, t3);
+    return L(L(a1, a2, 0, t2), L(a2, a3, t1, t3), t1, t2);
+  };
+  let chord = 0;
+  for (let i = 0; i < g.points.length - 1; i++) {
+    let a = cr(P[i], P[i + 1], P[i + 2], P[i + 3], 0);
+    for (let k = 1; k <= 40000; k++) {
+      const b = cr(P[i], P[i + 1], P[i + 2], P[i + 3], k / 40000);
+      chord += Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+      a = b;
+    }
+  }
+  const even = { ...g, rampS: 0, landS: 0, v0: g.pace };
+  const Lq = shapeLength(even) * even.pace;
+  check(Math.abs(Lq - chord) * D * 10 < 0.01, `the glide's length by Gauss–Legendre ${(Lq * D / 100).toFixed(4)} m against an independent 200,000-chord sum: ${(Math.abs(Lq - chord) * D * 10).toExponential(2)} mm`);
+  // the clock: at rest at both ends, the pace in the middle
+  const spd = (t, h = 0.01) => { const a = poseInShape(g, t - h), b = poseInShape(g, t + h); return (Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) * D) / (200 * h); };
+  check(spd(0.02, 0.01) < 0.01 && spd(T - 0.02, 0.01) < 0.01 && Math.abs(spd(T / 2) - 1.8) < 0.005, `the clock: ${spd(0.02, 0.01).toFixed(4)} m/s leaving, ${spd(T / 2).toFixed(3)} m/s mid-move (1.8), ${spd(T - 0.02, 0.01).toFixed(4)} m/s landing — ${T.toFixed(1)} s in all`);
+  // the aim never jumps: the largest change of yaw between two 1/60 s moments
+  let jump = 0;
+  for (let t = 1 / 60; t <= T; t += 1 / 60) jump = Math.max(jump, Math.abs(wrapDeg(poseInShape(g, t).yaw - poseInShape(g, t - 1 / 60).yaw)));
+  check(jump < 1, `the aim turns smoothly: at most ${jump.toFixed(3)}° in a 1/60 s frame`);
+  // placed, saved, read back as numbers; a glide over a recording is the newer take
+  const placed = placeShape(recordClip(emptyChain(), 1, 0, S(2, 0, 1), "R"), 1, 2, g, "G");
+  const back = parseChain(JSON.parse(JSON.stringify({ ...placed, units })));
+  check("chain" in back && back.chain.clips[1].shape?.kind === "glide" && Math.abs(clipPoseAt(back.chain.clips[1], 2 + T / 3).x - poseInShape(g, T / 3).x) < 1e-15, "a glide clip plays, survives a save and a read as its numbers");
+  check(recaptureStart(g, { ...cam, x: cam.x + 0.01 }, 0).points[0][0] === cam.x + 0.01 && recaptureStart(g, cam, 0).points[5] === g.points[5], "Start here moves only the first waypoint; the rest kept");
+  for (const [bad, what] of [
+    [{ ...g, looks: g.looks.slice(1) }, "look-at points not one per waypoint"],
+    [{ ...g, points: [g.points[0], g.points[0], ...g.points.slice(2)] }, "two waypoints at the same point"],
+    [{ ...g, pace: 1000 / D, rampS: 10, landS: 10 }, "glide too short for its eases"],
+    [{ ...g, looks: g.looks.map((p, i) => (i === 3 ? g.points[3] : p)) }, "camera passing through its own look-at point"],
+    // the last look-at point BEHIND where the move started looking (it starts looking +x, ends looking −x): 180° round
+    [{ ...g, looks: g.looks.map((p, i) => (i === 5 ? [g.points[5][0] - 1000 / D, g.points[5][1], g.points[5][2]] : p)) }, "aim turning half a turn from its start"],
+  ]) {
+    const r = shapeRefusal(bad);
+    check(typeof r === "string" && r.length > 5, `a ${what} is refused: "${r}"`);
+  }
+  check("refusal" in moveFromFile({ ...file, start: "somewhere" }, cam, units) && "refusal" in moveFromFile({ kind: "x" }, cam, units), "a move file not starting at the camera, or not a move file, is refused");
+  // ⛔ the helix untouched by the glide's clock: Parity A still holds (re-checked above, unchanged)
+}
+
 console.log(`\nVERDICT ${fail ? "✖" : "✔"} ${pass}/${pass + fail}`);
-console.log("⚠ NOT WATCHED: the store, the UI, the pad, storage — the page harness does those; Carl's own chain — checked in his browser on the first load.");
+console.log("⚠ NOT WATCHED: the store, the UI, the pad, storage — the page harness does those; Carl's own take 2 (Parity B, dropped by Carl 27 October: the data was a test).");
 process.exitCode = fail ? 1 : 0;

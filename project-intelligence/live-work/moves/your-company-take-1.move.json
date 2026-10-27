@@ -1,0 +1,27 @@
+{
+  "kind": "c2b-camera-move",
+  "version": 1,
+  "name": "Your company, take 1",
+  "_note": "The Builder's move (Carl: 'Get creative, you decide'). World cm (1 px = 1 cm): x right of the piece's centre, y up (the floor at -429), z out (the arch's face at 16). Starts WHERE THE CAMERA IS when opened. It reads the arch as a sentence: from beyond YOUR's left end, out and square on to YOUR at its own height, down past the crown, onto the left column, landing face on to the C at its base (10 cm up, 2 m out) - YOUR ... COMPANY.",
+  "start": "camera",
+  "glide": {
+    "points": [
+      [-560, 500, 420],
+      [0, 372, 820],
+      [-170, 40, 640],
+      [-285, -290, 380],
+      [-285.2, -419, 216]
+    ],
+    "looks": [
+      [-60, 380, 0],
+      [-2, 370, 0],
+      [-200, 120, 0],
+      [-285, -240, 0],
+      [-285.2, -419, -784]
+    ],
+    "paceCms": 180,
+    "rampS": 3,
+    "landS": 4,
+    "aimS": 1.5
+  }
+}

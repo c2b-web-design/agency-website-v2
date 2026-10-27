@@ -5,7 +5,8 @@ import CameraBench from "@/components/showcase/camera-bench";
  * v3, option A: a route of its own, apart from the client page). Carl's method: he describes the shot, PERFORMS it on his Xbox
  * pad to get it "in the ballpark", then we refine. R1, THE RECORDER (`live-work/plan-camera-recorder-r1-26-october.md`):
  * record / stop in clips on film 4's arch, drawn by the same code as `/proto/your-words` (`lettering-piece.tsx`); T1a,
- * CAMERA TRACKS (`live-work/plan-camera-tracks-t1a-27-october.md`): a track per camera, the top one plays. The page
+ * CAMERA TRACKS (`live-work/plan-camera-tracks-t1a-27-october.md`): a track per camera, the top one plays; SHAPE CLIPS
+ * (`live-work/plan-shape-clips-27-october.md`): a computed move (the corkscrew) on the tracks as its numbers. The page
  * is the title and the bench, full width (Carl: *"half the info on the page doesnt have to be there"*); the bench's drawers
  * hold the rest. An instrument, not a page: ⛔ noindex, never linked (kept through R1 — the Architect's [A7]).
  */

@@ -16,9 +16,18 @@
  * - ⛔ [E4] EVERY TAKE REACHABLE WITHOUT DELETING: the inspector lists every take under the playhead (`takesAt`), the one that
  *   plays first; click a line to select it (and Play plays it solo).
  * - While recording, the timeline is DISABLED ([A5]); the recording shows as a red block on the armed row.
+ * - ⛔ SHAPE CLIPS (the plan `live-work/plan-shape-clips-27-october.md` v2.1, Step 3): a shape clip is a clip like any
+ *   other, labelled "corkscrew". Selected, its NUMBERS show in Carl's units (metres, laps, m/s, seconds), each editable
+ *   (Enter or leaving the field commits; a refused value is said, not applied), with "Start here" and the clash warning
+ *   (Carl: *"In, warning only"*). Shapes are placed through the bench's dev hook. ⛔ The Corkscrew PANEL (Start here / End
+ *   here / Place, nothing selected) was built and REMOVED (Carl: *"If there are to be some "signature moves" that panel will
+ *   grow very quickly. It a good idea but not needed."*).
  */
-import { useRef, type PointerEvent as ReactPointerEvent } from "react";
-import { chainEnd, clipLength, numberClips, samplePose, takesAt, type Chain, type Join, type Pose } from "./bench-chain";
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  chainEnd, clipEnd, clipLength, clipPoseAt, numberClips, shapeLength, takesAt, type BarrelShape, type Chain, type Clip, type GlideShape, type HelixShape, type Join, type Pose, type Shape,
+  type Units,
+} from "./bench-chain";
 
 export const CAM_COLOURS = ["#5b7fa6", "#c08a3e", "#7f9a74", "#9a6fa8", "#a65b5b"];
 export const camColour = (cam: number) => CAM_COLOURS[(cam - 1) % CAM_COLOURS.length];
@@ -46,6 +55,10 @@ export function BenchTimeline({
   onSelect,
   onArm,
   onScrub,
+  frame,
+  shapeNote,
+  onShapeEdit,
+  onShapeStart,
 }: {
   chain: Chain;
   joins: Join[];
@@ -59,6 +72,13 @@ export function BenchTimeline({
   onSelect: (id: string, additive: boolean) => void;
   onArm: (cam: number) => void;
   onScrub: (T: number) => void;
+  /** the chain's units and the arch's floor and face (cm) — for a shape's numbers in metres; null until measured */
+  frame: { units: Units; floor: number; z1: number } | null;
+  /** the clash warning for a shape clip, in words */
+  shapeNote: (c: Clip) => string | null;
+  /** an edit: null, or the refusal in words */
+  onShapeEdit: (id: string, s: Shape) => string | null;
+  onShapeStart: (id: string) => void;
 }) {
   const end = chainEnd(chain);
   const span = Math.max(end, rec ? rec.at + rec.length : 0, 4) * 1.04;
@@ -142,7 +162,8 @@ export function BenchTimeline({
                     style={{ left: pct(j.t) }}
                     data-join={j.kind}
                   >
-                    {j.kind === "cut" ? "CUT" : `${j.metres.toFixed(2)} m · ${j.degrees.toFixed(0)}°`}
+                    {/* ⛔ metres unknown ("…") while the chain's units are not yet filled — never guessed from the live d */}
+                    {j.kind === "cut" ? "CUT" : `${Number.isFinite(j.metres) ? j.metres.toFixed(2) : "…"} m · ${j.degrees.toFixed(0)}°`}
                   </span>
                 );
               })}
@@ -173,7 +194,10 @@ export function BenchTimeline({
                           }`}
                           style={{ left: pct(c.start), width: `calc(${pct(clipLength(c))} - 2px)`, background: camColour(c.cam), zIndex: 1 + c.order }}
                         >
-                          <span className="block truncate font-semibold">{n}</span>
+                          <span className="block truncate font-semibold">
+                            {n}
+                            {c.shape && <span className="ml-1 font-normal opacity-90">{c.shape.kind === "glide" ? "⤳ glide" : "↻ corkscrew"}</span>}
+                          </span>
                           <span className="block truncate opacity-80">{sec(clipLength(c))}</span>
                         </button>
                       );
@@ -223,10 +247,12 @@ export function BenchTimeline({
         {selected.length === 1 ? (
           (() => {
             const c = selected[0];
-            const a = toMetres?.(samplePose(c.samples[0]));
-            const b = toMetres?.(samplePose(c.samples[c.samples.length - 1]));
+            // ⛔ through `clipPoseAt` at the clip's in and out — whatever its source (samples or a shape), and its trim
+            const a = toMetres?.(clipPoseAt(c, c.start));
+            const b = toMetres?.(clipPoseAt(c, clipEnd(c)));
             const m = (p?: Metres) => (p ? `${p.right.toFixed(2)}, ${p.up.toFixed(2)}, ${p.out.toFixed(2)}` : "…");
             return (
+              <>
               <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
                 <dt className="col-span-2 mb-1 text-sm font-semibold text-white">
                   Clip {numbers.get(c.id)} <span className="font-normal text-neutral-400">· Cam {c.cam} · take {c.order + 1}</span>
@@ -241,6 +267,10 @@ export function BenchTimeline({
                 <dd className="tabular-nums">{m(b)} m</dd>
                 <dd className="col-span-2 pt-1 text-[10px] text-neutral-500">Metres from ground zero: right, up, out from the arch&apos;s face.</dd>
               </dl>
+                {c.shape && (
+                  <ShapeFields key={c.id} clip={c} shape={c.shape} frame={frame} note={shapeNote(c)} disabled={disabled} onEdit={onShapeEdit} onStart={onShapeStart} />
+                )}
+              </>
             );
           })()
         ) : selected.length > 1 ? (
@@ -278,6 +308,245 @@ export function BenchTimeline({
           </div>
         )}
       </aside>
+    </div>
+  );
+}
+
+const TAU = 2 * Math.PI;
+const small =
+  "rounded border border-white/10 bg-black/40 px-2 py-0.5 text-[11px] hover:bg-white/10 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-400";
+
+/** One number of a shape, in Carl's units: Enter or leaving the field commits; anything not a number is not applied */
+function NumField({ label, unit, value, digits, disabled, onCommit }: { label: string; unit: string; value: number; digits: number; disabled: boolean; onCommit: (v: number) => void }) {
+  const shown = value.toFixed(digits);
+  const commit = (text: string) => {
+    const v = Number(text);
+    if (text.trim() !== shown && Number.isFinite(v)) onCommit(v);
+  };
+  return (
+    <>
+      <dt className="self-center text-neutral-500">{label}</dt>
+      <dd className="flex items-center gap-1">
+        <input
+          key={shown}
+          defaultValue={shown}
+          disabled={disabled}
+          inputMode="decimal"
+          aria-label={unit ? `${label} (${unit})` : label}
+          data-shape-field={label}
+          onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+          onBlur={(e) => commit(e.currentTarget.value)}
+          className="w-20 rounded border border-white/10 bg-black/40 px-1.5 py-0.5 text-right tabular-nums text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-sky-400"
+        />
+        <span className="text-neutral-500">{unit}</span>
+      </dd>
+    </>
+  );
+}
+
+/**
+ * ⛔ A SHAPE CLIP's NUMBERS (the plan v2.1, Step 3) — each converted to Carl's units and back through the CHAIN's units:
+ * the axis (m right, m out from the arch's face), the laps and direction (from `theta0` / `theta1`), the radii (m), the
+ * heights (m above the floor), the pace (m/s), the start's ease and the aim's settle (s). ⚠ The lens is HELD (the start's)
+ * and shown, not edited here (the plan listed it editable; the Builder's narrowing, stated). The clash warning (Carl:
+ * *"In, warning only"*) never blocks.
+ */
+type FieldsProps<S> = {
+  clip: Clip;
+  shape: S;
+  frame: { units: Units; floor: number; z1: number } | null;
+  note: string | null;
+  disabled: boolean;
+  onEdit: (id: string, s: Shape) => string | null;
+  onStart: (id: string) => void;
+};
+/** a shape's numbers, by its kind */
+function ShapeFields(props: FieldsProps<Shape>) {
+  const { shape } = props;
+  if (shape.kind === "barrel") return <BarrelFields {...props} shape={shape} />;
+  return shape.kind === "glide" ? <GlideFields {...props} shape={shape} /> : <HelixFields {...props} shape={shape} />;
+}
+
+/** ⛔ A BARREL's NUMBERS (the Vader move): laps, the spiral's radius (m), where the spiral ends (% of the line), the pace
+ *  along the line (m/s), the start's ease and the landing (s). Its line's ends are shown in From / To above. */
+function BarrelFields({ clip, shape: s, frame, note, disabled, onEdit }: FieldsProps<BarrelShape>) {
+  const [said, setSaid] = useState<string | null>(null);
+  if (!frame) return <p className="mt-2 text-neutral-500">Barrel roll: its numbers show once the bench has measured the arch…</p>;
+  const { d } = frame.units;
+  const edit = (patch: Partial<BarrelShape>) => setSaid(onEdit(clip.id, { ...s, ...patch }));
+  return (
+    <div className="col-span-2 mt-2 border-t border-white/10 pt-2" data-shape-fields>
+      <div className="mb-1 text-sm font-semibold text-white">Barrel roll</div>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+        <NumField label="Laps" unit="" value={s.turns} digits={2} disabled={disabled} onCommit={(v) => edit({ turns: v })} />
+        <NumField label="Radius" unit="m" value={(s.radius * d) / 100} digits={2} disabled={disabled} onCommit={(v) => edit({ radius: (v * 100) / d })} />
+        <NumField label="Rotation ease" unit="% each end" value={(s.rollEase ?? 0) * 100} digits={0} disabled={disabled} onCommit={(v) => edit({ rollEase: v / 100 })} />
+        <NumField label="Spiral starts" unit="% of the line" value={(s.spiralStart ?? 0) * 100} digits={0} disabled={disabled} onCommit={(v) => edit({ spiralStart: v / 100 })} />
+        <NumField label="Spiral ends" unit="% of the line" value={s.spiralEnd * 100} digits={0} disabled={disabled} onCommit={(v) => edit({ spiralEnd: v / 100 })} />
+        <NumField label="Pace" unit="m/s" value={(s.pace * d) / 100} digits={2} disabled={disabled} onCommit={(v) => edit({ pace: (v * 100) / d, v0: Math.min(s.v0, (v * 100) / d) })} />
+        <NumField label="Start ease" unit="s" value={s.rampS} digits={1} disabled={disabled} onCommit={(v) => edit({ rampS: v })} />
+        <NumField label="Landing" unit="s" value={s.landS} digits={1} disabled={disabled} onCommit={(v) => edit({ landS: v })} />
+      </dl>
+      {note && (
+        <p className="mt-1 text-amber-300" data-clash>
+          {note}
+        </p>
+      )}
+      {said && <p className="mt-1 text-red-300">{said}</p>}
+    </div>
+  );
+}
+
+function HelixFields({ clip, shape: s, frame, note, disabled, onEdit, onStart }: FieldsProps<HelixShape>) {
+  const [said, setSaid] = useState<string | null>(null);
+  if (!frame) return <p className="mt-2 text-neutral-500">Corkscrew: its numbers show once the bench has measured the arch…</p>;
+  const { d, up, zc } = frame.units;
+  const sweep = s.theta1 - s.theta0;
+  const dir = sweep > 0 ? 1 : -1;
+  const m = (units: number) => (units * d) / 100;
+  const u = (metres: number) => (metres * 100) / d;
+  const edit = (patch: Partial<HelixShape>) => setSaid(onEdit(clip.id, { ...s, ...patch }));
+  const short = shapeLength(s) <= s.rampS + 1e-9;
+  return (
+    <div className="col-span-2 mt-2 border-t border-white/10 pt-2" data-shape-fields>
+      <div className="mb-1 flex items-center justify-between text-sm font-semibold text-white">
+        Corkscrew
+        <button type="button" className={small} disabled={disabled} onMouseDown={noFocus} onClick={() => onStart(clip.id)} title="Take this clip's start from where the camera is now; the end stays">
+          Start here
+        </button>
+      </div>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+        <dt className="self-center text-neutral-500">Direction</dt>
+        <dd className="flex gap-1">
+          {([1, -1] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              disabled={disabled}
+              aria-pressed={dir === k}
+              onMouseDown={noFocus}
+              onClick={() => dir !== k && edit({ theta1: s.theta0 - sweep })}
+              className={`${small} ${dir === k ? "bg-neutral-200 text-neutral-950 hover:bg-neutral-200" : ""}`}
+            >
+              {k === 1 ? "Left first" : "Right first"}
+            </button>
+          ))}
+        </dd>
+        <NumField label="Laps" unit="" value={Math.abs(sweep) / TAU} digits={2} disabled={disabled} onCommit={(v) => edit({ theta1: s.theta0 + dir * v * TAU })} />
+        <NumField label="Axis right" unit="m" value={m(s.axisX)} digits={2} disabled={disabled} onCommit={(v) => edit({ axisX: u(v) })} />
+        <NumField label="Axis out" unit="m" value={(zc + s.axisZ * d - frame.z1) / 100} digits={2} disabled={disabled} onCommit={(v) => edit({ axisZ: (v * 100 + frame.z1 - zc) / d })} />
+        <NumField label="Start radius" unit="m" value={m(s.r0)} digits={2} disabled={disabled} onCommit={(v) => edit({ r0: u(v) })} />
+        <NumField label="End radius" unit="m" value={m(s.r1)} digits={2} disabled={disabled} onCommit={(v) => edit({ r1: u(v) })} />
+        <NumField label="Start height" unit="m" value={(up + s.y0 * d - frame.floor) / 100} digits={2} disabled={disabled} onCommit={(v) => edit({ y0: (v * 100 + frame.floor - up) / d })} />
+        <NumField label="End height" unit="m" value={(up + s.y1 * d - frame.floor) / 100} digits={2} disabled={disabled} onCommit={(v) => edit({ y1: (v * 100 + frame.floor - up) / d })} />
+        <NumField label="Pace" unit="m/s" value={m(s.pace)} digits={2} disabled={disabled} onCommit={(v) => edit({ pace: u(v), v0: Math.min(s.v0, u(v)) })} />
+        <NumField label="Start ease" unit="s" value={s.rampS} digits={1} disabled={disabled} onCommit={(v) => edit({ rampS: v })} />
+        <NumField label="Aim settle" unit="s" value={s.aimS} digits={1} disabled={disabled} onCommit={(v) => edit({ aimS: v })} />
+        <dt className="text-neutral-500">Start speed</dt>
+        <dd className="tabular-nums">{m(s.v0).toFixed(2)} m/s (from the clip before)</dd>
+        <dt className="text-neutral-500">Lens</dt>
+        <dd className="tabular-nums">{s.fov.toFixed(1)}° (the start&apos;s, held)</dd>
+      </dl>
+      {short && <p className="mt-1 text-amber-300">Shorter than its ease: it reaches its end before {s.rampS.toFixed(1)} s and holds there.</p>}
+      {note && (
+        <p className="mt-1 text-amber-300" data-clash>
+          {note}
+        </p>
+      )}
+      {said && <p className="mt-1 text-red-300">{said}</p>}
+    </div>
+  );
+}
+
+/** a point in Carl's metres (right, up from the floor, out from the arch's face), three fields; each commits on its own */
+function PointRow({ label, v, disabled, onCommit }: { label: string; v: [number, number, number]; disabled: boolean; onCommit: (v: [number, number, number]) => void }) {
+  const cell = (i: 0 | 1 | 2, name: string) => {
+    const shown = v[i].toFixed(2);
+    return (
+      <input
+        key={`${i}${shown}`}
+        defaultValue={shown}
+        disabled={disabled}
+        inputMode="decimal"
+        aria-label={`${label}, ${name} (m)`}
+        data-point-field={`${label}:${name}`}
+        onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+        onBlur={(e) => {
+          const n = Number(e.currentTarget.value);
+          if (e.currentTarget.value.trim() !== shown && Number.isFinite(n)) onCommit(v.map((x, k) => (k === i ? n : x)) as [number, number, number]);
+        }}
+        className="w-14 rounded border border-white/10 bg-black/40 px-1 py-0.5 text-right tabular-nums text-white focus-visible:outline focus-visible:outline-1 focus-visible:outline-sky-400"
+      />
+    );
+  };
+  return (
+    <>
+      <dt className="self-center text-neutral-500">{label}</dt>
+      <dd className="flex gap-1">
+        {cell(0, "right")}
+        {cell(1, "up")}
+        {cell(2, "out")}
+      </dd>
+    </>
+  );
+}
+
+/**
+ * ⛔ A GLIDE's NUMBERS (`structural-note-glide-and-open-27-october.md`) — its pace (m/s), the start's ease, the landing and
+ * the aim's settle (s); every waypoint and look-at point in Carl's metres (right, up from the floor, out from the arch's
+ * face), each editable. Waypoint 1 is where the camera was when the move was opened ("Start here" moves it). The lens is
+ * held (the start's). The clash warning never blocks.
+ */
+function GlideFields({ clip, shape: s, frame, note, disabled, onEdit, onStart }: FieldsProps<GlideShape>) {
+  const [said, setSaid] = useState<string | null>(null);
+  if (!frame) return <p className="mt-2 text-neutral-500">Glide: its numbers show once the bench has measured the arch…</p>;
+  const { d, up, zc } = frame.units;
+  const m = (units: number) => (units * d) / 100;
+  const u = (metres: number) => (metres * 100) / d;
+  const toM = (p: [number, number, number]): [number, number, number] => [m(p[0]), (up + p[1] * d - frame.floor) / 100, (zc + p[2] * d - frame.z1) / 100];
+  const fromM = (q: [number, number, number]): [number, number, number] => [u(q[0]), (q[1] * 100 + frame.floor - up) / d, (q[2] * 100 + frame.z1 - zc) / d];
+  const edit = (patch: Partial<GlideShape>) => setSaid(onEdit(clip.id, { ...s, ...patch }));
+  const setAt = (list: [number, number, number][], i: number, q: [number, number, number]) => list.map((p, k) => (k === i ? fromM(q) : p));
+  return (
+    <div className="col-span-2 mt-2 border-t border-white/10 pt-2" data-shape-fields>
+      <div className="mb-1 flex items-center justify-between text-sm font-semibold text-white">
+        Glide
+        <button type="button" className={small} disabled={disabled} onMouseDown={noFocus} onClick={() => onStart(clip.id)} title="Move the first waypoint to where the camera is now">
+          Start here
+        </button>
+      </div>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+        <NumField label="Pace" unit="m/s" value={m(s.pace)} digits={2} disabled={disabled} onCommit={(v) => edit({ pace: u(v), v0: Math.min(s.v0, u(v)) })} />
+        <NumField label="Start ease" unit="s" value={s.rampS} digits={1} disabled={disabled} onCommit={(v) => edit({ rampS: v })} />
+        <NumField label="Landing" unit="s" value={s.landS} digits={1} disabled={disabled} onCommit={(v) => edit({ landS: v })} />
+        <NumField label="Aim settle" unit="s" value={s.aimS} digits={1} disabled={disabled} onCommit={(v) => edit({ aimS: v })} />
+        <dt className="text-neutral-500">Start speed</dt>
+        <dd className="tabular-nums">{m(s.v0).toFixed(2)} m/s</dd>
+        <dt className="text-neutral-500">Lens</dt>
+        <dd className="tabular-nums">{s.fov.toFixed(1)}° (the start&apos;s, held)</dd>
+      </dl>
+      <details className="mt-2" open>
+        <summary className="cursor-pointer text-neutral-400">Waypoints (m: right, up, out)</summary>
+        <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+          {s.points.map((p, i) => (
+            <PointRow key={i} label={`${i + 1}`} v={toM(p)} disabled={disabled || i === 0} onCommit={(q) => edit({ points: setAt(s.points, i, q) })} />
+          ))}
+        </dl>
+      </details>
+      <details className="mt-2">
+        <summary className="cursor-pointer text-neutral-400">Looks at, at each waypoint (m)</summary>
+        <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+          {s.looks.map((p, i) => (
+            <PointRow key={i} label={`${i + 1}`} v={toM(p)} disabled={disabled} onCommit={(q) => edit({ looks: setAt(s.looks, i, q) })} />
+          ))}
+        </dl>
+      </details>
+      {note && (
+        <p className="mt-1 text-amber-300" data-clash>
+          {note}
+        </p>
+      )}
+      {said && <p className="mt-1 text-red-300">{said}</p>}
     </div>
   );
 }

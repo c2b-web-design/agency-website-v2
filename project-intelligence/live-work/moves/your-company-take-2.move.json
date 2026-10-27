@@ -1,0 +1,28 @@
+{
+  "kind": "c2b-camera-move",
+  "version": 1,
+  "name": "Your company, take 2",
+  "_note": "Take 1 + Carl's note: 'there a period of time at the start when theres no logo in sight. Remedy this.' ONE fix: the START looks at YOUR (startLook), so the aim turns toward the logo from the first frame; the aim's settle 1.5 -> 2 s so a ~140 degree turn (Carl started facing left) reads as a pan, not a whip. The path, pace, eases and landing are take 1's. No speed ramp (allowed; not needed once the logo is in sight from the start).",
+  "start": "camera",
+  "glide": {
+    "startLook": [-60, 380, 0],
+    "points": [
+      [-560, 500, 420],
+      [0, 372, 820],
+      [-170, 40, 640],
+      [-285, -290, 380],
+      [-285.2, -419, 216]
+    ],
+    "looks": [
+      [-60, 380, 0],
+      [-2, 370, 0],
+      [-200, 120, 0],
+      [-285, -240, 0],
+      [-285.2, -419, -784]
+    ],
+    "paceCms": 180,
+    "rampS": 3,
+    "landS": 4,
+    "aimS": 2
+  }
+}

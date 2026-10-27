@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-096 — The Vader Move, Take 4: A Barrel Roll Through The Arch, Made On The Camera Bench (`/proto/camera`, D-104): "Thats fixed it"
+
+**Date:** 2026-10-27
+**Reviewer:** Human Founder
+**Subject:** `components/showcase/bench-builder-take.ts` version 4, a BARREL shape placed on Carl's bench by the bench itself: from the default view, straight at 2.8 m/s to 17.3 m out, then 2 laps of a 1.2 m spiral rolling with it (the rotation eased over 40% at each end; the radius swelling as sin⁴), rejoining the centre line 6 m before the face, through the opening dead centre, landing level 8 m behind — 13.3 s.
+
+**Carl's verdict, verbatim:** *"thats fixed it. 4 takes and weve got it to where it wanrs to be."*
+
+**Findings:**
+
+- ✔ **The move, approved by eye at take 4.** Takes: 1 (Carl's brief, 3 laps from the start) → 2 (*"Fly forward first, then the barrel roll"*) → 3 (*"ease in and out more"*: the rotation eased, the jolt at its start 97 → 0.1°/s) → 4 (*"a little jolt at the star and finish"*: MEASURED as the radius, not the rotation — the sideways speed jumping ~95 cm/s in a frame; fixed by sin⁴).
+- ✔ **The METHOD proved** (Carl: *"we build our move just like we build our three js objects"*): he describes, the Builder calculates and puts the take on his bench as code, he iterates by notes. Found after the console snippet, an Open file picker and a Moves drop-down were each rejected (D-104).
+- ⚠ **NOT WATCHED:** the harnesses carry no barrel checks yet (the Node check of the take's numbers and the frames were one-off scripts); motion blur raised, not chosen. **Uncommitted** at this entry.
+
+---
+
 ## R-095 — The Client Film: The Tool And Its Proof Film (`scripts/client-film/`, D-105): "Looks very good ... Approved"
 
 **Date:** 2026-10-27
