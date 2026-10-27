@@ -59,15 +59,15 @@ clean; lint 1 error 0 warnings. One image seen. Records: D-104 (long — read it
 - **T1a is committed and pushed** (the commit after `fb86684`; check `git log`). `chunk-scope.json` stays LOCAL (never committed).
 - **T1b (the editing):** take lanes (one per pass), move with snapping, TRIM (the data already carries `in` / `out`),
   per-track numbers. Needs a plan + gate.
-- **T2 (the PiP):** the Architect's C1 — it takes over R3F's render; list every per-frame camera-derived value (the 10 cm
+- **T2 (the PiP): DEFERRED** — Carl: *"It can wait. lets get in there and fly first."* The Architect's C1 — it takes over R3F's render; list every per-frame camera-derived value (the 10 cm
   lines' thickness) before its plan.
 - **R2:** the download (also unlocks the bench client film), import + fitting, the Refined lane, comping.
 - **Carried:** the turn and lens RATES (item 3 remainder); the filmback preset; the hero (D-101); the films' edit; Send;
   mastering; `structural-note-viewer-on-about-21-october.md` to amend; `neon-bloom.tsx` re-arm; `about-card-glass.ts:491`
   anisotropy comment untrue (flag).
-- **Scope (open files, "keep open until I ask to close, then lock and test"):** `camera-pad.ts`, `camera-bench.tsx`,
-  `bench-chain.ts`, `bench-timeline.tsx`, `bench-transport.tsx`, `app/proto/camera/page.tsx`, and the five
-  `scripts/client-film/` files. Lock and test only on Carl's word.
+- **Scope: LOCKED AND TESTED at hand-over** (Carl: *"yes, lock and test then commit and push"*): the six camera bench files and
+  the five `scripts/client-film/` files removed from `files`, ten probes all REFUSED (D-104). ⛔ **The sequence will need
+  the bench files named again.** ⚠ 24 code files from earlier chunks are still in `files` — Carl's to close.
 
 ## STANDING / LESSONS (this session)
 
