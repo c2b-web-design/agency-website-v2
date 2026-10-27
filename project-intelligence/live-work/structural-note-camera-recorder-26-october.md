@@ -1,8 +1,129 @@
-# Structural note: THE CAMERA BENCH REDESIGNED AS A RECORDER (record / stop, chunks as clips, punch-in), 26 October 2026, VERSION 2.2
+# Structural note: THE CAMERA BENCH REDESIGNED AS A RECORDER (record / stop, chunks as clips, punch-in), 26 October 2026, VERSION 3
 
-**For:** Carl, to route to the Architect. **Status:** PROPOSED. Nothing built. The DESIGN is Carl's (D-104, 26 October,
-"CARL's REDESIGN"); this note is the Builder's account of what it changes structurally, the alternatives, and what the
-current bench provides that must survive (CLAUDE.md §5b). It amends `structural-note-camera-bench-26-october.md` (v3).
+**For:** Carl, to route to the Architect. **Status:** **v3 PROPOSED, nothing of it built.** v2.2 (below the v3 section)
+was APPROVED and is BUILT as R1 (D-104); it stays as the record of what R1 is. The DESIGN is Carl's; this note is the
+Builder's account of what it changes structurally, the alternatives, and what the current bench provides that must
+survive (CLAUDE.md §5b). It amends `structural-note-camera-bench-26-october.md` (v3).
+
+---
+
+## ⛔ (v3, 27 October 2026) A TRACK PER CAMERA — RESOLVE's A / B ROLL. PROPOSED
+
+### Carl's design, in his words
+
+- 26 October, after R1: *"Yes, thats the way Resolve works with A and B roll. Filming a sequence and then putting the
+  playhead where you need it for a 2nd camera thats takes precedence makes editing a lot easier."* / *"1. a pic in pic
+  would be a nice and useful touch. 2. yes, Resolve works in this way. As long as theres an image there."* / *"Are the
+  take lanes expandable. Do comped takes live within the same 'track'?"* / *"Non destructive is always better."*
+- 27 October, having flown R1: *"The option to add another camera(s). This puts Cam2 in the same take lane. We should
+  have the functionaliry line in Davinci Resolve and put it in its own take lane and be movable. Say we make a sequence
+  with 8 clips. If we put the playhead where we want it, select another camera and record Cam 2 takes precedent over Cam 1.
+  Which means cuts can be made easier and Cam 1 is non destructive."*
+
+**Words, for Carl to correct.** A **TRACK** is one camera's row (Resolve's V1, V2). A **TAKE LANE** is one recording pass
+inside a track (Logic's take folder), shown when the track is expanded. Carl's "its own take lane" for Cam 2 is read as
+**its own track**.
+
+### What R1 does that this replaces
+
+R1 is ONE LANE, clips END TO END (`bench-chain.ts`: a clip's time is the sum of the lengths before it). "New camera" only
+LABELS the next clip Cam 2, so Cam 2 lands in Cam 1's lane, after it. The punch-in CUTS the clip under the playhead and
+DISCARDS its tail; later clips SHIFT in time by the difference. Both are what Carl is asking to change.
+
+### Behaviour (the Builder's reading)
+
+| | |
+|---|---|
+| **Tracks** | One per camera, Cam 1 at the bottom, each new camera ADDED ABOVE (Resolve's order). A track exists before it has a clip, so it can be armed |
+| **Clips at times** | A clip has its own START time on the shot's clock. Nothing ripples: recording, moving or deleting one clip never moves another (Resolve's overwrite edit, not a ripple) |
+| **⛔ PRECEDENCE** | At any moment, the HIGHEST track with a clip there plays. Cam 2 over Cam 1, Cam 3 over both. Every change of playing track is a CUT. Cam 1's clips underneath are untouched: delete or trim the Cam 2 clip and Cam 1 is seen again (Carl: *"Cam 1 is non destructive"*) |
+| **Recording** | Arm a track (its header, as a DAW's record-arm), put the playhead, fly to frame, **A**. The take lands on the ARMED track at the PLAYHEAD and may run past every other clip (Carl: *"2. yes"*). The camera is still the ONE bench camera; a track is a label on the clips it holds |
+| **Same track, over a clip: a NEW TAKE** | Recording where the armed track already has a clip makes a NEW TAKE ON TOP of it; the old one is KEPT underneath. Inside a track the NEWEST take covering a moment plays (Logic's default comp), and the old take plays again where the new one ends. ⛔ Not R1's punch-in: nothing is cut or discarded. **Overwrite** stays as the deliberate step for THIS case only (Carl: *"a deliberate act"*). Recording onto an empty stretch, or onto a HIGHER track, needs no Overwrite: that is Carl's "put the playhead ... record" |
+| **Expandable** | A track collapses to one row (what it plays) or expands into its TAKE LANES, one per recording pass, oldest at the bottom (Carl: *"Are the take lanes expandable"*: yes). Lanes are a VIEW of the takes, packed for display; there is no separate "take" record |
+| **⛔ MOVABLE** | Drag a clip along its track to change its start. **Snapping** to the playhead and to every clip edge on any track (Resolve's snap), the Builder's default |
+| **Gaps** | A moment with NO clip on any track is MARKED on the timeline. Playback through a gap HOLDS the last picture and the status says "gap" (the Builder's reading of *"As long as theres an image there"*). The hand-off reports gaps; it does not invent a picture |
+| **Joins** | Between tracks: a CUT. Inside a track, two clips that touch: a MISMATCH as R1 shows it, which the Builder compensates at hand-off |
+| **Numbering** | Per track, in time order: "Cam 2 · 3". Renumbered after a move or a delete (Carl: *"sequential"*) |
+| **Selection, Delete, Play** | As R1, across tracks. Play plays the shot with precedence, or the selection |
+| **To the end / step** | The end is the latest clip end on any track; `,` `.` step between every clip edge on every track (the edit points) |
+
+### ⛔ The structural decisions (§5a)
+
+**v3-1. The data: clips PLACED IN TIME, in a flat list, plus the list of tracks.** A clip becomes
+`{ id, cam, start, order, samples }`: `start` its place on the shot's clock, `order` its recording order (the take
+precedence inside a track). The timeline holds `tracks` (camera numbers, bottom to top) so an empty, armed track exists.
+- **Rejected: nested tracks → takes → clips.** A take is a view (lanes are packed for display), so storing it would be
+  a second source of truth for what overlaps what.
+- **Rejected: keep R1's end-to-end chain and add a track field.** Precedence needs clips that OVERLAP in time; an
+  end-to-end list cannot hold two clips at the same moment.
+
+**v3-2. One rule decides what plays:** top track first; inside it, the highest `order` covering T; none = a gap. ONE pure
+function (`sourceAt`) in `bench-chain.ts`, Node-checked as now. Playback, the PiP, the cut list for the hand-off and the
+timeline's "what plays" row all read it, never their own copy.
+
+**v3-3. The version moves: `CHAIN_VERSION` 2, and R1's chains are MIGRATED, not refused.** A v1 reader would misread v2
+(the [A2] rule for moving it). The bench reads v1 by laying its clips end to end at their summed starts, each on its
+camera's track, `order` = its index: **R1 takes play exactly as before.** The v1 key is read once and the v2 key written,
+the v1 copy LEFT, so nothing is lost if v2 has a fault.
+
+**v3-4. Trim, the Builder's recommendation for Carl.** *"Cuts can be made easier"* is, in Resolve, dragging a clip's EDGE
+as well as the clip: shorten Cam 2's clip and the cut to Cam 1 comes earlier. That needs a clip to show PART of its
+samples: `in` and `out` over the samples, the samples never cut (non-destructive). **Without trim, a cut can only be moved
+by moving the whole clip.** Carl's call whether it is in the first stage.
+
+**v3-5. The PICTURE-IN-PICTURE: a second three.js CAMERA in the ONE canvas, drawn by SCISSOR.** While recording a higher
+track, a small inset shows what the tracks BELOW play at the same moment (the A-roll under the B-roll), so Carl can time
+his cut. The inset's camera is posed by `sourceAt` below the armed track; the scene draws twice that frame, the second time
+into a scissored corner.
+- **Rejected: a second canvas.** A second WebGL context: the warm-up canvas and the Next step button (CLAUDE.md §5a).
+- **Rejected: render to a texture shown in the HUD.** The same second draw plus a render target and a copy; it only
+  helps if the inset must sit over HTML, and it does not.
+- ⚠ **Cost: the scene drawn twice while recording a B-roll**, at roughly 1/9 of the pixels for the inset (a third of
+  the width), so most of the cost is the second pass over the geometry. Measured before it is called fine.
+- ⚠ **This is a SECOND three.js camera.** It is a playback camera with no rig and no input. Still ONE rig and ONE flown
+  camera. Named here because "why is there a second camera?" is the §5a test.
+
+**v3-6. Arming on the pad (Carl's call).** Arming is on the track header. The pad's free buttons are Start and the two
+stick clicks. **The Builder recommends Start cycles the armed track**, so a B-roll can be set up without the mouse.
+
+### §5b: what R1 provides, and what happens to each
+
+| R1 provides | Fate |
+|---|---|
+| Clip time = the sum of the lengths before it (`clipStarts`, `locate`) | **Replaced** by each clip's `start`; `locate` becomes `sourceAt` (v3-2) |
+| The punch-in cuts the clip under T and DISCARDS its tail; later clips SHIFT | **Replaced**: a new take on top, nothing cut, nothing shifts. ⚠ A real change Carl will feel: a long punch-in over clip 3 now COVERS clips 4 and 5 on that track where it once pushed them later |
+| "New camera" labels the next clip Cam 2 | **Becomes ADD A TRACK** (Cam 2 above, armed) |
+| Overwrite: required to record anywhere inside the chain | **Narrowed**: only over a clip on the ARMED track |
+| One lane, renumbered globally | Per-track numbering; tracks collapse / expand |
+| Joins: a cut where the camera changes, otherwise a mismatch | **Kept**, read from what plays (precedence) |
+| The halt where a clip ends (the next clip starts where the last stopped) | **Kept** |
+| The Sampler (60 a second, the clamped clock), hidden tab stops a recording, a failed save shown | **Kept unchanged** |
+| `refined` / `comp` reserved for R2 | **Kept reserved.** Comping (choosing which take plays across a range, a cut or a crossfade) writes into `comp` later; until then the newest take plays |
+| The fly rig, the pad map (27 October), the floor, the grid, the readouts | **Unchanged** |
+| `window.__cameraBench` (`clips`), the 58-check page harness, the 17-check chain check | Extended with tracks, start, order; the punch-in checks REWRITTEN for takes; new: precedence, gaps, move, migration |
+| The autosave key `c2b-camera-bench-chain-v1` | A v2 key; v1 migrated, left in place (v3-3) |
+| Film 4's page, `LetteringPiece`, `shot-format.ts` | **Untouched**. ⚠ The format's "N cameras + a cut track" now MATCHES the bench: each track a camera, the cut track read from precedence. The hand-off becomes simpler, not harder |
+
+### Stages (the Builder's proposal: prove the track before the extras, ethos §14a)
+
+| Stage | Builds |
+|---|---|
+| **T1, THE TRACKS** | v3-1 to v3-3; tracks, arming, record at the playhead, precedence, takes on top (newest plays), expand to take lanes, move with snapping, gaps marked, per-track numbers, migration. Trim if Carl puts it here (v3-4) |
+| **T2, THE PiP** | v3-5, measured |
+| **Then** | Comping (R2's `comp`), the hand-off and return (R2), as before. Order Carl's |
+
+### Open (Carl's)
+
+1. **Trim (v3-4)** in T1, or later?
+2. **Move between tracks:** dragging a clip up from Cam 1 to Cam 2 (Resolve allows it; it changes which camera the move
+   belongs to). The Builder's default: **time only in T1**.
+3. **Arming on the pad (v3-6):** Start cycles the armed track?
+4. **Gaps (above):** hold the last picture and say "gap", or show black as Resolve does?
+5. The order of T1 / T2 against the hand-off (R2).
+
+---
+
+# v2.2 — APPROVED AND BUILT AS R1 (kept as the record)
 
 **Versions.** **2.2 (26 October): TWO LANES APPROVED; MERGE; THE UI DELEGATED.** Carl: *"Two lanes is a great idea,
 especially with a merge function. Also, half the info on the page doesnt have to be there. Try to make it a clean UI. You

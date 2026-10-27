@@ -42,7 +42,7 @@ const press = async (i) => {
 const hold = (i, on) => pad(([i, on]) => (window.__fakePad.buttons[i] = { pressed: on, value: on ? 1 : 0 }), [i, on]);
 const axes = (a) => pad((a) => (window.__fakePad.axes = a), a);
 const metres = (s, dUnits) => (dUnits * s.d) / 100;
-const A = 0, X = 2, LB = 4, RB = 5, RT = 7, VIEW = 8, UP = 12;
+const A = 0, B = 1, X = 2, LB = 4, RB = 5, LT = 6, RT = 7, VIEW = 8, UP = 12, DRIGHT = 15;
 const btn = (label) => p.click(`button[aria-label="${label}"]`);
 const count = async () => (await state()).clips.length;
 /** scrub by the timeline's ruler (custom pointer handling, [C3]) to chain time T */
@@ -106,17 +106,66 @@ await axes([0, 0, 0, 0]);
 await wait(800);
 s = await state();
 check(Math.abs(metres(s, s.pose.x - q.x) - 1.4) < 0.3 && Math.abs(s.pose.yaw - q.yaw) < 0.01, `right stick right trucks ${metres(s, s.pose.x - q.x).toFixed(2)} m, facing unchanged`);
-// ⛔ TURNING ON THE BUMPERS (Carl: "LB / RB") — [D2] at 75°/s, not × 1.5; the position unchanged
+// ⛔ ONE JOB PER STICK (Carl, 27 October 2026: "the right stick should only move l+r using the l+r hemispheres") — a rough
+// push up and to the right still trucks STRAIGHT: no tilt
 q = (await state()).pose;
-await hold(RB, true);
+await axes([0, 0, 0.75, -0.65]);
+await wait(800);
+await axes([0, 0, 0, 0]);
+await wait(800);
+s = await state();
+check(s.pose.x > q.x && Math.abs(s.pose.pitch - q.pitch) < 0.01 && Math.abs(s.pose.yaw - q.yaw) < 0.01, `right stick pushed up-and-right trucks ${metres(s, s.pose.x - q.x).toFixed(2)} m, no tilt (${(s.pose.pitch - q.pitch).toFixed(3)}°)`);
+// ⛔ THE HELD LOOK: B + the right stick turns at 75°/s ([D2]: not × 1.5), the position unchanged, no truck
+q = (await state()).pose;
+await hold(B, true);
+await axes([0, 0, 1, 0]);
 await wait(1000);
-await hold(RB, false);
+await axes([0, 0, 0, 0]);
+await hold(B, false);
 await wait(800);
 s = await state();
 const turned = s.pose.yaw - q.yaw;
 // the position "unchanged" within 2 cm: the last move's ease is still settling (a 2.6% tail after 0.8 s)
 const turnMoved = Math.hypot(metres(s, s.pose.x - q.x), metres(s, s.pose.z - q.z));
-check(turned < -55 && turned > -95 && turnMoved < 0.02, `RB held 1 s turns right ${(-turned).toFixed(0)}° (75°/s, eased), the position unchanged (${(turnMoved * 100).toFixed(1)} cm)`);
+check(turned < -55 && turned > -95 && turnMoved < 0.02, `B + right stick right 1 s turns right ${(-turned).toFixed(0)}° (75°/s, eased), no truck (${(turnMoved * 100).toFixed(1)} cm)`);
+// the look takes the axis pushed MORE: mostly sideways turns with no tilt; mostly up tilts with no turn
+q = (await state()).pose;
+await hold(B, true);
+await axes([0, 0, -0.9, -0.35]);
+await wait(500);
+await axes([0, 0, 0, 0]);
+await hold(B, false);
+await wait(800);
+s = await state();
+check(s.pose.yaw > q.yaw + 10 && Math.abs(s.pose.pitch - q.pitch) < 0.01, `B + right stick left-and-a-little-up turns left ${(s.pose.yaw - q.yaw).toFixed(0)}°, no tilt`);
+// the turn's ease settled first (a 2.6% tail after 0.8 s still turns a fraction of a degree — it failed this check once)
+await wait(1500);
+q = (await state()).pose;
+await hold(B, true);
+await axes([0, 0, 0.3, -0.9]);
+await wait(400);
+await axes([0, 0, 0, 0]);
+await hold(B, false);
+await wait(800);
+s = await state();
+check(s.pose.pitch > q.pitch + 5 && Math.abs(s.pose.yaw - q.yaw) < 0.01, `B + right stick up-and-a-little-right tilts up ${(s.pose.pitch - q.pitch).toFixed(0)}°, no turn (${(s.pose.yaw - q.yaw).toFixed(4)}°)`);
+// ⛔ THE D-PAD A MOVEMENT PAD (Carl: "Yes the Dpad should be a movement pad") — at TWICE walking pace ("make the speed 2x")
+q = (await state()).pose;
+await hold(UP, true);
+await wait(1000);
+await hold(UP, false);
+await wait(800);
+s = await state();
+const dWalk = Math.hypot(metres(s, s.pose.x - q.x), metres(s, s.pose.z - q.z));
+check(Math.abs(dWalk - 2.8) < 0.5 && Math.abs(s.pose.fov - q.fov) < 0.01, `D-pad up moves ${dWalk.toFixed(2)} m in 1 s (2.8 m/s, twice the stick), the lens unchanged`);
+q = s.pose;
+await hold(DRIGHT, true);
+await wait(500);
+await hold(DRIGHT, false);
+await wait(800);
+s = await state();
+check(Math.abs(s.pose.yaw - q.yaw) < 0.01 && Math.hypot(s.pose.x - q.x, s.pose.z - q.z) > 0, "D-pad right slides, facing unchanged");
+// [D2] the bumpers carry no speed: RB held with the left stick still walks at walking pace
 q = (await state()).pose;
 await hold(RB, true);
 await axes([0, -1, 0, 0]);
@@ -127,22 +176,40 @@ await wait(800);
 s = await state();
 const rbWalk = Math.hypot(metres(s, s.pose.x - q.x), metres(s, s.pose.z - q.z));
 check(rbWalk > 1.1 && rbWalk < 1.75, `[D2] RB + left stick full forward moves ${rbWalk.toFixed(2)} m in 1 s — walking pace, not × 3`);
-await hold(LB, true);
+// ⛔ THE ZOOM ON THE BUMPERS (Carl: "The zoom you can put on the bumpers")
+let fov0 = (await state()).pose.fov;
+await hold(RB, true);
+await wait(500);
+await hold(RB, false);
 await wait(400);
+check((await state()).pose.fov < fov0 - 2, "RB lengthens the lens");
+fov0 = (await state()).pose.fov;
+await hold(LB, true);
+await wait(500);
 await hold(LB, false);
 await wait(400);
-check((await state()).pose.yaw > s.pose.yaw + 10, "LB turns left");
+check((await state()).pose.fov > fov0 + 2, "LB widens the lens");
+// ⛔ THE TRIGGERS AT THE STICKS' PACE (Carl: "Change the triggers to the speed of the sticks.")
+q = (await state()).pose;
 await hold(RT, true);
-await wait(500);
+await wait(1000);
 await hold(RT, false);
-await wait(500);
-check((await state()).pose.y > s.pose.y + 0.01, "right trigger rises");
-const fov0 = (await state()).pose.fov;
-await hold(UP, true);
-await wait(500);
-await hold(UP, false);
+await wait(800);
+s = await state();
+const rose = metres(s, s.pose.y - q.y);
+check(Math.abs(rose - 1.4) < 0.3, `right trigger held 1 s rises ${rose.toFixed(2)} m (1.4 m/s)`);
+// ⛔ THE FLOOR STOP (Carl: "The xamera should not be able to pass through the floor") — LT held far past it: the lens
+// held 10 cm above the floor, read on the HUD's position (metres from ground zero)
+const hudUp = () => p.evaluate(() => Number(document.body.innerText.match(/-?\d+\.\d\d · (-?\d+\.\d\d) · -?\d+\.\d\d/)?.[1]));
+await hold(LT, true);
+await wait(7000);
+const low1 = (await state()).pose.y;
+await wait(600);
+const low2 = (await state()).pose.y;
+await hold(LT, false);
 await wait(400);
-check((await state()).pose.fov < fov0 - 2, "D-pad up lengthens the lens");
+const up = await hudUp();
+check(low1 === low2 && Math.abs(up - 0.1) < 0.005, `LT held 7 s stops at the floor stop: ${up.toFixed(2)} m up, held`);
 await press(VIEW);
 s = await state();
 const atDefault = (q) => Math.abs(q.pose.z - q.front.z) < 0.001 && Math.abs(q.pose.x) < 0.001 && Math.abs(q.pose.yaw) < 0.01 && Math.abs(q.pose.fov - 30) < 0.01;

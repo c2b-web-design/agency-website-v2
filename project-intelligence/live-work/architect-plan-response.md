@@ -1,73 +1,86 @@
-# Architect Plan Response: R1, the camera recorder (26 October 2026)
+# Architect Plan Response: THE CLIENT FILM (27 October 2026)
 
-**Plan-review gate, `handoff-protocol.md` §2.5.** The plan: `live-work/plan-camera-recorder-r1-26-october.md` (v2.3),
-under the approved structural note `live-work/structural-note-camera-recorder-26-october.md` v2.2.
+**Plan-review gate, `handoff-protocol.md` §2.5.** The plan: `live-work/plan-client-film-27-october.md` (v3).
 
 ⚠ **PROVENANCE: read before trusting the authorship.** These findings are the Architect's (Claude chat, read-only),
 delivered in its own window and pasted by Carl into the Builder's session. **They were TRANSCRIBED into this file by the
 Builder**, an interested party in its own review. Each review's VERDICT and every numbered finding are kept as given; the
-long prose is condensed where noted. **If this file and the Architect's window differ, the window is the authority.**
+prose is condensed. **If this file and the Architect's window differ, the window is the authority.**
 
-The previous contents of this file (30 July 2026, the satin blue field) are in git history (`fb889ff`).
+The previous contents of this file (R1, the camera recorder, five reviews, 26 October 2026) are in git history
+(`7f564b2`).
 
-**Outcome:** five rounds; every finding accepted and folded into the plan, marked [A1]–[A9], [B1]–[B6], [C1]–[C3],
-[D1]–[D2]. **Carl: "Approved and proceed."**
+**Outcome:** two rounds; every finding accepted and folded into the plan, marked [A1]–[A12], [B1]–[B7]. Awaiting Carl's
+approval.
 
 ---
 
-## Review 1, the plan v1. Verdict: *"approve once the amendments below are made."*
+## Review 1, the plan v1. Verdict: *"Approve with amendments."*
 
-*"The plan matches note v2.2 closely ... Moving the chain into pure functions in bench-chain.ts and testing them under
-Node is a good call."*
+*"The scope is right: no site code changes, a new tool, and the §5a note is honestly stated."* Checked in the repo:
+Playwright 1.62.0 a root devDependency; `eslint.config.mjs` does not ignore `scripts/`; `.gitignore` in
+`chunk-scope.json`; `public/c2b-logo-mark.png` exists; Geist reaches the site only through `next/font/google`.
 
-1. **[A1] Which camera a punch-in records on:** a punch-in continues the punched clip's camera unless NEW CAMERA is
-   armed; check a punch into a Cam 1 clip with a Cam 2 clip after it.
-2. **[A2] R1's chain format must leave room for R2:** reserve `refined: null` (and the comp) now, or let `parseChain`
-   accept unknown optional fields without a version bump. Otherwise R2 refuses Carl's first real takes.
-3. **[A3] Every overlay a sibling of the drag surface;** the overlay layer `pointer-events: none`, only its controls take
-   clicks; check a drag on bare picture turns the camera and a click on any overlay control does not.
-4. **[A4] A focused button plus Space may fire twice** (a question, not a finding): check Space and Enter with a
-   transport button focused.
-5. **[A5] Edge states:** clamp the playhead after delete; a punch at a clip's start leaves zero samples, so remove the
-   clip; "at the end" a fact the store records, not a float compare; controls disabled while recording; Y on an empty
-   chain to the default view; a join between cameras labelled a cut.
-6. **[A6] A pad dropping out mid-recording** stops the recording, the status saying why.
-7. **[A7] Scope:** name all six files for R1 (camera-bench.tsx and camera-pad.ts were open only under the scale's
-   authorisation) and lock them after; keep the noindex metadata; chunk-scope.json's stale name and comment.
-8. **[A8] SVG icons, not emoji glyphs;** an aria-label and a tooltip naming each control's bindings.
-9. **[A9] Verification:** a hitch test (a 0.5 s frame advances 0.1 s); bench-chain.ts imports nothing at runtime (Node's
-   type stripping handles neither `@/` aliases nor extensionless imports); confirm `node --version`; stop servers
-   before the checkpoint.
+**Must amend**
+- **A1.** `recordVideo` IS the screencast in Chromium (25 fps VP8), so it cannot be the fallback for a frame-rate
+  shortfall. Real fallbacks: a smaller viewport scaled up; lower JPEG quality; OS capture (ffmpeg `ddagrab` / `gdigrab`:
+  window visible and uncovered, films the real cursor). Measure first, choose by the numbers.
+- **A2.** The capture test must tell idle from dropped frames: measure during continuous motion (or a temporary rAF
+  ticker); report fps during motion and the COUNT of gaps over 50 ms.
+- **A3.** Frame handling: ack immediately, before any disk write; stream frames to disk (~900 frames, ~250 MB per 30 s);
+  a temp folder under the OS temp dir, deleted on success.
+- **A4.** Geist has no source for `cards.html`: name one (a Google Fonts link, or a pinned local `.woff2`); gate on
+  `document.fonts.ready` and `document.fonts.check('600 48px Geist')`, stop if it fails.
+- **A5.** A version number per run shows the client takes they were never sent: drafts by default (overwritten, "Draft"
+  on the card), `--release` numbers, a number claimed only on success (temp name, rename at the end). Carl's call.
 
-*"Amendments 1, 2 and 5 decide whether Carl's first takes survive and whether punch-ins behave as he expects."*
+**Should amend**
+- **A6.** Colour: screencast JPEGs are full-range BT.601; convert and tag BT.709 limited range; `ffprobe` checks
+  `color_space=bt709`, `color_range=tv`.
+- **A7.** Timestamps to CFR: the concat demuxer with per-frame durations, the last frame listed twice, then
+  `-fps_mode cfr -r 30`.
+- **A8.** Captions anchored to the first screencast frame (t0); the duration check is title + film − crossfade.
+- **A9.** `glide` needs its own timed loop (an easing, ~36 moves, ~16 ms apart); `click` and `hover` glide first.
+- **A10.** Cursor init script: attach on `DOMContentLoaded`, hidden until the first `mousemove`, max z-index, skip
+  iframes. Drawing the cursor in post is an alternative; the Builder's choice, stated with its reason.
+- **A11.** A per-scene `captionPosition` ("top" | "bottom") so a caption never hides what it points at.
+- **A12.** A client film should cut in after a readiness condition; the cold load only in the proof. Carl's call.
 
-## Review 2, the plan v2. Verdict: *"approve once two fixes are made."*
+**Smaller points:** warn above ~60 s, fall back to 720p rather than a starved bitrate; run alongside the bench polish
+with its own `_clientFilm` scope entry (`npm run build` compiles the bench's in-progress changes); kill both servers by
+PID before the checkpoint; state how ffmpeg is found and print its version; the proof film is C2B-specific code in a tool
+folder (the workshop reference's Open Question 2); a D-entry on approval.
 
-1. **[B1] Stopping a punch-in set `atEnd` with the playhead mid-chain:** only an appending stop sets it; a punch-in's
-   stop leaves the playhead parked unless no clips follow; check OVERWRITE, A, A with a clip following, then a third A
-   does nothing.
-2. **[B2] View while recording teleported the camera inside a clip:** stop the recording first (or disable View); check
-   no clip holds a jump.
-- Small: **[B3]** the no-focus-on-mouse-click rule for EVERY control (clips, "?", "i", the grid checkbox); **[B4]** only a
-  play reaching the chain's end sets `atEnd`; **[B5]** a delete leaving no clip after T sets `atEnd`; **[B6]** the
-  Persistence section to carry the reserved fields.
+**For Carl, with recommendations:** MP4s outside the repo (`Videos\C2B Client Films\<client>\<feature>\`; workshops are
+made by copying, and `.gitignore` is "a convenience, never the protection"); drafts and `--release`; a readiness cut for
+clients; no end card; the title card the Builder's take, by eye. → **Carl chose all four recommendations** (plan v3,
+"Carl's answers").
 
-## Review 3, the plan v2.1. Verdict: *"approved. I'd send it to Carl as it stands."*
+---
 
-The Builder's correction to [B2]'s figure accepted (*"Your correction to my [B2] figure is right, and so is your
-threshold"*). Build notes: **[C1]** test SPEED, not distance (25 m/s limit), so RB + a trigger or a slow harness frame
-cannot trip it; **[C2]** the Sampler below 60 Hz: at most one sample per frame, stamped with the clamped time; add a
-30 Hz case; **[C3]** preventing mousedown's default breaks a native range input, so the playhead and sliders get their
-own pointer handling.
+## Review 2, the plan v2. Verdict: *"Approve with three amendments (B1–B3) before building."*
 
-## Review 4, the plan v2.2 (with Carl's two calls). Verdict: *"still approved."*
+*"A1–A12 and the smaller points are folded in correctly."* Checked: Next's `geist-latin.woff2` exists; `Videos\C2B Films`
+exists and is not redirected to OneDrive.
 
-The harness checked: no kept check presses LB or RB. **[D1]** the bumpers are fly inputs (leave scrub, stop
-playback); **[D2]** check RB + full forward moves at walking pace, not × 3. For Carl: the turn is the rig's 75°/s, already
-called too fast, and a bumper is on / off; it returns at item 3.
+**Must amend**
+- **B1.** `document.fonts.check()` returns true when no `@font-face` matches the family, and `fonts.ready` resolves when
+  nothing was requested: the gate passes with no Geist. Load explicitly from bytes (`new FontFace(...)`, `await
+  f.load()`, `document.fonts.add`), then assert a loaded Geist face exists.
+- **B2.** Confirm the pinned file covers weight 600 (variable, or Chromium fakes the bold): render 400 / 600 / 700 and
+  compare. Add `OFL.txt` beside the font (OFL 1.1 travels with every copy). → **Answered by the Builder before
+  building:** three distinct ink coverages (7,489 / 10,495 / 11,922 px), widening advances: variable.
+- **B3.** `ready: "text=Begin"` fires mid-fade (opacity 0 counts as visible): `{ selector, settleMs }` or a function.
+  Re-base captions and the duration check to the CUT frame in client films.
 
-## Review 5, the plan v2.3 (tidy pass, then final). Verdict: *"approved. Ready for Carl."* / *"Approved ... I have
-nothing further on this plan."*
+**Should amend**
+- **B4.** Composite first, convert colour once, last, in one filter graph.
+- **B5.** Run the A2 measurement on `/start` (production, 3100) with WebGL active, through the opening and Begin.
+- **B6.** The rename over a draft open in a player fails on Windows (EBUSY / EPERM): catch it, say "close <file> and
+  re-run", no raw stack trace.
+- **B7.** Refuse an `--out` inside the repo; `path.join`; spawn ffmpeg with an argument array (spaces in the path).
 
-The earlier text brought into line with the answered calls (title, scope, files header, camera-pad.ts, the fly-input
-line, the [C1] note); one leftover (the Chain's three-field form in the bench-chain.ts row) fixed.
+**Records:** quote Carl's answers, not "all four as recommended"; measure `tsc` and lint at the checkpoint rather than
+assert them in the plan.
+
+*"Once B1–B3 are in the plan, I have nothing further to raise. It goes to Carl for approval."*

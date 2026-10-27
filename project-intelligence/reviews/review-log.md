@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-095 — The Client Film: The Tool And Its Proof Film (`scripts/client-film/`, D-105): "Looks very good ... Approved"
+
+**Date:** 2026-10-27
+**Reviewer:** Human Founder
+**Subject:** `scripts/client-film/` and its proof film, `Videos\C2B Client Films\C2B Web Design\Start a conversation\start-a-conversation-draft.mp4` (27.8 s, 2.27 MB: the title card, `/start` from a cold load through Begin, a hover, a choice and Next step, four captions, the drawn cursor).
+
+**Carl's verdict, verbatim:** *"Looks very good. Sent it to my phone, which is a Samsung galaxy and the quality is very good. So i can see that it works on our site."* Then, on filming the camera bench for a client: *"So we can give a button to a client from the bench that may need approval and also show it in context from their draft site. Thats great Apptoved."*
+
+**Findings:**
+
+- ✔ **Approved** — the tool and the proof film's look (the title card, the captions, the cursor: the Builder's first takes). ✔ Played on Carl's phone (Samsung Galaxy), quality *"very good"*: the one NOT WATCHED item the runner could not check, now checked once, on one phone.
+- ✔ **Approved in principle, NOT BUILT:** a client film from the CAMERA BENCH (an early approval of a proposed move) alongside the film of the client's draft site (the final approval in context). It needs the bench's DOWNLOAD (R2) and a PICTURE-ONLY view; order Carl's.
+- ⚠ Not watched: a client's own mail app; other phones; a client's site (only C2B's `/start` filmed).
+
+---
+
 ## R-094 — Film 4's Page Whole: Both Viewports, The Brass Under Their Light (`/proto/your-words`, D-088): "They Are Approved"
 
 **Date:** 2026-10-26

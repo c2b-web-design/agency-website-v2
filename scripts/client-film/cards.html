@@ -1,0 +1,132 @@
+<!doctype html>
+<!--
+  THE CLIENT FILM's CARDS (D-105; live-work/plan-client-film-27-october.md v3). Loaded by film.mjs with setContent (no
+  file:// origin); Geist arrives as BYTES and is asserted loaded before anything renders (B1). `render(spec)` draws one
+  1920 x 1080 frame: the TITLE card (opaque, the site's dark ground) or a CAPTION (transparent, a band top or bottom).
+  The look is the Builder's take, judged by Carl's eye. No em dashes in these words.
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: transparent;
+        font-family: "Geist", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .title {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        /* the site's dark ground (globals.css --background, oklch(0.145 0 0)) with a low warm glow behind the mark */
+        background: radial-gradient(ellipse 60% 55% at 50% 42%, #1d1a16 0%, #121212 55%, #0b0b0b 100%);
+        color: #f2f2f2;
+      }
+      .mark {
+        width: 132px;
+        height: auto;
+        margin-bottom: 56px;
+      }
+      .feature {
+        font-weight: 600;
+        font-size: 84px;
+        letter-spacing: -0.02em;
+        line-height: 1.05;
+        text-align: center;
+        max-width: 1500px;
+      }
+      .client {
+        margin-top: 26px;
+        font-weight: 400;
+        font-size: 34px;
+        color: #b9b9b9;
+      }
+      .rule {
+        width: 72px;
+        height: 2px;
+        margin: 44px 0 30px;
+        background: linear-gradient(90deg, transparent, #c9a45c, transparent);
+      }
+      .meta {
+        font-weight: 500;
+        font-size: 24px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #c9a45c;
+      }
+      .studio {
+        position: absolute;
+        bottom: 54px;
+        font-weight: 400;
+        font-size: 20px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #6f6f6f;
+      }
+      .caption {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 1440px;
+        padding: 22px 40px;
+        border-radius: 14px;
+        background: rgba(12, 12, 12, 0.74);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07);
+        color: #f4f4f4;
+        font-weight: 500;
+        font-size: 38px;
+        line-height: 1.3;
+        text-align: center;
+        white-space: pre-wrap;
+      }
+      .caption.bottom {
+        bottom: 76px;
+      }
+      .caption.top {
+        top: 76px;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      // ⛔ B1: the font loaded EXPLICITLY from bytes and asserted POSITIVELY. `document.fonts.check()` is true when no face
+      // matches the family at all, so it cannot catch a missing font; a failed `load()` throws and the run stops.
+      window.loadGeist = async (bytes) => {
+        const f = new FontFace("Geist", new Uint8Array(bytes).buffer, { weight: "100 900" });
+        await f.load();
+        document.fonts.add(f);
+        if (![...document.fonts].some((x) => x.family === "Geist" && x.status === "loaded")) throw new Error("Geist did not load");
+      };
+      const el = (tag, cls, text) => {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text !== undefined) e.textContent = text;
+        return e;
+      };
+      window.render = async (spec) => {
+        document.body.replaceChildren();
+        if (spec.kind === "title") {
+          const t = el("div", "title");
+          const mark = el("img", "mark");
+          mark.src = spec.mark;
+          t.append(mark, el("div", "feature", spec.title));
+          if (spec.client) t.append(el("div", "client", spec.client));
+          t.append(el("div", "rule"), el("div", "meta", spec.meta), el("div", "studio", "C2B Web Design"));
+          document.body.append(t);
+          await mark.decode();
+        } else {
+          document.body.append(el("div", `caption ${spec.position === "top" ? "top" : "bottom"}`, spec.text));
+        }
+        await document.fonts.ready;
+      };
+    </script>
+  </body>
+</html>

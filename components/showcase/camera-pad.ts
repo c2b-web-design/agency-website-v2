@@ -10,24 +10,28 @@
  * - THE FEEL (the Builder's takes — Carl's hands judge them; no test can):
  *   a radial DEAD ZONE (a resting stick does not drift); a RESPONSE CURVE (power 2: fine near the centre, fast at full throw);
  *   the rig as a WEIGHTED camera — velocities eased toward the stick's with a first-order lag (`FEEL.smoothS`), which never
- *   overshoots (a critically damped response); speeds in units of `d`, the subject's front distance, so the same throw
- *   covers the same share of the frame on any scene.
+ *   overshoots (a critically damped response). Speeds were first in units of `d`, the subject's front distance; the moves
+ *   are now in metres (below), the look and the lens in degrees.
  * - ⛔ THE MOVE IS AT WALKING PACE, IN METRES (Carl, 26 October 2026: *"Make the L stick just go forwards and backwards at
  *   walking speed."*): `FEEL.walk`, 1.4 m/s at full throw — an average adult's walk; the start (22.71 m out) is ~16 s away.
- *   Was 0.45 d/s ≈ 10.3 m/s at 1 px = 1 cm, and it moved with the window's shape. The crane and the look are still in d
- *   and degrees — Carl's item 3 (sensitivity).
+ *   Was 0.45 d/s ≈ 10.3 m/s at 1 px = 1 cm, and it moved with the window's shape. The look is still in degrees — Carl's
+ *   item 3 (sensitivity).
+ * - ⛔ THE TRIGGERS AT THE STICKS' PACE (Carl, 27 October 2026: *"Change the triggers to the speed of the sticks."*): RT / LT
+ *   rise and sink at `FEEL.walk` too. Was `crane: 0.3` d/s ≈ 7 m/s.
  */
 
 export const BTN = { A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, VIEW: 8, START: 9, LS: 10, RS: 11, UP: 12, DOWN: 13, LEFT: 14, RIGHT: 15 } as const;
 
-/** ⚠ TAKES, to be judged on the pad: dead zone, curve, smoothing, and the speeds (d per second; degrees per second). */
+/** ⚠ TAKES, to be judged on the pad: dead zone, curve, smoothing, and the speeds (metres per second; degrees per second). */
 export const FEEL = {
   dead: 0.15,
   power: 2,
   smoothS: 0.22,
-  /** metres per second at full throw — walking pace (was `move: 0.45` d/s) */
+  /** metres per second at full throw — walking pace (was `move: 0.45` d/s); the triggers' rise / sink too (was `crane: 0.3` d/s) */
   walk: 1.4,
-  crane: 0.3,
+  /** ⛔ THE D-PAD AT TWICE THE STICKS (Carl, 27 October 2026: *"we should make the speed 2x. That way i would have the same
+   *  movemnt but the option of moving a bit faster."*) — × `walk`, so 2.8 m/s */
+  dpad: 2,
   lookDeg: 75,
   lensDeg: 14,
   fast: 3,
@@ -105,12 +109,14 @@ export function rigAt(x: number, y: number, z: number, yaw = 0, pitch = 0, fov =
   return { x, y, z, yaw, pitch, fov, vx: 0, vy: 0, vz: 0, vyaw: 0, vpitch: 0, vfov: 0 };
 }
 
-/** What the hands ask for this frame, each −1…1 (lens: + longer). `speed` the bumpers' multiplier. */
+/** What the hands ask for this frame, each −1…1 (lens: + longer) — forward and right to ±`FEEL.dpad` with the D-pad. `speed` the keyboard's Shift / Alt multiplier. */
 export type Intent = { forward: number; right: number; up: number; turn: number; tilt: number; lens: number; speed: number };
 
 /** One frame of the rig: velocities eased toward the intent, then integrated. Moves are relative to where the camera FACES
- *  (level — forward does not dive when the camera looks down). `pxPerMetre` the world's scale (the bench's). */
-export function stepRig(r: Rig, i: Intent, dt: number, d: number, pxPerMetre: number): void {
+ *  (level — forward does not dive when the camera looks down). `pxPerMetre` the world's scale (the bench's); `minY` the
+ *  lowest the lens may go (world px) — ⛔ THE FLOOR (Carl, 27 October 2026: *"The xamera should not be able to pass through
+ *  the floor."*): held there with its downward speed killed, so it stops dead and does not ease back up. */
+export function stepRig(r: Rig, i: Intent, dt: number, pxPerMetre: number, minY = -Infinity): void {
   const k = 1 - Math.exp(-dt / FEEL.smoothS);
   const yawR = (r.yaw * Math.PI) / 180;
   // three's camera looks −z at yaw 0; `rotation.y` = yaw turns it toward −x
@@ -119,7 +125,7 @@ export function stepRig(r: Rig, i: Intent, dt: number, d: number, pxPerMetre: nu
   const m = FEEL.walk * pxPerMetre * i.speed;
   const tx = (fx * i.forward + rx * i.right) * m;
   const tz = (fz * i.forward + rz * i.right) * m;
-  const ty = i.up * FEEL.crane * d * i.speed;
+  const ty = i.up * m;
   r.vx += (tx - r.vx) * k;
   r.vy += (ty - r.vy) * k;
   r.vz += (tz - r.vz) * k;
@@ -128,6 +134,10 @@ export function stepRig(r: Rig, i: Intent, dt: number, d: number, pxPerMetre: nu
   r.vfov += (-i.lens * FEEL.lensDeg - r.vfov) * k;
   r.x += r.vx * dt;
   r.y += r.vy * dt;
+  if (r.y < minY) {
+    r.y = minY;
+    if (r.vy < 0) r.vy = 0;
+  }
   r.z += r.vz * dt;
   r.yaw += r.vyaw * dt;
   r.pitch = Math.max(-FEEL.pitchLimitDeg, Math.min(FEEL.pitchLimitDeg, r.pitch + r.vpitch * dt));

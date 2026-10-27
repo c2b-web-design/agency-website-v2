@@ -54,6 +54,10 @@ type View = TransportView & {
 const CM_PER_PX = 1;
 /** layout px as a reading in metres, unit included — text after a `{…}` that runs to a line's end loses its space in JSX */
 const metres = (px: number) => `${((px * CM_PER_PX) / 100).toFixed(2)} m`;
+/** ⛔ THE FLOOR STOP (Carl, 27 October 2026: *"The xamera should not be able to pass through the floor."*): the lens no lower
+ *  than this above the arch's floor — a camera on a low floor rig, and clear of the 1 cm near plane, so the grid cannot slice
+ *  through the picture when the lens looks down. ⚠ A take; flying only (a pose the chain or a jump sets is not clamped). */
+const LENS_MIN_CM = 10;
 
 /**
  * The arch in the world (layout px): its box, the FLOOR it stands on (its lowest ink), the CLEAR OPENING — between the
@@ -372,7 +376,7 @@ class BenchStore {
     this.posed = true;
     this.atEnd = false;
   }
-  /** D-pad left / right, comma / full stop: between clip starts; right past the last clip is To the end */
+  /** comma / full stop: between clip starts; right past the last clip is To the end (the D-pad's until 27 October 2026) */
   step(dir: number) {
     if (this.rec || !this.chain.clips.length) return;
     const starts = clipStarts(this.chain);
@@ -433,7 +437,7 @@ class BenchStore {
   }
 
   /** ⛔ ONE FRAME: the pad (polled here and nowhere else), the keyboard and mouse, the rig, the recording, playback. */
-  frame(camera: THREE.PerspectiveCamera, rawDt: number, m: PieceMeasure, aspect: number): View | null {
+  frame(camera: THREE.PerspectiveCamera, rawDt: number, m: PieceMeasure, aspect: number, floorY?: number): View | null {
     this.m = m;
     const dt = clampDt(rawDt);
     if (!this.rig) this.rig = rigAt(0, 0, m.d, 0, 0, FRONT_FOV);
@@ -459,26 +463,38 @@ class BenchStore {
       if (hit(BTN.X)) this.togglePlay();
       if (hit(BTN.Y)) this.toStart();
       if (hit(BTN.VIEW)) this.home();
-      if (hit(BTN.LEFT)) this.step(-1);
-      if (hit(BTN.RIGHT)) this.step(1);
+      // the D-pad MOVES now (below); stepping between clips is the keyboard's ( , . ) and the timeline's
     }
 
-    // ⛔ THE FLY INPUTS — the pad (sticks, triggers, BUMPERS [D1], the lens) and the keyboard together
+    // ⛔ THE FLY INPUTS — the pad (sticks, triggers, the D-pad, B's look, the bumpers' zoom) and the keyboard together
     const k = this.keys;
     const key = (c: string) => (k.has(c) ? 1 : 0);
     const btn = (i: number) => (pad.buttons[i] ? 1 : 0);
-    // ⛔ [D2] the speed modifiers are the KEYBOARD's only (Shift / Alt): the bumpers TURN now (Carl: "LB / RB")
+    // ⛔ [D2] the speed modifiers are the KEYBOARD's only (Shift / Alt)
     const speed = (k.has("ShiftLeft") || k.has("ShiftRight") ? FEEL.fast : 1) * (k.has("AltLeft") ? FEEL.slow : 1);
+    // ⛔ ONE JOB PER STICK, READ BY HEMISPHERE (Carl, 27 October 2026: *"the right stick should only move l+r using the l+r
+    // hemispheres. That way accuracy isnt a problem on the stick, i just move them approx l+r"*) — a stick reads only its own
+    // axis, so a rough push moves straight. Was: the right stick's x trucked AND its y tilted, so any push off the horizontal
+    // also tilted the camera. ⛔ THE LOOK IS HELD: B + the right stick turns / tilts (Unreal's right-mouse look), taking
+    // whichever axis is pushed more — a pan stays level, a tilt stays straight (the Builder's; Carl: "Yes")
+    const look = !!pad.buttons[BTN.B];
+    const lookX = look && Math.abs(pad.rx) >= Math.abs(pad.ry) ? pad.rx : 0;
+    const lookY = look && Math.abs(pad.ry) > Math.abs(pad.rx) ? pad.ry : 0;
+    // ⛔ the D-PAD a MOVEMENT PAD (Carl: "Yes the Dpad should be a movement pad") at TWICE the sticks' pace (`FEEL.dpad`)
+    const dpad = (v: number) => Math.max(-FEEL.dpad, Math.min(FEEL.dpad, v));
     const intent: Intent = {
-      // the LEFT STICK forward and back ONLY (Carl: "Make the L stick just go forwards and backwards at walking speed")
-      forward: clamp(pad.ly + key("KeyW") - key("KeyS")),
-      // the RIGHT STICK's x a TRUCK, facing unchanged (Carl: "i need it to move physically l and r")
-      right: clamp(pad.rx + key("KeyD") - key("KeyA")),
+      // the LEFT STICK forward and back ONLY (Carl: "Make the L stick just go forwards and backwards at walking speed");
+      // the D-pad's up / down
+      forward: dpad(clamp(pad.ly + key("KeyW") - key("KeyS")) + FEEL.dpad * (btn(BTN.UP) - btn(BTN.DOWN))),
+      // the RIGHT STICK's x a TRUCK, facing unchanged (Carl: "i need it to move physically l and r") — not while B looks;
+      // the D-pad's left / right
+      right: dpad(clamp((look ? 0 : pad.rx) + key("KeyD") - key("KeyA")) + FEEL.dpad * (btn(BTN.RIGHT) - btn(BTN.LEFT))),
       up: clamp(pad.rt - pad.lt + key("KeyE") - key("KeyQ")),
-      // ⛔ TURNING ON THE BUMPERS (Carl: "LB / RB", GTA's aircraft yaw) — hold RB to turn right, LB left; the arrow keys too
-      turn: clamp(btn(BTN.RB) - btn(BTN.LB) + key("ArrowRight") - key("ArrowLeft")),
-      tilt: clamp(pad.ry + key("ArrowUp") - key("ArrowDown")),
-      lens: clamp(btn(BTN.UP) - btn(BTN.DOWN) + key("BracketRight") - key("BracketLeft")),
+      turn: clamp(lookX + key("ArrowRight") - key("ArrowLeft")),
+      tilt: clamp(lookY + key("ArrowUp") - key("ArrowDown")),
+      // ⛔ THE ZOOM ON THE BUMPERS (Carl: "The zoom you can put on the bumpers"): RB longer, LB wider (was the D-pad; the
+      // bumpers turned, 26 October)
+      lens: clamp(btn(BTN.RB) - btn(BTN.LB) + key("BracketRight") - key("BracketLeft")),
       speed,
     };
     const active =
@@ -503,7 +519,7 @@ class BenchStore {
       // a mouse drag turns the camera DIRECTLY (degrees per pixel), not through the stick's eased speed
       r.yaw -= this.mouse.dx * MOUSE_DEG_PER_PX;
       r.pitch = Math.max(-FEEL.pitchLimitDeg, Math.min(FEEL.pitchLimitDeg, r.pitch - this.mouse.dy * MOUSE_DEG_PER_PX));
-      stepRig(r, intent, dt, m.d, 100 / CM_PER_PX);
+      stepRig(r, intent, dt, 100 / CM_PER_PX, floorY === undefined ? -Infinity : floorY + LENS_MIN_CM / CM_PER_PX);
     }
     this.mouse.dx = 0;
     this.mouse.dy = 0;
@@ -577,7 +593,7 @@ function BenchScene({
   useEffect(() => onWorld(world), [world, onWorld]);
   const fine = useRef<THREE.Mesh>(null);
   useFrame((st, dt) => {
-    const v = store.frame(st.camera as THREE.PerspectiveCamera, dt, m, st.size.width / st.size.height);
+    const v = store.frame(st.camera as THREE.PerspectiveCamera, dt, m, st.size.width / st.size.height, world?.floor);
     // ⛔ THE FOCUS OBJECT's 10 cm lines: their thickness from the camera's distance to its nearest surface (same callback)
     const focusPx = world?.focus ? world.focus.distanceToPoint(st.camera.position) : Infinity;
     const mat = fine.current?.material as THREE.ShaderMaterial | undefined;
@@ -904,15 +920,15 @@ function CameraBenchInner() {
                     <dt className="text-neutral-500">Left stick</dt>
                     <dd>forward / back, walking pace</dd>
                     <dt className="text-neutral-500">Right stick</dt>
-                    <dd>left / right slide · up / down tilt</dd>
-                    <dt className="text-neutral-500">LB / RB</dt>
-                    <dd>turn left / right</dd>
+                    <dd>slide left / right</dd>
+                    <dt className="text-neutral-500">Hold B + right stick</dt>
+                    <dd>look: turn left / right or tilt up / down</dd>
+                    <dt className="text-neutral-500">D-pad</dt>
+                    <dd>forward / back, slide left / right, twice walking pace</dd>
                     <dt className="text-neutral-500">LT / RT</dt>
                     <dd>sink / rise</dd>
-                    <dt className="text-neutral-500">D-pad up / down</dt>
-                    <dd>lens longer / wider</dd>
-                    <dt className="text-neutral-500">D-pad left / right</dt>
-                    <dd>step between clips; right past the last: the end</dd>
+                    <dt className="text-neutral-500">LB / RB</dt>
+                    <dd>zoom wider / longer</dd>
                     <dt className="text-neutral-500">A</dt>
                     <dd>record / stop</dd>
                     <dt className="text-neutral-500">X</dt>
