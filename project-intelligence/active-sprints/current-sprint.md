@@ -100,7 +100,7 @@ and pushed as of 26 October 2026** (tree clean, level with `origin/main`) — ch
 - `neon-bloom.tsx` re-arm; the films' hosting.
 - **Flag only:** `components/about/about-card-glass.ts:491` says anisotropy "NEEDS A tangent ATTRIBUTE" —
   untrue on three r185 with UVs (proven on film 4). Protected; not edited.
-- Every film 4 material/light value was set under NEUTRAL tone mapping (a judging choice); the page's not ruled.
+- ✔ Film 4's tone mapping RULED (Carl, 29 Oct: *"i will take your recommendation"*): NEUTRAL, under D-106 (the showcase standard: the route per object; Neutral for materials under studio light).
 - Accessibility, mobile and reduced motion are deferred to mastering (D-094).
 
 ---
@@ -108,6 +108,9 @@ and pushed as of 26 October 2026** (tree clean, level with `origin/main`) — ch
 ## Standing — applies to all work
 
 - **Deadline 19 November 2026.** Order (Carl, 22 October): film 4 → the hero → edit the four films → Send → mastering.
+  ⛔ **Changed (Carl, 29 October, verbatim):** *"Slight schedule change. We will edit the 3 films we have then all that is
+  left to build is the Hero. That will take several sessions."* → **edit films 01, 02 and 04 NOW → the hero (several
+  sessions; film 3 is its capture).** Then Send (Carl: *"Yes, after the hero we will connect the "send" button"*), then mastering.
 - **The hero's right-side space stays empty** without a brief from Carl — D-026.
 - **Future work is not recorded here** — Carl keeps it outside the repository (D-038).
 - **At site completion:** the workshop/template separation — full record

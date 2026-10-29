@@ -1,71 +1,75 @@
-# Session Handoff — 29 October 2026. T1b APPROVED + PUSHED; THE THIRD-PERSON VIEW BUILT, AT CHECKPOINT, UNCOMMITTED.
+# Session Handoff — 29 October 2026, session 2. THREE FILMS CUT FOR RESOLVE; THE SHOWCASE STANDARD (D-106); THE HERO NEXT.
 
-⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Replaces the 27 October session-2 handoff. Delete it at the
-end of the session that reads it, once its replacement is written. Detail: **D-104's tail from "⛔ CARL's TWO IMPROVEMENTS
-(29 October 2026"** — the session's record, every quote verbatim.
+⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Replaces the 29 October session-1 handoff. Delete it at the
+end of the session that reads it, once its replacement is written.
 
-## ⛔ WHY THE SESSION ENDED HERE
+## ⛔ NEXT — tomorrow: EDIT THE THREE FILMS IN RESOLVE (with Carl)
 
-The Xbox pad would not connect. **Windows has lost the Bluetooth adapter itself** ("Realtek Bluetooth Adapter", status
-`Unknown`, gone from Settings; an ADMIN rescan, `pnputil /scan-devices`, run by Carl, did not bring it back). Over the
-USB cable the PC enumerates NOTHING from the pad, even in a port proven working (a MIDI keyboard's) — as on 27 October.
-The pad blinks (two blinks = searching for its last pairing; fast = pairing mode). **Carl is RESTARTING the PC** (Restart,
-not Shut down: fast startup would not reset the hardware). ⚠ The Builder's reading, unconfirmed: one dropped internal USB
-hub could explain both (the Bluetooth adapter is an internal USB device). If Bluetooth is back after the restart, press the
-Xbox button: the pad is paired. If USB still fails, a different cable settles whether it is the cable.
+Carl is updating DaVinci Resolve (it needs a PC restart). Then the three cuts go in. Each: a 1920×1080, 30 fps project,
+**Rec.709 Gamma 2.4**, *File > Import > Timeline…*, the film's `cut10.fcpxml` (`cut10.edl` is the fallback). Media in each
+film's `09 Cut - 10 min/`: DNxHR HQ 4:2:2 .mov, constant 30 fps, tagged BT.709 limited range.
 
-## ⛔ NEXT — Carl's
+| Film | Folder (`Videos\C2B Films\`) | Length | Build script (`live-work/scripts/`) |
+|---|---|---|---|
+| 01 Who we are | `01 Who we are button` | 9:49, 44 segments | `whoweare-cut10-build.mjs` |
+| 02 Ornate corners | `02 Ornate corners` | 9:15, 55 segments | `films-02-04-cut-build.mjs 02` |
+| 04 Extruded lettering | `04 Extruded lettering` | 8:40, 43 segments | `films-02-04-cut-build.mjs 04` |
 
-1. **Fly the third-person view** on `/proto/camera` (right-stick click or T on / off; View or H frames the whole scene).
-   Start the dev server first (`npm run dev`). Nothing about it is approved yet.
-2. **Rule on the FRAMING check's pass mark** (with the Architect): `third-person-verify` is **26/28** — the two failures are
-   check 10's: the PiP matches its camera (0.70 / 1.25 of 255 at DPR 1 / 2) but the WRONG camera also passes the pre-stated
-   mark of 8 (3.73 / 3.58), so the check cannot fail and is not evidence. NOT re-marked after measuring. Builder's
-   suggestion: "the right camera under HALF the wrong camera's", or a mark on the arch's pixels only — state it, re-run.
-3. Route the checkpoint to the Architect: `live-work/checkpoint-third-person-29-october/` (the request, `third-person.png`,
-   the framing evidence image).
-4. Commit? **Not asked — do not commit without Carl's word**; the clean-checkout build first (memory).
+- **Every film follows ONE journey** (Carl: *"a story with a beginning, middle and end … that is our process - and it
+  works"*): before and the idea → the plan and its review → each pass ending on Carl's approval → on the page, live.
+  Film 01's stage weights APPROVED by Carl; films 02 and 04's are the Builder's (in each `shot-list.md`), Carl's to move.
+  Film 04 is shorter on purpose (cuts faster; exempt from the C2B restraint).
+- **The films are tutorials:** how we did it, plain language, no jargon call-outs, clean cuts, and visually good. ~10 min
+  into Resolve for final polish; Carl cuts, grades and scores (his Resolve → Pro Tools → Fairlight work).
+- **Personal details:** Carl's NAME stays (paths `C:\Users\Carl Buckley`, "for Carl's eye" on benches). Carl blurs
+  anything else in Resolve (a blur strip). Film 02's two fallback stills had the Next.js dev badge ("N 10 Issues"):
+  PAINTED OUT at Carl's word (originals in `06 On the page/_raw/`).
+- **Subtitle drafts** are in each film's shot list / `07 Subtitles/` ("We", no em dashes). Film 02's last turning point
+  (15:04, "The box shape is implied by the corners") has no still: a subtitle over 14:55's.
 
-## BUILT AND DECIDED THIS SESSION
+## DONE THIS SESSION
 
-- **T1b, TRIM AND MOVE — APPROVED (R-097), COMMITTED AND PUSHED `5b95fdb`.** Plan v1.4 after three Architect reviews; take 2
-  on Carl's note: *the playhead moves on the ruler only*. Edge drag trims (non-destructive), body drag moves, snap on / N,
-  Esc cancels; a new Builder's take keeps a trim.
-- **THE THIRD-PERSON VIEW** — note `structural-note-third-person-view-29-october.md` **v1.3.3** (APPROVED at v1.3.1; record
-  amended twice after: the PiP in CSS px, the grid's fade-centre row, the drag ruling); plan `plan-third-person-view-29-
-  october.md` **v1.2** (APPROVED: *"Approved. Proceed and implement."*). Four note reviews, three plan reviews, saved verbatim
-  (`architect-plan-response-third-person-29-october.md`, `architect-plan-response-third-person-plan-29-october.md`).
-  **BUILT, uncommitted:** `bench-chain.ts` (`trackPoseAt`, `trackPath`, `clipPath`), `camera-bench.tsx` (view, eye, switch,
-  PiP, render callback, helpers, overlay; dev-only instruments). **Checks:** chain 118/118; first person PIXEL-IDENTICAL to
-  the pre-build baseline; `camera-bench-verify` 120/120; `third-person-verify` 26/28 (above); the cost: AMD Radeon via
-  ANGLE D3D11, timer queries present, third person GPU p95 1.61 ms (first 0.91), 0 dropped frames — within both pass lines.
-- **⛔ A NEW ROLE RULE** (Carl: *"I didnt think youd be ok with this, im certainly not."*): in review the Architect reports
-  findings and NAMES Carl's decisions; it does not put options to him or draft the revision — the Builder folds in, asks,
-  writes the next version. In `ai-system/ai-roles.md` (Architect, Cannot) and D-102 (amended 29 October). It held for the
-  rest of the session. `ai-roles.md` closed, locked and probed (refused).
-- **The Architect's seat reads `git status` from the start of ITS session** — it reported T1b "not committed" three times
-  after `5b95fdb` was pushed. Tell it to re-check.
+- **The third-person view APPROVED (R-098), pushed `2aa8e15`.** The framing check PASSED on Carl's ruling (*"Yes,
+  pass"*), its mark still unable to fail — the pass is his eye. Filmed for film 4 (`07 Camera bench - Third person`).
+  Carl on who performs a shot: *"C2b will make it and that included you and me"* (D-104). Bench files CLOSED, LOCKED,
+  TESTED (31/31 protected denied; `577efc1`).
+- **SCHEDULE CHANGED** (Carl): edit films 01, 02, 04 NOW → the hero (several sessions; film 3 is its capture) → Send →
+  mastering. Deadline 19 November.
+- **⛔ THE SCREEN IS RECORDED EVERY SESSION OF A FILMED BUILD, BY THE BUILDER, UNPROMPTED** — from the hero's FIRST
+  discussion (D-101 tail; `03 The hero/README.md`). Film 02's discussion was never filmed (*"Its clear my direction wasnt
+  followed"*). Recovered: films 02 and 04's discussions recorded from the archived sessions as Carl scrolled (ffmpeg
+  gdigrab), logged from the transcripts (`~/.claude/projects/…/<session>.jsonl` — the Builder can read them directly).
+  Start: `ffmpeg -f gdigrab -framerate 30 -offset_x 0 -offset_y 0 -video_size 1920x1080 -i desktop -c:v libx264 -preset
+  ultrafast -crf 18 -pix_fmt yuv420p <bin>/<name>.mkv` in the background; stop by killing the PID (mkv survives).
+- **Film 02 padded from the corner bench** (Carl): 14 clips of the dials moving (carving, relief, key light, modes, the
+  gold's roughness, the blue's tint and coat, the studio turning, rocks to face-on), via Chrome's screencast at ~57
+  painted frames/s → constant 30 fps (`film02-bench-capture-29-october.mjs`).
+- **⛔ COLOUR, MEASURED:** the FFmpeg screen recordings AND the Playwright clips are **BT.601**; today's bench screencasts
+  BT.709. VS Code's blue badge read as 601 = (45,124,157), the same pixel as a known-601 recording. Film 01's first cut
+  assumed 709 and was REBUILT; film 04's discussion MP4 was mislabelled and REBUILT. Tesseract 5.4 installed (OCR).
+- **⛔ D-106, THE SHOWCASE STANDARD (APPROVED as a definition):** "standard" = the best showcase of THAT object; the
+  route per object and conditions. Fixed layer measured (colour standard, no dropped frames, quality master; LUT =
+  correction only). Per-object layer by Carl's eye (tone mapping by the scene's light: Neutral for materials, AgX/none for
+  light, ACES for mood). **Film 4's page: NEUTRAL — RULED** (*"i will take your recommendation"*).
 
 ## ⛔ OPEN — with owners
 
-- **Scope:** `bench-chain.ts`, `camera-bench.tsx`, `bench-timeline.tsx` OPEN in `chunk-scope.json` (chunk
-  `trim-and-move-t1b`; Carl: *"Heep open until i ask to close, lock and test"*). `chunk-scope.json` stays LOCAL.
-- **Carl:** fly third person; the framing mark; commit; the pad.
-- **Raised, not chosen (Carl's):** stills of text in the gaps; flat views (top / side); the speed spline editor; signature
-  moves; R2. Overlap as a blend or a dissolve: raised and NOT chosen.
-- **Carried:** the hero (D-101); the films' edit; Send; mastering; `about-card-glass.ts:491` comment untrue (flag).
+- **PROPOSED, not built (D-106):** a colour test chart through the whole chain; frame-stepped capture at 2× (⚠ §5a — a
+  structural note first); a 10-bit master; one correction LUT from a Resolve grade, applied by FFmpeg `lut3d` in the
+  bench's client films. Carl's word to start the note.
+- **Carl:** the hero (camera and triggers his; the build is §5a); Send after it; mastering.
+- **Raised, not chosen:** stills of text in timeline gaps; flat views; the speed spline editor; signature moves; R2.
+- **Carried:** `about-card-glass.ts:491` comment untrue (flag only, protected).
 
 ## STANDING / LESSONS (this session)
 
-- **The site's ROOT ZOOM (D-097):** at 1920 px wide the page is zoomed ~1.36; the bench draws, scissors and places labels in
-  LAYOUT px (right). A harness measuring on-screen px (`getBoundingClientRect`, screenshots) is off by the zoom — use
-  `offsetWidth` / convert.
-- **A negative control on every comparison check:** the framing check's pass mark was only exposed as unable to fail because
-  the wrong camera was also measured.
-- **The Bash tool fails on long heredocs** carrying quotes and backticks ("unexpected EOF") — write the script with the Write
-  tool and run it.
-- Chromium fires `lostpointercapture` at the NEXT pointer event, not at the release.
+- **Shell text hazards, twice:** `\04` in a heredoc'd Python string wrote 0x04 into `decisions.md` (caught, fixed);
+  backticks in a double-quoted bash string ran as a command. Use `chr(92)`, Edit/Write, or a quoted heredoc to a file.
+- **A Python print redirected to a file is cp1252 on Windows** — write files from Python with `encoding='utf-8'`.
+- **OrbitControls on a relief:** the oblique view starts turned; a symmetric swing goes edge-on. Rock one way only.
+- **A tiling filter resets on a pixel-format change** (RGBA stills among RGB frames): normalise tiles to rgb24 first.
+- **The Grep tool skips `live-work/`** (gitignored) — use `grep -rn` there.
 
 ---
 
-*Written 29 October 2026, before Carl's restart. Replaces the 27 October session-2 handoff.*
+*Written 29 October 2026, session 2. Replaces the 29 October session-1 handoff.*
