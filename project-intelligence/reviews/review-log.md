@@ -77,7 +77,7 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 - ✔ **APPROVED** after Carl flew it (session 2, after the restart restored the Bluetooth adapter and the pad).
 - ✔ **Checks:** `bench-chain-check` 118/118; first person PIXEL-IDENTICAL to the pre-build baseline; `camera-bench-verify` 120/120; the cost on AMD Radeon / ANGLE D3D11 with timer queries, third person GPU p95 1.61 ms (first 0.91), 0 dropped frames.
-- ⚠ **`third-person-verify` 26/28: the framing check (10) cannot fail** — the wrong camera also passes the pre-stated mark of 8 (3.73 / 3.58 against the right camera's 0.70 / 1.25). Not re-marked. **Carl's ruling on the mark is not yet recorded here** — the check is not evidence until it is.
+- ⚠ **`third-person-verify` 26/28: the framing check (10) cannot fail** — the wrong camera also passes the pre-stated mark of 8 (3.73 / 3.58 against the right camera's 0.70 / 1.25). Not re-marked. **Carl's ruling (29 October 2026, later, verbatim): *"Yes, pass"*** → check 10 PASSED by Carl's ruling, on his own flight of the view; the number itself still cannot fail, so the PASS is his eye, not the harness.
 
 ---
 
