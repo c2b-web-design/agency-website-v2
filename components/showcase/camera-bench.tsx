@@ -34,9 +34,9 @@ import { FRONT_FOV, MeasureSpans } from "./lettering-hooks";
 import { Guard, LetteringPiece, measurePiece, NeutralToneMapping, usePieceBuild, type Built, type PieceMeasure } from "./lettering-piece";
 import { BTN, Edges, focalMm, readPad, rigAt, SENSOR_MM, stepRig, FEEL, type Intent, type Rig } from "./camera-pad";
 import {
-  addTrack, chainEnd, clampDt, clipEnd, clipLength, clipPoseAt, deleteClips, EDGE_S, editPoints, emptyChain, gapsOf, joinsOf, numberClips,
-  newClipId, parityV1, parseChain, placeShape, poseAtT, poseInShape, recaptureStart, recordClip, replaceShape, Sampler, shapeRefusal, sourceAt, startSpeed,
-  takesAt, type Chain, type Clip, type Pose, type Shape, type Units,
+  addTrack, applyEdit, chainEnd, clampDt, clipEnd, clipLength, clipPoseAt, deleteClips, EDGE_S, editPoints, emptyChain, gapsOf, isTrimmed, joinsOf, numberClips,
+  newClipId, parityV1, parseChain, placeShape, poseAtT, poseInShape, recaptureStart, recordClip, replaceShape, Sampler, setTrim, shapeRefusal, sourceAt, startSpeed,
+  takesAt, type Chain, type Clip, type Edit, type Pose, type Shape, type Units,
 } from "./bench-chain";
 import { BenchTransport, type Tone, type TransportView } from "./bench-transport";
 import { BenchTimeline } from "./bench-timeline";
@@ -262,6 +262,12 @@ class BenchStore {
   setBuilderTake(t: BuilderTake) {
     this.builderTake = t;
   }
+  /** ⛔ T1b: THE DRAG IN PROGRESS (`plan-trim-and-move-t1b-29-october.md` v1.4) — the PAGE's, pushed here on every change and
+   *  ended only by the page. While set, the picture is `applyEdit` on the CURRENT chain, and recording, delete, the transport,
+   *  flying and the Builder's take all wait. Never a copy of the chain. */
+  private edit: Edit | null = null;
+  /** snapping (Carl: *"snapping always on and the N to turn it off/on"*) — the page's state, mirrored for the harness */
+  private snap = true;
 
   constructor(chain: Chain) {
     this.chain = chain;
@@ -322,6 +328,7 @@ class BenchStore {
 
   /** A / Space / the record button: stop a recording, stop a play, else RECORD on the armed track at the playhead */
   pressA() {
+    if (this.edit) return;
     if (this.rec) return this.stopRecording(null);
     if (this.mode === "play") return this.stopPlay(true);
     const pose = this.pose();
@@ -353,7 +360,7 @@ class BenchStore {
     if (reason) this.say(reason);
   }
   togglePlay() {
-    if (this.rec) return;
+    if (this.rec || this.edit) return;
     if (this.mode === "play") return this.stopPlay(true);
     const end = this.derived.end;
     if (end <= EDGE_S) return;
@@ -405,7 +412,7 @@ class BenchStore {
     return p?.pose ?? null;
   }
   toStart() {
-    if (this.rec) return;
+    if (this.rec || this.edit) return;
     if (!this.chain.clips.length) return this.home(); // [A5] Y on an empty shot: the default view
     this.acted();
     this.mode = "fly";
@@ -413,14 +420,14 @@ class BenchStore {
     this.posed = true;
   }
   toEnd() {
-    if (this.rec) return;
+    if (this.rec || this.edit) return;
     this.acted();
     this.mode = "fly";
     this.T = this.derived.end;
     this.posed = this.chain.clips.length > 0;
   }
   scrub(T: number) {
-    if (this.rec || !this.chain.clips.length) return;
+    if (this.rec || this.edit || !this.chain.clips.length) return;
     this.acted();
     this.mode = "fly";
     this.T = Math.max(0, Math.min(T, this.derived.end));
@@ -428,7 +435,7 @@ class BenchStore {
   }
   /** comma / full stop: between the EDIT POINTS on every track; right past the last is To the end */
   step(dir: number) {
-    if (this.rec || !this.chain.clips.length) return;
+    if (this.rec || this.edit || !this.chain.clips.length) return;
     const pts = this.derived.points;
     if (dir > 0) {
       const next = pts.find((s) => s > this.T + EDGE_S);
@@ -440,6 +447,7 @@ class BenchStore {
   /** ⛔ HOME — the DEFAULT view (0, 4.29, 22.71 m, square on, 30°), the playhead untouched. ⛔ [B2] while recording it STOPS
    *  the recording FIRST: a jump inside a clip is never recorded. */
   home() {
+    if (this.edit) return;
     if (this.rec) this.stopRecording("Stopped, then default view");
     if (this.mode === "play") this.stopPlay(false);
     this.posed = false;
@@ -447,6 +455,7 @@ class BenchStore {
   }
   /** a new camera track ON TOP, armed (was "New camera", which only labelled the next clip) */
   addCamera() {
+    if (this.edit) return;
     if (this.rec) return this.say("A camera track cannot be added while recording: stop first (A)");
     this.acted();
     const chain = addTrack(this.chain);
@@ -455,6 +464,7 @@ class BenchStore {
   }
   /** arm a track (its header) */
   arm(cam: number) {
+    if (this.edit) return;
     if (this.rec) return this.say("The armed track cannot change while recording: stop first (A)");
     if (!this.chain.tracks.includes(cam)) return;
     this.acted();
@@ -463,19 +473,64 @@ class BenchStore {
   /** ⛔ START (pad) / C (keyboard): the armed track, bottom → top → bottom (Carl: "Start cycles the armed track"). ⛔ [C10]
    *  while recording it does nothing, and says why */
   cycleArm() {
+    if (this.edit) return;
     if (this.rec) return this.say("Start does nothing while recording: stop first (A)");
     const t = this.chain.tracks;
     this.acted();
     this.armedCam = t[(t.indexOf(this.armedCam) + 1) % t.length];
   }
   deleteSelected() {
-    if (this.rec || !this.selection.length) return;
+    if (this.rec || this.edit || !this.selection.length) return;
     this.acted();
     const chain = deleteClips(this.chain, new Set(this.selection));
     this.selection = [];
     this.commit(chain);
     // nothing ripples: a deleted middle clip leaves a GAP; the playhead only clamps to a shorter shot
     if (this.T > this.derived.end) this.T = this.derived.end;
+  }
+
+  // ── ⛔ T1b, TRIM AND MOVE (the plan v1.4) — the PAGE owns the edit and every way a drag ends; the store is handed it
+  setSnap(on: boolean) {
+    this.snap = on;
+  }
+  /** a drag starts or moves (the page, on every change). Refused while recording ([A5]); a play stops, as a scrub stops it */
+  setEdit(e: Edit | null): boolean {
+    if (e && this.rec) return false;
+    if (e && !this.edit) {
+      this.acted();
+      if (this.mode === "play") this.stopPlay(true);
+    }
+    this.edit = e;
+    return true;
+  }
+  /**
+   * ⛔ THE DRAG ENDS — called by the PAGE only (the first ending wins there). `commit`: the edit applied to the chain AS IT IS
+   * NOW (never one copied at the press: [R2]) and committed ONCE — an unchanged chain (a move under a frame) saves nothing. A
+   * cancel needs no restoring: nothing was changed. ⛔ THE PLAYHEAD DOES NOT MOVE (Carl, on take 1: *"If i click on the clip
+   * it mustnt move the playhead"* — only the ruler moves it); an edit that shortens the shot clamps it, as Delete does ([R12]).
+   */
+  endEdit(commit: boolean) {
+    const e = this.edit;
+    this.edit = null;
+    if (!e) return;
+    // the camera was showing the edit's picture: it stays HELD at the playhead's pose, whichever way the drag ended
+    this.mode = "fly";
+    this.posed = true;
+    if (!commit) return;
+    const chain = applyEdit(this.chain, e);
+    if (chain !== this.chain) this.commit(chain);
+    if (this.T > this.derived.end) this.T = this.derived.end;
+  }
+  /** ⛔ THE PICTURE DURING A DRAG (the playhead itself never moves — Carl, on take 1). A trim: the CLIP's own pose at its edge
+   *  AS CLAMPED by `applyEdit` (Carl: *"The frame at the edge"*; never the raw `edit.T`, which runs past the source or the
+   *  1/60 s floor; at a tail the half-open rule would show the NEXT clip). A move: what plays at the parked playhead on the
+   *  edited chain. `T`: the edge's time (a move: the playhead's) — for the harness, never the playhead. */
+  private editPicture(e: Edit): { T: number; pose: Pose | null } {
+    const chain = applyEdit(this.chain, e);
+    const c = chain.clips.find((k) => k.id === e.id);
+    if (!c || e.kind === "move") return { T: this.T, pose: poseAtT(chain, this.T)?.pose ?? null };
+    const T = e.kind === "head" ? c.start : clipEnd(c);
+    return { T, pose: clipPoseAt(c, T) };
   }
 
   // ── ⛔ SHAPE CLIPS (the plan `plan-shape-clips-27-october.md` v2.1) — each change a commit (an action), refused while
@@ -528,7 +583,9 @@ class BenchStore {
    */
   private syncBuilderTake(m: PieceMeasure) {
     const t = this.builderTake, u = this.chain.units;
-    if (!t || !u || this.rec || t.version === this.builderPlaced) return;
+    // ⛔ T1b: a new take WAITS while a drag runs and lands after the release — the check IN THIS early return, BEFORE
+    // `builderPlaced` is set below (placed after it, the version would be marked placed during the drag and never land)
+    if (!t || !u || this.rec || this.edit || t.version === this.builderPlaced) return;
     if ((window as unknown as { __benchNoBuilderTake?: boolean }).__benchNoBuilderTake) return;
     this.builderPlaced = t.version;
     const id = `builder-v${t.version}`;
@@ -559,11 +616,15 @@ class BenchStore {
     let chain = old ? deleteClips(this.chain, new Set([old.id])) : this.chain;
     const cam = old?.cam ?? chain.tracks[0], start = old?.start ?? 0;
     chain = placeShape(chain, cam, start, shape, id);
+    // ⛔ "KEEP MY TRIM" (Carl, 29 October 2026): a new version over a TRIMMED take (head or tail) lands with its in / out,
+    // in seconds — ⚠ a timing change moves where along the move the cut falls
+    const kept = !!old && isTrimmed(old);
+    if (old && kept) chain = setTrim(chain, id, old.in, old.out);
     this.commit(chain, false);
     this.mode = "fly";
     this.T = start;
     this.posed = true;
-    this.say(`The Builder's take is on the bench: "${t.name}" on Cam ${cam} at ${start.toFixed(1)} s${old ? " (it replaced the last take)" : ""}`);
+    this.say(`The Builder's take is on the bench: "${t.name}" on Cam ${cam} at ${start.toFixed(1)} s${old ? (kept ? " (it replaced the last take; your trim kept)" : " (it replaced the last take)") : ""}`);
   }
   recaptureShapeStart(id: string) {
     if (this.rec) return this.say("Stop first (A)");
@@ -580,6 +641,7 @@ class BenchStore {
 
   /** ⛔ THE STATUS — what A will do, in plain words, BEFORE it is pressed (no em dashes) */
   private status(): { status: string; tone: Tone } {
+    if (this.edit) return { status: `${this.edit.kind === "move" ? "Moving" : "Trimming"} clip ${this.derived.numbers.get(this.edit.id) ?? ""} · Esc cancels`, tone: "idle" };
     if (this.notice && performance.now() < this.notice.until) return { status: this.notice.text, tone: "warn" };
     const cam = this.armedCam;
     if (this.rec) return { status: `● Recording Cam ${this.rec.cam} · ${this.rec.sampler.length.toFixed(1)} s · A stops`, tone: "rec" };
@@ -675,7 +737,12 @@ class BenchStore {
     const active =
       intent.forward !== 0 || intent.right !== 0 || intent.up !== 0 || intent.turn !== 0 || intent.tilt !== 0 || intent.lens !== 0 || this.mouse.dx !== 0 || this.mouse.dy !== 0;
 
-    if (this.mode === "play") {
+    // ⛔ T1b: DURING A DRAG the picture is the edit's (the trim view, or the edited chain at the playhead) and NOTHING flies —
+    // the sticks, the triggers, the mouse look are ignored ([R3])
+    const pic = this.edit ? this.editPicture(this.edit) : null;
+    if (pic) {
+      if (pic.pose) setRig(pic.pose);
+    } else if (this.mode === "play") {
       if (active) this.stopPlay(false); // a fly input STOPS playback and flies from where it stopped
       else {
         this.advancePlay(dt);
@@ -683,14 +750,14 @@ class BenchStore {
         if (p) setRig(p);
       }
     }
-    if (this.mode === "fly" && this.posed) {
+    if (!pic && this.mode === "fly" && this.posed) {
       if (active) this.posed = false; // a fly input leaves the playhead's pose; the playhead stays PARKED
       else {
         const p = this.playheadPose();
         if (p) setRig(p);
       }
     }
-    if (this.mode === "rec" || (this.mode === "fly" && !this.posed)) {
+    if (!pic && (this.mode === "rec" || (this.mode === "fly" && !this.posed))) {
       this.roll = 0; // flying is level (a recording is level: samples carry no roll)
       // a mouse drag turns the camera DIRECTLY (degrees per pixel), not through the stick's eased speed
       r.yaw -= this.mouse.dx * MOUSE_DEG_PER_PX;
@@ -746,6 +813,8 @@ class BenchStore {
       atEnd: this.atEnd,
       posed: this.posed,
       selection: this.selection,
+      editing: this.edit ? { id: this.edit.id, kind: this.edit.kind, edgeT: pic?.T ?? null } : null,
+      snap: this.snap,
       chain: this.chain,
       chainUnits: units,
       tracks: this.chain.tracks,
@@ -1079,6 +1148,49 @@ function CameraBenchInner() {
     setSelection(next);
     store.setSelection(next);
   };
+  /** a press on an UNSELECTED clip selects it at once (T1b: Resolve; the inspector's trim readout shows during the drag);
+   *  a bare-row click clears (Carl: "Clear the selection") */
+  const selectOnly = (ids: string[]) => {
+    setSelection(ids);
+    store.setSelection(ids);
+  };
+
+  // ⛔ T1b, THE EDIT's ONE OWNER (the plan v1.4 §5a) — every way a drag ends comes HERE: pointer up (commit), Esc and a
+  // hidden tab (the window listeners below), a lost pointer (the timeline). ⛔ WHETHER A DRAG IS LIVE IS A REF: pointerup
+  // and lostpointercapture arrive back to back before React re-renders, so THE FIRST ENDING WINS and a later one finds the
+  // ref clear; the keyboard handler (registered once) reads the ref, never the state. The state is for drawing only.
+  const [edit, setEdit] = useState<Edit | null>(null);
+  const editRef = useRef<Edit | null>(null);
+  const editStart = useCallback(
+    (e: Edit) => {
+      if (editRef.current || !store.setEdit(e)) return false;
+      editRef.current = e;
+      setEdit(e);
+      return true;
+    },
+    [store],
+  );
+  const editMove = useCallback(
+    (e: Edit) => {
+      if (editRef.current?.id !== e.id) return; // ended (Esc, a hidden tab): a stray move cannot restart it
+      editRef.current = e;
+      store.setEdit(e);
+      setEdit(e);
+    },
+    [store],
+  );
+  const editEnd = useCallback(
+    (commit: boolean) => {
+      if (!editRef.current) return;
+      editRef.current = null;
+      store.endEdit(commit);
+      setEdit(null);
+    },
+    [store],
+  );
+  // snapping: ON by default, N toggles it — also mid-drag (Carl: "snapping always on and the N to turn it off/on")
+  const [snap, setSnap] = useState(true);
+  const snapRef = useRef(true);
 
   // ⛔ KEYBOARD — the fallback (and what tests drive). Ignored while typing in a field. ⛔ [A4] Space / Enter on a FOCUSED
   // control (reached by Tab) belong to THAT control: the window handler leaves them alone, so nothing fires twice.
@@ -1091,6 +1203,18 @@ function CameraBenchInner() {
       store.keyDown(e.code);
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space", "Home", "End", "Backspace"].includes(e.code)) e.preventDefault();
       if (e.repeat) return;
+      if (e.code === "KeyN") {
+        snapRef.current = !snapRef.current;
+        setSnap(snapRef.current);
+        store.setSnap(snapRef.current);
+        return;
+      }
+      // ⛔ T1b: DURING A DRAG Esc cancels and every other key is IGNORED ([R3]) — read from the REF (this handler is
+      // registered once); the store's own gates hold too
+      if (editRef.current) {
+        if (e.code === "Escape") editEnd(false);
+        return;
+      }
       if (e.code === "Space") store.pressA();
       else if (e.code === "Backspace" || e.code === "Delete") store.deleteSelected();
       else if (e.code === "KeyP") store.togglePlay();
@@ -1105,7 +1229,9 @@ function CameraBenchInner() {
     const blur = () => store.keysClear();
     // ⛔ THE ONE THING OUTSIDE THE FRAME CALLBACK: a hidden tab draws no frames, so it is heard here (note decision 4)
     const hidden = () => {
-      if (document.hidden) store.stopRecording("Stopped: the tab was hidden");
+      if (!document.hidden) return;
+      store.stopRecording("Stopped: the tab was hidden");
+      editEnd(false); // T1b: a hidden tab cancels a drag
     };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
@@ -1117,7 +1243,7 @@ function CameraBenchInner() {
       window.removeEventListener("blur", blur);
       document.removeEventListener("visibilitychange", hidden);
     };
-  }, [store]);
+  }, [store, editEnd]);
 
   // ⛔ THE NO-WEBGL NET — heard in the CAPTURE phase (it does not bubble)
   useEffect(() => {
@@ -1354,8 +1480,15 @@ function CameraBenchInner() {
         disabled={recording}
         toMetres={toMetres}
         onSelect={select}
+        onSelectOnly={selectOnly}
         onArm={(cam) => store.arm(cam)}
         onScrub={(T) => store.scrub(T)}
+        edit={edit}
+        snap={snap}
+        metresPerD={metresPerD}
+        onEditStart={editStart}
+        onEditMove={editMove}
+        onEditEnd={editEnd}
         frame={units && world ? { units, floor: world.floor, z1: world.z1 } : null}
         shapeNote={(c) => clashes.get(c.id) ?? null}
         onShapeEdit={(id, s) => store.editShape(id, s)}

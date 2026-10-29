@@ -17,6 +17,7 @@ import {
   EDGE_S, PROBE, Sampler, addTrack, chainEnd, clipPoseAt, deleteClips, emptyChain, gapsOf, helixFrom, joinsOf, migrateV1, parityV1,
   moveFromFile, parseChain, placeShape, poseAtT, poseInShape, recaptureStart, recordClip, replaceShape, shapeLength, shapeRefusal, sourceAt, startSpeed,
   takesAt, v1PoseAt, wrapDeg,
+  MIN_CLIP_S, applyEdit, clipEnd, clipLength, isTrimmed, moveClip, setTrim, snapSpan, snapTargets, snapTime, sourceLength, trimClip,
 } from "../../../components/showcase/bench-chain.ts";
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -386,6 +387,78 @@ function shapeForClip2(chain, pace = 280 / D) {
   }
   check("refusal" in moveFromFile({ ...file, start: "somewhere" }, cam, units) && "refusal" in moveFromFile({ kind: "x" }, cam, units), "a move file not starting at the camera, or not a move file, is refused");
   // ⛔ the helix untouched by the glide's clock: Parity A still holds (re-checked above, unchanged)
+}
+
+// ── ⛔ T1b, TRIM AND MOVE (the plan `plan-trim-and-move-t1b-29-october.md` v1.4, "Checks")
+{
+  // A: 4 s of x 0 → 4 on Cam 1 at 0; B: 2 s on Cam 1 at 6; C: 3 s on Cam 2 at 1
+  const ch = recordClip(recordClip(recordClip(emptyChain(), 1, 0, S(4, 0, 4), "A"), 1, 6, S(2, 10, 12), "B"), 2, 1, S(3, 20, 23), "C");
+  const A = (c) => c.clips.find((k) => k.id === "A");
+  // the tail
+  const t1 = trimClip(ch, "A", "tail", 2.5);
+  check(Math.abs(A(t1).out - 2.5) < 1e-12 && A(t1).start === 0 && A(t1).in === 0, `a TAIL trim to 2.5 s: out ${A(t1).out}, start and in fixed`);
+  check(Math.abs(A(trimClip(t1, "A", "tail", 99)).out - sourceLength(A(ch))) < 1e-12, "a tail dragged past the source stops at the source's length (non-destructive: the footage returns)");
+  check(Math.abs(clipEnd(A(trimClip(ch, "A", "tail", -5))) - MIN_CLIP_S) < 1e-12, "a tail dragged before the start leaves 1/60 s [C9]");
+  {
+    const noC = (c) => deleteClips(c, new Set(["C"]));
+    check(sourceAt(noC(t1), 3) === null && sourceAt(noC(t1), 2)?.id === "A" && near(poseAtT(noC(t1), 2)?.pose, poseAtT(noC(ch), 2)?.pose),
+      "after a tail trim the kept part plays unchanged; past the cut A no longer plays (a gap)");
+  }
+  // the head: start and in by ONE shared amount; every kept frame stays at its timeline time
+  const h1 = trimClip(ch, "A", "head", 1.5);
+  let same = true;
+  for (let T = 1.5; T < 4 - 1e-6; T += 1 / 120) same &&= near(clipPoseAt(A(h1), T), clipPoseAt(A(ch), T));
+  check(Math.abs(A(h1).start - 1.5) < 1e-12 && Math.abs(A(h1).in - 1.5) < 1e-12 && same, "a HEAD trim to 1.5 s: start and in move together; every kept frame at its timeline time (≤ 1e-9)");
+  // ⛔ past BOTH limits ([R10]): a clip whose start (2) is past its in (0.5) runs out of IN first; one whose in (3) is past its start (1) runs out of START first
+  for (const [st, inn, what] of [[2, 0.5, "in runs out first"], [1, 3, "start runs out first"]]) {
+    const base = { ...ch, clips: [{ ...A(ch), start: st, in: inn }] };
+    const c0 = base.clips[0];
+    const back = trimClip(base, "A", "head", -50).clips[0];
+    let kept = true;
+    for (let T = back.start; T < clipEnd(back) - 1e-6; T += 1 / 120) if (T >= c0.start) kept &&= near(clipPoseAt(back, T), clipPoseAt(c0, T));
+    const shift = Math.min(inn, st);
+    check(Math.abs(back.start - (st - shift)) < 1e-12 && Math.abs(back.in - (inn - shift)) < 1e-12 && back.start >= 0 && back.in >= 0 && kept,
+      `a head dragged past BOTH limits (${what}): start ${back.start}, in ${back.in}; every frame that was there is still at its time`);
+  }
+  check(Math.abs(clipLength(A(trimClip(ch, "A", "head", 99))) - MIN_CLIP_S) < 1e-12, "a head dragged past the end leaves 1/60 s [C9]");
+  // move
+  const m1 = moveClip(ch, "A", 10);
+  check(A(m1).start === 10 && A(m1).order === A(ch).order && near(clipPoseAt(A(m1), 11), clipPoseAt(A(ch), 1)), "a MOVE into empty space: start 10, poses shifted by exactly the move, order KEPT");
+  const m2 = moveClip(ch, "A", 4.5);
+  const top = Math.max(...ch.clips.filter((k) => k.id !== "A").map((k) => k.order)) + 1;
+  check(A(m2).order === top && sourceAt(m2, 6.5)?.id === "A", `a move ONTO another clip on its track comes to the TOP (order ${A(m2).order}); A plays where they overlap`);
+  check(moveClip(m2, "A", 4.6).clips.find((k) => k.id === "A").order === A(m2).order, "moved again while on top: its order is NOT bumped again, and never lowered");
+  check(moveClip(ch, "A", 0.01) === ch && moveClip(ch, "A", -3) === ch, "under one frame (or clamped to where it is): the SAME chain object (nothing saved, nothing promoted)");
+  check(moveClip(ch, "C", 5).clips.find((k) => k.id === "C").order === ch.clips.find((k) => k.id === "C").order, "a clip over a clip on ANOTHER track keeps its order (precedence by track stands)");
+  // applyEdit: idempotent; a missing id changes nothing
+  const e = { id: "A", kind: "tail", T: 2.5 };
+  const once = applyEdit(ch, e);
+  const mv = { id: "A", kind: "move", T: 4.5 }, movedOnce = applyEdit(ch, mv);
+  check(applyEdit(once, e) === once && applyEdit(movedOnce, mv) === movedOnce, "an edit applied to a chain it is already committed to (trim AND move): the SAME chain object (T absolute)");
+  check(applyEdit(ch, { id: "gone", kind: "move", T: 3 }) === ch, "a missing id (deleted or replaced under the drag): the chain unchanged");
+  // isTrimmed / replaceShape / setTrim
+  const hx = helixFrom({ start: { x: -0.1, y: 0, z: 0.0001, yaw: 0, pitch: 0, fov: 30 }, end: { x: 0.1, y: 0.3, z: 0, yaw: 0, pitch: 0, fov: 30 }, axisX: 0, axisZ: 0, laps: 2, dir: 1, v0: 0, pace: 0.1, rampS: 3, aimS: 1 });
+  const L = shapeLength(hx);
+  const sh = placeShape(emptyChain(), 1, 0, hx, "H");
+  const H = (c) => c.clips.find((k) => k.id === "H");
+  check(!isTrimmed(H(sh)) && isTrimmed(H(trimClip(sh, "H", "tail", L / 2))) && isTrimmed(H(trimClip(sh, "H", "head", 1))), "isTrimmed: whole no; tail-trimmed yes; HEAD-only trimmed yes (review 3 [5])");
+  check(!isTrimmed(H(trimClip(trimClip(sh, "H", "tail", L / 2), "H", "tail", L + 5))), "a tail dragged back to full counts as UNTRIMMED [R11]");
+  const cut = trimClip(sh, "H", "tail", L / 2);
+  const slower = replaceShape(cut, "H", { ...hx, pace: hx.pace / 2 });
+  check(Math.abs(H(slower).out - L / 2) < 1e-12, `Keep the trim: a trimmed shape's numbers edited (pace halved) keeps out ${H(slower).out.toFixed(3)} s`);
+  const shorter = replaceShape(cut, "H", { ...hx, pace: hx.pace * 4 });
+  check(Math.abs(H(shorter).out - shapeLength({ ...hx, pace: hx.pace * 4 })) < 1e-12, "a trim longer than the new move clamps to the new length");
+  check(Math.abs(H(replaceShape(sh, "H", { ...hx, pace: hx.pace / 2 })).out - shapeLength({ ...hx, pace: hx.pace / 2 })) < 1e-12, "an UNTRIMMED shape still follows its new length");
+  const carried = setTrim(placeShape(emptyChain(), 1, 0, hx, "H"), "H", 1, L / 2);
+  check(H(carried).in === 1 && Math.abs(H(carried).out - L / 2) < 1e-12 && setTrim(sh, "H", 0, 999).clips[0].out === L, "setTrim carries in and out; out clamped to the source");
+  // snapping
+  const tg = snapTargets(ch, "B", 2.2);
+  // clip ends are sums of sixtieths (4 s ends at 3.99999…), so "has" within 1e-9
+  const has = (v) => tg.some((t) => Math.abs(t - v) < 1e-9);
+  check(has(0) && has(2.2) && has(4) && has(1) && !has(6) && !has(8), "snap targets: 0, the PRESS's playhead, the OTHER clips' edges; never the dragged clip's own (B's 6 and 8) [R5]");
+  check(snapTime(2.15, tg, 0.1).T === 2.2 && snapTime(2.5, tg, 0.1).to === null, "snapTime: within the tolerance it locks; outside it is left");
+  const sp = snapSpan(5, 2, [0, 7.04], 0.1);
+  check(Math.abs(sp.T - 5.04) < 1e-12 && sp.to === 7.04, `a move snaps on its END too: start 5 + 2 s → end on 7.04 → start ${sp.T}`);
 }
 
 console.log(`\nVERDICT ${fail ? "✖" : "✔"} ${pass}/${pass + fail}`);

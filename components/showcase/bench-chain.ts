@@ -552,16 +552,111 @@ export function placeShape(chain: Chain, cam: number, T: number, shape: Shape, i
   return { ...chain, tracks, clips: [...chain.clips, clip] };
 }
 /** ⛔ AN EDITED SHAPE keeps its id, start and take order; `out` is RE-DERIVED (nothing ripples: longer covers what follows
- *  on its track as the newer take, shorter leaves a gap — T1a's rules); `in` kept while it leaves a span */
+ *  on its track as the newer take, shorter leaves a gap — T1a's rules) — ⛔ UNLESS ITS TAIL WAS TRIMMED (T1b, Carl: *"Keep
+ *  the trim"*): `out < its length − EDGE_S` (a tail dragged back to full counts as untrimmed) keeps `out`, clamped to the new
+ *  length. ⚠ Kept in SECONDS: a pace change moves where along the path the cut falls. `in` kept while it leaves ≥ 1/60 s */
 export function replaceShape(chain: Chain, id: string, shape: Shape): Chain {
   return withClips(
     chain,
     chain.clips.map((c) => {
       if (c.id !== id || !c.shape) return c;
-      const out = shapeLength(shape);
-      return { ...c, shape, out, in: c.in < out - EDGE_S ? c.in : 0 };
+      const len = shapeLength(shape);
+      const out = c.out < shapeLength(c.shape) - EDGE_S ? Math.min(c.out, len) : len;
+      return { ...c, shape, out, in: c.in <= out - MIN_CLIP_S ? c.in : 0 };
     }),
   );
+}
+
+// ── ⛔ T1b, TRIM AND MOVE (the plan `live-work/plan-trim-and-move-t1b-29-october.md` v1.4; Carl: *"When on the clip i should
+//    be able to left click and drag to trim"*, *"we should have the ability to drag and move clips"*) ───────────────────────
+
+/** the shortest clip an edit leaves ([C9]: one sample interval) */
+export const MIN_CLIP_S = 1 / SAMPLE_HZ;
+
+/** ⛔ "TRIMMED" (the plan v1.4): a head off its source's start OR a tail short of its source's end */
+export const isTrimmed = (c: Clip) => c.in > EDGE_S || c.out < sourceLength(c) - EDGE_S;
+
+/**
+ * ⛔ A DRAG HOLDS AN EDIT, NEVER A COPY OF THE CHAIN (the plan's §5a): everything shown during a drag is `applyEdit` on the
+ * CURRENT chain, and the release applies it to the chain as it is then. `T` is ABSOLUTE, per kind — head: the new START;
+ * tail: the new END; move: the new START — so applying it to a chain it is already committed to changes nothing. `grab`:
+ * the pointer's time minus the dragged edge (a move: the clip's start) at the press, so the edge stays under the hand (the
+ * timeline's; `applyEdit` reads only `T`). `anchorT`: the playhead AT THE PRESS (the snap target — the
+ * live one follows a trim edge). `span`: the timeline's scale, frozen at the press.
+ */
+export type Edit = { id: string; kind: "head" | "tail" | "move"; T: number; grab: number; anchorT: number; span: number };
+
+const replaceClip = (chain: Chain, c: Clip, next: Clip) =>
+  next.start === c.start && next.in === c.in && next.out === c.out && next.order === c.order ? chain : withClips(chain, chain.clips.map((k) => (k === c ? next : k)));
+
+/**
+ * ⛔ TRIM, non-destructive (Carl's answer 1 to note v3). TAIL: `out` = the edge's time into the source, `start` fixed;
+ * `out ≤` the source's length. HEAD: `start` and `in` move by ONE shared amount δ, clamped ONCE — `δ ≥ −min(in, start)`,
+ * `δ ≤ length − 1/60 s` — so every kept frame stays at its timeline time (Resolve's head trim; clamped separately, every
+ * kept frame would shift: the review's [R10]). Never shorter than 1/60 s ([C9]). A missing id: the chain unchanged.
+ */
+export function trimClip(chain: Chain, id: string, edge: "head" | "tail", T: number): Chain {
+  const c = chain.clips.find((k) => k.id === id);
+  if (!c) return chain;
+  // ⛔ an edge left where it is (within 1e-12 s — `T` round-tripped through start + length) is the SAME chain: nothing saved
+  if (edge === "tail") {
+    const out = Math.min(sourceLength(c), Math.max(c.in + MIN_CLIP_S, c.in + (T - c.start)));
+    return Math.abs(out - c.out) <= 1e-12 ? chain : replaceClip(chain, c, { ...c, out });
+  }
+  const d = Math.max(-Math.min(c.in, c.start), Math.min(Math.max(0, clipLength(c) - MIN_CLIP_S), T - c.start));
+  return Math.abs(d) <= 1e-12 ? chain : replaceClip(chain, c, { ...c, start: c.start + d, in: c.in + d });
+}
+
+/**
+ * ⛔ MOVE, along its own track (Carl's answer 2 to note v3); `start ≥ 0` ([C9]). ⛔ THE TAKE ORDER (Carl, 29 October: *"Only
+ * when it lands on another clip"*): over another clip on its track it comes to the TOP — `max(own, the others' highest + 1)`,
+ * never lowered, and a second application does not bump it again; into empty space its order is kept. ⛔ UNDER ONE FRAME
+ * from where it is: the SAME chain object (nothing changes, nothing is saved), so a shaky click promotes nothing.
+ */
+export function moveClip(chain: Chain, id: string, start: number): Chain {
+  const c = chain.clips.find((k) => k.id === id);
+  if (!c) return chain;
+  const s = Math.max(0, start);
+  if (Math.abs(s - c.start) < MIN_CLIP_S) return chain;
+  const end = s + clipLength(c);
+  const others = chain.clips.filter((k) => k !== c);
+  const lands = others.some((k) => k.cam === c.cam && k.start < end - EDGE_S && s < clipEnd(k) - EDGE_S);
+  const order = lands ? Math.max(c.order, others.reduce((m, k) => Math.max(m, k.order), -1) + 1) : c.order;
+  return replaceClip(chain, c, { ...c, start: s, order });
+}
+
+/** the edit on the chain as it is NOW — a missing id (a clip deleted or replaced under the drag) changes nothing */
+export const applyEdit = (chain: Chain, e: Pick<Edit, "id" | "kind" | "T">): Chain =>
+  e.kind === "move" ? moveClip(chain, e.id, e.T) : trimClip(chain, e.id, e.kind, e.T);
+
+/**
+ * ⛔ A TRIM CARRIED to another clip (T1b, Carl: *"Keep my trim"* — a new version of the Builder's take over a trimmed one):
+ * `out` clamped to the clip's own source, `in` kept while it leaves ≥ 1/60 s.
+ */
+export function setTrim(chain: Chain, id: string, inS: number, outS: number): Chain {
+  const c = chain.clips.find((k) => k.id === id);
+  if (!c) return chain;
+  const out = Math.min(sourceLength(c), Math.max(MIN_CLIP_S, outS));
+  return replaceClip(chain, c, { ...c, out, in: inS >= 0 && inS <= out - MIN_CLIP_S ? inS : 0 });
+}
+
+/** ⛔ WHAT A DRAG SNAPS TO (the review's [R5]): 0, the playhead AT THE PRESS, and every start and end of every OTHER clip —
+ *  never the dragged clip's own edges (they would hold it in place) */
+export const snapTargets = (chain: Chain, exceptId: string, anchorT: number): number[] =>
+  [0, anchorT, ...chain.clips.filter((c) => c.id !== exceptId).flatMap((c) => [c.start, clipEnd(c)])];
+
+/** the nearest target within `tolS`, else T unchanged (`to` null) */
+export function snapTime(T: number, targets: readonly number[], tolS: number): { T: number; to: number | null } {
+  let to: number | null = null;
+  for (const t of targets) if (Math.abs(t - T) <= tolS && (to === null || Math.abs(t - T) < Math.abs(to - T))) to = t;
+  return { T: to ?? T, to };
+}
+
+/** a MOVE snaps on its START and its END, the nearer target winning; returns the new start */
+export function snapSpan(start: number, length: number, targets: readonly number[], tolS: number): { T: number; to: number | null } {
+  const a = snapTime(start, targets, tolS), b = snapTime(start + length, targets, tolS);
+  if (b.to !== null && (a.to === null || Math.abs(b.to - (start + length)) < Math.abs(a.to - start))) return { T: b.to - length, to: b.to };
+  return a;
 }
 
 /**

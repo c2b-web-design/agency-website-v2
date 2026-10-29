@@ -7,9 +7,13 @@
  * wide as they show, coloured by camera; inside a row a newer take draws OVER an older one. Numbered 1, 2, 3 by start
  * across all tracks (R1's sequential rule; per-track numbers and take lanes are T1b).
  *
- * - Click a clip to SELECT it; shift-click (or ctrl / cmd) for several. Drag on the ruler or a row's bare background to
- *   SCRUB. ⛔ Custom pointer handling, never a native range ([C3]): `mousedown`'s default is prevented on every control
- *   ([B3]), which would break a native range's drag.
+ * - Click a clip to SELECT it; shift-click (or ctrl / cmd) for several. ⛔ T1b: drag on the RULER only to SCRUB (Carl: *"It
+ *   should just be on the time ruler"*); a bare-row click clears the selection. ⛔ Custom pointer handling, never a native
+ *   range ([C3]): `mousedown`'s default is prevented on every control ([B3]), which would break a native range's drag.
+ * - ⛔ T1b, TRIM AND MOVE (`live-work/plan-trim-and-move-t1b-29-october.md` v1.4): drag a clip's EDGE to trim (Resolve's
+ *   trim cursor; the picture shows the frame at the edge; the PLAYHEAD NEVER MOVES — only the ruler moves it), its BODY to
+ *   move it along its track; snapping ON, N toggles it;
+ *   Esc cancels. The drag is the PAGE's edit (one owner); this timeline is CONTROLLED and draws `applyEdit(chain, edit)`.
  * - ⛔ EACH JOIN SHOWN AS IT IS (`joinsOf`: wherever what PLAYS changes): a CUT between cameras; else the MISMATCH (how far
  *   the incoming clip starts from where the outgoing one IS) — the Builder compensates it at hand-off. ⛔ GAPS hatched: no
  *   clip plays there, and playback holds the last picture.
@@ -23,10 +27,10 @@
  *   here / Place, nothing selected) was built and REMOVED (Carl: *"If there are to be some "signature moves" that panel will
  *   grow very quickly. It a good idea but not needed."*).
  */
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import {
-  chainEnd, clipEnd, clipLength, clipPoseAt, numberClips, shapeLength, takesAt, type BarrelShape, type Chain, type Clip, type GlideShape, type HelixShape, type Join, type Pose, type Shape,
-  type Units,
+  applyEdit, chainEnd, clipEnd, clipLength, clipPoseAt, EDGE_S, gapsOf, isTrimmed, joinsOf, numberClips, shapeLength, snapSpan, snapTargets, snapTime, sourceLength, takesAt,
+  type BarrelShape, type Chain, type Clip, type Edit, type GlideShape, type HelixShape, type Join, type Pose, type Shape, type Units,
 } from "./bench-chain";
 
 export const CAM_COLOURS = ["#5b7fa6", "#c08a3e", "#7f9a74", "#9a6fa8", "#a65b5b"];
@@ -42,6 +46,33 @@ function tickStep(span: number) {
   return 300;
 }
 
+/** ⛔ T1b: a pressed clip, from pointerdown to its click — the zone, what was selected AT THE PRESS, the scale frozen there */
+type Press = {
+  id: string;
+  pointerId: number;
+  el: HTMLElement;
+  zone: "head" | "tail" | "body";
+  additive: boolean;
+  wasSelected: boolean;
+  /** the drag has STARTED: the pointer moved `MOVE_PX` (an edge or the body — Carl, on take 1: a press alone does nothing) */
+  started: boolean;
+  /** the pointer actually moved — else the release CANCELS (an edge clicked changes nothing; the playhead stays) */
+  moved: boolean;
+  x0: number;
+  rect: { left: number; width: number };
+  span: number;
+  anchorT: number;
+  /** the pointer's time minus the dragged edge (a move: the start) at the press — the edge stays under the hand */
+  grab: number;
+};
+/** the edge zones' width inside a clip; a clip narrower than `EDGE_MIN_PX` shows them only when selected (its body clickable) */
+const EDGE_PX = 6;
+const EDGE_MIN_PX = 18;
+/** a press on the body that moves less than this is a CLICK */
+const MOVE_PX = 3;
+/** snapping's reach (Carl: "Snap, a few pixels") */
+const SNAP_PX = 8;
+
 export function BenchTimeline({
   chain,
   joins,
@@ -53,8 +84,15 @@ export function BenchTimeline({
   disabled,
   toMetres,
   onSelect,
+  onSelectOnly,
   onArm,
   onScrub,
+  edit,
+  snap,
+  metresPerD,
+  onEditStart,
+  onEditMove,
+  onEditEnd,
   frame,
   shapeNote,
   onShapeEdit,
@@ -70,8 +108,20 @@ export function BenchTimeline({
   disabled: boolean;
   toMetres: ((p: Pose) => Metres) | null;
   onSelect: (id: string, additive: boolean) => void;
+  /** set the selection outright: a press on an unselected clip, a bare-row click (empty) */
+  onSelectOnly: (ids: string[]) => void;
   onArm: (cam: number) => void;
   onScrub: (T: number) => void;
+  /** ⛔ T1b: the drag in progress — the PAGE's (one owner); this timeline is CONTROLLED and only reports */
+  edit: Edit | null;
+  snap: boolean;
+  /** the chain's metres per unit, for the joins drawn during a drag */
+  metresPerD: number;
+  /** false: refused (recording, or a drag already live) */
+  onEditStart: (e: Edit) => boolean;
+  onEditMove: (e: Edit) => void;
+  /** `commit` false: a cancel. The page takes the FIRST ending; later ones do nothing */
+  onEditEnd: (commit: boolean) => void;
   /** the chain's units and the arch's floor and face (cm) — for a shape's numbers in metres; null until measured */
   frame: { units: Units; floor: number; z1: number } | null;
   /** the clash warning for a shape clip, in words */
@@ -80,31 +130,131 @@ export function BenchTimeline({
   onShapeEdit: (id: string, s: Shape) => string | null;
   onShapeStart: (id: string) => void;
 }) {
-  const end = chainEnd(chain);
-  const span = Math.max(end, rec ? rec.at + rec.length : 0, 4) * 1.04;
+  // ⛔ T1b: WHILE A DRAG RUNS everything drawn comes from `applyEdit` on the CURRENT chain — a DRAWING input only (the
+  // plan's §5a "new channel"); storage and the clash check read the committed chain, in the page
+  const shown = edit ? applyEdit(chain, edit) : chain;
+  const end = chainEnd(shown);
+  // ⛔ the scale FROZEN at the press ([R4]): a lengthening drag would otherwise slide the edge away from the cursor
+  const span = edit ? edit.span : Math.max(end, rec ? rec.at + rec.length : 0, 4) * 1.04;
   const pct = (t: number) => `${(t / span) * 100}%`;
   const step = tickStep(span);
   const ticks = Array.from({ length: Math.floor(span / step) + 1 }, (_, i) => i * step);
-  const numbers = numberClips(chain);
-  const rows = [...chain.tracks].reverse();
+  const numbers = numberClips(shown);
+  const rows = [...shown.tracks].reverse();
+  const shownJoins = edit ? joinsOf(shown, metresPerD) : joins;
+  const shownGaps = edit ? gapsOf(shown) : gaps;
+  const edited = edit ? (shown.clips.find((c) => c.id === edit.id) ?? null) : null;
+  // the dragged edge AS CLAMPED (review 2 [5]) — for the readout. ⛔ THE PLAYHEAD STAYS WHERE IT WAS PARKED (Carl, on take 1:
+  // *"If i click on the clip it mustnt move the playhead"*); only the ruler moves it
+  const edgeT = edited && edit && edit.kind !== "move" ? (edit.kind === "head" ? edited.start : clipEnd(edited)) : null;
+  const playT = T;
   const track = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
+  const press = useRef<Press | null>(null);
+  const [snapAt, setSnapAt] = useState<number | null>(null);
+  const [trackW, setTrackW] = useState(0);
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setTrackW(el.getBoundingClientRect().width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  // ⛔ a drag ENDED ELSEWHERE (Esc, a hidden tab): release the capture — the page already ended it, so the
+  // `lostpointercapture` this fires finds nothing live
+  useEffect(() => {
+    const p = press.current;
+    if (edit || !p?.started) return;
+    try {
+      if (p.el.hasPointerCapture(p.pointerId)) p.el.releasePointerCapture(p.pointerId);
+    } catch {
+      // the element is gone or never held it: nothing to release
+    }
+  }, [edit]);
 
+  // ⛔ THE SCRUB — the RULER ONLY (Carl: "It should just be on the time ruler")
   const scrubAt = (e: ReactPointerEvent) => {
     const r = track.current?.getBoundingClientRect();
     if (!r || !r.width) return;
     onScrub(Math.max(0, Math.min(end, ((e.clientX - r.left) / r.width) * span)));
   };
   const down = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (disabled || !chain.clips.length || (e.target as HTMLElement).closest("[data-clip]")) return;
+    if (disabled || edit || !chain.clips.length) return;
     e.preventDefault();
     dragging.current = true;
     e.currentTarget.setPointerCapture(e.pointerId);
     scrubAt(e);
   };
 
-  const selected = chain.clips.filter((c) => selection.includes(c.id));
-  const under = chain.clips.length ? takesAt(chain, Math.min(T, end)) : [];
+  // ── ⛔ T1b, TRIM AND MOVE — pointer handling on the clip
+  const editFor = (p: Press, x: number): { e: Edit; to: number | null } | null => {
+    const c = chain.clips.find((k) => k.id === p.id);
+    if (!c) return null;
+    const raw = ((x - p.rect.left) / p.rect.width) * p.span - p.grab;
+    const tol = snap ? (SNAP_PX / p.rect.width) * p.span : 0;
+    const targets = snap ? snapTargets(chain, p.id, p.anchorT) : [];
+    const s = p.zone === "body" ? snapSpan(raw, clipLength(c), targets, tol) : snapTime(raw, targets, tol);
+    return { e: { id: p.id, kind: p.zone === "body" ? "move" : p.zone, T: s.T, grab: p.grab, anchorT: p.anchorT, span: p.span }, to: s.to };
+  };
+  const clipDown = (e: ReactPointerEvent<HTMLButtonElement>, c: Clip) => {
+    press.current = null;
+    if (disabled || edit || e.button !== 0) return;
+    const r = track.current?.getBoundingClientRect();
+    if (!r || !r.width) return;
+    const zone = ((e.target as HTMLElement).closest("[data-edge]")?.getAttribute("data-edge") ?? "body") as Press["zone"];
+    const additive = e.shiftKey || e.ctrlKey || e.metaKey;
+    const wasSelected = selection.includes(c.id);
+    if (!additive && !wasSelected) onSelectOnly([c.id]);
+    const edge0 = zone === "tail" ? clipEnd(c) : c.start;
+    const anchorT = Math.min(T, end);
+    const p: Press = {
+      id: c.id, pointerId: e.pointerId, el: e.currentTarget, zone, additive, wasSelected, started: false, moved: false, x0: e.clientX,
+      rect: { left: r.left, width: r.width }, span, anchorT, grab: ((e.clientX - r.left) / r.width) * span - edge0,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    press.current = p;
+  };
+  const clipMove = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    const p = press.current;
+    if (!p || p.pointerId !== e.pointerId) return;
+    if (!p.started) {
+      // ⛔ NOTHING until the pointer moves `MOVE_PX` — an edge as the body (Carl, on take 1: a click on a clip changes nothing)
+      if (Math.abs(e.clientX - p.x0) < MOVE_PX) return;
+      const c = chain.clips.find((k) => k.id === p.id);
+      if (!c) return;
+      const kind = p.zone === "body" ? "move" : p.zone;
+      p.started = onEditStart({ id: p.id, kind, T: p.zone === "tail" ? clipEnd(c) : c.start, grab: p.grab, anchorT: p.anchorT, span: p.span });
+      if (!p.started) return;
+    }
+    const next = editFor(p, e.clientX);
+    if (!next) return;
+    if (Math.abs(e.clientX - p.x0) >= 1) p.moved = true;
+    setSnapAt(next.to);
+    onEditMove(next.e); // the page ignores it once the drag has ended (Esc, a hidden tab)
+  };
+  const clipUp = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    const p = press.current;
+    if (!p || p.pointerId !== e.pointerId) return;
+    if (p.started) onEditEnd(p.moved);
+    setSnapAt(null);
+  };
+  const clipLost = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    const p = press.current;
+    if (p && p.pointerId === e.pointerId && p.started) onEditEnd(false);
+    setSnapAt(null);
+  };
+  /** ⛔ THE CLICK AFTER A PRESS: it toggles ONLY if the clip was selected AT THE PRESS and nothing dragged. Suppressed after a
+   *  drag (a cancelled one too), after a press on an EDGE (a handle, never a toggle) and after a press that selected it
+   *  (review 2 [1]). A keyboard click (`detail` 0) is always a click. */
+  const clipClick = (e: ReactMouseEvent<HTMLButtonElement>, c: Clip) => {
+    const p = press.current;
+    press.current = null;
+    if (e.detail !== 0 && p && p.id === c.id && (p.started || p.zone !== "body" || (!p.additive && !p.wasSelected))) return;
+    onSelect(c.id, e.shiftKey || e.ctrlKey || e.metaKey);
+  };
+
+  const selected = shown.clips.filter((c) => selection.includes(c.id));
+  const under = shown.clips.length ? takesAt(shown, Math.min(playT, end)) : [];
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-start" data-timeline>
@@ -112,7 +262,11 @@ export function BenchTimeline({
         <div className="flex">
           {/* the track headers, row for row with the timeline: ruler, joins, then one per camera, top first */}
           <div className="w-24 shrink-0 border-r border-white/10 text-xs text-neutral-400">
-            <div className="h-6 border-b border-white/10" />
+            {/* ⛔ SNAPPING's state (Carl: "snapping always on and the N to turn it off/on") */}
+            <div className="flex h-6 items-center border-b border-white/10 px-2 text-[10px]" data-snap={snap ? "on" : "off"} title="N turns snapping on and off">
+              <span className={snap ? "text-amber-300" : "text-neutral-500"}>Snap {snap ? "on" : "off"}</span>
+              <span className="ml-1 text-neutral-600">N</span>
+            </div>
             <div className="h-4" />
             {rows.map((cam) => {
               const armed = cam === armedCam;
@@ -135,25 +289,25 @@ export function BenchTimeline({
             })}
           </div>
           {/* the ruler and the rows share one track, so the playhead runs through all of them */}
-          <div
-            ref={track}
-            className="relative min-w-0 flex-1 cursor-ew-resize select-none"
-            onPointerDown={down}
-            onPointerMove={(e) => dragging.current && scrubAt(e)}
-            onPointerUp={() => (dragging.current = false)}
-            onPointerCancel={() => (dragging.current = false)}
-            data-scrub-track
-          >
-            <div className="relative h-6 border-b border-white/10 text-[10px] text-neutral-500">
+          <div ref={track} className="relative min-w-0 flex-1 select-none" data-track-area>
+            {/* ⛔ THE RULER — the one scrub surface */}
+            <div
+              className="relative h-6 border-b border-white/10 text-[10px] text-neutral-500"
+              onPointerDown={down}
+              onPointerMove={(e) => dragging.current && scrubAt(e)}
+              onPointerUp={() => (dragging.current = false)}
+              onPointerCancel={() => (dragging.current = false)}
+              data-scrub-track
+            >
               {ticks.map((t) => (
-                <span key={t} className="absolute top-0 h-full border-l border-white/10 pl-1 leading-6 tabular-nums" style={{ left: pct(t) }}>
+                <span key={t} className="pointer-events-none absolute top-0 h-full border-l border-white/10 pl-1 leading-6 tabular-nums" style={{ left: pct(t) }}>
                   {t}s
                 </span>
               ))}
             </div>
-            {/* joins: a cut, or the mismatch the Builder will compensate */}
+            {/* joins: a cut, or the mismatch the Builder will compensate; during a drag, the edge's readout */}
             <div className="relative h-4 text-[10px]" data-joins>
-              {joins.map((j) => {
+              {shownJoins.map((j) => {
                 if (j.kind === "mismatch" && j.metres <= 0.01 && j.degrees <= 0.5) return null;
                 return (
                   <span
@@ -167,16 +321,38 @@ export function BenchTimeline({
                   </span>
                 );
               })}
+              {edit && edited && (
+                <span
+                  className="absolute z-10 -translate-x-1/2 whitespace-nowrap rounded bg-sky-950 px-1 leading-4 text-sky-200 tabular-nums"
+                  style={{ left: pct(edgeT ?? edited.start) }}
+                  data-edit-readout
+                >
+                  {edgeT !== null
+                    ? `${edgeT.toFixed(2)} s · ${clipLength(edited).toFixed(1)} of ${sourceLength(edited).toFixed(1)} s`
+                    : `starts ${edited.start.toFixed(2)} s`}
+                </span>
+              )}
             </div>
             <div className="relative">
               {rows.map((cam) => (
-                <div key={cam} className="relative h-12 border-t border-white/5" data-track={cam}>
-                  {chain.clips
+                <div
+                  key={cam}
+                  className="relative h-12 border-t border-white/5"
+                  data-track={cam}
+                  // ⛔ a BARE-ROW click clears the selection (Carl: "Clear the selection"); it no longer scrubs
+                  onClick={(e) => {
+                    if (!disabled && !edit && e.target === e.currentTarget) onSelectOnly([]);
+                  }}
+                >
+                  {/* ⛔ DOM ORDER STABLE (chain order, never sorted by take): a re-sort mid-drag would re-insert the dragged
+                      button and may drop its pointer capture ([R7]); stacking is `zIndex` */}
+                  {shown.clips
                     .filter((c) => c.cam === cam)
-                    .sort((a, b) => a.order - b.order)
                     .map((c) => {
                       const on = selection.includes(c.id);
                       const n = numbers.get(c.id);
+                      const moving = edit?.kind === "move" && edit.id === c.id;
+                      const edges = on || (clipLength(c) / span) * trackW >= EDGE_MIN_PX;
                       return (
                         <button
                           key={c.id}
@@ -186,19 +362,31 @@ export function BenchTimeline({
                           disabled={disabled}
                           aria-pressed={on}
                           aria-label={`Clip ${n}, Cam ${c.cam}, ${sec(clipLength(c))}`}
-                          title={`Clip ${n} · Cam ${c.cam} · take ${c.order + 1} · ${sec(clipLength(c))} (click to select, shift-click for several)`}
+                          title={`Clip ${n} · Cam ${c.cam} · take ${c.order + 1} · ${sec(clipLength(c))} (click to select, shift-click for several; drag to move, drag an edge to trim)`}
                           onMouseDown={noFocus}
-                          onClick={(e) => onSelect(c.id, e.shiftKey || e.ctrlKey || e.metaKey)}
-                          className={`absolute inset-y-1 overflow-hidden rounded-sm border px-1.5 text-left text-[11px] leading-tight text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-400 ${
+                          onPointerDown={(e) => clipDown(e, c)}
+                          onPointerMove={clipMove}
+                          onPointerUp={clipUp}
+                          onPointerCancel={clipLost}
+                          onLostPointerCapture={clipLost}
+                          onClick={(e) => clipClick(e, c)}
+                          className={`absolute inset-y-1 touch-none overflow-hidden rounded-sm border px-1.5 text-left text-[11px] leading-tight text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-400 ${
                             on ? "border-white ring-1 ring-white" : "border-black/40"
-                          }`}
+                          } ${moving ? "cursor-grabbing" : "cursor-default"}`}
                           style={{ left: pct(c.start), width: `calc(${pct(clipLength(c))} - 2px)`, background: camColour(c.cam), zIndex: 1 + c.order }}
                         >
                           <span className="block truncate font-semibold">
                             {n}
-                            {c.shape && <span className="ml-1 font-normal opacity-90">{c.shape.kind === "glide" ? "⤳ glide" : "↻ corkscrew"}</span>}
+                            {c.shape && <span className="ml-1 font-normal opacity-90">{c.shape.kind === "glide" ? "⤳ glide" : c.shape.kind === "barrel" ? "↻ barrel" : "↻ corkscrew"}</span>}
                           </span>
                           <span className="block truncate opacity-80">{sec(clipLength(c))}</span>
+                          {/* ⛔ THE TRIM HANDLES — Resolve's trim cursor at each end */}
+                          {edges && (
+                            <>
+                              <span data-edge="head" className="absolute inset-y-0 left-0 cursor-col-resize hover:bg-white/25" style={{ width: EDGE_PX }} />
+                              <span data-edge="tail" className="absolute inset-y-0 right-0 cursor-col-resize hover:bg-white/25" style={{ width: EDGE_PX }} />
+                            </>
+                          )}
                         </button>
                       );
                     })}
@@ -214,7 +402,7 @@ export function BenchTimeline({
                 </div>
               ))}
               {/* the gaps: hatched across every row (no clip plays; playback holds the last picture) */}
-              {gaps.map(([a, b]) => (
+              {shownGaps.map(([a, b]) => (
                 <div
                   key={a}
                   className="pointer-events-none absolute inset-y-0 z-[100001] border-x border-amber-400/40"
@@ -233,9 +421,13 @@ export function BenchTimeline({
                 </p>
               )}
             </div>
+            {/* ⛔ the SNAP line: where the dragged edge has locked */}
+            {edit && snapAt !== null && (
+              <div className="pointer-events-none absolute inset-y-0 z-[100003] w-px bg-amber-300" style={{ left: pct(snapAt) }} data-snap-line />
+            )}
             {/* the playhead */}
             {chain.clips.length > 0 && (
-              <div className="pointer-events-none absolute inset-y-0 z-[100002] w-px bg-sky-300" style={{ left: pct(Math.min(T, span)) }} data-playhead>
+              <div className="pointer-events-none absolute inset-y-0 z-[100002] w-px bg-sky-300" style={{ left: pct(Math.min(playT, span)) }} data-playhead>
                 <span className="absolute -left-1 top-0 h-0 w-0 border-x-4 border-t-[6px] border-x-transparent border-t-sky-300" />
               </div>
             )}
@@ -258,7 +450,17 @@ export function BenchTimeline({
                   Clip {numbers.get(c.id)} <span className="font-normal text-neutral-400">· Cam {c.cam} · take {c.order + 1}</span>
                 </dt>
                 <dt className="text-neutral-500">Length</dt>
-                <dd className="tabular-nums">{sec(clipLength(c))}</dd>
+                <dd className="tabular-nums" data-inspector-length>
+                  {isTrimmed(c) ? `${sec(clipLength(c))} of ${sec(sourceLength(c))}` : sec(clipLength(c))}
+                </dd>
+                {isTrimmed(c) && (
+                  <>
+                    <dt className="text-neutral-500">Trimmed</dt>
+                    <dd className="tabular-nums">
+                      in {sec(c.in)}, out {sec(c.out)}
+                    </dd>
+                  </>
+                )}
                 <dt className="text-neutral-500">Starts</dt>
                 <dd className="tabular-nums">{sec(c.start)}</dd>
                 <dt className="text-neutral-500">From</dt>
@@ -269,6 +471,12 @@ export function BenchTimeline({
               </dl>
                 {c.shape && (
                   <ShapeFields key={c.id} clip={c} shape={c.shape} frame={frame} note={shapeNote(c)} disabled={disabled} onEdit={onShapeEdit} onStart={onShapeStart} />
+                )}
+                {/* ⛔ "Keep the trim" holds the cut in SECONDS: a pace change moves where along the move it falls */}
+                {c.shape && c.out < shapeLength(c.shape) - EDGE_S && (
+                  <p className="mt-1 text-neutral-500" data-trim-note>
+                    Trimmed at {sec(c.out)}: a pace change keeps the cut at that time, so it falls at a different point along the move.
+                  </p>
                 )}
               </>
             );

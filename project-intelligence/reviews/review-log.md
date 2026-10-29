@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-097 — The Camera Bench's Timeline, T1b: Trim And Move, Take 2 (`/proto/camera`, D-104): "Thats fixed it ... Approved"
+
+**Date:** 2026-10-29
+**Reviewer:** Human Founder
+**Subject:** `bench-chain.ts`, `camera-bench.tsx`, `bench-timeline.tsx` under the plan `live-work/plan-trim-and-move-t1b-29-october.md` v1.4 (three Architect reviews; the last: *"With them made, I'd approve"*), then take 2 on Carl's note. Drag a clip's edge to TRIM (non-destructive; the picture shows the frame at the edge), its body to MOVE it along its track; snapping on, N toggles it; Esc cancels; the scrub on the RULER only; the playhead never moved by a clip.
+
+**Carl's verdict, verbatim:** *"Thats fixed it. Its imporant for the reasons already given for trimming but also what if we wanted to add a Cam 2? We could record the clip and now move the playhead where we want the cut to happen and move our clip to that precise point. Also there is no undo when trimming but we can drag the clip back to its former length- its the same thing and a nice touch. Approved. Commit and push."*
+
+**Findings:**
+
+- ✔ **APPROVED by hand at take 2.** Take 1's note: pressing an edge moved the playhead to it (*"This functionality must only be on the time ruler"*); take 2: the playhead moves only on the ruler; a press does nothing until 3 px.
+- ✔ **Carl names a second use:** a Cam 2 clip recorded, the playhead parked where the cut should fall, the clip MOVED onto that point (the snap). And the non-destructive trim as the undo: *"its the same thing and a nice touch."*
+- ✔ **Checks:** `bench-chain-check` 108/108; `camera-bench-verify` 120/120; `tsc` clean; lint 1 error, 0 warnings (the baseline). ⚠ **NOT WATCHED:** a Builder's take landing during a drag of ANOTHER clip (one version per run); the drag's feel is Carl's hands (approved).
+
+---
+
 ## R-096 — The Vader Move, Take 4: A Barrel Roll Through The Arch, Made On The Camera Bench (`/proto/camera`, D-104): "Thats fixed it"
 
 **Date:** 2026-10-27

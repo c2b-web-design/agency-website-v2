@@ -799,6 +799,235 @@ await seed([]);
 }
 await seed([]);
 
+// ── ⛔ T1b, TRIM AND MOVE (the plan `plan-trim-and-move-t1b-29-october.md` v1.4, "Checks"). A seeded v3 chain: A (Cam 1,
+//    0–6 s), B (Cam 1, 8–10 s), C (Cam 2, 12–14 s), and "builder-v3" (Cam 2, 20–26 s) — an OLD version of the Builder's take,
+//    so the current one (v4) replaces it when the harness lets it land (`__benchNoBuilderTake` false mid-drag)
+{
+  const clip3 = (id, cam, start, order, secs, a, b) => ({ id, cam, start, order, in: 0, out: v1Samples(secs, a, b).at(-1)[0], samples: v1Samples(secs, a, b) });
+  const t1b = { kind: "c2b-camera-chain", version: 3, tracks: [1, 2], units: null, refined: null, comp: null, migrations: [],
+    clips: [clip3("A", 1, 0, 0, 6, 0, 0.3), clip3("B", 1, 8, 1, 2, 0.5, 0.6), clip3("C", 2, 12, 2, 2, -0.2, -0.1), clip3("builder-v3", 2, 20, 3, 6, 0.1, 0.2)] };
+  await seed([[V3, JSON.stringify(t1b)]]);
+  await reload();
+  const clipOf = async (id) => (await state()).clips.find((c) => c.id === id);
+  const spanOf = (s) => Math.max(s.duration, 4) * 1.04;
+  const track = () => p.$eval("[data-track-area]", (e) => { const r = e.getBoundingClientRect(); return { x: r.left, w: r.width }; });
+  const box = (id) => p.$eval(`[data-clip-id="${id}"]`, (e) => { const r = e.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; });
+  const xAt = async (T, s) => { const t = await track(); return t.x + (T / spanOf(s)) * t.w; };
+  const captured = (id) => p.$eval(`[data-clip-id="${id}"]`, (e) => e.hasPointerCapture(1));
+  await p.evaluate((k) => {
+    window.__w = 0;
+    const o = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (a, v) {
+      if (a === k) window.__w++;
+      return o.call(this, a, v);
+    };
+  }, V3);
+  const writes = () => p.evaluate(() => window.__w);
+  const zeroWrites = () => p.evaluate(() => (window.__w = 0));
+  /** press a clip's zone, move (in steps) so the dragged edge — or a move's start — goes to `toT`, then `mid()`, then release */
+  async function drag(id, zone, toT, { mid, release = true, steps = 6 } = {}) {
+    const s0 = await state(), c = s0.clips.find((k) => k.id === id), b = await box(id);
+    const y = b.y + b.h / 2;
+    const x0 = zone === "head" ? b.x + 2 : zone === "tail" ? b.x + b.w - 3 : b.x + Math.min(b.w / 2, 40);
+    const edge0 = zone === "tail" ? c.start + c.len : c.start;
+    const off = x0 - (await xAt(edge0, s0));
+    const x1 = (await xAt(toT, s0)) + off;
+    await p.mouse.move(x0, y);
+    await p.mouse.down();
+    await p.mouse.move(x1, y, { steps });
+    await wait(250);
+    if (mid) await mid();
+    if (release) {
+      await p.mouse.up();
+      await wait(300);
+    }
+  }
+
+  // the ruler scrubs; a bare row does not, and clears the selection; a clip click selects without moving the playhead
+  await scrubTo(1);
+  let s = await state();
+  check(Math.abs(s.T - 1) < 0.05, `the RULER scrubs: the playhead at ${s.T.toFixed(2)} s`);
+  const aBox = await box("A");
+  await p.mouse.click(aBox.x + aBox.w / 2, aBox.y + aBox.h / 2);
+  await wait(300);
+  s = await state();
+  check(s.selection.join() === "A" && Math.abs(s.T - 1) < 0.05, `ONE click on an unselected clip SELECTS it and leaves it selected (review 2 [1]); the playhead stays at ${s.T.toFixed(2)} s`);
+  const row2 = await p.$eval('[data-track="2"]', (e) => { const r = e.getBoundingClientRect(); return { y: r.top + r.height / 2 }; });
+  await p.mouse.click(await xAt(5, s), row2.y);
+  await wait(300);
+  s = await state();
+  check(s.selection.length === 0 && Math.abs(s.T - 1) < 0.05, `a BARE-ROW click clears the selection and does NOT move the playhead (${s.T.toFixed(2)} s)`);
+  check((await p.getAttribute("[data-snap]", "data-snap")) === "on" && s.snap === true, "snapping is ON by default");
+
+  // ⛔ THE TAIL TRIM WITH SNAP: park at 4.5 s on the ruler, drag A's tail toward 4.45 → it locks on 4.5 exactly; one save
+  await scrubTo(4.5);
+  const parked = (await state()).T;
+  await zeroWrites();
+  let midState = null, midCaptured = null, midPlayhead = null;
+  await drag("A", "tail", parked - 0.05, {
+    mid: async () => {
+      midState = await state();
+      midCaptured = await captured("A");
+      midPlayhead = await p.$eval("[data-playhead]", (e) => parseFloat(e.style.left));
+    },
+  });
+  let a = await clipOf("A");
+  s = await state();
+  check(midState?.editing?.kind === "tail" && /Trimming clip/.test(midState.status) && midCaptured, `mid-drag: editing the tail, "${midState?.status}", pointer captured`);
+  check(Math.abs(midState.T - parked) < 1e-9 && Math.abs(midPlayhead - (parked / spanOf(midState)) * 100) < 0.05, `mid-drag the playhead STAYS where it was parked (${midState.T.toFixed(3)} s, drawn at ${midPlayhead.toFixed(2)}%)`);
+  check(Math.abs(a.len - parked) < 1e-9 && a.start === 0 && a.in === 0, `SNAP: the tail dragged toward ${(parked - 0.05).toFixed(2)} s locked on the parked playhead, ${a.len} s`);
+  check(s.selection.join() === "A", "the clip is still SELECTED after the drag (the post-drag click suppressed)");
+  check(Math.abs(s.T - parked) < 1e-9 && s.posed, `the playhead has NOT moved on release (${s.T.toFixed(3)} s): Carl parked it on the cut, A records from there`);
+  check((await writes()) === 1, `ONE write of the CHAIN's key for the drag (${await writes()}; the camera key is not counted)`);
+  const len0 = await p.$eval("[data-inspector-length]", (e) => e.textContent);
+  check(/of 6\.0 s/.test(len0), `the inspector: "${len0}"`);
+
+  // N off: no snap
+  await p.keyboard.press("KeyN");
+  await wait(200);
+  check((await state()).snap === false && (await p.getAttribute("[data-snap]", "data-snap")) === "off", "N turns snapping OFF");
+  // 0.1 s ≈ 6 px: past the 3 px click threshold, inside snapping's 8 px reach (0.05 s ≈ 3 px now counts as a click)
+  await drag("A", "tail", parked - 0.1);
+  a = await clipOf("A");
+  check(Math.abs(a.len - (parked - 0.1)) < 0.02, `N off: the tail lands where dragged (${a.len.toFixed(3)} s), not on the playhead`);
+  await p.keyboard.press("KeyN");
+  await wait(200);
+  check((await state()).snap === true, "N turns it back ON");
+
+  // ⛔ CARL's NOTE ON TAKE 1: "If i click on the clip it mustnt move the playhead" — an EDGE CLICK (press, no move) with the
+  // playhead parked elsewhere changes nothing; the playhead never moves during or after a drag; the PICTURE shows the edge
+  {
+    const T0 = (await state()).T;
+    const ab = await box("A");
+    await zeroWrites();
+    await p.mouse.move(ab.x + ab.w - 3, ab.y + ab.h / 2);
+    await p.mouse.down();
+    await wait(250);
+    const pressed = await state();
+    await p.mouse.up();
+    await wait(300);
+    const after = await state();
+    check(pressed.editing === null && Math.abs(pressed.T - T0) < 1e-9 && Math.abs(after.T - T0) < 1e-9 && (await writes()) === 0 && after.selection.join() === "A",
+      `an EDGE CLICK does nothing: the playhead stays at ${after.T.toFixed(2)} s (pressed and released), no edit, nothing saved, still selected`);
+  }
+  // the tail past the source: the EDGE stops at the clamped end; the playhead stays put; the picture shows the edge's frame
+  let mid = null;
+  const Tp = (await state()).T;
+  await drag("A", "tail", 9, { mid: async () => (mid = await state()) });
+  a = await clipOf("A");
+  check(Math.abs(mid.editing.edgeT - 6) < 0.02 && Math.abs(a.len - 6) < 0.02, `a tail dragged past the source: the edge stops at the clamped end (${mid.editing.edgeT.toFixed(3)} s), the clip whole again (${a.len.toFixed(3)} s)`);
+  check(Math.abs(mid.T - Tp) < 1e-9 && Math.abs((await state()).T - Tp) < 1e-9, `…the PLAYHEAD did not move, during or after (${Tp.toFixed(3)} s)`);
+  check(Math.abs(mid.pose.x - 0.3) < 0.002, `…while the PICTURE showed the frame at the edge (camera x ${mid.pose.x.toFixed(4)} = A's last frame, 0.3)`);
+
+  // the HEAD: start and in together
+  await drag("A", "head", 1);
+  a = await clipOf("A");
+  check(Math.abs(a.start - 1) < 0.02 && Math.abs(a.in - a.start) < 1e-9, `a HEAD trim: start ${a.start.toFixed(3)}, in ${a.in.toFixed(3)} (one shared amount)`);
+
+  // ⛔ CANCELS — Esc, a hidden tab, a lost pointer: the clip unchanged, capture released, a following move does not restart it
+  for (const [how, cancel] of [
+    ["Esc", () => p.keyboard.press("Escape")],
+    ["a hidden tab", () => p.evaluate(() => {
+      Object.defineProperty(document, "hidden", { value: true, configurable: true });
+      document.dispatchEvent(new Event("visibilitychange"));
+      delete document.hidden;
+    })],
+    // ⚠ Chromium fires `lostpointercapture` at the NEXT pointer event, not at the release (probed 29 October: the drag still
+    // live 250 ms after `releasePointerCapture`, ended by a 1 px move) — so the release is followed by a 1 px nudge
+    ["a lost pointer", async () => {
+      await p.$eval('[data-clip-id="A"]', (e) => e.releasePointerCapture(1));
+      const bx = await box("A");
+      await p.mouse.move(bx.x + bx.w - 40, bx.y + 10);
+    }],
+  ]) {
+    const before = await clipOf("A");
+    await zeroWrites();
+    let after = null, cap = null, restarted = null;
+    await drag("A", "tail", 3, {
+      mid: async () => {
+        await cancel();
+        await wait(250);
+        after = await state();
+        cap = await captured("A");
+        await p.mouse.move((await xAt(2.5, after)) , (await box("A")).y + 10, { steps: 3 });
+        await wait(200);
+        restarted = (await state()).editing;
+      },
+    });
+    const now = await clipOf("A");
+    check(after.editing === null && !cap && restarted === null && now.len === before.len && (await writes()) === 0 && (await state()).selection.join() === "A",
+      `${how} CANCELS: nothing changed or saved, capture released, a later move does not restart it, the clip still selected`);
+  }
+
+  // inputs IGNORED mid-drag: Space (record), Delete, P (play)
+  {
+    const n0 = (await state()).clips.length;
+    let mode = null;
+    await drag("A", "tail", 3.5, {
+      mid: async () => {
+        await p.keyboard.press("Space");
+        await p.keyboard.press("Delete");
+        await p.keyboard.press("KeyP");
+        await wait(250);
+        mode = (await state()).mode;
+        await p.keyboard.press("Escape");
+      },
+    });
+    s = await state();
+    check(s.clips.length === n0 && mode === "fly" && s.mode === "fly", `Space, Delete and P mid-drag do NOTHING (mode ${mode}; ${s.clips.length} clips)`);
+  }
+
+  // MOVE: into space (order kept); onto a clip on its track (TOP), capture held through the order change; under a frame: nothing
+  let b = await clipOf("B");
+  await drag("B", "body", 16);
+  b = await clipOf("B");
+  check(Math.abs(b.start - 16) < 0.05 && b.order === 1, `a MOVE into space: B starts ${b.start.toFixed(2)} s, order kept (${b.order})`);
+  let capThrough = null;
+  await drag("B", "body", 2.5, { mid: async () => (capThrough = await captured("B")) });
+  b = await clipOf("B");
+  const top = Math.max(...(await state()).clips.filter((c) => c.id !== "B").map((c) => c.order)) + 1;
+  check(Math.abs(b.start - 2.5) < 0.05 && b.order === top && capThrough, `a move ONTO A (same track): B on TOP (order ${b.order}); pointer capture HELD through the order change [R7]`);
+  await zeroWrites();
+  const bb = await box("B");
+  await p.mouse.move(bb.x + bb.w / 2, bb.y + 10);
+  await p.mouse.down();
+  await p.mouse.move(bb.x + bb.w / 2 + 5, bb.y + 10, { steps: 2 });
+  await p.mouse.move(bb.x + bb.w / 2, bb.y + 10, { steps: 2 });
+  await p.mouse.up();
+  await wait(300);
+  check(Math.abs((await clipOf("B")).start - b.start) < 1e-9 && (await writes()) === 0, "a move let go where it started (under a frame): nothing changed, nothing saved");
+
+  // ⛔ THE BUILDER's TAKE LANDING MID-DRAG, ON THE DRAGGED CLIP ITSELF: it WAITS; the playhead stays on the edge; after the
+  // release it lands with the trim kept (Carl: "Keep my trim")
+  {
+    let waited = null, edgeHeld = null;
+    const Tb = (await state()).T;
+    await drag("builder-v3", "tail", 23, {
+      mid: async () => {
+        await p.evaluate(() => (window.__benchNoBuilderTake = false));
+        await wait(500);
+        const m = await state();
+        waited = m.clips.some((c) => c.id === "builder-v3") && !m.clips.some((c) => c.id.startsWith("builder-v") && c.id !== "builder-v3");
+        edgeHeld = Math.abs(m.T - Tb) < 1e-9 && m.editing?.id === "builder-v3";
+      },
+    });
+    await wait(500);
+    s = await state();
+    const nv = s.clips.find((c) => c.id.startsWith("builder-v") && c.id !== "builder-v3");
+    check(waited && edgeHeld, "a new Builder's take mid-drag on the dragged clip WAITS; the playhead does not move");
+    check(!!nv && !s.clips.some((c) => c.id === "builder-v3") && nv.start === 20 && Math.abs(nv.out - 3) < 0.05 && nv.in === 0 && /trim kept/.test(s.status),
+      `after the release it LANDS (${nv?.id}) with the trim KEPT: out ${nv?.out.toFixed(2)} s; "${s.status}"`);
+  }
+
+  // a reload keeps the edits
+  const kept = (await state()).clips.map((c) => [c.id, c.start.toFixed(3), c.in.toFixed(3), c.out.toFixed(3), c.order].join(":")).sort().join(" ");
+  await reload();
+  const back = (await state()).clips.map((c) => [c.id, c.start.toFixed(3), c.in.toFixed(3), c.out.toFixed(3), c.order].join(":")).sort().join(" ");
+  check(kept === back, "a RELOAD keeps every trim and move");
+  await p.screenshot({ path: `${OUT}/camera-bench-t1b.png` });
+  console.log("⚠ NOT WATCHED (T1b): how the drag FEELS under Carl's own mouse; a Builder's take landing during a drag of ANOTHER clip (one take version per run: the dragged-clip case, the harder, is the one run).");
+}
+
 // ── (the Moves drop-down and Open were built and REMOVED — Carl: "remove the moves, i said we will come back to it")
 await seed([]);
 
