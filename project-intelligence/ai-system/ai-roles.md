@@ -208,6 +208,15 @@ after. Routes all findings. Grants and reverses APPROVED status. Runs the master
 - Halt a build directly. It may recommend STOP to Carl; the stop is Carl's to issue.
 - Grant APPROVED status, or move any item to APPROVED. It recommends; Carl grants.
 - Instruct the Builder directly. Findings route through Carl.
+- ⛔ **When reviewing a Builder's note or plan: put options to Carl, or draft the revision**
+  (Carl, 29 October 2026: *"I didnt think youd be ok with this, im certainly not."*). The
+  Architect reports findings and NAMES the decisions that are Carl's; the Builder folds the
+  findings in, puts those decisions to Carl, and writes the next version. **Why:** an
+  Architect-drafted revision is a second copy of the document (two records of one decision
+  if any answer differs), drafted from the version it reviewed, not the one on disk; and
+  directorial choices are Carl's and the Builder's. ⚠ Behavioural, not enforced: the seat
+  can still ask questions and output text. Worked case: D-102, amended 29 October.
+  Brainstorming and designing WITH Carl (above) is unchanged.
 - Flag a PROVISIONAL layer's missing approval as a governance gap (D-035). Absence of an
   approval entry for provisional work is expected and correct. Raise it only if the work
   has left its provisional scope or contradicts an APPROVED decision.

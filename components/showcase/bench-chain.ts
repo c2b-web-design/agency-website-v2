@@ -659,6 +659,77 @@ export function snapSpan(start: number, length: number, targets: readonly number
   return a;
 }
 
+// ── ⛔ THE THIRD-PERSON VIEW (note `live-work/structural-note-third-person-view-29-october.md` v1.3.3, plan v1.2; Carl: *"a
+//    visual representation of the camera and its trajectory in the form of a line. If multiple cameras are added the same
+//    for them"*) — where ONE track's camera is, and its path. `sourceAt` answers "what plays" across tracks; these answer
+//    "where is Cam 2" — the higher tracks ignored: it is THAT camera ─────────────────────────────────────────────────────
+
+/** the newest take on ONE track covering T (precedence inside the track only) */
+function trackSource(own: Clip[], T: number): Clip | null {
+  let best: Clip | null = null;
+  for (const c of own) if (covers(c, T) && (!best || c.order > best.order)) best = c;
+  return best;
+}
+
+export type TrackPose = { pose: Pose; held: boolean; clip: Clip | null };
+/**
+ * ⛔ WHERE ONE TRACK's CAMERA IS AT T: its newest take there. In a gap on its track, its last picture before T; before its
+ * first clip, its first picture — both `held` (the edit's gap hold, `poseAtT`'s rule, on one track). No clips: null.
+ */
+export function trackPoseAt(chain: Chain, cam: number, T: number): TrackPose | null {
+  const own = chain.clips.filter((c) => c.cam === cam);
+  if (!own.length) return null;
+  const c = trackSource(own, T);
+  if (c) return { pose: clipPoseAt(c, T), held: false, clip: c };
+  let before = -Infinity;
+  for (const k of own) {
+    const e = clipEnd(k);
+    if (e <= T + EDGE_S && e > before) before = e;
+  }
+  if (before > -Infinity) {
+    const h = trackSource(own, before - PROBE);
+    if (h) return { pose: clipPoseAt(h, before), held: true, clip: null };
+  }
+  let after = Infinity;
+  for (const k of own) if (k.start >= T - EDGE_S && k.start < after) after = k.start;
+  const h = after < Infinity ? trackSource(own, after) : null;
+  return h ? { pose: clipPoseAt(h, after), held: true, clip: null } : null;
+}
+
+/**
+ * ⛔ ONE TRACK's PATH, in CHAIN UNITS (the caller converts through `chain.units`, never the live measure): its poses over its
+ * own playing takes, `hz` a second and at every clip edge. ⛔ A NEW STRETCH WHEREVER THE PLAYING TAKE CHANGES, not only at
+ * gaps (the plan review's [6]): a newer take cutting in partway through an older one is a JUMP, and a line drawn across it
+ * would show a move the camera never makes. Between two consecutive clip edges one take plays throughout.
+ */
+export function trackPath(chain: Chain, cam: number, hz = 30): Pose[][] {
+  const own = chain.clips.filter((c) => c.cam === cam);
+  const edges = own.flatMap((c) => [c.start, clipEnd(c)]).sort((a, b) => a - b);
+  const out: Pose[][] = [];
+  let last: { clip: Clip; at: number } | null = null;
+  for (let i = 0; i < edges.length - 1; i++) {
+    const a = edges[i], b = edges[i + 1];
+    if (b - a <= EDGE_S) continue;
+    const src = trackSource(own, (a + b) / 2);
+    if (!src) {
+      last = null; // a gap
+      continue;
+    }
+    const n = Math.max(1, Math.ceil((b - a) * hz));
+    const seg = Array.from({ length: n + 1 }, (_, k) => clipPoseAt(src, a + ((b - a) * k) / n));
+    if (last && last.clip === src && Math.abs(last.at - a) <= EDGE_S) out[out.length - 1].push(...seg.slice(1));
+    else out.push(seg);
+    last = { clip: src, at: b };
+  }
+  return out;
+}
+
+/** ONE CLIP's own path over its span (a SOLO of a covered take, Carl: *"The clip being played"*), in chain units */
+export function clipPath(c: Clip, hz = 30): Pose[] {
+  const n = Math.max(1, Math.ceil(clipLength(c) * hz));
+  return Array.from({ length: n + 1 }, (_, k) => clipPoseAt(c, c.start + (clipLength(c) * k) / n));
+}
+
 /**
  * ⛔ THE START SPEED `v0`, measured AT THE PLAYHEAD T (the plan v2.1): what PLAYS at T − PROBE (any track; 0 in a gap) —
  * the straight-line speed from its pose at the first sample at or after the clip-local time (T − 0.25 s) (a shape: its

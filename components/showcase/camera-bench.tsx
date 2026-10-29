@@ -24,7 +24,7 @@
  *   along its front face, so the squares count metres right of centre and out from the face. Round the FOCUS OBJECT (the C,
  *   `FOCUS`) the squares SUBDIVIDE into 10 cm once the camera is within 3 m of it.
  */
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Fragment, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Grid, Line, PerspectiveCamera } from "@react-three/drei";
@@ -36,10 +36,10 @@ import { BTN, Edges, focalMm, readPad, rigAt, SENSOR_MM, stepRig, FEEL, type Int
 import {
   addTrack, applyEdit, chainEnd, clampDt, clipEnd, clipLength, clipPoseAt, deleteClips, EDGE_S, editPoints, emptyChain, gapsOf, isTrimmed, joinsOf, numberClips,
   newClipId, parityV1, parseChain, placeShape, poseAtT, poseInShape, recaptureStart, recordClip, replaceShape, Sampler, setTrim, shapeRefusal, sourceAt, startSpeed,
-  takesAt, type Chain, type Clip, type Edit, type Pose, type Shape, type Units,
+  takesAt, trackPoseAt, trackPath, clipPath, type Chain, type Clip, type Edit, type Pose, type Shape, type Units,
 } from "./bench-chain";
 import { BenchTransport, type Tone, type TransportView } from "./bench-transport";
-import { BenchTimeline } from "./bench-timeline";
+import { BenchTimeline, camColour } from "./bench-timeline";
 import { BUILDER_TAKE, type BuilderTake } from "./bench-builder-take";
 
 type Mode = "fly" | "rec" | "play";
@@ -53,6 +53,12 @@ type View = TransportView & {
   units: { d: number; up: number; zc: number };
   rec: { at: number; length: number; cam: number } | null;
   focusPx?: number;
+  /** ⛔ THE THIRD-PERSON VIEW (note v1.3.3): which view fills the picture; the PiP's label; the soloed clip (its path drawn);
+   *  the eye's distance to the arch, metres */
+  view: "first" | "third";
+  pipLabel: string;
+  soloId: string | null;
+  eyeM: number | null;
 };
 
 /** ⛔ ONE LAYOUT PX = ONE CENTIMETRE (Carl's scale, 26 October 2026 — the header). */
@@ -183,9 +189,13 @@ const MOUSE_DEG_PER_PX = 0.15;
  *  saved in this browser when it changes and restored on load — a refresh or a code reload never moves it. Home still goes
  *  to the default view. A per-viewer convenience: a failed read or write falls back to the default view, said nowhere. */
 const CAMERA_KEY = "c2b-camera-bench-camera-v1";
-function savedRig(): Rig | null {
+/** ⛔ THE EYE REMEMBERED (note v1.3.3 §3): the third-person eye, its own key, as the shot camera's */
+const EYE_KEY = "c2b-camera-bench-eye-v1";
+/** the eye's lens on a first visit — wide, to see the scene (the bumpers zoom it, as the shot camera's) */
+const EYE_FOV = 50;
+function savedRig(key = CAMERA_KEY): Rig | null {
   try {
-    const o = JSON.parse(window.localStorage.getItem(CAMERA_KEY) ?? "null") as Record<string, number> | null;
+    const o = JSON.parse(window.localStorage.getItem(key) ?? "null") as Record<string, number> | null;
     const k = ["x", "y", "z", "yaw", "pitch", "fov"];
     return o && k.every((n) => Number.isFinite(o[n])) ? rigAt(o.x, o.y, o.z, o.yaw, o.pitch, o.fov) : null;
   } catch {
@@ -268,6 +278,27 @@ class BenchStore {
   private edit: Edit | null = null;
   /** snapping (Carl: *"snapping always on and the N to turn it off/on"*) — the page's state, mirrored for the harness */
   private snap = true;
+  /**
+   * ⛔ THE THIRD-PERSON VIEW (`structural-note-third-person-view-29-october.md` v1.3.3, plan v1.2; Carl: *"Right stick click
+   * for third person on, click again for off (selected camera view)"*). `eye`: the director's eye's POSE (its camera object
+   * is the scene's; `frame()` writes it). ⛔ THIRD PERSON NEVER MOVES THE RIG. `sceneBox` / `archBox`: what "see it all"
+   * frames (the scene hands them in on change). `helpers`: each track's camera in WORLD px, computed once a frame in third
+   * person, read by the scene (the bodies) and the render callback (the labels).
+   */
+  private view: "first" | "third" = "first";
+  private eye: Rig | null = null;
+  private eyeSaved = "";
+  private sceneBox: THREE.Box3 | null = null;
+  private archBox: THREE.Box3 | null = null;
+  private aspect = 16 / 9;
+  helpers: { cam: number; x: number; y: number; z: number; yaw: number; pitch: number; roll: number; fov: number; held: boolean; armed: boolean }[] = [];
+  get isThird() {
+    return this.view === "third";
+  }
+  setScene(sceneBox: THREE.Box3 | null, archBox: THREE.Box3 | null) {
+    this.sceneBox = sceneBox;
+    this.archBox = archBox;
+  }
 
   constructor(chain: Chain) {
     this.chain = chain;
@@ -329,6 +360,8 @@ class BenchStore {
   /** A / Space / the record button: stop a recording, stop a play, else RECORD on the armed track at the playhead */
   pressA() {
     if (this.edit) return;
+    // ⛔ THIRD PERSON: A refused, said (note v1.3.3 §1) — recording happens in the camera's own view
+    if (this.view === "third") return this.say("Third person: right-stick click or T to go to the camera, then record");
     if (this.rec) return this.stopRecording(null);
     if (this.mode === "play") return this.stopPlay(true);
     const pose = this.pose();
@@ -448,6 +481,8 @@ class BenchStore {
    *  the recording FIRST: a jump inside a clip is never recorded. */
   home() {
     if (this.edit) return;
+    // ⛔ THIRD PERSON: View / H frame EVERYTHING (Carl: *"see it all"*); the keyboard's Home key is to-the-start in both views
+    if (this.view === "third") return this.frameAll();
     if (this.rec) this.stopRecording("Stopped, then default view");
     if (this.mode === "play") this.stopPlay(false);
     this.posed = false;
@@ -531,6 +566,81 @@ class BenchStore {
     if (!c || e.kind === "move") return { T: this.T, pose: poseAtT(chain, this.T)?.pose ?? null };
     const T = e.kind === "head" ? c.start : clipEnd(c);
     return { T, pose: clipPoseAt(c, T) };
+  }
+
+  // ── ⛔ THE THIRD-PERSON VIEW (note v1.3.3, plan v1.2)
+  /**
+   * The right-stick click (RS) and T. Refused while RECORDING (said, as Start's [C10]); ignored during a T1b drag (the
+   * twelfth gate). ON: no remembered eye → frame everything. ⛔ OFF, IN THIS ORDER (note review 4): the PiP's pose FIRST (a
+   * stop clears a solo); then stop playback (Carl: *"Whatever im doing i will stop"* — the Builder's reading); then the rig
+   * JUMPS to it (`jumpTo`: the existing route, applied at the next frame, the roll carried) and is PARKED (`posed` false —
+   * `posed` would re-pose it to what PLAYS). An armed track with no clips: the rig stays.
+   */
+  toggleView() {
+    if (this.edit) return;
+    if (this.rec) return this.say("Stop first (A)");
+    this.acted();
+    if (this.view === "first") {
+      this.view = "third";
+      if (!this.eye) this.eye = savedRig(EYE_KEY);
+      if (!this.eye) this.frameAll();
+      return;
+    }
+    const p = this.pipPose();
+    if (this.mode === "play") this.stopPlay(false);
+    if (p) {
+      this.jumpTo = p;
+      this.posed = false;
+    }
+    this.view = "first";
+  }
+  /** the SOLO clip playing, if any (X with clips selected) */
+  private soloClip(): Clip | null {
+    return this.mode === "play" ? (this.queue[this.queueIdx]?.clip ?? null) : null;
+  }
+  /**
+   * ⛔ WHAT THE PiP SHOWS (Carl: *"the view from the currently selected camera"*): during a T1b DRAG the drag's picture
+   * (*"The drag's picture"* — a trim's edge frame; a move: the armed camera at the playhead on the moved timeline); during a
+   * SOLO the clip being played (*"The clip being played"*); else the ARMED camera's own take at T — not what plays. Null:
+   * an armed track with no clips (the PiP shows the rig).
+   */
+  private pipPose(): Pose | null {
+    if (this.edit) {
+      if (this.edit.kind !== "move") return this.editPicture(this.edit).pose;
+      return trackPoseAt(applyEdit(this.chain, this.edit), this.armedCam, this.T)?.pose ?? null;
+    }
+    const solo = this.soloClip();
+    if (solo) return clipPoseAt(solo, this.T);
+    return trackPoseAt(this.chain, this.armedCam, this.T)?.pose ?? null;
+  }
+  private pipLabel(): string {
+    const solo = this.soloClip();
+    if (solo) return `Cam ${solo.cam} · clip ${this.num(solo)} solo`;
+    return this.chain.clips.some((c) => c.cam === this.armedCam) ? `Cam ${this.armedCam}` : `Cam ${this.armedCam} · no clips yet`;
+  }
+  /**
+   * ⛔ "SEE IT ALL" (Carl: *"position myself on the edge of a scene so i can see it all"*): the eye on a fixed bearing
+   * (front-left, 25° down), at the distance that fits the scene's bounding sphere in the NARROWER of its two lens angles,
+   * plus 10%. No scene box yet (T on a first visit before the arch is measured): the arch's box; neither: the default view's
+   * position pulled back 3× (plan v1.2).
+   */
+  frameAll() {
+    const m = this.m;
+    const fov = this.eye?.fov ?? EYE_FOV;
+    const box = this.sceneBox ?? this.archBox;
+    if (!box) {
+      this.eye = rigAt(0, 0, (m?.d ?? 2000) * 3, 0, 0, fov);
+      return;
+    }
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const v = (fov * Math.PI) / 180;
+    const h = 2 * Math.atan(Math.tan(v / 2) * this.aspect);
+    const dist = (sphere.radius / Math.sin(Math.min(v, h) / 2)) * 1.1;
+    const yaw = -35, pitch = -25;
+    const y = (yaw * Math.PI) / 180, p = (pitch * Math.PI) / 180;
+    const fwd = new THREE.Vector3(-Math.sin(y) * Math.cos(p), Math.sin(p), -Math.cos(y) * Math.cos(p));
+    const at = sphere.center.clone().addScaledVector(fwd, -dist);
+    this.eye = rigAt(at.x, at.y, at.z, yaw, pitch, fov);
   }
 
   // ── ⛔ SHAPE CLIPS (the plan `plan-shape-clips-27-october.md` v2.1) — each change a commit (an action), refused while
@@ -645,7 +755,9 @@ class BenchStore {
     if (this.notice && performance.now() < this.notice.until) return { status: this.notice.text, tone: "warn" };
     const cam = this.armedCam;
     if (this.rec) return { status: `● Recording Cam ${this.rec.cam} · ${this.rec.sampler.length.toFixed(1)} s · A stops`, tone: "rec" };
+    if (this.mode === "play" && this.view === "third") return { status: `Playing ${this.queueLabel} · Third person · X stops`, tone: "play" };
     if (this.mode === "play") return { status: `Playing ${this.queueLabel}${this.inGap ? " · Gap" : ""} · X or any stick stops`, tone: "play" };
+    if (this.view === "third") return { status: `Third person · ${this.pipLabel()} in the PiP · RS / T to the camera`, tone: "idle" };
     if (!this.chain.clips.length) return { status: `Ready · Cam ${cam} armed · A records clip 1 from here`, tone: "idle" };
     if (this.atEnd) return { status: `At the end · Cam ${cam} armed · A records here`, tone: "idle" };
     const at = `Cam ${cam} armed · A records at ${this.T.toFixed(1)} s`;
@@ -659,8 +771,9 @@ class BenchStore {
   }
 
   /** ⛔ ONE FRAME: the pad (polled here and nowhere else), the keyboard and mouse, the rig, the recording, playback. */
-  frame(camera: THREE.PerspectiveCamera, rawDt: number, m: PieceMeasure, aspect: number, floorY?: number): View | null {
+  frame(camera: THREE.PerspectiveCamera, eyeCam: THREE.PerspectiveCamera | null, rawDt: number, m: PieceMeasure, aspect: number, floorY?: number): View | null {
     this.m = m;
+    this.aspect = aspect;
     // ⛔ THE CHAIN's UNITS, FILLED ON THE FIRST MEASURED FRAME (note v3.2 §4): a new chain and a migrated one both load before
     // any measure, with `units` null. A QUIET commit (not an action): it does not clear the carry-over line, and the UI
     // writes storage only if the chain has clips (an empty first visit writes nothing)
@@ -700,6 +813,8 @@ class BenchStore {
       if (hit(BTN.Y)) this.toStart();
       if (hit(BTN.VIEW)) this.home();
       if (hit(BTN.START)) this.cycleArm();
+      // ⛔ THE RIGHT-STICK CLICK: third person on / off (Carl: *"Right stick click for third person on, click again for off"*)
+      if (hit(BTN.RS)) this.toggleView();
       // the D-pad MOVES now (below); stepping between clips is the keyboard's ( , . ) and the timeline's
     }
 
@@ -739,43 +854,89 @@ class BenchStore {
 
     // ⛔ T1b: DURING A DRAG the picture is the edit's (the trim view, or the edited chain at the playhead) and NOTHING flies —
     // the sticks, the triggers, the mouse look are ignored ([R3])
+    // ⛔ THIRD PERSON NEVER MOVES THE RIG (plan v1.2, the review's [4]): the drag picture, the play branch and the posed
+    // branch each set it in first person only — in third person the PiP shows their pose instead
+    const third = this.view === "third";
     const pic = this.edit ? this.editPicture(this.edit) : null;
     if (pic) {
-      if (pic.pose) setRig(pic.pose);
+      if (pic.pose && !third) setRig(pic.pose);
     } else if (this.mode === "play") {
-      if (active) this.stopPlay(false); // a fly input STOPS playback and flies from where it stopped
+      // a fly input STOPS playback and flies from where it stopped — ⛔ in FIRST person only: flying the EYE never stops it
+      // (Carl: *"i will see both its trajectory and the view while executing that trajectory in PiP"*)
+      if (active && !third) this.stopPlay(false);
       else {
         this.advancePlay(dt);
         const p = this.playheadPose();
-        if (p) setRig(p);
+        if (p && !third) setRig(p);
       }
     }
-    if (!pic && this.mode === "fly" && this.posed) {
+    if (!pic && !third && this.mode === "fly" && this.posed) {
       if (active) this.posed = false; // a fly input leaves the playhead's pose; the playhead stays PARKED
       else {
         const p = this.playheadPose();
         if (p) setRig(p);
       }
     }
-    if (!pic && (this.mode === "rec" || (this.mode === "fly" && !this.posed))) {
-      this.roll = 0; // flying is level (a recording is level: samples carry no roll)
+    if (!pic && !third && (this.mode === "rec" || (this.mode === "fly" && !this.posed))) {
+      // flying is level (a recording is level: samples carry no roll) — ⛔ levelled only BY a fly input (or at once by a
+      // recording), so a camera switched to mid-barrel keeps its roll until Carl moves it (note v1.3.3, review 3 [2])
+      if (this.mode === "rec" || active) this.roll = 0;
       // a mouse drag turns the camera DIRECTLY (degrees per pixel), not through the stick's eased speed
       r.yaw -= this.mouse.dx * MOUSE_DEG_PER_PX;
       r.pitch = Math.max(-FEEL.pitchLimitDeg, Math.min(FEEL.pitchLimitDeg, r.pitch - this.mouse.dy * MOUSE_DEG_PER_PX));
       stepRig(r, intent, dt, 100 / CM_PER_PX, floorY === undefined ? -Infinity : floorY + LENS_MIN_CM / CM_PER_PX);
     }
+    // ⛔ THIRD PERSON: the pad, the keys and the mouse fly the EYE (the same controls, `FEEL`, the floor stop); not during a drag
+    if (third && !pic) {
+      if (!this.eye) this.frameAll();
+      const e = this.eye!;
+      e.yaw -= this.mouse.dx * MOUSE_DEG_PER_PX;
+      e.pitch = Math.max(-FEEL.pitchLimitDeg, Math.min(FEEL.pitchLimitDeg, e.pitch - this.mouse.dy * MOUSE_DEG_PER_PX));
+      stepRig(e, intent, dt, 100 / CM_PER_PX, floorY === undefined ? -Infinity : floorY + LENS_MIN_CM / CM_PER_PX);
+    }
     this.mouse.dx = 0;
     this.mouse.dy = 0;
     if (this.rec) this.rec.sampler.step(rawDt, this.pose()!);
 
-    camera.position.set(r.x, r.y, r.z);
+    // ⛔ THE ONE WRITER OF EVERY CAMERA (note v1.3.3, review 2 [3]). The SHOT camera: first person from the rig (as before);
+    // third person from the PiP's pose — the rig itself untouched, so `CAMERA_KEY` keeps first person's camera
+    const rad = Math.PI / 180;
+    const pip = third ? this.pipPose() : null;
+    const pw = pip ? toWorld(units, pip) : null;
+    const shot = pip && pw ? { x: pw.x, y: pw.y, z: pw.z, yaw: pip.yaw, pitch: pip.pitch, roll: pip.roll ?? 0, fov: pip.fov } : { x: r.x, y: r.y, z: r.z, yaw: r.yaw, pitch: r.pitch, roll: this.roll, fov: r.fov };
+    camera.position.set(shot.x, shot.y, shot.z);
     // YXZ: turn about the vertical first, then tilt, then ROLL about the line of sight (only a shape rolls; the rig has none)
-    camera.rotation.set((r.pitch * Math.PI) / 180, (r.yaw * Math.PI) / 180, (this.roll * Math.PI) / 180, "YXZ");
-    if (camera.fov !== r.fov) {
-      camera.fov = r.fov;
+    camera.rotation.set(shot.pitch * rad, shot.yaw * rad, shot.roll * rad, "YXZ");
+    if (camera.fov !== shot.fov) {
+      camera.fov = shot.fov;
       camera.updateProjectionMatrix();
     }
     camera.updateMatrixWorld();
+    // ⛔ THE EYE's camera object — ALL of it, every frame, before any draw (plan v1.2, the review's [7]): its pose, lens,
+    // near 1, far the shot camera's (m.d × 60: "see it all" must not clip), aspect the canvas's
+    if (eyeCam) {
+      const e = this.eye ?? rigAt(0, 0, m.d * 3, 0, 0, EYE_FOV);
+      eyeCam.position.set(e.x, e.y, e.z);
+      eyeCam.rotation.set(e.pitch * rad, e.yaw * rad, 0, "YXZ");
+      if (eyeCam.fov !== e.fov || eyeCam.near !== 1 || eyeCam.far !== m.d * 60 || eyeCam.aspect !== aspect) {
+        Object.assign(eyeCam, { fov: e.fov, near: 1, far: m.d * 60, aspect });
+        eyeCam.updateProjectionMatrix();
+      }
+      eyeCam.updateMatrixWorld();
+    }
+    // ⛔ EACH TRACK's CAMERA, in WORLD px through the CHAIN's units, for the helpers and labels (third person only). During a
+    // SOLO the soloed clip's track rides the soloed clip; during a drag, the edited chain
+    this.helpers = [];
+    if (third) {
+      const ch = this.edit ? applyEdit(this.chain, this.edit) : this.chain;
+      const solo = this.soloClip();
+      for (const cam of ch.tracks) {
+        const tp = solo && solo.cam === cam ? { pose: clipPoseAt(solo, this.T), held: false } : trackPoseAt(ch, cam, this.T);
+        if (!tp) continue;
+        const w = toWorld(units, tp.pose);
+        this.helpers.push({ cam, x: w.x, y: w.y, z: w.z, yaw: tp.pose.yaw, pitch: tp.pose.pitch, roll: tp.pose.roll ?? 0, fov: tp.pose.fov, held: tp.held, armed: cam === this.armedCam });
+      }
+    }
 
     this.hudAt += rawDt;
     if (this.hudAt < 0.1) return null;
@@ -790,6 +951,18 @@ class BenchStore {
         // full or blocked storage: the camera is simply not remembered (the chain's own save failure IS shown)
       }
     }
+    // ⛔ the EYE remembered — its own key, written only when changed
+    if (this.eye) {
+      const ej = JSON.stringify({ x: this.eye.x, y: this.eye.y, z: this.eye.z, yaw: this.eye.yaw, pitch: this.eye.pitch, fov: this.eye.fov });
+      if (ej !== this.eyeSaved) {
+        this.eyeSaved = ej;
+        try {
+          window.localStorage.setItem(EYE_KEY, ej);
+        } catch {
+          // full or blocked storage: the eye is simply not remembered
+        }
+      }
+    }
     const view: View = {
       mode: this.mode,
       T: this.T,
@@ -800,11 +973,17 @@ class BenchStore {
       chainEmpty: !this.chain.clips.length,
       hasSelection: this.selection.length > 0,
       pad: { connected: pad.connected, id: pad.id },
-      mm: focalMm(r.fov, aspect),
-      fov: r.fov,
-      at: { x: r.x, y: r.y, z: r.z },
+      // ⛔ the HUD: first person the RIG (what A records); third person the PiP's camera — where switching off puts Carl
+      // (note v1.3.3, review 3 [3]); `shot` is exactly that in both views
+      mm: focalMm(shot.fov, aspect),
+      fov: shot.fov,
+      at: { x: shot.x, y: shot.y, z: shot.z },
       units: { d: m.d, up: m.up, zc: m.zc },
       rec: this.rec ? { at: this.rec.at, length: this.rec.sampler.length, cam: this.rec.cam } : null,
+      view: this.view,
+      pipLabel: this.pipLabel(),
+      soloId: this.soloClip()?.id ?? null,
+      eyeM: third && this.eye ? Math.hypot(this.eye.x, this.eye.y - m.up, this.eye.z - m.zc) / 100 : null,
     };
     // for harnesses: the bench's state, read-only. ⚠ `units` / `d` are the LIVE measure; `chainUnits` the chain's; `pose`
     // and `front` are in the CHAIN's units
@@ -815,6 +994,15 @@ class BenchStore {
       selection: this.selection,
       editing: this.edit ? { id: this.edit.id, kind: this.edit.kind, edgeT: pic?.T ?? null } : null,
       snap: this.snap,
+      // the third-person view, for the harnesses: `pose` below stays the RIG (it must not move in third person)
+      eye: this.eye ? { x: this.eye.x, y: this.eye.y, z: this.eye.z, yaw: this.eye.yaw, pitch: this.eye.pitch, fov: this.eye.fov } : null,
+      pip,
+      helpers: this.helpers,
+      roll: this.roll,
+      // LIVE readings (this snapshot is 10 Hz): the helpers and the eye as of the LAST FRAME — the labels check compares them
+      // with the labels written in that same frame
+      helpersNow: () => this.helpers,
+      eyeNow: () => this.eye,
       chain: this.chain,
       chainUnits: units,
       tracks: this.chain.tracks,
@@ -832,10 +1020,148 @@ class BenchStore {
   }
 }
 
+/**
+ * ⛔ THE PiP's RECTANGLE — ONE SOURCE (note v1.3.3 §2): the scissor and the DOM frame over it both read `PIP`. Top-left,
+ * inset 16 CSS px, a quarter of the picture's width and height (the picture's own aspect, so the shot is framed as
+ * recorded). ⛔ The GL rectangle counts from the BOTTOM-LEFT and is in CSS PIXELS — three multiplies by the pixel ratio
+ * itself (`WebGLRenderer.setViewport`, r185; the note's v1.3.2 correction: `× dpr` here would scale twice).
+ */
+const PIP = { insetPx: 16, widthFrac: 0.25 } as const;
+function pipRect(size: { width: number; height: number }) {
+  const w = size.width * PIP.widthFrac, h = size.height * PIP.widthFrac;
+  return { left: PIP.insetPx, top: PIP.insetPx, w, h, glX: PIP.insetPx, glY: size.height - PIP.insetPx - h };
+}
+
+/** ⚠ HARNESS-ONLY, DEV-ONLY window hooks of the render callback */
+type BenchCost = { renderer?: string; ext?: boolean; cpu: number[]; gpu: number[]; disjoint: number; pending: WebGLQuery[] };
+type BenchDevHooks = { __benchGrid?: { who: string; at: number[] }[]; __benchCost?: BenchCost };
+type TimerExt = { TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number };
+const timerExt = new WeakMap<WebGL2RenderingContext, TimerExt | null>();
+/** the cost instrument's start: the renderer named once; a GPU timer query begun where the extension exists */
+function costBegin(gl: THREE.WebGLRenderer, cost: BenchCost): WebGLQuery | null {
+  const c = gl.getContext() as WebGL2RenderingContext;
+  if (!timerExt.has(c)) timerExt.set(c, c.getExtension("EXT_disjoint_timer_query_webgl2") as TimerExt | null);
+  const ext = timerExt.get(c)!;
+  if (cost.renderer === undefined) {
+    const info = c.getExtension("WEBGL_debug_renderer_info");
+    cost.renderer = info ? String(c.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "unknown";
+    cost.ext = !!ext;
+  }
+  if (!ext) return null;
+  const q = c.createQuery();
+  if (q) c.beginQuery(ext.TIME_ELAPSED_EXT, q);
+  return q;
+}
+/** the cost instrument's end: the CPU time kept; finished GPU queries read (ms), a disjoint frame's discarded */
+function costEnd(gl: THREE.WebGLRenderer, cost: BenchCost, q: WebGLQuery | null, cpuMs: number) {
+  const c = gl.getContext() as WebGL2RenderingContext;
+  const ext = timerExt.get(c);
+  cost.cpu.push(cpuMs);
+  if (!ext) return;
+  if (q) {
+    c.endQuery(ext.TIME_ELAPSED_EXT);
+    cost.pending.push(q);
+  }
+  const disjoint = !!c.getParameter(ext.GPU_DISJOINT_EXT);
+  while (cost.pending.length && c.getQueryParameter(cost.pending[0], c.QUERY_RESULT_AVAILABLE)) {
+    const done = cost.pending.shift()!;
+    if (disjoint) cost.disjoint++;
+    else cost.gpu.push(Number(c.getQueryParameter(done, c.QUERY_RESULT)) / 1e6);
+    c.deleteQuery(done);
+  }
+}
+
+/** one track's camera, drawn in third person: a proxy camera (its lens, `far` 1.5 m) carrying an unlit body, and its frustum */
+type HelperParts = { proxy: THREE.PerspectiveCamera; helper: THREE.CameraHelper; mats: THREE.MeshBasicMaterial[] };
+/** ⚠ HARNESS-ONLY (check 9): `window.__benchHelpers` "off" unmounts the helpers, "loud" paints them magenta — read once */
+const helperMode = () => (window as unknown as { __benchHelpers?: "off" | "loud" }).__benchHelpers;
+function makeHelper(cam: number, loud: boolean): HelperParts {
+  const colour = new THREE.Color(loud ? "#ff00ff" : camColour(cam));
+  const proxy = new THREE.PerspectiveCamera(FRONT_FOV, 16 / 9, 1, 150 / CM_PER_PX);
+  const mat = () => new THREE.MeshBasicMaterial({ color: colour, transparent: true, toneMapped: false });
+  const mats = [mat(), mat()];
+  // the body 20 × 12 × 26 cm; the lens forward (−z, where the camera looks)
+  const body = new THREE.Mesh(new THREE.BoxGeometry(20 / CM_PER_PX, 12 / CM_PER_PX, 26 / CM_PER_PX), mats[0]);
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(5 / CM_PER_PX, 6 / CM_PER_PX, 8 / CM_PER_PX, 16), mats[1]);
+  lens.rotation.x = Math.PI / 2;
+  lens.position.z = -17 / CM_PER_PX;
+  proxy.add(body, lens);
+  const helper = new THREE.CameraHelper(proxy);
+  helper.setColors(colour, colour, colour, colour, colour);
+  return { proxy, helper, mats };
+}
+
+/**
+ * ⛔ THE HELPERS (note v1.3.3 §5; plan v1.2 Step 3) — ALWAYS MOUNTED (they compile with the brass at load, never as a
+ * stutter on the first switch), every object on LAYER 1, which only the eye sees: never in the shot camera's picture, the
+ * PiP, a recording or a client film. ⛔ Each `CameraHelper` sits in a group that NEVER MOVES (it takes its proxy's world
+ * matrix as its own, `matrixAutoUpdate` off — under a moving parent it would be moved twice: the plan review's [3]). The
+ * proxies are written by the scene's frame callback (`registryRef`), the paths drawn from `paths` (the chain's units).
+ */
+function TrackHelpers({
+  tracks,
+  armedCam,
+  paths,
+  soloPath,
+  soloCam,
+  registryRef,
+}: {
+  tracks: number[];
+  armedCam: number;
+  paths: Map<number, [number, number, number][][]> | null;
+  soloPath: [number, number, number][] | null;
+  soloCam: number | null;
+  registryRef: { current: Map<number, HelperParts> };
+}) {
+  const [mode] = useState(helperMode);
+  const root = useRef<THREE.Group>(null);
+  const key = tracks.join(",");
+  const parts = useMemo(() => new Map(key.split(",").map((t) => [Number(t), makeHelper(Number(t), mode === "loud")])), [key, mode]);
+  useEffect(() => {
+    registryRef.current = parts;
+    return () => {
+      for (const p of parts.values()) {
+        p.helper.dispose();
+        p.proxy.traverse((o) => {
+          if (o instanceof THREE.Mesh) o.geometry.dispose();
+        });
+        p.mats.forEach((m) => m.dispose());
+      }
+    };
+  }, [parts, registryRef]);
+  // ⛔ LAYER 1 ON EVERY OBJECT (layers are per object, never inherited: the review's [9]) — after every render, so a new
+  // path line or a new track's parts are covered
+  useLayoutEffect(() => {
+    root.current?.traverse((o) => o.layers.set(1));
+  });
+  if (mode === "off") return null;
+  return (
+    <group ref={root}>
+      {[...parts].map(([cam, p]) => (
+        <Fragment key={cam}>
+          <primitive object={p.proxy} />
+          <primitive object={p.helper} />
+        </Fragment>
+      ))}
+      {paths &&
+        [...paths].flatMap(([cam, segs]) =>
+          segs.map((seg, i) => (
+            <Line key={`${cam}-${i}`} points={seg} color={mode === "loud" ? "#ff00ff" : camColour(cam)} lineWidth={2} toneMapped={false} transparent opacity={cam === armedCam ? 1 : 0.7} />
+          )),
+        )}
+      {soloPath && soloCam !== null && <Line points={soloPath} color={mode === "loud" ? "#ff00ff" : camColour(soloCam)} lineWidth={2.5} toneMapped={false} />}
+    </group>
+  );
+}
+
 function BenchScene({
   built,
   store,
   grid,
+  chain,
+  armedCam,
+  soloId,
+  labels,
   onView,
   onWorld,
   onReady,
@@ -843,6 +1169,12 @@ function BenchScene({
   built: Built;
   store: BenchStore;
   grid: boolean;
+  /** React's COMMITTED chain — the paths derive from it, on change */
+  chain: Chain;
+  armedCam: number;
+  soloId: string | null;
+  /** the labels' layer (DOM, the overlay's) — written by the render callback, never through React */
+  labels: { current: HTMLDivElement | null };
   onView: (v: View) => void;
   onWorld: (w: ArchWorld | null) => void;
   onReady: () => void;
@@ -852,19 +1184,149 @@ function BenchScene({
   // the arch's box does not depend on the canvas's size (`up` is 0 for the arch) — measured once per build
   const world = useMemo(() => measureArch(built, measurePiece("arch", built, { width: 1, height: 1 })), [built]);
   useEffect(() => onWorld(world), [world, onWorld]);
+  const main = useRef<THREE.Mesh>(null);
   const fine = useRef<THREE.Mesh>(null);
+  // ⛔ THE EYE's CAMERA OBJECT (note v1.3.3 §3): made ONCE with the canvas, never keyed, gone with it; layers 0 and 1. Not
+  // the default camera. Every property written by `store.frame()` — none here
+  const [eye] = useState(() => {
+    const c = new THREE.PerspectiveCamera();
+    c.layers.enable(1);
+    return c;
+  });
+  const registry = useRef<Map<number, HelperParts>>(new Map());
+  // ⛔ THE PATHS — each track's, through the CHAIN's units (never the live measure: the review's [8]); nothing while the
+  // units are null. One derivation, on chain change: the helpers draw it, "see it all" frames it
+  const units = chain.units;
+  const paths = useMemo(() => {
+    if (!units) return null;
+    const w = (p: Pose): [number, number, number] => {
+      const q = toWorld(units, p);
+      return [q.x, q.y, q.z];
+    };
+    return new Map(chain.tracks.map((cam) => [cam, trackPath(chain, cam).map((seg) => seg.map(w))]));
+  }, [chain, units]);
+  const solo = soloId ? (chain.clips.find((c) => c.id === soloId) ?? null) : null;
+  const soloPath = useMemo(() => {
+    if (!solo || !units) return null;
+    return clipPath(solo).map((p): [number, number, number] => {
+      const q = toWorld(units, p);
+      return [q.x, q.y, q.z];
+    });
+  }, [solo, units]);
+  // ⛔ "SEE IT ALL": the arch's box, and that box with every path's points — handed to the store on change
+  useEffect(() => {
+    const arch = world ? new THREE.Box3(new THREE.Vector3(world.x0, world.floor, world.z0), new THREE.Vector3(world.x1, world.top, world.z1)) : null;
+    const scene = arch?.clone() ?? null;
+    if (scene && paths) for (const segs of paths.values()) for (const seg of segs) for (const [x, y, z] of seg) scene.expandByPoint(new THREE.Vector3(x, y, z));
+    store.setScene(scene, arch);
+  }, [world, paths, store]);
+
   useFrame((st, dt) => {
-    const v = store.frame(st.camera as THREE.PerspectiveCamera, dt, m, st.size.width / st.size.height, world?.floor);
-    // ⛔ THE FOCUS OBJECT's 10 cm lines: their thickness from the camera's distance to its nearest surface (same callback)
-    const focusPx = world?.focus ? world.focus.distanceToPoint(st.camera.position) : Infinity;
-    const mat = fine.current?.material as THREE.ShaderMaterial | undefined;
-    if (mat?.uniforms?.cellThickness) {
-      const k = Math.max(0, Math.min(1, (FINE_FROM_CM / CM_PER_PX - focusPx) / ((FINE_FROM_CM - FINE_FULL_CM) / CM_PER_PX)));
-      mat.uniforms.cellThickness.value = FINE_THICKNESS * k;
-      mat.uniforms.sectionThickness.value = FINE_THICKNESS * k;
+    const shot = st.camera as THREE.PerspectiveCamera;
+    const aspect = st.size.width / st.size.height;
+    const v = store.frame(shot, eye, dt, m, aspect, world?.floor);
+    // ⛔ THE HELPERS' PROXIES — written here, after the store, from its track poses (third person; none in first)
+    const rad = Math.PI / 180;
+    for (const [cam, p] of registry.current) {
+      const h = store.helpers.find((k) => k.cam === cam);
+      p.proxy.visible = p.helper.visible = !!h;
+      if (!h) continue;
+      p.proxy.position.set(h.x, h.y, h.z);
+      p.proxy.rotation.set(h.pitch * rad, h.yaw * rad, h.roll * rad, "YXZ");
+      const lensChanged = p.proxy.fov !== h.fov || p.proxy.aspect !== aspect;
+      if (lensChanged) Object.assign(p.proxy, { fov: h.fov, aspect });
+      if (lensChanged) p.proxy.updateProjectionMatrix();
+      p.proxy.updateMatrixWorld();
+      if (lensChanged) p.helper.update();
+      const a = h.held ? 0.35 : h.armed ? 1 : 0.7;
+      for (const mt of p.mats) mt.opacity = a;
     }
+    // the HUD's focus distance: the SHOT camera's (the 10 cm lines' thickness is the render callback's now)
+    const focusPx = world?.focus ? world.focus.distanceToPoint(shot.position) : Infinity;
     if (v) onView(world?.focus ? { ...v, focusPx } : v);
   });
+
+  // ⛔ BENCH RENDER — THE ONE PRIORITY-1 CALLBACK (note v1.3.3 §2): R3F 9 hands rendering to it. It only DRAWS — it writes no
+  // camera. Before EACH draw it sets both grids' per-camera uniforms from THAT draw's camera: the 10 cm lines' thickness
+  // (moved here from the frame callback: one writer) and drei Grid's `worldCamProjPosition` — the point its FADE is measured
+  // from, which drei sets from `state.camera` (the shot camera) in its own callback (Grid.js:107–112; the plan review's [2]).
+  const plane = useMemo(() => new THREE.Plane(), []);
+  const up = useMemo(() => new THREE.Vector3(0, 1, 0), []);
+  useFrame((st) => {
+    const { gl, scene, size: sz } = st;
+    const shot = st.camera as THREE.PerspectiveCamera;
+    // ⚠ HARNESS-ONLY, DEV-ONLY: the grids' fade centre per draw (check 13) and, when a harness sets `__benchCost`, the cost
+    // instrument (the plan's checkpoint: the render callback's CPU time always; its draws' GPU time by
+    // EXT_disjoint_timer_query_webgl2 where it exists — the WORK, not the frame interval)
+    const dev = process.env.NODE_ENV !== "production" ? (window as unknown as BenchDevHooks) : null;
+    const gridLog: { who: string; at: number[] }[] = [];
+    const cost = dev?.__benchCost;
+    const t0 = cost ? performance.now() : 0;
+    const q = cost ? costBegin(gl, cost) : null;
+    const gridsFor = (cam: THREE.Camera, who: string) => {
+      for (const g of [main.current, fine.current]) {
+        const u = (g?.material as THREE.ShaderMaterial | undefined)?.uniforms;
+        if (!g || !u?.worldCamProjPosition) continue;
+        plane.setFromNormalAndCoplanarPoint(up, new THREE.Vector3()).applyMatrix4(g.matrixWorld);
+        plane.projectPoint(cam.position, u.worldCamProjPosition.value);
+        if (dev) gridLog.push({ who, at: u.worldCamProjPosition.value.toArray() });
+      }
+      const u = (fine.current?.material as THREE.ShaderMaterial | undefined)?.uniforms;
+      if (u?.cellThickness) {
+        const focusPx = world?.focus ? world.focus.distanceToPoint(cam.position) : Infinity;
+        const k = Math.max(0, Math.min(1, (FINE_FROM_CM / CM_PER_PX - focusPx) / ((FINE_FROM_CM - FINE_FULL_CM) / CM_PER_PX)));
+        u.cellThickness.value = FINE_THICKNESS * k;
+        u.sectionThickness.value = FINE_THICKNESS * k;
+      }
+    };
+    const box = labels.current;
+    const done = () => {
+      if (dev) dev.__benchGrid = gridLog;
+      if (cost) costEnd(gl, cost, q, performance.now() - t0);
+    };
+    if (!store.isThird) {
+      // FIRST PERSON: one draw, the shot camera — as R3F's own render did
+      gridsFor(shot, "shot");
+      gl.render(scene, shot);
+      return done();
+    }
+    // THIRD PERSON: the EYE fills the canvas; then the SHOT camera in the PiP's rectangle (`autoClear` on: with the scissor
+    // test on, its clear touches only the PiP)
+    gl.setScissorTest(false);
+    gl.setViewport(0, 0, sz.width, sz.height);
+    gridsFor(eye, "eye");
+    gl.render(scene, eye);
+    const r = pipRect(sz);
+    gl.setViewport(r.glX, r.glY, r.w, r.h);
+    gl.setScissor(r.glX, r.glY, r.w, r.h);
+    gl.setScissorTest(true);
+    gridsFor(shot, "shot");
+    gl.render(scene, shot);
+    gl.setScissorTest(false);
+    gl.setViewport(0, 0, sz.width, sz.height);
+    done();
+    // ⛔ THE LABELS — written by ref in the same frame as the draw (never React, never the 10 Hz view: they would trail the
+    // bodies during play — the review's [5]); hidden behind the eye or inside the PiP
+    if (!box) return;
+    const at = new THREE.Vector3();
+    for (const el of Array.from(box.children) as HTMLElement[]) {
+      const h = store.helpers.find((k) => String(k.cam) === el.dataset.camLabel);
+      if (!h) {
+        el.style.display = "none";
+        continue;
+      }
+      at.set(h.x, h.y, h.z).project(eye);
+      const x = ((at.x + 1) / 2) * sz.width, y = ((1 - at.y) / 2) * sz.height;
+      const inPip = x >= r.left && x <= r.left + r.w && y >= r.top && y <= r.top + r.h;
+      if (at.z < -1 || at.z > 1 || inPip) {
+        el.style.display = "none";
+        continue;
+      }
+      el.style.display = "";
+      el.style.transform = `translate(${x + 10}px, ${y - 10}px)`;
+    }
+  }, 1);
+
   const axes = useMemo(() => {
     if (!world) return null;
     const r = AXIS_REACH_CM / CM_PER_PX, y = world.floor + 0.4;
@@ -893,12 +1355,14 @@ function BenchScene({
       {/* ⛔ the bench's camera: the page's start and lens; `far` d × 60 — a free camera leaves the page's d × 10 */}
       <PerspectiveCamera makeDefault position={[0, 0, m.d]} fov={FRONT_FOV} near={1} far={m.d * 60} />
       <LetteringPiece piece="arch" built={built} onReady={onReady} />
+      <TrackHelpers tracks={chain.tracks} armedCam={armedCam} paths={paths} soloPath={soloPath} soloCam={solo?.cam ?? null} registryRef={registry} />
       {/* ⛔ THE FLOOR GRID — on the arch's lowest ink; lines on the centre line and the front face; EVERY line a metre, all one
           weight (Carl: "make the grid squares 1m x 1m" — the faint metre lines under heavier 5 m ones read as 5 m squares).
           Drawn unlit (its own shader): the arch's light and reflections are untouched. Fades out LINEARLY to 150 m from the
           camera — Carl: "From 21m away i still meed to see 1m squares" (at 21 m the lines keep ~86%). */}
       {grid && world && (
         <Grid
+          ref={main}
           position={[0, world.floor, world.z1]}
           infiniteGrid
           cellSize={100 / CM_PER_PX}
@@ -913,8 +1377,9 @@ function BenchScene({
         />
       )}
       {/* ⛔ THE 10 cm SUBDIVISION round the focus object — the squares it stands in and beside (`patch`), 2 mm above the
-          floor (no fight with the metre lines), dimmer; its lines' thickness set each frame from the distance (above), 0 = not
-          drawn. Its edges lie on metre lines, and from any half or whole metre the 10 cm lines fall on the metre lines too. */}
+          floor (no fight with the metre lines), dimmer; its lines' thickness set before each draw from that draw's camera's
+          distance (the render callback), 0 = not drawn. Its edges lie on metre lines, and from any half or whole metre the
+          10 cm lines fall on the metre lines too. */}
       {grid && patch && (
         <Grid
           ref={fine}
@@ -1109,6 +1574,8 @@ function CameraBenchInner() {
   const [drawer, setDrawer] = useState<"help" | "info" | null>(null);
   const [world, setWorld] = useState<ArchWorld | null>(null);
   const wrap = useRef<HTMLDivElement>(null);
+  /** the third-person labels' layer — written by the render callback by ref, never through React */
+  const labelsRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number } | null>(null);
   const why = failed ?? failure;
 
@@ -1224,6 +1691,8 @@ function CameraBenchInner() {
       else if (e.code === "Comma") store.step(-1);
       else if (e.code === "Period") store.step(1);
       else if (e.code === "KeyC") store.cycleArm();
+      // ⛔ T: third person on / off — the keyboard twin of the right-stick click (ignored mid-drag: the `editRef` return above)
+      else if (e.code === "KeyT") store.toggleView();
     };
     const up = (e: KeyboardEvent) => store.keyUp(e.code);
     const blur = () => store.keysClear();
@@ -1325,7 +1794,20 @@ function CameraBenchInner() {
                     effects, R3F takes that for an unmount and forces the context lost — measured 26 October (the bench drew,
                     then "Context Lost" at ~2 s). */}
                 <Suspense fallback={null}>
-                  {shown && <BenchScene built={shown} store={store} grid={grid} onView={setView} onWorld={setWorld} onReady={() => setDrawn(true)} />}
+                  {shown && (
+                    <BenchScene
+                      built={shown}
+                      store={store}
+                      grid={grid}
+                      chain={chain}
+                      armedCam={transportView.armedCam}
+                      soloId={view?.soloId ?? null}
+                      labels={labelsRef}
+                      onView={setView}
+                      onWorld={setWorld}
+                      onReady={() => setDrawn(true)}
+                    />
+                  )}
                 </Suspense>
               </Canvas>
             </Guard>
@@ -1334,6 +1816,28 @@ function CameraBenchInner() {
 
         {/* ⛔ THE OVERLAY LAYER — pointer-events: none ([A3]); only its controls take clicks, so a drag on bare picture looks */}
         <div className="pointer-events-none absolute inset-0" data-overlay>
+          {/* ⛔ THIRD PERSON: the PiP's frame and label — over the rectangle the render callback scissors (`PIP`, one source) —
+              and the cameras' labels, positioned by the render callback by ref */}
+          {view?.view === "third" && (
+            <>
+              <div
+                className="absolute rounded-sm border"
+                style={{ left: PIP.insetPx, top: PIP.insetPx, width: `${PIP.widthFrac * 100}%`, height: `${PIP.widthFrac * 100}%`, borderColor: camColour(transportView.armedCam) }}
+                data-pip
+              >
+                <span className="absolute bottom-1 left-1 rounded bg-black/70 px-1.5 py-0.5 text-[11px] text-white" data-pip-label>
+                  {view.pipLabel}
+                </span>
+              </div>
+              <div ref={labelsRef} className="absolute inset-0 overflow-hidden" data-cam-labels>
+                {chain.tracks.map((cam) => (
+                  <span key={cam} data-cam-label={cam} className="absolute left-0 top-0 rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-semibold" style={{ color: camColour(cam), display: "none" }}>
+                    Cam {cam}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
           {/* the HUD: the pad, where the camera is, the lens; the two drawers */}
           <div className="absolute right-3 top-3 flex items-start gap-2">
             <div className="rounded-md border border-white/10 bg-black/60 px-2.5 py-1.5 text-right font-mono text-[11px] leading-snug text-neutral-300 tabular-nums" data-hud>
@@ -1348,6 +1852,12 @@ function CameraBenchInner() {
                     {(((view.at.z - world.z1) * CM_PER_PX) / 100).toFixed(2)} m
                   </div>
                   <div className="text-neutral-500">{view.mm.toFixed(0)} mm lens</div>
+                  {/* third person: the position and lens above are the PiP camera's (where switching off puts Carl) */}
+                  {view.view === "third" && (
+                    <div className="text-amber-300" data-hud-third>
+                      Third person{view.eyeM !== null ? ` · eye ${view.eyeM.toFixed(1)} m out` : ""}
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -1388,7 +1898,9 @@ function CameraBenchInner() {
                     <dt className="text-neutral-500">Start</dt>
                     <dd>arm the next camera track</dd>
                     <dt className="text-neutral-500">View</dt>
-                    <dd>default view</dd>
+                    <dd>default view (third person: see the whole scene)</dd>
+                    <dt className="text-neutral-500">Right-stick click</dt>
+                    <dd>third person on / off: off puts you in the selected camera</dd>
                   </dl>
                   <h2 className="mb-2 mt-4 text-sm font-semibold text-white">How it records</h2>
                   <p>
@@ -1400,7 +1912,7 @@ function CameraBenchInner() {
                   <h2 className="mb-2 mt-4 text-sm font-semibold text-white">Keyboard</h2>
                   <p>
                     W S forward / back · A D slide · E Q rise / sink · arrows turn / tilt · drag to look · [ ] lens · Shift fast · Alt slow · Space record · P play ·
-                    Home start · End end · H default · , . step · C arm the next track · Delete delete
+                    Home start · End end · H default (third person: the whole scene) · , . step · C arm the next track · T third person · Delete delete
                   </p>
                 </>
               ) : (

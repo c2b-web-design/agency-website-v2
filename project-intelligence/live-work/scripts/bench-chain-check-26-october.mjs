@@ -461,6 +461,36 @@ function shapeForClip2(chain, pace = 280 / D) {
   check(Math.abs(sp.T - 5.04) < 1e-12 && sp.to === 7.04, `a move snaps on its END too: start 5 + 2 s → end on 7.04 → start ${sp.T}`);
 }
 
+// ── ⛔ THE THIRD-PERSON VIEW, STEP 1 (the plan `plan-third-person-view-29-october.md` v1.2): where ONE track's camera is; its path
+{
+  const { trackPoseAt, trackPath, clipPath } = await import("../../../components/showcase/bench-chain.ts");
+  // Cam 1: A 0–6 s (x 0 → 6); a NEWER take N cuts in at 3–4 s (x 100 → 101); a gap 6–8; G 8–9. Cam 2: B 2–5 s on top
+  let ch = recordClip(emptyChain(), 1, 0, S(6, 0, 6), "A");
+  ch = recordClip(ch, 2, 2, S(3, 50, 53), "B");
+  ch = recordClip(ch, 1, 3, S(1, 100, 101), "N");
+  ch = recordClip(ch, 1, 8, S(1, 200, 201), "G");
+  ch = addTrack(ch);
+  const at = (cam, T) => trackPoseAt(ch, cam, T);
+  check(at(1, 2.5)?.clip?.id === "A" && Math.abs(at(1, 2.5).pose.x - 2.5) < 1e-6 && sourceAt(ch, 2.5)?.id === "B", "Cam 1's camera at 2.5 s is ITS take A (x 2.5), though Cam 2 plays there: higher tracks ignored");
+  check(at(1, 3.5)?.clip?.id === "N" && !at(1, 3.5).held, "inside a track the NEWEST take wins (N at 3.5 s)");
+  check(at(1, 7)?.held && at(1, 7).clip === null && Math.abs(at(1, 7).pose.x - 6) < 1e-6, `in a gap on its track: its LAST picture, held (x ${at(1, 7)?.pose.x.toFixed(3)})`);
+  check(at(2, 1)?.held && Math.abs(at(2, 1).pose.x - 50) < 1e-6, "before a track's first clip: its FIRST picture, held");
+  check(at(ch.tracks.at(-1), 3) === null, "a track with no clips: null");
+  const path = trackPath(ch, 1);
+  const maxStep = Math.max(...path.flatMap((seg) => seg.slice(1).map((p, i) => Math.abs(p.x - seg[i].x))));
+  check(path.length === 4, `Cam 1's path: ${path.length} stretches (A to the cut-in, N, A resumed, G after the gap)`);
+  check(maxStep < 0.1, `no stretch spans a jump: the largest step inside a stretch is ${maxStep.toFixed(3)} (a cut-in would be ~97)`);
+  const ends = path.map((s) => [s[0].x, s.at(-1).x].map((x) => x.toFixed(2)).join("→")).join(" | ");
+  check(Math.abs(path[0].at(-1).x - 3) < 1e-6 && Math.abs(path[1][0].x - 100) < 1e-6 && Math.abs(path[2][0].x - 4) < 1e-6, `every clip edge sampled: ${ends}`);
+  const cp = clipPath(ch.clips.find((c) => c.id === "A"));
+  check(cp.length > 150 && Math.abs(cp[0].x) < 1e-9 && Math.abs(cp.at(-1).x - 6) < 1e-6 && cp.some((p) => Math.abs(p.x - 3.5) < 0.05), "clipPath of the COVERED take A: its OWN poses through 3–4 s (a solo rides it)");
+  // a barrel's path carries its roll
+  const barrel = { kind: "barrel", from: [0, 0, 1], to: [0, 0, -0.5], turns: 2, radius: 0.05, spiralStart: 0.2, rollEase: 0.4, spiralEnd: 0.8, fov: 30, pace: 0.1, v0: 0, rampS: 1, landS: 1 };
+  const bch = placeShape(emptyChain(), 1, 0, barrel, "V");
+  const rolls = trackPath(bch, 1).flat().map((p) => p.roll ?? 0);
+  check(rolls.some((r) => Math.abs(r) > 10), `a BARREL's path carries its roll (max ${Math.max(...rolls.map(Math.abs)).toFixed(0)}°)`);
+}
+
 console.log(`\nVERDICT ${fail ? "✖" : "✔"} ${pass}/${pass + fail}`);
 console.log("⚠ NOT WATCHED: the store, the UI, the pad, storage — the page harness does those; Carl's own take 2 (Parity B, dropped by Carl 27 October: the data was a test).");
 process.exitCode = fail ? 1 : 0;

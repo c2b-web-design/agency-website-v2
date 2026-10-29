@@ -65,6 +65,22 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-098 — The Camera Bench's Third-Person View: The Cameras, Their Paths And The PiP (`/proto/camera`, D-104): "Approved"
+
+**Date:** 2026-10-29
+**Reviewer:** Human Founder
+**Subject:** `bench-chain.ts`, `camera-bench.tsx` under the note `live-work/structural-note-third-person-view-29-october.md` v1.3.3 (approved at v1.3.1) and the plan `live-work/plan-third-person-view-29-october.md` v1.2 (approved). RS click or T steps out to a director's eye flown by the pad; every camera drawn with its path as a line (helpers on layer 1, never in the shot camera's picture); the armed camera's view in a PiP top left; View or H frames the whole scene; switching off returns to the armed camera at the playhead. Checkpoint: `live-work/checkpoint-third-person-29-october/`.
+
+**Carl's verdict, verbatim:** *"Done next steps. Approved. Commit and oush"*
+
+**Findings:**
+
+- ✔ **APPROVED** after Carl flew it (session 2, after the restart restored the Bluetooth adapter and the pad).
+- ✔ **Checks:** `bench-chain-check` 118/118; first person PIXEL-IDENTICAL to the pre-build baseline; `camera-bench-verify` 120/120; the cost on AMD Radeon / ANGLE D3D11 with timer queries, third person GPU p95 1.61 ms (first 0.91), 0 dropped frames.
+- ⚠ **`third-person-verify` 26/28: the framing check (10) cannot fail** — the wrong camera also passes the pre-stated mark of 8 (3.73 / 3.58 against the right camera's 0.70 / 1.25). Not re-marked. **Carl's ruling on the mark is not yet recorded here** — the check is not evidence until it is.
+
+---
+
 ## R-097 — The Camera Bench's Timeline, T1b: Trim And Move, Take 2 (`/proto/camera`, D-104): "Thats fixed it ... Approved"
 
 **Date:** 2026-10-29

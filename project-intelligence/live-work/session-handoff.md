@@ -1,78 +1,71 @@
-# Session Handoff — 27 October 2026, session 2 (written before compaction). SHAPE CLIPS + THE GLIDE + OPEN BUILT; NOTHING COMMITTED.
+# Session Handoff — 29 October 2026. T1b APPROVED + PUSHED; THE THIRD-PERSON VIEW BUILT, AT CHECKPOINT, UNCOMMITTED.
 
-⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Replaces the 27 October session-1 handoff. Delete it at the
-end of the session that reads it, once its replacement is written. Detail: **D-104's tail** (from "THE SEQUENCE — DESCRIBED BY
-CARL") — read it, it is the session's record.
+⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Replaces the 27 October session-2 handoff. Delete it at the
+end of the session that reads it, once its replacement is written. Detail: **D-104's tail from "⛔ CARL's TWO IMPROVEMENTS
+(29 October 2026"** — the session's record, every quote verbatim.
 
+## ⛔ WHY THE SESSION ENDED HERE
 
-## ⛔ NEXT SESSION — Carl's words
+The Xbox pad would not connect. **Windows has lost the Bluetooth adapter itself** ("Realtek Bluetooth Adapter", status
+`Unknown`, gone from Settings; an ADMIN rescan, `pnputil /scan-devices`, run by Carl, did not bring it back). Over the
+USB cable the PC enumerates NOTHING from the pad, even in a port proven working (a MIDI keyboard's) — as on 27 October.
+The pad blinks (two blinks = searching for its last pairing; fast = pairing mode). **Carl is RESTARTING the PC** (Restart,
+not Shut down: fast startup would not reset the hardware). ⚠ The Builder's reading, unconfirmed: one dropped internal USB
+hub could explain both (the Bluetooth adapter is an internal USB device). If Bluetooth is back after the restart, press the
+Xbox button: the pad is paired. If USB still fails, a different cable settles whether it is the cable.
 
-*"Ive got more ideas how we can improve this tool, we will discuss next session. One of them is the ability to put the camera
-in third person mode. If i could view its movement from afar, much like the light helpers that would be a great benefit."*
-→ START BY DISCUSSING his ideas; the THIRD-PERSON VIEW first (a second viewpoint in the one canvas = §5a, as T2's PiP).
-Locks: no protected file opened; tested (a probe of `about-card-glass.ts` REFUSED). The five bench files LOCKED and tested (5 of 5 probes refused).
+## ⛔ NEXT — Carl's
 
-## ⛔ THE PROCESS THAT WORKS (found late, Carl: "i describe, you show me in clay we iterate")
+1. **Fly the third-person view** on `/proto/camera` (right-stick click or T on / off; View or H frames the whole scene).
+   Start the dev server first (`npm run dev`). Nothing about it is approved yet.
+2. **Rule on the FRAMING check's pass mark** (with the Architect): `third-person-verify` is **26/28** — the two failures are
+   check 10's: the PiP matches its camera (0.70 / 1.25 of 255 at DPR 1 / 2) but the WRONG camera also passes the pre-stated
+   mark of 8 (3.73 / 3.58), so the check cannot fail and is not evidence. NOT re-marked after measuring. Builder's
+   suggestion: "the right camera under HALF the wrong camera's", or a mark on the arch's pixels only — state it, re-run.
+3. Route the checkpoint to the Architect: `live-work/checkpoint-third-person-29-october/` (the request, `third-person.png`,
+   the framing evidence image).
+4. Commit? **Not asked — do not commit without Carl's word**; the clean-checkout build first (memory).
 
-Carl describes a move → the Builder calculates → edits `components/showcase/bench-builder-take.ts` (bump `version`) → the bench
-puts the take on his timeline BY ITSELF (a new version replaces the last) → Carl iterates. ⛔ NEVER console, file picker or a
-list (all rejected). **✔ THE VADER MOVE APPROVED at take 4** (R-096; Carl: *"thats fixed it. 4 takes and weve got it to where it wanrs to
-be"*): a BARREL shape (roll added to the bench); takes 2–4 were his notes. ✔ COMMITTED AND PUSHED `3bf5c6f` (clean-checkout build passed). The harnesses carry no barrel
-checks yet; motion blur raised, not chosen. Next: Carl's.
+## BUILT AND DECIDED THIS SESSION
 
-## ⛔ WHERE THINGS STAND (earlier in the session)
-
-- **Carl is about to fly the Builder's move, take 1.** Steps given: bench → press a pad button → fly to his start (beyond
-  YOUR's left end, a little higher than old clip 2's end) → ⛔ **NO WAY IN FOR A COMPUTED TAKE RIGHT NOW**: Carl rejected the console, Open's file picker
-  AND the Moves drop-down (*"remove the moves, i said we will come back to it"*). **Ask Carl how take 2 reaches his bench.**
-  **Take 1 flown:** *"Smooth"*; note: no logo at the start → **take 2** written (`live-work/moves/your-company-take-2.move.json`:
-  startLook = YOUR, aim settle 2 s; YOUR in frame at 1.48 s, was 3.85 s) — NOT YET FLOWN. Then HE ITERATES (Carl: *"Even if your move is brilliant, i will iterate upon
-  it just to go through the process, the workflow. Like we build the meshes"*): by the inspector's numbers, or notes → the
-  Builder writes **take 2 as a new move file** (memory: a note on a take = decide, test, hand over the next take).
-- **The sequence (D-104):** started over IN REVERSE — start = old clip 2's end (Carl places it), finish = old clip 1's end
-  (the C's base, 10 cm up, 2 m out, face on). The corkscrew is OUT of it (raised and not chosen). The move is the Builder's
-  (*"Get creative, you decide"*): "Your company" — out and square on to YOUR, down past P / M, landing on the C; 16.6 s.
-- ⚠ At the landing the C rises out of the top of the frame (old clip 1's end is 10 cm up, level) — an obvious iteration.
-
-## BUILT THIS SESSION — committed and pushed in `3bf5c6f` (`git status`: the four bench files, decisions.md, current-sprint.md, the harnesses)
-
-1. **Shape clips, chain v3** (note `structural-note-shape-clips-27-october.md` v3.2, three reviews; plan
-   `plan-shape-clips-27-october.md` v2.1, two reviews): a clip carries samples OR a shape; the chain carries its units
-   (filled on the first measured frame; saved only with clips or on an action); keys v3 → v2 → v1, only v3 written; Home on
-   the live `d`; the dev hook `window.__benchPlace` (NODE_ENV-gated); the inspector shows / edits a shape's numbers + a clash
-   warning (Carl: *"In, warning only"*). Parity A (the retired snippet run unchanged): 0.0013 mm.
-2. **The Corkscrew panel — built, then REMOVED** (Carl: *"If there are to be some "signature moves" that panel will grow very
-   quickly"*). ⛔ **"Signature moves" NOT SHELVED** — *"We will return to it in a future session. Probably put it in a drop
-   down list we can call upon."* (The move files are the natural entries.)
-3. **The GLIDE** (Open, then a Moves drop-down + dev route, built and REMOVED on Carl's word; `moveFromFile` kept) (note `structural-note-glide-and-open-27-october.md`; Carl: *"Approved, build it"*): a centripetal
-   Catmull–Rom path + look-at points at the same knots, Gauss–Legendre length, eased start and landing; Open reads a
-   `.move.json` (world cm, `start: "camera"` — Carl: *"no cheating"*).
-4. **The camera remembered** across refreshes / code reloads (Carl: *"It shouldnt move"* → *"Yes, build it"*).
-- **Checks at hand-over:** `bench-chain-check` **84/84**; `camera-bench-verify` **91/91**; `tsc` clean; `npm run lint`
-  1 error, 0 warnings (the baseline).
+- **T1b, TRIM AND MOVE — APPROVED (R-097), COMMITTED AND PUSHED `5b95fdb`.** Plan v1.4 after three Architect reviews; take 2
+  on Carl's note: *the playhead moves on the ruler only*. Edge drag trims (non-destructive), body drag moves, snap on / N,
+  Esc cancels; a new Builder's take keeps a trim.
+- **THE THIRD-PERSON VIEW** — note `structural-note-third-person-view-29-october.md` **v1.3.3** (APPROVED at v1.3.1; record
+  amended twice after: the PiP in CSS px, the grid's fade-centre row, the drag ruling); plan `plan-third-person-view-29-
+  october.md` **v1.2** (APPROVED: *"Approved. Proceed and implement."*). Four note reviews, three plan reviews, saved verbatim
+  (`architect-plan-response-third-person-29-october.md`, `architect-plan-response-third-person-plan-29-october.md`).
+  **BUILT, uncommitted:** `bench-chain.ts` (`trackPoseAt`, `trackPath`, `clipPath`), `camera-bench.tsx` (view, eye, switch,
+  PiP, render callback, helpers, overlay; dev-only instruments). **Checks:** chain 118/118; first person PIXEL-IDENTICAL to
+  the pre-build baseline; `camera-bench-verify` 120/120; `third-person-verify` 26/28 (above); the cost: AMD Radeon via
+  ANGLE D3D11, timer queries present, third person GPU p95 1.61 ms (first 0.91), 0 dropped frames — within both pass lines.
+- **⛔ A NEW ROLE RULE** (Carl: *"I didnt think youd be ok with this, im certainly not."*): in review the Architect reports
+  findings and NAMES Carl's decisions; it does not put options to him or draft the revision — the Builder folds in, asks,
+  writes the next version. In `ai-system/ai-roles.md` (Architect, Cannot) and D-102 (amended 29 October). It held for the
+  rest of the session. `ai-roles.md` closed, locked and probed (refused).
+- **The Architect's seat reads `git status` from the start of ITS session** — it reported T1b "not committed" three times
+  after `5b95fdb` was pushed. Tell it to re-check.
 
 ## ⛔ OPEN — with owners
 
-- **Carl:** fly take 1, iterate. Then: commit? (not asked yet — **do not commit without his word**; clean-checkout build first).
-- **Scope:** the bench files LOCKED and tested at hand-over (Carl: "yes, close them"); `chunk-scope.json` stays LOCAL.
-  Then lock and test."*) — close + probe when he says.
-- **Raised for later (Carl's):** the third-person camera view (*"Like the light helpers in WebGL"*); a speed spline editor;
-  signature moves (a drop-down); T1b; R2; the PiP. The inspector runs below the fold at full length (for his eye).
-- **The pad:** reconnects over Bluetooth; a two-blink light = searching for its last pairing (D-104).
-- **Carried** (from the previous handoff): the turn / lens rates; the filmback preset; the hero (D-101); the films' edit;
-  Send; mastering; `structural-note-viewer-on-about-21-october.md` to amend; `neon-bloom.tsx` re-arm;
-  `about-card-glass.ts:491` anisotropy comment untrue (flag).
+- **Scope:** `bench-chain.ts`, `camera-bench.tsx`, `bench-timeline.tsx` OPEN in `chunk-scope.json` (chunk
+  `trim-and-move-t1b`; Carl: *"Heep open until i ask to close, lock and test"*). `chunk-scope.json` stays LOCAL.
+- **Carl:** fly third person; the framing mark; commit; the pad.
+- **Raised, not chosen (Carl's):** stills of text in the gaps; flat views (top / side); the speed spline editor; signature
+  moves; R2. Overlap as a blend or a dissolve: raised and NOT chosen.
+- **Carried:** the hero (D-101); the films' edit; Send; mastering; `about-card-glass.ts:491` comment untrue (flag).
 
-## STANDING / LESSONS (this session — memories saved)
+## STANDING / LESSONS (this session)
 
-- ⛔ **Build only what Carl asks; a deferred idea stays deferred** (the Moves list, removed).
-
-- **A note on a take = the next take:** decide, test, hand over; never question which version he ran.
-- **Don't explain his own controls** (he built the pad map).
-- **Carl's division of labour:** the Architect reviews STRUCTURE; directorial choices are Carl's and the Builder's.
-- A harness caught what three reviews missed (the near-constant-radius branch) — measure, don't trust prose.
-- The dev server (PID 6696) is running; stop it by PID before any checkpoint.
+- **The site's ROOT ZOOM (D-097):** at 1920 px wide the page is zoomed ~1.36; the bench draws, scissors and places labels in
+  LAYOUT px (right). A harness measuring on-screen px (`getBoundingClientRect`, screenshots) is off by the zoom — use
+  `offsetWidth` / convert.
+- **A negative control on every comparison check:** the framing check's pass mark was only exposed as unable to fail because
+  the wrong camera was also measured.
+- **The Bash tool fails on long heredocs** carrying quotes and backticks ("unexpected EOF") — write the script with the Write
+  tool and run it.
+- Chromium fires `lostpointercapture` at the NEXT pointer event, not at the release.
 
 ---
 
-*Written 27 October 2026, session 2, before compaction. Replaces the 27 October session-1 handoff.*
+*Written 29 October 2026, before Carl's restart. Replaces the 27 October session-2 handoff.*
