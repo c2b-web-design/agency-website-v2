@@ -1,75 +1,72 @@
-# Session Handoff — 29 October 2026, session 2. THREE FILMS CUT FOR RESOLVE; THE SHOWCASE STANDARD (D-106); THE HERO NEXT.
+# Session Handoff — 30 October 2026. FILM 01 IN RESOLVE, NEARLY THROUGH ITS FAULT LIST; FILMS 02 AND 04 NOT STARTED.
 
-⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Replaces the 29 October session-1 handoff. Delete it at the
+⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Replaces the 29 October session-2 handoff. Delete it at the
 end of the session that reads it, once its replacement is written.
 
-## ⛔ NEXT — tomorrow: EDIT THE THREE FILMS IN RESOLVE (with Carl)
+**Where the project is:** no site code changed. HEAD `7f9f7de`; this session's record (D-107, the sprint row, this file) is
+NOT committed: Carl has not asked. Lint not run, nothing to lint. Schedule unchanged: edit films 01, 02, 04 → the hero
+(several sessions; film 3 is its capture) → Send → mastering. Deadline 19 November.
 
-Carl is updating DaVinci Resolve (it needs a PC restart). Then the three cuts go in. Each: a 1920×1080, 30 fps project,
-**Rec.709 Gamma 2.4**, *File > Import > Timeline…*, the film's `cut10.fcpxml` (`cut10.edl` is the fallback). Media in each
-film's `09 Cut - 10 min/`: DNxHR HQ 4:2:2 .mov, constant 30 fps, tagged BT.709 limited range.
+**How to work with Carl in Resolve:** one step at a time. He cuts; every edit is his. ⛔ **Two lists: FAULTS, and WHAT'S THERE
+for his judgement. Never file a suggestion as "to fix" or chase it across exports** (*"Did i authorise any editing
+choices?"*). Don't explain his own controls: he edits and adds subtitles himself. Look at the frame before calling anything a
+fault.
 
-| Film | Folder (`Videos\C2B Films\`) | Length | Build script (`live-work/scripts/`) |
-|---|---|---|---|
-| 01 Who we are | `01 Who we are button` | 9:49, 44 segments | `whoweare-cut10-build.mjs` |
-| 02 Ornate corners | `02 Ornate corners` | 9:15, 55 segments | `films-02-04-cut-build.mjs 02` |
-| 04 Extruded lettering | `04 Extruded lettering` | 8:40, 43 segments | `films-02-04-cut-build.mjs 04` |
+## ⛔ TO-DO LIST (Carl, end of session: *"Put it on the todo list. Make a note of other things and we will tackle them next session."*)
 
-- **Every film follows ONE journey** (Carl: *"a story with a beginning, middle and end … that is our process - and it
-  works"*): before and the idea → the plan and its review → each pass ending on Carl's approval → on the page, live.
-  Film 01's stage weights APPROVED by Carl; films 02 and 04's are the Builder's (in each `shot-list.md`), Carl's to move.
-  Film 04 is shorter on purpose (cuts faster; exempt from the C2B restraint).
-- **The films are tutorials:** how we did it, plain language, no jargon call-outs, clean cuts, and visually good. ~10 min
-  into Resolve for final polish; Carl cuts, grades and scores (his Resolve → Pro Tools → Fairlight work).
-- **Personal details:** Carl's NAME stays (paths `C:\Users\Carl Buckley`, "for Carl's eye" on benches). Carl blurs
-  anything else in Resolve (a blur strip). Film 02's two fallback stills had the Next.js dev badge ("N 10 Issues"):
-  PAINTED OUT at Carl's word (originals in `06 On the page/_raw/`).
-- **Subtitle drafts** are in each film's shot list / `07 Subtitles/` ("We", no em dashes). Film 02's last turning point
-  (15:04, "The box shape is implied by the corners") has no still: a subtitle over 14:55's.
+1. **BRAND COLOURS PICTURE — ASK CD (Carl's step). The Builder does NOT make it.** Carl: *"We need a visual represention of our
+   brand colours. I know you can do it but we will ask CD and import it from there."* It replaces `01E` (01:00:39:00 to
+   01:00:44:00), a stock swatch sheet with a faint **dreamstime** watermark that cannot go out in a public film. Carl tried the
+   caption in another colour there and wasn't happy.
+2. **Film 01's remaining faults** (timecodes from the render at 8:28:22; shift if he has trimmed since):
+   - `07C` and the second piece of `08B`: white sliver bottom left, up to 22 px wide. **Crop Left 22, keeping Crop Top 132.**
+   - `09B`, 01:07:40:13: one black frame at the cut. Trim 1 frame off its head.
+   - `01G`, 01:00:54:10: the first caption line touches "Home" in the nav. Nudge the caption.
+3. **Film 01, for Carl's judgement (not faults, raise each once):**
+   - `05F`: the white strip inside the media player, about 15 s, runs through "screen" in the caption. `06A`'s image viewer
+     shows the same strip. A crop can't reach either.
+   - `05F`: 20 s with no caption after 01:04:47:18. Three lines were offered; he hasn't used them, so don't re-offer.
+   - `05D`: 13 near-black frames, buttons fully up by frame 24. Its two captions have not moved.
+   - N dev badge on `01G` and `10C`. He painted it out of film 02's stills; a blur or small crop would be his.
+   - `03A`: stair-stepped edges at 4× (noted early, not raised since).
+4. **After those:** a new burned-in render, then his grade and score (Resolve → Pro Tools → Fairlight; Sonar for the bed).
 
-## DONE THIS SESSION
+## FILM 01 AS IT STANDS
 
-- **The third-person view APPROVED (R-098), pushed `2aa8e15`.** The framing check PASSED on Carl's ruling (*"Yes,
-  pass"*), its mark still unable to fail — the pass is his eye. Filmed for film 4 (`07 Camera bench - Third person`).
-  Carl on who performs a shot: *"C2b will make it and that included you and me"* (D-104). Bench files CLOSED, LOCKED,
-  TESTED (31/31 protected denied; `577efc1`).
-- **SCHEDULE CHANGED** (Carl): edit films 01, 02, 04 NOW → the hero (several sessions; film 3 is its capture) → Send →
-  mastering. Deadline 19 November.
-- **⛔ THE SCREEN IS RECORDED EVERY SESSION OF A FILMED BUILD, BY THE BUILDER, UNPROMPTED** — from the hero's FIRST
-  discussion (D-101 tail; `03 The hero/README.md`). Film 02's discussion was never filmed (*"Its clear my direction wasnt
-  followed"*). Recovered: films 02 and 04's discussions recorded from the archived sessions as Carl scrolled (ffmpeg
-  gdigrab), logged from the transcripts (`~/.claude/projects/…/<session>.jsonl` — the Builder can read them directly).
-  Start: `ffmpeg -f gdigrab -framerate 30 -offset_x 0 -offset_y 0 -video_size 1920x1080 -i desktop -c:v libx264 -preset
-  ultrafast -crf 18 -pix_fmt yuv420p <bin>/<name>.mkv` in the background; stop by killing the PID (mkv survives).
-- **Film 02 padded from the corner bench** (Carl): 14 clips of the dials moving (carving, relief, key light, modes, the
-  gold's roughness, the blue's tint and coat, the studio turning, rocks to face-on), via Chrome's screencast at ~57
-  painted frames/s → constant 30 fps (`film02-bench-capture-29-october.mjs`).
-- **⛔ COLOUR, MEASURED:** the FFmpeg screen recordings AND the Playwright clips are **BT.601**; today's bench screencasts
-  BT.709. VS Code's blue badge read as 601 = (45,124,157), the same pixel as a known-601 recording. Film 01's first cut
-  assumed 709 and was REBUILT; film 04's discussion MP4 was mislabelled and REBUILT. Tesseract 5.4 installed (OCR).
-- **⛔ D-106, THE SHOWCASE STANDARD (APPROVED as a definition):** "standard" = the best showcase of THAT object; the
-  route per object and conditions. Fixed layer measured (colour standard, no dropped frames, quality master; LUT =
-  correction only). Per-object layer by Carl's eye (tone mapping by the scene's light: Neutral for materials, AgX/none for
-  light, ACES for mood). **Film 4's page: NEUTRAL — RULED** (*"i will take your recommendation"*).
+- Resolve project "Film 1", Timeline 1, 1920 × 1080, 30 fps, Rec.709 Gamma 2.4, 46 clips, 8:28:22. Ask Carl whether it is saved.
+- `Videos\C2B Films\01 Who we are button\`: `film1-review.mp4` is the 17:39 render, subtitles burned in. `film1-v3.edl` and
+  `.srt` PREDATE the new `10B` and the `10C` cut (exact shape: everything up to `10A` unchanged, then `10B` 5:00, `10C` 8:09).
+- New `10B`: `10 Pick-ups\10B_the-who-we-are-button-live-uhd.mov`, live site, 3840 × 2160, DNxHR HQ. Sharp to about 2×.
+  Old `10B` deleted at Carl's word. `whoweare-cut10-build.mjs` can rebuild it.
+- **The render's every-frame scan** (15,262 frames, controls passed on known-bad sources): no white, no right bars or strips, no
+  taskbars, no bright browser bars. All 70 captions present; 64 measurably fade.
+- ⛔ **Never hand him a replacement .srt for film 01:** it wipes his placement and fades. The wording is his in Resolve now.
 
-## ⛔ OPEN — with owners
+## FILMS 02 AND 04, BEFORE CARL STARTS
 
-- **PROPOSED, not built (D-106):** a colour test chart through the whole chain; frame-stepped capture at 2× (⚠ §5a — a
-  structural note first); a 10-bit master; one correction LUT from a Resolve grade, applied by FFmpeg `lut3d` in the
-  bench's client films. Carl's word to start the note.
-- **Carl:** the hero (camera and triggers his; the build is §5a); Send after it; mastering.
+- **Scan every frame first**, of the used spans, then LOOK at each flag. Film 04 has white openings (from a head scan only):
+  `03F` 2, `05G` 10, `07D` 11, `07E` 2, `07F` 14, `07G` 2, `09B` 1 frames. Film 02: none in the first 5 s of each clip;
+  never scanned whole. Also scan left edge, taskbar and Chrome bars and give him crop groups, as film 01's (D-107).
+- **Get the subtitle wording right BEFORE he places them.** Placing and fading 70 by hand was *"mind numbingly tedious"*.
+- ⛔ **Carl's decision, not answered:** subtitles rendered as one transparent video on V2, position and fades baked in. One drag
+  and retimeable from his EDL, but text not editable in Resolve, and whether Resolve reads the alpha is UNTESTED.
+- Markers ready: `cut10-markers.edl` in each film's folder (`films-markers-edl.py`). Route in `D-107` and the film-pipeline memory.
+
+## OPEN — with owners
+
+- **Carl:** the hero; Send after it; mastering. Ask CD for the colours picture.
+- **Proposed, not built (D-106):** colour test chart; frame-stepped capture at 2× (§5a note first); 10-bit master; a correction LUT.
 - **Raised, not chosen:** stills of text in timeline gaps; flat views; the speed spline editor; signature moves; R2.
 - **Carried:** `about-card-glass.ts:491` comment untrue (flag only, protected).
 
-## STANDING / LESSONS (this session)
+## LESSONS (this session; D-107 has them too)
 
-- **Shell text hazards, twice:** `\04` in a heredoc'd Python string wrote 0x04 into `decisions.md` (caught, fixed);
-  backticks in a double-quoted bash string ran as a command. Use `chr(92)`, Edit/Write, or a quoted heredoc to a file.
-- **A Python print redirected to a file is cp1252 on Windows** — write files from Python with `encoding='utf-8'`.
-- **OrbitControls on a relief:** the oblique view starts turned; a symmetric swing goes edge-on. Rock one way only.
-- **A tiling filter resets on a pixel-format change** (RGBA stills among RGB frames): normalise tiles to rgb24 first.
-- **The Grep tool skips `live-work/`** (gitignored) — use `grep -rn` there.
+- A threshold is a question, the frame is the answer: `10C`'s "white flash" was the `/about` logo panel. Sampling lied twice.
+- Never carry a measure from a neighbouring clip: `05D`'s "4.7 s" opening was 0.8 s.
+- ffmpeg's dnxhd fails at UHD on default threads, and this machine ran out of memory at 8: `-threads 1` throughout.
+- Site captures need `--hide-scrollbars` AND `html{scrollbar-gutter:auto!important}`, or a white strip lands on the right.
+- A python print or tool with `tail` hides capture logs: send them to a file (the GPU line was lost once).
 
 ---
 
-*Written 29 October 2026, session 2. Replaces the 29 October session-1 handoff.*
+*Written 30 October 2026. Replaces the 29 October session-2 handoff.*
