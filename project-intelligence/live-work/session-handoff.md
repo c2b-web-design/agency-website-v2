@@ -1,50 +1,42 @@
-# Session Handoff — 31 October 2026. FILM 01 THROUGH ITS FAULT LIST IN RESOLVE; CARL HAS MORE TO DO ON IT FIRST.
+# Session Handoff — 1 November 2026. FILM 01 CUT AND GRADED, ON CARL'S PC; MUSIC AFTER THE HERO.
 
-⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Replaces the 30 October handoff. Delete it at the end of the
+⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Replaces the 31 October handoff. Delete it at the end of the
 session that reads it, once its replacement is written.
 
-**Where the project is:** no site code changed. Lint not run, nothing to lint. Schedule unchanged: edit films 01, 02, 04 → the
-hero (several sessions; film 3 is its capture) → Send → mastering. Deadline 19 November.
+**Where the project is:** no site code changed; lint not run, nothing to lint. Deadline 19 November. Order: edit films 01, 02, 04
+→ the hero (several sessions; film 3 is its capture) → music (Carl: *"Music comes after the hero is completed"*) → Send → mastering.
 
-**Next session:** Carl: *"There are a couple more things we need to do first"*, on film 01 before anything else. **He has not said
-what they are: ask him, don't guess.** Then his grade and score (Resolve → Pro Tools → Fairlight; Sonar for the bed), then films
-02 and 04.
+**Next session:** Carl's call; film 02 is next on the record, its every-frame scan before he starts (below).
 
 **How to work with Carl in Resolve:** one step at a time. He cuts; every edit is his. ⛔ **Two lists: FAULTS, and WHAT'S THERE for
-his judgement.** Don't explain his own controls. Look at the frame before calling anything a fault.
+his judgement.** He is not a colourist (*"explain where is 1.12"*): name the box, say what it does. Look at the frame before
+calling anything a fault.
 
 ## FILM 01 AS IT STANDS
 
-- Resolve project "Film 1", Timeline 1, 1920 × 1080, 30 fps, **46 clips, 8:26:20**. Saved by Carl. No version approved.
-- `Videos\C2B Films\01 Who we are button\`: **`film1-review-3.mp4`** is the latest render, 15,200 frames, scanned clean bar two
-  faint N rims (`01G` crop line; `08B` first piece's left crop line). ⚠ **Carl then said "done and saved": those two were fixed
-  after the render and NOT re-scanned.** Asked for: `01G` Crop Bottom 130, `08B` first piece Crop Left 80. Check on the next render.
-- ⚠ `film1-v3.edl` and `.srt` are STALE from `09A` on. Mapping: `09A` 19:14, `09B` 9:13, `09C` 14:01 starting 01:07:49:10, a 32-frame
-  centred Cross Dissolve at 01:07:39:27. Everything after `09C`'s head is 62 frames earlier than the old EDL.
-- ⚠ The `whoweare-cut10-build.mjs` entry for `01E` is stale: a re-run rebuilds the stock clip. The folder's other clips are as cut.
-- Judged and staying: `05F` and `06A`'s white strip (*"you showing me a video overlaid the chat window"*), `05D`'s dark head (Carl: under
-  0.2 s, a space for the pills to appear; *"to AI and Commander Data its almost an eternity"*). `03A`: Carl said *"fixed"*.
-- Still Carl's: the faint line down `09B`'s left (Crop Left 22 would take it, raised once). Not raised: the scrollbar on the right
-  of `08B`'s 1:08 piece; `10C` shows the old white `Start a conversation` pill (the page as it was then).
+- Resolve project "Film 1", Timeline 1, 1920 × 1080, 30 fps, **47 clips, 8:27:22, 15,232 frames**. Saved by Carl. No version approved.
+- The extra clip is his: a copy of the finished pill at the end, for the before and after.
+- **The grade:** master Gain 1.08 on 20 clips (strip numbers 19–22, 24–32, 38–42, 45, 47). Text clips left as they are; 46, `10C`,
+  kept as the "before". D-107.
+- `Videos\C2B Films\01 Who we are button\`: **`film1-review-5.mp4`** is the latest render. `08A` Crop Bottom 57 → 69 was saved after
+  it and NOT re-scanned. Carl: *"After the music is put on we will check at the final process."* Don't raise it before then.
+- ⚠ Review 4's filename is `film1-review-4.mp4 .mp4`, with the stray extension.
+- ⛔ **The film stays on Carl's PC** (*"Leave it on my PC for now"*). Hosting not chosen. What going up needs is in D-107: a web
+  encode, a host outside the repo (161 MB is over GitHub's 100 MB limit), box 1's stand-in, chapters and captions in `player-bench.tsx`.
+- Carl's rulings, staying: the N inside Media Player at 4:43 (*"It is closed"*); the arc at 4:18; *"The white scroll line is fine"*
+  (he did not say which). `05F`, `06A` white strip; `05D`'s dark head.
+- Still Carl's: the faint line down `09B`'s left (Crop Left 22 would take it, raised once). A stray point on clip 47's curve, on the
+  line, no effect.
+- ⚠ `film1-v3.edl` and `.srt` are stale from `09A` on. The `whoweare-cut10-build.mjs` entry for `01E` is stale.
 - ⛔ **Never hand him a replacement .srt for film 01:** it wipes his placement and fades.
-
-## `01E`, REPLACED (D-107)
-
-- ⛔ **THE BRAND COLOURS ARE GOLD, TEAL, PLATINUM BLUE** (Carl: *"Go to our site and look at our colours"*). The stock sheet's four
-  and "four brand colours" are overtaken. The CD route is withdrawn.
-- `09 Cut - 10 min\01E.mov`: three metal spheres, the names and hex codes under them, the light reaching each in turn. Carl:
-  *"Tha look great"*. Script: `live-work/scripts/whoweare-swatch-01E-31-october.mjs`. Preview copies:
-  `live-work/film-previews/` (gitignored; VS Code failed on the temp-folder copy, Chrome opened it).
-- The old clip deleted at his word. The source JPG stays in `00 References`.
-- `10 Pick-ups\09A_…-tail-3s.mov` (23 s) is unused. Raised once; delete only at his word.
+- `10 Pick-ups\09A_…-tail-3s.mov` is unused. Raised once; delete only at his word.
 
 ## FILMS 02 AND 04, BEFORE CARL STARTS
 
 - **Scan every frame first**, of the used spans, then LOOK at each flag. Film 04 has white openings (head scan only): `03F` 2, `05G`
-  10, `07D` 11, `07E` 2, `07F` 14, `07G` 2, `09B` 1 frames. Film 02 never scanned whole. Also left edge, taskbar, Chrome bars,
-  crop groups as film 01's, **and the N badge by clip**.
-- First-frame check done: of 141 clips across the three cuts, film 01's `09B` was the only one starting a frame late. Their
-  subtitles contain no "four brand colours".
+  10, `07D` 11, `07E` 2, `07F` 14, `07G` 2, `09B` 1 frames. Film 02 never scanned whole. Also left edge, taskbar, Chrome bars, crop
+  groups as film 01's, **and the N, whole-frame by template** (below).
+- Scripts: `live-work/scripts/film-scan-every-frame-1-november.py`, `film-compare-renders-1-november.py`; paths are hard-coded to film 01.
 - **Get the subtitle wording right BEFORE he places them.** Placing and fading 70 by hand was *"mind numbingly tedious"*.
 - ⛔ **Carl's decision, not answered:** subtitles as one transparent video on V2, position and fades baked in; text not editable in
   Resolve, and whether Resolve reads the alpha is UNTESTED.
@@ -52,24 +44,24 @@ his judgement.** Don't explain his own controls. Look at the frame before callin
 
 ## OPEN — with owners
 
-- **Carl:** his couple of things on film 01; grade and score; the hero; Send after it; mastering.
+- **Carl:** film 01's approval and final check after the music; films 02 and 04; the hero; Send; mastering.
 - **Proposed, not built (D-106):** colour test chart; frame-stepped capture at 2× (§5a note first); 10-bit master; a correction LUT.
-  ⚠ The swatch was frame-stepped at UHD by a one-off script outside the app; that is not this proposal built.
 - **Raised, not chosen:** stills of text in timeline gaps; flat views; the speed spline editor; signature moves; R2.
 - **Carried:** `about-card-glass.ts:491` comment untrue (flag only, protected).
 
 ## LESSONS (this session; D-107 has the record)
 
-- ⛔ **Resolve 21's Media Pool menu has NO "Replace Selected Clip".** I told him it did, three times. What works: Import Media, open in
-  the source viewer, playhead on the slot, F10. A dissolve without handles: Resolve trims both clips by half and can leave a gap.
-- **A timeline length that doesn't match the expected figure is a fault report.** 8:28:18 against 8:28:21 found a 58-frame gap.
-- **Undos take crops with them:** two Crop Lefts vanished in a run of undos. Re-check earlier fixes after one.
-- **"Call it X" means X exactly.** And when he names a file, check which one: he renamed the `09A` tail thinking it was the swatch,
-  because I had given him two new files in two folders; check file length, not the name.
-- A test with a bad baseline read 41 of 70 captions missing. Replacing it with a direct comparison to the verified render read 68,
-  the other two seen in the frame. An alarming number from a new instrument is a question about the instrument first.
-- On a sphere the buttons' recipe gives wet-pearl dots and a dark front: the route is per object (D-106).
+- ⛔ **A wrong frame label reached Carl and he ruled on it.** A script zipped decoded frames to an unsorted list, so the 6:32 page
+  was reported as 4:18. Sort the list, or extract one frame at a time.
+- **My N "scan" was a corner window at x < 140; the N sat at x 134 to 147.** Review 3 had been called clean with a full N in it.
+  Sampling one frame per clip missed it too. A template search found the rest; a template cannot see a cropped rim.
+- ffmpeg 9 has no `-vsync`: use `-fps_mode`. My first scan read no frames and exited 0. Assert the frame count.
+- A percentile on a scaled-down frame understated the end clip's peak (0.88 against 0.98). Carl's eye (*"This is where it is brightest"*)
+  caught it: area and peak are different questions.
+- The thumbnails for `08A`, `09A` show their first frame, the old page, so Carl missed them when selecting. Resolve's clip number turns
+  rainbow once a clip is graded (Carl's find): check that, not the thumbnail.
+- Don't parallel-pipe three decoders: the full-size stats pass took over ten minutes.
 
 ---
 
-*Written 31 October 2026. Replaces the 30 October handoff.*
+*Written 1 November 2026. Replaces the 31 October handoff.*
