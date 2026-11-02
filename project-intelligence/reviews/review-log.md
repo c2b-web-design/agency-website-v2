@@ -65,6 +65,24 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-099 — Film 02's Captions As One Transparent Layer, And The Workflow (D-107): "Approved"
+
+**Date:** 2026-11-01
+**Reviewer:** Human Founder
+**Subject:** `07 Subtitles\film2-captions-layer.mov` on V2 of the `Film 2` timeline, from `film2-captions.ass` (`live-work/scripts/film02-captions-ass-build.py`, `film02-captions-layer-render.py`)
+
+**Carl's verdict, verbatim:** *"Just watched it through, they look great and a much better and faster workflow. Approved."*
+
+**Findings:**
+
+- ✔ **APPROVED: the captions as they play, and the workflow.** Carl watched the film through in Resolve.
+- ⛔ **Film 02 is NOT approved by this entry.** The grade, the `06G` / `06H` pick-ups, the before clip and the final check after the music are all still to come.
+- ✔ **Read back before Carl saw it:** 16,650 frames; all 91 at full strength at their midpoints; nothing between captions; fades straight.
+- ⚠ **No render has been scanned yet.** `film2-review-2.mp4`'s check stands. `03F`'s caption reaching y 1079 is not recorded as lifted or left.
+- **Film 03 and 04:** the combined Resolve and Kdenlive workflow is not part of this approval.
+
+---
+
 ## R-098 — The Camera Bench's Third-Person View: The Cameras, Their Paths And The PiP (`/proto/camera`, D-104): "Approved"
 
 **Date:** 2026-10-29
