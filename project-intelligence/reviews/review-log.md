@@ -65,6 +65,47 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-102 — Removed 6 November 2026 (the hero's street concept dropped; Carl: *"The only remnnants that should remain is the lessons we both learnt from it."*)
+
+The page camera this entry approved by eye survives as a TAKE (`HERO_CAMERA`, `components/showcase/hero-page.tsx`); the lessons are in `decisions.md` (*"THE STREET CONCEPT — DROPPED; THE LESSONS KEPT"*).
+
+---
+
+## R-101 — Film 04, Extruded Lettering, Captioned And Graded: `film4-review-2.mp4` (D-107): "Approved"
+
+**Date:** 2026-11-02
+**Reviewer:** Human Founder
+**Subject:** `04 Extruded lettering\film4-review-2.mp4`, 15,461 frames, 8:35:11, Resolve project `Film 4`; the captions as `10 Subtitles\film4-captions-layer.mov` on V2, moved by Carl
+
+**Carl's verdict, verbatim:** *"i agree with the clip thats totating and its mainly in shadow and how the highlights are caught. i think its all good. approved, commit and push"*
+
+**Findings:**
+
+- ✔ **APPROVED: film 04 as rendered, the 90 captions' wording included.**
+- ✔ **Read before Carl's verdict:** no black or white frames; 1.04 on `08A` to `08E`, `09A`, `09B`; all 90 captions in the picture; the layer's alpha read back clean; `04B`'s caption navy under Subtract.
+- ⚠ **Left in by this approval, all reported to him:** `07D` and `07G` carry the 1.04 and `07E`, `07F` do not, not re-rendered; V2 clip 65's number showed as graded; four `09B` captions end 1 to 11 px from the bottom edge; the N in the first second of 11 clips, ruled earlier.
+- **Not covered:** music. Hosting is not chosen. The Builder's closing recommendation (1.04 on `07E` and `07F` too) was not taken up, and does not stand as a to-do.
+
+---
+
+## R-100 — Film 02, The Ornate Corners, Graded: `film2-review-3.mp4` (D-107): "Approved"
+
+**Date:** 2026-11-02
+**Reviewer:** Human Founder
+**Subject:** `02 Ornate corners\film2-review-3.mp4`, 16,650 frames, 9:15:00, Resolve project `Film 2`, master Gain 1.08 on the gold clips and 1.04 on the blue (clip lists in D-107)
+
+**Carl's verdict, verbatim:** *"yrs, its approved, ;ets commit and push."*
+
+**Findings:**
+
+- ✔ **APPROVED: film 02 as rendered in review 3,** given after the scan was reported to him.
+- ✔ **Read before Carl's verdict:** exactly the graded clips changed against review 2; no black or white frames; no whole N; all 91 captions placed.
+- ⚠ **Left in by this approval, all reported to him:** `07G` reaching 7.8% at or above 250 at its hottest, `03H`'s caption at full strength about 7 frames early under Subtract, `01B`'s last line 3 px from the frame's bottom.
+- **The four drafted lines** (Gemini named on `03E`, the face in the leaves on `03L`, "someone else's product" on `03J`, film 01's closing line on `08C`) stand as rendered.
+- **Not covered:** music. R-099 named a final check after the music; Carl did not address it here. Hosting is not chosen for this film.
+
+---
+
 ## R-099 — Film 02's Captions As One Transparent Layer, And The Workflow (D-107): "Approved"
 
 **Date:** 2026-11-01

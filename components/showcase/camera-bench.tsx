@@ -27,11 +27,17 @@
 import { Fragment, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Grid, Line, PerspectiveCamera } from "@react-three/drei";
+import { PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 import { useCanvasDpr } from "@/lib/use-site-scale";
 import { FRONT_FOV, MeasureSpans } from "./lettering-hooks";
 import { Guard, LetteringPiece, measurePiece, NeutralToneMapping, usePieceBuild, type Built, type PieceMeasure } from "./lettering-piece";
+import { HERO_CAMERA, HERO_PAGE, HeroPageGuide, HeroSketchLight } from "./hero-page";
+import { HeroText } from "./hero-text";
+/* ⛔ THE STREET REMOVED (6 November 2026, session 2; Carl: *"We should pivot. ... I want you to delete whats there on the
+ * bench."* — D-101's street superseded at the load crossroads, D-108): the block-out (`hero-blockout.tsx`), the walls'
+ * bricks (`hero-bricks.tsx`, lazy behind `?bricks=1`), the lamp post's 4 m measuring mark and the bricks-only shadow map
+ * are gone. The blank canvas keeps the 3D text, its two sketch lights, the page camera and the page guide (`hero-page.tsx`) */
 import { BTN, Edges, focalMm, readPad, rigAt, SENSOR_MM, stepRig, FEEL, type Intent, type Rig } from "./camera-pad";
 import {
   addTrack, applyEdit, chainEnd, clampDt, clipEnd, clipLength, clipPoseAt, deleteClips, EDGE_S, editPoints, emptyChain, gapsOf, isTrimmed, joinsOf, numberClips,
@@ -41,12 +47,16 @@ import {
 import { BenchTransport, type Tone, type TransportView } from "./bench-transport";
 import { BenchTimeline, camColour } from "./bench-timeline";
 import { BUILDER_TAKE, type BuilderTake } from "./bench-builder-take";
+import { loadMedium, mediumFromUrl, WEBGL_MEDIUM, type BenchCost, type BenchMedium } from "./bench-medium";
+import { ArchMediumContext } from "./arch-medium";
 
 type Mode = "fly" | "rec" | "play";
 /** What the UI shows, every 0.1 s: the transport's view, the pad, the camera (world px), the subject's units. */
 type View = TransportView & {
   pad: { connected: boolean; id: string };
   mm: number;
+  /** the mm is measured across the home page's frame (`?blank=1`), not the bench's canvas */
+  mmOnPage: boolean;
   fov: number;
   at: { x: number; y: number; z: number };
   /** the LIVE measure (framing); clips use the chain's units */
@@ -69,6 +79,19 @@ const metres = (px: number) => `${((px * CM_PER_PX) / 100).toFixed(2)} m`;
  *  than this above the arch's floor — a camera on a low floor rig, and clear of the 1 cm near plane, so the grid cannot slice
  *  through the picture when the lens looks down. ⚠ A take; flying only (a pose the chain or a jump sets is not clamped). */
 const LENS_MIN_CM = 10;
+/** ⛔ THE BENCH's NEAR PLANE — ONE CONSTANT for the shot camera and the eye (6 November 2026: the three hard-coded 1s
+ *  replaced). DEFAULT 1 cm; `?near=10` overrides it to MEASURE the depth precision. (A 10 cm near plane and its storyboard
+ *  rule were chosen for the hero's street, DROPPED 6 November, session 2 — not live.) ⚠ Should a default above 1 ever be set,
+ *  the floor stop must rise above it first (near ÷ cos(half the vertical view): ~15.6 cm at the bench's widest view;
+ *  `LENS_MIN_CM` above is 10). Read once, lazily (client only) */
+let benchNear: number | undefined;
+function benchNearCm(): number {
+  if (benchNear === undefined) {
+    const q = typeof window === "undefined" ? null : Number(new URLSearchParams(window.location.search).get("near"));
+    benchNear = q && q > 0 ? q : 1;
+  }
+  return benchNear;
+}
 
 /**
  * The arch in the world (layout px): its box, the FLOOR it stands on (its lowest ink), the CLEAR OPENING — between the
@@ -247,6 +270,16 @@ class BenchStore {
   private queueLabel = "";
   private inGap = false;
   private jumpTo: Pose | "front" | null = null;
+  /** `?blank=1`: Home is the hero's PAGE CAMERA (`HERO_CAMERA`, D-101), in WORLD px — set by the scene, which knows the floor */
+  private blankHome: { x: number; y: number; z: number; fov: number; shift: number; frameAspect: number } | null = null;
+  /** the first time it is known, the camera GOES there — the blank canvas opens on the page camera, not a saved pose nor
+   *  the Builder's take parked at the playhead (Carl: *"You need to move the pad so its exact"*). Applied in `frame()`
+   *  AFTER the take is synced, which would otherwise park the rig on its first frame */
+  private blankHomePending = false;
+  setBlankHome(p: { x: number; y: number; z: number; fov: number; shift: number; frameAspect: number } | null) {
+    if (p && !this.blankHome) this.blankHomePending = true;
+    this.blankHome = p;
+  }
   private keys = new Set<string>();
   private mouse = { dx: 0, dy: 0 };
   private rig: Rig | null = null;
@@ -780,6 +813,11 @@ class BenchStore {
     if (!this.chain.units) this.commit({ ...this.chain, units: { d: m.d, up: m.up, zc: m.zc } }, false);
     const units = this.chain.units!;
     this.syncBuilderTake(m);
+    if (this.blankHomePending && this.blankHome) {
+      this.blankHomePending = false;
+      this.posed = false;
+      this.jumpTo = "front";
+    }
     const dt = clampDt(rawDt);
     if (!this.rig) this.rig = savedRig() ?? rigAt(0, 0, m.d, 0, 0, FRONT_FOV);
     const r = this.rig;
@@ -793,7 +831,8 @@ class BenchStore {
       // ⛔ HOME is not a clip: the default view in the WORLD on the LIVE `d` (as the rig's first pose above), never through
       // the chain's units — so it lands square on even when the two values of `d` differ (the plan's T2)
       if (this.jumpTo === "front") {
-        Object.assign(r, rigAt(0, 0, m.d, 0, 0, FRONT_FOV));
+        const b = this.blankHome;
+        Object.assign(r, b ? rigAt(b.x, b.y, b.z, 0, 0, b.fov) : rigAt(0, 0, m.d, 0, 0, FRONT_FOV));
         this.roll = 0;
       }
       else setRig(this.jumpTo);
@@ -911,15 +950,35 @@ class BenchStore {
       camera.fov = shot.fov;
       camera.updateProjectionMatrix();
     }
+    // ⛔ THE SHIFT LENS — `?blank=1` only (D-101, 3 November 2026; Carl: *"can the bench camera have the same change? its
+    // impoertant that the two views are mirrored."*, then *"proceed"*; note `live-work/structural-note-bench-lens-shift-3-
+    // november.md`). The hero's page camera sits at 71.5 cm with its picture slid DOWN by `HERO_CAMERA.shift` of the frame's
+    // height, so the text stays locked — the SAME shift the page drawing uses. An off-centre frustum (three's view offset, in
+    // units of the frame: a NEGATIVE offset shows the region above, so the picture moves down); verticals stay vertical. A
+    // property of the blank canvas's lens: it holds while flying and in every take there; elsewhere it is 0 and cleared
+    // ⛔ THE ASPECT PUT BACK (5 November 2026, session 2; Carl, on the WebGPU bench: *"When the webGPU page loads something
+    // happens in the viewport first. its fast, then goes to the normal view. It looks like its squashed."*): three's
+    // `setViewOffset` SETS THE ASPECT TO fullWidth / fullHeight — 1 here — and nothing in the bench set it back; only R3F's
+    // next RESIZE did, so the first frames on `?blank=1` were drawn 2.54× too wide (the canvas 1859 × 733; measured from a
+    // recording: the door 2.6× its width), in BOTH media (WebGL ~0.3 s, WebGPU ~0.16 s), and a page that never resized would
+    // have stayed so. The canvas's aspect is restored wherever the offset is set (the spike's `PageCamera` did the same)
+    const shift = this.blankHome?.shift ?? 0;
+    if (shift) {
+      if (!camera.view || camera.view.offsetY !== -shift * 1000 || camera.aspect !== aspect) {
+        camera.setViewOffset(1000, 1000, 0, -shift * 1000, 1000, 1000);
+        camera.aspect = aspect;
+        camera.updateProjectionMatrix();
+      }
+    } else if (camera.view?.enabled) camera.clearViewOffset();
     camera.updateMatrixWorld();
     // ⛔ THE EYE's camera object — ALL of it, every frame, before any draw (plan v1.2, the review's [7]): its pose, lens,
-    // near 1, far the shot camera's (m.d × 60: "see it all" must not clip), aspect the canvas's
+    // near `benchNearCm()` (1 by default), far the shot camera's (m.d × 60: "see it all" must not clip), aspect the canvas's
     if (eyeCam) {
       const e = this.eye ?? rigAt(0, 0, m.d * 3, 0, 0, EYE_FOV);
       eyeCam.position.set(e.x, e.y, e.z);
       eyeCam.rotation.set(e.pitch * rad, e.yaw * rad, 0, "YXZ");
-      if (eyeCam.fov !== e.fov || eyeCam.near !== 1 || eyeCam.far !== m.d * 60 || eyeCam.aspect !== aspect) {
-        Object.assign(eyeCam, { fov: e.fov, near: 1, far: m.d * 60, aspect });
+      if (eyeCam.fov !== e.fov || eyeCam.near !== benchNearCm() || eyeCam.far !== m.d * 60 || eyeCam.aspect !== aspect) {
+        Object.assign(eyeCam, { fov: e.fov, near: benchNearCm(), far: m.d * 60, aspect });
         eyeCam.updateProjectionMatrix();
       }
       eyeCam.updateMatrixWorld();
@@ -975,7 +1034,13 @@ class BenchStore {
       pad: { connected: pad.connected, id: pad.id },
       // ⛔ the HUD: first person the RIG (what A records); third person the PiP's camera — where switching off puts Carl
       // (note v1.3.3, review 3 [3]); `shot` is exactly that in both views
-      mm: focalMm(shot.fov, aspect),
+      // ⛔ THE LENS IN MILLIMETRES, ACROSS THE FRAME THAT IS DELIVERED (Carl, 3 November 2026: *"This info is going out to
+      // potential clients, its important it shouls be accurate."*): a full-frame lens's mm describes its WIDTH, so the same
+      // vertical view reads shorter across a wider frame. On `?blank=1` the delivered frame is the HOME PAGE's (1894 × 934, the
+      // amber guide), so the 65 mm page camera reads 65 — across the whole bench canvas (~2.9 : 1) it read 45. Elsewhere the
+      // canvas is the frame, as before
+      mm: focalMm(shot.fov, this.blankHome?.frameAspect ?? aspect),
+      mmOnPage: !!this.blankHome,
       fov: shot.fov,
       at: { x: shot.x, y: shot.y, z: shot.z },
       units: { d: m.d, up: m.up, zc: m.zc },
@@ -1032,44 +1097,9 @@ function pipRect(size: { width: number; height: number }) {
   return { left: PIP.insetPx, top: PIP.insetPx, w, h, glX: PIP.insetPx, glY: size.height - PIP.insetPx - h };
 }
 
-/** ⚠ HARNESS-ONLY, DEV-ONLY window hooks of the render callback */
-type BenchCost = { renderer?: string; ext?: boolean; cpu: number[]; gpu: number[]; disjoint: number; pending: WebGLQuery[] };
+/** ⚠ HARNESS-ONLY, DEV-ONLY window hooks of the render callback. The cost instrument itself (`BenchCost`, the timer
+ *  queries) moved to the medium's seam, `bench-medium.ts` (5 November 2026) — each medium measures in its own API */
 type BenchDevHooks = { __benchGrid?: { who: string; at: number[] }[]; __benchCost?: BenchCost };
-type TimerExt = { TIME_ELAPSED_EXT: number; GPU_DISJOINT_EXT: number };
-const timerExt = new WeakMap<WebGL2RenderingContext, TimerExt | null>();
-/** the cost instrument's start: the renderer named once; a GPU timer query begun where the extension exists */
-function costBegin(gl: THREE.WebGLRenderer, cost: BenchCost): WebGLQuery | null {
-  const c = gl.getContext() as WebGL2RenderingContext;
-  if (!timerExt.has(c)) timerExt.set(c, c.getExtension("EXT_disjoint_timer_query_webgl2") as TimerExt | null);
-  const ext = timerExt.get(c)!;
-  if (cost.renderer === undefined) {
-    const info = c.getExtension("WEBGL_debug_renderer_info");
-    cost.renderer = info ? String(c.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "unknown";
-    cost.ext = !!ext;
-  }
-  if (!ext) return null;
-  const q = c.createQuery();
-  if (q) c.beginQuery(ext.TIME_ELAPSED_EXT, q);
-  return q;
-}
-/** the cost instrument's end: the CPU time kept; finished GPU queries read (ms), a disjoint frame's discarded */
-function costEnd(gl: THREE.WebGLRenderer, cost: BenchCost, q: WebGLQuery | null, cpuMs: number) {
-  const c = gl.getContext() as WebGL2RenderingContext;
-  const ext = timerExt.get(c);
-  cost.cpu.push(cpuMs);
-  if (!ext) return;
-  if (q) {
-    c.endQuery(ext.TIME_ELAPSED_EXT);
-    cost.pending.push(q);
-  }
-  const disjoint = !!c.getParameter(ext.GPU_DISJOINT_EXT);
-  while (cost.pending.length && c.getQueryParameter(cost.pending[0], c.QUERY_RESULT_AVAILABLE)) {
-    const done = cost.pending.shift()!;
-    if (disjoint) cost.disjoint++;
-    else cost.gpu.push(Number(c.getQueryParameter(done, c.QUERY_RESULT)) / 1e6);
-    c.deleteQuery(done);
-  }
-}
 
 /** one track's camera, drawn in third person: a proxy camera (its lens, `far` 1.5 m) carrying an unlit body, and its frustum */
 type HelperParts = { proxy: THREE.PerspectiveCamera; helper: THREE.CameraHelper; mats: THREE.MeshBasicMaterial[] };
@@ -1105,6 +1135,7 @@ function TrackHelpers({
   soloPath,
   soloCam,
   registryRef,
+  medium,
 }: {
   tracks: number[];
   armedCam: number;
@@ -1112,8 +1143,11 @@ function TrackHelpers({
   soloPath: [number, number, number][] | null;
   soloCam: number | null;
   registryRef: { current: Map<number, HelperParts> };
+  /** the bench's medium — its path line (`bench-medium.ts`) */
+  medium: BenchMedium;
 }) {
   const [mode] = useState(helperMode);
+  const Line = medium.Line;
   const root = useRef<THREE.Group>(null);
   const key = tracks.join(",");
   const parts = useMemo(() => new Map(key.split(",").map((t) => [Number(t), makeHelper(Number(t), mode === "loud")])), [key, mode]);
@@ -1165,6 +1199,7 @@ function BenchScene({
   onView,
   onWorld,
   onReady,
+  medium,
 }: {
   built: Built;
   store: BenchStore;
@@ -1178,12 +1213,32 @@ function BenchScene({
   onView: (v: View) => void;
   onWorld: (w: ArchWorld | null) => void;
   onReady: () => void;
+  /** ⛔ the bench's MEDIUM (`bench-medium.ts`): its grid, lines, cost meter and PiP origin — the only renderer-specific
+   *  parts this scene touches */
+  medium: BenchMedium;
 }) {
+  const { Grid, Line } = medium;
   const size = useThree((s) => s.size);
   const m = measurePiece("arch", built, size);
   // the arch's box does not depend on the canvas's size (`up` is 0 for the arch) — measured once per build
   const world = useMemo(() => measureArch(built, measurePiece("arch", built, { width: 1, height: 1 })), [built]);
   useEffect(() => onWorld(world), [world, onWorld]);
+  // ⛔ `?blank=1` — THE HERO's BLANK CANVAS (the block-out's, 3 November 2026 — its street REMOVED 6 November, session 2; Carl: *"The same environment and controls and functionalty to
+  // work in but with no arch. A blank canvas to build in."*). The arch is still BUILT AND MEASURED — the bench's units, Home,
+  // `far` and the grid's lines all come from it — only not DRAWN, nor its focus squares. Read once: the scene renders on
+  // the client only (inside the canvas)
+  const blank = useMemo(() => new URLSearchParams(window.location.search).has("blank"), []);
+  const clay = useMemo(() => new URLSearchParams(window.location.search).has("clay"), []);
+  // ...and Home becomes the hero's page camera, on the blank canvas's origin (the grid's crossing). ⛔ A LAYOUT effect (5 November
+  // 2026, session 2): it runs in the same commit that mounts the blank canvas's group, so the page camera is known before ANY frame
+  // draws it. As a passive effect it could run a frame late — the WebGPU medium, whose pipelines compile asynchronously,
+  // drew the block-out for ~2 frames from the bench's previous camera before the page camera (seen in a recording of the
+  // load; the WebGL medium's synchronous first compile hid it)
+  useLayoutEffect(() => {
+    store.setBlankHome(
+      blank && world ? { x: HERO_CAMERA.x, y: world.floor + HERO_CAMERA.y, z: world.z1 + HERO_CAMERA.z, fov: HERO_CAMERA.vfov, shift: HERO_CAMERA.shift, frameAspect: HERO_PAGE[0] / HERO_PAGE[1] } : null,
+    );
+  }, [blank, world, store]);
   const main = useRef<THREE.Mesh>(null);
   const fine = useRef<THREE.Mesh>(null);
   // ⛔ THE EYE's CAMERA OBJECT (note v1.3.3 §3): made ONCE with the canvas, never keyed, gone with it; layers 0 and 1. Not
@@ -1252,59 +1307,62 @@ function BenchScene({
   // from, which drei sets from `state.camera` (the shot camera) in its own callback (Grid.js:107–112; the plan review's [2]).
   const plane = useMemo(() => new THREE.Plane(), []);
   const up = useMemo(() => new THREE.Vector3(0, 1, 0), []);
+  const fadePoint = useMemo(() => new THREE.Vector3(), []);
   useFrame((st) => {
     const { gl, scene, size: sz } = st;
     const shot = st.camera as THREE.PerspectiveCamera;
     // ⚠ HARNESS-ONLY, DEV-ONLY: the grids' fade centre per draw (check 13) and, when a harness sets `__benchCost`, the cost
     // instrument (the plan's checkpoint: the render callback's CPU time always; its draws' GPU time by
-    // EXT_disjoint_timer_query_webgl2 where it exists — the WORK, not the frame interval)
+    // EXT_disjoint_timer_query_webgl2 where it exists — the WORK, not the frame interval; in the WebGPU medium, timestamp
+    // queries — `medium.meter`)
     const dev = process.env.NODE_ENV !== "production" ? (window as unknown as BenchDevHooks) : null;
     const gridLog: { who: string; at: number[] }[] = [];
     const cost = dev?.__benchCost;
-    const t0 = cost ? performance.now() : 0;
-    const q = cost ? costBegin(gl, cost) : null;
+    // ⛔ THE GRIDS' FADE AND THICKNESS THROUGH THE MEDIUM's SEAM (5 November 2026; the renderer note v1.6 §3, review 2's
+    // finding 4): the fade centre computed here as before, written by `setGridFade` — drei's uniform on WebGL, the TSL
+    // grid's node uniform on WebGPU; the cast into the shader's uniforms has left the bench
     const gridsFor = (cam: THREE.Camera, who: string) => {
       for (const g of [main.current, fine.current]) {
-        const u = (g?.material as THREE.ShaderMaterial | undefined)?.uniforms;
-        if (!g || !u?.worldCamProjPosition) continue;
+        if (!g) continue;
         plane.setFromNormalAndCoplanarPoint(up, new THREE.Vector3()).applyMatrix4(g.matrixWorld);
-        plane.projectPoint(cam.position, u.worldCamProjPosition.value);
-        if (dev) gridLog.push({ who, at: u.worldCamProjPosition.value.toArray() });
+        plane.projectPoint(cam.position, fadePoint);
+        if (!medium.setGridFade(g, fadePoint)) continue;
+        if (dev) gridLog.push({ who, at: fadePoint.toArray() });
       }
-      const u = (fine.current?.material as THREE.ShaderMaterial | undefined)?.uniforms;
-      if (u?.cellThickness) {
+      if (fine.current) {
         const focusPx = world?.focus ? world.focus.distanceToPoint(cam.position) : Infinity;
         const k = Math.max(0, Math.min(1, (FINE_FROM_CM / CM_PER_PX - focusPx) / ((FINE_FROM_CM - FINE_FULL_CM) / CM_PER_PX)));
-        u.cellThickness.value = FINE_THICKNESS * k;
-        u.sectionThickness.value = FINE_THICKNESS * k;
+        medium.setGridThickness(fine.current, FINE_THICKNESS * k);
       }
     };
     const box = labels.current;
-    const done = () => {
-      if (dev) dev.__benchGrid = gridLog;
-      if (cost) costEnd(gl, cost, q, performance.now() - t0);
-    };
-    if (!store.isThird) {
-      // FIRST PERSON: one draw, the shot camera — as R3F's own render did
+    const third = store.isThird;
+    const r = pipRect(sz);
+    // ⛔ THE DRAW, through the medium's METER (timed only when a harness asks): first person one draw, the shot camera — as
+    // R3F's own render did; THIRD PERSON the EYE fills the canvas, then the SHOT camera in the PiP's rectangle (`autoClear`
+    // on: with the scissor test on, its clear touches only the PiP). ⛔ The PiP's Y from the medium: WebGL counts from the
+    // bottom-left, `WebGPURenderer` from the top-left (`pipY`)
+    medium.meter(gl, cost, () => {
+      if (!third) {
+        gridsFor(shot, "shot");
+        gl.render(scene, shot);
+        return;
+      }
+      gl.setScissorTest(false);
+      gl.setViewport(0, 0, sz.width, sz.height);
+      gridsFor(eye, "eye");
+      gl.render(scene, eye);
+      const y = medium.pipY(sz.height, r.top, r.h);
+      gl.setViewport(r.glX, y, r.w, r.h);
+      gl.setScissor(r.glX, y, r.w, r.h);
+      gl.setScissorTest(true);
       gridsFor(shot, "shot");
       gl.render(scene, shot);
-      return done();
-    }
-    // THIRD PERSON: the EYE fills the canvas; then the SHOT camera in the PiP's rectangle (`autoClear` on: with the scissor
-    // test on, its clear touches only the PiP)
-    gl.setScissorTest(false);
-    gl.setViewport(0, 0, sz.width, sz.height);
-    gridsFor(eye, "eye");
-    gl.render(scene, eye);
-    const r = pipRect(sz);
-    gl.setViewport(r.glX, r.glY, r.w, r.h);
-    gl.setScissor(r.glX, r.glY, r.w, r.h);
-    gl.setScissorTest(true);
-    gridsFor(shot, "shot");
-    gl.render(scene, shot);
-    gl.setScissorTest(false);
-    gl.setViewport(0, 0, sz.width, sz.height);
-    done();
+      gl.setScissorTest(false);
+      gl.setViewport(0, 0, sz.width, sz.height);
+    });
+    if (dev) dev.__benchGrid = gridLog;
+    if (!third) return;
     // ⛔ THE LABELS — written by ref in the same frame as the draw (never React, never the 10 Hz view: they would trail the
     // bodies during play — the review's [5]); hidden behind the eye or inside the PiP
     if (!box) return;
@@ -1353,9 +1411,21 @@ function BenchScene({
   return (
     <>
       {/* ⛔ the bench's camera: the page's start and lens; `far` d × 60 — a free camera leaves the page's d × 10 */}
-      <PerspectiveCamera makeDefault position={[0, 0, m.d]} fov={FRONT_FOV} near={1} far={m.d * 60} />
-      <LetteringPiece piece="arch" built={built} onReady={onReady} />
-      <TrackHelpers tracks={chain.tracks} armedCam={armedCam} paths={paths} soloPath={soloPath} soloCam={solo?.cam ?? null} registryRef={registry} />
+      <PerspectiveCamera makeDefault position={[0, 0, m.d]} fov={FRONT_FOV} near={benchNearCm()} far={m.d * 60} />
+      <group visible={!blank}>
+        {/* `?clay=1` (5 November 2026, session 2): the arch in the block-out's clay, to judge the letters' form */}
+        <LetteringPiece piece="arch" built={built} onReady={onReady} clay={clay} />
+      </group>
+      {/* the hero's blank canvas, on the floor where the grid's centre line and front line cross (D-101; the street removed
+          6 November 2026, session 2): the 3D text and its two sketch lights */}
+      {blank && world && (
+        <group position={[0, world.floor, world.z1]}>
+          <HeroSketchLight />
+          {/* ⛔ the hero's TEXT in 3D, in place of the stand-in cards (5 November 2026, session 2; `hero-text.tsx`) */}
+          <HeroText />
+        </group>
+      )}
+      <TrackHelpers tracks={chain.tracks} armedCam={armedCam} paths={paths} soloPath={soloPath} soloCam={solo?.cam ?? null} registryRef={registry} medium={medium} />
       {/* ⛔ THE FLOOR GRID — on the arch's lowest ink; lines on the centre line and the front face; EVERY line a metre, all one
           weight (Carl: "make the grid squares 1m x 1m" — the faint metre lines under heavier 5 m ones read as 5 m squares).
           Drawn unlit (its own shader): the arch's light and reflections are untouched. Fades out LINEARLY to 150 m from the
@@ -1380,7 +1450,7 @@ function BenchScene({
           floor (no fight with the metre lines), dimmer; its lines' thickness set before each draw from that draw's camera's
           distance (the render callback), 0 = not drawn. Its edges lie on metre lines, and from any half or whole metre the
           10 cm lines fall on the metre lines too. */}
-      {grid && patch && (
+      {grid && patch && !blank && (
         <Grid
           ref={fine}
           position={patch.at}
@@ -1551,12 +1621,20 @@ function OverlayButton({ label, pressed, onClick, children }: { label: string; p
   );
 }
 
+/** the arch's medium, provided only when the medium has its own (WebGPU); otherwise no provider at all — the context's
+ *  WebGL default, as on film 4's page */
+function ArchMediumProvider({ arch, children }: { arch: BenchMedium["arch"]; children: ReactNode }) {
+  return arch ? <ArchMediumContext.Provider value={arch}>{children}</ArchMediumContext.Provider> : <>{children}</>;
+}
+
 /** Drawn in the browser only — the saved chain is read on the first render, and the bench has nothing to show a server. */
 export default dynamic(() => Promise.resolve(CameraBenchInner), { ssr: false });
 
 function CameraBenchInner() {
   const dpr = useCanvasDpr([1, 2]);
   const { spec, lines, spans, shown, failure } = usePieceBuild("arch");
+  // `?blank=1`, the hero's blank canvas (as `BenchScene` reads it): here for the page guide. Client only (`ssr: false`)
+  const blank = useMemo(() => new URLSearchParams(window.location.search).has("blank"), []);
   const [initial] = useState(loadChain);
   const [store] = useState(() => new BenchStore(initial.chain));
   // ⛔ the Builder's take handed to the store (an effect, re-run when the take's code changes — Fast Refresh re-runs effects)
@@ -1578,6 +1656,25 @@ function CameraBenchInner() {
   const labelsRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number } | null>(null);
   const why = failed ?? failure;
+  // ⛔ THE MEDIUM (5 November 2026; the renderer note v1.6, APPROVED; `bench-medium.ts`): read ONCE from the URL
+  // (`?medium=webgpu`; absent = WebGL). WebGL is there at once — today's bench, no loading frame; WebGPU's half is loaded by
+  // a dynamic `import()` and AWAITED HERE, OUTSIDE the canvas, before it mounts (note §4: nothing renderer-specific may
+  // suspend inside the `Canvas` — the 26 October "Context Lost"). Fixed for the canvas's life: a different medium is a
+  // different URL, a fresh page
+  const mediumName = useMemo(() => mediumFromUrl(window.location.search), []);
+  const [medium, setMedium] = useState<BenchMedium | null>(mediumName === "webgl" ? WEBGL_MEDIUM : null);
+  const [backend, setBackend] = useState(mediumName === "webgl" ? "webgl" : "");
+  useEffect(() => {
+    if (mediumName === "webgl") return;
+    let live = true;
+    loadMedium(mediumName)
+      .then((m) => live && setMedium(m))
+      .catch((e: unknown) => live && setFailed(`the WebGPU medium did not load: ${String(e)}`));
+    return () => {
+      live = false;
+    };
+  }, [mediumName]);
+  const glProp = useMemo(() => medium?.makeGl((w) => setFailed(w), setBackend), [medium]);
 
   /** ⛔ THE ONE PLACE A CHANGED CHAIN ENTERS REACT AND STORAGE — called by the store at a stop, a delete, a new track. A
    *  failed write is SHOWN until the next good one. The carry-over's report goes at the first change; its DIFFERENCES line
@@ -1753,7 +1850,7 @@ function CameraBenchInner() {
   };
 
   return (
-    <div className="space-y-3" data-camera-bench={why ? "failed" : drawn ? "drawn" : "pending"}>
+    <div className="space-y-3" data-camera-bench={why ? "failed" : drawn ? "drawn" : "pending"} data-medium={mediumName} data-medium-backend={backend}>
       <MeasureSpans lines={lines} fontKey={spec.font} spans={spans} accessible={false} />
       <div className="relative w-full overflow-hidden rounded-md border border-white/10 bg-[#0a0a0a]" style={{ height: "min(calc(68 * var(--vh)), 56.25vw)" }}>
         {/* ⛔ THE DRAG SURFACE — the picture only. Every overlay is its SIBLING ([A3]), never inside it: this element takes
@@ -1777,16 +1874,18 @@ function CameraBenchInner() {
         >
           {why ? (
             <p className="absolute inset-0 flex items-center justify-center p-6 text-center text-neutral-300">The bench cannot draw: {why}.</p>
+          ) : !medium || !glProp ? (
+            <p className="absolute inset-0 flex items-center justify-center p-6 text-center text-neutral-400" data-medium-loading>
+              Loading the WebGPU medium…
+            </p>
           ) : (
             <Guard onFailed={() => setFailed("the canvas threw")}>
               <Canvas
-                gl={{ antialias: true, alpha: true }}
+                gl={glProp}
                 resize={{ offsetSize: true }}
                 dpr={dpr}
                 frameloop="always"
-                onCreated={({ gl }) => {
-                  gl.domElement.addEventListener("webglcontextlost", () => setFailed("the WebGL context was lost"), { once: true });
-                }}
+                onCreated={({ gl }) => medium.watch(gl, (w) => setFailed(w))}
               >
                 <NeutralToneMapping />
                 {/* ⛔ THE SUSPENSE BOUNDARY INSIDE THE CANVAS (the page's own pattern): the piece waits on the studio HDRI
@@ -1794,7 +1893,10 @@ function CameraBenchInner() {
                     effects, R3F takes that for an unmount and forces the context lost — measured 26 October (the bench drew,
                     then "Context Lost" at ~2 s). */}
                 <Suspense fallback={null}>
+                  {/* ⛔ the arch's environment and compile wait: PROVIDED only in the WebGPU medium (its twins); in WebGL no
+                      provider — `ArchMediumContext`'s default, the approved helpers, exactly as film 4's page */}
                   {shown && (
+                    <ArchMediumProvider arch={medium.arch}>
                     <BenchScene
                       built={shown}
                       store={store}
@@ -1806,7 +1908,9 @@ function CameraBenchInner() {
                       onView={setView}
                       onWorld={setWorld}
                       onReady={() => setDrawn(true)}
+                      medium={medium}
                     />
+                    </ArchMediumProvider>
                   )}
                 </Suspense>
               </Canvas>
@@ -1816,6 +1920,8 @@ function CameraBenchInner() {
 
         {/* ⛔ THE OVERLAY LAYER — pointer-events: none ([A3]); only its controls take clicks, so a drag on bare picture looks */}
         <div className="pointer-events-none absolute inset-0" data-overlay>
+          {/* the hero's blank canvas: the home page's frame over the picture (D-101) */}
+          {blank && <HeroPageGuide />}
           {/* ⛔ THIRD PERSON: the PiP's frame and label — over the rectangle the render callback scissors (`PIP`, one source) —
               and the cameras' labels, positioned by the render callback by ref */}
           {view?.view === "third" && (
@@ -1860,6 +1966,10 @@ function CameraBenchInner() {
                   )}
                 </>
               )}
+              {/* ⛔ the MEDIUM the bench draws in, and what actually drew (WebGPU, or its WebGL 2 fallback) — note §3 */}
+              <div className="text-neutral-500" data-hud-medium>
+                {mediumName === "webgl" ? "WebGL" : `WebGPU${backend ? ` · drew on ${backend}` : ""}`}
+              </div>
             </div>
             {/* ⛔ The MOVES drop-down (and Open before it) was built and REMOVED (Carl: "remove the moves, i said we will come
                 back to it") — signature moves are a future session. `moveFromFile` in `bench-chain.ts` stays, tested. */}
@@ -1949,8 +2059,8 @@ function CameraBenchInner() {
                   )}
                   <h2 className="mb-2 mt-4 text-sm font-semibold text-white">The lens</h2>
                   <p>
-                    {view ? `${view.mm.toFixed(0)} mm, ${view.fov.toFixed(1)}° vertical` : "…"}, on a full-frame {SENSOR_MM} mm-wide sensor: a default until Carl
-                    names his Unreal filmback.
+                    {view ? `${view.mm.toFixed(0)} mm, ${view.fov.toFixed(1)}° vertical` : "…"}, on a full-frame {SENSOR_MM} mm-wide sensor
+                    {view?.mmOnPage ? ", measured across the home page's frame (the amber guide)" : ""}: a default until Carl names his Unreal filmback.
                   </p>
                   <h2 className="mb-2 mt-4 text-sm font-semibold text-white">Saving</h2>
                   <p>

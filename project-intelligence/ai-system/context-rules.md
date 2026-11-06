@@ -320,6 +320,10 @@ chunk 3 would have found three live options and asked Carl to decide something h
 ⛔ **THE TEST: if a future reader could not tell which option is live, the record has failed** —
 even though every word in it is true.
 
+**THE FORM:** `live-work/templates/brainstorm-record.template.md` — every brainstorm is recorded through it, each field asked
+every time, including **the MEDIUM (WebGL or WebGPU)**, decided from the scene's description by the questions in the form
+(Carl, 5 November 2026: *"yes, add it"*; D-101).
+
 ### Formatting consistency
 Use the established schema for every entry type. Do not add new fields. Do not omit mandatory fields. Schema deviations require a governance update to the relevant file.
 

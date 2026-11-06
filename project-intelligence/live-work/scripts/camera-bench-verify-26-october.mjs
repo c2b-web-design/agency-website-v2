@@ -11,6 +11,14 @@ import { tmpdir } from "node:os";
 
 // the screenshot goes to the OS temp folder unless an OUT is given (it once defaulted to "." and left a PNG in the repo root)
 const [BASE = "http://localhost:3000", OUT = tmpdir()] = process.argv.slice(2);
+// ⛔ THE MEDIUM (5 November 2026; the renderer note v1.6 §3: "a WebGPU run of each is added"): `BENCH_MEDIUM=webgpu` loads
+// `?medium=webgpu` and CHECKS what drew (the bench's `data-medium-backend` must read "webgpu" — never a silent fallback);
+// absent, the WebGL medium, exactly as before. The medium is printed beside the verdict
+const MEDIUM = process.env.BENCH_MEDIUM === "webgpu" ? "webgpu" : "webgl";
+const BENCH_BASE_URL = MEDIUM === "webgpu" ? "/proto/camera?medium=webgpu" : "/proto/camera";
+// ⛔ `BENCH_QUERY` (6 November 2026): extra query appended to every bench URL, e.g. BENCH_QUERY="blank=1"; absent, exactly
+// as before
+const BENCH_URL = process.env.BENCH_QUERY ? `${BENCH_BASE_URL}${BENCH_BASE_URL.includes("?") ? "&" : "?"}${process.env.BENCH_QUERY}` : BENCH_BASE_URL;
 mkdirSync(OUT, { recursive: true });
 const b = await chromium.launch({ headless: false, args: ["--enable-gpu", "--use-angle=default", "--ignore-gpu-blocklist"] });
 const ctx = await b.newContext({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
@@ -66,10 +74,14 @@ const reload = async () => {
   await wait(500);
 };
 
-await p.goto(`${BASE}/proto/camera`, { waitUntil: "networkidle" });
+await p.goto(`${BASE}${BENCH_URL}`, { waitUntil: "networkidle" });
 await p.evaluate(() => localStorage.clear());
 await reload();
 check(true, "the bench drew the arch (data-camera-bench=drawn)");
+{
+  const drew = await p.getAttribute("[data-camera-bench]", "data-medium-backend");
+  check(drew === MEDIUM, `the bench drew in the ${MEDIUM} medium (data-medium-backend "${drew}")`);
+}
 check((await p.getAttribute("[data-pad]", "data-pad")) === "none", "no pad → the HUD asks for a button press");
 let s = await state();
 check(Math.abs(s.pose.z - s.front.z) < 0.001 && s.atEnd && /Ready/.test(s.status), `starts at the default view, the chain empty: "${s.status}"`);
@@ -1033,6 +1045,6 @@ await seed([]);
 
 await p.screenshot({ path: `${OUT}/camera-bench-t1a.png` });
 check(errors.length === 0, `no console errors${errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""}`);
-console.log(`\nVERDICT ${fail ? "✖" : "✔"} ${pass}/${pass + fail}`);
+console.log(`\nVERDICT ${fail ? "✖" : "✔"} ${pass}/${pass + fail} — the ${MEDIUM === "webgpu" ? "WebGPU" : "WebGL"} medium`);
 console.log("⚠ NOT WATCHED: how the pad FEELS (Carl's hands only); a real pad's connection; the secure-page rule; production; real storage limits.");
 await b.close();

@@ -13,6 +13,11 @@ import { tmpdir } from "node:os";
 
 const BC = await import(new URL("../../../components/showcase/bench-chain.ts", import.meta.url).href);
 const [BASE = "http://localhost:3000", OUT = tmpdir()] = process.argv.slice(2);
+// ⛔ THE MEDIUM (5 November 2026; the renderer note v1.6 §3: "a WebGPU run of each is added"): `BENCH_MEDIUM=webgpu` loads
+// `?medium=webgpu` (every page this script opens) and CHECKS what drew on the first (`data-medium-backend` must read
+// "webgpu" — never a silent fallback); absent, the WebGL medium, exactly as before. Printed beside the verdict
+const MEDIUM = process.env.BENCH_MEDIUM === "webgpu" ? "webgpu" : "webgl";
+const BENCH_URL = MEDIUM === "webgpu" ? "/proto/camera?medium=webgpu" : "/proto/camera";
 mkdirSync(OUT, { recursive: true });
 let pass = 0, fail = 0;
 const check = (ok, what) => {
@@ -45,7 +50,7 @@ async function page({ dpr = 1, helpers } = {}) {
   const p = await ctx.newPage();
   p.on("pageerror", (e) => errors.push(String(e)));
   p.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-  await p.goto(`${BASE}/proto/camera`, { waitUntil: "networkidle" });
+  await p.goto(`${BASE}${BENCH_URL}`, { waitUntil: "networkidle" });
   return p;
 }
 async function fresh(p, keys = {}) {
@@ -102,6 +107,10 @@ const trackPose = (s, cam, T) => BC.trackPoseAt(s.chain, cam, T)?.pose;
 // ── 1–8, 12–15 at DPR 1
 const p = await page();
 await fresh(p);
+{
+  const drew = await p.getAttribute("[data-camera-bench]", "data-medium-backend");
+  check(drew === MEDIUM, `the bench drew in the ${MEDIUM} medium (data-medium-backend "${drew}")`);
+}
 await connect(p);
 let s = await state(p);
 check(s.view === "first", "the bench loads in FIRST person");
@@ -323,6 +332,16 @@ for (const dpr of [1, 2]) {
   for (const mode of ["loud", "off"]) {
     const q = await page({ dpr, helpers: mode });
     await fresh(q, { [EYE]: fixedEye });
+    // ⛔ THE WebGPU RUN, GRID OFF (5 November 2026): in the WebGPU medium the floor AXES (three's WebGPU `Line2`) draw their
+    // overlapping round JOINTS one of two ways per page load — measured by a negative control, two "off" captures: 47 px
+    // (18 in the PiP), every one at an axis joint (the red axis's every ~191 px), a few levels apart, never near a helper.
+    // A helper check that must read 0 cannot sit on that noise, so the WebGPU run hides the grid and axes (as check 10
+    // does); the helpers still show on the black (`dThird` proves the check can see them). The WebGL run is unchanged
+    if (MEDIUM === "webgpu") {
+      await q.click('button[aria-label="Scene information"]');
+      await q.click('button[aria-label="Floor grid"]');
+      await q.click('button[aria-label="Scene information"]');
+    }
     await scrubTo(q, 2.5);
     await q.addStyleTag({ content: "[data-overlay]{display:none!important}" });
     await wait(q, 400);
@@ -334,7 +353,7 @@ for (const dpr of [1, 2]) {
     await q.context().close();
   }
   const dFirst = pixelsDiffer(grab["loud-first"], grab["off-first"]), dPip = pixelsDiffer(grab["loud-pip"], grab["off-pip"]), dThird = pixelsDiffer(grab["loud-third"], grab["off-third"]);
-  check(dThird > 100 && dFirst === 0 && dPip === 0, `DPR ${dpr}: NO HELPER PIXEL in first person (${dFirst}) or the PiP (${dPip}); the loud helpers DO show in the eye's view (${dThird} px — the check can see them)`);
+  check(dThird > 100 && dFirst === 0 && dPip === 0, `DPR ${dpr}: NO HELPER PIXEL in first person (${dFirst}) or the PiP (${dPip}); the loud helpers DO show in the eye's view (${dThird} px — the check can see them)${MEDIUM === "webgpu" ? " ⚠ WebGPU: grid and axes OFF (their joints' noise; see the comment)" : ""}`);
 
   // 10. framing, grid OFF: the PiP (Cam 1 armed) against the first-person view of Cam 1 after switching off, downscaled
   const q = await page({ dpr });
@@ -358,17 +377,45 @@ for (const dpr of [1, 2]) {
   await q.keyboard.press("KeyT");
   await wait(q, 800);
   const wrong = await sharp(await q.locator("[data-drag-surface] canvas").screenshot()).removeAlpha().resize(pipImg.info.width, pipImg.info.height, { fit: "fill" }).raw().toBuffer({ resolveWithObject: true });
-  const mad = (a, b) => { let t = 0; for (let i = 0; i < a.data.length; i++) t += Math.abs(a.data[i] - b.data[i]); return t / a.data.length; };
-  const mRight = mad(pipImg, first), mWrong = mad(pipImg, wrong);
+  // ⛔ FRAMING MEASURED AS FRAMING (fixed 3 November 2026, on Carl's word: *"fix it"*). The check was a whole-frame mean pixel
+  // difference with a mark of 8 / 255; once the scene went darker (the arch alone on black) the WRONG camera — the arch
+  // plainly shifted ~23% of the frame — averaged only 3.7, under the mark, so the NEGATIVE CONTROL could not fail and the
+  // check read ✖ with the framing right (0.70). The empty black diluted the only pixels that differ. A per-pixel difference
+  // over the lit letters alone separated only ~2× at DPR 2 (the PiP and the full view anti-alias the edges differently).
+  // FRAMING is WHERE the subject sits and HOW BIG: the lit area's centre and extent (pixels brighter than 40 / 255), each as
+  // a FRACTION OF THE FRAME, compared at the worst of the four. THE MARK, 2% of the frame (~9 px across a 464 px PiP), is set
+  // by what "the same framing" means, NOT from the measured values (measured: the right camera 0.4–0.7%, the wrong 23%).
+  // ⚠ NOT WATCHED by this check: the picture's texture and colour (the helpers' check above watches pixels); a scene with
+  // nothing lit (the guard below fails loudly rather than pass on an empty frame)
+  const framing = (img, th = 40) => {
+    const { width: W, height: H } = img.info;
+    let sx = 0, sy = 0, n = 0, x0 = W, x1 = 0, y0 = H, y1 = 0;
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const i = (y * W + x) * 3;
+        if (Math.max(img.data[i], img.data[i + 1], img.data[i + 2]) > th) {
+          n++; sx += x; sy += y;
+          if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+        }
+      }
+    return n ? { cx: sx / n / W, cy: sy / n / H, w: (x1 - x0) / W, h: (y1 - y0) / H, n } : null;
+  };
+  const apart = (a, b) => Math.max(Math.abs(a.cx - b.cx), Math.abs(a.cy - b.cy), Math.abs(a.w - b.w), Math.abs(a.h - b.h));
+  const MARK = 0.02;
+  const fPip = framing(pipImg), fRight = framing(first), fWrong = framing(wrong);
   // the evidence, saved: the PiP, the right camera and the wrong one, all at the PiP's size
   const png = (img, name) => sharp(img.data, { raw: { width: img.info.width, height: img.info.height, channels: 3 } }).png().toFile(`${OUT}/framing-dpr${dpr}-${name}.png`);
   await Promise.all([png(pipImg, "pip"), png(first, "first-cam1"), png(wrong, "first-cam2-wrong")]);
-  check(mRight <= 8 && mWrong > 8, `DPR ${dpr}: the PiP's FRAMING = first person of the same camera: mean difference ${mRight.toFixed(2)} / 255 (mark ≤ 8); the WRONG camera ${mWrong.toFixed(2)} (must exceed 8 — the check can fail)`);
+  if (!fPip || !fRight || !fWrong) check(false, `DPR ${dpr}: the PiP's FRAMING: a picture with NOTHING LIT (pip ${fPip?.n ?? 0}, right ${fRight?.n ?? 0}, wrong ${fWrong?.n ?? 0} px) — cannot judge`);
+  else {
+    const dRight = apart(fPip, fRight), dWrong = apart(fPip, fWrong);
+    check(dRight <= MARK && dWrong > MARK, `DPR ${dpr}: the PiP's FRAMING = first person of the same camera: the lit area's centre and size within ${(dRight * 100).toFixed(2)}% of the frame (mark ≤ ${MARK * 100}%); the WRONG camera ${(dWrong * 100).toFixed(2)}% (must exceed ${MARK * 100}% — the check can fail)`);
+  }
   await q.context().close();
 }
 
 check(errors.length === 0, `no console errors${errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""}`);
-console.log(`\nVERDICT ${fail ? "✖" : "✔"} ${pass}/${pass + fail}`);
+console.log(`\nVERDICT ${fail ? "✖" : "✔"} ${pass}/${pass + fail} — the ${MEDIUM === "webgpu" ? "WebGPU" : "WebGL"} medium`);
 console.log("⚠ NOT WATCHED: how flying the eye feels (Carl's hands); a client film; the frameAll fallback with no scene box; the path lines' pixels (their data is checked).");
 await br.close();
 process.exitCode = fail ? 1 : 0;

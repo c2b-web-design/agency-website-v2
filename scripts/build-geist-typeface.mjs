@@ -2,7 +2,12 @@
  * Build `public/fonts/geist-regular.typeface.json` — Geist Regular in the
  * typeface format three's `FontLoader` / `TextGeometry` extrude from. D-094.
  *
- *   node scripts/build-geist-typeface.mjs <path/to/Geist-Regular.ttf>
+ *   node scripts/build-geist-typeface.mjs <path/to/Geist-Regular.ttf> [out.typeface.json]
+ *
+ * ⛔ 5 November 2026 (session 2; the hero's text, D-101): an optional OUTPUT path — the default is still
+ * `public/fonts/geist-regular.typeface.json`. Geist BOLD (the page's headline weight) is built with
+ *   node scripts/build-geist-typeface.mjs <…/geist-sans/Geist-Bold.ttf> public/fonts/geist-bold.typeface.json
+ * from the same `geist` 1.7.2 package (✅ no overlaps, 95 glyphs, `check-typeface-overlaps.mjs --ascii`).
  *
  * ⛔ SOURCE: VERCEL'S OWN STATIC Geist-Regular.ttf, from the `geist` npm package
  * (v1.7.2, `dist/fonts/geist-sans/Geist-Regular.ttf`; `npm pack geist` and
@@ -34,9 +39,9 @@
 import fs from "node:fs";
 import { TTFLoader } from "three-stdlib";
 
-const src = process.argv[2];
+const [src, outArg] = process.argv.slice(2);
 if (!src || !fs.existsSync(src)) {
-  console.error("usage: node scripts/build-geist-typeface.mjs <Geist-Regular.ttf>");
+  console.error("usage: node scripts/build-geist-typeface.mjs <Geist-*.ttf> [out.typeface.json]");
   process.exit(2);
 }
 
@@ -52,7 +57,7 @@ const missing = [...keep].filter((c) => !json.glyphs[c]);
 json.glyphs = Object.fromEntries(Object.entries(json.glyphs).filter(([c]) => keep.has(c)));
 
 fs.mkdirSync("public/fonts", { recursive: true });
-const out = "public/fonts/geist-regular.typeface.json";
+const out = outArg ?? "public/fonts/geist-regular.typeface.json";
 fs.writeFileSync(out, JSON.stringify(json));
 console.log(
   `${out}: ${Object.keys(json.glyphs).length} glyphs, ${(fs.statSync(out).size / 1024).toFixed(1)} KiB, ` +

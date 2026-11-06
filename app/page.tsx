@@ -10,7 +10,9 @@ export default function Home() {
     // min-h (one window, `100 * var(--vh)`): ensures the dark background fills the viewport even on short pages
     // ⛔ D-097: every window-height size here is `var(--vh)`, not `vh` — under the site's zoom `1vh` is drawn × the zoom
     // (`app/globals.css`, `lib/site-scale.ts`).
-    <div className="bg-neutral-950 text-white min-h-[calc(100*var(--vh))]">
+    // relative: was the frame of the hero's block-out drawing (`/?blockout=1`, D-101) — the drawing REMOVED 6 November 2026,
+    // session 2 (Carl: *"On the site, the guide lines can go leaving just the text."*); kept, so nothing else on the page moves
+    <div className="relative bg-neutral-950 text-white min-h-[calc(100*var(--vh))]">
 
       <SiteHeader />
 
@@ -72,7 +74,9 @@ export default function Home() {
               leading-[1.1] (tighter than leading-tight = 1.25): at display sizes, tight
               line-height reads as confident and magazine-like, not cramped.                  */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.1] max-w-2xl">
-            We build brands that mean something.
+            Websites built{" "}
+            <br />
+            to be seen.
           </h1>
 
           {/* Subtext:
@@ -85,49 +89,13 @@ export default function Home() {
               leading-relaxed: adds vertical air inside the paragraph, making it easier to scan
               without increasing the font size.                                               */}
           <p className="mt-8 text-base text-neutral-400 max-w-lg leading-relaxed">
-            A creative agency focused on strategy, design, and digital experiences that connect with people.
+            We show you what your website could be,{" "}
+            <br className="hidden sm:block" />
+            then we build you a site for sore eyes.
           </p>
 
-          {/* CTA:
-              mt-12 (up from mt-10): the CTA needs generous separation from the paragraph
-              so it reads as a deliberate action, not an afterthought.
-              font-semibold (up from font-medium): at text-sm, medium weight can look weak.
-              Semibold gives the label authority without going bold.
-              px-7 (up from px-6): slightly wider pill to balance the heavier label weight.
-              tracking-wide: adds subtle intentionality — button labels at this size benefit
-              from a touch of letter-spacing to feel considered.
-              hover:bg-neutral-100 (was neutral-200): softer hover destination — the shift
-              is noticeable but not jarring. Premium transitions are never loud.
-              duration-200: explicit and smooth without being slow.                          */}
-          {/* ⛔⛔ "TBD" IS A PLACEHOLDER LABEL, NOT A DESIGN. Carl, 2 September 2026: *"Change
-              see our work to TBD."* Was "See our work".
-
-              ⚠ WHY IT CHANGED: after D-068 removed the three cards, `#work` contains NO WORK —
-              it is now "Quality Without Exception", a statement of standard with no examples.
-              ⛔ The label promised a portfolio and delivered a philosophy.
-
-              ⛔⛔ AND CARL HAS RULED THE FUNCTION: *"I can definately say the button wont be
-              navigational."* ⚠ THIS ELEMENT IS DAY-1 SCAFFOLDING — a hero conventionally has a
-              nav CTA, so one was built. **What occupies this position is undetermined**; Carl:
-              *"its functionality may be something else."*
-
-              ⚠⚠ THE `href="#work"` IS DELIBERATELY LEFT IN PLACE AND IS NOW KNOWN-STALE.
-              Changing the element's type is STRUCTURAL and was not authorised by the label
-              change. ⛔ DO NOT "TIDY" THIS by removing the anchor, pointing it elsewhere, or
-              restoring a descriptive label — the destination is undecided BY RULING, and the
-              header nav already reaches `#work`, so nothing is lost while it waits.
-
-              ⛔ THE HERO IS BUILT LAST AND ITS BRIEF IS NOT IN THIS REPOSITORY. Carl holds it
-              outside the record by his own instruction. ⚠ A session reading these files CANNOT
-              plan this screen — ask Carl; do not infer it from anything here.                */}
-          <div className="mt-12">
-            <a
-              href="#work"
-              className="inline-block bg-white text-black text-sm font-semibold px-7 py-3 rounded-full tracking-wide hover:bg-neutral-100 transition-colors duration-200"
-            >
-              TBD
-            </a>
-          </div>
+          {/* The hero's CTA, the day-1 "TBD" pill, was removed by Carl, 2 November 2026: *"Thats the
+              space to work in. First, delete the button."* The hero's direction: D-098, D-101.  */}
 
         </Container>
       </section>

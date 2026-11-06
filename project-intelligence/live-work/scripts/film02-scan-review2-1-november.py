@@ -1,12 +1,13 @@
 """film2-review-2.mp4, every frame. Stats and every-sixth-frame N template on the render; a quarter-size difference against
 film2-review.mp4 (same cut, old captions). Writes OUT/stats.npy, OUT/n.npy, OUT/diff.npy. Asserts 16,650 frames on both.
-   python film02-scan-review2-1-november.py OUT
+   python film02-scan-review2-1-november.py OUT [render] [the render it is differenced against]
 NOT WATCHED here: the captions (film02-check-captions-1-november.py)."""
 import os, subprocess, sys, threading
 import numpy as np, cv2
 
 D = os.path.expanduser('~/Videos/C2B Films/02 Ornate corners')
-R2, R1 = D + '/film2-review-2.mp4', D + '/film2-review.mp4'
+R2 = D + '/' + (sys.argv[2] if len(sys.argv) > 2 else 'film2-review-2.mp4')
+R1 = D + '/' + (sys.argv[3] if len(sys.argv) > 3 else 'film2-review.mp4')
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = sys.argv[1]
 W, H = 1920, 1080

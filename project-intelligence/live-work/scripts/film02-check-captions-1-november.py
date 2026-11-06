@@ -1,13 +1,13 @@
 """Every caption in film2-review-2.mp4 against the layer that drew it. For each of the 91: the caption's own glyphs, from the layer at
 its midpoint, are searched for across the render's frame, which finds where it landed however Carl moved its V2 piece, and scores
 the match. Then its strength part way through each fade, and how it stands against what is right behind it.
-   python film02-check-captions-1-november.py OUT
+   python film02-check-captions-1-november.py OUT [render]
 NOT WATCHED: whether a caption covers something the viewer needs; that is Carl's eye."""
 import json, os, subprocess, sys
 import numpy as np, cv2
 
 D = os.path.expanduser('~/Videos/C2B Films/02 Ornate corners')
-R, L = D + '/film2-review-2.mp4', D + '/07 Subtitles/film2-captions-layer.mov'
+R, L = D + '/' + (sys.argv[2] if len(sys.argv) > 2 else 'film2-review-2.mp4'), D + '/07 Subtitles/film2-captions-layer.mov'
 OUT = sys.argv[1]
 W, H = 1920, 1080
 rows = json.load(open(D + '/07 Subtitles/film2-captions-rows.json', encoding='utf8'))

@@ -1,10 +1,11 @@
-"""Every frame of every clip in film 02's cut. Whole-frame stats per frame; the N by template in the lower left, every 6th frame."""
+"""Every frame of every clip in a film's cut. Whole-frame stats per frame; the N by template in the lower left, every 6th frame.
+   python film-scan-clips-1-november.py CLIPS_FOLDER OUT CLIP_COUNT   (run from the folder holding n-template.png)"""
 import glob, json, os, subprocess, sys
 import numpy as np, cv2
-C=sys.argv[1]; OUT="f2"; W,H=1920,1080
+C=sys.argv[1]; OUT=sys.argv[2]; COUNT=int(sys.argv[3]); W,H=1920,1080
 T0=cv2.resize(cv2.imread('n-template.png',0),(35,35),interpolation=cv2.INTER_AREA)
 Ts=[cv2.resize(T0,None,fx=s,fy=s,interpolation=cv2.INTER_AREA) for s in (1.0,0.8,0.6)]
-files=sorted(glob.glob(C+r"\*.mov")); assert len(files)==55,len(files)
+files=sorted(glob.glob(C+r"\*.mov")); assert len(files)==COUNT,len(files)
 res=[]
 for fp in files:
     n=os.path.basename(fp)
@@ -26,5 +27,5 @@ for fp in files:
     p.wait()
     r=np.array(rows,dtype=np.float32); np.save(f"{OUT}/{n[:3]}.npy",r); np.save(f"{OUT}/{n[:3]}-n.npy",np.array(nsc,dtype=np.float32))
     res.append(n); print(n[:3],len(r),flush=True)
-assert len(res)==55
+assert len(res)==COUNT
 print("done")

@@ -17,12 +17,17 @@
  *   page keeps its own assertion that the words built are the words its section shows.
  * ⛔ PROVED UNCHANGED: `/proto/your-words` captured before and after at eight frames (viewport 1; viewport 2 at `?cam=0`
  *   and `?t=` 1, 9, 15.75, 20, 23.5, 28) — `live-work/scripts/film04-lift-compare-26-october.mjs`.
+ * ⛔ 5 NOVEMBER 2026 — THE MEDIUM (the renderer note v1.6 §3, option (a), approved by Carl): the studio ENVIRONMENT and the
+ *   COMPILE WAIT come from `ArchMediumContext` (`arch-medium.tsx`), whose DEFAULT is the WebGL path — the approved
+ *   `corner-canvas.tsx` helpers, as before. Only the camera bench's WebGPU medium provides another. The environment WRAPS
+ *   the body (`LetteringBody`), which is always rendered, given the texture or null in the same render, as before.
+ *   Proved unchanged by the same eight frames, before and after.
  */
-import { Component, use, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { Component, use, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
-import { usePrefilteredStudio, whenLinked } from "@/components/home/corner-canvas";
+import { ArchMediumContext, type CompileWait } from "./arch-medium";
 import { LETTERING_DEFAULTS, type LetteringSpec, type LetteringStats } from "./lettering-geometry";
 import { applyBrushedMetal, BRUSHED_BRASS, createBrushedMetal, JUDGING_STUDIO } from "./lettering-material";
 import {
@@ -267,14 +272,28 @@ export function NeutralToneMapping() {
 }
 
 /** ONE PIECE, lit and drawn — the camera is the caller's (above). `onReady` after the first frame drawn with it. */
-export function LetteringPiece({ piece, built, onReady }: { piece: Piece; built: Built; onReady: () => void }) {
+/** `clay` (5 November 2026, session 2; the bench's `?clay=1` only — Carl: *"Show me the arch text in clay."*): the letters
+ *  drawn in the block-out's CLAY instead of the brass, to judge their FORM (bevel, depth) without reflections. Film 4's page
+ *  never passes it — its brass and timing are unchanged */
+export function LetteringPiece({ piece, built, onReady, clay = false }: { piece: Piece; built: Built; onReady: () => void; clay?: boolean }) {
   const hdri = use(loadStudioHdri(STUDIO_HDRI_SRC, JUDGING_STUDIO.room));
+  const gl = useThree((s) => s.gl);
+  const { Environment, compileWait } = useContext(ArchMediumContext);
+  return (
+    <Environment gl={gl} hdri={hdri}>
+      {(env) => <LetteringBody piece={piece} built={built} onReady={onReady} env={env} compileWait={compileWait} clay={clay} />}
+    </Environment>
+  );
+}
+
+/** the piece's body — the brass, the compile gate, the lamps, the letters — given the medium's environment (null until
+ *  prefiltered) and its compile wait */
+function LetteringBody({ piece, built, onReady, env, compileWait, clay }: { piece: Piece; built: Built; onReady: () => void; env: THREE.Texture | null; compileWait: CompileWait; clay: boolean }) {
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
   const camera = useThree((s) => s.camera);
   const size = useThree((s) => s.size);
   const invalidate = useThree((s) => s.invalidate);
-  const env = usePrefilteredStudio(gl, hdri);
   const metal = useMemo(() => (env ? createBrushedMetal(env) : null), [env]);
   useEffect(() => () => metal?.dispose(), [metal]);
   useEffect(() => {
@@ -288,8 +307,8 @@ export function LetteringPiece({ piece, built, onReady }: { piece: Piece; built:
   const linked = !!metal && compiled === metal;
   useEffect(() => {
     if (!metal) return;
-    return whenLinked(gl, gl.compile(scene, camera), () => setCompiled(metal));
-  }, [gl, scene, camera, metal, built]);
+    return compileWait(gl, scene, camera, () => setCompiled(metal));
+  }, [gl, scene, camera, metal, built, compileWait]);
 
   useEffect(() => invalidate(), [size, linked, built, invalidate]);
   const reported = useRef(false);
@@ -302,7 +321,10 @@ export function LetteringPiece({ piece, built, onReady }: { piece: Piece; built:
   });
 
   const { w, up, zc } = measurePiece(piece, built, size);
-  const material = metal ? [metal.face, metal.edge] : undefined;
+  // the clay view: one plain material for face and sides, lit by the SAME studio as the brass (the arch's lamps alone leave
+  // a clay face black — the brass takes most of its light from the studio) — never disposed: small, for the page's life
+  const clayMat = useMemo(() => (clay && env ? new THREE.MeshStandardMaterial({ color: "#9a9a96", roughness: 0.9, metalness: 0, envMap: env }) : null), [clay, env]);
+  const material = metal ? (clayMat ? [clayMat, clayMat] : [metal.face, metal.edge]) : undefined;
   return (
     <>
       {built.kind === "arch" && <ArchGrain shown={built} />}
