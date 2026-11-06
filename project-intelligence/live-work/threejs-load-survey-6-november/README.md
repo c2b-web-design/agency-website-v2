@@ -79,3 +79,11 @@ point light (0xff7c00) among the blobs, an ambient; the floor is part of the sam
 13 materials (most legacy Lambert/Phong, toon, hatching); drag to orbit. **Up close it is CRUDE** (`mc-shiny-full.png`):
 faceted silhouettes from the coarse grid, a blurry reflection — and it still impresses, by movement and gloss.
 `mc-materials.png`: all 13 materials, the walls on, a low orbit.
+
+## webgpu_compute_particles_rain (Carl: *"How expensive?"*)
+
+On Carl's PC, two cold loads: page loaded 0.5–0.7 s, the rain drawn ~1.2–2.3 s, **0.85 MB**, ~48 fps under Playwright (Carl's own Chrome counter: 60). 25,000 drops (of 50,000 buffers) moved by a compute shader, billboards, ripples on landing, a 1024² top-down collision map. Colour is a formula in the material: tinting it is near free. Cost dials: drop count, transparent overdraw. WebGPU only as written. `rain.mjs` (scratchpad).
+
+## webgpu_tsl_vfx_linkedparticles (Carl: *"Go look and video it"*)
+
+Filmed with the pointer drawing a figure-of-eight (`linkedparticles-pointer.webm`, 22 s; `linkedparticles-sheet.png` — both LOCAL ONLY, a third party's page). On Carl's PC: loaded 0.8 s, **0.84 MB**, ~60 fps. 8,192 particles in compute: spawned at a point that eases after the pointer (10 % a frame — the trail's lag), drifting on a fractal-noise turbulence, fading over a short life; EACH links to its TWO NEAREST by searching ALL the others every frame (~67 M checks — the cost grows with the SQUARE of the count); colour a hue that rotates with time plus noise per particle; additive blending + bloom. WebGPU only as written. `linked.mjs`.

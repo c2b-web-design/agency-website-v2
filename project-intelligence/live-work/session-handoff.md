@@ -24,10 +24,17 @@ CROSSROADS"* to the end, and **D-108**.
 
 ## NEXT — CARL's
 
-- **A NEW HERO CONCEPT** — Carl: *"Come up with a new concept for the hero."* Through the brainstorm form
-  (`live-work/templates/brainstorm-record.template.md`, its MEDIUM slot); every technique priced (D-108); judged by what a
-  client sees in the first seconds on an office PC. Carl leads; wait for him to open it.
-- **Open:** where D-108's running total lives; whether a link first opened on a phone counts in the audience.
+- **A NEW HERO CONCEPT — CARL BRINGS IT, MONDAY 9 NOVEMBER.** Carl: *"Next session is on Monday. I have the weekend to come
+  up with a concept."* Wait for him to present it; then record it through the brainstorm form
+  (`live-work/templates/brainstorm-record.template.md`, its MEDIUM slot), price every technique (D-108), and judge it by what
+  a client sees in the first seconds on an office PC. Don't pitch a concept of the Builder's own unless he asks.
+  RAISED by Carl at the close (not chosen): *"I think it may be fair to say i like those liquid bubble things"* — `webgl_marchingcubes`; then *"with a logo that is solid a nice morph could be on the cards"* (routes in D-101's last entry); then *"could the liquid fill the shape of the logo?"* (routes there too); the jack-in-the-box droplets example; and a SHARD CLOUD filling the logo, gathering into it or bursting out (`webgl_buffergeometry`; Carl: *"Thats exactly how i would use it"*). Then the compute RAIN (`webgpu_compute_particles_rain`, measured: 0.85 MB, ~1–2 s) and Carl's *"parting of the bland sea"* — a designed dry shape in the rain. Then the VFX linked particles (`webgpu_tsl_vfx_linkedparticles`, responds to the pointer; ~5 ms GPU of 16.7 on Carl's PC). All raised, none chosen. Carl's task for the weekend: *"to take elememts of these and come up with a concept."*
+- ⛔ **CARL's DIRECTION for the concept:** *"The logo is the central theme. It should always return to that shape, that form. Where it goes in between. That is the question, and how."* (D-101's last entry.)
+- **The film folder is fresh:** `Videos\C2B Films\03 The hero`, empty, film 01's bins (`00 References` … `10 Pick-ups`) — made
+  this session at Carl's request; recording only on his word.
+- **State at close:** everything committed and pushed — the rewritten history (`940bc82`) and, on top, the concept search's record and
+  this handoff; the dev server STOPPED (port 3000 free). The survey's screenshots and the linked-particles film are on Carl's PC only.
+- **Open:** where D-108's running total lives (RAISED: three.js's Inspector on the bench's WebGPU medium — per-pass ms); whether a link first opened on a phone counts in the audience.
 - **Files open in `chunk-scope.json`** (`_heroPivot6Nov`): `app/page.tsx` UNLOCKED (protected) — lock and test when Carl says
   close; `hero-page.tsx`, `hero-text.tsx`, `camera-bench.tsx`, the bench media files in `files`.
 
