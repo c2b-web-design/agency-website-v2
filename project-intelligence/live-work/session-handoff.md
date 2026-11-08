@@ -1,53 +1,70 @@
-# Session Handoff — 6 November 2026, session 2. THE PIVOT: THE STREET CONCEPT DROPPED; A NEW HERO CONCEPT NEXT
+# Session Handoff — 8 November 2026 (Sunday). THE NEW HERO CONCEPT IS SET: THE LOGO PHASES AND "GANDALF's FIREWORKS"
 
-⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Replaces the 6 November (session 1) handoff. Delete it at the end of
-the session that reads it, once its replacement is written. The record: `decisions.md` — D-101's entries from *"THE LOAD
-CROSSROADS"* to the end, and **D-108**.
+⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Replaces the 6 November (session 2) handoff. Delete it at the end
+of the session that reads it, once its replacement is written. The record: `decisions.md` — D-101, from *"THE NEW CONCEPT —
+CARL PRESENTS IT (8 November 2026)"* to the end; the form: `live-work/hero-concept-8-november/brainstorm-record.md`.
+
+## ⛔ FIRST, BEFORE ANYTHING ELSE: START THE SCREEN CAPTURE
+
+Carl: *"What we will do in the next session is discuss it in more detail while capturing it for film 3"* … *"I will take it as
+read when we start the session."* → **His word is given. Start the desktop recording (FFmpeg gdigrab, in the background) into
+`C:\Users\Carl Buckley\Videos\C2B Films\03 The hero\01 Discussion` AS THE SESSION BEGINS — no cue from Carl; he must never be
+seen asking on camera.** Stop it when the discussion ends. Keep on-camera replies short and presentable. (This lifts the
+2 November "recording only on my word" for this session's discussion — it is his word.)
 
 ## WHAT HAPPENED
 
-- **The load crossroads.** Carl, having seen the bench's load: stay all code, go partial video, or use Blender? *"my concern is
-  loading time."* The Builder filmed threejs.org's showcase sites and examples on Carl's PC (AMD Radeon integrated graphics,
-  ~250 Mbps): every heavy scene hides 3–20 s behind a loader or a designed build-in; Slop New York, a street built in code,
-  19.5 s — the wait is the DEVICE (build + compile), not the line. `live-work/threejs-load-survey-6-november/`.
-- **Carl's rulings (all in D-101 / D-108):** every technique priced when adopted, against the AUDIENCE's devices (D-108; for
-  clients too); the hero's audience is BUSINESSES on a PC; *"Are we building for devs? ... Or are we tryings to attract
-  clients?"* — the hero is for CLIENTS; three.js's examples are THEORY, not templates (*"Its like looking at music theory and
-  creating a masterpiece"*).
-- **⛔ THE STREET CONCEPT DROPPED AND REMOVED EVERYWHERE** — the code, the record, `live-work/`, the film folder `03 The hero`
-  (19 GB, to the Recycle Bin, recoverable until Carl empties it), and **git history** (rewritten from `69ca161`, force-pushed —
-  Carl chose it: *"b. I have no regrets."*). A founder override of context-rules' *No retroactive rewriting*, scope: the
-  street only. **Only the lessons remain** — D-101, *"THE STREET CONCEPT — DROPPED; THE LESSONS KEPT"*.
-- **Kept:** the hero copy (*Websites built / to be seen.* + subtext) — the home page now shows just the text; the 3D text on the
-  bench (`hero-text.tsx`, lit by its two sketch lights); the page camera and page guide as TAKES (`hero-page.tsx`); the camera
-  bench in BOTH media (WebGL, WebGPU — Carl: the medium depends on the new concept).
+- **Three logo files found EMPTIED** (0 bytes, 7 November 11:59, after a normal restart — not from a session):
+  `c2b-logo-gold-hero.svg`, `hero-logo-transition-concept.md`, `transition/README.md`. Carl had them committed as empty
+  (`0027d46`); the old contents are in history at `3bf92ab`. Several notes still point at them (`brand-assets/logo/README.md`,
+  `origins/README.md`, a comment in `site-header.tsx`, D-entries) — left as they are, not raised further by Carl.
+- **Carl brought the concept a day early** (`OneDrive\Pictures\Hero Section`: seven three.js examples, two NUMBERED for the
+  story's order, and `Logo2.1.png`). Built up beat by beat, every beat recorded in D-101 with Carl's words. Seven references
+  FILMED and MEASURED on Carl's PC into `03 The hero\00 References` (scripts in `live-work/hero-concept-8-november/`).
+
+## THE CONCEPT (Carl's; details next session)
+
+1. **Opening:** the RED-HOT logo stands on its end — c on the floor, b against the t of *"built"* — top edge to the camera, face
+   to the right (sketch `sketch-1-the-lean.png`). Text ICE BLUE; the subtext's bottom line on the floor, only the TIPS of the
+   two y's (*"you"*, *"eyes"*) touching — *"now we have balance"*.
+2. **It notices the visitor,** jumps (x cm), turns in the air to face us; the HEAVY LANDING melts it.
+3. **Beat 1 — red liquid blobs** (`webgl_marchingcubes`, one material with the logo); an unseen WALL just past the viewport's
+   right edge (bounce off the screen's side); they gather in the middle and RE-FORM the logo standing, facing us.
+4. **Beat 2 — localised PLATINUM BLUE RAIN** on the logo cools it to platinum blue. Steam (fog / VDB) raised, not chosen.
+5. **Beat 3 — the logo is WET; a CLOTH moves over it,** each pass leaving GOLD — shiny and new. (It may jump to meet the cloth:
+   raised.) The phases END on the gold logo, which stays.
+6. **The floor** takes heat or cold by phase — a gradient from the logo, no square, no edge; minimal at the y tips.
+7. **"GANDALF's FIREWORKS"** (Carl's name): once the gold logo is established, the pointer emits numerous tiny c2bs that come
+   apart into c's, 2s and b's; a SHELF LIFE; nothing during the phases.
 
 ## NEXT — CARL's
 
-- **A NEW HERO CONCEPT — CARL BRINGS IT, MONDAY 9 NOVEMBER.** Carl: *"Next session is on Monday. I have the weekend to come
-  up with a concept."* Wait for him to present it; then record it through the brainstorm form
-  (`live-work/templates/brainstorm-record.template.md`, its MEDIUM slot), price every technique (D-108), and judge it by what
-  a client sees in the first seconds on an office PC. Don't pitch a concept of the Builder's own unless he asks.
-  RAISED by Carl at the close (not chosen): *"I think it may be fair to say i like those liquid bubble things"* — `webgl_marchingcubes`; then *"with a logo that is solid a nice morph could be on the cards"* (routes in D-101's last entry); then *"could the liquid fill the shape of the logo?"* (routes there too); the jack-in-the-box droplets example; and a SHARD CLOUD filling the logo, gathering into it or bursting out (`webgl_buffergeometry`; Carl: *"Thats exactly how i would use it"*). Then the compute RAIN (`webgpu_compute_particles_rain`, measured: 0.85 MB, ~1–2 s) and Carl's *"parting of the bland sea"* — a designed dry shape in the rain. Then the VFX linked particles (`webgpu_tsl_vfx_linkedparticles`, responds to the pointer; ~5 ms GPU of 16.7 on Carl's PC). All raised, none chosen. Carl's task for the weekend: *"to take elememts of these and come up with a concept."*
-- ⛔ **CARL's DIRECTION for the concept:** *"The logo is the central theme. It should always return to that shape, that form. Where it goes in between. That is the question, and how."* (D-101's last entry.)
-- **Also raised at the close (D-101's last entries):** the 3D text ICE BLUE, bevelled front and back, lit SELECTIVELY — by the logo's colour
-  states and possibly the rain (drops may land on the letters); and the 19 October LOGO CHOREOGRAPHY (lean → notice → jump up → adjust attire →
-  waddle) REVIVED as a candidate (Carl: *"the parrot may not be completely dead after all"*). None chosen.
-- **The film folder is fresh:** `Videos\C2B Films\03 The hero`, empty, film 01's bins (`00 References` … `10 Pick-ups`) — made
-  this session at Carl's request; recording only on his word.
-- **State at close:** everything committed and pushed — the rewritten history (`940bc82`) and, on top, the concept search's record and
-  this handoff; the dev server STOPPED (port 3000 free). The survey's screenshots and the linked-particles film are on Carl's PC only.
-- **Open:** where D-108's running total lives (RAISED: three.js's Inspector on the bench's WebGPU medium — per-pass ms); whether a link first opened on a phone counts in the audience.
-- **Locked and tested (Carl: "lock and test"):** `app/page.tsx` relocked; this chunk's code files closed in `chunk-scope.json`
-  (`_lockedHeroPivot6Nov`); both probed with valid edits — the guard refused both. Name files again before the next code edit.
+- **The DETAILS, phase by phase, in order — THE TEXT FIRST, THEN THE LEANING LOGO** (Carl: *"We have phases, an order to work
+  through"*). The text's starting state: `hero-text.tsx` on `/proto/camera?blank=1` (it FLOATS today; it will stand with the
+  y tips on the floor).
+- **The page camera** (raised by Carl, end of session): 65 mm and 71.5 cm were judged for the street; at that setting the
+  floor reads nearly edge-on (a 2 m patch ~17 px tall, calculated, D-101). The camera MOVES during the story, so the page
+  camera is the REST frame; each move its own lens and height. Judged on the bench.
+- **Open, Carl's:** do the hot blobs and logo GLOW; heat and cold's LOOK on the floor; the floor in the GOLD phase; when the
+  pointer activates and the fireworks' count / growth / shelf life; the CYCLE (re-form the leaning logo — two routes in D-101).
+- **Builder's:** medium WebGPU a TAKE — prove MarchingCubes under WebGPURenderer and what a non-WebGPU browser sees; price every
+  technique on the real assets (D-108); the build goes through a §5a structural note before code.
+
+## STATE AT CLOSE
+
+- Everything committed and pushed; the dev server STOPPED (port 3000 free).
+- Code untouched this session. ⚠ Name files in `chunk-scope.json` with Carl before the next code edit (locks from 6 November
+  stand).
+- The reference films and raw `.webm`s are on Carl's PC only (kept, Carl: *"We can keep it for reference"*). The rain film is
+  667 MB.
 
 ## LESSONS (this session)
 
-- **Deleting a module the dev server still imports breaks EVERY page in development** — move the shared pieces out first,
-  delete last (the home page went to a build error; restored at once).
-- **Scripted writes bypass the scope guard** — use the Edit tool for code, so the guard checks it.
-- **Price before you build** — and say the running total as the work grows (D-108).
+- **Two readings of Carl's words were wrong and corrected at once** (the particles as glyph sprites; the logo's own triangles
+  coming away — it was emitted c2bs splitting). Both recorded as RAISED AND NOT CHOSEN, not rewritten.
+- **Read the example's code before describing it:** marching cubes has no physics (the floor bounce is `|cos|`; the wall
+  merges); the custom fog is a surface formula, not a volume or compute; the rain's slider prices only the drawing.
 
 ---
 
-*Written 6 November 2026, session 2.*
+*Written 8 November 2026.*
