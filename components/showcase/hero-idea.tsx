@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BenchIdea, IdeaSceneProps } from "./bench-ideas";
 import { HERO_CAMERA, HERO_PAGE, HeroPageGuide, HeroSketchLight } from "./hero-page";
-import { HeroText } from "./hero-text";
+import { HeroText, useHeroTextBuild } from "./hero-text";
 import { HeroLogo } from "./hero-logo";
 
 /**
@@ -23,14 +23,18 @@ function HeroScene({ medium, part, onReady }: IdeaSceneProps) {
   useEffect(() => {
     if (text && logo) onReady();
   }, [text, logo, onReady]);
+  // ⛔ THE TEXT BUILT ONCE, HERE (the reflection note v1.7, ownership): drawn by `HeroText`, and shared with the logo's
+  // reflection capture — ONLY when the hero's WebGPU part is loaded (the reflection is WebGPU-only; `part` is null in WebGL)
+  const textBuild = useHeroTextBuild(part?.materials?.heroText);
+  const reflect = useMemo(() => (part && textBuild ? { geometries: textBuild.geometries, material: textBuild.material } : undefined), [part, textBuild]);
   return (
     // on the grid's crossing — the workshop's origin (the floor y 0, the front line z 0)
     <group>
       <HeroSketchLight />
       {/* the 3D text (5 November 2026, session 2; `hero-text.tsx`) — the WebGPU part's edge-lit acrylic, or CLAY */}
-      <HeroText material={part?.materials?.heroText} onReady={onText} />
+      <HeroText built={textBuild} onReady={onText} />
       {/* the 2 m logo (9 November 2026; `hero-logo.tsx`): the lean APPROVED (R-103), mounted 9 November, session 2 */}
-      <HeroLogo pose="lean" pmrem={medium.pmrem} onReady={onLogo} />
+      <HeroLogo pose="lean" pmrem={medium.pmrem} onReady={onLogo} reflect={reflect} />
     </group>
   );
 }

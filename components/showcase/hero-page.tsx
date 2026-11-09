@@ -97,11 +97,19 @@ export function HeroPageGuide() {
  * carried — the arch's lights are hidden with it on `?blank=1` — so the 3D text in its clay reads EXACTLY as before the street
  * was removed. A sketch light, not a design: the new concept's light is its own step.
  */
+/** ⛔ THE SKETCH LIGHTS' VALUES, ONCE (9 November 2026, session 2; the reflection note v1.7, finding 1): the page's lights
+ *  and their copies in the logo's reflection capture (`hero-logo.tsx`) are built from this, so the two cannot drift. The
+ *  hemisphere at three's default position (0, 1, 0); the directional's target unparented at the world origin */
+export const HERO_SKETCH_LIGHT = {
+  hemi: { sky: "#ffffff", ground: "#30302c", intensity: 1.2 },
+  dir: { position: [-600, 900, 1400] as [number, number, number], intensity: 1.6 },
+} as const;
 export function HeroSketchLight() {
+  const { hemi, dir } = HERO_SKETCH_LIGHT;
   return (
     <>
-      <hemisphereLight args={["#ffffff", "#30302c", 1.2]} />
-      <directionalLight position={[-600, 900, 1400]} intensity={1.6} />
+      <hemisphereLight args={[hemi.sky, hemi.ground, hemi.intensity]} />
+      <directionalLight position={dir.position} intensity={dir.intensity} />
     </>
   );
 }

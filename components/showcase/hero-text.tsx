@@ -114,7 +114,11 @@ const NOTHING = { dispose: () => {} };
 /** the text on the bench — mounted in the blank canvas's group on the grid's crossing (the frame the block-out used; the
  *  street REMOVED 6 November 2026, session 2), lit by `HeroSketchLight` (`hero-page.tsx`). ⛔ `material` (9 November 2026):
  *  the medium's — the WebGPU medium's edge-lit acrylic (`hero-text-material.ts`, D-101); absent = CLAY, as before */
-export function HeroText({ material: makeMaterial, onReady }: { material?: () => THREE.Material; onReady?: () => void }) {
+export type HeroTextBuild = { geometries: THREE.BufferGeometry[]; material: THREE.Material; dispose(): void };
+/** ⛔ THE TEXT's BUILD, ONCE, ABOVE ITS USERS (9 November 2026, session 2; the reflection note v1.7, ownership): the text
+ *  draws it (`HeroText`) and the logo's reflection capture shares its geometry and material (`hero-logo.tsx`). Moved out of
+ *  `HeroText` verbatim; its life is its caller's (the hero's scene, `hero-idea.tsx`), disposed a task late */
+export function useHeroTextBuild(makeMaterial?: () => THREE.Material): HeroTextBuild | null {
   const fonts = useHeroFonts();
   const built = useMemo(() => {
     if (!fonts) return null;
@@ -123,6 +127,9 @@ export function HeroText({ material: makeMaterial, onReady }: { material?: () =>
     return { geometries, fits, material, dispose: () => (geometries.forEach((g) => g.dispose()), material.dispose()) };
   }, [fonts, makeMaterial]);
   useDisposeOnUnmount(built ?? NOTHING);
+  return built;
+}
+export function HeroText({ built, onReady }: { built: HeroTextBuild | null; onReady?: () => void }) {
   // ⛔ READY (9 November 2026, session 2; the workshop note v2.1 [R10-4]): the text is built — its fonts arrived, its
   // geometry and material made. The bench's "drawn" waits for it (the arch's `compileAsync` used to stand in for this)
   useEffect(() => {

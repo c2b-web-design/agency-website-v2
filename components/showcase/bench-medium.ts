@@ -80,7 +80,19 @@ export type BenchMedium = {
   pmrem: (gl: unknown) => PmremLike;
 };
 /** the part of either medium's `PMREMGenerator` the bench uses */
-export type PmremLike = { fromEquirectangular(t: THREE.Texture): { texture: THREE.Texture; dispose(): void }; dispose(): void };
+export type PmremLike = {
+  fromEquirectangular(t: THREE.Texture): { texture: THREE.Texture; dispose(): void };
+  /** ⛔ a scene captured as a prefiltered cube from `position`, reusing `renderTarget` (9 November 2026, session 2; the
+   *  hero logo's reflection, note v1.7 [R7-7]) — both media's generators have it */
+  fromScene(
+    scene: THREE.Scene,
+    sigma?: number,
+    near?: number,
+    far?: number,
+    options?: { size?: number; position?: THREE.Vector3; renderTarget?: unknown },
+  ): { texture: THREE.Texture; dispose(): void };
+  dispose(): void;
+};
 
 
 // ── THE WebGL MEDIUM — today's code, its behaviour unchanged ─────────────────────────────────────────────────────────────

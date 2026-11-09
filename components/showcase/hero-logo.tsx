@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/logo-mark-geometry";
 import { LOGO_ASPECT } from "@/components/about/logo-mark-outline";
 import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
-import { HERO_CAMERA, HERO_PAGE, HERO_TEXT_PLACE } from "./hero-page";
+import { HERO_CAMERA, HERO_PAGE, HERO_SKETCH_LIGHT, HERO_TEXT_PLACE } from "./hero-page";
 import { useDisposeOnUnmount } from "@/lib/use-dispose-on-unmount";
 import type { PmremLike } from "./bench-medium";
 
@@ -178,32 +178,195 @@ function useFamilyStudio(pmrem: ((gl: unknown) => PmremLike) | undefined): { tex
   return env;
 }
 
-/** the logo on the bench — mounted in the blank canvas's group beside `HeroText`, lit by `HeroSketchLight` and the family's
+/** what the logo reflects besides the studio: the TEXT, as second meshes sharing its geometry and material */
+export type HeroReflect = { geometries: THREE.BufferGeometry[]; material: THREE.Material };
+/** ⚠ DEV controls. ⛔ The step-1 switch (`mode: "equirect"`) was REMOVED 9 November 2026, session 3 (Carl: *"remove it"*):
+ *  it showed the lamps alone, not step 1's studio (D-101, *"COMMITTED STEP 1 IS SOUND"*; cause not found). The null
+ *  control's reference is now committed step 1's own frame, kept as a file (`hero-reflection-measure-9-november.mjs`) */
+type ReflectOpts = { text: boolean; yawDeg: number };
+type ReflectionDev = {
+  captures: number;
+  skips: number;
+  giveUps: number;
+  firstMs: number | null;
+  lastMs: number | null;
+  opts: ReflectOpts;
+  set(o: Partial<ReflectOpts>): void;
+  view(): Promise<{ w: number; h: number; data: number[] } | null>;
+};
+/** the capture's resolution, range and retries — the reflection note v1.7: 256 (the step-1 prefilter's), near 1 cm and
+ *  far 100 m ([R7-1]: the defaults, 0.1 and 100, clip everything past 1 m in this cm world), at most 10 frames' wait ([R9-2]) */
+const CAPTURE = { size: 256, near: 1, far: 10000, maxTries: 10 } as const;
+
+/**
+ * ⛔ THE LOGO's REFLECTION — THE STUDIO AND THE GLOWING TEXT (9 November 2026, session 2; `live-work/structural-note-hero-
+ * logo-reflection-9-november.md` v1.7, cleared by the Architect in review 9; Carl: *"It would be more realistic if we could
+ * show the glowing text in it"*). ONE `PMREMGenerator.fromScene` capture at the logo's centre, of a REFLECTION SCENE:
+ * - the family HDRI as its BACKGROUND (the same texture step 1 prefilters), turned 150° on `backgroundRotation` — the
+ *   capture is made in WORLD orientation, so the logo's `envMapRotation` is 0 (finding 2; the signs agree, review 9);
+ * - the TEXT, second meshes sharing its geometry and material (never the logo itself — no self-reflection);
+ * - the text's LIGHTS, copied from `HERO_SKETCH_LIGHT` (finding 1), under ONE root whose matrix is the logo's parent's,
+ *   `matrixAutoUpdate` OFF ([R9-1]: `render()` would otherwise rebuild it to identity).
+ * ⛔ RUN BETWEEN FRAMES (a task), guarded: the renderer must hold no target and no MRT, or the capture waits a frame — at
+ * most 10, then GIVES UP; skips and give-ups counted apart ([R8-2], [R9-2]). Retaken when the pose (the body's centre)
+ * moves, never per frame. ⛔ WebGPU only: `reflect` is given only by the hero's WebGPU part (the slot); without it the
+ * logo keeps step 1's studio. ⚠ DEV: `window.__heroReflection` — the counts, `set()` for the controls (text off; the yaw),
+ * `view()` for what the logo "sees" (measurement 2).
+ */
+function useReflection(pmrem: ((gl: unknown) => PmremLike) | undefined, reflect: HeroReflect | undefined, mesh: THREE.Mesh | null, opts: ReflectOpts, devRef: { current: ReflectionDev | null }) {
+  const gl = useThree((s) => s.gl);
+  const [hdri, setHdri] = useState<THREE.Texture | null>(null);
+  useEffect(() => {
+    if (!reflect) return;
+    let live = true;
+    loadStudioHdri(STUDIO_HDRI_SRC, HERO_LOGO_METAL.room).then((t) => live && setHdri(t));
+    return () => {
+      live = false;
+    };
+  }, [reflect]);
+  const built = useMemo(() => {
+    if (!reflect || !hdri) return null;
+    const scene = new THREE.Scene();
+    scene.background = hdri;
+    scene.backgroundIntensity = HERO_LOGO_METAL.envMapIntensity;
+    scene.backgroundRotation.set(0, (opts.yawDeg * Math.PI) / 180, 0);
+    const root = new THREE.Group();
+    root.matrixAutoUpdate = false;
+    const { hemi, dir } = HERO_SKETCH_LIGHT;
+    root.add(new THREE.HemisphereLight(hemi.sky, hemi.ground, hemi.intensity));
+    const d = new THREE.DirectionalLight(0xffffff, dir.intensity);
+    d.position.set(...dir.position);
+    root.add(d);
+    if (opts.text) for (const g of reflect.geometries) root.add(new THREE.Mesh(g, reflect.material));
+    scene.add(root);
+    return { scene, root };
+  }, [reflect, hdri, opts.yawDeg, opts.text]);
+  // the generator and its target, reused on every recapture; disposed a task late on a real unmount
+  const holder = useMemo(() => {
+    const h = {
+      gen: null as PmremLike | null,
+      target: null as { texture: THREE.Texture; dispose(): void } | null,
+      dispose() {
+        h.target?.dispose();
+        h.gen?.dispose();
+      },
+    };
+    return h;
+  }, []);
+  useDisposeOnUnmount(holder);
+  const [env, setEnv] = useState<THREE.Texture | null>(null);
+  const centreRef = useRef<THREE.Vector3 | null>(null);
+  useEffect(() => {
+    if (!built || !mesh || !pmrem) return;
+    let live = true;
+    let tries = 0;
+    let timer = 0;
+    const attempt = () => {
+      if (!live) return;
+      const dev = devRef.current;
+      const r = gl as unknown as { getRenderTarget(): unknown; getMRT?(): unknown };
+      if (r.getRenderTarget() !== null || (r.getMRT?.() ?? null) !== null) {
+        if (dev) dev.skips++;
+        if (++tries >= CAPTURE.maxTries) {
+          if (dev) dev.giveUps++;
+          return;
+        }
+        timer = window.setTimeout(() => requestAnimationFrame(() => attempt()), 0);
+        return;
+      }
+      mesh.updateWorldMatrix(true, false);
+      built.root.matrix.copy(mesh.parent ? mesh.parent.matrixWorld : new THREE.Matrix4());
+      built.root.matrixWorldNeedsUpdate = true;
+      const centre = new THREE.Box3().setFromObject(mesh).getCenter(new THREE.Vector3());
+      centreRef.current = centre;
+      holder.gen ??= pmrem(gl);
+      const t0 = performance.now();
+      holder.target = holder.gen.fromScene(built.scene, 0, CAPTURE.near, CAPTURE.far, { size: CAPTURE.size, position: centre, renderTarget: holder.target ?? undefined });
+      const ms = performance.now() - t0;
+      if (dev) {
+        dev.captures++;
+        dev.lastMs = ms;
+        dev.firstMs ??= ms;
+      }
+      setEnv(holder.target.texture);
+    };
+    timer = window.setTimeout(attempt, 0);
+    return () => {
+      live = false;
+      window.clearTimeout(timer);
+    };
+  }, [built, mesh, pmrem, gl, holder, devRef]);
+  // measurement 2: what the logo "sees" — the reflection scene from the capture's point, 90° toward the text (−x), RGBA8
+  useEffect(() => {
+    const dev = devRef.current;
+    if (!dev) return;
+    dev.view = async () => {
+      const c = centreRef.current;
+      if (!built || !c) return null;
+      const rt = new THREE.RenderTarget(512, 512);
+      const cam = new THREE.PerspectiveCamera(90, 1, CAPTURE.near, CAPTURE.far);
+      cam.position.copy(c);
+      cam.lookAt(c.x - 1, c.y, c.z);
+      cam.updateMatrixWorld();
+      const r = gl as unknown as { setRenderTarget(t: unknown): void; render(s: THREE.Scene, c: THREE.Camera): void; readRenderTargetPixelsAsync(t: unknown, x: number, y: number, w: number, h: number): Promise<ArrayLike<number>> };
+      r.setRenderTarget(rt);
+      r.render(built.scene, cam);
+      r.setRenderTarget(null);
+      const px = await r.readRenderTargetPixelsAsync(rt, 0, 0, 512, 512);
+      rt.dispose();
+      return { w: 512, h: 512, data: Array.from(px) };
+    };
+  }, [devRef, built, gl, reflect]);
+  return reflect ? env : null;
+}
+
+/** the logo on the bench — mounted in the hero's scene beside `HeroText`, lit by `HeroSketchLight` and the family's
  *  studio (`pmrem`, the medium's). `pose`: the LEAN (the opening, the default) or UPRIGHT (where it stood first, balanced —
- *  kept, Carl approved the balance) */
-export function HeroLogo({ pose = "lean", pmrem, onReady }: { pose?: "lean" | "upright"; pmrem?: (gl: unknown) => PmremLike; onReady?: () => void }) {
+ *  kept, Carl approved the balance). `reflect` (WebGPU only, the hero's part): the studio comes from the REFLECTION capture,
+ *  the glowing text in it */
+export function HeroLogo({ pose = "lean", pmrem, onReady, reflect }: { pose?: "lean" | "upright"; pmrem?: (gl: unknown) => PmremLike; onReady?: () => void; reflect?: HeroReflect }) {
   const geometry = useLogoGeometry(LOGO_HEIGHT_CM);
   const geo = useMemo(() => (geometry ? { geometry, dispose: () => geometry.dispose() } : null), [geometry]);
   useDisposeOnUnmount(geo ?? NOTHING);
-  const studio = useFamilyStudio(pmrem);
+  // ⚠ DEV: the reflection's controls and counts (`window.__heroReflection`) — the controls default to the design
+  const [opts, setOpts] = useState<ReflectOpts>({ text: true, yawDeg: HERO_LOGO_METAL.yawDeg });
+  // the counts live in a REF (mutable by design): they survive a control change and are written between frames
+  const devRef = useRef<ReflectionDev | null>(null);
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" || !reflect) return;
+    const d: ReflectionDev = { captures: 0, skips: 0, giveUps: 0, firstMs: null, lastMs: null, opts: { text: true, yawDeg: HERO_LOGO_METAL.yawDeg }, set: (o) => setOpts((p) => ({ ...p, ...o })), view: async () => null };
+    devRef.current = d;
+    (window as unknown as { __heroReflection?: ReflectionDev }).__heroReflection = d;
+  }, [reflect]);
+  useEffect(() => {
+    if (devRef.current) devRef.current.opts = opts;
+  }, [opts]);
+  const [mesh, setMesh] = useState<THREE.Mesh | null>(null);
+  const reflected = useReflection(pmrem, reflect, mesh, opts, devRef);
+  // step 1's studio — where there is no reflection (WebGL)
+  const studio = useFamilyStudio(reflect ? undefined : pmrem);
   // the material on its own life: a new one when the studio arrives, the old disposed a task later — never the geometry
   const material = useMemo(() => {
     const m = new THREE.MeshStandardMaterial({ color: HERO_LOGO_RED, metalness: HERO_LOGO_METAL.metalness, roughness: HERO_LOGO_METAL.roughness });
-    if (studio) {
+    if (reflected) {
+      // the reflection capture is in WORLD orientation (the turn is on its background): no rotation here
+      m.envMap = reflected;
+      m.envMapIntensity = HERO_LOGO_METAL.envMapIntensity;
+    } else if (studio) {
       m.envMap = studio.texture;
       m.envMapIntensity = HERO_LOGO_METAL.envMapIntensity;
       m.envMapRotation.set(0, (HERO_LOGO_METAL.yawDeg * Math.PI) / 180, 0);
     }
     return m;
-  }, [studio]);
+  }, [studio, reflected]);
   useDisposeOnUnmount(material);
   const placed = useMemo(() => (geometry ? (pose === "lean" ? leanPose(geometry) : uprightPose(geometry)) : null), [geometry, pose]);
   // ⛔ READY (9 November 2026, session 2; the workshop note v2.1 [R10-4]): the geometry from /about's worker AND, where the
-  // medium prefilters one, the studio on the material. The bench's "drawn" waits for it
-  const ready = !!placed && (!pmrem || !!studio);
+  // medium prefilters one, the studio (or the reflection) on the material. The bench's "drawn" waits for it
+  const ready = !!placed && (!pmrem || !!studio || !!reflected);
   useEffect(() => {
     if (ready) onReady?.();
   }, [ready, onReady]);
   if (!geometry || !placed) return null;
-  return <mesh name="hero logo" geometry={geometry} material={material} position={placed.position} quaternion={placed.quaternion} />;
+  return <mesh ref={setMesh} name="hero logo" geometry={geometry} material={material} position={placed.position} quaternion={placed.quaternion} />;
 }
