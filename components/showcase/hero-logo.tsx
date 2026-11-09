@@ -320,11 +320,59 @@ function useReflection(pmrem: ((gl: unknown) => PmremLike) | undefined, reflect:
   return reflect ? env : null;
 }
 
+/** ⚠ THROWAWAY — the liquid's route-B PROBE 1, THE SHADE NULL CONTROL (9 November 2026, session 3; the liquid note v1.5,
+ *  APPROVED). Two spheres the size of the largest blob (Ø 41 cm) in the liquid's space, just above the landing spot: LEFT
+ *  raymarched (`hero-liquid-webgpu.tsx`), RIGHT a mesh WEARING THE LOGO's OWN MATERIAL INSTANCE. The raymarched one copies
+ *  that material's colour, metalness, roughness and reflection (texture, strength, turn), so the only difference left is
+ *  the drawing. ⚠ DEV: `window.__liquidProbe.show("both" | "mesh" | "march")` — "mesh" and "march" put ONE sphere on the
+ *  LEFT spot, for the pixel-by-pixel comparison. WebGPU part only; removed after the choice. */
+const PROBE = { radius: 20.5, y: 110, dx: 45, segments: [256, 128] as const };
+type ProbeShow = "both" | "mesh" | "march";
+function LiquidProbe({ make, logoMaterial }: { make: () => THREE.Material; logoMaterial: THREE.MeshStandardMaterial }) {
+  const [show, setShow] = useState<ProbeShow>("both");
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    (window as unknown as { __liquidProbe?: { show(s: ProbeShow): void } }).__liquidProbe = { show: setShow };
+  }, []);
+  const left = useMemo(() => new THREE.Vector3(HERO_LOGO_PLACE.centreX - PROBE.dx, PROBE.y, HERO_LOGO_PLACE.face), []);
+  const right = useMemo(() => new THREE.Vector3(HERO_LOGO_PLACE.centreX + PROBE.dx, PROBE.y, HERO_LOGO_PLACE.face), []);
+  const geos = useMemo(() => {
+    const sphere = new THREE.SphereGeometry(PROBE.radius, PROBE.segments[0], PROBE.segments[1]);
+    const box = new THREE.BoxGeometry(PROBE.radius * 2.2, PROBE.radius * 2.2, PROBE.radius * 2.2);
+    return { sphere, box, dispose: () => (sphere.dispose(), box.dispose()) };
+  }, []);
+  useDisposeOnUnmount(geos);
+  // the raymarched material: a new one whenever the logo's material is replaced (its reflection arrived), copying it
+  const march = useMemo(() => {
+    const m = make() as THREE.MeshStandardMaterial;
+    m.color.copy(logoMaterial.color);
+    m.metalness = logoMaterial.metalness;
+    m.roughness = logoMaterial.roughness;
+    m.envMap = logoMaterial.envMap;
+    m.envMapIntensity = logoMaterial.envMapIntensity;
+    m.envMapRotation.copy(logoMaterial.envMapRotation);
+    const u = (m.userData as { probe?: { centre: { value: THREE.Vector3 }; radius: { value: number } } }).probe;
+    if (u) {
+      u.centre.value.copy(left);
+      u.radius.value = PROBE.radius;
+    }
+    return m;
+  }, [make, logoMaterial, left]);
+  useDisposeOnUnmount(march);
+  const meshAt = show === "both" ? right : left;
+  return (
+    <>
+      {show !== "mesh" && <mesh name="liquid probe march" geometry={geos.box} material={march} position={left} />}
+      {show !== "march" && <mesh name="liquid probe mesh" geometry={geos.sphere} material={logoMaterial} position={meshAt} />}
+    </>
+  );
+}
+
 /** the logo on the bench — mounted in the hero's scene beside `HeroText`, lit by `HeroSketchLight` and the family's
  *  studio (`pmrem`, the medium's). `pose`: the LEAN (the opening, the default) or UPRIGHT (where it stood first, balanced —
  *  kept, Carl approved the balance). `reflect` (WebGPU only, the hero's part): the studio comes from the REFLECTION capture,
  *  the glowing text in it */
-export function HeroLogo({ pose = "lean", pmrem, onReady, reflect }: { pose?: "lean" | "upright"; pmrem?: (gl: unknown) => PmremLike; onReady?: () => void; reflect?: HeroReflect }) {
+export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquidProbe }: { pose?: "lean" | "upright"; pmrem?: (gl: unknown) => PmremLike; onReady?: () => void; reflect?: HeroReflect; liquidProbe?: () => THREE.Material }) {
   const geometry = useLogoGeometry(LOGO_HEIGHT_CM);
   const geo = useMemo(() => (geometry ? { geometry, dispose: () => geometry.dispose() } : null), [geometry]);
   useDisposeOnUnmount(geo ?? NOTHING);
@@ -368,5 +416,11 @@ export function HeroLogo({ pose = "lean", pmrem, onReady, reflect }: { pose?: "l
     if (ready) onReady?.();
   }, [ready, onReady]);
   if (!geometry || !placed) return null;
-  return <mesh ref={setMesh} name="hero logo" geometry={geometry} material={material} position={placed.position} quaternion={placed.quaternion} />;
+  return (
+    <>
+      <mesh ref={setMesh} name="hero logo" geometry={geometry} material={material} position={placed.position} quaternion={placed.quaternion} />
+      {/* ⚠ THROWAWAY: the liquid's probe 1, only once the logo wears its reflection (the comparison needs the real one) */}
+      {liquidProbe && reflected && <LiquidProbe make={liquidProbe} logoMaterial={material} />}
+    </>
+  );
 }

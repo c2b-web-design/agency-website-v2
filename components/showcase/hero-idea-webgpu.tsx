@@ -2,6 +2,7 @@ import type * as THREE from "three";
 import type { BenchPost, IdeaMediumPart } from "./bench-ideas";
 import { makeHeroBloom, type HeroBloom } from "./hero-bloom";
 import { heroTextMaterial } from "./hero-text-material";
+import { liquidProbeMaterial } from "./hero-liquid-webgpu";
 
 /**
  * ⛔ THE HERO's WebGPU PART (9 November 2026, session 2; the workshop note v2.3, STEP 3, the review's [R10-5]): the text's
@@ -36,4 +37,5 @@ function heroPost(renderer: unknown, scene: THREE.Scene, camera: THREE.Camera): 
   };
 }
 
-export const HERO_WEBGPU: IdeaMediumPart = { post: heroPost, materials: { heroText: heroTextMaterial } };
+// ⚠ `liquidProbe`: the liquid's route-B PROBE 1 (the shade null control; `hero-liquid-webgpu.tsx`) — THROWAWAY
+export const HERO_WEBGPU: IdeaMediumPart = { post: heroPost, materials: { heroText: heroTextMaterial, liquidProbe: liquidProbeMaterial } };
