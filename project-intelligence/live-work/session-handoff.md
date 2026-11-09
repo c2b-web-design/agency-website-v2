@@ -6,7 +6,7 @@ session that reads it, once its replacement is written. **The record:** D-101 in
 
 ## STATE AT CLOSE
 
-- **Everything is committed and pushed.** The dev server is STOPPED (port 3000 free).
+- **Everything is committed and pushed.** ⚠ The dev server was LEFT RUNNING on port 3000 at close (Carl: *"keep the server up but stop the capture"*). Check it before starting another; per CLAUDE.md, stop it before any checkpoint.
 - **The film 3 capture is STOPPED:** `Videos\C2B Films\03 The hero\01 Discussion\2026-11-09_discussion_screen.mkv`, 4 h 01,
   remuxed after the stop to restore its duration.
 - **The scope is OPEN on Carl's word** (*"keep open until i ask you to close. Then lock and test"*). Open since today:
