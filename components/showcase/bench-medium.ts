@@ -2,6 +2,7 @@ import type { ComponentType, ForwardRefExoticComponent, RefAttributes } from "re
 import type { GLProps } from "@react-three/fiber";
 import { Grid as DreiGrid, Line as DreiLine } from "@react-three/drei";
 import type * as THREE from "three";
+import { PMREMGenerator } from "three";
 import type { ArchMedium } from "./arch-medium";
 import type { HeroBloom } from "./hero-bloom";
 
@@ -81,7 +82,13 @@ export type BenchMedium = {
    *  module constant): the bench owns the instance (`BenchScene`). Undefined = no post (the WebGL medium draws as before).
    *  Type-only import: the WebGL half never loads `hero-bloom.ts` */
   post?: { make: (renderer: unknown, scene: THREE.Scene, camera: THREE.Camera) => HeroBloom };
+  /** ⛔ the medium's PMREM generator (9 November 2026; the hero logo's studio reflection — the button family's HDRI): WebGL's
+   *  `PMREMGenerator` from `three`, WebGPU's from `three/webgpu` — each renderer prefilters with its own. The caller owns
+   *  and disposes what it makes */
+  pmrem: (gl: unknown) => PmremLike;
 };
+/** the part of either medium's `PMREMGenerator` the bench uses */
+export type PmremLike = { fromEquirectangular(t: THREE.Texture): { texture: THREE.Texture; dispose(): void }; dispose(): void };
 
 
 // ── THE WebGL MEDIUM — today's code, its behaviour unchanged ─────────────────────────────────────────────────────────────
@@ -127,6 +134,7 @@ function costEnd(gl: THREE.WebGLRenderer, cost: BenchCost, q: WebGLQuery | null,
 
 export const WEBGL_MEDIUM: BenchMedium = {
   name: "webgl",
+  pmrem: (gl) => new PMREMGenerator(gl as THREE.WebGLRenderer),
   makeGl: () => ({ antialias: true, alpha: true }),
   watch: (gl, fail) => {
     (gl as THREE.WebGLRenderer).domElement.addEventListener("webglcontextlost", () => fail("the WebGL context was lost"), { once: true });

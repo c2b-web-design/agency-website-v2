@@ -1477,7 +1477,7 @@ function BenchScene({
           <HeroText material={medium.heroText?.material} />
           {/* ⛔ the hero's LOGO, 2 m (9 November 2026; `hero-logo.tsx`): the lean APPROVED (R-103); back UPRIGHT on the right
               for the text's discussion (Carl: "return the logo to its position on the right hand side") */}
-          <HeroLogo pose="upright" />
+          <HeroLogo pose="upright" pmrem={medium.pmrem} />
         </group>
       )}
       <TrackHelpers tracks={chain.tracks} armedCam={armedCam} paths={paths} soloPath={soloPath} soloCam={solo?.cam ?? null} registryRef={registry} medium={medium} />

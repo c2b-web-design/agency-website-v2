@@ -298,6 +298,7 @@ const ARCH: ArchMedium = { Environment: WebGPUEnvironment, compileWait: webgpuCo
 
 export const WEBGPU_MEDIUM: BenchMedium = {
   name: "webgpu",
+  pmrem: (gl) => new PMREMGenerator(gl as GpuR),
   makeGl,
   // the failure watch lives in `makeGl` (`init()` caught, `onDeviceLost`) — nothing to add on the live renderer
   watch: () => {},

@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/logo-mark-geometry";
 import { LOGO_ASPECT } from "@/components/about/logo-mark-outline";
 import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
+import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 import { HERO_CAMERA, HERO_PAGE, HERO_TEXT_PLACE, useDisposeOnUnmount } from "./hero-page";
+import type { PmremLike } from "./bench-medium";
 
 /**
  * ⛔ THE HERO's LOGO ON THE BENCH (9 November 2026; D-101). Carl: *"Put a 2m logo thats facing us in the space on the right.
@@ -15,7 +18,9 @@ import { HERO_CAMERA, HERO_PAGE, HERO_TEXT_PLACE, useDisposeOnUnmount } from "./
  * - THE SAME GEOMETRY AS /about's DESK MARK: `buildLogoMarkGeometry` with `LOGO_MARK_DEFAULTS`, built off the main thread by
  *   /about's own worker (`desk-mark.worker.ts`, read, not changed — it holds the main thread ~1 s inline); inline if the
  *   worker cannot start. Only the SCALE differs (the mark's height in cm).
- * - 2 m WIDE (Carl's 2 m read as the width: the lean's length, the question it answers) → 103.9 cm tall, 4.9 cm thick.
+ * - 2 m WIDE (Carl's 2 m read as the width: the lean's length, the question it answers) → 103.9 cm tall, 7.6 cm thick
+ *   (MEASURED from the mesh, 9 November 2026; a first figure, 4.9 cm, was calculated from the source units — wrong);
+ *   volume 70,085 cm³ (~70 litres) — the mass the liquid phase must keep (Carl: "Is any new mass created?").
  * - FACING US: the mesh's face is +Z, the bench camera's side. Its FACE on the text's face plane (`HERO_TEXT_PLACE.face`),
  *   so on the page it is 2 px per cm, as the text is.
  * - THE BOTTOM EDGE ON THE FLOOR from the geometry's MEASURED bounds (not the outline's nominal 0).
@@ -24,6 +29,8 @@ import { HERO_CAMERA, HERO_PAGE, HERO_TEXT_PLACE, useDisposeOnUnmount } from "./
  * - CLAY, as the text: the metal is its own step (mesh → material → light).
  */
 const LOGO_WIDTH_CM = 200;
+/** the blobs' red — the reference's material colour (`webgl_marchingcubes`, `shiny`) */
+export const HERO_LOGO_RED = "#9c0000";
 const LOGO_HEIGHT_CM = LOGO_WIDTH_CM / LOGO_ASPECT;
 /** the t of "built"'s right-most ink, world X cm — ⚠ UNASSERTED: measured 9 November 2026 from the Geist Bold typeface JSON
  *  laid out as `heroTextLayout` lays it (a scratchpad script, −170.4; it lands on page x 684, as the bench draws it);
@@ -131,17 +138,65 @@ function leanPose(g: THREE.BufferGeometry): Pose {
   return { position: [ox, oy, TEXT_BACK_Z], quaternion: new THREE.Quaternion().setFromRotationMatrix(basis) };
 }
 
-/** the logo on the bench, in clay — mounted in the blank canvas's group beside `HeroText`, lit by `HeroSketchLight`.
- *  `pose`: the LEAN (the opening, the default) or UPRIGHT (where it stood first, balanced — kept, Carl approved the balance) */
-export function HeroLogo({ pose = "lean" }: { pose?: "lean" | "upright" }) {
+/**
+ * ⛔ THE LOGO's METAL — THE BUTTON FAMILY's, IN THE BLOBS' RED (9 November 2026; D-101). Carl, on the home page's teal button:
+ * *"this is what im after- a red version of this"*; *"yes, go that way."* The family's recipe (`WHOWEARE_LOOK`,
+ * `whoweare-button-scene.tsx`; R-045, R-058) exactly, only the colour changed:
+ * - THE COLOUR AS THE METAL's F0, PAINTED ON: the blobs' #9c0000 (the reference's `shiny`). No real metal is red (copper's
+ *   F0 is orange-pink), so red takes the TEAL's route — a chosen colour — not the gold's (the desk mark's measured gold F0).
+ *   At F0 linear ≈ 0.33 / 0 / 0 it is a DARK metal (luminance ~0.07; the teal ~0.35, the gold ~0.8), as the blobs read.
+ * - METALNESS 1, ROUGHNESS 0.4 (Carl's pick on the teal's ramp: *"closer without becoming too dark and it still showing
+ *   metalness"*).
+ * - THE STUDIO's REFLECTION: the family's HDRI (`monochrome_studio_02`), strength 1, its room darkened to 0.1, turned 150°
+ *   (the dark side behind the words on the buttons) — prefiltered by the medium's own PMREM generator (the seam's `pmrem`).
+ * - The family's LAMPS (the clay's and the moving one) are NOT here: light is its own chunk; the logo stands under the
+ *   bench's two sketch lights. ⚠ If it reads too dark, the teal's method: step the metalness and roughness, don't guess.
+ * - NEXT (Carl's plan, step 3): the glowing TEXT in the reflection — `structural-note-hero-logo-reflection-9-november.md`.
+ */
+export const HERO_LOGO_METAL = { metalness: 1, roughness: 0.4, envMapIntensity: 1, room: 0.1, yawDeg: 150 } as const;
+
+/** the family's studio, prefiltered for THIS renderer — made a task after the HDRI arrives, disposed a task late on a real
+ *  unmount or replacement (`useDisposeOnUnmount`: the 5 November StrictMode rule — WebGPU must never draw a destroyed one) */
+function useFamilyStudio(pmrem: ((gl: unknown) => PmremLike) | undefined): { texture: THREE.Texture; dispose(): void } | null {
+  const gl = useThree((s) => s.gl);
+  const [env, setEnv] = useState<{ texture: THREE.Texture; dispose(): void } | null>(null);
+  useEffect(() => {
+    if (!pmrem) return;
+    let live = true;
+    loadStudioHdri(STUDIO_HDRI_SRC, HERO_LOGO_METAL.room).then((hdri) => {
+      if (!live) return;
+      const gen = pmrem(gl);
+      const target = gen.fromEquirectangular(hdri);
+      setEnv({ texture: target.texture, dispose: () => (target.dispose(), gen.dispose()) });
+    });
+    return () => {
+      live = false;
+    };
+  }, [gl, pmrem]);
+  useDisposeOnUnmount(env ?? NOTHING);
+  return env;
+}
+
+/** the logo on the bench — mounted in the blank canvas's group beside `HeroText`, lit by `HeroSketchLight` and the family's
+ *  studio (`pmrem`, the medium's). `pose`: the LEAN (the opening, the default) or UPRIGHT (where it stood first, balanced —
+ *  kept, Carl approved the balance) */
+export function HeroLogo({ pose = "lean", pmrem }: { pose?: "lean" | "upright"; pmrem?: (gl: unknown) => PmremLike }) {
   const geometry = useLogoGeometry(LOGO_HEIGHT_CM);
-  const built = useMemo(() => {
-    if (!geometry) return null;
-    const material = new THREE.MeshStandardMaterial({ color: "#9a9a96", roughness: 0.9, metalness: 0 });
-    return { geometry, material, dispose: () => (geometry.dispose(), material.dispose()) };
-  }, [geometry]);
+  const geo = useMemo(() => (geometry ? { geometry, dispose: () => geometry.dispose() } : null), [geometry]);
+  useDisposeOnUnmount(geo ?? NOTHING);
+  const studio = useFamilyStudio(pmrem);
+  // the material on its own life: a new one when the studio arrives, the old disposed a task later — never the geometry
+  const material = useMemo(() => {
+    const m = new THREE.MeshStandardMaterial({ color: HERO_LOGO_RED, metalness: HERO_LOGO_METAL.metalness, roughness: HERO_LOGO_METAL.roughness });
+    if (studio) {
+      m.envMap = studio.texture;
+      m.envMapIntensity = HERO_LOGO_METAL.envMapIntensity;
+      m.envMapRotation.set(0, (HERO_LOGO_METAL.yawDeg * Math.PI) / 180, 0);
+    }
+    return m;
+  }, [studio]);
+  useDisposeOnUnmount(material);
   const placed = useMemo(() => (geometry ? (pose === "lean" ? leanPose(geometry) : uprightPose(geometry)) : null), [geometry, pose]);
-  useDisposeOnUnmount(built ?? NOTHING);
-  if (!built || !placed) return null;
-  return <mesh name="hero logo" geometry={built.geometry} material={built.material} position={placed.position} quaternion={placed.quaternion} />;
+  if (!geometry || !placed) return null;
+  return <mesh name="hero logo" geometry={geometry} material={material} position={placed.position} quaternion={placed.quaternion} />;
 }
