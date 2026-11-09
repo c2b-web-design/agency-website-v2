@@ -3,7 +3,6 @@ import type { GLProps } from "@react-three/fiber";
 import { Grid as DreiGrid, Line as DreiLine } from "@react-three/drei";
 import type * as THREE from "three";
 import { PMREMGenerator } from "three";
-import type { HeroBloom } from "./hero-bloom";
 
 /**
  * ⛔ THE BENCH's SEAM — the camera bench in TWO MEDIA (5 November 2026; the renderer note
@@ -72,15 +71,9 @@ export type BenchMedium = {
    *  passes it to `setViewport` as is; `WebGLBackend.updateViewport` flips it) — read in the source 5 November 2026; both
    *  take CSS px and multiply by the pixel ratio themselves */
   pipY: (height: number, top: number, h: number) => number;
-  /** ⛔ the hero text's material in this medium (⚠ the hero is an IDEA, not a tool: the workshop note v2.1 step 3 moves
-   *  this out of the medium) (9 November 2026; `structural-note-hero-text-material-9-november.md`, route B)
-   *  — undefined = the text stays in CLAY (the WebGL medium). Supplied by the WebGPU medium from `hero-text-material.ts`, so
-   *  the WebGL half never imports TSL. A NEW material per call: the caller owns and disposes it */
-  heroText?: { material: () => THREE.Material };
-  /** ⛔ the hero's GLOW — a selective bloom (9 November 2026; the bloom note v1.3, APPROVED). A FACTORY (this medium is a
-   *  module constant): the bench owns the instance (`BenchScene`). Undefined = no post (the WebGL medium draws as before).
-   *  Type-only import: the WebGL half never loads `hero-bloom.ts` */
-  post?: { make: (renderer: unknown, scene: THREE.Scene, camera: THREE.Camera) => HeroBloom };
+  // ⛔ (the hero text's material, `heroText`, and the hero's glow, `post`, LEFT THE MEDIUM on 9 November 2026, session 2 —
+  // the workshop note v2.3, step 3: they are the HERO's, an idea's, and live in its WebGPU part, `hero-idea-webgpu.tsx`,
+  // reached through `bench-ideas.ts`. The medium holds what ANY idea needs from a renderer, nothing more)
   /** ⛔ the medium's PMREM generator (9 November 2026; the hero logo's studio reflection — the button family's HDRI): WebGL's
    *  `PMREMGenerator` from `three`, WebGPU's from `three/webgpu` — each renderer prefilters with its own. The caller owns
    *  and disposes what it makes */

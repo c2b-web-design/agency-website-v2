@@ -1,101 +1,87 @@
-# Session Handoff — 9 November 2026 (Monday). THE TEXT GLOWS; THE LOGO IS RED METAL; PHASE 1's STORY IS SET
+# Session Handoff — 9 November 2026 (Monday), SESSION 2. THE BENCH IS A WORKSHOP; STEPS 1–2 BUILT; STEP 3 NEXT
 
-⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** Replaces the 8 November handoff. Delete it at the end of the
-session that reads it, once its replacement is written. **The record:** D-101 in `decisions.md`, from *"THE DETAILS SESSION
-— THE TEXT AND THE LOGO's SIZE (9 November 2026)"* to the end. Every beat is there with Carl's words.
+⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces session 1's handoff. Delete it at the end of the
+session that reads it, once its replacement is written.
 
-## STATE AT CLOSE
+**The record:** D-101 in `decisions.md`, from *"THE REFLECTION NOTE, TWO ARCHITECT ROUNDS"* to the end. Every beat is
+there with Carl's words.
 
-- **Everything is committed and pushed.** ⚠ The dev server was LEFT RUNNING on port 3000 at close (Carl: *"keep the server up but stop the capture"*). Check it before starting another; per CLAUDE.md, stop it before any checkpoint.
-- **The film 3 capture is STOPPED:** `Videos\C2B Films\03 The hero\01 Discussion\2026-11-09_discussion_screen.mkv`, 4 h 01,
-  remuxed after the stop to restore its duration.
-- **The scope is OPEN on Carl's word** (*"keep open until i ask you to close. Then lock and test"*). Open since today:
-  `hero-logo.tsx`, `camera-bench.tsx`, `hero-page.tsx`, `hero-text.tsx`, `bench-medium.ts`, `bench-medium-webgpu.tsx`,
-  `hero-text-material.ts`, `hero-bloom.ts` (the `_heroLogo9Nov` entry in `chunk-scope.json`). **Do not close them
-  without Carl.**
-- Carl moved his reference folder: `OneDrive\Pictures\Hero Section` is now `Videos\C2B Films\03 The hero\Hero Section`.
+## STATE
 
-## WHAT IS ON THE BENCH (`/proto/camera?blank=1`, now WebGPU by default)
+- **Pushed:** `9d896b1` (steps 1 and 2, the Vader move withdrawn, the timeline wording, notes, reviews 7–10, scripts).
+  The clean-checkout build passed first.
+- **The screen capture is RUNNING:** `Videos\C2B Films\03 The hero\01 Discussion\2026-11-09_s2_discussion_screen.mkv`,
+  started by the Builder on Carl's word. Stop it on Carl's word, then remux it to restore its duration (as session 1's).
+- **The dev server is up** on :3000. Kill the whole `next dev` tree before a checkpoint.
+- **The scope is OPEN on Carl's word** (`_heroLogo9Nov` in `chunk-scope.json`). Today it added:
+  - `shot-format.ts` (unused: no format change was needed)
+  - `bench-ideas.ts`, `hero-idea.tsx` and `hero-idea-webgpu.tsx` (all NEW)
+  - `bench-builder-take.ts`
+  - `bench-timeline.tsx`
+  - **Lock and test only when Carl says close.**
 
-- **The page camera: the arch's 30° vertical angle** (33 mm on the page frame, 8.7 m from the text). APPROVED (R-103).
-- **The text: EDGE-LIT ICE ACRYLIC** (`hero-text-material.ts`): #CFE6FF, satin faces, a Fresnel emissive on the bevels.
-  Carl: *"a great contrast"*.
-- **The text's GLOW, a selective bloom** (`hero-bloom.ts`): note v1.3, approved after four Architect reviews, plus a build
-  report the Architect reviewed. Carl: *"The glow looks great"*. The glow mask is written only by the text (Carl:
-  *"Having 2 glowing objects is a bit much"*).
-  - **Measured:** identity exact (with the lines' alpha-to-coverage off); halo clean; the logo unlit by it; +1.3 ms GPU; a
-    ~500 ms first-frame compile, accepted as known.
-  - Standing check: `live-work/scripts/hero-bloom-measure-9-november.mjs`.
-- **The logo: 2 m, /about's desk-mark geometry** (`hero-logo.tsx`).
-  - Volume **70,085 cm³ (~70 L)**, **7.6 cm thick** (measured; an earlier "4.9 cm" was wrong).
-  - Two poses: **upright** (balanced, APPROVED, now mounted) and the **lean** (12.5°, on the t's crossbar tip, APPROVED,
-    R-103).
-  - **Material STEP 1:** the button family's metal in the blobs' red: #9c0000 as F0, metalness 1, roughness 0.4, the
-    family's HDRI (room 0.1, 150°), through the seam's new `pmrem`. It measures #4e0000 / #731712 against the blobs'
-    sampled #460000 / #700f08. Carl: *"looking good so far"* — **NOT approved.**
+## CARL's DIRECTION TODAY (D-101)
 
-## NEXT — CARL's PLAN
+- **The camera bench is a WORKSHOP TOOL**; the idea brought to it is furniture (the hero now; the arch was film 4's). This
+  is the template model (`live-work/references/workshop-template-and-client-delivery.md`): *"when a new client comes
+  along, we clone the template."*
+- **An idea brings `home` ONLY:** where Cam 1 goes first, with what lens.
+  - **NO formula across scenes**, so no `subject` field (note v2.3). Carl: *"each scene will be different ... i dont think
+    we should apply a formuler with so mant parameters in play."*
+  - Moves are made for their scene (D-104).
+- **After the hero:** a BENCH STARTING TEMPLATE, *"Like in a DAW"*: Cam 1 placed from 0, 0, 0, a proprietary light rig.
+  The empty bench keeps the arch's old default view until then.
+- **The text under the corrected light:** *"still looks good"*.
+- **The lean is mounted** (*"i need to see it leaning first"*).
 
-1. **STEP 3: the glowing TEXT in the logo's reflection.** Design: `live-work/structural-note-hero-logo-reflection-9-november.md`
-   v1.3. Carl said *"apply the metal and reflection"* after reading it; no Architect round yet.
-   - **Then Carl redirected to the BUTTON's studio:** the capture's background is the **family HDRI**, NOT the desk mark's
-     formers (v1.3 still says formers, so amend it).
-   - The mechanism: one `fromScene` capture at the logo's position, of the studio plus the text (as second meshes sharing
-     its geometry and material). The logo is never in its own capture. Captured when the body moves, not per frame.
-   - Expectation stated: the text reads as bright edge-lit shapes, not words, at 256 px.
-   - **Carl builds substantial code in a FRESH session: this is that build.**
-2. **Then the LEAN:** switch the mount to `pose="lean"` and judge it.
-3. Later, raised by Carl:
-   - a **solid/liquid side-by-side bench** (*"They have to look the same, only the state should of changed"*);
-   - the colour **compared at the END of the process**.
+## ✔ STEP 3 BUILT AND MEASURED IN SESSION 2 (D-101, *"WORKSHOP STEP 3 BUILT"*) — the plan below kept as written
 
-## PHASE 1's STORY — SET TODAY (D-101)
+## (was) NEXT — STEP 3, THE SLOT (Carl: *"run step 3 and then we will commit and push"*)
 
-- **One red body, no new mass:** solid (the lean) → liquid → solid.
-- The blobs **emerge from the logo almost at once on the uncomfortable landing**, taking all its mass.
-- They travel **right**, **bounce off the unseen right wall a few times** (as in the reference film), **gather in the
-  middle, form the logo IN THE AIR**, and it **falls to the floor**. The landing is more balanced, but it HITS: it lands
-  on the spot the lean was jumping toward.
-- **Blobs: few and UNEQUAL**, one LARGER one (it shows the reflection), not many bubbles. A take: 50/20/15/10/5 % → Ø ~41,
-  30, 27, 24, 19 cm.
-- ⚠ **Metaballs do NOT conserve volume.** Merging inflates, so the 70 L must be HELD (measured each frame, strengths
-  scaled).
-- Their movement mirrors the film's fixed paths.
-- **Reflections:** the liquid smoother (sharp, the text clear), the solid rougher. **Roughness is the dial.**
+Design: `live-work/structural-note-bench-arch-removed-9-november.md` **v2.3**. The slot is v2.1's, cleared by the
+Architect in review 10. v2.2's `subject` field is withdrawn. Nothing is open for the Architect.
 
-## THE CAMERA — LATER (D-101; memory `project_hero_camera_layer.md`)
+- `bench-ideas.ts`: the types (`BenchIdea`, its `home`, `Scene`, `Guide`, `ready`, `byMedium.webgpu`, a generic post) and
+  the ONE list of ideas, loaded lazily: `hero: { medium: "webgpu", load }`. In the template the list is empty.
+  - `?idea=hero` picks the hero; `?blank=1` is its alias; no parameter gives the empty workshop.
+- `hero-idea.tsx`: the hero's `Scene` (lights, text, the leaning logo, `ready` when the text and the logo with its studio
+  are in), its `home` (`HERO_CAMERA`, `HERO_PAGE`), and its `Guide` (`HeroPageGuide`).
+- `hero-idea-webgpu.tsx`: the acrylic and the glow. Loaded ONLY in the WebGPU medium, which keeps `three/webgpu` out of
+  WebGL.
+  - The hooks `__heroBloom` and `__heroBloomOff` stay hero-named and are set by this part. Set the instance hook from an
+    `attach()` the bench calls in its effect, NOT in the factory: StrictMode runs `useMemo` twice.
+- `camera-bench.tsx`: no hero import; `blankHome` → the idea's home; the post drawn through the slot. `BenchScene` keeps
+  owning, calling, catching and disposing the instance (`:1256–1277`).
+- `bench-medium(.ts, -webgpu.tsx)`: `heroText` and `post` out.
+- **Verify:**
+  - pixel-identical to step 2 on `?blank=1`, on `?idea=hero` and on the plain URL (`workshop-measure-9-november.mjs`, then
+    `…-compare-…`);
+  - `?blank=1&medium=webgl` draws with no WebGPU chunk requested;
+  - the glow check unchanged;
+  - `tsc` clean; lint at the baseline; console clean.
+- **Flag, not in the note:** `useDisposeOnUnmount` (a tool helper) lives in `hero-page.tsx`, which is furniture, and both
+  `camera-bench.tsx` and `bench-medium-webgpu.tsx` import it. Moving it to a tool file needs scope: Carl's call.
 
-- The story is animated from the **FIXED page camera first**. The moving camera is a later layer on top.
-- Raised for that layer: a quick **push-in along the subtext, L→R, with speed ramps**, possibly **oblique** (the logo
-  seen behind it); and a **speed spline editor** on the bench.
+**NOW NEXT:** the reflection (note v1.7, cleared by the Architect in review 9; its *Files* and switch follow the slot: the
+reflection runs where the hero's WebGPU part is loaded). After that, the blobs.
 
 ## OPEN — WITH OWNERS
 
-- **The reflection note:** amend it to the family HDRI, then build (Builder; an Architect round if Carl routes it).
-- **Marching cubes under WebGPU:** still unproven. Prove it before the liquid (Builder).
-- **The glow's dials** (strength 0.45, radius 0.35) are takes. In the lean, the text's glow WILL visibly light the logo
-  (measured reach). That is Carl's judgement there; radius is the dial.
-- **[R4]:** the glow-attachment selection check, to be built before the lean (Architect, build review).
-- **Lint:** the accepted error plus **2 warnings in `live-work/hero-concept-8-november/projector.mjs`**, committed 8 November.
-  Reported, not touched; Carl's call.
-- **Phones:** the glow's cost is unmeasured there (D-108).
+- **The blobs: PARKED** (Carl). His proposal: copy three's marching-cubes example whole and use the logo as `addPlaneX`'s
+  wall. Open: the example's castle cube map is CC BY and not in npm's three (use the family HDRI?); a new file needs scope;
+  volume is not held; the CPU cost is to be priced.
+- **The glow's selection check fails AT THE PREVIOUS HEAD** (pre-existing: max 5, 909 values over 4, more than 200 px from
+  the text). Likely the logo's metal, but not bisected. [R4]'s attachment-level check would settle it. Reported; Carl's
+  call.
+- **Lint:** the accepted error, plus the 2 known warnings in `projector.mjs`.
 
-## LESSONS (this session)
+## LESSONS
 
-- **Do the homework before a structural note** (Carl: *"before i send that i want you to do your homework"*): read the
-  reference's SOURCE, watch its film, and read our own code. It overturned the first note: the reference reflects a photo,
-  not the scene, and the desk mark's studio is lit panels.
-- **Measure before asserting.**
-  - A font scale error (glyphs 1.39× too large) gave Carl a wrong text height; the bench exposed it.
-  - "4.9 cm thick" was calculated from source units; the mesh measured 7.6.
-  - The glow's identity check caught two wrong composites of the Builder's own.
-- **A null control first, then the negative control.** The identity failure was real (null 0/0), and it was bisected to a
-  three r185 quirk (`currentSamples` 0 on the frame-buffer target) rather than reclassified. Carl: *"We should always
-  track down and fix problems. casles made on sand have weak foundations."*
-- **Async compile in three reads the LIVE renderer state.** `PassNode.compileAsync` blanked the bench; there is no
-  precompile while anything else draws. A material's `mrtNode` on a target without MRT wipes it, and with tone mapping on,
-  every plain draw is such a target.
+- **Carry nothing of an idea into the workshop by default.** Step 2 moved the Vader take into the new world instead of
+  removing it with the arch; Carl's eye caught it.
+- **A null control and a negative control on every comparison** settled every question today: the 5 px layout shift; the
+  "slower" hero, which came from cold-compile noise; the glow failure, bisected to the previous HEAD.
 
 ---
 
-*Written 9 November 2026.*
+*Written 9 November 2026, session 2.*

@@ -38,10 +38,12 @@ import * as THREE from "three";
 import { useCanvasDpr } from "@/lib/use-site-scale";
 import { FRONT_FOV } from "./lettering-hooks";
 import { Guard, NeutralToneMapping } from "./lettering-piece";
-import { HERO_CAMERA, HERO_PAGE, HeroPageGuide, HeroSketchLight, useDisposeOnUnmount } from "./hero-page";
-import type { HeroBloom } from "./hero-bloom";
-import { HeroText } from "./hero-text";
-import { HeroLogo } from "./hero-logo";
+// ⚠ `useDisposeOnUnmount` is a TOOL helper living in the hero's `hero-page.tsx` (furniture) — flagged 9 November 2026
+// (the workshop note v2.3): moving it to a tool file needs Carl's scope
+import { useDisposeOnUnmount } from "./hero-page";
+// ⛔ THE IDEA's SLOT (9 November 2026, session 2; the workshop note v2.3, STEP 3): the bench names NO idea — the hero is
+// reached only through `bench-ideas.ts`'s list, loaded lazily (`?idea=hero`, or `?blank=1`)
+import { BENCH_IDEAS, ideaFromUrl, type BenchIdea, type BenchPost, type IdeaHome, type IdeaMediumPart } from "./bench-ideas";
 /* ⛔ THE STREET REMOVED (6 November 2026, session 2; Carl: *"We should pivot. ... I want you to delete whats there on the
  * bench."* — D-101's street superseded at the load crossroads, D-108): the block-out (`hero-blockout.tsx`), the walls'
  * bricks (`hero-bricks.tsx`, lazy behind `?bricks=1`), the lamp post's 4 m measuring mark and the bricks-only shadow map
@@ -241,15 +243,16 @@ class BenchStore {
   private queueLabel = "";
   private inGap = false;
   private jumpTo: Pose | "front" | null = null;
-  /** `?blank=1`: Home is the hero's PAGE CAMERA (`HERO_CAMERA`, D-101), in WORLD px — set by the scene, which knows the floor */
-  private blankHome: { x: number; y: number; z: number; fov: number; shift: number; frameAspect: number } | null = null;
-  /** the first time it is known, the camera GOES there — the blank canvas opens on the page camera, not a saved pose nor
-   *  the Builder's take parked at the playhead (Carl: *"You need to move the pad so its exact"*). Applied in `frame()`
-   *  AFTER the take is synced, which would otherwise park the rig on its first frame */
-  private blankHomePending = false;
-  setBlankHome(p: { x: number; y: number; z: number; fov: number; shift: number; frameAspect: number } | null) {
-    if (p && !this.blankHome) this.blankHomePending = true;
-    this.blankHome = p;
+  /** THE IDEA's HOME (`bench-ideas.ts`; the workshop note v2.3): where Cam 1 goes first, with what lens — for the hero its
+   *  PAGE CAMERA (`HERO_CAMERA`, D-101), in WORLD px — set by the scene. Was `blankHome` (`?blank=1`, the hero's only) */
+  private ideaHome: IdeaHome | null = null;
+  /** the first time it is known, the camera GOES there — the idea opens on its home, not a saved pose nor the Builder's
+   *  take parked at the playhead (Carl: *"You need to move the pad so its exact"*). Applied in `frame()` AFTER the take is
+   *  synced, which would otherwise park the rig on its first frame */
+  private ideaHomePending = false;
+  setIdeaHome(p: IdeaHome | null) {
+    if (p && !this.ideaHome) this.ideaHomePending = true;
+    this.ideaHome = p;
   }
   private keys = new Set<string>();
   private mouse = { dx: 0, dy: 0 };
@@ -798,8 +801,8 @@ class BenchStore {
     if (!this.chain.units) this.commit({ ...this.chain, units: { d: m.d, up: m.up, zc: m.zc } }, false);
     const units = this.chain.units!;
     this.syncBuilderTake(m);
-    if (this.blankHomePending && this.blankHome) {
-      this.blankHomePending = false;
+    if (this.ideaHomePending && this.ideaHome) {
+      this.ideaHomePending = false;
       this.posed = false;
       this.jumpTo = "front";
     }
@@ -817,7 +820,7 @@ class BenchStore {
       // ⛔ HOME is not a clip: the default view in the WORLD on the LIVE `d` (as the rig's first pose above), never through
       // the chain's units — so it lands square on even when the two values of `d` differ (the plan's T2)
       if (this.jumpTo === "front") {
-        const b = this.blankHome;
+        const b = this.ideaHome;
         Object.assign(r, b ? rigAt(b.x, b.y, b.z, 0, 0, b.fov) : rigAt(home.x, home.y, home.z, 0, 0, FRONT_FOV));
         this.roll = 0;
       }
@@ -948,7 +951,7 @@ class BenchStore {
     // next RESIZE did, so the first frames on `?blank=1` were drawn 2.54× too wide (the canvas 1859 × 733; measured from a
     // recording: the door 2.6× its width), in BOTH media (WebGL ~0.3 s, WebGPU ~0.16 s), and a page that never resized would
     // have stayed so. The canvas's aspect is restored wherever the offset is set (the spike's `PageCamera` did the same)
-    const shift = this.blankHome?.shift ?? 0;
+    const shift = this.ideaHome?.shift ?? 0;
     if (shift) {
       if (!camera.view || camera.view.offsetY !== -shift * 1000 || camera.aspect !== aspect) {
         camera.setViewOffset(1000, 1000, 0, -shift * 1000, 1000, 1000);
@@ -1026,8 +1029,8 @@ class BenchStore {
       // vertical view reads shorter across a wider frame. On `?blank=1` the delivered frame is the HOME PAGE's (1894 × 934, the
       // amber guide), so the 65 mm page camera read 65 — across the whole bench canvas (~2.9 : 1) it read 45. Elsewhere the
       // canvas is the frame, as before. (The page camera is the arch's 30° vertical since 9 November 2026: it reads 33.)
-      mm: focalMm(shot.fov, this.blankHome?.frameAspect ?? aspect),
-      mmOnPage: !!this.blankHome,
+      mm: focalMm(shot.fov, this.ideaHome?.frameAspect ?? aspect),
+      mmOnPage: !!this.ideaHome,
       fov: shot.fov,
       at: { x: shot.x, y: shot.y, z: shot.z },
       units: { d: m.d, up: m.up, zc: m.zc },
@@ -1089,14 +1092,14 @@ function pipRect(size: { width: number; height: number }) {
 type BenchDevHooks = {
   __benchGrid?: { who: string; at: number[] }[];
   __benchCost?: BenchCost;
-  /** the hero's bloom instance (dev only) — a harness sets its dials (`set`) */
-  __heroBloom?: HeroBloom | null;
-  /** dev only: draw plain (no bloom) — the identity check's "without" */
-  __heroBloomOff?: boolean;
+  // (the hero's glow hooks, `__heroBloom` / `__heroBloomOff`, are the HERO's — set by `hero-idea-webgpu.tsx` since
+  // 9 November 2026, session 2)
   /** dev only: the bench's scene — the identity defect's bisection hides parts of it */
   __benchScene?: THREE.Scene;
 };
 const NO_POST = { dispose: () => {} };
+/** the bench's post, as `BenchScene` holds it */
+type HeldPost = BenchPost | null;
 
 /** one track's camera, drawn in third person: a proxy camera (its lens, `far` 1.5 m) carrying an unlit body, and its frustum */
 type HelperParts = { proxy: THREE.PerspectiveCamera; helper: THREE.CameraHelper; mats: THREE.MeshBasicMaterial[] };
@@ -1195,6 +1198,8 @@ function BenchScene({
   onView,
   onReady,
   medium,
+  idea,
+  part,
 }: {
   store: BenchStore;
   grid: boolean;
@@ -1205,9 +1210,13 @@ function BenchScene({
   /** the labels' layer (DOM, the overlay's) — written by the render callback, never through React */
   labels: { current: HTMLDivElement | null };
   onView: (v: View) => void;
-  /** ⛔ THE READY SIGNAL (`data-camera-bench="drawn"`; note v2.1 [R10-4]): after the first frame drawn with the scene's
-   *  content present — on `?blank=1` the hero's text, the logo and the logo's studio; with nothing brought, the first frame */
+  /** ⛔ THE READY SIGNAL (`data-camera-bench="drawn"`; note v2.1 [R10-4]): after the first frame drawn once the IDEA reports
+   *  its content in (`IdeaSceneProps.onReady`); with nothing brought, the first frame */
   onReady: () => void;
+  /** ⛔ THE IDEA brought to the bench (`bench-ideas.ts`), loaded before the canvas mounts; null = the empty workshop */
+  idea: BenchIdea | null;
+  /** the idea's part for THIS medium (its WebGPU part in the WebGPU medium), or null */
+  part: IdeaMediumPart | null;
   /** ⛔ the bench's MEDIUM (`bench-medium.ts`): its grid, lines, cost meter and PiP origin — the only renderer-specific
    *  parts this scene touches */
   medium: BenchMedium;
@@ -1216,19 +1225,12 @@ function BenchScene({
   // ⛔ the bench's measure and world: FROZEN (9 November 2026, session 2 — `BENCH_MEASURE`, `BENCH_WORLD`; was the arch's)
   const m = BENCH_MEASURE;
   const world = BENCH_WORLD;
-  // ⛔ `?blank=1` — THE HERO's BLANK CANVAS (the block-out's, 3 November 2026 — its street REMOVED 6 November, session 2; Carl:
-  // *"The same environment and controls and functionalty to work in but with no arch. A blank canvas to build in."*). Was: the
-  // arch still BUILT AND MEASURED, only not drawn. ⛔ 9 November 2026, session 2: the arch is GONE on both URLs (`BENCH_WORLD`).
-  // Read once: the scene renders on the client only (inside the canvas)
-  const blank = useMemo(() => new URLSearchParams(window.location.search).has("blank"), []);
-  // ⛔ THE READY SIGNAL's parts (note v2.1 [R10-4]): the arch's `compileAsync` used to make "drawn" mean "everything compiled";
-  // now it waits for the hero's own pieces to arrive. ⚠ STEP 1's version — step 3 makes it the idea's own `ready`
-  const [heroText, setHeroTextReady] = useState(false);
-  const [heroLogo, setHeroLogoReady] = useState(false);
-  const contentReady = !blank || (heroText && heroLogo);
+  // ⛔ THE READY SIGNAL (note v2.1 [R10-4]): the arch's `compileAsync` used to make "drawn" mean "everything compiled"; now
+  // it waits for the IDEA to report its content in (the hero: its text, and the logo with its studio)
+  const [ideaReady, setIdeaReady] = useState(false);
+  const contentReady = !idea || ideaReady;
   const reported = useRef(false);
-  const onTextReady = useCallback(() => setHeroTextReady(true), []);
-  const onLogoReady = useCallback(() => setHeroLogoReady(true), []);
+  const onIdeaReady = useCallback(() => setIdeaReady(true), []);
   useFrame(() => {
     if (contentReady && !reported.current) {
       reported.current = true;
@@ -1236,21 +1238,19 @@ function BenchScene({
       window.setTimeout(onReady, 0);
     }
   });
-  // ...and Home becomes the hero's page camera, on the blank canvas's origin (the grid's crossing). ⛔ A LAYOUT effect (5 November
-  // 2026, session 2): it runs in the same commit that mounts the blank canvas's group, so the page camera is known before ANY frame
-  // draws it. As a passive effect it could run a frame late — the WebGPU medium, whose pipelines compile asynchronously,
+  // ...and Home becomes the IDEA's home (the hero: its page camera). ⛔ A LAYOUT effect (5 November 2026, session 2): it runs in
+  // the same commit that mounts the idea's scene, so its home is known before ANY frame draws it. As a passive effect it could run a frame late — the WebGPU medium, whose pipelines compile asynchronously,
   // drew the block-out for ~2 frames from the bench's previous camera before the page camera (seen in a recording of the
   // load; the WebGL medium's synchronous first compile hid it)
   useLayoutEffect(() => {
-    store.setBlankHome(
-      blank ? { x: HERO_CAMERA.x, y: world.floor + HERO_CAMERA.y, z: world.z1 + HERO_CAMERA.z, fov: HERO_CAMERA.vfov, shift: HERO_CAMERA.shift, frameAspect: HERO_PAGE[0] / HERO_PAGE[1] } : null,
-    );
-  }, [blank, world, store]);
+    store.setIdeaHome(idea?.home ?? null);
+  }, [idea, store]);
   // ⛔ THE HERO's GLOW — A SELECTIVE BLOOM (9 November 2026; `live-work/structural-note-hero-text-bloom-9-november.md` v1.3,
-  // APPROVED; `hero-bloom.ts`). The medium supplies a FACTORY (`post`, the WebGPU medium only); THIS SCENE OWNS THE INSTANCE:
-  // made on the blank canvas, keyed on the renderer, scene and shot camera; disposed a task late (`useDisposeOnUnmount`,
+  // APPROVED; `hero-bloom.ts`). ⛔ Since 9 November 2026, session 2 the IDEA's part supplies the FACTORY (`part.post`; the
+  // hero's WebGPU part, `hero-idea-webgpu.tsx` — was the medium's `post`); THIS SCENE OWNS THE INSTANCE, as before: made
+  // for the idea, keyed on the renderer, scene and shot camera; disposed a task late (`useDisposeOnUnmount`,
   // the 5 November StrictMode rule). ⚠ NO PRECOMPILE (a deviation from the note's [B3], found in the build — `hero-bloom.ts`):
-  // it draws from the first frame, its shaders compiled then. ONLY ON `?blank=1`. A JavaScript THROW inside its render
+  // it draws from the first frame, its shaders compiled then. ONLY WITH AN IDEA'S POST. A JavaScript THROW inside its render
   // (the renderer's state put back first, `hero-bloom.ts`) switches it off for the session — plain from then on.
   // ⛔ A BEHAVIOURAL BOUNDARY, NOT AN ENFORCED ONE (the Architect's build review, 9 November 2026): this catch sees
   // JavaScript errors ONLY. A TSL node-build error does NOT throw in three r185 — `NodeManager` catches it, logs "TSL: …"
@@ -1261,12 +1261,13 @@ function BenchScene({
   const glR = useThree((s) => s.gl);
   const sceneR = useThree((s) => s.scene);
   const getR3F = useThree((s) => s.get);
-  const post = useMemo(() => (blank && medium.post ? medium.post.make(glR, sceneR, getR3F().camera) : null), [blank, medium, glR, sceneR, getR3F]);
+  const post: HeldPost = useMemo(() => (part?.post ? part.post(glR, sceneR, getR3F().camera) : null), [part, glR, sceneR, getR3F]);
   useDisposeOnUnmount(post ?? NO_POST);
   const postFailed = useRef(false);
   useEffect(() => {
     postFailed.current = false;
-    if (post && process.env.NODE_ENV !== "production") (window as unknown as BenchDevHooks).__heroBloom = post;
+    // the instance the bench KEPT (StrictMode makes and drops one in development): the idea's dev hooks name it here
+    post?.attach?.();
     // ⚠ DEV ONLY — the identity defect's bisection: the scene, so a harness can hide the lines or the grid
     if (process.env.NODE_ENV !== "production") (window as unknown as BenchDevHooks).__benchScene = sceneR;
   }, [post, sceneR]);
@@ -1369,9 +1370,9 @@ function BenchScene({
     // on: with the scissor test on, its clear touches only the PiP). ⛔ The PiP's Y from the medium: WebGL counts from the
     // bottom-left, `WebGPURenderer` from the top-left (`pipY`)
     // ⛔ THE GLOW's DRAW (9 November 2026; the bloom note v1.3): ONE camera per frame through the bloom — the shot camera in
-    // first person, the EYE in third; the PiP below stays PLAIN by design ([R1]). Plain after a failure, or
-    // when a harness sets `__heroBloomOff` (the identity check's "without")
-    const bloomNow = post && !postFailed.current && !dev?.__heroBloomOff ? post : null;
+    // first person, the EYE in third; the PiP below stays PLAIN by design ([R1]). Plain after a failure. (The identity
+    // check's "without", `__heroBloomOff`, is honoured inside the hero's post since 9 November 2026, session 2)
+    const bloomNow = post && !postFailed.current ? post : null;
     const draw = (cam: THREE.Camera) => {
       if (bloomNow) {
         try {
@@ -1379,7 +1380,7 @@ function BenchScene({
           return;
         } catch (e) {
           postFailed.current = true;
-          console.warn("[hero bloom] render failed — the bench draws plain for the session", e);
+          console.warn("[bench post] render failed — the bench draws plain for the session", e);
         }
       }
       gl.render(scene, cam);
@@ -1438,19 +1439,9 @@ function BenchScene({
     <>
       {/* ⛔ the bench's camera: the page's start and lens; `far` d × 60 — a free camera leaves the page's d × 10 */}
       <PerspectiveCamera makeDefault position={[homeAt(m.d).x, homeAt(m.d).y, homeAt(m.d).z]} fov={FRONT_FOV} near={benchNearCm()} far={m.d * 60} />
-      {/* the hero's blank canvas, on the floor where the grid's centre line and front line cross (D-101; the street removed
-          6 November 2026, session 2): the 3D text and its two sketch lights */}
-      {blank && (
-        <group position={[0, world.floor, world.z1]}>
-          <HeroSketchLight />
-          {/* ⛔ the hero's TEXT in 3D, in place of the stand-in cards (5 November 2026, session 2; `hero-text.tsx`) */}
-          <HeroText material={medium.heroText?.material} onReady={onTextReady} />
-          {/* ⛔ the hero's LOGO, 2 m (9 November 2026; `hero-logo.tsx`): the lean APPROVED (R-103); back UPRIGHT on the right
-              for the text's discussion (Carl: "return the logo to its position on the right hand side"); LEANING again
-              9 November, session 2 (Carl: "i need to see it leaning first. It will move from that position") */}
-          <HeroLogo pose="lean" pmrem={medium.pmrem} onReady={onLogoReady} />
-        </group>
-      )}
+      {/* ⛔ THE IDEA BROUGHT TO THE BENCH (`bench-ideas.ts`; the workshop note v2.3, step 3) — its own objects and lights,
+          in the workshop's world. Was the hero's group under `?blank=1`, moved VERBATIM to `hero-idea.tsx` */}
+      {idea && <idea.Scene medium={medium} part={part} onReady={onIdeaReady} />}
       <TrackHelpers tracks={chain.tracks} armedCam={armedCam} paths={paths} soloPath={soloPath} soloCam={solo?.cam ?? null} registryRef={registry} medium={medium} />
       {/* ⛔ THE FLOOR GRID — on the arch's lowest ink (FROZEN there, `BENCH_WORLD`, the arch removed 9 November 2026); lines on the centre line and the front face; EVERY line a metre, all one
           weight (Carl: "make the grid squares 1m x 1m" — the faint metre lines under heavier 5 m ones read as 5 m squares).
@@ -1633,8 +1624,9 @@ export default dynamic(() => Promise.resolve(CameraBenchInner), { ssr: false });
 
 function CameraBenchInner() {
   const dpr = useCanvasDpr([1, 2]);
-  // `?blank=1`, the hero's blank canvas (as `BenchScene` reads it): here for the page guide. Client only (`ssr: false`)
-  const blank = useMemo(() => new URLSearchParams(window.location.search).has("blank"), []);
+  // ⛔ THE IDEA the URL brings (`bench-ideas.ts`: `?idea=<name>`, `?blank=1` the hero's alias), read once. Client only
+  const ideaName = useMemo(() => ideaFromUrl(window.location.search), []);
+  const ideaEntry = ideaName ? (BENCH_IDEAS[ideaName] ?? null) : null;
   const [initial] = useState(loadChain);
   const [store] = useState(() => new BenchStore(initial.chain));
   // ⛔ the Builder's take handed to the store (an effect, re-run when the take's code changes — Fast Refresh re-runs effects)
@@ -1656,7 +1648,8 @@ function CameraBenchInner() {
   /** the third-person labels' layer — written by the render callback by ref, never through React */
   const labelsRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number } | null>(null);
-  const why = failed;
+  // an idea the list does not hold — said, never a silent empty bench
+  const why = failed ?? (ideaName && !ideaEntry ? `no idea called "${ideaName}" is on the bench's list (bench-ideas.ts)` : null);
   // ⛔ THE MEDIUM (5 November 2026; the renderer note v1.6, APPROVED; `bench-medium.ts`): read ONCE from the URL
   // (`?medium=webgpu`; absent = WebGL). WebGL is there at once — today's bench, no loading frame; WebGPU's half is loaded by
   // a dynamic `import()` and AWAITED HERE, OUTSIDE the canvas, before it mounts (note §4: nothing renderer-specific may
@@ -1664,11 +1657,12 @@ function CameraBenchInner() {
   // different URL, a fresh page
   // ⛔ THE HERO's CANVAS IS WebGPU BY DEFAULT (9 November 2026; Carl: *"You know what is coming down the pipeline. WebGPU should
   // be the choice. Make the bech accordingly."*; D-101): on `?blank=1` the medium is WebGPU unless `?medium=webgl` asks for
-  // WebGL; elsewhere (the arch) the URL rule above is unchanged
+  // WebGL. ⛔ Since 9 November 2026, session 2 (the workshop note v2.3): THE IDEA's medium (`bench-ideas.ts` — the hero's is
+  // WebGPU) unless the URL names one; with no idea, the URL rule above
   const mediumName = useMemo(() => {
-    const q = new URLSearchParams(window.location.search);
-    return blank && q.get("medium") !== "webgl" ? "webgpu" : mediumFromUrl(window.location.search);
-  }, [blank]);
+    const asked = new URLSearchParams(window.location.search).get("medium");
+    return asked || !ideaEntry?.medium ? mediumFromUrl(window.location.search) : ideaEntry.medium;
+  }, [ideaEntry]);
   const [medium, setMedium] = useState<BenchMedium | null>(mediumName === "webgl" ? WEBGL_MEDIUM : null);
   const [backend, setBackend] = useState(mediumName === "webgl" ? "webgl" : "");
   useEffect(() => {
@@ -1682,6 +1676,23 @@ function CameraBenchInner() {
     };
   }, [mediumName]);
   const glProp = useMemo(() => medium?.makeGl((w) => setFailed(w), setBackend), [medium]);
+  // ⛔ THE IDEA AND ITS PART FOR THIS MEDIUM — loaded LAZILY and awaited HERE, outside the canvas, before it mounts (as the
+  // medium is: nothing may suspend inside the `Canvas`). `undefined` = still loading; the empty workshop has none to wait for
+  const [brought, setBrought] = useState<{ idea: BenchIdea; part: IdeaMediumPart | null } | null | undefined>(ideaName ? undefined : null);
+  useEffect(() => {
+    if (!ideaEntry) return;
+    let live = true;
+    ideaEntry
+      .load()
+      .then(async (idea) => {
+        const part = mediumName === "webgpu" && idea.byMedium?.webgpu ? await idea.byMedium.webgpu() : null;
+        if (live) setBrought({ idea, part });
+      })
+      .catch((e: unknown) => live && setFailed(`the idea "${ideaName}" did not load: ${String(e)}`));
+    return () => {
+      live = false;
+    };
+  }, [ideaEntry, ideaName, mediumName]);
 
   /** ⛔ THE ONE PLACE A CHANGED CHAIN ENTERS REACT AND STORAGE — called by the store at a stop, a delete, a new track. A
    *  failed write is SHOWN until the next good one. The carry-over's report goes at the first change; its DIFFERENCES line
@@ -1879,9 +1890,9 @@ function CameraBenchInner() {
         >
           {why ? (
             <p className="absolute inset-0 flex items-center justify-center p-6 text-center text-neutral-300">The bench cannot draw: {why}.</p>
-          ) : !medium || !glProp ? (
+          ) : !medium || !glProp || brought === undefined ? (
             <p className="absolute inset-0 flex items-center justify-center p-6 text-center text-neutral-400" data-medium-loading>
-              Loading the WebGPU medium…
+              {!medium || !glProp ? "Loading the WebGPU medium…" : `Loading ${ideaName}…`}
             </p>
           ) : (
             <Guard onFailed={() => setFailed("the canvas threw")}>
@@ -1910,6 +1921,8 @@ function CameraBenchInner() {
                       onView={setView}
                       onReady={() => setDrawn(true)}
                       medium={medium}
+                      idea={brought?.idea ?? null}
+                      part={brought?.part ?? null}
                     />
                   }
                 </Suspense>
@@ -1920,8 +1933,8 @@ function CameraBenchInner() {
 
         {/* ⛔ THE OVERLAY LAYER — pointer-events: none ([A3]); only its controls take clicks, so a drag on bare picture looks */}
         <div className="pointer-events-none absolute inset-0" data-overlay>
-          {/* the hero's blank canvas: the home page's frame over the picture (D-101) */}
-          {blank && <HeroPageGuide />}
+          {/* the IDEA's guide over the picture (the hero: the home page's frame, D-101) */}
+          {brought?.idea.Guide && <brought.idea.Guide />}
           {/* ⛔ THIRD PERSON: the PiP's frame and label — over the rectangle the render callback scissors (`PIP`, one source) —
               and the cameras' labels, positioned by the render callback by ref */}
           {view?.view === "third" && (
