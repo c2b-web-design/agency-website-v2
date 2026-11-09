@@ -10,6 +10,8 @@ import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import type { ArchEnvironmentProps, ArchMedium, CompileWait } from "./arch-medium";
 import type { BenchMedium, GridProps, LineProps } from "./bench-medium";
 import { useDisposeOnUnmount } from "./hero-page";
+import { heroTextMaterial } from "./hero-text-material";
+import { makeHeroBloom } from "./hero-bloom";
 
 /**
  * ⛔ THE BENCH's WebGPU MEDIUM — the NEW column of the renderer note v1.6 §3 (5 November 2026; APPROVED; D-101). Loaded ONLY
@@ -316,4 +318,8 @@ export const WEBGPU_MEDIUM: BenchMedium = {
   meter,
   pipY: (_height, top) => top,
   arch: ARCH,
+  // the hero text's edge-lit acrylic (9 November 2026; D-101) — the seam's optional slot, as `arch`
+  heroText: { material: heroTextMaterial },
+  // the hero's glow — a selective bloom (9 November 2026; the bloom note v1.3): a factory; `BenchScene` owns the instance
+  post: { make: makeHeroBloom },
 };

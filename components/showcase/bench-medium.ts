@@ -3,6 +3,7 @@ import type { GLProps } from "@react-three/fiber";
 import { Grid as DreiGrid, Line as DreiLine } from "@react-three/drei";
 import type * as THREE from "three";
 import type { ArchMedium } from "./arch-medium";
+import type { HeroBloom } from "./hero-bloom";
 
 /**
  * ⛔ THE BENCH's SEAM — the camera bench in TWO MEDIA (5 November 2026; the renderer note
@@ -72,6 +73,14 @@ export type BenchMedium = {
   pipY: (height: number, top: number, h: number) => number;
   /** the arch's environment and compile wait — undefined = `ArchMediumContext`'s WebGL default (no provider) */
   arch?: ArchMedium;
+  /** ⛔ the hero text's material in this medium (9 November 2026; `structural-note-hero-text-material-9-november.md`, route B)
+   *  — undefined = the text stays in CLAY (the WebGL medium). Supplied by the WebGPU medium from `hero-text-material.ts`, so
+   *  the WebGL half never imports TSL. A NEW material per call: the caller owns and disposes it */
+  heroText?: { material: () => THREE.Material };
+  /** ⛔ the hero's GLOW — a selective bloom (9 November 2026; the bloom note v1.3, APPROVED). A FACTORY (this medium is a
+   *  module constant): the bench owns the instance (`BenchScene`). Undefined = no post (the WebGL medium draws as before).
+   *  Type-only import: the WebGL half never loads `hero-bloom.ts` */
+  post?: { make: (renderer: unknown, scene: THREE.Scene, camera: THREE.Camera) => HeroBloom };
 };
 
 

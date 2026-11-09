@@ -32,7 +32,8 @@ import * as THREE from "three";
 import { useCanvasDpr } from "@/lib/use-site-scale";
 import { FRONT_FOV, MeasureSpans } from "./lettering-hooks";
 import { Guard, LetteringPiece, measurePiece, NeutralToneMapping, usePieceBuild, type Built, type PieceMeasure } from "./lettering-piece";
-import { HERO_CAMERA, HERO_PAGE, HeroPageGuide, HeroSketchLight } from "./hero-page";
+import { HERO_CAMERA, HERO_PAGE, HeroPageGuide, HeroSketchLight, useDisposeOnUnmount } from "./hero-page";
+import type { HeroBloom } from "./hero-bloom";
 import { HeroText } from "./hero-text";
 import { HeroLogo } from "./hero-logo";
 /* ⛔ THE STREET REMOVED (6 November 2026, session 2; Carl: *"We should pivot. ... I want you to delete whats there on the
@@ -1100,7 +1101,17 @@ function pipRect(size: { width: number; height: number }) {
 
 /** ⚠ HARNESS-ONLY, DEV-ONLY window hooks of the render callback. The cost instrument itself (`BenchCost`, the timer
  *  queries) moved to the medium's seam, `bench-medium.ts` (5 November 2026) — each medium measures in its own API */
-type BenchDevHooks = { __benchGrid?: { who: string; at: number[] }[]; __benchCost?: BenchCost };
+type BenchDevHooks = {
+  __benchGrid?: { who: string; at: number[] }[];
+  __benchCost?: BenchCost;
+  /** the hero's bloom instance (dev only) — a harness sets its dials (`set`) */
+  __heroBloom?: HeroBloom | null;
+  /** dev only: draw plain (no bloom) — the identity check's "without" */
+  __heroBloomOff?: boolean;
+  /** dev only: the bench's scene — the identity defect's bisection hides parts of it */
+  __benchScene?: THREE.Scene;
+};
+const NO_POST = { dispose: () => {} };
 
 /** one track's camera, drawn in third person: a proxy camera (its lens, `far` 1.5 m) carrying an unlit body, and its frustum */
 type HelperParts = { proxy: THREE.PerspectiveCamera; helper: THREE.CameraHelper; mats: THREE.MeshBasicMaterial[] };
@@ -1240,6 +1251,30 @@ function BenchScene({
       blank && world ? { x: HERO_CAMERA.x, y: world.floor + HERO_CAMERA.y, z: world.z1 + HERO_CAMERA.z, fov: HERO_CAMERA.vfov, shift: HERO_CAMERA.shift, frameAspect: HERO_PAGE[0] / HERO_PAGE[1] } : null,
     );
   }, [blank, world, store]);
+  // ⛔ THE HERO's GLOW — A SELECTIVE BLOOM (9 November 2026; `live-work/structural-note-hero-text-bloom-9-november.md` v1.3,
+  // APPROVED; `hero-bloom.ts`). The medium supplies a FACTORY (`post`, the WebGPU medium only); THIS SCENE OWNS THE INSTANCE:
+  // made on the blank canvas, keyed on the renderer, scene and shot camera; disposed a task late (`useDisposeOnUnmount`,
+  // the 5 November StrictMode rule). ⚠ NO PRECOMPILE (a deviation from the note's [B3], found in the build — `hero-bloom.ts`):
+  // it draws from the first frame, its shaders compiled then. ONLY ON `?blank=1`. A JavaScript THROW inside its render
+  // (the renderer's state put back first, `hero-bloom.ts`) switches it off for the session — plain from then on.
+  // ⛔ A BEHAVIOURAL BOUNDARY, NOT AN ENFORCED ONE (the Architect's build review, 9 November 2026): this catch sees
+  // JavaScript errors ONLY. A TSL node-build error does NOT throw in three r185 — `NodeManager` catches it, logs "TSL: …"
+  // and swaps in a default material (`NodeManager.js:226–242, 270–286`), so a faulty glow graph would draw a WRONG canvas
+  // with nothing here firing; and GPU validation errors are asynchronous and never thrown. Both are seen in the CONSOLE,
+  // not caught here. ⚠ The camera is read when the instance is made, NOT a key: `render(cam)` swaps it each frame, so a
+  // remounted default camera does not rebuild the pipeline (and pay its compile again)
+  const glR = useThree((s) => s.gl);
+  const sceneR = useThree((s) => s.scene);
+  const getR3F = useThree((s) => s.get);
+  const post = useMemo(() => (blank && medium.post ? medium.post.make(glR, sceneR, getR3F().camera) : null), [blank, medium, glR, sceneR, getR3F]);
+  useDisposeOnUnmount(post ?? NO_POST);
+  const postFailed = useRef(false);
+  useEffect(() => {
+    postFailed.current = false;
+    if (post && process.env.NODE_ENV !== "production") (window as unknown as BenchDevHooks).__heroBloom = post;
+    // ⚠ DEV ONLY — the identity defect's bisection: the scene, so a harness can hide the lines or the grid
+    if (process.env.NODE_ENV !== "production") (window as unknown as BenchDevHooks).__benchScene = sceneR;
+  }, [post, sceneR]);
   const main = useRef<THREE.Mesh>(null);
   const fine = useRef<THREE.Mesh>(null);
   // ⛔ THE EYE's CAMERA OBJECT (note v1.3.3 §3): made ONCE with the canvas, never keyed, gone with it; layers 0 and 1. Not
@@ -1343,16 +1378,32 @@ function BenchScene({
     // R3F's own render did; THIRD PERSON the EYE fills the canvas, then the SHOT camera in the PiP's rectangle (`autoClear`
     // on: with the scissor test on, its clear touches only the PiP). ⛔ The PiP's Y from the medium: WebGL counts from the
     // bottom-left, `WebGPURenderer` from the top-left (`pipY`)
+    // ⛔ THE GLOW's DRAW (9 November 2026; the bloom note v1.3): ONE camera per frame through the bloom — the shot camera in
+    // first person, the EYE in third; the PiP below stays PLAIN by design ([R1]). Plain after a failure, or
+    // when a harness sets `__heroBloomOff` (the identity check's "without")
+    const bloomNow = post && !postFailed.current && !dev?.__heroBloomOff ? post : null;
+    const draw = (cam: THREE.Camera) => {
+      if (bloomNow) {
+        try {
+          bloomNow.render(cam);
+          return;
+        } catch (e) {
+          postFailed.current = true;
+          console.warn("[hero bloom] render failed — the bench draws plain for the session", e);
+        }
+      }
+      gl.render(scene, cam);
+    };
     medium.meter(gl, cost, () => {
       if (!third) {
         gridsFor(shot, "shot");
-        gl.render(scene, shot);
+        draw(shot);
         return;
       }
       gl.setScissorTest(false);
       gl.setViewport(0, 0, sz.width, sz.height);
       gridsFor(eye, "eye");
-      gl.render(scene, eye);
+      draw(eye);
       const y = medium.pipY(sz.height, r.top, r.h);
       gl.setViewport(r.glX, y, r.w, r.h);
       gl.setScissor(r.glX, y, r.w, r.h);
@@ -1423,9 +1474,10 @@ function BenchScene({
         <group position={[0, world.floor, world.z1]}>
           <HeroSketchLight />
           {/* ⛔ the hero's TEXT in 3D, in place of the stand-in cards (5 November 2026, session 2; `hero-text.tsx`) */}
-          <HeroText />
-          {/* ⛔ the hero's LOGO, 2 m, facing us in the space on the right (9 November 2026; `hero-logo.tsx`) */}
-          <HeroLogo />
+          <HeroText material={medium.heroText?.material} />
+          {/* ⛔ the hero's LOGO, 2 m (9 November 2026; `hero-logo.tsx`): the lean APPROVED (R-103); back UPRIGHT on the right
+              for the text's discussion (Carl: "return the logo to its position on the right hand side") */}
+          <HeroLogo pose="upright" />
         </group>
       )}
       <TrackHelpers tracks={chain.tracks} armedCam={armedCam} paths={paths} soloPath={soloPath} soloCam={solo?.cam ?? null} registryRef={registry} medium={medium} />
@@ -1664,7 +1716,13 @@ function CameraBenchInner() {
   // a dynamic `import()` and AWAITED HERE, OUTSIDE the canvas, before it mounts (note §4: nothing renderer-specific may
   // suspend inside the `Canvas` — the 26 October "Context Lost"). Fixed for the canvas's life: a different medium is a
   // different URL, a fresh page
-  const mediumName = useMemo(() => mediumFromUrl(window.location.search), []);
+  // ⛔ THE HERO's CANVAS IS WebGPU BY DEFAULT (9 November 2026; Carl: *"You know what is coming down the pipeline. WebGPU should
+  // be the choice. Make the bech accordingly."*; D-101): on `?blank=1` the medium is WebGPU unless `?medium=webgl` asks for
+  // WebGL; elsewhere (the arch) the URL rule above is unchanged
+  const mediumName = useMemo(() => {
+    const q = new URLSearchParams(window.location.search);
+    return blank && q.get("medium") !== "webgl" ? "webgpu" : mediumFromUrl(window.location.search);
+  }, [blank]);
   const [medium, setMedium] = useState<BenchMedium | null>(mediumName === "webgl" ? WEBGL_MEDIUM : null);
   const [backend, setBackend] = useState(mediumName === "webgl" ? "webgl" : "");
   useEffect(() => {

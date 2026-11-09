@@ -110,16 +110,17 @@ function useHeroFonts(): Fonts | null {
 
 const NOTHING = { dispose: () => {} };
 
-/** the text on the bench, in clay — mounted in the blank canvas's group on the grid's crossing (the frame the block-out used;
- *  the street REMOVED 6 November 2026, session 2), lit by `HeroSketchLight` (`hero-page.tsx`) */
-export function HeroText() {
+/** the text on the bench — mounted in the blank canvas's group on the grid's crossing (the frame the block-out used; the
+ *  street REMOVED 6 November 2026, session 2), lit by `HeroSketchLight` (`hero-page.tsx`). ⛔ `material` (9 November 2026):
+ *  the medium's — the WebGPU medium's edge-lit acrylic (`hero-text-material.ts`, D-101); absent = CLAY, as before */
+export function HeroText({ material: makeMaterial }: { material?: () => THREE.Material }) {
   const fonts = useHeroFonts();
   const built = useMemo(() => {
     if (!fonts) return null;
     const { geometries, fits } = heroTextLayout(fonts);
-    const material = new THREE.MeshStandardMaterial({ color: "#9a9a96", roughness: 0.9, metalness: 0 });
+    const material = makeMaterial ? makeMaterial() : new THREE.MeshStandardMaterial({ color: "#9a9a96", roughness: 0.9, metalness: 0 });
     return { geometries, fits, material, dispose: () => (geometries.forEach((g) => g.dispose()), material.dispose()) };
-  }, [fonts]);
+  }, [fonts, makeMaterial]);
   useDisposeOnUnmount(built ?? NOTHING);
   if (!built) return null;
   return (
