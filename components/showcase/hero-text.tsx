@@ -5,7 +5,8 @@ import * as THREE from "three";
 import { FontLoader, type Font } from "three/addons/loaders/FontLoader.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { advancePx, glyphGeometry, type LetteringSpec } from "./lettering-geometry";
-import { HERO_TEXT_PLACE, useDisposeOnUnmount } from "./hero-page";
+import { HERO_TEXT_PLACE } from "./hero-page";
+import { useDisposeOnUnmount } from "@/lib/use-dispose-on-unmount";
 
 /**
  * ⛔ THE HERO's TEXT IN 3D — THE SKETCH's LAST PIECE (5 November 2026, session 2; D-101; Carl: *"Yes proceed."*). On the bench

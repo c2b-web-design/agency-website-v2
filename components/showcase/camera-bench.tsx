@@ -38,9 +38,8 @@ import * as THREE from "three";
 import { useCanvasDpr } from "@/lib/use-site-scale";
 import { FRONT_FOV } from "./lettering-hooks";
 import { Guard, NeutralToneMapping } from "./lettering-piece";
-// ⚠ `useDisposeOnUnmount` is a TOOL helper living in the hero's `hero-page.tsx` (furniture) — flagged 9 November 2026
-// (the workshop note v2.3): moving it to a tool file needs Carl's scope
-import { useDisposeOnUnmount } from "./hero-page";
+// the dispose-a-task-late hook — a TOOL (`lib/`; moved out of the hero's `hero-page.tsx`, 9 November 2026, session 2)
+import { useDisposeOnUnmount } from "@/lib/use-dispose-on-unmount";
 // ⛔ THE IDEA's SLOT (9 November 2026, session 2; the workshop note v2.3, STEP 3): the bench names NO idea — the hero is
 // reached only through `bench-ideas.ts`'s list, loaded lazily (`?idea=hero`, or `?blank=1`)
 import { BENCH_IDEAS, ideaFromUrl, type BenchIdea, type BenchPost, type IdeaHome, type IdeaMediumPart } from "./bench-ideas";

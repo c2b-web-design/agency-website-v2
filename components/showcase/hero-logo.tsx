@@ -7,7 +7,8 @@ import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/lo
 import { LOGO_ASPECT } from "@/components/about/logo-mark-outline";
 import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
-import { HERO_CAMERA, HERO_PAGE, HERO_TEXT_PLACE, useDisposeOnUnmount } from "./hero-page";
+import { HERO_CAMERA, HERO_PAGE, HERO_TEXT_PLACE } from "./hero-page";
+import { useDisposeOnUnmount } from "@/lib/use-dispose-on-unmount";
 import type { PmremLike } from "./bench-medium";
 
 /**

@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-
 /**
  * ⛔ THE HERO's PAGE — what the bench's blank canvas (`/proto/camera?blank=1`) keeps after the street was REMOVED (6 November
  * 2026, session 2; Carl: *"We should pivot. Come up with a new concept for the hero. I want you to delete whats there on the
@@ -108,34 +106,8 @@ export function HeroSketchLight() {
   );
 }
 
-/**
- * ⛔ DISPOSE ON A REAL UNMOUNT ONLY (found 5 November 2026, the third-person harness in the WebGPU medium: a capture FROZEN on
- * an early frame and *"Buffer used in submit while destroyed"*). React's StrictMode (dev) runs every effect's cleanup once
- * while the object stays MOUNTED, so a `useEffect(() => () => x.dispose())` disposed objects still in the scene. WebGL quietly
- * re-uploads a disposed geometry; `WebGPURenderer` can keep a cached draw holding the destroyed buffer, and then EVERY frame's
- * commands are rejected — the picture stops. Here the disposal waits one task and is CANCELLED if the object mounts again
- * (StrictMode's remount comes at once); a real unmount, or a replaced object, is disposed a task later, already out of the
- * scene. Shared: the 3D text (`hero-text.tsx`) and the WebGPU half's grid and lines (`bench-medium-webgpu.tsx`). ⚠ Kept OUT
- * of the bench's seam (`bench-medium.ts`), which imports drei.
- */
-const pendingDispose = new WeakMap<object, number>();
-export function useDisposeOnUnmount(obj: { dispose(): void }) {
-  useEffect(() => {
-    const id = pendingDispose.get(obj);
-    if (id !== undefined) window.clearTimeout(id);
-    pendingDispose.delete(obj);
-    return () => {
-      pendingDispose.set(
-        obj,
-        window.setTimeout(() => {
-          pendingDispose.delete(obj);
-          obj.dispose();
-        }, 0),
-      );
-    };
-  }, [obj]);
-}
-
+/** ⛔ `useDisposeOnUnmount` MOVED to `lib/use-dispose-on-unmount.ts` (9 November 2026, session 2): a TOOL the bench uses, it
+ *  must not leave with the hero. ⚠ `maxAnisotropy` below is a tool too (the both-media accessor) — flagged, not moved */
 /**
  * ⛔ THE MAX ANISOTROPY, FOR EITHER MEDIUM (5 November 2026; the renderer note v1.6 §3, approved): `WebGLRenderer` answers
  * through `capabilities.getMaxAnisotropy()`; `WebGPURenderer` has no `capabilities` object (reading it THREW on mount) and

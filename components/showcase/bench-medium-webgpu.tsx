@@ -8,7 +8,7 @@ import { abs, distance, Discard, float, Fn, fract, fwidth, If, min, mix, modelWo
 import { Line2 } from "three/examples/jsm/lines/webgpu/Line2.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import type { BenchMedium, GridProps, LineProps } from "./bench-medium";
-import { useDisposeOnUnmount } from "./hero-page";
+import { useDisposeOnUnmount } from "@/lib/use-dispose-on-unmount";
 
 /**
  * ⛔ THE BENCH's WebGPU MEDIUM — the NEW column of the renderer note v1.6 §3 (5 November 2026; APPROVED; D-101). Loaded ONLY
