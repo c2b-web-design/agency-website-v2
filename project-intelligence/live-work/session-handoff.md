@@ -10,9 +10,12 @@ there with Carl's words.
 
 - **Pushed:** `9d896b1` (steps 1 and 2, the Vader move withdrawn, the timeline wording, notes, reviews 7–10, scripts).
   The clean-checkout build passed first.
-- **The screen capture is RUNNING:** `Videos\C2B Films\03 The hero\01 Discussion\2026-11-09_s2_discussion_screen.mkv`,
-  started by the Builder on Carl's word. Stop it on Carl's word, then remux it to restore its duration (as session 1's).
-- **The dev server is up** on :3000. Kill the whole `next dev` tree before a checkpoint.
+- **The screen capture is STOPPED** (Carl's word, end of session 2):
+  `Videos\C2B Films\03 The hero\01 Discussion\2026-11-09_s2_discussion_screen.mkv`, 2 h 50 min, remuxed. Start a new one
+  (into `01 Discussion`) at the start of the next session's discussion, unprompted (the filmed-build rule).
+- **The dev server is STOPPED** (the whole `next dev` tree; port 3000 free). Start it, and check `/proto/camera` answers.
+- **UNCOMMITTED in the working tree:** the reflection (5 code files) and this record (D-101, this handoff, the sprint row).
+  The reflection stays out of `main` until its null control passes.
 - **The scope is OPEN on Carl's word** (`_heroLogo9Nov` in `chunk-scope.json`). Today it added:
   - `shot-format.ts` (unused: no format change was needed)
   - `bench-ideas.ts`, `hero-idea.tsx` and `hero-idea-webgpu.tsx` (all NEW)
@@ -62,7 +65,13 @@ Architect in review 10. v2.2's `subject` field is withdrawn. Nothing is open for
 - **Flag, not in the note:** `useDisposeOnUnmount` (a tool helper) lives in `hero-page.tsx`, which is furniture, and both
   `camera-bench.tsx` and `bench-medium-webgpu.tsx` import it. Moving it to a tool file needs scope: Carl's call.
 
-**NOW NEXT:** the reflection (note v1.7, cleared by the Architect in review 9; its *Files* and switch follow the slot: the
+**⛔ LATER IN SESSION 2 — THE REFLECTION BUILT, UNCOMMITTED; ITS NULL CONTROL FAILS** (D-101, *"THE REFLECTION BUILT"*):
+the capture without the text differs from step 1's path by a mean of 5.23 (pass ≤ 1.0), and NO yaw matches (best 2.26
+near −97°). Hypothesis, unchecked: `fromScene`'s cube is MIRRORED against `fromEquirectangular`'s (r185 WebGPU
+`PMREMGenerator`: compare `_sceneToCubeUV`'s cube-camera up/forward signs with `_textureToCubeUV`, and any flip uniform).
+**Track it down before judging anything.** Run `live-work/scripts/hero-reflection-measure-9-november.mjs <out>`;
+`window.__heroReflection.set({ text, yawDeg, mode })` for the controls. Measurement 4 (the front face) is not built; stated.
+**(was) NOW NEXT:** the reflection (note v1.7, cleared by the Architect in review 9; its *Files* and switch follow the slot: the
 reflection runs where the hero's WebGPU part is loaded). After that, the blobs.
 
 ## OPEN — WITH OWNERS
