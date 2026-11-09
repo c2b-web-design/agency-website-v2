@@ -34,6 +34,7 @@ import { FRONT_FOV, MeasureSpans } from "./lettering-hooks";
 import { Guard, LetteringPiece, measurePiece, NeutralToneMapping, usePieceBuild, type Built, type PieceMeasure } from "./lettering-piece";
 import { HERO_CAMERA, HERO_PAGE, HeroPageGuide, HeroSketchLight } from "./hero-page";
 import { HeroText } from "./hero-text";
+import { HeroLogo } from "./hero-logo";
 /* ⛔ THE STREET REMOVED (6 November 2026, session 2; Carl: *"We should pivot. ... I want you to delete whats there on the
  * bench."* — D-101's street superseded at the load crossroads, D-108): the block-out (`hero-blockout.tsx`), the walls'
  * bricks (`hero-bricks.tsx`, lazy behind `?bricks=1`), the lamp post's 4 m measuring mark and the bricks-only shadow map
@@ -1037,8 +1038,8 @@ class BenchStore {
       // ⛔ THE LENS IN MILLIMETRES, ACROSS THE FRAME THAT IS DELIVERED (Carl, 3 November 2026: *"This info is going out to
       // potential clients, its important it shouls be accurate."*): a full-frame lens's mm describes its WIDTH, so the same
       // vertical view reads shorter across a wider frame. On `?blank=1` the delivered frame is the HOME PAGE's (1894 × 934, the
-      // amber guide), so the 65 mm page camera reads 65 — across the whole bench canvas (~2.9 : 1) it read 45. Elsewhere the
-      // canvas is the frame, as before
+      // amber guide), so the 65 mm page camera read 65 — across the whole bench canvas (~2.9 : 1) it read 45. Elsewhere the
+      // canvas is the frame, as before. (The page camera is the arch's 30° vertical since 9 November 2026: it reads 33.)
       mm: focalMm(shot.fov, this.blankHome?.frameAspect ?? aspect),
       mmOnPage: !!this.blankHome,
       fov: shot.fov,
@@ -1423,6 +1424,8 @@ function BenchScene({
           <HeroSketchLight />
           {/* ⛔ the hero's TEXT in 3D, in place of the stand-in cards (5 November 2026, session 2; `hero-text.tsx`) */}
           <HeroText />
+          {/* ⛔ the hero's LOGO, 2 m, facing us in the space on the right (9 November 2026; `hero-logo.tsx`) */}
+          <HeroLogo />
         </group>
       )}
       <TrackHelpers tracks={chain.tracks} armedCam={armedCam} paths={paths} soloPath={soloPath} soloCam={solo?.cam ?? null} registryRef={registry} medium={medium} />

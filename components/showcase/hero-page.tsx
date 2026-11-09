@@ -49,11 +49,16 @@ export const HERO_TEXT_PLACE = {
  * - SIDEWAYS: the text's left edge on page x 125 → cx = TEXT_LEFT + (W/2 − 125) · 0.5 = −39 cm
  * - HEIGHT: the subtext's foot (Y 0) on page y 663 → cy = (663 − H/2) · 0.5 = 98 cm (the horizon at mid-screen)
  * - LENS → DISTANCE: f in page px from the lens on a 36 mm-wide sensor over the page's width; D = f · 0.5
- * ⚠ The lens (65 mm) and the height with its shift (71.5 cm) were judged FOR THE STREET (D-101) — takes the new concept
- * may move.
+ * ⚠ The height with its shift (71.5 cm) was judged FOR THE STREET (D-101) — a take the new concept may move.
+ * ⛔ THE LENS: THE ARCH's (9 November 2026; Carl: *"Change the lens back to the same value we had when we built the arch."*).
+ * The arch was framed at a 30° VERTICAL angle of view (`FRONT_FOV`, `lettering-hooks.tsx` — not imported: this file stays
+ * free of the bench's hooks), so the page camera takes the same vertical angle: f = (H/2) / tan 15° in page px → 33.1 mm on
+ * the 36 mm-wide sensor over the page's width; the camera 8.7 m from the text's face (it was 17.1 m at 65 mm). The text stays
+ * locked to the page (2 page px per cm at its face). ⚰️ Until then 65 mm, judged for the street (D-101).
  */
-const PAGE_LENS_MM = 65;
-const F_PX = (PAGE[0] * PAGE_LENS_MM) / 36;
+const PAGE_VFOV_DEG = 30;
+const F_PX = PAGE[1] / 2 / Math.tan((PAGE_VFOV_DEG / 2) * (Math.PI / 180));
+const PAGE_LENS_MM = (F_PX * 36) / PAGE[0];
 /** the height at which a square-on camera with NO shift lands the subtext's foot (Y 0) on page y 663: 98 cm */
 const UNSHIFTED_Y = (GUIDE_SUBTEXT.top + GUIDE_SUBTEXT.height - PAGE[1] / 2) * SKETCH_CM_PER_PX;
 /**

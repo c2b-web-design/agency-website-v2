@@ -65,6 +65,24 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-103 — The Hero's Logo On The Bench: The Lean, Under The Arch's Lens (D-101): "Approved"
+
+**Date:** 2026-11-09
+**Reviewer:** Human Founder
+**Subject:** `/proto/camera?blank=1` — `components/showcase/hero-logo.tsx` (the 2 m logo, /about's desk-mark geometry, in clay), `components/showcase/hero-page.tsx` (the page camera's lens)
+
+**Carl's verdict, verbatim:** *"i think it looks better. the leaning logo is now not just a side on view. It can be seen to be the logo a lot more with a bit more of the face on view. A problem we would of have to have fixed by having it turn slightly before landing. This makes the wobble a lot more interesting and we can make the precarious nature of the landing look better. Approved. Commit and push."*
+
+**Findings:**
+
+- ✔ **APPROVED: the page camera at the arch's 30° vertical angle** (33.1 mm across the page's frame; the HUD reads 33 mm; 8.7 m from the text) — under it the lean shows some of the logo's FACE, not only its edge.
+- ✔ **APPROVED by eye earlier the same session:** the upright logo's balance (equal gaps, 202.5 cm, centre X 132.1 — *"ok, the balance looks good."*); the lean (2 m, 12.5°, on the t's crossbar tip, contact two-thirds up — *"i think the lean looks right"*).
+- **Carl's reading:** the face on view under this lens removes the need for a slight turn before landing that the edge-only view would have needed; it makes the wobble and the precarious landing more interesting.
+- ⚠ **Open, recorded in D-101:** Carl asked whether the arch had a 26 mm lens; the same 30° reads 26 mm across a ~2.6 : 1 frame (the bench canvas), 33 mm across the page's; not settled further — the approval is of what is on the bench (33 mm on the page frame).
+- **Not covered:** the material (clay), light, the jump's height / forward distance / turn (takes, in steps), the text dropped onto its y tips (still 1.57 cm up).
+
+---
+
 ## R-102 — Removed 6 November 2026 (the hero's street concept dropped; Carl: *"The only remnnants that should remain is the lessons we both learnt from it."*)
 
 The page camera this entry approved by eye survives as a TAKE (`HERO_CAMERA`, `components/showcase/hero-page.tsx`); the lessons are in `decisions.md` (*"THE STREET CONCEPT — DROPPED; THE LESSONS KEPT"*).
