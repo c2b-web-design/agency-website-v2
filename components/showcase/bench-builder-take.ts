@@ -4,8 +4,10 @@
  * in clay we iterate"*). The Builder edits THIS FILE; the bench places the take on its timeline, and a new `version`
  * REPLACES the old take where it stood (as a mesh updates when its code changes). Carl fetches, pastes and opens nothing.
  *
- * Positions in WORLD CENTIMETRES (1 layout px = 1 cm: x right of the piece's centre, y up — the floor at −429 — z out, the
- * arch's face at 16); `"default"` = the bench's default view (Home). The bench converts through the chain's units.
+ * Positions in WORLD CENTIMETRES (1 layout px = 1 cm: x right of the centre line, y up, z out). ⛔ THE WORKSHOP's WORLD since
+ * 9 November 2026 (the workshop note v2.1, step 2): THE FLOOR AT y 0, THE FRONT LINE AT z 0. Was the arch's world (the floor
+ * at −429.05, the arch's face at z 16); every number below MOVED by (0, +429.05184025084225, −16), so the take stands where
+ * it stood against the floor. `"default"` = the bench's default view (Home). The bench converts through the chain's units.
  */
 export type BuilderTake = {
   version: number;
@@ -40,8 +42,13 @@ export type BuilderTake = {
 /** ⛔ TAKE 4 (Carl: *"Its smoother but theres a little jolt at the star and finish of the roll"*): the spiral's radius now
  *  swells as sin⁴ (in `bench-chain.ts`): the camera leaves and rejoins the line with zero sideways speed and acceleration. The numbers are
  *  take 3's. */
-export const BUILDER_TAKE: BuilderTake = {
-  version: 4,
-  name: "The Vader move, take 4",
-  barrel: { from: "default", to: [0, 0, -800], turns: 2, radiusCm: 120, spiralStartZ: 1730, spiralEndZ: 616, rollEase: 0.4, paceCms: 280, rampS: 2, landS: 2.5 },
-};
+/** ⛔ NO TAKE — THE VADER MOVE WITHDRAWN (9 November 2026, session 2). Carl, on the bench after the workshop's step 2: *"on
+ *  the bench is the barrel roll. it shouldnt be there. No camera moves have bee done for the hero"*. It was film 4's move,
+ *  through the ARCH — an idea's, gone with the arch; the take MECHANISM is the bench's (a tool) and stays. With no take,
+ *  the bench withdraws the Builder's clip from the timeline (`syncBuilderTake`). ⛔ STORED OUTSIDE THE BENCH (Carl: *"how to
+ *  do that specialist move should be noted but the actual clip can be stored outside the bench"*): its method and take 4 in
+ *  both worlds, `project-intelligence/live-work/references/film04/vader-move/`. Take 4 as it stood, in the workshop's world
+ *  (moved by (0, +429.05…, −16) the same day): `{ version: 4, name: "The Vader move, take 4", barrel: { from: "default",
+ *  to: [0, 429.05184025084225, -816], turns: 2, radiusCm: 120, spiralStartZ: 1714, spiralEndZ: 600, rollEase: 0.4,
+ *  paceCms: 280, rampS: 2, landS: 2.5 } }` (in the arch's world: to [0, 0, −800], spiral 1730 → 616). */
+export const BUILDER_TAKE: BuilderTake | null = null;

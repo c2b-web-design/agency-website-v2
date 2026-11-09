@@ -9,20 +9,26 @@
  * SOLO, gaps HOLD the last picture. R1's saved chains are MIGRATED and PROVEN on load (`loadChain`). The chain is handed to
  * the Builder to refine in R2. Chunk 1's keyframes are RETIRED.
  *
- * - ⛔ THE ARCH (R-093's scene) is drawn by the SHARED `LetteringPiece` — one mechanism with the page.
+ * - ⛔ THE ARCH REMOVED (9 November 2026, session 2; Carl: *"the arch, hidden or otherwise, does not need to be there.
+ *   remove it."* — note `live-work/structural-note-bench-arch-removed-9-november.md` v2.1, STEP 1). The bench is a WORKSHOP
+ *   TOOL; what it builds is the idea brought to it (Carl: *"What we build in there is dependent on the idea we bring to
+ *   it."*). Was: R-093's arch drawn by the SHARED `LetteringPiece` — film 4's page still draws it so (not touched here).
+ *   Its measurements are FROZEN in `BENCH_WORLD` / `BENCH_MEASURE` below, exact, so nothing moved.
  * - ⛔ ONE FRAME CALLBACK (`BenchStore.frame`): the pad polled, the rig, the recording, playback. The ONE thing outside it is a
  *   hidden tab, which draws no frames: a `visibilitychange` listener calls `stopRecording` (note decision 4).
  * - ⛔ A RECORDING LIVES IN THE STORE, never React state, and reaches React and storage ONCE, when it stops (note 4a).
  * - ⛔ THE CHAIN (`bench-chain.ts`, pure, checked under Node) saved in this browser when it CHANGES; a failed save is SHOWN.
  * - ⛔ FAILURE IN PLAIN WORDS: the no-WebGL net (`webglcontextcreationerror` in the CAPTURE phase), `Guard`, a lost context,
- *   the font / collision checks, a saved chain that cannot be read (kept aside, unread).
+ *   a saved chain that cannot be read (kept aside, unread). (The arch's font / collision checks left with the arch.)
  * - ⚠ NOT WATCHED BY ANY TEST: how the pad FEELS (`camera-pad.ts`, `FEEL`) — Carl's hands only.
  * - ⛔ THE WORLD's SCALE (Carl, 26 October 2026 — *"Scale for the world"*, *"put a grid on the floor for the arch to sit
  *   on. Give me some numbers for the arch."*): ONE LAYOUT PX = ONE CENTIMETRE, Unreal's unit (`CM_PER_PX`). A READING —
  *   the arch, its light and film 4's page are unchanged; the scale names what the numbers mean. The FLOOR is the arch's
  *   lowest ink; the GRID lies on it (1 m squares, every line one weight), its lines through the arch's centre line and
  *   along its front face, so the squares count metres right of centre and out from the face. Round the FOCUS OBJECT (the C,
- *   `FOCUS`) the squares SUBDIVIDE into 10 cm once the camera is within 3 m of it.
+ *   `FOCUS`) the squares SUBDIVIDE into 10 cm once the camera is within 3 m of it. ⛔ 9 November 2026, session 2: the arch
+ *   is gone; its floor and front face are FROZEN where they were (`BENCH_WORLD`); the C, its 10 cm squares and the focus
+ *   readout went with it (*"choosing a focus object is not built"* still stands).
  */
 import { Fragment, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
@@ -30,8 +36,8 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 import { useCanvasDpr } from "@/lib/use-site-scale";
-import { FRONT_FOV, MeasureSpans } from "./lettering-hooks";
-import { Guard, LetteringPiece, measurePiece, NeutralToneMapping, usePieceBuild, type Built, type PieceMeasure } from "./lettering-piece";
+import { FRONT_FOV } from "./lettering-hooks";
+import { Guard, NeutralToneMapping } from "./lettering-piece";
 import { HERO_CAMERA, HERO_PAGE, HeroPageGuide, HeroSketchLight, useDisposeOnUnmount } from "./hero-page";
 import type { HeroBloom } from "./hero-bloom";
 import { HeroText } from "./hero-text";
@@ -43,14 +49,13 @@ import { HeroLogo } from "./hero-logo";
 import { BTN, Edges, focalMm, readPad, rigAt, SENSOR_MM, stepRig, FEEL, type Intent, type Rig } from "./camera-pad";
 import {
   addTrack, applyEdit, chainEnd, clampDt, clipEnd, clipLength, clipPoseAt, deleteClips, EDGE_S, editPoints, emptyChain, gapsOf, isTrimmed, joinsOf, numberClips,
-  newClipId, parityV1, parseChain, placeShape, poseAtT, poseInShape, recaptureStart, recordClip, replaceShape, Sampler, setTrim, shapeRefusal, sourceAt, startSpeed,
+  newClipId, parityV1, parseChain, placeShape, poseAtT, recaptureStart, recordClip, replaceShape, Sampler, setTrim, shapeRefusal, sourceAt, startSpeed,
   takesAt, trackPoseAt, trackPath, clipPath, type Chain, type Clip, type Edit, type Pose, type Shape, type Units,
 } from "./bench-chain";
 import { BenchTransport, type Tone, type TransportView } from "./bench-transport";
 import { BenchTimeline, camColour } from "./bench-timeline";
 import { BUILDER_TAKE, type BuilderTake } from "./bench-builder-take";
 import { loadMedium, mediumFromUrl, WEBGL_MEDIUM, type BenchCost, type BenchMedium } from "./bench-medium";
-import { ArchMediumContext } from "./arch-medium";
 
 type Mode = "fly" | "rec" | "play";
 /** What the UI shows, every 0.1 s: the transport's view, the pad, the camera (world px), the subject's units. */
@@ -61,10 +66,9 @@ type View = TransportView & {
   mmOnPage: boolean;
   fov: number;
   at: { x: number; y: number; z: number };
-  /** the LIVE measure (framing); clips use the chain's units */
+  /** the bench's measure (`BENCH_MEASURE`, frozen 9 November 2026 — was the LIVE measure); clips use the chain's units */
   units: { d: number; up: number; zc: number };
   rec: { at: number; length: number; cam: number } | null;
-  focusPx?: number;
   /** ⛔ THE THIRD-PERSON VIEW (note v1.3.3): which view fills the picture; the PiP's label; the soloed clip (its path drawn);
    *  the eye's distance to the arch, metres */
   view: "first" | "third";
@@ -75,8 +79,6 @@ type View = TransportView & {
 
 /** ⛔ ONE LAYOUT PX = ONE CENTIMETRE (Carl's scale, 26 October 2026 — the header). */
 const CM_PER_PX = 1;
-/** layout px as a reading in metres, unit included — text after a `{…}` that runs to a line's end loses its space in JSX */
-const metres = (px: number) => `${((px * CM_PER_PX) / 100).toFixed(2)} m`;
 /** ⛔ THE FLOOR STOP (Carl, 27 October 2026: *"The xamera should not be able to pass through the floor."*): the lens no lower
  *  than this above the arch's floor — a camera on a low floor rig, and clear of the 1 cm near plane, so the grid cannot slice
  *  through the picture when the lens looks down. ⚠ A take; flying only (a pose the chain or a jump sets is not clamped). */
@@ -96,55 +98,40 @@ function benchNearCm(): number {
 }
 
 /**
- * The arch in the world (layout px): its box, the FLOOR it stands on (its lowest ink), the CLEAR OPENING — between the
- * legs' inner edges (the letters below the curve's centre) and from the floor to the crown's underside (the N's) — and the
- * two lines' letter heights (the N, the Y). From the letters' own geometry and placements: the meshes `LetteringPiece` draws.
+ * ⛔ THE WORKSHOP's OWN WORLD (9 November 2026, session 2; note `structural-note-bench-arch-removed-9-november.md` v2.1,
+ * STEP 2). Carl: *"we need a camera bench to build things with ... and to bring different things to it to build."* — the
+ * bench is a TOOL; its world is its own, not any idea's: THE FLOOR AT y 0, THE FRONT LINE AT z 0, THE CENTRE LINE AT x 0
+ * (the grid's crossing). 1 unit = 1 cm.
+ * History: until 9 November these were MEASURED from the arch's build (the floor its lowest ink, 429.05 below its centre,
+ * the front line its face at z 16; measured on the running bench at three canvas sizes, `d` 2287.490381354744 at all
+ * three); STEP 1 froze them, exact; STEP 2 moved the origin to the floor. ⛔ EVERYTHING STORED IN THE OLD FRAME MOVES BY
+ * `OLD_ORIGIN` (the chain's units, the remembered camera and eye, the Builder's take, the default views), so nothing moved
+ * against the floor — EXCEPT the hero's lights, which sit inside its group: at the old origin the hemisphere's sky pointed
+ * DOWN (measured, D-101); here it points up, as written (Carl's choice: *"i will judge it then"*). ⛔ NOT A SECOND SOURCE
+ * OF TRUTH: the arch's measurement was deleted in step 1.
  */
-type ArchWorld = {
-  floor: number;
-  x0: number;
-  x1: number;
-  top: number;
-  z0: number;
-  z1: number;
-  clearW: number;
-  clearH: number;
-  archCap: number;
-  topCap: number;
-  topBase: number;
-  /** the FOCUS OBJECT's box (`FOCUS`), or null if the arch has no such letter */
-  focus: THREE.Box3 | null;
-  /** ⛔ every letter's box — the ONE source the clash warning reads (never a copied list) */
-  letters: { ch: string; line: "arch" | "top"; box: THREE.Box3 }[];
-};
-
-/**
- * ⛔ THE FOCUS OBJECT (Carl, 26 October 2026: *"we will probably see the hero logo from afar first. We might zoom in. That
- * will be our focus object in that moment. The 1m square should stay, but should also be subdivided by 10. Thinner lines of
- * 10cm square. So we can test it on the C. If the camera gets within, say 3m of a focus object the square can subdivide and
- * show itself."*). THE C at the base of the left column — the test object; choosing a focus object is not built.
- * The 10 cm lines GROW IN (their thickness 0 → full) as the camera's distance to the object's nearest surface closes from
- * `FINE_FROM_CM` to `FINE_FULL_CM` — the Builder's ramp, so they do not pop. ⚠ Takes.
- */
-const FOCUS = { line: "arch", ch: "C" } as const;
-const FINE_FROM_CM = 300;
-const FINE_FULL_CM = 260;
-/** ⛔ A FULL PIXEL — at 0.5 the lines were under a pixel wide and broke into dashes at a slant (Carl: "some of the lines are
- *  breaking up"); they read thinner than the metre lines by their dimmer colour instead */
-const FINE_THICKNESS = 1;
-/** ⛔ ONLY THE SQUARES ROUND THE OBJECT (Carl: "Every square need not be sub divided, only the ones around the focus
- *  object") — the metre squares within this margin of its footprint; the C stands on the front-face line, so the margin
- *  takes in the squares in front of it as well as those it stands in (was: a fixed 4 m patch) */
-const FINE_MARGIN_CM = 10;
+const BENCH_WORLD = { floor: 0, z1: 0 } as const;
+/** the OLD world's origin (the arch's centre line, z 0 of its depth), in the workshop's world: what every position stored
+ *  before step 2 is moved by — once, on load */
+const OLD_ORIGIN = { y: 429.05184025084225, z: -16 } as const;
+/** ⛔ THE DEFAULT VIEW — face-on along the centre line, at the old origin's height, `dist` in front of it: the bench's Home
+ *  with nothing brought (`dist` = d) and the eye's first view (3d). ONE place for the seven sites that wrote `(0, 0, d)` in
+ *  the old world (the Architect's review 10, [R10-1]) */
+const homeAt = (dist: number) => ({ x: 0, y: OLD_ORIGIN.y, z: OLD_ORIGIN.z + dist });
+/** the bench's measure — `d` the front distance, the subject's centre at (0, `up`, `zc`); the chain's units on a NEW chain.
+ *  ⛔ THE LIVE `d` RETIRED (note v2.1, [R10-7]): note v3.2 §4 kept Home, the camera's `far` and the rig's first pose on a
+ *  LIVE `d`, re-measured per window to frame the ARCH in it (`frontDistance` takes the larger of its width and height
+ *  limits, so a tall window gave a longer `d`). With no arch there is nothing to frame: ONE `d` serves every window */
+type BenchMeasure = { d: number; up: number; zc: number };
+const BENCH_MEASURE: BenchMeasure = { d: 2287.490381354744, up: OLD_ORIGIN.y, zc: 16 + OLD_ORIGIN.z };
 
 /**
  * ⛔ THE LINES BY COLOUR (Carl: *"If it helps redefine the lines by colour"*) — as Fusion, Unreal and Blender draw theirs:
- * the metre lines neutral; the 10 cm lines a dim cool blue (never read as a metre line, or as the brass); the two lines the
- * readout measures from in AXIS COLOURS — the arch's FRONT FACE (it runs along x) red, the CENTRE LINE (along z) blue,
- * Unreal's and Fusion's x and z. ⚠ Colours are the Builder's takes.
+ * the metre lines neutral; the two lines the readout measures from in AXIS COLOURS — the FRONT LINE (it runs along x) red,
+ * the CENTRE LINE (along z) blue, Unreal's and Fusion's x and z. (The 10 cm focus lines, a dim blue, went with the arch's C,
+ * 9 November 2026.) ⚠ Colours are the Builder's takes.
  */
 const METRE_COLOUR = "#6b6b6b";
-const FINE_COLOUR = "#2c4660";
 const AXIS_X_COLOUR = "#c0453c";
 const AXIS_Z_COLOUR = "#3f6fd0";
 /** the axis lines' half-length, each FADING to the bench's ground colour toward its ends (1 − s³: near full strength close
@@ -164,46 +151,15 @@ function axisPoints(from: THREE.Vector3, to: THREE.Vector3, colour: string) {
   }
   return { points, colours };
 }
-function measureArch(built: Built, m: PieceMeasure): ArchWorld | null {
-  if (built.kind !== "arch" || !m.crown || !m.curveCentre) return null;
-  const all = built.letters.list.map((l) => {
-    const p = built.placed.placements.get(l)!;
-    const b = new THREE.Box3().setFromBufferAttribute(built.letters.geos.get(l)!.getAttribute("position") as THREE.BufferAttribute);
-    return { l, b: b.translate(new THREE.Vector3(p.x, m.up + p.y, 0)) };
-  });
-  const box = all.reduce((u, { b }) => u.union(b), new THREE.Box3());
-  const cy = m.curveCentre.y;
-  const legs = all.filter(({ l, b }) => l.line === "arch" && (b.min.y + b.max.y) / 2 < cy);
-  const left = legs.filter(({ b }) => b.max.x + b.min.x < 0).map(({ b }) => b.max.x);
-  const right = legs.filter(({ b }) => b.max.x + b.min.x > 0).map(({ b }) => b.min.x);
-  const height = (line: "arch" | "top", ch: string) => {
-    const f = all.find(({ l }) => l.line === line && l.ch.toUpperCase() === ch);
-    return f ? f.b.max.y - f.b.min.y : NaN;
-  };
-  const floor = box.min.y;
-  return {
-    floor,
-    x0: box.min.x,
-    x1: box.max.x,
-    top: box.max.y,
-    z0: box.min.z,
-    z1: box.max.z,
-    clearW: left.length && right.length ? Math.min(...right) - Math.max(...left) : NaN,
-    clearH: m.crown.y - floor,
-    archCap: height("arch", "N"),
-    topCap: height("top", "Y"),
-    topBase: Math.min(...all.filter(({ l }) => l.line === "top").map(({ b }) => b.min.y)) - floor,
-    focus: all.find(({ l }) => l.line === FOCUS.line && l.ch.toUpperCase() === FOCUS.ch)?.b ?? null,
-    letters: all.map(({ l, b }) => ({ ch: l.ch.toUpperCase(), line: l.line, box: b })),
-  };
-}
-
 /** ⛔ THE CHAIN's KEYS — each with its own version inside (`CHAIN_VERSION`, never the shot format's). ⛔ SHAPE CLIPS (note
  *  v3.2 §4): v3 is read first; ONLY when it is ABSENT is v2 (T1a's tracks) read and migrated; only when BOTH are absent is
  *  v1 (R1's) read, migrated and proven. ⛔ ONLY v3 IS EVER WRITTEN: v2 and v1 are never written or removed (Carl, of v1:
  *  *"Only when I say so"*) — so an older checkout in this browser finds its own v2 intact. ⚠ Work done LATER in an older
  *  checkout writes v2, which this build never reads again once v3 exists. Chunk 1's keyed take is left UNREAD. */
-const CHAIN_KEY = "c2b-camera-bench-chain-v3";
+/** ⛔ STEP 2 (9 November 2026): the chain in the WORKSHOP's world — chain format v3 inside, its units moved by `OLD_ORIGIN`.
+ *  The arch-world copy (`CHAIN_KEY_V3`) is read ONCE when this key is absent, moved, and KEPT, never written again */
+const CHAIN_KEY = "c2b-camera-bench-chain-v3-workshop";
+const CHAIN_KEY_V3 = "c2b-camera-bench-chain-v3";
 const CHAIN_KEY_V2 = "c2b-camera-bench-chain-v2";
 const CHAIN_KEY_V1 = "c2b-camera-bench-chain-v1";
 /** `localStorage` per origin, keys + values — MEASURED 27 October 2026 in Playwright's Chromium (Carl's Chrome's engine,
@@ -213,19 +169,30 @@ const MOUSE_DEG_PER_PX = 0.15;
 /** ⛔ THE CAMERA REMEMBERED (Carl, 27 October 2026: *"It shouldnt move"* → *"Yes, build it"*): the rig's pose in WORLD px,
  *  saved in this browser when it changes and restored on load — a refresh or a code reload never moves it. Home still goes
  *  to the default view. A per-viewer convenience: a failed read or write falls back to the default view, said nowhere. */
-const CAMERA_KEY = "c2b-camera-bench-camera-v1";
+const CAMERA_KEY = "c2b-camera-bench-camera-v2";
+/** the camera remembered in the ARCH's world (before 9 November 2026) — read when v2 is absent, moved, kept */
+const CAMERA_KEY_V1 = "c2b-camera-bench-camera-v1";
 /** ⛔ THE EYE REMEMBERED (note v1.3.3 §3): the third-person eye, its own key, as the shot camera's */
-const EYE_KEY = "c2b-camera-bench-eye-v1";
+const EYE_KEY = "c2b-camera-bench-eye-v2";
+const EYE_KEY_V1 = "c2b-camera-bench-eye-v1";
 /** the eye's lens on a first visit — wide, to see the scene (the bumpers zoom it, as the shot camera's) */
 const EYE_FOV = 50;
-function savedRig(key = CAMERA_KEY): Rig | null {
-  try {
-    const o = JSON.parse(window.localStorage.getItem(key) ?? "null") as Record<string, number> | null;
-    const k = ["x", "y", "z", "yaw", "pitch", "fov"];
-    return o && k.every((n) => Number.isFinite(o[n])) ? rigAt(o.x, o.y, o.z, o.yaw, o.pitch, o.fov) : null;
-  } catch {
-    return null; // unreadable storage: the default view
-  }
+function savedRig(key: typeof CAMERA_KEY | typeof EYE_KEY = CAMERA_KEY): Rig | null {
+  const read = (k: string) => {
+    try {
+      const o = JSON.parse(window.localStorage.getItem(k) ?? "null") as Record<string, number> | null;
+      const n = ["x", "y", "z", "yaw", "pitch", "fov"];
+      return o && n.every((f) => Number.isFinite(o[f])) ? o : null;
+    } catch {
+      return null; // unreadable storage: the default view
+    }
+  };
+  const o = read(key);
+  if (o) return rigAt(o.x, o.y, o.z, o.yaw, o.pitch, o.fov);
+  // ⛔ STEP 2 (9 November 2026; [R10-2]): the ARCH-world copy, moved into the workshop's world (a translation: the turn,
+  // tilt and lens unchanged). Written to v2 the next time it changes; v1 kept
+  const v1 = read(key === EYE_KEY ? EYE_KEY_V1 : CAMERA_KEY_V1);
+  return v1 ? rigAt(v1.x, v1.y + OLD_ORIGIN.y, v1.z + OLD_ORIGIN.z, v1.yaw, v1.pitch, v1.fov) : null;
 }
 /** what the store derives from a chain ON CHANGE, never per frame */
 const derive = (chain: Chain) => ({ points: editPoints(chain), end: chainEnd(chain), numbers: numberClips(chain) });
@@ -237,11 +204,13 @@ const clamp = (v: number) => Math.max(-1, Math.min(1, v));
  *  the inspector's metres; so no clip moves when the window's shape moves the live `d` (note v3.2 §4). */
 const toWorld = (u: Units, p: { x: number; y: number; z: number }) => ({ x: p.x * u.d, y: u.up + p.y * u.d, z: u.zc + p.z * u.d });
 const toUnits = (u: Units, w: { x: number; y: number; z: number }) => ({ x: w.x / u.d, y: (w.y - u.up) / u.d, z: (w.z - u.zc) / u.d });
-/** The page's own start: face-on at (0, 0, d) in the WORLD on the LIVE `d` — the front distance from the arch's FRONT, not
- *  its middle. ⛔ A DELIBERATE SECOND VALUE OF `d` (note v3.2 §4, named under §5a): framing is about THIS window, so Home,
- *  the camera's `far` and the rig's first pose stay on the live `d`; clips stay on the chain's. Here expressed in the
- *  CHAIN's units for the harness (`__cameraBench.front`), so it compares like with like. */
-const frontIn = (u: Units, m: PieceMeasure): Pose => ({ ...toUnits(u, { x: 0, y: 0, z: m.d }), yaw: 0, pitch: 0, fov: FRONT_FOV });
+/** The page's own start: face-on at (0, 0, d) in the WORLD — the front distance from the arch's FRONT, not its middle.
+ *  Was: ⛔ A DELIBERATE SECOND VALUE OF `d` (note v3.2 §4, named under §5a): framing is about THIS window, so Home, the
+ *  camera's `far` and the rig's first pose stay on the LIVE `d`; clips stay on the chain's. ⛔ RETIRED 9 November 2026
+ *  (note `structural-note-bench-arch-removed-9-november.md` v2.1, [R10-7]): with the arch removed there is nothing to frame
+ *  per window, so `m` is `BENCH_MEASURE`, one `d` for every window. Still true: clips stay on the chain's units. Here
+ *  expressed in the CHAIN's units for the harness (`__cameraBench.front`), so it compares like with like. */
+const frontIn = (u: Units, m: BenchMeasure): Pose => ({ ...toUnits(u, homeAt(m.d)), yaw: 0, pitch: 0, fov: FRONT_FOV });
 
 /**
  * ⛔ THE BENCH's ONE MUTABLE STORE — the chain (mirrored), the playhead, the armed track, the recording, the rig, the
@@ -285,7 +254,7 @@ class BenchStore {
   private keys = new Set<string>();
   private mouse = { dx: 0, dy: 0 };
   private rig: Rig | null = null;
-  private m: PieceMeasure | null = null;
+  private m: BenchMeasure | null = null;
   private edges = new Edges();
   private hudAt = 0;
   private padWas = false;
@@ -304,7 +273,7 @@ class BenchStore {
    *  reaches even a store made before it — and the version last put on the bench */
   private builderTake: BuilderTake | null = null;
   private builderPlaced = -1;
-  setBuilderTake(t: BuilderTake) {
+  setBuilderTake(t: BuilderTake | null) {
     this.builderTake = t;
   }
   /** ⛔ T1b: THE DRAG IN PROGRESS (`plan-trim-and-move-t1b-29-october.md` v1.4) — the PAGE's, pushed here on every change and
@@ -664,7 +633,8 @@ class BenchStore {
     const fov = this.eye?.fov ?? EYE_FOV;
     const box = this.sceneBox ?? this.archBox;
     if (!box) {
-      this.eye = rigAt(0, 0, (m?.d ?? 2000) * 3, 0, 0, fov);
+      const e = homeAt((m?.d ?? 2000) * 3);
+      this.eye = rigAt(e.x, e.y, e.z, 0, 0, fov);
       return;
     }
     const sphere = box.getBoundingSphere(new THREE.Sphere());
@@ -726,17 +696,30 @@ class BenchStore {
    * a reload of the same version places nothing. Carl's own clips are never touched (the take is the newest take, over
    * whatever it covers). ⚠ HARNESS ONLY: `__benchNoBuilderTake` keeps it off a test chain.
    */
-  private syncBuilderTake(m: PieceMeasure) {
+  private syncBuilderTake(m: BenchMeasure) {
     const t = this.builderTake, u = this.chain.units;
+    // ⛔ NO TAKE → THE BUILDER's CLIP WITHDRAWN (9 November 2026, session 2; Carl: *"on the bench is the barrel roll. it
+    // shouldnt be there"*): as a new version REPLACES the last take, no take REMOVES it — once per page, after any drag or
+    // recording. Only the Builder's own clips (`builder-…` ids, made nowhere else); Carl's are never touched
+    if (!t) {
+      if (this.builderPlaced === 0 || this.rec || this.edit) return;
+      this.builderPlaced = 0;
+      const mine = this.chain.clips.filter((c) => c.id.startsWith("builder-"));
+      if (!mine.length) return;
+      this.commit(deleteClips(this.chain, new Set(mine.map((c) => c.id))), false);
+      this.say(`The Builder's take was withdrawn: the Vader move (film 4's, through the arch) is off the timeline`);
+      return;
+    }
     // ⛔ T1b: a new take WAITS while a drag runs and lands after the release — the check IN THIS early return, BEFORE
     // `builderPlaced` is set below (placed after it, the version would be marked placed during the drag and never land)
-    if (!t || !u || this.rec || this.edit || t.version === this.builderPlaced) return;
+    if (!u || this.rec || this.edit || t.version === this.builderPlaced) return;
     if ((window as unknown as { __benchNoBuilderTake?: boolean }).__benchNoBuilderTake) return;
     this.builderPlaced = t.version;
     const id = `builder-v${t.version}`;
     if (this.chain.clips.some((c) => c.id === id)) return;
     const toU = (w: [number, number, number]): [number, number, number] => [w[0] / u.d, (w[1] - u.up) / u.d, (w[2] - u.zc) / u.d];
-    const fromW: [number, number, number] = t.barrel.from === "default" ? [0, 0, m.d] : t.barrel.from;
+    const h = homeAt(m.d);
+    const fromW: [number, number, number] = t.barrel.from === "default" ? [h.x, h.y, h.z] : t.barrel.from;
     // the spiral's end as a fraction of the line, from its world z (the Vader move's line runs straight in z)
     const frac = (fromW[2] - t.barrel.spiralEndZ) / (fromW[2] - t.barrel.to[2]);
     const frac0 = t.barrel.spiralStartZ === undefined ? 0 : (fromW[2] - t.barrel.spiralStartZ) / (fromW[2] - t.barrel.to[2]);
@@ -806,7 +789,7 @@ class BenchStore {
   }
 
   /** ⛔ ONE FRAME: the pad (polled here and nowhere else), the keyboard and mouse, the rig, the recording, playback. */
-  frame(camera: THREE.PerspectiveCamera, eyeCam: THREE.PerspectiveCamera | null, rawDt: number, m: PieceMeasure, aspect: number, floorY?: number): View | null {
+  frame(camera: THREE.PerspectiveCamera, eyeCam: THREE.PerspectiveCamera | null, rawDt: number, m: BenchMeasure, aspect: number, floorY?: number): View | null {
     this.m = m;
     this.aspect = aspect;
     // ⛔ THE CHAIN's UNITS, FILLED ON THE FIRST MEASURED FRAME (note v3.2 §4): a new chain and a migrated one both load before
@@ -821,7 +804,8 @@ class BenchStore {
       this.jumpTo = "front";
     }
     const dt = clampDt(rawDt);
-    if (!this.rig) this.rig = savedRig() ?? rigAt(0, 0, m.d, 0, 0, FRONT_FOV);
+    const home = homeAt(m.d);
+    if (!this.rig) this.rig = savedRig() ?? rigAt(home.x, home.y, home.z, 0, 0, FRONT_FOV);
     const r = this.rig;
     /** a CLIP pose onto the rig — through the CHAIN's units */
     const setRig = (p: Pose) => {
@@ -834,7 +818,7 @@ class BenchStore {
       // the chain's units — so it lands square on even when the two values of `d` differ (the plan's T2)
       if (this.jumpTo === "front") {
         const b = this.blankHome;
-        Object.assign(r, b ? rigAt(b.x, b.y, b.z, 0, 0, b.fov) : rigAt(0, 0, m.d, 0, 0, FRONT_FOV));
+        Object.assign(r, b ? rigAt(b.x, b.y, b.z, 0, 0, b.fov) : rigAt(home.x, home.y, home.z, 0, 0, FRONT_FOV));
         this.roll = 0;
       }
       else setRig(this.jumpTo);
@@ -976,7 +960,8 @@ class BenchStore {
     // ⛔ THE EYE's camera object — ALL of it, every frame, before any draw (plan v1.2, the review's [7]): its pose, lens,
     // near `benchNearCm()` (1 by default), far the shot camera's (m.d × 60: "see it all" must not clip), aspect the canvas's
     if (eyeCam) {
-      const e = this.eye ?? rigAt(0, 0, m.d * 3, 0, 0, EYE_FOV);
+      const e0 = homeAt(m.d * 3);
+      const e = this.eye ?? rigAt(e0.x, e0.y, e0.z, 0, 0, EYE_FOV);
       eyeCam.position.set(e.x, e.y, e.z);
       eyeCam.rotation.set(e.pitch * rad, e.yaw * rad, 0, "YXZ");
       if (eyeCam.fov !== e.fov || eyeCam.near !== benchNearCm() || eyeCam.far !== m.d * 60 || eyeCam.aspect !== aspect) {
@@ -1201,7 +1186,6 @@ function TrackHelpers({
 }
 
 function BenchScene({
-  built,
   store,
   grid,
   chain,
@@ -1209,11 +1193,9 @@ function BenchScene({
   soloId,
   labels,
   onView,
-  onWorld,
   onReady,
   medium,
 }: {
-  built: Built;
   store: BenchStore;
   grid: boolean;
   /** React's COMMITTED chain — the paths derive from it, on change */
@@ -1223,24 +1205,37 @@ function BenchScene({
   /** the labels' layer (DOM, the overlay's) — written by the render callback, never through React */
   labels: { current: HTMLDivElement | null };
   onView: (v: View) => void;
-  onWorld: (w: ArchWorld | null) => void;
+  /** ⛔ THE READY SIGNAL (`data-camera-bench="drawn"`; note v2.1 [R10-4]): after the first frame drawn with the scene's
+   *  content present — on `?blank=1` the hero's text, the logo and the logo's studio; with nothing brought, the first frame */
   onReady: () => void;
   /** ⛔ the bench's MEDIUM (`bench-medium.ts`): its grid, lines, cost meter and PiP origin — the only renderer-specific
    *  parts this scene touches */
   medium: BenchMedium;
 }) {
   const { Grid, Line } = medium;
-  const size = useThree((s) => s.size);
-  const m = measurePiece("arch", built, size);
-  // the arch's box does not depend on the canvas's size (`up` is 0 for the arch) — measured once per build
-  const world = useMemo(() => measureArch(built, measurePiece("arch", built, { width: 1, height: 1 })), [built]);
-  useEffect(() => onWorld(world), [world, onWorld]);
-  // ⛔ `?blank=1` — THE HERO's BLANK CANVAS (the block-out's, 3 November 2026 — its street REMOVED 6 November, session 2; Carl: *"The same environment and controls and functionalty to
-  // work in but with no arch. A blank canvas to build in."*). The arch is still BUILT AND MEASURED — the bench's units, Home,
-  // `far` and the grid's lines all come from it — only not DRAWN, nor its focus squares. Read once: the scene renders on
-  // the client only (inside the canvas)
+  // ⛔ the bench's measure and world: FROZEN (9 November 2026, session 2 — `BENCH_MEASURE`, `BENCH_WORLD`; was the arch's)
+  const m = BENCH_MEASURE;
+  const world = BENCH_WORLD;
+  // ⛔ `?blank=1` — THE HERO's BLANK CANVAS (the block-out's, 3 November 2026 — its street REMOVED 6 November, session 2; Carl:
+  // *"The same environment and controls and functionalty to work in but with no arch. A blank canvas to build in."*). Was: the
+  // arch still BUILT AND MEASURED, only not drawn. ⛔ 9 November 2026, session 2: the arch is GONE on both URLs (`BENCH_WORLD`).
+  // Read once: the scene renders on the client only (inside the canvas)
   const blank = useMemo(() => new URLSearchParams(window.location.search).has("blank"), []);
-  const clay = useMemo(() => new URLSearchParams(window.location.search).has("clay"), []);
+  // ⛔ THE READY SIGNAL's parts (note v2.1 [R10-4]): the arch's `compileAsync` used to make "drawn" mean "everything compiled";
+  // now it waits for the hero's own pieces to arrive. ⚠ STEP 1's version — step 3 makes it the idea's own `ready`
+  const [heroText, setHeroTextReady] = useState(false);
+  const [heroLogo, setHeroLogoReady] = useState(false);
+  const contentReady = !blank || (heroText && heroLogo);
+  const reported = useRef(false);
+  const onTextReady = useCallback(() => setHeroTextReady(true), []);
+  const onLogoReady = useCallback(() => setHeroLogoReady(true), []);
+  useFrame(() => {
+    if (contentReady && !reported.current) {
+      reported.current = true;
+      // this frame draws the content straight after the callbacks (the render callback is priority 1) — ready once it has
+      window.setTimeout(onReady, 0);
+    }
+  });
   // ...and Home becomes the hero's page camera, on the blank canvas's origin (the grid's crossing). ⛔ A LAYOUT effect (5 November
   // 2026, session 2): it runs in the same commit that mounts the blank canvas's group, so the page camera is known before ANY frame
   // draws it. As a passive effect it could run a frame late — the WebGPU medium, whose pipelines compile asynchronously,
@@ -1248,7 +1243,7 @@ function BenchScene({
   // load; the WebGL medium's synchronous first compile hid it)
   useLayoutEffect(() => {
     store.setBlankHome(
-      blank && world ? { x: HERO_CAMERA.x, y: world.floor + HERO_CAMERA.y, z: world.z1 + HERO_CAMERA.z, fov: HERO_CAMERA.vfov, shift: HERO_CAMERA.shift, frameAspect: HERO_PAGE[0] / HERO_PAGE[1] } : null,
+      blank ? { x: HERO_CAMERA.x, y: world.floor + HERO_CAMERA.y, z: world.z1 + HERO_CAMERA.z, fov: HERO_CAMERA.vfov, shift: HERO_CAMERA.shift, frameAspect: HERO_PAGE[0] / HERO_PAGE[1] } : null,
     );
   }, [blank, world, store]);
   // ⛔ THE HERO's GLOW — A SELECTIVE BLOOM (9 November 2026; `live-work/structural-note-hero-text-bloom-9-november.md` v1.3,
@@ -1276,7 +1271,6 @@ function BenchScene({
     if (process.env.NODE_ENV !== "production") (window as unknown as BenchDevHooks).__benchScene = sceneR;
   }, [post, sceneR]);
   const main = useRef<THREE.Mesh>(null);
-  const fine = useRef<THREE.Mesh>(null);
   // ⛔ THE EYE's CAMERA OBJECT (note v1.3.3 §3): made ONCE with the canvas, never keyed, gone with it; layers 0 and 1. Not
   // the default camera. Every property written by `store.frame()` — none here
   const [eye] = useState(() => {
@@ -1304,18 +1298,21 @@ function BenchScene({
       return [q.x, q.y, q.z];
     });
   }, [solo, units]);
-  // ⛔ "SEE IT ALL": the arch's box, and that box with every path's points — handed to the store on change
+  // ⛔ "SEE IT ALL": every path's points — handed to the store on change. Was: the arch's box, expanded by the paths; the arch
+  // is gone (9 November 2026), so with no paths it falls back to the default view pulled back (`frameAll`). ⚠ Step 3 of the
+  // note frames the idea brought to the bench instead
   useEffect(() => {
-    const arch = world ? new THREE.Box3(new THREE.Vector3(world.x0, world.floor, world.z0), new THREE.Vector3(world.x1, world.top, world.z1)) : null;
-    const scene = arch?.clone() ?? null;
-    if (scene && paths) for (const segs of paths.values()) for (const seg of segs) for (const [x, y, z] of seg) scene.expandByPoint(new THREE.Vector3(x, y, z));
-    store.setScene(scene, arch);
-  }, [world, paths, store]);
+    let scene: THREE.Box3 | null = null;
+    if (paths)
+      for (const segs of paths.values())
+        for (const seg of segs) for (const [x, y, z] of seg) (scene ??= new THREE.Box3()).expandByPoint(new THREE.Vector3(x, y, z));
+    store.setScene(scene, null);
+  }, [paths, store]);
 
   useFrame((st, dt) => {
     const shot = st.camera as THREE.PerspectiveCamera;
     const aspect = st.size.width / st.size.height;
-    const v = store.frame(shot, eye, dt, m, aspect, world?.floor);
+    const v = store.frame(shot, eye, dt, m, aspect, world.floor);
     // ⛔ THE HELPERS' PROXIES — written here, after the store, from its track poses (third person; none in first)
     const rad = Math.PI / 180;
     for (const [cam, p] of registry.current) {
@@ -1332,9 +1329,7 @@ function BenchScene({
       const a = h.held ? 0.35 : h.armed ? 1 : 0.7;
       for (const mt of p.mats) mt.opacity = a;
     }
-    // the HUD's focus distance: the SHOT camera's (the 10 cm lines' thickness is the render callback's now)
-    const focusPx = world?.focus ? world.focus.distanceToPoint(shot.position) : Infinity;
-    if (v) onView(world?.focus ? { ...v, focusPx } : v);
+    if (v) onView(v);
   });
 
   // ⛔ BENCH RENDER — THE ONE PRIORITY-1 CALLBACK (note v1.3.3 §2): R3F 9 hands rendering to it. It only DRAWS — it writes no
@@ -1358,17 +1353,12 @@ function BenchScene({
     // finding 4): the fade centre computed here as before, written by `setGridFade` — drei's uniform on WebGL, the TSL
     // grid's node uniform on WebGPU; the cast into the shader's uniforms has left the bench
     const gridsFor = (cam: THREE.Camera, who: string) => {
-      for (const g of [main.current, fine.current]) {
+      for (const g of [main.current]) {
         if (!g) continue;
         plane.setFromNormalAndCoplanarPoint(up, new THREE.Vector3()).applyMatrix4(g.matrixWorld);
         plane.projectPoint(cam.position, fadePoint);
         if (!medium.setGridFade(g, fadePoint)) continue;
         if (dev) gridLog.push({ who, at: fadePoint.toArray() });
-      }
-      if (fine.current) {
-        const focusPx = world?.focus ? world.focus.distanceToPoint(cam.position) : Infinity;
-        const k = Math.max(0, Math.min(1, (FINE_FROM_CM / CM_PER_PX - focusPx) / ((FINE_FROM_CM - FINE_FULL_CM) / CM_PER_PX)));
-        medium.setGridThickness(fine.current, FINE_THICKNESS * k);
       }
     };
     const box = labels.current;
@@ -1438,54 +1428,35 @@ function BenchScene({
   }, 1);
 
   const axes = useMemo(() => {
-    if (!world) return null;
     const r = AXIS_REACH_CM / CM_PER_PX, y = world.floor + 0.4;
     return {
       x: axisPoints(new THREE.Vector3(-r, y, world.z1), new THREE.Vector3(r, y, world.z1), AXIS_X_COLOUR),
       z: axisPoints(new THREE.Vector3(0, y, world.z1 - r), new THREE.Vector3(0, y, world.z1 + r), AXIS_Z_COLOUR),
     };
   }, [world]);
-  // the subdivided squares: the metre squares (on the main grid — x from the centre line, z from the front face) that the
-  // focus object's footprint, widened by the margin, touches
-  const metre = 100 / CM_PER_PX;
-  const f = world?.focus;
-  const margin = FINE_MARGIN_CM / CM_PER_PX;
-  const patch =
-    world && f
-      ? (() => {
-          const x0 = Math.floor((f.min.x - margin) / metre) * metre;
-          const x1 = Math.ceil((f.max.x + margin) / metre) * metre;
-          const z0 = world.z1 + Math.floor((f.min.z - margin - world.z1) / metre) * metre;
-          const z1 = world.z1 + Math.ceil((f.max.z + margin - world.z1) / metre) * metre;
-          return { at: [(x0 + x1) / 2, world.floor + 0.2, (z0 + z1) / 2] as [number, number, number], size: [x1 - x0, z1 - z0] as [number, number] };
-        })()
-      : null;
   return (
     <>
       {/* ⛔ the bench's camera: the page's start and lens; `far` d × 60 — a free camera leaves the page's d × 10 */}
-      <PerspectiveCamera makeDefault position={[0, 0, m.d]} fov={FRONT_FOV} near={benchNearCm()} far={m.d * 60} />
-      <group visible={!blank}>
-        {/* `?clay=1` (5 November 2026, session 2): the arch in the block-out's clay, to judge the letters' form */}
-        <LetteringPiece piece="arch" built={built} onReady={onReady} clay={clay} />
-      </group>
+      <PerspectiveCamera makeDefault position={[homeAt(m.d).x, homeAt(m.d).y, homeAt(m.d).z]} fov={FRONT_FOV} near={benchNearCm()} far={m.d * 60} />
       {/* the hero's blank canvas, on the floor where the grid's centre line and front line cross (D-101; the street removed
           6 November 2026, session 2): the 3D text and its two sketch lights */}
-      {blank && world && (
+      {blank && (
         <group position={[0, world.floor, world.z1]}>
           <HeroSketchLight />
           {/* ⛔ the hero's TEXT in 3D, in place of the stand-in cards (5 November 2026, session 2; `hero-text.tsx`) */}
-          <HeroText material={medium.heroText?.material} />
+          <HeroText material={medium.heroText?.material} onReady={onTextReady} />
           {/* ⛔ the hero's LOGO, 2 m (9 November 2026; `hero-logo.tsx`): the lean APPROVED (R-103); back UPRIGHT on the right
-              for the text's discussion (Carl: "return the logo to its position on the right hand side") */}
-          <HeroLogo pose="upright" pmrem={medium.pmrem} />
+              for the text's discussion (Carl: "return the logo to its position on the right hand side"); LEANING again
+              9 November, session 2 (Carl: "i need to see it leaning first. It will move from that position") */}
+          <HeroLogo pose="lean" pmrem={medium.pmrem} onReady={onLogoReady} />
         </group>
       )}
       <TrackHelpers tracks={chain.tracks} armedCam={armedCam} paths={paths} soloPath={soloPath} soloCam={solo?.cam ?? null} registryRef={registry} medium={medium} />
-      {/* ⛔ THE FLOOR GRID — on the arch's lowest ink; lines on the centre line and the front face; EVERY line a metre, all one
+      {/* ⛔ THE FLOOR GRID — on the arch's lowest ink (FROZEN there, `BENCH_WORLD`, the arch removed 9 November 2026); lines on the centre line and the front face; EVERY line a metre, all one
           weight (Carl: "make the grid squares 1m x 1m" — the faint metre lines under heavier 5 m ones read as 5 m squares).
           Drawn unlit (its own shader): the arch's light and reflections are untouched. Fades out LINEARLY to 150 m from the
           camera — Carl: "From 21m away i still meed to see 1m squares" (at 21 m the lines keep ~86%). */}
-      {grid && world && (
+      {grid && (
         <Grid
           ref={main}
           position={[0, world.floor, world.z1]}
@@ -1501,28 +1472,8 @@ function BenchScene({
           side={THREE.DoubleSide}
         />
       )}
-      {/* ⛔ THE 10 cm SUBDIVISION round the focus object — the squares it stands in and beside (`patch`), 2 mm above the
-          floor (no fight with the metre lines), dimmer; its lines' thickness set before each draw from that draw's camera's
-          distance (the render callback), 0 = not drawn. Its edges lie on metre lines, and from any half or whole metre the
-          10 cm lines fall on the metre lines too. */}
-      {grid && patch && !blank && (
-        <Grid
-          ref={fine}
-          position={patch.at}
-          args={patch.size}
-          cellSize={10 / CM_PER_PX}
-          sectionSize={10 / CM_PER_PX}
-          cellThickness={0}
-          sectionThickness={0}
-          cellColor={FINE_COLOUR}
-          sectionColor={FINE_COLOUR}
-          fadeDistance={15000 / CM_PER_PX}
-          fadeStrength={1}
-          side={THREE.DoubleSide}
-        />
-      )}
-      {/* ⛔ THE TWO AXES — the front face (x, red) and the centre line (z, blue), 4 mm above the floor, over the grid's lines */}
-      {grid && axes && (
+      {/* ⛔ THE TWO AXES — the front line (x, red) and the centre line (z, blue), 4 mm above the floor, over the grid's lines */}
+      {grid && (
         <>
           <Line points={axes.x.points} vertexColors={axes.x.colours} lineWidth={1.5} toneMapped={false} />
           <Line points={axes.z.points} vertexColors={axes.z.colours} lineWidth={1.5} toneMapped={false} />
@@ -1530,27 +1481,6 @@ function BenchScene({
       )}
     </>
   );
-}
-
-/**
- * ⛔ THE CLASH WARNING (Carl: *"In, warning only"*) — where a shape clip's path crosses the letters' depth slab, its nearest
- * letter (2D, front view) from the LETTERS' OWN BOXES (`measureArch` — never a copied list). 4,000 moments along the clip's
- * shown span. ⚠ Boxes, not ink: a lower bound of the true clearance. Never blocks.
- */
-function clashNote(c: Clip, u: Units | null, world: ArchWorld | null): string | null {
-  if (!c.shape || !u || !world?.letters.length) return null;
-  const zMin = Math.min(...world.letters.map((l) => l.box.min.z)), zMax = Math.max(...world.letters.map((l) => l.box.max.z));
-  let best = Infinity, who = "";
-  for (let i = 0; i <= 4000; i++) {
-    const w = toWorld(u, poseInShape(c.shape, c.in + ((c.out - c.in) * i) / 4000));
-    if (w.z < zMin || w.z > zMax) continue;
-    for (const l of world.letters) {
-      const dist = Math.hypot(Math.max(l.box.min.x - w.x, 0, w.x - l.box.max.x), Math.max(l.box.min.y - w.y, 0, w.y - l.box.max.y));
-      if (dist < best) [best, who] = [dist, l.line === "top" ? `YOUR's ${l.ch}` : `the ${l.ch}`];
-    }
-  }
-  if (best === Infinity) return "It never crosses the letters' plane.";
-  return best <= 0 ? `It passes THROUGH ${who} (by the letters' boxes).` : `Nearest letter where it crosses their plane: ${who}, ${metres(best)}.`;
 }
 
 type Loaded = { chain: Chain; error: string | null; carry: { text: string; persist: boolean } | null };
@@ -1597,6 +1527,28 @@ function readChain(): Loaded {
     raw3 = read(CHAIN_KEY);
   } catch (e) {
     return empty(`This browser's storage cannot be read (${(e as Error).message}); the bench starts empty.`);
+  }
+  if (raw3 === null) {
+    // ⛔ STEP 2 (9 November 2026): no workshop chain yet — the ARCH-world v3 chain, moved into the workshop's world (its
+    // units by `OLD_ORIGIN`: every pose, every shape clip moves exactly with the world — the Architect checked the maths,
+    // review 10) and KEPT under its own key, never written again. An unreadable v3 falls through to the refusal below
+    let rawV3: string | null = null;
+    try {
+      rawV3 = read(CHAIN_KEY_V3);
+    } catch {}
+    if (rawV3 !== null) {
+      const r = parse(rawV3);
+      if ("chain" in r && r.from === 3) {
+        const c = r.chain;
+        const chain: Chain = c.units ? { ...c, units: { ...c.units, up: c.units.up + OLD_ORIGIN.y, zc: c.units.zc + OLD_ORIGIN.z } } : c;
+        const carry = differences(chain) ?? {
+          text: `Your recording was moved into the workshop's world (the arch removed, the floor now at 0): ${chain.clips.length} clip${chain.clips.length === 1 ? "" : "s"}, every one where it was against the floor. The old copy is kept as "${CHAIN_KEY_V3}".`,
+          persist: false,
+        };
+        return { chain, error: null, carry };
+      }
+      raw3 = rawV3;
+    }
   }
   if (raw3 !== null) {
     const r = parse(raw3);
@@ -1676,18 +1628,11 @@ function OverlayButton({ label, pressed, onClick, children }: { label: string; p
   );
 }
 
-/** the arch's medium, provided only when the medium has its own (WebGPU); otherwise no provider at all — the context's
- *  WebGL default, as on film 4's page */
-function ArchMediumProvider({ arch, children }: { arch: BenchMedium["arch"]; children: ReactNode }) {
-  return arch ? <ArchMediumContext.Provider value={arch}>{children}</ArchMediumContext.Provider> : <>{children}</>;
-}
-
 /** Drawn in the browser only — the saved chain is read on the first render, and the bench has nothing to show a server. */
 export default dynamic(() => Promise.resolve(CameraBenchInner), { ssr: false });
 
 function CameraBenchInner() {
   const dpr = useCanvasDpr([1, 2]);
-  const { spec, lines, spans, shown, failure } = usePieceBuild("arch");
   // `?blank=1`, the hero's blank canvas (as `BenchScene` reads it): here for the page guide. Client only (`ssr: false`)
   const blank = useMemo(() => new URLSearchParams(window.location.search).has("blank"), []);
   const [initial] = useState(loadChain);
@@ -1705,12 +1650,13 @@ function CameraBenchInner() {
   const [drawn, setDrawn] = useState(false);
   const [grid, setGrid] = useState(true);
   const [drawer, setDrawer] = useState<"help" | "info" | null>(null);
-  const [world, setWorld] = useState<ArchWorld | null>(null);
+  // ⛔ the bench's world: FROZEN (9 November 2026, session 2 — `BENCH_WORLD`; was measured from the arch's build)
+  const world = BENCH_WORLD;
   const wrap = useRef<HTMLDivElement>(null);
   /** the third-person labels' layer — written by the render callback by ref, never through React */
   const labelsRef = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number } | null>(null);
-  const why = failed ?? failure;
+  const why = failed;
   // ⛔ THE MEDIUM (5 November 2026; the renderer note v1.6, APPROVED; `bench-medium.ts`): read ONCE from the URL
   // (`?medium=webgpu`; absent = WebGL). WebGL is there at once — today's bench, no loading frame; WebGPU's half is loaded by
   // a dynamic `import()` and AWAITED HERE, OUTSIDE the canvas, before it mounts (note §4: nothing renderer-specific may
@@ -1889,9 +1835,8 @@ function CameraBenchInner() {
   // ⛔ the joins and gaps derived ON CHAIN CHANGE, never per frame (the plan v2)
   const joins = useMemo(() => joinsOf(chain, metresPerD), [chain, metresPerD]);
   const gaps = useMemo(() => gapsOf(chain), [chain]);
-  // ⛔ the clash warnings, ON CHAIN CHANGE too (4,000 poses per shape — never per 0.1 s view)
-  const clashes = useMemo(() => new Map(chain.clips.filter((c) => c.shape).map((c) => [c.id, clashNote(c, units, world)])), [chain, units, world]);
-  const toMetres = units && world
+  // (the clash warnings — a shape clip's path through the arch's letters — went with the arch, 9 November 2026)
+  const toMetres = units
     ? (p: Pose) => ({
         right: (p.x * units.d * CM_PER_PX) / 100,
         up: ((units.up + p.y * units.d - world.floor) * CM_PER_PX) / 100,
@@ -1912,7 +1857,6 @@ function CameraBenchInner() {
 
   return (
     <div className="space-y-3" data-camera-bench={why ? "failed" : drawn ? "drawn" : "pending"} data-medium={mediumName} data-medium-backend={backend}>
-      <MeasureSpans lines={lines} fontKey={spec.font} spans={spans} accessible={false} />
       <div className="relative w-full overflow-hidden rounded-md border border-white/10 bg-[#0a0a0a]" style={{ height: "min(calc(68 * var(--vh)), 56.25vw)" }}>
         {/* ⛔ THE DRAG SURFACE — the picture only. Every overlay is its SIBLING ([A3]), never inside it: this element takes
             pointer capture on every pointerdown, so a button inside it would start a camera drag. */}
@@ -1949,17 +1893,14 @@ function CameraBenchInner() {
                 onCreated={({ gl }) => medium.watch(gl, (w) => setFailed(w))}
               >
                 <NeutralToneMapping />
-                {/* ⛔ THE SUSPENSE BOUNDARY INSIDE THE CANVAS (the page's own pattern): the piece waits on the studio HDRI
-                    (`use`). Without a boundary here the wait reaches the OUTER boundary, React hides the bench and disconnects its
-                    effects, R3F takes that for an unmount and forces the context lost — measured 26 October (the bench drew,
-                    then "Context Lost" at ~2 s). */}
+                {/* ⛔ THE SUSPENSE BOUNDARY INSIDE THE CANVAS (the page's own pattern): a piece that waits (`use`) must not reach
+                    the OUTER boundary — React would hide the bench and disconnect its effects, R3F takes that for an unmount and
+                    forces the context lost (measured 26 October: the bench drew, then "Context Lost" at ~2 s). Was the arch's
+                    studio HDRI; kept for whatever is brought to the bench (the arch, its environment and compile wait REMOVED
+                    9 November 2026) */}
                 <Suspense fallback={null}>
-                  {/* ⛔ the arch's environment and compile wait: PROVIDED only in the WebGPU medium (its twins); in WebGL no
-                      provider — `ArchMediumContext`'s default, the approved helpers, exactly as film 4's page */}
-                  {shown && (
-                    <ArchMediumProvider arch={medium.arch}>
+                  {
                     <BenchScene
-                      built={shown}
                       store={store}
                       grid={grid}
                       chain={chain}
@@ -1967,12 +1908,10 @@ function CameraBenchInner() {
                       soloId={view?.soloId ?? null}
                       labels={labelsRef}
                       onView={setView}
-                      onWorld={setWorld}
                       onReady={() => setDrawn(true)}
                       medium={medium}
                     />
-                    </ArchMediumProvider>
-                  )}
+                  }
                 </Suspense>
               </Canvas>
             </Guard>
@@ -2012,7 +1951,7 @@ function CameraBenchInner() {
                 <span className={view?.pad.connected ? "text-emerald-400" : "text-neutral-500"}>●</span>{" "}
                 {view?.pad.connected ? "Pad" : "Press a pad button"}
               </div>
-              {view && world && (
+              {view && (
                 <>
                   <div>
                     {((view.at.x * CM_PER_PX) / 100).toFixed(2)} · {(((view.at.y - world.floor) * CM_PER_PX) / 100).toFixed(2)} ·{" "}
@@ -2088,36 +2027,13 @@ function CameraBenchInner() {
                 </>
               ) : (
                 <>
-                  <h2 className="mb-2 text-sm font-semibold text-white">The arch (1 px = 1 cm)</h2>
-                  {world && (
-                    <ul className="space-y-1 font-mono text-[11px]" data-arch-world>
-                      <li>
-                        {metres(world.x1 - world.x0)} wide × {metres(world.top - world.floor)} tall × {metres(world.z1 - world.z0)}
-                        {" deep"}
-                      </li>
-                      <li>
-                        opening {metres(world.clearW)} wide × {metres(world.clearH)}
-                        {" to the crown"}
-                      </li>
-                      <li>
-                        letters {metres(world.archCap)} tall; &quot;YOUR&quot; stands {metres(world.topBase)}
-                        {" up"}
-                      </li>
-                    </ul>
-                  )}
-                  <h2 className="mb-2 mt-4 text-sm font-semibold text-white">The floor</h2>
+                  <h2 className="mb-2 text-sm font-semibold text-white">The floor (1 px = 1 cm)</h2>
                   <OverlayButton label="Floor grid" pressed={grid} onClick={() => setGrid((g) => !g)}>
                     {grid ? "Grid on" : "Grid off"}
                   </OverlayButton>
                   <p className="mt-2">
-                    1 m squares (grey); 10 cm round the focus object within 3 m (blue); the arch&apos;s face (red) and centre line (blue) cross at ground zero.
+                    1 m squares (grey); the front line (red) and centre line (blue) cross at ground zero.
                   </p>
-                  {view?.focusPx !== undefined && (
-                    <p className="mt-2 font-mono text-[11px]">
-                      focus object: the C, {metres(view.focusPx)}
-                      {" away"}
-                    </p>
-                  )}
                   <h2 className="mb-2 mt-4 text-sm font-semibold text-white">The lens</h2>
                   <p>
                     {view ? `${view.mm.toFixed(0)} mm, ${view.fov.toFixed(1)}° vertical` : "…"}, on a full-frame {SENSOR_MM} mm-wide sensor
@@ -2172,8 +2088,8 @@ function CameraBenchInner() {
         onEditStart={editStart}
         onEditMove={editMove}
         onEditEnd={editEnd}
-        frame={units && world ? { units, floor: world.floor, z1: world.z1 } : null}
-        shapeNote={(c) => clashes.get(c.id) ?? null}
+        frame={units ? { units, floor: world.floor, z1: world.z1 } : null}
+        shapeNote={() => null}
         onShapeEdit={(id, s) => store.editShape(id, s)}
         onShapeStart={(id) => store.recaptureShapeStart(id)}
       />

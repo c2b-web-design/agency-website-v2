@@ -1,13 +1,12 @@
 "use client";
 
-import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useFrame, type GLProps } from "@react-three/fiber";
 import * as THREE from "three";
 import { Line2NodeMaterial, MeshBasicNodeMaterial, PMREMGenerator, WebGPURenderer } from "three/webgpu";
 import { abs, distance, Discard, float, Fn, fract, fwidth, If, min, mix, modelWorldMatrix, positionGeometry, pow, uniform, varying, vec4 } from "three/tsl";
 import { Line2 } from "three/examples/jsm/lines/webgpu/Line2.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
-import type { ArchEnvironmentProps, ArchMedium, CompileWait } from "./arch-medium";
 import type { BenchMedium, GridProps, LineProps } from "./bench-medium";
 import { useDisposeOnUnmount } from "./hero-page";
 import { heroTextMaterial } from "./hero-text-material";
@@ -25,7 +24,8 @@ import { makeHeroBloom } from "./hero-bloom";
  * - THE LINES: three's WebGPU `Line2` + `Line2NodeMaterial`, fed as drei's `Line` feeds its GLSL one.
  * - THE COST METER: timestamp queries (`trackTimestamp`, dev only) where the adapter has `timestamp-query`; CPU time always.
  * - THE ARCH's TWINS (provided through `ArchMediumContext`): the studio prefiltered by `three/webgpu`'s `PMREMGenerator`
- *   (public API, after `init()`), and the compile wait on `compileAsync` with a CANCELLED flag.
+ *   (public API, after `init()`), and the compile wait on `compileAsync` with a CANCELLED flag. ⛔ REMOVED 9 November 2026
+ *   with the arch (the workshop note v2.1 step 1).
  * - ⛔ THE BRASS's `anisotropyRotation` π/2 RE-DERIVED FROM THE TSL CODE (note §3's last row; 5 November 2026, three r185),
  *   not taken from the image: (1) the anisotropy VECTOR is the same uniform, anisotropy × (cos, sin) of the rotation
  *   (`MaterialNode.js:797`); (2) B is mapped the same — `anisotropyB = TBN[1]·x − TBN[0]·y` (`MeshPhysicalNodeMaterial.js:440`;
@@ -252,47 +252,9 @@ const meter: BenchMedium["meter"] = (gl, cost, draw) => {
     });
 };
 
-// ── THE ARCH's TWINS ───────────────────────────────────────────────────────────────────────────────────────────────────
-
-/** the studio prefiltered on THIS renderer — `three/webgpu`'s `PMREMGenerator`, public API, after `init()` (the renderer
- *  reaches the canvas already initialised). The body is rendered at once, given null until the texture exists */
-function WebGPUEnvironment({ gl, hdri, children }: ArchEnvironmentProps) {
-  const [env, setEnv] = useState<{ from: THREE.DataTexture; map: THREE.Texture } | null>(null);
-  useEffect(() => {
-    const gen = new PMREMGenerator(gl as GpuR);
-    let target: THREE.RenderTarget | null = null;
-    let live = true;
-    // a task later, never inside the effect's own pass (the hooks lint's set-state-in-effect rule; the baseline holds)
-    const id = window.setTimeout(() => {
-      if (!live) return;
-      target = gen.fromEquirectangular(hdri) as unknown as THREE.RenderTarget;
-      setEnv({ from: hdri, map: target.texture });
-    }, 0);
-    return () => {
-      live = false;
-      window.clearTimeout(id);
-      target?.dispose();
-      gen.dispose();
-    };
-  }, [gl, hdri]);
-  return <>{children(env && env.from === hdri ? env.map : null)}</>;
-}
-/** ⛔ the compile wait: `compileAsync` — and a CANCELLED flag, so a stale promise never calls `done` (note v1.4) */
-const webgpuCompileWait: CompileWait = (gl, scene, camera, done) => {
-  let cancelled = false;
-  (gl as GpuR)
-    .compileAsync(scene, camera)
-    .then(() => {
-      if (!cancelled) done();
-    })
-    .catch(() => {
-      if (!cancelled) done();
-    });
-  return () => {
-    cancelled = true;
-  };
-};
-const ARCH: ArchMedium = { Environment: WebGPUEnvironment, compileWait: webgpuCompileWait };
+// ── THE ARCH's TWINS — REMOVED (9 November 2026, session 2; the workshop note v2.1 step 1): the studio prefiltered for the
+// arch (`WebGPUEnvironment`) and its compile wait (`compileAsync` with a cancelled flag) went with the arch. Film 4's page
+// keeps the WebGL versions (`arch-medium.tsx`).
 
 // ── THE MEDIUM ─────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -318,8 +280,7 @@ export const WEBGPU_MEDIUM: BenchMedium = {
   Line: LineWebGPU,
   meter,
   pipY: (_height, top) => top,
-  arch: ARCH,
-  // the hero text's edge-lit acrylic (9 November 2026; D-101) — the seam's optional slot, as `arch`
+  // the hero text's edge-lit acrylic (9 November 2026; D-101) — the seam's optional slot (⚠ to the hero idea in step 3)
   heroText: { material: heroTextMaterial },
   // the hero's glow — a selective bloom (9 November 2026; the bloom note v1.3): a factory; `BenchScene` owns the instance
   post: { make: makeHeroBloom },

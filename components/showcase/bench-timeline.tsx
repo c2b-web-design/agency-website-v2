@@ -122,9 +122,11 @@ export function BenchTimeline({
   onEditMove: (e: Edit) => void;
   /** `commit` false: a cancel. The page takes the FIRST ending; later ones do nothing */
   onEditEnd: (commit: boolean) => void;
-  /** the chain's units and the arch's floor and face (cm) — for a shape's numbers in metres; null until measured */
+  /** the chain's units and the bench's floor and front line (cm; the workshop's own since 9 November 2026 — was the arch's
+   *  floor and face) — for a shape's numbers in metres; null until the bench has its units */
   frame: { units: Units; floor: number; z1: number } | null;
-  /** the clash warning for a shape clip, in words */
+  /** the clash warning for a shape clip, in words. ⚠ Since 9 November 2026 the bench passes none (the warning measured a
+   *  path against the ARCH's letters, removed with it); kept as the bench's hook for whatever idea is brought to it */
   shapeNote: (c: Clip) => string | null;
   /** an edit: null, or the refusal in words */
   onShapeEdit: (id: string, s: Shape) => string | null;
@@ -467,7 +469,7 @@ export function BenchTimeline({
                 <dd className="tabular-nums">{m(a)} m</dd>
                 <dt className="text-neutral-500">To</dt>
                 <dd className="tabular-nums">{m(b)} m</dd>
-                <dd className="col-span-2 pt-1 text-[10px] text-neutral-500">Metres from ground zero: right, up, out from the arch&apos;s face.</dd>
+                <dd className="col-span-2 pt-1 text-[10px] text-neutral-500">Metres from ground zero: right, up, out from the front line.</dd>
               </dl>
                 {c.shape && (
                   <ShapeFields key={c.id} clip={c} shape={c.shape} frame={frame} note={shapeNote(c)} disabled={disabled} onEdit={onShapeEdit} onStart={onShapeStart} />
@@ -554,7 +556,7 @@ function NumField({ label, unit, value, digits, disabled, onCommit }: { label: s
 
 /**
  * ⛔ A SHAPE CLIP's NUMBERS (the plan v2.1, Step 3) — each converted to Carl's units and back through the CHAIN's units:
- * the axis (m right, m out from the arch's face), the laps and direction (from `theta0` / `theta1`), the radii (m), the
+ * the axis (m right, m out from the front line), the laps and direction (from `theta0` / `theta1`), the radii (m), the
  * heights (m above the floor), the pace (m/s), the start's ease and the aim's settle (s). ⚠ The lens is HELD (the start's)
  * and shown, not edited here (the plan listed it editable; the Builder's narrowing, stated). The clash warning (Carl:
  * *"In, warning only"*) never blocks.
@@ -579,7 +581,7 @@ function ShapeFields(props: FieldsProps<Shape>) {
  *  along the line (m/s), the start's ease and the landing (s). Its line's ends are shown in From / To above. */
 function BarrelFields({ clip, shape: s, frame, note, disabled, onEdit }: FieldsProps<BarrelShape>) {
   const [said, setSaid] = useState<string | null>(null);
-  if (!frame) return <p className="mt-2 text-neutral-500">Barrel roll: its numbers show once the bench has measured the arch…</p>;
+  if (!frame) return <p className="mt-2 text-neutral-500">Barrel roll: its numbers show once the bench has drawn its first frame…</p>;
   const { d } = frame.units;
   const edit = (patch: Partial<BarrelShape>) => setSaid(onEdit(clip.id, { ...s, ...patch }));
   return (
@@ -607,7 +609,7 @@ function BarrelFields({ clip, shape: s, frame, note, disabled, onEdit }: FieldsP
 
 function HelixFields({ clip, shape: s, frame, note, disabled, onEdit, onStart }: FieldsProps<HelixShape>) {
   const [said, setSaid] = useState<string | null>(null);
-  if (!frame) return <p className="mt-2 text-neutral-500">Corkscrew: its numbers show once the bench has measured the arch…</p>;
+  if (!frame) return <p className="mt-2 text-neutral-500">Corkscrew: its numbers show once the bench has drawn its first frame…</p>;
   const { d, up, zc } = frame.units;
   const sweep = s.theta1 - s.theta0;
   const dir = sweep > 0 ? 1 : -1;
@@ -666,7 +668,7 @@ function HelixFields({ clip, shape: s, frame, note, disabled, onEdit, onStart }:
   );
 }
 
-/** a point in Carl's metres (right, up from the floor, out from the arch's face), three fields; each commits on its own */
+/** a point in Carl's metres (right, up from the floor, out from the front line), three fields; each commits on its own */
 function PointRow({ label, v, disabled, onCommit }: { label: string; v: [number, number, number]; disabled: boolean; onCommit: (v: [number, number, number]) => void }) {
   const cell = (i: 0 | 1 | 2, name: string) => {
     const shown = v[i].toFixed(2);
@@ -701,13 +703,13 @@ function PointRow({ label, v, disabled, onCommit }: { label: string; v: [number,
 
 /**
  * ⛔ A GLIDE's NUMBERS (`structural-note-glide-and-open-27-october.md`) — its pace (m/s), the start's ease, the landing and
- * the aim's settle (s); every waypoint and look-at point in Carl's metres (right, up from the floor, out from the arch's
- * face), each editable. Waypoint 1 is where the camera was when the move was opened ("Start here" moves it). The lens is
- * held (the start's). The clash warning never blocks.
+ * the aim's settle (s); every waypoint and look-at point in Carl's metres (right, up from the floor, out from the front
+ * line), each editable. Waypoint 1 is where the camera was when the move was opened ("Start here" moves it). The lens is
+ * held (the start's). (The clash warning — a path through the arch's letters — went with the arch, 9 November 2026.)
  */
 function GlideFields({ clip, shape: s, frame, note, disabled, onEdit, onStart }: FieldsProps<GlideShape>) {
   const [said, setSaid] = useState<string | null>(null);
-  if (!frame) return <p className="mt-2 text-neutral-500">Glide: its numbers show once the bench has measured the arch…</p>;
+  if (!frame) return <p className="mt-2 text-neutral-500">Glide: its numbers show once the bench has drawn its first frame…</p>;
   const { d, up, zc } = frame.units;
   const m = (units: number) => (units * d) / 100;
   const u = (metres: number) => (metres * 100) / d;

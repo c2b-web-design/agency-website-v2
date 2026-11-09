@@ -3,7 +3,6 @@ import type { GLProps } from "@react-three/fiber";
 import { Grid as DreiGrid, Line as DreiLine } from "@react-three/drei";
 import type * as THREE from "three";
 import { PMREMGenerator } from "three";
-import type { ArchMedium } from "./arch-medium";
 import type { HeroBloom } from "./hero-bloom";
 
 /**
@@ -13,8 +12,9 @@ import type { HeroBloom } from "./hero-bloom";
  * WebGL, so today's links, takes and harnesses stay WebGL). ONLY the parts that speak a renderer's language exist twice, and
  * the bench reaches them ONLY through a `BenchMedium`:
  *   the RENDERER (R3F's `gl`) with its FAILURE watch · the floor GRID and its per-draw FADE / THICKNESS · the path LINES ·
- *   the COST meter (harness-only) · the PiP's VIEWPORT ORIGIN · the ARCH's environment and compile wait (WebGPU only —
- *   their WebGL versions are `ArchMediumContext`'s default, beside `LetteringPiece`).
+ *   the COST meter (harness-only) · the PiP's VIEWPORT ORIGIN. (Was also: the ARCH's environment and compile wait, WebGPU
+ *   only — REMOVED 9 November 2026 with the arch, the workshop note v2.1 step 1; film 4's page keeps its own, the
+ *   `ArchMediumContext` default beside `LetteringPiece`.)
  * This file holds the interface, the WebGL versions (TODAY's code, moved here unchanged in behaviour) and the loader.
  * ⛔ THE WebGPU HALF (`bench-medium-webgpu.tsx`) LOADS ONLY WHEN CHOSEN — a dynamic `import()`, awaited OUTSIDE the canvas
  * before it mounts (note §4): the WebGL medium never downloads `three/webgpu`.
@@ -72,9 +72,8 @@ export type BenchMedium = {
    *  passes it to `setViewport` as is; `WebGLBackend.updateViewport` flips it) — read in the source 5 November 2026; both
    *  take CSS px and multiply by the pixel ratio themselves */
   pipY: (height: number, top: number, h: number) => number;
-  /** the arch's environment and compile wait — undefined = `ArchMediumContext`'s WebGL default (no provider) */
-  arch?: ArchMedium;
-  /** ⛔ the hero text's material in this medium (9 November 2026; `structural-note-hero-text-material-9-november.md`, route B)
+  /** ⛔ the hero text's material in this medium (⚠ the hero is an IDEA, not a tool: the workshop note v2.1 step 3 moves
+   *  this out of the medium) (9 November 2026; `structural-note-hero-text-material-9-november.md`, route B)
    *  — undefined = the text stays in CLAY (the WebGL medium). Supplied by the WebGPU medium from `hero-text-material.ts`, so
    *  the WebGL half never imports TSL. A NEW material per call: the caller owns and disposes it */
   heroText?: { material: () => THREE.Material };

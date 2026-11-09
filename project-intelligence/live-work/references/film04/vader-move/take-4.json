@@ -1,0 +1,19 @@
+{
+  "what": "The Vader move, take 4 (film 4, 27 October 2026): a BuilderTake for components/showcase/bench-builder-take.ts. Withdrawn from the bench 9 November 2026, session 2; stored here on Carl's word.",
+  "workshopWorld": {
+    "note": "the camera bench's world since 9 November 2026: the floor at y 0, the front line at z 0; 'default' = the bench's Home",
+    "take": {
+      "version": 4,
+      "name": "The Vader move, take 4",
+      "barrel": { "from": "default", "to": [0, 429.05184025084225, -816], "turns": 2, "radiusCm": 120, "spiralStartZ": 1714, "spiralEndZ": 600, "rollEase": 0.4, "paceCms": 280, "rampS": 2, "landS": 2.5 }
+    }
+  },
+  "archWorld": {
+    "note": "as flown in film 4's arch world: the floor at y -429.05184025084225, the arch's face at z 16; 'default' was (0, 0, 2287.490381354744)",
+    "take": {
+      "version": 4,
+      "name": "The Vader move, take 4",
+      "barrel": { "from": "default", "to": [0, 0, -800], "turns": 2, "radiusCm": 120, "spiralStartZ": 1730, "spiralEndZ": 616, "rollEase": 0.4, "paceCms": 280, "rampS": 2, "landS": 2.5 }
+    }
+  }
+}

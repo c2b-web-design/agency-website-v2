@@ -180,7 +180,7 @@ function useFamilyStudio(pmrem: ((gl: unknown) => PmremLike) | undefined): { tex
 /** the logo on the bench — mounted in the blank canvas's group beside `HeroText`, lit by `HeroSketchLight` and the family's
  *  studio (`pmrem`, the medium's). `pose`: the LEAN (the opening, the default) or UPRIGHT (where it stood first, balanced —
  *  kept, Carl approved the balance) */
-export function HeroLogo({ pose = "lean", pmrem }: { pose?: "lean" | "upright"; pmrem?: (gl: unknown) => PmremLike }) {
+export function HeroLogo({ pose = "lean", pmrem, onReady }: { pose?: "lean" | "upright"; pmrem?: (gl: unknown) => PmremLike; onReady?: () => void }) {
   const geometry = useLogoGeometry(LOGO_HEIGHT_CM);
   const geo = useMemo(() => (geometry ? { geometry, dispose: () => geometry.dispose() } : null), [geometry]);
   useDisposeOnUnmount(geo ?? NOTHING);
@@ -197,6 +197,12 @@ export function HeroLogo({ pose = "lean", pmrem }: { pose?: "lean" | "upright"; 
   }, [studio]);
   useDisposeOnUnmount(material);
   const placed = useMemo(() => (geometry ? (pose === "lean" ? leanPose(geometry) : uprightPose(geometry)) : null), [geometry, pose]);
+  // ⛔ READY (9 November 2026, session 2; the workshop note v2.1 [R10-4]): the geometry from /about's worker AND, where the
+  // medium prefilters one, the studio on the material. The bench's "drawn" waits for it
+  const ready = !!placed && (!pmrem || !!studio);
+  useEffect(() => {
+    if (ready) onReady?.();
+  }, [ready, onReady]);
   if (!geometry || !placed) return null;
   return <mesh name="hero logo" geometry={geometry} material={material} position={placed.position} quaternion={placed.quaternion} />;
 }
