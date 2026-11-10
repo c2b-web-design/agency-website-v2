@@ -14,6 +14,9 @@ import { HeroLogo } from "./hero-logo";
  * home page's amber frame). Its WebGPU part (the acrylic, the glow) is `hero-idea-webgpu.tsx`, loaded only in that medium.
  * ⛔ FURNITURE: it leaves with the C2B site; the bench never imports it (`bench-ideas.ts` lists it, lazily).
  */
+/** the liquid on the bench: OFF while the start (the jump and its landing) is built — Carl, 10 November 2026 */
+const LIQUID_ON = false;
+
 function HeroScene({ medium, part, onReady }: IdeaSceneProps) {
   // READY: the text built and the logo with its studio — the bench's "drawn" waits for both ([R10-4])
   const [text, setText] = useState(false);
@@ -34,8 +37,9 @@ function HeroScene({ medium, part, onReady }: IdeaSceneProps) {
       {/* the 3D text (5 November 2026, session 2; `hero-text.tsx`) — the WebGPU part's edge-lit acrylic, or CLAY */}
       <HeroText built={textBuild} onReady={onText} />
       {/* the 2 m logo (9 November 2026; `hero-logo.tsx`): the lean APPROVED (R-103), mounted 9 November, session 2 */}
-      {/* ⚠ `liquid`: the liquid's route-B probe 2 (the logo in the field, one blob), WebGPU part only — THROWAWAY until the choice */}
-      <HeroLogo pose="lean" pmrem={medium.pmrem} onReady={onLogo} reflect={reflect} liquid={part?.materials?.liquid} />
+      {/* ⚠ `liquid`: the liquid, route B (one field: the logo, the blobs, the wall), WebGPU part only. ⛔ OFF (10 November 2026,
+          Carl: "lets deal with the start first ... so turn off the blobs for now") — set LIQUID_ON to bring it back */}
+      <HeroLogo pose="jump" pmrem={medium.pmrem} onReady={onLogo} reflect={reflect} liquid={LIQUID_ON ? part?.materials?.liquid : undefined} />
     </group>
   );
 }

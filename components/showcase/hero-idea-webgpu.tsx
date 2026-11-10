@@ -2,7 +2,7 @@ import type * as THREE from "three";
 import type { BenchPost, IdeaMediumPart } from "./bench-ideas";
 import { makeHeroBloom, type HeroBloom } from "./hero-bloom";
 import { heroTextMaterial } from "./hero-text-material";
-import { liquidFieldMaterial } from "./hero-liquid-webgpu";
+import { liquidMaterial } from "./hero-liquid-webgpu";
 
 /**
  * ⛔ THE HERO's WebGPU PART (9 November 2026, session 2; the workshop note v2.3, STEP 3, the review's [R10-5]): the text's
@@ -37,5 +37,5 @@ function heroPost(renderer: unknown, scene: THREE.Scene, camera: THREE.Camera): 
   };
 }
 
-// ⚠ `liquid`: the liquid's route-B PROBE 2 (the logo in the field, one blob; `hero-liquid-webgpu.tsx`) — THROWAWAY until the choice
-export const HERO_WEBGPU: IdeaMediumPart = { post: heroPost, materials: { heroText: heroTextMaterial, liquid: liquidFieldMaterial } };
+// ⚠ `liquid`: the liquid, route B — one field: the logo, the blobs, the wall (`hero-liquid-webgpu.tsx`; 10 November 2026)
+export const HERO_WEBGPU: IdeaMediumPart = { post: heroPost, materials: { heroText: heroTextMaterial, liquid: liquidMaterial } };

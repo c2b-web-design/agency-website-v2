@@ -65,6 +65,20 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-105 — The Hero's Logo: The Jump From The Lean And Its Landing (D-101): "Perfect"
+
+**Date:** 2026-11-10
+**Reviewer:** Human Founder
+**Subject:** `/proto/camera?blank=1` — `components/showcase/hero-logo.tsx` (`pose="jump"`, `useJump`, `endPose`, the landing's wobble)
+
+**Carl's verdict, verbatim:** *"Perfect."*
+
+**Findings:**
+
+- ✔ **APPROVED (take 2):** from the lean, the logo hops (a ballistic arc under real gravity, 0.7 s, apex ~61 cm) while only STRAIGHTENING its 12.5° lean — its profile kept, face to the right, top edge toward us — and lands standing on its end (the c) on the grid line x = −100; then the desk mark's wobble (its curve and angles), sideways on its thin end, right first.
+- **Take 1 rejected:** it turned to face us — *"i didnt say turn it. if the blobs were too be expelled now they would shoot right at us. keep the same profile."*
+- **Not covered:** the landing's shock and the blobs it sets off (the liquid is OFF on the bench); the trigger on the page (the visitor's arrival); the bench loop's timings are a bench convenience.
+
 ## R-104 — The Hero's Logo, Its Reflection Fixed: The Live Capture On Every Load (D-101): "Approved"
 
 **Date:** 2026-11-10

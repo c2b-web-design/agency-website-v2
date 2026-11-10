@@ -1,81 +1,82 @@
-# Session Handoff — 9 November 2026 (Monday), SESSION 3. THE REFLECTION SHIPPED; THE LIQUID NOTE APPROVED; PROBE 1 ACCEPTED; PROBE 2 NEXT
+# Session Handoff — 10 November 2026 (Tuesday). THE REFLECTION FIXED; THE BLOBS MIMICKED; THE JUMP APPROVED
 
-⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces session 2's handoff. Delete it at the end of the
-session that reads it, once its replacement is written.
+⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces 9 November session 3's handoff. Delete it at
+the end of the session that reads it, once its replacement is written.
 
-**The record:** D-101 in `decisions.md`, from *"THE MIRROR HYPOTHESIS FALSIFIED"* to the end. Every beat is there with
-Carl's words.
+**The record:** D-101 in `decisions.md`, from *"THE LIQUID's PROBE 2 — THE LOGO IN THE FIELD (10 November 2026"* to the
+end; R-104 and R-105 in `reviews/review-log.md`. Every beat is there with Carl's words.
 
 ## STATE
 
-- **Pushed:** `719cefa`, the logo's reflection (the studio and the glowing text), with the clean-checkout build passing
-  first. Carl: *"i dont have a problem with it ... It looks like the family of metals."*
-- **UNCOMMITTED (Carl has not said commit):** probe 1 (THROWAWAY): `hero-liquid-webgpu.tsx` (NEW), `hero-idea-webgpu.tsx`,
-  `hero-idea.tsx`, `hero-logo.tsx` (`LiquidProbe`); D-101's session-3 lines. Ask Carl before committing.
-- **The dev server is STOPPED** (the whole `next dev` tree; port 3000 free), on Carl's word. Start it, and check
-  `/proto/camera` answers.
-- **The screen capture is STOPPED** on Carl's word, and remuxed:
-  `Videos\C2B Films\03 The hero\01 Discussion\2026-11-09_s3_discussion_screen.mkv`, 2 h 25 min. Start a new one (into
-  `01 Discussion`) at the start of the next session's discussion, unprompted (the filmed-build rule).
-- **The scope is OPEN on Carl's word** (`_heroLogo9Nov`, `chunk-scope.json`). This session added
-  `hero-liquid-webgpu.tsx` and **`hero-liquid.tsx` (NEW, for probe 2, not yet created)**. **It stays open, with no
-  re-asking, until the end of the hero's PHASE 1**; then lock and test them all (Carl's standing exception, below).
-- **Lint:** the accepted error and the 2 known warnings in `projector.mjs`. `tsc` clean.
+- **Pushed:** `8b4b84d` — the logo's stale-reflection fix (R-104) and probe 2.
+- **UNCOMMITTED (Carl has not said commit):** `hero-logo.tsx` (THE JUMP, R-105 "Perfect"), `hero-liquid.tsx` and
+  `hero-liquid-webgpu.tsx` (the one-field liquid, phrase 1), `hero-idea.tsx` (`pose="jump"`, `LIQUID_ON = false`),
+  `hero-idea-webgpu.tsx` (the `liquid` slot → `liquidMaterial`), `decisions.md`, `review-log.md`, `current-sprint.md`.
+  Ask Carl before committing. **tsc clean; lint at the baseline** (the accepted error, the 2 `projector.mjs` warnings) —
+  last checked before the final docs edits; re-run before a commit, and build a clean checkout before any push.
+- **The bench (`/proto/camera?blank=1`)** shows the JUMP looping (2 s lean, 0.7 s hop, landed with the wobble). **The
+  liquid is OFF** (`LIQUID_ON = false` in `hero-idea.tsx`; nothing removed).
+- **The dev server is RUNNING** (port 3000). **The screen recording is RUNNING** — ffmpeg PID 29156, started on Carl's
+  word, into `Videos\C2B Films\03 The hero\01 Discussion\2026-11-10_discussion_screen.mkv`. Ask Carl whether to stop it
+  (stop by PID; the file is MKV, safe if cut).
+- **The scope stays OPEN** (`_heroLogo9Nov`, Carl's standing exception to the end of the hero's PHASE 1). No new files
+  were added this session.
 
-## WHAT SESSION 3 SETTLED
+## WHAT THIS SESSION SETTLED
 
-- **The reflection's null control:** there was NO mirror. The session-2 failure came from the `mode: "equirect"` dev
-  switch, which showed the lamps alone. Committed step 1 is sound (checked from a scratch worktree on port 3001).
-  Instrument v2: the reference is committed step 1's own frame (`live-work/scripts/hero-reflection-ref/`), with a yaw
-  sweep (150° the single best of 36) in place of a chosen bar. All checks pass.
-- **Carl's standard for the phases:** *"Whats important is the colour of the states are consistant."*
-- **⛔ Solid to liquid reads as ONE object** (Carl's T2 / T-1000 rule): the liquid looks exactly like the LOGO's material
-  (`#9c0000`, metalness 1, roughness 0.4, its reflection). No shade change at the transition.
-- **The liquid note** `live-work/structural-note-hero-liquid-9-november.md` **v1.5 APPROVED** (*"i will trust your
-  judgement.  as it stands"*), after reviews 11 and 12 (saved beside it). **Route B: RAYMARCHED METABALLS.**
-  - The blobs emerge out of the logo like the example's `wallx` (only the coming-out half), carrying its 70,085 cm³.
-  - **~4 s** against the right wall. **They stay in the air** (no floor fold). The logo forms **just above its landing
-    spot** (`HERO_LOGO_PLACE`) and falls.
-  - **D1-a:** a second capture of the landing spot, taken at load, swapped in on the landing frame. **D2:** if a
-    still-frame handover fails its bar, swap at the first bulge.
-  - The volume curve is solved at DEV TIME and shipped; per-frame volume is verification only.
-  - The liquid mounts INSIDE `HeroLogo`, through a prop slot from the WebGPU part.
-- **Probe 1, the shade null control:** BUILT. The shade matches (interior mean 0.08); the edge is fixed by
-  alpha-to-coverage, and its 1-px ring is **ACCEPTED by Carl's eye** (*"its acceptable, the one pixel ring. To me the left
-  blov looks better"*). The whole-mask bar is NOT met (1.13, p99.5 28) and is not moved.
-  - Two findings to KEEP in the real build: specular anti-aliasing must come from the HIT's normal (`roughnessNode`); the
-    edge needs coverage → `alphaToCoverage`.
-  - The coverage estimate for a hit is the SPHERE's (grazing angle). Metaballs need their own.
+- **⛔ THE STALE REFLECTION (R-104).** three r185's WebGPU renderer reuses a built program for any material whose cache
+  key matches, and that key records a texture's KIND, never WHICH texture; `EnvironmentNode` fixes the env texture into
+  the program. Step 1's studio (built first, while the text builds) and the capture are the same kind, so the logo drew
+  the studio. Fix: `customProgramCacheKey` returns the env texture's uuid. Four loads identical; the reflection
+  instrument passes at session 3's figures. **Carl re-approved the look.**
+- **⛔ THE BLOBS: the reference's code mimicked** (Carl: *"mimic the blobs behaviour ... then we will customise it and
+  make it our own"*), APPROVED: *"look, movement and behaviour look great."* Its field (balls `s/r² − 12` that ADD; the
+  surface at 80) is what makes the fat bridges and the wall's swell — a smooth minimum only rounds a crease.
+- **⛔ CARL's LIQUID CHOREOGRAPHY** (verbatim in D-101): EXPELLED out of the logo in ~500 ms, NOTHING left → to the right
+  wall, bouncing and partly merging → the bounce brings them to the MIDDLE for ~3 s → they come together into the logo
+  shape, *"like pouring jelly in a mould"* / the T-1000 re-forming. ⚠ Earlier: several blobs over ~500 ms, no mass left.
+- **⛔ THE START (R-105):** the page loads → the logo NOTICES the visitor → it JUMPS from the lean → LANDS standing on its
+  end on the grid line **x = −100 cm** → **the SHOCK of that landing sets off the blobs.** ⛔ **No turn** (*"keep the same
+  profile"* — face to the RIGHT so the blobs leave toward the wall, never at the camera). Approved take: a 0.7 s
+  ballistic hop under real gravity, only straightening the 12.5° lean; then the DESK MARK's wobble (its curve and
+  angles, copied), sideways on its thin end, right first.
+- **Phrase 1 (expelled → the wall), BUILT, then PARKED** (Carl: *"We can fine tune it from here"*). ONE field
+  (`liquidMaterial`): ten balls + the mirrored wall + the LOGO added by the wall's own law (its surface exactly on the
+  mesh's at weight 1). Take 2 of the travel: one Hermite path per blob (leaves the face moving, arrives with its wall
+  path's velocity; measured: no stop, no seam).
 
-## NEXT — PROBE 2 (the note v1.5's live plan, step 2), in `hero-liquid.tsx` + `hero-liquid-webgpu.tsx`
+## NEXT — Carl leads; the obvious thread
 
-**⛔ NO need to ask before the first code edit for the open files** (Carl's override, 9 November, session 3: *"to close
-them all only for you to ask to open them again in 9hrs in the next session is a waste of your energy and mine"*). Every
-file open under `_heroLogo9Nov` stays open, with no re-asking, until the END OF THE HERO's PHASE 1; then lock and test
-them all before phase 2. **New files outside the list still need his word.** Then build:
-- **The logo as a field term.** A 2D distance texture of the OUTLINE (`components/about/logo-mark-outline.ts`;
-  ~480 × 288 at 0.5 cm with a ±20 cm margin), extruded to 7.6 cm by the standard formula, in the lean's frame. Bake it
-  in a worker in the end; a probe may bake on load and say so.
-- **The first handover:** mesh → field logo at full weight, null control at mean ≤ 1.0, p99.5 ≤ 6; then D2 if needed.
-  Measure the extrusion's volume at weight 1 against 70,085 cm³ (the approximation check).
-- **ONE blob** bulging out of the logo's right face, necking and pinching off (smooth minimum), looping on the bench.
-- **The drain, for Carl's eye:** an even shrink against a directional front. Show the true 70 L scale.
-- Measure on WebGPU and on the fallback (`&forcewebgl=1`). Remove probe 1's spheres when probe 2 replaces them.
+1. **The landing's SHOCK → the blobs** from the LANDED logo (on its end at x = −100, face right). The liquid's logo term
+   reads the LEAN's frame today (`HeroLiquid` gets the lean's position/quaternion): it must read the LANDED pose, and the
+   expulsion start at touchdown. Bring the liquid back (`LIQUID_ON`).
+2. Carl's fine-tuning of phrase 1 (the travel's speed: `LIQUID_T.travel`, 2.5 s now, peak ~3 m/s).
+3. Then the MIDDLE (~3 s), then the MOULD (the logo term at the formation spot just above `HERO_LOGO_PLACE`, its weight
+   rising), then the solid logo falls (the second, balanced landing).
 
 ## OPEN — WITH OWNERS
 
-- **Commit of probe 1:** Carl's word.
-- **The glow's selection check fails at the previous HEAD** (pre-existing, from session 2): Carl's call, unchanged.
-- **Fable 5.2:** tried for one diagnosis and dropped (10 % of its own weekly limit). Do not propose it again.
+- **The wall's sheet shows** (Builder): a red board whose far half reaches inside the page frame (the frame widens with
+  depth). Place it for the far depth, or limit its extent.
+- **The field's first-show compile: ~4.4 s stall** (was 130 s; fixed by looping the balls IN the shader). On the site it
+  must compile during the lean's hold (Builder).
+- **Mass is not held** in the liquid (the mimic swings ±12 %; the expulsion unmeasured) — step 4's curve (Builder).
+- **`/about` showed a Next dev "1 Issue" badge; one automated run logged "NEON IGNITION NEVER RAN"** (under Playwright;
+  the next run did not). Not investigated — ask Carl to look before calling it a fault (Playwright is not his mouse).
+- **The profile formula is COPIED** from `logo-mark-geometry.ts` (not exported; outside the scope): face height asserted,
+  the rest not. Carl's call whether to export it.
+- **The glow's selection check fails at the previous HEAD** (pre-existing): Carl's call, unchanged.
 
 ## LESSONS
 
-- **A null control's REFERENCE must itself be verified.** Session 2 chased a "mirror" for hours; the reference (a dev
-  switch) was the broken thing. Check the reference first, ideally against a commit Carl approved.
-- **Homework before a note works twice:** the source showed `wallx` is a plane in the SAME field (so the logo must be in
-  the field), and the measurements showed "copy it whole" could not work at our scale, before anything was built.
-- **An adopted review finding must be carried through the whole body**, not only the answer table (review 12).
+- **A green instrument can be measuring something else:** the reflection instrument "failed" because the bench now
+  showed the liquid probe by default; it now parks it first. Check what is on screen before reading a number.
+- **WebGPU on D3D inlines every shader call:** ~16 field calls × ten JS-unrolled balls froze the page 130 s on first
+  compile. Loop over a uniform ARRAY inside the shader (`uniformArray` + `Loop`), and time the first compile.
+- **GNU sed/grep read `` \` `` as an anchor:** a sed meant to remove backslash-backticks put a backtick at the start of all
+  397 lines of `hero-logo.tsx` (repaired). Use Edit or Python for literal characters; grep with `-F`.
+- **Homework before building works again:** the video and source showed the fields ADD — the look Carl approved.
 
 ---
 
-*Written 9 November 2026, session 3.*
+*Written 10 November 2026.*

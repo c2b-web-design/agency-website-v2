@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/logo-mark-geometry";
 import { LOGO_ASPECT } from "@/components/about/logo-mark-outline";
@@ -122,6 +122,131 @@ function uprightPose(g: THREE.BufferGeometry): Pose {
   const b = g.boundingBox!;
   // measured bounds: the lowest point on the floor, the ink centred on `centreX`, the FACE (max Z) on the text's face
   return { position: [HERO_LOGO_PLACE.centreX - (b.min.x + b.max.x) / 2, -b.min.y, HERO_LOGO_PLACE.face - b.max.z], quaternion: new THREE.Quaternion() };
+}
+
+/** STANDING ON ITS END in the lean's PROFILE (Carl: *"keep the same profile"*): the lean straightened to vertical — the mesh's
+ *  +X (c → b) straight UP, its +Y (bottom edge → top edge) to the CAMERA (+Z), its face (+Z) to the RIGHT (+X); the c's lowest
+ *  ink on the floor; the THICKNESS centred on world X `x` (the line); its depth where the lean's is (`z`) */
+function endPose(g: THREE.BufferGeometry, x: number, z: number): Pose {
+  g.computeBoundingBox();
+  const b = g.boundingBox!;
+  const basis = new THREE.Matrix4().makeBasis(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1), new THREE.Vector3(1, 0, 0));
+  return { position: [x - (b.min.z + b.max.z) / 2, -b.min.x, z], quaternion: new THREE.Quaternion().setFromRotationMatrix(basis) };
+}
+
+/**
+ * ⛔ THE JUMP — THE START (10 November 2026; D-101). Carl: *"so a visitor lands, the page loads. its as if the logo notices
+ * this. it jumps up from its leaning postion and lands on the line. its the "shock" of this landing that causes the
+ * blobs."* The line: *"not the blue line, the one before it"* — the grid line x = −100 cm (`JUMP.landX`).
+ * ⛔ NO TURN — Carl, on take 1 (turned to face us): *"i didnt say turn it. if the blobs were too be expelled now they would
+ * shoot right at us. keep the same profile."* TAKE 2: the logo's CENTRE flies a BALLISTIC arc under real gravity (981 cm/s²,
+ * the world is in cm) while the body only STRAIGHTENS the lean (12.5° → vertical, within its own profile, evenly), landing
+ * STANDING ON ITS END (the c) in the lean's profile (`endPose`): face to the RIGHT (the blobs leave toward the wall), top
+ * edge toward us, its 7.6 cm thickness centred on the line, its edge running toward the camera along it. No crouch, no recoil.
+ * ⛔ THE LANDING's WOBBLE — Carl: *"look at the desk in the /about section. the logo can have a bit of a wobble as it lands."*
+ * The DESK MARK's wobble (`about-card-canvas.tsx`, `DESK_MARK_WOBBLE` and its curve, COPIED here — that file is outside
+ * this chunk): a block ROCKING ON ITS BOTTOM EDGES — here SIDEWAYS on its thin end, about the line: to the right about the
+ * face's bottom edge, to the left about the back's, the pivot changing side through upright; turning points 3.75°, 2.25°,
+ * 1.125°, 0.5625°, each swing eased (`easeInOutSine`), the first and last half-swings half the time; 2 s. From TOUCHDOWN,
+ * RIGHT first (the straightening's momentum carries its top that way). The desk's numbers as the first take.
+ * On the bench: a LOOP (`JUMP`): leaning, the jump, landed. Starts only once the logo wears its reflection (the capture
+ * is the LEAN's, taken at load). ⚠ DEV: `window.__heroJump` — play, at(t), and the arc's lowest corner (`minCornerCm`).
+ */
+const JUMP = { landX: -100, lean: 2, flight: 0.7, landed: 3, g: 981 } as const;
+/** the desk mark's wobble (`DESK_MARK_WOBBLE`, 10 October 2026, approved by Carl's eye), copied: ms and turning points */
+const LAND_WOBBLE = { ms: 2000, ampsDeg: [3.75, 2.25, 1.125, 0.5625] } as const;
+/** the desk mark's curve (radians) `w` ms into it: its first swing NEGATIVE, eased between turning points */
+function wobbleAngle(w: number): number {
+  if (w < 0 || w >= LAND_WOBBLE.ms) return 0;
+  const pts = [0, ...LAND_WOBBLE.ampsDeg.flatMap((a) => [-a, a]), 0];
+  const shares = pts.slice(1).map((_, i) => (i === 0 || i === pts.length - 2 ? 0.5 : 1));
+  let u = (w / LAND_WOBBLE.ms) * shares.reduce((a, b) => a + b, 0);
+  let i = 0;
+  while (i < shares.length - 1 && u > shares[i]) u -= shares[i++];
+  const e = (1 - Math.cos(Math.PI * Math.min(1, u / shares[i]))) / 2;
+  return THREE.MathUtils.degToRad(pts[i] + (pts[i + 1] - pts[i]) * e);
+}
+type JumpDev = { play(on: boolean): void; at(t: number): void; stats: { apexCm: number; minCornerCm: number; distanceCm: number; turnDeg: number } | null };
+
+type JumpPlan = { c: THREE.Vector3; q0: THREE.Quaternion; q1: THREE.Quaternion; c0: THREE.Vector3; c1: THREE.Vector3; vy: number };
+/** the pose at time s into the flight (0 → T): the centre on its ballistic arc, the body turned evenly about it */
+function jumpPoseAt(plan: JumpPlan, s: number, outQ: THREE.Quaternion, outP: THREE.Vector3) {
+  const T = JUMP.flight;
+  const u = Math.min(1, Math.max(0, s / T));
+  const tt = u * T;
+  outQ.slerpQuaternions(plan.q0, plan.q1, u);
+  outP.lerpVectors(plan.c0, plan.c1, u);
+  outP.y = plan.c0.y + plan.vy * tt - (JUMP.g * tt * tt) / 2;
+  outP.sub(plan.c.clone().applyQuaternion(outQ));
+}
+
+function useJump(mesh: THREE.Mesh | null, g: THREE.BufferGeometry | null, from: Pose | null, on: boolean) {
+  const plan = useMemo(() => {
+    if (!g || !from) return null;
+    g.computeBoundingBox();
+    const b = g.boundingBox!;
+    const c = b.getCenter(new THREE.Vector3());
+    const to = endPose(g, JUMP.landX, from.position[2]);
+    const q0 = from.quaternion.clone();
+    const q1 = to.quaternion.clone();
+    const c0 = new THREE.Vector3(...from.position).add(c.clone().applyQuaternion(q0));
+    const c1 = new THREE.Vector3(...to.position).add(c.clone().applyQuaternion(q1));
+    const T = JUMP.flight;
+    const vy = (c1.y - c0.y + (JUMP.g * T * T) / 2) / T;
+    const corners = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z));
+    // the landed pose and its two rocking edges (local): the c's lowest ink (x min) on the FACE (z max, world right) and on
+    // the BACK (z min, world left); the rock is about world Z (the line), so their y does not matter
+    const landPos = new THREE.Vector3(...to.position);
+    const front = new THREE.Vector3(b.min.x, c.y, b.max.z);
+    const back = new THREE.Vector3(b.min.x, c.y, b.min.z);
+    return { c, q0, q1, c0, c1, vy, corners, landPos, front, back };
+  }, [g, from]);
+  const ctl = useRef({ playing: true, t: 0 });
+  const tmp = useMemo(() => ({ q: new THREE.Quaternion(), p: new THREE.Vector3(), k: new THREE.Vector3(), z: new THREE.Vector3(0, 0, 1), r: new THREE.Quaternion() }), []);
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" || !plan) return;
+    // the arc's numbers, sampled: its apex above the start's centre, the lowest bounding-box corner over the flight
+    let minY = Infinity;
+    let apex = -Infinity;
+    const q = new THREE.Quaternion();
+    const p = new THREE.Vector3();
+    for (let i = 0; i <= 200; i++) {
+      const s = (i / 200) * JUMP.flight;
+      jumpPoseAt(plan, s, q, p);
+      apex = Math.max(apex, p.clone().add(plan.c.clone().applyQuaternion(q)).y);
+      for (const k of plan.corners) minY = Math.min(minY, k.clone().applyQuaternion(q).add(p).y);
+    }
+    const d: JumpDev = {
+      play: (v) => void (ctl.current.playing = v),
+      at: (t) => {
+        ctl.current.playing = false;
+        ctl.current.t = t;
+      },
+      stats: { apexCm: +(apex - plan.c0.y).toFixed(1), minCornerCm: +minY.toFixed(2), distanceCm: +plan.c0.distanceTo(plan.c1).toFixed(1), turnDeg: +((plan.q0.angleTo(plan.q1) * 180) / Math.PI).toFixed(1) },
+    };
+    (window as unknown as { __heroJump?: JumpDev }).__heroJump = d;
+  }, [plan]);
+  useFrame((_, delta) => {
+    if (!on || !mesh || !plan) return;
+    const c = ctl.current;
+    const L = JUMP.lean + JUMP.flight + JUMP.landed;
+    if (c.playing) c.t = (c.t + Math.min(delta, 0.1)) % L;
+    const s = c.t - JUMP.lean;
+    if (s < JUMP.flight) {
+      jumpPoseAt(plan, s, tmp.q, tmp.p);
+    } else {
+      // landed: the rock SIDEWAYS about the line (world Z), on the bottom edge it leans onto — RIGHT first (+ = its top to
+      // the right, onto the face's edge); the pivot stays where it stands
+      const th = -wobbleAngle((s - JUMP.flight) * 1000);
+      const pivot = th >= 0 ? plan.front : plan.back;
+      tmp.r.setFromAxisAngle(tmp.z, -th);
+      tmp.q.copy(tmp.r).multiply(plan.q1);
+      tmp.p.copy(pivot).applyQuaternion(plan.q1).add(plan.landPos);
+      tmp.p.sub(tmp.k.copy(pivot).applyQuaternion(tmp.q));
+    }
+    mesh.quaternion.copy(tmp.q);
+    mesh.position.copy(tmp.p);
+  });
 }
 
 /** THE LEAN (above): the turn, then the origin solved from the floor and the contact */
@@ -325,7 +450,7 @@ function useReflection(pmrem: ((gl: unknown) => PmremLike) | undefined, reflect:
  *  studio (`pmrem`, the medium's). `pose`: the LEAN (the opening, the default) or UPRIGHT (where it stood first, balanced —
  *  kept, Carl approved the balance). `reflect` (WebGPU only, the hero's part): the studio comes from the REFLECTION capture,
  *  the glowing text in it */
-export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquid }: { pose?: "lean" | "upright"; pmrem?: (gl: unknown) => PmremLike; onReady?: () => void; reflect?: HeroReflect; liquid?: () => THREE.Material }) {
+export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquid }: { pose?: "lean" | "upright" | "jump"; pmrem?: (gl: unknown) => PmremLike; onReady?: () => void; reflect?: HeroReflect; liquid?: () => THREE.Material }) {
   const geometry = useLogoGeometry(LOGO_HEIGHT_CM);
   const geo = useMemo(() => (geometry ? { geometry, dispose: () => geometry.dispose() } : null), [geometry]);
   useDisposeOnUnmount(geo ?? NOTHING);
@@ -378,19 +503,21 @@ export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquid }: { p
     const w = window as unknown as { __heroLogoEnvs?: string[] };
     (w.__heroLogoEnvs ??= []).push(reflected ? "reflection" : studio ? "studio" : "none");
   }, [material, reflected, studio]);
-  const placed = useMemo(() => (geometry ? (pose === "lean" ? leanPose(geometry) : uprightPose(geometry)) : null), [geometry, pose]);
+  const placed = useMemo(() => (geometry ? (pose === "upright" ? uprightPose(geometry) : leanPose(geometry)) : null), [geometry, pose]);
   // ⛔ READY (9 November 2026, session 2; the workshop note v2.1 [R10-4]): the geometry from /about's worker AND, where the
   // medium prefilters one, the studio (or the reflection) on the material. The bench's "drawn" waits for it
   const ready = !!placed && (!pmrem || !!studio || !!reflected);
   useEffect(() => {
     if (ready) onReady?.();
   }, [ready, onReady]);
+  // ⛔ THE JUMP (the start): from the lean, once the logo is ready — the lean's capture is taken first
+  useJump(mesh, geometry, pose === "jump" ? placed : null, pose === "jump" && ready);
   if (!geometry || !placed) return null;
   return (
     <>
       <mesh ref={setMesh} name="hero logo" geometry={geometry} material={material} position={placed.position} quaternion={placed.quaternion} visible={meshVisible} />
-      {/* ⚠ THE LIQUID's PROBE 2 (`hero-liquid.tsx`; probe 1's spheres removed, 10 November 2026), only once the logo wears
-          its reflection (the field copies the real one): the logo in the field, one blob out of its face */}
+      {/* ⚠ THE LIQUID (`hero-liquid.tsx`, 10 November 2026): ONE field — the logo, the ten blobs, the wall — on the bench's
+          loop (the hold, the expulsion, the wall), only once the logo wears its reflection (the field copies the real one) */}
       {liquid && reflected && <HeroLiquid make={liquid} logoMaterial={material} logoGeometry={geometry} position={placed.position} quaternion={placed.quaternion} onMeshVisible={setMeshVisible} />}
     </>
   );
