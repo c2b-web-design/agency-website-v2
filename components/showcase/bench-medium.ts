@@ -78,6 +78,22 @@ export type BenchMedium = {
    *  `PMREMGenerator` from `three`, WebGPU's from `three/webgpu` — each renderer prefilters with its own. The caller owns
    *  and disposes what it makes */
   pmrem: (gl: unknown) => PmremLike;
+  /** ⛔ OPTIONAL: build a material's pipeline ASYNCHRONOUSLY in the real draw, so its first draw never freezes the page
+   *  (10 November 2026, session 2; `live-work/structural-note-liquid-async-compile-10-november.md` v1.4, the plan v1.2,
+   *  APPROVED). The WebGPU medium only; without it, a caller behaves as before (three's synchronous first build) */
+  asyncCompile?: (gl: unknown, material: THREE.Material) => AsyncCompileHandle;
+};
+/** a registration with the medium's async compile — read every frame by its owner */
+export type AsyncCompileHandle = {
+  /** `pending` until every render object of the material seen in the draw has its pipeline; `failed` on any error */
+  state(): "pending" | "ready" | "failed";
+  /** the owner's gate has begun to HOLD (dev bookkeeping for the forced delay, counted from the hold's start) */
+  holding(): void;
+  /** ⚠ DEV ONLY: `fail` → reads failed; `delay` → reads pending until `ms` of wall clock after the hold begins */
+  force(kind: "fail" | "delay", ms?: number): void;
+  /** for the dev hook: the render objects seen, by three's id */
+  seenIds(): number[];
+  dispose(): void;
 };
 /** the part of either medium's `PMREMGenerator` the bench uses */
 export type PmremLike = {

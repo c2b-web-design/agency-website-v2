@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { MeshStandardNodeMaterial, type Node } from "three/webgpu";
-import { abs, Break, cameraFar, uniformArray, cameraNear, cameraPosition, cameraViewMatrix, clamp, dot, float, Fn, If, length, Loop, materialRoughness, max, min, normalize, positionWorld, select, sqrt, texture, uniform, vec2, vec3, vec4, viewZToPerspectiveDepth } from "three/tsl";
+import { abs, Break, exp, cameraFar, uniformArray, cameraNear, cameraPosition, cameraViewMatrix, clamp, dot, float, Fn, If, length, Loop, materialRoughness, max, min, normalize, positionWorld, select, sqrt, texture, uniform, vec2, vec3, vec4, viewZToPerspectiveDepth } from "three/tsl";
 
 /**
  * ⛔ THE LIQUID — ONE FIELD: THE LOGO, THE BLOBS, THE WALL (10 November 2026; route B, the note v1.5; D-101). Replaces
@@ -13,8 +13,9 @@ import { abs, Break, cameraFar, uniformArray, cameraNear, cameraPosition, camera
  * - ⛔ THE LOGO adds the SAME law as the wall, `2 / x² − 12`, with x = the logo's signed distance (box units) PLUS the
  *   wall's own iso offset √(2 / (iso + 12)) — so at weight 1 its surface lies EXACTLY on the logo's distance zero (the
  *   mesh's surface: the profile swept along the outline's distance, probe 2's construction), and its field falls off like
- *   the wall's, so the blobs SWELL OUT OF IT as the example's do out of its wall. Times `logoWeight`: as it falls the
- *   surface sinks inward evenly and is gone below ~0.58 (the plate's half-thickness).
+ *   the wall's, so the blobs SWELL OUT OF IT as the example's do out of its wall. Times `logoWeight` (1, or 0 once gone)
+ *   and, during the emergence, the MASK (`maskAt`, 10 November 2026, session 2): each blob's REGION of the logo goes with
+ *   it — a mask below ~0.58 leaves no surface (the plate's half-thickness).
  * The surface is where the SUM reaches `isolation` (80). Not an SDF: the march steps by (iso − F) / G, halved and clamped,
  * where G bounds |∇F| (the sum of each term's gradient magnitude), with a skip to the nearest INFLUENCE region when outside
  * all of them; then it BISECTS the crossing. Normals: central differences of F. In WORLD space; the logo's distance is read
@@ -41,6 +42,14 @@ export type LiquidUniforms = {
   cosT: { value: number };
   worldToLocal: { value: THREE.Matrix4 };
   logoWeight: { value: number };
+  /** ⛔ THE REGIONS (each blob's own mass, `logoRegions`): local cm, xy the region's centre (the partition), zw its ANCHOR
+   *  (where its blob leaves); `fronts` the radius about the anchor inside which the region is still solid */
+  regions: { array: THREE.Vector4[] };
+  fronts: { array: number[] };
+  /** the front's soft edge and the regions' soft border (cm); `masking` 1 only while the fronts move (the emergence) */
+  band: { value: number };
+  tau: { value: number };
+  masking: { value: number };
   /** xyz world cm, w strength 0–1 — ONE uniform array, looped over IN the shader (one copy of the ball code per call) */
   balls: { array: THREE.Vector4[] };
   boxMin: { value: THREE.Vector3 };
@@ -86,6 +95,11 @@ export function liquidMaterial(): THREE.Material {
     cosT: uniform(1),
     worldToLocal: uniform(new THREE.Matrix4()),
     logoWeight: uniform(1),
+    regions: uniformArray(Array.from({ length: LIQUID_BALLS }, () => new THREE.Vector4(0, 0, 0, 0)), "vec4"),
+    fronts: uniformArray(Array.from({ length: LIQUID_BALLS }, () => 1e4), "float"),
+    band: uniform(3),
+    tau: uniform(3),
+    masking: uniform(0),
     balls: uniformArray(Array.from({ length: LIQUID_BALLS }, () => new THREE.Vector4(0, 0, 0, 0)), "vec4"),
     boxMin: uniform(new THREE.Vector3()),
     boxMax: uniform(new THREE.Vector3()),
@@ -126,14 +140,62 @@ export function liquidMaterial(): THREE.Material {
     const inside = u.greaterThanEqual(0).and(z.greaterThanEqual(0)).and(z.lessThanEqual(zu));
     return select(inside, dist.negate(), dist);
   };
-  /** the logo's signed distance (cm) at a WORLD point */
-  const logoSdf = (pw: V3) => {
-    const p = U.worldToLocal.mul(vec4(pw, 1)).xyz;
+  /** the logo's signed distance (cm) at a point in its OWN frame */
+  const logoSdfLocal = (p: V3) => {
     const uv = p.xy.sub(U.gridOrigin).div(U.gridSize);
     const dTex = distTex.sample(uv).level(float(0)).r;
     const half = U.gridSize.mul(0.5);
     const out = length(max(abs(p.xy.sub(U.gridOrigin.add(half))).sub(half), vec2(0, 0)));
     return profileSdf(dTex.sub(out), p.z);
+  };
+  const toLocal = (pw: V3) => U.worldToLocal.mul(vec4(pw, 1)).xyz;
+  /** the logo's signed distance (cm) at a WORLD point */
+  const logoSdf = (pw: V3) => logoSdfLocal(toLocal(pw));
+  /**
+   * ⛔ THE MASK — what is still SOLID of the logo at a local point, 0–1 (10 November 2026, session 2; Carl: *"each blob
+   * that emerges will have its own mass. The equivalent mass must disappear from the logo, maybe through masking it a
+   * bit"*). The point's region is its nearest centre, SOFTENED over `tau` (a weighted mean, `exp(−(d − dmin) / tau)`), so
+   * a gone region meets a full one in a slope, not a cut face; within its region the solid is what lies inside the
+   * region's FRONT (`fronts[i]` about its anchor), falling to 0 over `band` — the front closes in on the anchor as the
+   * blob grows, the mass drawn into it. Only while `masking`: otherwise 1, the loops skipped.
+   * Returns vec2(mask, a bound on its slope per cm): the slope counted ONLY where the mask varies — a front's edge in a
+   * region that matters here (1.5 / band), and a border between regions that differ (their spread × 2 / tau). Charged
+   * everywhere, it forced 0.1 cm steps around the whole logo and the rays ran out (the green outline, 10 November 2026).
+   * ⚠ Regions weighing under 1 % here are left out of the slope — approximate, not a strict bound.
+   */
+  const maskAt = (p: V3, need: Node<"bool">) => {
+    const m = float(1).toVar();
+    const slope = float(0).toVar();
+    // only where the logo's term reaches (`need`): elsewhere the mask multiplies nothing — the loops halved the frame rate
+    // when run at every step (33 ms frames against 16.7, 10 November 2026)
+    If(U.masking.greaterThan(0.5).and(need), () => {
+      const dmin = float(1e9).toVar();
+      Loop(LIQUID_BALLS, ({ i }: { i: Node<"int"> }) => {
+        const r = U.regions.element(i) as unknown as Node<"vec4">;
+        dmin.assign(min(dmin, length(p.xy.sub(r.xy))));
+      });
+      const sw = float(0).toVar();
+      const sm = float(0).toVar();
+      const hi = float(0).toVar();
+      const lo = float(1).toVar();
+      const edge = float(0).toVar();
+      Loop(LIQUID_BALLS, ({ i }: { i: Node<"int"> }) => {
+        const r = U.regions.element(i) as unknown as Node<"vec4">;
+        const a = exp(dmin.sub(length(p.xy.sub(r.xy))).div(U.tau));
+        const front = U.fronts.element(i) as unknown as F;
+        const k = clamp(front.sub(length(p.xy.sub(r.zw))).div(U.band).add(1), 0, 1);
+        const sk = k.mul(k).mul(k.mul(-2).add(3));
+        sw.addAssign(a);
+        sm.addAssign(a.mul(sk));
+        const matters = a.greaterThan(0.01);
+        hi.assign(select(matters, max(hi, sk), hi));
+        lo.assign(select(matters, min(lo, sk), lo));
+        edge.assign(select(matters.and(k.greaterThan(0)).and(k.lessThan(1)), float(1), edge));
+      });
+      m.assign(sm.div(sw.max(1e-6)));
+      slope.assign(edge.mul(float(1.5).div(U.band)).add(hi.sub(lo).max(0).mul(float(2).div(U.tau))));
+    });
+    return vec2(m, slope);
   };
   const B2 = U.scale.mul(U.scale);
   const x0 = sqrt(float(2).div(U.isolation.add(12)));
@@ -162,11 +224,17 @@ export function liquidMaterial(): THREE.Material {
     const won = wval.greaterThan(0).and(xw.greaterThanEqual(0)).and(U.wallOn.greaterThan(0.5));
     F = F.add(select(won, wval, float(0)));
     G = G.add(select(won, xw.mul(4).div(U.scale.mul(wden.mul(wden))), float(0)));
-    const xl = logoSdf(p).div(U.scale).add(x0).max(1e-3);
-    const lval = float(2).div(xl.mul(xl)).sub(12).mul(U.logoWeight);
+    const pl = toLocal(p);
+    const xl = logoSdfLocal(pl).div(U.scale).add(x0).max(1e-3);
+    const lraw = float(2).div(xl.mul(xl)).sub(12).mul(U.logoWeight).toVar();
+    const ms = maskAt(pl, lraw.greaterThan(0)).toVar();
+    const mask = ms.x;
+    const lval = lraw.mul(mask);
     const lon = lval.greaterThan(0);
     F = F.add(select(lon, lval, float(0)));
-    G = G.add(select(lon, float(4).mul(U.logoWeight).div(U.scale.mul(xl.mul(xl).mul(xl))), float(0)));
+    // the bound: the term's own slope, plus the mask's where it varies (`maskAt`)
+    const maskSlope = ms.y;
+    G = G.add(select(lraw.greaterThan(0), float(4).mul(U.logoWeight).mul(mask).div(U.scale.mul(xl.mul(xl).mul(xl))).add(lraw.mul(maskSlope)), float(0)));
     return vec2(F, G);
   }).setLayout({ name: "liquidField", type: "vec2", inputs: [{ name: "p", type: "vec3" }] });
   const field = (p: V3) => fieldFn(p);

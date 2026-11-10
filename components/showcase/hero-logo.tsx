@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/logo-mark-geometry";
-import { LOGO_ASPECT } from "@/components/about/logo-mark-outline";
+import { LOGO_ASPECT, LOGO_OUTLINE } from "@/components/about/logo-mark-outline";
 import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 import { HERO_CAMERA, HERO_PAGE, HERO_SKETCH_LIGHT, HERO_TEXT_PLACE } from "./hero-page";
 import { useDisposeOnUnmount } from "@/lib/use-dispose-on-unmount";
-import type { PmremLike } from "./bench-medium";
-import { HeroLiquid } from "./hero-liquid";
+import type { AsyncCompileHandle, PmremLike } from "./bench-medium";
+import { HeroLiquid, LIQUID_LENGTH } from "./hero-liquid";
 
 /**
  * ⛔ THE HERO's LOGO ON THE BENCH (9 November 2026; D-101). Carl: *"Put a 2m logo thats facing us in the space on the right.
@@ -124,6 +124,41 @@ function uprightPose(g: THREE.BufferGeometry): Pose {
   return { position: [HERO_LOGO_PLACE.centreX - (b.min.x + b.max.x) / 2, -b.min.y, HERO_LOGO_PLACE.face - b.max.z], quaternion: new THREE.Quaternion() };
 }
 
+/**
+ * ⛔ THE FACE-ON POSITION's OUTLINE (10 November 2026, session 2; Carl: *"before we made the logo lean, we plotted that
+ * position on the right side on the floor. Draw an outline of the logo in that same position"*; *"face on"*). The logo
+ * FACING THE CAMERA, its bottom edge on the floor, balanced in the space on the right (`uprightPose`, Carl's balance,
+ * 9 November) — where the liquid will fill the invisible logo and fall to (D-101). The logo's own outline (`LOGO_OUTLINE`,
+ * the one its mesh is built from, scaled by the mesh's MEASURED height), one closed line on its FACE. A guide: amber, unlit.
+ */
+/** `raiseCm` (Carl: *"raise it a little so that the blobs on the way to the wall go through it"*): read off the bench at
+ *  4 s — the clump's centre ~89 cm up (56–123), the outline's centre 52 → raised 40 cm. ⚠ Read from a frame, not measured
+ *  in code (the `__liquid.material` dev hook returned a StrictMode-dropped instance's uniforms) */
+const FACE_ON_OUTLINE = { show: true, colour: "#ffb84d", raiseCm: 40 } as const;
+function FaceOnOutline({ geometry }: { geometry: THREE.BufferGeometry }) {
+  const line = useMemo(() => {
+    geometry.computeBoundingBox();
+    const b = geometry.boundingBox!;
+    const h = b.max.y - b.min.y;
+    const pts: number[] = [];
+    for (let i = 0; i < LOGO_OUTLINE.length; i += 2) pts.push(LOGO_OUTLINE[i] * h, LOGO_OUTLINE[i + 1] * h, b.max.z);
+    // closed by repeating the first point: WebGPU draws no `LineLoop`
+    pts.push(pts[0], pts[1], pts[2]);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    const m = new THREE.LineBasicMaterial({ color: FACE_ON_OUTLINE.colour });
+    const pose = uprightPose(geometry);
+    // a THREE.Line built here (JSX `<line>` is SVG's in React's types)
+    const obj = new THREE.Line(g, m);
+    obj.name = "hero logo face-on outline";
+    obj.position.set(pose.position[0], pose.position[1] + FACE_ON_OUTLINE.raiseCm, pose.position[2]);
+    obj.quaternion.copy(pose.quaternion);
+    return { obj, dispose: () => (g.dispose(), m.dispose()) };
+  }, [geometry]);
+  useDisposeOnUnmount(line);
+  return <primitive object={line.obj} />;
+}
+
 /** STANDING ON ITS END in the lean's PROFILE (Carl: *"keep the same profile"*): the lean straightened to vertical — the mesh's
  *  +X (c → b) straight UP, its +Y (bottom edge → top edge) to the CAMERA (+Z), its face (+Z) to the RIGHT (+X); the c's lowest
  *  ink on the floor; the THICKNESS centred on world X `x` (the line); its depth where the lean's is (`z`) */
@@ -180,7 +215,18 @@ function jumpPoseAt(plan: JumpPlan, s: number, outQ: THREE.Quaternion, outP: THR
   outP.sub(plan.c.clone().applyQuaternion(outQ));
 }
 
-function useJump(mesh: THREE.Mesh | null, g: THREE.BufferGeometry | null, from: Pose | null, on: boolean) {
+/** ⛔ THE JUMP's CLOCK IS THE HERO's (10 November 2026, session 2): the liquid reads it (`HeroLiquid`), so the landing's
+ *  shock and the expulsion cannot drift apart. Advanced HERE only. The loop's landed phase runs `landedS` (the liquid's
+ *  length while it is on). `poseAt` — the logo's pose at any time on it — is what the field logo follows */
+type JumpClock = { current: { playing: boolean; t: number } };
+type Jump = { touchdown: number; settled: number; landed: Pose; poseAt(t: number, outQ: THREE.Quaternion, outP: THREE.Vector3): void };
+
+/** ⛔ THE LIQUID's HOLD (10 November 2026, session 2; the async-compile plan v1.2): written by the liquid EVERY frame —
+ *  while `hold`, the clock is clamped at `settled` BEFORE it crosses (never stepped back), the logo standing after its
+ *  wobble until the liquid's pipeline is ready (Carl: the extra beat accepted, up to 1 s) */
+export type JumpHold = { current: { hold: boolean } };
+
+function useJump(mesh: THREE.Mesh | null, g: THREE.BufferGeometry | null, from: Pose | null, on: boolean, clockRef: JumpClock, landedS: number, holdRef: JumpHold): Jump | null {
   const plan = useMemo(() => {
     if (!g || !from) return null;
     g.computeBoundingBox();
@@ -199,10 +245,32 @@ function useJump(mesh: THREE.Mesh | null, g: THREE.BufferGeometry | null, from: 
     const landPos = new THREE.Vector3(...to.position);
     const front = new THREE.Vector3(b.min.x, c.y, b.max.z);
     const back = new THREE.Vector3(b.min.x, c.y, b.min.z);
-    return { c, q0, q1, c0, c1, vy, corners, landPos, front, back };
+    return { c, q0, q1, c0, c1, vy, corners, landPos, front, back, to };
   }, [g, from]);
-  const ctl = useRef({ playing: true, t: 0 });
-  const tmp = useMemo(() => ({ q: new THREE.Quaternion(), p: new THREE.Vector3(), k: new THREE.Vector3(), z: new THREE.Vector3(0, 0, 1), r: new THREE.Quaternion() }), []);
+  const jump = useMemo<Jump | null>(() => {
+    if (!plan) return null;
+    const k = new THREE.Vector3();
+    const z = new THREE.Vector3(0, 0, 1);
+    const r = new THREE.Quaternion();
+    return {
+      touchdown: JUMP.lean + JUMP.flight,
+      settled: JUMP.lean + JUMP.flight + LAND_WOBBLE.ms / 1000,
+      landed: plan.to,
+      poseAt(t, outQ, outP) {
+        const s = t - JUMP.lean;
+        if (s < JUMP.flight) return jumpPoseAt(plan, s, outQ, outP);
+        // landed: the rock SIDEWAYS about the line (world Z), on the bottom edge it leans onto — RIGHT first (+ = its top
+        // to the right, onto the face's edge); the pivot stays where it stands
+        const th = -wobbleAngle((s - JUMP.flight) * 1000);
+        const pivot = th >= 0 ? plan.front : plan.back;
+        r.setFromAxisAngle(z, -th);
+        outQ.copy(r).multiply(plan.q1);
+        outP.copy(pivot).applyQuaternion(plan.q1).add(plan.landPos);
+        outP.sub(k.copy(pivot).applyQuaternion(outQ));
+      },
+    };
+  }, [plan]);
+  const tmp = useMemo(() => ({ q: new THREE.Quaternion(), p: new THREE.Vector3() }), []);
   useEffect(() => {
     if (process.env.NODE_ENV === "production" || !plan) return;
     // the arc's numbers, sampled: its apex above the start's centre, the lowest bounding-box corner over the flight
@@ -217,36 +285,29 @@ function useJump(mesh: THREE.Mesh | null, g: THREE.BufferGeometry | null, from: 
       for (const k of plan.corners) minY = Math.min(minY, k.clone().applyQuaternion(q).add(p).y);
     }
     const d: JumpDev = {
-      play: (v) => void (ctl.current.playing = v),
+      play: (v) => void (clockRef.current.playing = v),
       at: (t) => {
-        ctl.current.playing = false;
-        ctl.current.t = t;
+        clockRef.current.playing = false;
+        clockRef.current.t = t;
       },
       stats: { apexCm: +(apex - plan.c0.y).toFixed(1), minCornerCm: +minY.toFixed(2), distanceCm: +plan.c0.distanceTo(plan.c1).toFixed(1), turnDeg: +((plan.q0.angleTo(plan.q1) * 180) / Math.PI).toFixed(1) },
     };
     (window as unknown as { __heroJump?: JumpDev }).__heroJump = d;
-  }, [plan]);
+  }, [plan, clockRef]);
   useFrame((_, delta) => {
-    if (!on || !mesh || !plan) return;
-    const c = ctl.current;
-    const L = JUMP.lean + JUMP.flight + JUMP.landed;
-    if (c.playing) c.t = (c.t + Math.min(delta, 0.1)) % L;
-    const s = c.t - JUMP.lean;
-    if (s < JUMP.flight) {
-      jumpPoseAt(plan, s, tmp.q, tmp.p);
-    } else {
-      // landed: the rock SIDEWAYS about the line (world Z), on the bottom edge it leans onto — RIGHT first (+ = its top to
-      // the right, onto the face's edge); the pivot stays where it stands
-      const th = -wobbleAngle((s - JUMP.flight) * 1000);
-      const pivot = th >= 0 ? plan.front : plan.back;
-      tmp.r.setFromAxisAngle(tmp.z, -th);
-      tmp.q.copy(tmp.r).multiply(plan.q1);
-      tmp.p.copy(pivot).applyQuaternion(plan.q1).add(plan.landPos);
-      tmp.p.sub(tmp.k.copy(pivot).applyQuaternion(tmp.q));
+    if (!on || !mesh || !jump) return;
+    const L = JUMP.lean + JUMP.flight + landedS;
+    if (clockRef.current.playing) {
+      const t0 = clockRef.current.t;
+      let t = t0 + Math.min(delta, 0.1);
+      if (holdRef.current.hold && t0 <= jump.settled) t = Math.min(t, jump.settled);
+      clockRef.current.t = t % L;
     }
+    jump.poseAt(clockRef.current.t, tmp.q, tmp.p);
     mesh.quaternion.copy(tmp.q);
     mesh.position.copy(tmp.p);
   });
+  return jump;
 }
 
 /** THE LEAN (above): the turn, then the origin solved from the floor and the contact */
@@ -450,7 +511,7 @@ function useReflection(pmrem: ((gl: unknown) => PmremLike) | undefined, reflect:
  *  studio (`pmrem`, the medium's). `pose`: the LEAN (the opening, the default) or UPRIGHT (where it stood first, balanced —
  *  kept, Carl approved the balance). `reflect` (WebGPU only, the hero's part): the studio comes from the REFLECTION capture,
  *  the glowing text in it */
-export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquid }: { pose?: "lean" | "upright" | "jump"; pmrem?: (gl: unknown) => PmremLike; onReady?: () => void; reflect?: HeroReflect; liquid?: () => THREE.Material }) {
+export function HeroLogo({ pose = "lean", pmrem, asyncCompile, onReady, reflect, liquid }: { pose?: "lean" | "upright" | "jump"; pmrem?: (gl: unknown) => PmremLike; asyncCompile?: (gl: unknown, material: THREE.Material) => AsyncCompileHandle; onReady?: () => void; reflect?: HeroReflect | null; liquid?: () => THREE.Material }) {
   const geometry = useLogoGeometry(LOGO_HEIGHT_CM);
   const geo = useMemo(() => (geometry ? { geometry, dispose: () => geometry.dispose() } : null), [geometry]);
   useDisposeOnUnmount(geo ?? NOTHING);
@@ -468,11 +529,23 @@ export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquid }: { p
     if (devRef.current) devRef.current.opts = opts;
   }, [opts]);
   const [mesh, setMesh] = useState<THREE.Mesh | null>(null);
-  // the liquid's field draws the logo while it runs: the mesh is HIDDEN by its owner then, never unmounted (the note v1.5)
-  const [meshVisible, setMeshVisible] = useState(true);
-  const reflected = useReflection(pmrem, reflect, mesh, opts, devRef);
+  // the same mesh as a REF, for the liquid's per-frame visibility switch
+  const meshRef = useRef<THREE.Mesh | null>(null);
+  const onMesh = useCallback((m: THREE.Mesh | null) => {
+    meshRef.current = m;
+    setMesh(m);
+  }, []);
+  // the liquid's field draws the logo while it runs: the mesh is HIDDEN then, never unmounted (the note v1.5) — by the
+  // liquid itself, in the frame the field shows (session 2; was a state here, a React render late)
+  const reflected = useReflection(pmrem, reflect ?? undefined, mesh, opts, devRef);
   // step 1's studio — where there is no reflection (WebGL)
-  const studio = useFamilyStudio(reflect ? undefined : pmrem);
+  // ⛔ NO STAND-IN (10 November 2026, session 2; Carl: *"when the logo does finally appear on its far edge there is a light
+  // and then its darker. its very noticable"*). FILMED on a cold load (`hero-cold-load-film-10-november.mjs`): the logo
+  // showed step 1's studio (the text not yet built, so no capture) and ~1 s later its live reflection, darker. Now
+  // `reflect === null` means a reflection is COMING (the WebGPU part is loaded): no studio is made, the solid stays HIDDEN
+  // and the logo is not READY until the reflection is on it (the solid shows only once `reflected` is on its material —
+  // the text being built is not enough: the capture follows it). `undefined` (WebGL): step 1's studio, as before
+  const studio = useFamilyStudio(reflect !== undefined ? undefined : pmrem);
   // the material on its own life: a new one when the studio arrives, the old disposed a task later — never the geometry
   const material = useMemo(() => {
     const m = new THREE.MeshStandardMaterial({ color: HERO_LOGO_RED, metalness: HERO_LOGO_METAL.metalness, roughness: HERO_LOGO_METAL.roughness });
@@ -510,15 +583,22 @@ export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquid }: { p
   useEffect(() => {
     if (ready) onReady?.();
   }, [ready, onReady]);
-  // ⛔ THE JUMP (the start): from the lean, once the logo is ready — the lean's capture is taken first
-  useJump(mesh, geometry, pose === "jump" ? placed : null, pose === "jump" && ready);
+  // ⛔ THE JUMP (the start): from the lean, once the logo is ready — the lean's capture is taken first. Its clock is the
+  // liquid's too; with the liquid on, the landed phase runs the wobble, then the liquid's length (the expulsion starts
+  // once the wobble has played: `settled`)
+  const clockRef = useRef({ playing: true, t: 0 });
+  const holdRef = useRef({ hold: false });
+  const liquidOn = !!liquid && !!reflected && pose === "jump";
+  const jump = useJump(mesh, geometry, pose === "jump" ? placed : null, pose === "jump" && ready, clockRef, liquidOn ? LAND_WOBBLE.ms / 1000 + LIQUID_LENGTH : JUMP.landed, holdRef);
   if (!geometry || !placed) return null;
   return (
     <>
-      <mesh ref={setMesh} name="hero logo" geometry={geometry} material={material} position={placed.position} quaternion={placed.quaternion} visible={meshVisible} />
-      {/* ⚠ THE LIQUID (`hero-liquid.tsx`, 10 November 2026): ONE field — the logo, the ten blobs, the wall — on the bench's
-          loop (the hold, the expulsion, the wall), only once the logo wears its reflection (the field copies the real one) */}
-      {liquid && reflected && <HeroLiquid make={liquid} logoMaterial={material} logoGeometry={geometry} position={placed.position} quaternion={placed.quaternion} onMeshVisible={setMeshVisible} />}
+      <mesh ref={onMesh} name="hero logo" geometry={geometry} material={material} position={placed.position} quaternion={placed.quaternion} visible={reflect === undefined || !!reflected} />
+      {/* ⚠ THE LIQUID (`hero-liquid.tsx`, 10 November 2026): ONE field — the logo, the ten blobs, the wall — from the
+          LANDING (session 2: on the jump's clock, out of the landed logo), only once the logo wears its reflection (the
+          field copies the real one). ⛔ With the jump only (`pose="jump"`) */}
+      {FACE_ON_OUTLINE.show && <FaceOnOutline geometry={geometry} />}
+      {liquidOn && jump && mesh && <HeroLiquid make={liquid} logoMaterial={material} logoGeometry={geometry} landed={jump.landed} logoMeshRef={meshRef} clockRef={clockRef} start={jump.settled} poseAt={jump.poseAt} asyncCompile={asyncCompile} holdRef={holdRef} />}
     </>
   );
 }

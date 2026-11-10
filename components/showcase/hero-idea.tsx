@@ -14,8 +14,9 @@ import { HeroLogo } from "./hero-logo";
  * home page's amber frame). Its WebGPU part (the acrylic, the glow) is `hero-idea-webgpu.tsx`, loaded only in that medium.
  * ⛔ FURNITURE: it leaves with the C2B site; the bench never imports it (`bench-ideas.ts` lists it, lazily).
  */
-/** the liquid on the bench: OFF while the start (the jump and its landing) is built — Carl, 10 November 2026 */
-const LIQUID_ON = false;
+/** the liquid on the bench: OFF while the start (the jump and its landing) was built — Carl, 10 November 2026; ON again
+ *  (session 2) for the emergence from the LANDED logo */
+const LIQUID_ON = true;
 
 function HeroScene({ medium, part, onReady }: IdeaSceneProps) {
   // READY: the text built and the logo with its studio — the bench's "drawn" waits for both ([R10-4])
@@ -29,7 +30,8 @@ function HeroScene({ medium, part, onReady }: IdeaSceneProps) {
   // ⛔ THE TEXT BUILT ONCE, HERE (the reflection note v1.7, ownership): drawn by `HeroText`, and shared with the logo's
   // reflection capture — ONLY when the hero's WebGPU part is loaded (the reflection is WebGPU-only; `part` is null in WebGL)
   const textBuild = useHeroTextBuild(part?.materials?.heroText);
-  const reflect = useMemo(() => (part && textBuild ? { geometries: textBuild.geometries, material: textBuild.material } : undefined), [part, textBuild]);
+  // `null` while the text builds: the reflection is COMING (the logo shows no stand-in meanwhile — `HeroLogo`)
+  const reflect = useMemo(() => (!part ? undefined : textBuild ? { geometries: textBuild.geometries, material: textBuild.material } : null), [part, textBuild]);
   return (
     // on the grid's crossing — the workshop's origin (the floor y 0, the front line z 0)
     <group>
@@ -39,7 +41,7 @@ function HeroScene({ medium, part, onReady }: IdeaSceneProps) {
       {/* the 2 m logo (9 November 2026; `hero-logo.tsx`): the lean APPROVED (R-103), mounted 9 November, session 2 */}
       {/* ⚠ `liquid`: the liquid, route B (one field: the logo, the blobs, the wall), WebGPU part only. ⛔ OFF (10 November 2026,
           Carl: "lets deal with the start first ... so turn off the blobs for now") — set LIQUID_ON to bring it back */}
-      <HeroLogo pose="jump" pmrem={medium.pmrem} onReady={onLogo} reflect={reflect} liquid={LIQUID_ON ? part?.materials?.liquid : undefined} />
+      <HeroLogo pose="jump" pmrem={medium.pmrem} asyncCompile={medium.asyncCompile} onReady={onLogo} reflect={reflect} liquid={LIQUID_ON ? part?.materials?.liquid : undefined} />
     </group>
   );
 }

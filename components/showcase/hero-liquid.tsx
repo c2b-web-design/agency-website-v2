@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { LOGO_ASPECT, LOGO_OUTLINE, LOGO_R_CAP } from "@/components/about/logo-mark-outline";
 import { LOGO_MARK_DEFAULTS } from "@/components/about/logo-mark-geometry";
 import { useDisposeOnUnmount } from "@/lib/use-dispose-on-unmount";
 import { LIQUID_BALLS, type LiquidUniforms } from "./hero-liquid-webgpu";
-import { HERO_LOGO_PLACE } from "./hero-logo";
+import { HERO_LOGO_PLACE, type JumpHold } from "./hero-logo";
+import type { AsyncCompileHandle } from "./bench-medium";
 
 /**
  * ⛔ THE LIQUID, ROUTE B (10 November 2026; THROWAWAY until the choice; D-101) — the logo as a field term (probe 2) and the
@@ -303,12 +304,19 @@ function blobVolume(t: number, scale: number, step: number): number {
  * ⛔ THE LIQUID ON THE BENCH — PHRASE 1: EXPELLED, THEN THE WALL (10 November 2026; D-101). Carl: *"they get expelled out of
  * the logo over a 500ms time frame leaving nothing of the logo behing because its all liquid now. they travel over to the
  * right hand wall and boumce of it while partly merging with it as they do now."* ONE field (`liquidMaterial`): the logo,
- * the ten balls, the wall. A LOOP on the bench (`LIQUID_T`):
- * 1. HOLD — the solid logo, the MESH (the field hidden).
- * 2. EXPEL (0.5 s) — ⛔ the swap to the field at its first frame, as the first bulge starts (D2, Carl's: "yes"). Each ball
- *    is BORN inside the logo (its strength 0 → 1) at one of ten spots on its widest strokes, staggered 30 ms, and pushed
- *    out of its RIGHT FACE (the lean's face looks right, toward the wall); the logo's weight falls 1 → 0.55, below which
- *    nothing of it is left (the plate's half-thickness).
+ * the ten balls, the wall. On the JUMP's clock (session 2, below):
+ * 1. HOLD — the lean, the jump and the landing's WOBBLE, played in full as approved (R-105): the solid logo, the MESH (the
+ *    field hidden). ⛔ Carl, on take 1 (the expulsion at touchdown): *"The logo has lost its wobble"* — the blobs ate its
+ *    bottom, the edge it rocks on, within 0.5 s. Take 2 starts the expulsion when the wobble ends (`start`, the jump's
+ *    `settled`, touchdown + 2 s).
+ * 2. EXPEL (0.5 s) — ⛔ the swap to the field at `start`. ⛔ FROM THE LANDED LOGO, ALL OF IT
+ *    (session 2; Carl: *"We should use all the logo from which the blobs emerge. Top, middle and bottom ... each blob that
+ *    emerges will have its own mass. The eqivalent mass must disappear from the logo"*): the logo is cut into ten REGIONS
+ *    (`logoRegions`), each one blob's mass; ball i is BORN at its region's anchor (its strength 0 → its region's), staggered
+ *    30 ms FROM THE BOTTOM UP (the shock travels up from the floor — the Builder's take), pushed out of the RIGHT FACE (the
+ *    landed face looks right, toward the wall), and as it grows its region's FRONT closes in on the anchor, the region's
+ *    remaining volume `1 − k^1.5` as the ball's grows `k^1.5` (`k` its strength's share). The field logo follows the
+ *    landing's wobble (the jump's pose at the same clock).
  * 3. TRAVEL — ⛔ ONE FLUID PATH per ball (Carl's note, take 1: *"expelled, stop, get some momentum from somwhere and fly far
  *    too fast towards the wall ... it should all be onr "fluid" movement"*): a cubic Hermite from its spot, LEAVING THE FACE
  *    ALREADY MOVING (`exitSpeed` cm/s along the face's normal), to its place on the mimic's paths, ARRIVING WITH THAT
@@ -317,76 +325,241 @@ function blobVolume(t: number, scale: number, step: number): number {
  * 4. WALL (3 s) — the mimic, as approved: the example's paths, its half-speed clock, the wall's swell.
  * ⚠ NOT YET: the middle (~3 s), the mould; the mass is not held (the field's volume swings; step 4's curve).
  */
-const LIQUID_T = { hold: 1, expel: 0.5, travel: 2.5, wall: 3, stagger: 0.03, exitSpeed: 150 } as const;
+/** ⛔ THE TRAVEL SLOWED (10 November 2026, session 2; Carl: *"They move far to fast towards the wall ... The blobs can amble
+ *  over to the wall, much slower"* — the point is to SHOW the geometry, shaders and reflections). Was 2.5 s at 150 cm/s off
+ *  the face (~2 m/s average); now 8 s, leaving at 40 cm/s (~0.6 m/s average over the ~4.5 m) — the Builder's take */
+const LIQUID_T = { expel: 0.5, travel: 8, wall: 3, stagger: 0.03, exitSpeed: 40 } as const;
+/** the crowd on the way (`HeroLiquid`'s frame): how far mid-travel pulls each ball to the group (0–1), and its jostle (cm) */
+const CROWD = { gather: 0.75, jostleCm: 22 } as const;
+/** the liquid's length after its START (s): the jump's landed phase runs the wobble plus this while the liquid is on */
+export const LIQUID_LENGTH = (LIQUID_BALLS - 1) * LIQUID_T.stagger + LIQUID_T.travel + LIQUID_T.wall;
 const smooth01 = (x: number) => {
   const t = Math.min(1, Math.max(0, x));
   return t * t * (3 - 2 * t);
 };
 
-/** ten spots on the logo's widest strokes (local cm, mid-thickness): the deepest texels first, at least `sep` apart */
-function logoSpots(dist: LogoDistance, n: number, sep: number, top: number): THREE.Vector3[] {
-  const cand: number[] = [];
-  for (let i = 0; i < dist.dCm.length; i++) if (dist.dCm[i] >= 3) cand.push(i);
-  cand.sort((a, b) => dist.dCm[b] - dist.dCm[a]);
+/**
+ * ⛔ THE LOGO's REGIONS — EACH BLOB's OWN MASS (10 November 2026, session 2; Carl, above). The logo's ink (the bake's
+ * texels inside the outline, each weighed by the profile's height there — its VOLUME) cut into `n` regions by a
+ * MASS-WEIGHTED k-means (Lloyd, `iters` rounds), seeded farthest-point from the c's end (the bottom when it stands): the
+ * regions spread over the whole logo, top, middle and bottom, and come out UNEQUAL (the logo's strokes are), so are the
+ * blobs (Carl, 8 November: *"the blobs should not be equal in volume"*). Per region:
+ * - its VOLUME (cm³, Σ = the field logo's);
+ * - its ANCHOR: the region's ink nearest its centre at least 3 cm in from the outline (the blob leaves from there, mid-
+ *   thickness);
+ * - its STRENGTH factor: (volume ÷ the mean)^(2/3) — a ball's volume goes as strength^1.5, so the blobs' sizes keep the
+ *   regions' PROPORTIONS. ⚠ The mean stays 1 (the mimic's calibration, `BLOBS.scale`): the TOTAL is not held — step 4;
+ * - its FRONT's RADII: the radius about the anchor holding each fraction of its volume (`fractions` + 1 entries, 0 → 1).
+ * Run once after the bake, on the main thread; its time is published (`__liquid.stats.regionsMs`).
+ */
+const REGION = { iters: 12, fractions: 32, band: 3, tau: 3 } as const;
+/** frames the empty field is drawn for, to START its compile before it is needed (`HeroLiquid`, the warm-up draw) */
+const WARM_FRAMES = 2;
+/** ⛔ THE GATE's numbers (the async-compile plan v1.2, APPROVED): the longest the logo may stand held after its wobble —
+ *  Carl's 1 s (*"wait and beat are ok"*), WALL CLOCK (the jump's clock is held then, so it cannot measure the wait); and
+ *  how late a ready may arrive and still open this loop — the clock's largest step (its delta clamp, 0.1 s) */
+const GATE = { maxWaitMs: 1000, lateReadyS: 0.1 + 1e-6 } as const;
+type LogoRegions = { centres: [number, number][]; anchors: THREE.Vector3[]; volumes: number[]; strengths: number[]; radii: Float32Array[]; ms: number };
+
+function logoRegions(dist: LogoDistance, prof: LogoProfileCm, n: number): LogoRegions | null {
+  const t0 = performance.now();
   const texel = dist.size[0] / dist.cols;
-  for (let s = sep; s >= 5; s *= 0.8) {
-    const out: THREE.Vector3[] = [];
-    for (const id of cand) {
-      const x = dist.origin[0] + ((id % dist.cols) + 0.5) * texel;
-      const y = dist.origin[1] + (Math.floor(id / dist.cols) + 0.5) * texel;
-      if (out.every((q) => (q.x - x) ** 2 + (q.y - y) ** 2 >= s * s)) out.push(new THREE.Vector3(x, y, top / 2));
-      if (out.length === n) return out;
+  const area = texel * texel;
+  const ids: number[] = [];
+  for (let i = 0; i < dist.dCm.length; i++) if (dist.dCm[i] > 0) ids.push(i);
+  const M = ids.length;
+  if (M < n) return null;
+  const X = new Float32Array(M);
+  const Y = new Float32Array(M);
+  const W = new Float32Array(M);
+  const D = new Float32Array(M);
+  for (let k = 0; k < M; k++) {
+    const id = ids[k];
+    X[k] = dist.origin[0] + ((id % dist.cols) + 0.5) * texel;
+    Y[k] = dist.origin[1] + (Math.floor(id / dist.cols) + 0.5) * texel;
+    D[k] = dist.dCm[id];
+    W[k] = prof.z(D[k]) * area;
+  }
+  // the seeds: farthest-point, from the lowest-x ink (the c's end)
+  const cx = new Float64Array(n);
+  const cy = new Float64Array(n);
+  let first = 0;
+  for (let k = 1; k < M; k++) if (X[k] < X[first]) first = k;
+  cx[0] = X[first];
+  cy[0] = Y[first];
+  const near = new Float64Array(M).fill(Infinity);
+  for (let s = 1; s < n; s++) {
+    let far = 0;
+    let best = -1;
+    for (let k = 0; k < M; k++) {
+      const d = (X[k] - cx[s - 1]) ** 2 + (Y[k] - cy[s - 1]) ** 2;
+      if (d < near[k]) near[k] = d;
+      if (near[k] > best) {
+        best = near[k];
+        far = k;
+      }
+    }
+    cx[s] = X[far];
+    cy[s] = Y[far];
+  }
+  // Lloyd, mass-weighted
+  const lab = new Int32Array(M);
+  const assign = () => {
+    for (let k = 0; k < M; k++) {
+      let b = 0;
+      let bd = Infinity;
+      for (let s = 0; s < n; s++) {
+        const d = (X[k] - cx[s]) ** 2 + (Y[k] - cy[s]) ** 2;
+        if (d < bd) {
+          bd = d;
+          b = s;
+        }
+      }
+      lab[k] = b;
+    }
+  };
+  for (let it = 0; it < REGION.iters; it++) {
+    assign();
+    const sx = new Float64Array(n);
+    const sy = new Float64Array(n);
+    const sw = new Float64Array(n);
+    for (let k = 0; k < M; k++) {
+      sx[lab[k]] += W[k] * X[k];
+      sy[lab[k]] += W[k] * Y[k];
+      sw[lab[k]] += W[k];
+    }
+    for (let s = 0; s < n; s++) {
+      if (sw[s] <= 0) continue;
+      cx[s] = sx[s] / sw[s];
+      cy[s] = sy[s] / sw[s];
     }
   }
-  return [];
+  assign();
+  const volumes: number[] = [];
+  const anchors: THREE.Vector3[] = [];
+  const radii: Float32Array[] = [];
+  for (let s = 0; s < n; s++) {
+    const mine: number[] = [];
+    let v = 0;
+    let deepest = 0;
+    for (let k = 0; k < M; k++)
+      if (lab[k] === s) {
+        mine.push(k);
+        v += W[k];
+        deepest = Math.max(deepest, D[k]);
+      }
+    if (!mine.length) return null;
+    volumes.push(v);
+    // the anchor: the region's ink nearest its centre, at least 3 cm in (or most of its deepest, for a thin region)
+    const inBy = Math.min(3, 0.8 * deepest);
+    let a = mine[0];
+    let ad = Infinity;
+    for (const k of mine) {
+      if (D[k] < inBy) continue;
+      const d = (X[k] - cx[s]) ** 2 + (Y[k] - cy[s]) ** 2;
+      if (d < ad) {
+        ad = d;
+        a = k;
+      }
+    }
+    anchors.push(new THREE.Vector3(X[a], Y[a], prof.top / 2));
+    // the front's radii: the region's ink by distance from the anchor, its volume accumulated
+    const byR = mine.map((k) => [Math.hypot(X[k] - X[a], Y[k] - Y[a]), W[k]] as const).sort((p, q) => p[0] - q[0]);
+    const F = REGION.fractions;
+    const r = new Float32Array(F + 1);
+    r[0] = -REGION.band - 1;
+    let cum = 0;
+    let j = 1;
+    for (const [d, w] of byR) {
+      cum += w;
+      while (j < F && cum >= (j / F) * v) r[j++] = d;
+    }
+    r[F] = byR[byR.length - 1][0];
+    for (; j < F; j++) r[j] = r[F];
+    radii.push(r);
+  }
+  const mean = volumes.reduce((p, q) => p + q, 0) / n;
+  const strengths = volumes.map((v) => (v / mean) ** (2 / 3));
+  const centres = Array.from({ length: n }, (_, s) => [cx[s], cy[s]] as [number, number]);
+  return { centres, anchors, volumes, strengths, radii, ms: performance.now() - t0 };
+}
+/** the front's radius (cm) holding the fraction `f` (0–1) of region `i`'s volume */
+function frontAt(reg: LogoRegions, i: number, f: number): number {
+  const r = reg.radii[i];
+  const x = Math.min(1, Math.max(0, f)) * REGION.fractions;
+  const j = Math.min(REGION.fractions - 1, Math.floor(x));
+  return r[j] + (r[j + 1] - r[j]) * (x - j);
 }
 
 export type LiquidShow = "auto" | "mesh" | "field";
 type LiquidDev = {
-  stats: { bakeMs: number; fieldVolumeCm3: number; meshVolumeCm3: number; volumeErrorPct: number; topErrorCm: number; spots: number } | null;
+  stats: { bakeMs: number; fieldVolumeCm3: number; meshVolumeCm3: number; volumeErrorPct: number; topErrorCm: number; regionsMs: number; regionVolumesCm3: number[]; regionStrengths: number[] } | null;
   play(on: boolean): void;
-  /** freeze at a time in the loop (s) */
+  /** freeze at a time since the expulsion's START (s; negative: the lean, the jump, the wobble) — the jump's clock */
   at(t: number): void;
   show(s: LiquidShow): void;
   debug(n: number): void;
   /** ⚠ diagnosis: terms forced off after the timeline is applied */
   override(o: { logoOff?: boolean; wallOff?: boolean; ballsOff?: boolean }): void;
+  /** the time since the expulsion's start (s) */
   time(): number;
   material: THREE.Material | null;
   /** the mimic's balls-only volume at the wall (cm³), sampled over time */
   volume(samples?: number, step?: number): { min: number; median: number; max: number };
 };
 
-export function HeroLiquid({ make, logoMaterial, logoGeometry, position, quaternion, onMeshVisible }: { make: () => THREE.Material; logoMaterial: THREE.MeshStandardMaterial; logoGeometry: THREE.BufferGeometry; position: [number, number, number]; quaternion: THREE.Quaternion; onMeshVisible: (v: boolean) => void }) {
+/** the clock the liquid shares with the jump (`hero-logo.tsx`): ONE clock for the phases (the note v1.5, §5) */
+export type LiquidClock = { current: { playing: boolean; t: number } };
+/** the logo's pose at a time on that clock — the jump's own (the lean, the flight, the landing's wobble) */
+export type LiquidPoseAt = (t: number, outQ: THREE.Quaternion, outP: THREE.Vector3) => void;
+
+/**
+ * ⛔ THE LIQUID's OWNER — mounted by `HeroLogo` inside itself, on the JUMP (session 2): `landed` is the pose it lands in (the
+ * proxy box is built about it), `logoMeshRef` the solid it replaces at `start` — its visibility and the field's are set
+ * HERE, in the same frame (no React render between them), `clockRef` the jump's, `start` the expulsion's time on it (the
+ * jump's `settled`), `poseAt` the jump's pose.
+ */
+export function HeroLiquid({ make, logoMaterial, logoGeometry, landed, logoMeshRef, clockRef, start, poseAt, asyncCompile, holdRef }: { make: () => THREE.Material; logoMaterial: THREE.MeshStandardMaterial; logoGeometry: THREE.BufferGeometry; landed: { position: [number, number, number]; quaternion: THREE.Quaternion }; logoMeshRef: { current: THREE.Mesh | null }; clockRef: LiquidClock; start: number; poseAt: LiquidPoseAt; asyncCompile?: (gl: unknown, material: THREE.Material) => AsyncCompileHandle; holdRef: JumpHold }) {
+  const gl = useThree((s) => s.gl);
   const heightCm = useMemo(() => {
     logoGeometry.computeBoundingBox();
     const b = logoGeometry.boundingBox!;
     return b.max.y - b.min.y;
   }, [logoGeometry]);
   const prof = useMemo(() => logoProfileCm(heightCm), [heightCm]);
-  // ⚠ the bake: on the main thread, a task after mount (this mounts after the reflection, so after the hero is ready)
+  // ⚠ the bake and the regions: on the main thread, a task after mount (this mounts after the reflection, so after the
+  // hero is ready)
   const [dist, setDist] = useState<LogoDistance | null>(null);
   useEffect(() => {
     const id = window.setTimeout(() => setDist(bakeLogoDistance(heightCm, prof)), 0);
     return () => window.clearTimeout(id);
   }, [heightCm, prof]);
   useDisposeOnUnmount(dist ?? { dispose: () => {} });
-  // the logo's frame (world ← local), and the ten spots in world cm
-  const logoFrame = useMemo(() => new THREE.Matrix4().compose(new THREE.Vector3(...position), quaternion, new THREE.Vector3(1, 1, 1)), [position, quaternion]);
-  const spots = useMemo(() => (dist ? logoSpots(dist, LIQUID_BALLS, 30, prof.top) : []), [dist, prof]);
+  const regions = useMemo(() => (dist ? logoRegions(dist, prof, LIQUID_BALLS) : null), [dist, prof]);
+  // the births' order: bottom first (the anchors' local x — the mesh's +X is UP when it stands)
+  const rank = useMemo(() => {
+    if (!regions) return [];
+    const order = regions.anchors.map((a, i) => [a.x, i] as const).sort((p, q) => p[0] - q[0]);
+    const r = new Array<number>(LIQUID_BALLS);
+    order.forEach(([, i], k) => (r[i] = k));
+    return r;
+  }, [regions]);
+  // the landed frame (world ← local): the proxy box is built about it
+  const landedFrame = useMemo(() => new THREE.Matrix4().compose(new THREE.Vector3(...landed.position), landed.quaternion, new THREE.Vector3(1, 1, 1)), [landed]);
   const frame = useMemo(() => blobFrame(BLOBS.scale), []);
-  // the proxy box: the logo's world bounds (+ the field's reach) united with the wall's box
+  // the proxy box: the landed logo's world bounds (+ the field's reach, which also holds the wobble's ~13 cm at its top)
+  // united with the wall's box
   const box = useMemo(() => {
-    const lb = logoGeometry.boundingBox!.clone().applyMatrix4(logoFrame);
+    const lb = logoGeometry.boundingBox!.clone().applyMatrix4(landedFrame);
     lb.expandByScalar(0.3 * BLOBS.scale);
     lb.union(new THREE.Box3(frame.min, frame.max));
     const g = new THREE.BoxGeometry(lb.max.x - lb.min.x, lb.max.y - lb.min.y, lb.max.z - lb.min.z);
     g.translate((lb.min.x + lb.max.x) / 2, (lb.min.y + lb.max.y) / 2, (lb.min.z + lb.max.z) / 2);
     return { geometry: g, min: lb.min.clone(), max: lb.max.clone(), dispose: () => g.dispose() };
-  }, [logoGeometry, logoFrame, frame]);
+  }, [logoGeometry, landedFrame, frame]);
   useDisposeOnUnmount(box);
   const material = useMemo(() => {
-    if (!dist) return null;
+    if (!dist || !regions) return null;
     const m = make() as THREE.MeshStandardMaterial;
     m.color.copy(logoMaterial.color);
     m.metalness = logoMaterial.metalness;
@@ -409,7 +582,7 @@ export function HeroLiquid({ make, logoMaterial, logoGeometry, position, quatern
       u.slope.value = prof.slope;
       u.sinT.value = Math.sin(prof.theta);
       u.cosT.value = Math.cos(prof.theta);
-      u.worldToLocal.value.copy(logoFrame).invert();
+      u.worldToLocal.value.copy(landedFrame).invert();
       u.boxMin.value.copy(box.min);
       u.boxMax.value.copy(box.max);
       u.scale.value = BLOBS.scale;
@@ -417,35 +590,93 @@ export function HeroLiquid({ make, logoMaterial, logoGeometry, position, quatern
       u.subtract.value = BLOBS.subtract;
       u.isolation.value = BLOBS.isolation;
       u.wallX.value = frame.wallX;
+      u.band.value = REGION.band;
+      u.tau.value = REGION.tau;
+      for (let i = 0; i < LIQUID_BALLS; i++) u.regions.array[i].set(regions.centres[i][0], regions.centres[i][1], regions.anchors[i].x, regions.anchors[i].y);
     }
     return m;
-  }, [make, logoMaterial, dist, prof, logoFrame, box, frame]);
+  }, [make, logoMaterial, dist, regions, prof, landedFrame, box, frame]);
   useDisposeOnUnmount(material ?? { dispose: () => {} });
   const uRef = useRef<LiquidUniforms | null>(null);
   useEffect(() => {
     uRef.current = (material?.userData as { liquid?: LiquidUniforms } | undefined)?.liquid ?? null;
   }, [material]);
-  const ctl = useRef({ playing: true, t: 0, show: "auto" as LiquidShow, debug: 0, ov: {} as { logoOff?: boolean; wallOff?: boolean; ballsOff?: boolean } });
-  // the mesh shows during the HOLD; the field from the first bulge on (D2)
-  const [fieldOn, setFieldOn] = useState(false);
+  const ctl = useRef({ show: "auto" as LiquidShow, debug: 0, ov: {} as { logoOff?: boolean; wallOff?: boolean; ballsOff?: boolean } });
+  const fieldRef = useRef<THREE.Mesh>(null);
+  /**
+   * ⛔ THE WARM-UP DRAW (10 November 2026, session 2; Carl: *"on a hard refresh the blobs take too long to emerge"*). The
+   * field DRAWN EMPTY (no balls, no logo, no wall: every pixel discarded) for `WARM_FRAMES` frames as soon as its material
+   * exists, during the LEAN. With the medium's ASYNC COMPILE (below) this STARTS the pipeline's build in the background
+   * and the page keeps drawing; without it (a medium with no `asyncCompile`) the first draw compiles synchronously, the
+   * stall in the lean, as first built (its clock waits through it: the delta clamp).
+   */
+  const warm = useRef(0);
+  /**
+   * ⛔ THE ASYNC COMPILE, THE GATE, THE FAILURE BRANCH (10 November 2026, session 2;
+   * `live-work/structural-note-liquid-async-compile-10-november.md` v1.4, `live-work/plan-liquid-async-compile-10-november.md`
+   * v1.2, APPROVED by Carl, cleared by the Architect).
+   * - REGISTERED in a LAYOUT effect (the same commit as the material: a passive effect can run a frame late on this medium,
+   *   `camera-bench.tsx`), and the warm-up WAITS for the handle — a warm-up drawn first would build synchronously.
+   * - THE HOLD, written EVERY frame: while the pipeline is not ready (and the liquid not off), the jump's clock is clamped
+   *   at `start` before it crosses (`hero-logo.tsx`): the logo stands after its wobble. Off once ready, or off, across
+   *   every loop.
+   * - THE GATE: the swap (solid → field) only when READY. A ready arriving more than the clock's largest step past `start`
+   *   (the clamp never bound: a late registration) waits for the NEXT loop — no blobs appearing mid-flight.
+   * - THE FAILURE BRANCH: `failed`, or the hold past Carl's 1 s of wall clock → OFF for this registration: the solid
+   *   stays through the liquid's time, the loop runs on, a console WARNING (not an error) names why.
+   * - WITHOUT a handle: everything as before (the warm-up runs, no hold, the swap at `start`).
+   * ⚠ DEV: `window.__liquidCompile` — state, seen render objects, the last hold, why off, `force` (the probe's checks).
+   */
+  const handleRef = useRef<AsyncCompileHandle | null>(null);
+  const offRef = useRef<{ off: boolean; why: string | null }>({ off: false, why: null });
+  const gateRef = useRef({ open: false });
+  const holdStartRef = useRef<number | null>(null);
+  const holdMsRef = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    if (!material || !asyncCompile) return;
+    const h = asyncCompile(gl, material);
+    handleRef.current = h;
+    offRef.current = { off: false, why: null };
+    // the hold's object is `HeroLogo`'s for its whole life: released here when the liquid leaves
+    const holdState = holdRef.current;
+    return () => {
+      h.dispose();
+      if (handleRef.current === h) handleRef.current = null;
+      holdState.hold = false;
+    };
+  }, [material, asyncCompile, gl, holdRef]);
   useEffect(() => {
-    onMeshVisible(!fieldOn);
-    return () => onMeshVisible(true);
-  }, [fieldOn, onMeshVisible]);
+    if (process.env.NODE_ENV === "production") return;
+    (window as unknown as { __liquidCompile?: unknown }).__liquidCompile = {
+      state: () => handleRef.current?.state() ?? "none",
+      seen: () => handleRef.current?.seenIds() ?? [],
+      holdMs: () => holdMsRef.current,
+      off: () => offRef.current.off,
+      failedWhy: () => offRef.current.why,
+      force: (kind: "fail" | "delay", ms?: number) => handleRef.current?.force(kind, ms),
+    };
+  }, []);
+  // the solid comes back whenever the liquid leaves
+  useEffect(() => {
+    const solid = logoMeshRef.current;
+    return () => {
+      if (solid) solid.visible = true;
+    };
+  }, [logoMeshRef]);
   const devRef = useRef<LiquidDev | null>(null);
   useEffect(() => {
     if (process.env.NODE_ENV === "production") return;
     const d: LiquidDev = {
       stats: null,
-      play: (on) => void (ctl.current.playing = on),
+      play: (on) => void (clockRef.current.playing = on),
       at: (t) => {
-        ctl.current.playing = false;
-        ctl.current.t = t;
+        clockRef.current.playing = false;
+        clockRef.current.t = start + t;
       },
       show: (s) => void (ctl.current.show = s),
       debug: (n) => void (ctl.current.debug = n),
       override: (o) => void (ctl.current.ov = o),
-      time: () => ctl.current.t,
+      time: () => clockRef.current.t - start,
       material: null,
       volume: (samples = 12, step = 1.5) => {
         const v = Array.from({ length: samples }, (_, k) => blobVolume(k * 2.5, BLOBS.scale, step)).sort((a, b) => a - b);
@@ -454,61 +685,114 @@ export function HeroLiquid({ make, logoMaterial, logoGeometry, position, quatern
     };
     devRef.current = d;
     (window as unknown as { __liquid?: LiquidDev }).__liquid = d;
-  }, []);
+  }, [clockRef, start]);
   useEffect(() => {
     const d = devRef.current;
     if (!d) return;
     d.material = material;
-    if (dist) {
+    if (dist && regions) {
       const meshV = meshVolume(logoGeometry);
-      d.stats = { bakeMs: +dist.bakeMs.toFixed(1), fieldVolumeCm3: Math.round(dist.volumeCm3), meshVolumeCm3: Math.round(meshV), volumeErrorPct: +((100 * (dist.volumeCm3 - meshV)) / meshV).toFixed(3), topErrorCm: +(prof.top - logoGeometry.boundingBox!.max.z).toFixed(4), spots: spots.length };
+      d.stats = {
+        bakeMs: +dist.bakeMs.toFixed(1),
+        fieldVolumeCm3: Math.round(dist.volumeCm3),
+        meshVolumeCm3: Math.round(meshV),
+        volumeErrorPct: +((100 * (dist.volumeCm3 - meshV)) / meshV).toFixed(3),
+        topErrorCm: +(prof.top - logoGeometry.boundingBox!.max.z).toFixed(4),
+        regionsMs: +regions.ms.toFixed(1),
+        regionVolumesCm3: regions.volumes.map(Math.round),
+        regionStrengths: regions.strengths.map((s) => +s.toFixed(3)),
+      };
     }
-  }, [material, dist, logoGeometry, prof, spots]);
+  }, [material, dist, regions, logoGeometry, prof]);
   // per-frame scratch
-  const tmp = useMemo(() => ({ start: new THREE.Vector3(), w: new THREE.Vector4(), wa: new THREE.Vector4(), wb: new THREE.Vector4(), dir: new THREE.Vector3() }), []);
-  useFrame((_, delta) => {
+  const tmp = useMemo(() => ({ start: new THREE.Vector3(), w: new THREE.Vector4(), wa: new THREE.Vector4(), wb: new THREE.Vector4(), dir: new THREE.Vector3(), q: new THREE.Quaternion(), p: new THREE.Vector3(), one: new THREE.Vector3(1, 1, 1), live: new THREE.Matrix4() }), []);
+  useFrame(() => {
     const u = uRef.current;
-    if (!u || spots.length < LIQUID_BALLS) return;
+    const field = fieldRef.current;
+    if (!u || !regions || !field) return;
+    // registered first (a layout effect): a warm-up drawn before it would build synchronously
+    if (asyncCompile && !handleRef.current) return;
+    if (warm.current < WARM_FRAMES) {
+      warm.current++;
+      field.visible = true;
+      for (let i = 0; i < LIQUID_BALLS; i++) u.balls.array[i].setW(0);
+      u.logoWeight.value = 0;
+      u.wallOn.value = 0;
+      u.masking.value = 1;
+      return;
+    }
     const c = ctl.current;
-    const lastBirth = (LIQUID_BALLS - 1) * LIQUID_T.stagger;
-    const T = LIQUID_T.hold + lastBirth + LIQUID_T.travel + LIQUID_T.wall;
-    if (c.playing) c.t = (c.t + Math.min(delta, 0.1)) % T;
-    const t = c.t;
-    const te = t - LIQUID_T.hold; // time since the expulsion began
-    const wantField = c.show === "field" || (c.show === "auto" && te >= 0);
-    if (wantField !== fieldOn) setFieldOn(wantField);
+    const te = clockRef.current.t - start; // time since the expulsion's start — once the landing's wobble has played
+    // ⛔ THE GATE (above): the failure branch, the hold, the swap
+    const h = handleRef.current;
+    const st = h ? h.state() : "ready";
+    const off = offRef.current;
+    if (h && !off.off) {
+      if (st === "failed") off.why = "its pipeline reported an error";
+      else if (st === "pending" && holdStartRef.current !== null && performance.now() - holdStartRef.current > GATE.maxWaitMs) off.why = `the ${GATE.maxWaitMs} ms wait ran out`;
+      if (off.why) {
+        off.off = true;
+        console.warn(`[hero liquid] the liquid is OFF for this load: ${off.why}; the solid logo stays`);
+      }
+    }
+    const hold = !!h && st !== "ready" && !off.off;
+    holdRef.current.hold = hold;
+    if (hold && Math.abs(te) < 1e-6) {
+      if (holdStartRef.current === null) {
+        holdStartRef.current = performance.now();
+        h!.holding();
+      }
+    } else if (holdStartRef.current !== null) {
+      holdMsRef.current = performance.now() - holdStartRef.current;
+      holdStartRef.current = null;
+    }
+    if (te < 0) gateRef.current.open = false;
+    else if (!gateRef.current.open && (!h || (st === "ready" && !off.off && te <= GATE.lateReadyS))) gateRef.current.open = true;
+    const wantField = c.show === "field" || (c.show === "auto" && te >= 0 && gateRef.current.open);
+    field.visible = wantField;
+    const solid = logoMeshRef.current;
+    if (solid) solid.visible = !wantField;
     u.debug.value = c.debug;
-    u.logoWeight.value = te < 0 ? 1 : te >= LIQUID_T.expel ? 0 : 1 - 0.45 * smooth01(te / LIQUID_T.expel);
+    // the field logo where the solid is now: the jump's pose at the same clock (the landing's wobble included)
+    poseAt(clockRef.current.t, tmp.q, tmp.p);
+    tmp.live.compose(tmp.p, tmp.q, tmp.one);
+    u.worldToLocal.value.copy(tmp.live).invert();
+    u.logoWeight.value = te < LIQUID_T.expel ? 1 : 0;
+    u.masking.value = te >= 0 && te < LIQUID_T.expel ? 1 : 0;
     // the face's outward normal in world space (the mesh's +Z)
-    tmp.dir.set(0, 0, 1).transformDirection(logoFrame);
+    tmp.dir.set(0, 0, 1).applyQuaternion(tmp.q);
     // the mimic's clock (box-path time) at a time since the expulsion began: half speed, from the expulsion's start
-    const clock = (x: number) => Math.max(0, x) * BLOBS.speed * 0.5;
+    const clk = (x: number) => Math.max(0, x) * BLOBS.speed * 0.5;
+    const lastBirth = (LIQUID_BALLS - 1) * LIQUID_T.stagger;
     const grow = LIQUID_T.expel - lastBirth;
     const TT = LIQUID_T.travel;
     for (let i = 0; i < LIQUID_BALLS; i++) {
-      const birth = i * LIQUID_T.stagger;
+      const birth = rank[i] * LIQUID_T.stagger;
       const born = te - birth;
       const k = smooth01(born / grow);
+      const ws = regions.strengths[i];
+      // the region gives up what the ball takes: its remaining volume 1 − k^1.5
+      u.fronts.array[i] = frontAt(regions, i, 1 - k ** 1.5);
       const v = u.balls.array[i];
-      tmp.start.copy(spots[i]).applyMatrix4(logoFrame);
+      tmp.start.copy(regions.anchors[i]).applyMatrix4(tmp.live);
       if (born <= 0) {
         v.set(tmp.start.x, tmp.start.y, tmp.start.z, 0);
         continue;
       }
       if (born >= TT) {
-        const [x, y, z] = blobPath(i, clock(te));
+        const [x, y, z] = blobPath(i, clk(te));
         frame.toWorld(x, y, z, v);
-        v.w = c.ov.ballsOff ? 0 : 1;
+        v.w = c.ov.ballsOff ? 0 : ws;
         continue;
       }
       // the arrival: its place on the mimic's paths, and that path's velocity there (cm per second of the loop)
       const ta = birth + TT;
       const e = 0.01;
-      let [x, y, z] = blobPath(i, clock(ta));
+      let [x, y, z] = blobPath(i, clk(ta));
       frame.toWorld(x, y, z, tmp.w);
-      [x, y, z] = blobPath(i, clock(ta + e));
+      [x, y, z] = blobPath(i, clk(ta + e));
       frame.toWorld(x, y, z, tmp.wb);
-      [x, y, z] = blobPath(i, clock(ta - e));
+      [x, y, z] = blobPath(i, clk(ta - e));
       frame.toWorld(x, y, z, tmp.wa);
       // cubic Hermite in the travel's own time, u ∈ [0, 1]; the tangents are the velocities × the travel time
       const uu = born / TT;
@@ -522,12 +806,43 @@ export function HeroLiquid({ make, logoMaterial, logoGeometry, position, quatern
         h00 * tmp.start.x + h10 * m0 * tmp.dir.x + h01 * tmp.w.x + h11 * m1 * (tmp.wb.x - tmp.wa.x),
         h00 * tmp.start.y + h10 * m0 * tmp.dir.y + h01 * tmp.w.y + h11 * m1 * (tmp.wb.y - tmp.wa.y),
         h00 * tmp.start.z + h10 * m0 * tmp.dir.z + h01 * tmp.w.z + h11 * m1 * (tmp.wb.z - tmp.wa.z),
-        c.ov.ballsOff ? 0 : k,
+        c.ov.ballsOff ? 0 : k * ws,
       );
+    }
+    // ⛔ THE CROWD ON THE WAY (10 November 2026, session 2; Carl: *"they can merge and collide with each other a lot more
+    // before they get to the wall"*). Mid-travel each ball is drawn toward the travelling group's CENTRE plus its own slow
+    // JOSTLE (`CROWD.jostleCm`, its own phases), by `CROWD.gather × sin²(πu)` — zero, and zero in slope, at both ends of
+    // its trip, so it still leaves the face and meets its wall path seamlessly; between, they bump, merge and part. The
+    // Builder's take
+    let n = 0;
+    tmp.p.set(0, 0, 0);
+    for (let i = 0; i < LIQUID_BALLS; i++) {
+      const born = te - rank[i] * LIQUID_T.stagger;
+      if (born > 0 && born < TT) {
+        tmp.p.add(u.balls.array[i] as unknown as THREE.Vector3);
+        n++;
+      }
+    }
+    if (n > 1) {
+      tmp.p.divideScalar(n);
+      for (let i = 0; i < LIQUID_BALLS; i++) {
+        const born = te - rank[i] * LIQUID_T.stagger;
+        if (born <= 0 || born >= TT) continue;
+        const s = Math.sin(Math.PI * (born / TT));
+        const g = CROWD.gather * s * s;
+        const J = CROWD.jostleCm;
+        const v = u.balls.array[i];
+        v.set(
+          v.x + g * (tmp.p.x + J * Math.sin(1.3 * te + 2.1 * i) - v.x),
+          v.y + g * (tmp.p.y + J * Math.cos(1.1 * te + 1.7 * i) - v.y),
+          v.z + g * (tmp.p.z + J * Math.sin(0.9 * te + 0.8 * i) - v.z),
+          v.w,
+        );
+      }
     }
     if (c.ov.logoOff) u.logoWeight.value = 0;
     u.wallOn.value = c.ov.wallOff ? 0 : 1;
   });
   if (!material) return null;
-  return <mesh name="hero liquid" geometry={box.geometry} material={material} visible={fieldOn} />;
+  return <mesh ref={fieldRef} name="hero liquid" geometry={box.geometry} material={material} visible={false} />;
 }

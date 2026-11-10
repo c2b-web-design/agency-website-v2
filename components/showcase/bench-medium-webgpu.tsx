@@ -7,7 +7,7 @@ import { Line2NodeMaterial, MeshBasicNodeMaterial, PMREMGenerator, WebGPURendere
 import { abs, distance, Discard, float, Fn, fract, fwidth, If, min, mix, modelWorldMatrix, positionGeometry, pow, uniform, varying, vec4 } from "three/tsl";
 import { Line2 } from "three/examples/jsm/lines/webgpu/Line2.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
-import type { BenchMedium, GridProps, LineProps } from "./bench-medium";
+import type { AsyncCompileHandle, BenchMedium, GridProps, LineProps } from "./bench-medium";
 import { useDisposeOnUnmount } from "@/lib/use-dispose-on-unmount";
 
 /**
@@ -72,7 +72,10 @@ function startRenderer(canvas: HTMLCanvasElement, powerPreference: GlDefaults["p
       // ⚠ DEV ONLY: the cost meter's GPU time — the pool is drained every frame (`meter`), harness or not
       trackTimestamp: process.env.NODE_ENV !== "production",
     });
-    p = r.init().then(() => r);
+    p = r.init().then(() => {
+      installAsyncCompile(r);
+      return r;
+    });
     started.set(canvas, p);
   }
   return p;
@@ -91,6 +94,112 @@ const makeGl: BenchMedium["makeGl"] = (fail, onBackend) => async (props: GlDefau
     fail(`the WebGPU renderer did not start: ${String(e)}`);
     return new Promise<never>(() => {});
   }
+};
+
+// ── THE ASYNC COMPILE ──────────────────────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * ⛔ A MATERIAL's PIPELINE BUILT ASYNCHRONOUSLY IN THE REAL DRAW (10 November 2026, session 2;
+ * `live-work/structural-note-liquid-async-compile-10-november.md` v1.4, through four Architect reviews;
+ * `live-work/plan-liquid-async-compile-10-november.md` v1.2, APPROVED by Carl). MEASURED first
+ * (`live-work/liquid-stall-split-10-november.md`): the liquid's first draw held the page ~3 s, the main thread WAITING for
+ * 99.6 % of it — the GPU compile of a pipeline three r185 builds SYNCHRONOUSLY on first draw.
+ * - ONE WRAPPER PER RENDERER, installed here after `init()`, on the INSTANCE's `renderer._pipelines.getForRender` — ⚠ a
+ *   PRIVATE part of three 0.185.1. It relies on: `getForRender(renderObject, promises)` (`Pipelines.js:160`; a promise
+ *   list sends the build to `createRenderPipelineAsync`, `WebGPUPipelineUtils.js:292`; the WebGL 2 fallback's
+ *   `KHR_parallel_shader_compile` poll, `WebGLBackend.js:1520–1546`); `isReady` (`Pipelines.js:255`; the draw SKIPS an
+ *   object whose pipeline is still compiling, `Renderer.js:3725`); the backend's `error` (`WebGPUPipelineUtils.js:316–333`,
+ *   a failed compile still RESOLVES); `renderObject.onDispose` (`RenderObjects.js:203`, called by `dispose()`,
+ *   `RenderObject.js:969`). An upgrade of three must re-check every one.
+ * - Only for a REGISTERED material (`asyncCompile`); every other material keeps three's default.
+ * - READINESS from the RENDER OBJECTS the wrapper has SEEN (not promises: none is made on a cache hit,
+ *   `Pipelines.js:218–228`): `ready` = at least one seen, every one `isReady`, none with an error; any error → `failed`.
+ *   A seen render object leaves the set when three DISPOSES it (its `onDispose` chained once; the hook looks up the
+ *   material's registration AT DISPOSE TIME, so a re-registration cannot keep a dead one).
+ * - THE WINDOW: async only until the state first reads `ready`; later builds stall as three's default (a new render
+ *   CONTEXT is a new render object, `RenderContexts.js:53–67`: per-object async would make the liquid blink mid-shot).
+ * - PER REGISTRATION: a new registration replaces the old (the window reopens, the seen set is fresh); `dispose()` removes
+ *   only its own — React's StrictMode double mount cannot stack or cross them.
+ * - ⚠ An error scope stays open for the whole async compile (`WebGPUPipelineUtils.js:253` → `:316`): another draw's
+ *   validation error in that window lands in this one's — accepted (note v1.4), the owner's failure branch the guard.
+ * - ⚠ The WebGL 2 fallback reads a failed link as ready (`WebGLBackend.js:1670–1694`): no worse than today.
+ */
+type RenderObjectLike = { id: number; material: THREE.Material; onDispose: (() => void) | null };
+type PipelinesLike = {
+  getForRender(ro: RenderObjectLike, promises?: unknown[] | null): unknown;
+  isReady(ro: RenderObjectLike): boolean;
+  get(ro: RenderObjectLike): { pipeline?: object };
+};
+type BackendLike = { get(o: object): { error?: boolean } };
+type Forced = null | { kind: "fail" } | { kind: "delay"; ms: number; since: number | null };
+type Registration = { open: boolean; seen: Set<RenderObjectLike>; forced: Forced };
+const registries = new WeakMap<object, Map<THREE.Material, Registration>>();
+const hookedDispose = new WeakSet<RenderObjectLike>();
+const privates = (r: GpuR) => r as unknown as { _pipelines: PipelinesLike; backend: BackendLike };
+
+function installAsyncCompile(r: GpuR) {
+  if (registries.has(r)) return;
+  const map = new Map<THREE.Material, Registration>();
+  registries.set(r, map);
+  const pipes = privates(r)._pipelines;
+  const original = pipes.getForRender.bind(pipes);
+  pipes.getForRender = (ro, promises = null) => {
+    const g = map.get(ro.material);
+    if (g) {
+      g.seen.add(ro);
+      if (!hookedDispose.has(ro)) {
+        hookedDispose.add(ro);
+        const before = ro.onDispose;
+        ro.onDispose = () => {
+          map.get(ro.material)?.seen.delete(ro);
+          before?.();
+        };
+      }
+      if (g.open && promises === null) return original(ro, []);
+    }
+    return original(ro, promises);
+  };
+}
+
+const asyncCompile = (gl: unknown, material: THREE.Material): AsyncCompileHandle => {
+  const r = gl as GpuR;
+  installAsyncCompile(r);
+  const map = registries.get(r)!;
+  const { _pipelines: pipes, backend } = privates(r);
+  const g: Registration = { open: true, seen: new Set(), forced: null };
+  map.set(material, g);
+  const real = (): "pending" | "ready" | "failed" => {
+    if (g.seen.size === 0) return "pending";
+    let all = true;
+    for (const ro of g.seen) {
+      const pl = pipes.get(ro).pipeline;
+      if (pl && backend.get(pl).error) return "failed";
+      if (!pipes.isReady(ro)) all = false;
+    }
+    if (all) g.open = false;
+    return all ? "ready" : "pending";
+  };
+  return {
+    state() {
+      const f = g.forced;
+      if (f?.kind === "fail") return "failed";
+      const s = real();
+      // the forced delay counts from the HOLD's start, so a hold always happens (the plan v1.2, check 6)
+      if (f?.kind === "delay" && s === "ready" && (f.since === null || performance.now() - f.since < f.ms)) return "pending";
+      return s;
+    },
+    holding() {
+      if (g.forced?.kind === "delay" && g.forced.since === null) g.forced.since = performance.now();
+    },
+    force(kind, ms = 0) {
+      if (process.env.NODE_ENV === "production") return;
+      g.forced = kind === "fail" ? { kind } : { kind, ms, since: null };
+    },
+    seenIds: () => [...g.seen].map((ro) => ro.id),
+    dispose() {
+      if (map.get(material) === g) map.delete(material);
+    },
+  };
 };
 
 // ── THE GRID (drei's, in TSL) ──────────────────────────────────────────────────────────────────────────────────────────
@@ -278,5 +387,6 @@ export const WEBGPU_MEDIUM: BenchMedium = {
   Line: LineWebGPU,
   meter,
   pipY: (_height, top) => top,
+  asyncCompile,
   // (the hero's acrylic and glow moved to the hero's own WebGPU part, `hero-idea-webgpu.tsx` — 9 November 2026, session 2)
 };
