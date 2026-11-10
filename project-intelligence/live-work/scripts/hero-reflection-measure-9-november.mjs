@@ -42,6 +42,9 @@ const shots = { ref: readFileSync(join(REF, "step1-7d63aff.png")).toString("base
 const shot = async (name, keep = true) => { await p.waitForTimeout(1500); const buf = await p.screenshot({ clip: canvasBox }); if (keep) writeFileSync(join(OUT, `${name}.png`), buf); shots[name] = buf.toString("base64"); };
 const set = (o) => p.evaluate((o) => window.__heroReflection.set(o), o);
 
+// ⛔ 10 November 2026: since probe 2 the bench shows the LIQUID's field logo (mesh hidden) and a looping blob by default — a
+// run without this measured the probe, not the logo. Park it: the mesh shown, no blob, still (`__liquid`, dev only)
+await p.evaluate(() => { const l = window.__liquid; if (l) { l.blob(false); l.at(0); l.show("mesh"); } });
 await shot("A-text");
 await set({ text: false });
 await shot("B-no-text");

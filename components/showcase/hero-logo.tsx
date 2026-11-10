@@ -10,6 +10,7 @@ import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 import { HERO_CAMERA, HERO_PAGE, HERO_SKETCH_LIGHT, HERO_TEXT_PLACE } from "./hero-page";
 import { useDisposeOnUnmount } from "@/lib/use-dispose-on-unmount";
 import type { PmremLike } from "./bench-medium";
+import { HeroLiquid } from "./hero-liquid";
 
 /**
  * ⛔ THE HERO's LOGO ON THE BENCH (9 November 2026; D-101). Carl: *"Put a 2m logo thats facing us in the space on the right.
@@ -320,59 +321,11 @@ function useReflection(pmrem: ((gl: unknown) => PmremLike) | undefined, reflect:
   return reflect ? env : null;
 }
 
-/** ⚠ THROWAWAY — the liquid's route-B PROBE 1, THE SHADE NULL CONTROL (9 November 2026, session 3; the liquid note v1.5,
- *  APPROVED). Two spheres the size of the largest blob (Ø 41 cm) in the liquid's space, just above the landing spot: LEFT
- *  raymarched (`hero-liquid-webgpu.tsx`), RIGHT a mesh WEARING THE LOGO's OWN MATERIAL INSTANCE. The raymarched one copies
- *  that material's colour, metalness, roughness and reflection (texture, strength, turn), so the only difference left is
- *  the drawing. ⚠ DEV: `window.__liquidProbe.show("both" | "mesh" | "march")` — "mesh" and "march" put ONE sphere on the
- *  LEFT spot, for the pixel-by-pixel comparison. WebGPU part only; removed after the choice. */
-const PROBE = { radius: 20.5, y: 110, dx: 45, segments: [256, 128] as const };
-type ProbeShow = "both" | "mesh" | "march";
-function LiquidProbe({ make, logoMaterial }: { make: () => THREE.Material; logoMaterial: THREE.MeshStandardMaterial }) {
-  const [show, setShow] = useState<ProbeShow>("both");
-  useEffect(() => {
-    if (process.env.NODE_ENV === "production") return;
-    (window as unknown as { __liquidProbe?: { show(s: ProbeShow): void } }).__liquidProbe = { show: setShow };
-  }, []);
-  const left = useMemo(() => new THREE.Vector3(HERO_LOGO_PLACE.centreX - PROBE.dx, PROBE.y, HERO_LOGO_PLACE.face), []);
-  const right = useMemo(() => new THREE.Vector3(HERO_LOGO_PLACE.centreX + PROBE.dx, PROBE.y, HERO_LOGO_PLACE.face), []);
-  const geos = useMemo(() => {
-    const sphere = new THREE.SphereGeometry(PROBE.radius, PROBE.segments[0], PROBE.segments[1]);
-    const box = new THREE.BoxGeometry(PROBE.radius * 2.2, PROBE.radius * 2.2, PROBE.radius * 2.2);
-    return { sphere, box, dispose: () => (sphere.dispose(), box.dispose()) };
-  }, []);
-  useDisposeOnUnmount(geos);
-  // the raymarched material: a new one whenever the logo's material is replaced (its reflection arrived), copying it
-  const march = useMemo(() => {
-    const m = make() as THREE.MeshStandardMaterial;
-    m.color.copy(logoMaterial.color);
-    m.metalness = logoMaterial.metalness;
-    m.roughness = logoMaterial.roughness;
-    m.envMap = logoMaterial.envMap;
-    m.envMapIntensity = logoMaterial.envMapIntensity;
-    m.envMapRotation.copy(logoMaterial.envMapRotation);
-    const u = (m.userData as { probe?: { centre: { value: THREE.Vector3 }; radius: { value: number } } }).probe;
-    if (u) {
-      u.centre.value.copy(left);
-      u.radius.value = PROBE.radius;
-    }
-    return m;
-  }, [make, logoMaterial, left]);
-  useDisposeOnUnmount(march);
-  const meshAt = show === "both" ? right : left;
-  return (
-    <>
-      {show !== "mesh" && <mesh name="liquid probe march" geometry={geos.box} material={march} position={left} />}
-      {show !== "march" && <mesh name="liquid probe mesh" geometry={geos.sphere} material={logoMaterial} position={meshAt} />}
-    </>
-  );
-}
-
 /** the logo on the bench — mounted in the hero's scene beside `HeroText`, lit by `HeroSketchLight` and the family's
  *  studio (`pmrem`, the medium's). `pose`: the LEAN (the opening, the default) or UPRIGHT (where it stood first, balanced —
  *  kept, Carl approved the balance). `reflect` (WebGPU only, the hero's part): the studio comes from the REFLECTION capture,
  *  the glowing text in it */
-export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquidProbe }: { pose?: "lean" | "upright"; pmrem?: (gl: unknown) => PmremLike; onReady?: () => void; reflect?: HeroReflect; liquidProbe?: () => THREE.Material }) {
+export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquid }: { pose?: "lean" | "upright"; pmrem?: (gl: unknown) => PmremLike; onReady?: () => void; reflect?: HeroReflect; liquid?: () => THREE.Material }) {
   const geometry = useLogoGeometry(LOGO_HEIGHT_CM);
   const geo = useMemo(() => (geometry ? { geometry, dispose: () => geometry.dispose() } : null), [geometry]);
   useDisposeOnUnmount(geo ?? NOTHING);
@@ -390,6 +343,8 @@ export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquidProbe }
     if (devRef.current) devRef.current.opts = opts;
   }, [opts]);
   const [mesh, setMesh] = useState<THREE.Mesh | null>(null);
+  // the liquid's field draws the logo while it runs: the mesh is HIDDEN by its owner then, never unmounted (the note v1.5)
+  const [meshVisible, setMeshVisible] = useState(true);
   const reflected = useReflection(pmrem, reflect, mesh, opts, devRef);
   // step 1's studio — where there is no reflection (WebGL)
   const studio = useFamilyStudio(reflect ? undefined : pmrem);
@@ -405,9 +360,24 @@ export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquidProbe }
       m.envMapIntensity = HERO_LOGO_METAL.envMapIntensity;
       m.envMapRotation.set(0, (HERO_LOGO_METAL.yawDeg * Math.PI) / 180, 0);
     }
+    // ⛔ THE ENV TEXTURE's IDENTITY IN THE PROGRAM CACHE KEY (10 November 2026; D-101, "THE STALE REFLECTION"). three r185's
+    // WebGPU renderer caches a built program by a key that records a texture's KIND (mapping, filters, wrapping), not WHICH
+    // texture (`RenderObject.getMaterialCacheKey`), and `EnvironmentNode` fixes the env texture into the program when it is
+    // built. Step 1's studio and the reflection capture are the same kind (CubeUV PMREMs): when the studio arrived before the
+    // text was built (a load race), the reflection's material REUSED the studio's program and drew the studio, unturned,
+    // for good — the "two states by load", deaf to a recapture. three's own hook keys the program on the texture instead.
+    // Also guards every later swap (D1-a's landing capture).
+    const envKey = `hero-logo-env:${m.envMap ? m.envMap.uuid : "none"}`;
+    m.customProgramCacheKey = () => envKey;
     return m;
   }, [studio, reflected]);
   useDisposeOnUnmount(material);
+  // ⚠ DEV: which env each logo material was built with, in order (`window.__heroLogoEnvs`) — the race's evidence
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    const w = window as unknown as { __heroLogoEnvs?: string[] };
+    (w.__heroLogoEnvs ??= []).push(reflected ? "reflection" : studio ? "studio" : "none");
+  }, [material, reflected, studio]);
   const placed = useMemo(() => (geometry ? (pose === "lean" ? leanPose(geometry) : uprightPose(geometry)) : null), [geometry, pose]);
   // ⛔ READY (9 November 2026, session 2; the workshop note v2.1 [R10-4]): the geometry from /about's worker AND, where the
   // medium prefilters one, the studio (or the reflection) on the material. The bench's "drawn" waits for it
@@ -418,9 +388,10 @@ export function HeroLogo({ pose = "lean", pmrem, onReady, reflect, liquidProbe }
   if (!geometry || !placed) return null;
   return (
     <>
-      <mesh ref={setMesh} name="hero logo" geometry={geometry} material={material} position={placed.position} quaternion={placed.quaternion} />
-      {/* ⚠ THROWAWAY: the liquid's probe 1, only once the logo wears its reflection (the comparison needs the real one) */}
-      {liquidProbe && reflected && <LiquidProbe make={liquidProbe} logoMaterial={material} />}
+      <mesh ref={setMesh} name="hero logo" geometry={geometry} material={material} position={placed.position} quaternion={placed.quaternion} visible={meshVisible} />
+      {/* ⚠ THE LIQUID's PROBE 2 (`hero-liquid.tsx`; probe 1's spheres removed, 10 November 2026), only once the logo wears
+          its reflection (the field copies the real one): the logo in the field, one blob out of its face */}
+      {liquid && reflected && <HeroLiquid make={liquid} logoMaterial={material} logoGeometry={geometry} position={placed.position} quaternion={placed.quaternion} onMeshVisible={setMeshVisible} />}
     </>
   );
 }

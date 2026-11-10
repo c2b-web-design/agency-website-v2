@@ -34,8 +34,8 @@ function HeroScene({ medium, part, onReady }: IdeaSceneProps) {
       {/* the 3D text (5 November 2026, session 2; `hero-text.tsx`) — the WebGPU part's edge-lit acrylic, or CLAY */}
       <HeroText built={textBuild} onReady={onText} />
       {/* the 2 m logo (9 November 2026; `hero-logo.tsx`): the lean APPROVED (R-103), mounted 9 November, session 2 */}
-      {/* ⚠ `liquidProbe`: the liquid's route-B probe 1 (the shade null control), WebGPU part only — THROWAWAY */}
-      <HeroLogo pose="lean" pmrem={medium.pmrem} onReady={onLogo} reflect={reflect} liquidProbe={part?.materials?.liquidProbe} />
+      {/* ⚠ `liquid`: the liquid's route-B probe 2 (the logo in the field, one blob), WebGPU part only — THROWAWAY until the choice */}
+      <HeroLogo pose="lean" pmrem={medium.pmrem} onReady={onLogo} reflect={reflect} liquid={part?.materials?.liquid} />
     </group>
   );
 }

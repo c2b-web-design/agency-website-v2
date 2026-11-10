@@ -65,6 +65,21 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-104 — The Hero's Logo, Its Reflection Fixed: The Live Capture On Every Load (D-101): "Approved"
+
+**Date:** 2026-11-10
+**Reviewer:** Human Founder
+**Subject:** `/proto/camera?blank=1` — `components/showcase/hero-logo.tsx` (the env texture's identity in the program cache key, `customProgramCacheKey`)
+
+**Carl's verdict, verbatim:** *"It does look a lot better. Approved. commit and push."* — after flying the bench (four views: close on the face, from behind the lean, the text's side, the home view).
+
+**Findings:**
+
+- ✔ **APPROVED: the logo drawing its LIVE reflection** (the studio and the glowing text, the capture of R-103's lean), identical on every load. Before the fix it drew step 1's studio through a reused program (three r185's cache key ignores a texture's identity), in one of two states by load.
+- **Measured (D-101, "THE STALE REFLECTION"):** four fresh loads identical; the reflection instrument passes at session 3's figures (null 0.164, 150° the single best).
+- **Supersedes nothing approved:** the reflection's design (note v1.7, *"the family of metals"*) stands; this is that design drawn as built.
+- **Not covered:** the liquid probe (parked on the bench; the field logo 2.09 from the mesh, the handover's null still over its bar); the drain (Carl's several blobs over ~500 ms, nothing left behind), not built.
+
 ## R-103 — The Hero's Logo On The Bench: The Lean, Under The Arch's Lens (D-101): "Approved"
 
 **Date:** 2026-11-09
