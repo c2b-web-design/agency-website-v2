@@ -42,6 +42,19 @@ beat with Carl's words. ⚠ Read the LAST FIVE entries first: they set where the
    RETIRED now the example's route is taken — not asked yet. It is uncommitted and in place; the camera bench still
    runs it (`LIQUID_ON = true`).
 
+## ⛔ REUSABLE FROM THE OLD BENCH (Carl: *"so many things can be re used"*)
+
+- **The logo's VOLUME:** the mesh 70,085 cm³ (divergence theorem, `meshVolume`), the field logo 70,148 cm³ at 2 m wide —
+  scales with the logo's size cubed.
+- **The logo's SHAPE MAP:** `bakeLogoDistance` (`hero-liquid.tsx`): the outline's signed distance, the profile
+  (`logoProfileCm`) — the logo stamped into a field (the field term `2 / x² − 12`, its surface on the mesh's).
+- **The REGIONS:** `logoRegions` — ten mass-weighted regions, their volumes, anchors and front radii (the mask that takes
+  a blob's mass out of the logo region by region; the reverse fills it back).
+- **The CHOREOGRAPHY:** the jump and the desk mark's wobble (`hero-logo.tsx`; now UP only, the base fixed); the Hermite
+  paths that leave a point moving and arrive matching a path's velocity (`hero-liquid.tsx`); the crowd (`CROWD`); the
+  face-on outline (`FACE_ON_OUTLINE`).
+- **The measurements and harnesses** in `live-work/scripts/` (frame cost, cold load, stall split, frame-stepped stills).
+
 ## STATE
 
 - **COMMITTED AND PUSHED: `95c8d69`** (Carl: *"commit and push"*) — the emergence, the outline, the async compile, the
@@ -59,6 +72,12 @@ beat with Carl's words. ⚠ Read the LAST FIVE entries first: they set where the
   files added (`_marchingBench10Nov`).
 
 ## THE STORY (Carl's, set this session; D-101)
+
+⛔ **SUPERSEDED IN PART, after the push (D-101's last two entries): THE CASCADE.** The landing's hit on the floor expels ONE
+blob; it comes back, touches the logo in a new place and PULLS mass out, making more blobs, which touch and pull in turn
+— the BLOB DANCE in the MIDDLE (the wall may not be needed: raised, not decided); then the solid logo RE-FORMS IN THE AIR
+bit by bit; at full integrity it FALLS. The story below is the earlier version for the rest.
+
 
 Lean → notices the visitor → jumps (up, no forward travel) → wobble → when the wobble stops the blobs emerge from ALL of
 the logo, each with its own mass, the logo masked away as they go → they amble (slow: *"showcase the wonderful geometry
