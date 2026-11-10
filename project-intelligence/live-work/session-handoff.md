@@ -44,13 +44,13 @@ beat with Carl's words. ⚠ Read the LAST FIVE entries first: they set where the
 
 ## STATE
 
-- **HEAD `f829572`, pushed. EVERYTHING since is UNCOMMITTED** (Carl has not said commit): the emergence (regions, the
-  wobble-then-blobs start, the slowed travel 8 s, the crowd, the cold-load stand-in fix), the face-on outline (raised
-  40 cm), the async compile (`bench-medium.ts`, `bench-medium-webgpu.tsx`, the gate in `hero-liquid.tsx` / `hero-logo.tsx`),
-  the marching bench, `decisions.md`. Live-work files staged with `git add -f`. tsc clean; eslint clean on the files
-  touched (`components/showcase/`, `app/proto/marching/`); ⚠ whole-repo `npm run lint` NOT re-run this session — run it
-  before any commit (CLAUDE.md's baseline: 1 error, ZERO warnings; the earlier handoff's "2 projector.mjs warnings" is
-  NOT a baseline — flag them to Carl if they show). Build a clean checkout before any push.
+- **COMMITTED AND PUSHED: `95c8d69`** (Carl: *"commit and push"*) — the emergence, the outline, the async compile, the
+  marching bench, the docs; a clean checkout built (`npm ci` + `npm run build`, `/proto/marching` in the route list). tsc
+  clean. `npm run lint`: ✔ **1 problem (1 error, 0 warnings)** — the accepted `enquiry-opening.tsx` error only. The 2
+  warnings in `live-work/hero-concept-8-november/projector.mjs` (unused `distance`, `decay`) were CLEARED after the push
+  on Carl's word (*"clear it up, only the one accapted error shouls remain"*): their destructuring slots left empty.
+  ⚠ That fix and this handoff are UNCOMMITTED (staged). Carl's closing words:
+  *"we have all that we need on screen now. our logo is scalable. the material etc can all be derived from the liquid."*
 - **The dev server is RUNNING** (port 3000, PID 17048). **No screen recording is running.**
 - **Recordings:** `Videos\C2B Films\03 The hero\01 Discussion\`: `2026-11-10_s2_discussion_screen.mkv` (fixed, 1:22:50);
   `2026-11-10_s3_discussion_screen.mkv` (raw) beside `…s3…fixed.mkv` (1:05:40) — ⚠ Carl not yet asked whether to delete

@@ -27,7 +27,9 @@ async function drag(r, to, ms) {
   for (let k = 1; k <= n; k++) { await p.mouse.move(x(from) + ((x(to) - x(from)) * k) / n, y); await p.waitForTimeout(25); }
   await p.mouse.up(); r.value = String(to);
 }
-const [intensity, distance, angle, penumbra, decay, focus] = ranges;
+// the example's six sliders in order: intensity, distance, angle, penumbra, decay, focus — distance and decay not driven
+// (their slots left empty: the two unused names were lint's only warnings, cleared 10 November 2026 on Carl's word)
+const [intensity, , angle, penumbra, , focus] = ranges;
 const sel = p.locator("select").filter({ has: p.locator('option[value="procedural"]') }).first();
 await p.waitForTimeout(3000);
 await drag(intensity, 300, 3000); await p.waitForTimeout(2500); await drag(intensity, 100, 2000);
