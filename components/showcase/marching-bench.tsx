@@ -23,7 +23,9 @@ import Container from "@/components/layout/container";
  * The ONLY departures, stated:
  * - THE RENDERER: the example's own `WebGLRenderer` BY DEFAULT; `?webgpu=1` is `WebGPURenderer` (the hero's medium).
  *   ⛔ Under WebGPU this bench HUNG the GPU on both runs, 10 November 2026 (`DXGI_ERROR_DEVICE_HUNG`, the AMD driver's
- *   timeout dialog on Carl's machine): cause NOT FOUND; WebGPU only on purpose until it is.
+ *   timeout dialog on Carl's machine). Was: "cause NOT FOUND; WebGPU only on purpose until it is." ✔ FOUND AND FIXED the
+ *   same session (THE DRAW, below: the addon's `count` read as an instance count). WebGL stays the default: the example's
+ *   own renderer, the reference. (Corrected 11 November 2026; the hero's bench `/proto/hero` carries the same fix.)
  * - THE TOON MATERIALS (toon1, toon2, hatching, dotted) are raw `ShaderMaterial`s, which `WebGPURenderer` cannot draw:
  *   offered only on WebGL (the panel says so under `?webgpu=1`).
  * - THE SIZE: the page is zoomed at the root above 1412 px (D-097), so the canvas is sized from its CONTAINER (layout px)
@@ -43,7 +45,9 @@ export default function MarchingBench() {
     if (!host) return;
     const container: HTMLDivElement = host;
     // ⛔ WebGL BY DEFAULT (10 November 2026, session 2): under WebGPU this bench HUNG Carl's GPU twice (DXGI_ERROR_DEVICE_HUNG;
-    // the AMD driver reported a timeout and reset). WebGPU only on purpose, `?webgpu=1`, until the cause is found
+    // the AMD driver reported a timeout and reset). Was: "WebGPU only on purpose, `?webgpu=1`, until the cause is found".
+    // ✔ The cause was found and fixed the same day (THE ONE STRUCTURAL DEPARTURE, below); WebGL stays the default as the
+    // example's own renderer, the reference; `?webgpu=1` WebGPU (corrected 11 November 2026)
     const webgl = !new URLSearchParams(window.location.search).has("webgpu");
     const zoom = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
     const size = () => ({ w: container.clientWidth, h: container.clientHeight });
@@ -306,7 +310,8 @@ export default function MarchingBench() {
       renderer!.setSize(w, h);
     }
 
-    // RENDERER (the one departure: WebGPU unless `?webgl=1`)
+    // RENDERER (the one departure: WebGL, the example's own, unless `?webgpu=1`. Corrected 11 November 2026; it read
+    // "WebGPU unless `?webgl=1`", the reverse of the code)
     const start = async () => {
       const r = webgl ? new THREE.WebGLRenderer() : new WebGPURenderer();
       if (r instanceof WebGPURenderer) {
