@@ -1,80 +1,70 @@
-# Session Handoff — 11 November 2026 (Wednesday), session 1. THE HERO's OWN BENCH: `/proto/hero`
+# Session Handoff — 13 November 2026 (Friday), session 1. THE HERO: LEAN → ARRIVAL → EMISSION ON `/proto/hero`
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces every earlier handoff. Delete it at the end of
 the session that reads it, once its replacement is written.
 
-**The record:** D-101 in `decisions.md`, from *"CARL: THE HERO IS BUILT ON THE MARCHING BENCH (11 November 2026"* to the
-end — every beat with Carl's words. ⚠ Read the LAST TEN entries first.
+**The record:** D-101 in `decisions.md`, from *"THE LOGO LEANS ON THE 3D t (13 November 2026"* to the end — every beat with
+Carl's words. ⚠ Read the LAST TEN entries first. Carl: *"Its looks the best yet. a good place to take stock."*
 
-## ⛔ WHERE IT STANDS
+## ⛔ WHERE IT STANDS (all in `components/hero/hero-scene.ts` unless named; the bench `components/hero/hero-bench.tsx`)
 
-1. **The camera bench is NOT the hero's bench** (Carl: *"we will not use the camera bench. We will use the marching
-   cubes."*). Its liquid work (route B) is a SOURCE only. ⚠ Still open: whether route B's code there is REMOVED
-   (`LIQUID_ON = true`, `components/showcase/hero-idea.tsx:19`) — asked twice, not answered; nothing deleted.
-2. **THE NEW BENCH `/proto/hero`** (note `live-work/structural-note-hero-bench-11-november.md` v1.3; two Architect reviews
-   saved beside it; Carl's three decisions given). Files: `app/proto/hero/page.tsx`, `components/hero/hero-scene.ts` (what
-   SHIPS: no panel, meter, overlay or orbit controls), `components/hero/hero-bench.tsx` (the bench's tools). WebGPU.
-   `/proto/marching` stays the UNTOUCHED reference (only four stale comments corrected).
-3. **What is on it now:**
-   - **HOME** (code `HOME`): square on, 0, −49.2, 2566.2, target 0, 0, 0, 45° (Carl re-tracked it from the first, oblique
-     Home). The camera is remembered per browser; the Home button / pad VIEW return. Panel → Camera: readout + Copy.
-   - **THE FLOOR** `FLOOR_Y = −437.5`: the two y tips of the subtext's bottom line ("you", "eyes") touch it, the text at
-     the BLOBS' depth (z 0) — Carl: *"the blobs are next to the text. not in the foreground or background."* A bench grid
-     (100-unit squares, a dial).
-   - **THE TEXT BAKED IN 3D** — the sketch bench's `heroTextLayout` carried by one similarity so at Home it lands on the
-     page text (checked). **THE SCALE: 1 cm = 4.411 units** (`hero.unitsPerCm`). In the **EDGE-LIT ICE ACRYLIC**
-     (`heroTextMaterial`); no bloom yet. The page-text overlay OFF by default (a check at Home).
-   - **FLYING**: the camera bench's own controller (`camera-pad.ts`, unchanged): Carl's pad mapping + W S A D E Q, arrows,
-     [ ], Shift / Alt; walking pace in the text's metres. Carl flew it.
-   - **MSAA ON** (*"looks a lot better"*); its GPU cost on weak devices UNMEASURED (D-108).
-   - **THE ORANGE LIGHT BELONGS TO THE BLOBS** (Carl's idea): off with no liquid (the text pure ice), on while it is out.
-     ✔ Carl: it is to FADE with how much liquid is out — build it with the cascade. Now it follows the blobs switch.
-   - **OUR ENVIRONMENT MAP** (Carl: *"this is our env map"*; *"Wow"*): GPT's night courtyard with the GOLD c2b EMBLEM in
-     it, `public/hero-bench/courtyard-emblem.jpg` (2:1, 415 KB, edges join); the blobs reflect the mark, distorted; the dark
-     sky melts the blobs' tops into the background and the arches give an AMBER RIM. The castle is a switch.
-   - Blobs ON by default; the field's own floor plane OFF.
-4. **THE LOGO's FIRST LEAN WAS REMOVED** (Carl: *"we have gone about this in the wrong order"* — the page text was on the
-   screen, the logo in the world). The text is now in the world; **the lean (R-103: 2 m, 12.5°, on its end, c on the
-   floor, b against the t) is NEXT**, on the 3D t, from the glyph's geometry.
-5. **The blobs' choreography is DEFERRED** (Carl). Known: the example's paths wander ±378 units in depth (~4 squares) and
-   fall to −700, below the floor (seen THROUGH the grid ~10 squares forward — Carl confirmed by flying).
+1. **THE LEAN on the 3D "t"** — the sketch's R-103 lean solved in the sketch's frame, carried by the text's similarity
+   (`leanInSketch`; `HERO_LEAN` exported from `hero-logo.tsx`). Contact measured from the glyph = the recorded constant.
+   ✔ *"The lean looks good."*
+2. **THE LOGO's OWN RED** — the button family's metal in the blobs' red (`logoMaterial`, now a `MeshStandardNodeMaterial`),
+   NOT the courtyard. ✔ *"the colour where it starts and ends phase 1."* Carl's PRINCIPLE: **a light or map that belongs to
+   the blobs acts only once the blobs exist.**
+3. **THE ARRIVAL** — appears leaning, holds 2 s, jumps (ballistic, 60 cm apex), lands UPRIGHT, SAME PROFILE, wobbles (the
+   desk mark's, sideways). ✔ timing (*"It loads, theres a beat. Jumps happens and a wobble."*). **⛔ It now lands in the
+   MIDDLE OF THE DANCE** (Carl's solution: *"bring the mountain and have our logo junp slap bang in the middle of the blobs
+   mass"*). ⚠ From Home the logo there is EDGE-ON — a thin red line (put to Carl, not answered).
+4. **THE EMISSION (take 10, the one Carl liked)** — from the wobble's end, over **3 s, eased in/out**: a chunked dissolve
+   FRONT runs DOWN the logo; blobs BORN AT THE FRONT (top first), swell 0.2 s, ease onto their dance position over a FIXED
+   0.7 s; ONE shared dance clock (the example's original choreography); the orange light rises with it. Logo in the middle
+   cut the blobs' joining speeds by a third (2,233 → 1,644 units/s top; the dance's own top ~390).
+5. **THE FLOOR** — solid for the liquid (nothing drawn below it: a `ClippingGroup` at `FLOOR_Y`); blobs SQUASH on contact
+   (volume kept); the floor HEATS where they merge and cools after (an additive plane, a 28 × 28 heat map); the ROUND AMBER
+   DISC (the example's floor liquid, top at the floor, faded by a spherical container). ✔ *"a viscous fluid would pool like that."*
+6. **THE MOULD** — the sketch's yellow outline (face-on, upright, balanced right, raised 40 cm) as the scene's `mould` pose;
+   the bench draws it (Logo → "mould outline"). ✔ balance. ⛔ a GUIDE only, never on the page.
+7. **RULED:** the blobs KEEP their size (they are ~19× the logo's 70 L, measured; Carl: the goal over the litres). The
+   re-forming: the blobs squeeze INTO the mould FROM BEHIND; the extra mass discarded; at full integrity it falls.
 
-## NEXT — in Carl's order
+## ⚠ KNOWN, NOT FIXED
 
-1. **The logo leaning on the 3D "t"** (mesh first; its material from the liquid's `shiny`), in the same world. The scale
-   is the text's (2 m = 882 units).
-2. Then the lights (the example's white directional 3 + grey ambient: Carl stopped Neutral tone mapping as a fix and had
-   the orange light tied to the blobs instead — any tone-mapping change is HIS call), the bloom layer, the cascade.
+- **The amber pool POPS IN at full size the instant the emission starts** (not caused). Planned: a WETNESS mask (landings
+  give liquid early, take it back late — Carl: *"the mask in reverse"*), after the choreography.
+- One far blob still joins fast (the fixed 0.7 s hand-off); the middle landing reduced it.
+- The walls (wallx, wallz) are still the example's square ones (outside the sphere); where a wall stands is Carl's.
 
-## OPEN FOR CARL (not answered)
+## NEXT — Carl's: *"If we can get the solid to liquid transition right we will work out timings next."*
 
-- Route B's code on the camera bench: retire it or leave it.
-- A solid floor under the grid, or the blobs raised onto the floor, or a depth dial: offered, deferred with the
-  choreography.
+- The timings (the dance's length — "3/4s" was never pinned, Carl: *"not set in stone"*), then the corral (the box shrinks
+  toward the mould, trajectories inside it; the blobs' world size held), the squeeze into the mould from behind, the fall.
+- WITHDRAWN this session (do not rebuild): per-blob dance clocks (*"a lot worse"*, a column); working backward from the
+  dance with a drain (*"blobs jusr spawn out of nowhere"*); the path shifted to the blob (the Builder's misreading of the proverb).
 
 ## STATE
 
-- **COMMITTED AND PUSHED this session** (Carl: *"write a handoff, commit amd push and stop the capture"*) — see the git log.
-  tsc clean; lint the one accepted error, 0 warnings.
-- **The dev server is RUNNING** (port 3000). **The screen capture is STOPPED**: `Videos\C2B Films\03 The hero\01
-  Discussion\2026-11-11_discussion_screen.mkv` (3:32:37, remuxed after the stop, all 372,577 frames; the raw duplicate
-  removed on Carl's earlier word).
-- **Film:** `Videos\C2B Films\03 The hero\2026-11-11_courtyard-env_blobs.mp4` — 30 s, 1080p30 CFR, frame-stepped (chrome,
-  shiny, liquid; the Builder's camera path). Carl's GPT images are in `03 The hero\` (the courtyard; the emblem).
-- **Scope:** the hero's phase-1 exception holds; this session added `_heroBench11Nov` (the three bench files) and
-  `_heroEnvMap11Nov` (the env map) to `chunk-scope.json`.
-- **Measurement scripts** (`live-work/scripts/`, 11-november): the step-1 check, the floor from the y tips, the ink from
-  the page's pixels (takes a fixed floor as its 2nd argument), the baked-text check, the env check, the film.
+- **COMMITTED AND PUSHED this session** (Carl: *"Write a handoff and commit and push"*). tsc clean; lint the one accepted
+  error, 0 warnings.
+- **The dev server is RUNNING** (port 3000). **The screen capture is RUNNING** (Carl did not ask to stop it):
+  `Videos\C2B Films\03 The hero\01 Discussion\2026-11-13_discussion_screen.mkv` (ffmpeg gdigrab; stop it, then remux).
+- **Films** (frame-stepped, 30 fps) in `Videos\C2B Films\03 The hero\`: `2026-11-13_logo-arrival_take1`, `floor-heat`,
+  `floor-splat_low`, `round-pool_*`, `amber-disc_*`, `emission_take1` … `take10_3s` (take 10 = the one liked).
+- **Scripts** (`live-work/scripts/`, 13-november): the lean check, the orange source, the desk-wobble film, the arrival film,
+  the solid-floor check, the floor-heat film (camera argument), the heat mapping check, the volume budget, the closest
+  approach, the sketch-bench look, the mould spacing, the emission film, the blob speed.
+- **Scope:** the hero's phase-1 exception holds (files already in `chunk-scope.json`).
+- **Memory:** `feedback_physics_serves_the_goal.md` added; the index compacted (one line each).
 
 ## LESSONS
 
-- **Bring the outside element's world in first, then everything into ONE world.** A lean measured against page text that
-  lives on the screen held at one view only. Carl saw it.
-- **Fly to settle a geometry argument.** "Ten squares in front" was a blob seen through a floor made of lines.
-- **Read the page's own pixels, not a re-drawn glyph** — font metrics are rounded at small sizes.
-- **Carl's "it could be a job for AI" became the best look of the day** — report a limit plainly (the mark in the map),
-  then follow his reason (the blobs distort it).
+- **Measure the physical fact, then frame it by the goal.** The litres were right to raise and wrong to obey.
+- **A proverb is Carl's to explain** — the Builder's reading of "mountains and Muhammed" was built and withdrawn; ask.
+- **Find the cause before tuning** — the rush was DISTANCE (a fixed dance), not easing; Carl saw it first.
+- **Before showing, check the rule the change must keep** — the first drain ate the logo early and blobs came from nothing.
 
 ---
 
-*Written 11 November 2026, session 1.*
+*Written 13 November 2026, session 1.*

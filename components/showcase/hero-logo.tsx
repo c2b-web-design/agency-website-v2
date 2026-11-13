@@ -71,6 +71,9 @@ export const HERO_LOGO_PLACE = {
 const LEAN_DEG = 12.5;
 const T_CONTACT: [number, number] = [-170.45, 129.43];
 const TEXT_BACK_Z = HERO_TEXT_PLACE.face - 8.124;
+/** the lean's values, read by the hero's own bench (`components/hero/hero-scene.ts`, 13 November 2026: Carl, *"refer to the
+ *  sketch and orient the logo in the same position keeping the scale the same"*) — ONE source, so the two cannot drift */
+export const HERO_LEAN = { deg: LEAN_DEG, contact: T_CONTACT, backZ: TEXT_BACK_Z } as const;
 
 function useLogoGeometry(scale: number): THREE.BufferGeometry | null {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
@@ -189,9 +192,10 @@ function endPose(g: THREE.BufferGeometry, x: number, z: number): Pose {
  */
 const JUMP = { landX: -100, lean: 2, flight: 0.7, landed: 3, g: 981 } as const;
 /** the desk mark's wobble (`DESK_MARK_WOBBLE`, 10 October 2026, approved by Carl's eye), copied: ms and turning points */
-const LAND_WOBBLE = { ms: 2000, ampsDeg: [3.75, 2.25, 1.125, 0.5625] } as const;
+// exported with `wobbleAngle` (13 November 2026): the hero's own bench lands with the same wobble (`hero-scene.ts`)
+export const LAND_WOBBLE = { ms: 2000, ampsDeg: [3.75, 2.25, 1.125, 0.5625] } as const;
 /** the desk mark's curve (radians) `w` ms into it: its first swing NEGATIVE, eased between turning points */
-function wobbleAngle(w: number): number {
+export function wobbleAngle(w: number): number {
   if (w < 0 || w >= LAND_WOBBLE.ms) return 0;
   const pts = [0, ...LAND_WOBBLE.ampsDeg.flatMap((a) => [-a, a]), 0];
   const shares = pts.slice(1).map((_, i) => (i === 0 || i === pts.length - 2 ? 0.5 : 1));

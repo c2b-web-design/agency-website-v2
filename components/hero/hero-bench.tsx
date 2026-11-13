@@ -9,6 +9,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Container from "@/components/layout/container";
 import { BTN, Edges, FEEL, readPad, rigAt, stepRig, type Intent, type Rig } from "@/components/showcase/camera-pad";
 import { createHeroScene, FLOOR_Y, HERO_ENVIRONMENTS, HOME, type HeroEnvironment } from "./hero-scene";
+import { LOGO_OUTLINE } from "@/components/about/logo-mark-outline";
 
 /**
  * ⛔ THE HERO's BENCH — `/proto/hero` (11 November 2026, session 1; D-101; the structural note
@@ -100,6 +101,31 @@ export default function HeroBench() {
     };
     buildGrid();
 
+    // ⛔ THE MOULD's OUTLINE — a GUIDE, bench only (13 November 2026; Carl: *"in the space on the right in the proto hero
+    // viewport draw a yellow logo outline, it should be the smae size as the upright logo but facing us in it normal
+    // orientation. Im looking for good spacing within the viewport when the blobs are gone."*). The sketch bench's own
+    // outline (`hero-logo.tsx`, `FaceOnOutline`: `LOGO_OUTLINE` scaled by the logo mesh's measured height, on its FACE,
+    // amber `#ffb84d`, unlit, one closed line) placed by the scene's mould pose (`hero.mould`); built once the logo is in
+    const mouldGuide = { outline: true };
+    let mouldLine: THREE.Line | null = null;
+    const buildMouldLine = () => {
+      const m = hero.mould;
+      if (mouldLine || !m) return;
+      const hCm = m.bounds.max.y - m.bounds.min.y;
+      const pts: number[] = [];
+      for (let i = 0; i < LOGO_OUTLINE.length; i += 2) pts.push(LOGO_OUTLINE[i] * hCm, LOGO_OUTLINE[i + 1] * hCm, m.bounds.max.z);
+      // closed by repeating the first point: WebGPU draws no `LineLoop`
+      pts.push(pts[0], pts[1], pts[2]);
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+      mouldLine = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xffb84d }));
+      mouldLine.name = "hero mould outline (guide)";
+      mouldLine.matrixAutoUpdate = false;
+      mouldLine.matrix.copy(m.matrix);
+      mouldLine.visible = mouldGuide.outline;
+      scene.add(mouldLine);
+    };
+
     // the readout's values (the panel's Camera folder lists them)
     const readout = { position: "", target: "", distance: "", fov: "", window: "", backend: "" };
     const pose = (): Pose => ({
@@ -180,6 +206,15 @@ export default function HeroBench() {
       f.add(page, "text").onChange((on: boolean) => {
         if (homeText.current) homeText.current.style.display = on ? "" : "none";
       });
+
+      // the logo's arrival (`hero-scene.ts`, `arrivalPlan`; 13 November 2026): played once on load; replayed from the lean here
+      f = gui.addFolder("Logo");
+      f.add({ jump: () => hero.replayArrival() }, "jump").name("Arrival again");
+      f.add(mouldGuide, "outline")
+        .name("mould outline")
+        .onChange((on: boolean) => {
+          if (mouldLine) mouldLine.visible = on;
+        });
 
       // ⛔ THE CAMERA — the readout, Copy and Home (note v1.3, "HOME")
       f = gui.addFolder("Camera");
@@ -283,6 +318,7 @@ export default function HeroBench() {
       const dt = Math.min(timer.getDelta(), 0.1);
       fly(dt);
       hero.update(dt);
+      buildMouldLine();
       renderer!.render(scene, camera);
       stats!.update();
     }
@@ -355,6 +391,8 @@ export default function HeroBench() {
       timer.dispose();
       grid?.geometry.dispose();
       (grid?.material as THREE.Material | undefined)?.dispose();
+      mouldLine?.geometry.dispose();
+      (mouldLine?.material as THREE.Material | undefined)?.dispose();
       hero.dispose();
       renderer?.domElement.remove();
       renderer?.dispose();
