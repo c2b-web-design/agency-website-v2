@@ -465,7 +465,7 @@ export type HeroScene = {
   /** the lean's checks: the contact in the scene, the recorded and measured contacts (sketch cm), the lowest point, the width */
   lean: { contact: number[]; contactMeasuredCm: number[]; contactConstantCm: number[]; lowestY: number; floorY: number; widthUnits: number; widthCm: number } | null;
   /** the arrival's numbers (`arrivalPlan`): seconds, and the lowest corner over the flight above the floor (cm, ≥ 0) */
-  arrival: { t: number; holdS: number; flightS: number; touchdownS: number; durationS: number; apexCm: number; minCornerAboveFloorCm: number; pool: number } | null;
+  arrival: { t: number; holdS: number; flightS: number; touchdownS: number; durationS: number; apexCm: number; minCornerAboveFloorCm: number; pool: number; poolHits: number[] } | null;
   /** plays the arrival again from the lean (the bench's button) */
   replayArrival(): void;
   /** the blobs' centres this frame, world units (born blobs only) — a READ-OUT for checks */
@@ -569,7 +569,7 @@ export function createHeroScene(aspect: number): HeroScene {
   const dissolveFront = makeFront();
   // the settled logo: its pose and height (world), for the births and the front
   let settled: { matrix: THREE.Matrix4; bounds: THREE.Box3; topY: number; bottomY: number; box: THREE.Box3 } | null = null;
-  let arrivalInfo: Omit<NonNullable<HeroScene["arrival"]>, "t" | "pool"> | null = null;
+  let arrivalInfo: Omit<NonNullable<HeroScene["arrival"]>, "t" | "pool" | "poolHits"> | null = null;
   let mould: HeroScene["mould"] = null;
   const textReady = buildText().then((t) => {
     if (disposed) return t.dispose();
@@ -895,10 +895,29 @@ export function createHeroScene(aspect: number): HeroScene {
    * growing EASED (smoothstep) to past the full disc by the FIRST BLOB's birth (`poolGrow`, `update`: tied to that moment,
    * not a fixed time, so it follows the emission's length). A soft edge `edge` wide (field units; ~19 cm) inside its
    * radius: where the mask thins the pool's top sinks below the floor, as at the disc's own rim. Values are takes.
+   * ✔ Take 1 (the full disc by the first blob): Carl, *"That looks great."*
+   * ⛔ TAKE 2 — THE BLOBS FEED IT (Carl: *"can the disc be partially unmasked si it look like it added to the disc mass?"* …
+   * *"it doesnt have to be accurate by volume, just look as if it has"*): by the first blob the disc reaches `atFirst` of
+   * its radius (eased from touchdown as take 1); then EACH BIRTH eases the edge out one equal step over `stepS`, so it
+   * reaches the full disc as the last blob leaves the logo's foot (the logo gone with it). Births, not floor touches: the
+   * touches measured too sparse (two at birth, then 3.2 s, 3.7 s, ~1 s apart after: `hero-floor-contacts-13-november.mjs`).
+   * ✗ Carl, on take 2: *"the timing is slight off. the disc grows, stops and grows again before the blobs hit it."* (seen in
+   * its frames: eased OUT to half at the first birth, a stop, then grown by births high on the logo, ~1.3 s before the
+   * first blob reaches the disc).
+   * ⛔ TAKE 3 — IT GROWS WHEN A BLOB REACHES IT: (1) from touchdown the disc SPREADS as a poured liquid, fast then ever
+   * slower, never a hard stop: `atFirst` × (1 − e^(−t / `spreadS`)); (2) each time a blob comes DOWN INTO the disc (its
+   * sphere's bottom within `reach` of a radius of the pool's top, its centre over the disc as it stands: `updateCubes`, a
+   * rising edge per blob) the edge eases out one step of (1 − `atFirst`) / `hits` over `stepS` from that frame; full
+   * after `hits` arrivals. Detected live, so it follows the dance if the dance changes.
+   * ✔ Take 3: Carl, *"Nailed it, that looks great."*
    */
-  const POOL_GROW = { edge: 0.06 } as const;
-  // the mask's share, 0 → 1 from touchdown to the first blob (`update`); the read-out `arrival.pool`
+  const POOL_GROW = { edge: 0.06, atFirst: 0.5, spreadS: 1.2, hits: 4, reach: 0.5, stepS: 0.5 } as const;
+  // the mask's radius share, 0 → 1 (`update`); the read-out `arrival.pool`
   let poolGrow = 0;
+  // take 3: the arrivals in the disc (emission seconds) and each blob's last state (in the disc or not); cleared before
+  // the emission
+  let poolHits: number[] = [];
+  let poolIn: boolean[] = [];
   function addLocalFloor(object: MarchingCubes, balls: [number, number, number][], radius: number) {
     const size = object.resolution;
     const field = object.field;
@@ -907,7 +926,7 @@ export function createHeroScene(aspect: number): HeroScene {
     // the mask's radius (field units, about the field's middle): 0 → the full disc (the sphere's section at the floor) plus
     // its soft edge, so at 1 it no longer touches the disc
     const fullR = Math.sqrt(Math.max(0, POOL.fadeTo ** 2 - (floorC - 0.5) ** 2));
-    const maskR = smooth(poolGrow) * (fullR + POOL_GROW.edge);
+    const maskR = poolGrow * (fullR + POOL_GROW.edge);
     const sigma2 = 2 * (FLOOR_CONTACT.sigmaR * radius) ** 2;
     // the pool's base: one slab-depth (where strength / dy² − subtract = isolation) below its top; its top `topLift` units
     // ABOVE the floor (clear of the grid's lines and the clip at the floor)
@@ -1041,6 +1060,21 @@ export function createHeroScene(aspect: number): HeroScene {
       }
     }
 
+    // ⛔ THE DISC's ARRIVALS (take 3, `POOL_GROW`): a blob whose bottom comes within `reach` of a radius of the pool's top,
+    // over the disc as it stands, is an ARRIVAL on its rising edge (once per blob per descent)
+    if (floor) {
+      const poolTop = floorLayer / object.resolution + POOL.topLift / 1400;
+      const fullR = Math.sqrt(Math.max(0, POOL.fadeTo ** 2 - (floorLayer / object.resolution - 0.5) ** 2));
+      const discR = poolGrow * (fullR + POOL_GROW.edge) - POOL_GROW.edge;
+      for (let k = 0; k < balls.length; k++) {
+        const [x, y, z] = balls[k];
+        const i = ids[k];
+        const on = y - radius <= poolTop + POOL_GROW.reach * radius && Math.hypot(x - 0.5, z - 0.5) <= Math.max(discR, 0);
+        if (on && !poolIn[i] && poolHits.length < POOL_GROW.hits) poolHits.push(emitT);
+        poolIn[i] = on;
+      }
+    }
+
     // the read-out (`blobs`): each born blob's centre, world units, with its index
     blobRead = balls.map(([x, y, z], k) => [ids[k], (2 * x - 1) * 700 + object.position.x, (2 * y - 1) * 700 + object.position.y, (2 * z - 1) * 700 + object.position.z]);
     if (floor) addLocalFloor(object, balls, radius);
@@ -1069,12 +1103,20 @@ export function createHeroScene(aspect: number): HeroScene {
       dissolveFront.value = emitT < 0 ? 1e6 : settled.topY + DISSOLVE.band / 2 - (len + DISSOLVE.band) * emitted;
       logo.visible = emitted < 1;
     }
-    // ⛔ THE DISC GROWS FROM THE LANDING (`POOL_GROW`): the mask's share from TOUCHDOWN to the FIRST BLOB's birth (blob 0,
-    // top first: `birthOf`), so the liquid is DRAWN from touchdown — the pool alone until the blobs
-    const firstBirth = settled ? birthOf(0, settings.numBlobs) : null;
+    // ⛔ THE DISC GROWS FROM THE LANDING (`POOL_GROW`, take 3): from TOUCHDOWN it spreads (fast, then ever slower, toward
+    // `atFirst`), then each ARRIVAL of a blob in it (`updateCubes`) eases it out a step — so the liquid is DRAWN from
+    // touchdown, the pool alone until the blobs
+    if (emitT < 0) {
+      poolHits = [];
+      poolIn = [];
+    }
     const poolT = arrival && settled ? storyT - arrival.touchdown : -1;
-    const poolS = arrival && firstBirth ? arrival.duration + firstBirth.t - arrival.touchdown : 1;
-    poolGrow = poolT < 0 ? 0 : Math.min(1, poolT / poolS);
+    if (poolT < 0) poolGrow = 0;
+    else {
+      poolGrow = POOL_GROW.atFirst * (1 - Math.exp(-poolT / POOL_GROW.spreadS));
+      for (const h of poolHits) poolGrow += ((1 - POOL_GROW.atFirst) / POOL_GROW.hits) * smooth((emitT - h) / POOL_GROW.stepS);
+      poolGrow = Math.min(1, poolGrow);
+    }
     const live = settings.blobs && (emitT >= 0 || (settings.floor && poolT >= 0));
     // the field's time — the example's `time += delta * speed * 0.5`; the clock itself is the bench's
     view.visible = live;
@@ -1083,11 +1125,25 @@ export function createHeroScene(aspect: number): HeroScene {
     // text, not in a negative way but a caused by the world way. When the blobs reform into the logo, the lights are not
     // needed."* → the example's orange point light is ON only while the liquid is out (§14a: caused by the world, not
     // layered on it). ⛔ 13 November 2026: it RISES with the emission (0 → `EMISSION.light` over its 500 ms; Carl, 11
-    // November: *"as more blobs drain or reform putting it on a fade is a good idea"*); the re-forming's fall comes later
+    // November: *"as more blobs drain or reform putting it on a fade is a good idea"*) — ⚰️ superseded the same day by the blobs
+    // out (below); the re-forming's fall comes later
     // the light and the heat wait for the EMISSION, not the pool (the blobs' light comes with the blobs)
     const blobsOut = live && emitT >= 0;
     pointLight.visible = blobsOut;
-    pointLight.intensity = EMISSION.light * emitted;
+    // ⛔ THE LIGHT IS THE BLOBS' OUT (13 November 2026, session 2; Carl: *"the pre blob text is ice blue when the blobs
+    // appear it turns a tinge of orange ... If you can make it better and more accurate by this 0.7s that would be great"*):
+    // it rose with the emission's eased share, ~0.7 s BEFORE the first blob (0.22 of full by then). Now each blob adds its
+    // 1/n as it SWELLS out of the logo (the same `swellS` smoothstep as its size): 0 until the first birth, full when the
+    // last blob is out
+    let out = 0;
+    if (emitT >= 0) {
+      const n = settings.numBlobs;
+      for (let i = 0; i < n; i++) {
+        const b = birthOf(i, n);
+        if (b && emitT >= b.t) out += smooth((emitT - b.t) / EMISSION.swellS) / n;
+      }
+    }
+    pointLight.intensity = EMISSION.light * out;
     // the floor's heat (`stepHeat`) is the blobs' and the floor's: hidden and cleared without them
     heatPlane.visible = blobsOut && settings.floor;
     if (!heatPlane.visible) heat.fill(0);
@@ -1137,7 +1193,7 @@ export function createHeroScene(aspect: number): HeroScene {
       return lean;
     },
     get arrival() {
-      return arrivalInfo ? { t: Math.round(storyT * 100) / 100, ...arrivalInfo, pool: Math.round(poolGrow * 1000) / 1000 } : null;
+      return arrivalInfo ? { t: Math.round(storyT * 100) / 100, ...arrivalInfo, pool: Math.round(poolGrow * 1000) / 1000, poolHits: poolHits.map((h) => Math.round(h * 100) / 100) } : null;
     },
     replayArrival() {
       storyT = 0;

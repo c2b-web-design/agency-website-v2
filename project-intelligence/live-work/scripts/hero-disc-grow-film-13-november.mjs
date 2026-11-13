@@ -2,7 +2,7 @@
 // starts from the middle and by time the blobs appear it will be complete." FRAME-STEPPED (the bench loop stopped; the
 // scene stepped exactly 1/30 s a frame), blobs and floor ON: the story from the start twice, from HOME then CLOSE.
 // 1920 x 1080, panel, meters and mould outline hidden; H.264 BT.709, 30 fps CFR. Logs the mask share (arrival.pool) from
-// touchdown to the first blob, and the light (which must stay 0 until the emission).
+// touchdown through the births (take 2: the blobs feed it), and the light (which must stay 0 until the emission).
 // NOT WATCHED: real-time smoothness on Carl's machine; the first compile (a load cost, not stepped).
 import { chromium } from "playwright";
 import { execFileSync } from "node:child_process";
@@ -56,9 +56,9 @@ for (const [k, shot] of ["home", "close"].entries()) {
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
       let light = null;
       scene.traverse((o) => o.isPointLight && (light = o));
-      return { t: hero.arrival.t, pool: hero.arrival.pool, td: hero.arrival.touchdownS, born: hero.blobs.length, logo: hero.logo.visible, light: +light.intensity.toFixed(2) };
+      return { t: hero.arrival.t, pool: hero.arrival.pool, hits: hero.arrival.poolHits.join(" "), td: hero.arrival.touchdownS, born: hero.blobs.length, logo: hero.logo.visible, light: +light.intensity.toFixed(2) };
     }, i);
-    if (k === 0 && (i % 6 === 0 || (info.born > 0 && !globalThis.firstSeen)) && info.t > info.td - 0.2 && info.t < dur + 1.8) { if (info.born > 0 && !globalThis.firstSeen) { globalThis.firstSeen = 1; console.log("FIRST BLOB"); } console.log(`t ${info.t}: pool ${info.pool}, blobs ${info.born}, light ${info.light}, logo ${info.logo}`); }
+    if (k === 0 && (i % 6 === 0 || (info.born > 0 && !globalThis.firstSeen)) && info.t > info.td - 0.2 && info.t < dur + 3.4) { if (info.born > 0 && !globalThis.firstSeen) { globalThis.firstSeen = 1; console.log("FIRST BLOB"); } console.log(`t ${info.t}: pool ${info.pool} [arrivals at ${info.hits}], blobs ${info.born}, light ${info.light}, logo ${info.logo}`); }
     await p.screenshot({ path: `${FRAMES_DIR}/f${String(seq).padStart(5, "0")}.jpg`, type: "jpeg", quality: 95 });
   }
   console.log(`${shot}: ${N} frames`);
