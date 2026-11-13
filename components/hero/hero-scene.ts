@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { ClippingGroup, MeshStandardNodeMaterial } from "three/webgpu";
-import { mx_cell_noise_float, positionWorld, uniform } from "three/tsl";
+import { cameraWorldMatrix, float, mix, mx_cell_noise_float, mx_noise_float, mx_noise_vec3, normalView, pmremTexture, positionLocal, positionViewDirection, positionWorld, pow4, roughness, texture, transformNormalToView, normalLocal, uniform, vec2, vec3 } from "three/tsl";
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { heroTextLayout } from "@/components/showcase/hero-text";
@@ -234,15 +234,251 @@ async function buildText(): Promise<{ group: THREE.Group; unitsPerCm: number; sk
 const DISSOLVE = { band: 160, chunk: 30 } as const;
 /** the front's uniform (world y), far above until the emission — made here so its type is the float uniform's */
 const makeFront = () => uniform(1e6);
-function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>): MeshStandardNodeMaterial {
+/**
+ * ⛔ THE FLOW MAP — THE LOGO FILLS AS A CONTAINER (13 November 2026, session 2; D-101). Carl: *"The blobs converge on the
+ * letter c. you should slow the fill down slightly. If the fluid id in c, it spreads to the 2. Some fluid would go up the 2
+ * stem, negotiate the curve at the top. Some fluid would travel along the bottom towards the b. It would negotiate the long
+ * bend and pour into the bottom part of the bs stem. Fill that up and them the top of the stem. The fluid would behave
+ * exactly as it should in a "container" like that."* → made ONCE from the logo's own geometry: its triangles drawn flat
+ * onto its face (local x, y) at `FLOW.perCm` cells per cm (the INK); from the ink nearest the c's entry, the distance the
+ * liquid must travel INSIDE the ink to each cell (8-way, a priority flood) — so it goes round the c, into the 2, up its stem and
+ * over its top curve, and along the bottom, round the long bend, into the foot of the b's stem and up it. Normalised 0–1;
+ * cells off the ink take their nearest ink cell's value (the bevels' edges sample cleanly). GRAVITY added before Carl saw
+ * it (the order below: the low road first; a pocket under an inflow fills from its floor up — *"pour into the bottom part
+ * of the bs stem. Fill that up and them the top"*). Stored as each cell's RANK: `level(share)` = the share itself, the
+ * poured share of the ink's AREA (the liquid's volume, not its reach).
+ */
+const FLOW = { perCm: 2, gravity: 1, noiseScale: 0.18, noiseAmp: 0.012 } as const;
+type FlowMap = { tex: THREE.DataTexture; minX: number; minY: number; sizeX: number; sizeY: number; level(share: number): number; check: { inkCells: number; reachedCells: number; seedCells: number; seed: number[]; tris: number; indexed: boolean } };
+function logoFlowMap(g: THREE.BufferGeometry, seedX: number, seedY: number): FlowMap {
+  g.computeBoundingBox();
+  const bb = g.boundingBox!;
+  const minX = bb.min.x - 1;
+  const minY = bb.min.y - 1;
+  const sizeX = bb.max.x - bb.min.x + 2;
+  const sizeY = bb.max.y - bb.min.y + 2;
+  const W = Math.ceil(sizeX * FLOW.perCm);
+  const H = Math.ceil(sizeY * FLOW.perCm);
+  const ink = new Uint8Array(W * H);
+  const pos = g.getAttribute("position");
+  const idx = g.getIndex();
+  const tris = idx ? idx.count / 3 : pos.count / 3;
+  const P = (k: number) => {
+    const v = idx ? idx.getX(k) : k;
+    return [((pos.getX(v) - minX) / sizeX) * W, ((pos.getY(v) - minY) / sizeY) * H];
+  };
+  for (let t = 0; t < tris; t++) {
+    const [ax, ay] = P(3 * t);
+    const [bx, by] = P(3 * t + 1);
+    const [cx, cy] = P(3 * t + 2);
+    const area = (bx - ax) * (cy - ay) - (cx - ax) * (by - ay);
+    if (Math.abs(area) < 1e-9) continue; // a wall, edge-on to the face
+    const x0 = Math.max(0, Math.floor(Math.min(ax, bx, cx)));
+    const x1 = Math.min(W - 1, Math.ceil(Math.max(ax, bx, cx)));
+    const y0 = Math.max(0, Math.floor(Math.min(ay, by, cy)));
+    const y1 = Math.min(H - 1, Math.ceil(Math.max(ay, by, cy)));
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        const px = x + 0.5;
+        const py = y + 0.5;
+        const w0 = ((bx - px) * (cy - py) - (cx - px) * (by - py)) / area;
+        const w1 = ((cx - px) * (ay - py) - (ax - px) * (cy - py)) / area;
+        if (w0 >= 0 && w1 >= 0 && w0 + w1 <= 1) ink[W * y + x] = 1;
+      }
+    }
+  }
+  // CLOSE the ink (grow one cell, then shrink one): ~295,000 thin face triangles drawn onto the grid leave hairline CRACKS
+  // along their shared edges that cut the ink into pieces the flow cannot cross (measured, 13 November: 39,381 ink
+  // cells, 1,485 reached); a crack up to two cells wide is sealed, the letters' outline kept
+  const morph = (src: Uint8Array, grow: boolean) => {
+    const out = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        let v = grow ? 0 : 1;
+        for (let dy = -1; dy <= 1 && v === (grow ? 0 : 1); dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const xx = x + dx;
+            const yy = y + dy;
+            const s = xx < 0 || yy < 0 || xx >= W || yy >= H ? 0 : src[W * yy + xx];
+            if (grow && s) v = 1;
+            if (!grow && !s) v = 0;
+          }
+        }
+        out[W * y + x] = v;
+      }
+    }
+    return out;
+  };
+  ink.set(morph(morph(ink, true), false));
+  // the seed: the ink nearest the c's entry (within a cell of the nearest)
+  const sx = ((seedX - minX) / sizeX) * W;
+  const sy = ((seedY - minY) / sizeY) * H;
+  let near = Infinity;
+  for (let i = 0; i < W * H; i++) if (ink[i]) near = Math.min(near, Math.hypot((i % W) + 0.5 - sx, Math.floor(i / W) + 0.5 - sy));
+  // ⚠ Float64 throughout, as the heap's values: a Float32 store rounded some values BELOW the queued value, so the stale
+  // check took a live entry for a stale one and the flow stopped (13 November: 1,485 of 39,381 ink cells reached)
+  // a binary heap of [key, i] (the order, below)
+  const heap: [number, number][] = [];
+  const push = (d: number, i: number) => {
+    heap.push([d, i]);
+    let k = heap.length - 1;
+    while (k > 0) {
+      const p = (k - 1) >> 1;
+      if (heap[p][0] <= heap[k][0]) break;
+      [heap[p], heap[k]] = [heap[k], heap[p]];
+      k = p;
+    }
+  };
+  const pop = () => {
+    const top = heap[0];
+    const last = heap.pop()!;
+    if (heap.length) {
+      heap[0] = last;
+      let k = 0;
+      for (;;) {
+        const l = 2 * k + 1;
+        const r = l + 1;
+        let m = k;
+        if (l < heap.length && heap[l][0] < heap[m][0]) m = l;
+        if (r < heap.length && heap[r][0] < heap[m][0]) m = r;
+        if (m === k) break;
+        [heap[m], heap[k]] = [heap[k], heap[m]];
+        k = m;
+      }
+    }
+    return top;
+  };
+  // THE ORDER (with GRAVITY, Carl's container): a priority flood. A cell's KEY is the highest, along the liquid's way to
+  // it, of (the way's length so far + `gravity` × its height): climbing costs (1 + gravity) a cell, running level 1, and
+  // running DOWN costs nothing (the key cannot fall) — so the low road is taken first, and a pocket BELOW an inflow (the
+  // b's stem under the bowl's join) shares its inflow's key and fills from its FLOOR UP (ties broken by height, lowest
+  // first). The map stores each cell's RANK in that order (0–1), so a fill level IS the poured share of the ink's area.
+  const way = new Float64Array(W * H).fill(Infinity);
+  const key = new Float64Array(W * H).fill(Infinity);
+  for (let i = 0; i < W * H; i++) {
+    if (ink[i] && Math.hypot((i % W) + 0.5 - sx, Math.floor(i / W) + 0.5 - sy) <= near + 1) {
+      way[i] = 0;
+      key[i] = FLOW.gravity * Math.floor(i / W);
+      push(key[i], i);
+    }
+  }
+  const steps = [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], [1, 1, Math.SQRT2], [1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [-1, -1, Math.SQRT2]];
+  while (heap.length) {
+    const [k, i] = pop();
+    if (k > key[i]) continue;
+    const x = i % W;
+    const y = Math.floor(i / W);
+    for (const [dx, dy, c] of steps) {
+      const xx = x + dx;
+      const yy = y + dy;
+      if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+      const j = W * yy + xx;
+      if (!ink[j]) continue;
+      const g2 = way[i] + c;
+      const k2 = Math.max(k, g2 + FLOW.gravity * yy);
+      if (k2 < key[j] || (k2 === key[j] && g2 < way[j])) {
+        key[j] = k2;
+        way[j] = g2;
+        push(k2, j);
+      }
+    }
+  }
+  const reached: number[] = [];
+  for (let i = 0; i < W * H; i++) if (ink[i] && key[i] < Infinity) reached.push(i);
+  reached.sort((a, b) => key[a] - key[b] || Math.floor(a / W) - Math.floor(b / W) || way[a] - way[b]);
+  const rank = new Float64Array(W * H).fill(-1);
+  reached.forEach((i, r) => (rank[i] = r / Math.max(1, reached.length - 1)));
+  // off the ink: the nearest ink cell's value (a breadth-first spread outward, a few rounds)
+  const val = new Float32Array(W * H).fill(-1);
+  for (let i = 0; i < W * H; i++) if (rank[i] >= 0) val[i] = rank[i];
+  for (let round = 0; round < 6; round++) {
+    const next = val.slice();
+    for (let i = 0; i < W * H; i++) {
+      if (val[i] >= 0) continue;
+      const x = i % W;
+      const y = Math.floor(i / W);
+      let best = Infinity;
+      for (const [dx, dy] of steps) {
+        const xx = x + dx;
+        const yy = y + dy;
+        if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+        const v = val[W * yy + xx];
+        if (v >= 0) best = Math.min(best, v);
+      }
+      if (best < Infinity) next[i] = best;
+    }
+    val.set(next);
+  }
+  const data = new Uint16Array(4 * W * H);
+  for (let i = 0; i < W * H; i++) {
+    const h = THREE.DataUtils.toHalfFloat(val[i] >= 0 ? val[i] : 1);
+    data[4 * i] = h;
+    data[4 * i + 1] = h;
+    data[4 * i + 2] = h;
+    data[4 * i + 3] = THREE.DataUtils.toHalfFloat(1);
+  }
+  const tex = new THREE.DataTexture(data, W, H, THREE.RGBAFormat, THREE.HalfFloatType);
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+  return {
+    tex,
+    minX,
+    minY,
+    sizeX,
+    sizeY,
+    level: (share) => (share <= 0 ? -1 : share >= 1 ? 2 : share),
+    check: { inkCells: ink.reduce((a, v) => a + v, 0), reachedCells: reached.length, seedCells: reached.filter((i) => way[i] === 0).length, seed: [Math.round(sx), Math.round(sy)], tris, indexed: !!idx },
+  };
+}
+/**
+ * ⛔ THE HARDENING — FROM BLOB TO SOLID (13 November 2026, session 2; D-101). Carl: *"the spread is mettallic. solid,
+ * straight away. That gives it no time to cool down"* … *"the whole logo can have the blob material at first … no one will
+ * expect the logo to come back. It makes sense that its fluid inside the logo container. The hardening process would then
+ * be to dial down the attributes."* … *"kkep the 2.8 for filling and use 1.2 for hardening."* → ONE dial, `harden` (0 =
+ * the blobs' liquid, 1 = the solid logo), for the whole logo, inside its one material: its ROUGHNESS the blobs' 0.1 → the
+ * logo's 0.4, its REFLECTION the blobs' courtyard → the logo's studio (the two mixed per pixel); the colour the family
+ * red in both (one object). The material rotates its studio by the logo's yaw (`envMapRotation`) and applies that to
+ * every environment lookup, so the courtyard's lookup is turned back by it first (the radiance context's own reflection
+ * vector, re-made here): the logo's liquid sees the courtyard exactly as the blobs do. At 1 it is the solid logo as before
+ * (the null control: `hero-logo-state-stills-13-november.mjs`). Metalness 1: the courtyard's diffuse term is nothing.
+ */
+/**
+ * ⛔ FLOATY WHILE LIQUID (13 November 2026, session 2; D-101). Carl: *"While liquid it still has some of its floaty, bubble
+ * like qualities."* → while the logo is liquid (`harden` < 1) its SURFACE wavers like the blobs' skin: a smooth noise field
+ * of its own position (cm, the geometry's units), drifting in time (`clock`), moves the surface by up to `swellCm` (a
+ * continuous field: the same point moves the same way on every face, so no seams open at the bevels) and tilts its
+ * shading normal by up to `tilt` (the highlights swim) — both × (1 − harden): nothing at all once hard (the null control).
+ * Values are takes.
+ */
+const LIQUID = { roughness: 0.1, swellCm: 1.2, tilt: 0.35, scale: 0.045, drift: 0.35 } as const;
+function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>, fill: ReturnType<typeof makeFront>, flow: FlowMap, courtyard: THREE.Texture, harden: ReturnType<typeof makeFront>, clock: ReturnType<typeof makeFront>): MeshStandardNodeMaterial {
   const m = new MeshStandardNodeMaterial({ color: HERO_LOGO_RED, metalness: HERO_LOGO_METAL.metalness, roughness: HERO_LOGO_METAL.roughness });
   m.envMap = studio;
   m.envMapIntensity = HERO_LOGO_METAL.envMapIntensity;
   m.envMapRotation.set(0, THREE.MathUtils.degToRad(HERO_LOGO_METAL.yawDeg), 0);
-  // keep a fragment while its height is under the front, offset per chunk by up to half the band either way
+  m.roughnessNode = mix(float(LIQUID.roughness), float(HERO_LOGO_METAL.roughness), harden);
+  // the radiance context's reflection (three r185, `EnvironmentNode`'s `createRadianceContext`), turned by the yaw R so
+  // the material's own Rᵀ leaves the courtyard unturned
+  const turn = uniform(new THREE.Matrix4().makeRotationFromEuler(m.envMapRotation));
+  const reflected = pow4(roughness).mix(positionViewDirection.negate().reflect(normalView), normalView).normalize().transformDirection(cameraWorldMatrix);
+  m.envNode = mix(pmremTexture(courtyard, turn.mul(reflected)), pmremTexture(studio), harden);
+  // floaty while liquid (LIQUID, above)
+  const liquid = float(1).sub(harden);
+  const field = positionLocal.mul(LIQUID.scale).add(vec3(0, 0, clock.mul(LIQUID.drift)));
+  m.positionNode = positionLocal.add(mx_noise_vec3(field).mul(liquid.mul(LIQUID.swellCm)));
+  const wobbled = transformNormalToView(normalLocal.add(mx_noise_vec3(field.add(vec3(17, 5, 3))).mul(LIQUID.tilt))).normalize();
+  m.normalNode = mix(normalView, wobbled, liquid);
+  // keep a fragment while its height is under the front, offset per chunk by up to half the band either way; and (THE
+  // RE-FORMING's FILL, `REFORM`, `FLOW`) while its FLOW distance is under the fill LEVEL, the edge a soft liquid wobble
+  // (smooth noise; the chunks were square up close) — the level far above until then (everything kept)
   const cell = mx_cell_noise_float(positionWorld.div(DISSOLVE.chunk));
-  m.maskNode = positionWorld.y.lessThan(front.add(cell.sub(0.5).mul(DISSOLVE.band)));
-  const key = `hero-scene-logo-env:${studio.uuid}`;
+  const jitter = cell.sub(0.5).mul(DISSOLVE.band);
+  const flowUv = vec2(positionLocal.x.sub(flow.minX).div(flow.sizeX), positionLocal.y.sub(flow.minY).div(flow.sizeY));
+  const along = texture(flow.tex, flowUv).r;
+  const wobble = mx_noise_float(positionLocal.mul(FLOW.noiseScale)).mul(FLOW.noiseAmp);
+  m.maskNode = positionWorld.y.lessThan(front.add(jitter)).and(along.lessThan(fill.add(wobble)));
+  const key = `hero-scene-logo-env:${studio.uuid}:${courtyard.uuid}`;
   m.customProgramCacheKey = () => key;
   return m;
 }
@@ -470,6 +706,10 @@ export type HeroScene = {
   replayArrival(): void;
   /** the blobs' centres this frame, world units (born blobs only) — a READ-OUT for checks */
   blobs: number[][];
+  /** THE FLOW MAP (`FLOW`), once the logo is in — a READ-OUT for checks: its texture (half floats, RGBA) and frame (cm) */
+  flow: { tex: THREE.DataTexture; minX: number; minY: number; sizeX: number; sizeY: number; check: FlowMap["check"] } | null;
+  /** THE RE-FORMING's plan (`REFORM`), once it has started — a READ-OUT for checks: emission seconds, the fill share */
+  reform: { startS: number; filled: number; hardness: number; fullS: number; hardS: number; landS: number; endS: number; dropCm: number; blobs: { i: number; carrier: boolean; departS: number; touchS: number; reachS: number }[] } | null;
   /** THE MOULD (`mouldPose`): the logo's local → world matrix there, and the logo geometry's local bounds (cm) */
   mould: { matrix: THREE.Matrix4; bounds: THREE.Box3 } | null;
   /** the example's `render()` minus the draw and the clock: the field's time, resolution, isolation, `updateCubes` */
@@ -480,6 +720,8 @@ export type HeroScene = {
 export function createHeroScene(aspect: number): HeroScene {
   const disposables: { dispose(): void }[] = [];
   const loads: Promise<void>[] = [];
+  // the courtyard's image (`generateMaterials`); the logo's material waits for it (THE HARDENING)
+  let courtyardReady: Promise<void> = Promise.resolve();
 
   // CAMERA — the example's (45°, near 1, far 10000), at HOME
   const camera = new THREE.PerspectiveCamera(HOME.fov, aspect, 1, 10000);
@@ -567,6 +809,28 @@ export function createHeroScene(aspect: number): HeroScene {
   const EMISSION = { seconds: 3, swellS: 0.2, blendS: 0.7, light: 3 } as const;
   // the dissolve's front (world y): far above until the emission
   const dissolveFront = makeFront();
+  // the re-forming's fill LEVEL (the flow map's distance, `FLOW`): far above (nothing masked) until the re-forming
+  const fillFront = makeFront();
+  let flow: FlowMap | null = null;
+  // THE HARDENING's dial (`logoMaterial`): 1 = the solid logo (all before the re-forming), 0 = the blobs' liquid
+  const hardness = uniform(1);
+  /**
+   * ⛔ THE FALL — THE LAST STEP OF PHASE 1 (13 November 2026, session 2; D-101). Carl: *"While liquid it still has some of
+   * its floaty, bubble like qualities. As soon as it hardens, gravity kicks in and it can fall to the floor with a slight
+   * wobble on langing."* → while liquid the logo BOBS (`bobCm` at `bobHz`, × (1 − hardness): still once hard) and its surface
+   * wavers (`LIQUID`); the moment it is HARD it FALLS straight down from the mould to the floor under real gravity (981
+   * cm/s² in world units; `mouldDrop`, the mould's 40 cm raise, ~0.29 s), and on landing WOBBLES — the arrival's (the desk
+   * mark's, `wobbleAngle`, 2 s): rocking front and back on its thin base about its long axis, the pivot the base's FACE edge
+   * (top toward the camera) or its BACK edge (away), changing side through upright — the arrival's rock, seen face on.
+   * Values are takes.
+   */
+  const FALL = { bobCm: 1.5, bobHz: 0.45 } as const;
+  let mouldDrop = 0;
+  const fallT = new THREE.Matrix4();
+  const fallR = new THREE.Matrix4();
+  const fallP = new THREE.Vector3();
+  // the liquid's own clock (seconds, the scene's — frame-stepped films step it exactly): its surface drifts on it
+  const liquidClock = uniform(0);
   // the settled logo: its pose and height (world), for the births and the front
   let settled: { matrix: THREE.Matrix4; bounds: THREE.Box3; topY: number; bottomY: number; box: THREE.Box3 } | null = null;
   let arrivalInfo: Omit<NonNullable<HeroScene["arrival"]>, "t" | "pool" | "poolHits"> | null = null;
@@ -579,9 +843,14 @@ export function createHeroScene(aspect: number): HeroScene {
     scene.add(text);
     // ⛔ THE LOGO ON THE 3D t (`leanInSketch`): once its geometry and the text's frame are both in
     // the studio is `loadStudioHdri`'s shared, cached texture: not disposed here (the sketch bench's rule)
-    Promise.all([logoGeo, loadStudioHdri(STUDIO_HDRI_SRC, HERO_LOGO_METAL.room)]).then(([g, studio]) => {
+    Promise.all([logoGeo, loadStudioHdri(STUDIO_HDRI_SRC, HERO_LOGO_METAL.room), courtyardReady]).then(([g, studio]) => {
       if (disposed) return g.dispose();
-      const material = logoMaterial(studio, dissolveFront);
+      // the re-forming's flow map, from the ink nearest the c's entry (`REFORM`'s c: its middle, at mid height)
+      g.computeBoundingBox();
+      const gb = g.boundingBox!;
+      flow = logoFlowMap(g, gb.min.x + (REFORM.cShare * (gb.max.x - gb.min.x)) / 2, (gb.min.y + gb.max.y) / 2);
+      disposables.push(flow.tex);
+      const material = logoMaterial(studio, dissolveFront, fillFront, flow, envs.courtyard!.reflect, hardness, liquidClock);
       disposables.push(g, material);
       const l = leanInSketch(g, t.sketch);
       logo = new THREE.Mesh(g, material);
@@ -601,6 +870,14 @@ export function createHeroScene(aspect: number): HeroScene {
         settled = { matrix: m, bounds: b, topY: wb.max.y, bottomY: wb.min.y, box: wb };
       }
       mould = { matrix: mouldPose(g, t.sketch), bounds: g.boundingBox!.clone() };
+      {
+        // THE FALL's height (`FALL`): the mould pose's lowest vertex above the floor (world units)
+        const pa = g.getAttribute("position");
+        const v = new THREE.Vector3();
+        let low = Infinity;
+        for (let i = 0; i < pa.count; i++) low = Math.min(low, v.fromBufferAttribute(pa, i).applyMatrix4(mould.matrix).y);
+        mouldDrop = low - FLOOR_Y;
+      }
       const r = (v: number) => Math.round(v * 100) / 100;
       arrivalInfo = { holdS: ARRIVAL.holdS, flightS: r(arrival.flightS), touchdownS: r(arrival.touchdown), durationS: r(arrival.duration), apexCm: r(arrival.apexCm), minCornerAboveFloorCm: r(arrival.minCornerY) };
       lean = {
@@ -661,7 +938,15 @@ export function createHeroScene(aspect: number): HeroScene {
     // off the bottom), JPEG, 415 KB (D-108: a load the site's hero would pay); its left and right edges join (checked). An
     // equirectangular map: reflection for the metals, refraction for the liquid (one image, two mappings). The castle kept
     // as a switch for comparison
-    const courtyard = new THREE.TextureLoader().load("/hero-bench/courtyard-emblem.jpg", loaded());
+    // its load is also awaited by the LOGO's material (the hardening mixes it in): a PMREM built before the image arrives
+    // draws black for good (the note at the top)
+    const courtyardDone = loaded();
+    let courtyardResolve: () => void = () => {};
+    courtyardReady = new Promise<void>((r) => (courtyardResolve = r));
+    const courtyard = new THREE.TextureLoader().load("/hero-bench/courtyard-emblem.jpg", () => {
+      courtyardDone();
+      courtyardResolve();
+    });
     courtyard.mapping = THREE.EquirectangularReflectionMapping;
     courtyard.colorSpace = THREE.SRGBColorSpace;
     const courtyardRefract = courtyard.clone();
@@ -918,6 +1203,130 @@ export function createHeroScene(aspect: number): HeroScene {
   // the emission
   let poolHits: number[] = [];
   let poolIn: boolean[] = [];
+
+  /**
+   * ⛔ THE RE-FORMING — INTO THE MOULD THROUGH THE c (13 November 2026, session 2; D-101). Carl: *"the yellow logo outline
+   * is just a guide. The blobs must fill it up and become a solid logo, like the leaning logo, only face on. The dance
+   * sequence should last about 7s. So after that if a blob touches the disc, it should take some mass and make its way to
+   * the logo. Almost all of the blobs touch the letter "c". That could be the entry point. That wat the completed logo could
+   * already ne there only masked. We would also be able to account for the disc and be able to remove it ib a realistic
+   * way."* … *"Only a few blobs can hit the disc then- we nust account for its mass. Ones that are floating you can send
+   * direct. Its the principle im after."* (the method delegated; he judges after the event).
+   * MEASURED first (`hero-reform-contacts-13-november.mjs`): the field box ends at ~x 650, the mould spans x 277–1160 —
+   * the c (and the 2's start) is the ONLY part the liquid can reach; the dance alone brings blobs to the disc after 7 s
+   * at 7.2 … 30.8 s (one never in 40 s) and to the c rarely (its 34-unit depth) — so the blobs are GUIDED out of the dance.
+   * - WHEN: `danceS` after the LAST blob's birth (the Builder's reading of "about 7s": the dance with all blobs out).
+   * - THE ORDER: one leaves every `gapS`, nearest the c's entry first (planned once at the start, from the dance's own
+   *   positions, which are a function of time: `pathAt`).
+   * - THE DISC's MASS: the `carriers` blobs LOWEST at their departure dip into the disc (centre half a radius above its
+   *   top, drawn in toward the middle), REST `dwellS` while they SWELL by `takeMass` of their strength (taking it), and the
+   *   disc's radius drains a 1/`carriers` step over `drainS` from each touch — gone with the last carrier.
+   * - THE FLOATING ONES go direct.
+   * - THE ENTRY: each comes to a point BEHIND the c (`behindR` radii past its back, away from the camera), then sinks into
+   *   the c's middle over `enterS`, its strength to nothing; as it does the LOGO — the same mesh, moved to the mould's pose
+   *   (never two logos), masked by the FILL (the flow map's level, `FLOW`; take 1 a world-x front) — fills 1/n through the letters,
+   *   and the orange light loses that blob's 1/n.
+   * - THE MOTION: each leg eased (smoothstep), its time from its length at a PEAK of `speed` units/s (the dance's own top
+   *   ~390–409); the hand-off from the dance blended over `blendS`. Values are takes.
+   */
+  // pourS (Carl: "you should slow the fill down slightly"): each blob's liquid spreads through the logo over 1.4 s (it
+  // was the 0.6 s of its entry); then 1.4 → 2.8 (Carl: "slow the logo fill by 50%": half the speed, twice the time); then 2.8 → 4 (Carl: "its the 2.8s spread i want to focus on. First of all make that 4s"); then back to 2.8 with the
+  // HARDENING (Carl: "kkep the 2.8 for filling and use 1.2 for hardening"): the logo fills as the blobs' liquid, and once
+  // FULL the whole logo hardens over `hardenS` (`logoMaterial`)
+  const REFORM = { danceS: 7, gapS: 0.45, carriers: 3, speed: 420, dwellS: 0.4, takeMass: 0.35, drainS: 0.6, enterS: 0.6, pourS: 2.8, hardenS: 1.2, blendS: 0.8, cShare: 0.33, behindR: 1 } as const;
+  type V3 = [number, number, number];
+  type ReformBlob = { i: number; carrier: boolean; depart: number; p0: V3; q: V3 | null; l1: number; touch: number; leave: number; l2: number; reach: number; e: V3; c: V3 };
+  let reform: { start: number; blobs: ReformBlob[]; xMin: number; xMax: number } | null = null;
+  const lerp3 = (a: V3, b: V3, u: number): V3 => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u];
+  const dist3 = (a: V3, b: V3) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  /** the re-forming's start (emission seconds): `danceS` after the last birth */
+  function reformStart(n: number): number | null {
+    const last = birthOf(n - 1, n);
+    return last ? last.t + REFORM.danceS : null;
+  }
+  /** the plan (field units, emission seconds), made once at the start from the dance's positions */
+  function planReform(object: MarchingCubes, start: number, n: number, floor: boolean): NonNullable<typeof reform> | null {
+    if (!mould) return null;
+    const { radius, low } = fieldParams(n, object.isolation, object.resolution);
+    const { matrix, bounds } = mould;
+    const v = new THREE.Vector3();
+    const toF = (x: number, y: number, z: number): V3 => {
+      v.set(x, y, z).applyMatrix4(matrix);
+      return [toField(v.x, object.position.x), toField(v.y, object.position.y), toField(v.z, object.position.z)];
+    };
+    const w = bounds.max.x - bounds.min.x;
+    const cx = bounds.min.x + (REFORM.cShare * w) / 2;
+    const cy = (bounds.min.y + bounds.max.y) / 2;
+    const c = toF(cx, cy, (bounds.min.z + bounds.max.z) / 2);
+    const back = toF(cx, cy, bounds.min.z);
+    const away = Math.sign(back[2] - c[2]) || -1;
+    const e: V3 = [back[0], back[1], back[2] + away * REFORM.behindR * radius];
+    const xs = [bounds.min.x, bounds.max.x].map((x) => v.set(x, cy, bounds.min.z).applyMatrix4(matrix).x);
+    const poolTop = floorLayer / object.resolution + POOL.topLift / 1400;
+    const fullR = Math.sqrt(Math.max(0, POOL.fadeTo ** 2 - (floorLayer / object.resolution - 0.5) ** 2));
+    const dance = (i: number, t: number) => pathAt(i, 0.5 * settings.speed * t, low, floor);
+    const legS = (a: V3, b: V3) => Math.max(0.5, (1.5 * dist3(a, b) * 1400) / REFORM.speed);
+    // the order: nearest the entry first, by where each is at the start
+    const order = Array.from({ length: n }, (_, i) => i).sort((a, b) => dist3(dance(a, start), e) - dist3(dance(b, start), e));
+    const departs = order.map((i, k) => ({ i, depart: start + k * REFORM.gapS }));
+    // the carriers: the lowest at their own departure
+    const carriers = new Set([...departs].sort((a, b) => dance(a.i, a.depart)[1] - dance(b.i, b.depart)[1]).slice(0, REFORM.carriers).map((d) => d.i));
+    const blobs = departs.map(({ i, depart }): ReformBlob => {
+      const p0 = dance(i, depart);
+      if (carriers.has(i)) {
+        const dx = p0[0] - 0.5;
+        const dz = p0[2] - 0.5;
+        const s = Math.min(1, (0.6 * fullR) / Math.max(1e-6, Math.hypot(dx, dz)));
+        const q: V3 = [0.5 + dx * s, poolTop + 0.5 * radius, 0.5 + dz * s];
+        const l1 = legS(p0, q);
+        const touch = depart + l1;
+        const leave = touch + REFORM.dwellS;
+        const l2 = legS(q, e);
+        return { i, carrier: true, depart, p0, q, l1, touch, leave, l2, reach: leave + l2, e, c };
+      }
+      const l2 = legS(p0, e);
+      return { i, carrier: false, depart, p0, q: null, l1: 0, touch: depart, leave: depart, l2, reach: depart + l2, e, c };
+    });
+    return { start, blobs, xMin: Math.min(...xs), xMax: Math.max(...xs) };
+  }
+  /** blob b's guided position at emission time t (after its departure) and its strength factor */
+  function guidedAt(b: ReformBlob, t: number): { p: V3; k: number } {
+    const enter = smooth((t - b.reach) / REFORM.enterS);
+    if (t >= b.reach) return { p: lerp3(b.e, b.c, enter), k: (b.carrier ? 1 + REFORM.takeMass : 1) * (1 - enter) };
+    if (b.carrier && b.q) {
+      const took = 1 + REFORM.takeMass * smooth((t - b.touch) / REFORM.dwellS);
+      if (t < b.touch) return { p: lerp3(b.p0, b.q, smooth((t - b.depart) / b.l1)), k: 1 };
+      if (t < b.leave) return { p: b.q, k: took };
+      return { p: lerp3(b.q, b.e, smooth((t - b.leave) / b.l2)), k: took };
+    }
+    return { p: lerp3(b.p0, b.e, smooth((t - b.depart) / b.l2)), k: 1 };
+  }
+  /** THE HARDENING's dial at emission time t: 1 (solid) outside the re-forming; in it 0 (the blobs' liquid) until the logo
+   *  is FULL (the last entry + `pourS`), then eased to 1 over `hardenS` */
+  function hardnessAt(t: number): number {
+    if (!reform || t < reform.start) return 1;
+    return smooth((t - fullAt()) / REFORM.hardenS);
+  }
+  /** emission seconds: the logo FULL; HARD (the fall starts); LANDED; the wobble DONE (phase 1's end) */
+  function fullAt() {
+    return reform ? Math.max(...reform.blobs.map((b) => b.reach)) + REFORM.pourS : Infinity;
+  }
+  const gWorld = () => 981 * (unitsPerCm ?? 1);
+  const fallS = () => Math.sqrt((2 * Math.max(0, mouldDrop)) / gWorld());
+  /** the re-forming's shares at emission time t: the disc drained, the blobs ENTERED (each over `enterS`: the light and
+   *  the heat go with them) and the liquid POURED through the logo (each blob's over `pourS`, slower: the fill), 0–1 */
+  function reformShares(t: number): { drained: number; filled: number; poured: number } {
+    if (!reform) return { drained: 0, filled: 0, poured: 0 };
+    let drained = 0;
+    let filled = 0;
+    let poured = 0;
+    for (const b of reform.blobs) {
+      if (b.carrier) drained += smooth((t - b.touch) / REFORM.drainS) / REFORM.carriers;
+      filled += smooth((t - b.reach) / REFORM.enterS) / reform.blobs.length;
+      poured += smooth((t - b.reach) / REFORM.pourS) / reform.blobs.length;
+    }
+    return { drained, filled, poured };
+  }
   function addLocalFloor(object: MarchingCubes, balls: [number, number, number][], radius: number) {
     const size = object.resolution;
     const field = object.field;
@@ -1025,6 +1434,11 @@ export function createHeroScene(aspect: number): HeroScene {
     const ids: number[] = [];
     // the shared dance clock, at the dance's full pace from the emission (the pool alone before it: the clock waits)
     if (emitT >= 0) danceT += delta * settings.speed * 0.5;
+    // the re-forming's plan, made once when it starts (`REFORM`)
+    if (!reform && emitT >= 0) {
+      const start = reformStart(numblobs);
+      if (start !== null && emitT >= start) reform = planReform(object, start, numblobs, floor);
+    }
     for (let i = 0; i < numblobs; i++) {
       // ⛔ THE EMISSION (above): not yet born → not in the field; born → swelling out of the logo, easing onto its dance
       const birth = birthOf(i, numblobs);
@@ -1035,13 +1449,22 @@ export function createHeroScene(aspect: number): HeroScene {
       const grow = smooth(age / EMISSION.swellS);
       // take 4's hand-off: eased (smoothstep) from its birth spot onto its moving dance position over `blendS`
       const e = smooth(age / EMISSION.blendS);
-      const strength = baseStrength * grow;
-      const r = radius * Math.sqrt(grow);
+      let strength = baseStrength * grow;
+      let r = radius * Math.sqrt(grow);
       // clear of the box's left side by its own radius and the undrawn outer layer
       const bx = Math.max(birth.x, r + 1.5 / object.resolution);
-      const ballx = bx + (pathx - bx) * e;
-      const bally = birth.y + (pathy - birth.y) * e;
-      const ballz = birth.z + (pathz - birth.z) * e;
+      let ballx = bx + (pathx - bx) * e;
+      let bally = birth.y + (pathy - birth.y) * e;
+      let ballz = birth.z + (pathz - birth.z) * e;
+      // ⛔ THE RE-FORMING (`REFORM`): from its departure, blended off the dance onto its guided way to the c
+      const rb = reform?.blobs.find((b) => b.i === i);
+      if (rb && emitT >= rb.depart) {
+        const g = guidedAt(rb, emitT);
+        if (g.k <= 0.001) continue; // entered: no longer in the field
+        [ballx, bally, ballz] = lerp3([ballx, bally, ballz], g.p, smooth((emitT - rb.depart) / REFORM.blendS));
+        strength *= g.k;
+        r = radius * Math.sqrt(grow * g.k);
+      }
       balls.push([ballx, bally, ballz]);
       ids.push(i);
 
@@ -1061,8 +1484,9 @@ export function createHeroScene(aspect: number): HeroScene {
     }
 
     // ⛔ THE DISC's ARRIVALS (take 3, `POOL_GROW`): a blob whose bottom comes within `reach` of a radius of the pool's top,
-    // over the disc as it stands, is an ARRIVAL on its rising edge (once per blob per descent)
-    if (floor) {
+    // over the disc as it stands, is an ARRIVAL on its rising edge (once per blob per descent); not in the re-forming (the
+    // carriers' dips TAKE from the disc)
+    if (floor && !reform) {
       const poolTop = floorLayer / object.resolution + POOL.topLift / 1400;
       const fullR = Math.sqrt(Math.max(0, POOL.fadeTo ** 2 - (floorLayer / object.resolution - 0.5) ** 2));
       const discR = poolGrow * (fullR + POOL_GROW.edge) - POOL_GROW.edge;
@@ -1103,6 +1527,38 @@ export function createHeroScene(aspect: number): HeroScene {
       dissolveFront.value = emitT < 0 ? 1e6 : settled.topY + DISSOLVE.band / 2 - (len + DISSOLVE.band) * emitted;
       logo.visible = emitted < 1;
     }
+    // ⛔ THE RE-FORMING (`REFORM`): the plan is cleared before the emission; once it runs, the SAME logo stands in the
+    // mould's pose, masked by the fill (the flow map, `FLOW`) as the liquid pours in
+    if (emitT < 0) reform = null;
+    const { drained, filled, poured } = reformShares(emitT);
+    fillFront.value = 1e6;
+    hardness.value = hardnessAt(emitT);
+    liquidClock.value = Math.max(0, emitT);
+    if (reform && mould && logo && flow && emitT >= reform.start) {
+      // THE FALL (`FALL`): the bob while liquid; from HARD, the drop and the landing's rock
+      const hardAt = fullAt() + REFORM.hardenS;
+      let dy = ((FALL.bobCm * (unitsPerCm ?? 1)) / 2) * Math.sin(2 * Math.PI * FALL.bobHz * (emitT - reform.start)) * (1 - hardness.value);
+      let rock = 0;
+      const tf = emitT - hardAt;
+      if (tf > 0) {
+        const T = fallS();
+        if (tf < T) dy -= 0.5 * gWorld() * tf * tf;
+        else {
+          dy -= mouldDrop;
+          rock = wobbleAngle((tf - T) * 1000);
+        }
+      }
+      const b = mould.bounds;
+      fallP.set((b.min.x + b.max.x) / 2, b.min.y, rock >= 0 ? b.max.z : b.min.z);
+      // world drop · the mould pose · the rock about the base's edge (local x, + tips the top toward the face)
+      logo.matrix.makeTranslation(0, dy, 0).multiply(mould.matrix);
+      logo.matrix.multiply(fallT.makeTranslation(fallP.x, fallP.y, fallP.z)).multiply(fallR.makeRotationX(rock)).multiply(fallT.makeTranslation(-fallP.x, -fallP.y, -fallP.z));
+      logo.matrixWorldNeedsUpdate = true;
+      dissolveFront.value = 1e6;
+      // the liquid's level in the flow map: the distance by which the poured share of the ink's area is full (`FLOW`)
+      fillFront.value = flow.level(poured);
+      logo.visible = poured > 0;
+    }
     // ⛔ THE DISC GROWS FROM THE LANDING (`POOL_GROW`, take 3): from TOUCHDOWN it spreads (fast, then ever slower, toward
     // `atFirst`), then each ARRIVAL of a blob in it (`updateCubes`) eases it out a step — so the liquid is DRAWN from
     // touchdown, the pool alone until the blobs
@@ -1115,7 +1571,8 @@ export function createHeroScene(aspect: number): HeroScene {
     else {
       poolGrow = POOL_GROW.atFirst * (1 - Math.exp(-poolT / POOL_GROW.spreadS));
       for (const h of poolHits) poolGrow += ((1 - POOL_GROW.atFirst) / POOL_GROW.hits) * smooth((emitT - h) / POOL_GROW.stepS);
-      poolGrow = Math.min(1, poolGrow);
+      // the re-forming's carriers TAKE it back (`REFORM`): gone with the last
+      poolGrow = Math.max(0, Math.min(1, poolGrow) - drained);
     }
     const live = settings.blobs && (emitT >= 0 || (settings.floor && poolT >= 0));
     // the field's time — the example's `time += delta * speed * 0.5`; the clock itself is the bench's
@@ -1143,9 +1600,15 @@ export function createHeroScene(aspect: number): HeroScene {
         if (b && emitT >= b.t) out += smooth((emitT - b.t) / EMISSION.swellS) / n;
       }
     }
-    pointLight.intensity = EMISSION.light * out;
+    // … and each blob that ENTERS the logo takes its 1/n back (`REFORM`; Carl, 11 November: *"When the blobs reform into
+    // the logo, the lights are not needed."*)
+    pointLight.intensity = EMISSION.light * Math.max(0, out - filled);
     // the floor's heat (`stepHeat`) is the blobs' and the floor's: hidden and cleared without them
-    heatPlane.visible = blobsOut && settings.floor;
+    // … and it COOLS WITH THE FILL (13 November 2026, session 2; Carl: *"the end logo should ne ted, with no hints of
+    // orange. Exactly as it is in leaning state before the blobs took over."*): each blob that enters the logo takes its
+    // 1/n of the glow (the additive plane's colour scaled), and the floor is cold — not drawn — when the logo is whole
+    heatPlane.visible = blobsOut && settings.floor && filled < 1;
+    heatMat.color.setScalar(1 - filled);
     if (!heatPlane.visible) heat.fill(0);
     // before the emission the dance's clock waits at its start
     if (emitT < 0) danceT = 0;
@@ -1205,6 +1668,16 @@ export function createHeroScene(aspect: number): HeroScene {
     },
     get mould() {
       return mould;
+    },
+    get flow() {
+      return flow;
+    },
+    get reform() {
+      if (!reform) return null;
+      const r = (v: number) => Math.round(v * 100) / 100;
+      const t = arrival && storyT >= arrival.duration ? storyT - arrival.duration : -1;
+      const hard = fullAt() + REFORM.hardenS;
+      return { startS: r(reform.start), filled: r(reformShares(t).poured), hardness: r(hardnessAt(t)), fullS: r(fullAt()), hardS: r(hard), landS: r(hard + fallS()), endS: r(hard + fallS() + LAND_WOBBLE.ms / 1000), dropCm: r(mouldDrop / (unitsPerCm ?? 1)), blobs: reform.blobs.map((b) => ({ i: b.i, carrier: b.carrier, departS: r(b.depart), touchS: r(b.touch), reachS: r(b.reach) })) };
     },
     update,
     dispose() {

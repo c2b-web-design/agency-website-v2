@@ -65,6 +65,20 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-106 — The Hero, Phase 1 Complete: The Logo Melts, Dances, Re-forms And Falls (D-101): "Outstanding!"
+
+**Date:** 2026-11-13
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — `components/hero/hero-scene.ts` (the arrival, the disc, the emission, the dance, the re-forming, the hardening, the fall), `components/hero/hero-bench.tsx` (the mould guide off by default)
+
+**Carl's verdict, verbatim:** *"Phase 1 is mow complete and i can give my verdict. Outstanding! The added animation to the floaty liquid logo is a great touch and we are yet to give it some icing on the cake with some camera direction at the end of the phases. Great work."*
+
+**Findings:**
+
+- ✔ **APPROVED, PHASE 1 WHOLE**, frame-stepped on the bench (take 7 of the re-forming, `Videos\C2B Films\03 The hero\2026-11-13_reform_take7_fall.mp4`): the red logo leans on the 3D t, holds, jumps into the middle of the dance and wobbles (13 Nov s1); the amber disc grows from the landing and is fed by the blobs' arrivals; the blobs emerge top to bottom over 3 s and the orange light comes with them; the 7 s dance; the re-forming — three blobs take the disc's mass, the rest go direct, all enter the c from behind; the logo fills as LIQUID through its letters by a gravity flow map (2.8 s a blob), floaty (a wavering surface, a bob), darker; it hardens as one (1.2 s) to the solid family red (pixel-identical to the lean's material); it falls 40 cm and lands with the arrival's wobble.
+- Verdicts on the way, the same day: the disc from the landing (*"That looks great"*), fed by arrivals (*"Nailed it"*), the light with the blobs, the re-forming's first take (*"very good"*), the end in logo state (*"that looks great"*), the hardening (*"A lot better than it did before"*).
+- **Not covered:** the CAMERA direction at the end of the phases (Carl: *"icing on the cake"*; the camera layer comes after the animation, D-101); phases 2 and 3 (the platinum blue rain, the cloth to gold); the page (the hero is on its bench); the visitor's real-time playback on Carl's machine and phones (every check was frame-stepped); the load and frame cost per layer (D-108) not yet priced for the phase as a whole.
+
 ## R-105 — The Hero's Logo: The Jump From The Lean And Its Landing (D-101): "Perfect"
 
 **Date:** 2026-11-10

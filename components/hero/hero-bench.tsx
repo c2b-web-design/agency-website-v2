@@ -106,7 +106,9 @@ export default function HeroBench() {
     // orientation. Im looking for good spacing within the viewport when the blobs are gone."*). The sketch bench's own
     // outline (`hero-logo.tsx`, `FaceOnOutline`: `LOGO_OUTLINE` scaled by the logo mesh's measured height, on its FACE,
     // amber `#ffb84d`, unlit, one closed line) placed by the scene's mould pose (`hero.mould`); built once the logo is in
-    const mouldGuide = { outline: true };
+    // OFF by default (13 November 2026, session 2; Carl: *"take the yellow guide lines away"*): the re-forming fills the
+    // mould; the switch stays (Logo → "mould outline") to check its place
+    const mouldGuide = { outline: false };
     let mouldLine: THREE.Line | null = null;
     const buildMouldLine = () => {
       const m = hero.mould;
