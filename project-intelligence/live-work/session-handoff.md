@@ -48,8 +48,10 @@ Carl's words. ⚠ Read the LAST TEN entries first. Carl: *"Its looks the best ye
 
 - **COMMITTED AND PUSHED this session** (Carl: *"Write a handoff and commit and push"*). tsc clean; lint the one accepted
   error, 0 warnings.
-- **The dev server is RUNNING** (port 3000). **The screen capture is RUNNING** (Carl did not ask to stop it):
-  `Videos\C2B Films\03 The hero\01 Discussion\2026-11-13_discussion_screen.mkv` (ffmpeg gdigrab; stop it, then remux).
+- **The dev server is RUNNING** (port 3000; Carl: *"keep the server up"*). **The screen capture is STOPPED** (Carl: *"stop
+  the capture"*): `Videos\C2B Films\03 The hero\01 Discussion\2026-11-13_discussion_screen.remux.mkv` — 4:18:27, all
+  443,219 frames, remuxed after the forced stop; the RAW `2026-11-13_discussion_screen.mkv` is KEPT beside it (not deleted
+  without Carl's word). Carl: *"We will start a new session and convo and i will tell you where we are at."*
 - **Films** (frame-stepped, 30 fps) in `Videos\C2B Films\03 The hero\`: `2026-11-13_logo-arrival_take1`, `floor-heat`,
   `floor-splat_low`, `round-pool_*`, `amber-disc_*`, `emission_take1` … `take10_3s` (take 10 = the one liked).
 - **Scripts** (`live-work/scripts/`, 13-november): the lean check, the orange source, the desk-wobble film, the arrival film,
