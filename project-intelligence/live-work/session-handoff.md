@@ -1,85 +1,86 @@
-# Session Handoff — 13 November 2026 (Friday), session 1. THE HERO: LEAN → ARRIVAL → EMISSION ON `/proto/hero`
+# Session Handoff — 13 November 2026 (Friday), session 2. THE HERO: ✔ PHASE 1 COMPLETE. NEXT: PHASE 2, THE RAIN
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces every earlier handoff. Delete it at the end of
 the session that reads it, once its replacement is written.
 
-**The record:** D-101 in `decisions.md`, from *"THE LOGO LEANS ON THE 3D t (13 November 2026"* to the end — every beat with
-Carl's words. ⚠ Read the LAST TEN entries first. Carl: *"Its looks the best yet. a good place to take stock."*
+**The record:** D-101 in `decisions.md`, from *"THE DISC GROWS FROM THE LANDING — TAKE 1 BUILT (13 November 2026, session
+2"* to the end, every beat with Carl's words; R-106 in `reviews/review-log.md`.
 
-## ⛔ WHERE IT STANDS (all in `components/hero/hero-scene.ts` unless named; the bench `components/hero/hero-bench.tsx`)
+## ⛔ WHERE IT STANDS
 
-1. **THE LEAN on the 3D "t"** — the sketch's R-103 lean solved in the sketch's frame, carried by the text's similarity
-   (`leanInSketch`; `HERO_LEAN` exported from `hero-logo.tsx`). Contact measured from the glyph = the recorded constant.
-   ✔ *"The lean looks good."*
-2. **THE LOGO's OWN RED** — the button family's metal in the blobs' red (`logoMaterial`, now a `MeshStandardNodeMaterial`),
-   NOT the courtyard. ✔ *"the colour where it starts and ends phase 1."* Carl's PRINCIPLE: **a light or map that belongs to
-   the blobs acts only once the blobs exist.**
-3. **THE ARRIVAL** — appears leaning, holds 2 s, jumps (ballistic, 60 cm apex), lands UPRIGHT, SAME PROFILE, wobbles (the
-   desk mark's, sideways). ✔ timing (*"It loads, theres a beat. Jumps happens and a wobble."*). **⛔ It now lands in the
-   MIDDLE OF THE DANCE** (Carl's solution: *"bring the mountain and have our logo junp slap bang in the middle of the blobs
-   mass"*). ⚠ From Home the logo there is EDGE-ON — a thin red line (put to Carl, not answered).
-4. **THE EMISSION (take 10, the one Carl liked)** — from the wobble's end, over **3 s, eased in/out**: a chunked dissolve
-   FRONT runs DOWN the logo; blobs BORN AT THE FRONT (top first), swell 0.2 s, ease onto their dance position over a FIXED
-   0.7 s; ONE shared dance clock (the example's original choreography); the orange light rises with it. Logo in the middle
-   cut the blobs' joining speeds by a third (2,233 → 1,644 units/s top; the dance's own top ~390).
-5. **THE FLOOR** — solid for the liquid (nothing drawn below it: a `ClippingGroup` at `FLOOR_Y`); blobs SQUASH on contact
-   (volume kept); the floor HEATS where they merge and cools after (an additive plane, a 28 × 28 heat map); the ROUND AMBER
-   DISC (the example's floor liquid, top at the floor, faded by a spherical container). ✔ *"a viscous fluid would pool like that."*
-6. **THE MOULD** — the sketch's yellow outline (face-on, upright, balanced right, raised 40 cm) as the scene's `mould` pose;
-   the bench draws it (Logo → "mould outline"). ✔ balance. ⛔ a GUIDE only, never on the page.
-7. **RULED:** the blobs KEEP their size (they are ~19× the logo's 70 L, measured; Carl: the goal over the litres). The
-   re-forming: the blobs squeeze INTO the mould FROM BEHIND; the extra mass discarded; at full integrity it falls.
+**PHASE 1 IS APPROVED WHOLE — R-106.** Carl: *"Phase 1 is mow complete and i can give my verdict. Outstanding! The added
+animation to the floaty liquid logo is a great touch and we are yet to give it some icing on the cake with some camera
+direction at the end of the phases. Great work."* Pushed `0f3b368`. All in `components/hero/hero-scene.ts` (the bench:
+`hero-bench.tsx`), on `/proto/hero`:
 
-## ⚠ KNOWN, NOT FIXED
+1. The lean on the 3D t → holds 2 s → jumps into the middle of the dance → wobbles (session 1).
+2. **The amber disc** grows from the landing (a radial mask), creeping, then FED by the blobs' arrivals (detected live,
+   four steps) — ✔ *"Nailed it"*. **The orange light** comes with the blobs (each blob's 1/10 as it swells out).
+3. The emission (3 s, top to bottom, eased) and **the 7 s dance** (the example's choreography).
+4. **The re-forming** (`REFORM`): one blob leaves every 0.45 s; the three LOWEST take the disc's mass (it drains with
+   them); the rest go DIRECT; all enter the mould's **c** from behind (the only part of the mould inside the field box).
+5. **The fill** (`FLOW`, `logoFlowMap`): the SAME logo mesh at the mould, filled through its letters by a GRAVITY flow
+   map made from its own geometry — the c, the 2's foot and the bottom stroke, up the 2 and over its top, round the b's
+   bend, the b's stem from its foot up. 2.8 s a blob. As **LIQUID**: the blobs' mirror and courtyard, darker, a wavering
+   surface and a bob (`LIQUID`).
+6. **The hardening** (`harden`): once full, the whole logo dials to the solid family red over 1.2 s — ✔ *"i would expect
+   the liquid logo to be darker. Lightening it adds to the hardening effect."* The solid is PIXEL-IDENTICAL to the lean's
+   material (the null control `live-work/scripts/hero-logo-state-stills-13-november.mjs`).
+7. **The fall** (`FALL`): hard → 40 cm straight down under gravity (0.29 s) → the arrival's wobble (2 s). The heat and
+   the light are gone; the mould guide is OFF by default (Logo → "mould outline" to check it).
+   Story times: re-forming 14.05 s, full ~22.2, hard 23.41, landed 23.69, **phase 1 ends 25.69 s**.
 
-- **The amber pool POPS IN at full size the instant the emission starts** (not caused). Planned: a WETNESS mask (landings
-  give liquid early, take it back late — Carl: *"the mask in reverse"*), after the choreography.
-- One far blob still joins fast (the fixed 0.7 s hand-off); the middle landing reduced it.
-- The walls (wallx, wallz) are still the example's square ones (outside the sphere); where a wall stands is Carl's.
+**THE FILM:** `Videos\C2B Films\03 The hero\phase 1 logo.mp4` — the whole phase from Home, 27.7 s, frame-stepped (its
+stale first frame removed; the takes before it carry one: the first frame of each clip).
 
-## ⛔ FIRST IN THE NEXT SESSION — THE DISC GROWS FROM THE LANDING (Carl: *"Add it to the handoff we will build it in the new session."*)
+## ⛔ FIRST IN THE NEXT SESSION — PHASE 2's QUESTIONS
 
-Carl: *"the fluid disc appears complete out of nowhere. It arrives when the wobble has stopped and there is a small delay
-before the blobs appear. Is it possible to use a radial nasc on the fluid disc? So when the logo hits the floor if starts
-from the middle and by time the blobs appear it will be complete."* The plan put to him (D-101, the last entry):
-- A RADIAL MASK on the pool (`addLocalFloor`, `POOL`): a soft-edged circle about the LANDING point — the disc's own centre
-  (the logo now lands in the middle) — radius 0 at TOUCHDOWN (`arrival.touchdown`), growing EASED in/out to the full disc by
-  the moment the FIRST BLOB appears (the first birth's time: tie it to that, not a fixed number, so it follows the
-  emission's length).
-- The liquid must be DRAWN from touchdown (today `live` waits for the emission): the pool alone until the blobs; the
-  heat and the orange light still wait for the first blob (Carl's rule: the blobs' light comes with the blobs).
-- The delay he saw is the emission's eased start (the front begins slowly above the logo's top).
+Carl: *"we will adrees those questions in the next session"*. The homework: `live-work/hero-phase2-homework-13-november.md`
+(how three's `webgpu_compute_particles_rain` works, at r185; what our story needs that it lacks). The questions, Carl's:
+- When the rain starts (on the landing's last wobble?), how long, how heavy, how it ends.
+- How the face cools: the Builder's suggestion — rain hits the top edges and RUNS DOWN (vertical rain never meets the
+  face; the flow map's gravity order already runs that way).
+- Steam: raised 8 November, not chosen.
+- ✔ **The floor — ANSWERED (Carl, end of session 2):** *"the floors pattern can be put in after phase 2. Its basically the
+  same geometry all that will differ is the colour of the pattern on the floor depending on whether is hot or cold
+  touchimg it."* → the cell pattern is built AFTER phase 2: ONE pattern, its colour set by what touches the floor, hot
+  (reddish) or cold (bluish). Not a question for phase 2.
+- The rain's look at our scale (streak size, density, splashes); Platinum Blue read from the site.
 
-## NEXT — Carl's: *"If we can get the solid to liquid transition right we will work out timings next."*
+## STANDING
 
-- The timings (the dance's length — "3/4s" was never pinned, Carl: *"not set in stone"*), then the corral (the box shrinks
-  toward the mould, trajectories inside it; the blobs' world size held), the squeeze into the mould from behind, the fall.
-- WITHDRAWN this session (do not rebuild): per-blob dance clocks (*"a lot worse"*, a column); working backward from the
-  dance with a drain (*"blobs jusr spawn out of nowhere"*); the path shifted to the blob (the Builder's misreading of the proverb).
+- ⛔ **THE HERO's SCOPE IS LOCKED** (Carl: *"Lock and test the files that are open"*; 55 paths closed, the scope cut to the
+  records only; tested through the guard and with real edits: D-101, `_lockedPhase1_13Nov`). **The 9 November exception
+  has ENDED: name the code files and ASK before the first code edit.** The scope's `chunk` name reads
+  `trim-and-move-t1b` (stale; harmless — flagged).
+- After the phases: the **camera direction** (*"icing on the cake"*; the camera layer after the animation).
+- Still open from before: the walls (wallx, wallz) are the example's square ones; where a wall stands is Carl's.
 
 ## STATE
 
-- **COMMITTED AND PUSHED this session** (Carl: *"Write a handoff and commit and push"*). tsc clean; lint the one accepted
-  error, 0 warnings.
-- **The dev server is RUNNING** (port 3000; Carl: *"keep the server up"*). **The screen capture is STOPPED** (Carl: *"stop
-  the capture"*): `Videos\C2B Films\03 The hero\01 Discussion\2026-11-13_discussion_screen.remux.mkv` — 4:18:27, all
-  443,219 frames, remuxed after the forced stop; the RAW `2026-11-13_discussion_screen.mkv` is KEPT beside it (not deleted
-  without Carl's word). Carl: *"We will start a new session and convo and i will tell you where we are at."*
-- **Films** (frame-stepped, 30 fps) in `Videos\C2B Films\03 The hero\`: `2026-11-13_logo-arrival_take1`, `floor-heat`,
-  `floor-splat_low`, `round-pool_*`, `amber-disc_*`, `emission_take1` … `take10_3s` (take 10 = the one liked).
-- **Scripts** (`live-work/scripts/`, 13-november): the lean check, the orange source, the desk-wobble film, the arrival film,
-  the solid-floor check, the floor-heat film (camera argument), the heat mapping check, the volume budget, the closest
-  approach, the sketch-bench look, the mould spacing, the emission film, the blob speed.
-- **Scope:** the hero's phase-1 exception holds (files already in `chunk-scope.json`).
-- **Memory:** `feedback_physics_serves_the_goal.md` added; the index compacted (one line each).
+- **COMMITTED AND PUSHED:** `120e9c4` (the disc take 1), `a549786` (the fed disc, the light), `0f3b368` (phase 1). After
+  `0f3b368`, UNCOMMITTED: this handoff, D-101's last two lines (the push note, the homework), the sprint's hero row; the
+  homework file (live-work, scratch). tsc clean; lint the one accepted error, 0 warnings.
+- **The dev server is STOPPED** (the whole tree; no project node process; port 3000 free).
+- **The screen capture is STOPPED** (Carl: *"stop the capture"*): `Videos\C2B Films\03 The hero\01 Discussion\
+  2026-11-13_s2_discussion_screen.remux.mkv`, 2:48:12; the RAW `.mkv` beside it, KEPT (not deleted without Carl's word).
+- **Films** this session in `03 The hero\`: `disc-grow_take1–3`, `light-with-blobs_take1`, `reform_take1–7`
+  (take 7 = the approved), `phase 1 logo`.
+- **Scripts** (`live-work/scripts/`, 13-november, committed): the disc film, the floor contacts, the re-forming's facts,
+  the re-forming film (ends at phase 1's end; steps once after a replay), the logo's red, the flow map's picture, the
+  state stills (null control).
 
 ## LESSONS
 
-- **Measure the physical fact, then frame it by the goal.** The litres were right to raise and wrong to obey.
-- **A proverb is Carl's to explain** — the Builder's reading of "mountains and Muhammed" was built and withdrawn; ask.
-- **Find the cause before tuning** — the rush was DISTANCE (a fixed dance), not easing; Carl saw it first.
-- **Before showing, check the rule the change must keep** — the first drain ate the logo early and blobs came from nothing.
+- **Draw the instrument's data before trusting the effect.** The fill's holes were a 32-bit store against 64-bit queue
+  values (the flood stopped at 1,485 of 39,384 cells); drawing the map found it in two steps, guessing (a crack-sealing
+  close) found nothing.
+- **Measure what the idea rests on before proposing it.** The re-forming's plan came from measured facts: the field box
+  reaches only the c; the dance alone meets the disc at 7–31 s.
+- **Carl's physical picture includes gravity** — "pour into the bottom part of the b's stem" is not a shortest path.
+- **A null control and a positive control together:** 0 pixels changed means nothing until the new state is SEEN live.
+- **Never type a Windows path's backslash in a scripted write** — three control bytes today; `chr(92)`, then scan.
 
 ---
 
-*Written 13 November 2026, session 1.*
+*Written 13 November 2026, session 2.*
