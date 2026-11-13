@@ -465,7 +465,7 @@ export type HeroScene = {
   /** the lean's checks: the contact in the scene, the recorded and measured contacts (sketch cm), the lowest point, the width */
   lean: { contact: number[]; contactMeasuredCm: number[]; contactConstantCm: number[]; lowestY: number; floorY: number; widthUnits: number; widthCm: number } | null;
   /** the arrival's numbers (`arrivalPlan`): seconds, and the lowest corner over the flight above the floor (cm, ≥ 0) */
-  arrival: { t: number; holdS: number; flightS: number; touchdownS: number; durationS: number; apexCm: number; minCornerAboveFloorCm: number } | null;
+  arrival: { t: number; holdS: number; flightS: number; touchdownS: number; durationS: number; apexCm: number; minCornerAboveFloorCm: number; pool: number } | null;
   /** plays the arrival again from the lean (the bench's button) */
   replayArrival(): void;
   /** the blobs' centres this frame, world units (born blobs only) — a READ-OUT for checks */
@@ -569,7 +569,7 @@ export function createHeroScene(aspect: number): HeroScene {
   const dissolveFront = makeFront();
   // the settled logo: its pose and height (world), for the births and the front
   let settled: { matrix: THREE.Matrix4; bounds: THREE.Box3; topY: number; bottomY: number; box: THREE.Box3 } | null = null;
-  let arrivalInfo: Omit<NonNullable<HeroScene["arrival"]>, "t"> | null = null;
+  let arrivalInfo: Omit<NonNullable<HeroScene["arrival"]>, "t" | "pool"> | null = null;
   let mould: HeroScene["mould"] = null;
   const textReady = buildText().then((t) => {
     if (disposed) return t.dispose();
@@ -628,7 +628,7 @@ export function createHeroScene(aspect: number): HeroScene {
     // ⛔ OFF (Carl, 11 November 2026, of the field's floor plane: *"yes we dont need it"*); the example's default was true.
     // Home was judged with it off.
     // ⛔ ON AGAIN, AS OUR FLOOR (13 November 2026; Carl: *"make the floor solid for them"*): the switch now means the
-    // SOLID floor and the ROUND POOL (`addLocalFloor`, `POOL`), not the example's square slab. It acts only with the blobs.
+    // SOLID floor and the ROUND POOL (`addLocalFloor`, `POOL`), not the example's square slab. It acts only with the blobs (the switch); it is drawn from the logo's TOUCHDOWN, growing from the landing (`POOL_GROW`).
     floor: true,
     wallx: false,
     wallz: false,
@@ -887,11 +887,27 @@ export function createHeroScene(aspect: number): HeroScene {
   // only its last ~150 units thin to the rim
   // topLift (take 2, the disc): the pool's flat top this many units above the floor (~3 cm); its body below, clipped
   const POOL = { strength: 2, subtract: 12, fadeFrom: 0.4, fadeTo: 0.47, topLift: 12 } as const;
+  /**
+   * ⛔ THE DISC GROWS FROM THE LANDING (13 November 2026, session 2; D-101). Carl: *"the fluid disc appears complete out of
+   * nowhere ... Is it possible to use a radial nasc on the fluid disc? So when the logo hits the floor if starts from the
+   * middle and by time the blobs appear it will be complete."* → a RADIAL MASK on the pool about the LANDING (the logo lands
+   * on the dance's centre, which is the disc's: the field's middle), × the sphere's fade above: its radius 0 at TOUCHDOWN,
+   * growing EASED (smoothstep) to past the full disc by the FIRST BLOB's birth (`poolGrow`, `update`: tied to that moment,
+   * not a fixed time, so it follows the emission's length). A soft edge `edge` wide (field units; ~19 cm) inside its
+   * radius: where the mask thins the pool's top sinks below the floor, as at the disc's own rim. Values are takes.
+   */
+  const POOL_GROW = { edge: 0.06 } as const;
+  // the mask's share, 0 → 1 from touchdown to the first blob (`update`); the read-out `arrival.pool`
+  let poolGrow = 0;
   function addLocalFloor(object: MarchingCubes, balls: [number, number, number][], radius: number) {
     const size = object.resolution;
     const field = object.field;
     const k = floorLayer;
     const floorC = k / size;
+    // the mask's radius (field units, about the field's middle): 0 → the full disc (the sphere's section at the floor) plus
+    // its soft edge, so at 1 it no longer touches the disc
+    const fullR = Math.sqrt(Math.max(0, POOL.fadeTo ** 2 - (floorC - 0.5) ** 2));
+    const maskR = smooth(poolGrow) * (fullR + POOL_GROW.edge);
     const sigma2 = 2 * (FLOOR_CONTACT.sigmaR * radius) ** 2;
     // the pool's base: one slab-depth (where strength / dy² − subtract = isolation) below its top; its top `topLift` units
     // ABOVE the floor (clear of the grid's lines and the clip at the floor)
@@ -914,7 +930,9 @@ export function createHeroScene(aspect: number): HeroScene {
         // the fade thins it, its top sinks below the floor — the disc's soft edge
         const d = Math.sqrt((fx - 0.5) ** 2 + (fz - 0.5) ** 2 + (floorC - 0.5) ** 2);
         const u = Math.min(1, Math.max(0, (d - POOL.fadeFrom) / (POOL.fadeTo - POOL.fadeFrom)));
-        const fade = 1 - u * u * (3 - 2 * u);
+        // × the radial mask (POOL_GROW, above): 1 inside its soft edge, 0 past its radius
+        const rho = Math.sqrt((fx - 0.5) ** 2 + (fz - 0.5) ** 2);
+        const fade = (1 - u * u * (3 - 2 * u)) * (1 - smooth((rho - maskR + POOL_GROW.edge) / POOL_GROW.edge));
         if (fade > 0.01) {
           for (let y = kb; y < size; y++) {
             const dy = y / size - baseC;
@@ -986,8 +1004,8 @@ export function createHeroScene(aspect: number): HeroScene {
     const { baseStrength, radius, low } = fieldParams(numblobs, object.isolation, object.resolution);
     const balls: [number, number, number][] = [];
     const ids: number[] = [];
-    // the shared dance clock, at the dance's full pace from the emission
-    danceT += delta * settings.speed * 0.5;
+    // the shared dance clock, at the dance's full pace from the emission (the pool alone before it: the clock waits)
+    if (emitT >= 0) danceT += delta * settings.speed * 0.5;
     for (let i = 0; i < numblobs; i++) {
       // ⛔ THE EMISSION (above): not yet born → not in the field; born → swelling out of the logo, easing onto its dance
       const birth = birthOf(i, numblobs);
@@ -1051,7 +1069,13 @@ export function createHeroScene(aspect: number): HeroScene {
       dissolveFront.value = emitT < 0 ? 1e6 : settled.topY + DISSOLVE.band / 2 - (len + DISSOLVE.band) * emitted;
       logo.visible = emitted < 1;
     }
-    const live = settings.blobs && emitT >= 0;
+    // ⛔ THE DISC GROWS FROM THE LANDING (`POOL_GROW`): the mask's share from TOUCHDOWN to the FIRST BLOB's birth (blob 0,
+    // top first: `birthOf`), so the liquid is DRAWN from touchdown — the pool alone until the blobs
+    const firstBirth = settled ? birthOf(0, settings.numBlobs) : null;
+    const poolT = arrival && settled ? storyT - arrival.touchdown : -1;
+    const poolS = arrival && firstBirth ? arrival.duration + firstBirth.t - arrival.touchdown : 1;
+    poolGrow = poolT < 0 ? 0 : Math.min(1, poolT / poolS);
+    const live = settings.blobs && (emitT >= 0 || (settings.floor && poolT >= 0));
     // the field's time — the example's `time += delta * speed * 0.5`; the clock itself is the bench's
     view.visible = live;
     // ⛔ THE ORANGE LIGHT BELONGS TO THE BLOBS (11 November 2026, session 1; Carl's idea, D-101): *"At the start of the scene
@@ -1060,14 +1084,18 @@ export function createHeroScene(aspect: number): HeroScene {
     // needed."* → the example's orange point light is ON only while the liquid is out (§14a: caused by the world, not
     // layered on it). ⛔ 13 November 2026: it RISES with the emission (0 → `EMISSION.light` over its 500 ms; Carl, 11
     // November: *"as more blobs drain or reform putting it on a fade is a good idea"*); the re-forming's fall comes later
-    pointLight.visible = live;
+    // the light and the heat wait for the EMISSION, not the pool (the blobs' light comes with the blobs)
+    const blobsOut = live && emitT >= 0;
+    pointLight.visible = blobsOut;
     pointLight.intensity = EMISSION.light * emitted;
     // the floor's heat (`stepHeat`) is the blobs' and the floor's: hidden and cleared without them
-    heatPlane.visible = live && settings.floor;
+    heatPlane.visible = blobsOut && settings.floor;
     if (!heatPlane.visible) heat.fill(0);
+    // before the emission the dance's clock waits at its start
+    if (emitT < 0) danceT = 0;
+    // before touchdown (or the blobs off): not drawn, not moved; the read-out emptied (it held the last run's blobs)
     if (!live) {
-      // before the emission (or the blobs off): not drawn, not moved; the dance's clock waits at its start
-      if (emitT < 0) danceT = 0;
+      blobRead = [];
       return;
     }
 
@@ -1082,7 +1110,7 @@ export function createHeroScene(aspect: number): HeroScene {
     }
 
     updateCubes(effect, delta, settings.numBlobs, settings.floor, settings.wallx, settings.wallz, emitT);
-    if (settings.floor) stepHeat(delta);
+    if (blobsOut && settings.floor) stepHeat(delta);
     // the addon (not in the scene) holds its transform; the view follows it
     view.position.copy(effect.position);
     view.scale.copy(effect.scale);
@@ -1109,7 +1137,7 @@ export function createHeroScene(aspect: number): HeroScene {
       return lean;
     },
     get arrival() {
-      return arrivalInfo ? { t: Math.round(storyT * 100) / 100, ...arrivalInfo } : null;
+      return arrivalInfo ? { t: Math.round(storyT * 100) / 100, ...arrivalInfo, pool: Math.round(poolGrow * 1000) / 1000 } : null;
     },
     replayArrival() {
       storyT = 0;
