@@ -37,6 +37,19 @@ Carl's words. ⚠ Read the LAST TEN entries first. Carl: *"Its looks the best ye
 - One far blob still joins fast (the fixed 0.7 s hand-off); the middle landing reduced it.
 - The walls (wallx, wallz) are still the example's square ones (outside the sphere); where a wall stands is Carl's.
 
+## ⛔ FIRST IN THE NEXT SESSION — THE DISC GROWS FROM THE LANDING (Carl: *"Add it to the handoff we will build it in the new session."*)
+
+Carl: *"the fluid disc appears complete out of nowhere. It arrives when the wobble has stopped and there is a small delay
+before the blobs appear. Is it possible to use a radial nasc on the fluid disc? So when the logo hits the floor if starts
+from the middle and by time the blobs appear it will be complete."* The plan put to him (D-101, the last entry):
+- A RADIAL MASK on the pool (`addLocalFloor`, `POOL`): a soft-edged circle about the LANDING point — the disc's own centre
+  (the logo now lands in the middle) — radius 0 at TOUCHDOWN (`arrival.touchdown`), growing EASED in/out to the full disc by
+  the moment the FIRST BLOB appears (the first birth's time: tie it to that, not a fixed number, so it follows the
+  emission's length).
+- The liquid must be DRAWN from touchdown (today `live` waits for the emission): the pool alone until the blobs; the
+  heat and the orange light still wait for the first blob (Carl's rule: the blobs' light comes with the blobs).
+- The delay he saw is the emission's eased start (the front begins slowly above the logo's top).
+
 ## NEXT — Carl's: *"If we can get the solid to liquid transition right we will work out timings next."*
 
 - The timings (the dance's length — "3/4s" was never pinned, Carl: *"not set in stone"*), then the corral (the box shrinks
