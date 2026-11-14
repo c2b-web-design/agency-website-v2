@@ -1,4 +1,19 @@
-# Structural note: directing the hero's camera (14 November 2026), v1.1
+# Structural note: directing the hero's camera (14 November 2026), v1.2
+
+**v1.2 (14 November 2026) — ⛔ CARL CLARIFIES ROUTE A: THE CAMERA BENCH PLOTS; THE SCENE STAYS.** *"The whole scene doesnt
+have to be brought over. In this instance its primary function is to plot camera position and movement. We need to know
+three things. Where Home is, where the camera is and where the objects are relative to each other in 3d space. Objects can
+be represented by 3d outlines. Its not important how they look, its important where they are. Any camera movements can be
+mapped."* (D-101). → The camera bench gets a STAND-IN of the hero: HOME, the CAMERA, and each OBJECT as a 3D OUTLINE at its
+true place (the text block, the logo at its poses, the rain's column, the dance's region…). Moves are plotted there (flown
+or computed) and played back IN the hero on its own bench. So v1.1's questions 2–6 FALL AWAY (no hero scene in the R3F
+canvas, no compute, no draw twice, no panel; the 9 November hero idea's fate stays Carl's). What remains, for the rewrite:
+1. **ONE CONVERSION** between the two worlds (the hero: 4.41 units a cm, the floor at −437.5; the bench: 1 cm a unit, the
+   floor at 0) — for the outlines going over and the moves coming back. A pure function, checkable both ways.
+2. **WHICH OUTLINES, AND WHERE:** exported from the hero's own numbers (its bounds and poses), not re-measured by hand.
+3. **TIME:** the objects MOVE (the lean, the jump, the dance, the fall). Whether an outline follows the story's clock on the
+   bench (its poses sampled from the hero) or stands at its key poses only — Carl's.
+4. **THE WAY BACK:** a plotted move is the chain's numbers (the MOVE shape, §4); the hero plays it on the story's clock.
 
 **v1.1 (14 November 2026) — ⛔ CARL CHOSE ROUTE A, AND ITS TIME.** *"we will move the scene to the camera bench"* … *"That is
 after our work is done on the proto/hero first"* (D-101). → **THE STORY MOVES TO THE CAMERA BENCH** (its idea slot,
