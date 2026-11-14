@@ -51,4 +51,13 @@ export type BuilderTake = {
  *  (moved by (0, +429.05…, −16) the same day): `{ version: 4, name: "The Vader move, take 4", barrel: { from: "default",
  *  to: [0, 429.05184025084225, -816], turns: 2, radiusCm: 120, spiralStartZ: 1714, spiralEndZ: 600, rollEase: 0.4,
  *  paceCms: 280, rampS: 2, landS: 2.5 } }` (in the arch's world: to [0, 0, −800], spiral 1730 → 616). */
-export const BUILDER_TAKE: BuilderTake | null = null;
+/** ⛔ RESTORED (14 November 2026; Carl: *"permission given. run the vader move with the arch"*): take 4's numbers EXACTLY, in
+ *  the workshop's world, from `live-work/references/film04/vader-move/take-4.json` — flown through the arch, now an idea
+ *  (`arch-idea.tsx`, `?idea=arch`). `version` 5 only so the bench places it afresh (take 4's clip was withdrawn on
+ *  9 November); the move is take 4's. ⚠ It is the BENCH's take, on every idea's timeline: on the hero's it flies through
+ *  empty air. */
+export const BUILDER_TAKE: BuilderTake | null = {
+  version: 5,
+  name: "The Vader move, take 4",
+  barrel: { from: "default", to: [0, 429.05184025084225, -816], turns: 2, radiusCm: 120, spiralStartZ: 1714, spiralEndZ: 600, rollEase: 0.4, paceCms: 280, rampS: 2, landS: 2.5 },
+};

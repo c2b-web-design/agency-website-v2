@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { ClippingGroup, MeshStandardNodeMaterial } from "three/webgpu";
-import { cameraWorldMatrix, float, mix, mx_cell_noise_float, mx_noise_float, mx_noise_vec3, normalView, pmremTexture, positionLocal, positionViewDirection, positionWorld, pow4, roughness, texture, transformNormalToView, normalLocal, uniform, vec2, vec3 } from "three/tsl";
+import { ClippingGroup, MeshPhysicalNodeMaterial, type WebGPURenderer } from "three/webgpu";
+import { acesFilmicToneMapping, cameraWorldMatrix, float, lights, materialColor, mix, mx_cell_noise_float, mx_noise_float, mx_noise_vec3, normalView, output, pmremTexture, positionLocal, positionViewDirection, positionWorld, pow4, roughness, smoothstep, texture, transformNormalToView, normalLocal, uniform, vec2, vec3, vec4 } from "three/tsl";
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { heroTextLayout } from "@/components/showcase/hero-text";
@@ -9,6 +9,8 @@ import { HERO_LEAN, HERO_LOGO_METAL, HERO_LOGO_PLACE, HERO_LOGO_RED, LAND_WOBBLE
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/logo-mark-geometry";
 import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
+import { createHeroRain, type HeroRainInfo, type HeroRainSettings } from "./hero-rain";
+import { LOGO_BLUE_DEFAULTS, LOGO_JUDGING_STUDIO, platinumBlueF0 } from "@/components/about/logo-mark-material";
 
 /**
  * ⛔ THE HERO's SCENE — the marching scene, as the site will draw it (11 November 2026, session 1; D-101; the structural
@@ -250,15 +252,21 @@ const makeFront = () => uniform(1e6);
  */
 const FLOW = { perCm: 2, gravity: 1, noiseScale: 0.18, noiseAmp: 0.012 } as const;
 type FlowMap = { tex: THREE.DataTexture; minX: number; minY: number; sizeX: number; sizeY: number; level(share: number): number; check: { inkCells: number; reachedCells: number; seedCells: number; seed: number[]; tris: number; indexed: boolean } };
-function logoFlowMap(g: THREE.BufferGeometry, seedX: number, seedY: number): FlowMap {
+/**
+ * THE LOGO's INK — its triangles drawn flat onto its FACE (local x, y, cm) at `perCm` cells per cm, closed (a crack up to
+ * two cells wide sealed). Shared by the FLOW MAP (`logoFlowMap`, the re-forming's fill) and the RUN-OFF MAP
+ * (`logoRunoffMap`, phase 2's wash) — lifted VERBATIM out of `logoFlowMap` (14 November 2026; its texture proven
+ * unchanged: the same 405 × 212 cells, hash 3630756487, before and after).
+ */
+function inkGrid(g: THREE.BufferGeometry, perCm: number): { ink: Uint8Array; W: number; H: number; minX: number; minY: number; sizeX: number; sizeY: number; tris: number; indexed: boolean } {
   g.computeBoundingBox();
   const bb = g.boundingBox!;
   const minX = bb.min.x - 1;
   const minY = bb.min.y - 1;
   const sizeX = bb.max.x - bb.min.x + 2;
   const sizeY = bb.max.y - bb.min.y + 2;
-  const W = Math.ceil(sizeX * FLOW.perCm);
-  const H = Math.ceil(sizeY * FLOW.perCm);
+  const W = Math.ceil(sizeX * perCm);
+  const H = Math.ceil(sizeY * perCm);
   const ink = new Uint8Array(W * H);
   const pos = g.getAttribute("position");
   const idx = g.getIndex();
@@ -310,6 +318,10 @@ function logoFlowMap(g: THREE.BufferGeometry, seedX: number, seedY: number): Flo
     return out;
   };
   ink.set(morph(morph(ink, true), false));
+  return { ink, W, H, minX, minY, sizeX, sizeY, tris, indexed: !!idx };
+}
+function logoFlowMap(g: THREE.BufferGeometry, seedX: number, seedY: number): FlowMap {
+  const { ink, W, H, minX, minY, sizeX, sizeY, tris, indexed } = inkGrid(g, FLOW.perCm);
   // the seed: the ink nearest the c's entry (within a cell of the nearest)
   const sx = ((seedX - minX) / sizeX) * W;
   const sy = ((seedY - minY) / sizeY) * H;
@@ -427,9 +439,191 @@ function logoFlowMap(g: THREE.BufferGeometry, seedX: number, seedY: number): Flo
     minY,
     sizeX,
     sizeY,
-    level: (share) => (share <= 0 ? -1 : share >= 1 ? 2 : share),
-    check: { inkCells: ink.reduce((a, v) => a + v, 0), reachedCells: reached.length, seedCells: reached.filter((i) => way[i] === 0).length, seed: [Math.round(sx), Math.round(sy)], tris, indexed: !!idx },
+    // ⛔ FULL WITHIN A HAIR OF 1 (14 November 2026; Carl, close on the b's stem: *"theres a problem here. part of the logo
+    // is missing."*): the poured share is a SUM of each blob's 1/n, and ten tenths add to 0.9999999999999999 in floating
+    // point — so `>= 1` never held, the level stayed a hair under the top, and the LAST cells to fill (rank ~1, the top of
+    // the b's stem) were cut away wherever the edge's wobble (`FLOW.noiseAmp`) pushed them over it. Present since phase 1
+    // (13 November), unseen at Home
+    level: (share) => (share <= 0 ? -1 : share >= 1 - 1e-9 ? 2 : share),
+    check: { inkCells: ink.reduce((a, v) => a + v, 0), reachedCells: reached.length, seedCells: reached.filter((i) => way[i] === 0).length, seed: [Math.round(sx), Math.round(sy)], tris, indexed },
   };
+}
+/**
+ * ⛔ THE BLUE IS THE DESK MARK's BLUE (14 November 2026; D-101). Carl: *"why is the colour different"* → *"Build them both.
+ * Try to get the blue shade to be the same and apply the wet look."* … *"Phase 1 is over, so any changes in lighting for
+ * Phase 2 can be done. The same goes for roughness or any other parameter."* The desk mark's approved blue (R-035, the mark
+ * bench `/proto/logo?mode=blue`, face on: sRGB (8, 60, 128), #083C80, measured 14 November) is the swatch's F0 at
+ * roughness 0.25 (`LOGO_BLUE_DEFAULTS`), in the JUDGING STUDIO (`LOGO_JUDGING_STUDIO`, five softboxes on near-black — NOT
+ * the button family's studio photograph the hero logo uses), under ACES (the mark bench's renderer). Wash take 1's blue sat
+ * in our studio photograph at 0.4 under no tone mapping, so it read pale. So WHERE THE LOGO HAS COOLED (`cooled`, the
+ * wash) its material BECOMES the desk mark's: the judging studio's reflection, roughness 0.25, and the ACES curve on this
+ * material's own output (the renderer's tone mapping is the whole scene's; untouched). Where it is red, nothing changes
+ * (mixed by 0: the null control).
+ * - `judgingStudioTexture`: the judging studio as an EQUIRECTANGULAR image made on the CPU from the SAME list the mark
+ *   bench and `/about` read (no second copy): each former a 1 × 1 rect scaled, facing the origin (drei's `Lightformer`:
+ *   +Z toward the origin, up +Y), colour × intensity, the nearest in front; the background behind. In the logo's frame +Z is
+ *   where its face points — the landed logo faces +Z — so it is looked up UNTURNED (as the courtyard is).
+ */
+const JUDGING = { width: 512, height: 256 } as const;
+function judgingStudioTexture(): THREE.DataTexture {
+  const { width: W, height: H } = JUDGING;
+  const bg = new THREE.Color(LOGO_JUDGING_STUDIO.background);
+  const formers = LOGO_JUDGING_STUDIO.formers.map((f) => {
+    const p = new THREE.Vector3(...f.position);
+    const z = p.clone().negate().normalize();
+    const x = new THREE.Vector3(0, 1, 0).cross(z).normalize();
+    const y = z.clone().cross(x);
+    const c = new THREE.Color(f.color ?? "white").multiplyScalar(f.intensity);
+    return { p, z, x, y, sx: f.scale[0], sy: f.scale[1], c };
+  });
+  const data = new Uint16Array(4 * W * H);
+  const d = new THREE.Vector3();
+  const h = new THREE.Vector3();
+  for (let j = 0; j < H; j++) {
+    const theta = ((j + 0.5) / H - 0.5) * Math.PI;
+    for (let i = 0; i < W; i++) {
+      const phi = ((i + 0.5) / W - 0.5) * 2 * Math.PI;
+      d.set(Math.cos(theta) * Math.cos(phi), Math.sin(theta), Math.cos(theta) * Math.sin(phi));
+      let best = Infinity;
+      let col = bg;
+      for (const f of formers) {
+        // the ray from the origin meets the former's plane (normal z, through p) at t, if in front
+        const den = d.dot(f.z);
+        if (den >= -1e-6) continue;
+        const t = f.p.dot(f.z) / den;
+        if (t <= 0 || t >= best) continue;
+        h.copy(d).multiplyScalar(t).sub(f.p);
+        if (Math.abs(h.dot(f.x)) <= f.sx / 2 && Math.abs(h.dot(f.y)) <= f.sy / 2) {
+          best = t;
+          col = f.c;
+        }
+      }
+      const k = 4 * (W * j + i);
+      data[k] = THREE.DataUtils.toHalfFloat(col.r);
+      data[k + 1] = THREE.DataUtils.toHalfFloat(col.g);
+      data[k + 2] = THREE.DataUtils.toHalfFloat(col.b);
+      data[k + 3] = THREE.DataUtils.toHalfFloat(1);
+    }
+  }
+  const tex = new THREE.DataTexture(data, W, H, THREE.RGBAFormat, THREE.HalfFloatType);
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+  return tex;
+}
+/** the cooled metal: the desk mark's (`LOGO_BLUE_DEFAULTS`); `exposure` the mark bench's ACES, 1 */
+const COOLED = { roughness: LOGO_BLUE_DEFAULTS.roughness, exposure: 1 } as const;
+/**
+ * ⛔ WET (14 November 2026; D-101). Carl: *"how do we make it look wet?"* → the Builder's three parts → *"Build them both
+ * ... apply the wet look."* On METAL, water does not darken (that is a porous dielectric's look): it lays a thin GLASSY
+ * LAYER over it. So:
+ * - A CLEAR COAT (Unreal's Clear Coat model: `MeshPhysicalNodeMaterial`'s `clearcoat`), its strength the share the water has
+ *   reached (`cooled` — wet exactly where the run-off has passed; dry and red where it has not), its roughness WATER's.
+ * - MOVING WATER on the coat (its own normal, `clearcoatNormalNode`): ripples stretched tall and thin (`streakCm` across,
+ *   `lengthCm` long) RUNNING DOWN at `runCmS` on the story's clock (`clock`, frame-steppable) while the water flows; as the
+ *   wash completes the flow eases into still BEADS (a small, round, unmoving ripple). The base metal's normal is untouched
+ *   (the desk mark's blue stays the desk mark's under the coat).
+ * - It stays wet until phase 3's cloth dries it. Values are takes.
+ */
+const WET = { coat: 1, coatRoughness: 0.04, streakCm: 1.6, lengthCm: 14, runCmS: 22, flowTilt: 0.35, beadCm: 1.2, beadTilt: 0.12 } as const;
+
+/**
+ * ⛔ PHASE 2, THE WASH — THE RAIN TURNS THE RED TO PLATINUM BLUE (14 November 2026; D-101). Carl: *"ok, let the rain wash
+ * the red and turn it blue."* — on his rulings: the face cools by RUN-OFF (*"3.A yes your suggestion"*: the rain meets the
+ * top edges and the water runs DOWN the face); the colour the logo becomes is the family's PLATINUM BLUE (*"Platinum blue,
+ * same as the logo will become"*; `platinumBlueF0`, the desk mark's tint).
+ * - THE RUN-OFF MAP (`logoRunoffMap`), made ONCE from the logo's own ink (`inkGrid`, the flow map's): on the face, each
+ *   cell's distance in cm BELOW THE TOP OF ITS RUN — the stretch of ink straight above it up to where the ink ends, the top
+ *   edge the rain lands on. On a vertical face water runs straight down; where a run ends (an edge facing down) it drips off,
+ *   and the run below starts at its own top edge. So EVERY point is below a top edge that the rain reaches.
+ * - THE WASH (`hero-rain.ts`, `wash`, 0–1): the share of the rain's whole fall that has LANDED so far — slow in the light
+ *   opening, fast in the downpour, slowing as it eases off; 1 by the last drop.
+ * - THE FRONT: on each streak the water has run `wash` × the REACH × its PACE, a share 1 to 1 + `spread` from a smooth
+ *   noise across the face (`streakCm` wide; made in the map, take 2) — rivulets, not a sheet; the REACH is scaled so the
+ *   slowest point is done at a wash of exactly 1 (take 2). A point is cooled as
+ *   the front passes it (eased over `bandCm`), its edge ragged by up to `ragCm` (a noise of the face).
+ * - ⛔ EXACT AT BOTH ENDS: at wash 0 every point's front is at or above it by the rag (≥ 0), so the cooled share is 0 and
+ *   the colour is the material's own red (`materialColor`, mixed by 0 — the null control); at wash 1 every point's front is
+ *   past it by the band and the rag (the reach's scaling), so every point is 1: the whole logo platinum blue.
+ * Values are takes.
+ */
+const RUNOFF = { perCm: 2, bandCm: 6, spread: 0.6, streakCm: 3.5, ragCm: 4, ragScale: 0.12 } as const;
+type RunoffMap = { tex: THREE.DataTexture; minX: number; minY: number; sizeX: number; sizeY: number; tallestCm: number; reachCm: number; check: { cells: number[]; inkCells: number; runs: number; tallestCm: number; reachCm: number; pace: number[] } };
+function logoRunoffMap(g: THREE.BufferGeometry): RunoffMap {
+  const { ink, W, H, minX, minY, sizeX, sizeY } = inkGrid(g, RUNOFF.perCm);
+  const below = new Float32Array(W * H).fill(-1);
+  let runs = 0;
+  let tallest = 0;
+  for (let x = 0; x < W; x++) {
+    let top = -1;
+    for (let y = H - 1; y >= 0; y--) {
+      const i = W * y + x;
+      if (!ink[i]) {
+        top = -1;
+        continue;
+      }
+      if (top < 0) {
+        top = y;
+        runs++;
+      }
+      below[i] = (top - y) / RUNOFF.perCm;
+      tallest = Math.max(tallest, below[i]);
+    }
+  }
+  // off the ink (the walls' and bevels' edges): the nearest ink cell's value, a few rounds (the flow map's spread)
+  const steps = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+  for (let round = 0; round < 6; round++) {
+    const next = below.slice();
+    for (let i = 0; i < W * H; i++) {
+      if (below[i] >= 0) continue;
+      const x = i % W;
+      const y = Math.floor(i / W);
+      let best = Infinity;
+      for (const [dx, dy] of steps) {
+        const xx = x + dx;
+        const yy = y + dy;
+        if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+        const v = below[W * yy + xx];
+        if (v >= 0) best = Math.min(best, v);
+      }
+      if (best < Infinity) next[i] = best;
+    }
+    below.set(next);
+  }
+  // ⛔ TAKE 2 (14 November 2026): EACH COLUMN's PACE made HERE, not by a shader noise — take 1's noise never reached its low
+  // end, so every streak finished early and the last red went at a wash of ~0.75, not 1 (seen: ~5.3 s against the dial's
+  // 7.5). A smooth value noise across x (a knot every `streakCm`, cosine-eased, a fixed seed: the same streaks every run),
+  // 1 to 1 + `spread`; and THE REACH SCALED so the slowest point (its depth + band + rag, over its column's pace) is done
+  // at a wash of EXACTLY 1 — so the wash's length is when the last red goes
+  let seed = 12345;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296);
+  const knots = Array.from({ length: Math.ceil(W / (RUNOFF.streakCm * RUNOFF.perCm)) + 2 }, rnd);
+  const pace = new Float32Array(W);
+  for (let x = 0; x < W; x++) {
+    const k = x / (RUNOFF.streakCm * RUNOFF.perCm);
+    const k0 = Math.floor(k);
+    const e = (1 - Math.cos(Math.PI * (k - k0))) / 2;
+    pace[x] = 1 + RUNOFF.spread * (knots[k0] + (knots[k0 + 1] - knots[k0]) * e);
+  }
+  let reach = 0;
+  for (let i = 0; i < W * H; i++) if (below[i] >= 0) reach = Math.max(reach, (below[i] + RUNOFF.bandCm + RUNOFF.ragCm) / pace[i % W]);
+  const data = new Uint16Array(2 * W * H);
+  for (let i = 0; i < W * H; i++) {
+    data[2 * i] = THREE.DataUtils.toHalfFloat(below[i] >= 0 ? below[i] : 0);
+    data[2 * i + 1] = THREE.DataUtils.toHalfFloat(pace[i % W]);
+  }
+  const tex = new THREE.DataTexture(data, W, H, THREE.RGFormat, THREE.HalfFloatType);
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+  let pMin = Infinity;
+  let pMax = 0;
+  for (const p of pace) {
+    pMin = Math.min(pMin, p);
+    pMax = Math.max(pMax, p);
+  }
+  return { tex, minX, minY, sizeX, sizeY, tallestCm: tallest, reachCm: reach, check: { cells: [W, H], inkCells: ink.reduce((a, v) => a + v, 0), runs, tallestCm: Math.round(tallest * 10) / 10, reachCm: Math.round(reach * 10) / 10, pace: [Math.round(pMin * 100) / 100, Math.round(pMax * 100) / 100] } };
 }
 /**
  * ⛔ THE HARDENING — FROM BLOB TO SOLID (13 November 2026, session 2; D-101). Carl: *"the spread is mettallic. solid,
@@ -452,23 +646,54 @@ function logoFlowMap(g: THREE.BufferGeometry, seedX: number, seedY: number): Flo
  * Values are takes.
  */
 const LIQUID = { roughness: 0.1, swellCm: 1.2, tilt: 0.35, scale: 0.045, drift: 0.35 } as const;
-function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>, fill: ReturnType<typeof makeFront>, flow: FlowMap, courtyard: THREE.Texture, harden: ReturnType<typeof makeFront>, clock: ReturnType<typeof makeFront>): MeshStandardNodeMaterial {
-  const m = new MeshStandardNodeMaterial({ color: HERO_LOGO_RED, metalness: HERO_LOGO_METAL.metalness, roughness: HERO_LOGO_METAL.roughness });
+function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>, fill: ReturnType<typeof makeFront>, flow: FlowMap, courtyard: THREE.Texture, harden: ReturnType<typeof makeFront>, clock: ReturnType<typeof makeFront>, runoff: RunoffMap, wash: ReturnType<typeof makeFront>, judging: THREE.Texture, logoLights: THREE.Light[]): MeshPhysicalNodeMaterial {
+  // ⛔ PHYSICAL since the wet look (14 November 2026; `WET`): the clear coat is the physical model's; dry (coat 0) it draws as
+  // the standard material did (the null control)
+  const m = new MeshPhysicalNodeMaterial({ color: HERO_LOGO_RED, metalness: HERO_LOGO_METAL.metalness, roughness: HERO_LOGO_METAL.roughness });
   m.envMap = studio;
   m.envMapIntensity = HERO_LOGO_METAL.envMapIntensity;
   m.envMapRotation.set(0, THREE.MathUtils.degToRad(HERO_LOGO_METAL.yawDeg), 0);
-  m.roughnessNode = mix(float(LIQUID.roughness), float(HERO_LOGO_METAL.roughness), harden);
+  // the logo's OWN light list (`LOGO_KEY`, in `createHeroScene`): the scene's three, its key a copy that fades with the wash
+  m.lightsNode = lights(logoLights);
+  // ⛔ PHASE 2, THE WASH (`RUNOFF`): the share of this point the run-off has cooled, 0 (red) → 1 (platinum blue)
+  const runUv = vec2(positionLocal.x.sub(runoff.minX).div(runoff.sizeX), positionLocal.y.sub(runoff.minY).div(runoff.sizeY));
+  const run = texture(runoff.tex, runUv);
+  const belowTop = run.r;
+  // each column's pace (take 2: from the map, so the reach can be scaled to finish at a wash of exactly 1)
+  const pace = run.g;
+  const rag = mx_noise_float(positionLocal.mul(RUNOFF.ragScale)).mul(0.5).add(0.5).clamp(0, 1).mul(RUNOFF.ragCm);
+  const reach = wash.mul(runoff.reachCm).mul(pace);
+  const cooled = smoothstep(0, RUNOFF.bandCm, reach.sub(belowTop).sub(rag));
+  // the cooled metal's roughness is the desk mark's (`COOLED`, above)
+  m.roughnessNode = mix(mix(float(LIQUID.roughness), float(HERO_LOGO_METAL.roughness), harden), float(COOLED.roughness), cooled);
   // the radiance context's reflection (three r185, `EnvironmentNode`'s `createRadianceContext`), turned by the yaw R so
   // the material's own Rᵀ leaves the courtyard unturned
   const turn = uniform(new THREE.Matrix4().makeRotationFromEuler(m.envMapRotation));
   const reflected = pow4(roughness).mix(positionViewDirection.negate().reflect(normalView), normalView).normalize().transformDirection(cameraWorldMatrix);
-  m.envNode = mix(pmremTexture(courtyard, turn.mul(reflected)), pmremTexture(studio), harden);
+  // …and it reflects the desk mark's JUDGING STUDIO where cooled (looked up unturned, as the courtyard)
+  m.envNode = mix(mix(pmremTexture(courtyard, turn.mul(reflected)), pmremTexture(studio), harden), pmremTexture(judging, turn.mul(reflected)), cooled);
   // floaty while liquid (LIQUID, above)
   const liquid = float(1).sub(harden);
   const field = positionLocal.mul(LIQUID.scale).add(vec3(0, 0, clock.mul(LIQUID.drift)));
   m.positionNode = positionLocal.add(mx_noise_vec3(field).mul(liquid.mul(LIQUID.swellCm)));
   const wobbled = transformNormalToView(normalLocal.add(mx_noise_vec3(field.add(vec3(17, 5, 3))).mul(LIQUID.tilt))).normalize();
   m.normalNode = mix(normalView, wobbled, liquid);
+  // ⛔ PHASE 2, THE WASH (`RUNOFF`, above): the red cooled to platinum blue where the run-off has passed
+  const [pr, pg, pb] = platinumBlueF0(LOGO_BLUE_DEFAULTS.tint);
+  m.colorNode = mix(materialColor, vec3(pr, pg, pb), cooled);
+  // ⛔ WET (`WET`, above): the coat where the water has reached; its normal the running water, easing into beads as the
+  // wash completes (`flowing`: 1 while it runs, 0 once done)
+  m.clearcoatNode = cooled.mul(WET.coat);
+  m.clearcoatRoughnessNode = float(WET.coatRoughness);
+  const flowing = float(1).sub(smoothstep(0.85, 1, wash));
+  const runField = vec3(positionLocal.x.div(WET.streakCm), positionLocal.y.add(clock.mul(WET.runCmS)).div(WET.lengthCm), positionLocal.z.div(WET.streakCm));
+  const beadField = positionLocal.div(WET.beadCm);
+  const ripple = mx_noise_vec3(runField).mul(flowing.mul(WET.flowTilt)).add(mx_noise_vec3(beadField.add(vec3(31, 7, 13))).mul(float(1).sub(flowing).mul(WET.beadTilt)));
+  m.clearcoatNormalNode = transformNormalToView(normalLocal.add(ripple.mul(cooled))).normalize();
+  // …under the desk mark's tone curve (ACES), on THIS material's output only, where cooled
+  // (the cast: r185's types give the tone-mapping function an untyped Node; it returns the colour's vec3)
+  const aces = acesFilmicToneMapping(output.rgb, float(COOLED.exposure)) as unknown as ReturnType<typeof vec3>;
+  m.outputNode = vec4(mix(output.rgb, aces, cooled), output.a);
   // keep a fragment while its height is under the front, offset per chunk by up to half the band either way; and (THE
   // RE-FORMING's FILL, `REFORM`, `FLOW`) while its FLOW distance is under the fill LEVEL, the edge a soft liquid wobble
   // (smooth noise; the chunks were square up close) — the level far above until then (everything kept)
@@ -714,6 +939,15 @@ export type HeroScene = {
   mould: { matrix: THREE.Matrix4; bounds: THREE.Box3 } | null;
   /** the example's `render()` minus the draw and the clock: the field's time, resolution, isolation, `updateCubes` */
   update(delta: number): void;
+  /** ⛔ PHASE 2, THE RAIN (`hero-rain.ts`; D-101, 14 November 2026): the GPU's step, called by the bench each frame after
+   *  `update` and before the draw — the one new call Carl approved (the scene does not hold the renderer) */
+  compute(renderer: WebGPURenderer): void;
+  /** the rain's dials (the bench's Rain folder edits them) */
+  rain: HeroRainSettings;
+  /** the rain's shape again from now (once the logo has landed) */
+  rainAgain(): void;
+  /** the rain's numbers — a READ-OUT for checks; null until the logo (and its hit map) is in */
+  rainInfo: HeroRainInfo | null;
   dispose(): void;
 };
 
@@ -742,6 +976,25 @@ export function createHeroScene(aspect: number): HeroScene {
 
   const ambientLight = new THREE.AmbientLight(0x323232, 3);
   scene.add(ambientLight);
+
+  /**
+   * ⛔ THE LOGO's OWN KEY (14 November 2026; D-101). Measured face on after the wash: with the scene's white key the b's
+   * stem read (32, 89, 166); WITHOUT it the blue IS the desk mark's — (8, 60, 127) against (8, 60, 128) — the desk mark is
+   * lit by its studio alone ("Studio only"). Turning the key off for the WHOLE scene turns the 3D text dark grey (seen at
+   * Home), so the logo gets its OWN LIGHT LIST (`logoMaterial`'s `lightsNode`): the scene's point light and ambient as
+   * they are, and its OWN COPY of the key on layer 31, which the camera never collects (r185 culls lights by the camera's
+   * layers), so the copy lights the logo and nothing else. Its strength follows the WASH (`update`): the scene key's 3 while
+   * the logo is red — phase 1 unchanged (the null control) — fading to 0 as the wash completes (Carl: *"Phase 1 is over,
+   * so any changes in lighting for Phase 2 can be done"*). The scene's key is untouched: the text keeps it.
+   * ⚠ The Builder's structure (a second key light; the logo's own list), stated to Carl before it was built.
+   */
+  const LOGO_KEY_LAYER = 31;
+  const logoKey = new THREE.DirectionalLight(light.color, light.intensity);
+  logoKey.name = "hero logo key (the logo's own)";
+  logoKey.position.copy(light.position);
+  logoKey.layers.set(LOGO_KEY_LAYER);
+  scene.add(logoKey);
+  const logoLights: THREE.Light[] = [logoKey, pointLight, ambientLight];
 
   // MATERIALS
   const envs: Partial<Record<HeroEnvironment, { reflect: THREE.Texture; refract: THREE.Texture }>> = {};
@@ -812,6 +1065,13 @@ export function createHeroScene(aspect: number): HeroScene {
   // the re-forming's fill LEVEL (the flow map's distance, `FLOW`): far above (nothing masked) until the re-forming
   const fillFront = makeFront();
   let flow: FlowMap | null = null;
+  // ⛔ PHASE 2, THE WASH: the run-off map (built with the flow map) and the wash's share (from the rain, each frame)
+  let runoff: RunoffMap | null = null;
+  const washShare = makeFront();
+  washShare.value = 0;
+  // the desk mark's judging studio, for the cooled metal (made once, on the CPU)
+  const judging = judgingStudioTexture();
+  disposables.push(judging);
   // THE HARDENING's dial (`logoMaterial`): 1 = the solid logo (all before the re-forming), 0 = the blobs' liquid
   const hardness = uniform(1);
   /**
@@ -835,6 +1095,11 @@ export function createHeroScene(aspect: number): HeroScene {
   let settled: { matrix: THREE.Matrix4; bounds: THREE.Box3; topY: number; bottomY: number; box: THREE.Box3 } | null = null;
   let arrivalInfo: Omit<NonNullable<HeroScene["arrival"]>, "t" | "pool" | "poolHits"> | null = null;
   let mould: HeroScene["mould"] = null;
+  // ⛔ PHASE 2, THE RAIN (`hero-rain.ts`): its drops and splashes in the scene; its hit map made from the LANDED logo once
+  // the logo is in (below); it runs on the story's clock from phase 1's end (`update`)
+  const rain = createHeroRain(FLOOR_Y);
+  scene.add(rain.group);
+  disposables.push(rain);
   const textReady = buildText().then((t) => {
     if (disposed) return t.dispose();
     text = t.group;
@@ -850,7 +1115,9 @@ export function createHeroScene(aspect: number): HeroScene {
       const gb = g.boundingBox!;
       flow = logoFlowMap(g, gb.min.x + (REFORM.cShare * (gb.max.x - gb.min.x)) / 2, (gb.min.y + gb.max.y) / 2);
       disposables.push(flow.tex);
-      const material = logoMaterial(studio, dissolveFront, fillFront, flow, envs.courtyard!.reflect, hardness, liquidClock);
+      runoff = logoRunoffMap(g);
+      disposables.push(runoff.tex);
+      const material = logoMaterial(studio, dissolveFront, fillFront, flow, envs.courtyard!.reflect, hardness, liquidClock, runoff, washShare, judging, logoLights);
       disposables.push(g, material);
       const l = leanInSketch(g, t.sketch);
       logo = new THREE.Mesh(g, material);
@@ -878,6 +1145,9 @@ export function createHeroScene(aspect: number): HeroScene {
         for (let i = 0; i < pa.count; i++) low = Math.min(low, v.fromBufferAttribute(pa, i).applyMatrix4(mould.matrix).y);
         mouldDrop = low - FLOOR_Y;
       }
+      // THE RAIN's HIT MAP (`hero-rain.ts`): the logo where it LANDS — the fall's pose at rest (`update`: the mould dropped
+      // by `mouldDrop`, the rock 0 once the wobble is done)
+      rain.setLogo(g, new THREE.Matrix4().makeTranslation(0, -mouldDrop, 0).multiply(mould.matrix), t.unitsPerCm);
       const r = (v: number) => Math.round(v * 100) / 100;
       arrivalInfo = { holdS: ARRIVAL.holdS, flightS: r(arrival.flightS), touchdownS: r(arrival.touchdown), durationS: r(arrival.duration), apexCm: r(arrival.apexCm), minCornerAboveFloorCm: r(arrival.minCornerY) };
       lean = {
@@ -1559,6 +1829,15 @@ export function createHeroScene(aspect: number): HeroScene {
       fillFront.value = flow.level(poured);
       logo.visible = poured > 0;
     }
+    // ⛔ PHASE 2, THE RAIN (`hero-rain.ts`; Carl, 14 November 2026: *"the rain starts just as the wobble ends"*): the seconds
+    // since phase 1's end — HARD, the fall, the landing's wobble done (the `reform` read-out's `endS`); NaN before the
+    // re-forming has a plan (nothing to rain on). The rain releases its first drops one fall early, so they land at 0
+    const phase1End = reform ? fullAt() + REFORM.hardenS + fallS() + LAND_WOBBLE.ms / 1000 : NaN;
+    rain.update(delta, emitT >= 0 ? emitT - phase1End : NaN);
+    // the wash follows the rain that has LANDED (0 until the first drop, 1 by the last)
+    washShare.value = rain.wash;
+    // the logo's own key fades as the wash completes (`LOGO_KEY`)
+    logoKey.intensity = light.intensity * (1 - rain.wash);
     // ⛔ THE DISC GROWS FROM THE LANDING (`POOL_GROW`, take 3): from TOUCHDOWN it spreads (fast, then ever slower, toward
     // `atFirst`), then each ARRIVAL of a blob in it (`updateCubes`) eases it out a step — so the liquid is DRAWN from
     // touchdown, the pool alone until the blobs
@@ -1680,6 +1959,16 @@ export function createHeroScene(aspect: number): HeroScene {
       return { startS: r(reform.start), filled: r(reformShares(t).poured), hardness: r(hardnessAt(t)), fullS: r(fullAt()), hardS: r(hard), landS: r(hard + fallS()), endS: r(hard + fallS() + LAND_WOBBLE.ms / 1000), dropCm: r(mouldDrop / (unitsPerCm ?? 1)), blobs: reform.blobs.map((b) => ({ i: b.i, carrier: b.carrier, departS: r(b.depart), touchS: r(b.touch), reachS: r(b.reach) })) };
     },
     update,
+    compute(renderer: WebGPURenderer) {
+      rain.compute(renderer);
+    },
+    rain: rain.settings,
+    rainAgain() {
+      rain.again();
+    },
+    get rainInfo() {
+      return rain.info;
+    },
     dispose() {
       disposed = true;
       textDispose?.();

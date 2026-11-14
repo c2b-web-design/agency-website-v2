@@ -58,3 +58,37 @@ webgpu_compute_particles_rain.html`, 368 lines). Nothing built.
   after phase 2: one pattern, coloured by what touches it.
 - Steam: still raised, not chosen. A red-hot metal under rain is where it would be caused by the world.
 - The rain's look: streak length and width at our scale (4.41 units per cm), its density, the splashes' size.
+
+---
+
+## 14 November 2026: Carl's answers, and the second look (steam)
+
+Carl's answers are in D-101 (*"PHASE 2's QUESTIONS ANSWERED"*): the drops land as the wobble ends; slow in, slow out, the
+weight dialled; the face cools by RUN-OFF (A); steam: *"Look here"* at `00 References\vdb-smoke-8-november.mp4`; the rain
+platinum blue, the colour the logo becomes.
+
+**Measured on Carl's PC** (Playwright's Chrome, 1920 × 1080, DPR 1; the adapter checked: ANGLE on the **AMD Radeon
+integrated** graphics, D3D11, not software; ⚠ a test browser, not Carl's own Chrome):
+
+| Example (r185) | What it is | Download | fps |
+|---|---|---|---|
+| `webgpu_compute_particles_rain` | the rain, 25,000 drops, full screen | 0.85 MB (the page) | **46–48** |
+| `webgl_loader_vdb` (8 Nov) | ONE baked smoke frame, ray-marched, unlit, an outside loader, WebGL | **2.94 MB** (`smoke.vdb` 2.6) | 52–60 |
+| `webgpu_volume_fire` (NEW) | a LIVE smoke-and-fire FLUID simulation on the GPU: emitted from a MESH's SURFACE, rising by heat, cooling, dissipating, self-shadowed; 100 × 100 × 200 cells | 0.86 MB (the page) | **8–9** |
+| `webgpu_volume_cloud` (read, not run) | the VDB look with NO file: a 128³ noise volume made in code, ray-marched (100 steps), its threshold/opacity/colour dialled | none | not measured |
+
+**The rain's dials** (the example's Settings): position and scale (the umbrella box), **drop count 200–50,000** (25,000
+default). Carl's *"you can dial it in"* → our weight dial is the drop count; the slow-in, slow-out is a curve over it.
+
+**The smoke film** (contact sheet looked at): one plume rising from a rounded base, curling, thinning at the top; the
+camera orbits a FROZEN frame.
+
+**Steam, caused by the world:** steam exists only where water meets HOT metal. So it rises where the rain lands on the
+red that is left, and its amount follows that red; when the logo is all platinum blue the steam stops, and so ends with
+the rain's slow out. Three routes to the reference's look, none chosen:
+1. **The VDB file** (the reference itself): 2.6 MB, frozen (moved only by scrolling noise through it), unlit, WebGL.
+2. **The volume made in code** (`webgpu_volume_cloud`'s method): no download, WebGPU, moves by noise, its colour ours.
+   Not a simulation: the plume's shape is drawn, not caused.
+3. **The fluid simulation** (`webgpu_volume_fire`'s method, smoke only): truly caused (emitted where the surface is hot,
+   rising by heat). ⚠ **8–9 fps as written on Carl's PC**: unaffordable. Its cost grows with its cell count; a box sized
+   to the logo, at fewer cells, is UNMEASURED (a probe).

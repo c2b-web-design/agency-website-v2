@@ -9,6 +9,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Container from "@/components/layout/container";
 import { BTN, Edges, FEEL, readPad, rigAt, stepRig, type Intent, type Rig } from "@/components/showcase/camera-pad";
 import { createHeroScene, FLOOR_Y, HERO_ENVIRONMENTS, HOME, type HeroEnvironment } from "./hero-scene";
+import { RAIN_MAX_DROPS } from "./hero-rain";
 import { LOGO_OUTLINE } from "@/components/about/logo-mark-outline";
 
 /**
@@ -218,6 +219,29 @@ export default function HeroBench() {
           if (mouldLine) mouldLine.visible = on;
         });
 
+      // ⛔ PHASE 2, THE RAIN (`hero-rain.ts`; 14 November 2026; Carl: *"build it on the bench and put the controls in the panel.
+      // That way i can give tou some ballpark figures on how heavy the rain should be"*). It starts on its own as phase 1's
+      // wobble ends; "Rain again" plays the shape from now; "hold" keeps the downpour on to judge the weight
+      const rs = hero.rain;
+      f = gui.addFolder("Rain");
+      f.add(rs, "on");
+      f.add(rs, "hold").name("hold (at peak)");
+      f.add({ again: () => hero.rainAgain() }, "again").name("Rain again");
+      f.add(rs, "peak", 200, RAIN_MAX_DROPS, 100).name("peak drops");
+      f.add(rs, "light", 0, 1, 0.01).name("light share");
+      f.add(rs, "seconds", 4, 8, 0.1).name("length (s)");
+      f.add(rs, "radiusCm", 20, 400, 5).name("area radius (cm)");
+      f.add(rs, "heightCm", 150, 800, 10).name("start height (cm)");
+      f.add(rs, "speedCmS", 100, 1500, 10).name("fall speed (cm/s)");
+      f.add(rs, "lengthCm", 1, 60, 0.5).name("streak length (cm)");
+      f.add(rs, "widthMm", 0.5, 10, 0.1).name("streak width (mm)");
+      f.add(rs, "opacity", 0, 1, 0.01);
+      f.add(rs, "brightness", 0, 20, 0.1);
+      f.add(rs, "splashes");
+      f.add(rs, "splashCm", 0.5, 15, 0.1).name("splash size (cm)");
+      // the wash: the run-off keeps running after the rain (from the first drops landing to the logo all platinum blue)
+      f.add(rs, "washSeconds", 3, 15, 0.1).name("wash length (s)");
+
       // ⛔ THE CAMERA — the readout, Copy and Home (note v1.3, "HOME")
       f = gui.addFolder("Camera");
       for (const k of Object.keys(readout) as (keyof typeof readout)[]) f.add(readout, k).disable().listen();
@@ -320,6 +344,8 @@ export default function HeroBench() {
       const dt = Math.min(timer.getDelta(), 0.1);
       fly(dt);
       hero.update(dt);
+      // ⛔ PHASE 2, THE RAIN: the scene's GPU step before the draw (D-101, 14 November 2026 — the one new call)
+      hero.compute(renderer!);
       buildMouldLine();
       renderer!.render(scene, camera);
       stats!.update();

@@ -57,6 +57,9 @@ export const BENCH_IDEAS: Record<string, { medium?: MediumName; load: () => Prom
   // the hero (D-101): the 3D text, its sketch lights, the leaning logo; the page camera; WebGPU (Carl: *"WebGPU should be
   // the choice"*)
   hero: { medium: "webgpu", load: () => import("./hero-idea").then((m) => m.HERO_IDEA) },
+  // film 4's arch (R-093), back as an idea (14 November 2026; Carl: *"put the arch logo in it and run it"*) — WebGL, as
+  // film 4 drew it (the bench's default medium)
+  arch: { load: () => import("./arch-idea").then((m) => m.ARCH_IDEA) },
 };
 
 /** the idea the URL asks for: `?idea=<name>`, or the hero for `?blank=1`; null = the empty workshop */
