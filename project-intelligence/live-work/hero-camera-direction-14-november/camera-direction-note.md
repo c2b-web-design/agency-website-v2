@@ -113,3 +113,11 @@ For the direction (decided when the scene is finished): the rain/wash moment wan
 `oblique-wet-3-low-right-steep-beads.png`: LOW and from the front RIGHT, a steep raking angle along the face, the text
 turned edge-on behind at the left; the coat's streaks bright down the strokes, the last red at the b's foot. For the
 direction: the beads and streaks want a LOW, RAKING angle along the face.
+
+## ⛔ Carl: "This angle is great." — ACROSS THE TEXT (14 November 2026, after the commit)
+
+Three frames from one camera position through phase 1 (`across-the-text-1-the-dance.png`, `-2-one-blob.png`,
+`-3-the-liquid-logo.png`): the camera LOW and to the LEFT of the text, looking ACROSS it toward the story — *"Websites built
+to be seen."* huge in the left foreground, raking away; the subtext laid along the floor leading the eye in; the story
+beyond it on the right: the dance (with the pool and its orange light), one blob, the liquid logo in the mould. For the
+direction: a shot that keeps the TEXT and the STORY in one frame — the words in front, what they promise behind.
