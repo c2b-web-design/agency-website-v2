@@ -79,7 +79,7 @@ key light's old strength).
 - The six code files, `decisions.md`, `current-sprint.md`, the homework file and the live-work notes (force-added) are in
   the session's commit. tsc clean; lint at the baseline (the one accepted error, 0 warnings).
 - **COMMITTED AND PUSHED** at Carl's word (*"commit and push and stop the capture"*) — see `git log` for the commit after `50fb88d`.
-- **The dev server is RUNNING** (port 3000). **The screen capture is STOPPED** (Carl): `VideosC2B Films The hero Discussion6-11-14_discussion_screen.remux.mkv`, 2:50:53; the RAW `.mkv` beside it, KEPT (not deleted without Carl's word).
+- **The dev server is STOPPED** (the whole tree; no project node process; port 3000 free). **The screen capture is STOPPED** (Carl): `VideosC2B Films The hero Discussion6-11-14_discussion_screen.remux.mkv`, 2:50:53; the RAW `.mkv` beside it, KEPT (not deleted without Carl's word).
 - **Films this session** (`Videos\C2B Films\03 The hero\`): `rain-wash_take1.mp4`, `rain-wash_take2.mp4`,
   `rain-blue-wet_take1.mp4` (frame-stepped, Carl's close camera 79.6, −279.4, 934.2 → 681.9, −187.1, −6.3).
 
