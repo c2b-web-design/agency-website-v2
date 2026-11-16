@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { ClippingGroup, MeshPhysicalNodeMaterial, type Node, type WebGPURenderer } from "three/webgpu";
+import { ClippingGroup, MeshBasicNodeMaterial, MeshPhysicalNodeMaterial, type Node, type WebGPURenderer } from "three/webgpu";
 import { acesFilmicToneMapping, cameraWorldMatrix, float, interleavedGradientNoise, lights, materialColor, mix, mx_cell_noise_float, mx_noise_float, mx_noise_vec3, normalView, output, pmremTexture, positionLocal, positionViewDirection, positionWorld, pow4, roughness, screenCoordinate, smoothstep, texture, transformNormalToView, normalLocal, uniform, vec2, vec3, vec4 } from "three/tsl";
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
@@ -9,8 +9,9 @@ import { HERO_LEAN, HERO_LOGO_METAL, HERO_LOGO_PLACE, HERO_LOGO_RED, LAND_WOBBLE
 import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/logo-mark-geometry";
 import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
-import { createHeroRain, type HeroRainInfo, type HeroRainSettings } from "./hero-rain";
-import { createHeroSteam, type HeroSteamInfo, type HeroSteamSettings } from "./hero-steam";
+import { createHeroRain, HIT, type HeroRainInfo, type HeroRainSettings } from "./hero-rain";
+import { createHeroSteam, MARGIN, type HeroSteamInfo, type HeroSteamSettings } from "./hero-steam";
+import { faceMaps, landedMaps, type FaceRequest, type FaceResult, type FlowCheck, type FlowData, type InkGrid, type LandedRequest, type LandedResult, type MapsMessage, type MapsReply, type RunoffCheck, type RunoffData } from "./hero-maps.worker";
 import { LOGO_BLUE_DEFAULTS, LOGO_JUDGING_STUDIO, platinumBlueF0 } from "@/components/about/logo-mark-material";
 
 /**
@@ -252,184 +253,13 @@ const makeFront = () => uniform(1e6);
  * poured share of the ink's AREA (the liquid's volume, not its reach).
  */
 const FLOW = { perCm: 2, gravity: 1, noiseScale: 0.18, noiseAmp: 0.012 } as const;
-type FlowMap = { tex: THREE.DataTexture; minX: number; minY: number; sizeX: number; sizeY: number; level(share: number): number; check: { inkCells: number; reachedCells: number; seedCells: number; seed: number[]; tris: number; indexed: boolean } };
+type FlowMap = { tex: THREE.DataTexture; minX: number; minY: number; sizeX: number; sizeY: number; level(share: number): number; check: FlowCheck };
 /**
- * THE LOGO's INK — its triangles drawn flat onto its FACE (local x, y, cm) at `perCm` cells per cm, closed (a crack up to
- * two cells wide sealed). Shared by the FLOW MAP (`logoFlowMap`, the re-forming's fill) and the RUN-OFF MAP
- * (`logoRunoffMap`, phase 2's wash) — lifted VERBATIM out of `logoFlowMap` (14 November 2026; its texture proven
- * unchanged: the same 405 × 212 cells, hash 3630756487, before and after).
+ * THE LOGO's INK and THE FLOW MAP are built in `hero-maps.worker.ts` (16 November 2026, session 2; D-101: off the main
+ * thread, lifted verbatim — `inkGrid`, `flowMapData`); here the texture is made from its texels and `level` added.
  */
-function inkGrid(g: THREE.BufferGeometry, perCm: number): { ink: Uint8Array; W: number; H: number; minX: number; minY: number; sizeX: number; sizeY: number; tris: number; indexed: boolean } {
-  g.computeBoundingBox();
-  const bb = g.boundingBox!;
-  const minX = bb.min.x - 1;
-  const minY = bb.min.y - 1;
-  const sizeX = bb.max.x - bb.min.x + 2;
-  const sizeY = bb.max.y - bb.min.y + 2;
-  const W = Math.ceil(sizeX * perCm);
-  const H = Math.ceil(sizeY * perCm);
-  const ink = new Uint8Array(W * H);
-  const pos = g.getAttribute("position");
-  const idx = g.getIndex();
-  const tris = idx ? idx.count / 3 : pos.count / 3;
-  const P = (k: number) => {
-    const v = idx ? idx.getX(k) : k;
-    return [((pos.getX(v) - minX) / sizeX) * W, ((pos.getY(v) - minY) / sizeY) * H];
-  };
-  for (let t = 0; t < tris; t++) {
-    const [ax, ay] = P(3 * t);
-    const [bx, by] = P(3 * t + 1);
-    const [cx, cy] = P(3 * t + 2);
-    const area = (bx - ax) * (cy - ay) - (cx - ax) * (by - ay);
-    if (Math.abs(area) < 1e-9) continue; // a wall, edge-on to the face
-    const x0 = Math.max(0, Math.floor(Math.min(ax, bx, cx)));
-    const x1 = Math.min(W - 1, Math.ceil(Math.max(ax, bx, cx)));
-    const y0 = Math.max(0, Math.floor(Math.min(ay, by, cy)));
-    const y1 = Math.min(H - 1, Math.ceil(Math.max(ay, by, cy)));
-    for (let y = y0; y <= y1; y++) {
-      for (let x = x0; x <= x1; x++) {
-        const px = x + 0.5;
-        const py = y + 0.5;
-        const w0 = ((bx - px) * (cy - py) - (cx - px) * (by - py)) / area;
-        const w1 = ((cx - px) * (ay - py) - (ax - px) * (cy - py)) / area;
-        if (w0 >= 0 && w1 >= 0 && w0 + w1 <= 1) ink[W * y + x] = 1;
-      }
-    }
-  }
-  // CLOSE the ink (grow one cell, then shrink one): ~295,000 thin face triangles drawn onto the grid leave hairline CRACKS
-  // along their shared edges that cut the ink into pieces the flow cannot cross (measured, 13 November: 39,381 ink
-  // cells, 1,485 reached); a crack up to two cells wide is sealed, the letters' outline kept
-  const morph = (src: Uint8Array, grow: boolean) => {
-    const out = new Uint8Array(W * H);
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        let v = grow ? 0 : 1;
-        for (let dy = -1; dy <= 1 && v === (grow ? 0 : 1); dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            const xx = x + dx;
-            const yy = y + dy;
-            const s = xx < 0 || yy < 0 || xx >= W || yy >= H ? 0 : src[W * yy + xx];
-            if (grow && s) v = 1;
-            if (!grow && !s) v = 0;
-          }
-        }
-        out[W * y + x] = v;
-      }
-    }
-    return out;
-  };
-  ink.set(morph(morph(ink, true), false));
-  return { ink, W, H, minX, minY, sizeX, sizeY, tris, indexed: !!idx };
-}
-function logoFlowMap(g: THREE.BufferGeometry, seedX: number, seedY: number): FlowMap {
-  const { ink, W, H, minX, minY, sizeX, sizeY, tris, indexed } = inkGrid(g, FLOW.perCm);
-  // the seed: the ink nearest the c's entry (within a cell of the nearest)
-  const sx = ((seedX - minX) / sizeX) * W;
-  const sy = ((seedY - minY) / sizeY) * H;
-  let near = Infinity;
-  for (let i = 0; i < W * H; i++) if (ink[i]) near = Math.min(near, Math.hypot((i % W) + 0.5 - sx, Math.floor(i / W) + 0.5 - sy));
-  // ⚠ Float64 throughout, as the heap's values: a Float32 store rounded some values BELOW the queued value, so the stale
-  // check took a live entry for a stale one and the flow stopped (13 November: 1,485 of 39,381 ink cells reached)
-  // a binary heap of [key, i] (the order, below)
-  const heap: [number, number][] = [];
-  const push = (d: number, i: number) => {
-    heap.push([d, i]);
-    let k = heap.length - 1;
-    while (k > 0) {
-      const p = (k - 1) >> 1;
-      if (heap[p][0] <= heap[k][0]) break;
-      [heap[p], heap[k]] = [heap[k], heap[p]];
-      k = p;
-    }
-  };
-  const pop = () => {
-    const top = heap[0];
-    const last = heap.pop()!;
-    if (heap.length) {
-      heap[0] = last;
-      let k = 0;
-      for (;;) {
-        const l = 2 * k + 1;
-        const r = l + 1;
-        let m = k;
-        if (l < heap.length && heap[l][0] < heap[m][0]) m = l;
-        if (r < heap.length && heap[r][0] < heap[m][0]) m = r;
-        if (m === k) break;
-        [heap[m], heap[k]] = [heap[k], heap[m]];
-        k = m;
-      }
-    }
-    return top;
-  };
-  // THE ORDER (with GRAVITY, Carl's container): a priority flood. A cell's KEY is the highest, along the liquid's way to
-  // it, of (the way's length so far + `gravity` × its height): climbing costs (1 + gravity) a cell, running level 1, and
-  // running DOWN costs nothing (the key cannot fall) — so the low road is taken first, and a pocket BELOW an inflow (the
-  // b's stem under the bowl's join) shares its inflow's key and fills from its FLOOR UP (ties broken by height, lowest
-  // first). The map stores each cell's RANK in that order (0–1), so a fill level IS the poured share of the ink's area.
-  const way = new Float64Array(W * H).fill(Infinity);
-  const key = new Float64Array(W * H).fill(Infinity);
-  for (let i = 0; i < W * H; i++) {
-    if (ink[i] && Math.hypot((i % W) + 0.5 - sx, Math.floor(i / W) + 0.5 - sy) <= near + 1) {
-      way[i] = 0;
-      key[i] = FLOW.gravity * Math.floor(i / W);
-      push(key[i], i);
-    }
-  }
-  const steps = [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], [1, 1, Math.SQRT2], [1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [-1, -1, Math.SQRT2]];
-  while (heap.length) {
-    const [k, i] = pop();
-    if (k > key[i]) continue;
-    const x = i % W;
-    const y = Math.floor(i / W);
-    for (const [dx, dy, c] of steps) {
-      const xx = x + dx;
-      const yy = y + dy;
-      if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
-      const j = W * yy + xx;
-      if (!ink[j]) continue;
-      const g2 = way[i] + c;
-      const k2 = Math.max(k, g2 + FLOW.gravity * yy);
-      if (k2 < key[j] || (k2 === key[j] && g2 < way[j])) {
-        key[j] = k2;
-        way[j] = g2;
-        push(k2, j);
-      }
-    }
-  }
-  const reached: number[] = [];
-  for (let i = 0; i < W * H; i++) if (ink[i] && key[i] < Infinity) reached.push(i);
-  reached.sort((a, b) => key[a] - key[b] || Math.floor(a / W) - Math.floor(b / W) || way[a] - way[b]);
-  const rank = new Float64Array(W * H).fill(-1);
-  reached.forEach((i, r) => (rank[i] = r / Math.max(1, reached.length - 1)));
-  // off the ink: the nearest ink cell's value (a breadth-first spread outward, a few rounds)
-  const val = new Float32Array(W * H).fill(-1);
-  for (let i = 0; i < W * H; i++) if (rank[i] >= 0) val[i] = rank[i];
-  for (let round = 0; round < 6; round++) {
-    const next = val.slice();
-    for (let i = 0; i < W * H; i++) {
-      if (val[i] >= 0) continue;
-      const x = i % W;
-      const y = Math.floor(i / W);
-      let best = Infinity;
-      for (const [dx, dy] of steps) {
-        const xx = x + dx;
-        const yy = y + dy;
-        if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
-        const v = val[W * yy + xx];
-        if (v >= 0) best = Math.min(best, v);
-      }
-      if (best < Infinity) next[i] = best;
-    }
-    val.set(next);
-  }
-  const data = new Uint16Array(4 * W * H);
-  for (let i = 0; i < W * H; i++) {
-    const h = THREE.DataUtils.toHalfFloat(val[i] >= 0 ? val[i] : 1);
-    data[4 * i] = h;
-    data[4 * i + 1] = h;
-    data[4 * i + 2] = h;
-    data[4 * i + 3] = THREE.DataUtils.toHalfFloat(1);
-  }
+function logoFlowMap(d: FlowData): FlowMap {
+  const { data, W, H, minX, minY, sizeX, sizeY, check } = d;
   const tex = new THREE.DataTexture(data, W, H, THREE.RGBAFormat, THREE.HalfFloatType);
   tex.magFilter = THREE.LinearFilter;
   tex.minFilter = THREE.LinearFilter;
@@ -446,7 +276,7 @@ function logoFlowMap(g: THREE.BufferGeometry, seedX: number, seedY: number): Flo
     // the b's stem) were cut away wherever the edge's wobble (`FLOW.noiseAmp`) pushed them over it. Present since phase 1
     // (13 November), unseen at Home
     level: (share) => (share <= 0 ? -1 : share >= 1 - 1e-9 ? 2 : share),
-    check: { inkCells: ink.reduce((a, v) => a + v, 0), reachedCells: reached.length, seedCells: reached.filter((i) => way[i] === 0).length, seed: [Math.round(sx), Math.round(sy)], tris, indexed },
+    check,
   };
 }
 /**
@@ -550,81 +380,16 @@ const WET = { coat: 1, coatRoughness: 0.04, streakCm: 1.6, lengthCm: 14, runCmS:
  * Values are takes.
  */
 const RUNOFF = { perCm: 2, bandCm: 6, spread: 0.6, streakCm: 3.5, ragCm: 4, ragScale: 0.12 } as const;
-type RunoffMap = { tex: THREE.DataTexture; minX: number; minY: number; sizeX: number; sizeY: number; tallestCm: number; reachCm: number; check: { cells: number[]; inkCells: number; runs: number; tallestCm: number; reachCm: number; pace: number[] } };
-function logoRunoffMap(g: THREE.BufferGeometry): RunoffMap {
-  const { ink, W, H, minX, minY, sizeX, sizeY } = inkGrid(g, RUNOFF.perCm);
-  const below = new Float32Array(W * H).fill(-1);
-  let runs = 0;
-  let tallest = 0;
-  for (let x = 0; x < W; x++) {
-    let top = -1;
-    for (let y = H - 1; y >= 0; y--) {
-      const i = W * y + x;
-      if (!ink[i]) {
-        top = -1;
-        continue;
-      }
-      if (top < 0) {
-        top = y;
-        runs++;
-      }
-      below[i] = (top - y) / RUNOFF.perCm;
-      tallest = Math.max(tallest, below[i]);
-    }
-  }
-  // off the ink (the walls' and bevels' edges): the nearest ink cell's value, a few rounds (the flow map's spread)
-  const steps = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
-  for (let round = 0; round < 6; round++) {
-    const next = below.slice();
-    for (let i = 0; i < W * H; i++) {
-      if (below[i] >= 0) continue;
-      const x = i % W;
-      const y = Math.floor(i / W);
-      let best = Infinity;
-      for (const [dx, dy] of steps) {
-        const xx = x + dx;
-        const yy = y + dy;
-        if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
-        const v = below[W * yy + xx];
-        if (v >= 0) best = Math.min(best, v);
-      }
-      if (best < Infinity) next[i] = best;
-    }
-    below.set(next);
-  }
-  // ⛔ TAKE 2 (14 November 2026): EACH COLUMN's PACE made HERE, not by a shader noise — take 1's noise never reached its low
-  // end, so every streak finished early and the last red went at a wash of ~0.75, not 1 (seen: ~5.3 s against the dial's
-  // 7.5). A smooth value noise across x (a knot every `streakCm`, cosine-eased, a fixed seed: the same streaks every run),
-  // 1 to 1 + `spread`; and THE REACH SCALED so the slowest point (its depth + band + rag, over its column's pace) is done
-  // at a wash of EXACTLY 1 — so the wash's length is when the last red goes
-  let seed = 12345;
-  const rnd = () => ((seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296);
-  const knots = Array.from({ length: Math.ceil(W / (RUNOFF.streakCm * RUNOFF.perCm)) + 2 }, rnd);
-  const pace = new Float32Array(W);
-  for (let x = 0; x < W; x++) {
-    const k = x / (RUNOFF.streakCm * RUNOFF.perCm);
-    const k0 = Math.floor(k);
-    const e = (1 - Math.cos(Math.PI * (k - k0))) / 2;
-    pace[x] = 1 + RUNOFF.spread * (knots[k0] + (knots[k0 + 1] - knots[k0]) * e);
-  }
-  let reach = 0;
-  for (let i = 0; i < W * H; i++) if (below[i] >= 0) reach = Math.max(reach, (below[i] + RUNOFF.bandCm + RUNOFF.ragCm) / pace[i % W]);
-  const data = new Uint16Array(2 * W * H);
-  for (let i = 0; i < W * H; i++) {
-    data[2 * i] = THREE.DataUtils.toHalfFloat(below[i] >= 0 ? below[i] : 0);
-    data[2 * i + 1] = THREE.DataUtils.toHalfFloat(pace[i % W]);
-  }
+type RunoffMap = { tex: THREE.DataTexture; minX: number; minY: number; sizeX: number; sizeY: number; tallestCm: number; reachCm: number; check: RunoffCheck };
+// the map itself is built in `hero-maps.worker.ts` (16 November 2026, session 2: off the main thread, lifted verbatim —
+// `runoffMapData`); here the texture is made from its texels
+function logoRunoffMap(d: RunoffData): RunoffMap {
+  const { data, W, H, minX, minY, sizeX, sizeY, tallestCm, reachCm, check } = d;
   const tex = new THREE.DataTexture(data, W, H, THREE.RGFormat, THREE.HalfFloatType);
   tex.magFilter = THREE.LinearFilter;
   tex.minFilter = THREE.LinearFilter;
   tex.needsUpdate = true;
-  let pMin = Infinity;
-  let pMax = 0;
-  for (const p of pace) {
-    pMin = Math.min(pMin, p);
-    pMax = Math.max(pMax, p);
-  }
-  return { tex, minX, minY, sizeX, sizeY, tallestCm: tallest, reachCm: reach, check: { cells: [W, H], inkCells: ink.reduce((a, v) => a + v, 0), runs, tallestCm: Math.round(tallest * 10) / 10, reachCm: Math.round(reach * 10) / 10, pace: [Math.round(pMin * 100) / 100, Math.round(pMax * 100) / 100] } };
+  return { tex, minX, minY, sizeX, sizeY, tallestCm, reachCm, check };
 }
 /**
  * ⛔ THE HARDENING — FROM BLOB TO SOLID (13 November 2026, session 2; D-101). Carl: *"the spread is mettallic. solid,
@@ -790,6 +555,19 @@ const MOULD = { raiseCm: 40 } as const;
  *   TRANSPARENT from the start changed the floor grid's pixels at the lean (111,236 px, max 45; the null control — the same
  *   frame opaque was 0 px), and switching transparency on only for the fade is a SECOND build of the logo's shader
  *   (3.2 s measured). Alpha-to-coverage is set from the start too: one shader, built once.
+ *   ⛔ OVERTAKEN (16 November 2026, session 2; Carl: *"When the logo fades in it doesnt look right"* … *"implement 1"*): seen
+ *   close (`live-work/scripts/hero-logo-fade-film-16-november.mjs`), alpha-to-coverage showed a FIXED stipple (the noise
+ *   locked to the screen: a dotted net, the "t" behind it a grey crosshatch) and the logo's INNER walls (each surface
+ *   part-covered on its own: red glass, not a solid fading). NOW THE FADE IS ONE SOLID LAYER (`logoFadeParts`): during the
+ *   opening the logo draws with a TRANSPARENT copy of its material at the fade's opacity, after a DEPTH-ONLY draw of the same
+ *   geometry (its own vertex position node; drawn after the scene's opaques, so the text behind stays and shows through):
+ *   only its front surface is coloured. Once the opening is done it is the opaque material above, untouched — the story's
+ *   frames 0 px against before (the null control). Both materials are built in the background by the warm-up. ⚠ The
+ *   grid's pixels (the first rejection above): MEASURED to come from a draw-ORDER effect in three r185, not from
+ *   transparency — whenever the opaque logo is drawn BEFORE the bench's grid, the grid's distant lines differ (up to 44
+ *   levels), however the logo is drawn; so the grid changes when the opaque logo returns at the fade's END (it used to
+ *   change when the logo appeared, at the fade's start). Drawing the grid first fixes the grid but changed the text's and
+ *   the logo's shading (up to 59 levels) — approved frames: REVERTED, put to Carl (D-101).
  * - Then the story as approved from the lean (`ARRIVAL`: the hold, then the jump forward).
  * All values are TAKES.
  */
@@ -926,6 +704,120 @@ function logoGeometry(heightCm: number): Promise<THREE.BufferGeometry> {
     };
     worker.postMessage({ scale: heightCm });
   });
+}
+
+/**
+ * ⛔ THE MAPS, OFF THE MAIN THREAD (`hero-maps.worker.ts`; 16 November 2026, session 2; D-101). Carl: *"The stalls are the
+ * problem."* ONE worker per scene, STARTED WITH THE SCENE (its module, three included, is loaded while the logo's geometry
+ * is still being built); sent the geometry once it arrives (COPIED: the scene keeps its own), then "face" (the flow and
+ * run-off maps, the ink) at once, and "landed" (the rain's hit map, the steam's solid mask) when the landed pose is known;
+ * it is ended after "landed". If it cannot start or fails, the SAME functions run inline (the main thread, as before
+ * 16 November). `check` (`?mapcheck=1`, dev only): each map built inline as well, and the number of mismatched values
+ * reported (0 = identical; timings not compared).
+ */
+type MapsClient = { geometry(g: THREE.BufferGeometry): void; face(r: FaceRequest): Promise<FaceResult>; landed(r: LandedRequest): Promise<LandedResult>; dispose(): void };
+function mapsClient(check: ((kind: "face" | "landed", mismatches: number) => void) | null): MapsClient {
+  let g: THREE.BufferGeometry | null = null;
+  let worker: Worker | null = null;
+  try {
+    worker = new Worker(new URL("./hero-maps.worker.ts", import.meta.url), { type: "module" });
+  } catch {
+    worker = null;
+  }
+  // the ink, for "landed" (from "face", wherever it ran)
+  let ink: InkGrid | null = null;
+  const inline = {
+    face: (r: FaceRequest) => {
+      if (!g) throw new Error("[hero maps] face before the geometry");
+      return faceMaps(g, r);
+    },
+    landed: (r: LandedRequest) => {
+      if (!g || !ink) throw new Error("[hero maps] landed before face");
+      return landedMaps(g, ink, r);
+    },
+  };
+  type Wait = { req: FaceRequest | LandedRequest; resolve(v: FaceResult | LandedResult): void };
+  const waiting = new Map<"face" | "landed", Wait>();
+  const settle = (kind: "face" | "landed", v: FaceResult | LandedResult) => {
+    const w = waiting.get(kind);
+    if (!w) return;
+    waiting.delete(kind);
+    if (v.kind === "face") ink = v.ink;
+    if (check) check(kind, mismatches(v, kind === "face" ? inline.face(w.req as FaceRequest) : inline.landed(w.req as LandedRequest)));
+    w.resolve(v);
+  };
+  /** the worker is gone: what it owed runs inline */
+  const fallBack = () => {
+    worker?.terminate();
+    worker = null;
+    for (const [kind, w] of [...waiting]) {
+      waiting.delete(kind);
+      const v = kind === "face" ? inline.face(w.req as FaceRequest) : inline.landed(w.req as LandedRequest);
+      if (v.kind === "face") ink = v.ink;
+      w.resolve(v);
+    }
+  };
+  if (worker) {
+    worker.onmessage = (e: MessageEvent<MapsReply>) => {
+      const m = e.data;
+      if (m.kind === "error") {
+        console.warn("[hero maps] worker failed; inline", m.message);
+        fallBack();
+      } else settle(m.kind, m);
+    };
+    worker.onerror = (e) => {
+      console.warn("[hero maps] worker error; inline", e.message);
+      e.preventDefault();
+      fallBack();
+    };
+  }
+  const ask = <R extends FaceResult | LandedResult>(req: FaceRequest | LandedRequest) =>
+    new Promise<R>((resolve) => {
+      if (!worker) {
+        // inline, in its own task (as `logoGeometry`'s fallback)
+        window.setTimeout(() => {
+          const v = req.kind === "face" ? inline.face(req) : inline.landed(req);
+          if (v.kind === "face") ink = v.ink;
+          resolve(v as R);
+        }, 0);
+        return;
+      }
+      waiting.set(req.kind, { req, resolve: resolve as Wait["resolve"] });
+      worker.postMessage(req satisfies MapsMessage);
+    });
+  return {
+    geometry(geo) {
+      g = geo;
+      if (!worker) return;
+      const pos = geo.getAttribute("position").array as Float32Array;
+      const idx = geo.getIndex();
+      worker.postMessage({ kind: "geometry", position: pos, index: idx ? (idx.array as Uint16Array | Uint32Array) : null } satisfies MapsMessage);
+    },
+    face: (r) => ask<FaceResult>(r),
+    landed: (r) => ask<LandedResult>(r),
+    dispose() {
+      worker?.terminate();
+      worker = null;
+      waiting.clear();
+    },
+  };
+}
+/** the dev check's count: values that differ between two results, every typed array element by element (`ms` skipped) */
+function mismatches(a: unknown, b: unknown): number {
+  if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
+    const x = a as unknown as ArrayLike<number>;
+    const y = b as unknown as ArrayLike<number>;
+    let n = Math.abs(x.length - y.length);
+    for (let i = 0; i < Math.min(x.length, y.length); i++) if (x[i] !== y[i]) n++;
+    return n;
+  }
+  if (a && b && typeof a === "object" && typeof b === "object") {
+    let n = 0;
+    const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+    for (const k of keys) if (k !== "ms" && k !== "buildMs") n += mismatches((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]);
+    return n;
+  }
+  return a === b ? 0 : 1;
 }
 
 /** the environments the bench can show: OUR courtyard with the emblem (the default), the example's castle (comparison) */
@@ -1103,6 +995,8 @@ export function createHeroScene(aspect: number): HeroScene {
   const opening = { t: 0, fadeT: -1, done: false, subT: -1, warmT: -1 };
   // the leaning logo's fade (0 → 1), read by its alpha-to-coverage (`OPENING`)
   const logoFade = uniform(0);
+  // the opening's fade drawn as one solid layer (`OPENING`): the opaque material, the fade's, and the depth drawn first
+  let logoFadeParts: { opaque: THREE.Material; fade: THREE.Material; depth: THREE.Mesh } | null = null;
   // the lights' share (0 → 1), the text's glow with them; the subtext's reveal edges (world x)
   const lit = uniform(0);
   const reveal1 = uniform(-1e9);
@@ -1145,6 +1039,48 @@ export function createHeroScene(aspect: number): HeroScene {
   // the desk mark's judging studio, for the cooled metal (made once, on the CPU)
   const judging = judgingStudioTexture();
   disposables.push(judging);
+  /**
+   * ⛔ THE REFLECTION MAPS PREFILTERED IN THE DARK (16 November 2026, session 2; D-101). Carl: *"get to the bottom of the
+   * stall and try to fix it"* … *"We had stall problems in the q+a months ago. See if the problems are similar"* — they are:
+   * `/start`'s opening stutter was the cards' PMREM (~572 ms, `answer-card-canvas.tsx`, deferred to where nothing visible
+   * depended on it) and the corners' was the studio's GGX prefilter (`corner-canvas.tsx`, prefiltered first, 21 October).
+   * MEASURED here (`live-work/scripts/hero-opening-gpu-work-16-november.mjs`, a return visit, a visible window): the frames
+   * left on the headline's fade were the GPU running three's PMREM (one GGX submit 249 ms, ~0.5 s in all at opening
+   * 1.5–2.1 s), made when the warm-up first built the logo's material — its three reflections (the courtyard, the studio,
+   * the judging studio; the liquid shares the courtyard's).
+   * So a PRIMER — one tiny draw that writes nothing (no colour, no depth, a zero-area triangle) and samples the SAME three
+   * textures through three's own `pmremTexture` — is put in the scene as soon as they are loaded: three prefilters each
+   * then, into the RENDERER's cache (per texture; `_getPMREMFromTexture`), while the opening is still dark or early. The
+   * logo's and the liquid's materials later find each in that cache: ONE build per map, only earlier (⚠ the warm-up canvas,
+   * D-036's worked case, built its programs twice; this must not — measured by counting the PMREM passes). Nothing the
+   * visitor sees changes: the maps are three's, made by the same function from the same textures. Removed after
+   * `PRIMER_FRAMES` drawn frames.
+   */
+  const PRIMER_FRAMES = 3;
+  let primer: THREE.Mesh | null = null;
+  let primerFrames = 0;
+  Promise.all([loadStudioHdri(STUDIO_HDRI_SRC, HERO_LOGO_METAL.room), courtyardReady]).then(([studio]) => {
+    if (disposed || !envs.courtyard) return;
+    const m = new MeshBasicNodeMaterial();
+    // each with an explicit direction AND level: outside a lit material's environment context `pmremTexture` has neither
+    // (three r185: `PMREMNode.setup` reads `uvNode.x` and passes the level on — without them the build throws after the
+    // FIRST map is made, and the others never are)
+    const dir = vec3(0, 0, 1);
+    const level = float(0);
+    m.colorNode = pmremTexture(studio, dir, level).add(pmremTexture(envs.courtyard.reflect, dir, level)).add(pmremTexture(judging, dir, level));
+    m.colorWrite = false;
+    m.depthWrite = false;
+    m.depthTest = false;
+    m.name = "hero reflection-map primer";
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(9), 3));
+    g.setAttribute("normal", new THREE.Float32BufferAttribute([0, 0, 1, 0, 0, 1, 0, 0, 1], 3));
+    primer = new THREE.Mesh(g, m);
+    primer.name = "hero reflection-map primer";
+    primer.frustumCulled = false;
+    scene.add(primer);
+    performance.mark("hero:Primer");
+  });
   // THE HARDENING's dial (`logoMaterial`): 1 = the solid logo (all before the re-forming), 0 = the blobs' liquid
   const hardness = uniform(1);
   /**
@@ -1179,8 +1115,35 @@ export function createHeroScene(aspect: number): HeroScene {
   steam.setLight(light.position);
   scene.add(steam.group);
   disposables.push(steam);
+  // ⛔ THE MAPS (`mapsClient`, `hero-maps.worker.ts`; 16 November 2026, session 2): "face" is asked THE MOMENT THE LOGO's
+  // GEOMETRY ARRIVES — it needs nothing else — so it runs while the text, the studio and the courtyard are still loading;
+  // "landed" is asked below, once the landed pose is known. `landedIn`: the rain's hit map and the steam's mask are in
+  let landedIn = false;
+  let rainWarmed = false;
+  const mapCheck = process.env.NODE_ENV !== "production" && typeof window !== "undefined" && new URLSearchParams(window.location.search).has("mapcheck");
+  let maps: MapsClient | null = mapsClient(mapCheck ? (kind, n) => (loadTimes[kind === "face" ? "mapCheckFace" : "mapCheckLanded"] = n) : null);
+  // the load's moments (ms on the page's clock: `at*` in `loadTimes`) — when each step of the logo's way in happened
+  const at = (k: string) => {
+    loadTimes[`at${k}`] = Math.round(performance.now());
+    // the same moment on the page's timeline (`performance.mark`, "hero:…"): read by the measurement scripts, free otherwise
+    performance.mark(`hero:${k}`);
+  };
+  const faceReady = logoGeo.then((g) => {
+    if (disposed || !maps) return null;
+    at("Geometry");
+    maps.geometry(g);
+    // the re-forming's flow map, from the ink nearest the c's entry (`REFORM`'s c: its middle, at mid height)
+    g.computeBoundingBox();
+    const gb = g.boundingBox!;
+    const seed: [number, number] = [gb.min.x + (REFORM.cShare * (gb.max.x - gb.min.x)) / 2, (gb.min.y + gb.max.y) / 2];
+    return maps.face({ kind: "face", seed, flow: { perCm: FLOW.perCm, gravity: FLOW.gravity }, runoff: RUNOFF, inkPerCm: FLOW.perCm }).then((f) => {
+      at("Face");
+      return f;
+    });
+  });
   const textReady = buildText().then((t) => {
     if (disposed) return t.dispose();
+    at("Text");
     text = t.group;
     unitsPerCm = t.unitsPerCm;
     textDispose = t.dispose;
@@ -1215,8 +1178,9 @@ export function createHeroScene(aspect: number): HeroScene {
     scene.add(text);
     // ⛔ THE LOGO ON THE 3D t (`leanInSketch`): once its geometry and the text's frame are both in
     // the studio is `loadStudioHdri`'s shared, cached texture: not disposed here (the sketch bench's rule)
-    Promise.all([logoGeo, loadStudioHdri(STUDIO_HDRI_SRC, HERO_LOGO_METAL.room), courtyardReady]).then(([g, studio]) => {
-      if (disposed) return g.dispose();
+    Promise.all([logoGeo, loadStudioHdri(STUDIO_HDRI_SRC, HERO_LOGO_METAL.room), courtyardReady, faceReady]).then(([g, studio, , face]) => {
+      if (disposed || !face) return g.dispose();
+      at("Arrival");
       // ⛔ THE ARRIVAL's MAIN-THREAD WORK, TIMED (16 November 2026; Carl: *"theres a stall on the W of the subtext"*): each
       // step's ms into `loadTimes` (the bench's read-out)
       let lt = performance.now();
@@ -1226,15 +1190,13 @@ export function createHeroScene(aspect: number): HeroScene {
         loadTimes[k] = Math.round(n - lt);
         lt = n;
       };
-      // the re-forming's flow map, from the ink nearest the c's entry (`REFORM`'s c: its middle, at mid height)
-      g.computeBoundingBox();
-      const gb = g.boundingBox!;
-      flow = logoFlowMap(g, gb.min.x + (REFORM.cShare * (gb.max.x - gb.min.x)) / 2, (gb.min.y + gb.max.y) / 2);
+      // the flow and run-off maps, built by the worker ("face", above): their textures
+      loadTimes.workerFace = face.ms;
+      flow = logoFlowMap(face.flow);
       disposables.push(flow.tex);
-      mark("flowMap");
-      runoff = logoRunoffMap(g);
+      runoff = logoRunoffMap(face.runoff);
       disposables.push(runoff.tex);
-      mark("runoffMap");
+      mark("mapTextures");
       const material = logoMaterial(studio, dissolveFront, fillFront, flow, envs.courtyard!.reflect, hardness, liquidClock, runoff, washShare, judging, logoLights);
       // ⛔ THE OPENING's FADE (`OPENING`): ALPHA-TO-COVERAGE from the start (one shader, built once; the logo stays opaque):
       // the fade's opacity, dithered per pixel between the 4 samples' levels, exactly 1 when faded in
@@ -1247,6 +1209,32 @@ export function createHeroScene(aspect: number): HeroScene {
       mark("lean");
       logo = new THREE.Mesh(g, material);
       logo.name = "hero logo";
+      // ⛔ THE FADE AS ONE SOLID LAYER (`OPENING`; 16 November 2026, session 2): its transparent material and the depth first
+      {
+        const fade = (material as unknown as { clone(): MeshPhysicalNodeMaterial }).clone();
+        fade.alphaToCoverage = false;
+        fade.transparent = true;
+        fade.depthWrite = false;
+        fade.depthFunc = THREE.LessEqualDepth;
+        (fade as unknown as { opacityNode: unknown }).opacityNode = logoFade;
+        const key = `${material.customProgramCacheKey()}:fade`;
+        fade.customProgramCacheKey = () => key;
+        fade.name = "hero logo (the opening's fade)";
+        const depthMat = new MeshBasicNodeMaterial();
+        // the logo's own vertex position (the same node: the same depth, so the fade's test meets it exactly)
+        depthMat.positionNode = material.positionNode;
+        depthMat.colorWrite = false;
+        depthMat.transparent = true;
+        depthMat.depthWrite = true;
+        depthMat.name = "hero logo (the fade's depth)";
+        const depth = new THREE.Mesh(g, depthMat);
+        depth.name = "hero logo (the fade's depth)";
+        depth.renderOrder = 1;
+        depth.visible = false;
+        logo.add(depth);
+        logoFadeParts = { opaque: material, fade, depth };
+        disposables.push(fade, depthMat);
+      }
       // its pose is written whole each frame by the arrival (`update`)
       logo.matrixAutoUpdate = false;
       logo.matrix.copy(l.matrix);
@@ -1275,11 +1263,24 @@ export function createHeroScene(aspect: number): HeroScene {
       // THE RAIN's HIT MAP (`hero-rain.ts`): the logo where it LANDS — the fall's pose at rest (`update`: the mould dropped
       // by `mouldDrop`, the rock 0 once the wobble is done)
       const landedPose = new THREE.Matrix4().makeTranslation(0, -mouldDrop, 0).multiply(mould.matrix);
-      rain.setLogo(g, landedPose, t.unitsPerCm);
-      mark("rainHitMap");
-      // THE STEAM's box and solid mask (`hero-steam.ts`): the same landed pose; the ink at the flow map's 2 cells per cm
-      steam.setLogo(g, landedPose, t.unitsPerCm, inkGrid(g, FLOW.perCm));
-      mark("steamInk+mask");
+      // ⛔ built by the worker ("landed"): the rain's hit map, and THE STEAM's solid mask (`hero-steam.ts`) — the same
+      // landed pose; the steam's ink the flow map's (2 cells per cm). The rain's step program is warmed when they are in
+      // (`compute`, `landedIn`)
+      const upc = t.unitsPerCm;
+      maps!
+        .landed({ kind: "landed", landed: landedPose.toArray(), upc, floorY: FLOOR_Y, hit: HIT, steam: { margin: MARGIN, cellCm: steam.settings.cellCm } })
+        .then((r) => {
+          if (disposed) return;
+          at("Landed");
+          const t1 = performance.now();
+          loadTimes.workerLanded = r.ms;
+          rain.setLogo(r.hit, upc);
+          steam.setLogo(g, landedPose, upc, face.ink, r.mask);
+          loadTimes.landedMain = Math.round(performance.now() - t1);
+          landedIn = true;
+          maps?.dispose();
+          maps = null;
+        });
       loadTimes.arrivalTotal = Math.round(performance.now() - t0);
       const r = (v: number) => Math.round(v * 100) / 100;
       arrivalInfo = { holdS: ARRIVAL.holdS, flightS: r(arrival.flightS), touchdownS: r(arrival.touchdown), durationS: r(arrival.duration), apexCm: r(arrival.apexCm), minCornerAboveFloorCm: r(arrival.minCornerY) };
@@ -1919,7 +1920,9 @@ export function createHeroScene(aspect: number): HeroScene {
    * Once the logo exists, WHILE THE STORY RUNS, the liquid, the heat plane and the rain's drops and splashes are compiled
    * in the BACKGROUND (`compileAsync`: r185 builds render pipelines asynchronously), each made visible (and not culled)
    * only for `compileAsync`'s synchronous gather; the rain's step program is run once with no drop live (`HeroRain.warm`;
-   * r185 builds compute pipelines synchronously only). The steam warms itself (`hero-steam.ts`, `warm`).
+   * r185 builds compute pipelines synchronously only — ⛔ since 16 November 2026, session 2, the rain's and the steam's
+   * compute pipelines are first COMPILED IN THE BACKGROUND, `hero-steam.ts`, `precompileCompute`, so that synchronous build
+   * is a cache hit). The steam warms itself (`hero-steam.ts`, `warm`).
    * ⛔ THE LOGO IS LEFT OUT, and the story is NOT held. ⚰️ Withdrawn the same day: the logo hidden and the story's clock
    * held until the warm-up was done (~6 s of the text alone on a cold cache). Carl: *"That is far too long to have text on
    * its own. The start of the story is the logo realises their is a visitor and responds. ... Whats to stop a visitor going
@@ -1943,7 +1946,23 @@ export function createHeroScene(aspect: number): HeroScene {
     }
     // compileAsync gathers what to build synchronously at the call; everything is put back straight after
     const tc = performance.now();
-    const done = renderer.compileAsync(scene, camera);
+    // ⛔ BOTH of the logo's materials (`logoFadeParts`, 16 November 2026, session 2): the fade's (and its depth) for the
+    // opening, the opaque one for the story after it — two gathers, the logo's material swapped between them
+    const parts = logoFadeParts;
+    const keepMat = logo?.material;
+    const keepDepth = parts?.depth.visible ?? false;
+    const builds: Promise<void>[] = [];
+    if (logo && parts) {
+      logo.material = parts.fade;
+      parts.depth.visible = true;
+      builds.push(renderer.compileAsync(scene, camera));
+      logo.material = parts.opaque;
+      parts.depth.visible = false;
+    }
+    builds.push(renderer.compileAsync(scene, camera));
+    if (logo && keepMat) logo.material = keepMat;
+    if (parts) parts.depth.visible = keepDepth;
+    const done = Promise.all(builds);
     loadTimes.warmGatherSync = Math.round(performance.now() - tc);
     show.forEach((o, i) => {
       o.visible = keep[i][0];
@@ -1951,6 +1970,7 @@ export function createHeroScene(aspect: number): HeroScene {
     });
     await done;
     warmMs = Math.round(performance.now() - t0);
+    performance.mark("hero:WarmDone");
   }
 
   const easeSine = (u: number) => 0.5 - 0.5 * Math.cos(Math.PI * Math.max(0, Math.min(1, u)));
@@ -2006,6 +2026,14 @@ export function createHeroScene(aspect: number): HeroScene {
 
   function update(delta: number) {
     stepOpening(delta);
+    // THE PRIMER (above): drawn `PRIMER_FRAMES` frames, then gone
+    if (primer && ++primerFrames > PRIMER_FRAMES) {
+      scene.remove(primer);
+      primer.geometry.dispose();
+      (primer.material as THREE.Material).dispose();
+      primer = null;
+      performance.mark("hero:PrimerDone");
+    }
     // ⛔ THE ARRIVAL (`arrivalPlan`): the logo's pose on the story's clock, once; still after it settles
     const wasT = storyT;
     // ⚰️ the story's clock waited for THE WARM-UP (16 November 2026) — WITHDRAWN the same day (`warmScene`): the story
@@ -2063,6 +2091,13 @@ export function createHeroScene(aspect: number): HeroScene {
     if (logo) {
       logoFade.value = logoOpacity();
       if (!opening.done && opening.fadeT < 0) logo.visible = false;
+      // THE FADE AS ONE LAYER: while the opening runs, the fade's material after its depth; once done, the opaque logo
+      if (logoFadeParts) {
+        const fading = !opening.done;
+        logo.material = fading ? logoFadeParts.fade : logoFadeParts.opaque;
+        logo.renderOrder = fading ? 2 : 0;
+        logoFadeParts.depth.visible = fading;
+      }
     }
     // ⛔ PHASE 2, THE RAIN (`hero-rain.ts`; Carl, 14 November 2026: *"the rain starts just as the wobble ends"*): the seconds
     // since phase 1's end — HARD, the fall, the landing's wobble done (the `reform` read-out's `endS`); NaN before the
@@ -2216,9 +2251,16 @@ export function createHeroScene(aspect: number): HeroScene {
       steam.compute(renderer, scene, camera);
       const ms = Math.round(performance.now() - tc);
       if (ms > (loadTimes.computeMaxMs ?? 0)) loadTimes.computeMaxMs = ms;
+      // THE RAIN's STEP PROGRAM (`HeroRain.warm`) is built from its hit map, which arrives from the worker AFTER the logo
+      // (`landedIn`, 16 November 2026, session 2): run once when it is in (the warm-up's own call is then a no-op if early)
+      if (landedIn && !rainWarmed) {
+        rainWarmed = true;
+        rain.warm(renderer);
+      }
       // THE WARM-UP (`warmScene`): once the logo exists, in the background, while the story runs
       if (logo && !warmed && !warming) {
         warming = true;
+        at("Warm");
         warmScene(renderer)
           .catch((e: unknown) => console.warn("[hero] warm-up", e))
           .finally(() => {
@@ -2248,6 +2290,7 @@ export function createHeroScene(aspect: number): HeroScene {
     },
     dispose() {
       disposed = true;
+      maps?.dispose();
       textDispose?.();
       for (const d of disposables) d.dispose();
     },

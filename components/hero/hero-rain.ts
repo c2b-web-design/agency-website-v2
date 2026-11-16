@@ -3,6 +3,8 @@ import { MeshBasicNodeMaterial, type WebGPURenderer } from "three/webgpu";
 import { cameraProjectionMatrix, cameraViewMatrix, cos, float, Fn, hash, If, instanceIndex, instancedArray, positionGeometry, positionLocal, select, sin, smoothstep, sqrt, step, texture, uniform, uv, vec2, vec3, vec4 } from "three/tsl";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { LOGO_BLUE_DEFAULTS, platinumBlueF0 } from "@/components/about/logo-mark-material";
+import type { HitData } from "./hero-maps.worker";
+import { precompileCompute, type PrecompileResult } from "./hero-steam";
 
 /**
  * ⛔ THE HERO's PHASE 2 — THE RAIN (14 November 2026; D-101). Carl: *"So lets start off with the rain om the Logo."* …
@@ -28,7 +30,8 @@ import { LOGO_BLUE_DEFAULTS, platinumBlueF0 } from "@/components/about/logo-mark
  * - **THE START** (*"the rain starts just as the wobble ends"*): the first drops are released one fall EARLY, so they LAND
  *   on the logo's top as phase 1's wobble ends (`update`'s `sinceLanding` = 0).
  * - **THE HIT MAP, MADE ONCE FROM THE LOGO's OWN GEOMETRY** (`hitMap`): the landed logo's triangles drawn from above onto a
- *   grid, each cell the highest surface over it — the flow map's method (`hero-scene.ts`, `logoFlowMap`). ⚠ A DEPARTURE,
+ *   grid, each cell the highest surface over it — the flow map's method (`hero-maps.worker.ts`, `inkGrid`; both built off the
+ *   main thread there since 16 November 2026, session 2: `hitMapData`). ⚠ A DEPARTURE,
  *   stated: the structure Carl approved (D-101, 14 November) was the example's — an orthographic camera rendering the
  *   logo into a texture, ONCE at the landing. The map is the same; made on the CPU it needs no second render, no second
  *   camera and no render target, and its orientation is the flow map's (proven), not a render's (unproven). Built when the
@@ -55,8 +58,9 @@ const VARY = { width: 0.35, length: 0.25, brightness: 0.35, splashSize: 0.4, cro
 export const RAIN_MAX_DROPS = 50000;
 /** a parked drop's height (world): far below the camera's far plane — not drawn, waiting to be released */
 const PARK = -1e6;
-/** the hit map's cells per cm (the logo's top edges are ~7.6 cm deep: ~30 cells across) */
-const HIT = { perCm: 4, marginCm: 2, maxCells: 4096 } as const;
+/** the hit map's cells per cm (the logo's top edges are ~7.6 cm deep: ~30 cells across). Exported: sent with the map's
+ *  request to `hero-maps.worker.ts`, which builds it (16 November 2026, session 2) */
+export const HIT = { perCm: 4, marginCm: 2, maxCells: 4096 } as const;
 /** how fast the live count may RISE (a full peak over this many seconds): `hold` switched on mid-story must not drop a
  *  sheet of thousands of drops from the same height at once */
 const RISE_S = 0.5;
@@ -135,8 +139,8 @@ export type HeroRain = {
   /** the drops and the splashes (added to the scene by its owner) */
   group: THREE.Group;
   settings: HeroRainSettings;
-  /** the landed logo: its geometry and its world pose once landed — builds the hit map */
-  setLogo(g: THREE.BufferGeometry, landed: THREE.Matrix4, unitsPerCm: number): void;
+  /** the landed logo's HIT MAP (built by `hero-maps.worker.ts` from its geometry and its world pose once landed; `HIT`) */
+  setLogo(hit: HitData, unitsPerCm: number): void;
   /** the story's delta, and the seconds since phase 1's end (the wobble done; NaN = no story to rain on) */
   update(delta: number, sinceLanding: number): void;
   /** the GPU step, before the draw (the bench calls it each frame, D-101's approved structure) */
@@ -164,85 +168,16 @@ type HitMap = { tex: THREE.DataTexture; minX: number; minZ: number; sizeX: numbe
  * barycentric fill); walls edge-on from above are skipped (no area). Row = z, column = x — the flow map's convention, so
  * `texture(map, ((x − minX) / sizeX, (z − minZ) / sizeZ))` reads the cell under (x, z).
  */
-function hitMap(g: THREE.BufferGeometry, landed: THREE.Matrix4, upc: number, floorY: number): HitMap {
-  const t0 = performance.now();
-  const pos = g.getAttribute("position");
-  const idx = g.getIndex();
-  const n = pos.count;
-  const wp = new Float32Array(n * 3);
-  const v = new THREE.Vector3();
-  const bb = new THREE.Box3();
-  for (let i = 0; i < n; i++) {
-    v.fromBufferAttribute(pos, i).applyMatrix4(landed);
-    wp[3 * i] = v.x;
-    wp[3 * i + 1] = v.y;
-    wp[3 * i + 2] = v.z;
-    bb.expandByPoint(v);
-  }
-  const margin = HIT.marginCm * upc;
-  const minX = bb.min.x - margin;
-  const minZ = bb.min.z - margin;
-  const sizeX = bb.max.x - bb.min.x + 2 * margin;
-  const sizeZ = bb.max.z - bb.min.z + 2 * margin;
-  const W = Math.min(HIT.maxCells, Math.ceil((sizeX / upc) * HIT.perCm));
-  const H = Math.min(HIT.maxCells, Math.ceil((sizeZ / upc) * HIT.perCm));
-  const hgt = new Float32Array(W * H);
-  const tris = idx ? idx.count / 3 : n / 3;
-  const vi = (k: number) => (idx ? idx.getX(k) : k);
-  for (let t = 0; t < tris; t++) {
-    const a = vi(3 * t);
-    const b = vi(3 * t + 1);
-    const c = vi(3 * t + 2);
-    const ax = ((wp[3 * a] - minX) / sizeX) * W;
-    const az = ((wp[3 * a + 2] - minZ) / sizeZ) * H;
-    const bx = ((wp[3 * b] - minX) / sizeX) * W;
-    const bz = ((wp[3 * b + 2] - minZ) / sizeZ) * H;
-    const cx = ((wp[3 * c] - minX) / sizeX) * W;
-    const cz = ((wp[3 * c + 2] - minZ) / sizeZ) * H;
-    const area = (bx - ax) * (cz - az) - (cx - ax) * (bz - az);
-    if (Math.abs(area) < 1e-9) continue; // a wall, edge-on from above
-    const ay = wp[3 * a + 1] - floorY;
-    const by = wp[3 * b + 1] - floorY;
-    const cy = wp[3 * c + 1] - floorY;
-    const x0 = Math.max(0, Math.floor(Math.min(ax, bx, cx)));
-    const x1 = Math.min(W - 1, Math.ceil(Math.max(ax, bx, cx)));
-    const z0 = Math.max(0, Math.floor(Math.min(az, bz, cz)));
-    const z1 = Math.min(H - 1, Math.ceil(Math.max(az, bz, cz)));
-    for (let z = z0; z <= z1; z++) {
-      for (let x = x0; x <= x1; x++) {
-        const px = x + 0.5;
-        const pz = z + 0.5;
-        const w0 = ((bx - px) * (cz - pz) - (cx - px) * (bz - pz)) / area;
-        const w1 = ((cx - px) * (az - pz) - (ax - px) * (cz - pz)) / area;
-        const w2 = 1 - w0 - w1;
-        if (w0 < 0 || w1 < 0 || w2 < 0) continue;
-        const y = w0 * ay + w1 * by + w2 * cy;
-        if (y > hgt[W * z + x]) hgt[W * z + x] = y;
-      }
-    }
-  }
-  let lit = 0;
-  let maxH = 0;
-  for (let i = 0; i < W * H; i++) {
-    if (hgt[i] > 0) lit++;
-    if (hgt[i] > maxH) maxH = hgt[i];
-  }
+function hitMap(d: HitData): HitMap {
+  // ⛔ BUILT IN `hero-maps.worker.ts` (16 November 2026, session 2; D-101: off the main thread, lifted verbatim —
+  // `hitMapData`); here the texture is made from its heights
+  const { hgt, W, H, minX, minZ, sizeX, sizeZ, topY, cx, cz, check } = d;
   const tex = new THREE.DataTexture(hgt, W, H, THREE.RedFormat, THREE.FloatType);
   tex.magFilter = THREE.NearestFilter;
   tex.minFilter = THREE.NearestFilter;
   tex.generateMipmaps = false;
   tex.needsUpdate = true;
-  return {
-    tex,
-    minX,
-    minZ,
-    sizeX,
-    sizeZ,
-    topY: bb.max.y,
-    cx: (bb.min.x + bb.max.x) / 2,
-    cz: (bb.min.z + bb.max.z) / 2,
-    check: { cellsX: W, cellsZ: H, litCells: lit, maxHeight: Math.round(maxH * 10) / 10, buildMs: Math.round(performance.now() - t0) },
-  };
+  return { tex, minX, minZ, sizeX, sizeZ, topY, cx, cz, check };
 }
 
 const smooth01 = (u: number) => {
@@ -486,13 +421,23 @@ export function createHeroRain(floorY: number): HeroRain {
     group.visible = false;
   };
 
+  // ⛔ THE BACKGROUND COMPILE (`hero-steam.ts`, `precompileCompute`; 16 November 2026, session 2): the park and the step
+  // compiled before their first dispatch, so three's synchronous compile is a cache hit (the step is built once: `buildStep`)
+  let precompiling: Promise<unknown> | null = null;
+  let precompile: PrecompileResult | null = null;
+  const precompiled = (renderer: WebGPURenderer) => {
+    if (precompile) return true;
+    if (!precompiling && step_) precompiling = precompileCompute(renderer, [park, step_]).then((r) => (precompile = r));
+    return false;
+  };
+
   return {
     group,
     settings,
-    setLogo(g, landed, unitsPerCm) {
+    setLogo(hit, unitsPerCm) {
       if (map) return;
       upc = unitsPerCm;
-      map = hitMap(g, landed, upc, floorY);
+      map = hitMap(hit);
     },
     update(delta, sinceLanding) {
       const s = settings;
@@ -552,6 +497,7 @@ export function createHeroRain(floorY: number): HeroRain {
         buildStep(map);
         needsPark = true;
       }
+      if (!precompiled(renderer)) return;
       if (needsPark) {
         renderer.compute(park);
         needsPark = false;
@@ -567,6 +513,8 @@ export function createHeroRain(floorY: number): HeroRain {
         buildStep(map);
         needsPark = true;
       }
+      // still compiling in the background: nothing to warm (the first dispatch is then a cache hit anyway)
+      if (!precompiled(renderer)) return;
       if (needsPark) {
         renderer.compute(park);
         needsPark = false;

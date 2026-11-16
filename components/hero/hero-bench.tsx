@@ -85,7 +85,11 @@ export default function HeroBench() {
     // `FLOOR_Y` (the subtext's y tips). Carl: *"without a floor, everything is floating in space for me, it would be good to
     // have some perspective"*; *"The scale is not inportant to me, though it will be to you."* Spacing in SCENE UNITS until
     // step 2's scale gives them centimetres. Rebuilt when the spacing changes
-    const floor = { grid: true, spacing: 100 };
+    // ⛔ OFF BY DEFAULT (16 November 2026, session 2; D-101). Carl: *"The grid lines were for my benefit when putting the page
+    // together. To establish relative distance of objects from each other. In the finished scene they wont be there. In fact,
+    // theyve served their purpose and are not needed anymore."* … *"you can switch it off now"*. The panel's switch kept.
+    // (It also carried the flick at the logo's fade end: this GPU draws the grid dimmer after a LARGE draw — D-101.)
+    const floor = { grid: false, spacing: 100 };
     const GRID_EXTENT = 4000;
     let grid: THREE.GridHelper | null = null;
     const buildGrid = () => {

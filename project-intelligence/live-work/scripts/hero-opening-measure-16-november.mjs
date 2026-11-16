@@ -5,6 +5,7 @@
 // the swivel (the story starts), and the worst frames in each stretch. argv 2: a folder to also RECORD a video of the cold
 // load into (Playwright's recorder, for looking; it costs frames, so its run is separate and not timed). READ-ONLY.
 // ⚠ NOT WATCHED / CAVEATS, printed: Playwright's Chrome (headless, AMD integrated), not Carl's; the frame cap ON.
+// HEADED=1 (env): a VISIBLE window at the screen's own size and density (16 November 2026, session 2), as Carl sees it.
 import { chromium } from "playwright";
 import { mkdtempSync, renameSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -56,7 +57,7 @@ const run = async (page) => {
   return page.evaluate(() => window.__frames);
 };
 {
-  const ctx = await chromium.launchPersistentContext(mkdtempSync(join(tmpdir(), "hero-opening-")), { channel: "chrome", args: ARGS, viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+  const ctx = await chromium.launchPersistentContext(mkdtempSync(join(tmpdir(), "hero-opening-")), { channel: "chrome", args: ARGS, headless: process.env.HEADED !== "1", viewport: process.env.HEADED === "1" ? null : { width: 1920, height: 1080 }, deviceScaleFactor: process.env.HEADED === "1" ? undefined : 1 });
   const p = ctx.pages()[0] ?? (await ctx.newPage());
   await p.addInitScript(logger);
   await p.goto("http://localhost:3000/proto/hero", { waitUntil: "load" });

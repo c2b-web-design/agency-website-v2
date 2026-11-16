@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { MeshBasicNodeMaterial, Storage3DTexture, type Node, type WebGPURenderer } from "three/webgpu";
 import { Break, float, frameId, Fn, hash, If, instanceIndex, instancedArray, interleavedGradientNoise, Loop, max, min, mx_noise_float, cameraPosition, positionWorld, screenCoordinate, select, smoothstep, step, storageTexture, texture3D, textureStore, uniform, uvec3, vec3, vec4 } from "three/tsl";
 import { snoiseVec3 } from "three/addons/tsl/math/curlNoise.js";
+import { steamBoxFor, steamSolidMask, type SteamBox, type SteamInk, type SteamLogo, type SteamMask } from "./hero-maps.worker";
 
 /**
  * ⛔ THE HERO's PHASE 2: THE STEAM (16 November 2026; D-101). Carl: *"Steam first. build it on the proto hero and we will
@@ -37,8 +38,9 @@ import { snoiseVec3 } from "three/addons/tsl/math/curlNoise.js";
  * Values are takes (the panel's Steam folder).
  */
 
-/** the box about the landed logo (cm): each side in x and z, and above its top */
-const MARGIN = { xCm: 20, zCm: 25, riseCm: 100 } as const;
+/** the box about the landed logo (cm): each side in x and z, and above its top. Exported: sent with the solid mask's
+ *  request to `hero-maps.worker.ts` (16 November 2026, session 2) */
+export const MARGIN = { xCm: 20, zCm: 25, riseCm: 100 } as const;
 /**
  * ONE STEP PER FRAME, its length the frame's (clamped to `SIM_DT`). ⚰️ Take 1 stepped a FIXED 1/60 s, up to two a frame:
  * below 60 fps it ran TWO steps every frame to catch up, doubling the simulation's cost exactly when the frame was already
@@ -119,13 +121,16 @@ export type HeroSteamInfo = {
   gpuMB: number;
   /** the warm-up's time at load (ms, to its last compile; −1 = not done) */
   warmMs: number;
+  /** the compute pipelines' background compile (`precompileCompute`): null until done */
+  precompile: PrecompileResult | null;
 };
 
 export type HeroSteam = {
   group: THREE.Group;
   settings: HeroSteamSettings;
-  /** the landed logo: geometry (local cm), its landed world pose, units per cm, its ink raster (`hero-scene.ts`, `inkGrid`) */
-  setLogo(g: THREE.BufferGeometry, landed: THREE.Matrix4, unitsPerCm: number, ink: SteamInk): void;
+  /** the landed logo: geometry (local cm), its landed world pose, units per cm, its ink raster (`hero-maps.worker.ts`,
+   *  `inkGrid`), and its SOLID MASK built off the main thread there (used only at the cell size it was made for) */
+  setLogo(g: THREE.BufferGeometry, landed: THREE.Matrix4, unitsPerCm: number, ink: SteamInk, mask?: SteamMask): void;
   /** the scene key's direction (world, toward the light) */
   setLight(dir: THREE.Vector3): void;
   /** the story's delta; seconds since the first drops landed (NaN = none); the red left (1 − wash); the camera (world) */
@@ -136,67 +141,85 @@ export type HeroSteam = {
   dispose(): void;
 };
 
-/** the logo's ink on its face (local x, y in cm) — `inkGrid`'s result */
-export type SteamInk = { ink: Uint8Array; W: number; H: number; minX: number; minY: number; sizeX: number; sizeY: number };
-
 const smooth01 = (u: number) => {
   const x = Math.max(0, Math.min(1, u));
   return x * x * (3 - 2 * x);
 };
 
-type Logo = { g: THREE.BufferGeometry; landed: THREE.Matrix4; upc: number; ink: SteamInk };
-type Box = { min: THREE.Vector3; sizeWorld: THREE.Vector3; cm: THREE.Vector3; n: [number, number, number]; cellCm: number };
-
-/** the box about the landed logo, in whole cubic cells */
-function boxFor(logo: Logo, floorY: number, cellCm: number): Box {
-  logo.g.computeBoundingBox();
-  const wb = logo.g.boundingBox!.clone().applyMatrix4(logo.landed);
-  const u = logo.upc;
-  const lo = new THREE.Vector3(wb.min.x - MARGIN.xCm * u, floorY, wb.min.z - MARGIN.zCm * u);
-  const hi = new THREE.Vector3(wb.max.x + MARGIN.xCm * u, wb.max.y + MARGIN.riseCm * u, wb.max.z + MARGIN.zCm * u);
-  const cmSize = hi.clone().sub(lo).divideScalar(u);
-  const n: [number, number, number] = [Math.ceil(cmSize.x / cellCm), Math.ceil(cmSize.y / cellCm), Math.ceil(cmSize.z / cellCm)];
-  const cm = new THREE.Vector3(n[0] * cellCm, n[1] * cellCm, n[2] * cellCm);
-  // centred on the logo in x and z; the floor kept as the bottom
-  const min = new THREE.Vector3(lo.x - ((cm.x - cmSize.x) * u) / 2, floorY, lo.z - ((cm.z - cmSize.z) * u) / 2);
-  return { min, sizeWorld: cm.clone().multiplyScalar(u), cm, n, cellCm };
+/**
+ * ⛔ THE COMPUTE PIPELINES, COMPILED IN THE BACKGROUND FIRST (16 November 2026, session 2; D-101). Carl: *"get to the bottom
+ * of the stall and try to fix it."* MEASURED (`live-work/scripts/hero-opening-gpu-creates-16-november.mjs`, `-gpu-trace-`):
+ * on a first visit (an empty shader cache) the opening froze ~0.85–1.3 s in one frame on the headline's fade-in, the page
+ * IDLE: the GPU process compiling the steam's 10 compute pipelines and the rain's 2, which three r185 creates
+ * SYNCHRONOUSLY ONLY (`WebGPUPipelineUtils.createComputePipeline` → `device.createComputePipeline`). WebGPU can compile a
+ * pipeline in the background (`createComputePipelineAsync`), and Chrome then serves the SAME pipeline from its cache:
+ * probed (`webgpu-async-prewarm-probe-16-november.mjs`) a slow shader's synchronous create 679 ms cold → 4 ms after.
+ * So for each compute node, BEFORE ITS FIRST DISPATCH: three's OWN WGSL (`_nodes.getForCompute`, cached — not generated
+ * twice) and OWN bind group layouts (`_bindings.getForCompute`, cached), compiled with `createComputePipelineAsync` — three's
+ * descriptor exactly (the code, entry point `main`, the layouts; only the label differs, which compiles to nothing); the
+ * caller holds its first dispatch until this resolves, and three's synchronous create is then a cache hit.
+ * ⚠ IT READS THREE r185's PRIVATE SURFACE (`renderer._nodes`, `renderer._bindings`, `backend.get(group).layout.layoutGPU`;
+ * three is pinned). If any piece is missing or throws, it resolves `ok: false` and the caller dispatches anyway: three's
+ * synchronous compile, exactly as before — never worse. Approved by Carl's instruction above; structural note
+ * `live-work/structural-note-compute-precompile-16-november.md`.
+ */
+export type PrecompileResult = { ok: boolean; pipelines: number; ms: number };
+// the WebGPU calls used (the project carries no WebGPU types): the device's three creators, by shape
+type GpuDevice = {
+  createShaderModule(d: { code: string }): unknown;
+  createPipelineLayout(d: { bindGroupLayouts: unknown[] }): unknown;
+  createComputePipelineAsync(d: { label: string; layout: unknown; compute: { module: unknown; entryPoint: string } }): Promise<unknown>;
+};
+type ThreeInternals = {
+  _nodes?: { getForCompute(n: unknown): { computeShader: string } };
+  _bindings?: { getForCompute(n: unknown): unknown[] };
+  backend?: { device?: GpuDevice; get(o: unknown): { layout?: { layoutGPU?: unknown } } };
+};
+export async function precompileCompute(renderer: WebGPURenderer, nodes: readonly unknown[]): Promise<PrecompileResult> {
+  const t0 = performance.now();
+  performance.mark("hero:Precompile");
+  const r = renderer as unknown as ThreeInternals;
+  try {
+    const device = r.backend?.device;
+    if (!device || !r._nodes || !r._bindings || !r.backend) throw new Error("three's internals are not as r185's");
+    const { _nodes: nodesOf, _bindings: bindingsOf, backend } = r;
+    const jobs = nodes.map((node) => {
+      const code = nodesOf.getForCompute(node).computeShader;
+      const bindGroupLayouts = bindingsOf.getForCompute(node).map((group) => {
+        const l = backend.get(group).layout?.layoutGPU;
+        if (!l) throw new Error("no bind group layout");
+        return l;
+      });
+      return device.createComputePipelineAsync({ label: "hero precompile", layout: device.createPipelineLayout({ bindGroupLayouts }), compute: { module: device.createShaderModule({ code }), entryPoint: "main" } });
+    });
+    performance.mark("hero:PrecompileIssued");
+    await Promise.all(jobs);
+    performance.mark("hero:PrecompileDone");
+    return { ok: true, pipelines: nodes.length, ms: Math.round(performance.now() - t0) };
+  } catch (e) {
+    console.warn("[hero] compute precompile skipped (three compiles synchronously, as before)", e);
+    return { ok: false, pipelines: nodes.length, ms: Math.round(performance.now() - t0) };
+  }
 }
+
+type Logo = SteamLogo & { mask?: SteamMask };
+type Box = SteamBox;
 
 /**
- * THE SOLID MASK (header): each cell of a grid at half the simulation's cell, 255 where its centre is inside the logo — the
- * ink at its face position (local x, y) and inside the extrusion's depth (local z). The landed pose inverted takes each
- * world centre to the logo's local cm. ⚠ The bevel is not modelled (the ink's outline × the full depth).
+ * THE BOX (`steamBoxFor`: the box about the landed logo, in whole cubic cells) and THE SOLID MASK (`steamSolidMask`: each
+ * cell of a grid at half the simulation's cell, 255 where its centre is inside the logo — the ink at its face position and
+ * inside the extrusion's depth; ⚠ the bevel is not modelled) live in `hero-maps.worker.ts` (16 November 2026, session 2;
+ * D-101): lifted verbatim, so the mask is built OFF THE MAIN THREAD at load and by the same function here when the cell
+ * size changes (the panel).
  */
-function solidMask(logo: Logo, box: Box): { data: Uint8Array; n: [number, number, number]; solid: number; ms: number } {
-  const t0 = performance.now();
+const boxFor = (logo: Logo, floorY: number, cellCm: number): Box => steamBoxFor(logo, floorY, cellCm, MARGIN);
+const solidMask = (logo: Logo, box: Box): SteamMask => {
+  // the worker's mask only where it was made for this very box (its cell size, and so its cells' count)
+  const m = logo.mask;
   const mc = box.cellCm / 2;
-  const n: [number, number, number] = [Math.round(box.cm.x / mc), Math.round(box.cm.y / mc), Math.round(box.cm.z / mc)];
-  const data = new Uint8Array(n[0] * n[1] * n[2]);
-  const inv = logo.landed.clone().invert().elements;
-  const zb = logo.g.boundingBox!;
-  const { ink, W, H, minX, minY, sizeX, sizeY } = logo.ink;
-  const stepW = mc * logo.upc;
-  let solid = 0;
-  for (let k = 0; k < n[2]; k++) {
-    const wz = box.min.z + (k + 0.5) * stepW;
-    for (let j = 0; j < n[1]; j++) {
-      const wy = box.min.y + (j + 0.5) * stepW;
-      for (let i = 0; i < n[0]; i++) {
-        const wx = box.min.x + (i + 0.5) * stepW;
-        const lz = inv[2] * wx + inv[6] * wy + inv[10] * wz + inv[14];
-        if (lz < zb.min.z || lz > zb.max.z) continue;
-        const lx = inv[0] * wx + inv[4] * wy + inv[8] * wz + inv[12];
-        const ly = inv[1] * wx + inv[5] * wy + inv[9] * wz + inv[13];
-        const ix = Math.floor(((lx - minX) / sizeX) * W);
-        const iy = Math.floor(((ly - minY) / sizeY) * H);
-        if (ix < 0 || iy < 0 || ix >= W || iy >= H || !ink[W * iy + ix]) continue;
-        data[n[0] * (n[1] * k + j) + i] = 255;
-        solid++;
-      }
-    }
-  }
-  return { data, n, solid, ms: Math.round(performance.now() - t0) };
-}
+  const fits = !!m && m.cellCm === box.cellCm && m.n[0] === Math.round(box.cm.x / mc) && m.n[1] === Math.round(box.cm.y / mc) && m.n[2] === Math.round(box.cm.z / mc);
+  return fits ? m! : steamSolidMask(logo, box);
+};
 
 /** THE EMITTERS (header): per column of simulation cells, the cell above the highest solid one (uvw at its centre) */
 function emittersFor(mask: { data: Uint8Array; n: [number, number, number] }, box: Box): Float32Array {
@@ -594,6 +617,7 @@ export function createHeroSteam(floorY: number): HeroSteam {
   async function warm(renderer: WebGPURenderer, scene: THREE.Scene, camera: THREE.Camera) {
     const s = sim!;
     const t0 = performance.now();
+    performance.mark("hero:SteamWarm");
     u.dt.value = SIM_DT;
     u.emitD.value = 0;
     u.emitT.value = 0;
@@ -618,6 +642,7 @@ export function createHeroSteam(floorY: number): HeroSteam {
     mat.depthTest = keep.depthTest;
     mat.needsUpdate = true;
     warmMs = Math.round(performance.now() - t0);
+    performance.mark("hero:SteamWarmDone");
   }
 
   // THE CLOCK (header)
@@ -631,10 +656,17 @@ export function createHeroSteam(floorY: number): HeroSteam {
 
   const endS = () => settings.burstS + 2.5 * settings.lifeS;
 
+  // ⛔ THE BACKGROUND COMPILE (`precompileCompute`): nothing is dispatched (and nothing drawn) until it is done, per build
+  let ready = false;
+  let precompiling: Promise<unknown> | null = null;
+  let precompile: PrecompileResult | null = null;
   function rebuild() {
     if (!logo) return;
     sim?.dispose();
     sim = buildSim(logo, settings.cellCm);
+    ready = false;
+    precompiling = null;
+    precompile = null;
     needsCurl = true;
     needsClear = true;
     needsWarm = true;
@@ -643,9 +675,9 @@ export function createHeroSteam(floorY: number): HeroSteam {
   return {
     group,
     settings,
-    setLogo(g, landed, unitsPerCm, ink) {
+    setLogo(g, landed, unitsPerCm, ink, mask) {
       if (logo) return;
-      logo = { g, landed: landed.clone(), upc: unitsPerCm, ink };
+      logo = { g, landed: landed.clone(), upc: unitsPerCm, ink, mask };
       rebuild();
     },
     setLight(dir) {
@@ -661,7 +693,7 @@ export function createHeroSteam(floorY: number): HeroSteam {
       if (started && !(lastT >= 0 && t >= lastT)) needsClear = true;
       lastT = t;
       const wasLive = live;
-      live = !!sim && s.on && started && (s.hold || t < endS());
+      live = !!sim && ready && s.on && started && (s.hold || t < endS());
       group.visible = live;
       if (!live) {
         env = 0;
@@ -701,6 +733,18 @@ export function createHeroSteam(floorY: number): HeroSteam {
     compute(renderer, scene, camera) {
       stepsLastFrame = 0;
       if (!sim) return;
+      // THE BACKGROUND COMPILE (`precompileCompute`), once per build: every pass the simulation dispatches
+      if (!ready) {
+        if (!precompiling) {
+          const built = sim;
+          precompiling = precompileCompute(renderer, [built.curlPass, built.clearA, built.clearB, built.advectVel, built.divergence, built.jacobiAB, built.jacobiBA, built.project, built.advectDye, built.emitPass]).then((res) => {
+            if (sim !== built) return;
+            precompile = res;
+            ready = true;
+          });
+        }
+        return;
+      }
       if (needsCurl) {
         renderer.compute(sim.curlPass);
         needsCurl = false;
@@ -754,6 +798,7 @@ export function createHeroSteam(floorY: number): HeroSteam {
         stepsLastFrame,
         gpuMB: sim.gpuMB,
         warmMs,
+        precompile,
       };
     },
     dispose() {
