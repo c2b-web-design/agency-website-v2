@@ -28,7 +28,7 @@ Close: *"We have the logo phases and the pointer im nicknaming "Gandalfs firewor
 | Beat 2: LOCALISED PLATINUM BLUE RAIN on the logo; red because HOT; the rain COOLS it to PLATINUM BLUE | Carl | CHOSEN |
 | STEAM — fog (`webgpu_custom_fog`) or a VDB volume (`webgl_loader_vdb`) | Builder noted steam; Carl both examples | RAISED, NOT CHOSEN |
 | Beat 3: the logo WET; a CLOTH (`webgpu_compute_cloth`) MOVES OVER THE STILL LOGO, drying it; each pass leaves GOLD — shiny and new | Carl | CHOSEN |
-| The logo JUMPS UP TO MEET THE CLOTH | Carl ("could possibly") | RAISED, NOT CHOSEN |
+| The logo JUMPS UP TO MEET THE CLOTH | Carl ("could possibly") | RAISED, NOT CHOSEN (8 Nov) → **CHOSEN, 16 November 2026** (Carl developed it: *"yes, it is chosen, it should of been noted already"*; D-101) |
 | The FLOOR: HEAT or COLD by the logo's phase, a GRADIENT from the logo, no square, no edge (reference `webgpu_lights_projector`) | Carl | CHOSEN |
 | The SUBTEXT's bottom line on the floor — only the TIPS of the y's (*"you"*, *"eyes"*) touch; heat/cold there, minimal — "balance" | Carl | CHOSEN |
 | The baseline on the floor (descenders sunk) | Builder | RAISED AND NOT CHOSEN |

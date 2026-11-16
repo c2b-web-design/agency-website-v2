@@ -150,3 +150,43 @@ disintegration; FROM BEHIND, FLEETINGLY (new); close in the rain, then the pull 
 look and the beads; the move-or-zoom question answered per shot. Seen in the frames, reported, not ruled: from behind the
 text's backs read dark grey (the key is in front); side on, the dissolve's chunks show as SQUARE blocks at the top of the
 logo (the emission's cell noise, Carl's "chunks taken out", 13 November) — up close a square edge could read as a glitch.
+
+## 16 November 2026, session 3: Carl's principles for the direction
+
+Carl: *"so at the end of building we need to list the events and the time they happen at. Longer tracking shots will eat
+into events so in all likelihood we will use more than one camera. What is a good technique, but should be used sparingly
+is speed ramps. There is already a note about adding a spline editor. But, as the arch shows with the Vader move, a users
+perpective doesnt have to be a voyeur. We can get amongst the asset. Standing at the Home position will be a visual treat.
+Good use of cameras will elevate it no end."*
+1. **AN EVENT LIST** at the end of building: every event and its time on the story's clock — the storyboard's spine.
+2. **MORE THAN ONE CAMERA, LIKELY:** a long tracking shot eats into the events around it; cuts keep them.
+3. **SPEED RAMPS: good, SPARINGLY.** The camera bench's speed spline editor (raised 27 October, not built) is their tool.
+4. **NOT A VOYEUR:** the viewer can go AMONGST the asset (the Vader move through the arch), not only watch from outside.
+5. **HOME IS A TREAT IN ITSELF;** good camera use elevates it.
+6. **SMPTE TIMECODE** (Carl: *"its got a clock, we should use SMPTE"*): the event list and the direction in HH:MM:SS:FF on the
+   story's clock; 30 fps non-drop proposed (the films' and Resolve's rate), not ruled.
+7. **⛔ SET IN STONE: THE OPENING SHOT IS FROM HOME** (Carl: *"Lets give people tha traditional first."*).
+8. **THE CLOCK** (delegated to the Builder): SMPTE 30 fps non-drop, zero at the lean; the opening a variable pre-roll; the
+   event list printed from the scene; the benches' clocks to SMPTE with it.
+9. **TEMPO** is camera movement, position and cuts as much as the event times — *"not neccersarily in a numerical way"*.
+10. **⛔ NO CUT OUT OF HOME:** shot 1 is left by a MOVE of the same camera (move, arc, zoom, or all), never a cut — *"Web Devs
+    might but the general public wont"* expect it. It starts at Home exactly, from rest, eased in. Cuts come later.
+11. **⛔ THE CAMERA's CHARACTER: CLAIR DE LUNE** (not Beethoven's 5th, not Thus Spake Zarathustra): pianissimo, legato,
+    rubato — moves begin almost imperceptibly and settle rather than stop; arcs and drifts over pushes; tempo breathes.
+12. **⛔ FIRST PLOTTED MOVE: UNDER THE DANCING BLOBS, LOOKING UP, WITH A SPEED RAMP** (Carl). The dance is fixed: all ten
+    blobs out `00:00:07:02` → `00:00:17:01`; the group ~1.8 m across, centres 10–188 cm above the floor; the lowest always
+    10–46 cm up (they feed the pool) — the path threads between them. Measured 16 November, session 3 (D-101).
+13. **THE LAST DROPS TURN TO CODE** (Carl's idea, D-101): a few, here and there, fleeting, at the rain's end; no slow motion;
+    an in-joke (*"There is no spoon"*). A moment the storyboard should let the viewer catch, without pointing at it.
+14. **THE CODE DROPS AND THE CAMERA (NOT AT HOME then, Carl):** where the camera is at the last band (`00:00:31:10` – `00:00:31:23`) decides how the
+    code reads — close and oblique: larger, a partial fall, fast (Carl). The glyphs are sized in the world, not the screen.
+15. **CAM 2 CANDIDATE: TO THE SIDE, ALONG THE LOGO's EDGE** (Carl), for the code drops (authored, so their time and place are
+    known): the top edges recede in one line of sight, so every chosen one is in frame wherever it lands along the logo.
+16. **OBLIQUE IS THE LOGO's BEST LIGHT; SMALL MOVES MAKE THE SHADING TRAVEL** (Carl; the `Who we are` button's reason).
+    Measured: 10° of arc halves the highlit area and slides the highlight across the b and down the 2's stem
+    (`2026-11-16_oblique-arc-12deg_cooled.mp4`). Even a held shot can drift a few degrees.
+17. **⛔ EACH SHOT = WHERE, WHEN, HOW IT MOVES, HOW LONG — AND THE NEXT MARK AND ITS TIME** (Carl): a move is planned
+    backward from where it must be next. *"A face on logo is impressive ... moving through 3d space is stunning."*
+18. **THE CAMERA CAN HIDE PART OF A TRANSITION** (Carl): once a behaviour is established, later stretches may happen off
+    camera (blue → gold not always by visible interaction). Continuity: on return, the state is what the behaviour would
+    have made it.

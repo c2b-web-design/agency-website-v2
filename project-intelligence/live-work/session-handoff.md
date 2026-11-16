@@ -1,99 +1,92 @@
-# Session Handoff — 16 November 2026 (Monday), session 2. THE OPENING's STALLS FIXED; THE LOGO's FADE AS ONE SOLID LAYER; THE GRID OFF
+# Session Handoff — 16 November 2026 (Monday), session 3. THE TEMPERATURE APPROVED; THE WET DIALS; THE STEAM's LOCAL HEAT; THE CAMERA's PRINCIPLES; THE FLOOR NEXT
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces every earlier handoff. Delete it at the end of
 the session that reads it, once its replacement is written.
 
-**The record:** D-101 in `decisions.md`, from *"⛔ THE STALL ON THE TEXT: THE MAPS MOVED OFF THE MAIN THREAD (16 November
-2026, session 2)"* to the end: every beat, with Carl's words. Session ended on Carl's word: *"Compaction is 44%. Session limit
-is good on 35%. We will start a new session. Write a handoff and commit and push and give me a status check"*; then the
-vertical lines (ruled out), the temperature model (approved for NEXT session) — the last entries of D-101.
+**The record:** D-101 in `decisions.md`, from *"⛔ THE TEMPERATURE MODEL — THE STRUCTURAL NOTE (16 November 2026, session 3)"*
+to the end: every beat, with Carl's words. The camera's principles are numbered 1–18 at the end of
+`live-work/hero-camera-direction-14-november/camera-direction-note.md`. Session ended on Carl's word: *"ok. write a handoff
+and commit and push."*
 
 ## ⛔ NEXT SESSION — WHAT IS OPEN
 
-1. **⛔ FIRST: BUILD THE TEMPERATURE MODEL** (Carl, end of session 2: *"yes, but in the next session ... it will be built
-   from the Home position"*). The sharp vertical red/blue lines are RULED OUT (*"do not look natural during the wash, either
-   through the rain or with rapid cooling"*): today's wash cools each vertical strip of the face on its own (the run-off map,
-   `RUNOFF`), so neighbouring strips with different run lengths jump at a ruler line. **Build:** a TEMPERATURE for the logo's
-   face — falling everywhere over time (the logo cools AS AN OBJECT, Carl), faster where the water runs, EVENED OUT through
-   the metal (soft, wandering boundaries) — driving the red→blue colour; the steam follows it (it already follows the red
-   left); the DRIPS later (water flashes to steam while the metal is above boiling; below it, it runs, gathers on the
-   downward edges, drips). Judged from HOME; Carl flies closer at times, and the final camera direction comes at the end —
-   **the wash is to be SEEN CLOSE UP** (*"your handiwork deserves to be seen close up in all its glory"*; the oblique note,
-   `hero-camera-direction-14-november/camera-direction-note.md`, 14 November). **NULL CONTROL:** every frame before the rain
-   unchanged — make a NEW reference first (the grid is off now). Then the rest of Carl's 14 November rulings: the wet coat's
-   lightness, the wet dials, the structural note v1.1 and the camera direction note. Then **THE FLOOR**.
-2. **THE FLOOR, restated today** (Carl: *"that will be on the floor. No statue. The pasttern will either be red or blue
-   depending on the lodo stste."*): `webgpu_lights_projector`'s procedural cell pattern
-   (`Videos\C2B Films\03 The hero\00 References\projector-floor-8-november.mp4`), WITHOUT the statue; reddish from the heat,
-   bluish from the cold, spreading from the logo and fading with distance (10 November, PHASE 4). It replaces the grid.
-   ⚠ **Check it with and without the logo drawn before it** — this GPU draws a later object differently after a LARGE draw
-   (below).
-3. **The steam's take-1 notes** (seen, not ruled; carried from session 1): a thin fringe on the top edges in the first ~0.4 s;
-   the cloud hangs once its heat is gone, then fades by ~4.2 s; soft close up at 2.5 cm cells.
-4. **Flags, not chased:** the one-off PINK tint on the text at the lean (1 of 4 Playwright runs; Carl saw none) — likely the
-   same GPU draw-order effect; the scene's remaining 100–170 ms frames are three's main-thread shader generation (cannot
-   leave the main thread) and land before the subtext.
+1. **⛔ FIRST: THE FLOOR** (Carl: *"in tomorrows session we will look at the floor ... first thing"*; *"coz its substantial
+   we will consult the architect"*). **The brief:** from `webgpu_lights_projector` ONLY the PULSING PATTERN on the floor — NO
+   statue, NO rotation; it EMANATES OUT FROM THE LOGO's CENTRE; NO square edge — a roughly CIRCULAR GRADIENT; HOT, then COLD
+   (red with the heat, blue as it cools). It replaces the grid. **Route:** homework first (the reference
+   `Videos\C2B Films\03 The hero\00 References\projector-floor-8-november.mp4` and the example's source at r185 — fetch
+   `raw.githubusercontent.com/mrdoob/three.js/r185/examples/webgpu_lights_projector.html`), then a structural note / plan for
+   the Architect VIA CARL (plan-review gate), BEFORE any build. ⚠ Check it with and without the logo drawn before it — this
+   GPU draws a later object differently after a large draw (session 2). The floor can read the logo's TEMPERATURE field
+   (`hero-heat.ts`) for hot → cold.
+2. **The steam — Carl's to judge now** (ruling 3: local heat first, then these): the thin fringe on the top edges (~0.4 s);
+   the hang (fades by ~4.2 s); the softness close up (2.5 cm cells). Take: `03 The hero\2026-11-16_steam_take2_local-heat.mp4`.
+3. **Asked, not answered:** (a) the camera bench's tool for plotted moves (marking poses from the pad, a PARABOLA through
+   three points, start/end TIMES not pace, a ZOOM over the move) — built ahead of the storyboard or with it? (b) a STORYBOARD
+   FORM (a panel per shot: from pose + SMPTE, move, to pose + SMPTE, duration, what it shows) — wanted?
+4. **The code drops — ruled, not built:** in the rain's LAST BAND (~170 drops in the air as the last starts down,
+   `00:00:31:10`), ~3 CHOSEN ONES, ALL landing on the logo, AUTHORED (spots on the top edges, release times, staggered turning
+   heights); once code, always code; no slow motion; glyphs sized in the WORLD; the camera then NOT at Home; Cam 2 candidate
+   to the SIDE, looking ALONG the logo's edge. Open: a code drop's landing (Builder: no splash).
+5. **Phase 3:** the cloth MOVES through space (its pins the hand, an authored path) and the logo JUMPS to meet it (CHOSEN —
+   no propulsion, it jumps because it is wet; dry it is C-3PO gold); the camera may hide part of the drying once the
+   behaviour is established (continuity on return). **After the cloth: TBD — Carl's** (*"ive got a few days"*).
+6. **Gandalf's fireworks:** the pointer emits the letters c, 2, b (small, growing) for 2 s once the logo is gold; the c2b
+   break-apart REJECTED. Open (Carl's): each letter's life; a still or absent pointer (touch); colour (family default).
+7. **Flags, not chased:** the console warning *"Draw with a vertex count of 0"* (every run, with or without the temperature);
+   side on, the emission's dissolve chunks show as SQUARE blocks (a possible glitch up close); the one-off pink tint (session 2).
 
 ## ⛔ STANDING — CARL's
 
-- **A FIX MUST NOT CHANGE THE STORY** (memory). Anything that changes what the visitor sees, or when, goes to Carl first.
-  Today it held twice: the grid drawn first changed approved shading → reverted and put to him.
-- **SOMETHING IS ALWAYS MOVING.**
-- **THE SCOPE STAYS OPEN** (no lock and test asked): `components/hero/hero-scene.ts`, `hero-bench.tsx`, `hero-rain.ts`,
-  `hero-steam.ts`, `hero-maps.worker.ts` (new today, Carl: *"Authorised to create and use."*), `components/showcase/arch-idea.tsx`,
-  `bench-ideas.ts`, `bench-builder-take.ts` (`chunk-scope.json`: `_keptOpen14Nov`, `_heroSteam16Nov`, `_heroMapsWorker16Nov`).
-  Any other file: name it and ask.
-- Best first; fall back only if a measurement forces it.
+- **A FIX MUST NOT CHANGE THE STORY** (memory). **SOMETHING IS ALWAYS MOVING.** Best first; fall back only if measured.
+- **THE SCOPE STAYS OPEN** (no lock asked): `components/hero/hero-scene.ts`, `hero-bench.tsx`, `hero-rain.ts`,
+  `hero-steam.ts`, `hero-maps.worker.ts`, **`hero-heat.ts` (new today, Carl: *"Authorised to create and use"*)**,
+  `components/showcase/arch-idea.tsx`, `bench-ideas.ts`, `bench-builder-take.ts` (`chunk-scope.json`: `_heroHeat16Nov` and
+  the earlier keys). The camera bench's files are LOCKED. Any other file: name it and ask.
+- **THE DIRECTION (camera note 1–18):** the scene finished from Home first, then STORYBOARDED; ⛔ **SHOT 1 IS HOME, SET IN
+  STONE**; ⛔ **NO CUT OUT OF HOME** — the first change is a MOVE, from rest, eased; **CLAIR DE LUNE**, not Beethoven's 5th;
+  each shot = where, when, how it moves, how long, AND the next mark and its time; amongst the asset, not a voyeur; speed
+  ramps and slow motion sparingly (slow motion PROVEN possible: the dance identical at quarter speed); the first plotted move
+  UNDER THE DANCING BLOBS (all ten out `00:00:07:02` – `00:00:17:01`; the lowest always 10–46 cm up — the path threads
+  between); OBLIQUE is the logo's best light (Carl's 30° orbit, take 2, the reference: `2026-11-16_orbit-30_left_take2.mp4`).
+- **THE CLOCK (delegated, decided):** SMPTE, 30 fps non-drop, ZERO AT THE LEAN; the opening a variable pre-roll; the event
+  list PRINTED FROM THE SCENE, never typed; the benches' clocks to SMPTE in the same chunk.
 
-## WHERE IT STANDS — on `/proto/hero` (committed and pushed at session end)
+## WHERE IT STANDS — on `/proto/hero`
 
-1. **THE MAPS OFF THE MAIN THREAD** (`hero-maps.worker.ts`): the flow, run-off, hit and steam-mask maps, lifted VERBATIM;
-   the arrival's main-thread work 490–632 → 45–70 ms; worker vs inline 0 mismatches (`?mapcheck=1`, dev).
-2. **THE COMPUTE PIPELINES COMPILED IN THE BACKGROUND** (`precompileCompute`, `hero-steam.ts`; the rain imports it): the
-   steam's 10 and the rain's 2 — three r185 creates compute pipelines synchronously only; probed 679 → 4 ms. It reads three's
-   PRIVATE surface (`_nodes`, `_bindings`, `backend`); skips itself if they change. Note
-   `live-work/structural-note-compute-precompile-16-november.md`.
-3. **THE REFLECTION MAPS PREFILTERED IN THE DARK** (the PRIMER, `hero-scene.ts`): the studio, courtyard and judging studio
-   PMREMs built at opening 0.1 s (the lights rise at 0.3 s) into three's cache; exactly 3 builds (none twice). The Q&A's
-   lesson (`/start`'s ~572 ms PMREM; the corners, 21 October). `pmremTexture` outside a lit material needs an explicit
-   direction AND level.
-4. **MEASURED** (a visible window, this PC): first visit — frames over 50 ms after the lights start: 83, 67, 67 ms (was a
-   0.85–1.3 s freeze); return visit — worst 67 ms; the subtext starts at 2.2 s on both; its window 0 over 50 ms. Carl:
-   *"Start text and subtext timings look good, No pink tint on this load."*
-5. **THE LOGO's FADE AS ONE SOLID LAYER** (`logoFadeParts`): during the opening a TRANSPARENT copy of the logo's material
-   after a DEPTH-ONLY child; once done, the opaque material untouched (the story's frames 0 px). Carl: *"implement 1"*. Takes:
-   `03 The hero\2026-11-16_logo-fade_cold.mp4` (the old stipple) and `..._take2_solid-layer.mp4`.
-6. **THE GRID OFF** (`hero-bench.tsx`, the panel switch kept): Carl: *"theyve served their purpose"* … *"you can switch it off
-   now"*. It carried the flick at the fade's end: this GPU draws the grid DIMMER after a large draw — its SCREEN AREA, even a
-   draw writing nothing (bisected, `hero-grid-order-bisect-16-november.mjs`); the 16 November "transparency moved the grid"
-   rejection was this.
+1. **THE TEMPERATURE (R-107, APPROVED, `d07bfa0`):** `hero-heat.ts` — a coldness field on the ink's grid (405 × 212), GPU,
+   1/120 s sub-steps on the story's clock: air 0.04/s, wet 1.2/s, conduction 1 cm²/s; colour, roughness, reflection and ACES
+   follow it; the wet coat stays on the WATER. The Heat folder (switch = an A/B). Last red ~33 s. The mauve band SETTLED.
+2. **THE WET DIALS** (`a4b08f8`): the Wet folder, `WET`'s eight values live. The wet coat's lightness SETTLED (stays lighter).
+3. **THE STEAM × THE LOCAL HEAT** (`a4b08f8`): each emitter reads the heat under it (`heatCellsFor`; 240/240); its own switch
+   (Steam folder, "local heat"); 1–3% less steam (the burst ends before the edges cool).
 
-**NULL CONTROL:** `node project-intelligence/live-work/scripts/hero-logo-state-stills-13-november.mjs <out> 25.3 <ref>` —
-⚠ today's references (scratchpad, gone) included the grid: make a NEW reference from the current code first.
+**NULL CONTROL:** `node project-intelligence/live-work/scripts/hero-logo-state-stills-13-november.mjs <out> 26.2 <ref>`
+(references in the session scratchpad are gone — make new ones first; the Home lean varies ~37 levels run to run, its floor).
+⚠ Mid-rain stills never match pixel for pixel: the rain is RANDOM each run (a fresh seed every frame).
 
-## MEASUREMENT SCRIPTS (all `live-work/scripts/`, 16 November session 2)
+## SCRIPTS (all `live-work/scripts/`, today)
 
-`hero-opening-measure` (`HEADED=1` for a visible window), `hero-opening-gpu-work` (each submit's GPU time and pipelines; the
-PMREM count), `hero-opening-gpu-creates` (which pipelines are built when, labelled), `hero-opening-timeline` (the hero's
-`performance.mark`s "hero:…" beside each long frame and each process), `hero-opening-profile` (CPU, `warm`, `HEADED=1`),
-`hero-opening-gpu-trace`, `hero-maps-worker-check`, `webgpu-async-prewarm-probe`, `hero-logo-fade-film`,
-`hero-fade-grid-probe`, `hero-grid-order-bisect`.
+`hero-heat-wash` (red pixels by time, Home; on/off), `hero-heat-film` (the wash filmed, Home + close),
+`hero-steam-local-heat` (steam grey pixels by steam time, close; on/off), `hero-orbit-take` (Carl's orbit: pose, axis,
+degrees, seconds).
 
 ## STATE
 
-- **COMMITTED AND PUSHED** at Carl's word: see `git log` for the commit after `6701266`. tsc clean; lint at the baseline (the
-  one accepted error, 0 warnings); a clean-checkout build before the push.
+- **COMMITTED AND PUSHED** at Carl's word (see `git log`): tsc clean; lint at the baseline (the one accepted error, 0
+  warnings); a clean-checkout build before each push.
+- **The screen capture STOPPED** (`01 Discussion\2026-11-16_s3_discussion_screen.remux.mkv`, 1:18:51; raw kept).
 - **The dev server is UP** (port 3000).
 
 ## LESSONS
 
-- **A freeze with the page IDLE is the GPU.** Profile first (`hero-opening-profile`): if the main thread is idle in the long
-  frame, trace the GPU process and time the submits.
-- **Check the record for the same problem:** the Q&A and the corners had already solved PMREM stalls.
-- **A probe needs a frozen scene** (the loop stopped, frames drawn by hand): a live scene moved and gave false numbers once.
-- **Bisect by removal, against a true reference** (the object hidden): it found that a draw's screen area, not its pixels,
-  changed the grid.
+- **An idea Carl DEVELOPS is CHOSEN** (`context-rules.md`, the brainstorm rule): the Builder recorded the cloth jump as
+  "being developed" and asked; Carl: *"it should of been noted already."*
+- **An 8-bit ink of 1 (not 255) reads 1/255 on the GPU** — a `> 0.5` test found no ink; the logo stayed red. Measure first.
+- **`hero-steam.ts` has CRLF line endings:** shell string-matching edits fail on it; use the editor.
+- **One switch, one variable:** the steam's local heat first rode the Heat switch; separated.
+- **Credit the right seat:** the linked-particles slider film was the Builder's, not Carl's.
 
 ---
 
-*Written 16 November 2026, session 2.*
+*Written 16 November 2026, session 3.*
