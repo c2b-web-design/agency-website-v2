@@ -13,7 +13,8 @@ const p = await b.newPage({ viewport: { width: 1920, height: 1080 }, deviceScale
 const errors = [];
 p.on("pageerror", (e) => errors.push(String(e).slice(0, 200)));
 await p.goto("http://localhost:3000/proto/hero", { waitUntil: "load" });
-await p.waitForFunction(() => window.__heroBench?.hero?.mould, null, { timeout: 60000 });
+// the story's warm-up (16 November; `hero-scene.ts`, `warmScene`) done: the clock waits for it (code without it: undefined, passes)
+await p.waitForFunction(() => window.__heroBench?.hero?.mould && window.__heroBench.hero.warmed !== false, null, { timeout: 90000 });
 await p.waitForTimeout(9000);
 await p.addStyleTag({ content: ".lil-gui, nextjs-portal { display: none !important; } [data-hero-bench] > div:not(.lil-gui) { display: none !important; }" });
 const shots = { home: [0, -49.2, 2566.2, 0, 0, 0], close: [718, -32, 1700, 718, -32, 0] };

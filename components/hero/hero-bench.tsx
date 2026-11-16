@@ -210,6 +210,11 @@ export default function HeroBench() {
         if (homeText.current) homeText.current.style.display = on ? "" : "none";
       });
 
+      // ⛔ THE OPENING (`hero-scene.ts`, `OPENING`; 16 November 2026): the text, then the leaning logo fades in; plays on
+      // load, and again from the dark here
+      f = gui.addFolder("Opening");
+      f.add({ again: () => hero.openingAgain() }, "again").name("Opening again");
+
       // the logo's arrival (`hero-scene.ts`, `arrivalPlan`; 13 November 2026): played once on load; replayed from the lean here
       f = gui.addFolder("Logo");
       f.add({ jump: () => hero.replayArrival() }, "jump").name("Arrival again");
@@ -241,6 +246,27 @@ export default function HeroBench() {
       f.add(rs, "splashCm", 0.5, 15, 0.1).name("splash size (cm)");
       // the wash: the run-off keeps running after the rain (from the first drops landing to the logo all platinum blue)
       f.add(rs, "washSeconds", 3, 15, 0.1).name("wash length (s)");
+
+      // ⛔ PHASE 2, THE STEAM (`hero-steam.ts`; 16 November 2026; Carl: *"build it on the proto hero and we will take
+      // measurements"*): a short burst as the first drops land; "hold" keeps it emitting to judge and measure; it plays on
+      // the rain's clock, so "Steam again" plays the rain again; the cell size is the cost's main dial
+      const ss = hero.steam;
+      f = gui.addFolder("Steam");
+      f.add(ss, "on");
+      f.add(ss, "hold").name("hold (emitting)");
+      f.add({ again: () => hero.rainAgain() }, "again").name("Steam again (rain again)");
+      f.add(ss, "burstS", 0.3, 4, 0.05).name("burst (s)");
+      f.add(ss, "lifeS", 0.2, 5, 0.05).name("life (s)");
+      f.add(ss, "coolS", 0.1, 4, 0.05).name("heat life (s)");
+      f.add(ss, "amount", 0, 40, 0.5);
+      f.add(ss, "heat", 0, 20, 0.1);
+      f.add(ss, "rise", 0, 1500, 10).name("rise (cm/s²)");
+      f.add(ss, "weight", 0, 200, 1);
+      f.add(ss, "turbulence", 0, 1500, 10);
+      f.add(ss, "cellCm", [1.5, 2, 2.5, 3, 4, 5]).name("cell (cm)");
+      f.add(ss, "steps", 8, 128, 1).name("ray steps");
+      f.add(ss, "thickness", 0.002, 0.2, 0.001);
+      f.add(ss, "brightness", 0, 3, 0.01);
 
       // ⛔ THE CAMERA — the readout, Copy and Home (note v1.3, "HOME")
       f = gui.addFolder("Camera");

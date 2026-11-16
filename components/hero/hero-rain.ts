@@ -141,11 +141,17 @@ export type HeroRain = {
   update(delta: number, sinceLanding: number): void;
   /** the GPU step, before the draw (the bench calls it each frame, D-101's approved structure) */
   compute(renderer: WebGPURenderer): void;
+  /** ⛔ THE WARM-UP (16 November 2026; `hero-scene.ts`, `warmScene`): the step program built and run once at load with no
+   *  drop live (nothing moves) — not first built at the rain's release (~100 ms on a cold shader cache, measured) */
+  warm(renderer: WebGPURenderer): void;
   /** the shape again from now (once the logo has landed) */
   again(): void;
   /** ⛔ PHASE 2, THE WASH: the share of the rain's whole fall that has LANDED, 0 until the first drop, 1 by the last (held
    *  at the peak: 1 after one whole fall's worth). The logo's run-off reads it (`hero-scene.ts`, `RUNOFF`) */
   readonly wash: number;
+  /** ⛔ PHASE 2, THE STEAM's clock (`hero-steam.ts`; 16 November 2026): seconds since the FIRST DROPS LANDED on the rain's
+   *  own clock (negative before; NaN while off), so "Rain again" plays the steam again too. A read-out only */
+  readonly sinceFirstLanding: number;
   readonly info: HeroRainInfo | null;
   dispose(): void;
 };
@@ -555,6 +561,22 @@ export function createHeroRain(floorY: number): HeroRain {
       // are, undrawn (the draw's count is the peak), until the next run parks them all
       if (running && step_) renderer.compute(step_, Math.max(1, Math.ceil(settings.peak)));
     },
+    warm(renderer) {
+      if (!map) return;
+      if (!step_) {
+        buildStep(map);
+        needsPark = true;
+      }
+      if (needsPark) {
+        renderer.compute(park);
+        needsPark = false;
+      }
+      // no drop live and no time passing: every drop stays parked, every splash where it is
+      if (running || !step_) return;
+      u.active.value = 0;
+      u.dt.value = 0;
+      renderer.compute(step_, 1);
+    },
     again() {
       if (started) {
         landed = 0;
@@ -564,6 +586,9 @@ export function createHeroRain(floorY: number): HeroRain {
     },
     get wash() {
       return washNow();
+    },
+    get sinceFirstLanding() {
+      return t < 0 ? NaN : t - leadS;
     },
     get info() {
       if (!map) return null;

@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { ClippingGroup, MeshPhysicalNodeMaterial, type WebGPURenderer } from "three/webgpu";
-import { acesFilmicToneMapping, cameraWorldMatrix, float, lights, materialColor, mix, mx_cell_noise_float, mx_noise_float, mx_noise_vec3, normalView, output, pmremTexture, positionLocal, positionViewDirection, positionWorld, pow4, roughness, smoothstep, texture, transformNormalToView, normalLocal, uniform, vec2, vec3, vec4 } from "three/tsl";
+import { ClippingGroup, MeshPhysicalNodeMaterial, type Node, type WebGPURenderer } from "three/webgpu";
+import { acesFilmicToneMapping, cameraWorldMatrix, float, interleavedGradientNoise, lights, materialColor, mix, mx_cell_noise_float, mx_noise_float, mx_noise_vec3, normalView, output, pmremTexture, positionLocal, positionViewDirection, positionWorld, pow4, roughness, screenCoordinate, smoothstep, texture, transformNormalToView, normalLocal, uniform, vec2, vec3, vec4 } from "three/tsl";
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { heroTextLayout } from "@/components/showcase/hero-text";
@@ -10,6 +10,7 @@ import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/logo-mark-geometry";
 import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
 import { createHeroRain, type HeroRainInfo, type HeroRainSettings } from "./hero-rain";
+import { createHeroSteam, type HeroSteamInfo, type HeroSteamSettings } from "./hero-steam";
 import { LOGO_BLUE_DEFAULTS, LOGO_JUDGING_STUDIO, platinumBlueF0 } from "@/components/about/logo-mark-material";
 
 /**
@@ -771,6 +772,46 @@ const ARRIVAL = { holdS: 2, apexCm: 60, g: 981 } as const;
  * yellow outline drawn there is the bench's guide. The spot is a take for Carl's spacing.
  */
 const MOULD = { raiseCm: 40 } as const;
+
+
+/**
+ * ⛔ THE OPENING — THE TEXT, THEN THE LEANING LOGO FADES IN (16 November 2026; D-101). Carl: *"scrap the HTML logo idea and
+ * the overlay. Frame rate drops to 14fps while its compiling. Just have the text happen and fade in the leaning logo. No
+ * loading needed."* ⚰️ WITHDRAWN the same day (D-101): the HTML loading logo, "Loading" and its dots, the face-on swap and
+ * the swivel into the lean (Carl's opening of the same day; built and measured before he scrapped it).
+ * - THE LIGHTS COME UP (`litS`): the key and the ambient from 0, and the text's edge glow with them — intensities only (no
+ *   shader rebuilt); the text fades in with them.
+ * - THE SUBTEXT REVEALS, line by line, at READING SPEED (`/start`'s subtext: 59 letters in 4.2 s, ~70 ms a letter, eased in
+ *   and out — `sub1`, `sub2`: start, length): a reveal edge sweeping left to right (`maskNode`).
+ * - THE LEANING LOGO FADES IN (`logoAtS`, `logoFadeS`) — in the lean, where the story starts — at its time OR WHEN ITS
+ *   PROGRAMS ARE BUILT, if later (`warmScene`: it is never drawn before it is built). THE FADE IS ALPHA-TO-COVERAGE: the
+ *   logo stays OPAQUE; its opacity decides how many of each pixel's 4 MSAA samples it covers, dithered per pixel between
+ *   the levels (`logoFade`), exactly 1 when faded in. ⚰️ Two routes MEASURED and rejected the same day: the material
+ *   TRANSPARENT from the start changed the floor grid's pixels at the lean (111,236 px, max 45; the null control — the same
+ *   frame opaque was 0 px), and switching transparency on only for the fade is a SECOND build of the logo's shader
+ *   (3.2 s measured). Alpha-to-coverage is set from the start too: one shader, built once.
+ * - Then the story as approved from the lean (`ARRIVAL`: the hold, then the jump forward).
+ * All values are TAKES.
+ */
+export const OPENING = {
+  /** the lights' rise: start, length (s). ⛔ 2.0 → 3.0 (Carl, 16 November 2026: *"Theres some leeway on the text fade in. it
+   *  can happen a bit slower. Its almost instantaneous to the human eye. That will buy us a little more time."*): the subtext
+   *  and the logo move later with it, so the load's main-thread stalls land before the subtext begins */
+  litS: [0.3, 3.0],
+  /** the subtext's two lines: start, length (s) — reading pace, ~70 ms a letter (40 and 39 letters). ⛔ 3.4 → 2.2 (Carl, 16
+   *  November 2026: *"there is too much of a gap between text and subtext"*): it starts as the headline's fade ends — OR
+   *  `settleS` after the logo's arrival work (the load's main-thread stalls: `stepOpening`), if later; the second line and
+   *  the logo keep their spacing after it. Were 1.4 / 3.4 and 3.9 / 5.9 */
+  sub1: [2.2, 2.8],
+  sub2: [4.7, 2.8],
+  /** the leaning logo fades in (s; or when built, if later), over `logoFadeS`. Was 6.4, then 8.4 */
+  logoAtS: 7.2,
+  logoFadeS: 1.2,
+  /** the subtext waits this long after the warm-up has started (s), so no stall falls on it */
+  settleS: 0.6,
+  /** … but never longer than this past its own time (s): it starts regardless */
+  subCeilingS: 3,
+} as const;
 function mouldPose(g: THREE.BufferGeometry, sketch: SketchFrame): THREE.Matrix4 {
   g.computeBoundingBox();
   const b = g.boundingBox!;
@@ -927,8 +968,12 @@ export type HeroScene = {
   lean: { contact: number[]; contactMeasuredCm: number[]; contactConstantCm: number[]; lowestY: number; floorY: number; widthUnits: number; widthCm: number } | null;
   /** the arrival's numbers (`arrivalPlan`): seconds, and the lowest corner over the flight above the floor (cm, ≥ 0) */
   arrival: { t: number; holdS: number; flightS: number; touchdownS: number; durationS: number; apexCm: number; minCornerAboveFloorCm: number; pool: number; poolHits: number[] } | null;
-  /** plays the arrival again from the lean (the bench's button) */
+  /** plays the arrival again from the lean (the bench's button); the opening skipped */
   replayArrival(): void;
+  /** ⛔ THE OPENING (`OPENING`; 16 November 2026): plays it again from the dark (the bench's button) */
+  openingAgain(): void;
+  /** the opening's read-out: its clock, the logo built, when its fade began (−1 = not yet), the end, the lights, the logo's opacity */
+  openingInfo: { t: number; ready: boolean; subAtS: number; fadeAtS: number; done: boolean; lit: number; logoOpacity: number };
   /** the blobs' centres this frame, world units (born blobs only) — a READ-OUT for checks */
   blobs: number[][];
   /** THE FLOW MAP (`FLOW`), once the logo is in — a READ-OUT for checks: its texture (half floats, RGBA) and frame (cm) */
@@ -942,12 +987,20 @@ export type HeroScene = {
   /** ⛔ PHASE 2, THE RAIN (`hero-rain.ts`; D-101, 14 November 2026): the GPU's step, called by the bench each frame after
    *  `update` and before the draw — the one new call Carl approved (the scene does not hold the renderer) */
   compute(renderer: WebGPURenderer): void;
+  /** ⛔ THE WARM-UP (`warmScene`; 16 November 2026): the story's later programs built in the background (the story does NOT wait for it), and its time (ms; −1 = not done) */
+  readonly warmed: boolean;
+  readonly warmMs: number;
+  /** the load's main-thread steps (ms): the logo's arrival, the warm-up's synchronous part, the worst GPU-step frame */
+  readonly loadTimes: Record<string, number>;
   /** the rain's dials (the bench's Rain folder edits them) */
   rain: HeroRainSettings;
   /** the rain's shape again from now (once the logo has landed) */
   rainAgain(): void;
   /** the rain's numbers — a READ-OUT for checks; null until the logo (and its hit map) is in */
   rainInfo: HeroRainInfo | null;
+  /** ⛔ PHASE 2, THE STEAM (`hero-steam.ts`; 16 November 2026): its dials (the bench's Steam folder) and its read-out */
+  steam: HeroSteamSettings;
+  steamInfo: HeroSteamInfo | null;
   dispose(): void;
 };
 
@@ -972,6 +1025,8 @@ export function createHeroScene(aspect: number): HeroScene {
 
   const pointLight = new THREE.PointLight(0xff7c00, 3, 0, 0);
   pointLight.position.set(0, 0, 100);
+  // off until the blobs are out (`update`): by intensity, never by `visible` — the light set must not change (`update`)
+  pointLight.intensity = 0;
   scene.add(pointLight);
 
   const ambientLight = new THREE.AmbientLight(0x323232, 3);
@@ -1037,6 +1092,24 @@ export function createHeroScene(aspect: number): HeroScene {
   // the arrival plays on it once, the emission follows it
   let arrival: Arrival | null = null;
   let storyT = 0;
+  // THE WARM-UP (`warmScene`): false until the story's later programs are built (in the background; the story does not wait)
+  let warmed = false;
+  let warming = false;
+  let warmMs = -1;
+  // the load's main-thread steps (ms; the logo's arrival, the warm-up's synchronous part) — a READ-OUT (`loadTimes`)
+  const loadTimes: Record<string, number> = {};
+  // ⛔ THE OPENING (`OPENING`): its own clock (s, from the first update) and state; the story's clock waits for its end
+  // `subT`: when the subtext actually began (opening s; −1 = not yet); `warmT`: when the warm-up began (the stalls)
+  const opening = { t: 0, fadeT: -1, done: false, subT: -1, warmT: -1 };
+  // the leaning logo's fade (0 → 1), read by its alpha-to-coverage (`OPENING`)
+  const logoFade = uniform(0);
+  // the lights' share (0 → 1), the text's glow with them; the subtext's reveal edges (world x)
+  const lit = uniform(0);
+  const reveal1 = uniform(-1e9);
+  const reveal2 = uniform(-1e9);
+  let subLines: { midY: number; x1: [number, number]; x2: [number, number] } | null = null;
+  const KEY_I = 3;
+  const AMBIENT_I = 3;
   /**
    * ⛔ THE EMISSION (13 November 2026; D-101). Carl: *"the blobs should come out of the logo over 500ms. if they emerge from
    * top to bottom some of the area where thy came from can go. maybe a fade as chunks are taken out of it"*; then *"slow it
@@ -1100,26 +1173,78 @@ export function createHeroScene(aspect: number): HeroScene {
   const rain = createHeroRain(FLOOR_Y);
   scene.add(rain.group);
   disposables.push(rain);
+  // ⛔ PHASE 2, THE STEAM (`hero-steam.ts`; 16 November 2026; structural note v1.0): a short burst as the FIRST DROPS land,
+  // in a box about the landed logo, the logo a solid in it; on the rain's clock; lit by the scene key's direction
+  const steam = createHeroSteam(FLOOR_Y);
+  steam.setLight(light.position);
+  scene.add(steam.group);
+  disposables.push(steam);
   const textReady = buildText().then((t) => {
     if (disposed) return t.dispose();
     text = t.group;
     unitsPerCm = t.unitsPerCm;
     textDispose = t.dispose;
+    // ⛔ THE OPENING's TEXT (`OPENING`, beats 2–3): the glow rises with the lights (`lit`, a uniform: no rebuild); the
+    // SUBTEXT (the layout's second geometry) gets its own copy of the material with a REVEAL EDGE per line (`maskNode`)
+    {
+      const [headMesh, subMesh] = t.group.children as THREE.Mesh[];
+      type Glowing = THREE.Material & { emissiveNode: Node<"vec3">; maskNode: unknown; glowMRT?: unknown };
+      const headMat = headMesh.material as Glowing;
+      headMat.emissiveNode = headMat.emissiveNode.mul(lit);
+      const subMat = (headMat as unknown as { clone(): Glowing }).clone();
+      subMat.glowMRT = headMat.glowMRT;
+      subMat.name = "hero text: edge-lit acrylic (subtext, revealed)";
+      // the lines: split at the subtext's middle height; each line's ink from its left to its right
+      const pos = subMesh.geometry.getAttribute("position");
+      subMesh.geometry.computeBoundingBox();
+      const sb = subMesh.geometry.boundingBox!;
+      const midY = (sb.min.y + sb.max.y) / 2;
+      const x1: [number, number] = [Infinity, -Infinity];
+      const x2: [number, number] = [Infinity, -Infinity];
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i);
+        const r = pos.getY(i) > midY ? x1 : x2;
+        r[0] = Math.min(r[0], x);
+        r[1] = Math.max(r[1], x);
+      }
+      subLines = { midY, x1, x2 };
+      subMat.maskNode = positionWorld.x.lessThan(positionWorld.y.greaterThan(midY).select(reveal1, reveal2));
+      subMesh.material = subMat;
+      disposables.push(subMat);
+    }
     scene.add(text);
     // ⛔ THE LOGO ON THE 3D t (`leanInSketch`): once its geometry and the text's frame are both in
     // the studio is `loadStudioHdri`'s shared, cached texture: not disposed here (the sketch bench's rule)
     Promise.all([logoGeo, loadStudioHdri(STUDIO_HDRI_SRC, HERO_LOGO_METAL.room), courtyardReady]).then(([g, studio]) => {
       if (disposed) return g.dispose();
+      // ⛔ THE ARRIVAL's MAIN-THREAD WORK, TIMED (16 November 2026; Carl: *"theres a stall on the W of the subtext"*): each
+      // step's ms into `loadTimes` (the bench's read-out)
+      let lt = performance.now();
+      const t0 = lt;
+      const mark = (k: string) => {
+        const n = performance.now();
+        loadTimes[k] = Math.round(n - lt);
+        lt = n;
+      };
       // the re-forming's flow map, from the ink nearest the c's entry (`REFORM`'s c: its middle, at mid height)
       g.computeBoundingBox();
       const gb = g.boundingBox!;
       flow = logoFlowMap(g, gb.min.x + (REFORM.cShare * (gb.max.x - gb.min.x)) / 2, (gb.min.y + gb.max.y) / 2);
       disposables.push(flow.tex);
+      mark("flowMap");
       runoff = logoRunoffMap(g);
       disposables.push(runoff.tex);
+      mark("runoffMap");
       const material = logoMaterial(studio, dissolveFront, fillFront, flow, envs.courtyard!.reflect, hardness, liquidClock, runoff, washShare, judging, logoLights);
+      // ⛔ THE OPENING's FADE (`OPENING`): ALPHA-TO-COVERAGE from the start (one shader, built once; the logo stays opaque):
+      // the fade's opacity, dithered per pixel between the 4 samples' levels, exactly 1 when faded in
+      material.alphaToCoverage = true;
+      const dither = interleavedGradientNoise(screenCoordinate).sub(0.5).mul(0.25);
+      (material as unknown as { opacityNode: unknown }).opacityNode = logoFade.greaterThanEqual(1).select(float(1), logoFade.add(dither).clamp(0, 1));
       disposables.push(g, material);
+      mark("material");
       const l = leanInSketch(g, t.sketch);
+      mark("lean");
       logo = new THREE.Mesh(g, material);
       logo.name = "hero logo";
       // its pose is written whole each frame by the arrival (`update`)
@@ -1128,6 +1253,7 @@ export function createHeroScene(aspect: number): HeroScene {
       scene.add(logo);
       // the landing: the dance's centre (the field's middle, x and z; its height is the floor's)
       arrival = arrivalPlan(g, l, t.sketch, new THREE.Vector3(effect.position.x, FLOOR_Y, effect.position.z));
+      mark("arrivalPlan");
       storyT = 0;
       {
         const m = new THREE.Matrix4();
@@ -1137,6 +1263,7 @@ export function createHeroScene(aspect: number): HeroScene {
         settled = { matrix: m, bounds: b, topY: wb.max.y, bottomY: wb.min.y, box: wb };
       }
       mould = { matrix: mouldPose(g, t.sketch), bounds: g.boundingBox!.clone() };
+      mark("mould");
       {
         // THE FALL's height (`FALL`): the mould pose's lowest vertex above the floor (world units)
         const pa = g.getAttribute("position");
@@ -1147,7 +1274,13 @@ export function createHeroScene(aspect: number): HeroScene {
       }
       // THE RAIN's HIT MAP (`hero-rain.ts`): the logo where it LANDS — the fall's pose at rest (`update`: the mould dropped
       // by `mouldDrop`, the rock 0 once the wobble is done)
-      rain.setLogo(g, new THREE.Matrix4().makeTranslation(0, -mouldDrop, 0).multiply(mould.matrix), t.unitsPerCm);
+      const landedPose = new THREE.Matrix4().makeTranslation(0, -mouldDrop, 0).multiply(mould.matrix);
+      rain.setLogo(g, landedPose, t.unitsPerCm);
+      mark("rainHitMap");
+      // THE STEAM's box and solid mask (`hero-steam.ts`): the same landed pose; the ink at the flow map's 2 cells per cm
+      steam.setLogo(g, landedPose, t.unitsPerCm, inkGrid(g, FLOW.perCm));
+      mark("steamInk+mask");
+      loadTimes.arrivalTotal = Math.round(performance.now() - t0);
       const r = (v: number) => Math.round(v * 100) / 100;
       arrivalInfo = { holdS: ARRIVAL.holdS, flightS: r(arrival.flightS), touchdownS: r(arrival.touchdown), durationS: r(arrival.duration), apexCm: r(arrival.apexCm), minCornerAboveFloorCm: r(arrival.minCornerY) };
       lean = {
@@ -1778,10 +1911,107 @@ export function createHeroScene(aspect: number): HeroScene {
     object.update();
   }
 
+  /**
+   * ⛔ THE WARM-UP — THE STORY's LATER PROGRAMS BUILT IN THE BACKGROUND (16 November 2026; D-101). Carl: *"Yes, fix them
+   * now."* MEASURED in a FRESH browser (an empty shader cache, as a first-time visitor; `live-work/scripts/hero-pipeline-
+   * builds-16-november.mjs` logs what is built when): the LIQUID first drawn at touchdown (133 ms); the RAIN's step and
+   * draws at its release (~100 ms); (the ~600 ms–2.7 s at the emission was the orange light's `visible` switch: `update`).
+   * Once the logo exists, WHILE THE STORY RUNS, the liquid, the heat plane and the rain's drops and splashes are compiled
+   * in the BACKGROUND (`compileAsync`: r185 builds render pipelines asynchronously), each made visible (and not culled)
+   * only for `compileAsync`'s synchronous gather; the rain's step program is run once with no drop live (`HeroRain.warm`;
+   * r185 builds compute pipelines synchronously only). The steam warms itself (`hero-steam.ts`, `warm`).
+   * ⛔ THE LOGO IS LEFT OUT, and the story is NOT held. ⚰️ Withdrawn the same day: the logo hidden and the story's clock
+   * held until the warm-up was done (~6 s of the text alone on a cold cache). Carl: *"That is far too long to have text on
+   * its own. The start of the story is the logo realises their is a visitor and responds. ... Whats to stop a visitor going
+   * straight to the menu or scrolling. This is a fundamental change i didnt ask for and goes against the first line in the
+   * story."* The logo is hidden for the gather so `compileAsync` does not take its pipeline (a pipeline still compiling is
+   * SKIPPED by r185's draw: the logo would vanish by another route). ⚠ So the LOGO's OWN first build (~4.3 s on a cold
+   * cache, measured) is NOT fixed here: it is Carl's open question (D-101, 16 November).
+   */
+  async function warmScene(renderer: WebGPURenderer) {
+    const t0 = performance.now();
+    rain.warm(renderer);
+    loadTimes.warmRainStep = Math.round(performance.now() - t0);
+    // ⛔ THE LOGO IS IN IT AGAIN (16 November 2026, Carl's OPENING, `OPENING`): it is not drawn until its fade, which waits
+    // for this — so its background build hides nothing
+    const show: THREE.Object3D[] = [view, heatPlane, rain.group];
+    if (logo) show.push(logo);
+    const keep = show.map((o) => [o.visible, o.frustumCulled] as const);
+    for (const o of show) {
+      o.visible = true;
+      o.frustumCulled = false;
+    }
+    // compileAsync gathers what to build synchronously at the call; everything is put back straight after
+    const tc = performance.now();
+    const done = renderer.compileAsync(scene, camera);
+    loadTimes.warmGatherSync = Math.round(performance.now() - tc);
+    show.forEach((o, i) => {
+      o.visible = keep[i][0];
+      o.frustumCulled = keep[i][1];
+    });
+    await done;
+    warmMs = Math.round(performance.now() - t0);
+  }
+
+  const easeSine = (u: number) => 0.5 - 0.5 * Math.cos(Math.PI * Math.max(0, Math.min(1, u)));
+  /** the opening's share of a beat (start, length in opening seconds), eased in and out (`/start`'s curve) */
+  const beat = ([start, len]: readonly [number, number]) => easeSine((opening.t - start) / len);
+  /** the logo's programs are built (`warmScene`) */
+  const openingReady = () => warmed;
+  function resetOpening() {
+    opening.t = 0;
+    opening.fadeT = -1;
+    opening.done = false;
+    opening.subT = -1;
+    // a replay: the load is long done — the warm-up's moment is the start
+    opening.warmT = warming || warmed ? 0 : -1;
+  }
+  /** the logo's opacity in the opening: 0 before its fade, eased up over `logoFadeS`, 1 once the opening is done */
+  const logoOpacity = () => (opening.done ? 1 : opening.fadeT < 0 ? 0 : easeSine((opening.t - opening.fadeT) / OPENING.logoFadeS));
+  /** ⛔ THE OPENING's CLOCK (`OPENING`): the lights, the subtext, the logo's fade; the story starts at its end */
+  function stepOpening(delta: number) {
+    if (opening.done) {
+      lit.value = 1;
+      reveal1.value = 1e9;
+      reveal2.value = 1e9;
+      light.intensity = KEY_I;
+      ambientLight.intensity = AMBIENT_I;
+      return;
+    }
+    opening.t += delta;
+    const L = beat(OPENING.litS);
+    lit.value = L;
+    light.intensity = KEY_I * L;
+    ambientLight.intensity = AMBIENT_I * L;
+    // the warm-up's start, on the opening's clock (the load's main-thread stalls come with it and the logo's arrival)
+    if (opening.warmT < 0 && warming) opening.warmT = opening.t;
+    // THE SUBTEXT's START: its time, or `settleS` after the warm-up began if later (no stall on it), never past the ceiling
+    const [s1, len1] = OPENING.sub1;
+    if (opening.subT < 0 && opening.t >= s1 && ((opening.warmT >= 0 && opening.t >= opening.warmT + OPENING.settleS) || opening.t >= s1 + OPENING.subCeilingS)) opening.subT = opening.t;
+    // everything after keeps its spacing from the subtext's start
+    const shift = opening.subT < 0 ? Infinity : opening.subT - s1;
+    if (subLines) {
+      const edge = (r: [number, number], s: number) => (s <= 0 ? -1e9 : s >= 1 ? 1e9 : r[0] + (r[1] - r[0]) * s);
+      reveal1.value = edge(subLines.x1, beat([s1 + shift, len1]));
+      reveal2.value = edge(subLines.x2, beat([OPENING.sub2[0] + shift, OPENING.sub2[1]]));
+    }
+    // the leaning logo fades in at its time AND once built (never drawn before it is built)
+    if (opening.fadeT < 0 && logo && openingReady() && opening.t >= OPENING.logoAtS + shift) opening.fadeT = opening.t;
+    // faded in: the story begins (the lean's hold, then the jump)
+    if (opening.fadeT >= 0 && opening.t >= opening.fadeT + OPENING.logoFadeS) {
+      opening.done = true;
+      storyT = 0;
+    }
+  }
+
   function update(delta: number) {
+    stepOpening(delta);
     // ⛔ THE ARRIVAL (`arrivalPlan`): the logo's pose on the story's clock, once; still after it settles
     const wasT = storyT;
-    if (logo) storyT += delta;
+    // ⚰️ the story's clock waited for THE WARM-UP (16 November 2026) — WITHDRAWN the same day (`warmScene`): the story
+    // starts the moment the logo exists. ⛔ 16 November 2026 (Carl's opening, `OPENING`): the story starts when the
+    // OPENING ends — the logo swivelled into the lean
+    if (logo && opening.done) storyT += delta;
     if (logo && arrival && wasT <= arrival.duration) {
       arrival.at(Math.min(storyT, arrival.duration), logo.matrix);
       logo.matrixWorldNeedsUpdate = true;
@@ -1829,6 +2059,11 @@ export function createHeroScene(aspect: number): HeroScene {
       fillFront.value = flow.level(poured);
       logo.visible = poured > 0;
     }
+    // ⛔ THE OPENING (`OPENING`): the leaning logo not drawn before its fade; then fading in (its opacity, a uniform)
+    if (logo) {
+      logoFade.value = logoOpacity();
+      if (!opening.done && opening.fadeT < 0) logo.visible = false;
+    }
     // ⛔ PHASE 2, THE RAIN (`hero-rain.ts`; Carl, 14 November 2026: *"the rain starts just as the wobble ends"*): the seconds
     // since phase 1's end — HARD, the fall, the landing's wobble done (the `reform` read-out's `endS`); NaN before the
     // re-forming has a plan (nothing to rain on). The rain releases its first drops one fall early, so they land at 0
@@ -1838,6 +2073,8 @@ export function createHeroScene(aspect: number): HeroScene {
     washShare.value = rain.wash;
     // the logo's own key fades as the wash completes (`LOGO_KEY`)
     logoKey.intensity = light.intensity * (1 - rain.wash);
+    // ⛔ THE STEAM (`hero-steam.ts`): on the rain's clock (the first drops landing), × the red still left
+    steam.update(delta, rain.sinceFirstLanding, 1 - rain.wash, camera.position);
     // ⛔ THE DISC GROWS FROM THE LANDING (`POOL_GROW`, take 3): from TOUCHDOWN it spreads (fast, then ever slower, toward
     // `atFirst`), then each ARRIVAL of a blob in it (`updateCubes`) eases it out a step — so the liquid is DRAWN from
     // touchdown, the pool alone until the blobs
@@ -1865,7 +2102,10 @@ export function createHeroScene(aspect: number): HeroScene {
     // out (below); the re-forming's fall comes later
     // the light and the heat wait for the EMISSION, not the pool (the blobs' light comes with the blobs)
     const blobsOut = live && emitT >= 0;
-    pointLight.visible = blobsOut;
+    // ⛔ OFF BY INTENSITY 0, NOT BY `visible` (16 November 2026; D-101, the first-run hitches): r185 rebuilds EVERY lit
+    // material when the number of lights changes — the text, the logo and the liquid were rebuilt the moment the blobs came
+    // out (story 4.72 s; ~600 ms on a cold shader cache, measured). In the light list always, it adds exactly 0 when off:
+    // the same picture (null control), one light set, no rebuild. Its intensity below is 0 unless the blobs are out
     // ⛔ THE LIGHT IS THE BLOBS' OUT (13 November 2026, session 2; Carl: *"the pre blob text is ice blue when the blobs
     // appear it turns a tinge of orange ... If you can make it better and more accurate by this 0.7s that would be great"*):
     // it rose with the emission's eased share, ~0.7 s BEFORE the first blob (0.22 of full by then). Now each blob adds its
@@ -1881,7 +2121,7 @@ export function createHeroScene(aspect: number): HeroScene {
     }
     // … and each blob that ENTERS the logo takes its 1/n back (`REFORM`; Carl, 11 November: *"When the blobs reform into
     // the logo, the lights are not needed."*)
-    pointLight.intensity = EMISSION.light * Math.max(0, out - filled);
+    pointLight.intensity = blobsOut ? EMISSION.light * Math.max(0, out - filled) : 0;
     // the floor's heat (`stepHeat`) is the blobs' and the floor's: hidden and cleared without them
     // … and it COOLS WITH THE FILL (13 November 2026, session 2; Carl: *"the end logo should ne ted, with no hints of
     // orange. Exactly as it is in leaning state before the blobs took over."*): each blob that enters the logo takes its
@@ -1938,9 +2178,20 @@ export function createHeroScene(aspect: number): HeroScene {
       return arrivalInfo ? { t: Math.round(storyT * 100) / 100, ...arrivalInfo, pool: Math.round(poolGrow * 1000) / 1000, poolHits: poolHits.map((h) => Math.round(h * 100) / 100) } : null;
     },
     replayArrival() {
+      // from the LEAN: the opening skipped (its end state: the lights up, the subtext whole)
+      opening.done = true;
       storyT = 0;
       danceT = 0;
       if (logo) logo.visible = true;
+    },
+    openingAgain() {
+      resetOpening();
+      storyT = 0;
+      danceT = 0;
+    },
+    get openingInfo() {
+      const r = (v: number) => Math.round(v * 100) / 100;
+      return { t: r(opening.t), ready: openingReady(), subAtS: r(opening.subT), fadeAtS: r(opening.fadeT), done: opening.done, lit: r(lit.value), logoOpacity: r(logoOpacity()) };
     },
     get blobs() {
       return blobRead;
@@ -1960,7 +2211,33 @@ export function createHeroScene(aspect: number): HeroScene {
     },
     update,
     compute(renderer: WebGPURenderer) {
+      const tc = performance.now();
       rain.compute(renderer);
+      steam.compute(renderer, scene, camera);
+      const ms = Math.round(performance.now() - tc);
+      if (ms > (loadTimes.computeMaxMs ?? 0)) loadTimes.computeMaxMs = ms;
+      // THE WARM-UP (`warmScene`): once the logo exists, in the background, while the story runs
+      if (logo && !warmed && !warming) {
+        warming = true;
+        warmScene(renderer)
+          .catch((e: unknown) => console.warn("[hero] warm-up", e))
+          .finally(() => {
+            warmed = true;
+          });
+      }
+    },
+    get warmed() {
+      return warmed;
+    },
+    get warmMs() {
+      return warmMs;
+    },
+    get loadTimes() {
+      return loadTimes;
+    },
+    steam: steam.settings,
+    get steamInfo() {
+      return steam.info;
     },
     rain: rain.settings,
     rainAgain() {
