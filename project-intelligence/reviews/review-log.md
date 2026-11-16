@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-107 — The Hero, Phase 2: The Logo Cools As An Object During The Wash (D-101): "a vast improvement"
+
+**Date:** 2026-11-16
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — `components/hero/hero-heat.ts` (new: the face's temperature, a GPU field), `components/hero/hero-scene.ts` (the logo's material reads it; the wet coat stays on the water), `components/hero/hero-bench.tsx` (the Heat folder)
+
+**Carl's verdict, verbatim:** *"It looks a lot better, a vast improvement. One noticable touch is at the bevel. The water runs down it, seems to gather at the edge and flows down the face. Also, on the bottom stem, water appears to fall from the Bs vertical stem onto the horizontal stem below it causing some steam. Thats a nice touch that adds to the realism."* Then: *"yes, its approved, commit and push."*
+
+**Findings:**
+
+- ✔ **APPROVED** on the bench: the red → platinum blue follows a TEMPERATURE (cooling everywhere, faster where wet, conducting through the metal), so the boundaries are soft and wander; the straight vertical lines Carl ruled out on 16 November (session 2) are gone. Take 1's values (the Heat folder): air 0.04/s, wet 1.2/s, conduction 1 cm²/s, red until 0.1, blue from 0.8. The take: `Videos\C2B Films\03 The hero\2026-11-16_temperature_take1.mp4`.
+- The two touches Carl named are kept on purpose: the bevel wets first and the water runs down the face from it; drops passing the b's stem land on the stroke below and steam there. ⚠ Not drips (not built yet); the drips will land in the same place (D-101).
+- Measured: every frame before the rain unchanged (null control at 25.3 and 26.2 s); the last red at ~33 s, as before.
+- **Not covered:** the GPU frame cost (not measured; D-108) and the visitor's real-time playback on Carl's machine and phones (checked frame-stepped); the mauve between red and blue (seen, not ruled); the steam reading the local temperature, and the drips (later layers); the camera direction (the wash to be seen close up, at the end).
+
+---
+
 ## R-106 — The Hero, Phase 1 Complete: The Logo Melts, Dances, Re-forms And Falls (D-101): "Outstanding!"
 
 **Date:** 2026-11-13

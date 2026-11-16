@@ -251,6 +251,17 @@ export default function HeroBench() {
       // the wash: the run-off keeps running after the rain (from the first drops landing to the logo all platinum blue)
       f.add(rs, "washSeconds", 3, 15, 0.1).name("wash length (s)");
 
+      // ⛔ PHASE 2, THE TEMPERATURE (`hero-heat.ts`; 16 November 2026, session 3): the logo cools as an object during the
+      // wash — off = the run-off front drives the colour directly, as before (an A/B). The rates act on the heat left
+      const hs = hero.heat;
+      f = gui.addFolder("Heat");
+      f.add(hs, "on").name("temperature drives colour");
+      f.add(hs, "airPerS", 0, 0.5, 0.005).name("air cooling (/s)");
+      f.add(hs, "wetPerS", 0.1, 10, 0.05).name("wet cooling (/s)");
+      f.add(hs, "diffCm2S", 0, 7, 0.05).name("conduction (cm²/s)");
+      f.add(hs, "redBelow", 0, 0.9, 0.01).name("red until (cold)");
+      f.add(hs, "blueAbove", 0.1, 1, 0.01).name("blue from (cold)");
+
       // ⛔ PHASE 2, THE STEAM (`hero-steam.ts`; 16 November 2026; Carl: *"build it on the proto hero and we will take
       // measurements"*): a short burst as the first drops land; "hold" keeps it emitting to judge and measure; it plays on
       // the rain's clock, so "Steam again" plays the rain again; the cell size is the cost's main dial

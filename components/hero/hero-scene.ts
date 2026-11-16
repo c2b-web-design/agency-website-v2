@@ -11,6 +11,7 @@ import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/lo
 import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
 import { createHeroRain, HIT, type HeroRainInfo, type HeroRainSettings } from "./hero-rain";
 import { createHeroSteam, MARGIN, type HeroSteamInfo, type HeroSteamSettings } from "./hero-steam";
+import { createHeroHeat, type HeroHeat, type HeroHeatInfo, type HeroHeatSettings } from "./hero-heat";
 import { faceMaps, landedMaps, type FaceRequest, type FaceResult, type FlowCheck, type FlowData, type InkGrid, type LandedRequest, type LandedResult, type MapsMessage, type MapsReply, type RunoffCheck, type RunoffData } from "./hero-maps.worker";
 import { LOGO_BLUE_DEFAULTS, LOGO_JUDGING_STUDIO, platinumBlueF0 } from "@/components/about/logo-mark-material";
 
@@ -286,8 +287,8 @@ function logoFlowMap(d: FlowData): FlowMap {
  * bench `/proto/logo?mode=blue`, face on: sRGB (8, 60, 128), #083C80, measured 14 November) is the swatch's F0 at
  * roughness 0.25 (`LOGO_BLUE_DEFAULTS`), in the JUDGING STUDIO (`LOGO_JUDGING_STUDIO`, five softboxes on near-black — NOT
  * the button family's studio photograph the hero logo uses), under ACES (the mark bench's renderer). Wash take 1's blue sat
- * in our studio photograph at 0.4 under no tone mapping, so it read pale. So WHERE THE LOGO HAS COOLED (`cooled`, the
- * wash) its material BECOMES the desk mark's: the judging studio's reflection, roughness 0.25, and the ACES curve on this
+ * in our studio photograph at 0.4 under no tone mapping, so it read pale. So WHERE THE LOGO HAS COOLED (`cooled`: the
+ * wash's front until 16 November 2026, session 3; the temperature, `hero-heat.ts`, since) its material BECOMES the desk mark's: the judging studio's reflection, roughness 0.25, and the ACES curve on this
  * material's own output (the renderer's tone mapping is the whole scene's; untouched). Where it is red, nothing changes
  * (mixed by 0: the null control).
  * - `judgingStudioTexture`: the judging studio as an EQUIRECTANGULAR image made on the CPU from the SAME list the mark
@@ -350,7 +351,9 @@ const COOLED = { roughness: LOGO_BLUE_DEFAULTS.roughness, exposure: 1 } as const
  * ... apply the wet look."* On METAL, water does not darken (that is a porous dielectric's look): it lays a thin GLASSY
  * LAYER over it. So:
  * - A CLEAR COAT (Unreal's Clear Coat model: `MeshPhysicalNodeMaterial`'s `clearcoat`), its strength the share the water has
- *   reached (`cooled` — wet exactly where the run-off has passed; dry and red where it has not), its roughness WATER's.
+ *   reached (`wet` — exactly where the run-off has passed; dry where it has not), its roughness WATER's. (Until 16 November
+ *   2026, session 3, this front was named `cooled` and drove the colour too; the colour now follows the TEMPERATURE,
+ *   `hero-heat.ts`, and the coat stays on the water.)
  * - MOVING WATER on the coat (its own normal, `clearcoatNormalNode`): ripples stretched tall and thin (`streakCm` across,
  *   `lengthCm` long) RUNNING DOWN at `runCmS` on the story's clock (`clock`, frame-steppable) while the water flows; as the
  *   wash completes the flow eases into still BEADS (a small, round, unmoving ripple). The base metal's normal is untouched
@@ -378,6 +381,11 @@ const WET = { coat: 1, coatRoughness: 0.04, streakCm: 1.6, lengthCm: 14, runCmS:
  *   the colour is the material's own red (`materialColor`, mixed by 0 — the null control); at wash 1 every point's front is
  *   past it by the band and the rag (the reach's scaling), so every point is 1: the whole logo platinum blue.
  * Values are takes.
+ * ⛔ 16 NOVEMBER 2026, SESSION 3 — THE FRONT IS THE WATER, NOT THE COLOUR. Carl: *"The stright lines do not look natural
+ * during the wash"* → the front above now marks only where the WATER is (the wet coat, and the wetness the temperature
+ * reads). The colour, roughness, reflection and tone curve follow the logo's TEMPERATURE (`hero-heat.ts`): cooling
+ * everywhere, faster where wet, conducting through the metal. "Exact at both ends" still holds for the colour: 0 before the
+ * rain (the field starts at 0); all platinum blue once every cell is cold (measured: the last red at ~33 s, as before).
  */
 const RUNOFF = { perCm: 2, bandCm: 6, spread: 0.6, streakCm: 3.5, ragCm: 4, ragScale: 0.12 } as const;
 type RunoffMap = { tex: THREE.DataTexture; minX: number; minY: number; sizeX: number; sizeY: number; tallestCm: number; reachCm: number; check: RunoffCheck };
@@ -412,7 +420,7 @@ function logoRunoffMap(d: RunoffData): RunoffMap {
  * Values are takes.
  */
 const LIQUID = { roughness: 0.1, swellCm: 1.2, tilt: 0.35, scale: 0.045, drift: 0.35 } as const;
-function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>, fill: ReturnType<typeof makeFront>, flow: FlowMap, courtyard: THREE.Texture, harden: ReturnType<typeof makeFront>, clock: ReturnType<typeof makeFront>, runoff: RunoffMap, wash: ReturnType<typeof makeFront>, judging: THREE.Texture, logoLights: THREE.Light[]): MeshPhysicalNodeMaterial {
+function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>, fill: ReturnType<typeof makeFront>, flow: FlowMap, courtyard: THREE.Texture, harden: ReturnType<typeof makeFront>, clock: ReturnType<typeof makeFront>, runoff: RunoffMap, wash: ReturnType<typeof makeFront>, judging: THREE.Texture, logoLights: THREE.Light[], heat: HeroHeat): MeshPhysicalNodeMaterial {
   // ⛔ PHYSICAL since the wet look (14 November 2026; `WET`): the clear coat is the physical model's; dry (coat 0) it draws as
   // the standard material did (the null control)
   const m = new MeshPhysicalNodeMaterial({ color: HERO_LOGO_RED, metalness: HERO_LOGO_METAL.metalness, roughness: HERO_LOGO_METAL.roughness });
@@ -421,7 +429,8 @@ function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>
   m.envMapRotation.set(0, THREE.MathUtils.degToRad(HERO_LOGO_METAL.yawDeg), 0);
   // the logo's OWN light list (`LOGO_KEY`, in `createHeroScene`): the scene's three, its key a copy that fades with the wash
   m.lightsNode = lights(logoLights);
-  // ⛔ PHASE 2, THE WASH (`RUNOFF`): the share of this point the run-off has cooled, 0 (red) → 1 (platinum blue)
+  // ⛔ PHASE 2, THE WASH (`RUNOFF`): where the run-off has reached this point (the water; since 16 November 2026, session 3,
+  // the colour follows the temperature that reads it, below)
   const runUv = vec2(positionLocal.x.sub(runoff.minX).div(runoff.sizeX), positionLocal.y.sub(runoff.minY).div(runoff.sizeY));
   const run = texture(runoff.tex, runUv);
   const belowTop = run.r;
@@ -429,7 +438,14 @@ function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>
   const pace = run.g;
   const rag = mx_noise_float(positionLocal.mul(RUNOFF.ragScale)).mul(0.5).add(0.5).clamp(0, 1).mul(RUNOFF.ragCm);
   const reach = wash.mul(runoff.reachCm).mul(pace);
-  const cooled = smoothstep(0, RUNOFF.bandCm, reach.sub(belowTop).sub(rag));
+  // ⛔ 16 November 2026, session 3: this is now the WATER's front (`wet`) — where the run-off has reached. It drives the wet
+  // coat (water does run in streaks); the METAL's state (colour, roughness, reflection, tone curve) follows the TEMPERATURE
+  // (`hero-heat.ts`: cooling everywhere, faster where wet, conducting through the metal), which reads this same front.
+  // Until 16 November it drove all of them (`cooled` was this front): the ruler lines Carl ruled out
+  const wet = smoothstep(0, RUNOFF.bandCm, reach.sub(belowTop).sub(rag));
+  // ⛔ THE TEMPERATURE (`hero-heat.ts`): the share cooled, 0 (red) → 1 (platinum blue); exactly 0 before the rain (the field
+  // starts cold-free: phase 1 unchanged). The heat panel's switch off = the front as before (an A/B)
+  const cooled = heat.share(runUv, wet);
   // the cooled metal's roughness is the desk mark's (`COOLED`, above)
   m.roughnessNode = mix(mix(float(LIQUID.roughness), float(HERO_LOGO_METAL.roughness), harden), float(COOLED.roughness), cooled);
   // the radiance context's reflection (three r185, `EnvironmentNode`'s `createRadianceContext`), turned by the yaw R so
@@ -444,18 +460,18 @@ function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>
   m.positionNode = positionLocal.add(mx_noise_vec3(field).mul(liquid.mul(LIQUID.swellCm)));
   const wobbled = transformNormalToView(normalLocal.add(mx_noise_vec3(field.add(vec3(17, 5, 3))).mul(LIQUID.tilt))).normalize();
   m.normalNode = mix(normalView, wobbled, liquid);
-  // ⛔ PHASE 2, THE WASH (`RUNOFF`, above): the red cooled to platinum blue where the run-off has passed
+  // ⛔ PHASE 2, THE WASH (`RUNOFF`, above): the red cooled to platinum blue as the metal cools (the temperature, `cooled`)
   const [pr, pg, pb] = platinumBlueF0(LOGO_BLUE_DEFAULTS.tint);
   m.colorNode = mix(materialColor, vec3(pr, pg, pb), cooled);
   // ⛔ WET (`WET`, above): the coat where the water has reached; its normal the running water, easing into beads as the
   // wash completes (`flowing`: 1 while it runs, 0 once done)
-  m.clearcoatNode = cooled.mul(WET.coat);
+  m.clearcoatNode = wet.mul(WET.coat);
   m.clearcoatRoughnessNode = float(WET.coatRoughness);
   const flowing = float(1).sub(smoothstep(0.85, 1, wash));
   const runField = vec3(positionLocal.x.div(WET.streakCm), positionLocal.y.add(clock.mul(WET.runCmS)).div(WET.lengthCm), positionLocal.z.div(WET.streakCm));
   const beadField = positionLocal.div(WET.beadCm);
   const ripple = mx_noise_vec3(runField).mul(flowing.mul(WET.flowTilt)).add(mx_noise_vec3(beadField.add(vec3(31, 7, 13))).mul(float(1).sub(flowing).mul(WET.beadTilt)));
-  m.clearcoatNormalNode = transformNormalToView(normalLocal.add(ripple.mul(cooled))).normalize();
+  m.clearcoatNormalNode = transformNormalToView(normalLocal.add(ripple.mul(wet))).normalize();
   // …under the desk mark's tone curve (ACES), on THIS material's output only, where cooled
   // (the cast: r185's types give the tone-mapping function an untyped Node; it returns the colour's vec3)
   const aces = acesFilmicToneMapping(output.rgb, float(COOLED.exposure)) as unknown as ReturnType<typeof vec3>;
@@ -886,6 +902,9 @@ export type HeroScene = {
   readonly loadTimes: Record<string, number>;
   /** the rain's dials (the bench's Rain folder edits them) */
   rain: HeroRainSettings;
+  /** ⛔ THE TEMPERATURE's dials (`hero-heat.ts`; the bench's Heat folder) and its read-out */
+  heat: HeroHeatSettings;
+  readonly heatInfo: HeroHeatInfo | null;
   /** the rain's shape again from now (once the logo has landed) */
   rainAgain(): void;
   /** the rain's numbers — a READ-OUT for checks; null until the logo (and its hit map) is in */
@@ -1115,6 +1134,10 @@ export function createHeroScene(aspect: number): HeroScene {
   steam.setLight(light.position);
   scene.add(steam.group);
   disposables.push(steam);
+  // ⛔ PHASE 2, THE TEMPERATURE (`hero-heat.ts`; 16 November 2026, session 3; structural note v1.0): the logo's face cools
+  // as an object during the wash — its field reads the wash's share (the run-off front) and the logo's material reads it
+  const logoHeat = createHeroHeat(washShare);
+  disposables.push(logoHeat);
   // ⛔ THE MAPS (`mapsClient`, `hero-maps.worker.ts`; 16 November 2026, session 2): "face" is asked THE MOMENT THE LOGO's
   // GEOMETRY ARRIVES — it needs nothing else — so it runs while the text, the studio and the courtyard are still loading;
   // "landed" is asked below, once the landed pose is known. `landedIn`: the rain's hit map and the steam's mask are in
@@ -1196,8 +1219,13 @@ export function createHeroScene(aspect: number): HeroScene {
       disposables.push(flow.tex);
       runoff = logoRunoffMap(face.runoff);
       disposables.push(runoff.tex);
+      // ⛔ THE TEMPERATURE's FACE (`hero-heat.ts`): the run-off map and the ink share one grid (both 2 per cm: `RUNOFF`,
+      // `FLOW`) — asserted here, not assumed; the visible face is the geometry's +z (the material's rag noise is read there)
+      if (face.ink.W !== face.runoff.W || face.ink.H !== face.runoff.H) throw new Error("[hero] the ink and the run-off map are not one grid");
+      g.computeBoundingBox();
+      logoHeat.setFace({ runoffTex: runoff.tex, W: face.runoff.W, H: face.runoff.H, minX: runoff.minX, minY: runoff.minY, sizeX: runoff.sizeX, sizeY: runoff.sizeY, perCm: RUNOFF.perCm, reachCm: runoff.reachCm, bandCm: RUNOFF.bandCm, ragCm: RUNOFF.ragCm, ragScale: RUNOFF.ragScale, ink: face.ink.ink, faceZ: g.boundingBox!.max.z });
       mark("mapTextures");
-      const material = logoMaterial(studio, dissolveFront, fillFront, flow, envs.courtyard!.reflect, hardness, liquidClock, runoff, washShare, judging, logoLights);
+      const material = logoMaterial(studio, dissolveFront, fillFront, flow, envs.courtyard!.reflect, hardness, liquidClock, runoff, washShare, judging, logoLights, logoHeat);
       // ⛔ THE OPENING's FADE (`OPENING`): ALPHA-TO-COVERAGE from the start (one shader, built once; the logo stays opaque):
       // the fade's opacity, dithered per pixel between the 4 samples' levels, exactly 1 when faded in
       material.alphaToCoverage = true;
@@ -2106,6 +2134,8 @@ export function createHeroScene(aspect: number): HeroScene {
     rain.update(delta, emitT >= 0 ? emitT - phase1End : NaN);
     // the wash follows the rain that has LANDED (0 until the first drop, 1 by the last)
     washShare.value = rain.wash;
+    // ⛔ THE TEMPERATURE (`hero-heat.ts`): its sub-steps owed on the story's clock (stepped in `compute`); no wash = reset
+    logoHeat.update(delta, rain.wash);
     // the logo's own key fades as the wash completes (`LOGO_KEY`)
     logoKey.intensity = light.intensity * (1 - rain.wash);
     // ⛔ THE STEAM (`hero-steam.ts`): on the rain's clock (the first drops landing), × the red still left
@@ -2249,6 +2279,7 @@ export function createHeroScene(aspect: number): HeroScene {
       const tc = performance.now();
       rain.compute(renderer);
       steam.compute(renderer, scene, camera);
+      logoHeat.compute(renderer);
       const ms = Math.round(performance.now() - tc);
       if (ms > (loadTimes.computeMaxMs ?? 0)) loadTimes.computeMaxMs = ms;
       // THE RAIN's STEP PROGRAM (`HeroRain.warm`) is built from its hit map, which arrives from the worker AFTER the logo
@@ -2276,6 +2307,10 @@ export function createHeroScene(aspect: number): HeroScene {
     },
     get loadTimes() {
       return loadTimes;
+    },
+    heat: logoHeat.settings,
+    get heatInfo() {
+      return logoHeat.info;
     },
     steam: steam.settings,
     get steamInfo() {
