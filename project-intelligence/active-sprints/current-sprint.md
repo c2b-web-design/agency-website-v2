@@ -112,6 +112,7 @@ and pushed as of 26 October 2026** (tree clean, level with `origin/main`) — ch
   ⛔ **Changed (Carl, 29 October, verbatim):** *"Slight schedule change. We will edit the 3 films we have then all that is
   left to build is the Hero. That will take several sessions."* → **edit films 01, 02 and 04 NOW → the hero (several
   sessions; film 3 is its capture).** Then Send (Carl: *"Yes, after the hero we will connect the "send" button"*), then mastering.
+- ⛔ **THE ORDER TO THE FINISH (Carl, 16 November 2026, session 3; D-101):** finish building the hero (`/proto/hero`; next the floor) → **camera direction, its own phase** (`/proto/hero` + `/proto/camera`, its order discussed step by step) → the hero on the site → edit film 3 → the four films on the site → the Send button → mastering (phones, tablets). *"We are on the home straight and the finish line is in sight."*
 - **The hero's right-side space:** still empty; D-026's guard held until the hero was the chunk, and Carl opened it on 2 November. Nothing goes in it without his design.
 - **Future work is not recorded here** — Carl keeps it outside the repository (D-038).
 - **At site completion:** the workshop/template separation — full record

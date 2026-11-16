@@ -38,6 +38,10 @@ and commit and push."*
 
 ## ⛔ STANDING — CARL's
 
+- ⛔ **THE ORDER TO THE FINISH** (Carl, after the session's push; D-101): finish BUILDING the hero (the floor next) →
+  **CAMERA DIRECTION, ITS OWN PHASE** (`/proto/hero` + `/proto/camera`; its order discussed, one step at a time) → the
+  hero ON THE SITE → EDIT FILM 3 → the FOUR FILMS on the site → the SEND button → MASTERING (phones, tablets). *"We are on
+  the home straight and the finish line is in sight."*
 - **A FIX MUST NOT CHANGE THE STORY** (memory). **SOMETHING IS ALWAYS MOVING.** Best first; fall back only if measured.
 - **THE SCOPE STAYS OPEN** (no lock asked): `components/hero/hero-scene.ts`, `hero-bench.tsx`, `hero-rain.ts`,
   `hero-steam.ts`, `hero-maps.worker.ts`, **`hero-heat.ts` (new today, Carl: *"Authorised to create and use"*)**,
@@ -76,7 +80,9 @@ degrees, seconds).
 - **COMMITTED AND PUSHED** at Carl's word (see `git log`): tsc clean; lint at the baseline (the one accepted error, 0
   warnings); a clean-checkout build before each push.
 - **The screen capture STOPPED** (`01 Discussion\2026-11-16_s3_discussion_screen.remux.mkv`, 1:18:51; raw kept).
-- **The dev server is UP** (port 3000).
+- **The dev server is STOPPED** (the whole `next dev` tree killed, port 3000 free; Carl also had the Codex app's helper
+  node stopped). The order-to-the-finish entry (D-101, the sprint file, this handoff) committed and pushed after it (Carl: *"Lets
+  keep things current and up to date - commit and push."*).
 
 ## LESSONS
 
