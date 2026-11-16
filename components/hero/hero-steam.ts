@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { MeshBasicNodeMaterial, Storage3DTexture, type Node, type WebGPURenderer } from "three/webgpu";
-import { Break, float, frameId, Fn, hash, If, instanceIndex, instancedArray, interleavedGradientNoise, Loop, max, min, mx_noise_float, cameraPosition, positionWorld, screenCoordinate, select, smoothstep, step, storageTexture, texture3D, textureStore, uniform, uvec3, vec3, vec4 } from "three/tsl";
+import { Break, float, frameId, Fn, hash, If, instanceIndex, instancedArray, interleavedGradientNoise, Loop, max, min, mx_noise_float, cameraPosition, positionWorld, screenCoordinate, select, smoothstep, step, storageTexture, texture, texture3D, textureLoad, textureStore, uniform, uvec2, uvec3, vec3, vec4 } from "three/tsl";
 import { snoiseVec3 } from "three/addons/tsl/math/curlNoise.js";
 import { steamBoxFor, steamSolidMask, type SteamBox, type SteamInk, type SteamLogo, type SteamMask } from "./hero-maps.worker";
 
@@ -28,7 +28,9 @@ import { steamBoxFor, steamSolidMask, type SteamBox, type SteamInk, type SteamLo
  * - **WHERE THE RAIN LANDS** (the emitters): in each column of cells, the cell just above the logo's HIGHEST surface there,
  *   the rain's own hit-map rule (vertical rain reaches only what faces up and is not under another part of the logo).
  * - **WHEN** (Carl's brief): a short BURST from the moment the FIRST DROPS LAND (`burstS`, eased in and out) × the red still
- *   left (1 − the wash); then it rises and thins (`lifeS`). After that the simulation STOPS and the box is hidden, so it
+ *   left (1 − the wash); then it rises and thins (`lifeS`). ⛔ Since 16 November 2026, session 3 (Carl: *"Your
+ *   recommendation"*): × the heat left UNDER EACH EMITTER (`heatCellsFor`, the logo's temperature, `hero-heat.ts`) in place
+ *   of the one red-left number (`localHeat`, its own switch in the Steam folder: one variable per A/B). After that the simulation STOPS and the box is hidden, so it
  *   costs nothing outside those seconds. The clock is the rain's (`HeroRain.sinceFirstLanding`), so "Rain again" plays it.
  * - **BY TIME**: each step is the story's delta (clamped to `SIM_DT`), so frame-stepped films (1/30 s) step it exactly.
  * - **THE DRAW**: ONE box in the main pass, my own march (no second render, no volumetric lighting pass, no blur): front
@@ -82,6 +84,8 @@ export type HeroSteamSettings = {
   /** extinction per cm at density 1 */
   thickness: number;
   brightness: number;
+  /** ⛔ each puff × the heat left under it (the logo's temperature, `setHeat`); off = the logo's one red-left number */
+  localHeat: boolean;
 };
 
 export const HERO_STEAM_DEFAULTS: HeroSteamSettings = {
@@ -99,6 +103,7 @@ export const HERO_STEAM_DEFAULTS: HeroSteamSettings = {
   steps: 48,
   thickness: 0.04,
   brightness: 0.8,
+  localHeat: true,
 };
 
 /** the bench's read-out (`__heroBench.hero.steamInfo`) */
@@ -112,6 +117,9 @@ export type HeroSteamInfo = {
   cellCm: number;
   boxCm: [number, number, number];
   emitters: number;
+  /** emitters over a cell of the logo's face (they read its local temperature), and whether the field was given */
+  heatEmitters: number;
+  heatGiven: boolean;
   maskCells: [number, number, number];
   solidCells: number;
   maskBuildMs: number;
@@ -133,7 +141,11 @@ export type HeroSteam = {
   setLogo(g: THREE.BufferGeometry, landed: THREE.Matrix4, unitsPerCm: number, ink: SteamInk, mask?: SteamMask): void;
   /** the scene key's direction (world, toward the light) */
   setLight(dir: THREE.Vector3): void;
-  /** the story's delta; seconds since the first drops landed (NaN = none); the red left (1 − wash); the camera (world) */
+  /** ⛔ THE LOGO's TEMPERATURE FIELD (`hero-heat.ts`; 16 November 2026, session 3) — given BEFORE `setLogo` (the emitters
+   *  read it from their first build) */
+  setHeat(tex: THREE.Texture | null): void;
+  /** the story's delta; seconds since the first drops landed (NaN = none); the red left (1 − wash, used when `localHeat` is
+   *  off or no field is given); the camera (world) */
   update(delta: number, sinceFirstLanding: number, redLeft: number, camera: THREE.Vector3): void;
   /** the GPU steps, before the draw (the scene's `compute`); the scene and camera for the WARM-UP's compile (`warm`) */
   compute(renderer: WebGPURenderer, scene: THREE.Scene, camera: THREE.Camera): void;
@@ -246,6 +258,48 @@ function emittersFor(mask: { data: Uint8Array; n: [number, number, number] }, bo
   return new Float32Array(out);
 }
 
+/**
+ * ⛔ THE HEAT UNDER EACH EMITTER (16 November 2026, session 3; D-101 — Carl: *"Your recommendation"*: the steam reads the
+ * LOCAL temperature, `hero-heat.ts`). For each emitter (`emittersFor`'s order), the cell of the logo's FACE grid (the ink's,
+ * which is the temperature's: 2 per cm) under the solid cell it sits on: that cell's centre (world) taken back to the logo's
+ * local cm by the landed pose, then the face grid's cell there — or the NEAREST ink cell within `HEAT_SNAP` cells (the
+ * bevel is not in the mask, and a top edge can sit a cell off the ink). −1 where none: that emitter keeps the whole
+ * puff. Made ONCE per build, on the CPU (a few thousand emitters).
+ */
+const HEAT_SNAP = 6;
+function heatCellsFor(emit: Float32Array, logo: Logo, box: Box): Float32Array {
+  const { ink, W, H, minX, minY, sizeX, sizeY } = logo.ink;
+  const toLocal = logo.landed.clone().invert();
+  const [, ny] = box.n;
+  const out = new Float32Array((emit.length / 4) * 2).fill(-1);
+  const p = new THREE.Vector3();
+  for (let e = 0; e < emit.length / 4; e++) {
+    // the solid cell under the emitter: one cell below it
+    p.set(emit[4 * e], emit[4 * e + 1] - 1 / ny, emit[4 * e + 2]).multiply(box.sizeWorld).add(box.min).applyMatrix4(toLocal);
+    const cx = Math.floor(((p.x - minX) / sizeX) * W);
+    const cy = Math.floor(((p.y - minY) / sizeY) * H);
+    let best = -1;
+    let bestD = Infinity;
+    for (let dy = -HEAT_SNAP; dy <= HEAT_SNAP; dy++) {
+      for (let dx = -HEAT_SNAP; dx <= HEAT_SNAP; dx++) {
+        const x = cx + dx;
+        const y = cy + dy;
+        if (x < 0 || y < 0 || x >= W || y >= H || !ink[W * y + x]) continue;
+        const d = dx * dx + dy * dy;
+        if (d < bestD) {
+          bestD = d;
+          best = W * y + x;
+        }
+      }
+    }
+    if (best >= 0) {
+      out[2 * e] = best % W;
+      out[2 * e + 1] = Math.floor(best / W);
+    }
+  }
+  return out;
+}
+
 function storage3D(n: [number, number, number], name: string): Storage3DTexture {
   const t = new Storage3DTexture(n[0], n[1], n[2]);
   t.name = name;
@@ -288,10 +342,16 @@ export function createHeroSteam(floorY: number): HeroSteam {
     lightDir: uniform(new THREE.Vector3(0.5, 0.5, 1).normalize()),
     // the self-shadow's tap spacing (cm)
     shadowCm: uniform(6),
+    // ⛔ the LOCAL temperature (`heatCellsFor`): 1 = each puff × the heat left under it; 0 = the whole logo's red left
+    local: uniform(0),
   };
 
   // the draw's textures, swapped when the simulation is rebuilt (a 1-cell placeholder until then)
   const placeholder = new THREE.Data3DTexture(new Uint8Array(4), 1, 1, 1);
+  // ⛔ THE LOGO's TEMPERATURE FIELD (`hero-heat.ts`, `setHeat`): a 1-texel stand-in (cold 0: all heat left) until it is given
+  const heatPlaceholder = new THREE.DataTexture(new Uint16Array(4), 1, 1, THREE.RGBAFormat, THREE.HalfFloatType);
+  heatPlaceholder.needsUpdate = true;
+  let heatTex: THREE.Texture | null = null;
   placeholder.needsUpdate = true;
   const dyeNode = texture3D(placeholder);
   const maskNode = texture3D(placeholder);
@@ -371,6 +431,7 @@ export function createHeroSteam(floorY: number): HeroSteam {
     maskTex.unpackAlignment = 1;
     maskTex.needsUpdate = true;
     const emit = emittersFor(mask, box);
+    const heatCells = heatCellsFor(emit, l, box);
     const [nx, ny, nz] = box.n;
     const count = nx * ny * nz;
     const dims = vec3(nx, ny, nz);
@@ -538,8 +599,14 @@ export function createHeroSteam(floorY: number): HeroSteam {
     const emitters = instancedArray(emitCount, "vec4");
     (emitters.value.array as Float32Array).set(emit.length ? emit : new Float32Array(4).fill(-1));
     emitters.value.needsUpdate = true;
+    // ⛔ THE HEAT UNDER EACH EMITTER (`heatCellsFor`): its face cell (x, y), −1 = none
+    const emitHeat = instancedArray(emitCount, "vec2");
+    (emitHeat.value.array as Float32Array).set(heatCells.length ? heatCells : new Float32Array(2).fill(-1));
+    emitHeat.value.needsUpdate = true;
+    const heatField = texture(heatTex ?? heatPlaceholder);
     const emitPass = Fn(() => {
       const p = emitters.element(instanceIndex).xyz;
+      const hc = emitHeat.element(instanceIndex);
       If(p.x.greaterThanEqual(0), () => {
         const c = uvec3(p.mul(dims));
         const flicker = mx_noise_float(p.mul(u.boxCm).div(8).add(vec3(0, u.time.mul(-2.5), u.time.mul(0.7))))
@@ -550,7 +617,11 @@ export function createHeroSteam(floorY: number): HeroSteam {
         // whole top outline at once as an even white fringe (seen, 16 November): a glow, not drops meeting hot metal
         const draw = hash(instanceIndex.add(u.time.mul(30).floor().toUint().mul(7919)));
         const puff = step(1 - PUFF_CHANCE, draw).mul(1 / PUFF_CHANCE);
-        const k = flicker.mul(0.85).add(0.15).mul(puff);
+        // ⛔ × THE HEAT LEFT UNDER IT (`u.local`; `hero-heat.ts` holds the coldness C, so the heat left is 1 − C): water
+        // flashes to steam where the metal is still hot, and less as that spot cools — not one number for the whole logo
+        const heatLeft = select(hc.x.greaterThanEqual(0), float(1).sub(textureLoad(heatField, uvec2(hc.max(0))).r), float(1));
+        const local = select(u.local.greaterThan(0.5), heatLeft, float(1));
+        const k = flicker.mul(0.85).add(0.15).mul(puff).mul(local);
         const cur = dyeNode.sample(p).level(LOD0);
         const dens = cur.r.add(u.emitD.mul(k));
         const temp = cur.g.add(u.emitT.mul(k)).clamp(0, 12);
@@ -586,6 +657,9 @@ export function createHeroSteam(floorY: number): HeroSteam {
       advectDye,
       emitPass,
       emitCount: emit.length / 4,
+      // emitters that found a face cell (`heatCellsFor`), and whether the field was given at this build
+      heatEmitters: heatCells.reduce((n, v, i) => (i % 2 === 0 && v >= 0 ? n + 1 : n), 0),
+      heatGiven: !!heatTex,
       count,
       gpuMB: Math.round((bytes / (1024 * 1024)) * 10) / 10,
       dispose() {
@@ -683,6 +757,9 @@ export function createHeroSteam(floorY: number): HeroSteam {
     setLight(dir) {
       u.lightDir.value.copy(dir).normalize();
     },
+    setHeat(tex) {
+      heatTex = tex;
+    },
     update(delta, sinceFirstLanding, redLeft, camera) {
       const s = settings;
       pending = 0;
@@ -702,7 +779,11 @@ export function createHeroSteam(floorY: number): HeroSteam {
       }
       const b = s.burstS;
       env = s.hold ? 1 : smooth01(t / (0.25 * b)) * (1 - smooth01((t - 0.5 * b) / (0.5 * b)));
-      const red = Math.max(0, Math.min(1, redLeft));
+      // ⛔ LOCAL (16 November 2026, session 3): the heat left is read per emitter (the emit pass); the logo's one "red left"
+      // only without the temperature field
+      const isLocal = s.localHeat && !!heatTex;
+      u.local.value = isLocal ? 1 : 0;
+      const red = isLocal ? 1 : Math.max(0, Math.min(1, redLeft));
       // ONE STEP PER FRAME (`SIM_DT`): this frame's length, clamped; none on a paused frame
       const dt = Math.min(delta, SIM_DT);
       pending = dt > 1e-6 ? 1 : 0;
@@ -792,6 +873,8 @@ export function createHeroSteam(floorY: number): HeroSteam {
         cellCm: sim.box.cellCm,
         boxCm: [r(sim.box.cm.x), r(sim.box.cm.y), r(sim.box.cm.z)] as [number, number, number],
         emitters: sim.emitCount,
+        heatEmitters: sim.heatEmitters,
+        heatGiven: sim.heatGiven,
         maskCells: sim.mask.n,
         solidCells: sim.mask.solid,
         maskBuildMs: sim.mask.ms,
@@ -804,6 +887,7 @@ export function createHeroSteam(floorY: number): HeroSteam {
     dispose() {
       sim?.dispose();
       placeholder.dispose();
+      heatPlaceholder.dispose();
       boxGeo.dispose();
       mat.dispose();
     },

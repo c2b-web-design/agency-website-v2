@@ -121,3 +121,32 @@ Three frames from one camera position through phase 1 (`across-the-text-1-the-da
 to be seen."* huge in the left foreground, raking away; the subtext laid along the floor leading the eye in; the story
 beyond it on the right: the dance (with the pool and its orange light), one blob, the liquid logo in the mould. For the
 direction: a shot that keeps the TEXT and the STORY in one frame — the words in front, what they promise behind.
+
+## 16 November 2026, session 3: the temperature seen close up (Carl's frames)
+
+Carl: *"up really close the rain can be seen bouncing of the logo. i will show you the angle i like."* Six frames
+(`close-temperature-16-november-1.png` … `-6.png`): (1) very close on the c's top edge, the splashes landing ON the logo's top
+surfaces with the steam behind; (2), (4), (5) oblique views mid-wash and late wash, the temperature's soft red/blue; (3) the
+logo cooled whole, platinum blue, oblique; (6) the steam burst over the red logo, oblique. **What the "bounce" is:** the
+rain's SPLASH (the example's ring and crown, drawn where each drop meets the highest surface under it, the hit map) on the
+logo's top edges; it throws no secondary droplets. **The angle Carl likes is still to come** (his next frame).
+
+## 16 November 2026, session 3: the angle Carl likes, and the question before it
+
+Three frames from one camera, low and left of the text, looking ACROSS it to the story (the 14 November "across the text"
+family): (1) the dance over the pool, (2) the liquid logo in the mould, (3) the rain and the steam on the red logo, small
+in frame (`carls-angle-16-november-1-the-dance.png`, `-2-the-liquid-logo.png`, `-3-the-rain.png`). Carl: *"before we get
+there. A decision must be made on whether to move a camera or to zoom in."* → put to Carl: MOVE (dolly) or ZOOM (focal
+length), the principle and what each does to this scene; his to decide.
+
+Then two more (`carls-angle-16-november-4-side-the-dissolve.png`, `-5-from-behind.png`): side on to the lean, the START OF
+THE DISINTEGRATION (the emission's front taking the logo top down, the first blob swelling out of it); and FROM BEHIND, the
+text reading mirrored, the blobs coming out of the logo. Carl: *"From this angle you can see the start of the
+disintegration of the logo. So building it is one thing, using the camera effectively to show off and enhance your handiwork
+is another. looking at it from the back, fleetingly is something we havent even considered. Direction is better
+storyboarded."* → **THE DIRECTION IS STORYBOARDED** (when the scene is finished from Home, ruling 5): the shots drawn up per
+phase before any move is built. Candidates on record for it: across the text (14 November and today); side on for the
+disintegration; FROM BEHIND, FLEETINGLY (new); close in the rain, then the pull back that shows it local; oblique for the wet
+look and the beads; the move-or-zoom question answered per shot. Seen in the frames, reported, not ruled: from behind the
+text's backs read dark grey (the key is in front); side on, the dissolve's chunks show as SQUARE blocks at the top of the
+logo (the emission's cell noise, Carl's "chunks taken out", 13 November) — up close a square edge could read as a glitch.

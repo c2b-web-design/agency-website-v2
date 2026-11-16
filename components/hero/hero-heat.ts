@@ -86,6 +86,9 @@ export type HeroHeat = {
   update(delta: number, wash: number): void;
   /** the GPU sub-steps owed since the last call, before the draw */
   compute(renderer: WebGPURenderer): void;
+  /** the field the material reads (after each sub-step pair, the latest), null before `setFace` — the steam's emitters read
+   *  it too (`hero-steam.ts`, `setHeat`) */
+  readonly texture: THREE.Texture | null;
   readonly info: HeroHeatInfo | null;
   dispose(): void;
 };
@@ -280,6 +283,9 @@ export function createHeroHeat(wash: Node<"float">): HeroHeat {
         dirty = true;
         stepped += 2 * pairs;
       }
+    },
+    get texture() {
+      return sim?.a ?? null;
     },
     get info() {
       if (!sim) return null;

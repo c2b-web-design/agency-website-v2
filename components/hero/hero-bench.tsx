@@ -262,6 +262,19 @@ export default function HeroBench() {
       f.add(hs, "redBelow", 0, 0.9, 0.01).name("red until (cold)");
       f.add(hs, "blueAbove", 0.1, 1, 0.01).name("blue from (cold)");
 
+      // ⛔ THE WET LOOK's DIALS (`WET`, `hero-scene.ts`; 16 November 2026, session 3; Carl: "we can tweak if needed"): the
+      // clear coat where the water is, its running streaks while the wash runs, its beads after. Live, no rebuild
+      const ws = hero.wet;
+      f = gui.addFolder("Wet");
+      f.add(ws, "coat", 0, 1, 0.01).name("coat strength");
+      f.add(ws, "coatRoughness", 0, 0.5, 0.005).name("coat roughness");
+      f.add(ws, "streakCm", 0.2, 6, 0.05).name("streak width (cm)");
+      f.add(ws, "lengthCm", 2, 40, 0.5).name("streak length (cm)");
+      f.add(ws, "runCmS", 0, 80, 0.5).name("run speed (cm/s)");
+      f.add(ws, "flowTilt", 0, 1, 0.01).name("streak ripple");
+      f.add(ws, "beadCm", 0.2, 5, 0.05).name("bead size (cm)");
+      f.add(ws, "beadTilt", 0, 0.6, 0.01).name("bead ripple");
+
       // ⛔ PHASE 2, THE STEAM (`hero-steam.ts`; 16 November 2026; Carl: *"build it on the proto hero and we will take
       // measurements"*): a short burst as the first drops land; "hold" keeps it emitting to judge and measure; it plays on
       // the rain's clock, so "Steam again" plays the rain again; the cell size is the cost's main dial
@@ -269,6 +282,8 @@ export default function HeroBench() {
       f = gui.addFolder("Steam");
       f.add(ss, "on");
       f.add(ss, "hold").name("hold (emitting)");
+      // ⛔ 16 November 2026, session 3: each puff × the heat left under it (the logo's temperature); off = one number for all
+      f.add(ss, "localHeat").name("local heat");
       f.add({ again: () => hero.rainAgain() }, "again").name("Steam again (rain again)");
       f.add(ss, "burstS", 0.3, 4, 0.05).name("burst (s)");
       f.add(ss, "lifeS", 0.2, 5, 0.05).name("life (s)");

@@ -361,6 +361,18 @@ const COOLED = { roughness: LOGO_BLUE_DEFAULTS.roughness, exposure: 1 } as const
  * - It stays wet until phase 3's cloth dries it. Values are takes.
  */
 const WET = { coat: 1, coatRoughness: 0.04, streakCm: 1.6, lengthCm: 14, runCmS: 22, flowTilt: 0.35, beadCm: 1.2, beadTilt: 0.12 } as const;
+/**
+ * ⛔ THE WET DIALS (16 November 2026, session 3; Carl: *"tes, we can tweak if needed"*): `WET`'s values as uniforms, the
+ * bench's Wet folder edits them live (no rebuild). Their defaults ARE `WET`. ⛔ The coat's lightness is SETTLED (Carl, the
+ * same day: the wet face reads lighter than the dry desk-mark blue — water reflecting is the wet look); a dial is for a
+ * tweak, not for "correcting" it back.
+ */
+export type HeroWetSettings = { -readonly [K in keyof typeof WET]: number };
+// a float uniform's type, as `makeFront`'s (above)
+type WetUniforms = { [K in keyof typeof WET]: ReturnType<typeof makeFront> };
+function wetUniforms(): WetUniforms {
+  return Object.fromEntries(Object.entries(WET).map(([k, v]) => [k, uniform(v)])) as WetUniforms;
+}
 
 /**
  * ⛔ PHASE 2, THE WASH — THE RAIN TURNS THE RED TO PLATINUM BLUE (14 November 2026; D-101). Carl: *"ok, let the rain wash
@@ -420,7 +432,7 @@ function logoRunoffMap(d: RunoffData): RunoffMap {
  * Values are takes.
  */
 const LIQUID = { roughness: 0.1, swellCm: 1.2, tilt: 0.35, scale: 0.045, drift: 0.35 } as const;
-function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>, fill: ReturnType<typeof makeFront>, flow: FlowMap, courtyard: THREE.Texture, harden: ReturnType<typeof makeFront>, clock: ReturnType<typeof makeFront>, runoff: RunoffMap, wash: ReturnType<typeof makeFront>, judging: THREE.Texture, logoLights: THREE.Light[], heat: HeroHeat): MeshPhysicalNodeMaterial {
+function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>, fill: ReturnType<typeof makeFront>, flow: FlowMap, courtyard: THREE.Texture, harden: ReturnType<typeof makeFront>, clock: ReturnType<typeof makeFront>, runoff: RunoffMap, wash: ReturnType<typeof makeFront>, judging: THREE.Texture, logoLights: THREE.Light[], heat: HeroHeat, wetU: WetUniforms): MeshPhysicalNodeMaterial {
   // ⛔ PHYSICAL since the wet look (14 November 2026; `WET`): the clear coat is the physical model's; dry (coat 0) it draws as
   // the standard material did (the null control)
   const m = new MeshPhysicalNodeMaterial({ color: HERO_LOGO_RED, metalness: HERO_LOGO_METAL.metalness, roughness: HERO_LOGO_METAL.roughness });
@@ -465,12 +477,12 @@ function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>
   m.colorNode = mix(materialColor, vec3(pr, pg, pb), cooled);
   // ⛔ WET (`WET`, above): the coat where the water has reached; its normal the running water, easing into beads as the
   // wash completes (`flowing`: 1 while it runs, 0 once done)
-  m.clearcoatNode = wet.mul(WET.coat);
-  m.clearcoatRoughnessNode = float(WET.coatRoughness);
+  m.clearcoatNode = wet.mul(wetU.coat);
+  m.clearcoatRoughnessNode = wetU.coatRoughness;
   const flowing = float(1).sub(smoothstep(0.85, 1, wash));
-  const runField = vec3(positionLocal.x.div(WET.streakCm), positionLocal.y.add(clock.mul(WET.runCmS)).div(WET.lengthCm), positionLocal.z.div(WET.streakCm));
-  const beadField = positionLocal.div(WET.beadCm);
-  const ripple = mx_noise_vec3(runField).mul(flowing.mul(WET.flowTilt)).add(mx_noise_vec3(beadField.add(vec3(31, 7, 13))).mul(float(1).sub(flowing).mul(WET.beadTilt)));
+  const runField = vec3(positionLocal.x.div(wetU.streakCm), positionLocal.y.add(clock.mul(wetU.runCmS)).div(wetU.lengthCm), positionLocal.z.div(wetU.streakCm));
+  const beadField = positionLocal.div(wetU.beadCm);
+  const ripple = mx_noise_vec3(runField).mul(flowing.mul(wetU.flowTilt)).add(mx_noise_vec3(beadField.add(vec3(31, 7, 13))).mul(float(1).sub(flowing).mul(wetU.beadTilt)));
   m.clearcoatNormalNode = transformNormalToView(normalLocal.add(ripple.mul(wet))).normalize();
   // …under the desk mark's tone curve (ACES), on THIS material's output only, where cooled
   // (the cast: r185's types give the tone-mapping function an untyped Node; it returns the colour's vec3)
@@ -905,6 +917,8 @@ export type HeroScene = {
   /** ⛔ THE TEMPERATURE's dials (`hero-heat.ts`; the bench's Heat folder) and its read-out */
   heat: HeroHeatSettings;
   readonly heatInfo: HeroHeatInfo | null;
+  /** ⛔ THE WET DIALS (`WET`; the bench's Wet folder) */
+  wet: HeroWetSettings;
   /** the rain's shape again from now (once the logo has landed) */
   rainAgain(): void;
   /** the rain's numbers — a READ-OUT for checks; null until the logo (and its hit map) is in */
@@ -1138,6 +1152,9 @@ export function createHeroScene(aspect: number): HeroScene {
   // as an object during the wash — its field reads the wash's share (the run-off front) and the logo's material reads it
   const logoHeat = createHeroHeat(washShare);
   disposables.push(logoHeat);
+  // ⛔ THE WET DIALS (`WET`, `wetUniforms`): the bench's Wet folder edits `wetSettings`; copied to the uniforms in `update`
+  const wetSettings: HeroWetSettings = { ...WET };
+  const wetU = wetUniforms();
   // ⛔ THE MAPS (`mapsClient`, `hero-maps.worker.ts`; 16 November 2026, session 2): "face" is asked THE MOMENT THE LOGO's
   // GEOMETRY ARRIVES — it needs nothing else — so it runs while the text, the studio and the courtyard are still loading;
   // "landed" is asked below, once the landed pose is known. `landedIn`: the rain's hit map and the steam's mask are in
@@ -1224,8 +1241,10 @@ export function createHeroScene(aspect: number): HeroScene {
       if (face.ink.W !== face.runoff.W || face.ink.H !== face.runoff.H) throw new Error("[hero] the ink and the run-off map are not one grid");
       g.computeBoundingBox();
       logoHeat.setFace({ runoffTex: runoff.tex, W: face.runoff.W, H: face.runoff.H, minX: runoff.minX, minY: runoff.minY, sizeX: runoff.sizeX, sizeY: runoff.sizeY, perCm: RUNOFF.perCm, reachCm: runoff.reachCm, bandCm: RUNOFF.bandCm, ragCm: RUNOFF.ragCm, ragScale: RUNOFF.ragScale, ink: face.ink.ink, faceZ: g.boundingBox!.max.z });
+      // the steam's emitters read the same field (each puff × the heat left under it); given before the steam's logo (below)
+      steam.setHeat(logoHeat.texture);
       mark("mapTextures");
-      const material = logoMaterial(studio, dissolveFront, fillFront, flow, envs.courtyard!.reflect, hardness, liquidClock, runoff, washShare, judging, logoLights, logoHeat);
+      const material = logoMaterial(studio, dissolveFront, fillFront, flow, envs.courtyard!.reflect, hardness, liquidClock, runoff, washShare, judging, logoLights, logoHeat, wetU);
       // ⛔ THE OPENING's FADE (`OPENING`): ALPHA-TO-COVERAGE from the start (one shader, built once; the logo stays opaque):
       // the fade's opacity, dithered per pixel between the 4 samples' levels, exactly 1 when faded in
       material.alphaToCoverage = true;
@@ -2136,6 +2155,7 @@ export function createHeroScene(aspect: number): HeroScene {
     washShare.value = rain.wash;
     // ⛔ THE TEMPERATURE (`hero-heat.ts`): its sub-steps owed on the story's clock (stepped in `compute`); no wash = reset
     logoHeat.update(delta, rain.wash);
+    for (const k of Object.keys(wetSettings) as (keyof HeroWetSettings)[]) wetU[k].value = wetSettings[k];
     // the logo's own key fades as the wash completes (`LOGO_KEY`)
     logoKey.intensity = light.intensity * (1 - rain.wash);
     // ⛔ THE STEAM (`hero-steam.ts`): on the rain's clock (the first drops landing), × the red still left
@@ -2308,6 +2328,7 @@ export function createHeroScene(aspect: number): HeroScene {
     get loadTimes() {
       return loadTimes;
     },
+    wet: wetSettings,
     heat: logoHeat.settings,
     get heatInfo() {
       return logoHeat.info;
