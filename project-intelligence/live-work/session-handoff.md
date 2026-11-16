@@ -5,13 +5,23 @@ the session that reads it, once its replacement is written.
 
 **The record:** D-101 in `decisions.md`, from *"⛔ THE STALL ON THE TEXT: THE MAPS MOVED OFF THE MAIN THREAD (16 November
 2026, session 2)"* to the end: every beat, with Carl's words. Session ended on Carl's word: *"Compaction is 44%. Session limit
-is good on 35%. We will start a new session. Write a handoff and commit and push and give me a status check"*.
+is good on 35%. We will start a new session. Write a handoff and commit and push and give me a status check"*; then the
+vertical lines (ruled out), the temperature model (approved for NEXT session) — the last entries of D-101.
 
 ## ⛔ NEXT SESSION — WHAT IS OPEN
 
-1. **Carl's plan from 14 November, the RULINGS, in order** (the opening's stalls are done): the sharp vertical red/blue
-   lines, the wet coat's lightness, the wet dials, the structural note v1.1 and the camera direction note. Then **THE
-   FLOOR**.
+1. **⛔ FIRST: BUILD THE TEMPERATURE MODEL** (Carl, end of session 2: *"yes, but in the next session ... it will be built
+   from the Home position"*). The sharp vertical red/blue lines are RULED OUT (*"do not look natural during the wash, either
+   through the rain or with rapid cooling"*): today's wash cools each vertical strip of the face on its own (the run-off map,
+   `RUNOFF`), so neighbouring strips with different run lengths jump at a ruler line. **Build:** a TEMPERATURE for the logo's
+   face — falling everywhere over time (the logo cools AS AN OBJECT, Carl), faster where the water runs, EVENED OUT through
+   the metal (soft, wandering boundaries) — driving the red→blue colour; the steam follows it (it already follows the red
+   left); the DRIPS later (water flashes to steam while the metal is above boiling; below it, it runs, gathers on the
+   downward edges, drips). Judged from HOME; Carl flies closer at times, and the final camera direction comes at the end —
+   **the wash is to be SEEN CLOSE UP** (*"your handiwork deserves to be seen close up in all its glory"*; the oblique note,
+   `hero-camera-direction-14-november/camera-direction-note.md`, 14 November). **NULL CONTROL:** every frame before the rain
+   unchanged — make a NEW reference first (the grid is off now). Then the rest of Carl's 14 November rulings: the wet coat's
+   lightness, the wet dials, the structural note v1.1 and the camera direction note. Then **THE FLOOR**.
 2. **THE FLOOR, restated today** (Carl: *"that will be on the floor. No statue. The pasttern will either be red or blue
    depending on the lodo stste."*): `webgpu_lights_projector`'s procedural cell pattern
    (`Videos\C2B Films\03 The hero\00 References\projector-floor-8-november.mp4`), WITHOUT the statue; reddish from the heat,
