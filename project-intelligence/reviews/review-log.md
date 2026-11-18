@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-109 — The Hero, Phase 2 Complete: The Rain, The Wash, The Steam And The Floor's Heat (D-101): "Phase 2 is approved"
+
+**Date:** 2026-11-18
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` at `3c3838c` — phase 2 whole: the rain (`hero-rain.ts`), the wash and the wet look (`hero-scene.ts`), the logo's temperature (`hero-heat.ts`, R-107), the steam (`hero-steam.ts`, R-108), and the floor's heat (`hero-floor.ts`, new 18 November: the lean's, the amber liquid's and the solid logo's webs; the rain turning it blue)
+
+**Carl's verdict, verbatim:** *"ok, Phase 2 is approved. The blue floor is taken into Phase 3"*
+
+**Findings:**
+
+- ✔ **PHASE 2 APPROVED** on the bench: from the solid logo's landing through the rain, the wash red → platinum blue (the temperature), the wet coat, the steam, and the floor's webs turning blue under the rain (*"Excellent!"*, the same day).
+- ⚠ **Read as including the floor's earlier sources** (the lean's web, the amber liquid's), built in the same session though they play in phase 1's time — Carl's to correct.
+- **Carried into phase 3:** the BLUE FLOOR (the solid logo's web, cooled by the rain) is phase 3's starting state.
+- **Not covered:** the GPU frame cost and load on the visitor's devices (D-108; not measured for the floor); the camera direction (its own phase); the code drops (ruled, not built, after the floor).
+
+---
+
 ## R-108 — The Hero, Phase 2: The Steam, With The Local Heat (D-101): "Steam is good and approved"
 
 **Date:** 2026-11-18
