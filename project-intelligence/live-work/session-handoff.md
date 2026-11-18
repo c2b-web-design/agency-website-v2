@@ -109,7 +109,7 @@ The threejs.dev sketch: `live-work/floor-sketch-18-november/` (step 1 only; Carl
 - **COMMITTED AND PUSHED** to `753a2ed` (the floor `b87747a`, the lint fix `3c3838c`, the records): tsc clean; lint at the
   baseline (1 error, 0 warnings); a clean-checkout build before the floor's push.
 - **The screen capture STOPPED** (`01 Discussion\2026-11-18_discussion_screen.remux.mkv`, 2:45:18; raw kept).
-- **The dev server is RUNNING** (port 3000, started this session) — stop the whole `next dev` tree if a checkpoint opens.
+- **The dev server is STOPPED** (the whole `next dev` tree killed at Carl's word, port 3000 free).
 - The Architect note v1.5 and its review (four rounds): `live-work/structural-note-floor-lean-18-november.md`,
   `review-floor-lean-note-18-november.md`.
 
