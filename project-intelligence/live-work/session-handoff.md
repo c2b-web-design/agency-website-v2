@@ -8,6 +8,15 @@ Carl's words. Session ended on Carl's word: *"im on 44% till compaction. Write a
 
 ## ⛔ NEXT SESSION — WHAT IS OPEN
 
+0. **⛔ FIRST: THE CLOTH — STATIC, AN OBJECT THROUGH IT** (Carl, after the handoff was written: *"we will build the cloth
+   first. Static. we will put an object through it while its static. Like it is on the site and in the video, look at the
+   interaction. we will develop from there."*). ⛔ Then, asked to commit: *"yes, code drops then cloth."* — **THE STORY's ORDER stays code drops → cloth** (phase 3 starts with the drops, which initiate the drying). ⚠ **CONFIRM WITH CARL AT THE START: the BUILD order** — his *"we will build the cloth first"* (read as: built first) against *"code drops then cloth"* (the story's order, or the build's?). The cloth as described: a STATIC cloth (hanging, not yet
+   moving through space), and an OBJECT passed through it, as `webgpu_compute_cloth` does on threejs.org and in Carl's film
+   — study THE INTERACTION. **Homework first** (the memory rule): the reference film `Videos\C2B Films\03 The hero\00
+   References\cloth-8-november.mp4` (contact sheet), the example's source at r185 (and today's r187 — the projector
+   example changed between them), and our own scene's matching pieces (the steam's and rain's compute, `hero-scene.ts`).
+   Then develop from there, on Carl's word. Files: name them and ask.
+
 1. **⛔ PHASE 3 STARTS WITH THE CODE DROPS** (Carl: *"The code drops can be seen as the start of Phase 3. i described them as
    an in joke. This may be true but they can have a function too - to inutiate the drying process."*). The 16 November
    rulings stand: ~3 CHOSEN drops in the rain's LAST BAND (~170 drops in the air as the last starts down, `00:00:31:10`),
