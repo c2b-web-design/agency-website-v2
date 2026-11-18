@@ -15,6 +15,13 @@ Carl's words. Session ended on Carl's word: *"im on 44% till compaction. Write a
    code; no slow motion; glyphs sized in the WORLD; the camera then not at Home (Cam 2 candidate to the side, along the
    logo's edge). **OPEN, Carl's:** what a code drop's LANDING does to START THE DRYING (the spot it hits dries first and
    spreads? the first landing sets the whole logo drying?). The Builder's 16 November note: no splash. Nothing built.
+1a. **⛔ THE BRAINSTORM AFTER THE PUSH — PHASE 3's END (Carl: *"all for the next session. We got the makings of a great idea
+   to develop."*):** `live-work/hero-concept-8-november/brainstorm-plinth-18-november.md` (D-101, from *"THE BLUE WEB SHRINKS
+   WITH EACH WIPE"*). The blue web shrinks with each wipe as the gold appears; the drying done → the gold logo at rest on the
+   floor → SPOTLIGHTS to showcase, PROJECTED MARBLE on the floor (2D) → a plain ROUNDED BLOCK rises slowly out of the floor
+   (the same projected marble wrapping it in 3D, *"a plinth but not so ostentatious as to build a real one"*) → the LOGO
+   GROWS as it rises. Open (Carl's): "rotating" (the marble flowing or the block turning); the text's size; the drying's
+   how; the timings. Not built; a structural note before it is.
 2. **Phase 3 after the drops:** the cloth MOVES (its pins the hand, an authored path), the logo JUMPS to meet it (CHOSEN —
    wet, it jumps; dry, it is C-3PO gold); after the cloth: TBD, Carl's. **Carried in: THE BLUE FLOOR** (the solid logo's
    web after the rain) is phase 3's starting state (R-109).
