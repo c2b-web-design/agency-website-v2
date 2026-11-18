@@ -43,7 +43,7 @@ const grey = (buf) => {
 };
 const rows = [];
 for (const at of times) {
-  const info = await p.evaluate(async (at) => {
+  await p.evaluate(async (at) => {
     const { hero, renderer, scene, camera } = window.__heroBench;
     let n = 0;
     while (!(Number.isFinite(hero.steamInfo?.t) && hero.steamInfo.t >= at - 1e-6) && n++ < 30 * 60) {
