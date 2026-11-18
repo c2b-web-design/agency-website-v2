@@ -8,15 +8,25 @@ Carl's words. Session ended on Carl's word: *"im on 44% till compaction. Write a
 
 ## ⛔ NEXT SESSION — WHAT IS OPEN
 
+**⛔ THE SESSION's SHAPE (Carl, 18 November 2026):** *"so the prep is done, the code is alraedy built, literally, it shouldnt
+take long to implement. Then we can spend the majurity of the session on the cloth."* → **the CODE DROPS first and QUICK**
+(the rulings are in D-101, 16 November; the rain's code is `player-bench.tsx`'s — reuse it), **then the CLOTH for the
+majority of the session.** Still name the files and ask before the first edit; the approved `player-bench.tsx` is touched
+only on Carl's word.
+
 0. **⛔ FIRST: THE CLOTH — STATIC, AN OBJECT THROUGH IT** (Carl, after the handoff was written: *"we will build the cloth
    first. Static. we will put an object through it while its static. Like it is on the site and in the video, look at the
-   interaction. we will develop from there."*). ⛔ Then, asked to commit: *"yes, code drops then cloth."* — **THE STORY's ORDER stays code drops → cloth** (phase 3 starts with the drops, which initiate the drying). ⚠ **CONFIRM WITH CARL AT THE START: the BUILD order** — his *"we will build the cloth first"* (read as: built first) against *"code drops then cloth"* (the story's order, or the build's?). The cloth as described: a STATIC cloth (hanging, not yet
+   interaction. we will develop from there."*). ⛔ Then, asked to commit: *"yes, code drops then cloth."* — **THE STORY's ORDER stays code drops → cloth** (phase 3 starts with the drops, which initiate the drying). ✔ **CONFIRMED (Carl): *"the code drops are first"* — the BUILD order is CODE DROPS, THEN THE CLOTH** (was: confirm the BUILD order — his *"we will build the cloth first"* (read as: built first) against *"code drops then cloth"* (the story's order, or the build's?). The cloth as described: a STATIC cloth (hanging, not yet
    moving through space), and an OBJECT passed through it, as `webgpu_compute_cloth` does on threejs.org and in Carl's film
    — study THE INTERACTION. **Homework first** (the memory rule): the reference film `Videos\C2B Films\03 The hero\00
    References\cloth-8-november.mp4` (contact sheet), the example's source at r185 (and today's r187 — the projector
    example changed between them), and our own scene's matching pieces (the steam's and rain's compute, `hero-scene.ts`).
    Then develop from there, on Carl's word. Files: name them and ask.
 
+1. **⛔ THE CODE DROPS REUSE `/about`'s CODE RAIN — READ D-101's 16 NOVEMBER ENTRIES FIRST** (*"HOMEWORK DONE: THE LOGO IN `/about` §3's PLAYER"* to *"THE OPTION OF A CUT TO CAM 2"*: every code-drop ruling is there; Carl, 18 November: *"weve already dicussed the code drop. read the notes"*) (Carl: *"most of the work has been done, you dont have to do it from
+   scratvh"*): `player-bench.tsx`'s `CODE_RAIN` / `rainAtlas` — the characters, colours, glowing head, flares — carried into
+   the hero (homework done: `00 References\about-code-rain-18-november.webm`, D-101). ⚠ `player-bench.tsx` is APPROVED
+   (R-086/R-087): exporting or moving the atlas to a shared file is a §5a choice for the note, named to Carl first.
 1. **⛔ PHASE 3 STARTS WITH THE CODE DROPS** (Carl: *"The code drops can be seen as the start of Phase 3. i described them as
    an in joke. This may be true but they can have a function too - to inutiate the drying process."*). The 16 November
    rulings stand: ~3 CHOSEN drops in the rain's LAST BAND (~170 drops in the air as the last starts down, `00:00:31:10`),
