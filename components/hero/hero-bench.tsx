@@ -205,6 +205,34 @@ export default function HeroBench() {
       });
       f.add(floor, "spacing", 25, 500, 25).name("spacing (units)").onFinishChange(buildGrid);
 
+      // ⛔ THE FLOOR's HEAT (`hero-floor.ts`; 18 November 2026; structural note v1.5): chunk 1, the leaning logo's rough
+      // circle and webs from its contact edge; a radial mask opens it inside out over 2.5 s from the logo's fade-in and
+      // closes it outside in over 2.5 s from the leap (Carl). Values are takes
+      const fh = hero.floor;
+      f = gui.addFolder("Heat floor");
+      f.add(fh, "on").name("floor heat");
+      f.add(fh, "strength", 0, 1, 0.01).name("strength (as seen)");
+      f.add(fh, "radiusCm", 5, 500, 1).name("radius (cm)");
+      f.add(fh, "falloff", 0.3, 5, 0.05).name("fall-off");
+      f.add(fh, "roughness", 0, 0.6, 0.01).name("rim roughness");
+      f.add(fh, "lobes", 0.2, 6, 0.05).name("rim bumps");
+      f.addColor(fh, "colour").name("colour");
+      f.add(fh, "maskEdge", 0, 0.6, 0.01).name("mask edge (soft)");
+      f.add(fh, "liquidStrength", 0, 2, 0.01).name("liquid: heat at touchdown");
+      f.add(fh, "liquidReach", 1, 4, 0.05).name("liquid: reach beyond the disc (×)");
+      f.add(fh, "chargedStrength", 0, 2, 0.01).name("liquid: supercharged heat");
+      f.add(fh, "chargeS", 0.05, 3, 0.05).name("liquid: supercharge rise (s)");
+      f.add(fh, "chargedRadiusCm", 50, 800, 5).name("liquid: supercharged radius (cm)");
+      f.addColor(fh, "liquidColour").name("liquid: colour");
+      f.addColor(fh, "coldColour").name("rain: cold colour");
+      f.add(fh, "rainCoolIn", 0.1, 20, 0.1).name("rain: cooling inside (/s)");
+      f.add(fh, "rainCoolOut", 0, 5, 0.05).name("rain: cooling outside (/s)");
+      f.add(fh, "rainEdgeCm", 5, 300, 5).name("rain: outside fall-off (cm)");
+      f.add(fh, "cellCm", 2, 60, 0.5).name("cell size (cm)");
+      f.add(fh, "contrast", 0.5, 4, 0.05).name("web contrast");
+      f.add(fh, "webGain", 0.2, 6, 0.05).name("web brightness");
+      f.add(fh, "zoomS", 0.5, 15, 0.1).name("outward drift (s)");
+
       // the home page's hero text over the view (Carl, 10 November 2026: spacing)
       f = gui.addFolder("Home page");
       // ⛔ OFF by default (11 November 2026): the text is BAKED into the world (`hero-scene.ts`); the page's text stays on

@@ -65,6 +65,21 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-108 — The Hero, Phase 2: The Steam, With The Local Heat (D-101): "Steam is good and approved"
+
+**Date:** 2026-11-18
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — `components/hero/hero-steam.ts` (the volumetric steam; each emitter reads the heat under it, `heatCellsFor`), `components/hero/hero-scene.ts`, `components/hero/hero-bench.tsx` (the Steam folder, its "local heat" switch). Built 16 November 2026 (take 1 and session 3's local heat, `a4b08f8`).
+
+**Carl's verdict, verbatim:** *"Steam is good and approved."*
+
+**Findings:**
+
+- ✔ **APPROVED** on the bench: the steam as it stands, with the local heat ON — the take `Videos\C2B Films\03 The hero\2026-11-16_steam_take2_local-heat.mp4`. The three notes the handoff put to Carl (the thin fringe on the top edges, ~0.4 s; the hang, fading by ~4.2 s; the softness close up, 2.5 cm cells) are **closed by this approval** — none is to be changed.
+- **Not covered:** the GPU frame cost on the visitor's devices (D-108; 30 fps measured on Carl's Chrome during the burst, 16 November); the camera direction (the steam to be seen in its shots, later).
+
+---
+
 ## R-107 — The Hero, Phase 2: The Logo Cools As An Object During The Wash (D-101): "a vast improvement"
 
 **Date:** 2026-11-16

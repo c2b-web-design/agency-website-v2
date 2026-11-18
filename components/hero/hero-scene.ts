@@ -12,6 +12,7 @@ import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
 import { createHeroRain, HIT, type HeroRainInfo, type HeroRainSettings } from "./hero-rain";
 import { createHeroSteam, MARGIN, type HeroSteamInfo, type HeroSteamSettings } from "./hero-steam";
 import { createHeroHeat, type HeroHeat, type HeroHeatInfo, type HeroHeatSettings } from "./hero-heat";
+import { createHeroFloor, type HeroFloorInfo, type HeroFloorSettings } from "./hero-floor";
 import { faceMaps, landedMaps, type FaceRequest, type FaceResult, type FlowCheck, type FlowData, type InkGrid, type LandedRequest, type LandedResult, type MapsMessage, type MapsReply, type RunoffCheck, type RunoffData } from "./hero-maps.worker";
 import { LOGO_BLUE_DEFAULTS, LOGO_JUDGING_STUDIO, platinumBlueF0 } from "@/components/about/logo-mark-material";
 
@@ -501,6 +502,35 @@ function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>
   m.customProgramCacheKey = () => key;
   return m;
 }
+/**
+ * ⛔ THE LEAN's CONTACT EDGE ON THE FLOOR (18 November 2026; Carl: the floor's heat from *"the leaning logo base"* = THE
+ * CONTACT EDGE, where the c's end touches the floor). `Lean.contact` is NOT it — that is where the logo's back rests on the
+ * headline's t (the note's [R1]) — and the lean keeps only the lowest HEIGHT. So: the vertices within `CONTACT_EDGE_CM` of
+ * the lowest, in the lean's world pose; their centre (x, z) on the floor.
+ */
+const CONTACT_EDGE_CM = 0.5;
+/** ⛔ the leaning logo's web OPENS (contact edge → rim) over this from the logo's fade-in START, and CLOSES (rim → contact
+ *  edge) over this from LIFT-OFF (s). Carl, 18 November 2026: first *"Lets pick the figure 500ms"* (the close; the open rode
+ *  the logo's 1.2 s fade), then *"the heat spread/collapse is far too fast. change to 2s from 500ms"* → BOTH 2 s; then, told
+ *  one floor carries the landing's own spread beside it, *"ok, good. in that case change from 2s to 2.5s"* → BOTH 2.5 s */
+const FLOOR_SPREAD_S = 2.5;
+function leanFloorContact(g: THREE.BufferGeometry, matrix: THREE.Matrix4, unitsPerCm: number): { point: THREE.Vector3; count: number } {
+  const p = g.getAttribute("position");
+  const v = new THREE.Vector3();
+  let low = Infinity;
+  for (let i = 0; i < p.count; i++) low = Math.min(low, v.fromBufferAttribute(p, i).applyMatrix4(matrix).y);
+  const band = CONTACT_EDGE_CM * unitsPerCm;
+  const sum = new THREE.Vector3();
+  let count = 0;
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i).applyMatrix4(matrix);
+    if (v.y > low + band) continue;
+    sum.add(v);
+    count++;
+  }
+  sum.divideScalar(Math.max(1, count));
+  return { point: new THREE.Vector3(sum.x, low, sum.z), count };
+}
 type Lean = { local: THREE.Matrix4; matrix: THREE.Matrix4; contact: THREE.Vector3; lowestWorldY: number; widthUnits: number };
 function leanInSketch(g: THREE.BufferGeometry, sketch: SketchFrame): Lean {
   const a = THREE.MathUtils.degToRad(HERO_LEAN.deg);
@@ -884,8 +914,9 @@ export type HeroScene = {
   unitsPerCm: number | null;
   /** the logo leaning on the 3D t (`leanInSketch`), once built — not awaited by `ready` (the worker's ~1 s) */
   logo: THREE.Mesh | null;
-  /** the lean's checks: the contact in the scene, the recorded and measured contacts (sketch cm), the lowest point, the width */
-  lean: { contact: number[]; contactMeasuredCm: number[]; contactConstantCm: number[]; lowestY: number; floorY: number; widthUnits: number; widthCm: number } | null;
+  /** the lean's checks: the contact in the scene, the recorded and measured contacts (sketch cm), the lowest point, the width;
+   *  `floorContact` = THE CONTACT EDGE on the floor (world; the floor's heat, source 1), `floorContactVerts` its vertex count */
+  lean: { contact: number[]; contactMeasuredCm: number[]; contactConstantCm: number[]; lowestY: number; floorY: number; widthUnits: number; widthCm: number; floorContact: number[]; floorContactVerts: number } | null;
   /** the arrival's numbers (`arrivalPlan`): seconds, and the lowest corner over the flight above the floor (cm, ≥ 0) */
   arrival: { t: number; holdS: number; flightS: number; touchdownS: number; durationS: number; apexCm: number; minCornerAboveFloorCm: number; pool: number; poolHits: number[] } | null;
   /** plays the arrival again from the lean (the bench's button); the opening skipped */
@@ -926,6 +957,9 @@ export type HeroScene = {
   /** ⛔ PHASE 2, THE STEAM (`hero-steam.ts`; 16 November 2026): its dials (the bench's Steam folder) and its read-out */
   steam: HeroSteamSettings;
   steamInfo: HeroSteamInfo | null;
+  /** ⛔ THE FLOOR's HEAT (`hero-floor.ts`; 18 November 2026): its dials (the bench's Heat floor folder) and its read-out */
+  floor: HeroFloorSettings;
+  readonly floorInfo: HeroFloorInfo & { liquidStep: number; liquidReachCm: number };
   dispose(): void;
 };
 
@@ -1013,6 +1047,18 @@ export function createHeroScene(aspect: number): HeroScene {
   const logoGeo = logoGeometry(HERO_LOGO_PLACE.heightCm);
   let logo: THREE.Mesh | null = null;
   let lean: HeroScene["lean"] = null;
+  /** THE LEAN's CONTACT EDGE on the floor (world): the floor's heat, source 1 (`leanFloorContact`) */
+  let floorContact: THREE.Vector3 | null = null;
+  /** the floor's heat, source 2: the web's reach (cm) when the first blob reached the disc — the supercharge spreads from it
+   *  (reset with the liquid) */
+  let liquidReachCm = 0;
+  /** THE SOLID LOGO's BASE on the floor where it lands (world): the floor's heat, source 3 */
+  let landedContact: THREE.Vector3 | null = null;
+  /** … its reach at the first hit (the steps start from it), and the step it is heading for (0–3; a read-out) */
+  let liquidHitCm = 0;
+  let liquidStep = 0;
+  /** … its reach when the collapse began (−1 = not begun) */
+  let liquidCollapseCm = -1;
   // the arrival (`arrivalPlan`) and THE STORY's clock (`storyT`, seconds since the logo appeared) — advanced in `update`;
   // the arrival plays on it once, the emission follows it
   let arrival: Arrival | null = null;
@@ -1152,6 +1198,12 @@ export function createHeroScene(aspect: number): HeroScene {
   // as an object during the wash — its field reads the wash's share (the run-off front) and the logo's material reads it
   const logoHeat = createHeroHeat(washShare);
   disposables.push(logoHeat);
+  // ⛔ THE FLOOR's HEAT (`hero-floor.ts`; 18 November 2026; structural note v1.5): ONE additive glow on the floor with three
+  // source slots; chunk 1 drives slot 1, the LEANING LOGO, from its CONTACT EDGE (`floorContact`, below). Hidden until the
+  // warm-up has built it, and whenever nothing it adds can be seen
+  const floorHeat = createHeroFloor(FLOOR_Y);
+  scene.add(floorHeat.mesh);
+  disposables.push(floorHeat);
   // ⛔ THE WET DIALS (`WET`, `wetUniforms`): the bench's Wet folder edits `wetSettings`; copied to the uniforms in `update`
   const wetSettings: HeroWetSettings = { ...WET };
   const wetU = wetUniforms();
@@ -1253,6 +1305,8 @@ export function createHeroScene(aspect: number): HeroScene {
       disposables.push(g, material);
       mark("material");
       const l = leanInSketch(g, t.sketch);
+      const fc = leanFloorContact(g, l.matrix, t.unitsPerCm);
+      floorContact = fc.point;
       mark("lean");
       logo = new THREE.Mesh(g, material);
       logo.name = "hero logo";
@@ -1310,6 +1364,8 @@ export function createHeroScene(aspect: number): HeroScene {
       // THE RAIN's HIT MAP (`hero-rain.ts`): the logo where it LANDS — the fall's pose at rest (`update`: the mould dropped
       // by `mouldDrop`, the rock 0 once the wobble is done)
       const landedPose = new THREE.Matrix4().makeTranslation(0, -mouldDrop, 0).multiply(mould.matrix);
+      // the floor's heat, source 3: the solid logo's BASE where it lands (`leanFloorContact` on the landed pose)
+      landedContact = leanFloorContact(g, landedPose, t.unitsPerCm).point;
       // ⛔ built by the worker ("landed"): the rain's hit map, and THE STEAM's solid mask (`hero-steam.ts`) — the same
       // landed pose; the steam's ink the flow map's (2 cells per cm). The rain's step program is warmed when they are in
       // (`compute`, `landedIn`)
@@ -1339,6 +1395,8 @@ export function createHeroScene(aspect: number): HeroScene {
         floorY: FLOOR_Y,
         widthUnits: r(l.widthUnits),
         widthCm: r(l.widthUnits / t.unitsPerCm),
+        floorContact: fc.point.toArray().map(r),
+        floorContactVerts: fc.count,
       };
     });
   });
@@ -1984,7 +2042,7 @@ export function createHeroScene(aspect: number): HeroScene {
     loadTimes.warmRainStep = Math.round(performance.now() - t0);
     // ⛔ THE LOGO IS IN IT AGAIN (16 November 2026, Carl's OPENING, `OPENING`): it is not drawn until its fade, which waits
     // for this — so its background build hides nothing
-    const show: THREE.Object3D[] = [view, heatPlane, rain.group];
+    const show: THREE.Object3D[] = [view, heatPlane, rain.group, floorHeat.mesh];
     if (logo) show.push(logo);
     const keep = show.map((o) => [o.visible, o.frustumCulled] as const);
     for (const o of show) {
@@ -2146,6 +2204,23 @@ export function createHeroScene(aspect: number): HeroScene {
         logoFadeParts.depth.visible = fading;
       }
     }
+    // ⛔ THE FLOOR's HEAT, SOURCE 1 — THE LEANING LOGO (`hero-floor.ts`; 18 November 2026): at its contact edge, at full
+    // strength (⚰️ the Builder's unasked cooling REMOVED — Carl: *"I did not tell you to make it fade"*), shown through a
+    // RADIAL MASK (Carl: *"when it leaps, no contact is on the floor. Heat at the extremity of the web will dissapear first
+    // ... a radial fade or mask for 500ms, outside to in. Consequently, when the logo fades in ... We need to opposite
+    // effect, inside out."*):
+    // - THE SPREAD: from the START of the logo's fade-in the mask OPENS from the contact edge to the rim over
+    //   `FLOOR_SPREAD_S` (2.5 s, Carl), linear — so it runs on 1.3 s past the 1.2 s fade, into the lean (story 1.3 s).
+    // - THE COLLAPSE: from LIFT-OFF (`ARRIVAL.holdS`) the mask CLOSES from the rim to the contact edge over
+    //   `FLOOR_SPREAD_S` (2.5 s, Carl; was 500 ms, then 2 s), linear — gone at story 4.5 s.
+    // A pure function of the story's clock: replayed and frame-stepped runs give the same floor
+    if (logo && floorContact) {
+      // seconds since the fade-in started: in the opening its own clock; after it, the fade's length + the story's clock
+      const sinceFade = opening.done ? OPENING.logoFadeS + storyT : opening.fadeT >= 0 ? opening.t - opening.fadeT : -1;
+      const opened = sinceFade < 0 ? 0 : Math.min(1, sinceFade / FLOOR_SPREAD_S);
+      const closed = Math.max(0, Math.min(1, (storyT - ARRIVAL.holdS) / FLOOR_SPREAD_S));
+      floorHeat.setSource(0, { x: floorContact.x, z: floorContact.z, strength: 1, extent: opened * (1 - closed) });
+    } else floorHeat.setSource(0, null);
     // ⛔ PHASE 2, THE RAIN (`hero-rain.ts`; Carl, 14 November 2026: *"the rain starts just as the wobble ends"*): the seconds
     // since phase 1's end — HARD, the fall, the landing's wobble done (the `reform` read-out's `endS`); NaN before the
     // re-forming has a plan (nothing to rain on). The rain releases its first drops one fall early, so they land at 0
@@ -2176,6 +2251,82 @@ export function createHeroScene(aspect: number): HeroScene {
       poolGrow = Math.max(0, Math.min(1, poolGrow) - drained);
     }
     const live = settings.blobs && (emitT >= 0 || (settings.floor && poolT >= 0));
+    // ⛔ THE FLOOR's HEAT, SOURCE 2 — THE AMBER LIQUID (`hero-floor.ts`; 18 November 2026). Carl: *"we can infer that the
+    // amber liquid has some heat. Not as much as the logo though. When touchdown happens some effect can be seen on the floor
+    // from the amber liquid. The logo breaks down and when the first blob hits the liquid this supercharges it. It can spread
+    // outwards. The speed can be the same but it will be longer given its larger area."* So, on the landing (the disc's
+    // centre, the field's middle):
+    // - FROM TOUCHDOWN: about the DISC as it grows (`poolGrow`: the disc's own radius × `liquidReach`, so it grows with the
+    //   liquid and shows BEYOND its edge — take 1 kept to the edge and the disc, 3 cm up, hid it all), at `liquidStrength`
+    //   (less than the logo's);
+    // - FROM THE FIRST BLOB REACHING THE DISC (`poolHits[0]`, detected live): SUPERCHARGED — the strength rises to
+    //   `chargedStrength` over `chargeS`, and the web spreads outward from the disc's edge at the LOGO's speed (its radius
+    //   over `FLOOR_SPREAD_S`) to `chargedRadiusCm` — longer, as the area is larger. Then HELD (no fade until Carl says).
+    // The blobs' own glows near the floor are the 13 November merge glow (`heatPlane`, `stepHeat`), unchanged.
+    if (live && poolT >= 0 && unitsPerCm) {
+      const fs = floorHeat.settings;
+      const fullR = Math.sqrt(Math.max(0, POOL.fadeTo ** 2 - (floorLayer / effect.resolution - 0.5) ** 2));
+      const discCm = ((Math.max(0, poolGrow * (fullR + POOL_GROW.edge) - POOL_GROW.edge) * 1400) / unitsPerCm) * fs.liquidReach;
+      const first = poolHits.length ? emitT - poolHits[0] : -1;
+      const speed = fs.radiusCm / FLOOR_SPREAD_S;
+      // before the first blob the web follows the disc. ⛔ THEN BY THE HITS — CAUSED BY THE WORLD (Carl, 18 November 2026:
+      // *"the first blob hit should expand it a little. The next blob hit, expand a little more and another to ful size. We
+      // also know when the second to last and last blob hit so the effect can happen in reverse."* … told the first three
+      // hits land within 0.3 s: *"caused by the world ... even if the surges are small it would still add to the area. 300ms
+      // is quick for the human eye. i wont know until i see it. After the last hit we will have to look at it and when the
+      // rain starts."*): the reach at the first hit (`liquidHitCm`) and the full radius split in three STEPS; each of the
+      // first three hits in the disc (`poolHits`, live) raises the TARGET a step; in reverse the SECOND-TO-LAST and LAST
+      // carrier touches (`reform`, the blobs taking the disc back) lower it a step each, and once the amber is DRAINED it
+      // collapses to nothing. The edge moves toward the target at the logo's speed (take 2's lesson: never jump with the
+      // disc)
+      if (first < 0) {
+        liquidHitCm = discCm;
+        liquidReachCm = discCm;
+      } else {
+        const step = Math.min(3, poolHits.filter((h) => emitT >= h).length);
+        liquidStep = step;
+        const target = liquidHitCm + ((fs.chargedRadiusCm - liquidHitCm) * step) / 3;
+        const move = speed * Math.max(0, delta);
+        // ⛔ THE COLLAPSE — SLOW, AND GONE WHEN THE LOGO IS FULLY FORMED (Carl, 18 November 2026: first *"yes if would collapse
+        // fully"* once the amber is drained; then *"make the larger area shrink much slower. When the logo is fully forned the
+        // last web must be gone. the collapse can be slower. the floor has been hotter so is should collapse slower."*): from
+        // the SECOND-TO-LAST carrier touch (the blobs taking the amber back) the reach shrinks steadily from where it is to
+        // NOTHING, arriving exactly when the logo is FULL (`fullAt`). ⚰️ Was: a step down at each of the last two touches,
+        // then nothing at the drain, at the logo's speed (100 cm/s; gone ~3.4 s after it began)
+        const touches = reform ? reform.blobs.filter((b) => b.carrier).map((b) => b.touch).sort((a, b) => a - b) : [];
+        const from = touches.length >= 2 ? touches[touches.length - 2] : touches[0];
+        if (reform && from !== undefined && emitT >= from) {
+          if (liquidCollapseCm < 0) liquidCollapseCm = liquidReachCm;
+          const u = Math.max(0, Math.min(1, (emitT - from) / Math.max(0.1, fullAt() - from)));
+          liquidReachCm = liquidCollapseCm * (1 - u);
+          liquidStep = 0;
+        } else liquidReachCm = liquidReachCm < target ? Math.min(target, liquidReachCm + move) : Math.max(target, liquidReachCm - move);
+      }
+      const radCm = Math.min(fs.chargedRadiusCm, liquidReachCm);
+      const charge = first < 0 ? 0 : smooth(first / Math.max(0.01, fs.chargeS));
+      const strength = fs.liquidStrength + (fs.chargedStrength - fs.liquidStrength) * charge;
+      floorHeat.setSource(1, { x: effect.position.x, z: effect.position.z, strength, extent: radCm / Math.max(1, fs.chargedRadiusCm), radiusCm: fs.chargedRadiusCm, colour: fs.liquidColour });
+    } else {
+      floorHeat.setSource(1, null);
+      liquidReachCm = 0;
+      liquidHitCm = 0;
+      liquidStep = 0;
+      liquidCollapseCm = -1;
+    }
+    // ⛔ THE FLOOR's HEAT, SOURCE 3 — THE SOLID LOGO (Carl, 18 November 2026: *"when the solidified logo lands, the floor
+    // would have the properties of the leaning logo"*): from the LANDING of the fall (`fullAt` + `hardenS` + the fall), at
+    // its BASE (`landedContact`: the landed pose's lowest vertices, as the lean's contact edge), the lean's web — the same
+    // strength, radius and colour — spreading inside out over `FLOOR_SPREAD_S`, then HELD; the rain turns it blue (below)
+    if (reform && landedContact && unitsPerCm) {
+      const sinceLand = emitT - (fullAt() + REFORM.hardenS + fallS());
+      floorHeat.setSource(2, sinceLand < 0 ? null : { x: landedContact.x, z: landedContact.z, strength: 1, extent: Math.min(1, sinceLand / FLOOR_SPREAD_S), coolable: true });
+    } else floorHeat.setSource(2, null);
+    // ⛔ THE RAIN COOLS IT (Carl, 18 November 2026: *"the rain falls in an almost circular area. the rain woukd make the red
+    // inside this area turn blue almost right away. At the extremity, it would be slower."*): the floor reads the RAIN
+    // itself — its disc (centre, radius) and its clock since the first drops landed — not the logo's temperature: the floor
+    // is cooled by the water falling on it. (The note's [R9] had source 3 read `hero-heat.ts`; Carl's model is the rain.)
+    const rainMap = rain.info?.map;
+    floorHeat.update(warmed, unitsPerCm ?? 1, delta, rainMap ? { x: rainMap.centre[0], z: rainMap.centre[1], radiusCm: rain.settings.radiusCm, sinceFirstLanding: rain.sinceFirstLanding } : null);
     // the field's time — the example's `time += delta * speed * 0.5`; the clock itself is the bench's
     view.visible = live;
     // ⛔ THE ORANGE LIGHT BELONGS TO THE BLOBS (11 November 2026, session 1; Carl's idea, D-101): *"At the start of the scene
@@ -2318,6 +2469,10 @@ export function createHeroScene(aspect: number): HeroScene {
             warmed = true;
           });
       }
+    },
+    floor: floorHeat.settings,
+    get floorInfo() {
+      return { ...floorHeat.info, liquidStep, liquidReachCm: Math.round(liquidReachCm) };
     },
     get warmed() {
       return warmed;
