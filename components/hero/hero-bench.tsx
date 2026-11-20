@@ -313,12 +313,33 @@ export default function HeroBench() {
       f.add(cl, "wind", 0, 5, 0.1);
       // ⛔ 1 = the gusts scaled to the cloth (the example's look; Carl, 20 November); ~0.27 = the example's world size
       f.add(cl, "gustSize", 0.1, 3, 0.01).name("gust size (× cloth)");
+      // ⛔ THE COLLISION with the logo (`hero-cloth.ts`; 20 November 2026, session 2; note
+      // `structural-note-cloth-collision-20-november.md`): on/off, the margin (cm), the friction (0 slides, 1 sticks)
+      f.add(cl, "collide").name("collide with logo");
+      f.add(cl, "marginCm", 0.5, 5, 0.1).name("collision margin (cm)");
+      f.add(cl, "friction", 0, 1, 0.01).name("friction");
       const mf = f.addFolder("material");
       mf.addColor(cl, "color");
       mf.add(cl, "roughness", 0, 1, 0.01);
       mf.add(cl, "sheen", 0, 1, 0.01);
       mf.add(cl, "sheenRoughness", 0, 1, 0.01);
       mf.addColor(cl, "sheenColor");
+
+      // ⛔ PHASE 3, PASS 1, FORWARD (`hero-scene.ts`, `pass1`; 20 November 2026, session 2; Carl: *"have the logo jump up and
+      // down with the figures youve suggeated"*): the first jump, straight up and down, on "Jump" once phase 1's wobble is
+      // done. The height's rows put to Carl: 32.7 (touching), 47.7, 60 (phase 1's hop), 72.7 cm; take 3: 95 (half the front face, the default). The cloth answers
+      // the jump (behind → in front, crossing at the apex) when it is at its place; "Reset pass 1" brings it and the logo back
+      f = gui.addFolder("Pass 1");
+      f.add({ jump: () => hero.jump() }, "jump").name("Jump");
+      f.add(hero.pass1, "apexCm", 20, 120, 0.1).name("jump height (cm)");
+      // ⛔ take 3: UP AND BACK into the cloth (apex this far behind its spot; it lands twice as far back)
+      f.add(hero.pass1, "backCm", 0, 80, 1).name("jump back (cm, at apex)");
+      // ⛔ the BACKWARD action, by itself after the forward landing's wobble (the beat): the cloth retreats to here (cm from
+      // the spot); the logo jumps home into it this long after the cloth set off
+      f.add(hero.pass1, "clothBackToCm", -250, 60, 1).name("cloth back to (cm)");
+      f.add(hero.pass1, "backJumpDelayS", 0, 4, 0.01).name("back jump after cloth (s)");
+      // the cloth answers the jump (from behind to in front, `CLOTH_PATH_CM`); a bench reset brings both back
+      f.add({ back: () => hero.resetPass1() }, "back").name("Reset pass 1");
 
       // ⛔ PHASE 2, THE TEMPERATURE (`hero-heat.ts`; 16 November 2026, session 3): the logo cools as an object during the
       // wash — off = the run-off front drives the colour directly, as before (an A/B). The rates act on the heat left

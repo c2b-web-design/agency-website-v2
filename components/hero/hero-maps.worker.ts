@@ -456,10 +456,84 @@ export function steamSolidMask(logo: SteamLogo, box: SteamBox): SteamMask {
   return { data, n, solid, ms: Math.round(performance.now() - t0), cellCm: box.cellCm };
 }
 
+/* ───────────────────────────── the cloth's collider (hero-cloth.ts, the collision) ───────────────────────────── */
+
+export type SdfData = { data: Uint16Array; W: number; H: number; minX: number; minY: number; sizeX: number; sizeY: number; check: { inkCells: number; minCm: number; maxCm: number } };
+/**
+ * ⛔ THE LOGO's FLAT DISTANCE FIELD (20 November 2026, session 2; `live-work/structural-note-cloth-collision-20-november.md`,
+ * Carl: *"Yes, proceed. We will see how it bahaves and how deterministic it is."*): from the INK (`inkGrid`, the same grid
+ * as the flow and run-off maps), each cell's SIGNED distance in cm to the letters' edge — negative inside the ink,
+ * positive outside — by an exact Euclidean distance transform (Felzenszwalb and Huttenlocher's, rows then columns), the
+ * edge taken half a cell from each cell centre. The cloth combines it with the logo's thickness (`hero-cloth.ts`): the
+ * logo is an extrusion, so flat field + depth IS its 3D distance (the bevel's rounding inside the collision margin).
+ * Packed as the flow map is (RGBA half floats, R = the distance; G, B, A = 0).
+ */
+export function inkSdfData(grid: InkGrid, perCm: number): SdfData {
+  const { ink, W, H, minX, minY, sizeX, sizeY } = grid;
+  const INF = 1e20;
+  // the 1D squared distance transform of f (n values), into d
+  const z = new Float64Array(Math.max(W, H) + 1);
+  const v = new Int32Array(Math.max(W, H));
+  const dt1 = (f: Float64Array, n: number, d: Float64Array) => {
+    let k = 0;
+    v[0] = 0;
+    z[0] = -INF;
+    z[1] = INF;
+    for (let q = 1; q < n; q++) {
+      let sq = (f[q] + q * q - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+      while (sq <= z[k]) {
+        k--;
+        sq = (f[q] + q * q - (f[v[k]] + v[k] * v[k])) / (2 * q - 2 * v[k]);
+      }
+      k++;
+      v[k] = q;
+      z[k] = sq;
+      z[k + 1] = INF;
+    }
+    k = 0;
+    for (let q = 0; q < n; q++) {
+      while (z[k + 1] < q) k++;
+      d[q] = (q - v[k]) * (q - v[k]) + f[v[k]];
+    }
+  };
+  // squared distance (cells) from every cell to the nearest cell where `feature(i)`
+  const edt = (feature: (i: number) => boolean) => {
+    const g = new Float64Array(W * H);
+    for (let i = 0; i < W * H; i++) g[i] = feature(i) ? 0 : INF;
+    const f = new Float64Array(Math.max(W, H));
+    const d = new Float64Array(Math.max(W, H));
+    for (let x = 0; x < W; x++) {
+      for (let y = 0; y < H; y++) f[y] = g[W * y + x];
+      dt1(f, H, d);
+      for (let y = 0; y < H; y++) g[W * y + x] = d[y];
+    }
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) f[x] = g[W * y + x];
+      dt1(f, W, d);
+      for (let x = 0; x < W; x++) g[W * y + x] = d[x];
+    }
+    return g;
+  };
+  const toInk = edt((i) => ink[i] === 1);
+  const toAir = edt((i) => ink[i] === 0);
+  const data = new Uint16Array(W * H * 4);
+  let inkCells = 0;
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (let i = 0; i < W * H; i++) {
+    const cm = ink[i] ? -(Math.sqrt(toAir[i]) - 0.5) / perCm : (Math.sqrt(toInk[i]) - 0.5) / perCm;
+    if (ink[i]) inkCells++;
+    lo = Math.min(lo, cm);
+    hi = Math.max(hi, cm);
+    data[i * 4] = THREE.DataUtils.toHalfFloat(cm);
+  }
+  return { data, W, H, minX, minY, sizeX, sizeY, check: { inkCells, minCm: Math.round(lo * 100) / 100, maxCm: Math.round(hi * 100) / 100 } };
+}
+
 /* ───────────────────────────── the two requests (run here, or inline as the fallback) ───────────────────────────── */
 
 export type FaceRequest = { kind: "face"; seed: [number, number]; flow: { perCm: number; gravity: number }; runoff: RunoffParams; inkPerCm: number };
-export type FaceResult = { kind: "face"; flow: FlowData; runoff: RunoffData; ink: InkGrid; ms: number };
+export type FaceResult = { kind: "face"; flow: FlowData; runoff: RunoffData; ink: InkGrid; sdf: SdfData; ms: number };
 export type LandedRequest = { kind: "landed"; landed: number[]; upc: number; floorY: number; hit: HitParams; steam: { margin: SteamMargin; cellCm: number } };
 export type LandedResult = { kind: "landed"; hit: HitData; mask: SteamMask; ms: number };
 
@@ -475,7 +549,9 @@ export function faceMaps(g: THREE.BufferGeometry, r: FaceRequest): FaceResult {
   const flow = flowMapData(gridAt(r.flow.perCm), r.seed[0], r.seed[1], r.flow.gravity);
   const runoff = runoffMapData(gridAt(r.runoff.perCm), r.runoff);
   const ink = gridAt(r.inkPerCm);
-  return { kind: "face", flow, runoff, ink, ms: Math.round(performance.now() - t0) };
+  // ⛔ the cloth's collider (`inkSdfData`, 20 November 2026): the same ink grid
+  const sdf = inkSdfData(ink, r.inkPerCm);
+  return { kind: "face", flow, runoff, ink, sdf, ms: Math.round(performance.now() - t0) };
 }
 
 /** "landed": the rain's hit map and the steam's solid mask, the logo at its landed pose */
@@ -512,7 +588,7 @@ if (WorkerScope && globalThis instanceof WorkerScope) {
         const r = faceMaps(geometry, m);
         ink = r.ink;
         // the ink is COPIED (kept here for "landed"); the maps' arrays are moved
-        scope.postMessage({ ...r, ink: { ...r.ink, ink: r.ink.ink.slice() } }, [r.flow.data.buffer, r.runoff.data.buffer]);
+        scope.postMessage({ ...r, ink: { ...r.ink, ink: r.ink.ink.slice() } }, [r.flow.data.buffer, r.runoff.data.buffer, r.sdf.data.buffer]);
       } else {
         if (!ink) throw new Error("no ink");
         const r = landedMaps(geometry, ink, m);

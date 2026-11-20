@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { LineBasicNodeMaterial, MeshPhysicalNodeMaterial, SpriteNodeMaterial, type WebGPURenderer } from "three/webgpu";
-import { attribute, cross, float, Fn, If, instancedArray, instanceIndex, lights, Loop, neutralToneMapping, output, Return, select, transformNormalToView, triNoise3D, uniform, vec3, vec4 } from "three/tsl";
+import { LineBasicNodeMaterial, MeshPhysicalNodeMaterial, type Node, SpriteNodeMaterial, type WebGPURenderer } from "three/webgpu";
+import { attribute, cross, float, Fn, If, instancedArray, instanceIndex, lights, Loop, max, min, neutralToneMapping, output, Return, select, texture, transformNormalToView, triNoise3D, uniform, vec2, vec3, vec4 } from "three/tsl";
 import { UltraHDRLoader } from "three/addons/loaders/UltraHDRLoader.js";
 import { precompileCompute, type PrecompileResult } from "./hero-steam";
 
@@ -16,7 +16,7 @@ import { precompileCompute, type PrecompileResult } from "./hero-steam";
  * two compute passes a step (spring forces; then each point: damping 0.99, its springs, gravity 0.00005, the triNoise
  * WIND along −z, the SPHERE pushing out what would end inside it); 360 steps a second; the sphere (r 0.15, drawn at 0.95)
  * on its path `(sin(2.1 t) × 0.1, 0, sin(0.8 t))`; the drawn mesh (30 × 30, each vertex the centre of four points, its
- * normal from them); the material (`MeshPhysicalNodeMaterial` #204080, opacity 0.85, DoubleSide, sheen 1 white, sheen
+ * normal from them); the material (`MeshPhysicalNodeMaterial` #204080, opacity 0.85 — now OPAQUE, 20 November session 2 —, DoubleSide, sheen 1 white, sheen
  * roughness 0.5, roughness 1); the sphere's (`MeshStandardNodeMaterial`, defaults); the environment (Royal Esplanade 2k,
  * the example's own file, `public/hero-bench/`); Neutral tone mapping at exposure 1; the wireframe helpers. All in the
  * example's OWN units, inside one group.
@@ -60,6 +60,15 @@ const EXAMPLE = { position: new THREE.Vector3(-1.6, -0.1, -1.6), target: new THR
 const toRad = THREE.MathUtils.degToRad;
 /** take 4: the pins' height, world y (header of the bigger cloth, below) */
 const PINS_Y = 760;
+const UNITS_PER_CM = 4.41; // the hero's world (D-101, 11 November: 1 cm = 4.41 units)
+/**
+ * ⛔ PASS 1, FORWARD — THE CLOTH MOVED BACK, OUT OF THE WAY (20 November 2026, session 2; Carl: *"Move the cloth back, out of the
+ * way and have the logo jump up and down"*): its plane `CLOTH_BACK_CM` behind the logo's centre (z −16.92). MEASURED first
+ * (`live-work/scripts/hero-cloth-depth-20-november.mjs`, 25 s after settling): the hanging cloth swings up to 46.5 cm IN FRONT
+ * of its plane and ~0 behind it; the logo's back face is 3.8 cm behind its centre (7.6 cm thick) → 46.5 + 3.8 + ~10 cm of air.
+ * The cloth's place for the FORWARD action's start (its path not built). Unasserted: one run's swing — the wind is random.
+ */
+export const CLOTH_BACK_CM = 60;
 export const CLOTH_PLACE = (() => {
   const dc = CARL.target.clone().sub(CARL.position);
   const de = EXAMPLE.target.clone().sub(EXAMPLE.position);
@@ -76,7 +85,8 @@ export const CLOTH_PLACE = (() => {
   // ⛔ TAKE 3 (Carl, the same day: *"for now you can put the cloth directly above the logo"*): over the logo's own plane — its
   // centre z −16.92 (the orbit's axis, 16 November) — not behind it; the height unchanged (take 2's depth was z −329.4)
   // ⛔ TAKE 4, THE BIGGER CLOTH (below): its PINS at world y `PINS_Y` (the pins sit at the example's y 0.5)
-  const position = new THREE.Vector3(718.48, PINS_Y - 0.5 * scale, -16.92);
+  // ⛔ PASS 1 (`CLOTH_BACK_CM`, above): moved straight back from over the logo's plane
+  const position = new THREE.Vector3(718.48, PINS_Y - 0.5 * scale, -16.92 - CLOTH_BACK_CM * UNITS_PER_CM);
   return { position, turn, scale };
 })();
 
@@ -90,7 +100,7 @@ export const CLOTH_PLACE = (() => {
  * `PINS_Y`: high enough that the longer cloth, hanging and dragged, stays CLEAR of the logo's top (y 20.71) — measured
  * after (`live-work/scripts/hero-cloth-clearance-20-november.mjs`).
  */
-const UNITS_PER_CM = 4.41; // the hero's world (D-101, 11 November: 1 cm = 4.41 units)
+// `UNITS_PER_CM`: moved above `CLOTH_PLACE` (20 November 2026, session 2), which now reads it
 const SIZE_CM = { width: 230, height: 130 } as const;
 const SEGS_PER_UNIT = 30; // the example's: 30 segments across its 1-unit cloth
 const CLOTH = (() => {
@@ -115,6 +125,12 @@ export type HeroClothSettings = {
   sheen: number;
   sheenRoughness: number;
   sheenColor: string;
+  /** ⛔ THE COLLISION with the logo (`setCollider`; 20 November 2026, session 2) */
+  collide: boolean;
+  /** how close a point may come to the logo's surface, cm (the cloth's points are ~2 cm apart) */
+  marginCm: number;
+  /** 0 = slides freely over the metal; 1 = sticks where it touches */
+  friction: number;
 };
 /** the example's values */
 export const HERO_CLOTH_DEFAULTS: HeroClothSettings = {
@@ -131,6 +147,13 @@ export const HERO_CLOTH_DEFAULTS: HeroClothSettings = {
   sheen: 1,
   sheenRoughness: 0.5,
   sheenColor: "#ffffff",
+  collide: true,
+  // ⛔ 1.5 → 3.5 (Carl, 20 November 2026, session 2: *"set to 3.5  smaller creases, if they happen do so when the logo jumps
+  // back. Because of the cloths distance to travel and logo contact they always iron out."*): at 1.5 the hem folded under
+  // round the logo's top edge and the fold LOCKED (0 → 17 flipped cells after one pass, surviving resets); at 3 none in six
+  // frame-stepped passes, one live that undid itself (`live-work/scripts/hero-cloth-folds-20-november.mjs`)
+  marginCm: 3.5,
+  friction: 0.3,
 };
 
 export type HeroCloth = {
@@ -144,11 +167,23 @@ export type HeroCloth = {
   compute(renderer: WebGPURenderer): void;
   /** from the start again: flat, falling to hang */
   again(): void;
+  /** ⛔ THE HAND (`setHand`, below): the pins' offset from their place, cm toward the camera (world +z), for the next steps */
+  setHand(zCm: number): void;
+  /** ⛔ THE COLLIDER (the collision, below): the logo's flat distance field and its frame, once */
+  setColliderShape(shape: ClothColliderShape): void;
+  /** the logo's pose for the next steps: its local (cm) from WORLD (the inverse of its world matrix); null = no collider */
+  setCollider(worldToLogo: THREE.Matrix4 | null): void;
+  /** a READ-OUT for checks: the collider's shape once given (null before) */
+  readonly collider: ClothColliderShape | null;
   readonly info: { steps: number; simTime: number; precompiled: boolean; bottomY: number; scale: number; points: number; springs: number; grid: [number, number] };
   /** a READ-OUT for checks: the points' storage (961 × vec3, the example's units; `group`'s matrix to world) */
   readonly points: THREE.BufferAttribute;
   dispose(): void;
 };
+
+/** the logo's shape for the collision: its flat distance field (`hero-maps.worker.ts`, `inkSdfData`) on its face (local x,
+ *  y, cm) and its depth (local z, cm) */
+export type ClothColliderShape = { tex: THREE.Texture; minX: number; minY: number; sizeX: number; sizeY: number; zMin: number; zMax: number };
 
 type V = { id: number; position: THREE.Vector3; isFixed: boolean; springIds: number[] };
 type S = { id: number; vertex0: V; vertex1: V };
@@ -218,6 +253,8 @@ export function createHeroCloth(): HeroCloth {
     }
   }
   const vertexPositionBuffer = instancedArray(vertexPositionArray, "vec3").setPBO(true);
+  // ⛔ THE HAND (header of `setHand`): each point's place as built — read by the PINNED points only, which are SET to it + the hand
+  const pinStartBuffer = instancedArray(vertexPositionArray.slice(), "vec3");
   const vertexForceBuffer = instancedArray(vertexCount, "vec3");
   const vertexParamsBuffer = instancedArray(vertexParamsArray, "uvec3");
   const springListBuffer = instancedArray(new Uint32Array(springListArray), "uint").setPBO(true);
@@ -242,6 +279,37 @@ export function createHeroCloth(): HeroCloth {
   // the gusts' size (example units; `gustSize` × the cloth's width and height: the wind, below)
   const gustX = uniform(1);
   const gustY = uniform(1);
+  /** ⛔ THE HAND: the pins' offset along the cloth's local z (example units; `setHand`) */
+  const handUniform = uniform(0);
+  /**
+   * ⛔ THE COLLISION (20 November 2026, session 2; `live-work/structural-note-cloth-collision-20-november.md`). The logo is an
+   * EXTRUSION, so its 3D distance is its FLAT field (the face's outline, `inkSdfData`) combined with its DEPTH (local z):
+   * the box-style union |max(q, 0)| + min(max(q.x, q.y), 0), q = (flat, depth). Each free point, after its step, is taken
+   * into the logo's frame (`toLogo`, this step's pose, interpolated across the frame's steps like the hand); if it is
+   * nearer than the MARGIN it is pushed out along the field's slope (central differences, 0.5 cm), its speed INTO the
+   * logo removed and its sliding slowed by FRICTION. One way: the logo pushes the cloth, never the reverse (its moves are
+   * authored). The logo's own speed is not given to the cloth: a point it meets is pushed out each step, not thrown.
+   */
+  const colliderOn = uniform(0);
+  const toLogo = uniform(new THREE.Matrix4());
+  const fromLogo = uniform(new THREE.Matrix4());
+  const sdfPlaceholder = new THREE.DataTexture(new Uint16Array([THREE.DataUtils.toHalfFloat(1000), 0, 0, 0]), 1, 1, THREE.RGBAFormat, THREE.HalfFloatType);
+  sdfPlaceholder.needsUpdate = true;
+  const sdfNode = texture(sdfPlaceholder);
+  const sdfMin = uniform(new THREE.Vector2(0, 0));
+  const sdfSize = uniform(new THREE.Vector2(1, 1));
+  const zRange = uniform(new THREE.Vector2(0, 0));
+  const marginU = uniform(1.5);
+  const frictionU = uniform(0.3);
+  /** the logo's distance at a point of its frame (cm); off the field's edge, the edge's value + the distance to it */
+  const logoDistance = Fn(([p]: [Node<"vec3">]) => {
+    const uv = p.xy.sub(sdfMin).div(sdfSize);
+    const uvc = uv.clamp(0, 1);
+    const flat = sdfNode.sample(uvc).level(float(0)).r.add(uv.sub(uvc).mul(sdfSize).length());
+    const depth = max(zRange.x.sub(p.z), p.z.sub(zRange.y));
+    const q = vec2(flat, depth);
+    return max(q, vec2(0)).length().add(min(max(q.x, q.y), 0));
+  });
 
   // ── setupComputeShaders (the example's) ──
   const computeSpringForces = Fn(() => {
@@ -264,6 +332,9 @@ export function createHeroCloth(): HeroCloth {
     const springPointer = params.z;
     If(isFixed, () => {
       // don't need to calculate vertex forces if the vertex is set as immovable
+      // ⛔ THE HAND (20 November 2026, session 2; `setHand`): a pinned point is CARRIED — set to its place + the hand's offset
+      // (was: never moved). The free points follow through the springs: the sheet trails, swings and settles as cloth
+      vertexPositionBuffer.element(instanceIndex).assign(pinStartBuffer.element(instanceIndex).add(vec3(0, 0, handUniform)));
       Return();
     });
     const position = vertexPositionBuffer.element(instanceIndex).toVar("vertexPosition");
@@ -290,8 +361,30 @@ export function createHeroCloth(): HeroCloth {
     const windForce = noise.mul(windUniform);
     force.z.subAssign(windForce);
     // (⚰️ the collision with the sphere: deleted, header)
+    // ⛔ THE COLLISION (above): the point where this step takes it, pushed out of the logo
+    const next = position.add(force).toVar("next");
+    If(colliderOn.greaterThan(0.5), () => {
+      const pL = toLogo.mul(vec4(next, 1)).xyz.toVar("pLogo");
+      const d = logoDistance(pL).toVar("dLogo");
+      If(d.lessThan(marginU), () => {
+        const h = float(0.5);
+        const n = vec3(
+          logoDistance(pL.add(vec3(h, 0, 0))).sub(logoDistance(pL.sub(vec3(h, 0, 0)))),
+          logoDistance(pL.add(vec3(0, h, 0))).sub(logoDistance(pL.sub(vec3(0, h, 0)))),
+          logoDistance(pL.add(vec3(0, 0, h))).sub(logoDistance(pL.sub(vec3(0, 0, h)))),
+        )
+          .normalize()
+          .toVar("nLogo");
+        next.assign(fromLogo.mul(vec4(pL.add(n.mul(marginU.sub(d))), 1)).xyz);
+        const nC = fromLogo.mul(vec4(n, 0)).xyz.normalize().toVar("nCloth");
+        const vn = force.dot(nC).toVar("vn");
+        // the speed into the logo removed; the sliding slowed by friction; the speed away from it kept
+        const vT = force.sub(nC.mul(vn)).mul(float(1).sub(frictionU));
+        force.assign(vT.add(nC.mul(max(vn, 0))));
+      });
+    });
     vertexForceBuffer.element(instanceIndex).assign(force);
-    vertexPositionBuffer.element(instanceIndex).addAssign(force);
+    vertexPositionBuffer.element(instanceIndex).assign(next);
   })()
     .compute(vertexCount)
     .setName("hero cloth: Vertex Forces");
@@ -368,8 +461,12 @@ export function createHeroCloth(): HeroCloth {
   const clothMaterial = new MeshPhysicalNodeMaterial({
     color: new THREE.Color(settings.color),
     side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.85,
+    // ⛔ FULLY OPAQUE (Carl, 20 November 2026, session 2: *"the blue logo wont show through quite as much as the red, but it
+    // will see show through. That makes the golg transition, problematic."* … *"yes, full opacity"*): the logo no longer
+    // shows THROUGH the cloth, so the drying's gold appears as the cloth UNCOVERS it, never tinted through it. Was the
+    // example's `transparent: true, opacity: 0.85`
+    transparent: false,
+    opacity: 1,
     sheen: 1.0,
     sheenRoughness: 0.5,
     sheenColor: new THREE.Color(settings.sheenColor),
@@ -413,6 +510,23 @@ export function createHeroCloth(): HeroCloth {
   const timePerStep = 1 / CLOTH.stepsPerSecond;
   let precompile: PrecompileResult | null = null;
   let precompiling: Promise<unknown> | null = null;
+  /**
+   * ⛔ THE HAND (20 November 2026, session 2; `live-work/structural-note-cloth-hand-20-november.md`, Carl: *"Thays ok that
+   * nothing collides yet. we will know its speed and the area of the logo it touches."*): the scene sets where the hand is
+   * each frame (cm toward the camera from the cloth's place); the steps due between two frames INTERPOLATE from the last
+   * place to the new one, so the pins move smoothly at 360 steps a second, never in one jump. World +z → the group's local
+   * −z (turned 180°), ÷ its scale.
+   */
+  let handFrom = 0;
+  let handTo = 0;
+  /** the collider's pose: last frame's and this frame's (cloth local → logo local), interpolated across the steps */
+  const poseFrom = new THREE.Matrix4();
+  const poseTo = new THREE.Matrix4();
+  const poseStep = new THREE.Matrix4();
+  let posePrimed = false;
+  let poseOn = false;
+  let shapeIn = false;
+  let shapeGiven: ClothColliderShape | null = null;
 
   return {
     group,
@@ -433,6 +547,8 @@ export function createHeroCloth(): HeroCloth {
       clothMaterial.sheen = s.sheen;
       clothMaterial.sheenRoughness = s.sheenRoughness;
       clothMaterial.sheenColor.set(s.sheenColor);
+      marginU.value = s.marginCm;
+      frictionU.value = s.friction;
       if (!s.on || !precompile) return;
       timeSinceLastStep += Math.max(0, delta);
       while (timeSinceLastStep >= timePerStep) {
@@ -454,12 +570,56 @@ export function createHeroCloth(): HeroCloth {
         (f.array as Float32Array).fill(0);
         f.needsUpdate = true;
       }
-      for (; stepsDue > 0; stepsDue--) {
+      const n = stepsDue;
+      const colliding = poseOn && shapeIn && settings.collide;
+      colliderOn.value = colliding ? 1 : 0;
+      for (let k = 1; stepsDue > 0; stepsDue--, k++) {
         timestamp += timePerStep;
         simTimeUniform.value = timestamp;
+        handUniform.value = handFrom + ((handTo - handFrom) * k) / n;
+        if (colliding) {
+          // the pose this step: last frame's to this frame's, element by element (a frame's turn is a fraction of a degree)
+          const a = poseFrom.elements;
+          const b = poseTo.elements;
+          const e = poseStep.elements;
+          for (let j = 0; j < 16; j++) e[j] = a[j] + ((b[j] - a[j]) * k) / n;
+          toLogo.value.copy(poseStep);
+          fromLogo.value.copy(poseStep).invert();
+        }
         renderer.compute(computeSpringForces);
         renderer.compute(computeVertexForces);
         stepsDone++;
+      }
+      if (n > 0) {
+        handFrom = handTo;
+        poseFrom.copy(poseTo);
+      }
+    },
+    setHand(zCm) {
+      handTo = -(zCm * UNITS_PER_CM) / CLOTH_PLACE.scale;
+    },
+    setColliderShape(shape) {
+      sdfNode.value = shape.tex;
+      sdfMin.value.set(shape.minX, shape.minY);
+      sdfSize.value.set(shape.sizeX, shape.sizeY);
+      zRange.value.set(shape.zMin, shape.zMax);
+      shapeIn = true;
+      shapeGiven = shape;
+    },
+    get collider() {
+      return shapeGiven;
+    },
+    setCollider(worldToLogo) {
+      poseOn = worldToLogo !== null;
+      if (!worldToLogo) {
+        posePrimed = false;
+        return;
+      }
+      group.updateMatrixWorld();
+      poseTo.multiplyMatrices(worldToLogo, group.matrixWorld);
+      if (!posePrimed) {
+        poseFrom.copy(poseTo);
+        posePrimed = true;
       }
     },
     again() {
