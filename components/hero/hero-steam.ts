@@ -89,7 +89,9 @@ export type HeroSteamSettings = {
 };
 
 export const HERO_STEAM_DEFAULTS: HeroSteamSettings = {
-  on: true,
+  // ⛔ OFF FOR NOW (Carl, 20 November 2026: *"for now you can put the cloth directly above the logo but turn off the rain
+  // and steam."*): a working state while the cloth is built — TURN BACK ON (true) when Carl says (D-101)
+  on: false,
   hold: false,
   burstS: 1.2,
   lifeS: 1.2,

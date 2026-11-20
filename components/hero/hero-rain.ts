@@ -105,7 +105,9 @@ export type HeroRainSettings = {
 
 /** starting values — takes, for Carl's eye */
 export const HERO_RAIN_DEFAULTS: HeroRainSettings = {
-  on: true,
+  // ⛔ OFF FOR NOW (Carl, 20 November 2026: *"for now you can put the cloth directly above the logo but turn off the rain
+  // and steam."*): a working state while the cloth is built — TURN BACK ON (true) when Carl says (D-101)
+  on: false,
   hold: false,
   // Carl, take 1: "Peak drops at 3600 boost the frame rate and still look good" (8,000 before)
   peak: 3600,

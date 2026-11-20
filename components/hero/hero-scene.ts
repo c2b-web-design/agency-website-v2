@@ -11,6 +11,7 @@ import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/lo
 import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
 import { createHeroRain, HIT, type HeroRainInfo, type HeroRainSettings } from "./hero-rain";
 import type { HeroCodeSettings } from "./hero-code-drops";
+import { createHeroCloth, type HeroCloth } from "./hero-cloth";
 import { createHeroSteam, MARGIN, type HeroSteamInfo, type HeroSteamSettings } from "./hero-steam";
 import { createHeroHeat, type HeroHeat, type HeroHeatInfo, type HeroHeatSettings } from "./hero-heat";
 import { createHeroFloor, type HeroFloorInfo, type HeroFloorSettings } from "./hero-floor";
@@ -946,6 +947,9 @@ export type HeroScene = {
   readonly loadTimes: Record<string, number>;
   /** the rain's dials (the bench's Rain folder edits them) */
   rain: HeroRainSettings;
+  /** ⛔ PHASE 3, THE CLOTH, step 1 (`hero-cloth.ts`; 20 November 2026): three's `webgpu_compute_cloth` exactly as it is, behind
+   *  the logo — its dials (the bench's Cloth folder), "again", and a read-out */
+  cloth: Pick<HeroCloth, "settings" | "again" | "info" | "points">;
   /** ⛔ THE CODE DROPS' dials (`hero-code-drops.ts`, inside the rain; the bench's Code drops folder; 20 November 2026) */
   code: HeroCodeSettings;
   /** ⛔ THE TEMPERATURE's dials (`hero-heat.ts`; the bench's Heat folder) and its read-out */
@@ -1138,10 +1142,16 @@ export function createHeroScene(aspect: number): HeroScene {
    * visitor sees changes: the maps are three's, made by the same function from the same textures. Removed after
    * `PRIMER_FRAMES` drawn frames.
    */
+  // ⛔ PHASE 3, THE CLOTH, step 1 (`hero-cloth.ts`; 20 November 2026; Carl: *"build it on the page exactly as it is ... Build
+  // it here, behind the logo"*): the example in its own group, placed at Carl's camera target; made HERE so its environment
+  // joins the primer below (prefiltered in the dark with the others, not at its first draw)
+  const cloth = createHeroCloth();
+  scene.add(cloth.group);
+  disposables.push(cloth);
   const PRIMER_FRAMES = 3;
   let primer: THREE.Mesh | null = null;
   let primerFrames = 0;
-  Promise.all([loadStudioHdri(STUDIO_HDRI_SRC, HERO_LOGO_METAL.room), courtyardReady]).then(([studio]) => {
+  Promise.all([loadStudioHdri(STUDIO_HDRI_SRC, HERO_LOGO_METAL.room), courtyardReady, cloth.envReady]).then(([studio, , clothEnv]) => {
     if (disposed || !envs.courtyard) return;
     const m = new MeshBasicNodeMaterial();
     // each with an explicit direction AND level: outside a lit material's environment context `pmremTexture` has neither
@@ -1149,7 +1159,8 @@ export function createHeroScene(aspect: number): HeroScene {
     // FIRST map is made, and the others never are)
     const dir = vec3(0, 0, 1);
     const level = float(0);
-    m.colorNode = pmremTexture(studio, dir, level).add(pmremTexture(envs.courtyard.reflect, dir, level)).add(pmremTexture(judging, dir, level));
+    // ⛔ + the cloth's environment (`hero-cloth.ts`, 20 November 2026): the example's Royal Esplanade, prefiltered with the rest
+    m.colorNode = pmremTexture(studio, dir, level).add(pmremTexture(envs.courtyard.reflect, dir, level)).add(pmremTexture(judging, dir, level)).add(pmremTexture(clothEnv, dir, level));
     m.colorWrite = false;
     m.depthWrite = false;
     m.depthTest = false;
@@ -2047,7 +2058,8 @@ export function createHeroScene(aspect: number): HeroScene {
     // for this — so its background build hides nothing
     // ⛔ THE CODE DROPS' mesh too (`hero-code-drops.ts`; 20 November 2026): hidden outside its band, so shown here to be
     // built now, not at the last band
-    const show: THREE.Object3D[] = [view, heatPlane, rain.group, rain.codeMesh, floorHeat.mesh];
+    // ⛔ + the cloth (`hero-cloth.ts`; 20 November 2026): hidden until its environment is in, so shown here to be built now
+    const show: THREE.Object3D[] = [view, heatPlane, rain.group, rain.codeMesh, floorHeat.mesh, cloth.group];
     if (logo) show.push(logo);
     const keep = show.map((o) => [o.visible, o.frustumCulled] as const);
     for (const o of show) {
@@ -2231,6 +2243,8 @@ export function createHeroScene(aspect: number): HeroScene {
     // re-forming has a plan (nothing to rain on). The rain releases its first drops one fall early, so they land at 0
     const phase1End = reform ? fullAt() + REFORM.hardenS + fallS() + LAND_WOBBLE.ms / 1000 : NaN;
     rain.update(delta, emitT >= 0 ? emitT - phase1End : NaN);
+    // ⛔ THE CLOTH (`hero-cloth.ts`): on its own clock from load, stepped by the bench's/story's time
+    cloth.update(delta);
     // the wash follows the rain that has LANDED (0 until the first drop, 1 by the last)
     washShare.value = rain.wash;
     // ⛔ THE TEMPERATURE (`hero-heat.ts`): its sub-steps owed on the story's clock (stepped in `compute`); no wash = reset
@@ -2459,6 +2473,7 @@ export function createHeroScene(aspect: number): HeroScene {
     compute(renderer: WebGPURenderer) {
       const tc = performance.now();
       rain.compute(renderer);
+      cloth.compute(renderer);
       steam.compute(renderer, scene, camera);
       logoHeat.compute(renderer);
       const ms = Math.round(performance.now() - tc);
@@ -2504,6 +2519,16 @@ export function createHeroScene(aspect: number): HeroScene {
     },
     rain: rain.settings,
     code: rain.code,
+    cloth: {
+      settings: cloth.settings,
+      again: () => cloth.again(),
+      get info() {
+        return cloth.info;
+      },
+      get points() {
+        return cloth.points;
+      },
+    },
     rainAgain() {
       rain.again();
     },

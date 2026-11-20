@@ -301,6 +301,25 @@ export default function HeroBench() {
       f.add(cd, "flickMinMs", 20, 600, 10).name("flicker min (ms)");
       f.add(cd, "flickMaxMs", 20, 600, 10).name("flicker max (ms)");
 
+      // ⛔ PHASE 3, THE CLOTH, step 1 (`hero-cloth.ts`; 20 November 2026; Carl: *"build it on the page exactly as it is"*):
+      // three's `webgpu_compute_cloth` behind the logo; its own GUI's controls (stiffness, wireframe, wind, material; the sphere deleted, Carl),
+      // "Cloth again" from flat
+      const cl = hero.cloth.settings;
+      f = gui.addFolder("Cloth");
+      f.add(cl, "on");
+      f.add({ again: () => hero.cloth.again() }, "again").name("Cloth again");
+      f.add(cl, "stiffness", 0.1, 0.5, 0.01);
+      f.add(cl, "wireframe");
+      f.add(cl, "wind", 0, 5, 0.1);
+      // ⛔ 1 = the gusts scaled to the cloth (the example's look; Carl, 20 November); ~0.27 = the example's world size
+      f.add(cl, "gustSize", 0.1, 3, 0.01).name("gust size (× cloth)");
+      const mf = f.addFolder("material");
+      mf.addColor(cl, "color");
+      mf.add(cl, "roughness", 0, 1, 0.01);
+      mf.add(cl, "sheen", 0, 1, 0.01);
+      mf.add(cl, "sheenRoughness", 0, 1, 0.01);
+      mf.addColor(cl, "sheenColor");
+
       // ⛔ PHASE 2, THE TEMPERATURE (`hero-heat.ts`; 16 November 2026, session 3): the logo cools as an object during the
       // wash — off = the run-off front drives the colour directly, as before (an A/B). The rates act on the heat left
       const hs = hero.heat;
