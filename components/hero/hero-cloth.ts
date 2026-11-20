@@ -173,6 +173,19 @@ export type HeroCloth = {
   setColliderShape(shape: ClothColliderShape): void;
   /** the logo's pose for the next steps: its local (cm) from WORLD (the inverse of its world matrix); null = no collider */
   setCollider(worldToLogo: THREE.Matrix4 | null): void;
+  /**
+   * ⛔ THE SNAPSHOT (20 November 2026, session 2; Carl, of the bench reset: *"it doesnt reset it. it goes back to before the
+   * blobs"*): `snapshot` saves the cloth's WHOLE state — every point's place and motion, and its clock (the wind's) — as a
+   * COPY ON THE GPU (two buffers beside the cloth's, one compute pass); `restore` copies it back before the next steps (one
+   * pass). So a reset returns the cloth EXACTLY to the moment it was saved (pass 1's first take-off), not merely its top.
+   * ⚰️ Take 1 read the state back to the CPU and wrote it up again: MEASURED, the write did not put the cloth back (the
+   * cloth carried on from where it was) — not explained, so not built on. `again` clears it. `restore`: false if none.
+   */
+  snapshot(renderer: WebGPURenderer): void;
+  restore(): boolean;
+  readonly snapshotted: boolean;
+  /** a READ-OUT for checks: the snapshot's clock (null = none saved) */
+  readonly snapshotInfo: { t: number } | null;
   /** a READ-OUT for checks: the collider's shape once given (null before) */
   readonly collider: ClothColliderShape | null;
   readonly info: { steps: number; simTime: number; precompiled: boolean; bottomY: number; scale: number; points: number; springs: number; grid: [number, number] };
@@ -389,9 +402,28 @@ export function createHeroCloth(): HeroCloth {
     .compute(vertexCount)
     .setName("hero cloth: Vertex Forces");
 
+  // ⛔ THE SNAPSHOT's COPY (header of `snapshot`): two buffers beside the cloth's, and a pass each way
+  const snapPosBuffer = instancedArray(vertexCount, "vec3");
+  const snapForceBuffer = instancedArray(vertexCount, "vec3");
+  const computeSnapshot = Fn(() => {
+    snapPosBuffer.element(instanceIndex).assign(vertexPositionBuffer.element(instanceIndex));
+    snapForceBuffer.element(instanceIndex).assign(vertexForceBuffer.element(instanceIndex));
+  })()
+    .compute(vertexCount)
+    .setName("hero cloth: Snapshot");
+  const computeRestore = Fn(() => {
+    vertexPositionBuffer.element(instanceIndex).assign(snapPosBuffer.element(instanceIndex));
+    vertexForceBuffer.element(instanceIndex).assign(snapForceBuffer.element(instanceIndex));
+  })()
+    .compute(vertexCount)
+    .setName("hero cloth: Restore");
+
   // the start again: the positions as built, the forces zero (`again`)
   const startPositions = vertexPositionBuffer.value.array.slice() as Float32Array;
   let needsReset = false;
+  // ⛔ THE SNAPSHOT (`snapshot`, `restore`): its clock (NaN = none saved); a restore due before the next steps
+  let snapT = Number.NaN;
+  let needsRestore = false;
 
   // ── the environment (the example's file; header) and the materials' shared output ──
   let env: THREE.Texture | null = null;
@@ -558,8 +590,18 @@ export function createHeroCloth(): HeroCloth {
     },
     compute(renderer) {
       if (!precompile) {
-        if (!precompiling) precompiling = precompileCompute(renderer, [computeSpringForces, computeVertexForces]).then((r) => (precompile = r));
+        if (!precompiling) precompiling = precompileCompute(renderer, [computeSpringForces, computeVertexForces, computeSnapshot, computeRestore]).then((r) => (precompile = r));
         return;
+      }
+      if (needsRestore && !Number.isNaN(snapT)) {
+        // ⛔ THE SNAPSHOT put back (`restore`), ON THE GPU before this frame's steps: every point's place and motion, and the
+        // clock; the pins at their place
+        needsRestore = false;
+        needsReset = false;
+        renderer.compute(computeRestore);
+        timestamp = snapT;
+        handFrom = handTo = 0;
+        posePrimed = false;
       }
       if (needsReset) {
         needsReset = false;
@@ -622,11 +664,33 @@ export function createHeroCloth(): HeroCloth {
         posePrimed = true;
       }
     },
+    snapshot(renderer) {
+      // on the GPU, in order: after every step already run, before this frame's
+      if (!precompile) return;
+      renderer.compute(computeSnapshot);
+      snapT = timestamp;
+    },
+    restore() {
+      if (Number.isNaN(snapT)) return false;
+      needsRestore = true;
+      return true;
+    },
+    get snapshotted() {
+      return !Number.isNaN(snapT);
+    },
+    get snapshotInfo() {
+      return Number.isNaN(snapT) ? null : { t: snapT };
+    },
     again() {
+      snapT = Number.NaN;
+      needsRestore = false;
       timestamp = 0;
       timeSinceLastStep = 0;
       stepsDue = 0;
       needsReset = true;
+      // from flat with the pins at their place and the collider re-primed: nothing carried over from before
+      handFrom = handTo = 0;
+      posePrimed = false;
     },
     get points() {
       return vertexPositionBuffer.value as THREE.BufferAttribute;

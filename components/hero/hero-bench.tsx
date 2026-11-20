@@ -328,7 +328,7 @@ export default function HeroBench() {
       // ⛔ PHASE 3, PASS 1, FORWARD (`hero-scene.ts`, `pass1`; 20 November 2026, session 2; Carl: *"have the logo jump up and
       // down with the figures youve suggeated"*): the first jump, straight up and down, on "Jump" once phase 1's wobble is
       // done. The height's rows put to Carl: 32.7 (touching), 47.7, 60 (phase 1's hop), 72.7 cm; take 3: 95 (half the front face, the default). The cloth answers
-      // the jump (behind → in front, crossing at the apex) when it is at its place; "Reset pass 1" brings it and the logo back
+      // the jump (behind → in front, crossing at the apex) when it is at its place; "Reset pass 1" restores the cloth as it was at pass 1's first take-off
       f = gui.addFolder("Pass 1");
       f.add({ jump: () => hero.jump() }, "jump").name("Jump");
       f.add(hero.pass1, "apexCm", 20, 120, 0.1).name("jump height (cm)");
@@ -339,7 +339,35 @@ export default function HeroBench() {
       f.add(hero.pass1, "clothBackToCm", -250, 60, 1).name("cloth back to (cm)");
       f.add(hero.pass1, "backJumpDelayS", 0, 4, 0.01).name("back jump after cloth (s)");
       // the cloth answers the jump (from behind to in front, `CLOTH_PATH_CM`); a bench reset brings both back
+      // ⛔ RESET = THE BEGINNING OF PASS 1 (Carl: accurate measurement): the logo home, the cloth restored EXACTLY to its state
+      // at pass 1's first take-off (the button's name "Reset": *"change the buttons back to reset, not back to the beginning"*)
       f.add({ back: () => hero.resetPass1() }, "back").name("Reset pass 1");
+
+      // ⛔ PASS 2, STAGED (`hero-scene.ts`, `stage`; 20 November 2026, session 2; Carl: *"an easier way to do this is if i show
+      // you in stages"*): a still pose — roll (− = right, as the front camera sees it), then turn about the vertical
+      // ⛔ PASS 2, FORWARD — THE JUMP SWIVEL (`hero-scene.ts`, `pass2`): "Jump" once pass 1 is done
+      f = gui.addFolder("Pass 2");
+      f.add({ jump: () => hero.jump() }, "jump").name("Jump");
+      f.add(hero.pass2, "apexCm", 0, 150, 1).name("apex (cm above)");
+      f.add(hero.pass2, "landBackCm", -100, 150, 1).name("land back (cm)");
+      f.add(hero.pass2, "clothForwardCm", 0, 250, 1).name("cloth forward (cm)");
+      // ⛔ the REVERSE MOVE (by itself after the swivel's wobble): the cloth back to here (cm from the spot); the logo's jump
+      f.add(hero.pass2, "clothBackToCm", -250, 60, 1).name("reverse: cloth back to (cm)");
+      f.add(hero.pass2, "backJumpDelayS", 0, 4, 0.01).name("reverse: jump after cloth (s)");
+      // ⛔ THE GYMNAST: no wobble between, the reverse move `reboundS` after the swivel lands, the cloth setting off with it
+      f.add(hero.pass2, "gymnast").name("gymnast (one movement)");
+      f.add(hero.pass2, "reboundS", 0, 1, 0.01).name("gymnast: gather (s)");
+      f.add(hero.pass2, "gatherDeg", 0, 10, 0.1).name("gymnast: gather tip (deg)");
+      // ⛔ PASS 2's SPEED (Carl: *"slow the logos pass 2 movement down by 50%"*): 0.5 = twice as long, the same path
+      f.add(hero.pass2, "speed", 0.1, 1, 0.01).name("pass 2 speed (× real)");
+      f.add(hero.pass2, "rollDeg", -180, 180, 1).name("roll (deg, − = right)");
+      f.add(hero.pass2, "yawDeg", -180, 180, 1).name("turn (deg)");
+      f.add({ back: () => hero.resetPass1() }, "back").name("Reset (pass 1)");
+
+      f = gui.addFolder("Stage (pass 2)");
+      f.add(hero.stage, "on").name("stage the logo");
+      f.add(hero.stage, "rollDeg", -180, 180, 1).name("roll (deg, − = right)");
+      f.add(hero.stage, "yawDeg", -180, 180, 1).name("turn (deg)");
 
       // ⛔ PHASE 2, THE TEMPERATURE (`hero-heat.ts`; 16 November 2026, session 3): the logo cools as an object during the
       // wash — off = the run-off front drives the colour directly, as before (an A/B). The rates act on the heat left

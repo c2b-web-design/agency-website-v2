@@ -1,167 +1,97 @@
-# Session Handoff — 20 November 2026 (Friday), session 1. THE CODE DROPS APPROVED (R-110); THE CLOTH BUILT, STEP BY STEP; NEXT: SESSION 2, THE CLOTH CONTINUES
+# Session Handoff — 20 November 2026 (Friday), session 2. "SCHRÖDINGER'S CLOTH": PASS 1 AND PASS 2 BUILT; NEXT: SESSION 3, FINE-TUNE PASS 2, THEN PASSES 3 AND 4
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces every earlier handoff. Delete it at the end of
 the session that reads it, once its replacement is written.
 
-**The record:** D-101 in `decisions.md`, from *"THE LAST BAND's HITS ON THE LOGO, MEASURED ON THE GPU (20 November 2026)"* to
-the end: every beat with Carl's words. Session ended on Carl's word: *"compaction is 46%. Write a handoff. connit and push.
-stop the capture and keep the server up. We will start a new convo and go into session 2."*
+**The record:** D-101 in `decisions.md`, from *"THE LOGO LEADS, THE CLOTH RESPONDS; PASS 1 DRIES THE TOP"* to the end:
+every beat with Carl's words. Session ended on Carl's word: *"The hard part is done. Stop the capture, wtite a handoff and
+commit and push."*
 
-## ⛔ NEXT SESSION (session 2) — THE CLOTH CONTINUES
+## ⛔ NEXT SESSION (session 3) — CARL's PLAN (D-101, the last entry)
 
-**⛔ THE SUBJECT IS SET: MOVEMENT AND CHOREOGRAPHY** (the section below; Carl: *"Add to the handoff so we are ready to go."*).
+1. **FINE-TUNE PASS 2.** ⛔ *"Pass 2 cloth finish is far too close"* — after the reverse move, the cloth's hem ends hanging
+   just above and beside the logo home (his side still). The levers, Carl's: *"altering the speed of the backwards and
+   forward logo movement and then altering the cloth distance and speed"*.
+2. **PASS 3 = A MIRROR IMAGE OF PASS 2, FOR THE B** (the swivel the other way: the B's face, then its back).
+3. **PASS 4 = THE BOTTOM HALF OF THE 2** — *"a much easier movement"*.
+4. *"The hard part is done."*
 
-### ⛔ THE CHOREOGRAPHY AS IT STANDS (Carl, 20 November 2026, after the handoff — every line his, in D-101)
+## THE CHOREOGRAPHY AS BUILT (`components/hero/hero-scene.ts`, `hero-cloth.ts`; the bench `/proto/hero`)
 
-1. **The cloth ADVANCES and RETREATS**; ONE PASS = a FORWARD action + a BACKWARD action.
-2. **The logo JUMPS to meet it** (no propulsion; it jumps because it is wet) **and ROTATES** in the air to TARGET the
-   portions that need drying — a straight jump only ever offers the top, which the cloth drapes over.
-3. ***"say"* 4 PASSES = 8 ACTIONS** to dry it — a working figure, not fixed.
-4. **The FIRST JUMP is STRAIGHT UP AND DOWN** — the drape dries some of the BACK and the FRONT TOP.
-5. **Every LANDING is UPRIGHT, with a SLIGHT WOBBLE** (`LAND_WOBBLE`); which way it FACES is free — each landing
-   POSITIONS what needs drying NEXT (planned backward from the next action). **The END lands FACE ON.**
-6. **The reference for HOW it moves: `/about`'s DESK LOGO** (the tip, the flip, the end-over-end tumble; the colour
-   crossing riding the movement) — *"we can get more creative with its movement"*; new, added to the original choreography.
-7. ⛔ **DESIGN IN 3D, NOT ONLY FOR THE FRONT:** *"dont just think in POV from the front. In phase 5 our camera will do some
-   work here."* **BUILT from the front** (the working camera, below); judged from other angles at stages.
-8. **Open, Carl's:** how/when the cloth APPEARS; the cloth's path and timing; each action's target and turn; whether a turn
-   is the logo's own or the cloth's catch (the desk logo's bin); the drying's look (the reverse crossing riding the
-   movement was offered, not chosen); the floor's blue shrinking per wipe.
+**Phase 3 is named "Schrödinger's cloth"** (Carl). One **Jump** plays pass 1; a second **Jump** (after it) plays pass 2.
 
-**What else is open, all Carl's:**
+- **Pass 1** (`pass1`): FORWARD — the logo jumps **95 cm** high, **up and back** (apex 34 cm behind its spot, lands 68 cm
+  back), into the cloth as its HAND (the pins) carries it forward 120 cm (−60 → +60 from the spot), the hand's move
+  spanning the flight. BACKWARD — after the landing's wobble the cloth retreats by itself to **−75** (the BEAT), and
+  **2 s** later the logo jumps home into it. Measured: the top **~47% front / ~48% back**. (The cloth ends at −75, not
+  its start −60: Carl ruled that FINE, and ⛔ *the next move starts from the cloth's ending position*.)
+- **Pass 2** (`pass2`): the **JUMP SWIVEL** — roll 90° right + turn 180° in one move, complete at the apex, the C's face
+  meeting the cloth in the air; lands on the **b's end**, its back to the front camera, **90 cm back** (landing on the
+  spot hooked the cloth over the c). The cloth +120 forward from −75. Then the **GYMNAST**: no wobble, a **gather**
+  (a 2° tip back and up), and a rebound straight into the **REVERSE MOVE** (held on its side to the apex — the C's back
+  meets the cloth — then upright by the landing, home), the cloth retreating to **−30**; the normal wobble only at the
+  end. All of pass 2 at **HALF SPEED** (`pass2.speed` 0.5: *"gravity is secondary to how it looks"*). Measured: the
+  **C's front ~100%**, the **C's back ~75%**. (The BEAT version — `gymnast` off, cloth back −75, 2 s — gave the C's back
+  ~100%: the trade-off was put to Carl, not ruled.)
+- **The collision** (structural note `live-work/structural-note-cloth-collision-20-november.md`): the logo's FLAT distance
+  field (from its ink, `hero-maps.worker.ts` `inkSdfData`) + its depth, read by the cloth's own step, the logo's pose
+  interpolated per step; margin **3.5 cm** (no locked hem folds), friction 0.3. **0 points through the metal** in every
+  measured pass. One way: the logo pushes the cloth.
+- **The cloth OPAQUE** (*"an unexpected bonus"*): the logo's outline pressed into the blue cloth; the drying hidden under
+  it; ⛔ the visitor, seeing the blue outline, expects a blue logo — the gold is the surprise; ⛔ the reveal needs a FRONT
+  camera (straight, angled or oblique); candidate: Carl's LOW FRONT, looking up (position 516.5, −361.4, 1729.4; target
+  536.6, 238.5, −496.5; fov 45).
+- **Reset** (both buttons): the logo home and the cloth RESTORED to its exact state at pass 1's first take-off (a GPU
+  snapshot). ⛔ For accurate measurement **press Jump straight after Reset** — the cloth sways in the wind (~6 cm at the
+  hem over 3 s), so a later press meets it elsewhere, as on a fresh load. Carl: *"One pass is built upon the other."*
 
-1. **THE CLOTH — what next.** Built and committed as step-by-step takes (below). Open: **how and when it APPEARS** (*"the
-   cloth wont be there from the start. We will decide how and when it appears"*); the HAND (its pins carried on an authored
-   path — with a 230 cm cloth, a rail/bar or two hands at the corners, *"like buffing with a chamois"* was the Builder's
-   aside, not ruled); the LOGO's COLLISION with it (the steam's voxel solid mask is the candidate shape; the rain's hit map
-   sees from above only); the JUMP to meet it (CHOSEN 16 November); the DRYING to gold (a field over the face, like the
-   temperature's). Each likely a §5a note — the Architect: *"We may consult the architect, but not yet."*
-2. **THE CLOTH's COLOUR:** C, ultramarine **#2E3FC8** — *"the colour does look better. we will judge it again when we get to
-   the gold transition"* (against the gold AND the wet platinum blue #3F6DB8).
-3. **THE CODE DROPS' LANDING → THE DRYING:** what a landing does to start the drying — open since 16 November.
-4. **THE RAIN AND STEAM ARE OFF BY DEFAULT ON THE BENCH, FOR NOW** (`HERO_RAIN_DEFAULTS.on`, `HERO_STEAM_DEFAULTS.on` =
-   false, marked in the code) — Carl: *"for now ... turn off the rain and steam"*; *"its ok if the logo stays red for now"*.
-   ⛔ **TURN THEM BACK ON when Carl says.** With the rain off the logo and floor stay RED (no wash, no cooling).
-5. **Carried:** the plinth brainstorm (`live-work/hero-concept-8-november/brainstorm-plinth-18-november.md`); Gandalf's
-   fireworks; the floor's notes not done ([R5][T1][R6][R7], `heatPlane` not retired); the camera bench's plotted-moves tool
-   and a storyboard form (asked, not answered).
+**Bench folders:** Pass 1 (Jump, jump height, jump back, cloth back to, back jump after cloth, Reset pass 1); Pass 2
+(Jump, apex, land back, cloth forward, roll, turn, reverse: cloth back to, reverse: jump after cloth, gymnast, gather,
+gather tip, pass 2 speed, Reset); Stage (pass 2) (a still pose tool, off); Cloth (+ collide, margin, friction).
 
-## ⛔ SESSION 2's SUBJECT: MOVEMENT AND CHOREOGRAPHY (Carl, after the handoff: *"we move on to monement and choreography"*)
+## OPEN — CARL's
 
-**Read first in D-101 (16 November, session 3 — the rulings are there, don't re-derive or re-ask):** *"PHASE 3 — THE CLOTH
-MOVES THROUGH SPACE AND THE LOGO JUMPS UP TO MEET IT"*, *"THE LOGO's JUMP TO MEET THE CLOTH: CHOSEN"*, *"THE CAMERA CAN HIDE
-PART OF A TRANSITION"*, *"variations on a theme"*, *"THE CAMERA STORY IS PLACE, TIME, MOVE, DURATION — AND THE NEXT MARK"*;
-and 18 November's *"THE BLUE WEB SHRINKS WITH EACH WIPE"*. What they rule:
-
-- **The CLOTH MOVES through space; its PINS are the HAND** — carried on an AUTHORED path with timing and easing (*"the
-  camera's mathematics"*). Carl's 10 November inversion: the logo still, the cloth moves over it.
-- **The LOGO JUMPS UP TO MEET IT (CHOSEN)** — no propulsion, it never flies; it jumps BECAUSE IT IS WET, to dry itself; the
-  meeting MID-AIR; the cloth drapes over the letters' tops and slides off as the logo drops back (the Builder's 16 Nov
-  reading, recorded). DRY = shiny gold (*"a shiny gold Threepio would be proud of"*). A theme with variations: phase 1's
-  jump ECHOED.
-- **The camera may hide part of the drying** once the behaviour is established; continuity when it returns.
-- **Each move:** where, when, how, how long — and where it must be NEXT and by when (planned backward from the next mark).
-- **The floor:** the blue web SHRINKS with each wipe as the gold appears (18 Nov).
-- **(B) was chosen** so ONE pass covers the face (230 × 130 cm); (A) more passes stays a possible variation.
-
-**⛔ NEW, after the handoff (Carl): *"go to the /about section and look at the desk logo. the logo will jump up and down but we
-can get more creative with its movement. the desk logo will show how we can help the drying process. This is new, added to
-the original choreography."*** The homework is DONE (D-101, *"HOMEWORK: THE DESK LOGO's JOURNEY, SEEN"*; frames in `03 The
-hero\00 References\desk-logo-journey-20-november\`): the tip → over the edge upside down → the bin's strike FLIPS it →
-END-OVER-END tumble → face on; the colour crossing RIDES the tumble (outside-in, tied to the object). Offered to Carl, not
-designed: the drying as the reverse crossing riding the movement; a SOMERSAULT inside the cloth (both faces, one pass; the
-width never grows — no cartwheel); causes not flight (the cloth catching the top edge flips it, as the bin did); the rim's
-glint. ⛔ Carl leads the movement — build nothing from this list unasked.
-**Then Carl developed it (D-101, the two entries after the homework):** a straight jump meets an advancing/retreating cloth
-only at the TOP (it drapes over), so the logo JUMPS AND ROTATES to TARGET portions; ONE PASS = a FORWARD + a BACKWARD
-action; *"say"* 4 passes = 8 ACTIONS (a working figure); the LANDINGS need not be face on — each landing POSITIONS what
-needs drying NEXT — but the END is FACE ON; the FIRST JUMP is STRAIGHT UP AND DOWN (some of the back and front top).
-
-**The echo — phase 1's jumps, as built:** the lean → jump (R-105, *"Perfect"*: a 0.7 s ballistic hop, the lean straightened
-in its own profile, landing on its end, the desk mark's wobble); the ARRIVAL (`hero-scene.ts`, `ARRIVAL = { holdS 2, apexCm
-60, g 981 }`: a ballistic arc under real gravity, 981 cm/s²); the landing wobble `LAND_WOBBLE` (`components/showcase/
-hero-logo.tsx`: 2 s, 3.75°/2.25°/1.125°/0.5625°).
-
-**The machinery to know before planning (facts, not decisions):**
-- **The cloth's pins never move today** (`hero-cloth.ts`: a fixed point `Return()`s from the step). Carrying them = writing
-  the pins' positions from the hand's path each step (a uniform transform) — a change to the step; likely a §5a note.
-- **The logo's collision with the cloth does not exist yet.** Candidates: the steam's voxel solid mask
-  (`hero-maps.worker.ts`, `steamSolidMask` → `SteamMask`, a 3D grid at a cell size) as a 3D texture / distance field; the
-  rain's hit map (`HitData`) sees from above only.
-- **Authored paths with easing already exist** on the camera bench (`components/showcase/bench-chain.ts`: clips, shapes,
-  the corkscrew maths; D-104) — the "camera's mathematics" the hand's path can borrow (a structural choice, named first).
-- **The story's clock at phase 3:** phase 1 ends at `phase1End` (the wobble done) = the rain's start; the rain's last
-  release ~31.23–31.30 s of story; the code drops land to ~31.9 s; the wash's last red ~1.5 s after the last drop. ⚠ With
-  the rain OFF on the bench, none of phase 2/3's clock runs (`rain.sinceFirstLanding` NaN) — choreography timed on the rain
-  needs it back on, or the cloth's own clock.
-- **The cloth runs on its own clock from load** (`Cloth again` restarts) — not yet tied to the story.
-
-## ⛔ THE WORKING CAMERA (Carl: *"this is the camera position we will contine from"*)
-
-**position 675.5, −2.8, 2203.3; target 695.4, −0.4, 0.9; fov 45** — face on to the logo, ~5 m back. ⛔ **Build face on;
-at stages Carl moves the camera to judge it IN 3D, for PHASE 5 (camera direction and movement).** The Builder's habit that
-served: stills from four angles (`live-work/scripts/hero-cloth-views-20-november.mjs`: working, orbit ±40°, raised 25°).
-
-## THE CLOTH — WHERE IT STANDS (`components/hero/hero-cloth.ts`, new; D-101)
-
-three's `webgpu_compute_cloth` transcribed (r185 source = r187's but one constant), in its OWN units inside one group:
-Verlet grid, pins (every 5th top point), structural + shear springs, two compute passes a step (springs; each point: damping
-0.99, springs, gravity, wind), **360 steps/s on the bench's/story's time**; the sheen material (`MeshPhysicalNodeMaterial`,
-opacity 0.85, sheen 1 white, sheen roughness 0.5, roughness 1), lit ONLY by its own environment (Royal Esplanade,
-`public/hero-bench/royal_esplanade_2k.hdr.jpg`, prefiltered in the dark with the scene's maps — the primer), an EMPTY light
-list, Neutral tone mapping in its output. Carl: *"All the parameters in the cloth are good."*
-
-Carl's takes, in order: the example exactly (at his camera) → **face on, blue side to the front** → **directly ABOVE the
-logo** (centred x 718.48, z −16.92) → **(B) BIGGER, 230 × 130 cm** at the example's point spacing (113 × 64 = 7,232 points,
-28,399 springs, 23 pins, pins at world y 760) — (A) more passes RAISED, NOT CHOSEN → **the SPHERE DELETED** → **the GUSTS
-SCALED TO THE CLOTH** (`gustSize` 1: the sheet sways as one; *"looks better, its not just influencing the bottom"*) →
-**colour C**. The bench's **Cloth** folder: on, Cloth again, stiffness, wireframe, wind, gust size, material.
-
-- **MEASURED:** clearance — lowest point y 164.9 vs the landed logo's top 20.71: **32.7 cm** clear
-  (`hero-cloth-clearance-20-november.mjs`); cost — **~3–5 ms a frame** on this PC (`hero-cloth-cost-20-november.mjs`:
-  59–60 fps on vs 71–91 off, Playwright's Chrome; D-108). The first swing rises above the pins (it starts flat): not a fault.
-- **Not asked to change, noted:** blobs and cloth do not interact (not needed — they never share the stage).
-
-## THE CODE DROPS — APPROVED (R-110; `components/hero/hero-code-drops.ts`, new; `hero-rain.ts`)
-
-Every last-band drop that will land on the logo (the rain decides at release, from the hit map) turns to `/about`'s code at
-a height of its own and falls at **0.5 × the rain's speed** (*"Its not slow mo and its not rain either"*), drains into the
-logo, no splash. The glyphs from `components/code-rain-atlas.ts` (moved verbatim from `player-bench.tsx`, one source).
-Measured 2–4 a run (GPU read-back); 0 band splashes on the logo over every checked run.
+1. **Pass 2's tuning** (above), then passes 3 and 4.
+2. **The gymnast ~75% vs the beat ~100%** on the C's back — not ruled.
+3. **The drying itself** (gold where the cloth touched): not built. The collision's contact per cell is the natural map
+   (offered, not chosen). The floor's blue shrinking per wipe: not built. *"One step at a time"* — the floor and the rest
+   wait for the choreography.
+4. **Carried:** the rain and steam OFF on the bench (turn back on when Carl says); the cloth's colour C (#2E3FC8) judged
+   again at the gold; how/when the cloth APPEARS; the camera (phase 5) — every move designed in 3D; the plinth
+   brainstorm; Gandalf's fireworks; the floor's notes ([R5][T1][R6][R7], `heatPlane`); the untracked
+   `live-work/structural-note-code-drops-20-november.md` (keep or delete).
 
 ## ⛔ STANDING — CARL's
 
-- **Target 1 December 2026.** The order to the finish (16 November) unchanged.
-- **Name the files and ask before the first code edit, every session.** Open in `chunk-scope.json` (kept open, *"keep open
-  until i ask you to lock and test"*): the hero files, `code-rain-atlas.ts`, `player-bench.tsx`, `hero-code-drops.ts`,
-  `hero-cloth.ts`, the HDR.
-- **A question in a brief is answered, not built** (twice today it was a question — wind, blobs — and answered only).
-- **Approval includes the record:** C and the scaled wind are TAKES (*"looks better"*), not approvals.
+- **Target 1 December 2026.** Name the files and ask before the first code edit, every session (all hero files open in
+  `chunk-scope.json`, *"keep open until i ask you to lock and test"*).
+- **A question is answered, not built** (*"can you fix …"* was answered with a test, then Carl chose).
+- **Contact must be REAL from every angle; NO contact is the worst outcome.** Check every action from the SIDE.
+- **Gravity serves the look** — slow enough that the gold's nuances are seen.
 
 ## LESSONS (today)
 
-- **A LINT WARNING WAS COMMITTED AGAIN** (`b34de82`: an edit to a check script after lint ran). Fixed (`38100c6`). Run lint
-  after the LAST edit, read its last line, then commit.
-- **I said "far less than the rain or the steam" before measuring** the bigger cloth: it measured ~3–5 ms. Price after
-  measuring, never before.
-- **The clean build:** `node project-intelligence/live-work/scripts/clean-build.mjs` (stage first; ~50 s; packages in
-  `~/.c2b-clean-build`, reinstalled only when the lock file changes). ⛔ Never `cp -r node_modules` (>10 min today).
-- **A check that judges by time alone misjudged** a pre-band drop landing on a low surface: track the cause (each drop's
-  release), not a proxy. **Per-drop values decided in the vertex stage and passed on** (take 1's square glows: the fragment
-  recomputed them).
-- **The "vertex count of 0" warning was the liquid's empty marching-cubes draw** — fixed (`38100c6`).
+- ⛔ **A WAIT ABSORBED BY SET-UP:** a "press at different times" test waited right after replaying the story, so every
+  wait passed inside phase 1 and every press took off at the same moment — it "proved" the press time didn't matter, and
+  that went into D-101 and to Carl as a correction of my own true caveat. Corrected (D-101). Check that a varied input
+  actually varied (log the take-off time) before concluding it has no effect.
+- **A CPU write-back of a GPU storage buffer did not take** (the cloth carried on); not explained, so not built on — the
+  snapshot is GPU-to-GPU (two compute passes).
+- **The shortest rotation is not the described move:** slerping to the swivel's end pose flipped the logo flat (a pancake);
+  the turn and roll interpolated together read as the swivel Carl described.
+- **"Back to the beginning" meant the beginning of the PASS**, not of the story — ask which beginning when it is ambiguous.
+- **A timing prediction was wrong** (the 100 ms rebound): measure, don't predict; say so when it is wrong.
+- Lint covers `live-work/scripts/`: run it after the LAST edit (two unused variables caught before the push).
 
 ## STATE
 
-- **COMMITTED AND PUSHED** to the session's last commit (this handoff with it): the code drops `b34de82`; the empty-draw fix
-  `38100c6`; the clean-build script `8ff7775`; the cloth `75f86b3`; colour C and the records with this handoff. Clean
-  build passed before each push; tsc clean; lint at the baseline (1 error, 0 warnings).
-- **The screen capture STOPPED:** `03 The hero\01 Discussion\2026-11-20_discussion_screen.remux.mkv` (3:23:07; raw kept).
-- **The dev server is UP** (port 3000, at Carl's word — *"keep the server up"*).
-- **Untracked, Carl's call:** `live-work/structural-note-code-drops-20-november.md` (the superseded draft — keep or delete).
-- Films and stills today: `03 The hero\2026-11-20_code-drops_take1–3\`, `…_cloth-step1_take1–3\`, `…_cloth-bigger_take1\`,
-  `…_cloth-no-sphere\`, `…_cloth-gusts-scaled\`, `…_cloth-colour-C\`.
+- **COMMITTED AND PUSHED** with this handoff (after `e37a593`, the session's first push). Clean build passed; tsc clean;
+  lint at the baseline (1 error, 0 warnings).
+- **The screen capture STOPPED:** `03 The hero\01 Discussion\2026-11-20_s2_discussion_screen.remux.mkv` (6:11:08; raw kept).
+- **The dev server is UP** (port 3000).
+- Films today: `03 The hero\2026-11-20_pass1-*`, `…_pass2-*` (forward swivel takes 1–3, reverse, gymnast, gymnast
+  half-speed with LOW FRONT), `…_pass1-collision_take1-film`, `…_pass1-backward-contact_front(_opaque)`.
 
 ---
 
-*Written 20 November 2026, session 1.*
+*Written 20 November 2026, session 2.*

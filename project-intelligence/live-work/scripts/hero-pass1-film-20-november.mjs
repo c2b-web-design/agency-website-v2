@@ -6,7 +6,9 @@
 import { chromium } from "playwright";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync } from "node:fs";
-const [OUT, AFTER = "3.5", CAM, START] = process.argv.slice(2);
+const [OUT, AFTER = "3.5", CAM, START, HOLD] = process.argv.slice(2);
+// argv[6] "hold": "Jump" pressed EVERY frame — each next action (pass 2's swivel) taken the moment it can be
+const hold = HOLD === "hold";
 // argv[5] START: seconds after the FORWARD jump's take-off to begin filming (the backward action is ~4.9 s after it);
 // unset = 0.5 s before the take-off, as before
 const startS = START === undefined ? -0.5 : Number(START);
@@ -35,19 +37,20 @@ await p.evaluate((stop) => {
   hero.replayArrival(); hero.cloth.again(); hero.update(0);
   for (let n = 0; n < stop; n++) { hero.update(1 / 30); hero.compute(renderer); }
 }, takenAt - 15);
+await p.evaluate((hold) => (window.__holdJump = hold), hold);
 const lead = Math.round(-startS * 30); // frames filmed before the take-off (negative: frames skipped after it)
 const total = Math.max(0, lead) + Math.round(Number(AFTER) * 30);
 // a START after the take-off: take the jump, then step on unfilmed to it
 if (lead < 0) {
   await p.evaluate((skip) => {
     const { hero, renderer } = window.__heroBench;
-    for (let n = 0; n < 15 + skip; n++) { if (n === 14) hero.jump(); hero.update(1 / 30); hero.compute(renderer); }
+    for (let n = 0; n < 15 + skip; n++) { if (n === 14 || (window.__holdJump && n > 14)) hero.jump(); hero.update(1 / 30); hero.compute(renderer); }
   }, -lead);
 }
 for (let f = 0; f < total; f++) {
   await p.evaluate(async ({ cam, jumpNow }) => {
     const { hero, renderer, scene, camera } = window.__heroBench;
-    if (jumpNow) hero.jump();
+    if (jumpNow || window.__holdJump) hero.jump();
     hero.update(1 / 30);
     hero.compute(renderer);
     camera.position.set(...cam.position); camera.lookAt(...cam.target); camera.fov = cam.fov; camera.updateProjectionMatrix();
