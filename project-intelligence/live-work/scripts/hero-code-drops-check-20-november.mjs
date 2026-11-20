@@ -78,7 +78,6 @@ for (let run = 1; run <= RUNS; run++) {
   await p.evaluate(() => (window.__prevY = null));
   const columns = new Map();
   let band = null;
-  let lead = 0;
   for (;;) {
     const r = await p.evaluate(async (film) => {
       const { hero, renderer, scene, camera } = window.__heroBench;
@@ -113,7 +112,6 @@ for (let run = 1; run <= RUNS; run++) {
       return { t: info.t, story: hero.arrival.t, band: info.codeBand, lead: info.leadS, cols, splashes, released, filmed: film && info.t >= info.codeBand[0] - 0.15 };
     }, film);
     band = r.band;
-    lead = r.lead;
     for (const c of r.cols) if (c[3] >= band[0] - 1e-4) columns.set(c[0], c);
     // ⛔ EXACT (take 3's fix): a logo splash belongs to its drop's release BEFORE this frame (a hit re-releases in the
     // same step); a band drop = released at or after the band's start. ⚠ The rain's clock is read rounded to 0.01 s:

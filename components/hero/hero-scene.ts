@@ -2389,6 +2389,11 @@ export function createHeroScene(aspect: number): HeroScene {
     }
 
     updateCubes(effect, delta, settings.numBlobs, settings.floor, settings.wallx, settings.wallz, emitT);
+    // ⛔ NO EMPTY DRAW (20 November 2026; Carl: "yes, fix it"): a field with no surface leaves the draw range at 0, and three
+    // r185 still sends a draw of 0 vertices (only a negative count is skipped) — Chrome's "Draw with a vertex count of 0 is
+    // unusual", 424 draws a story (`live-work/scripts/hero-zero-vertex-draw-20-november.mjs`). Shown only with triangles,
+    // the same frame they are built (the warm-up still shows it to compile it)
+    view.visible = effect.geometry.drawRange.count > 0;
     if (blobsOut && settings.floor) stepHeat(delta);
     // the addon (not in the scene) holds its transform; the view follows it
     view.position.copy(effect.position);
