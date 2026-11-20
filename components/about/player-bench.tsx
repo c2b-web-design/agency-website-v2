@@ -31,6 +31,7 @@ import { LOGO_ASPECT, LOGO_OUTLINE } from "./logo-mark-outline";
 import type { DeskMarkReadout } from "./about-card-canvas";
 import { pageZoom } from "@/lib/site-scale";
 import { canvasOnScreen } from "@/lib/canvas-on-screen";
+import { rainAtlas } from "@/components/code-rain-atlas";
 
 const PlayerIdent = dynamic(() => import("./player-ident"), { ssr: false });
 const MarkMetal = dynamic(() => import("./player-ident").then((m) => m.MarkMetal), { ssr: false });
@@ -495,48 +496,8 @@ function rainEndMs(cols: RainColumn[]): number {
   for (const col of cols) for (const d of col.drops) end = Math.max(end, 1000 * (d.start + (1.05 + (d.trail + 1) * col.glyph) / d.speed));
   return end;
 }
-type RainAtlas = { cell: number; n: number; own: number; white: HTMLCanvasElement; head: HTMLCanvasElement; light: HTMLCanvasElement; deep: HTMLCanvasElement };
-let rainAtlasCache: RainAtlas | null = null;
-/** The characters, drawn once per colour into a strip: [katakana…, 0–9] mirrored, then c 2 b unmirrored (the last `own`). */
-function rainAtlas(): RainAtlas {
-  if (rainAtlasCache) return rainAtlasCache;
-  const cell = 48;
-  const font = `${Math.round(cell * 0.86)}px "MS Gothic", "Yu Gothic", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Noto Sans Mono CJK JP", monospace`;
-  // does the device draw katakana? compare one against an unassigned code point (drawn as nothing, or as a box)
-  const probe = (ch: string) => {
-    const cv = document.createElement("canvas");
-    cv.width = cv.height = cell;
-    const g = cv.getContext("2d")!;
-    g.font = font;
-    g.fillText(ch, 4, cell * 0.8);
-    return g.getImageData(0, 0, cell, cell).data.join(",");
-  };
-  const hasKana = probe("ﾊ") !== probe("͸");
-  const kana = hasKana ? Array.from({ length: 0xff9d - 0xff66 + 1 }, (_, i) => String.fromCharCode(0xff66 + i)) : [];
-  const mirrored = [...kana, ..."0123456789"];
-  const own = ["c", "2", "b"];
-  const strip = (colour: string) => {
-    const cv = document.createElement("canvas");
-    cv.width = cell * (mirrored.length + own.length);
-    cv.height = cell;
-    const g = cv.getContext("2d")!;
-    g.font = font;
-    g.fillStyle = colour;
-    g.textAlign = "center";
-    g.textBaseline = "middle";
-    mirrored.forEach((ch, i) => {
-      g.save();
-      g.translate(cell * (i + 0.5), cell / 2);
-      g.scale(-1, 1);
-      g.fillText(ch, 0, 0);
-      g.restore();
-    });
-    own.forEach((ch, i) => g.fillText(ch, cell * (mirrored.length + i + 0.5), cell / 2));
-    return cv;
-  };
-  rainAtlasCache = { cell, n: mirrored.length, own: own.length, white: strip("#FFFFFF"), head: strip("#CFE6FF"), light: strip("#5F88C8"), deep: strip("#3F6DB8") };
-  return rainAtlasCache;
-}
+// ⛔ THE CHARACTERS (`rainAtlas`) MOVED VERBATIM to `components/code-rain-atlas.ts` (20 November 2026, D-101): one source for this
+// rain and the hero's code drops. Imported above; the same function, the same cache, the same idle build (below).
 type Arrival = "empty" | "enter" | "land" | "bounce" | "placed" | "cycle";
 /** A point of the outline (mark units: origin bottom-centre, y up) about the mark's centre, turned by `q` (the camera's
  *  frame) and seen straight on: its offset from the centre in mark heights, y up. */

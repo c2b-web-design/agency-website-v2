@@ -5,6 +5,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { LOGO_BLUE_DEFAULTS, platinumBlueF0 } from "@/components/about/logo-mark-material";
 import type { HitData } from "./hero-maps.worker";
 import { precompileCompute, type PrecompileResult } from "./hero-steam";
+import { createCodeDrops, type HeroCodeSettings } from "./hero-code-drops";
 
 /**
  * ⛔ THE HERO's PHASE 2 — THE RAIN (14 November 2026; D-101). Carl: *"So lets start off with the rain om the Logo."* …
@@ -46,6 +47,12 @@ import { precompileCompute, type PrecompileResult } from "./hero-steam";
  * - **NOTHING TILES** (`VARY`): each drop its own width, length and brightness (fixed per drop, from its index); each
  *   splash its own turn about the vertical, size and crown height (drawn fresh at every hit, `splashRnd`).
  * - **PEAK 3,600** by default.
+ *
+ * ⛔ THE CODE DROPS (20 November 2026; D-101; `hero-code-drops.ts`). Carl: *"In each run, every drop that is destined to
+ * fall on the logo should be code."* At each RELEASE the step decides: in the LAST BAND (`bandFrom`, the rain's clock: one
+ * fall before the shape's last live drop, `codeBandFrom`) AND over the logo in the hit map → a code drop (`codeNow`), its
+ * column written (`codeCol`, `codeSurf`) for `hero-code-drops.ts` to draw. Its streak is hidden from its TURN down, and it
+ * makes NO SPLASH when it lands. Nothing else in the rain changes; held at the peak (`hold`), there is no last band.
  * - ⚰️ THE DROPS LIT BY THE WORLD — built, then WITHDRAWN the same day (Carl: *"the red drops and splashes dont look
  *   right. if the logo is light emissive i dont think they would affect rain splashes like that."*): the logo is not a
  *   light source, so it cannot tint the rain. Removed whole (a face-on distance field and two dials); should the logo be
@@ -132,6 +139,8 @@ export type HeroRainInfo = {
   running: boolean;
   /** phase 2's wash: the share of the rain's whole fall that has landed (0–1; `hero-scene.ts`, `RUNOFF`) */
   wash: number;
+  /** the code drops' band on the rain's clock (s; null = none: held, or off) */
+  codeBand: [number, number] | null;
   map: { cellsX: number; cellsZ: number; minX: number; minZ: number; sizeX: number; sizeZ: number; topY: number; centre: [number, number]; litCells: number; maxHeight: number; buildMs: number };
 };
 
@@ -157,6 +166,9 @@ export type HeroRain = {
    *  own clock (negative before; NaN while off), so "Rain again" plays the steam again too. A read-out only */
   readonly sinceFirstLanding: number;
   readonly info: HeroRainInfo | null;
+  /** ⛔ THE CODE DROPS' dials (`hero-code-drops.ts`) and their mesh (in `group`; shown to the warm-up by its owner) */
+  code: HeroCodeSettings;
+  codeMesh: THREE.Mesh;
   dispose(): void;
 };
 
@@ -214,6 +226,20 @@ function shapeShareBy(u: number, light: number): number {
   return washTable.cum[k] + (washTable.cum[k + 1] - washTable.cum[k]) * (x - k);
 }
 
+/** ⛔ THE CODE DROPS' BAND (header): the rain's clock at the shape's LAST LIVE DROP (the live count `peak × weightAt` last at
+ *  ≥ 1, scanned back from the end), less `falls` × one fall. Measured 20 November (`hero-last-band-hits-20-november.mjs`):
+ *  the last release falls at 31.23–31.30 s of story over five runs */
+function codeBandFrom(peak: number, light: number, seconds: number, fallS: number, falls: number): [number, number] {
+  let end = 0;
+  for (let k = 2000; k >= 0; k--) {
+    if (peak * weightAt(k / 2000, light) >= 1) {
+      end = (k / 2000) * seconds;
+      break;
+    }
+  }
+  return [end - falls * fallS, end];
+}
+
 export function createHeroRain(floorY: number): HeroRain {
   const settings: HeroRainSettings = { ...HERO_RAIN_DEFAULTS };
   const group = new THREE.Group();
@@ -248,6 +274,9 @@ export function createHeroRain(floorY: number): HeroRain {
     // take 2: the streak's size (world units; each drop varies it, `VARY`)
     dropW: uniform(1),
     dropL: uniform(1),
+    // ⛔ THE CODE DROPS: the rain's clock (s), the band's start on it (1e9 = none)
+    clock: uniform(0),
+    bandFrom: uniform(1e9),
   };
   const [br, bg, bb] = platinumBlueF0(LOGO_BLUE_DEFAULTS.tint);
   const blue = vec3(br, bg, bb);
@@ -258,6 +287,11 @@ export function createHeroRain(floorY: number): HeroRain {
   const splashPos = instancedArray(RAIN_MAX_DROPS, "vec3");
   const splashT = instancedArray(RAIN_MAX_DROPS, "float");
   const splashRnd = instancedArray(RAIN_MAX_DROPS, "float");
+  // ⛔ THE CODE DROPS (header): this fall is code (1/0); its column (x, release height, z, release clock); the surface it
+  // lands on (`PARK` = no column)
+  const codeNow = instancedArray(RAIN_MAX_DROPS, "float");
+  const codeCol = instancedArray(RAIN_MAX_DROPS, "vec4");
+  const codeSurf = instancedArray(RAIN_MAX_DROPS, "float");
 
   // take 2, NOTHING TILES: a drop's fixed share of a dial, 1 ± spread (from its index; the same in the step and the draw)
   const vary = (salt: number, spread: number) => hash(instanceIndex.add(salt)).mul(2).sub(1).mul(spread).add(1);
@@ -268,6 +302,8 @@ export function createHeroRain(floorY: number): HeroRain {
   const park = Fn(() => {
     pos.element(instanceIndex).assign(vec3(0, PARK, 0));
     splashT.element(instanceIndex).assign(1000);
+    codeNow.element(instanceIndex).assign(0);
+    codeSurf.element(instanceIndex).assign(PARK);
   })().compute(RAIN_MAX_DROPS);
   park.setName("hero rain: park");
 
@@ -285,10 +321,25 @@ export function createHeroRain(floorY: number): HeroRain {
       st.addAssign(u.dt.mul(4));
       // released at the top: uniform over the disc (√ of the random radius), a fraction of one step above the top so
       // drops released in the same frame do not line up
+      const cn = codeNow.element(instanceIndex);
+      const cs = codeSurf.element(instanceIndex);
+      // ⛔ THE CODE DROPS: a column from a replayed run (released "later" than now on a restarted clock) is cleared
+      If(cs.greaterThan(PARK / 2).and(codeCol.element(instanceIndex).w.greaterThan(u.clock.add(0.001))), () => {
+        cs.assign(PARK);
+      });
       const release = () => {
         const r = sqrt(rnd(0)).mul(u.radius);
         const a = rnd(1).mul(Math.PI * 2);
         p.assign(vec3(u.cx.add(r.mul(cos(a))), u.spawnY.add(rnd(2).mul(u.speed).mul(u.dt)), u.cz.add(r.mul(sin(a)))));
+        // ⛔ THE CODE DROPS (header): in the last band and over the logo (the cell its hit test will sample: it falls
+        // straight down, so it lands there) → code, its column written
+        const land = hits.sample(vec2(p.x.sub(u.mapMinX).div(u.mapSizeX), p.z.sub(u.mapMinZ).div(u.mapSizeZ))).r;
+        const chosen = u.clock.greaterThanEqual(u.bandFrom).and(land.greaterThan(0));
+        cn.assign(select(chosen, float(1), float(0)));
+        If(chosen, () => {
+          codeCol.element(instanceIndex).assign(vec4(p.x, p.y, p.z, u.clock));
+          cs.assign(u.floorY.add(land));
+        });
       };
       If(p.y.lessThan(PARK / 2), () => {
         If(live, () => {
@@ -302,7 +353,8 @@ export function createHeroRain(floorY: number): HeroRain {
         // the streak's FOOT reaches the surface: a splash there; the drop again at the top, or parked
         If(p.y.sub(u.halfLen.mul(lengthVary())).lessThan(hitY), () => {
           sp.assign(vec3(p.x, hitY.add(u.lift), p.z));
-          st.assign(select(u.splashOn.greaterThan(0.5), float(1), float(1000)));
+          // ⛔ a CODE drop makes no splash (once code, always code: it drains into the logo, `hero-code-drops.ts`)
+          st.assign(select(u.splashOn.greaterThan(0.5).and(cn.lessThan(0.5)), float(1), float(1000)));
           splashRnd.element(instanceIndex).assign(rnd(3));
           If(live, () => {
             release();
@@ -318,6 +370,19 @@ export function createHeroRain(floorY: number): HeroRain {
   // THE DROPS (the example's streak and glow; the colour ours; faded at the disc's rim and over the top of the fall).
   // Take 2: the example's `billboarding` written out here so each drop has its OWN size (`VARY`) — the quad's x along the
   // view's right, its y along the world's up seen from the camera (the streak upright, as the example's)
+  // ⛔ THE CODE DROPS (`hero-code-drops.ts`): drawn from the columns the step writes; the rain's own per-drop shares passed
+  // in, so a column's head is the drop's foot
+  const code = createCodeDrops({
+    codeCol,
+    codeSurf,
+    none: PARK,
+    clock: u.clock,
+    speed: u.speed,
+    halfLen: u.halfLen,
+    speedShare: hash(instanceIndex.toFloat().add(9000000)).mul(0.2).add(0.9),
+    lengthShare: lengthVary(),
+  });
+  group.add(code.mesh);
   const dropAt = pos.toAttribute();
   const dropMat = new MeshBasicNodeMaterial();
   // `.xyz`: the storage's vec3 is padded to four on the GPU, so its attribute reads as a vec4
@@ -330,7 +395,9 @@ export function createHeroRain(floorY: number): HeroRain {
   dropMat.colorNode = blue.mul(u.brightness).mul(vary(3000017, VARY.brightness)).mul(glow);
   const rim = float(1).sub(smoothstep(0.65, 1, dropAt.xz.sub(vec2(u.cx, u.cz)).length().div(u.radius)));
   const top = float(1).sub(smoothstep(u.spawnY.sub(u.fadeTop), u.spawnY, dropAt.y));
-  dropMat.opacityNode = u.opacity.mul(rim).mul(top);
+  // ⛔ a CODE drop's streak goes at its TURN (its foot at or below the turn): from there it is code (`hero-code-drops.ts`)
+  const turned = codeNow.element(instanceIndex).mul(code.turned(dropAt.y.sub(u.halfLen.mul(lengthVary()))));
+  dropMat.opacityNode = u.opacity.mul(rim).mul(top).mul(float(1).sub(turned));
   dropMat.transparent = true;
   dropMat.depthWrite = false;
   dropMat.depthTest = true;
@@ -397,6 +464,8 @@ export function createHeroRain(floorY: number): HeroRain {
   let fallS = 0;
   // THE WASH (above): the rain LANDED so far, in seconds at the peak
   let landed = 0;
+  // THE CODE DROPS' band on the rain's clock (`codeBandFrom`), null when none
+  let codeBand: [number, number] | null = null;
 
   /**
    * ⛔ THE WASH, TAKE 2 (Carl: *"the wash happens too fast"* → *"lets go with 1"*: the water keeps running after the rain).
@@ -487,6 +556,16 @@ export function createHeroRain(floorY: number): HeroRain {
       u.brightness.value = s.brightness;
       u.dropW.value = (s.widthMm / 10) * upc;
       u.dropL.value = s.lengthCm * upc;
+      // ⛔ THE CODE DROPS: the clock; the band (none while held or off); the columns drawn from the band's start until the
+      // last could have drained: one fall after the band's end, plus the code's own slower fall from the highest turn and a
+      // whole trail's drain (`speed`, a share of the rain's; the slowest drop 0.9 ×)
+      u.clock.value = t;
+      codeBand = !s.hold && code.settings.on ? codeBandFrom(s.peak, s.light, s.seconds, fallS, code.settings.band) : null;
+      u.bandFrom.value = codeBand ? codeBand[0] : 1e9;
+      code.update(upc, Math.ceil(s.peak));
+      const cs = code.settings;
+      const codeTail = (cs.turnMaxCm + cs.trailMax * cs.glyphCm) / (s.speedCmS * 0.9 * Math.max(0.05, cs.speed));
+      code.mesh.visible = !!codeBand && t >= codeBand[0] && t <= codeBand[1] + fallS + codeTail + 0.2;
       drops.count = Math.max(1, Math.ceil(s.peak));
       splashes.count = drops.count;
       splashes.visible = s.splashes;
@@ -538,6 +617,8 @@ export function createHeroRain(floorY: number): HeroRain {
     get sinceFirstLanding() {
       return t < 0 ? NaN : t - leadS;
     },
+    code: code.settings,
+    codeMesh: code.mesh,
     get info() {
       if (!map) return null;
       const r = (v: number) => Math.round(v * 100) / 100;
@@ -549,6 +630,7 @@ export function createHeroRain(floorY: number): HeroRain {
         fallS: r(fallS),
         running,
         wash: r(washNow()),
+        codeBand: codeBand ? ([r(codeBand[0]), r(codeBand[1])] as [number, number]) : null,
         map: { ...map.check, minX: r(map.minX), minZ: r(map.minZ), sizeX: r(map.sizeX), sizeZ: r(map.sizeZ), topY: r(map.topY), centre: [r(map.cx), r(map.cz)] as [number, number] },
       };
     },
@@ -557,6 +639,7 @@ export function createHeroRain(floorY: number): HeroRain {
       dropMat.dispose();
       splashGeo.dispose();
       splashMat.dispose();
+      code.dispose();
       map?.tex.dispose();
     },
   };

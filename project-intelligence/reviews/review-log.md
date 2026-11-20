@@ -65,6 +65,23 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-110 — The Hero, Phase 3's Start: The Code Drops (D-101): "It looks great. Approved"
+
+**Date:** 2026-11-20
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero`, take 3 — every last-band drop that lands on the logo turns to `/about`'s code (`components/hero/hero-code-drops.ts`, new; `hero-rain.ts` chooses at release, hides the streak at the turn, no splash; the glyphs from `components/code-rain-atlas.ts`, moved verbatim from `components/about/player-bench.tsx`); the code falls at 0.5 × the rain's speed from its turn
+
+**Carl's verdict, verbatim:** *"Its hard to capture with the screenshot tool but this is the closest that i got. It is clearly code and a little bit brighter when its higher. At the speed it is now its clearlt legible, even from the Home position though the camera will be close up in the approx pos i have it now. It looks great. Approved, commit and push."*
+
+**Findings:**
+
+- ✔ **THE CODE DROPS APPROVED** as built at the take-3 defaults (the Code drops folder): code speed 0.5, character 8 cm, trail 8–16 cells, turn 30–110 cm above the landing, brightness 1.5, halo 0.35, flare 0.5 at a 0.16 share, c 2 b 0.06, flicker 90–260 ms.
+- ✔ **Legible** at the code's speed — from Carl's close camera (his saved pose, 712.4, −59.1, 929.1) and from Home.
+- **Seen by Carl:** a little brighter higher up (the head and the trail's first cells, by `/about`'s colours and alpha) — noted, not asked to change.
+- **Checked, not judged by eye:** 0 logo splashes from band drops over 5 runs (GPU read-back, `live-work/scripts/hero-code-drops-check-20-november.mjs`); 1–6 columns a run (mean 2.8 over 18).
+- ⚠ **Not covered:** what a landing does to START THE DRYING (Carl's, open); the frame cost (D-108, not measured); `/about` §3's rain after the atlas move was loaded without errors, not filmed and compared.
+
+---
 ## R-109 — The Hero, Phase 2 Complete: The Rain, The Wash, The Steam And The Floor's Heat (D-101): "Phase 2 is approved"
 
 **Date:** 2026-11-18

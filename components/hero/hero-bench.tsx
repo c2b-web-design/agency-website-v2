@@ -279,6 +279,28 @@ export default function HeroBench() {
       // the wash: the run-off keeps running after the rain (from the first drops landing to the logo all platinum blue)
       f.add(rs, "washSeconds", 3, 15, 0.1).name("wash length (s)");
 
+      // ⛔ PHASE 3's START, THE CODE DROPS (`hero-code-drops.ts`; 20 November 2026; Carl: *"In each run, every drop that is
+      // destined to fall on the logo should be code"*): the rain's last band, every drop landing on the logo. Live, no rebuild.
+      // "Rain again" plays them again (they are the rain's)
+      const cd = hero.code;
+      f = gui.addFolder("Code drops");
+      f.add(cd, "on");
+      f.add({ again: () => hero.rainAgain() }, "again").name("Rain again");
+      f.add(cd, "band", 0.25, 4, 0.05).name("band (falls)");
+      f.add(cd, "speed", 0.05, 1, 0.01).name("code speed (× rain)");
+      f.add(cd, "glyphCm", 1, 30, 0.5).name("character (cm)");
+      f.add(cd, "trailMin", 0, 16, 1).name("trail min (cells)");
+      f.add(cd, "trailMax", 0, 16, 1).name("trail max (cells)");
+      f.add(cd, "turnMinCm", 0, 300, 5).name("turn min (cm above)");
+      f.add(cd, "turnMaxCm", 0, 300, 5).name("turn max (cm above)");
+      f.add(cd, "brightness", 0, 6, 0.05);
+      f.add(cd, "glow", 0, 2, 0.01).name("halo");
+      f.add(cd, "flare", 0, 4, 0.05).name("flare burst");
+      f.add(cd, "flareOdds", 0, 1, 0.01).name("flare share");
+      f.add(cd, "cOdds", 0, 1, 0.01).name("c 2 b share");
+      f.add(cd, "flickMinMs", 20, 600, 10).name("flicker min (ms)");
+      f.add(cd, "flickMaxMs", 20, 600, 10).name("flicker max (ms)");
+
       // ⛔ PHASE 2, THE TEMPERATURE (`hero-heat.ts`; 16 November 2026, session 3): the logo cools as an object during the
       // wash — off = the run-off front drives the colour directly, as before (an A/B). The rates act on the heat left
       const hs = hero.heat;

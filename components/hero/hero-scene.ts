@@ -10,6 +10,7 @@ import { loadStudioHdri, STUDIO_HDRI_SRC } from "@/lib/studio-hdri";
 import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/logo-mark-geometry";
 import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
 import { createHeroRain, HIT, type HeroRainInfo, type HeroRainSettings } from "./hero-rain";
+import type { HeroCodeSettings } from "./hero-code-drops";
 import { createHeroSteam, MARGIN, type HeroSteamInfo, type HeroSteamSettings } from "./hero-steam";
 import { createHeroHeat, type HeroHeat, type HeroHeatInfo, type HeroHeatSettings } from "./hero-heat";
 import { createHeroFloor, type HeroFloorInfo, type HeroFloorSettings } from "./hero-floor";
@@ -945,6 +946,8 @@ export type HeroScene = {
   readonly loadTimes: Record<string, number>;
   /** the rain's dials (the bench's Rain folder edits them) */
   rain: HeroRainSettings;
+  /** ⛔ THE CODE DROPS' dials (`hero-code-drops.ts`, inside the rain; the bench's Code drops folder; 20 November 2026) */
+  code: HeroCodeSettings;
   /** ⛔ THE TEMPERATURE's dials (`hero-heat.ts`; the bench's Heat folder) and its read-out */
   heat: HeroHeatSettings;
   readonly heatInfo: HeroHeatInfo | null;
@@ -2042,7 +2045,9 @@ export function createHeroScene(aspect: number): HeroScene {
     loadTimes.warmRainStep = Math.round(performance.now() - t0);
     // ⛔ THE LOGO IS IN IT AGAIN (16 November 2026, Carl's OPENING, `OPENING`): it is not drawn until its fade, which waits
     // for this — so its background build hides nothing
-    const show: THREE.Object3D[] = [view, heatPlane, rain.group, floorHeat.mesh];
+    // ⛔ THE CODE DROPS' mesh too (`hero-code-drops.ts`; 20 November 2026): hidden outside its band, so shown here to be
+    // built now, not at the last band
+    const show: THREE.Object3D[] = [view, heatPlane, rain.group, rain.codeMesh, floorHeat.mesh];
     if (logo) show.push(logo);
     const keep = show.map((o) => [o.visible, o.frustumCulled] as const);
     for (const o of show) {
@@ -2493,6 +2498,7 @@ export function createHeroScene(aspect: number): HeroScene {
       return steam.info;
     },
     rain: rain.settings,
+    code: rain.code,
     rainAgain() {
       rain.again();
     },
