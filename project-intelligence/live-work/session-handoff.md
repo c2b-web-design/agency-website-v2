@@ -27,6 +27,43 @@ Nothing is set as the first item: ask Carl. **What is open, all Carl's:**
    fireworks; the floor's notes not done ([R5][T1][R6][R7], `heatPlane` not retired); the camera bench's plotted-moves tool
    and a storyboard form (asked, not answered).
 
+## ⛔ SESSION 2's SUBJECT: MOVEMENT AND CHOREOGRAPHY (Carl, after the handoff: *"we move on to monement and choreography"*)
+
+**Read first in D-101 (16 November, session 3 — the rulings are there, don't re-derive or re-ask):** *"PHASE 3 — THE CLOTH
+MOVES THROUGH SPACE AND THE LOGO JUMPS UP TO MEET IT"*, *"THE LOGO's JUMP TO MEET THE CLOTH: CHOSEN"*, *"THE CAMERA CAN HIDE
+PART OF A TRANSITION"*, *"variations on a theme"*, *"THE CAMERA STORY IS PLACE, TIME, MOVE, DURATION — AND THE NEXT MARK"*;
+and 18 November's *"THE BLUE WEB SHRINKS WITH EACH WIPE"*. What they rule:
+
+- **The CLOTH MOVES through space; its PINS are the HAND** — carried on an AUTHORED path with timing and easing (*"the
+  camera's mathematics"*). Carl's 10 November inversion: the logo still, the cloth moves over it.
+- **The LOGO JUMPS UP TO MEET IT (CHOSEN)** — no propulsion, it never flies; it jumps BECAUSE IT IS WET, to dry itself; the
+  meeting MID-AIR; the cloth drapes over the letters' tops and slides off as the logo drops back (the Builder's 16 Nov
+  reading, recorded). DRY = shiny gold (*"a shiny gold Threepio would be proud of"*). A theme with variations: phase 1's
+  jump ECHOED.
+- **The camera may hide part of the drying** once the behaviour is established; continuity when it returns.
+- **Each move:** where, when, how, how long — and where it must be NEXT and by when (planned backward from the next mark).
+- **The floor:** the blue web SHRINKS with each wipe as the gold appears (18 Nov).
+- **(B) was chosen** so ONE pass covers the face (230 × 130 cm); (A) more passes stays a possible variation.
+
+**The echo — phase 1's jumps, as built:** the lean → jump (R-105, *"Perfect"*: a 0.7 s ballistic hop, the lean straightened
+in its own profile, landing on its end, the desk mark's wobble); the ARRIVAL (`hero-scene.ts`, `ARRIVAL = { holdS 2, apexCm
+60, g 981 }`: a ballistic arc under real gravity, 981 cm/s²); the landing wobble `LAND_WOBBLE` (`components/showcase/
+hero-logo.tsx`: 2 s, 3.75°/2.25°/1.125°/0.5625°).
+
+**The machinery to know before planning (facts, not decisions):**
+- **The cloth's pins never move today** (`hero-cloth.ts`: a fixed point `Return()`s from the step). Carrying them = writing
+  the pins' positions from the hand's path each step (a uniform transform) — a change to the step; likely a §5a note.
+- **The logo's collision with the cloth does not exist yet.** Candidates: the steam's voxel solid mask
+  (`hero-maps.worker.ts`, `steamSolidMask` → `SteamMask`, a 3D grid at a cell size) as a 3D texture / distance field; the
+  rain's hit map (`HitData`) sees from above only.
+- **Authored paths with easing already exist** on the camera bench (`components/showcase/bench-chain.ts`: clips, shapes,
+  the corkscrew maths; D-104) — the "camera's mathematics" the hand's path can borrow (a structural choice, named first).
+- **The story's clock at phase 3:** phase 1 ends at `phase1End` (the wobble done) = the rain's start; the rain's last
+  release ~31.23–31.30 s of story; the code drops land to ~31.9 s; the wash's last red ~1.5 s after the last drop. ⚠ With
+  the rain OFF on the bench, none of phase 2/3's clock runs (`rain.sinceFirstLanding` NaN) — choreography timed on the rain
+  needs it back on, or the cloth's own clock.
+- **The cloth runs on its own clock from load** (`Cloth again` restarts) — not yet tied to the story.
+
 ## ⛔ THE WORKING CAMERA (Carl: *"this is the camera position we will contine from"*)
 
 **position 675.5, −2.8, 2203.3; target 695.4, −0.4, 0.9; fov 45** — face on to the logo, ~5 m back. ⛔ **Build face on;
