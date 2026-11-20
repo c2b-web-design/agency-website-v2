@@ -9,7 +9,26 @@ stop the capture and keep the server up. We will start a new convo and go into s
 
 ## ⛔ NEXT SESSION (session 2) — THE CLOTH CONTINUES
 
-Nothing is set as the first item: ask Carl. **What is open, all Carl's:**
+**⛔ THE SUBJECT IS SET: MOVEMENT AND CHOREOGRAPHY** (the section below; Carl: *"Add to the handoff so we are ready to go."*).
+
+### ⛔ THE CHOREOGRAPHY AS IT STANDS (Carl, 20 November 2026, after the handoff — every line his, in D-101)
+
+1. **The cloth ADVANCES and RETREATS**; ONE PASS = a FORWARD action + a BACKWARD action.
+2. **The logo JUMPS to meet it** (no propulsion; it jumps because it is wet) **and ROTATES** in the air to TARGET the
+   portions that need drying — a straight jump only ever offers the top, which the cloth drapes over.
+3. ***"say"* 4 PASSES = 8 ACTIONS** to dry it — a working figure, not fixed.
+4. **The FIRST JUMP is STRAIGHT UP AND DOWN** — the drape dries some of the BACK and the FRONT TOP.
+5. **Every LANDING is UPRIGHT, with a SLIGHT WOBBLE** (`LAND_WOBBLE`); which way it FACES is free — each landing
+   POSITIONS what needs drying NEXT (planned backward from the next action). **The END lands FACE ON.**
+6. **The reference for HOW it moves: `/about`'s DESK LOGO** (the tip, the flip, the end-over-end tumble; the colour
+   crossing riding the movement) — *"we can get more creative with its movement"*; new, added to the original choreography.
+7. ⛔ **DESIGN IN 3D, NOT ONLY FOR THE FRONT:** *"dont just think in POV from the front. In phase 5 our camera will do some
+   work here."* **BUILT from the front** (the working camera, below); judged from other angles at stages.
+8. **Open, Carl's:** how/when the cloth APPEARS; the cloth's path and timing; each action's target and turn; whether a turn
+   is the logo's own or the cloth's catch (the desk logo's bin); the drying's look (the reverse crossing riding the
+   movement was offered, not chosen); the floor's blue shrinking per wipe.
+
+**What else is open, all Carl's:**
 
 1. **THE CLOTH — what next.** Built and committed as step-by-step takes (below). Open: **how and when it APPEARS** (*"the
    cloth wont be there from the start. We will decide how and when it appears"*); the HAND (its pins carried on an authored
@@ -44,6 +63,19 @@ and 18 November's *"THE BLUE WEB SHRINKS WITH EACH WIPE"*. What they rule:
 - **Each move:** where, when, how, how long — and where it must be NEXT and by when (planned backward from the next mark).
 - **The floor:** the blue web SHRINKS with each wipe as the gold appears (18 Nov).
 - **(B) was chosen** so ONE pass covers the face (230 × 130 cm); (A) more passes stays a possible variation.
+
+**⛔ NEW, after the handoff (Carl): *"go to the /about section and look at the desk logo. the logo will jump up and down but we
+can get more creative with its movement. the desk logo will show how we can help the drying process. This is new, added to
+the original choreography."*** The homework is DONE (D-101, *"HOMEWORK: THE DESK LOGO's JOURNEY, SEEN"*; frames in `03 The
+hero\00 References\desk-logo-journey-20-november\`): the tip → over the edge upside down → the bin's strike FLIPS it →
+END-OVER-END tumble → face on; the colour crossing RIDES the tumble (outside-in, tied to the object). Offered to Carl, not
+designed: the drying as the reverse crossing riding the movement; a SOMERSAULT inside the cloth (both faces, one pass; the
+width never grows — no cartwheel); causes not flight (the cloth catching the top edge flips it, as the bin did); the rim's
+glint. ⛔ Carl leads the movement — build nothing from this list unasked.
+**Then Carl developed it (D-101, the two entries after the homework):** a straight jump meets an advancing/retreating cloth
+only at the TOP (it drapes over), so the logo JUMPS AND ROTATES to TARGET portions; ONE PASS = a FORWARD + a BACKWARD
+action; *"say"* 4 passes = 8 ACTIONS (a working figure); the LANDINGS need not be face on — each landing POSITIONS what
+needs drying NEXT — but the END is FACE ON; the FIRST JUMP is STRAIGHT UP AND DOWN (some of the back and front top).
 
 **The echo — phase 1's jumps, as built:** the lean → jump (R-105, *"Perfect"*: a 0.7 s ballistic hop, the lean straightened
 in its own profile, landing on its end, the desk mark's wobble); the ARRIVAL (`hero-scene.ts`, `ARRIVAL = { holdS 2, apexCm
