@@ -123,7 +123,10 @@ export const HERO_CLOTH_DEFAULTS: HeroClothSettings = {
   wind: 1.0,
   gustSize: 1,
   stiffness: 0.2,
-  color: "#204080",
+  // ⛔ C, ULTRAMARINE (Carl, 20 November 2026: *"lets try it with C"*): opposite the gold (#FFE39E, ~43° → ~223°), mid
+  // lightness to hold against the dark, more saturated and a touch more violet (233°) than the wet logo's platinum blue
+  // (#3F6DB8, 217°) so the two do not run together where they touch. Was the example's #204080 (220°: the wet logo's hue)
+  color: "#2E3FC8",
   roughness: 1,
   sheen: 1,
   sheenRoughness: 0.5,
