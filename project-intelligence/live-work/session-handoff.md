@@ -12,6 +12,11 @@ commit and push."*
 1. **FINE-TUNE PASS 2.** ⛔ *"Pass 2 cloth finish is far too close"* — after the reverse move, the cloth's hem ends hanging
    just above and beside the logo home (his side still). The levers, Carl's: *"altering the speed of the backwards and
    forward logo movement and then altering the cloth distance and speed"*.
+   ⛔ **And the RETURN (the reverse move) looks MESSY** (Carl, after the push: *"i like the energetic cloth on the way back
+   but the movement, timing or cloth could be better. it looks....... messy"*; *"it only needs minor timing tweaks"*; the
+   swivel backwards *"looks good"*). Seen: the UN-SWIVEL happens while the cloth is on the C and flings it. Candidates (D-101,
+   none chosen): hold the side pose until the cloth slides off; a later/slower un-swivel; unwind the turn to 360° instead
+   of back; the cloth's retreat timed to clear first. Films: `2026-11-20_pass2-gymnast-half-speed_take1eturn-*`.
 2. **PASS 3 = A MIRROR IMAGE OF PASS 2, FOR THE B** (the swivel the other way: the B's face, then its back).
 3. **PASS 4 = THE BOTTOM HALF OF THE 2** — *"a much easier movement"*.
 4. *"The hard part is done."*
