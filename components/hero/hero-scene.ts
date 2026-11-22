@@ -962,11 +962,13 @@ export type HeroScene = {
   /** ⛔ PHASE 3, PASS 1 (`pass1`; 20 November 2026, session 2): the first jump's height (cm) — the bench's Pass 1 folder */
   pass1: { apexCm: number; backCm: number; clothBackToCm: number; backJumpDelayS: number };
   /** ⛔ PASS 2, FORWARD (`pass2`): the jump swivel's dials */
-  pass2: { apexCm: number; landBackCm: number; rollDeg: number; yawDeg: number; clothForwardCm: number; clothBackToCm: number; backJumpDelayS: number; gymnast: boolean; reboundS: number; gatherDeg: number; speed: number; reverse: boolean; clothForwardTime: number; clothBackTime: number };
+  pass2: { apexCm: number; landBackCm: number; rollDeg: number; yawDeg: number; pitchDeg: number; clothForwardCm: number; clothBackToCm: number; backJumpDelayS: number; gymnast: boolean; reboundS: number; gatherDeg: number; speed: number; reverse: boolean; clothForwardTime: number; clothBackTime: number };
   /** a READ-OUT for checks: pass 2's take-off (emission s, NaN = none) and flight (s); the reverse move's set-off, take-off, flight */
-  readonly pass2Info: { at: number; flightS: number; apexS: number; pass1Done: boolean; retreatAt: number; backAt: number; backFlightS: number; pass2Done: boolean; pass: 2 | 3; pass3Done: boolean };
+  readonly pass2Info: { at: number; flightS: number; apexS: number; pass1Done: boolean; retreatAt: number; backAt: number; backFlightS: number; pass2Done: boolean; pass: 2 | 3 | 4; pass3Done: boolean; pass4Done: boolean };
   /** ⛔ PASS 3, THE MIRROR FOR THE B: its dials (as pass 2's, the roll and turn mirrored); `pass2Info` reads whichever pass is in play */
   pass3: HeroScene["pass2"];
+  /** ⛔ PASS 4, THE BOTTOM HALF OF THE 2: a 180° flip BACKWARDS, landing upside down, then forward home (its dials) */
+  pass4: HeroScene["pass2"];
   /** ⛔ PASS 2, STAGED (`stage`): a still pose for the logo — on, roll (deg, − = right as the front camera sees it), turn (deg) */
   stage: { on: boolean; rollDeg: number; yawDeg: number };
   /** the first jump, straight up and down, from now (once phase 1's wobble is done; ignored while airborne or wobbling) */
@@ -1296,9 +1298,26 @@ export function createHeroScene(aspect: number): HeroScene {
   // cloth is -75 back. It finishes at -30, too close. … The end of pass 2 the cloth should be -75. Pass 3 is the mirror of
   // Pass 2."*): `clothBackToCm` −75, so pass 3 starts from the same place pass 2 did. ⚰️ −30 was set by contact measurement
   // (20 November, above); the contact is now found by the logo's timing, not by bringing the cloth close.
-  const pass2 = { apexCm: 60, landBackCm: 90, rollDeg: -90, yawDeg: 180, clothForwardCm: 120, clothBackToCm: -75, backJumpDelayS: 2, gymnast: true, reboundS: 0.2, gatherDeg: 4, speed: 0.2, reverse: true, clothForwardTime: 1, clothBackTime: 0.64 };
+  const pass2 = { apexCm: 60, landBackCm: 90, rollDeg: -90, yawDeg: 180, pitchDeg: 0, clothForwardCm: 120, clothBackToCm: -75, backJumpDelayS: 2, gymnast: true, reboundS: 0.2, gatherDeg: 4, speed: 0.2, reverse: true, clothForwardTime: 1, clothBackTime: 0.64 };
   // ⛔ PASS 3 (below, `pass3Done`): pass 2's dials, mirrored — roll +90 (LEFT), turn −180 (the other way)
-  const pass3 = { apexCm: 60, landBackCm: 90, rollDeg: 90, yawDeg: -180, clothForwardCm: 120, clothBackToCm: -75, backJumpDelayS: 2, gymnast: true, reboundS: 0.2, gatherDeg: 4, speed: 0.2, reverse: true, clothForwardTime: 1, clothBackTime: 0.64 };
+  const pass3 = { apexCm: 60, landBackCm: 90, rollDeg: 90, yawDeg: -180, pitchDeg: 0, clothForwardCm: 120, clothBackToCm: -75, backJumpDelayS: 2, gymnast: true, reboundS: 0.2, gatherDeg: 4, speed: 0.2, reverse: true, clothForwardTime: 1, clothBackTime: 0.64 };
+  /**
+   * ⛔ PASS 4 — THE BOTTOM HALF OF THE 2 (Carl, 22 November 2026, session 3: *"For phase 4 the logo should do a 180 backwards
+   * a land upside down and then spring forwards landing in its starting position. This will get the remaining area."* …
+   * *"The speed should be the same as Pass 1."*): pass 2's machinery a third time — the turn and roll 0, a FLIP about the
+   * horizontal (`pitchDeg` −180: the top goes back and over, complete at the apex), so it lands UPSIDE DOWN `landBackCm`
+   * behind, the 2's bottom half up; the landing lean; the return un-flips it forward, home. At pass 1's speed (`speed` 1,
+   * real gravity); every other dial as pass 2's at first.
+   */
+  // ⛔ CARL's BACKWARD ACTION (22 November 2026, session 3: *"ive got the backwards action working well. Had to make it jump
+  // higher. see what you can do with the forwards action. It doesnt matter where the cloth ends up."*): his bench dials —
+  // apex 100, land back 75, cloth forward 50, speed 0.38 — the flip: the 2's bottom half FRONT ~100%. THE FORWARD ACTION
+  // (the Builder's): with the cloth back to −50 at 0.64 it scored ~93% on the bottom half's BACK but DRAGGED the cloth down
+  // to the floor with the landing (contact to the landing, during the un-flip, as pass 2's messy return); the cloth sent
+  // further back, faster — −100 at 0.4 of the flight — sweeps across the bottom half as it rises and clears: contact
+  // 3.87–4.77 s (the return's apex 4.12, landing 5.31), the bottom half's BACK ~83%, its front ~1% (no wrap); measured
+  // (`live-work/scripts/hero-pass4-contact-22-november.mjs`): −130/0.4 72%, −130/0.6 83%, −160/0.5 70%, −100/0.3 81%, −200/0.6 66%.
+  const pass4 = { apexCm: 100, landBackCm: 75, rollDeg: 0, yawDeg: 0, pitchDeg: -180, clothForwardCm: 50, clothBackToCm: -100, backJumpDelayS: 2, gymnast: true, reboundS: 0.2, gatherDeg: 4, speed: 0.38, reverse: true, clothForwardTime: 1, clothBackTime: 0.4 };
   /** the dials of the pass in play (pass 2 or pass 3): set at its take-off */
   let sw = pass2;
   // ⛔ CARL's DIALS, SET (22 November 2026, session 3): `speed` 0.5 → **0.2** and `clothBackTime` 1 → **0.64**, moved by Carl
@@ -1352,6 +1371,8 @@ export function createHeroScene(aspect: number): HeroScene {
    * starting point; pass 3 is measured and tuned itself.
    */
   let pass3Done = false;
+  /** pass 4 done (home after its flip): nothing more until a reset */
+  let pass4Done = false;
   /** pass 2's take-off (emission s, NaN = none) and its flight, planned at take-off */
   let p2At = Number.NaN;
   let p2: { home: THREE.Matrix4; c0: THREE.Vector3; c1: THREE.Vector3; q: THREE.Quaternion; T: number; tUp: number; vy: number; zLo: number; zHi: number } | null = null;
@@ -2424,6 +2445,7 @@ export function createHeroScene(aspect: number): HeroScene {
       p2b = null;
       pass2Done = false;
       pass3Done = false;
+      pass4Done = false;
       sw = pass2;
       if (handCm !== 0 && Number.isNaN(clothBackS)) clothBackAsked = true;
     }
@@ -2466,7 +2488,7 @@ export function createHeroScene(aspect: number): HeroScene {
       }
       // ⛔ PASS 2, FORWARD (`pass2`): "Jump" once pass 1 is done and settled — planned here, from the pose it stands in
       // ⛔ PASS 3 (`pass3`) on the SAME machinery once pass 2 is done: the next pass's dials (`sw`) chosen at its take-off
-      const swNext = pass1Done && !pass2Done ? pass2 : pass2Done && !pass3Done ? pass3 : null;
+      const swNext = pass1Done && !pass2Done ? pass2 : pass2Done && !pass3Done ? pass3 : pass3Done && !pass4Done ? pass4 : null;
       const p2Ready = swNext !== null && Number.isNaN(p2At) && logoBackCm === 0 && atRest && Number.isNaN(clothFwdAt) && Number.isNaN(retreatAt) && jumpDone;
       if (jumpAsked && p2Ready) {
         sw = swNext;
@@ -2474,7 +2496,7 @@ export function createHeroScene(aspect: number): HeroScene {
         const lb = logo.geometry.boundingBox!;
         const home = logo.matrix.clone();
         const c0 = lb.getCenter(new THREE.Vector3()).applyMatrix4(home);
-        const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, THREE.MathUtils.degToRad(sw.yawDeg), THREE.MathUtils.degToRad(sw.rollDeg), "YXZ"));
+        const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(THREE.MathUtils.degToRad(sw.pitchDeg), THREE.MathUtils.degToRad(sw.yawDeg), THREE.MathUtils.degToRad(sw.rollDeg), "YXZ"));
         // the landing: the swivelled pose's lowest corner on the floor, `landBackCm` behind
         p2M.compose(c0, q, stageV.set(1, 1, 1)).multiply(stageT.makeTranslation(-c0.x, -c0.y, -c0.z)).multiply(home);
         let low = Infinity;
@@ -2581,7 +2603,7 @@ export function createHeroScene(aspect: number): HeroScene {
           p2P.copy(p2.c0);
           rock3 = wobbleAngle((emitT - p2bAt - p2b.T / sw.speed) * 1000); // the final wobble at normal speed
         }
-        p2Q.setFromEuler(stageE.set(0, THREE.MathUtils.degToRad(sw.yawDeg) * e3, THREE.MathUtils.degToRad(sw.rollDeg) * e3, "YXZ"));
+        p2Q.setFromEuler(stageE.set(THREE.MathUtils.degToRad(sw.pitchDeg) * e3, THREE.MathUtils.degToRad(sw.yawDeg) * e3, THREE.MathUtils.degToRad(sw.rollDeg) * e3, "YXZ"));
         logo.matrix.compose(p2P, p2Q, stageV.set(1, 1, 1)).multiply(stageT.makeTranslation(-p2.c0.x, -p2.c0.y, -p2.c0.z)).multiply(p2.home);
         if (rock3) logo.matrix.premultiply(stageT.makeTranslation(-p2P.x, -FLOOR_Y, -p2P.z)).premultiply(p2M.makeRotationX(rock3)).premultiply(stageT.makeTranslation(p2P.x, FLOOR_Y, p2P.z));
         // home and settled: pass 2 done, the logo's own pose again (the same matrix)
@@ -2590,7 +2612,8 @@ export function createHeroScene(aspect: number): HeroScene {
           p2b = null;
           p2bAt = Number.NaN;
           p2At = Number.NaN;
-          if (sw === pass3) pass3Done = true;
+          if (sw === pass4) pass4Done = true;
+          else if (sw === pass3) pass3Done = true;
           else pass2Done = true;
         }
       } else if (p2 && emitT >= p2At) {
@@ -2604,7 +2627,7 @@ export function createHeroScene(aspect: number): HeroScene {
           // way is ONE 180° flip about a diagonal, which laid the logo FLAT mid-air (a pancake flip, seen on its film)
           const w = Math.min(1, s2 / p2.tUp);
           const e = w * w * (3 - 2 * w);
-          p2Q.setFromEuler(stageE.set(0, THREE.MathUtils.degToRad(sw.yawDeg) * e, THREE.MathUtils.degToRad(sw.rollDeg) * e, "YXZ"));
+          p2Q.setFromEuler(stageE.set(THREE.MathUtils.degToRad(sw.pitchDeg) * e, THREE.MathUtils.degToRad(sw.yawDeg) * e, THREE.MathUtils.degToRad(sw.rollDeg) * e, "YXZ"));
         } else {
           p2P.copy(p2.c1);
           p2Q.copy(p2.q);
@@ -2999,8 +3022,9 @@ export function createHeroScene(aspect: number): HeroScene {
     stage,
     pass2,
     pass3,
+    pass4,
     get pass2Info() {
-      return { at: p2At, flightS: p2 ? p2.T / sw.speed : Number.NaN, apexS: p2 ? p2.tUp / sw.speed : Number.NaN, pass1Done, retreatAt: retreat2At, backAt: p2bAt, backFlightS: p2b ? p2b.T / sw.speed : Number.NaN, pass2Done, pass: (sw === pass3 ? 3 : 2) as 2 | 3, pass3Done };
+      return { at: p2At, flightS: p2 ? p2.T / sw.speed : Number.NaN, apexS: p2 ? p2.tUp / sw.speed : Number.NaN, pass1Done, retreatAt: retreat2At, backAt: p2bAt, backFlightS: p2b ? p2b.T / sw.speed : Number.NaN, pass2Done, pass: (sw === pass4 ? 4 : sw === pass3 ? 3 : 2) as 2 | 3 | 4, pass3Done, pass4Done };
     },
     jump() {
       jumpAsked = true;
@@ -3036,6 +3060,7 @@ export function createHeroScene(aspect: number): HeroScene {
       p2b = null;
       pass2Done = false;
       pass3Done = false;
+      pass4Done = false;
       sw = pass2;
       cloth.setHand(0);
       // the cloth EXACTLY as it was at pass 1's first take-off (`clothSnapWanted`); before any pass, nothing has moved it

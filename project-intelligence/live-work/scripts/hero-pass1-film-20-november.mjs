@@ -29,7 +29,9 @@ await p.addStyleTag({ content: ".lil-gui, nextjs-portal { display: none !importa
 const takenAt = await p.evaluate((dials) => {
   const { hero, renderer } = window.__heroBench;
   renderer.setAnimationLoop(null);
-  Object.assign(hero.pass2, dials);
+  // { pass2: {…}, pass3: {…}, pass4: {…} } sets each pass's dials; a flat object sets pass 2's (as before)
+  if (dials.pass2 || dials.pass3 || dials.pass4) for (const k of ["pass2", "pass3", "pass4"]) Object.assign(hero[k], dials[k] ?? {});
+  else Object.assign(hero.pass2, dials);
   hero.replayArrival(); hero.cloth.again(); hero.update(0);
   let n = 0;
   while (Number.isNaN(hero.jumpInfo.at) && n < 30 * 120) { hero.jump(); hero.update(1 / 30); hero.compute(renderer); n++; }
