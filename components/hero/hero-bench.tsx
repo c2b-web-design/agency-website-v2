@@ -360,11 +360,31 @@ export default function HeroBench() {
       f.add(hero.pass2, "clothBackTime", 0.2, 1, 0.01).name("reverse: cloth back time (× flight)");
       f.add(hero.pass2, "gymnast").name("gymnast (one movement)");
       f.add(hero.pass2, "reboundS", 0, 1, 0.01).name("gymnast: gather (s)");
-      f.add(hero.pass2, "gatherDeg", 0, 10, 0.1).name("gymnast: gather tip (deg)");
+      f.add(hero.pass2, "gatherDeg", 0, 10, 0.1).name("gymnast: landing lean (deg)");
       // ⛔ PASS 2's SPEED (Carl: *"slow the logos pass 2 movement down by 50%"*): 0.5 = twice as long, the same path
       f.add(hero.pass2, "speed", 0.1, 1, 0.01).name("pass 2 speed (× real)");
       f.add(hero.pass2, "rollDeg", -180, 180, 1).name("roll (deg, − = right)");
       f.add(hero.pass2, "yawDeg", -180, 180, 1).name("turn (deg)");
+      f.add({ back: () => hero.resetPass1() }, "back").name("Reset (pass 1)");
+
+      // ⛔ PASS 3 — THE MIRROR OF PASS 2, FOR THE B (`hero-scene.ts`, `pass3`): "Jump" once pass 2 is done; its own dials,
+      // pass 2's at first with the roll and turn mirrored (Carl, 22 November 2026: *"keep the dials the same as Pass 2 at first"*)
+      f = gui.addFolder("Pass 3");
+      f.add({ jump: () => hero.jump() }, "jump").name("Jump");
+      f.add(hero.pass3, "apexCm", 0, 150, 1).name("apex (cm above)");
+      f.add(hero.pass3, "landBackCm", -100, 150, 1).name("land back (cm)");
+      f.add(hero.pass3, "clothForwardCm", 0, 250, 1).name("cloth forward (cm)");
+      f.add(hero.pass3, "clothBackToCm", -250, 60, 1).name("reverse: cloth back to (cm)");
+      f.add(hero.pass3, "backJumpDelayS", 0, 4, 0.01).name("reverse: jump after cloth (s)");
+      f.add(hero.pass3, "reverse").name("reverse move (off: it stays)");
+      f.add(hero.pass3, "clothForwardTime", 0.2, 1, 0.01).name("cloth forward time (× flight)");
+      f.add(hero.pass3, "clothBackTime", 0.2, 1, 0.01).name("reverse: cloth back time (× flight)");
+      f.add(hero.pass3, "gymnast").name("gymnast (one movement)");
+      f.add(hero.pass3, "reboundS", 0, 1, 0.01).name("gymnast: gather (s)");
+      f.add(hero.pass3, "gatherDeg", 0, 10, 0.1).name("gymnast: landing lean (deg)");
+      f.add(hero.pass3, "speed", 0.1, 1, 0.01).name("pass 3 speed (× real)");
+      f.add(hero.pass3, "rollDeg", -180, 180, 1).name("roll (deg, − = right)");
+      f.add(hero.pass3, "yawDeg", -180, 180, 1).name("turn (deg)");
       f.add({ back: () => hero.resetPass1() }, "back").name("Reset (pass 1)");
 
       f = gui.addFolder("Stage (pass 2)");
