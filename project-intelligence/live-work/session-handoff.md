@@ -7,13 +7,17 @@ the session that reads it, once its replacement is written.
 end; reviews **R-111** (passes 1–4 approved), **R-112** (the passes baked in, the arrival), **R-113** (the gold, *"Thats got
 it"*). Session ended on Carl's word: *"stop the capture. Compaction is at 40%. Wtire a handoff then commit and push."*
 
-## ⛔ NEXT SESSION — NOT YET SET BY CARL
+## ⛔ NEXT SESSION (session 2 tonight) — CARL's PLAN
 
-Phase 3 (Schrödinger's cloth) is built end to end. **Ask Carl for the next subject.** Candidates on record, none chosen:
-the cloth's colour judged against the gold (C #2E3FC8); what happens after the gold (the end of phase 3, Gandalf's
-fireworks — 2 s of c, 2, b — on record since 16 November); **the camera direction (phase 5)** — Carl's order: finish the
-hero → camera direction → the hero on the site → film 3's edit → the four films on the site → Send → mastering.
-**Target 1 December 2026.**
+Carl, after the push: *"we will decide what happens to the cloth and our gold logo is going to grow with an action. Phase 3
+will then be done and we move on to Phase 4."*
+
+1. **What happens to the CLOTH** after the gold — Carl's to decide at the start (how/when it leaves is open).
+2. **The GOLD LOGO GROWS, WITH AN ACTION** — the action not yet described; ask, don't design ahead.
+3. Then **PHASE 3 IS DONE** → **PHASE 4**.
+
+Carl's order to the finish stands: finish the hero → camera direction (phase 5) → the hero on the site → film 3's edit →
+the four films on the site → Send → mastering. **Target 1 December 2026.** Start the screen capture when Carl says.
 
 ## THE STORY AS IT NOW PLAYS (nothing pressed; `/proto/hero`, frame-stepped times)
 
