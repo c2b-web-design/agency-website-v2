@@ -6,7 +6,9 @@
 import { chromium } from "playwright";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync } from "node:fs";
-const [OUT, AFTER = "3.5", CAM, START, HOLD] = process.argv.slice(2);
+const [OUT, AFTER = "3.5", CAM, START, HOLD, DIALS] = process.argv.slice(2);
+// argv[7] DIALS (22 November 2026): JSON for `hero.pass2` (e.g. Carl's bench values), set in THIS browser before the replay
+const dials = DIALS ? JSON.parse(DIALS) : {};
 // argv[6] "hold": "Jump" pressed EVERY frame — each next action (pass 2's swivel) taken the moment it can be
 const hold = HOLD === "hold";
 // argv[5] START: seconds after the FORWARD jump's take-off to begin filming (the backward action is ~4.9 s after it);
@@ -24,14 +26,15 @@ await p.goto("http://localhost:3000/proto/hero", { waitUntil: "load" });
 await p.waitForFunction(() => window.__heroBench?.hero?.warmed === true, null, { timeout: 180000 });
 await p.addStyleTag({ content: ".lil-gui, nextjs-portal { display: none !important; } [data-hero-bench] > div:not(.lil-gui) { display: none !important; }" });
 // to 0.5 s before the jump can be taken: find when it is taken, replay, stop 15 frames short
-const takenAt = await p.evaluate(() => {
+const takenAt = await p.evaluate((dials) => {
   const { hero, renderer } = window.__heroBench;
   renderer.setAnimationLoop(null);
+  Object.assign(hero.pass2, dials);
   hero.replayArrival(); hero.cloth.again(); hero.update(0);
   let n = 0;
   while (Number.isNaN(hero.jumpInfo.at) && n < 30 * 120) { hero.jump(); hero.update(1 / 30); hero.compute(renderer); n++; }
   return n;
-});
+}, dials);
 await p.evaluate((stop) => {
   const { hero, renderer } = window.__heroBench;
   hero.replayArrival(); hero.cloth.again(); hero.update(0);

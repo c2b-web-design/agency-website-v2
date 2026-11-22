@@ -355,6 +355,9 @@ export default function HeroBench() {
       f.add(hero.pass2, "clothBackToCm", -250, 60, 1).name("reverse: cloth back to (cm)");
       f.add(hero.pass2, "backJumpDelayS", 0, 4, 0.01).name("reverse: jump after cloth (s)");
       // ⛔ THE GYMNAST: no wobble between, the reverse move `reboundS` after the swivel lands, the cloth setting off with it
+      f.add(hero.pass2, "reverse").name("reverse move (off: it stays)");
+      f.add(hero.pass2, "clothForwardTime", 0.2, 1, 0.01).name("cloth forward time (× flight)");
+      f.add(hero.pass2, "clothBackTime", 0.2, 1, 0.01).name("reverse: cloth back time (× flight)");
       f.add(hero.pass2, "gymnast").name("gymnast (one movement)");
       f.add(hero.pass2, "reboundS", 0, 1, 0.01).name("gymnast: gather (s)");
       f.add(hero.pass2, "gatherDeg", 0, 10, 0.1).name("gymnast: gather tip (deg)");

@@ -962,7 +962,7 @@ export type HeroScene = {
   /** ⛔ PHASE 3, PASS 1 (`pass1`; 20 November 2026, session 2): the first jump's height (cm) — the bench's Pass 1 folder */
   pass1: { apexCm: number; backCm: number; clothBackToCm: number; backJumpDelayS: number };
   /** ⛔ PASS 2, FORWARD (`pass2`): the jump swivel's dials */
-  pass2: { apexCm: number; landBackCm: number; rollDeg: number; yawDeg: number; clothForwardCm: number; clothBackToCm: number; backJumpDelayS: number; gymnast: boolean; reboundS: number; gatherDeg: number; speed: number };
+  pass2: { apexCm: number; landBackCm: number; rollDeg: number; yawDeg: number; clothForwardCm: number; clothBackToCm: number; backJumpDelayS: number; gymnast: boolean; reboundS: number; gatherDeg: number; speed: number; reverse: boolean; clothForwardTime: number; clothBackTime: number };
   /** a READ-OUT for checks: pass 2's take-off (emission s, NaN = none) and flight (s); the reverse move's set-off, take-off, flight */
   readonly pass2Info: { at: number; flightS: number; apexS: number; pass1Done: boolean; retreatAt: number; backAt: number; backFlightS: number; pass2Done: boolean };
   /** ⛔ PASS 2, STAGED (`stage`): a still pose for the logo — on, roll (deg, − = right as the front camera sees it), turn (deg) */
@@ -1290,7 +1290,32 @@ export function createHeroScene(aspect: number): HeroScene {
   // ~44%; the cloth's retreat −30 cm best (−75: 64%), its forward travel 120 best (40 → 34%); the BEAT (wobble + 2 s) → ~100%.
   // ⛔ Set: gather 0.4 s, back to −30 cm (the beat's −75 kept for `gymnast` off — read from `clothBackToCm` either way, so
   // switching modes, set it: −75 for the beat)
-  const pass2 = { apexCm: 60, landBackCm: 90, rollDeg: -90, yawDeg: 180, clothForwardCm: 120, clothBackToCm: -30, backJumpDelayS: 2, gymnast: true, reboundS: 0.2, gatherDeg: 2, speed: 0.5 };
+  // ⛔ PASS 2 ENDS WITH THE CLOTH AT −75, WHERE IT STARTED (Carl, 22 November 2026, session 3: *"At the start of pass 2 the
+  // cloth is -75 back. It finishes at -30, too close. … The end of pass 2 the cloth should be -75. Pass 3 is the mirror of
+  // Pass 2."*): `clothBackToCm` −75, so pass 3 starts from the same place pass 2 did. ⚰️ −30 was set by contact measurement
+  // (20 November, above); the contact is now found by the logo's timing, not by bringing the cloth close.
+  const pass2 = { apexCm: 60, landBackCm: 90, rollDeg: -90, yawDeg: 180, clothForwardCm: 120, clothBackToCm: -75, backJumpDelayS: 2, gymnast: true, reboundS: 0.2, gatherDeg: 2, speed: 0.2, reverse: true, clothForwardTime: 1, clothBackTime: 0.64 };
+  // ⛔ CARL's DIALS, SET (22 November 2026, session 3): `speed` 0.5 → **0.2** and `clothBackTime` 1 → **0.64**, moved by Carl
+  // on the bench (*"Its looking far better than it did and contact is better. Lets commit and push."*). Measured: the C's
+  // FRONT ~100% (the swivel, 4.10 s), the C's BACK ~94% (was ~77%), met near the return's apex, before the un-swivel; 0 points
+  // inside the metal; home exactly; the cloth ends at −75. ⚠ The half-speed notes below describe 20 November's 0.5.
+  // ⛔ THE REVERSE MOVE OFF, FOR NOW (`reverse`; Carl, 22 November 2026, session 3: *"On pass 2, just have it jump back and
+  // stop for now. I want to see what happens to the cloth. Because the C makes a good contact with the cloth my guess is that
+  // the cloth will swing. I think the reason there is minimal contact with the logo is that the logo jumps too early. Lets
+  // see what the cloth does first."*): off → the swivel lands (the gymnast's gather, as before) and the logo STAYS on the
+  // b's end until a reset; the cloth left to answer by itself. On → the reverse move as built on 20 November.
+  // ⛔ ROUTE 2, THE CLOTH FASTER (`clothForwardTime`; Carl, 22 November 2026, session 3, after seeing the take with the reverse
+  // off — the C drapes the cloth, releases it late as the cloth moves on, and the cloth is still swinging down from its high
+  // place as the logo comes back: *"It would be good if Pass 2 was implemented in one move. Implement route 2 first and we
+  // will see how it looks. We need to make a good contact with the cloth in the logo's backwards and forward actions."*): the
+  // cloth's forward travel takes this share of the swivel's flight (1 = the whole flight, as built on 20 November; less =
+  // it slides off the C sooner and swings down into the path before the rebound). The reverse move back ON.
+  // ⚠ MEASURED (`live-work/scripts/hero-pass2-return-timeline-22-november.mjs` whole; `hero-pass2-swivel/reverse-20-november
+  // .mjs`): the forward time does NOT reach the return — at 1 and 0.55 alike the cloth has arrived by the landing and the C
+  // releases it ~1.9 s after take-off; the C's back 77 / 76 / 74 / 72 / 65% at 1 / 0.85 / 0.7 / 0.55 / 0.4 (its front ~100%
+  // throughout). Kept at 1. What the timeline showed instead: the reverse move touches NOTHING on its rise (2.05–3.0 s) and
+  // meets the cloth only on its way down (3.1–3.5 s), WHILE it un-swivels — the cloth's retreat, eased over the whole return
+  // flight, is slow when the logo sets off. So `clothBackTime`: the retreat takes this share of the return flight (1 = as built).
   // ⛔ AT HALF SPEED, MEASURED (`hero-pass2-swivel/reverse-20-november.mjs`): the swivel's C FRONT ~100%; the rebound's C BACK
   // ~66% at gather 0.4 (move s; 0.8 s real), **~75% at 0.2 (0.4 s real)**, 58% at 0.6; the retreat −30 best (−75: 57%, 0: 59%).
   // Set: gather 0.2 move s (0.4 s real, as at full speed)
@@ -2445,10 +2470,10 @@ export function createHeroScene(aspect: number): HeroScene {
         clothFwdAt = emitT;
         clothFromCm = handCm;
         clothToCm = handCm + pass2.clothForwardCm;
-        clothDurS = T / pass2.speed;
+        clothDurS = (T * pass2.clothForwardTime) / pass2.speed;
       }
       // ⛔ PASS 2, THE REVERSE MOVE (`pass2`): the swivel's wobble done → the cloth sets off back; then the logo jumps to it
-      if (p2 && !p2b && Number.isNaN(retreat2At) && Number.isNaN(clothFwdAt) && atRest && emitT - p2At >= (p2.T + (pass2.gymnast ? pass2.reboundS : 0)) / pass2.speed + (pass2.gymnast ? 0 : LAND_WOBBLE.ms / 1000)) {
+      if (pass2.reverse && p2 && !p2b && Number.isNaN(retreat2At) && Number.isNaN(clothFwdAt) && atRest && emitT - p2At >= (p2.T + (pass2.gymnast ? pass2.reboundS : 0)) / pass2.speed + (pass2.gymnast ? 0 : LAND_WOBBLE.ms / 1000)) {
         const g = gWorld();
         const upc = unitsPerCm ?? 1;
         const peak = Math.max(p2.c1.y, p2.c0.y) + pass2.apexCm * upc;
@@ -2459,7 +2484,7 @@ export function createHeroScene(aspect: number): HeroScene {
         clothFwdAt = emitT;
         clothFromCm = handCm;
         clothToCm = CLOTH_BACK_CM + pass2.clothBackToCm;
-        clothDurS = p2b.T / pass2.speed;
+        clothDurS = (p2b.T * pass2.clothBackTime) / pass2.speed;
       }
       if (!Number.isNaN(retreat2At) && emitT >= retreat2At + (pass2.gymnast ? 0 : pass2.backJumpDelayS)) {
         p2bAt = emitT;
