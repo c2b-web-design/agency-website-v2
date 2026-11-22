@@ -131,9 +131,14 @@ export type HeroClothSettings = {
   marginCm: number;
   /** 0 = slides freely over the metal; 1 = sticks where it touches */
   friction: number;
+  /** ⛔ THE FLOOR (`setFloor`; 22 November 2026): 0 = slides freely over the floor; 1 = sticks where it lies */
+  floorFriction: number;
 };
 /** the example's values */
 export const HERO_CLOTH_DEFAULTS: HeroClothSettings = {
+  // ⛔ ON (22 November 2026, session 3): the ARRIVAL now decides when it is seen — it lies ASLEEP on the floor (not drawn, not
+  // stepped) until it rises (`layOnFloor` / `wake`; Carl: *"Just build it."*). ⚰️ Hidden earlier the same day (*"Hide the
+  // cloth for now … We will decide how and when the cloth arrives."*); off still hides it (the bench's switch) (D-101)
   on: true,
   wireframe: false,
   wind: 1.0,
@@ -154,6 +159,7 @@ export const HERO_CLOTH_DEFAULTS: HeroClothSettings = {
   // frame-stepped passes, one live that undid itself (`live-work/scripts/hero-cloth-folds-20-november.mjs`)
   marginCm: 3.5,
   friction: 0.3,
+  floorFriction: 0.6,
 };
 
 export type HeroCloth = {
@@ -168,7 +174,15 @@ export type HeroCloth = {
   /** from the start again: flat, falling to hang */
   again(): void;
   /** ⛔ THE HAND (`setHand`, below): the pins' offset from their place, cm toward the camera (world +z), for the next steps */
-  setHand(zCm: number): void;
+  setHand(zCm: number, yCm?: number): void;
+  /** ⛔ THE FLOOR (22 November 2026, session 3; `live-work/structural-note-cloth-floor-rise-22-november.md`): world y; a free
+   *  point is kept on it (its speed down removed, its sliding slowed by `floorFriction`) */
+  setFloor(worldY: number): void;
+  /** ⛔ THE ARRIVAL: the sheet laid FLAT on the floor behind its pins (its built shape), the hand `zCm` along and DOWN to the
+   *  floor, ASLEEP — not drawn, not stepped — until `wake`. Returns the hand's height there (cm, negative: below its place) */
+  layOnFloor(zCm: number): number;
+  wake(): void;
+  readonly asleep: boolean;
   /** ⛔ THE COLLIDER (the collision, below): the logo's flat distance field and its frame, once */
   setColliderShape(shape: ClothColliderShape): void;
   /** the logo's pose for the next steps: its local (cm) from WORLD (the inverse of its world matrix); null = no collider */
@@ -294,6 +308,13 @@ export function createHeroCloth(): HeroCloth {
   const gustY = uniform(1);
   /** ⛔ THE HAND: the pins' offset along the cloth's local z (example units; `setHand`) */
   const handUniform = uniform(0);
+  /** ⛔ THE HAND RISES (22 November 2026, session 3): the pins' offset along the cloth's local y (example units) */
+  const handYUniform = uniform(0);
+  /** ⛔ THE FLOOR (`setFloor`): its height in the cloth's local y (the group is turned about the vertical and scaled evenly,
+   *  so world y = place y + scale × local y); off until set */
+  const floorOn = uniform(0);
+  const floorYU = uniform(0);
+  const floorFrictionU = uniform(0.6);
   /**
    * ⛔ THE COLLISION (20 November 2026, session 2; `live-work/structural-note-cloth-collision-20-november.md`). The logo is an
    * EXTRUSION, so its 3D distance is its FLAT field (the face's outline, `inkSdfData`) combined with its DEPTH (local z):
@@ -347,7 +368,7 @@ export function createHeroCloth(): HeroCloth {
       // don't need to calculate vertex forces if the vertex is set as immovable
       // ⛔ THE HAND (20 November 2026, session 2; `setHand`): a pinned point is CARRIED — set to its place + the hand's offset
       // (was: never moved). The free points follow through the springs: the sheet trails, swings and settles as cloth
-      vertexPositionBuffer.element(instanceIndex).assign(pinStartBuffer.element(instanceIndex).add(vec3(0, 0, handUniform)));
+      vertexPositionBuffer.element(instanceIndex).assign(pinStartBuffer.element(instanceIndex).add(vec3(0, handYUniform, handUniform)));
       Return();
     });
     const position = vertexPositionBuffer.element(instanceIndex).toVar("vertexPosition");
@@ -395,6 +416,16 @@ export function createHeroCloth(): HeroCloth {
         const vT = force.sub(nC.mul(vn)).mul(float(1).sub(frictionU));
         force.assign(vT.add(nC.mul(max(vn, 0))));
       });
+    });
+    // ⛔ THE FLOOR (`setFloor`; 22 November 2026, session 3; Carl: *"it should have floor physics"*): after the logo's push, a
+    // point below the floor is put back on it, its speed DOWN removed and its sliding slowed by the floor's friction; its
+    // speed up is kept (lifted, it leaves the floor freely). ⚠ A point squeezed between the logo's base and the floor ends on
+    // the floor (tested last)
+    If(floorOn.greaterThan(0.5).and(next.y.lessThan(floorYU)), () => {
+      next.y.assign(floorYU);
+      force.y.assign(max(force.y, 0));
+      force.x.mulAssign(float(1).sub(floorFrictionU));
+      force.z.mulAssign(float(1).sub(floorFrictionU));
     });
     vertexForceBuffer.element(instanceIndex).assign(force);
     vertexPositionBuffer.element(instanceIndex).assign(next);
@@ -551,6 +582,11 @@ export function createHeroCloth(): HeroCloth {
    */
   let handFrom = 0;
   let handTo = 0;
+  let handYFrom = 0;
+  let handYTo = 0;
+  /** ⛔ THE ARRIVAL (`layOnFloor`): asleep = not drawn, not stepped; `layAt` = the hand's place to lay it at (local), once */
+  let asleep = false;
+  let layAt: { z: number; y: number } | null = null;
   /** the collider's pose: last frame's and this frame's (cloth local → logo local), interpolated across the steps */
   const poseFrom = new THREE.Matrix4();
   const poseTo = new THREE.Matrix4();
@@ -566,7 +602,7 @@ export function createHeroCloth(): HeroCloth {
     envReady,
     update(delta) {
       const s = settings;
-      group.visible = s.on && env !== null;
+      group.visible = s.on && env !== null && !asleep;
       windUniform.value = s.wind;
       gustX.value = CLOTH.width * Math.max(0.01, s.gustSize);
       gustY.value = CLOTH.height * Math.max(0.01, s.gustSize);
@@ -581,7 +617,8 @@ export function createHeroCloth(): HeroCloth {
       clothMaterial.sheenColor.set(s.sheenColor);
       marginU.value = s.marginCm;
       frictionU.value = s.friction;
-      if (!s.on || !precompile) return;
+      floorFrictionU.value = s.floorFriction;
+      if (!s.on || !precompile || asleep) return;
       timeSinceLastStep += Math.max(0, delta);
       while (timeSinceLastStep >= timePerStep) {
         timeSinceLastStep -= timePerStep;
@@ -601,7 +638,26 @@ export function createHeroCloth(): HeroCloth {
         renderer.compute(computeRestore);
         timestamp = snapT;
         handFrom = handTo = 0;
+        handYFrom = handYTo = 0;
         posePrimed = false;
+      }
+      if (layAt) {
+        // ⛔ LAID ON THE FLOOR (`layOnFloor`): its built shape — flat, behind its pins — moved by the hand; at rest
+        const pos = vertexPositionBuffer.value as THREE.BufferAttribute;
+        const a = pos.array as Float32Array;
+        for (let i = 0; i < a.length; i += 3) {
+          a[i] = startPositions[i];
+          a[i + 1] = startPositions[i + 1] + layAt.y;
+          a[i + 2] = startPositions[i + 2] + layAt.z;
+        }
+        pos.needsUpdate = true;
+        const f = vertexForceBuffer.value as THREE.BufferAttribute;
+        (f.array as Float32Array).fill(0);
+        f.needsUpdate = true;
+        handFrom = handTo = layAt.z;
+        handYFrom = handYTo = layAt.y;
+        layAt = null;
+        needsReset = false;
       }
       if (needsReset) {
         needsReset = false;
@@ -619,6 +675,7 @@ export function createHeroCloth(): HeroCloth {
         timestamp += timePerStep;
         simTimeUniform.value = timestamp;
         handUniform.value = handFrom + ((handTo - handFrom) * k) / n;
+        handYUniform.value = handYFrom + ((handYTo - handYFrom) * k) / n;
         if (colliding) {
           // the pose this step: last frame's to this frame's, element by element (a frame's turn is a fraction of a degree)
           const a = poseFrom.elements;
@@ -634,11 +691,39 @@ export function createHeroCloth(): HeroCloth {
       }
       if (n > 0) {
         handFrom = handTo;
+        handYFrom = handYTo;
         poseFrom.copy(poseTo);
       }
     },
-    setHand(zCm) {
+    setHand(zCm, yCm = 0) {
       handTo = -(zCm * UNITS_PER_CM) / CLOTH_PLACE.scale;
+      // world +y is the group's local +y (turned about the vertical only)
+      handYTo = (yCm * UNITS_PER_CM) / CLOTH_PLACE.scale;
+    },
+    setFloor(worldY) {
+      // ~0.5 cm above the floor: drawn clear of it
+      floorYU.value = (worldY + 0.5 * UNITS_PER_CM - CLOTH_PLACE.position.y) / CLOTH_PLACE.scale;
+      floorOn.value = 1;
+    },
+    layOnFloor(zCm) {
+      // the pins (and the flat sheet, built at their height: local y = height / 2) down onto the floor
+      layAt = { z: -(zCm * UNITS_PER_CM) / CLOTH_PLACE.scale, y: floorYU.value - CLOTH.height * 0.5 };
+      handTo = layAt.z;
+      handYTo = layAt.y;
+      asleep = true;
+      timeSinceLastStep = 0;
+      stepsDue = 0;
+      return (layAt.y * CLOTH_PLACE.scale) / UNITS_PER_CM;
+    },
+    wake() {
+      if (!asleep) return;
+      asleep = false;
+      // no catch-up: it starts stepping from now
+      timeSinceLastStep = 0;
+      stepsDue = 0;
+    },
+    get asleep() {
+      return asleep;
     },
     setColliderShape(shape) {
       sdfNode.value = shape.tex;
@@ -690,6 +775,9 @@ export function createHeroCloth(): HeroCloth {
       needsReset = true;
       // from flat with the pins at their place and the collider re-primed: nothing carried over from before
       handFrom = handTo = 0;
+      handYFrom = handYTo = 0;
+      asleep = false;
+      layAt = null;
       posePrimed = false;
     },
     get points() {

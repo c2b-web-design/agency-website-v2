@@ -65,6 +65,49 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-112 — The Hero, Phase 3: The Cloth's Arrival And The Passes Baked In (D-101): "Approved"
+
+**Date:** 2026-11-22
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — the cloth lying on the floor and rising (up and forward together over 3 s, 1 s after the last
+code drop; floor physics in its step, `hero-cloth.ts`), and the four passes played by the story (`passesAuto`: a 2 s beat
+after the cloth arrives, each next pass once the logo has stopped wobbling; `hero-scene.ts`, `hero-bench.tsx`)
+
+**Carl's verdict, verbatim:** *"that looks great. Theres a good flow throughout the 4 passes. Theres good contact and
+outlines within the cloth. Approved. commit and push"*
+
+**Findings:**
+
+- ✔ **THE PASSES BAKED IN APPROVED** — the flow through the four passes, the contact, the logo's outlines in the cloth.
+- ✔ **The cloth's arrival** as built (it is part of what was played): laid 250 cm back, up and forward over 3 s, 1 s after
+  the last code drop; ⚠ Carl's verdict names the passes' flow; the arrival's TIMING remains a take for the camera's pull-back.
+- **Timed** (nothing pressed): the cloth arrives 35.7 s into the story, pass 1 at 37.8, pass 4 settled at 75.4; pass 1 in
+  the story: the top half's back ~98% forward, front ~100% backward; 0 points inside the metal.
+- ⚠ **Not covered:** the drying (gold where the cloth touched: not built); the camera (phase 5); the frame cost (D-108).
+
+---
+## R-111 — The Hero, Phase 3: Schrödinger's Cloth, Passes 1–4 (D-101): "The Passes have all be approved"
+
+**Date:** 2026-11-22
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — the four passes of the logo into the cloth (`components/hero/hero-scene.ts`, `pass1`–`pass4`, one
+machinery for passes 2–4; `hero-cloth.ts`, the hand and the collision), as committed in `1362333`, `fd37849`, `333d7a2`
+
+**Carl's verdict, verbatim:** *"Good. The Passes have all be approved so they can be baked in."*
+
+**Findings:**
+
+- ✔ **PASSES 1–4 APPROVED** at their defaults: pass 1 (95 cm up and back; the beat, home into the cloth); pass 2 (the C: the
+  jump swivel, the landing lean, the gymnast rebound; speed 0.2, the cloth back to −75 at 0.64 of the flight); pass 3 (the
+  B: pass 2 mirrored); pass 4 (the 2's bottom half: a 180° flip backwards, upside down, forward home; apex 100, land back
+  75, cloth forward 50, speed 0.38, the cloth back to −100 at 0.4).
+- **Measured** (frame-stepped harnesses in `live-work/scripts/`): pass 1 the top ~47% front / ~48% back; pass 2 the C's
+  front ~100%, back ~94%; pass 3 the B's front ~100%, back ~100%; pass 4 the 2's bottom half front ~100%, back ~83%; 0
+  points inside the metal in every pass.
+- ⚠ **Not covered by this verdict:** the cloth's ARRIVAL (built the same day, a take); the drying itself (gold where the cloth
+  touched: not built); the frame cost (D-108, not measured); "baked in" — what it means for the build is Carl's to say.
+
+---
 ## R-110 — The Hero, Phase 3's Start: The Code Drops (D-101): "It looks great. Approved"
 
 **Date:** 2026-11-20

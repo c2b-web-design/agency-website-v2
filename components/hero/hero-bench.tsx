@@ -324,11 +324,31 @@ export default function HeroBench() {
       mf.add(cl, "sheen", 0, 1, 0.01);
       mf.add(cl, "sheenRoughness", 0, 1, 0.01);
       mf.addColor(cl, "sheenColor");
+      // ⛔ THE FLOOR (`hero-cloth.ts`, `setFloor`; 22 November 2026): 0 slides freely, 1 sticks where it lies
+      f.add(cl, "floorFriction", 0, 1, 0.01).name("floor friction");
+
+      // ⛔ THE CLOTH's ARRIVAL (`hero-scene.ts`, `clothArrival`; 22 November 2026, session 3): it lies flat on the floor, asleep,
+      // `back` behind the spot; `delay` after the last code drop it rises and comes forward to its place together. Takes
+      f = gui.addFolder("Cloth arrival");
+      f.add(hero.clothArrival, "auto").name("rise after the code drops");
+      f.add(hero.clothArrival, "backCm", 160, 500, 5).name("lies back (cm from the spot)");
+      f.add(hero.clothArrival, "delayS", 0, 6, 0.1).name("delay after the last code drop (s)");
+      // (up and forward together, one move: Carl, 22 November 2026)
+      f.add(hero.clothArrival, "seconds", 0.5, 8, 0.1).name("rise and forward (s)");
+      f.add({ go: () => hero.clothRiseNow() }, "go").name("Rise now");
+      f.add({ lay: () => hero.clothLayAgain() }, "lay").name("Lay it on the floor again");
 
       // ⛔ PHASE 3, PASS 1, FORWARD (`hero-scene.ts`, `pass1`; 20 November 2026, session 2; Carl: *"have the logo jump up and
       // down with the figures youve suggeated"*): the first jump, straight up and down, on "Jump" once phase 1's wobble is
       // done. The height's rows put to Carl: 32.7 (touching), 47.7, 60 (phase 1's hop), 72.7 cm; take 3: 95 (half the front face, the default). The cloth answers
       // the jump (behind → in front, crossing at the apex) when it is at its place; "Reset pass 1" restores the cloth as it was at pass 1's first take-off
+      // ⛔ THE PASSES BAKED IN (`hero-scene.ts`, `passesAuto`; 22 November 2026, R-111): the story plays them — the beat after
+      // the cloth arrives, then each pass once the logo has stopped wobbling. Their dials (below) are READ-ONLY: approved
+      f = gui.addFolder("Passes (approved, R-111)");
+      f.add(hero.passesAuto, "on").name("played by the story");
+      f.add(hero.passesAuto, "beatS", 0, 6, 0.1).name("beat after the cloth arrives (s)");
+      f.add({ back: () => hero.resetPass1() }, "back").name("Reset (pass 1)");
+
       f = gui.addFolder("Pass 1");
       f.add({ jump: () => hero.jump() }, "jump").name("Jump");
       f.add(hero.pass1, "apexCm", 20, 120, 0.1).name("jump height (cm)");
@@ -408,6 +428,11 @@ export default function HeroBench() {
       f.add(hero.pass4, "yawDeg", -180, 180, 1).name("turn (deg)");
       f.add(hero.pass4, "pitchDeg", -360, 360, 1).name("flip (deg, − = backwards)");
       f.add({ back: () => hero.resetPass1() }, "back").name("Reset (pass 1)");
+      // ⛔ APPROVED, R-111: every pass's dials READ-ONLY (shown, not moved); the buttons (Jump, Reset) still work
+      for (const name of ["Pass 1", "Pass 2", "Pass 3", "Pass 4"]) {
+        const folder = gui.folders.find((x) => x._title === name);
+        for (const c of folder?.controllers ?? []) if (typeof (c.object as Record<string, unknown>)[c.property] !== "function") c.disable();
+      }
 
       f = gui.addFolder("Stage (pass 2)");
       f.add(hero.stage, "on").name("stage the logo");
