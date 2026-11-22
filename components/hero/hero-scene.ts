@@ -12,11 +12,12 @@ import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
 import { createHeroRain, HIT, type HeroRainInfo, type HeroRainSettings } from "./hero-rain";
 import type { HeroCodeSettings } from "./hero-code-drops";
 import { CLOTH_BACK_CM, createHeroCloth, type HeroCloth } from "./hero-cloth";
+import { createHeroDry, type HeroDry } from "./hero-dry";
 import { createHeroSteam, MARGIN, type HeroSteamInfo, type HeroSteamSettings } from "./hero-steam";
 import { createHeroHeat, type HeroHeat, type HeroHeatInfo, type HeroHeatSettings } from "./hero-heat";
 import { createHeroFloor, type HeroFloorInfo, type HeroFloorSettings } from "./hero-floor";
 import { faceMaps, landedMaps, type FaceRequest, type FaceResult, type FlowCheck, type FlowData, type InkGrid, type LandedRequest, type LandedResult, type MapsMessage, type MapsReply, type RunoffCheck, type RunoffData } from "./hero-maps.worker";
-import { LOGO_BLUE_DEFAULTS, LOGO_JUDGING_STUDIO, platinumBlueF0 } from "@/components/about/logo-mark-material";
+import { GOLD_F0_LINEAR, LOGO_BLUE_DEFAULTS, LOGO_GOLD_DEFAULTS, LOGO_JUDGING_STUDIO, platinumBlueF0 } from "@/components/about/logo-mark-material";
 
 /**
  * ⛔ THE HERO's SCENE — the marching scene, as the site will draw it (11 November 2026, session 1; D-101; the structural
@@ -435,7 +436,7 @@ function logoRunoffMap(d: RunoffData): RunoffMap {
  * Values are takes.
  */
 const LIQUID = { roughness: 0.1, swellCm: 1.2, tilt: 0.35, scale: 0.045, drift: 0.35 } as const;
-function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>, fill: ReturnType<typeof makeFront>, flow: FlowMap, courtyard: THREE.Texture, harden: ReturnType<typeof makeFront>, clock: ReturnType<typeof makeFront>, runoff: RunoffMap, wash: ReturnType<typeof makeFront>, judging: THREE.Texture, logoLights: THREE.Light[], heat: HeroHeat, wetU: WetUniforms): MeshPhysicalNodeMaterial {
+function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>, fill: ReturnType<typeof makeFront>, flow: FlowMap, courtyard: THREE.Texture, harden: ReturnType<typeof makeFront>, clock: ReturnType<typeof makeFront>, runoff: RunoffMap, wash: ReturnType<typeof makeFront>, judging: THREE.Texture, logoLights: THREE.Light[], heat: HeroHeat, wetU: WetUniforms, dry: HeroDry): MeshPhysicalNodeMaterial {
   // ⛔ PHYSICAL since the wet look (14 November 2026; `WET`): the clear coat is the physical model's; dry (coat 0) it draws as
   // the standard material did (the null control)
   const m = new MeshPhysicalNodeMaterial({ color: HERO_LOGO_RED, metalness: HERO_LOGO_METAL.metalness, roughness: HERO_LOGO_METAL.roughness });
@@ -462,7 +463,10 @@ function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>
   // starts cold-free: phase 1 unchanged). The heat panel's switch off = the front as before (an A/B)
   const cooled = heat.share(runUv, wet);
   // the cooled metal's roughness is the desk mark's (`COOLED`, above)
-  m.roughnessNode = mix(mix(float(LIQUID.roughness), float(HERO_LOGO_METAL.roughness), harden), float(COOLED.roughness), cooled);
+  // ⛔ PHASE 3, DRIED TO GOLD BY THE CLOTH (`hero-dry.ts`; 22 November 2026): the share dried, 0 (platinum blue) → 1 (the desk
+  // mark's gold) — a soft, wandering gradient where the cloth has been, never a line (Carl)
+  const dried = dry.share(positionLocal, normalLocal);
+  m.roughnessNode = mix(mix(mix(float(LIQUID.roughness), float(HERO_LOGO_METAL.roughness), harden), float(COOLED.roughness), cooled), float(LOGO_GOLD_DEFAULTS.roughness), dried);
   // the radiance context's reflection (three r185, `EnvironmentNode`'s `createRadianceContext`), turned by the yaw R so
   // the material's own Rᵀ leaves the courtyard unturned
   const turn = uniform(new THREE.Matrix4().makeRotationFromEuler(m.envMapRotation));
@@ -477,7 +481,8 @@ function logoMaterial(studio: THREE.Texture, front: ReturnType<typeof makeFront>
   m.normalNode = mix(normalView, wobbled, liquid);
   // ⛔ PHASE 2, THE WASH (`RUNOFF`, above): the red cooled to platinum blue as the metal cools (the temperature, `cooled`)
   const [pr, pg, pb] = platinumBlueF0(LOGO_BLUE_DEFAULTS.tint);
-  m.colorNode = mix(materialColor, vec3(pr, pg, pb), cooled);
+  // …and dried to the desk mark's GOLD (`GOLD_F0_LINEAR`, its F0) where the cloth has been (`dried`, above)
+  m.colorNode = mix(mix(materialColor, vec3(pr, pg, pb), cooled), vec3(GOLD_F0_LINEAR[0], GOLD_F0_LINEAR[1], GOLD_F0_LINEAR[2]), dried);
   // ⛔ WET (`WET`, above): the coat where the water has reached; its normal the running water, easing into beads as the
   // wash completes (`flowing`: 1 while it runs, 0 once done)
   m.clearcoatNode = wet.mul(wetU.coat);
@@ -957,6 +962,14 @@ export type HeroScene = {
   /** ⛔ THE PASSES BAKED IN (22 November 2026, session 3; R-111): the story plays them by itself — `beatS` after the cloth
    *  arrives, pass 1; each next pass once the logo has stopped wobbling. Off = the bench's Jump, as before */
   passesAuto: { on: boolean; beatS: number };
+  /** ⛔ THE WEB FLOOR DRIES WITH THE LOGO (22 November 2026, session 3): each step's shrink (s), and a read-out */
+  floorDry: { shrinkS: number };
+  readonly floorDryInfo: { contacts: number; shown: number };
+  /** ⛔ THE GOLD IS NEVER SEEN TO CHANGE (22 November 2026): a side dries only while hidden — its fill time (s of hidden time),
+   *  the facing below which a side counts as turned away, and pass 1's face under the cloth (a share of its jump home) */
+  dryHidden: { fillS: number; edge: number; coverFrom: number; coverTo: number };
+  /** ⛔ THE DRYING (`hero-dry.ts`): its dials and a read-out */
+  dry: Pick<HeroDry, "settings" | "info">;
   clothLayAgain(): void;
   /** ⛔ THE CODE DROPS' dials (`hero-code-drops.ts`, inside the rain; the bench's Code drops folder; 20 November 2026) */
   code: HeroCodeSettings;
@@ -1171,6 +1184,8 @@ export function createHeroScene(aspect: number): HeroScene {
   // ⛔ PHASE 3, THE CLOTH, step 1 (`hero-cloth.ts`; 20 November 2026; Carl: *"build it on the page exactly as it is ... Build
   // it here, behind the logo"*): the example in its own group, placed at Carl's camera target; made HERE so its environment
   // joins the primer below (prefiltered in the dark with the others, not at its first draw)
+  // ⛔ THE DRYING (`hero-dry.ts`; 22 November 2026): authored, pass by pass, on the logo's own surface
+  const dry = createHeroDry();
   const cloth = createHeroCloth();
   // ⛔ THE FLOOR in the cloth's step (22 November 2026, session 3; Carl: *"it should have floor physics"*)
   cloth.setFloor(FLOOR_Y);
@@ -1458,6 +1473,38 @@ export function createHeroScene(aspect: number): HeroScene {
    * logo's landing wobble (`jumpDone`, the passes' `…Done` flags): the gap. A beat of 2 s, as pass 1's own beat.
    */
   const passesAuto = { on: true, beatS: 2 };
+  /**
+   * ⛔ THE WEB FLOOR DRIES WITH THE LOGO (Carl, 22 November 2026, session 3: *"the web floor next. The floor indicates the
+   * logos temperature status. As the logo is dried is gradually turns gold. With 4 passes thats 8 contacts with cloth. After
+   * each contact, the web floor should shrink until the last contact makes it disappear completely."*): the solid logo's web
+   * (floor source 3, blue since the rain) is shown inside `1 − contacts / 8` of its radius. A CONTACT is counted at each
+   * action's LANDING — pass 1 forward and backward, then each pass's forward move and its return — the cloth met in the air
+   * before it; each step eased (smoothstep) over `shrinkS`; after the eighth it is gone. Derived from the passes' state every
+   * frame, so a replay or "Reset pass 1" counts from 0 again. ⚠ The logo's GOLD (the drying itself) is not built.
+   */
+  const floorDry = { shrinkS: 1.5 };
+  let dryShown = 1;
+  let dryTarget = 1;
+  let dryFrom = 1;
+  let dryAt = Number.NaN;
+  let dryContacts = 0;
+  /**
+   * ⛔ THE GOLD IS NEVER SEEN TO CHANGE (Carl, 22 November 2026, session 3: *"there are parts when i can see the transition
+   * happen. Film all 4 passes. The rule is that the user must never see the transition happen."* … *"it will only happen on
+   * logo forward movement."*). Filmed (the front camera): the face still turning gold after the cloth left it (pass 1's jump
+   * home), the BACK's region filling while it faced the camera at the start of each return, pass 4's patch. ⚰️ Each side
+   * dried over its action's flight, seen or not. NOW each side of each pass dries ONLY WHILE HIDDEN from the camera — turned
+   * away from it (its facing below `edge`; edge-on counts as hidden) — from its action's start until whole, `fillS` of hidden
+   * time; pass 1's FACE never turns away, so it dries only while the cloth is over it (`coverFrom`–`coverTo` of its jump
+   * home, where the measured contact is). Read against the LIVE camera, so it holds wherever the camera is set (phase 5).
+   */
+  // (pass 1's face, filmed: the top is inside the cloth from ~0.15 to ~0.65 of the jump home; ⚰️ 0.25–0.9 left it finishing
+  // in view as it came out)
+  const dryHidden = { fillS: 0.5, edge: 0.2, coverFrom: 0.15, coverTo: 0.6 };
+  const dryF = [0, 0, 0, 0];
+  const dryB = [0, 0, 0, 0];
+  const dryAxis = new THREE.Vector3();
+  const dryToCam = new THREE.Vector3();
   const layCloth = () => {
     layZ = -(clothArrival.backCm - CLOTH_BACK_CM);
     handCm = layZ;
@@ -1603,6 +1650,8 @@ export function createHeroScene(aspect: number): HeroScene {
         g.computeBoundingBox();
         const bb = g.boundingBox!;
         cloth.setColliderShape({ tex, minX: d.minX, minY: d.minY, sizeX: d.sizeX, sizeY: d.sizeY, zMin: bb.min.z, zMax: bb.max.z });
+        // the drying's grid laid over the same face (`hero-dry.ts`)
+        dry.setFace(d.minX, d.minY, d.sizeX, d.sizeY);
         loadTimes.sdfInkCells = d.check.inkCells;
       }
       // ⛔ THE TEMPERATURE's FACE (`hero-heat.ts`): the run-off map and the ink share one grid (both 2 per cm: `RUNOFF`,
@@ -1613,7 +1662,7 @@ export function createHeroScene(aspect: number): HeroScene {
       // the steam's emitters read the same field (each puff × the heat left under it); given before the steam's logo (below)
       steam.setHeat(logoHeat.texture);
       mark("mapTextures");
-      const material = logoMaterial(studio, dissolveFront, fillFront, flow, envs.courtyard!.reflect, hardness, liquidClock, runoff, washShare, judging, logoLights, logoHeat, wetU);
+      const material = logoMaterial(studio, dissolveFront, fillFront, flow, envs.courtyard!.reflect, hardness, liquidClock, runoff, washShare, judging, logoLights, logoHeat, wetU, dry);
       // ⛔ THE OPENING's FADE (`OPENING`): ALPHA-TO-COVERAGE from the start (one shader, built once; the logo stays opaque):
       // the fade's opacity, dithered per pixel between the 4 samples' levels, exactly 1 when faded in
       material.alphaToCoverage = true;
@@ -2891,9 +2940,76 @@ export function createHeroScene(aspect: number): HeroScene {
     // would have the properties of the leaning logo"*): from the LANDING of the fall (`fullAt` + `hardenS` + the fall), at
     // its BASE (`landedContact`: the landed pose's lowest vertices, as the lean's contact edge), the lean's web — the same
     // strength, radius and colour — spreading inside out over `FLOOR_SPREAD_S`, then HELD; the rain turns it blue (below)
+    // ⛔ … AND IT SHRINKS AS THE LOGO DRIES (`floorDry`, above): the contacts so far, from the passes' state
+    {
+      const landed = (q: typeof pass2, done: boolean) => {
+        if (done) return 2;
+        if (sw !== q || !p2 || Number.isNaN(p2At)) return 0;
+        if (p2b && !Number.isNaN(p2bAt) && emitT - p2bAt >= p2b.T / q.speed) return 2;
+        return emitT - p2At >= p2.T / q.speed ? 1 : 0;
+      };
+      dryContacts = (pass1Done ? 2 : logoBackCm > 0 ? 1 : 0) + landed(pass2, pass2Done) + landed(pass3, pass3Done) + landed(pass4, pass4Done);
+      const target = 1 - Math.min(8, dryContacts) / 8;
+      if (emitT < 0) {
+        dryShown = dryTarget = dryFrom = 1;
+        dryAt = Number.NaN;
+      } else if (target !== dryTarget) {
+        dryFrom = dryShown;
+        dryTarget = target;
+        dryAt = emitT;
+      }
+      if (!Number.isNaN(dryAt)) {
+        const u = Math.min(1, Math.max(0, (emitT - dryAt) / Math.max(0.01, floorDry.shrinkS)));
+        dryShown = dryFrom + (dryTarget - dryFrom) * u * u * (3 - 2 * u);
+        if (u >= 1) dryAt = Number.NaN;
+      }
+    }
+    // ⛔ THE DRYING, PASS BY PASS, SIDE BY SIDE (`hero-dry.ts`; Carl: *"Pass 1 jumps back. Only the back of the logo will be
+    // dried. At this point the face should be still blue. After it jumps forward, the face makes contact, then it is gold."*):
+    // each action dries the side it presents to the cloth, over its flight — pass 1: the BACK (jump back), the FRONT (jump
+    // forward); passes 2–4: the FRONT (the swivel / flip), the BACK (the return). Derived from the passes' state (a replay or
+    // Reset: blue again)
+    // … ⛔ AND ONLY WHILE HIDDEN (`dryHidden`, above)
+    {
+      const frac = (start: number, dur: number) => (Number.isNaN(start) ? 0 : Math.min(1, Math.max(0, (emitT - start) / Math.max(1e-3, dur))));
+      // the story replayed or the passes reset: blue again
+      if (!pass1Done && Number.isNaN(jumpAt)) {
+        dryF.fill(0);
+        dryB.fill(0);
+      }
+      // the face's facing to the camera: + toward it, − away (the logo's local +z, from its centre)
+      let facing = 0;
+      if (logo) {
+        if (!logo.geometry.boundingBox) logo.geometry.computeBoundingBox();
+        logo.geometry.boundingBox!.getCenter(dryToCam).applyMatrix4(logo.matrix);
+        dryToCam.subVectors(camera.position, dryToCam).normalize();
+        facing = dryAxis.set(0, 0, 1).transformDirection(logo.matrix).dot(dryToCam);
+      }
+      const frontHidden = facing < dryHidden.edge;
+      const backHidden = facing > -dryHidden.edge;
+      const step = Math.max(0, delta) / Math.max(0.05, dryHidden.fillS);
+      const grow = (a: number[], i: number) => (a[i] = Math.min(1, a[i] + step));
+      // pass 1: the BACK from the jump back (always away from a camera in front); the FACE under the cloth on the jump home
+      if (pass1Done || !Number.isNaN(jumpAt)) {
+        if (backHidden) grow(dryB, 0);
+        const home = !Number.isNaN(jumpAt) && jumpFromCm > 0 ? frac(jumpAt, jumpFlightS()) : pass1Done ? 1 : 0;
+        // (under the cloth it fills in 90% of the window, so it is whole before the cloth leaves it)
+        const inCover = home >= dryHidden.coverFrom && home <= dryHidden.coverTo;
+        if (inCover) dryF[0] = Math.min(1, dryF[0] + Math.max(0, delta) / Math.max(0.05, 0.9 * (dryHidden.coverTo - dryHidden.coverFrom) * jumpFlightS()));
+        else if (frontHidden) grow(dryF, 0);
+      }
+      // passes 2–4: the FACE from the swivel / flip, the BACK from the return — each only while it is turned away
+      [pass2, pass3, pass4].forEach((q, i) => {
+        const done = [pass2Done, pass3Done, pass4Done][i];
+        const inPass = sw === q && p2 !== null && !Number.isNaN(p2At);
+        if ((done || inPass) && frontHidden) grow(dryF, i + 1);
+        if ((done || (inPass && p2b !== null && !Number.isNaN(p2bAt))) && backHidden) grow(dryB, i + 1);
+      });
+      dry.setProgress([dryF[0], dryF[1], dryF[2], dryF[3]], [dryB[0], dryB[1], dryB[2], dryB[3]]);
+    }
     if (reform && landedContact && unitsPerCm) {
       const sinceLand = emitT - (fullAt() + REFORM.hardenS + fallS());
-      floorHeat.setSource(2, sinceLand < 0 ? null : { x: landedContact.x, z: landedContact.z, strength: 1, extent: Math.min(1, sinceLand / FLOOR_SPREAD_S), coolable: true });
+      floorHeat.setSource(2, sinceLand < 0 ? null : { x: landedContact.x, z: landedContact.z, strength: 1, extent: Math.min(1, sinceLand / FLOOR_SPREAD_S) * dryShown, coolable: true });
     } else floorHeat.setSource(2, null);
     // ⛔ THE RAIN COOLS IT (Carl, 18 November 2026: *"the rain falls in an almost circular area. the rain woukd make the red
     // inside this area turn blue almost right away. At the extremity, it would be slower."*): the floor reads the RAIN
@@ -3080,6 +3196,17 @@ export function createHeroScene(aspect: number): HeroScene {
     code: rain.code,
     clothArrival,
     passesAuto,
+    floorDry,
+    dryHidden,
+    dry: {
+      settings: dry.settings,
+      get info() {
+        return dry.info;
+      },
+    },
+    get floorDryInfo() {
+      return { contacts: dryContacts, shown: Math.round(dryShown * 1000) / 1000 };
+    },
     get clothArrivalInfo() {
       return { laid: cloth.asleep, riseAt, handCm, handYCm, arrived: !cloth.asleep && Number.isNaN(riseAt) && handCm === 0 && handYCm === 0 };
     },

@@ -347,6 +347,30 @@ export default function HeroBench() {
       f = gui.addFolder("Passes (approved, R-111)");
       f.add(hero.passesAuto, "on").name("played by the story");
       f.add(hero.passesAuto, "beatS", 0, 6, 0.1).name("beat after the cloth arrives (s)");
+      // ⛔ THE WEB FLOOR DRIES WITH THE LOGO (`hero-scene.ts`, `floorDry`; 22 November 2026): an eighth smaller after each contact
+      f.add(hero.floorDry, "shrinkS", 0.1, 5, 0.1).name("floor shrink per contact (s)");
+
+      // ⛔ DRIED TO GOLD, PASS BY PASS (`hero-dry.ts`; 22 November 2026): 1 the top third, 2 where the c meets the 2, 3 where
+      // the b meets the 2, 4 what's left — each over its pass's two actions; the regions' soft, wandering edges; the border
+      f = gui.addFolder("Drying (gold)");
+      const dr = hero.dry.settings;
+      f.add(dr, "topThird", 0, 1, 0.01).name("pass 1: above (height share)");
+      f.add(dr, "cMeets2", 0, 1, 0.01).name("pass 2: left of (width share)");
+      f.add(dr, "bMeets2", 0, 1, 0.01).name("pass 3: right of (width share)");
+      f.add(dr, "pass4Below", 0, 1, 0.01).name("pass 3: the 2 above (height share)");
+      f.add(dr, "regionEdge", 0, 0.3, 0.005).name("region edge softness");
+      f.add(dr, "regionWander", 0, 0.3, 0.005).name("region edge wander");
+      f.add(dr, "wanderCm", 2, 60, 0.5).name("region wander size (cm)");
+      f.add(dr, "blotch", 0, 2, 0.01).name("fills unevenly");
+      // ⛔ NEVER SEEN TO CHANGE (`hero-scene.ts`, `dryHidden`): a side dries only while turned away from the camera
+      f.add(hero.dryHidden, "fillS", 0.1, 3, 0.05).name("fills in (s, hidden)");
+      f.add(hero.dryHidden, "edge", -0.5, 0.8, 0.01).name("counts as turned away below");
+      f.add(hero.dryHidden, "coverFrom", 0, 1, 0.01).name("pass 1 face: cloth over from");
+      f.add(hero.dryHidden, "coverTo", 0, 1, 0.01).name("pass 1 face: cloth over to");
+      f.add(dr, "blueBelow", 0, 1, 0.01).name("all blue below");
+      f.add(dr, "goldAbove", 0, 1, 0.01).name("all gold above");
+      f.add(dr, "ragged", 0, 1, 0.01).name("edge wander");
+      f.add(dr, "raggedCm", 1, 40, 0.5).name("edge wander size (cm)");
       f.add({ back: () => hero.resetPass1() }, "back").name("Reset (pass 1)");
 
       f = gui.addFolder("Pass 1");

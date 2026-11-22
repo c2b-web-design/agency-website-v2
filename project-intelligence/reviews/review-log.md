@@ -65,6 +65,32 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-113 — The Hero, Phase 3: The Logo Dried To Gold, Pass By Pass, Never Seen To Change (D-101): "Thats got it"
+
+**Date:** 2026-11-22
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — the gold transition (`components/hero/hero-dry.ts`, new; `hero-scene.ts`, the logo's colour and
+`dryHidden`): four authored regions (pass 1 the top third, 2 where the c meets the 2, 3 where the b meets the 2 and the 2's
+upper middle, 4 the 2's lower part), each side dried by its action and ONLY while hidden from the camera; the web floor
+shrinking an eighth per contact (`floorDry`)
+
+**Carl's verdict, verbatim:** *"Yes. Thats got it, it looks a lot more natural now and theres no magic cloth going on."*
+(Earlier the same session, on take 1's border: *"The border of blue to gold looks fantastic. Just the sort of look i was
+after."*)
+
+**Findings:**
+
+- ✔ **"Thats got it"** — recorded at the level given: the gold transition as built at its defaults (the border
+  `smoothstep(0.15, 0.75, dryness + noise × 0.25)`; regions 0.667 / 0.42 / 0.6 / 0.3; `dryHidden` 0.5 s, edge 0.2, pass 1's
+  face under the cloth 0.15–0.6 of the jump home).
+- ⛔ **The standing rule (Carl):** *"The rule is that the user must never see the transition happen."* — read against the
+  LIVE camera; checked from the front camera only (close frames, every 1/6 s around pass 1's jump home).
+- **The floor** (built the same day, D-101): an eighth smaller per contact, gone after the eighth — seen by Carl in the
+  same runs; not separately ruled.
+- ⚠ **Not covered:** cameras other than the front; the walls and bevels at edge-on angles (counted as hidden); the frame
+  cost (D-108); the camera direction (phase 5).
+
+---
 ## R-112 — The Hero, Phase 3: The Cloth's Arrival And The Passes Baked In (D-101): "Approved"
 
 **Date:** 2026-11-22
