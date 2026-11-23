@@ -353,7 +353,7 @@ export default function HeroBench() {
         const mb = hero.marble.settings;
         f = gui.addFolder("Marble (spotlight example)");
         f.add(mb, "on");
-        f.add(mb, "map", ["disturb.jpg", "none"]);
+        f.add(mb, "map", ["ours", "gpt", "disturb.jpg", "none"]).name("map (ours, gpt: the floor's)");
         f.addColor(mb, "color");
         f.add(mb, "intensity", 0, 500);
         f.add(mb, "distance", 0, 20);
@@ -370,6 +370,18 @@ export default function HeroBench() {
         f.add(mb, "story").name("enters with the cloth's departure");
         f.add(mb, "spreadS", 0.5, 10, 0.1).name("spread from the logo (s)");
         f.add(mb, "featherCm", 0, 300, 5).name("spread's soft edge (cm)");
+        // the floor's circle and the marble image's size (Carl: no square; the floor's own, static marble)
+        f.add(mb, "rimCm", 100, 700, 5).name("circle radius (cm)");
+        f.add(mb, "rimFadeCm", 0, 500, 5).name("circle's fading rim (cm)");
+        f.add(mb, "tileCm", 50, 1500, 10).name("marble image size (cm)");
+        // the stone (every map but the example's) and OUR marble's dials (23 November 2026; Carl: "Build it.")
+        f.add(mb, "roughness", 0, 1, 0.01).name("stone roughness");
+        f.add(mb, "clearcoat", 0, 1, 0.01).name("clear coat");
+        f.add(mb, "clearcoatRoughness", 0, 1, 0.01).name("clear coat roughness");
+        f.add(mb, "scale", 0.25, 4, 0.05).name("ours: scale");
+        f.add(mb, "gold", 0, 2, 0.05).name("ours: gold veins");
+        f.add(mb, "web", 0, 2, 0.05).name("ours: hairline web");
+        f.add(mb, "teal", 0, 2, 0.05).name("ours: teal");
       }
 
       // ⛔ PHASE 3, PASS 1, FORWARD (`hero-scene.ts`, `pass1`; 20 November 2026, session 2; Carl: *"have the logo jump up and

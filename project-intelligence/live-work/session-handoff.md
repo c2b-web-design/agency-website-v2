@@ -1,84 +1,76 @@
-# Session Handoff — 22 November 2026 (Sunday), session 3. SCHRÖDINGER'S CLOTH COMPLETE: FOUR PASSES BAKED IN, THE CLOTH RISES FROM THE FLOOR, THE WEB FLOOR SHRINKS, THE LOGO DRIES TO GOLD — NEVER SEEN TO CHANGE
+# Session Handoff — 23 November 2026 (Monday), session 1. PHASE 4 BEGUN: THE CLOTH LEAVES AS THE LOGO CLEARS, THE MARBLE RADIATES IN; ROUTE B (A PLINTH, NO GROWTH); THE MARBLE's BAR IS GPT's IMAGE
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces every earlier handoff. Delete it at the end of
 the session that reads it, once its replacement is written.
 
-**The record:** D-101 in `decisions.md`, from *"PASS 2 IN ONE MOVE; GOOD CONTACT BOTH WAYS; THE CLOTH ENDS AT −75"* to the
-end; reviews **R-111** (passes 1–4 approved), **R-112** (the passes baked in, the arrival), **R-113** (the gold, *"Thats got
-it"*). Session ended on Carl's word: *"stop the capture. Compaction is at 40%. Wtire a handoff then commit and push."*
+**The record:** D-101 in `decisions.md`, from *"THE CLOTH's DEPARTURE IS ITS ARRIVAL MIRRORED"* to the end; review
+**R-114** (*"a natural flow to the story"* — the departure's timing and the marble's entrance; not the marble's look).
+Session ended on Carl's word: *"Compaction is 44%. Write a handoff and commit and push."*
 
-## ⛔ NEXT SESSION (session 2 tonight) — CARL's PLAN
+## ⛔ NEXT — CARL's (asked, not answered)
 
-Carl, after the push: *"we will decide what happens to the cloth and our gold logo is going to grow with an action. Phase 3
-will then be done and we move on to Phase 4."*
+1. **OUR MARBLE, TAKE 4** — here or a fresh session was asked; the session ended first. Aim at **THE BAR: GPT's first
+   marble** (`public/hero-bench/marble-gpt.webp`, Carl: *"the GPT image is the bar"*): a CONTINUOUS near-black body, GOLD
+   veins that run THROUGH it and fade (never closing into shapes — Carl rejected plates-and-cracks: *"crazy paving with
+   gold cement"*), TEAL deep inside, real MINERAL TEXTURE inside the veins close up (take 3 failed close up: *"the close
+   up image is the decider"* — poured liquid gold in flat nested bands). Build on the SEND OPAL's recipe (D-033: submerged
+   formations, few strong shapes, local contrast, one thing answers the light). **Generate it ONCE at load into a large
+   texture** (4096–8192 px) so it costs what GPT costs (measured: ours per-pixel 31 / 18 FPS against GPT 47 / 30 — HOME /
+   close, `hero-marble-fps-23-november.mjs`). Judged on the bench, CLOSE UP, against GPT.
+2. **THE FLOOR READS SLOPED** (Carl: *"does the floor seem sloped?"*): MEASURED level; the circle's far rim, centred on the
+   logo, reads as a tilted horizon from HOME (~88 cm above the floor). Three ways put; the Builder recommends (3) the FAR
+   side faded by DEPTH (a straight edge), the sides round. Not answered.
+3. **THE CLEAR COAT HAS NOTHING TO REFLECT** but the spotlight's highlight (an environment, maybe the logo, to come; a
+   mirror priced first, D-108).
 
-1. **What happens to the CLOTH** after the gold — Carl's to decide at the start (how/when it leaves is open).
-2. **The GOLD LOGO GROWS, WITH AN ACTION** — the action not yet described; ask, don't design ahead.
-3. Then **PHASE 3 IS DONE** → **PHASE 4**.
+## ⛔ PHASE 4 AS RULED TODAY
 
-Carl's order to the finish stands: finish the hero → camera direction (phase 5) → the hero on the site → film 3's edit →
-the four films on the site → Send → mastering. **Target 1 December 2026.** Start the screen capture when Carl says.
+- **RENAMED:** phase 4 = the larger logo, with **GANDALF's FIREWORKS** at the end (the 10–16 Nov "phase 4" = the web floor).
+- **ROUTE B:** NO jump, NO growth — the logo keeps its size; the marble on the flat floor, then a RECTANGULAR shape rises
+  out of it under the logo, lifting it to the text's height (~31 cm at HOME, a take); the camera (phase 5) emphasises size.
+- **THE STORY LOOPS**, ending at HOME (Home is set in stone for the OPENING only). **Scrolled away / tab hidden: FREEZE**
+  (nothing drawn, the story clock stopped; resume where it stopped); **navigated away: restart from the opening** —
+  structural, a note through the Architect, belongs to the hero ON THE SITE (after phase 5). Not built.
+- **THE MARBLE IS THE FLOOR's OWN, STATIC** (movement from the camera); 18 Nov's projected marble superseded.
 
-## THE STORY AS IT NOW PLAYS (nothing pressed; `/proto/hero`, frame-stepped times)
+## BUILT TODAY (committed and pushed with this handoff)
 
-- **32.7 s** the cloth wakes (1 s after the last code drop) — it LAY FLAT ON THE FLOOR, 250 cm back, asleep (not drawn,
-  not stepped); it rises AND comes forward together, one eased 3 s move, its pins to −60 (`clothArrival`).
-- **35.7 s** it arrives; a **2 s beat**; **37.8 s pass 1**; each next pass once the logo has stopped wobbling (`passesAuto`):
-  pass 2 45.6, pass 3 56.8, pass 4 68.1, all settled **75.4 s**.
-- **The web floor** shrinks an eighth after each of the 8 contacts (each action's landing, eased 1.5 s), gone after the
-  eighth (`floorDry`).
-- **The gold** (`hero-dry.ts`, new; the logo's colour in `hero-scene.ts`): AUTHORED regions — pass 1 the top third, 2 left
-  of 0.42 (where the c meets the 2), 3 right of 0.6 AND the 2's upper middle (above 0.3 of the height), 4 the 2's lower
-  part; the FRONT and BACK apart, each side by its action (pass 1 the back on the jump back, the face on the jump home;
-  passes 2–4 the face in the swivel/flip, the back after the return); ⛔ **each side dries ONLY WHILE TURNED AWAY from the
-  live camera** (`dryHidden`; pass 1's face only while the top is inside the cloth, 0.15–0.6 of the jump home). The border:
-  `smoothstep(0.15, 0.75, dryness + noise × 0.25)` — Carl: *"fantastic"*.
+- **The cloth's departure** (`clothDeparture`): the arrival mirrored, from −100 back and down to where it lay, 3 s, then
+  asleep; starts `clearS` 1.8 s after pass 4's return takes off — the moment the logo is clear (measured,
+  `hero-pass4-clear-23-november.mjs`; a constant of pass 4's approved dials). Story: leaves 72.8 s, down 75.8 s. Its
+  one-frame vanish: the camera hides it (Carl).
+- **`hero-marble.ts`** (new): `webgpu_lights_spotlight` copied, the logo in the statue's place (casts/receives; both
+  lights in its list); the floor its own light list; enters with the departure, a circle radiating from the logo over 3 s.
+  Then: a CIRCLE (450 cm, 200 cm rim fading into the background colour), PHYSICAL STONE (matte 0.5 under a clear coat
+  1 / 0.06), maps **gpt** (default, THE BAR), **ours** (take 3, its own material), **disturb.jpg** (THE FALLBACK), none.
+- **Deleted (Carl):** every other marble of today — Gemini, emerald, eight perchance images, their stills.
 
-## ⛔ STANDING — CARL's (new today)
+## OPEN — CARL's (carried)
 
-- ⛔ **"The user must never see the transition happen."** No frame may show blue turning gold. Checked from the FRONT camera
-  only; re-check when the camera is directed (phase 5) — the gating reads the live camera, so it should hold, unproven.
-- **Accuracy is not the point; the effect is** (*"no one is measuring"*) — but *"by action alone we will infer"*: a change
-  must be where the action could have caused it (no "magic cloth").
-- **Every pass value is APPROVED (R-111) and read-only on the bench.** A tweak to a pass now reopens an approved layer: ask.
-- Carried: target 1 December; name the files and ask before the first code edit, every session (the hero files open in
-  `chunk-scope.json`, `hero-dry.ts` added today, `_dry22Nov`); a question is answered, not built; contact must be real from
-  every angle; gravity serves the look.
-
-## OPEN — CARL's
-
-1. **The next subject** (above).
-2. **The cloth's arrival timing** — a TAKE (`clothArrival`: lies back 250 cm, delay 1 s, 3 s): to be set against the camera's
-   pull-back (Carl's cameras A 206, −269.5, 587.7 and B 238.3, −402.2, 571.6, both → 468.9, −201, −37.9, fov 45).
-3. **The back face** reads near-black from behind (the logo's lights are in front): its gold has not been judged by eye.
-4. **Carried:** the cloth colour C at the gold; how/when the cloth LEAVES; the plinth brainstorm; Gandalf's fireworks; the
-   floor's notes ([R5][T1][R6][R7], `heatPlane`); the untracked `structural-note-code-drops-20-november.md` (keep or delete);
-   the frame cost of the whole phase (D-108, not measured).
+- The cloth's arrival timing vs the camera's pull-back; the back face's gold; the plinth's size; the slope (above).
+- Flagged: the dev overlay on `/start` reads "2 Issues" — not looked into.
+- Carried from before: the cloth colour C at the gold; Gandalf's fireworks; the floor's notes; the untracked
+  `structural-note-code-drops-20-november.md`; the frame cost of the whole phase (D-108).
 
 ## LESSONS (today)
 
-- **Measure the cause before tuning the lever.** Route 2 (a faster cloth) was measured to do nothing: the return's poor
-  contact came from the drape's RELEASE swing, found only by a timeline harness (`hero-pass2-return-timeline-22-november.mjs`).
-- **A conserving spread drains what it spreads.** The gold's first spread (heat's Laplacian) leaked pass 1's top back to
-  blue; drying is one-way (`max(lap, 0)`), and then was replaced by authored regions anyway.
-- **Physical isn't always the brief.** Carl wanted the EFFECT of contact, authored per pass, not the measured contact.
-- **The overview sheet can mislead.** Motion and the frame's edge read as colour change at 2 fps; close frames decided it.
-- **A harness's own defaults go stale with the story:** `hero-pass1-backward-20-november.mjs` no longer measures the story
-  (its 1 s beat; `cloth.again` now lays and raises the cloth). Use `hero-pass1-contact-22-november.mjs`.
-- **The dev server WAS current** when two films looked alike; check the served object (`window.__heroBench.hero`) before
-  blaming it.
-- Carl's PC: a hard hang while casting to the TV (the Realtek card, `WLAN-AutoConfig/Operational`); Lenovo has no newer
-  driver (Carl checked) — memory updated.
+- **Measure before tuning:** the "pause" was the wobble + a 2 s beat, not the −100 move (which the 2's drying needs).
+- **A dark disc's rim must fade to the BACKGROUND, not black** — black read as a ring.
+- **One shader for several looks pays for all of them:** ours dragged GPT to ~35 FPS until split onto its own material.
+- **Close up decides marble.** Fractal zero lines read as rivers/contours; closed cracks read as paving. Slab veins run
+  through and fade.
+- **Perchance refused the automated browser**; Carl ran it himself. Its output is 768 px.
 
 ## STATE
 
-- **COMMITTED AND PUSHED** with this handoff (after `5181aab`). Lint at the baseline (1 error, 0 warnings); tsc clean; the
-  clean-checkout build passed.
-- **The screen capture STOPPED:** `03 The hero\01 Discussion\2026-11-22_discussion_screen.remux.mkv` (4:44:12; raw kept).
-- **The dev server is UP** (port 3000).
-- Films today (`03 The hero\`): `2026-11-22_pass2-*`, `…_pass3-mirror_take1`, `…_pass2-3-landing-lean_take1`,
-  `…_pass4-*`, `…_cloth-arrival_take1/2`, `…_floor-dries_take1`, `…_gold-dry_take1–8`.
+- **Committed and pushed** with this handoff. The screen capture STOPPED (`01 Discussion\2026-11-23_discussion_screen
+  .remux.mkv`, 2:17:58). The dev server is UP (port 3000).
+- Films today (`03 The hero\`): `2026-11-23_cloth-departure_take1`, `_take2-when-clear`, `_marble-spotlight-example_take1/2`,
+  `_marble-entrance_take1`, `_marble-gpt_take1`.
+- Scope (`chunk-scope.json`, `_marble23Nov`): `hero-marble.ts`, `disturb.jpg`, `marble-gpt.webp` added; Gemini removed.
+- Carried: target 1 December; name the files and ask before the first code edit, every session; a question is answered,
+  not built.
 
 ---
 
-*Written 22 November 2026, session 3.*
+*Written 23 November 2026, session 1.*
