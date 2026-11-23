@@ -7,7 +7,19 @@ the session that reads it, once its replacement is written.
 **R-114** (*"a natural flow to the story"* — the departure's timing and the marble's entrance; not the marble's look).
 Session ended on Carl's word: *"Compaction is 44%. Write a handoff and commit and push."*
 
-## ⛔ NEXT — CARL's (asked, not answered)
+## ⛔ NEXT SESSION — CARL's PLAN
+
+Carl, at the session's end: *"ok, next session we will deal with the plinth and the speed of the marble radial reveal."*
+
+1. **THE PLINTH** — route B: a rectangular shape (rounded edges, 18 Nov) rising out of the marble UNDER the logo, lifting
+   it to the text's height (~31 cm at HOME, a take); the marble on it (now the floor's own material — how the plinth
+   takes it, world-fixed or carried with the block, to settle). Ask, don't design ahead; name the files first.
+2. **THE MARBLE's RADIAL REVEAL SPEED** — now `spreadS` 3 s, linear, from the cloth's departure (72.8 s), the circle's
+   soft edge 60 cm (`hero-marble.ts`; the bench's Marble folder).
+3. **For phase 5 (recorded):** fast camera moves need a steady 60 — keep them out of framings where the logo fills the
+   screen (37 FPS seen close up), or the plain-gold swap after the drying (raised, not chosen; Carl's; measured first).
+
+## CARRIED — CARL's (asked, not answered)
 
 1. **OUR MARBLE, TAKE 4** — here or a fresh session was asked; the session ended first. Aim at **THE BAR: GPT's first
    marble** (`public/hero-bench/marble-gpt.webp`, Carl: *"the GPT image is the bar"*): a CONTINUOUS near-black body, GOLD
