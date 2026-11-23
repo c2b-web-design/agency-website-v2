@@ -338,6 +338,14 @@ export default function HeroBench() {
       f.add({ go: () => hero.clothRiseNow() }, "go").name("Rise now");
       f.add({ lay: () => hero.clothLayAgain() }, "lay").name("Lay it on the floor again");
 
+      // ⛔ THE CLOTH's DEPARTURE (`hero-scene.ts`, `clothDeparture`; 23 November 2026): the arrival mirrored — back and down
+      // together to where it lay, then asleep. ⚠ What starts it is open (phase 4); PROVISIONAL: after pass 4 settles. Takes
+      f = gui.addFolder("Cloth departure");
+      f.add(hero.clothDeparture, "auto").name("leave after pass 4");
+      f.add(hero.clothDeparture, "afterS", 0, 10, 0.1).name("after pass 4 settles (s)");
+      f.add(hero.clothDeparture, "seconds", 0.5, 8, 0.1).name("back and down (s)");
+      f.add({ go: () => hero.clothDepartNow() }, "go").name("Leave now");
+
       // ⛔ PHASE 3, PASS 1, FORWARD (`hero-scene.ts`, `pass1`; 20 November 2026, session 2; Carl: *"have the logo jump up and
       // down with the figures youve suggeated"*): the first jump, straight up and down, on "Jump" once phase 1's wobble is
       // done. The height's rows put to Carl: 32.7 (touching), 47.7, 60 (phase 1's hop), 72.7 cm; take 3: 95 (half the front face, the default). The cloth answers

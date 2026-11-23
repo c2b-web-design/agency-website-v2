@@ -959,6 +959,10 @@ export type HeroScene = {
   clothArrival: { auto: boolean; backCm: number; delayS: number; seconds: number };
   readonly clothArrivalInfo: { laid: boolean; riseAt: number; handCm: number; handYCm: number; arrived: boolean };
   clothRiseNow(): void;
+  /** ⛔ THE CLOTH's DEPARTURE (23 November 2026): the arrival mirrored — its dials, a read-out, and the bench's button */
+  clothDeparture: { auto: boolean; afterS: number; seconds: number };
+  readonly clothDepartureInfo: { departAt: number; departed: boolean; pass4DoneAt: number };
+  clothDepartNow(): void;
   /** ⛔ THE PASSES BAKED IN (22 November 2026, session 3; R-111): the story plays them by itself — `beatS` after the cloth
    *  arrives, pass 1; each next pass once the logo has stopped wobbling. Off = the bench's Jump, as before */
   passesAuto: { on: boolean; beatS: number };
@@ -1466,6 +1470,27 @@ export function createHeroScene(aspect: number): HeroScene {
   /** when the cloth arrived at its place (story s, NaN = not yet): the passes' beat counts from here */
   let clothArrivedAt = Number.NaN;
   /**
+   * ⛔ THE CLOTH's DEPARTURE (23 November 2026, session 1). Carl: *"The cloth in Phase 4 as its travelling backwards should
+   * return to -60 and then to the position it was at the start of Phase 1. So its the opposite, a mirror, to its arrival. Its
+   * departure should be the same."* … *"if the cloth is at -100 it should return to its starting position from there."*
+   * - THE ARRIVAL MIRRORED: from where pass 4 leaves it (`pass4.clothBackToCm`, −100 cm from the spot), its pins go BACK AND
+   *   DOWN TOGETHER, one eased (smoothstep) move over `seconds`, to where it lay from the load (`clothArrival.backCm` behind
+   *   the spot, on the floor); then it SLEEPS again (not drawn, not stepped). No stop at −60 (Carl, the second quote).
+   * - ⚠ The simulation does not run backwards: lowered and drawn back, it is dragged and folds on the floor (its floor
+   *   physics), not the flat sheet it rose from. A take, filmed for Carl.
+   * - ⚠ WHAT STARTS IT IS OPEN: Carl places it in phase 4; the phase 3 → 4 boundary (after the gold logo's growth, not yet
+   *   described) is not set. ⚠ PROVISIONAL: `afterS` after pass 4 has settled, so it can be seen; to be re-placed then.
+   */
+  const clothDeparture = { auto: true, afterS: 2, seconds: 3 };
+  /** the departure's start (story s, NaN = none), where it set off from, and whether it has gone (no re-arrival until a replay) */
+  let departAt = Number.NaN;
+  let departFromCm = 0;
+  let departFromYCm = 0;
+  let departed = false;
+  let departAsked = false;
+  /** when pass 4 settled (story s, NaN = not yet): the departure's provisional clock */
+  let pass4DoneAt = Number.NaN;
+  /**
    * ⛔ THE PASSES BAKED IN (Carl, 22 November 2026, session 3, R-111: *"The Passes have all be approved so they can be baked
    * in."* … *"Give the cloth a beat when it arrives, the hem may still be swinging. the gap. Wait till the logo has stopped
    * wobbling. Again, that gives the hem some time to stop swinging as much."*): `on` — the story asks for the next pass every
@@ -1512,6 +1537,8 @@ export function createHeroScene(aspect: number): HeroScene {
     handYCm = layY;
     riseAt = Number.NaN;
     clothArrivedAt = Number.NaN;
+    departAt = Number.NaN;
+    departed = false;
   };
   layCloth();
   /** the jump (emission s) the cloth is answering, NaN = none */
@@ -2547,6 +2574,7 @@ export function createHeroScene(aspect: number): HeroScene {
       pass2Done = false;
       pass3Done = false;
       pass4Done = false;
+      pass4DoneAt = Number.NaN;
       sw = pass2;
       // ⛔ THE CLOTH LAID ON THE FLOOR AGAIN (its arrival replays; ⚰️ was: eased home over `CLOTH_RETURN_S`)
       if (!cloth.asleep || handCm !== layZ || !Number.isNaN(riseAt)) layCloth();
@@ -2716,7 +2744,10 @@ export function createHeroScene(aspect: number): HeroScene {
           p2b = null;
           p2bAt = Number.NaN;
           p2At = Number.NaN;
-          if (sw === pass4) pass4Done = true;
+          if (sw === pass4) {
+            pass4Done = true;
+            pass4DoneAt = emitT;
+          }
           else if (sw === pass3) pass3Done = true;
           else pass2Done = true;
         }
@@ -2828,7 +2859,11 @@ export function createHeroScene(aspect: number): HeroScene {
     if (cloth.asleep && Number.isNaN(riseAt)) {
       const cb = rain.info?.codeBand ?? null;
       const due = Number.isFinite(phase1End) && emitT - phase1End >= (cb ? cb[1] : rain.settings.seconds) + clothArrival.delayS;
-      if (riseAsked || (clothArrival.auto && due)) riseAt = emitT;
+      // (once it has DEPARTED it stays down: the auto rise does not bring it back; the bench's "Rise now" still does)
+      if (riseAsked || (clothArrival.auto && due && !departed)) {
+        riseAt = emitT;
+        departed = false;
+      }
     }
     riseAsked = false;
     if (!Number.isNaN(riseAt)) {
@@ -2843,6 +2878,31 @@ export function createHeroScene(aspect: number): HeroScene {
         handYCm = 0;
         riseAt = Number.NaN;
         clothArrivedAt = emitT;
+      }
+    }
+    // ⛔ THE CLOTH's DEPARTURE (`clothDeparture`, above): the arrival mirrored — from where it is, back AND down together to
+    // where it lay, one eased move; then asleep again. Only from rest: arrived, not answering a pass, not easing home
+    if (Number.isNaN(departAt) && !departed && !cloth.asleep && Number.isNaN(riseAt) && Number.isNaN(clothFwdAt) && Number.isNaN(clothBackS)) {
+      const due = clothDeparture.auto && pass4Done && Number.isFinite(pass4DoneAt) && emitT - pass4DoneAt >= clothDeparture.afterS;
+      if (departAsked || due) {
+        departAt = emitT;
+        departFromCm = handCm;
+        departFromYCm = handYCm;
+      }
+    }
+    departAsked = false;
+    if (!Number.isNaN(departAt)) {
+      const u = Math.min(1, Math.max(0, (emitT - departAt) / clothDeparture.seconds));
+      const e = u * u * (3 - 2 * u);
+      handCm = departFromCm + (layZ - departFromCm) * e;
+      handYCm = departFromYCm + (layY - departFromYCm) * e;
+      if (u >= 1) {
+        // down where it lay from the load: asleep (not drawn, not stepped), its laid shape put back unseen
+        handCm = layZ;
+        handYCm = layY;
+        layY = cloth.layOnFloor(layZ);
+        departAt = Number.NaN;
+        departed = true;
       }
     }
     cloth.setHand(handCm, handYCm);
@@ -3213,6 +3273,13 @@ export function createHeroScene(aspect: number): HeroScene {
     clothRiseNow() {
       if (cloth.asleep) riseAsked = true;
     },
+    clothDeparture,
+    get clothDepartureInfo() {
+      return { departAt, departed, pass4DoneAt };
+    },
+    clothDepartNow() {
+      if (!cloth.asleep) departAsked = true;
+    },
     clothLayAgain() {
       layCloth();
     },
@@ -3288,11 +3355,16 @@ export function createHeroScene(aspect: number): HeroScene {
       pass2Done = false;
       pass3Done = false;
       pass4Done = false;
+      pass4DoneAt = Number.NaN;
+      departAt = Number.NaN;
       sw = pass2;
       if (cloth.snapshotted) {
         cloth.setHand(0);
         // the cloth EXACTLY as it was at pass 1's first take-off (`clothSnapWanted`); before any pass, nothing has moved it
         cloth.restore();
+        // (awake again if it had DEPARTED)
+        departed = false;
+        cloth.wake();
       }
     },
     rainAgain() {
