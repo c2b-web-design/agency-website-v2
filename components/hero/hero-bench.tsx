@@ -339,12 +339,38 @@ export default function HeroBench() {
       f.add({ lay: () => hero.clothLayAgain() }, "lay").name("Lay it on the floor again");
 
       // ⛔ THE CLOTH's DEPARTURE (`hero-scene.ts`, `clothDeparture`; 23 November 2026): the arrival mirrored — back and down
-      // together to where it lay, then asleep. ⚠ What starts it is open (phase 4); PROVISIONAL: after pass 4 settles. Takes
+      // together to where it lay, then asleep; the moment the logo is clear of it on pass 4's return (Carl, 23 November). Takes
       f = gui.addFolder("Cloth departure");
       f.add(hero.clothDeparture, "auto").name("leave after pass 4");
-      f.add(hero.clothDeparture, "afterS", 0, 10, 0.1).name("after pass 4 settles (s)");
+      f.add(hero.clothDeparture, "clearS", 0, 6, 0.05).name("after pass 4's return takes off (s)");
       f.add(hero.clothDeparture, "seconds", 0.5, 8, 0.1).name("back and down (s)");
       f.add({ go: () => hero.clothDepartNow() }, "go").name("Leave now");
+
+      // ⛔ PHASE 4, THE MARBLE, step 1 (`hero-scene.ts`, `hero-marble.ts`; 23 November 2026; Carl: *"Copy the code exactly. We
+      // can turn off the rotations and other things, then we will tweak it"*): `webgpu_lights_spotlight`'s own GUI, in its
+      // units, + rotate, the scale and the hemisphere. Takes
+      {
+        const mb = hero.marble.settings;
+        f = gui.addFolder("Marble (spotlight example)");
+        f.add(mb, "on");
+        f.add(mb, "map", ["disturb.jpg", "none"]);
+        f.addColor(mb, "color");
+        f.add(mb, "intensity", 0, 500);
+        f.add(mb, "distance", 0, 20);
+        f.add(mb, "angle", 0, Math.PI / 3);
+        f.add(mb, "penumbra", 0, 1);
+        f.add(mb, "decay", 1, 2);
+        f.add(mb, "focus", 0, 1);
+        f.add(mb, "shadowIntensity", 0, 1);
+        f.add(mb, "helpers");
+        f.add(mb, "rotate").name("rotate (the light circles)");
+        f.add(mb, "metresPerUnit", 0.25, 3, 0.05).name("metres per example unit");
+        f.add(mb, "ambient", 0, 1, 0.01).name("hemisphere");
+        // its entrance (Carl, 23 November 2026): radiating from the logo as the cloth leaves
+        f.add(mb, "story").name("enters with the cloth's departure");
+        f.add(mb, "spreadS", 0.5, 10, 0.1).name("spread from the logo (s)");
+        f.add(mb, "featherCm", 0, 300, 5).name("spread's soft edge (cm)");
+      }
 
       // ⛔ PHASE 3, PASS 1, FORWARD (`hero-scene.ts`, `pass1`; 20 November 2026, session 2; Carl: *"have the logo jump up and
       // down with the figures youve suggeated"*): the first jump, straight up and down, on "Jump" once phase 1's wobble is
@@ -643,6 +669,9 @@ export default function HeroBench() {
         return;
       }
       renderer = r;
+      // ⛔ THE MARBLE (`hero-marble.ts`; 23 November 2026): the example's shadows — on, PCF soft (`webgpu_lights_spotlight`)
+      r.shadowMap.enabled = true;
+      r.shadowMap.type = THREE.PCFSoftShadowMap;
       backend = (r.backend as { isWebGPUBackend?: boolean }).isWebGPUBackend ? "webgpu" : "webgl2 (fallback)";
       container.dataset.heroBackend = backend;
       // the root zoom above 1412 px (D-097): sized from the container in layout px, drawn at DPR × zoom

@@ -65,6 +65,31 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-114 — The Hero, Phase 3 → 4: The Cloth Leaves As The Logo Clears, The Marble Radiates In (D-101): "a natural flow to the story"
+
+**Date:** 2026-11-23
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — the cloth's departure (`hero-scene.ts`, `clothDeparture`: the arrival mirrored, from −100 back
+and down to where it lay, 3 s, then asleep; started `clearS` 1.8 s after pass 4's return takes off, the moment the logo
+is clear, measured) and phase 4's first step, the marble (`hero-marble.ts`, new: `webgpu_lights_spotlight` copied exactly,
+the logo in the statue's place; entering with the departure, a circle radiating from the logo over 3 s, its lights rising
+with it). Film: `03 The hero6-11-23_cloth-departure_take2-when-clearilm.mp4`.
+
+**Carl's verdict, verbatim:** *"It looks a lot smoother and theres a natural flow to the story. Commit and push."*
+
+**Findings:**
+
+- ✔ **"A lot smoother ... a natural flow to the story"** — recorded at the level given: the departure's TIMING (the
+  moment the logo is clear, one action to the floor) and the marble's entrance with it, as built at their defaults.
+  Not worded as an approval; not promoted to one.
+- **The marble itself** (the example's image, its light and floor): step 1 of route B, to be made ours (our own image,
+  then the plinth) — not ruled as a look.
+- ⚠ **Carried:** the cloth's one-frame vanish as it sleeps is to be hidden by the camera (Carl, the same day); the
+  spotlight lights the folding cloth (a pale strip through the counters); the 10 m floor's far edge visible at HOME; the
+  frame cost (a shadow pass, D-108) not measured; checked from HOME only.
+
+---
+
 ## R-113 — The Hero, Phase 3: The Logo Dried To Gold, Pass By Pass, Never Seen To Change (D-101): "Thats got it"
 
 **Date:** 2026-11-22

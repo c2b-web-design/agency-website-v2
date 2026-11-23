@@ -12,6 +12,7 @@ import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
 import { createHeroRain, HIT, type HeroRainInfo, type HeroRainSettings } from "./hero-rain";
 import type { HeroCodeSettings } from "./hero-code-drops";
 import { CLOTH_BACK_CM, createHeroCloth, type HeroCloth } from "./hero-cloth";
+import { createHeroMarble, type HeroMarble } from "./hero-marble";
 import { createHeroDry, type HeroDry } from "./hero-dry";
 import { createHeroSteam, MARGIN, type HeroSteamInfo, type HeroSteamSettings } from "./hero-steam";
 import { createHeroHeat, type HeroHeat, type HeroHeatInfo, type HeroHeatSettings } from "./hero-heat";
@@ -955,13 +956,16 @@ export type HeroScene = {
   /** ⛔ PHASE 3, THE CLOTH, step 1 (`hero-cloth.ts`; 20 November 2026): three's `webgpu_compute_cloth` exactly as it is, behind
    *  the logo — its dials (the bench's Cloth folder), "again", and a read-out */
   cloth: Pick<HeroCloth, "settings" | "again" | "info" | "points" | "collider" | "snapshotInfo"> & { readonly asleep: boolean };
+  /** ⛔ PHASE 4, THE MARBLE, step 1 (`hero-marble.ts`; 23 November 2026): `webgpu_lights_spotlight` exactly as it is, the
+   *  logo in the statue's place — its dials (the bench's Marble folder) and a read-out */
+  marble: Pick<HeroMarble, "settings" | "info">;
   /** ⛔ THE CLOTH's ARRIVAL (22 November 2026, session 3): its dials, a read-out, and the bench's buttons */
   clothArrival: { auto: boolean; backCm: number; delayS: number; seconds: number };
   readonly clothArrivalInfo: { laid: boolean; riseAt: number; handCm: number; handYCm: number; arrived: boolean };
   clothRiseNow(): void;
   /** ⛔ THE CLOTH's DEPARTURE (23 November 2026): the arrival mirrored — its dials, a read-out, and the bench's button */
-  clothDeparture: { auto: boolean; afterS: number; seconds: number };
-  readonly clothDepartureInfo: { departAt: number; departed: boolean; pass4DoneAt: number };
+  clothDeparture: { auto: boolean; clearS: number; seconds: number };
+  readonly clothDepartureInfo: { departAt: number; departed: boolean; pass4ReturnAt: number };
   clothDepartNow(): void;
   /** ⛔ THE PASSES BAKED IN (22 November 2026, session 3; R-111): the story plays them by itself — `beatS` after the cloth
    *  arrives, pass 1; each next pass once the logo has stopped wobbling. Off = the bench's Jump, as before */
@@ -1058,7 +1062,13 @@ export function createHeroScene(aspect: number): HeroScene {
   logoKey.position.copy(light.position);
   logoKey.layers.set(LOGO_KEY_LAYER);
   scene.add(logoKey);
-  const logoLights: THREE.Light[] = [logoKey, pointLight, ambientLight];
+  // ⛔ PHASE 4, THE MARBLE, step 1 (`hero-marble.ts`; 23 November 2026; Carl: *"Copy the code exactly"*): the example's
+  // spotlight and hemisphere light, made HERE so they are in the scene's light set from the first build (off = intensity 0,
+  // never `visible`) and in the LOGO's own list (the statue was in the example's light: the scope Carl authorised)
+  const marble = createHeroMarble();
+  scene.add(marble.group);
+  disposables.push(marble);
+  const logoLights: THREE.Light[] = [logoKey, pointLight, ambientLight, ...marble.lights];
 
   // MATERIALS
   const envs: Partial<Record<HeroEnvironment, { reflect: THREE.Texture; refract: THREE.Texture }>> = {};
@@ -1478,18 +1488,28 @@ export function createHeroScene(aspect: number): HeroScene {
    *   the spot, on the floor); then it SLEEPS again (not drawn, not stepped). No stop at −60 (Carl, the second quote).
    * - ⚠ The simulation does not run backwards: lowered and drawn back, it is dragged and folds on the floor (its floor
    *   physics), not the flat sheet it rose from. A take, filmed for Carl.
-   * - ⚠ WHAT STARTS IT IS OPEN: Carl places it in phase 4; the phase 3 → 4 boundary (after the gold logo's growth, not yet
-   *   described) is not set. ⚠ PROVISIONAL: `afterS` after pass 4 has settled, so it can be seen; to be re-placed then.
+   * - ⛔ WHAT STARTS IT (Carl, 23 November 2026: *"As soon as the logo is clear of the cloth and the cloth is making its way
+   *   back too -100 and then making the movement, it can do it all with one action. Thers a too long of a pause. so the
+   *   logos clear and it makes its way to the floor."*): THE MOMENT THE LOGO IS CLEAR OF THE CLOTH on pass 4's return —
+   *   `clearS` after the return takes off. MEASURED (`live-work/scripts/hero-pass4-clear-23-november.mjs`, pass 4's
+   *   approved dials): the cloth at −100 by +0.97 s (before the logo reaches it — the 2's back is dried there, so the −100
+   *   stays), the logo in it +1.0 to +1.77 s, CLEAR from +1.8 s, still flying home (it lands +2.40 s).
+   *   ⚠ `clearS` is a MEASURED constant of pass 4's dials (R-111, approved and fixed): re-measure if they ever change.
+   *   ⚰️ Was: 2 s after pass 4 SETTLED (+6.43 s, 4.6 s after the logo was clear); then its landing home (+2.40 s).
    */
-  const clothDeparture = { auto: true, afterS: 2, seconds: 3 };
+  const clothDeparture = { auto: true, clearS: 1.8, seconds: 3 };
   /** the departure's start (story s, NaN = none), where it set off from, and whether it has gone (no re-arrival until a replay) */
   let departAt = Number.NaN;
   let departFromCm = 0;
   let departFromYCm = 0;
   let departed = false;
   let departAsked = false;
-  /** when pass 4 settled (story s, NaN = not yet): the departure's provisional clock */
-  let pass4DoneAt = Number.NaN;
+  /** when pass 4's RETURN TOOK OFF (story s, NaN = not yet): the departure's clock */
+  let pass4ReturnAt = Number.NaN;
+  /** ⛔ THE MARBLE's ENTRANCE (`hero-marble.ts`, `setReveal`; Carl, 23 November 2026: *"When the cloth makes its final
+   *  journey backwards, it should radiate outwards from the logo, much like the web floor does."*): when the departure
+   *  started (story s, NaN = not yet) — the marble's circle opens from it over `marble.settings.spreadS` */
+  let marbleAt = Number.NaN;
   /**
    * ⛔ THE PASSES BAKED IN (Carl, 22 November 2026, session 3, R-111: *"The Passes have all be approved so they can be baked
    * in."* … *"Give the cloth a beat when it arrives, the hem may still be swinging. the gap. Wait till the logo has stopped
@@ -1539,6 +1559,7 @@ export function createHeroScene(aspect: number): HeroScene {
     clothArrivedAt = Number.NaN;
     departAt = Number.NaN;
     departed = false;
+    marbleAt = Number.NaN;
   };
   layCloth();
   /** the jump (emission s) the cloth is answering, NaN = none */
@@ -1703,6 +1724,9 @@ export function createHeroScene(aspect: number): HeroScene {
       mark("lean");
       logo = new THREE.Mesh(g, material);
       logo.name = "hero logo";
+      // ⛔ THE MARBLE (`hero-marble.ts`): in the statue's place, it casts and receives the spotlight's shadow (the example's)
+      logo.castShadow = true;
+      logo.receiveShadow = true;
       // ⛔ THE FADE AS ONE SOLID LAYER (`OPENING`; 16 November 2026, session 2): its transparent material and the depth first
       {
         const fade = (material as unknown as { clone(): MeshPhysicalNodeMaterial }).clone();
@@ -1746,6 +1770,12 @@ export function createHeroScene(aspect: number): HeroScene {
       }
       mould = { matrix: mouldPose(g, t.sketch), bounds: g.boundingBox!.clone() };
       mark("mould");
+      // ⛔ THE MARBLE's spot (`hero-marble.ts`): where the statue stood = the logo's spot on the floor (the mould's middle,
+      // straight below: the logo falls from the mould onto the floor and the passes return it there)
+      {
+        const c = g.boundingBox!.getCenter(new THREE.Vector3()).applyMatrix4(mould.matrix);
+        marble.place(new THREE.Vector3(c.x, FLOOR_Y, c.z), t.unitsPerCm);
+      }
       {
         // THE FALL's height (`FALL`): the mould pose's lowest vertex above the floor (world units)
         const pa = g.getAttribute("position");
@@ -2438,7 +2468,8 @@ export function createHeroScene(aspect: number): HeroScene {
     // ⛔ THE CODE DROPS' mesh too (`hero-code-drops.ts`; 20 November 2026): hidden outside its band, so shown here to be
     // built now, not at the last band
     // ⛔ + the cloth (`hero-cloth.ts`; 20 November 2026): hidden until its environment is in, so shown here to be built now
-    const show: THREE.Object3D[] = [view, heatPlane, rain.group, rain.codeMesh, floorHeat.mesh, cloth.group];
+    // ⛔ + the marble's floor (`hero-marble.ts`; 23 November 2026): hidden while off, so shown here to be built now
+    const show: THREE.Object3D[] = [view, heatPlane, rain.group, rain.codeMesh, floorHeat.mesh, cloth.group, marble.floor];
     if (logo) show.push(logo);
     const keep = show.map((o) => [o.visible, o.frustumCulled] as const);
     for (const o of show) {
@@ -2527,6 +2558,8 @@ export function createHeroScene(aspect: number): HeroScene {
 
   function update(delta: number) {
     stepOpening(delta);
+    // ⛔ THE MARBLE (`hero-marble.ts`): the example's light circling, on the scene's clock
+    marble.update(delta);
     // THE PRIMER (above): drawn `PRIMER_FRAMES` frames, then gone
     if (primer && ++primerFrames > PRIMER_FRAMES) {
       scene.remove(primer);
@@ -2574,7 +2607,7 @@ export function createHeroScene(aspect: number): HeroScene {
       pass2Done = false;
       pass3Done = false;
       pass4Done = false;
-      pass4DoneAt = Number.NaN;
+      pass4ReturnAt = Number.NaN;
       sw = pass2;
       // ⛔ THE CLOTH LAID ON THE FLOOR AGAIN (its arrival replays; ⚰️ was: eased home over `CLOTH_RETURN_S`)
       if (!cloth.asleep || handCm !== layZ || !Number.isNaN(riseAt)) layCloth();
@@ -2671,6 +2704,8 @@ export function createHeroScene(aspect: number): HeroScene {
       }
       if (!Number.isNaN(retreat2At) && emitT >= retreat2At + (sw.gymnast ? 0 : sw.backJumpDelayS)) {
         p2bAt = emitT;
+        // pass 4's return: the cloth's departure counts from this take-off (`clothDeparture.clearS`)
+        if (sw === pass4) pass4ReturnAt = emitT;
         retreat2At = Number.NaN;
       }
       jumpAsked = false;
@@ -2744,10 +2779,7 @@ export function createHeroScene(aspect: number): HeroScene {
           p2b = null;
           p2bAt = Number.NaN;
           p2At = Number.NaN;
-          if (sw === pass4) {
-            pass4Done = true;
-            pass4DoneAt = emitT;
-          }
+          if (sw === pass4) pass4Done = true;
           else if (sw === pass3) pass3Done = true;
           else pass2Done = true;
         }
@@ -2883,11 +2915,12 @@ export function createHeroScene(aspect: number): HeroScene {
     // ⛔ THE CLOTH's DEPARTURE (`clothDeparture`, above): the arrival mirrored — from where it is, back AND down together to
     // where it lay, one eased move; then asleep again. Only from rest: arrived, not answering a pass, not easing home
     if (Number.isNaN(departAt) && !departed && !cloth.asleep && Number.isNaN(riseAt) && Number.isNaN(clothFwdAt) && Number.isNaN(clothBackS)) {
-      const due = clothDeparture.auto && pass4Done && Number.isFinite(pass4DoneAt) && emitT - pass4DoneAt >= clothDeparture.afterS;
+      const due = clothDeparture.auto && Number.isFinite(pass4ReturnAt) && emitT - pass4ReturnAt >= clothDeparture.clearS;
       if (departAsked || due) {
         departAt = emitT;
         departFromCm = handCm;
         departFromYCm = handYCm;
+        marbleAt = emitT;
       }
     }
     departAsked = false;
@@ -2905,6 +2938,8 @@ export function createHeroScene(aspect: number): HeroScene {
         departed = true;
       }
     }
+    // ⛔ THE MARBLE's ENTRANCE (`marbleAt`): its circle and its lights from the departure's start, linear
+    marble.setReveal(Number.isNaN(marbleAt) ? 0 : (emitT - marbleAt) / Math.max(0.01, marble.settings.spreadS));
     cloth.setHand(handCm, handYCm);
     // ⛔ THE COLLIDER's POSE (`hero-cloth.ts`): the logo's local from world, while it is drawn
     cloth.setCollider(logo && logo.visible ? clothPose.copy(logo.matrix).invert() : null);
@@ -3275,13 +3310,19 @@ export function createHeroScene(aspect: number): HeroScene {
     },
     clothDeparture,
     get clothDepartureInfo() {
-      return { departAt, departed, pass4DoneAt };
+      return { departAt, departed, pass4ReturnAt };
     },
     clothDepartNow() {
       if (!cloth.asleep) departAsked = true;
     },
     clothLayAgain() {
       layCloth();
+    },
+    marble: {
+      settings: marble.settings,
+      get info() {
+        return marble.info;
+      },
     },
     cloth: {
       settings: cloth.settings,
@@ -3355,8 +3396,9 @@ export function createHeroScene(aspect: number): HeroScene {
       pass2Done = false;
       pass3Done = false;
       pass4Done = false;
-      pass4DoneAt = Number.NaN;
+      pass4ReturnAt = Number.NaN;
       departAt = Number.NaN;
+      marbleAt = Number.NaN;
       sw = pass2;
       if (cloth.snapshotted) {
         cloth.setHand(0);
