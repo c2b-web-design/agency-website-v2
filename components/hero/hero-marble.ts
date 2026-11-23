@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { MeshPhysicalNodeMaterial } from "three/webgpu";
-import { abs, clamp, color, float, fwidth, lights, max, min, mix, mx_fractal_noise_float, mx_fractal_noise_vec3, mx_noise_float, neutralToneMapping, output, positionWorld, smoothstep, texture as sampleTexture, uniform, vec2, vec3, vec4 } from "three/tsl";
+import { abs, clamp, color, float, fwidth, lights, max, mix, mx_fractal_noise_float, mx_fractal_noise_vec3, mx_noise_float, neutralToneMapping, output, positionWorld, smoothstep, texture as sampleTexture, uniform, vec2, vec3, vec4 } from "three/tsl";
 
 /**
  * ⛔ PHASE 4, THE MARBLE, STEP 1 — `webgpu_lights_spotlight` EXACTLY AS IT IS (23 November 2026; D-101, route B).
@@ -20,7 +20,13 @@ import { abs, clamp, color, float, fwidth, lights, max, min, mix, mx_fractal_noi
  *
  * ⛔ WHAT IS OURS, AND WHY:
  * - THE STATUE IS OUR LOGO (the scope Carl authorised): the light aims where the statue stood, the logo's spot; the logo
- *   casts and receives the shadow (`hero-scene.ts`) and is in the light (its own light list includes both lights).
+ *   casts the shadow (`hero-scene.ts`). ⚰️ It was also IN the light (both lights in its own list) until Carl's question,
+ *   23 November 2026: *"can the floor light be isolated from the logo?"* … *"Do those 2 things"* → the two lights are on
+ *   `MARBLE_LIGHT_LAYER` (31, the logo's key's layer), which the camera never collects (r185 culls lights by the camera's
+ *   layers), so ONLY the floor — which names them in its own `lightsNode` — is lit by them: the logo keeps its approved gold
+ *   and the text its look whatever the floor light's colour; the logo still CASTS its shadow on the floor (casting is not
+ *   being lit). The default colour Carl's `#f7f8c9` (his bench, the same day: *"The black marble isnt so black, nor is it
+ *   jarring technicolour green"*).
  * - THE SCALE: 1 example unit = `metresPerUnit` m (default 1) — the example's floor at y −1 is our floor (`FLOOR_Y`), its
  *   origin 1 unit above it at the logo's spot. Positions, the floor, the shadow camera and `distance` are scaled; the
  *   INTENSITY by scale^decay (a physical light: the same light falling on the floor at the scaled distance). The dials
@@ -58,9 +64,17 @@ import { abs, clamp, color, float, fwidth, lights, max, min, mix, mx_fractal_noi
  *   be finer than a pixel (nothing may shimmer: *"Nothing in the hero may read as a glitch"*).
  * - THE FLOOR IS STONE for every map (a fair comparison): a physical material — a matte base under a CLEAR COAT
  *   (`roughness`, `clearcoat`, `clearcoatRoughness`); "disturb.jpg" keeps the example's look (rough, no coat, grey).
+ * - ⛔ THE SLOPE (Carl: *"Is it just me or does the floor seem sloped?"* … *"sort out the seemingly slope effect"*): MEASURED
+ *   level (`hero-marble-level-23-november.mjs`); the circle's far rim, centred on the logo, read from HOME (~88 cm above
+ *   the floor) as a horizon falling to the left. Now: the floor an OVAL `widthScale` × wider than deep, its back half
+ *   stretched away, and the FAR side faded along a STRAIGHT line (`farCm` behind the spot, over `farFadeCm`), parallel to
+ *   HOME's screen (world z) — a level horizon; the sides round, out at the frame's edges.
  * - OFF = both lights at intensity 0 and the floor hidden — NEVER `visible` on a light: the light set must not change
  *   (every lit material's program would rebuild).
  */
+/** the layer the camera never collects (the logo's key's, `hero-scene.ts`): lights here reach only materials that name them */
+export const MARBLE_LIGHT_LAYER = 31;
+
 export type HeroMarbleSettings = {
   on: boolean;
   /** "ours": built in the shader; "gpt": the AI marble on the floor (static; THE BAR); "disturb.jpg": the example's,
@@ -91,6 +105,10 @@ export type HeroMarbleSettings = {
   /** the floor's circle: its radius from the logo's spot (cm), and the fade at its rim (cm) */
   rimCm: number;
   rimFadeCm: number;
+  /** the oval: × wider than deep; and the far side's straight fade, from `farCm` behind the spot over `farFadeCm` */
+  widthScale: number;
+  farCm: number;
+  farFadeCm: number;
   /** the floor's marble image: cm of floor per image (it repeats beyond) */
   tileCm: number;
   /** the stone's surface (every map but "disturb.jpg"): the matte base, the clear coat and its roughness */
@@ -123,7 +141,7 @@ export function createHeroMarble(): HeroMarble {
   const settings: HeroMarbleSettings = {
     on: true,
     map: "gpt",
-    color: "#ffffff",
+    color: "#f7f8c9",
     intensity: 100,
     distance: 0,
     angle: Math.PI / 6,
@@ -140,6 +158,9 @@ export function createHeroMarble(): HeroMarble {
     featherCm: 60,
     rimCm: 450,
     rimFadeCm: 200,
+    widthScale: 1.6,
+    farCm: 200,
+    farFadeCm: 250,
     tileCm: 900,
     roughness: 0.5,
     clearcoat: 1,
@@ -175,6 +196,8 @@ export function createHeroMarble(): HeroMarble {
   // Lights
   const ambient = new THREE.HemisphereLight(0xffffff, 0x8d8d8d, 0.25);
   ambient.name = "hero marble hemisphere";
+  // ⛔ ON THE HIDDEN LAYER (`MARBLE_LIGHT_LAYER`, above): the floor's alone
+  ambient.layers.set(MARBLE_LIGHT_LAYER);
   group.add(ambient);
 
   const spotLight = new THREE.SpotLight(0xffffff, 100);
@@ -189,6 +212,7 @@ export function createHeroMarble(): HeroMarble {
   spotLight.shadow.mapSize.height = 1024;
   spotLight.shadow.focus = 1;
   spotLight.shadow.intensity = 1;
+  spotLight.layers.set(MARBLE_LIGHT_LAYER);
   group.add(spotLight);
   group.add(spotLight.target);
 
@@ -230,13 +254,23 @@ export function createHeroMarble(): HeroMarble {
   const revealRadius = uniform(0);
   const revealFeather = uniform(1);
   const fromSpot = positionWorld.xz.distance(vec2(revealCentre));
-  // the floor's CIRCLE (no square): `rim` from the spot, fading over `rimFade`
+  // the floor's OVAL (no square; the slope, above): x over `rimX`, z toward the camera over `rim`, behind stretched away;
+  // the far side's STRAIGHT fade; `rimFade` as a share of the oval
   const rim = uniform(1);
-  const rimFade = uniform(1);
-  material.maskNode = fromSpot.lessThan(min(revealRadius, rim));
+  const rimX = uniform(1);
+  const rimFade = uniform(0.5);
+  const far = uniform(1);
+  const farFade = uniform(1);
+  const dx = positionWorld.x.sub(revealCentre.x);
+  const dz = positionWorld.z.sub(revealCentre.y);
+  const dzOval = dz.max(0).add(dz.min(0).mul(0.35));
+  const oval = vec2(dx.div(rimX), dzOval.div(rim)).length();
+  const behind = dz.negate();
+  material.maskNode = fromSpot.lessThan(revealRadius).and(oval.lessThan(1)).and(behind.lessThan(far.add(farFade)));
   const edge = float(1)
     .sub(smoothstep(revealRadius.sub(revealFeather), revealRadius, fromSpot))
-    .mul(float(1).sub(smoothstep(rim.sub(rimFade), rim, fromSpot)));
+    .mul(float(1).sub(smoothstep(float(1).sub(rimFade), 1, oval)))
+    .mul(float(1).sub(smoothstep(far, far.add(farFade), behind)));
   // faded INTO the scene's background colour (`hero-scene.ts`, 0x050505), not to black: no ring at the rim
   material.outputNode = vec4(mix(color(0x050505), neutral, edge), output.a);
   // ⛔ ITS OWN LIGHT LIST — the example's two lights only (the logo's method, `hero-scene.ts`): in the hero the floor would
@@ -322,7 +356,10 @@ export function createHeroMarble(): HeroMarble {
     revealRadius.value = share * (5 * Math.SQRT2 * u + feather);
     // the circle and the marble image, in world units from the spot
     rim.value = Math.max(1, settings.rimCm * unitsPerCm);
-    rimFade.value = Math.max(1, settings.rimFadeCm * unitsPerCm);
+    rimX.value = Math.max(1, settings.rimCm * settings.widthScale * unitsPerCm);
+    rimFade.value = Math.min(1, Math.max(0.001, settings.rimFadeCm / Math.max(1, settings.rimCm)));
+    far.value = settings.farCm * unitsPerCm;
+    farFade.value = Math.max(1, settings.farFadeCm * unitsPerCm);
     marbleCentre.value.set(spot!.x, spot!.z);
     tileWorld.value = Math.max(1, settings.tileCm * unitsPerCm);
     cmPerUnit.value = 1 / unitsPerCm;

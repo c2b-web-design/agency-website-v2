@@ -17,9 +17,11 @@ Session ended on Carl's word: *"Compaction is 44%. Write a handoff and commit an
    formations, few strong shapes, local contrast, one thing answers the light). **Generate it ONCE at load into a large
    texture** (4096–8192 px) so it costs what GPT costs (measured: ours per-pixel 31 / 18 FPS against GPT 47 / 30 — HOME /
    close, `hero-marble-fps-23-november.mjs`). Judged on the bench, CLOSE UP, against GPT.
-2. **THE FLOOR READS SLOPED** (Carl: *"does the floor seem sloped?"*): MEASURED level; the circle's far rim, centred on the
-   logo, reads as a tilted horizon from HOME (~88 cm above the floor). Three ways put; the Builder recommends (3) the FAR
-   side faded by DEPTH (a straight edge), the sides round. Not answered.
+2. ✔ **DONE after the first push (committed):** the slope fixed (an oval 1.6× wider than deep, the far side faded along a
+   STRAIGHT line 200 cm behind the logo — level from HOME; world-fixed, so a straight back edge from other cameras); the
+   floor light ISOLATED (both marble lights on hidden layer 31, out of the logo's list — the logo keeps its approved gold,
+   its shadow still falls, verified `hero-marble-shadow-23-november.mjs`); the floor light's default Carl's `#f7f8c9`.
+   Seen: from ABOVE the logo's face now goes dark (nothing lights it there) — the SHOWCASE LIGHTS for the gold, to come.
 3. **THE CLEAR COAT HAS NOTHING TO REFLECT** but the spotlight's highlight (an environment, maybe the logo, to come; a
    mirror priced first, D-108).
 

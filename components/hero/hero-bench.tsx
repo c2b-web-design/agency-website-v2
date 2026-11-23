@@ -373,6 +373,10 @@ export default function HeroBench() {
         // the floor's circle and the marble image's size (Carl: no square; the floor's own, static marble)
         f.add(mb, "rimCm", 100, 700, 5).name("circle radius (cm)");
         f.add(mb, "rimFadeCm", 0, 500, 5).name("circle's fading rim (cm)");
+        // the slope (Carl, 23 November 2026): an oval wider than deep, the far side faded along a straight line
+        f.add(mb, "widthScale", 1, 3, 0.05).name("oval: × wider than deep");
+        f.add(mb, "farCm", 0, 500, 5).name("far fade starts (cm behind)");
+        f.add(mb, "farFadeCm", 10, 600, 5).name("far fade length (cm)");
         f.add(mb, "tileCm", 50, 1500, 10).name("marble image size (cm)");
         // the stone (every map but the example's) and OUR marble's dials (23 November 2026; Carl: "Build it.")
         f.add(mb, "roughness", 0, 1, 0.01).name("stone roughness");

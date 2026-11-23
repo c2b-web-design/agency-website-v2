@@ -1064,11 +1064,13 @@ export function createHeroScene(aspect: number): HeroScene {
   scene.add(logoKey);
   // ⛔ PHASE 4, THE MARBLE, step 1 (`hero-marble.ts`; 23 November 2026; Carl: *"Copy the code exactly"*): the example's
   // spotlight and hemisphere light, made HERE so they are in the scene's light set from the first build (off = intensity 0,
-  // never `visible`) and in the LOGO's own list (the statue was in the example's light: the scope Carl authorised)
+  // never `visible`). ⚰️ They were in the LOGO's own list (the statue was in the example's light) until Carl, 23 November
+  // 2026: *"can the floor light be isolated from the logo?"* … *"Do those 2 things"* → on their own hidden layer, the
+  // FLOOR's alone (`hero-marble.ts`, `MARBLE_LIGHT_LAYER`); the logo keeps its approved gold
   const marble = createHeroMarble();
   scene.add(marble.group);
   disposables.push(marble);
-  const logoLights: THREE.Light[] = [logoKey, pointLight, ambientLight, ...marble.lights];
+  const logoLights: THREE.Light[] = [logoKey, pointLight, ambientLight];
 
   // MATERIALS
   const envs: Partial<Record<HeroEnvironment, { reflect: THREE.Texture; refract: THREE.Texture }>> = {};
