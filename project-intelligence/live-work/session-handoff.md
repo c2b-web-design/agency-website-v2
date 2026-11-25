@@ -1,90 +1,92 @@
-# Session Handoff — 23 November 2026 (Monday), session 1. PHASE 4 BEGUN: THE CLOTH LEAVES AS THE LOGO CLEARS, THE MARBLE RADIATES IN; ROUTE B (A PLINTH, NO GROWTH); THE MARBLE's BAR IS GPT's IMAGE
+# Session Handoff — 25 November 2026 (Wednesday), session 1. THE PLINTH IN; THE ENTRANCE's STALL FIXED; GANDALF's FIREWORKS DISCARDED; FILM 3's SHAPE RULED — NEXT: FILM 3's LOGGING, IN THIS FRESH SESSION
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces every earlier handoff. Delete it at the end of
 the session that reads it, once its replacement is written.
 
-**The record:** D-101 in `decisions.md`, from *"THE CLOTH's DEPARTURE IS ITS ARRIVAL MIRRORED"* to the end; review
-**R-114** (*"a natural flow to the story"* — the departure's timing and the marble's entrance; not the marble's look).
-Session ended on Carl's word: *"Compaction is 44%. Write a handoff and commit and push."*
+**The record:** D-101 in `decisions.md`, from *"THE PLINTH — ROUTE A, BUILT"* to the end (the last entry: *"FILM 3 (THE
+HERO) — ITS SHAPE"*); reviews **R-115** (*"Plinth looks great"*) and **R-116** (*"much smoother"*).
+Session ended on Carl's word (*"A fresh session is the way to go"* … *"Authorised. Proceed"*).
 
-## ⛔ NEXT SESSION — CARL's PLAN
+## ⛔ NEXT SESSION — FILM 3, THE HERO (Carl chose to start it fresh)
 
-Carl, at the session's end: *"ok, next session we will deal with the plinth and the speed of the marble radial reveal."*
+Carl: *"What we want are the parts that count. Any detours, problem solving etc can be left out. There is the discussion,
+text intro and 4 phases. It needs to be boiled down into a no more than 30min film."* Ruled (decisions.md, the last entry):
 
-1. **THE PLINTH** — route B: a rectangular shape (rounded edges, 18 Nov) rising out of the marble UNDER the logo, lifting
-   it to the text's height (~31 cm at HOME, a take); the marble on it (now the floor's own material — how the plinth
-   takes it, world-fixed or carried with the block, to settle). Ask, don't design ahead; name the files first.
-2. **THE MARBLE's RADIAL REVEAL SPEED** — now `spreadS` 3 s, linear, from the cloth's departure (72.8 s), the circle's
-   soft edge 60 cm (`hero-marble.ts`; the bench's Marble folder).
-3. **For phase 5 (recorded):** fast camera moves need a steady 60 — keep them out of framings where the logo fills the
-   screen (37 FPS seen close up), or the plain-gold swap after the drying (raised, not chosen; Carl's; measured first).
+- **ASSET CONSTRUCTION ONLY:** the discussion, the text intro, phases 1–4. **Phase 5 (the camera) and the hero on the
+  site LEFT OUT** (*"The camera bench has already been mentioned elsewhere"*).
+- **A ROUGH ~30-MIN CUT goes into Resolve** (not ~10 as for 01/02/04); Carl crops and adds transitions there.
+- **Process only** — no detours, no problem solving. Approvals shown. Plain language, "We", no em dashes (subtitles later).
+- **THE METHOD** (put to Carl): (1) a BEAT LIST per phase from the record — D-101 and R-103 – R-116 give every step and
+  approval, dated, in Carl's words; (2) each beat found in that day's capture — change detection, timestamped contact
+  sheets (the pipeline: memory `reference_film_edit_pipeline`, films 01/02/04's scripts in `live-work/scripts/`);
+  (3) the bench takes where they show the step better; (4) selects at **1080p 30 fps CFR**, file-name order = cut order,
+  a markers EDL; Carl builds the timeline in Resolve from the clips (FCPXML import did not work for him).
+- **FIRST WEIGHTING (a take, minutes):** discussion 4 · text intro 3 · phase 1 6 · phase 2 5 · phase 3 6.5 · phase 4 3 ·
+  the finished scene played whole 2.5.
+- **SOURCES:** `Videos\C2B Films\03 The hero\01 Discussion\` — **52 h 32 min in 18 captures** (9–25 November; the
+  remuxed `.remux.mkv` from 13 November on, the originals for 9–11). ⚠ **NO capture of the 8 November concept
+  brainstorm** (the idea comes from `00 References\`, `live-work/hero-concept-8-november/brainstorm-record.md` and the
+  9 November captures) and **none of 16 November session 2**. ⚠ Today's capture covers 11:42–12:46 only (stopped on
+  Carl's word); nothing after it was recorded. The dated bench takes: folders and clips in `03 The hero\`.
+- **Phase 4 is NOT finished** (the reveal and the rise at 5 s, *"much smoother"*; the plinth *"looks great"* — verdicts,
+  not approvals; our own marble take 4 and the showcase lights still to come): log intro + phases 1–3 first, add phase 4's beats when it is done.
 
-## CARRIED — CARL's (asked, not answered)
+## BUILT TODAY (all committed and pushed)
 
-1. **OUR MARBLE, TAKE 4** — here or a fresh session was asked; the session ended first. Aim at **THE BAR: GPT's first
-   marble** (`public/hero-bench/marble-gpt.webp`, Carl: *"the GPT image is the bar"*): a CONTINUOUS near-black body, GOLD
-   veins that run THROUGH it and fade (never closing into shapes — Carl rejected plates-and-cracks: *"crazy paving with
-   gold cement"*), TEAL deep inside, real MINERAL TEXTURE inside the veins close up (take 3 failed close up: *"the close
-   up image is the decider"* — poured liquid gold in flat nested bands). Build on the SEND OPAL's recipe (D-033: submerged
-   formations, few strong shapes, local contrast, one thing answers the light). **Generate it ONCE at load into a large
-   texture** (4096–8192 px) so it costs what GPT costs (measured: ours per-pixel 31 / 18 FPS against GPT 47 / 30 — HOME /
-   close, `hero-marble-fps-23-november.mjs`). Judged on the bench, CLOSE UP, against GPT.
-2. ✔ **DONE after the first push (committed):** the slope fixed (an oval 1.6× wider than deep, the far side faded along a
-   STRAIGHT line 200 cm behind the logo — level from HOME; world-fixed, so a straight back edge from other cameras); the
-   floor light ISOLATED (both marble lights on hidden layer 31, out of the logo's list — the logo keeps its approved gold,
-   its shadow still falls, verified `hero-marble-shadow-23-november.mjs`); the floor light's default Carl's `#f7f8c9`.
-   Seen: from ABOVE the logo's face now goes dark (nothing lights it there) — the SHOWCASE LIGHTS for the gold, to come.
-3. **THE CLEAR COAT HAS NOTHING TO REFLECT** but the spotlight's highlight (an environment, maybe the logo, to come; a
-   mirror priced first, D-108).
+- **THE PLINTH** (`hero-marble.ts`; `hero-scene.ts`): route A — a rounded block (240 × 60 cm, edges 4 cm; takes) under
+  the standing logo, its height the text's top less the logo's (31.6 cm, read from the geometry at load); the top the
+  floor's own marble, the sides folded over its edges; its OWN soft fill (front, 20° up, 25° from the left, 2.5 —
+  *"visible at all times"*); the logo lifted onto it. R-115.
+- **THE REVEAL 5 s (linear); THE PLINTH RISES over the same 5 s from the same moment, EASED** (smoothstep — the
+  Builder's take, stated; linear is one line). Story clock: the marble enters ~72.7 s, both complete ~77.7 s — **~86 s
+  from the opening's start; the scene ~90 s** (Carl's figure, not recorded as a target). R-116.
+- **THE STALL AT THE MARBLE's ENTRANCE FIXED** (`hero-scene.ts`, `warmShadow`): the spotlight's shadow pass compiled in
+  the background warm-up, one caster at a time (cold 1,217–2,017 ms → none over 51 ms). ⚠ It mirrors three r185's
+  internals: re-run `live-work/scripts/hero-pass4-stall-25-november.mjs` cold on any three upgrade.
+- **`/start`'s `?skip=1` DEV DOOR RETIRED** (`enquiry-opening.tsx`, PROTECTED — authorised, locked and tested): its
+  hydration failure was the dev overlay's "2 Issues". To reach client info in a check: **`verify/lib/walk-to-client-info.mjs`**
+  (the visitor's walk, ~60 s; throws if it fails). `verify/` scripts run through **`npm run verify -- <script>`** (a hook
+  enforces it).
 
-## ⛔ PHASE 4 AS RULED TODAY
+## RULED TODAY
 
-- **RENAMED:** phase 4 = the larger logo, with **GANDALF's FIREWORKS** at the end (the 10–16 Nov "phase 4" = the web floor).
-- **ROUTE B:** NO jump, NO growth — the logo keeps its size; the marble on the flat floor, then a RECTANGULAR shape rises
-  out of it under the logo, lifting it to the text's height (~31 cm at HOME, a take); the camera (phase 5) emphasises size.
-- **THE STORY LOOPS**, ending at HOME (Home is set in stone for the OPENING only). **Scrolled away / tab hidden: FREEZE**
-  (nothing drawn, the story clock stopped; resume where it stopped); **navigated away: restart from the opening** —
-  structural, a note through the Architect, belongs to the hero ON THE SITE (after phase 5). Not built.
-- **THE MARBLE IS THE FLOOR's OWN, STATIC** (movement from the camera); 18 Nov's projected marble superseded.
+- **Gandalf's fireworks DISCARDED** — *"We end up with elegant marble and shiny gold."* The last ~4 s: the hold on the
+  finished image and the loop to HOME.
+- **The site STAYS ON three r185** — *"a rabbit hole that gets deeper every month"*; an upgrade at the right time; client
+  sites checked per site. Notes kept: `live-work/references/three-upgrade-r186-r187-notes.md`.
+- **The governance review before the clone** (pre-push gate, `/ship`, Code Mode as candidates; from Claude Projects, the
+  Strategist): `live-work/references/workshop-template-and-client-delivery.md`, the last section.
 
-## BUILT TODAY (committed and pushed with this handoff)
+## OPEN — CARL's
 
-- **The cloth's departure** (`clothDeparture`): the arrival mirrored, from −100 back and down to where it lay, 3 s, then
-  asleep; starts `clearS` 1.8 s after pass 4's return takes off — the moment the logo is clear (measured,
-  `hero-pass4-clear-23-november.mjs`; a constant of pass 4's approved dials). Story: leaves 72.8 s, down 75.8 s. Its
-  one-frame vanish: the camera hides it (Carl).
-- **`hero-marble.ts`** (new): `webgpu_lights_spotlight` copied, the logo in the statue's place (casts/receives; both
-  lights in its list); the floor its own light list; enters with the departure, a circle radiating from the logo over 3 s.
-  Then: a CIRCLE (450 cm, 200 cm rim fading into the background colour), PHYSICAL STONE (matte 0.5 under a clear coat
-  1 / 0.06), maps **gpt** (default, THE BAR), **ours** (take 3, its own material), **disturb.jpg** (THE FALLBACK), none.
-- **Deleted (Carl):** every other marble of today — Gemini, emerald, eight perchance images, their stills.
-
-## OPEN — CARL's (carried)
-
-- The cloth's arrival timing vs the camera's pull-back; the back face's gold; the plinth's size; the slope (above).
-- Flagged: the dev overlay on `/start` reads "2 Issues" — not looked into.
-- Carried from before: the cloth colour C at the gold; Gandalf's fireworks; the floor's notes; the untracked
-  `structural-note-code-drops-20-november.md`; the frame cost of the whole phase (D-108).
+- The plinth's rise easing (the Builder's take); width 240 / depth 60 / edges 4 cm are takes.
+- One shadow pipeline still made synchronously at the entrance, at no visible cost — which caster, not identified.
+- A one-line pointer from `ai-system/governance-review-protocol.md` (OUT OF SCOPE) to the governance notes — needs Carl
+  to name the file.
+- R-114's film path carries two corrupted characters, and `decisions.md` line ~8048 one more (a 0x82 byte in a 23 November
+  entry's `03 The hero6-11-23_marble-spotlight…` path) — the same shell-quoting slip; repair asked, not answered.
+- Carried: our marble take 4 (THE BAR: GPT's image; close up decides); the showcase lights (the logo's face dark from
+  above); the clear coat has nothing to reflect; the loop / freeze / restart (structural, after phase 5); the cloth's
+  arrival timing vs the camera; the frame cost of the whole phase (D-108).
 
 ## LESSONS (today)
 
-- **Measure before tuning:** the "pause" was the wobble + a 2 s beat, not the −100 move (which the 2's drying needs).
-- **A dark disc's rim must fade to the BACKGROUND, not black** — black read as a ring.
-- **One shader for several looks pays for all of them:** ours dragged GPT to ~35 FPS until split onto its own material.
-- **Close up decides marble.** Fractal zero lines read as rivers/contours; closed cracks read as paving. Slab veins run
-  through and fade.
-- **Perchance refused the automated browser**; Carl ran it himself. Its output is 768 px.
+- **Read lint BEFORE committing — never in one command with the commit.** `af6d8b3` went out with 3 warnings that way
+  (fixed in `5f8ae42`). The pre-push gate is on the governance agenda.
+- **`compileAsync` builds an override material LATER, from its state then** — three's draw sets and restores per-object
+  state at once, so a plain gather of the shadow pass built the wrong pipelines (measured, take 1).
+- **Python heredocs: no backslash before digits** in record text (`\2026` became a stray byte, `\f` a form feed — the
+  R-114 corruption). Check new entries for C1 bytes.
 
 ## STATE
 
-- **Committed and pushed** with this handoff. The screen capture STOPPED (`01 Discussion\2026-11-23_discussion_screen
-  .remux.mkv`, 2:17:58). The dev server is UP (port 3000).
-- Films today (`03 The hero\`): `2026-11-23_cloth-departure_take1`, `_take2-when-clear`, `_marble-spotlight-example_take1/2`,
-  `_marble-entrance_take1`, `_marble-gpt_take1`.
-- Scope (`chunk-scope.json`, `_marble23Nov`): `hero-marble.ts`, `disturb.jpg`, `marble-gpt.webp` added; Gemini removed.
+- **Committed and pushed** with this handoff. The dev server STOPPED. Screen capture STOPPED and remuxed
+  (`01 Discussion\2026-11-25_discussion_screen.remux.mkv`, 1:03:23).
+- Scope (`chunk-scope.json`): the nine `/start` door files LOCKED and probed (`_lockedSkipDoor25Nov`); `unlocked` [];
+  the hero files still open (`_marble23Nov` etc.).
 - Carried: target 1 December; name the files and ask before the first code edit, every session; a question is answered,
-  not built.
+  not built; record each verdict as it lands.
 
 ---
 
-*Written 23 November 2026, session 1.*
+*Written 25 November 2026, session 1.*
