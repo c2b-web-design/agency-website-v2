@@ -65,6 +65,25 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-117 — The Hero, Phase 4: The Plinth (D-101): APPROVED
+
+**Date:** 2026-11-25 (session 2)
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — the plinth as built and seen in R-115 and R-116 (`hero-marble.ts`; `hero-scene.ts`): route A,
+240 × 60 cm, edges 4 cm, its height the text's top less the logo's (31.6 cm, read at load), the floor's marble on top and
+folded over the sides, its own soft fill; rising over 5 s with the reveal, eased (smoothstep).
+
+**Carl's verdict, verbatim:** *"Plinth is approved."*
+
+**Findings:**
+
+- ✔ **The plinth APPROVED**, as built: R-115's verdict (*"looks great"*) and R-116's (*"much smoother"*) are now an approval.
+  The size, the edges and the eased rise were takes; they are what he approved.
+- ⚠ **Still open, not covered by this approval:** our own marble take 4 (the bar: GPT's image); the showcase lights; the
+  one shadow pipeline still made at the entrance; the frame cost (D-108).
+
+---
+
 ## R-116 — The Hero, Phase 4: The Entrance's Stall Fixed; The Reveal And The Plinth's Rise At 5 s (D-101): "much smoother"
 
 **Date:** 2026-11-25
@@ -114,7 +133,7 @@ low, high)
 and down to where it lay, 3 s, then asleep; started `clearS` 1.8 s after pass 4's return takes off, the moment the logo
 is clear, measured) and phase 4's first step, the marble (`hero-marble.ts`, new: `webgpu_lights_spotlight` copied exactly,
 the logo in the statue's place; entering with the departure, a circle radiating from the logo over 3 s, its lights rising
-with it). Film: `03 The hero6-11-23_cloth-departure_take2-when-clearilm.mp4`.
+with it). Film: `03 The hero\2026-11-23_cloth-departure_take2-when-clear\film.mp4`.
 
 **Carl's verdict, verbatim:** *"It looks a lot smoother and theres a natural flow to the story. Commit and push."*
 

@@ -129,6 +129,12 @@ recorded above as evidence of the sweep's failure pattern — **not as decisions
 recommendations this file endorses.** Nothing in this protocol authorises any change to any
 seat's permission surface.
 
+## The next review
+
+**Before the template is cloned for any client, once the C2B site is finished and extracted** (Carl, 25 November 2026):
+the notes and agenda are in `live-work/references/workshop-template-and-client-delivery.md`, section *"THE GOVERNANCE
+REVIEW BEFORE THE CLONE"*.
+
 ## What this is not
 
 **Not a substitute for the checkpoint review** (`checkpoint-review-protocol.md`), which reviews

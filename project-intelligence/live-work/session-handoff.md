@@ -1,101 +1,97 @@
-# Session Handoff — 25 November 2026 (Wednesday), session 1. THE PLINTH IN; THE ENTRANCE's STALL FIXED; GANDALF's FIREWORKS DISCARDED; FILM 3's SHAPE RULED — NEXT: FILM 3's LOGGING, IN THIS FRESH SESSION
+# Session Handoff — 25 November 2026 (Wednesday), session 2. THE PLINTH APPROVED; FILM 3 LOGGED; THE STORYBOARD's SPINE TIMED FROM THE SCENE; THE ORDER NOW FILM → STORYBOARD → POLISH
 
 ⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces every earlier handoff. Delete it at the end of
 the session that reads it, once its replacement is written.
 
-**The record:** D-101 in `decisions.md`, from *"THE PLINTH — ROUTE A, BUILT"* to the end (the last entry: *"FILM 3 (THE
-HERO) — ITS SHAPE"*); reviews **R-115** (*"Plinth looks great"*) and **R-116** (*"much smoother"*).
-Session ended on Carl's word (*"A fresh session is the way to go"* … *"Authorised. Proceed"*).
+**The record:** D-101 in `decisions.md`, from *"✔ THE PLINTH APPROVED (25 November 2026, session 2; R-117)"* to the end;
+review **R-117** (*"Plinth is approved."*). Session ended on Carl's word (*"write a handoff and commit and push"*).
 
-## ⛔ NEXT SESSION — FILM 3, THE HERO (Carl chose to start it fresh)
+## ⛔ THE ORDER NOW (Carl, this session; amends 16 November)
 
-Carl: *"What we want are the parts that count. Any detours, problem solving etc can be left out. There is the discussion,
-text intro and 4 phases. It needs to be boiled down into a no more than 30min film."* Ruled (decisions.md, the last entry):
+**Film 3's edit NOW → the storyboard (the camera direction, phase 5) → the hero's polish** (our own marble take 4, the showcase
+lights) → the hero on the site → the films on the site → Send → mastering. Carl: *"we will come back to the polish, the icing on
+the cake. The film editing is a big job and the storyboarding is after that."*
 
-- **ASSET CONSTRUCTION ONLY:** the discussion, the text intro, phases 1–4. **Phase 5 (the camera) and the hero on the
-  site LEFT OUT** (*"The camera bench has already been mentioned elsewhere"*).
-- **A ROUGH ~30-MIN CUT goes into Resolve** (not ~10 as for 01/02/04); Carl crops and adds transitions there.
-- **Process only** — no detours, no problem solving. Approvals shown. Plain language, "We", no em dashes (subtitles later).
-- **THE METHOD** (put to Carl): (1) a BEAT LIST per phase from the record — D-101 and R-103 – R-116 give every step and
-  approval, dated, in Carl's words; (2) each beat found in that day's capture — change detection, timestamped contact
-  sheets (the pipeline: memory `reference_film_edit_pipeline`, films 01/02/04's scripts in `live-work/scripts/`);
-  (3) the bench takes where they show the step better; (4) selects at **1080p 30 fps CFR**, file-name order = cut order,
-  a markers EDL; Carl builds the timeline in Resolve from the clips (FCPXML import did not work for him).
-- **FIRST WEIGHTING (a take, minutes):** discussion 4 · text intro 3 · phase 1 6 · phase 2 5 · phase 3 6.5 · phase 4 3 ·
-  the finished scene played whole 2.5.
-- **SOURCES:** `Videos\C2B Films\03 The hero\01 Discussion\` — **52 h 32 min in 18 captures** (9–25 November; the
-  remuxed `.remux.mkv` from 13 November on, the originals for 9–11). ⚠ **NO capture of the 8 November concept
-  brainstorm** (the idea comes from `00 References\`, `live-work/hero-concept-8-november/brainstorm-record.md` and the
-  9 November captures) and **none of 16 November session 2**. ⚠ Today's capture covers 11:42–12:46 only (stopped on
-  Carl's word); nothing after it was recorded. The dated bench takes: folders and clips in `03 The hero\`.
-- **SUBTITLES — NOT BAKED IN** (Carl, 25 November: *"They were done a different way and not baked in for the last film"*;
-  R-099, D-107; memory `project_caption_layer_workflow`): written as ONE `.ass` (Open Sans 80.6, centred x 960, Y per
-  caption, `\fad(1000,500)`, 30 frames clear at clip ends, ≤ 2 lines over VS Code chat) → rendered to ONE transparent
-  **ProRes 4444 layer** (white-on-black matte as the alpha; never `ass=…:alpha=1`, which fades twice) → V2 over the cut;
-  Carl cuts it at V1's cuts and moves pieces with Position Y; burned in only at the final render. Film 04's:
-  `04 Extruded lettering\10 Subtitles\` (`film4-captions.ass`, `film4-captions-layer.mov`). Scripts:
-  `film02-captions-ass-build.py`, `film02-captions-layer-render.py` (point them at film 3). ⚠ **ORDER:** the layer must
-  match the cut frame for frame, and Carl crops / trims / adds transitions in Resolve first — so the captions are timed
-  to HIS TIMELINE EDL after that, not to the rough cut. ~30 min ≈ a 5 GB layer.
-- **Phase 4 is NOT finished** (the reveal and the rise at 5 s, *"much smoother"*; the plinth *"looks great"* — verdicts,
-  not approvals; our own marble take 4 and the showcase lights still to come): log intro + phases 1–3 first, add phase 4's beats when it is done.
+## FILM 3 — WHERE IT STANDS
 
-## BUILT TODAY (all committed and pushed)
+- **Shape** (ruled this session): asset construction; phase 4 AS IT STANDS today; the finished scene NOT replayed (*"A user will
+  have already seen the finished scene. The film just gives a glimpse into BTS."*); the film ENDS on what comes next (add the
+  sparkle, storyboard, direct). Rough cut ~27.5 min into Resolve.
+- **⛔ THE FILM FOLLOWS THE SCENE's ORDER, NOT THE BUILD's** (*"It doesnt matter that we made the web later"*): each event its
+  IDEA (*"the jump shock. hot, cold, wet, dry"*), its METHOD (mesh, material, light), its APPROVAL. The roadmap:
+  **`live-work/hero-event-order-25-november.md`** (the opening O1–O4, phase 1 as 1a–1g, 2a–2e, 3a–3f, 4a–4e), with the film's
+  opening drafted: the 6-line intro (three.js vs HTML/CSS, "information dumps", a film set OR A VIDEO GAME, mesh → material → light;
+  ~30 s, Carl: *"30s is long enough"*), the blank canvas, the good idea, cue the text, the logo, THE FLOOR (⚠ the projector
+  example's PATTERN, not its lamp: maths on a flat glowing sheet; Carl: *"i forgot we pivoted"*).
+- **The beat list:** `Videos\C2B Films\03 The hero\beat-list.md` — 49 beats, each with **a time range in its day's capture**
+  (all 18 captures OCR'd for Carl's words: `11 Log\`, `beat-hits.md`). Gaps: no capture of 8 Nov, of 16 Nov s2, of the steam's
+  approval or of GPT's marble (bench takes cover them).
+- **The text shot (Carl's idea):** the home page as it is DISSOLVING into the bench's lit 3D text —
+  `03 The hero\2026-11-25_text-dissolve_take2\film.mp4` (registers; take 1 had the scrollbar strip, superseded). Not yet judged.
+- **Cards:** Carl makes them in Resolve (a "c2b film presents" card, then a title card per film from a template); the Builder
+  supplies elements WITH ALPHA on request. ⚠ The 2 November titles STAND (01 *Finger on the Button*, 02 *No Corners Cut*, 04 *Bold
+  as Brass*); film 03's title OPEN (*Breaking Out*, and now *Holding Out for a Hero*, candidates). The Builder missed that trail
+  this session — read D-107 first.
+- **Next for film 3:** Carl checks the ranges / the roadmap's order and ideas; then STEP 3 — per event: the ask (~5–10 s), the
+  result (the bench take or the capture), the verdict (~5 s), cut at 1080p 30 fps CFR in the roadmap's order, a markers EDL.
 
-- **THE PLINTH** (`hero-marble.ts`; `hero-scene.ts`): route A — a rounded block (240 × 60 cm, edges 4 cm; takes) under
-  the standing logo, its height the text's top less the logo's (31.6 cm, read from the geometry at load); the top the
-  floor's own marble, the sides folded over its edges; its OWN soft fill (front, 20° up, 25° from the left, 2.5 —
-  *"visible at all times"*); the logo lifted onto it. R-115.
-- **THE REVEAL 5 s (linear); THE PLINTH RISES over the same 5 s from the same moment, EASED** (smoothstep — the
-  Builder's take, stated; linear is one line). Story clock: the marble enters ~72.7 s, both complete ~77.7 s — **~86 s
-  from the opening's start; the scene ~90 s** (Carl's figure, not recorded as a target). R-116.
-- **THE STALL AT THE MARBLE's ENTRANCE FIXED** (`hero-scene.ts`, `warmShadow`): the spotlight's shadow pass compiled in
-  the background warm-up, one caster at a time (cold 1,217–2,017 ms → none over 51 ms). ⚠ It mirrors three r185's
-  internals: re-run `live-work/scripts/hero-pass4-stall-25-november.mjs` cold on any three upgrade.
-- **`/start`'s `?skip=1` DEV DOOR RETIRED** (`enquiry-opening.tsx`, PROTECTED — authorised, locked and tested): its
-  hydration failure was the dev overlay's "2 Issues". To reach client info in a check: **`verify/lib/walk-to-client-info.mjs`**
-  (the visitor's walk, ~60 s; throws if it fails). `verify/` scripts run through **`npm run verify -- <script>`** (a hook
-  enforces it).
+## THE STORYBOARD's SPINE — TIMED FROM THE SCENE
 
-## RULED TODAY
+**`live-work/hero-storyboard-25-november.md`**: the whole scene filmed and LOGGED frame by frame from the dark at HOME
+(`03 The hero\2026-11-25_whole-scene_home\`: `film.mp4`, `state.jsonl`, `events.md` — 165 events PRINTED from the scene's clock,
+never typed). Five sections, SMPTE 30 fps non-drop, FILM (from the dark) and STORY (zero at the lean, FILM 00:00:08:14). The scene:
+~86.3 s to the marble complete. ⚠ The 16 November ruling's other half — the BENCH clocks to SMPTE — NOT done (code; Carl's files).
+Three OUTSIDE VIEWS beside it (Gemini on the film; Claude in Chrome on the live bench; an outside opinion), each sorted into
+finding / our design / taste.
 
-- **Gandalf's fireworks DISCARDED** — *"We end up with elegant marble and shiny gold."* The last ~4 s: the hold on the
-  finished image and the loop to HOME.
-- **The site STAYS ON three r185** — *"a rabbit hole that gets deeper every month"*; an upgrade at the right time; client
-  sites checked per site. Notes kept: `live-work/references/three-upgrade-r186-r187-notes.md`.
-- **The governance review before the clone** (pre-push gate, `/ship`, Code Mode as candidates; from Claude Projects, the
-  Strategist): `live-work/references/workshop-template-and-client-delivery.md`, the last section.
+**Ruled this session for the direction:**
+- ⛔ **HOME is the only thing set in stone; by the subtext's reveal the camera may already be moving** (*"im about to go all Peter
+  Jackson on people"*). A camera move costs nothing to load: it fills the opening's loading seconds.
+- ⛔ **The camera tells its own story and can ADD TO OR TAKE AWAY FROM the story** (standing principle; the outside views were
+  the case: from a fixed HOME the lean, the jump, the code drops and pass 1 are lost).
+- ⛔ **Phase 3's on-screen length is the CAMERA's** (speed ramps, the spline editor raised 27 Oct, not built); the passes keep their
+  approved timing; ~90 s will end up shorter. ⚠ A ramp runs the scene's clock faster: the cloth must be stepped finely enough
+  that its contact is unchanged — prove on the bench.
+- ⛔ **The visitor does NOT drive the timeline** (*"giving them access to control the story and speed ramp the whole thing"*);
+  RAISED, not chosen: a cursor drift of a few degrees on top of the shots; what a returning visitor sees.
+- ⛔ **The story starts with what loads first** (Carl: a strong opening of marble and gold would load longer). The intro: a
+  READ-ONLY measure of a cold and a return visit first; 16 Nov's "the logo is the loading bar" worth revisiting.
 
 ## OPEN — CARL's
 
-- The plinth's rise easing (the Builder's take); width 240 / depth 60 / edges 4 cm are takes.
-- One shadow pipeline still made synchronously at the entrance, at no visible cost — which caster, not identified.
-- A one-line pointer from `ai-system/governance-review-protocol.md` (OUT OF SCOPE) to the governance notes — needs Carl
-  to name the file.
-- R-114's film path carries two corrupted characters, and `decisions.md` line ~8048 one more (a 0x82 byte in a 23 November
-  entry's `03 The hero\2026-11-23_marble-spotlight…` path) — the same shell-quoting slip; repair asked, not answered.
-- Carried: our marble take 4 (THE BAR: GPT's image; close up decides); the showcase lights (the logo's face dark from
-  above); the clear coat has nothing to reflect; the loop / freeze / restart (structural, after phase 5); the cloth's
-  arrival timing vs the camera; the frame cost of the whole phase (D-108).
+- **The cloth and the logo passing through each other:** seen by two outside viewers (one closer than HOME); our "0 points inside
+  the metal" counts the cloth's POINTS, not its triangles — UNRESOLVED, to be looked at close (read-only first).
+- **Live pauses** reported with a debugger attached (to confirm on a clean run): ~130–217 ms on the headline's fade; ~50–67 ms
+  at the rain and steam; ~100 ms at the marble (maybe the handoff-carried "one shadow pipeline made synchronously").
+- **The logo's look by angle** (black edge-on, matte tan from below; the platinum blue dark from HOME) — the showcase lights.
+- **"CSP"** — pass 4 upside down near the climax: a camera question.
+- The music: the *Holding Out for a Hero* echo is Funky Claude's (Music Production; Pro Tools write access being granted;
+  PT → Fairlight in Resolve). A melody quote vs a progression: rights, put to Carl.
+- Carried: our marble take 4 (GPT's the bar); the loop / freeze / restart (structural, after phase 5); the frame cost (D-108).
+
+## BUILT / CHANGED TODAY
+
+- R-117 and D-101 entries; the three corrupted characters REPAIRED (R-114's path, decisions.md's 23 Nov path).
+- `ai-system/governance-review-protocol.md`: "The next review" pointer (opened, written, LOCKED and probed).
+- Scripts (`live-work/scripts/`): `film03-log-changes-`, `film03-log-ocr-`, `film03-find-beats-`, `film03-text-dissolve-`,
+  `film03-scene-log-`, `film03-scene-events-25-november.*`. No site code changed.
 
 ## LESSONS (today)
 
-- **Read lint BEFORE committing — never in one command with the commit.** `af6d8b3` went out with 3 warnings that way
-  (fixed in `5f8ae42`). The pre-push gate is on the governance agenda.
-- **`compileAsync` builds an override material LATER, from its state then** — three's draw sets and restores per-object
-  state at once, so a plain gather of the shadow pass built the wrong pipelines (measured, take 1).
-- **Python heredocs: no backslash before digits** in record text (`\2026` became a stray byte, `\f` a form feed — the
-  R-114 corruption). Check new entries for C1 bytes.
+- **The heredoc STILL collapses a doubled backslash** (0x03 and a backspace in a D-101 path; caught by the scan): record appends
+  with a backslash go through a `.py` written with the Write tool. Memory updated.
+- **Read the record before answering from files on disk** (the film titles: D-107 had them). Memory updated.
+- **A green measure can still be narrower than its name:** "0 points inside the metal" checks points, not triangles; two viewers
+  saw otherwise.
+- Carl's prompt cache runs 60 min: on long background jobs a watcher wakes the Builder inside 40 min (memory).
 
 ## STATE
 
-- **Committed and pushed** with this handoff. The dev server STOPPED. Screen capture STOPPED and remuxed
-  (`01 Discussion\2026-11-25_discussion_screen.remux.mkv`, 1:03:23).
-- Scope (`chunk-scope.json`): the nine `/start` door files LOCKED and probed (`_lockedSkipDoor25Nov`); `unlocked` [];
-  the hero files still open (`_marble23Nov` etc.).
-- Carried: target 1 December; name the files and ask before the first code edit, every session; a question is answered,
-  not built; record each verdict as it lands.
+- Committed and pushed with this handoff. The dev server STOPPED. No screen capture this session (the work was logging).
+- Scope (`chunk-scope.json`): the hero files still open (`_marble23Nov` etc.); `governance-review-protocol.md` LOCKED again.
+- Carried: target 1 December; name the files and ask before the first code edit, every session; a question is answered, not
+  built; record each verdict as it lands.
 
 ---
 
-*Written 25 November 2026, session 1.*
+*Written 25 November 2026, session 2.*
