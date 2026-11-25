@@ -28,6 +28,15 @@ text intro and 4 phases. It needs to be boiled down into a no more than 30min fi
   brainstorm** (the idea comes from `00 References\`, `live-work/hero-concept-8-november/brainstorm-record.md` and the
   9 November captures) and **none of 16 November session 2**. ⚠ Today's capture covers 11:42–12:46 only (stopped on
   Carl's word); nothing after it was recorded. The dated bench takes: folders and clips in `03 The hero\`.
+- **SUBTITLES — NOT BAKED IN** (Carl, 25 November: *"They were done a different way and not baked in for the last film"*;
+  R-099, D-107; memory `project_caption_layer_workflow`): written as ONE `.ass` (Open Sans 80.6, centred x 960, Y per
+  caption, `\fad(1000,500)`, 30 frames clear at clip ends, ≤ 2 lines over VS Code chat) → rendered to ONE transparent
+  **ProRes 4444 layer** (white-on-black matte as the alpha; never `ass=…:alpha=1`, which fades twice) → V2 over the cut;
+  Carl cuts it at V1's cuts and moves pieces with Position Y; burned in only at the final render. Film 04's:
+  `04 Extruded lettering\10 Subtitles\` (`film4-captions.ass`, `film4-captions-layer.mov`). Scripts:
+  `film02-captions-ass-build.py`, `film02-captions-layer-render.py` (point them at film 3). ⚠ **ORDER:** the layer must
+  match the cut frame for frame, and Carl crops / trims / adds transitions in Resolve first — so the captions are timed
+  to HIS TIMELINE EDL after that, not to the rough cut. ~30 min ≈ a 5 GB layer.
 - **Phase 4 is NOT finished** (the reveal and the rise at 5 s, *"much smoother"*; the plinth *"looks great"* — verdicts,
   not approvals; our own marble take 4 and the showcase lights still to come): log intro + phases 1–3 first, add phase 4's beats when it is done.
 
@@ -64,7 +73,7 @@ text intro and 4 phases. It needs to be boiled down into a no more than 30min fi
 - A one-line pointer from `ai-system/governance-review-protocol.md` (OUT OF SCOPE) to the governance notes — needs Carl
   to name the file.
 - R-114's film path carries two corrupted characters, and `decisions.md` line ~8048 one more (a 0x82 byte in a 23 November
-  entry's `03 The hero6-11-23_marble-spotlight…` path) — the same shell-quoting slip; repair asked, not answered.
+  entry's `03 The hero\2026-11-23_marble-spotlight…` path) — the same shell-quoting slip; repair asked, not answered.
 - Carried: our marble take 4 (THE BAR: GPT's image; close up decides); the showcase lights (the logo's face dark from
   above); the clear coat has nothing to reflect; the loop / freeze / restart (structural, after phase 5); the cloth's
   arrival timing vs the camera; the frame cost of the whole phase (D-108).
