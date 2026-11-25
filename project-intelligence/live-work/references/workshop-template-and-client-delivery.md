@@ -549,3 +549,39 @@ planning session, not decided:**
   an instrument").
 - **A clone test before it is ever used.** Clone it fresh, `npm ci`, build, lint, run the hooks,
   then the .wav test above — the clean-checkout lesson of 8 October, applied to the template itself.
+
+# ⛔ THE GOVERNANCE REVIEW BEFORE THE CLONE — Carl, 25 November 2026
+
+> *"the pre push review sounds like something we should implement. Its been a few months since the
+> current governance was put in place. When the site is finished and all the c2b site stuff is taken
+> out we should look at it again before we clone the repo."* … *"yes, it should be included in the
+> governance review notes."*
+
+**When:** after the site is finished and the C2B material is extracted, **before the template is
+cloned** for any client. The governance (most of it set up in August 2026) is reviewed again then.
+
+**How (Carl):** *"How i conducted the review last time was to use Claude Chat with full access to the
+repo and then brought instructions here for you to implement. I will probably use Claude Projects,
+where the Strategist lives and do it from there."* — reviewed from OUTSIDE (the reasoning of
+`ai-system/governance-review-protocol.md`: a system audited by the tool that wrote it is not
+audited); the Builder implements what Carl brings back.
+
+**On the agenda (raised 25 November 2026; candidates, none chosen):**
+- **A PRE-PUSH GATE.** The case that raised it: commit `af6d8b3` was pushed with **3 lint
+  warnings** against the zero-warnings baseline — lint ran in the same command as the commit, so
+  nothing stopped the push. The zero-warnings rule lives in prose only (CLAUDE.md; ⚠ *an invariant
+  that lives only in prose is not asserted*, `context-rules.md`). Candidates, cheapest first: the
+  clean-build script (`live-work/scripts/clean-build.mjs`) also runs lint and REFUSES on any warning
+  or new error; a git `pre-push` hook doing the same; a `/code-review` pass on the diff before
+  pushing (Claude Code; session usage). For the TEMPLATE the gate belongs in the template itself, so
+  every client workshop starts with it.
+- **`/ship` (Claude Code), named in a video Carl watched** (said to be favoured by Andrej Karpathy —
+  not checked): commits, pushes, opens a pull request, reviews it, then works on feedback and failing
+  checks; never merges. ⚠ It assumes BRANCHES AND PULL REQUESTS — this repo pushes straight to
+  `main` (Vercel deploys `main`). A workflow change, not a check added; it would also give every
+  change a Vercel preview before it goes live.
+- **Code Mode (Claude Code, experimental)** — noted only: Claude writes JavaScript that makes several
+  tool calls in one step (said to save tokens, can be slower); in auto mode the classifier reviews
+  each program, not each call; its JavaScript and file / web / MCP calls run OUTSIDE the sandbox; not
+  available in the VS Code panel. Whether the scope-guard hooks fire for edits made from inside a
+  program is NOT tested.

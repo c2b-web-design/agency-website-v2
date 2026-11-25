@@ -19,7 +19,6 @@ await p.screenshot({ path: `${out}/02_settled-4s.png` });
 const r = await p.evaluate((t0) => {
   const { hero, camera } = window.__heroBench;
   const V = camera.position.constructor;
-  const top = (o) => { const bx = new (camera.position.constructor === V ? window.__heroBench.scene.constructor : null)(); return null; };
   const B = (obj) => { const pa = obj.geometry.getAttribute("position"); let hi = -Infinity; const v = new V(); obj.updateMatrixWorld(true); for (let i = 0; i < pa.count; i++) hi = Math.max(hi, v.fromBufferAttribute(pa, i).applyMatrix4(obj.matrixWorld).y); return hi; };
   const textTop = Math.max(...hero.text.children.map(B));
   hero.logo.updateMatrixWorld(true);
