@@ -1,3 +1,4 @@
+// ⚰️ USES /start?skip=1, THE DEV DOOR RETIRED 25 NOVEMBER 2026: rerun as is, it lands on the OPENING and measures the wrong screen. Reach client info with verify/lib/walk-to-client-info.mjs.
 // THE SEND OPAL, LOOKED AT (23 November 2026; Carl: "Go look at the Send button in Client info.", on the hero's marble).
 // /start?skip=1 (the dev door to client info), its entrance waited out (12 s), then the page and the Send button close up,
 // six frames across one light orbit (~10 s). READ-ONLY. ⚠ NOT WATCHED: Carl's Chrome; hover; phones.

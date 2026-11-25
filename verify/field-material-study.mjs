@@ -35,12 +35,13 @@
  * SwiftShader and the shading would be a lie. deviceScaleFactor 2 so the crops
  * carry real detail.
  *
- * ⚠ Reached via `?skip=1`, a DEV DOOR — the corridor cannot walk to completion
- * because Q5's cards were removed for the WebGL rebuild. Documented, accepted.
+ * ⚠ Reached by WALKING the corridor, as a visitor (`lib/walk-to-client-info.mjs`).
+ * ⚰️ It used `?skip=1`, a dev door, retired 25 November 2026.
  */
 
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { walkToClientInfo } from "./lib/walk-to-client-info.mjs";
 
 const OUT = "verify/out/field-study";
 mkdirSync(OUT, { recursive: true });
@@ -64,7 +65,8 @@ const page = await browser.newPage({
 const errs = [];
 page.on("pageerror", (e) => errs.push(e.message));
 
-await page.goto(`${BASE}/start?skip=1`, { waitUntil: "networkidle" });
+// ⚰️ was `/start?skip=1` (the dev door, retired 25 November 2026): now WALKED there, as a visitor (`lib/walk-to-client-info.mjs`)
+await walkToClientInfo(page, BASE);
 
 const renderer = await page
   .evaluate(() => {

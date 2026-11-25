@@ -1,3 +1,4 @@
+// ⚰️ USES /start?skip=1, THE DEV DOOR RETIRED 25 NOVEMBER 2026: rerun as is, it lands on the OPENING and measures the wrong screen. Reach client info with verify/lib/walk-to-client-info.mjs.
 /** THE CLIENT INFO LIGHT, LOOKED AT (10 October 2026) — Carl: "go and look at the client info section- see what the
  *  light is doing", for the desk mark's light. /start?skip=1 (the dev door), the field's entrance waited out (8.1 s +
  *  margin), then frames over ~11 s (one 10 s orbit and a bit), each named by its time. ⚠ NOT WATCHED: Carl's Chrome. */

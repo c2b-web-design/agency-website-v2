@@ -1,3 +1,4 @@
+// ⚰️ USES /start?skip=1, THE DEV DOOR RETIRED 25 NOVEMBER 2026: rerun as is, it lands on the OPENING and measures the wrong screen. Reach client info with verify/lib/walk-to-client-info.mjs.
 /** THE CLIENT INFO ORBIT, FILMED — 3 October 2026. Carl: "look at the client info section, especially the orbit of
  *  the moving light." /start?skip=1 (the dev door), 11 s settle, then a frame every 400 ms for 12 s (> one 10 s lap).
  *  ⚠ NOT WATCHED: anything but these frames; Carl's Chrome. */

@@ -137,8 +137,9 @@ const OPAL_FADE_IN_DURATION_MS = 3000;
  *
  * ⚠ **250 IS A FIRST PASS, NOT A PROPOSAL** — the midpoint of the range Carl
  * described, put on screen so he has something to react to. Find the value with
- * `?acklead=` on a running build (pair it with `?skip=1`, which mounts the
- * completion state directly), then hand-enter what his eye settles on.
+ * `?acklead=` on a running build (walk the corridor to client info; ⚰️ it was
+ * paired with `?skip=1`, the dev door retired 25 November 2026), then hand-enter
+ * what his eye settles on.
  */
 const ACK_LEAD_MS = 250;
 
@@ -448,48 +449,32 @@ function SpaceLayer({ src, credit, shown, load }: { src: string; credit: string;
 
 export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = {}) {
   /**
-   * ⚠ `?skip=1` — JUMP STRAIGHT TO THE CONTACT FIELD. A DEV DOOR, NOT A FEATURE.
+   * The page always STARTS at the opening — on the server and in the browser alike.
    *
-   * Carl, 6 August 2026: *"If you cant get there build a simple button so we can
-   * get there... its getting replaced anyway."*
-   *
-   * ⚠ THE CORRIDOR CANNOT REACH COMPLETION RIGHT NOW, and that is documented and
-   * accepted rather than broken: Q5's five CSS answer cards were removed for the
-   * WebGL rebuild (*"just remove the 5 cards that are there now and build"*), so
-   * there is nothing at Q5 that registers as a SELECTION. The WebGL cards fire
-   * their filament on pointerdown, which is deliberately not the same thing.
-   *
-   * ⚠ WHY IT MATTERS ENOUGH TO ADD A DOOR. Carl: *"Its important that you see it,
-   * because what comes before it, what weve been building, has more than a direct
-   * relationship to what comes after."* The contact field is four boxes built
-   * from the same rim/bevel/face vocabulary as the answer card — so a change to
-   * the card's cross-section is a statement about the field too, and the two
-   * cannot be judged apart.
-   *
-   * ⚠ DELETE THIS WHEN Q5 CARRIES REAL SELECTION AGAIN (chunk 5). It is a
-   * scaffold with an expiry, and it is gated on a query param so it can never
-   * fire for a visitor who has not typed it.
+   * ⚰️ THE `?skip=1` DEV DOOR STOOD HERE (6 August → 25 November 2026). It jumped
+   * straight to the contact field (Carl, 6 August: *"If you cant get there build a
+   * simple button so we can get there... its getting replaced anyway."*), when Q5
+   * had nothing that registered as a selection; it carried its own expiry: *"DELETE
+   * THIS WHEN Q5 CARRIES REAL SELECTION AGAIN"*. RETIRED on Carl's word, 25 November
+   * 2026 (*"There are no visible issues so it was just your shortcut to get there.
+   * Implement 1."*): its lazy initialiser read the URL in the browser only, so the
+   * server rendered the opening and the browser the contact field — a HYDRATION
+   * FAILURE, and React's client re-render of the root layout then flagged the
+   * site-scale `<script>` (`app/layout.tsx`): the dev overlay's "2 Issues". A
+   * visitor's walk never met either (measured: no issue, no console error). The
+   * way to client info for checks now is the WALK
+   * (`verify/lib/walk-to-client-info.mjs`).
    */
-  const [stage, setStage] = useState<"opening" | "active" | "complete">(() => {
-    // ⚠ A LAZY INITIALISER, NOT AN EFFECT. An effect would render the opening
-    // for a frame and then swap, firing the opening's choreography and leaving
-    // the contact field's own entrance racing it.
-    //
-    // ⚠ AND IT READS `window` INSIDE THE INITIALISER, which only runs on the
-    // client — reading it at module scope would break the server render.
-    if (typeof window === "undefined") return "opening";
-    const q = new URLSearchParams(window.location.search).get("skip");
-    const skip = q !== null && q !== "" && q !== "0" && q !== "false";
-    return skip ? "complete" : "opening";
-  });
+  const [stage, setStage] = useState<"opening" | "active" | "complete">("opening");
   /**
    * ⚠ THE `?acklead=` DOOR — so Carl can find this value by EYE on a running
    * build rather than through a rebuild per attempt, the way `?tealstrength=`
    * was used to settle the hover teal (D-053).
    *
-   * Pair it with `?skip=1`, which mounts the completion state directly:
-   *   /start?skip=1&acklead=250   ← the shipped default
-   *   /start?skip=1&acklead=0     ← the original, for comparison
+   * Load `/start?acklead=…` and walk the corridor to client info:
+   *   /start?acklead=250   ← the shipped default
+   *   /start?acklead=0     ← the original, for comparison
+   * (⚰️ it was paired with `?skip=1`, the dev door retired 25 November 2026)
    *
    * ⚠ READ ONCE, IN STATE. A value re-read per render would be a knob that
    * appears to work and changes nothing once the animation has started — the
@@ -1346,10 +1331,12 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
   */
 
   /* ⚠⚠ REPORT THE STAGE THE COMPONENT MOUNTED IN — NOT ONLY THE TRANSITIONS.
-     ⛔ WITHOUT THIS, `?skip=1` LEAVES THE LOGO GOLD ON A PAGE THAT IS ALREADY
-     AT COMPLETION. The lazy initialiser above can start at "complete" directly,
-     and on that path NEITHER `enterActive()` NOR `enterComplete()` is ever
-     called, so a caller listening only to transitions is told nothing at all.
+     ⚰️ WRITTEN FOR THE `?skip=1` DEV DOOR (retired 25 November 2026), which
+     mounted at "complete" directly: on that path NEITHER `enterActive()` NOR
+     `enterComplete()` was called, and the logo stayed gold on a page already at
+     completion. The page now always mounts at "opening"; the report is KEPT — it
+     costs nothing, and it is what makes any future entry that bypasses the
+     transitions visible.
 
      ⚠ THE GENERAL FORM: a listener on transitions alone cannot see the state a
      component STARTED in. The initial value has to be announced separately, or
@@ -2235,28 +2222,17 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
   // The heading is the deepest corridor layer — always one step below the deepest memory.
   const headingDepth = memory.length > 0 ? memory.length + 1 : 0;
 
-  /**
-   * ⛔ THE DEV DOOR'S OVERLAP — `?skip=1` ONLY, and it can never reach a visitor.
-   *
-   * ⚠⚠ THE HEADING NORMALLY FADES BY DEPTH, NOT BY STAGE. `headingDepth` is
-   * derived from `memory.length`, and the `enquiry-heading-complete` fade to
-   * `opacity: 0` is written only against `.enquiry-heading-d2..d6`
-   * (`globals.css`). **So the fade exists but is unreachable when depth is 0.**
-   *
-   * ⛔ `?skip=1` mounts `complete` DIRECTLY — no question is ever answered, so
-   * `memory` is empty, `headingDepth` is 0, and the heading renders at full
-   * opening size **on top of the contact field.** That is the overlap in every
-   * screenshot of this section.
-   *
-   * ⚠ **A REAL VISITOR NEVER SEES IT**: walking the corridor fills `memory`, so
-   * depth is >= 2 by completion and the existing fade runs. This flag is true
-   * only in the state the dev door creates.
-   *
-   * ⚠ Carl, 9 September 2026: *"i wondered why that text was overlayed... by all
-   * means fix it."* ⛔ **The scaffold itself is still scheduled for deletion when
-   * Q5 carries real selection again — see the `?skip=` note above.**
-   */
-  const skipDoorHeadingHidden = stage === "complete" && headingDepth === 0;
+  /*
+    ⚰️ `skipDoorHeadingHidden` STOOD HERE (9 September → 25 November 2026): the
+    heading fades at completion BY DEPTH (`enquiry-heading-complete` is written
+    only against `.enquiry-heading-d2..d6`, `globals.css`), and the `?skip=1` dev
+    door reached completion at depth 0 with nothing answered, so the heading sat
+    at full size over the contact field (Carl: *"i wondered why that text was
+    overlayed... by all means fix it."*); the flag hid it in that state only.
+    Removed with the door. ⚠ Still true: a visitor reaches completion at depth
+    >= 2 (walking fills `memory`), so the depth fade is the only one needed — an
+    entry at depth 0 would bring the overlap back.
+  */
   // The first recede (full opening heading -> d2) TRAVELS — the heading itself moves and
   // shrinks (`enquiry-heading-travelling`; was a ghost cross-fade until 17 October 2026);
   // later steps deepen via the transition. memory.length === 1 while the first step is in
@@ -2609,10 +2585,6 @@ export default function EnquiryOpening({ onStageChange }: EnquiryOpeningProps = 
               ? ` enquiry-heading-d${headingDepth}${firstRecede ? " enquiry-heading-travelling" : ""}${corridorMoving && !firstRecede ? " enquiry-heading-deepening" : ""}${stage === "complete" ? " enquiry-heading-complete" : ""}`
               : " text-3xl sm:text-4xl leading-[1.15]"
           }`}
-          // ⛔ THE DEV DOOR ONLY — see `skipDoorHeadingHidden`. Hidden rather
-          // than unmounted so the shell keeps its box and nothing below reflows.
-          style={skipDoorHeadingHidden ? { opacity: 0 } : undefined}
-          aria-hidden={skipDoorHeadingHidden || undefined}
         >
           {/* ⚠ `openingMask` — NOT `stage === "opening"` alone. The mask classes
               carry the animations, so withholding the CLASS is what holds the

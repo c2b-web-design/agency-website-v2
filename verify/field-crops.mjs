@@ -21,6 +21,7 @@
 
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { walkToClientInfo } from "./lib/walk-to-client-info.mjs";
 
 const OUT = "verify/out/field-study";
 mkdirSync(OUT, { recursive: true });
@@ -38,7 +39,8 @@ const page = await browser.newPage({
   deviceScaleFactor: 2,
 });
 
-await page.goto(`${BASE}/start?skip=1`, { waitUntil: "networkidle" });
+// ⚰️ was `/start?skip=1` (the dev door, retired 25 November 2026): now WALKED there, as a visitor (`lib/walk-to-client-info.mjs`)
+await walkToClientInfo(page, BASE);
 
 const renderer = await page
   .evaluate(() => {

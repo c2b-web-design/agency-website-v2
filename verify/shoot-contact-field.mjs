@@ -2,15 +2,12 @@
 //
 //   node verify/shoot-contact-field.mjs
 //
-// ⚠ IT WALKS THERE, IT DOES NOT USE `?skip=1`. The dev door exists because the
-// corridor could not reach completion — but selection was restored on
-// 11 August (step 1a), so the real path works now. **Walking it means the field
-// is entered the way a visitor enters it**, with the corridor's own state and
-// timing behind it, rather than mounted cold by a query param.
-//
-// ⚠ THE `?skip=1` COMMENT IN `enquiry-opening.tsx` IS NOW STALE — it still says
-// *"the corridor cannot reach completion right now"*. That was true when
-// written and is not any more. Flagged, not fixed here.
+// ⚠ IT WALKS THERE. Selection was restored on 11 August (step 1a), so the real
+// path works. **Walking it means the field is entered the way a visitor enters
+// it**, with the corridor's own state and timing behind it, rather than mounted
+// cold by a query param. (⚰️ The `?skip=1` dev door, and the stale comment about
+// it flagged here, were RETIRED on 25 November 2026; the shared route for other
+// harnesses is `lib/walk-to-client-info.mjs`.)
 //
 // ⚠ FIVE QUESTIONS, EACH NEEDING A SELECTION AND A CLICK. The walk is slow by
 // construction: 900ms corridor moves, a staggered card ladder per question, and

@@ -21,6 +21,7 @@
  */
 import { chromium } from "@playwright/test";
 import { mkdirSync } from "node:fs";
+import { walkToClientInfo } from "./lib/walk-to-client-info.mjs";
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 const N = Number(process.argv[2] ?? 14);
 mkdirSync("verify/out/fieldwalk", { recursive: true });
@@ -32,7 +33,8 @@ const STEP_MS = 640;
 const browser = await chromium.launch({ headless: false, args: ["--enable-gpu","--use-angle=default","--ignore-gpu-blocklist"] });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 
-await page.goto(`${BASE}/start?skip=1`, { waitUntil: "networkidle" });
+// ⚰️ was `/start?skip=1` (the dev door, retired 25 November 2026): now WALKED there, as a visitor (`lib/walk-to-client-info.mjs`)
+await walkToClientInfo(page, BASE);
 // Let the field's own entrance cascade finish before sampling the resting orbit.
 await page.waitForTimeout(9000);
 
@@ -42,7 +44,7 @@ const box = await page.evaluate(() => {
   const b = c.getBoundingClientRect();
   return { x: Math.round(b.x), y: Math.round(b.y), width: Math.round(b.width), height: Math.round(b.height) };
 });
-if (!box) { console.log("⚠ contact layer not found — ?skip=1 may not have reached completion."); await browser.close(); process.exit(1); }
+if (!box) { console.log("⚠ contact layer not found — the walk may not have reached completion."); await browser.close(); process.exit(1); }
 
 console.log(`\n  contact layer at ${box.width}x${box.height}`);
 console.log(`  sampling every ${STEP_MS}ms across a 9000ms circuit (front 6000 visible / back 3000 hidden)\n`);

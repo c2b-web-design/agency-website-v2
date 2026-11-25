@@ -1,11 +1,10 @@
 /**
  * The client info section — the contact field — as it stands.
  *
- * ⚠ REACHED VIA `?skip=1`, A DEV DOOR. The corridor cannot walk to completion:
- * Q5's five CSS answer cards were removed for the WebGL rebuild, so nothing
- * there registers as a SELECTION and Next step never activates. That is
- * documented and accepted, not broken. See the `stage` initialiser in
- * `enquiry-opening.tsx`.
+ * ⚠ REACHED BY WALKING THE CORRIDOR, as a visitor (`lib/walk-to-client-info.mjs`).
+ * ⚰️ It used `?skip=1`, a dev door written when the corridor could not reach
+ * completion; selection returned on 11 August and the door was RETIRED on
+ * 25 November 2026 (its hydration failure was the dev overlay's "2 Issues").
  *
  * ⚠ WHY IT MATTERS. Carl, 6 August 2026: *"Its important that you see it,
  * because what comes before it, what weve been building, has more than a direct
@@ -23,6 +22,7 @@
 
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { walkToClientInfo } from "./lib/walk-to-client-info.mjs";
 
 const OUT = "verify/out";
 mkdirSync(OUT, { recursive: true });
@@ -39,7 +39,8 @@ const page = await browser.newPage({
 const errs = [];
 page.on("pageerror", (e) => errs.push(e.message));
 
-await page.goto("http://localhost:3000/start?skip=1", { waitUntil: "networkidle" });
+// ⚰️ was `/start?skip=1` (the dev door, retired 25 November 2026): now WALKED there, as a visitor (`lib/walk-to-client-info.mjs`)
+await walkToClientInfo(page);
 
 const renderer = await page
   .evaluate(() => {

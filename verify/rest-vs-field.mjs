@@ -30,6 +30,7 @@
 
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { walkToClientInfo } from "./lib/walk-to-client-info.mjs";
 
 const OUT = "verify/out/rest-vs-field";
 mkdirSync(OUT, { recursive: true });
@@ -79,11 +80,11 @@ async function sweep(label, clip, moments) {
 // ── THE CARD ROW ────────────────────────────────────────────────────────────
 // Three passes: the rig as it stands, the traveller alone, and the traveller
 // alone at an intensity high enough to actually judge the arc by.
-// ⚠ THERE IS NO `?skip=` DOOR TO THE CARDS. `?skip=1` sets stage "complete",
-// which is the CONTACT FIELD (enquiry-opening.tsx:477-479). The only way to the
-// answer row is to press Begin and wait out the opening, so that is what this
-// does — checked in the source rather than assumed, because a harness that
-// screenshots the wrong stage produces confident pictures of nothing.
+// ⚠ THE ONLY WAY TO THE ANSWER ROW is to press Begin and wait out the opening,
+// so that is what this does — checked in the source rather than assumed,
+// because a harness that screenshots the wrong stage produces confident
+// pictures of nothing. (⚰️ The `?skip=1` door led to the CONTACT FIELD only,
+// never the cards; it was retired 25 November 2026.)
 const CARD_PASSES = [
   ["cards-asis", "/start"],
   ["cards-alone", "/start?noglobal=1"],
@@ -140,7 +141,8 @@ for (const [label, url] of CARD_PASSES) {
 // thing being compared.
 const FIELD_MOMENTS = [0, 800, 1900, 3100, 4400, 5700, 6600, 7500, 8600];
 
-await page.goto(`${BASE}/start?skip=1`, { waitUntil: "networkidle" });
+// ⚰️ was `/start?skip=1` (the dev door, retired 25 November 2026): now WALKED there, as a visitor (`lib/walk-to-client-info.mjs`)
+await walkToClientInfo(page, BASE);
 await page.waitForTimeout(8100 + 2500); // entrance, then settle
 
 const fieldClip = await page.evaluate(() => {

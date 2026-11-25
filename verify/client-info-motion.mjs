@@ -25,6 +25,7 @@
 
 import { chromium } from "playwright";
 import { mkdirSync } from "node:fs";
+import { walkToClientInfo } from "./lib/walk-to-client-info.mjs";
 import sharp from "sharp";
 
 const OUT = "verify/out";
@@ -44,7 +45,8 @@ const page = await browser.newPage({
   deviceScaleFactor: 2,
 });
 
-await page.goto("http://localhost:3000/start?skip=1", { waitUntil: "networkidle" });
+// ⚰️ was `/start?skip=1` (the dev door, retired 25 November 2026): now WALKED there, as a visitor (`lib/walk-to-client-info.mjs`)
+await walkToClientInfo(page);
 // FIELD_ENTRANCE_END_MS is 8100; wait it out plus a margin so the boxes have
 // finished arriving and only the orbit is moving.
 await page.waitForTimeout(11000);
@@ -127,6 +129,6 @@ await sharp({
   .toFile(`${OUT}/client-info-motion.png`);
 
 console.log(`\nsheet: ${OUT}/client-info-motion.png`);
-console.log("watch: http://localhost:3000/start?skip=1");
+console.log("watch: http://localhost:3000/start (walk the corridor to client info)");
 
 await browser.close();

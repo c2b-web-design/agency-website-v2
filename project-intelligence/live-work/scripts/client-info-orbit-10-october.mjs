@@ -1,3 +1,4 @@
+// ⚰️ USES /start?skip=1, THE DEV DOOR RETIRED 25 NOVEMBER 2026: rerun as is, it lands on the OPENING and measures the wrong screen. Reach client info with verify/lib/walk-to-client-info.mjs.
 /** THE CLIENT INFO ORBIT, DRAWN (10 October 2026) — Carl: "i want you to see the lights orbit". The rig draws nothing
  *  and is a locked file, so its path is EVALUATED here: `fieldPlacements` imported from the real module; `orbitFrame`,
  *  `orbitPosition`, `orbitPhase`, `aimPoint` and the relay copied VERBATIM from contact-field-light-rig.tsx at HEAD
