@@ -6,6 +6,15 @@ the session that reads it, once its replacement is written.
 **The record:** D-101 in `decisions.md`, from *"✔ THE PLINTH APPROVED (25 November 2026, session 2; R-117)"* to the end;
 review **R-117** (*"Plinth is approved."*). Session ended on Carl's word (*"write a handoff and commit and push"*).
 
+## ⛔ NEXT SESSION (Carl, after the push)
+
+*"Next session. We will use the storyboard roadmap with the editing of the film and put precise numbers within the storyboard for
+working out camera shots."* → (1) **film 3's edit driven by the roadmap** (`hero-event-order-25-november.md`, the scene's order;
+step 3 below); (2) **precise numbers in the storyboard** (`hero-storyboard-25-november.md`) for the camera shots. The Builder's
+reading, to confirm with Carl first: the TIMES are already printed; what a shot also needs is WHERE — the logo's position and size
+at each event, the blobs' spread, the cloth's extent, the plinth, in the scene's units and cm — printed from the scene's state the
+same way (`film03-scene-log-25-november.mjs` extended; read-only).
+
 ## ⛔ THE ORDER NOW (Carl, this session; amends 16 November)
 
 **Film 3's edit NOW → the storyboard (the camera direction, phase 5) → the hero's polish** (our own marble take 4, the showcase
