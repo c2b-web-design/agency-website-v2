@@ -3,7 +3,10 @@
 **We are on r185** (`package.json` `"three": "^0.185.1"` — on a 0.x version the caret allows 0.185.x only; the lockfile
 pins the build). Released since: r186 (npm 0.186.0, 8 September; 0.186.1, 24 September), r187 (0.187.0, 30 October).
 **The Builder's advice, 25 November:** stay on r185 to launch; upgrade AFTER, as its own chunk, on a branch, harnesses run,
-every page walked. Carl asked for this report; no upgrade decided.
+every page walked. Carl asked for this report. **⛔ RULED by Carl the same day (D-101):** *"i am happy at how the site looks with r185 ...
+that would lead to a rabbit hole that gets deeper every month. With clients, i suppose it depends what they have on their
+site and a check would have to be done. But upgrading three would have to be done at the right time."* — the site stays on
+r185; an upgrade only at the right time; client sites checked per site.
 
 Source: the GitHub release pages for r186 and r187 (titles quoted; the bodies not read; the migration guide sections
 185→186 and 186→187 NOT read — read them first when the upgrade is planned).
