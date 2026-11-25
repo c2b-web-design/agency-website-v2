@@ -33,7 +33,7 @@ Close: *"We have the logo phases and the pointer im nicknaming "Gandalfs firewor
 | The SUBTEXT's bottom line on the floor — only the TIPS of the y's (*"you"*, *"eyes"*) touch; heat/cold there, minimal — "balance" | Carl | CHOSEN |
 | The baseline on the floor (descenders sunk) | Builder | RAISED AND NOT CHOSEN |
 | The PHASES END on the GOLD LOGO (it stays) | Carl | CHOSEN |
-| "GANDALF's FIREWORKS": after the gold logo is established, the POINTER emits numerous tiny c2bs that come apart into c's, 2s and b's, maybe growing; a SHELF LIFE; nothing during the phases (from `webgpu_tsl_vfx_linkedparticles`, NO connecting lines) | Carl | CHOSEN |
+| "GANDALF's FIREWORKS": after the gold logo is established, the POINTER emits numerous tiny c2bs that come apart into c's, 2s and b's, maybe growing; a SHELF LIFE; nothing during the phases (from `webgpu_tsl_vfx_linkedparticles`, NO connecting lines) | Carl | CHOSEN (8 Nov) → ⚰️ **DISCARDED, 25 November 2026** (Carl: *"Gandalfs fireworks are discarded. On relection i dont think it will fit the scene. We end up with elegant marble and shiny gold. Even though the efeect is cool, we shouldnt use it here."*; D-101) |
 | Each particle a c, 2 or b drawn on a sprite; the logo's own triangles coming away | Builder | RAISED AND NOT CHOSEN (both misreadings, corrected) |
 | A CYCLE: re-form the leaning logo at the start | Carl | RAISED, OPEN — routes: the letters rebuild it, or the gold logo waddles back and reheats |
 | Unused from the folder: `webgl_instancing_dynamic`, `webgl_buffergeometry` (the shard cloud) | Carl (6 Nov) | not placed in the concept |
