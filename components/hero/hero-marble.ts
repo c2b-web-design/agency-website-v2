@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { MeshPhysicalNodeMaterial } from "three/webgpu";
-import { abs, clamp, color, float, fwidth, lights, max, mix, mx_fractal_noise_float, mx_fractal_noise_vec3, mx_noise_float, neutralToneMapping, output, positionWorld, smoothstep, texture as sampleTexture, uniform, vec2, vec3, vec4 } from "three/tsl";
+import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
+import { abs, clamp, color, float, fwidth, lights, max, mix, normalWorld, mx_fractal_noise_float, mx_fractal_noise_vec3, mx_noise_float, neutralToneMapping, output, positionWorld, smoothstep, texture as sampleTexture, uniform, vec2, vec3, vec4 } from "three/tsl";
 
 /**
  * ⛔ PHASE 4, THE MARBLE, STEP 1 — `webgpu_lights_spotlight` EXACTLY AS IT IS (23 November 2026; D-101, route B).
@@ -77,6 +78,19 @@ export const MARBLE_LIGHT_LAYER = 31;
 
 export type HeroMarbleSettings = {
   on: boolean;
+  /** ⛔ THE PLINTH (route B, below): shown with the marble; its size (cm), the round of its edges (cm), and how far it has
+   *  risen (0 = sunk in the floor, 1 = its full height: the text's top, `setPlinthBase`) — a dial until its timing is set */
+  plinth: boolean;
+  plinthWidthCm: number;
+  plinthDepthCm: number;
+  plinthRadiusCm: number;
+  plinthRise: number;
+  /** ⛔ the plinth's RISE (s), from the marble's entrance, eased in and out — Carl: 5 s, "the same" as the reveal */
+  plinthRiseS: number;
+  /** ⛔ the plinth's own FILL (always on; the spotlight only adds): its strength, its height (°) and from the left (°) */
+  plinthFill: number;
+  plinthFillUpDeg: number;
+  plinthFillLeftDeg: number;
   /** "ours": built in the shader; "gpt": the AI marble on the floor (static; THE BAR); "disturb.jpg": the example's,
    *  projected by the light; "none" */
   map: "ours" | "gpt" | "disturb.jpg" | "none";
@@ -98,7 +112,9 @@ export type HeroMarbleSettings = {
   ambient: number;
   /** ⛔ the entrance follows the story (the cloth's departure); off = shown whole */
   story: boolean;
-  /** the circle's spread from the logo to the floor's corners (s); the Builder's take: the cloth's departure (3 s) */
+  /** the circle's spread from the logo to the floor's corners (s), linear. ⚰️ 3 s (the Builder's take: the cloth's
+   *  departure) → 5 s (Carl, 25 November 2026: *"The radial reveal should be slower- 5s and thats should be the same for
+   *  the plinth rising."*) */
   spreadS: number;
   /** the circle's soft edge (cm) */
   featherCm: number;
@@ -127,19 +143,37 @@ export type HeroMarble = {
   /** the two lights: in the logo's own light list (`hero-scene.ts`) */
   readonly lights: THREE.Light[];
   readonly floor: THREE.Mesh;
+  /** ⛔ the plinth (route B): the floor's stone, rising under the logo */
+  readonly plinth: THREE.Mesh;
   readonly settings: HeroMarbleSettings;
   /** where the statue stood: the logo's spot on the floor (world), and the world's units per cm; until then, off */
   place(spot: THREE.Vector3, unitsPerCm: number): void;
   /** the entrance's share (0 = none, 1 = whole): the circle's radius and the lights' strength */
   setReveal(share: number): void;
+  /** ⛔ THE PLINTH's BASE (`hero-scene.ts`): the middle of the logo's footprint where it stands (world, on the floor), and the
+   *  full height (world units) — the text's top less the standing logo's: the two tops level */
+  setPlinthBase(centre: THREE.Vector3, height: number): void;
+  /** the story's share of the plinth's rise (0 before phase 4); × the `plinthRise` dial */
+  setPlinthRise(share: number): void;
+  /** how far the plinth's top stands above the floor now (world units): the logo's lift */
+  readonly plinthLift: number;
   update(delta: number): void;
-  readonly info: { placed: boolean; unitsPerMetre: number; lightAt: [number, number, number]; intensityWorld: number; reveal: number };
+  readonly info: { placed: boolean; unitsPerMetre: number; lightAt: [number, number, number]; intensityWorld: number; reveal: number; plinthCm: { width: number; depth: number; height: number; risen: number } };
   dispose(): void;
 };
 
 export function createHeroMarble(): HeroMarble {
   const settings: HeroMarbleSettings = {
     on: true,
+    plinth: true,
+    plinthWidthCm: 240,
+    plinthDepthCm: 60,
+    plinthRadiusCm: 4,
+    plinthRise: 1,
+    plinthRiseS: 5,
+    plinthFill: 2.5,
+    plinthFillUpDeg: 20,
+    plinthFillLeftDeg: 25,
     map: "gpt",
     color: "#f7f8c9",
     intensity: 100,
@@ -154,7 +188,7 @@ export function createHeroMarble(): HeroMarble {
     metresPerUnit: 1,
     ambient: 0.25,
     story: true,
-    spreadS: 3,
+    spreadS: 5,
     featherCm: 60,
     rimCm: 450,
     rimFadeCm: 200,
@@ -296,6 +330,71 @@ export function createHeroMarble(): HeroMarble {
   floor.visible = false;
   group.add(floor);
 
+  // ⛔ THE PLINTH (25 November 2026; D-101, route B; Carl: *"Yes, its A. The total height of the logo and plinth should be
+  // the same as the text and subtext on the left. The plinth should have soft rounded edges. Put it in first and then we will
+  // talk about the timing in which it rises. We need a good balance between text on the left and logo/plimth on the right so
+  // the width of the plinth will be important."*). A rounded block under the logo, rising OUT of the floor (its sunk part
+  // hidden by the floor), its height the text's top less the standing logo's (`setPlinthBase`; measured 31.5 cm:
+  // `hero-plinth-measure-25-november.mjs`), so the logo's top and the headline's stand level.
+  // ROUTE A (Carl's choice): the TOP is the floor's own marble — the same world projection as the floor (xz), so the stone
+  // under the logo is the floor's stone, lifted; the SIDES are the top FOLDED over its edges (each side reads the floor's
+  // image as if the top ran on past its edge, by the depth below the top), so every vein runs over the rounded edge unbroken
+  // and the sides rise WITH the block. ⚠ So the floor's strip in front of the block and the front face carry the same
+  // marble, mirrored about the base line: it reads as the face reflected in the polished floor (a take; if a real
+  // reflection is added to the floor, revisit). The bottom faces down, inside the floor: never seen.
+  // Its OWN material for the "gpt" map (the floor keeps its one sample: three samples here, on the block's pixels only);
+  // the same uniforms, mask, output and light list as the floor. "ours" is a solid stone (its own material, as the floor);
+  // the example's maps, the floor's grey material.
+  const plinthTop = uniform(0);
+  const plinthMin = uniform(new THREE.Vector2());
+  const plinthMax = uniform(new THREE.Vector2());
+  const below = plinthTop.sub(positionWorld.y).max(0);
+  // each side's point unfolded onto the floor's plane: front/back along z, right/left along x
+  const nW = normalWorld;
+  const zFold = nW.z.greaterThan(0).select(plinthMax.y.add(below), plinthMin.y.sub(below));
+  const xFold = nW.x.greaterThan(0).select(plinthMax.x.add(below), plinthMin.x.sub(below));
+  const onFloor = (x: unknown, z: unknown) => sampleTexture(gpt, vec2(x as F, z as F).sub(vec2(marbleCentre)).div(tileWorld).add(0.5)).rgb;
+  const sTop = onFloor(positionWorld.x, positionWorld.z);
+  const sZ = onFloor(positionWorld.x, zFold);
+  const sX = onFloor(xFold, positionWorld.z);
+  // blended by the normal (sharp: the flat faces pure, the rounded edges a blend of continuous neighbours)
+  const wN = abs(nW).pow(4);
+  const wSum = wN.x.add(wN.y.max(0)).add(wN.z).max(1e-4);
+  const plinthColour = sTop.mul(wN.y).add(sZ.mul(wN.z)).add(sX.mul(wN.x)).div(wSum);
+  const plinthMaterial = new MeshPhysicalNodeMaterial();
+  plinthMaterial.colorNode = plinthColour;
+  plinthMaterial.roughnessNode = roughU;
+  plinthMaterial.metalnessNode = float(0);
+  plinthMaterial.clearcoatNode = coatU;
+  plinthMaterial.clearcoatRoughnessNode = coatRoughU;
+  plinthMaterial.maskNode = material.maskNode;
+  plinthMaterial.outputNode = material.outputNode;
+  // ⛔ ITS OWN FILL (Carl, 25 November 2026, on take 1's two frames — the front face lit in one, black in the other as the
+  // spotlight circled: *"The marble plinth should always be visible, the spotlight would only highlight it and bring out the
+  // logos shadow."*): a soft DIRECTIONAL light from the front, low and a little from the left, in the PLINTH's list only (on
+  // the hidden layer, as the floor's two) — so the faces always read; the spotlight's circle adds the highlight and the
+  // logo's shadow on top. Low, so the top takes little of it and stays the floor's stone (route A). No shadow of its own.
+  // ⚠ The "ours" and example maps put the floor's own material on the plinth: no fill there (a take, "gpt" only)
+  const plinthFill = new THREE.DirectionalLight(0xffffff, 0);
+  plinthFill.name = "hero marble plinth fill";
+  plinthFill.layers.set(MARBLE_LIGHT_LAYER);
+  group.add(plinthFill);
+  group.add(plinthFill.target);
+  plinthMaterial.lightsNode = lights([spotLight, ambient, plinthFill]);
+  plinthMaterial.name = "hero marble plinth (the floor's marble, folded)";
+  const plinth = new THREE.Mesh(new RoundedBoxGeometry(1, 1, 1, 4, 0.05), plinthMaterial);
+  plinth.name = "hero marble plinth";
+  plinth.castShadow = true;
+  plinth.receiveShadow = true;
+  plinth.visible = false;
+  group.add(plinth);
+  /** the base: the logo's footprint's middle on the floor (world), the full height (world); its built size (a rebuild key) */
+  let plinthAt: THREE.Vector3 | null = null;
+  let plinthHeight = 0;
+  let plinthStory = 0;
+  let plinthLift = 0;
+  let plinthKey = "";
+
   let spot: THREE.Vector3 | null = null;
   let unitsPerCm = 0;
   let t = 0;
@@ -336,6 +435,38 @@ export function createHeroMarble(): HeroMarble {
     spotLight.shadow.intensity = settings.shadowIntensity;
     ambient.intensity = on ? settings.ambient * share : 0;
     floor.visible = on;
+    // ⛔ THE PLINTH: its material follows the floor's map (above); its height the story's share × the dial
+    plinth.material = settings.map === "gpt" ? plinthMaterial : settings.map === "ours" ? oursMaterial : material;
+    const risen = Math.min(1, Math.max(0, plinthStory * settings.plinthRise));
+    plinthLift = on && settings.plinth && plinthAt ? risen * plinthHeight : 0;
+    plinth.visible = plinthLift > 0;
+    if (plinthAt && unitsPerCm > 0) {
+      const w = Math.max(1, settings.plinthWidthCm) * unitsPerCm;
+      const d = Math.max(1, settings.plinthDepthCm) * unitsPerCm;
+      const h = Math.max(1e-3, plinthHeight);
+      const r = Math.max(0, Math.min(settings.plinthRadiusCm * unitsPerCm, h / 2, w / 2, d / 2));
+      const key = `${w}|${d}|${h}|${r}`;
+      if (key !== plinthKey) {
+        plinthKey = key;
+        plinth.geometry.dispose();
+        plinth.geometry = new RoundedBoxGeometry(w, h, d, 4, r);
+      }
+      // risen: its top `plinthLift` above the floor (the rest sunk below it, hidden)
+      plinth.position.set(plinthAt.x, plinthAt.y + plinthLift - h / 2, plinthAt.z);
+      plinthTop.value = plinthAt.y + plinthLift;
+      plinthMin.value.set(plinthAt.x - w / 2, plinthAt.z - d / 2);
+      plinthMax.value.set(plinthAt.x + w / 2, plinthAt.z + d / 2);
+      // the fill: from the front (+z, the camera's side), `plinthFillUpDeg` up and `plinthFillLeftDeg` from the left
+      const up = THREE.MathUtils.degToRad(settings.plinthFillUpDeg);
+      const left = THREE.MathUtils.degToRad(settings.plinthFillLeftDeg);
+      const far = 500 * unitsPerCm;
+      plinthFill.target.position.set(plinthAt.x, plinthAt.y + plinthLift / 2, plinthAt.z);
+      plinthFill.position.set(plinthAt.x - Math.sin(left) * Math.cos(up) * far, plinthAt.y + plinthLift / 2 + Math.sin(up) * far, plinthAt.z + Math.cos(left) * Math.cos(up) * far);
+      plinthFill.target.updateMatrixWorld();
+    }
+    // (never `visible`: the light set must not change — intensity 0 when off)
+    plinthFill.color.set(settings.color);
+    plinthFill.intensity = plinth.visible ? settings.plinthFill * share : 0;
     lightHelper.visible = on && settings.helpers;
     shadowCameraHelper.visible = on && settings.helpers;
     if (!placed) return;
@@ -384,7 +515,20 @@ export function createHeroMarble(): HeroMarble {
     group,
     lights: [spotLight, ambient],
     floor,
+    plinth,
     settings,
+    setPlinthBase(centre, height) {
+      plinthAt = centre.clone();
+      plinthHeight = Math.max(0, height);
+      apply();
+    },
+    setPlinthRise(share) {
+      plinthStory = Math.min(1, Math.max(0, share));
+      apply();
+    },
+    get plinthLift() {
+      return plinthLift;
+    },
     place(at, upc) {
       spot = at.clone();
       unitsPerCm = upc;
@@ -399,7 +543,9 @@ export function createHeroMarble(): HeroMarble {
       apply();
     },
     get info() {
-      return { placed: spot !== null, unitsPerMetre: settings.metresPerUnit * 100 * unitsPerCm, lightAt, intensityWorld, reveal };
+      const cm = (v: number) => Math.round((v / Math.max(1e-6, unitsPerCm)) * 10) / 10;
+      const plinthCm = { width: settings.plinthWidthCm, depth: settings.plinthDepthCm, height: cm(plinthHeight), risen: cm(plinthLift) };
+      return { placed: spot !== null, unitsPerMetre: settings.metresPerUnit * 100 * unitsPerCm, lightAt, intensityWorld, reveal, plinthCm };
     },
     dispose() {
       texture.dispose();
@@ -407,6 +553,9 @@ export function createHeroMarble(): HeroMarble {
       white.dispose();
       material.dispose();
       oursMaterial.dispose();
+      plinthMaterial.dispose();
+      plinthFill.dispose();
+      plinth.geometry.dispose();
       floor.geometry.dispose();
       lightHelper.dispose();
       shadowCameraHelper.dispose();

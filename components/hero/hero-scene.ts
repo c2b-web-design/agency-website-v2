@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { ClippingGroup, MeshBasicNodeMaterial, MeshPhysicalNodeMaterial, type Node, type WebGPURenderer } from "three/webgpu";
-import { acesFilmicToneMapping, cameraWorldMatrix, float, interleavedGradientNoise, lights, materialColor, mix, mx_cell_noise_float, mx_noise_float, mx_noise_vec3, normalView, output, pmremTexture, positionLocal, positionViewDirection, positionWorld, pow4, roughness, screenCoordinate, smoothstep, texture, transformNormalToView, normalLocal, uniform, vec2, vec3, vec4 } from "three/tsl";
+import { acesFilmicToneMapping, cameraWorldMatrix, float, getShadowMaterial, interleavedGradientNoise, lights, materialColor, mix, mx_cell_noise_float, mx_noise_float, mx_noise_vec3, normalView, output, pmremTexture, positionLocal, positionViewDirection, positionWorld, pow4, roughness, screenCoordinate, smoothstep, texture, transformNormalToView, normalLocal, uniform, vec2, vec3, vec4 } from "three/tsl";
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { heroTextLayout } from "@/components/showcase/hero-text";
@@ -1426,6 +1426,8 @@ export function createHeroScene(aspect: number): HeroScene {
   const stageE = new THREE.Euler();
   const stageR = new THREE.Matrix4();
   const stageT = new THREE.Matrix4();
+  /** the plinth's lift of the logo (`hero-marble.ts`, the plinth) */
+  const plinthT = new THREE.Matrix4();
   const stageV = new THREE.Vector3();
   /** where the logo stands, cm behind its spot (the jumps' landings add up; a bench reset clears it) */
   let logoBackCm = 0;
@@ -1791,6 +1793,22 @@ export function createHeroScene(aspect: number): HeroScene {
       const landedPose = new THREE.Matrix4().makeTranslation(0, -mouldDrop, 0).multiply(mould.matrix);
       // the floor's heat, source 3: the solid logo's BASE where it lands (`leanFloorContact` on the landed pose)
       landedContact = leanFloorContact(g, landedPose, t.unitsPerCm).point;
+      // ⛔ THE PLINTH (`hero-marble.ts`; 25 November 2026, Carl: *"The total height of the logo and plinth should be the same as
+      // the text and subtext on the left"*): under the standing logo's footprint, its height the text's top less the standing
+      // logo's (measured 31.5 cm, `hero-plinth-measure-25-november.mjs`) — both read from their geometry here, not recorded
+      {
+        const pa = g.getAttribute("position");
+        const v = new THREE.Vector3();
+        const lo = new THREE.Vector3(Infinity, Infinity, Infinity);
+        const hi = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+        for (let i = 0; i < pa.count; i++) {
+          v.fromBufferAttribute(pa, i).applyMatrix4(landedPose);
+          lo.min(v);
+          hi.max(v);
+        }
+        const textTop = new THREE.Box3().setFromObject(t.group, true).max.y;
+        marble.setPlinthBase(new THREE.Vector3((lo.x + hi.x) / 2, FLOOR_Y, (lo.z + hi.z) / 2), textTop - hi.y);
+      }
       // ⛔ built by the worker ("landed"): the rain's hit map, and THE STEAM's solid mask (`hero-steam.ts`) — the same
       // landed pose; the steam's ink the flow map's (2 cells per cm). The rain's step program is warmed when they are in
       // (`compute`, `landedIn`)
@@ -2471,7 +2489,8 @@ export function createHeroScene(aspect: number): HeroScene {
     // built now, not at the last band
     // ⛔ + the cloth (`hero-cloth.ts`; 20 November 2026): hidden until its environment is in, so shown here to be built now
     // ⛔ + the marble's floor (`hero-marble.ts`; 23 November 2026): hidden while off, so shown here to be built now
-    const show: THREE.Object3D[] = [view, heatPlane, rain.group, rain.codeMesh, floorHeat.mesh, cloth.group, marble.floor];
+    // ⛔ + the plinth (`hero-marble.ts`; 25 November 2026): hidden until phase 4, so shown here to be built now
+    const show: THREE.Object3D[] = [view, heatPlane, rain.group, rain.codeMesh, floorHeat.mesh, cloth.group, marble.floor, marble.plinth];
     if (logo) show.push(logo);
     const keep = show.map((o) => [o.visible, o.frustumCulled] as const);
     for (const o of show) {
@@ -2505,6 +2524,102 @@ export function createHeroScene(aspect: number): HeroScene {
     await done;
     warmMs = Math.round(performance.now() - t0);
     performance.mark("hero:WarmDone");
+    // the spotlight's shadow pass after it, in the background (not awaited: the opening does not wait for it)
+    void warmShadow(renderer);
+  }
+
+  /**
+   * ⛔ THE SPOTLIGHT's SHADOW PASS, BUILT IN THE BACKGROUND (25 November 2026; Carl: *"On the 4th jump, on its return,
+   * theres a stall. Its happened a couple of times now."* … *"implement the fix"*). MEASURED
+   * (`live-work/scripts/hero-pass4-stall-25-november.mjs`): at the marble's entrance (story ~72.7 s, the logo still landing
+   * from pass 4) three built the shadow pass's pipelines SYNCHRONOUSLY at its first draw — one per caster (the logo, the
+   * plinth), `ShadowMaterial` — a 1,300 ms frame on a cold cache. `warmScene` builds the floor's material, which SETS UP
+   * the shadow (three r185 `ShadowNode.setupShadow`: `shadow.map` is its target), never the pass itself.
+   * So each caster is gathered here as `ShadowNode.updateShadow` draws it: the light's own `getShadowMaterial` as the
+   * scene's override, three's own `shadow.map` as the target, no MRT, no background, the shadow camera (its matrices; the
+   * main camera's layers when it has none of its own); the logo in its STORY material. ⚠ ONE CASTER AT A TIME, the
+   * override HELD in that caster's state until its compile is done: the draw (`Renderer.renderObject`) sets the shared
+   * override's position / colour / depth nodes and its side per object and PUTS THEM BACK straight after, but
+   * `compileAsync` builds LATER, from the material as it then is — so a plain gather built the wrong programs (take 1:
+   * measured, the same 1,217 ms frame). The state is the draw's own: `_getShadowNodes` (three's, cached per material) and
+   * the flipped side. Nothing drawn changes. Restored after.
+   * ⚠ This mirrors three r185's internals (`ShadowNode.updateShadow`, `Renderer.renderObject`, `_getShadowNodes`): on a
+   * three upgrade, re-run the stall harness — no ShadowMaterial pipeline may be made at the entrance, no long frame cold.
+   * `loadTimes.warmShadow`: the casters built, or −1 (no shadow map yet), −2 (three's helper missing: not built).
+   */
+  async function warmShadow(renderer: WebGPURenderer) {
+    const t0 = performance.now();
+    const sl = marble.lights[0] as THREE.SpotLight;
+    const sh = sl.shadow;
+    const map = (sh as unknown as { map: THREE.RenderTarget | null }).map;
+    type Ov = THREE.Material & { colorNode: unknown; depthNode: unknown; positionNode: unknown };
+    type Src = THREE.Material & { positionNode?: { isNode?: boolean } | null; shadowSide: THREE.Side | null };
+    const r = renderer as unknown as { _getShadowNodes?: (m: THREE.Material) => { colorNode: unknown; depthNode: unknown; positionNode: unknown } };
+    if (!map) {
+      loadTimes.warmShadow = -1;
+      return;
+    }
+    if (typeof r._getShadowNodes !== "function") {
+      loadTimes.warmShadow = -2;
+      return;
+    }
+    const flip: Record<number, THREE.Side> = { [THREE.FrontSide]: THREE.BackSide, [THREE.BackSide]: THREE.FrontSide, [THREE.DoubleSide]: THREE.DoubleSide };
+    const ov = getShadowMaterial(sl) as unknown as Ov;
+    const orig = { colorNode: ov.colorNode, depthNode: ov.depthNode, positionNode: ov.positionNode, side: ov.side };
+    let built = 0;
+    for (const o of [logo, marble.plinth]) {
+      if (disposed || !o || !o.castShadow) continue;
+      // the caster in its story state, shown for the gather only
+      const keepVis = o.visible;
+      const keepCull = o.frustumCulled;
+      const keepMat = o.material;
+      if (o === logo && logoFadeParts) o.material = logoFadeParts.opaque;
+      const src = o.material as Src;
+      // the override in this caster's state, as the draw sets it (and held: the draw's restore puts back THIS)
+      ov.colorNode = orig.colorNode;
+      ov.depthNode = orig.depthNode;
+      ov.positionNode = src.positionNode && src.positionNode.isNode ? src.positionNode : orig.positionNode;
+      ov.side = src.shadowSide !== null && src.shadowSide !== undefined ? src.shadowSide : flip[src.side];
+      const n = r._getShadowNodes(src);
+      if (n.colorNode !== null) ov.colorNode = n.colorNode;
+      if (n.depthNode !== null) ov.depthNode = n.depthNode;
+      if (n.positionNode !== null) ov.positionNode = n.positionNode;
+      // the pass's renderer and scene state, for the gather (synchronous); put back straight after
+      const keepTarget = renderer.getRenderTarget();
+      const keepMRT = renderer.getMRT();
+      const keepOverride = scene.overrideMaterial;
+      const keepBg = scene.background;
+      const keepBgNode = (scene as unknown as { backgroundNode: unknown }).backgroundNode;
+      const keepLayers = sh.camera.layers.mask;
+      if ((sh.camera.layers.mask & 0xfffffffe) === 0) sh.camera.layers.mask = camera.layers.mask;
+      sh.updateMatrices(sl);
+      o.visible = true;
+      o.frustumCulled = false;
+      scene.overrideMaterial = ov;
+      scene.background = null;
+      (scene as unknown as { backgroundNode: unknown }).backgroundNode = null;
+      renderer.setMRT(null);
+      renderer.setRenderTarget(map);
+      const build = renderer.compileAsync(o, sh.camera, scene);
+      renderer.setRenderTarget(keepTarget);
+      renderer.setMRT(keepMRT);
+      scene.overrideMaterial = keepOverride;
+      scene.background = keepBg;
+      (scene as unknown as { backgroundNode: unknown }).backgroundNode = keepBgNode;
+      sh.camera.layers.mask = keepLayers;
+      o.visible = keepVis;
+      o.frustumCulled = keepCull;
+      o.material = keepMat;
+      await build;
+      built++;
+    }
+    ov.colorNode = orig.colorNode;
+    ov.depthNode = orig.depthNode;
+    ov.positionNode = orig.positionNode;
+    ov.side = orig.side;
+    loadTimes.warmShadow = built;
+    loadTimes.warmShadowMs = Math.round(performance.now() - t0);
+    performance.mark("hero:WarmShadowDone");
   }
 
   const easeSine = (u: number) => 0.5 - 0.5 * Math.cos(Math.PI * Math.max(0, Math.min(1, u)));
@@ -2942,6 +3057,16 @@ export function createHeroScene(aspect: number): HeroScene {
     }
     // ⛔ THE MARBLE's ENTRANCE (`marbleAt`): its circle and its lights from the departure's start, linear
     marble.setReveal(Number.isNaN(marbleAt) ? 0 : (emitT - marbleAt) / Math.max(0.01, marble.settings.spreadS));
+    // ⛔ THE PLINTH (`hero-marble.ts`; 25 November 2026): RISES with the marble's entrance — from the same moment, over
+    // `plinthRiseS` (Carl: *"The radial reveal should be slower- 5s and thats should be the same for the plinth rising."*;
+    // ⚰️ up at once in take 1), EASED in and out (the Builder's take: a heavy stone starts and stops gently; the reveal itself
+    // stays linear); the logo LIFTED by its top's height, on top of the pose written above (written whole every frame, so
+    // the lift never accumulates) — so a logo still landing from pass 4 lands on the rising plinth
+    marble.setPlinthRise(Number.isNaN(marbleAt) ? 0 : smooth((emitT - marbleAt) / Math.max(0.01, marble.settings.plinthRiseS)));
+    if (logo && marble.plinthLift > 0) {
+      logo.matrix.premultiply(plinthT.makeTranslation(0, marble.plinthLift, 0));
+      logo.matrixWorldNeedsUpdate = true;
+    }
     cloth.setHand(handCm, handYCm);
     // ⛔ THE COLLIDER's POSE (`hero-cloth.ts`): the logo's local from world, while it is drawn
     cloth.setCollider(logo && logo.visible ? clothPose.copy(logo.matrix).invert() : null);

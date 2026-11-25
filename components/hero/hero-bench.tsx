@@ -386,6 +386,18 @@ export default function HeroBench() {
         f.add(mb, "gold", 0, 2, 0.05).name("ours: gold veins");
         f.add(mb, "web", 0, 2, 0.05).name("ours: hairline web");
         f.add(mb, "teal", 0, 2, 0.05).name("ours: teal");
+        // ⛔ THE PLINTH (25 November 2026, route B; Carl: *"the width of the plinth will be important"*): its height is the
+        // text's top less the logo's (not a dial); width, depth and the round of its edges are takes; "risen" until its timing
+        f.add(mb, "plinth").name("plinth");
+        f.add(mb, "plinthWidthCm", 200, 500, 5).name("plinth width (cm)");
+        f.add(mb, "plinthDepthCm", 10, 200, 1).name("plinth depth (cm)");
+        f.add(mb, "plinthRadiusCm", 0, 15, 0.5).name("plinth edge round (cm)");
+        f.add(mb, "plinthRiseS", 0.5, 10, 0.1).name("plinth rise (s)");
+        f.add(mb, "plinthRise", 0, 1, 0.01).name("plinth risen (0 → 1)");
+        // its own fill (Carl: "The marble plinth should always be visible, the spotlight would only highlight it")
+        f.add(mb, "plinthFill", 0, 10, 0.1).name("plinth fill");
+        f.add(mb, "plinthFillUpDeg", 0, 80, 1).name("plinth fill: up (°)");
+        f.add(mb, "plinthFillLeftDeg", -80, 80, 1).name("plinth fill: from the left (°)");
       }
 
       // ⛔ PHASE 3, PASS 1, FORWARD (`hero-scene.ts`, `pass1`; 20 November 2026, session 2; Carl: *"have the logo jump up and

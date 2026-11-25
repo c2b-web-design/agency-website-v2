@@ -65,6 +65,47 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-116 — The Hero, Phase 4: The Entrance's Stall Fixed; The Reveal And The Plinth's Rise At 5 s (D-101): "much smoother"
+
+**Date:** 2026-11-25
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — the spotlight's shadow pass built in the background warm-up (`hero-scene.ts`, `warmShadow`;
+the stall at the marble's entrance, measured cold 1,217–2,017 ms → no frame over 51 ms); the marble's radial reveal 3 → 5 s
+(linear); the plinth rising over 5 s from the same moment, eased in and out (`hero-marble.ts`, `plinthRiseS`).
+
+**Carl's verdict, verbatim:** *"Stall is fixes and rhe radial reveal and plinth rise is much smoother."*
+
+**Findings:**
+
+- ✔ **The stall fixed; "much smoother"** — recorded at the level given. Not worded as an approval; not promoted to one.
+- ⚠ **Open:** one shadow pipeline still made synchronously at the entrance at no visible cost (which caster, not
+  identified); the fix mirrors three r185's internals (re-run `hero-pass4-stall-25-november.mjs` on any three upgrade);
+  the rise's easing is the Builder's take.
+
+---
+
+## R-115 — The Hero, Phase 4: The Plinth, The Floor's Marble Lifted Under The Logo (D-101): "Plinth looks great"
+
+**Date:** 2026-11-25
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — the plinth (`hero-marble.ts`; `hero-scene.ts`): route A, a rounded block (240 × 60 cm, edges
+4 cm) rising out of the floor under the standing logo, its height the text's top less the logo's (31.6 cm, measured), the
+logo lifted onto it; the top the floor's own marble, the sides the top folded over its edges; its own soft fill from the
+front (the spotlight only adds). Stills: `03 The hero\2026-11-25_plinth_take1\`, `2026-11-25_plinth_take2-fill\`.
+
+**Carl's verdict, verbatim:** *"Plinth looks great. its now visible at all times."* (on four bench frames: HOME, close,
+low, high)
+
+**Findings:**
+
+- ✔ **"Plinth looks great"** — recorded at the level given: the plinth's shape, size (the take, 240 × 60 cm), route A's
+  marble and the fill, as built at their defaults. Not worded as an approval; not promoted to one.
+- ⚠ **Open:** the RISE's timing (it is up at once with the marble's entrance, the logo popping 31.6 cm — next); the fill
+  "gpt" only; the mirrored front face / floor strip (a reflection read; revisit with a real reflection); frame cost
+  (D-108) not measured on Carl's Chrome.
+
+---
+
 ## R-114 — The Hero, Phase 3 → 4: The Cloth Leaves As The Logo Clears, The Marble Radiates In (D-101): "a natural flow to the story"
 
 **Date:** 2026-11-23
