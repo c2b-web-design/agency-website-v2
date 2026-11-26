@@ -327,24 +327,15 @@ export default function HeroBench() {
       // ⛔ THE FLOOR (`hero-cloth.ts`, `setFloor`; 22 November 2026): 0 slides freely, 1 sticks where it lies
       f.add(cl, "floorFriction", 0, 1, 0.01).name("floor friction");
 
-      // ⛔ THE CLOTH's ARRIVAL (`hero-scene.ts`, `clothArrival`; 22 November 2026, session 3): it lies flat on the floor, asleep,
-      // `back` behind the spot; `delay` after the last code drop it rises and comes forward to its place together. Takes
+      // ⛔ THE CLOTH's ARRIVAL (`hero-scene.ts`, `clothArrival`): it lies flat on the floor, asleep, `back` behind the spot; `delay`
+      // after the last code drop it is HUNG over the logo and fades in (phase 3's circle). ⚰️ The rise and the departure folder
+      // went with the passes (26 November 2026)
       f = gui.addFolder("Cloth arrival");
-      f.add(hero.clothArrival, "auto").name("rise after the code drops");
+      f.add(hero.clothArrival, "auto").name("hang after the code drops");
       f.add(hero.clothArrival, "backCm", 160, 500, 5).name("lies back (cm from the spot)");
       f.add(hero.clothArrival, "delayS", 0, 6, 0.1).name("delay after the last code drop (s)");
-      // (up and forward together, one move: Carl, 22 November 2026)
-      f.add(hero.clothArrival, "seconds", 0.5, 8, 0.1).name("rise and forward (s)");
-      f.add({ go: () => hero.clothRiseNow() }, "go").name("Rise now");
+      f.add({ go: () => hero.clothRiseNow() }, "go").name("Hang now");
       f.add({ lay: () => hero.clothLayAgain() }, "lay").name("Lay it on the floor again");
-
-      // ⛔ THE CLOTH's DEPARTURE (`hero-scene.ts`, `clothDeparture`; 23 November 2026): the arrival mirrored — back and down
-      // together to where it lay, then asleep; the moment the logo is clear of it on pass 4's return (Carl, 23 November). Takes
-      f = gui.addFolder("Cloth departure");
-      f.add(hero.clothDeparture, "auto").name("leave after pass 4");
-      f.add(hero.clothDeparture, "clearS", 0, 6, 0.05).name("after pass 4's return takes off (s)");
-      f.add(hero.clothDeparture, "seconds", 0.5, 8, 0.1).name("back and down (s)");
-      f.add({ go: () => hero.clothDepartNow() }, "go").name("Leave now");
 
       // ⛔ PHASE 4, THE MARBLE, step 1 (`hero-scene.ts`, `hero-marble.ts`; 23 November 2026; Carl: *"Copy the code exactly. We
       // can turn off the rotations and other things, then we will tweak it"*): `webgpu_lights_spotlight`'s own GUI, in its
@@ -400,16 +391,12 @@ export default function HeroBench() {
         f.add(mb, "plinthFillLeftDeg", -80, 80, 1).name("plinth fill: from the left (°)");
       }
 
-      // ⛔ PHASE 3, PASS 1, FORWARD (`hero-scene.ts`, `pass1`; 20 November 2026, session 2; Carl: *"have the logo jump up and
-      // down with the figures youve suggeated"*): the first jump, straight up and down, on "Jump" once phase 1's wobble is
-      // done. The height's rows put to Carl: 32.7 (touching), 47.7, 60 (phase 1's hop), 72.7 cm; take 3: 95 (half the front face, the default). The cloth answers
-      // the jump (behind → in front, crossing at the apex) when it is at its place; "Reset pass 1" restores the cloth as it was at pass 1's first take-off
       // ⛔ PHASE 3 REDESIGNED — ONE CIRCLE THROUGH THE CLOTH (`hero-scene.ts`, `circle`; Carl, 26 November 2026): the cloth hung
       // and faded in over the logo, the upright circle backwards first, slowed through the cloth, gold behind it, the web floor
-      // shrinking to touchdown, the marble from touchdown. Read at the circle's take-off: replay to see a change. On = the
-      // passes (below) out of the story
-      f = gui.addFolder("Phase 3: the circle (take 4)");
-      f.add(hero.circle, "on").name("the circle (off = the four passes)");
+      // shrinking to touchdown, the marble from touchdown. Read at the circle's take-off: replay to see a change. APPROVED as
+      // take 4 (R-119). ⚰️ The four passes' folders (Pass 1–4, Stage, Passes) deleted with their code (26 November 2026)
+      f = gui.addFolder("Phase 3: the circle (approved, R-119)");
+      f.add({ back: () => hero.resetPhase3() }, "back").name("Back to phase 3's start");
       f.add(hero.circle, "radiusCm", 40, 120, 1).name("radius (cm; the cloth's centre at the top)");
       f.add(hero.circle, "seconds", 1, 12, 0.1).name("the circle (s)");
       f.add(hero.circle, "slow", 0.05, 1, 0.01).name("speed through the cloth (×)");
@@ -424,16 +411,10 @@ export default function HeroBench() {
       f.add(hero.circle, "releaseCm", 0, 60, 1).name("lets go: past its plane (cm)");
       f.add(hero.circle, "fadeOutLeadS", -3, 3, 0.05).name("cloth fade out: before touchdown (s; − = after)");
       f.add(hero.circle, "fadeOutS", 0.1, 5, 0.1).name("cloth fade out (s)");
-      // ⛔ THE PASSES BAKED IN (`hero-scene.ts`, `passesAuto`; 22 November 2026, R-111): the story plays them — the beat after
-      // the cloth arrives, then each pass once the logo has stopped wobbling. Their dials (below) are READ-ONLY: approved
-      f = gui.addFolder("Passes (approved, R-111)");
-      f.add(hero.passesAuto, "on").name("played by the story");
-      f.add(hero.passesAuto, "beatS", 0, 6, 0.1).name("beat after the cloth arrives (s)");
-      // ⛔ THE WEB FLOOR DRIES WITH THE LOGO (`hero-scene.ts`, `floorDry`; 22 November 2026): an eighth smaller after each contact
-      f.add(hero.floorDry, "shrinkS", 0.1, 5, 0.1).name("floor shrink per contact (s)");
 
-      // ⛔ DRIED TO GOLD, PASS BY PASS (`hero-dry.ts`; 22 November 2026): 1 the top third, 2 where the c meets the 2, 3 where
-      // the b meets the 2, 4 what's left — each over its pass's two actions; the regions' soft, wandering edges; the border
+      // ⛔ DRIED TO GOLD (`hero-dry.ts`): since 26 November 2026 the whole logo at once (phase 3's circle), so the regions below
+      // (built 22 November for the passes: 1 the top third, 2 where the c meets the 2, 3 where the b meets the 2, 4 what's left)
+      // all fill together; the blotch, the border and the regions' soft, wandering edges still shape it
       f = gui.addFolder("Drying (gold)");
       const dr = hero.dry.settings;
       f.add(dr, "topThird", 0, 1, 0.01).name("pass 1: above (height share)");
@@ -444,106 +425,10 @@ export default function HeroBench() {
       f.add(dr, "regionWander", 0, 0.3, 0.005).name("region edge wander");
       f.add(dr, "wanderCm", 2, 60, 0.5).name("region wander size (cm)");
       f.add(dr, "blotch", 0, 2, 0.01).name("fills unevenly");
-      // ⛔ NEVER SEEN TO CHANGE (`hero-scene.ts`, `dryHidden`): a side dries only while turned away from the camera
-      f.add(hero.dryHidden, "fillS", 0.1, 3, 0.05).name("fills in (s, hidden)");
-      f.add(hero.dryHidden, "edge", -0.5, 0.8, 0.01).name("counts as turned away below");
-      f.add(hero.dryHidden, "coverFrom", 0, 1, 0.01).name("pass 1 face: cloth over from");
-      f.add(hero.dryHidden, "coverTo", 0, 1, 0.01).name("pass 1 face: cloth over to");
       f.add(dr, "blueBelow", 0, 1, 0.01).name("all blue below");
       f.add(dr, "goldAbove", 0, 1, 0.01).name("all gold above");
       f.add(dr, "ragged", 0, 1, 0.01).name("edge wander");
       f.add(dr, "raggedCm", 1, 40, 0.5).name("edge wander size (cm)");
-      f.add({ back: () => hero.resetPass1() }, "back").name("Reset (pass 1)");
-
-      f = gui.addFolder("Pass 1");
-      f.add({ jump: () => hero.jump() }, "jump").name("Jump");
-      f.add(hero.pass1, "apexCm", 20, 120, 0.1).name("jump height (cm)");
-      // ⛔ take 3: UP AND BACK into the cloth (apex this far behind its spot; it lands twice as far back)
-      f.add(hero.pass1, "backCm", 0, 80, 1).name("jump back (cm, at apex)");
-      // ⛔ the BACKWARD action, by itself after the forward landing's wobble (the beat): the cloth retreats to here (cm from
-      // the spot); the logo jumps home into it this long after the cloth set off
-      f.add(hero.pass1, "clothBackToCm", -250, 60, 1).name("cloth back to (cm)");
-      f.add(hero.pass1, "backJumpDelayS", 0, 4, 0.01).name("back jump after cloth (s)");
-      // the cloth answers the jump (from behind to in front, `CLOTH_PATH_CM`); a bench reset brings both back
-      // ⛔ RESET = THE BEGINNING OF PASS 1 (Carl: accurate measurement): the logo home, the cloth restored EXACTLY to its state
-      // at pass 1's first take-off (the button's name "Reset": *"change the buttons back to reset, not back to the beginning"*)
-      f.add({ back: () => hero.resetPass1() }, "back").name("Reset pass 1");
-
-      // ⛔ PASS 2, STAGED (`hero-scene.ts`, `stage`; 20 November 2026, session 2; Carl: *"an easier way to do this is if i show
-      // you in stages"*): a still pose — roll (− = right, as the front camera sees it), then turn about the vertical
-      // ⛔ PASS 2, FORWARD — THE JUMP SWIVEL (`hero-scene.ts`, `pass2`): "Jump" once pass 1 is done
-      f = gui.addFolder("Pass 2");
-      f.add({ jump: () => hero.jump() }, "jump").name("Jump");
-      f.add(hero.pass2, "apexCm", 0, 150, 1).name("apex (cm above)");
-      f.add(hero.pass2, "landBackCm", -100, 150, 1).name("land back (cm)");
-      f.add(hero.pass2, "clothForwardCm", 0, 250, 1).name("cloth forward (cm)");
-      // ⛔ the REVERSE MOVE (by itself after the swivel's wobble): the cloth back to here (cm from the spot); the logo's jump
-      f.add(hero.pass2, "clothBackToCm", -250, 60, 1).name("reverse: cloth back to (cm)");
-      f.add(hero.pass2, "backJumpDelayS", 0, 4, 0.01).name("reverse: jump after cloth (s)");
-      // ⛔ THE GYMNAST: no wobble between, the reverse move `reboundS` after the swivel lands, the cloth setting off with it
-      f.add(hero.pass2, "reverse").name("reverse move (off: it stays)");
-      f.add(hero.pass2, "clothForwardTime", 0.2, 1, 0.01).name("cloth forward time (× flight)");
-      f.add(hero.pass2, "clothBackTime", 0.2, 1, 0.01).name("reverse: cloth back time (× flight)");
-      f.add(hero.pass2, "gymnast").name("gymnast (one movement)");
-      f.add(hero.pass2, "reboundS", 0, 1, 0.01).name("gymnast: gather (s)");
-      f.add(hero.pass2, "gatherDeg", 0, 10, 0.1).name("gymnast: landing lean (deg)");
-      // ⛔ PASS 2's SPEED (Carl: *"slow the logos pass 2 movement down by 50%"*): 0.5 = twice as long, the same path
-      f.add(hero.pass2, "speed", 0.1, 1, 0.01).name("pass 2 speed (× real)");
-      f.add(hero.pass2, "rollDeg", -180, 180, 1).name("roll (deg, − = right)");
-      f.add(hero.pass2, "yawDeg", -180, 180, 1).name("turn (deg)");
-      f.add(hero.pass2, "pitchDeg", -360, 360, 1).name("flip (deg, − = backwards)");
-      f.add({ back: () => hero.resetPass1() }, "back").name("Reset (pass 1)");
-
-      // ⛔ PASS 3 — THE MIRROR OF PASS 2, FOR THE B (`hero-scene.ts`, `pass3`): "Jump" once pass 2 is done; its own dials,
-      // pass 2's at first with the roll and turn mirrored (Carl, 22 November 2026: *"keep the dials the same as Pass 2 at first"*)
-      f = gui.addFolder("Pass 3");
-      f.add({ jump: () => hero.jump() }, "jump").name("Jump");
-      f.add(hero.pass3, "apexCm", 0, 150, 1).name("apex (cm above)");
-      f.add(hero.pass3, "landBackCm", -100, 150, 1).name("land back (cm)");
-      f.add(hero.pass3, "clothForwardCm", 0, 250, 1).name("cloth forward (cm)");
-      f.add(hero.pass3, "clothBackToCm", -250, 60, 1).name("reverse: cloth back to (cm)");
-      f.add(hero.pass3, "backJumpDelayS", 0, 4, 0.01).name("reverse: jump after cloth (s)");
-      f.add(hero.pass3, "reverse").name("reverse move (off: it stays)");
-      f.add(hero.pass3, "clothForwardTime", 0.2, 1, 0.01).name("cloth forward time (× flight)");
-      f.add(hero.pass3, "clothBackTime", 0.2, 1, 0.01).name("reverse: cloth back time (× flight)");
-      f.add(hero.pass3, "gymnast").name("gymnast (one movement)");
-      f.add(hero.pass3, "reboundS", 0, 1, 0.01).name("gymnast: gather (s)");
-      f.add(hero.pass3, "gatherDeg", 0, 10, 0.1).name("gymnast: landing lean (deg)");
-      f.add(hero.pass3, "speed", 0.1, 1, 0.01).name("pass 3 speed (× real)");
-      f.add(hero.pass3, "rollDeg", -180, 180, 1).name("roll (deg, − = right)");
-      f.add(hero.pass3, "yawDeg", -180, 180, 1).name("turn (deg)");
-      f.add(hero.pass3, "pitchDeg", -360, 360, 1).name("flip (deg, − = backwards)");
-      f.add({ back: () => hero.resetPass1() }, "back").name("Reset (pass 1)");
-
-      // ⛔ PASS 4 — THE BOTTOM HALF OF THE 2 (`hero-scene.ts`, `pass4`): "Jump" once pass 3 is done; a 180° flip BACKWARDS
-      f = gui.addFolder("Pass 4");
-      f.add({ jump: () => hero.jump() }, "jump").name("Jump");
-      f.add(hero.pass4, "apexCm", 0, 150, 1).name("apex (cm above)");
-      f.add(hero.pass4, "landBackCm", -100, 150, 1).name("land back (cm)");
-      f.add(hero.pass4, "clothForwardCm", 0, 250, 1).name("cloth forward (cm)");
-      f.add(hero.pass4, "clothBackToCm", -250, 60, 1).name("reverse: cloth back to (cm)");
-      f.add(hero.pass4, "backJumpDelayS", 0, 4, 0.01).name("reverse: jump after cloth (s)");
-      f.add(hero.pass4, "reverse").name("reverse move (off: it stays)");
-      f.add(hero.pass4, "clothForwardTime", 0.2, 1, 0.01).name("cloth forward time (× flight)");
-      f.add(hero.pass4, "clothBackTime", 0.2, 1, 0.01).name("reverse: cloth back time (× flight)");
-      f.add(hero.pass4, "gymnast").name("gymnast (one movement)");
-      f.add(hero.pass4, "reboundS", 0, 1, 0.01).name("gymnast: gather (s)");
-      f.add(hero.pass4, "gatherDeg", 0, 10, 0.1).name("gymnast: landing lean (deg)");
-      f.add(hero.pass4, "speed", 0.1, 1, 0.01).name("pass 4 speed (× real)");
-      f.add(hero.pass4, "rollDeg", -180, 180, 1).name("roll (deg, − = right)");
-      f.add(hero.pass4, "yawDeg", -180, 180, 1).name("turn (deg)");
-      f.add(hero.pass4, "pitchDeg", -360, 360, 1).name("flip (deg, − = backwards)");
-      f.add({ back: () => hero.resetPass1() }, "back").name("Reset (pass 1)");
-      // ⛔ APPROVED, R-111: every pass's dials READ-ONLY (shown, not moved); the buttons (Jump, Reset) still work
-      for (const name of ["Pass 1", "Pass 2", "Pass 3", "Pass 4"]) {
-        const folder = gui.folders.find((x) => x._title === name);
-        for (const c of folder?.controllers ?? []) if (typeof (c.object as Record<string, unknown>)[c.property] !== "function") c.disable();
-      }
-
-      f = gui.addFolder("Stage (pass 2)");
-      f.add(hero.stage, "on").name("stage the logo");
-      f.add(hero.stage, "rollDeg", -180, 180, 1).name("roll (deg, − = right)");
-      f.add(hero.stage, "yawDeg", -180, 180, 1).name("turn (deg)");
 
       // ⛔ PHASE 2, THE TEMPERATURE (`hero-heat.ts`; 16 November 2026, session 3): the logo cools as an object during the
       // wash — off = the run-off front drives the colour directly, as before (an A/B). The rates act on the heat left

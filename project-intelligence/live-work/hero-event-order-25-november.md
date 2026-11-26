@@ -49,9 +49,25 @@ order first); when they come they are printed from the scene's clock (16 Novembe
 
 ## PHASE 3: DRY (SCHRÖDINGER's CLOTH)
 
+⛔ **REDESIGNED 26 November 2026 (R-118, R-119; D-101):** one circle through the cloth replaces the four passes (Carl: phase 3
+measured 40.7 s, *"far too long"*). The passes are cut from the scene AND from the film (Carl: *"when approved, we can take the
+old Phase 3 out of the film and insert the new one"*); their rows are kept below as ⚰️, dead. Captures: `26` =
+`01 Discussion\2026-11-26_discussion_screen`, `26 pt2` = `…_part2` (times from each one's start; ⚠ the 40.7 s itself was
+answered before the capture started: the storyboard's table and a caption carry it).
+
 | # | Event | The idea | How we made it | Footage | Approval |
 |---|---|---|---|---|---|
 | 3a | The code drops: the last band of rain landing on the logo turns to code | The rain turns into what the site is made of; `/about`'s code rain returns | Each last-band drop bound for the logo turns at release to `/about`'s glyphs, falling at half the rain's speed | P3-1: 20 0:00:00–0:37:30; `2026-11-20_code-drops_take1` → `take3` | R-110 *"It looks great. Approved"* |
+| 3b | The cloth fades in, hung directly above the logo | DRY. Something comes to dry it | three's compute cloth, made ours (face on, bigger, the sphere removed, ultramarine, opaque); hung straight from its pins over the logo, its centre at the circle's top; faded in over 1.5 s | P3-2: 20 1:36:30–2:18:30 (the cloth built); P3-12: 26 0:00:00–0:07:52 (the case, the choreography, Carl's four answers); `cloth-step1_*`, `cloth-bigger_take1`, `cloth-no-sphere`, `cloth-colour-C`, `2026-11-26_phase3-circle_take1` | R-118 |
+| 3c | The circle: the logo leaves the floor travelling BACKWARDS, rises behind the cloth, upright all the way | One movement, not four passes: quicker and simpler | A circle 1.5 m across about a centre above home, a translation only (it never turns), eased at take-off and landing; 5.7 s | P3-13: 26 0:11:12–0:22:40 (*"Just implement it"*, take 1 built and filmed); `2026-11-26_phase3-circle_take1` | R-118 |
+| 3d | Just before it meets the cloth, behind it, the logo turns gold | DRY = GOLD, shiny and new. **The visitor never sees it change**: Schrödinger's cloth | The whole logo at once, from 30 cm before its face reaches the cloth, over 0.4 s; at HOME the cloth hides it; the camera's placement hides it in the direction (phase 5) | the take films; the rule's origin, P3-11's range (22 3:51:00, *"the user must never see the transition happen"*) | R-113's rule; R-118 |
+| 3e | Through the cloth: it slows right down; the bulge at first amorphous, then the logo's outline; the cloth drapes over the face and slides off as the logo comes down the front | The outline is the show (*"If that action is too fast it will be missed by the human eye"*) | The logo's shape collides with the cloth all the way round (no let-go); the speed down to 0.06× over ±45° about the top, so the outline holds ~2 s (take 1: 0.40 s, measured) | P3-4b: 20 s2 2:18:00–2:21:45 (the cloth made opaque, *"an unexpected bonus"*); P3-14: 26 0:26:20–0:32:53; P3-15: 26 pt2 0:04:54–0:13:41; `take2-slow-through`, `take3-drape`, `take4-cloth-1s-longer` | R-118 *"the logo outline is clearly visible"*; R-119 *"now we get more of the collision physics"* |
+| 3f | Home: it lands and wobbles; the web floor, shrinking since take-off, gone at touchdown; the cloth fades out from 0.5 s after | Dry: the heat's last trace gone | The web's radius eased to nothing over the circle; the cloth's fade by alpha-to-coverage, then asleep on the floor | P3-15: 26 pt2 0:10:30–0:13:41 (*"keep the cloth visible for 1s longer"*); `take4-cloth-1s-longer` | R-119 |
+
+**⚰️ CUT 26 November (the four passes; not in the scene, not in the film):**
+
+| # | Event | The idea | How we made it | Footage | Approval |
+|---|---|---|---|---|---|
 | 3b | The cloth rises from the floor, up and forward together over 3 s; a 2 s beat | DRY. Something comes to dry it | three's compute cloth, made ours: face on, bigger, the sphere removed, ultramarine; it lies on the floor with floor physics, then rises | P3-2: 20 1:36:30–2:18:30; P3-10: 22 1:58:30–2:22:30; `cloth-step1_*`, `cloth-bigger_take1`, `cloth-no-sphere`, `cloth-colour-C`, `cloth-arrival_take2-together-3s` | R-112 |
 | 3c | Pass 1: the logo jumps up and back into the cloth, the beat, then home | The logo leads, the cloth responds. Each action dries the side it presents | A hand carries the cloth's pins; the logo's shape collides with the cloth; the cloth opaque, so the logo's outline presses through it | P3-4: 20 s2 0:00:00–2:22:30; `pass1-forward_take3-film`, `pass1-backward-contact_front_opaque`, `pass1-collision_take1-film` | R-111; *"an unexpected bonus"* |
 | 3d | Pass 2: the C. A jump swivel, the landing lean, the gymnast's return | As 3c; a landing that leans like a real body | One machinery for passes 2–4: an arc under gravity, the swivel eased, the landing lean, at half speed (*"gravity is secondary to how it looks"*) | P3-6: 20 s2 3:05:30–5:32:00; P3-7: 22 0:00:00–0:13:30; `pass2-*` | R-111 *"far better"* |
@@ -63,8 +79,8 @@ order first); when they come they are printed from the scene's clock (16 Novembe
 
 | # | Event | The idea | How we made it | Footage | Approval |
 |---|---|---|---|---|---|
-| 4a | The cloth leaves the moment the logo is clear, its arrival mirrored | Its job is done | The arrival run backwards, from the moment the logo is clear | P4-1: 23 1:55:00–2:08:30; `cloth-departure_take2-when-clear` | R-114 *"a natural flow to the story"* |
-| 4b | The marble radiates in from the logo over 5 s, its lights rising | Elegant marble and shiny gold | three's spotlight example copied, then made ours: GPT's marble image (the bar), revealed in a circle from the logo | P4-2: 23 1:24:30 on; `marble-spotlight-example_take1/2`, `marble-gpt_take1`, `take2-level-isolated` | R-116 *"much smoother"* |
+| ⚰️ 4a | ~~The cloth leaves the moment the logo is clear, its arrival mirrored~~ CUT 26 November: the cloth now fades out after touchdown (3f) | | | ~~P4-1~~ | ~~R-114~~ (superseded by R-119) |
+| 4b | The marble radiates in from the logo over 5 s from its TOUCHDOWN (R-119), its lights rising | Elegant marble and shiny gold | three's spotlight example copied, then made ours: GPT's marble image (the bar), revealed in a circle from the logo | P4-2: 23 1:24:30 on; `marble-spotlight-example_take1/2`, `marble-gpt_take1`, `take2-level-isolated` | R-116 *"much smoother"* |
 | 4c | The plinth rises with it over 5 s, eased, lifting the logo level with the text | Confidence, not presumption: level with the words, not above them | The floor's marble lifted as a rounded block, its height read from the text; its own soft fill | P4-3: 25 0:00:00–0:22:00; P4-4: 25 0:46:00–0:48:30; `plinth_take1`, `take2-fill`, `take3-rise5s-shadow-warm` | R-115; R-117 *"Plinth is approved."* |
 | 4d | The hold on the finished image, marble and gold | The end of the story | ~4 s held | | ruled 25 Nov (the fireworks discarded) |
 | 4e | The loop back to HOME | The logo always returns | not built (the loop, freeze and restart: after phase 5) | | ruled 23 Nov |
