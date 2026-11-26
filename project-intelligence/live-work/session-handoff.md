@@ -7,12 +7,36 @@ the session that reads it, once its replacement is written.
 the end; reviews **R-118** and **R-119**; `live-work/hero-cold-load-26-november.md` (the cold load, measured: A, B, C).
 Written at Carl's word mid-task (*"compaction is 35% write a handoff first"*), not at a session's end.
 
-## ⛔ NEXT: CARL LOOKS AT THE FLOWING OPENING AGAIN
+## ⛔ NEXT SESSION: THE FIRST-FRAME FREEZE (Carl: *"the jump is noticable. put the fix options in the handoff and we will deal with it in the next session."*)
 
-His note *"the text moves slightly left"* is fixed and committed: each 2D line nudged onto its 3D face (`FLOW_LINE_NUDGE`),
-measured per line by edge correlation — within 0 to +1 px horizontally and ±1 px vertically at 1896 x 946, 1600 x 860 and
-1280 x 720 (`scripts/hero-flow-registration-26-november.mjs <out> <w> <h>`; D-101). The flowing opening is a TAKE: his
-verdict is next, then OPTION D (the logo's wait) and the poster's deletion (below).
+**The fault, MEASURED:** as the scene draws its FIRST frame (~1.3–1.5 s after the first paint on the dev bench), the screen
+produces NO frames for ~200 ms — the 2D headline's fade (and the subtext's letter fades) freeze, then catch up in one frame:
+a visible jump (`Videos\C2B Films\03 The hero\2026-11-26_flow-opening_take2-weight-matched`: the headline's brightness 35.8
+held six frames, then 44.4). NOT the camera: `scripts/screencast-freeze-test-26-november.mjs` shows the screencast keeps
+filming a CSS fade through a blocked script thread, so a stall with no frames at all is deeper than the script — most likely
+the GPU building the first frame's programs (three r185 builds a render pipeline at its first draw; the 16 November stall
+work and the 10 November async-compile plan are the precedents: `live-work/plan-liquid-async-compile-10-november.md`).
+
+**The options (Carl's choice; measure first, read-only, on a production build — `scripts/hero-cold-load-26-november.mjs`):**
+- **(a) Build the first frame's programs ASYNCHRONOUSLY before it is drawn** — e.g. `renderer.compileAsync(scene, camera)`
+  awaited before `setAnimationLoop` in `hero-bench.tsx`'s `start()`, or the bench's existing background warm-up extended to
+  the text's and floor's programs. The cleaner fix: no freeze at all. ⚠ Prove on the bench that three r185 WebGPU really builds
+  them off the frame (the 10 November plan found the liquid's draw built synchronously despite a warm-up); a structural
+  question if it adds a mechanism — the Architect.
+- **(b) Hold the scene until the 2D headline's fade is done** (1.5 s) before its first draw, so the freeze lands on still
+  text and is invisible. Simpler; the growth then starts at ~1.5 s rather than 0.75 s on fast loads. ⚠ The subtext's letter
+  fades start at 1.31 s and could still catch the freeze: start them after the scene's first frame, or accept.
+- **(c)** Not raised to Carl: both — (a) where it works, (b) as the guard. The Builder's note only.
+
+**Also open on the flowing opening (Carl's):** his verdict on the take; OPTION D (the logo waits for the WHOLE story's warm-up:
+fades in at ~8.75 s on dev, not ~3.0 s); the unused poster (`public/hero-bench/opening-poster.webp`, untracked) — delete?;
+the SITE's route (the 2D registers at HOME only: a structural note for the Architect).
+
+**Done since the mid-session handoff (committed with this one):** *"the text moves slightly left"* — each 2D line nudged onto
+its face by edge correlation (`FLOW_LINE_NUDGE`); *"when the light comes into play it should grow in intensityy, theres a
+sudden change"* — FILMED: the headline lost ~11% brightness at the hand-over because the 3D's glyphs are ~10% THINNER than the
+browser's Geist Bold; the 2D now at weight 625 with +0.0102 em tracking (`FLOW_HEAD_WEIGHT`, `scripts/hero-flow-weight-26-
+november.mjs`): ink within ~1%, every line ±1 px at three windows, the brightness HOLDS through the hand-over (refilmed).
 
 ## DONE AND PUSHED TODAY
 
@@ -29,7 +53,7 @@ verdict is next, then OPTION D (the logo's wait) and the poster's deletion (belo
 - Captures: `03 The hero\01 Discussion\2026-11-26_discussion_screen.mkv` (35:45) and `_part2.mkv` (18:15), each with a
   `.remux.mkv`; take films `03 The hero\2026-11-26_phase3-circle_take1` … `take4-cloth-1s-longer` (Home + side).
 
-## THE OPENING ON THE COLD LOAD — COMMITTED AS A TAKE (not approved)
+## THE OPENING ON THE COLD LOAD — COMMITTED AS A TAKE (not approved; the first-frame freeze above)
 
 Carl: *"Im trying to avoid a black viewport at the start."* Measured (production, cold): the headline readable ~2.7 s.
 - **A** (kept): the castle cube map and uv grid (threejs.org, bench-only) no longer fetched at load — no visible gain on
@@ -70,11 +94,14 @@ Carl: *"Im trying to avoid a black viewport at the start."* Measured (production
 - Hydration REMOVES nodes an inline script adds to `<body>`: render them with React, hidden, `suppressHydrationWarning`,
   and let the script only style them. A finished CSS animation's `currentTime` stops at its end: use the document timeline
   minus `startTime`. three's typeface JSON has no kerning: kerned HTML drifts from it.
+- **The heredoc STILL collapses backslashes** (twice more today: a 0x03 and a U+0082 in Windows paths, in `hero-bench.tsx`
+  and D-101): write ANY script that carries a backslash with the Write tool, and scan for C1 controls (U+0080–U+009F) too.
+- **Match the 2D's INK, not only its place and colour:** the browser draws a weight heavier than the font's own outline.
 - The plan gate was set aside twice on Carl's word (*"Just implement it"*; the flowing opening built on *"yes"*).
 
 ## STATE
 
-- Dev server on :3000 RUNNING (a background task of this session). Production server :3100 stopped. Screen recording
+- Dev server STOPPED (Carl: *"commit and push and stop the server"*). Production server :3100 stopped. Screen recording
   STOPPED (Carl: *"stop the screen capture."*).
 - Committed and pushed with this handoff: `hero-scene.ts`, `hero-bench.tsx` (A, the lights' B, the flowing opening),
   `decisions.md`, today's scripts, `live-work/hero-cold-load-26-november.md`. ⚠ NOT committed: the poster
@@ -85,4 +112,4 @@ Carl: *"Im trying to avoid a black viewport at the start."* Measured (production
 
 ---
 
-*Written 26 November 2026, mid-session (compaction at 35%).*
+*Written 26 November 2026; updated at the session's end (Carl: "put the fix options in the handoff").*

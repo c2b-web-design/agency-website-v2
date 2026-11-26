@@ -109,6 +109,17 @@ const FLOW_REF = (() => {
  */
 const FLOW_LINE_NUDGE = { head1: [-1.1, 0.8], head2: [-2.3, 0.8], sub1: [-1.5, 1.6], sub2: [-0.8, 1.2] } as const;
 const nudge = (n: readonly [number, number]) => `translate(${n[0] / FLOW_REF_ZOOM}px, ${n[1] / FLOW_REF_ZOOM}px)`;
+/**
+ * ⛔ THE HEADLINE's WEIGHT MATCHED TO THE 3D's INK (Carl: *"when the light comes into play it should grow in intensityy,
+ * theres a sudden change"*). FILMED live (`Videos\C2B Films\03 The hero\2026-11-26_flow-opening_take1-long`): at the hand-over
+ * the headline's brightness dropped ~11% in a frame. MEASURED: the same colour, the same place, but the 3D's glyphs THINNER —
+ * 22,158 solid px against the browser's Geist Bold's 24,524 (the browser draws the weight heavier than the typeface's own
+ * outline). Geist is variable: by `scripts/hero-flow-weight-26-november.mjs`, 620 → 22,035, 640 → 22,511: 625
+ */
+const FLOW_HEAD_WEIGHT = 625;
+// (at 625 the letters are narrower: the lines 532/543 and 394/402 px against the 3D's, ~0.8 px a gap — +0.0102 em of tracking
+// gives the width back; the left edges already matched)
+const FLOW_HEAD_TRACK_EM = -0.025 + FLOW_TRACK_EM + 0.0102;
 const FLOW_FADE_OUT_MS = 250;
 const FLOW_KEYFRAMES = "@keyframes heroFlowIn{from{opacity:0}to{opacity:1}}";
 const FLOW_SUB = ["We show you what your website could be, ", "then we build you a site for sore eyes."] as const;
@@ -791,7 +802,7 @@ export default function HeroBench() {
         <div id="hero-flow-stage" suppressHydrationWarning style={{ position: "absolute", left: "50%", top: "50%", width: FLOW_REF.w, height: FLOW_REF.h, transform: "translate(-50%, -50%) scale(var(--flow-s, 1))", transformOrigin: "50% 50%" }}>
           <div id="hero-flow-zoomed" suppressHydrationWarning style={{ position: "absolute", inset: 0 }}>
           <div id="hero-flow-headwrap" suppressHydrationWarning style={{ position: "absolute", left: FLOW_REF.head[0], top: FLOW_REF.head[1] }}>
-            <h1 id="hero-flow-head" suppressHydrationWarning style={{ margin: 0, opacity: 0, whiteSpace: "nowrap", fontSize: 60, fontWeight: 700, lineHeight: 1.088, letterSpacing: `${-0.025 + FLOW_TRACK_EM}em` }}>
+            <h1 id="hero-flow-head" suppressHydrationWarning style={{ margin: 0, opacity: 0, whiteSpace: "nowrap", fontSize: 60, fontWeight: FLOW_HEAD_WEIGHT, lineHeight: 1.088, letterSpacing: `${FLOW_HEAD_TRACK_EM}em` }}>
               <span style={{ display: "inline-block", transform: nudge(FLOW_LINE_NUDGE.head1) }}>Websites built</span>
               <br />
               <span style={{ display: "inline-block", transform: nudge(FLOW_LINE_NUDGE.head2) }}>to be seen.</span>
