@@ -29,8 +29,7 @@ work and the 10 November async-compile plan are the precedents: `live-work/plan-
 - **(c)** Not raised to Carl: both — (a) where it works, (b) as the guard. The Builder's note only.
 
 **Also open on the flowing opening (Carl's):** his verdict on the take; OPTION D (the logo waits for the WHOLE story's warm-up:
-fades in at ~8.75 s on dev, not ~3.0 s); the unused poster (`public/hero-bench/opening-poster.webp`, untracked) — delete?;
-the SITE's route (the 2D registers at HOME only: a structural note for the Architect).
+fades in at ~8.75 s on dev, not ~3.0 s); the SITE's route (the 2D registers at HOME only: a structural note for the Architect).
 
 **Done since the mid-session handoff (committed with this one):** *"the text moves slightly left"* — each 2D line nudged onto
 its face by edge correlation (`FLOW_LINE_NUDGE`); *"when the light comes into play it should grow in intensityy, theres a
@@ -60,8 +59,8 @@ Carl: *"Im trying to avoid a black viewport at the start."* Measured (production
   Carl's PC; the dependency gone. `loadCastle`, `loadUvGrid` in `hero-scene.ts`.
 - **B + C** (built, measured best: readable 1.02 s cold; Carl *"implement the B+C option. Its the fadtest yet."*) —
   **SUPERSEDED the same session** by Carl's idea, THE FLOWING OPENING. `OPENING.litS` is now [0, 1.5] (A's [0.3, 3.0] kept as
-  `OPENING_LIGHTS_A`, `?open=a`). ⚠ `public/hero-bench/opening-poster.webp` (C's still; authorised, in scope, STAGED) is
-  now UNUSED — ask Carl whether to delete it.
+  `OPENING_LIGHTS_A`, `?open=a`). C's still (`public/hero-bench/opening-poster.webp`) DELETED at the session's end (Carl:
+  *"delere it"*; never committed; `scripts/hero-opening-poster-26-november.mjs` can render it again).
 - **THE FLOWING OPENING** (`FLOW_OPENING` in `hero-scene.ts`, the bench's 2D in `hero-bench.tsx`; D-101 has every quote).
   Four actions flowing like `/start`'s Q5 cards (first halfway through, each next 28% in): (1) the HTML headline (#bed3ea,
   the lit 3D face's colour, sampled) fades in 1.5 s from the first paint; (2) the 3D headline, flat on it, grows BACKWARDS
@@ -104,9 +103,9 @@ Carl: *"Im trying to avoid a black viewport at the start."* Measured (production
 - Dev server STOPPED (Carl: *"commit and push and stop the server"*). Production server :3100 stopped. Screen recording
   STOPPED (Carl: *"stop the screen capture."*).
 - Committed and pushed with this handoff: `hero-scene.ts`, `hero-bench.tsx` (A, the lights' B, the flowing opening),
-  `decisions.md`, today's scripts, `live-work/hero-cold-load-26-november.md`. ⚠ NOT committed: the poster
-  (`public/hero-bench/opening-poster.webp`, unused — left untracked on disk for Carl's word on deleting it). `chunk-scope.json`: `opening-poster.webp` added on
-  Carl's *"yes, authorised"* (`_openingPoster26Nov`).
+  `decisions.md`, today's scripts, `live-work/hero-cold-load-26-november.md`. The poster deleted (never committed); the
+  tree clean. `chunk-scope.json`: `opening-poster.webp` added on
+  Carl's *"yes, authorised"* (`_openingPoster26Nov`), then REMOVED with the file's deletion.
 - Carried: target 1 December; name the files and ask before the first code edit, every session; a question is answered,
   not built; record each verdict as it lands.
 
