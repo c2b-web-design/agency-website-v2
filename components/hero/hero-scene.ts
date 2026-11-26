@@ -11,7 +11,7 @@ import { buildLogoMarkGeometry, LOGO_MARK_DEFAULTS } from "@/components/about/lo
 import type { DeskMarkResult } from "@/components/about/desk-mark.worker";
 import { createHeroRain, HIT, type HeroRainInfo, type HeroRainSettings } from "./hero-rain";
 import type { HeroCodeSettings } from "./hero-code-drops";
-import { CLOTH_BACK_CM, createHeroCloth, type HeroCloth } from "./hero-cloth";
+import { CLOTH_BACK_CM, CLOTH_PLACE, createHeroCloth, type HeroCloth } from "./hero-cloth";
 import { createHeroMarble, type HeroMarble } from "./hero-marble";
 import { createHeroDry, type HeroDry } from "./hero-dry";
 import { createHeroSteam, MARGIN, type HeroSteamInfo, type HeroSteamSettings } from "./hero-steam";
@@ -907,6 +907,51 @@ export type HeroSettings = {
   wallz: boolean;
 };
 
+/**
+ * ⛔ PHASE 3 REDESIGNED: QUICKER AND SIMPLER, ONE CIRCLE THROUGH THE CLOTH (Carl, 26 November 2026; D-101). Phase 3 measured
+ * 40.7 s (the four passes); Carl: *"At 40.7s that is far too long. So this is the new choreography for it. The cloth should
+ * gently fade in directly above the logo. The logo should complete a circle on the z axis travelling backwards first. As it
+ * reaches the cloth it should slow down to go through it. The outline of the logo is a nice effect as it goes through the
+ * cloth. It should be gold as it exits the cloth. The colour transition can take place just as the logo nears the cloth. The
+ * camera will be placed in a position that will hide this. For building purposes the camera will be at home. As it leaves the
+ * floor to complete the circle, the web floor can slowly decrease in size. When the gold logo touches the floor again the
+ * marble should appear."* … *"Yes, it stays upright ar all times."* … *"As it goes through the cloth will still be moving a
+ * little. It can fade out as the logo lands."* … *"Just implement it."* All values below are TAKE 1, the Builder's.
+ * - THE CLOTH: HUNG (`HeroCloth.hang`) where the passes' cloth rose (the last code drop + `clothArrival.delayS`), its plane
+ *   over the logo's centre, its centre at the circle's TOP; faded in over `fadeInS`; the circle `beatS` after.
+ * - THE CIRCLE: upright (a translation, no turn), in the depth plane, about a centre `radiusCm` above the logo's home centre:
+ *   from the floor BACKWARDS, up behind the cloth, FORWARD through it at the top, down at the front, home. Its speed eased at
+ *   both ends (from rest, `easeDeg`), and SLOWED to `slow` × through the cloth (a cosine dip `slowHalfDeg` either side of
+ *   `slowAtDeg`; 180° = the top). `seconds` the whole circle.
+ * - THROUGH THE CLOTH: the collision ON as it meets the fabric (the outline) and, from take 3, ON ALL THE WAY (`letGo`
+ *   false): the fabric drapes over the face as the logo carries it forward, and slides off as the logo comes down the front.
+ *   ⚰️ Takes 1–2: RELEASED once the logo's centre was `releaseCm` in front of the cloth's plane (the metal through the fabric).
+ * - THE GOLD: the whole logo (`hero-dry.ts`, every region, both sides), over `goldS`, from where its face is `goldLeadCm`
+ *   behind the cloth's plane on the way up ("just as the logo nears the cloth"): behind the opaque cloth from HOME. Carl's
+ *   camera hides it in the direction (R-113's rule kept: the visitor never sees it change).
+ * - THE WEB FLOOR: from take-off, shrinking (eased) to nothing at touchdown. THE MARBLE and the plinth from TOUCHDOWN.
+ * - THE CLOTH LEAVES: faded out from `fadeOutLeadS` before touchdown (negative: after it) over `fadeOutS`, then laid asleep.
+ * - THE LANDING: the logo's own landing wobble (`LAND_WOBBLE`).
+ * ⚰️ The four passes (R-111 – R-113) are out of the story while `on`; their code stays, off, until the circle is approved.
+ */
+export type HeroCircleSettings = { on: boolean; letGo: boolean; radiusCm: number; seconds: number; slow: number; slowAtDeg: number; slowHalfDeg: number; easeDeg: number; fadeInS: number; beatS: number; goldLeadCm: number; goldS: number; releaseCm: number; fadeOutLeadS: number; fadeOutS: number };
+// ⛔ TAKE 2 (Carl, 26 November 2026, on take 1: *"The speed of the circle movement is good. However as the logo aprroaches and
+// nears the cloth it should slow right down. I want to see the outline through the cloth. If that action is too fast it will be
+// missed by the human eye."*): MEASURED, take 1's outline (the face at the cloth's plane, 174.4°, to the let-go, 195.5°) lasted
+// 0.40 s. Now the slow 0.06× over ±45° about 186° (slowing from ~141°, on the approach), the let-go at 35 cm, and `seconds`
+// 5.7 so the rest of the circle keeps take 1's speed: the outline ~2.0 s. ⚰️ Take 1: seconds 4, slow 0.3, slowAtDeg 185,
+// slowHalfDeg 25, releaseCm 20
+// ⛔ TAKE 3 — THE CLOTH DRAPES, IT DOES NOT LET GO (Carl, 26 November 2026, after approving take 2: *"The logo literally goes
+// through the cloth. What should happen is as the logo and cloth interact the cloth would drape over the face of the logo as
+// it travels through. Like what happened with the previous iteration. I think you took my description too literally in
+// travelling through. Partly my mistake."*): `letGo` false — the collision stays ON all the way round, so the fabric drapes
+// over the face as the logo carries it forward and slides off as the logo comes down the front (the passes' contact).
+// ⚰️ Takes 1 and 2: the collision released `releaseCm` past the cloth's plane (the metal passed through the fabric); kept
+// behind `letGo`
+// ⛔ TAKE 4 (Carl, 26 November 2026, on take 3: *"keep the cloth visible for 1s longer"*): the fade-out 1 s later —
+// `fadeOutLeadS` 0.5 → −0.5 (negative = AFTER touchdown: it starts 0.5 s after the landing, over the same 1.2 s)
+export const HERO_CIRCLE_DEFAULTS: HeroCircleSettings = { on: true, letGo: false, radiusCm: 75, seconds: 5.7, slow: 0.06, slowAtDeg: 186, slowHalfDeg: 45, easeDeg: 50, fadeInS: 1.5, beatS: 0.5, goldLeadCm: 30, goldS: 0.4, releaseCm: 35, fadeOutLeadS: -0.5, fadeOutS: 1.2 };
+
 export type HeroScene = {
   scene: THREE.Scene;
   camera: THREE.PerspectiveCamera;
@@ -970,6 +1015,10 @@ export type HeroScene = {
   /** ⛔ THE PASSES BAKED IN (22 November 2026, session 3; R-111): the story plays them by itself — `beatS` after the cloth
    *  arrives, pass 1; each next pass once the logo has stopped wobbling. Off = the bench's Jump, as before */
   passesAuto: { on: boolean; beatS: number };
+  /** ⛔ PHASE 3 REDESIGNED, ONE CIRCLE THROUGH THE CLOTH (26 November 2026; `circle` in the scene): its dials, read at the
+   *  circle's take-off, and a read-out */
+  circle: HeroCircleSettings;
+  readonly circleInfo: { fadeInAt: number; at: number; seconds: number; landAt: number; thetaDeg: number; goldAt: number; goldDeg: number; releaseDeg: number; released: boolean; opacity: number; radiusCm: number; clothHandCm: number; clothHandYCm: number };
   /** ⛔ THE WEB FLOOR DRIES WITH THE LOGO (22 November 2026, session 3): each step's shrink (s), and a read-out */
   floorDry: { shrinkS: number };
   readonly floorDryInfo: { contacts: number; shown: number };
@@ -1522,6 +1571,62 @@ export function createHeroScene(aspect: number): HeroScene {
    * logo's landing wobble (`jumpDone`, the passes' `…Done` flags): the gap. A beat of 2 s, as pass 1's own beat.
    */
   const passesAuto = { on: true, beatS: 2 };
+  /** ⛔ PHASE 3 REDESIGNED (`HERO_CIRCLE_DEFAULTS`, its header): the dials, and the circle's state */
+  const circle: HeroCircleSettings = { ...HERO_CIRCLE_DEFAULTS };
+  /** when the cloth was hung and its fade began / the circle took off (story s, NaN = not yet) */
+  let fadeInAt = Number.NaN;
+  let circleAt = Number.NaN;
+  /** the circle planned at take-off: its time table (θ = 2π i / N → seconds), radius (world), the gold's start, the release */
+  type CirclePlan = { ts: Float64Array; N: number; seconds: number; r: number; goldAt: number; goldTh: number; releaseTh: number };
+  let circlePlan: CirclePlan | null = null;
+  let circleTh = 0;
+  let circleReleased = false;
+  let clothOpacity = 1;
+  /** the speed round the circle, × (θ in degrees): eased from rest at both ends, the dip through the cloth */
+  const circleSpeed = (deg: number) => {
+    const sm = (u: number) => {
+      const c = Math.min(1, Math.max(0, u));
+      return c * c * (3 - 2 * c);
+    };
+    const e = Math.max(1e-3, circle.easeDeg);
+    let w = 1;
+    if (deg < e) w *= 0.15 + 0.85 * sm(deg / e);
+    if (deg > 360 - e) w *= 0.15 + 0.85 * sm((360 - deg) / e);
+    const d = Math.abs(deg - circle.slowAtDeg);
+    const h = Math.max(1e-3, circle.slowHalfDeg);
+    if (d < h) w *= 1 - (1 - Math.min(1, Math.max(0.02, circle.slow))) * (0.5 + 0.5 * Math.cos((Math.PI * d) / h));
+    return w;
+  };
+  const circleTimeOf = (plan: CirclePlan, th: number) => {
+    const x = Math.min(plan.N, Math.max(0, (th / (2 * Math.PI)) * plan.N));
+    const i = Math.min(plan.N - 1, Math.floor(x));
+    return plan.ts[i] + (plan.ts[i + 1] - plan.ts[i]) * (x - i);
+  };
+  const circleThetaAt = (plan: CirclePlan, t: number) => {
+    let lo = 0;
+    let hi = plan.N;
+    while (hi - lo > 1) {
+      const m = (lo + hi) >> 1;
+      if (plan.ts[m] <= t) lo = m;
+      else hi = m;
+    }
+    const span = plan.ts[hi] - plan.ts[lo];
+    return ((lo + (span > 0 ? (t - plan.ts[lo]) / span : 0)) / plan.N) * 2 * Math.PI;
+  };
+  const planCircle = (halfDepthCm: number): CirclePlan => {
+    const N = 1440;
+    const ts = new Float64Array(N + 1);
+    const dTh = 360 / N;
+    for (let i = 1; i <= N; i++) ts[i] = ts[i - 1] + dTh / circleSpeed((i - 0.5) * dTh);
+    const k = Math.max(0.1, circle.seconds) / ts[N];
+    for (let i = 0; i <= N; i++) ts[i] *= k;
+    const rc = Math.max(1, circle.radiusCm);
+    const goldTh = Math.PI - Math.asin(Math.min(1, (circle.goldLeadCm + halfDepthCm) / rc));
+    const releaseTh = Math.PI + Math.asin(Math.min(1, circle.releaseCm / rc));
+    const plan: CirclePlan = { ts, N, seconds: Math.max(0.1, circle.seconds), r: rc * (unitsPerCm ?? 1), goldAt: 0, goldTh, releaseTh };
+    plan.goldAt = circleTimeOf(plan, goldTh);
+    return plan;
+  };
   /**
    * ⛔ THE WEB FLOOR DRIES WITH THE LOGO (Carl, 22 November 2026, session 3: *"the web floor next. The floor indicates the
    * logos temperature status. As the logo is dried is gradually turns gold. With 4 passes thats 8 contacts with cloth. After
@@ -2726,6 +2831,10 @@ export function createHeroScene(aspect: number): HeroScene {
       pass4Done = false;
       pass4ReturnAt = Number.NaN;
       sw = pass2;
+      // ⛔ PHASE 3's CIRCLE forgotten (`circle`)
+      fadeInAt = Number.NaN;
+      circleAt = Number.NaN;
+      circlePlan = null;
       // ⛔ THE CLOTH LAID ON THE FLOOR AGAIN (its arrival replays; ⚰️ was: eased home over `CLOTH_RETURN_S`)
       if (!cloth.asleep || handCm !== layZ || !Number.isNaN(riseAt)) layCloth();
     }
@@ -2756,7 +2865,7 @@ export function createHeroScene(aspect: number): HeroScene {
       const atRest = Number.isNaN(clothBackS);
       const forwardReady = logoBackCm === 0 && handCm === 0 && atRest;
       // ⛔ THE PASSES BAKED IN (`passesAuto`, above): the next pass asked for, every frame, from the beat after the cloth arrives
-      if (passesAuto.on && !pass4Done && !Number.isNaN(clothArrivedAt) && emitT - clothArrivedAt >= passesAuto.beatS) jumpAsked = true;
+      if (!circle.on && passesAuto.on && !pass4Done && !Number.isNaN(clothArrivedAt) && emitT - clothArrivedAt >= passesAuto.beatS) jumpAsked = true;
       if (jumpAsked && emitT >= standingAt && jumpDone && forwardReady) {
         jumpAt = emitT;
         clothFwdAt = jumpAt;
@@ -2865,6 +2974,31 @@ export function createHeroScene(aspect: number): HeroScene {
           if (jumpToCm === 0 && jumpFromCm > 0) pass1Done = true;
           logoBackCm = jumpToCm;
           dz = -logoBackCm * (unitsPerCm ?? 1);
+        }
+      }
+      // ⛔ PHASE 3 REDESIGNED — THE CIRCLE (`circle`, its header): taken once the cloth has faded in and the beat is over
+      if (circle.on && Number.isNaN(circleAt) && Number.isFinite(fadeInAt) && emitT >= fadeInAt + circle.fadeInS + circle.beatS && emitT >= standingAt && Number.isNaN(jumpAt) && !p2) {
+        if (!logo.geometry.boundingBox) logo.geometry.computeBoundingBox();
+        const lb = logo.geometry.boundingBox!;
+        circleAt = emitT;
+        // (the logo's local is cm: half its depth, where its face is from its centre)
+        circlePlan = planCircle((lb.max.z - lb.min.z) / 2);
+      }
+      circleReleased = false;
+      if (circlePlan && !Number.isNaN(circleAt) && emitT >= circleAt) {
+        const sC = emitT - circleAt;
+        if (sC < circlePlan.seconds) {
+          // upright: a translation only — y up from the floor, z BACK first (−z), round the centre above home
+          circleTh = circleThetaAt(circlePlan, sC);
+          dy += circlePlan.r * (1 - Math.cos(circleTh));
+          dz = -circlePlan.r * Math.sin(circleTh);
+          circleReleased = circle.letGo && circleTh >= circlePlan.releaseTh;
+        } else {
+          // home: the landing's wobble; the marble and the plinth from touchdown
+          circleTh = 2 * Math.PI;
+          circleReleased = circle.letGo;
+          rock = wobbleAngle((sC - circlePlan.seconds) * 1000);
+          if (Number.isNaN(marbleAt)) marbleAt = circleAt + circlePlan.seconds;
         }
       }
       const b = mould.bounds;
@@ -3005,7 +3139,43 @@ export function createHeroScene(aspect: number): HeroScene {
       }
     }
     // ⛔ THE CLOTH's ARRIVAL (`clothArrival`, above): woken `delayS` after the last code drop lands; up and forward together
-    if (cloth.asleep && Number.isNaN(riseAt)) {
+    // ⛔ PHASE 3 REDESIGNED (`circle`): HUNG over the logo, its centre the circle's top, at the arrival's time; faded in; faded
+    // out from just before touchdown, then laid asleep
+    if (circle.on) {
+      if (cloth.asleep && Number.isNaN(fadeInAt) && !departed && logo) {
+        const cb = rain.info?.codeBand ?? null;
+        const due = Number.isFinite(phase1End) && emitT - phase1End >= (cb ? cb[1] : rain.settings.seconds) + clothArrival.delayS;
+        if (riseAsked || (clothArrival.auto && due)) {
+          if (!logo.geometry.boundingBox) logo.geometry.computeBoundingBox();
+          const c = logo.geometry.boundingBox!.getCenter(new THREE.Vector3()).applyMatrix4(logo.matrix);
+          // the hand in the cloth's own cm (`HeroCloth.setHand`: 4.41 units a cm): its plane over the logo's centre; its
+          // centre — the pins less half its height — at the circle's top
+          const CM = 4.41;
+          handCm = (c.z - CLOTH_PLACE.position.z) / CM;
+          handYCm = (c.y + 2 * circle.radiusCm * (unitsPerCm ?? CM) - (cloth.pinsY - (cloth.sizeCm.height / 2) * CM)) / CM;
+          cloth.hang(handCm, handYCm);
+          fadeInAt = emitT;
+        }
+      }
+      let op = Number.isNaN(fadeInAt) ? 0 : smooth((emitT - fadeInAt) / Math.max(0.01, circle.fadeInS));
+      if (circlePlan && !Number.isNaN(circleAt)) {
+        const outAt = circleAt + circlePlan.seconds - circle.fadeOutLeadS;
+        const u = (emitT - outAt) / Math.max(0.01, circle.fadeOutS);
+        if (u > 0) op = Math.min(op, 1 - smooth(u));
+        if (u >= 1 && !departed && !cloth.asleep) {
+          handCm = layZ;
+          handYCm = layY;
+          layY = cloth.layOnFloor(layZ);
+          departed = true;
+        }
+      }
+      clothOpacity = op;
+      cloth.setOpacity(op);
+    } else {
+      clothOpacity = 1;
+      cloth.setOpacity(1);
+    }
+    if (!circle.on && cloth.asleep && Number.isNaN(riseAt)) {
       const cb = rain.info?.codeBand ?? null;
       const due = Number.isFinite(phase1End) && emitT - phase1End >= (cb ? cb[1] : rain.settings.seconds) + clothArrival.delayS;
       // (once it has DEPARTED it stays down: the auto rise does not bring it back; the bench's "Rise now" still does)
@@ -3069,7 +3239,7 @@ export function createHeroScene(aspect: number): HeroScene {
     }
     cloth.setHand(handCm, handYCm);
     // ⛔ THE COLLIDER's POSE (`hero-cloth.ts`): the logo's local from world, while it is drawn
-    cloth.setCollider(logo && logo.visible ? clothPose.copy(logo.matrix).invert() : null);
+    cloth.setCollider(logo && logo.visible && !(circle.on && circleReleased) ? clothPose.copy(logo.matrix).invert() : null);
     cloth.update(delta);
     // the wash follows the rain that has LANDED (0 until the first drop, 1 by the last)
     washShare.value = rain.wash;
@@ -3185,6 +3355,8 @@ export function createHeroScene(aspect: number): HeroScene {
         dryShown = dryFrom + (dryTarget - dryFrom) * u * u * (3 - 2 * u);
         if (u >= 1) dryAt = Number.NaN;
       }
+      // ⛔ PHASE 3 REDESIGNED (`circle`): shrinking from the circle's take-off, eased, gone at touchdown
+      if (circle.on) dryShown = !circlePlan || Number.isNaN(circleAt) ? 1 : 1 - smooth((emitT - circleAt) / circlePlan.seconds);
     }
     // ⛔ THE DRYING, PASS BY PASS, SIDE BY SIDE (`hero-dry.ts`; Carl: *"Pass 1 jumps back. Only the back of the logo will be
     // dried. At this point the face should be still blue. After it jumps forward, the face makes contact, then it is gold."*):
@@ -3228,6 +3400,11 @@ export function createHeroScene(aspect: number): HeroScene {
         if ((done || (inPass && p2b !== null && !Number.isNaN(p2bAt))) && backHidden) grow(dryB, i + 1);
       });
       dry.setProgress([dryF[0], dryF[1], dryF[2], dryF[3]], [dryB[0], dryB[1], dryB[2], dryB[3]]);
+      // ⛔ PHASE 3 REDESIGNED (`circle`): the whole logo, every region and both sides, over `goldS` from the circle's gold point
+      if (circle.on) {
+        const g = !circlePlan || Number.isNaN(circleAt) ? 0 : Math.min(1, Math.max(0, (emitT - circleAt - circlePlan.goldAt) / Math.max(0.01, circle.goldS)));
+        dry.setProgress([g, g, g, g], [g, g, g, g]);
+      }
     }
     if (reform && landedContact && unitsPerCm) {
       const sinceLand = emitT - (fullAt() + REFORM.hardenS + fallS());
@@ -3418,6 +3595,25 @@ export function createHeroScene(aspect: number): HeroScene {
     code: rain.code,
     clothArrival,
     passesAuto,
+    circle,
+    get circleInfo() {
+      const deg = (r: number) => Math.round(((r * 180) / Math.PI) * 10) / 10;
+      return {
+        fadeInAt,
+        at: circleAt,
+        seconds: circlePlan ? circlePlan.seconds : circle.seconds,
+        landAt: circlePlan && !Number.isNaN(circleAt) ? circleAt + circlePlan.seconds : Number.NaN,
+        thetaDeg: deg(circleTh),
+        goldAt: circlePlan && !Number.isNaN(circleAt) ? circleAt + circlePlan.goldAt : Number.NaN,
+        goldDeg: circlePlan ? deg(circlePlan.goldTh) : Number.NaN,
+        releaseDeg: circlePlan ? deg(circlePlan.releaseTh) : Number.NaN,
+        released: circleReleased,
+        opacity: Math.round(clothOpacity * 1000) / 1000,
+        radiusCm: circle.radiusCm,
+        clothHandCm: Math.round(handCm * 10) / 10,
+        clothHandYCm: Math.round(handYCm * 10) / 10,
+      };
+    },
     floorDry,
     dryHidden,
     dry: {
@@ -3527,6 +3723,14 @@ export function createHeroScene(aspect: number): HeroScene {
       departAt = Number.NaN;
       marbleAt = Number.NaN;
       sw = pass2;
+      // ⛔ PHASE 3's CIRCLE (`circle`): from the cloth's hanging again
+      if (circle.on) {
+        fadeInAt = Number.NaN;
+        circleAt = Number.NaN;
+        circlePlan = null;
+        layCloth();
+        return;
+      }
       if (cloth.snapshotted) {
         cloth.setHand(0);
         // the cloth EXACTLY as it was at pass 1's first take-off (`clothSnapWanted`); before any pass, nothing has moved it

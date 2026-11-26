@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { LineBasicNodeMaterial, MeshPhysicalNodeMaterial, type Node, SpriteNodeMaterial, type WebGPURenderer } from "three/webgpu";
-import { attribute, cross, float, Fn, If, instancedArray, instanceIndex, lights, Loop, max, min, neutralToneMapping, output, Return, select, texture, transformNormalToView, triNoise3D, uniform, vec2, vec3, vec4 } from "three/tsl";
+import { attribute, cross, float, Fn, If, instancedArray, instanceIndex, interleavedGradientNoise, lights, Loop, max, min, neutralToneMapping, output, Return, screenCoordinate, select, texture, transformNormalToView, triNoise3D, uniform, vec2, vec3, vec4 } from "three/tsl";
 import { UltraHDRLoader } from "three/addons/loaders/UltraHDRLoader.js";
 import { precompileCompute, type PrecompileResult } from "./hero-steam";
 
@@ -183,6 +183,17 @@ export type HeroCloth = {
   layOnFloor(zCm: number): number;
   wake(): void;
   readonly asleep: boolean;
+  /**
+   * ⛔ PHASE 3 REDESIGNED (26 November 2026; Carl: *"The cloth should gently fade in directly above the logo."*): the sheet
+   * put HANGING straight down from its pins (its built rows, the pins' row at the top), the hand at `zCm` / `yCm`, AWAKE
+   * and stepping from now. Hung at its rest lengths, it only has gravity's stretch and the wind to settle: no fall from flat
+   */
+  hang(zCm: number, yCm: number): void;
+  /** ⛔ THE FADE (26 November 2026): 1 = opaque (exactly the approved look), 0 = gone; alpha-to-coverage, one pipeline */
+  setOpacity(opacity: number): void;
+  /** the pins' world height with the hand at 0, and the sheet's size (cm): where a hung sheet's centre is */
+  readonly pinsY: number;
+  readonly sizeCm: { width: number; height: number };
   /** ⛔ THE COLLIDER (the collision, below): the logo's flat distance field and its frame, once */
   setColliderShape(shape: ClothColliderShape): void;
   /** the logo's pose for the next steps: its local (cm) from WORLD (the inverse of its world matrix); null = no collider */
@@ -536,6 +547,18 @@ export function createHeroCloth(): HeroCloth {
   });
   clothMaterial.name = "hero cloth: cloth";
   neutral(clothMaterial as never);
+  /**
+   * ⛔ THE FADE (26 November 2026, phase 3 redesigned: *"gently fade in"*, *"It can fade out as the logo lands"*): ALPHA-TO-
+   * COVERAGE, the opening logo's own technique (`hero-scene.ts`, the logo's material): set from construction, so the ONE
+   * pipeline is built in the warm-up and a fade compiles nothing; the opacity dithered per pixel between the 4 samples'
+   * levels, EXACTLY 1 when faded in — the approved opaque cloth unchanged. ⚠ A dithered fade: grain while it fades (a take)
+   */
+  const fadeU = uniform(1);
+  clothMaterial.alphaToCoverage = true;
+  {
+    const dither = interleavedGradientNoise(screenCoordinate).sub(0.5).mul(0.25);
+    (clothMaterial as unknown as { opacityNode: unknown }).opacityNode = fadeU.greaterThanEqual(1).select(float(1), fadeU.add(dither).clamp(0, 1));
+  }
   // (typed as called with no inputs, as the example calls it: the builder supplies `material`)
   clothMaterial.positionNode = (Fn(({ material }: { material: THREE.Material & { normalNode: unknown } }) => {
     // gather the position of the 4 verlet vertices and calculate the center position and normal from that
@@ -587,6 +610,8 @@ export function createHeroCloth(): HeroCloth {
   /** ⛔ THE ARRIVAL (`layOnFloor`): asleep = not drawn, not stepped; `layAt` = the hand's place to lay it at (local), once */
   let asleep = false;
   let layAt: { z: number; y: number } | null = null;
+  /** ⛔ HUNG (`hang`): the hand's place to hang it at (local), once */
+  let hangAt: { z: number; y: number } | null = null;
   /** the collider's pose: last frame's and this frame's (cloth local → logo local), interpolated across the steps */
   const poseFrom = new THREE.Matrix4();
   const poseTo = new THREE.Matrix4();
@@ -659,6 +684,26 @@ export function createHeroCloth(): HeroCloth {
         layAt = null;
         needsReset = false;
       }
+      if (hangAt) {
+        // ⛔ HUNG (`hang`): each row straight down from the pins' row (built along local z from 0) — x as built, the row's
+        // distance from the pins taken off y, z the hand's — moved by the hand; at rest
+        const pos = vertexPositionBuffer.value as THREE.BufferAttribute;
+        const a = pos.array as Float32Array;
+        for (let i = 0; i < a.length; i += 3) {
+          a[i] = startPositions[i];
+          a[i + 1] = startPositions[i + 1] - startPositions[i + 2] + hangAt.y;
+          a[i + 2] = hangAt.z;
+        }
+        pos.needsUpdate = true;
+        const f = vertexForceBuffer.value as THREE.BufferAttribute;
+        (f.array as Float32Array).fill(0);
+        f.needsUpdate = true;
+        handFrom = handTo = hangAt.z;
+        handYFrom = handYTo = hangAt.y;
+        hangAt = null;
+        needsReset = false;
+        posePrimed = false;
+      }
       if (needsReset) {
         needsReset = false;
         const pos = vertexPositionBuffer.value as THREE.BufferAttribute;
@@ -710,6 +755,7 @@ export function createHeroCloth(): HeroCloth {
       layAt = { z: -(zCm * UNITS_PER_CM) / CLOTH_PLACE.scale, y: floorYU.value - CLOTH.height * 0.5 };
       handTo = layAt.z;
       handYTo = layAt.y;
+      hangAt = null;
       asleep = true;
       timeSinceLastStep = 0;
       stepsDue = 0;
@@ -725,6 +771,22 @@ export function createHeroCloth(): HeroCloth {
     get asleep() {
       return asleep;
     },
+    hang(zCm, yCm) {
+      hangAt = { z: -(zCm * UNITS_PER_CM) / CLOTH_PLACE.scale, y: (yCm * UNITS_PER_CM) / CLOTH_PLACE.scale };
+      handTo = hangAt.z;
+      handYTo = hangAt.y;
+      layAt = null;
+      asleep = false;
+      // no catch-up: it starts stepping from now
+      timeSinceLastStep = 0;
+      stepsDue = 0;
+    },
+    setOpacity(opacity) {
+      fadeU.value = Math.min(1, Math.max(0, opacity));
+    },
+    // the pins built at local y = height / 2 (`addVerletVertex`), the group scaled evenly and turned about the vertical
+    pinsY: CLOTH_PLACE.position.y + CLOTH_PLACE.scale * CLOTH.height * 0.5,
+    sizeCm: SIZE_CM,
     setColliderShape(shape) {
       sdfNode.value = shape.tex;
       sdfMin.value.set(shape.minX, shape.minY);
@@ -778,6 +840,7 @@ export function createHeroCloth(): HeroCloth {
       handYFrom = handYTo = 0;
       asleep = false;
       layAt = null;
+      hangAt = null;
       posePrimed = false;
     },
     get points() {

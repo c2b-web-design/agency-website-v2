@@ -65,6 +65,53 @@ process was at the time; `context-rules.md` forbids retroactive rewriting.
 
 ---
 
+## R-119 — The Hero, Phase 3's Circle, Take 4: The Cloth Drapes, 1 s Longer (D-101): APPROVED
+
+**Date:** 2026-11-26
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — R-118's circle with Carl's two notes after it: take 3, the cloth DRAPES over the face (`letGo`
+false: the collision on all the way round; ⚰️ takes 1–2 let the metal through the fabric); take 4, the cloth visible 1 s
+longer (`fadeOutLeadS` 0.5 → −0.5: its fade-out from 0.5 s after touchdown, over 1.2 s). `HERO_CIRCLE_DEFAULTS` as
+committed. Filmed from Home and the side: `03 The hero\2026-11-26_phase3-circle_take3-drape\`,
+`03 The hero\2026-11-26_phase3-circle_take4-cloth-1s-longer\`.
+
+**Carl's verdict, verbatim:** *"Thats better, now we get more of the collision physics. Approved. Commit and push."*
+
+**Findings:**
+
+- ✔ **Phase 3's circle APPROVED as take 4** — supersedes R-118's let-go; R-118's other values stand, as approved.
+- ✔ The longer cloth shows more of the collision (Carl).
+- ⚠ **Not covered:** the camera's placement that hides the gold change (phase 5); the four passes' code, still in the scene
+  (off), to be deleted; film 3's old phase 3 replaced by the new one; the cloth's dithered fade not judged on its own.
+
+---
+
+## R-118 — The Hero, Phase 3 Redesigned: One Circle Through The Cloth, Take 2 (D-101): APPROVED
+
+**Date:** 2026-11-26
+**Reviewer:** Human Founder
+**Subject:** `/proto/hero` — phase 3 as Carl re-choreographed it the same day (40.7 s of passes → one circle; `hero-scene.ts`
+`HERO_CIRCLE_DEFAULTS`, `hero-cloth.ts` `hang` / `setOpacity`): the cloth hung over the logo and faded in (1.5 s); the logo
+upright round a 1.5 m circle (radius 75 cm), backwards first, 5.7 s; slowed to 0.06× over ±45° about 186° (the outline held
+2.00 s, measured from the take's log; take 1's 0.40 s); the collision released 35 cm past the cloth's plane; the whole logo
+gold behind the cloth (from 30 cm before its face reaches it, over 0.4 s); the web floor shrinking to nothing at touchdown;
+the marble and plinth from touchdown; the cloth faded out over the landing. Filmed from Home and the side:
+`03 The hero\2026-11-26_phase3-circle_take2-slow-through\`.
+
+**Carl's verdict, verbatim:** *"Thats a lot better. As it approaches the bulge in the cloth is at first amorphous in nature then as it proceeds the logo outline is clearly visible. Approved, commit and push."*
+
+**Findings:**
+
+- ✔ **Phase 3's circle APPROVED, take 2 as built.** Every value above was a take; they are what he approved.
+- ✔ **The outline reads in two stages** (Carl): the bulge amorphous on the approach, then the logo's outline clearly visible.
+- ⚠ **Not covered by this approval:** the camera's placement that hides the gold change (phase 5); the four passes' code,
+  still in the scene (off) — to be deleted now the circle is approved (Carl, 26 November: *"Yes, thats ok"*); film 3's old
+  phase 3 replaced by the new one (Carl: *"when approved, we can take the old Phase 3 out of the film and insert the new
+  one"*); the cloth's dithered fade not judged on its own.
+- ⚠ **AMENDED the same day (D-101, *"THE CLOTH DRAPES, IT DOES NOT LET GO"*):** Carl, after this approval: *"The logo literally goes through the cloth. What should happen is as the logo and cloth interact the cloth would drape over the face of the logo as it travels through. Like what happened with the previous iteration. I think you took my description too literally in travelling through. Partly my mistake."* → the let-go (35 cm past the cloth's plane) is re-tracked as take 3, the collision on all the way; that element is not approved until he judges take 3.
+
+---
+
 ## R-117 — The Hero, Phase 4: The Plinth (D-101): APPROVED
 
 **Date:** 2026-11-25 (session 2)

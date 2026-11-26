@@ -404,6 +404,26 @@ export default function HeroBench() {
       // down with the figures youve suggeated"*): the first jump, straight up and down, on "Jump" once phase 1's wobble is
       // done. The height's rows put to Carl: 32.7 (touching), 47.7, 60 (phase 1's hop), 72.7 cm; take 3: 95 (half the front face, the default). The cloth answers
       // the jump (behind → in front, crossing at the apex) when it is at its place; "Reset pass 1" restores the cloth as it was at pass 1's first take-off
+      // ⛔ PHASE 3 REDESIGNED — ONE CIRCLE THROUGH THE CLOTH (`hero-scene.ts`, `circle`; Carl, 26 November 2026): the cloth hung
+      // and faded in over the logo, the upright circle backwards first, slowed through the cloth, gold behind it, the web floor
+      // shrinking to touchdown, the marble from touchdown. Read at the circle's take-off: replay to see a change. On = the
+      // passes (below) out of the story
+      f = gui.addFolder("Phase 3: the circle (take 4)");
+      f.add(hero.circle, "on").name("the circle (off = the four passes)");
+      f.add(hero.circle, "radiusCm", 40, 120, 1).name("radius (cm; the cloth's centre at the top)");
+      f.add(hero.circle, "seconds", 1, 12, 0.1).name("the circle (s)");
+      f.add(hero.circle, "slow", 0.05, 1, 0.01).name("speed through the cloth (×)");
+      f.add(hero.circle, "slowAtDeg", 150, 230, 1).name("the slow's centre (deg; 180 = top)");
+      f.add(hero.circle, "slowHalfDeg", 5, 80, 1).name("the slow's half width (deg)");
+      f.add(hero.circle, "easeDeg", 5, 120, 1).name("ease at take-off and landing (deg)");
+      f.add(hero.circle, "fadeInS", 0.1, 5, 0.1).name("cloth fade in (s)");
+      f.add(hero.circle, "beatS", 0, 4, 0.1).name("beat before the circle (s)");
+      f.add(hero.circle, "goldLeadCm", 0, 80, 1).name("gold starts: face behind the cloth (cm)");
+      f.add(hero.circle, "goldS", 0.05, 2, 0.05).name("gold change (s)");
+      f.add(hero.circle, "letGo").name("cloth lets go (takes 1–2; off = drapes)");
+      f.add(hero.circle, "releaseCm", 0, 60, 1).name("lets go: past its plane (cm)");
+      f.add(hero.circle, "fadeOutLeadS", -3, 3, 0.05).name("cloth fade out: before touchdown (s; − = after)");
+      f.add(hero.circle, "fadeOutS", 0.1, 5, 0.1).name("cloth fade out (s)");
       // ⛔ THE PASSES BAKED IN (`hero-scene.ts`, `passesAuto`; 22 November 2026, R-111): the story plays them — the beat after
       // the cloth arrives, then each pass once the logo has stopped wobbling. Their dials (below) are READ-ONLY: approved
       f = gui.addFolder("Passes (approved, R-111)");
