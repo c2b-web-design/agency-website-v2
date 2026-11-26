@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { ClippingGroup, MeshBasicNodeMaterial, MeshPhysicalNodeMaterial, type Node, type WebGPURenderer } from "three/webgpu";
-import { acesFilmicToneMapping, cameraWorldMatrix, float, getShadowMaterial, interleavedGradientNoise, lights, materialColor, mix, mx_cell_noise_float, mx_noise_float, mx_noise_vec3, normalView, output, pmremTexture, positionLocal, positionViewDirection, positionWorld, pow4, roughness, screenCoordinate, smoothstep, texture, transformNormalToView, normalLocal, uniform, vec2, vec3, vec4 } from "three/tsl";
+import { acesFilmicToneMapping, attribute, cameraWorldMatrix, float, getShadowMaterial, interleavedGradientNoise, lights, materialColor, mix, mx_cell_noise_float, mx_noise_float, mx_noise_vec3, normalView, output, pmremTexture, positionLocal, positionViewDirection, positionWorld, pow4, roughness, screenCoordinate, smoothstep, texture, transformNormalToView, normalLocal, uniform, vec2, vec3, vec4 } from "three/tsl";
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { heroTextLayout } from "@/components/showcase/hero-text";
@@ -40,11 +40,13 @@ import { GOLD_F0_LINEAR, LOGO_BLUE_DEFAULTS, LOGO_GOLD_DEFAULTS, LOGO_JUDGING_ST
  *   (`RenderObject.js:610–612`): ~10,000 draws a frame, which hung Carl's GPU twice (10 November 2026).
  *   ⚠ THE SAME WORKAROUND LIVES IN `components/showcase/marching-bench.tsx` (Carl accepted the two copies, note v1.3
  *   decision 2): a three upgrade re-checks BOTH; a fix in one does not reach the other.
- * - `ready`: the cube map's loads as a promise the bench awaits before its first frame (WebGPU builds the reflection on
- *   the first frame; built before the images arrive it fails for good and the shiny draws black).
+ * - `ready`: the scene's loads (our courtyard, the text) as a promise the bench awaits before its first frame (WebGPU
+ *   builds a reflection at its first draw; built before the images arrive it fails for good and the shiny draws black).
+ *   ⚰️ The example's castle cube map was awaited too — no longer (26 November 2026: loaded only when the bench picks it).
  * - NO toon materials (raw `ShaderMaterial`s WebGPU cannot draw); the reference keeps them on WebGL.
  * - ⚠ TWO LOADS FROM threejs.org, as the example: the castle cube map and `uv_grid_opengl.jpg` (the textured material).
- *   Fine for a bench; THE SITE CANNOT DEPEND ON threejs.org — the hero's own environment replaces them before the site.
+ *   THE SITE CANNOT DEPEND ON threejs.org: since 26 November 2026 neither is fetched unless the bench picks it
+ *   (`loadCastle`, `loadUvGrid`); the hero's own courtyard is the default.
  */
 
 /** where the camera looks from, at what, with what lens: plain DATA. The scene applies `position` and `fov`; the BENCH
@@ -160,6 +162,44 @@ function tContact(headline: THREE.BufferGeometry): THREE.Vector3 {
     }
   }
   return best;
+}
+
+/**
+ * ⛔ EACH GLYPH's LEFT X, per vertex (the flowing opening's letter-by-letter extrusion; 26 November 2026). The layout merges
+ * the glyphs into one non-indexed geometry with no record of which triangle is which letter (`heroTextLayout`); a glyph is a
+ * set of triangles sharing corners, so triangles are joined where a corner's (x, y) is shared (union-find; z left out: a
+ * glyph's front and back share their outline's x, y), and each vertex gets its part's least x. A letter in two parts (i's dot)
+ * gives two parts with near the same x. ⚠ Unasserted: no two glyphs touch (true of the subtext's tracking).
+ */
+function glyphLeftX(g: THREE.BufferGeometry): Float32Array {
+  const pos = g.getAttribute("position");
+  const tris = Math.floor(pos.count / 3);
+  const parent = new Int32Array(tris);
+  for (let i = 0; i < tris; i++) parent[i] = i;
+  const find = (a: number): number => {
+    while (parent[a] !== a) a = parent[a] = parent[parent[a]];
+    return a;
+  };
+  const corner = new Map<number, number>();
+  for (let v = 0; v < tris * 3; v++) {
+    const key = Math.round(pos.getX(v) * 100) * 1048576 + Math.round(pos.getY(v) * 100);
+    const t = (v / 3) | 0;
+    const other = corner.get(key);
+    if (other === undefined) corner.set(key, t);
+    else {
+      const a = find(t);
+      const b = find(other);
+      if (a !== b) parent[a] = b;
+    }
+  }
+  const left = new Float32Array(tris).fill(Infinity);
+  for (let v = 0; v < tris * 3; v++) {
+    const r = find((v / 3) | 0);
+    left[r] = Math.min(left[r], pos.getX(v));
+  }
+  const out = new Float32Array(pos.count);
+  for (let v = 0; v < pos.count; v++) out[v] = left[find((v / 3) | 0)];
+  return out;
 }
 
 async function buildText(): Promise<{ group: THREE.Group; unitsPerCm: number; sketch: SketchFrame; dispose(): void }> {
@@ -638,10 +678,13 @@ const MOULD = { raiseCm: 40 } as const;
  * All values are TAKES.
  */
 export const OPENING = {
-  /** the lights' rise: start, length (s). ⛔ 2.0 → 3.0 (Carl, 16 November 2026: *"Theres some leeway on the text fade in. it
+  /** the lights' rise: start, length (s). ⛔ [0.3, 3.0] → [0, 1.5] (Carl, 26 November 2026, of option B + C on the cold load:
+   *  *"implement the B+C option. Its the fadtest yet."*; `live-work/hero-cold-load-26-november.md`): the lights from the
+   *  opening's first moment, over 1.5 s; the bench's opening still (C) fades up on the same curve. ⚰️ [0.3, 3.0] kept as
+   *  `OPENING_LIGHTS_A` (`?open=a`). Before that: ⛔ 2.0 → 3.0 (Carl, 16 November 2026: *"Theres some leeway on the text fade in. it
    *  can happen a bit slower. Its almost instantaneous to the human eye. That will buy us a little more time."*): the subtext
    *  and the logo move later with it, so the load's main-thread stalls land before the subtext begins */
-  litS: [0.3, 3.0],
+  litS: [0, 1.5],
   /** the subtext's two lines: start, length (s) — reading pace, ~70 ms a letter (40 and 39 letters). ⛔ 3.4 → 2.2 (Carl, 16
    *  November 2026: *"there is too much of a gap between text and subtext"*): it starts as the headline's fade ends — OR
    *  `settleS` after the logo's arrival work (the load's main-thread stalls: `stepOpening`), if later; the second line and
@@ -656,6 +699,42 @@ export const OPENING = {
   /** … but never longer than this past its own time (s): it starts regardless */
   subCeilingS: 3,
 } as const;
+/**
+ * ⚰️ OPTION A, THE LIGHTS AS APPROVED 16 NOVEMBER (from 0.3 s over 3.0 s): replaced by option B (`OPENING.litS`; Carl, 26
+ * November 2026: *"implement the B+C option. Its the fadtest yet."*). Kept for comparison: `?open=a` on the bench
+ * (`HeroSceneOptions`); the subtext and the logo keep their own times either way.
+ */
+export const OPENING_LIGHTS_A = [0.3, 3.0] as const;
+/**
+ * ⛔ THE FLOWING OPENING (26 November 2026; D-101). Carl: *"my idea was to put HTML/CSS 2d text on first. Give threejs time to
+ * load."* … *"the faces should be in the exact same position. The ice blue colour should match. What would be the effect is
+ * that the 3d would grow out of the back of the 2d, gradually reveal itself."* … *"from home the 3d IS noticable. If its done
+ * slowly enough this is where thr growimg effect would come from. It would extrude itself backwards."* … *"the subtext
+ * already reveals at a certain speed. the backwards extrusion should happen at the same speed. Once its revealed in 2d it can
+ * stay on the screen- its the extrusion that is revealed from left to right"* … *"the logo needs the 3d text to lean on, it
+ * doesnt need the subtext. There are 4 actions. They dont have to happen after the previous one has finished. Go look at the
+ * answer cards in the /start section."* … *"they will flow, very much like the q section = the principle is the same"*.
+ * FOUR ACTIONS ON ONE CLOCK (the opening's; 0 = the page's first paint, the bench's HTML headline's fade), OVERLAPPING as
+ * `/start`'s Q5 cards do (the first entrance HALFWAY through the text before it; each next 28% into the one before —
+ * `CARD_OVERLAP` 0.72):
+ *  1. the 2D headline (the bench's HTML, `#bed3ea`, the lit 3D face's own colour, sampled) fades in over `headFadeS`;
+ *  2. the 3D headline, FLAT on it (its depth squashed onto its front face: from HOME identical), GROWS BACKWARDS over
+ *     `growS`, from halfway through 1 (or the scene's first frame, if later); its edge glow grows with it;
+ *  3. the 2D subtext reveals letter by letter at the old reveal's speed (`subLineS` a line, line 2 `subGapS` after line 1),
+ *     from `subFrac` of the way into 2 — and STAYS; its EXTRUSION follows each line at the same speed, `lagFrac` of a line
+ *     behind, each letter growing over `letterGrowS` as the front passes it;
+ *  4. the leaning logo fades in once the headline is fully 3D (it leans on the t; it does not need the subtext).
+ * The scene draws at FULL LIGHT throughout (the HTML carries the fade-in). All values are TAKES. `?open=a`: the old opening.
+ */
+export const FLOW_OPENING = { headFadeS: 1.5, growFrac: 0.5, growS: 2.0, subFrac: 0.28, subLineS: 2.8, subGapS: 2.5, lagFrac: 0.28, letterGrowS: 0.5 } as const;
+/** the flowing opening's nominal times (s on its clock): where the bench's HTML schedules its own reveal (one source) */
+export const FLOW_TIMES = (() => {
+  const f = FLOW_OPENING;
+  const growAt = f.headFadeS * f.growFrac;
+  const sub1 = growAt + f.subFrac * f.growS;
+  return { growAt, sub: [sub1, sub1 + f.subGapS] as const };
+})();
+export type HeroSceneOptions = { opening?: "flow" | "a" };
 function mouldPose(g: THREE.BufferGeometry, sketch: SketchFrame): THREE.Matrix4 {
   g.computeBoundingBox();
   const b = g.boundingBox!;
@@ -962,7 +1041,7 @@ export type HeroScene = {
   materials: Record<string, THREE.Material>;
   setMaterial(name: string): void;
   setEnvironment(name: HeroEnvironment): void;
-  /** resolves when the cube map's loads have */
+  /** resolves when the scene's loads (the courtyard, the text) have — the castle is not among them (`loadCastle`) */
   ready: Promise<void>;
   /** the baked text (step 3 first), once built */
   text: THREE.Group | null;
@@ -979,8 +1058,16 @@ export type HeroScene = {
   replayArrival(): void;
   /** ⛔ THE OPENING (`OPENING`; 16 November 2026): plays it again from the dark (the bench's button) */
   openingAgain(): void;
+  /** the lights' rise in use (start, length: opening seconds) — the opening still's fade follows it (option C, the bench) */
+  readonly openingLights: readonly [number, number];
+  /**
+   * ⛔ OPTION C (26 November 2026): the opening's clock set to `seconds` BEFORE its first step — the bench's opening still has
+   * been fading up on the same curve since the page's first paint, so the live scene continues from where the still has got
+   * to. Ignored once the opening has run a step
+   */
+  startOpeningAt(seconds: number): void;
   /** the opening's read-out: its clock, the logo built, when its fade began (−1 = not yet), the end, the lights, the logo's opacity */
-  openingInfo: { t: number; ready: boolean; subAtS: number; fadeAtS: number; done: boolean; lit: number; logoOpacity: number };
+  openingInfo: { t: number; ready: boolean; subAtS: number; fadeAtS: number; done: boolean; lit: number; logoOpacity: number; flowing: boolean; growAt: number; headDepth: number; subExtrudeAt: [number, number]; subDone: [boolean, boolean] };
   /** the blobs' centres this frame, world units (born blobs only) — a READ-OUT for checks */
   blobs: number[][];
   /** THE FLOW MAP (`FLOW`), once the logo is in — a READ-OUT for checks: its texture (half floats, RGBA) and frame (cm) */
@@ -1042,7 +1129,11 @@ export type HeroScene = {
   dispose(): void;
 };
 
-export function createHeroScene(aspect: number): HeroScene {
+export function createHeroScene(aspect: number, options: HeroSceneOptions = {}): HeroScene {
+  /** ⛔ THE FLOWING OPENING (`FLOW_OPENING`), or the old opening A (`?open=a`) */
+  const flowing = options.opening !== "a";
+  /** the lights' rise: the old A's (`OPENING_LIGHTS_A`); the flowing opening draws at full light */
+  const litS: readonly [number, number] = flowing ? OPENING.litS : OPENING_LIGHTS_A;
   const disposables: { dispose(): void }[] = [];
   const loads: Promise<void>[] = [];
   // the courtyard's image (`generateMaterials`); the logo's material waits for it (THE HARDENING)
@@ -1159,6 +1250,15 @@ export function createHeroScene(aspect: number): HeroScene {
   // ⛔ THE OPENING (`OPENING`): its own clock (s, from the first update) and state; the story's clock waits for its end
   // `subT`: when the subtext actually began (opening s; −1 = not yet); `warmT`: when the warm-up began (the stalls)
   const opening = { t: 0, fadeT: -1, done: false, subT: -1, warmT: -1 };
+  /** ⛔ THE FLOWING OPENING's state (`FLOW_OPENING`): the clock at the scene's first step (−1 = not yet), the growth's start,
+   *  each subtext line's extrusion start (s), and its uniforms: the headline's depth, each line's extrusion front (x) and the
+   *  width over which a letter grows (x) */
+  const flowOpen = { t0: -1, growAt: -1, subAt: [-1, -1] as [number, number] };
+  const headDepth = uniform(flowing ? 0 : 1);
+  const subFront1 = uniform(flowing ? -1e9 : 1e9);
+  const subFront2 = uniform(flowing ? -1e9 : 1e9);
+  const subGrowW1 = uniform(1);
+  const subGrowW2 = uniform(1);
   // the leaning logo's fade (0 → 1), read by its alpha-to-coverage (`OPENING`)
   const logoFade = uniform(0);
   // the opening's fade drawn as one solid layer (`OPENING`): the opaque material, the fade's, and the depth drawn first
@@ -1456,7 +1556,30 @@ export function createHeroScene(aspect: number): HeroScene {
         r[1] = Math.max(r[1], x);
       }
       subLines = { midY, x1, x2 };
-      subMat.maskNode = positionWorld.x.lessThan(positionWorld.y.greaterThan(midY).select(reveal1, reveal2));
+      if (!flowing) subMat.maskNode = positionWorld.x.lessThan(positionWorld.y.greaterThan(midY).select(reveal1, reveal2));
+      else {
+        // ⛔ THE FLOWING OPENING (`FLOW_OPENING`): the depth squashed onto the FRONT FACE (`faceZ`, the text's front: from
+        // HOME the flat text is the 2D) and grown back. The headline: one depth. The subtext: per LETTER — each glyph's left x
+        // (`glyphLeftX`, a vertex attribute), the line's extrusion front past it by `subGrowW` = fully deep; shown only once
+        // the front reaches it (before, the HTML 2D is the letter). The edge glow grows with the depth
+        let faceZ = -Infinity;
+        for (const m of [headMesh, subMesh]) {
+          m.geometry.computeBoundingBox();
+          faceZ = Math.max(faceZ, m.geometry.boundingBox!.max.z);
+        }
+        const fz = float(faceZ);
+        const squash = (d: Node<"float">) => vec3(positionLocal.x, positionLocal.y, fz.add(positionLocal.z.sub(fz).mul(d.max(0.001))));
+        (headMat as unknown as { positionNode: unknown }).positionNode = squash(headDepth);
+        headMat.emissiveNode = headMat.emissiveNode.mul(headDepth);
+        subMesh.geometry.setAttribute("glyphX", new THREE.BufferAttribute(glyphLeftX(subMesh.geometry), 1));
+        const gx = attribute<"float">("glyphX");
+        const upper = positionLocal.y.greaterThan(midY);
+        const front = upper.select(subFront1, subFront2);
+        const d = front.sub(gx).div(upper.select(subGrowW1, subGrowW2)).clamp(0, 1);
+        (subMat as unknown as { positionNode: unknown }).positionNode = squash(d);
+        subMat.emissiveNode = subMat.emissiveNode.mul(d);
+        subMat.maskNode = gx.lessThan(front);
+      }
       subMesh.material = subMat;
       disposables.push(subMat);
     }
@@ -1654,25 +1777,53 @@ export function createHeroScene(aspect: number): HeroScene {
     wallz: false,
   };
 
-  function generateMaterials() {
-    const path = "https://threejs.org/examples/textures/cube/SwedishRoyalCastle/";
-    const format = ".jpg";
-    const urls = [path + "px" + format, path + "nx" + format, path + "py" + format, path + "ny" + format, path + "pz" + format, path + "nz" + format];
+  /**
+   * ⛔ THE CASTLE AND THE UV GRID, LOADED ONLY WHEN CHOSEN (26 November 2026; Carl, on the cold load: *"try A first. The goal is
+   * to avoid a black screen."*; `live-work/hero-cold-load-26-november.md`). MEASURED: the first frame waited for the castle's
+   * 12 images from threejs.org (ending ~0.67 – 0.89 s on a cold load) though the hero draws with OUR courtyard; the uv grid was
+   * fetched on every load for a bench-only material. Now neither is fetched at load: each loads the first time the bench
+   * picks it (`setEnvironment("castle")`, `setMaterial("textured")`) and is APPLIED ONLY ONCE ITS IMAGES ARE IN (a reflection
+   * built before its images arrive draws black for good: the note at the top). The site's hero never asks for either.
+   */
+  const CASTLE_URLS = ["px", "nx", "py", "ny", "pz", "nz"].map((f) => `https://threejs.org/examples/textures/cube/SwedishRoyalCastle/${f}.jpg`);
+  let castleLoading = false;
+  function loadCastle(then: () => void) {
+    if (envs.castle) return then();
+    if (castleLoading) return;
+    castleLoading = true;
     const cubeTextureLoader = new THREE.CubeTextureLoader();
+    let n = 0;
+    const one = () => {
+      if (++n < 2 || disposed) return;
+      disposables.push(reflectionCube, refractionCube);
+      envs.castle = { reflect: reflectionCube, refract: refractionCube };
+      then();
+    };
+    const reflectionCube = cubeTextureLoader.load(CASTLE_URLS, one);
+    const refractionCube = cubeTextureLoader.load(CASTLE_URLS, one);
+    refractionCube.mapping = THREE.CubeRefractionMapping;
+  }
+  let uvGridLoading = false;
+  function loadUvGrid(m: THREE.MeshPhongMaterial) {
+    if (m.map || uvGridLoading) return;
+    uvGridLoading = true;
+    const texture = new THREE.TextureLoader().load("https://threejs.org/examples/textures/uv_grid_opengl.jpg", () => {
+      if (disposed) return;
+      m.map = texture;
+      m.needsUpdate = true;
+    });
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    disposables.push(texture);
+  }
+
+  function generateMaterials() {
     const loaded = () => {
       let done: () => void = () => {};
       loads.push(new Promise<void>((r) => (done = r)));
       return () => done();
     };
-    const reflectionCube = cubeTextureLoader.load(urls, loaded());
-    const refractionCube = cubeTextureLoader.load(urls, loaded());
-    refractionCube.mapping = THREE.CubeRefractionMapping;
-
-    const texture = new THREE.TextureLoader().load("https://threejs.org/examples/textures/uv_grid_opengl.jpg");
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.colorSpace = THREE.SRGBColorSpace;
-    disposables.push(reflectionCube, refractionCube, texture);
 
     // ⛔ OUR ENVIRONMENT: THE COURTYARD AND THE EMBLEM (11 November 2026, session 1; D-101). Carl had GPT make a night
     // courtyard of lit arches (the castle's effect, our own place; the Builder's prompt), then put the gold c2b emblem IN it:
@@ -1696,7 +1847,7 @@ export function createHeroScene(aspect: number): HeroScene {
     courtyardRefract.mapping = THREE.EquirectangularRefractionMapping;
     disposables.push(courtyard, courtyardRefract);
     envs.courtyard = { reflect: courtyard, refract: courtyardRefract };
-    envs.castle = { reflect: reflectionCube, refract: refractionCube };
+    // (the castle: `loadCastle`, when the bench picks it)
     const env = envs.courtyard;
 
     const out: Record<string, THREE.Material> = {
@@ -1707,7 +1858,8 @@ export function createHeroScene(aspect: number): HeroScene {
       flat: new THREE.MeshLambertMaterial({
         /*TODO flatShading: true */
       }),
-      textured: new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0x111111, shininess: 1, map: texture }),
+      // (its uv grid: `loadUvGrid`, when the bench picks it)
+      textured: new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0x111111, shininess: 1 }),
       colors: new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0xffffff, shininess: 2, vertexColors: true }),
       multiColors: new THREE.MeshPhongMaterial({ shininess: 2, vertexColors: true }),
       plastic: new THREE.MeshPhongMaterial({ specular: 0xc1c1c1, shininess: 250 }),
@@ -1718,9 +1870,13 @@ export function createHeroScene(aspect: number): HeroScene {
 
   // the example's `createHandler`
   function setEnvironment(name: HeroEnvironment) {
-    const e = envs[name];
-    if (!e) return;
     settings.environment = name;
+    const e = envs[name];
+    // the castle on its first pick: loaded, then applied if it is still the one chosen
+    if (!e) {
+      if (name === "castle") loadCastle(() => settings.environment === "castle" && setEnvironment("castle"));
+      return;
+    }
     for (const [id, m] of Object.entries(materials)) {
       if (id !== "shiny" && id !== "chrome" && id !== "liquid") continue;
       (m as THREE.MeshStandardMaterial | THREE.MeshLambertMaterial).envMap = id === "liquid" ? e.refract : e.reflect;
@@ -1732,6 +1888,7 @@ export function createHeroScene(aspect: number): HeroScene {
     const m = materials[id];
     if (!m) return;
     settings.material = id;
+    if (id === "textured") loadUvGrid(m as THREE.MeshPhongMaterial);
     effect.material = m;
     view.material = m;
     effect.enableUvs = id === "textured";
@@ -2419,6 +2576,14 @@ export function createHeroScene(aspect: number): HeroScene {
   /** the logo's programs are built (`warmScene`) */
   const openingReady = () => warmed;
   function resetOpening() {
+    flowOpen.t0 = -1;
+    flowOpen.growAt = -1;
+    flowOpen.subAt = [-1, -1];
+    if (flowing) {
+      headDepth.value = 0;
+      subFront1.value = -1e9;
+      subFront2.value = -1e9;
+    }
     opening.t = 0;
     opening.fadeT = -1;
     opening.done = false;
@@ -2428,18 +2593,64 @@ export function createHeroScene(aspect: number): HeroScene {
   }
   /** the logo's opacity in the opening: 0 before its fade, eased up over `logoFadeS`, 1 once the opening is done */
   const logoOpacity = () => (opening.done ? 1 : opening.fadeT < 0 ? 0 : easeSine((opening.t - opening.fadeT) / OPENING.logoFadeS));
+  /** the subtext's extrusion fronts on the opening's clock (`flowOpen.subAt`): run on AFTER the opening is done — the logo
+   *  does not wait for the subtext, and the subtext's extrusion does not stop for the logo */
+  function stepFlowSub() {
+    const f = FLOW_OPENING;
+    if (!subLines || flowOpen.subAt[0] < 0) return;
+    const edge = (r: [number, number], u: number) => (u <= 0 ? -1e9 : u >= 1 ? 1e9 : r[0] + (r[1] - r[0]) * u);
+    subFront1.value = edge(subLines.x1, beat([flowOpen.subAt[0], f.subLineS]));
+    subFront2.value = edge(subLines.x2, beat([flowOpen.subAt[1], f.subLineS]));
+    // a letter grows over `letterGrowS`: the distance the front covers in that time, at its mean speed
+    subGrowW1.value = ((subLines.x1[1] - subLines.x1[0]) / f.subLineS) * f.letterGrowS;
+    subGrowW2.value = ((subLines.x2[1] - subLines.x2[0]) / f.subLineS) * f.letterGrowS;
+  }
+  /** ⛔ THE FLOWING OPENING's STEP (`FLOW_OPENING`): full light; the headline grown back; each subtext line's extrusion; the
+   *  logo once the headline is fully deep; the story at the logo's fade's end */
+  function stepFlow() {
+    const f = FLOW_OPENING;
+    const t = opening.t;
+    lit.value = 1;
+    light.intensity = KEY_I;
+    ambientLight.intensity = AMBIENT_I;
+    if (flowOpen.t0 < 0) flowOpen.t0 = t;
+    // 2: from halfway through the 2D's fade, or the scene's first frame if later
+    if (flowOpen.growAt < 0) flowOpen.growAt = Math.max(FLOW_TIMES.growAt, flowOpen.t0);
+    headDepth.value = easeSine((t - flowOpen.growAt) / f.growS);
+    // 3: each line's extrusion, `lagFrac` of a line behind its 2D reveal, never before 28% of the growth
+    const lag = f.lagFrac * f.subLineS;
+    const s1 = Math.max(FLOW_TIMES.sub[0], flowOpen.growAt + f.subFrac * f.growS) + lag;
+    flowOpen.subAt = [s1, Math.max(FLOW_TIMES.sub[1] + lag, s1 + f.subGapS)];
+    stepFlowSub();
+    // 4: the logo, once the headline is fully 3D (and built)
+    if (opening.fadeT < 0 && logo && openingReady() && t >= flowOpen.growAt + f.growS) opening.fadeT = t;
+    if (opening.fadeT >= 0 && t >= opening.fadeT + OPENING.logoFadeS) {
+      opening.done = true;
+      storyT = 0;
+    }
+  }
   /** ⛔ THE OPENING's CLOCK (`OPENING`): the lights, the subtext, the logo's fade; the story starts at its end */
   function stepOpening(delta: number) {
     if (opening.done) {
       lit.value = 1;
       reveal1.value = 1e9;
       reveal2.value = 1e9;
+      // (the flowing opening: the headline fully deep; the subtext's extrusion runs on to its end, its clock kept going)
+      headDepth.value = 1;
+      if (flowing && opening.t < flowOpen.subAt[1] + FLOW_OPENING.subLineS + FLOW_OPENING.letterGrowS) {
+        opening.t += delta;
+        stepFlowSub();
+      } else {
+        subFront1.value = 1e9;
+        subFront2.value = 1e9;
+      }
       light.intensity = KEY_I;
       ambientLight.intensity = AMBIENT_I;
       return;
     }
     opening.t += delta;
-    const L = beat(OPENING.litS);
+    if (flowing) return stepFlow();
+    const L = beat(litS);
     lit.value = L;
     light.intensity = KEY_I * L;
     ambientLight.intensity = AMBIENT_I * L;
@@ -2858,6 +3069,11 @@ export function createHeroScene(aspect: number): HeroScene {
       danceT = 0;
       if (logo) logo.visible = true;
     },
+    openingLights: litS,
+    startOpeningAt(seconds) {
+      if (opening.done || opening.t > 0) return;
+      opening.t = Math.max(0, seconds);
+    },
     openingAgain() {
       resetOpening();
       storyT = 0;
@@ -2865,7 +3081,8 @@ export function createHeroScene(aspect: number): HeroScene {
     },
     get openingInfo() {
       const r = (v: number) => Math.round(v * 100) / 100;
-      return { t: r(opening.t), ready: openingReady(), subAtS: r(opening.subT), fadeAtS: r(opening.fadeT), done: opening.done, lit: r(lit.value), logoOpacity: r(logoOpacity()) };
+      const sDone = (k: 0 | 1) => flowing && flowOpen.subAt[k] >= 0 && opening.t >= flowOpen.subAt[k] + FLOW_OPENING.subLineS + FLOW_OPENING.letterGrowS;
+      return { t: r(opening.t), ready: openingReady(), subAtS: r(opening.subT), fadeAtS: r(opening.fadeT), done: opening.done, lit: r(lit.value), logoOpacity: r(logoOpacity()), flowing, growAt: r(flowOpen.growAt), headDepth: r(headDepth.value), subExtrudeAt: [r(flowOpen.subAt[0]), r(flowOpen.subAt[1])] as [number, number], subDone: [sDone(0), sDone(1)] as [boolean, boolean] };
     },
     get blobs() {
       return blobRead;

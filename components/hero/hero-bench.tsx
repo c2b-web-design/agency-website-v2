@@ -8,7 +8,7 @@ import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Container from "@/components/layout/container";
 import { BTN, Edges, FEEL, readPad, rigAt, stepRig, type Intent, type Rig } from "@/components/showcase/camera-pad";
-import { createHeroScene, FLOOR_Y, HERO_ENVIRONMENTS, HOME, type HeroEnvironment } from "./hero-scene";
+import { createHeroScene, FLOOR_Y, FLOW_OPENING, FLOW_TIMES, HERO_ENVIRONMENTS, HOME, type HeroEnvironment } from "./hero-scene";
 import { RAIN_MAX_DROPS } from "./hero-rain";
 import { LOGO_OUTLINE } from "@/components/about/logo-mark-outline";
 
@@ -58,6 +58,63 @@ function writePose(p: Pose) {
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
 
+/**
+ * ⛔ THE FLOWING OPENING's 2D (26 November 2026; `hero-scene.ts`, `FLOW_OPENING`, its header, for Carl's words and the four
+ * actions). The headline and subtext as HTML, the HOME PAGE's own markup (`app/page.tsx`'s hero: the guide below), in the
+ * lit 3D face's colour (`FLOW_INK`, sampled from the scene's render at full light), OVER the canvas. An INLINE SCRIPT starts
+ * them as the HTML is parsed — before any of the bench's script has loaded — so they are in the FIRST PAINT: (1) the
+ * headline fades in over `headFadeS`; (3) the subtext's letters each fade in (0.12 s) as the old reveal's eased front passes
+ * them (`FLOW_TIMES.sub`, `subLineS`: one source with the scene). The scene's clock is handed the headline's animation time
+ * at its first frame (`startOpeningAt`), so the 3D's growth and extrusion are timed against what the visitor has seen; the
+ * HTML headline dissolves as the 3D headline starts growing back from under it, each HTML line once its extrusion is done
+ * (`openingInfo.subDone`). Elements rendered by React, hidden, styled only by the script (`suppressHydrationWarning`: take 1
+ * of the still showed hydration REMOVES nodes a script adds, `live-work/scripts/hero-opening-handover-probe-26-november.mjs`).
+ * ⚠ The 2D registers with the 3D face only where the 3D text's layout was measured (Carl's window, 1896 x 946, at HOME —
+ * the bench's camera starts there for this): the site needs the 3D laid out from the HTML (a structural note, not built).
+ * ⚰️ B + C's opening still (`public/hero-bench/opening-poster.webp`) replaced the same day. `?open=a`: the old opening.
+ */
+const FLOW_INK = "#bed3ea";
+/**
+ * ⛔ THE 2D PUT ON THE 3D FACE (MEASURED, `live-work/scripts/hero-flow-registration-26-november.mjs`, at the REFERENCE window
+ * 1896 x 946, HOME; the lit pixels of each line, 2D against 3D). Kerning OFF (above) made each block's misfit one
+ * letter-spacing and one shift: the 3D's advances are 0.007 em tighter in BOTH blocks (headline lines 543/551 and 402/407
+ * px; subtext 410/415 and 369/372); the headline's leading 1.088 (its second line 1 px low at 1.1). Every line then within
+ * 1–2 px of its face; the colour exact.
+ * ⛔ AT EVERY WINDOW (Carl, on his own window: *"alignment for text and subtext is way out."*): the camera's FOV is VERTICAL,
+ * so the 3D's picture scales with the CANVAS's HEIGHT about its CENTRE, and does not reflow; the home page's markup did
+ * (take 1: registered only at the reference window). Now the 2D is laid out ONCE, as measured at the reference (`FLOW_REF`:
+ * the element boxes there, the shifts included, in CSS px at its root zoom 1.343; `scripts/hero-flow-ref-boxes-26-
+ * november.mjs`), on a STAGE the reference canvas's size, centred on the canvas and scaled by the canvas's height
+ * (`--flow-s`, set by the script and on resize). Fixed sizes, no breakpoints, explicit line breaks: nothing reflows.
+ * ⚠ HOME only (the bench's camera starts there for this). The SITE still needs its own route (a structural note).
+ */
+const FLOW_TRACK_EM = -0.007;
+/** the reference's root zoom: the 2D is laid out AT IT at every window (`hero-flow-zoomed`), so its lines round to the same
+ *  pixels as where it was registered — laid out at each window's own zoom (1.0–1.34), the subtext sat 2–4 px high */
+const FLOW_REF_ZOOM = 1.343;
+const FLOW_REF = (() => {
+  const z = FLOW_REF_ZOOM;
+  // (+7.25 px in x: the reference's 2D was measured on a 1896-wide layer while its canvas had kept the site's scrollbar
+  // gutter, 1881.5 wide — the two centres 7.25 px apart; MEASURED, `scripts/hero-flow-projection-probe-26-november.mjs`:
+  // the camera's projection lands on the lit pixels, gutter or none. The stage is centred on the canvas, so the 2D's
+  // reference x is taken against the canvas's centre)
+  const dx = 7.25;
+  return { w: 1896 / z, h: 946 / z, head: [(120.45 + dx) / z, 387.33 / z], sub: [(116.45 + dx) / z, 602.61 / z] } as const;
+})();
+/**
+ * ⛔ EACH LINE NUDGED ONTO ITS FACE (Carl: *"the text moves slightly left"* — at the hand-over the 3D sat 1–3 px left of the
+ * 2D). MEASURED per line, the 3D against the 2D, by correlating the strokes' LEFT and TOP edges (the 3D's sides grow right
+ * and down, so they cannot bias them) at 1896 x 946, 1600 x 860 and 1280 x 720 (gutter kept), averaged and taken to the
+ * reference's px (÷ the stage's scale): [x, y] in the reference's visual px, the stage scales them with the canvas
+ */
+const FLOW_LINE_NUDGE = { head1: [-1.1, 0.8], head2: [-2.3, 0.8], sub1: [-1.5, 1.6], sub2: [-0.8, 1.2] } as const;
+const nudge = (n: readonly [number, number]) => `translate(${n[0] / FLOW_REF_ZOOM}px, ${n[1] / FLOW_REF_ZOOM}px)`;
+const FLOW_FADE_OUT_MS = 250;
+const FLOW_KEYFRAMES = "@keyframes heroFlowIn{from{opacity:0}to{opacity:1}}";
+const FLOW_SUB = ["We show you what your website could be, ", "then we build you a site for sore eyes."] as const;
+// the inverse of the scene's eased sine (`beat`): u = acos(1 − 2y) / π — a letter at share f of its line's ink is reached at u
+const FLOW_SCRIPT = `(function(){var o=new URLSearchParams(location.search).get("open")||"";if(o==="a")return;var L=document.getElementById("hero-flow-2d");if(!L)return;L.style.display="block";var z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;var S=document.getElementById("hero-flow-stage");S.style.width=(1896/z)+"px";S.style.height=(946/z)+"px";S.style.setProperty("--flow-s",String(L.getBoundingClientRect().height/946));document.getElementById("hero-flow-zoomed").style.zoom=String(${FLOW_REF_ZOOM}/z);var h=document.getElementById("hero-flow-head");h.style.animation="heroFlowIn ${FLOW_OPENING.headFadeS}s cubic-bezier(0.37,0,0.63,1) 0s both";var st=[${FLOW_TIMES.sub[0]},${FLOW_TIMES.sub[1]}];[1,2].forEach(function(n,k){var sp=document.getElementById("hero-flow-sub"+n).querySelectorAll("span");var a=sp[0].getBoundingClientRect().left,b=sp[sp.length-1].getBoundingClientRect().right;for(var i=0;i<sp.length;i++){var f=Math.min(1,Math.max(0,(sp[i].getBoundingClientRect().left-a)/(b-a)));var u=Math.acos(1-2*f)/Math.PI;sp[i].style.animation="heroFlowIn 0.12s linear "+(st[k]+${FLOW_OPENING.subLineS}*u).toFixed(3)+"s both";}});})();`;
+
 export default function HeroBench() {
   const box = useRef<HTMLDivElement>(null);
   const homeText = useRef<HTMLDivElement>(null);
@@ -78,7 +135,10 @@ export default function HeroBench() {
     timer.connect(document);
 
     const { w, h } = size();
-    const hero = createHeroScene(w / h);
+    // ⛔ THE OPENING (`FLOW_INK`'s header): the flowing opening, or the old A by `?open=a`
+    const optA = new URLSearchParams(window.location.search).get("open") === "a";
+    const flowing = !optA;
+    const hero = createHeroScene(w / h, { opening: optA ? "a" : "flow" });
     const { scene, camera, settings } = hero;
 
     // ⛔ THE GRID FLOOR — a GUIDE, bench only, drawn APART from the field (so nothing puddles into it) at the scene's
@@ -574,9 +634,48 @@ export default function HeroBench() {
       }
     }
 
+    // ⛔ THE FLOWING OPENING's HAND-OVER (`FLOW_INK`'s header): the scene's clock from the HTML headline's, at its first frame;
+    // then each HTML part dissolved once the 3D has taken it over
+    let flowSynced = false;
+    // the stage on the CANVAS's own box once it exists (`FLOW_REF`): centred on it, scaled by its height — the 3D's picture is
+    // the canvas's; before it exists, the script used the layer's box (the same box, unless the page's gutter differs)
+    const flowScale = () => {
+      const L = document.getElementById("hero-flow-2d");
+      const st = document.getElementById("hero-flow-stage");
+      const c = renderer?.domElement.getBoundingClientRect();
+      if (!L || !st || !c) return;
+      const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+      const l = L.getBoundingClientRect();
+      st.style.left = `${(c.left - l.left + c.width / 2) / z}px`;
+      st.style.top = `${(c.top - l.top + c.height / 2) / z}px`;
+      st.style.width = `${1896 / z}px`;
+      st.style.height = `${946 / z}px`;
+      st.style.setProperty("--flow-s", String(c.height / 946));
+      const zz = document.getElementById("hero-flow-zoomed");
+      if (zz) zz.style.zoom = String(FLOW_REF_ZOOM / z);
+    };
+    window.addEventListener("resize", flowScale);
+    const flowOut = { head: false, sub: [false, false] };
+    const dissolve = (id: string) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.transition = `opacity ${FLOW_FADE_OUT_MS}ms linear`;
+      el.style.opacity = "0";
+    };
     function animate() {
       timer.update();
       const dt = Math.min(timer.getDelta(), 0.1);
+      if (flowing && !flowSynced) {
+        // the first frame: the opening's clock from the HTML headline's fade (0 = the page's first paint) — the time SINCE ITS
+        // START on the document's timeline, not its `currentTime`, which stops at the fade's end (MEASURED: a scene arriving at
+        // 1.6 s was handed 1.5 − dt = 1.17 s, `live-work/scripts/hero-flow-timeline-26-november.mjs`)
+        const a = document.getElementById("hero-flow-head")?.getAnimations()[0];
+        const now = document.timeline.currentTime;
+        const t = a && typeof a.startTime === "number" && typeof now === "number" ? (now - a.startTime) / 1000 : 0;
+        hero.startOpeningAt(t - dt);
+        flowSynced = true;
+        flowScale();
+      }
       fly(dt);
       hero.update(dt);
       // ⛔ PHASE 2, THE RAIN: the scene's GPU step before the draw (D-101, 14 November 2026 — the one new call)
@@ -584,6 +683,20 @@ export default function HeroBench() {
       buildMouldLine();
       renderer!.render(scene, camera);
       stats!.update();
+      // ⛔ THE FLOWING OPENING: the HTML headline goes as the 3D starts growing back from under it; each line once extruded
+      if (flowing) {
+        const o = hero.openingInfo;
+        if (!flowOut.head && o.growAt >= 0 && o.t >= o.growAt) {
+          flowOut.head = true;
+          dissolve("hero-flow-headwrap");
+        }
+        for (const k of [0, 1] as const) {
+          if (!flowOut.sub[k] && o.subDone[k]) {
+            flowOut.sub[k] = true;
+            dissolve(`hero-flow-sub${k + 1}`);
+          }
+        }
+      }
     }
 
     const start = async () => {
@@ -616,7 +729,8 @@ export default function HeroBench() {
       controls = new OrbitControls(camera, renderer.domElement);
       controls.minDistance = 500;
       controls.maxDistance = 5000;
-      applyPose(readPose() ?? { position: HOME.position, target: HOME.target, fov: HOME.fov });
+      // (the flowing opening: from HOME, where the 2D registers with the 3D — not the remembered pose)
+      applyPose((flowing ? null : readPose()) ?? { position: HOME.position, target: HOME.target, fov: HOME.fov });
       controls.addEventListener("change", refreshReadout);
       controls.addEventListener("start", () => {
         rig = null; // the mouse takes the camera; the next fly input starts from where it leaves it
@@ -647,6 +761,7 @@ export default function HeroBench() {
     return () => {
       live = false;
       window.removeEventListener("resize", onWindowResize);
+      window.removeEventListener("resize", flowScale);
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", blur);
@@ -667,6 +782,39 @@ export default function HeroBench() {
   return (
     <>
       <div ref={box} data-hero-bench="" className="fixed inset-0 overflow-hidden bg-[#050505]" />
+      {/* ⛔ THE FLOWING OPENING's 2D (`FLOW_INK`'s header): the home page's hero markup, hidden; shown and started by the script
+          as the HTML is parsed (not for `?open=a`; hydration leaves the script's styles: `suppressHydrationWarning`) */}
+      <style>{FLOW_KEYFRAMES}</style>
+      {/* (no kerning: the 3D text's typeface has none — `three`'s typeface JSON carries advances only — so a kerned 2D would
+          drift from its face letter by letter; measured: line 1 9 px wider in 3D, line 2 2 px narrower) */}
+      <div id="hero-flow-2d" suppressHydrationWarning className="pointer-events-none fixed inset-0 overflow-hidden" style={{ display: "none", zIndex: 1, color: FLOW_INK, fontKerning: "none", fontVariantLigatures: "none" }}>
+        <div id="hero-flow-stage" suppressHydrationWarning style={{ position: "absolute", left: "50%", top: "50%", width: FLOW_REF.w, height: FLOW_REF.h, transform: "translate(-50%, -50%) scale(var(--flow-s, 1))", transformOrigin: "50% 50%" }}>
+          <div id="hero-flow-zoomed" suppressHydrationWarning style={{ position: "absolute", inset: 0 }}>
+          <div id="hero-flow-headwrap" suppressHydrationWarning style={{ position: "absolute", left: FLOW_REF.head[0], top: FLOW_REF.head[1] }}>
+            <h1 id="hero-flow-head" suppressHydrationWarning style={{ margin: 0, opacity: 0, whiteSpace: "nowrap", fontSize: 60, fontWeight: 700, lineHeight: 1.088, letterSpacing: `${-0.025 + FLOW_TRACK_EM}em` }}>
+              <span style={{ display: "inline-block", transform: nudge(FLOW_LINE_NUDGE.head1) }}>Websites built</span>
+              <br />
+              <span style={{ display: "inline-block", transform: nudge(FLOW_LINE_NUDGE.head2) }}>to be seen.</span>
+            </h1>
+          </div>
+          <p style={{ position: "absolute", left: FLOW_REF.sub[0], top: FLOW_REF.sub[1], margin: 0, whiteSpace: "nowrap", fontSize: 16, lineHeight: "26px", letterSpacing: `${FLOW_TRACK_EM}em` }}>
+            {FLOW_SUB.map((line, k) => (
+              <span key={k}>
+                <span id={`hero-flow-sub${k + 1}`} suppressHydrationWarning style={{ display: "inline-block", transform: nudge(k === 0 ? FLOW_LINE_NUDGE.sub1 : FLOW_LINE_NUDGE.sub2) }}>
+                  {[...line].map((c, i) => (
+                    <span key={i} suppressHydrationWarning style={{ opacity: 0 }}>
+                      {c}
+                    </span>
+                  ))}
+                </span>
+                {k === 0 && <br />}
+              </span>
+            ))}
+          </p>
+          </div>
+        </div>
+      </div>
+      <script dangerouslySetInnerHTML={{ __html: FLOW_SCRIPT }} />
       {/* ⛔ THE HOME PAGE's HERO TEXT, OVER THE VIEW — a GUIDE (Carl: *"The text will be the size it is now"*), the home
           page's own markup and classes (`app/page.tsx`'s hero section). ⚠ The THIRD copy (with `marching-bench.tsx`): if
           the home page's text changes, this does not follow. Replaced by the three.js text in step 3. Clicks pass through */}
