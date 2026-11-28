@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { ClippingGroup, MeshBasicNodeMaterial, MeshPhysicalNodeMaterial, type Node, type WebGPURenderer } from "three/webgpu";
+import { ClippingGroup, MeshBasicNodeMaterial, MeshPhysicalNodeMaterial, PMREMGenerator, type Node, type WebGPURenderer } from "three/webgpu";
 import { acesFilmicToneMapping, attribute, cameraWorldMatrix, float, getShadowMaterial, interleavedGradientNoise, lights, materialColor, mix, mx_cell_noise_float, mx_noise_float, mx_noise_vec3, normalView, output, pmremTexture, positionLocal, positionViewDirection, positionWorld, pow4, roughness, screenCoordinate, smoothstep, texture, transformNormalToView, normalLocal, uniform, vec2, vec3, vec4 } from "three/tsl";
 import { MarchingCubes } from "three/examples/jsm/objects/MarchingCubes.js";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
@@ -721,12 +721,18 @@ export const OPENING_LIGHTS_A = [0.3, 3.0] as const;
  *  2. the 3D headline, FLAT on it (its depth squashed onto its front face: from HOME identical), GROWS BACKWARDS over
  *     `growS`, from halfway through 1 (or the scene's first frame, if later); its edge glow grows with it;
  *  3. the 2D subtext reveals letter by letter at the old reveal's speed (`subLineS` a line, line 2 `subGapS` after line 1),
- *     from `subFrac` of the way into 2 — and STAYS; its EXTRUSION follows each line at the same speed, `lagFrac` of a line
- *     behind, each letter growing over `letterGrowS` as the front passes it;
- *  4. the leaning logo fades in once the headline is fully 3D (it leans on the t; it does not need the subtext).
+ *     from `subFrac` of the way into 2 — and STAYS; each 3D letter is REVEALED ALREADY EXTRUDED, fading in WITH its 2D
+ *     letter over `letterGrowS` (the same eased front, the same moment: `lagFrac` 0). ⛔ 28 November 2026, Carl: *"on the
+ *     text this animated extrusion is noticable, as it should be. But the subtext is smaller. What a user will see is
+ *     thicker text being revealed. Not the actual animation itself, its too small. Therefore each letter can be revealed as
+ *     alreadt extruded. Theres no point in pytting an animation on something a human cannot see."* ⚰️ Was: its EXTRUSION
+ *     followed each line, 0.28 of a line behind, each letter growing back over `letterGrowS` as the front passed it;
+ *  4. the leaning logo fades in once the TEXT AND SUBTEXT are in: the subtext's last line fully 3D (28 November 2026, Carl:
+ *     *"it should be when the text and subtext have loaded. The aim is to keep the flow."*; ⚰️ was: once the headline was
+ *     fully 3D — "it leans on the t; it does not need the subtext").
  * The scene draws at FULL LIGHT throughout (the HTML carries the fade-in). All values are TAKES. `?open=a`: the old opening.
  */
-export const FLOW_OPENING = { headFadeS: 1.5, growFrac: 0.5, growS: 2.0, subFrac: 0.28, subLineS: 2.8, subGapS: 2.5, lagFrac: 0.28, letterGrowS: 0.5 } as const;
+export const FLOW_OPENING = { headFadeS: 1.5, growFrac: 0.5, growS: 2.0, subFrac: 0.28, subLineS: 2.8, subGapS: 2.5, lagFrac: 0, letterGrowS: 0.5 } as const;
 /** the flowing opening's nominal times (s on its clock): where the bench's HTML schedules its own reveal (one source) */
 export const FLOW_TIMES = (() => {
   const f = FLOW_OPENING;
@@ -1043,6 +1049,8 @@ export type HeroScene = {
   setEnvironment(name: HeroEnvironment): void;
   /** resolves when the scene's loads (the courtyard, the text) have — the castle is not among them (`loadCastle`) */
   ready: Promise<void>;
+  /** the reflection maps' prefilter PIPELINES built asynchronously (`primePrefilter`): awaited before the first frame */
+  primePrefilter(renderer: WebGPURenderer): Promise<void>;
   /** the baked text (step 3 first), once built */
   text: THREE.Group | null;
   /** scene units per cm — from the baked text (`buildText`); null until it is built */
@@ -1255,10 +1263,9 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
    *  width over which a letter grows (x) */
   const flowOpen = { t0: -1, growAt: -1, subAt: [-1, -1] as [number, number] };
   const headDepth = uniform(flowing ? 0 : 1);
-  const subFront1 = uniform(flowing ? -1e9 : 1e9);
-  const subFront2 = uniform(flowing ? -1e9 : 1e9);
-  const subGrowW1 = uniform(1);
-  const subGrowW2 = uniform(1);
+  // each subtext line's clock (s since its 3D letters began: −1e9 before, 1e9 = all in) — read per letter by its fade
+  const subClock1 = uniform(flowing ? -1e9 : 1e9);
+  const subClock2 = uniform(flowing ? -1e9 : 1e9);
   // the leaning logo's fade (0 → 1), read by its alpha-to-coverage (`OPENING`)
   const logoFade = uniform(0);
   // the opening's fade drawn as one solid layer (`OPENING`): the opaque material, the fade's, and the depth drawn first
@@ -1335,8 +1342,14 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
   const PRIMER_FRAMES = 3;
   let primer: THREE.Mesh | null = null;
   let primerFrames = 0;
+  // the prefilter's pipelines built and the primer in the scene (`primePrefilter`): the warm-up waits for it
+  let prefiltered = false;
+  // the primer's maps, handed to `primePrefilter` (empty if they never come: nothing then waits on them)
+  let primerMapsIn: (maps: THREE.Texture[]) => void = () => {};
+  const primerMaps = new Promise<THREE.Texture[]>((r) => (primerMapsIn = r));
   Promise.all([loadStudioHdri(STUDIO_HDRI_SRC, HERO_LOGO_METAL.room), courtyardReady, cloth.envReady]).then(([studio, , clothEnv]) => {
-    if (disposed || !envs.courtyard) return;
+    if (disposed || !envs.courtyard) return primerMapsIn([]);
+    primerMapsIn([studio, envs.courtyard.reflect, judging, clothEnv]);
     const m = new MeshBasicNodeMaterial();
     // each with an explicit direction AND level: outside a lit material's environment context `pmremTexture` has neither
     // (three r185: `PMREMNode.setup` reads `uvNode.x` and passes the level on — without them the build throws after the
@@ -1355,9 +1368,82 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
     primer = new THREE.Mesh(g, m);
     primer.name = "hero reflection-map primer";
     primer.frustumCulled = false;
-    scene.add(primer);
-    performance.mark("hero:Primer");
+    // (NOT in the scene yet: `primePrefilter` adds it once its pipelines are built — drawn before, three would build them
+    // synchronously, or SKIP a pass still building and cache a wrong map)
+  }).catch((e: unknown) => {
+    console.warn("[hero] the reflection maps", e);
+    primerMapsIn([]);
   });
+  /**
+   * ⛔ THE PREFILTER's PIPELINES BUILT ASYNCHRONOUSLY, BEFORE THE FIRST FRAME (28 November 2026; Carl: *"Proceed with Option
+   * A"*; D-101). The primer above was made for an opening that was still DARK (16 November); the flowing opening shows the
+   * 2D headline from the first paint, so its work landed on the visible fade. MEASURED on a COLD load
+   * (`live-work/scripts/hero-opening-gpu-work-16-november.mjs`): the prefilter's GGX submits held the GPU 107–282 ms each,
+   * one per map size (three r185's `_getGGXShader` bakes the size into the shader); on a RELOAD all of it took 17 ms — so
+   * the cost is the PIPELINES being built SYNCHRONOUSLY at their first draw (the GPU process makes no frames for the page
+   * meanwhile: the 2D froze), not the filtering.
+   * So, once, before the first frame: three's own generator RUN DRY on the same four maps, its every `renderer.render`
+   * turned into a `compileAsync` of the same object with the same state (material, render target, mesh) at that moment —
+   * the gather is synchronous at the call (`compileAsync`'s header; `warmScene` relies on the same). The real prefilter then
+   * (the primer, put in the scene at the end of this) finds every pipeline built. Nothing drawn changes: the dry run's
+   * targets are thrown away; the maps are made as before, by three, from the same textures.
+   * ⛔ Since 28 November 2026 (Carl: *"yes proceed"*) it runs ALONGSIDE the first frame's builds, not before them (the
+   * text needs none of these maps; production measured the 3D's first frame at ~2.3–2.5 s with it first): so the primer
+   * joins the scene only here, and the WARM-UP (whose logo, cloth and liquid sample these maps) waits for `prefiltered`.
+   * ⚠ This mirrors three r185's PMREMGenerator (its passes are `renderer.render` calls): on a three upgrade, re-run the
+   * cold-load harness — no PMREM pipeline may be built at the first frame. `loadTimes.prefilterPrime`: the passes built.
+   */
+  async function primePrefilter(renderer: WebGPURenderer) {
+    try {
+      await primeDry(renderer);
+    } finally {
+      // the primer drawn from the next frame (its maps made then, from built pipelines); the warm-up free to start
+      if (primer && !disposed && !primer.parent) {
+        scene.add(primer);
+        performance.mark("hero:Primer");
+      }
+      prefiltered = true;
+    }
+  }
+  async function primeDry(renderer: WebGPURenderer) {
+    const maps = await primerMaps;
+    if (disposed || maps.length === 0) return;
+    const t0 = performance.now();
+    // the maps UPLOADED first, ONE A FRAME (three's `initTexture`: the upload and its mipmaps), so they do not land in one
+    // GPU job with the dry run's builds (28 November 2026, Carl: *"a slight stall after the W on the word "We""*: MEASURED
+    // `live-work/scripts/hero-flow-holds-28-november.py`, the subtext's first line held ~250 ms inside the dry run)
+    performance.mark("hero:PrefilterUploads");
+    for (const map of maps) {
+      if (disposed) return;
+      renderer.initTexture(map);
+      await new Promise<void>((r) => requestAnimationFrame(() => r()));
+    }
+    performance.mark("hero:PrefilterPrime");
+    const gen = new PMREMGenerator(renderer);
+    const r = renderer as unknown as Record<string, unknown>;
+    const own = Object.prototype.hasOwnProperty.call(r, "render");
+    const keep = r.render;
+    const builds: Promise<void>[] = [];
+    const targets: THREE.RenderTarget[] = [];
+    r.render = (o: THREE.Object3D, c: THREE.Camera) => {
+      builds.push(renderer.compileAsync(o, c));
+    };
+    try {
+      for (const map of maps) {
+        const cube = map.mapping === THREE.CubeReflectionMapping || map.mapping === THREE.CubeRefractionMapping;
+        targets.push(cube ? gen.fromCubemap(map as THREE.CubeTexture) : gen.fromEquirectangular(map));
+      }
+    } finally {
+      if (own) r.render = keep;
+      else delete r.render;
+    }
+    await Promise.all(builds);
+    for (const t of targets) t.dispose();
+    gen.dispose();
+    loadTimes.prefilterPrime = builds.length;
+    loadTimes.prefilterPrimeMs = Math.round(performance.now() - t0);
+    performance.mark("hero:PrefilterPrimeDone");
+  }
   // THE HARDENING's dial (`logoMaterial`): 1 = the solid logo (all before the re-forming), 0 = the blobs' liquid
   const hardness = uniform(1);
   /**
@@ -1559,9 +1645,14 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
       if (!flowing) subMat.maskNode = positionWorld.x.lessThan(positionWorld.y.greaterThan(midY).select(reveal1, reveal2));
       else {
         // ⛔ THE FLOWING OPENING (`FLOW_OPENING`): the depth squashed onto the FRONT FACE (`faceZ`, the text's front: from
-        // HOME the flat text is the 2D) and grown back. The headline: one depth. The subtext: per LETTER — each glyph's left x
-        // (`glyphLeftX`, a vertex attribute), the line's extrusion front past it by `subGrowW` = fully deep; shown only once
-        // the front reaches it (before, the HTML 2D is the letter). The edge glow grows with the depth
+        // HOME the flat text is the 2D) and grown back: the HEADLINE (one depth; the edge glow grows with it).
+        // ⛔ THE SUBTEXT: each letter REVEALED ALREADY EXTRUDED (28 November 2026, Carl: *"Theres no point in pytting an
+        // animation on something a human cannot see"*): full depth, FADING IN WITH ITS 2D LETTER — the 2D's own schedule
+        // (`FLOW_SCRIPT`, `hero-bench.tsx`): a letter at share f of its line's ink starts at subLineS · acos(1 − 2f) / π and
+        // fades over `letterGrowS`. Its share from its glyph's left x (`glyphLeftX`), as the 2D's from its span's left. The fade
+        // scales the letter's light (colour and glow) up from BLACK: over the bench's black, an opacity fade with no
+        // transparency (no sorting within the text). ⚠ Unasserted: nothing lit sits behind the subtext while it fades (the
+        // floor's glow comes with the logo, after it) — over a lit background the letter would read dark for 0.5 s
         let faceZ = -Infinity;
         for (const m of [headMesh, subMesh]) {
           m.geometry.computeBoundingBox();
@@ -1571,14 +1662,19 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
         const squash = (d: Node<"float">) => vec3(positionLocal.x, positionLocal.y, fz.add(positionLocal.z.sub(fz).mul(d.max(0.001))));
         (headMat as unknown as { positionNode: unknown }).positionNode = squash(headDepth);
         headMat.emissiveNode = headMat.emissiveNode.mul(headDepth);
-        subMesh.geometry.setAttribute("glyphX", new THREE.BufferAttribute(glyphLeftX(subMesh.geometry), 1));
-        const gx = attribute<"float">("glyphX");
-        const upper = positionLocal.y.greaterThan(midY);
-        const front = upper.select(subFront1, subFront2);
-        const d = front.sub(gx).div(upper.select(subGrowW1, subGrowW2)).clamp(0, 1);
-        (subMat as unknown as { positionNode: unknown }).positionNode = squash(d);
-        subMat.emissiveNode = subMat.emissiveNode.mul(d);
-        subMat.maskNode = gx.lessThan(front);
+        const gl = glyphLeftX(subMesh.geometry);
+        const startS = new Float32Array(gl.length);
+        for (let i = 0; i < gl.length; i++) {
+          const r = pos.getY(i) > midY ? x1 : x2;
+          const share = Math.min(1, Math.max(0, (gl[i] - r[0]) / (r[1] - r[0])));
+          startS[i] = (FLOW_OPENING.subLineS * Math.acos(1 - 2 * share)) / Math.PI;
+        }
+        subMesh.geometry.setAttribute("glyphStart", new THREE.BufferAttribute(startS, 1));
+        const clock = positionLocal.y.greaterThan(midY).select(subClock1, subClock2);
+        const a = clock.sub(attribute<"float">("glyphStart")).div(FLOW_OPENING.letterGrowS).clamp(0, 1);
+        subMat.emissiveNode = subMat.emissiveNode.mul(a);
+        (subMat as unknown as { outputNode: unknown }).outputNode = vec4(output.rgb.mul(a), output.a);
+        subMat.maskNode = a.greaterThan(0);
       }
       subMesh.material = subMat;
       disposables.push(subMat);
@@ -2431,6 +2527,10 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
     const t0 = performance.now();
     rain.warm(renderer);
     loadTimes.warmRainStep = Math.round(performance.now() - t0);
+    // ⚰️ TRIED 28 November 2026 (Carl: *"yes proceed"*), MEASURED on a production build and WITHDRAWN: the warm-up in the
+    // story's order (A the logo's own programs and the web floor, the logo's fade waiting only for A; B the liquid; C the
+    // rest) — A ALONE took ~9–10 s of the ~10 s (the logo's material is the cost), so the logo came no sooner; and building
+    // one `compileAsync` per object side by side was no faster than one over the scene (the GPU's compiles are the time)
     // ⛔ THE LOGO IS IN IT AGAIN (16 November 2026, Carl's OPENING, `OPENING`): it is not drawn until its fade, which waits
     // for this — so its background build hides nothing
     // ⛔ THE CODE DROPS' mesh too (`hero-code-drops.ts`; 20 November 2026): hidden outside its band, so shown here to be
@@ -2581,8 +2681,8 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
     flowOpen.subAt = [-1, -1];
     if (flowing) {
       headDepth.value = 0;
-      subFront1.value = -1e9;
-      subFront2.value = -1e9;
+      subClock1.value = -1e9;
+      subClock2.value = -1e9;
     }
     opening.t = 0;
     opening.fadeT = -1;
@@ -2593,20 +2693,14 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
   }
   /** the logo's opacity in the opening: 0 before its fade, eased up over `logoFadeS`, 1 once the opening is done */
   const logoOpacity = () => (opening.done ? 1 : opening.fadeT < 0 ? 0 : easeSine((opening.t - opening.fadeT) / OPENING.logoFadeS));
-  /** the subtext's extrusion fronts on the opening's clock (`flowOpen.subAt`): run on AFTER the opening is done — the logo
-   *  does not wait for the subtext, and the subtext's extrusion does not stop for the logo */
+  /** each subtext line's clock on the opening's (`flowOpen.subAt`): run on AFTER the opening is done, should it end first */
   function stepFlowSub() {
-    const f = FLOW_OPENING;
     if (!subLines || flowOpen.subAt[0] < 0) return;
-    const edge = (r: [number, number], u: number) => (u <= 0 ? -1e9 : u >= 1 ? 1e9 : r[0] + (r[1] - r[0]) * u);
-    subFront1.value = edge(subLines.x1, beat([flowOpen.subAt[0], f.subLineS]));
-    subFront2.value = edge(subLines.x2, beat([flowOpen.subAt[1], f.subLineS]));
-    // a letter grows over `letterGrowS`: the distance the front covers in that time, at its mean speed
-    subGrowW1.value = ((subLines.x1[1] - subLines.x1[0]) / f.subLineS) * f.letterGrowS;
-    subGrowW2.value = ((subLines.x2[1] - subLines.x2[0]) / f.subLineS) * f.letterGrowS;
+    subClock1.value = opening.t - flowOpen.subAt[0];
+    subClock2.value = opening.t - flowOpen.subAt[1];
   }
   /** ⛔ THE FLOWING OPENING's STEP (`FLOW_OPENING`): full light; the headline grown back; each subtext line's extrusion; the
-   *  logo once the headline is fully deep; the story at the logo's fade's end */
+   *  logo once the subtext's last line is fully 3D; the story at the logo's fade's end */
   function stepFlow() {
     const f = FLOW_OPENING;
     const t = opening.t;
@@ -2617,13 +2711,16 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
     // 2: from halfway through the 2D's fade, or the scene's first frame if later
     if (flowOpen.growAt < 0) flowOpen.growAt = Math.max(FLOW_TIMES.growAt, flowOpen.t0);
     headDepth.value = easeSine((t - flowOpen.growAt) / f.growS);
-    // 3: each line's extrusion, `lagFrac` of a line behind its 2D reveal, never before 28% of the growth
+    // 3: each line's 3D letters, WITH its 2D reveal (`lagFrac` 0: revealed already extruded), never before 28% of the growth
     const lag = f.lagFrac * f.subLineS;
     const s1 = Math.max(FLOW_TIMES.sub[0], flowOpen.growAt + f.subFrac * f.growS) + lag;
     flowOpen.subAt = [s1, Math.max(FLOW_TIMES.sub[1] + lag, s1 + f.subGapS)];
     stepFlowSub();
-    // 4: the logo, once the headline is fully 3D (and built)
-    if (opening.fadeT < 0 && logo && openingReady() && t >= flowOpen.growAt + f.growS) opening.fadeT = t;
+    // 4: the logo, once the TEXT AND SUBTEXT are in — the subtext's last letter fully in (in 3D) — and built.
+    // ⛔ 28 November 2026, Carl: *"on the logo fade in. it should be when the text and subtext have loaded. The aim is to
+    // keep the flow."* (the Builder's reading, a TAKE; D-101). ⚰️ Was: once the headline was fully 3D (`growAt + growS`)
+    const subIn = flowOpen.subAt[1] + f.subLineS + f.letterGrowS;
+    if (opening.fadeT < 0 && logo && openingReady() && t >= subIn) opening.fadeT = t;
     if (opening.fadeT >= 0 && t >= opening.fadeT + OPENING.logoFadeS) {
       opening.done = true;
       storyT = 0;
@@ -2635,14 +2732,14 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
       lit.value = 1;
       reveal1.value = 1e9;
       reveal2.value = 1e9;
-      // (the flowing opening: the headline fully deep; the subtext's extrusion runs on to its end, its clock kept going)
+      // (the flowing opening: the headline fully deep; the subtext's letters run on to their end, its clock kept going)
       headDepth.value = 1;
       if (flowing && opening.t < flowOpen.subAt[1] + FLOW_OPENING.subLineS + FLOW_OPENING.letterGrowS) {
         opening.t += delta;
         stepFlowSub();
       } else {
-        subFront1.value = 1e9;
-        subFront2.value = 1e9;
+        subClock1.value = 1e9;
+        subClock2.value = 1e9;
       }
       light.intensity = KEY_I;
       ambientLight.intensity = AMBIENT_I;
@@ -2680,7 +2777,8 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
     // ⛔ THE MARBLE (`hero-marble.ts`): the example's light circling, on the scene's clock
     marble.update(delta);
     // THE PRIMER (above): drawn `PRIMER_FRAMES` frames, then gone
-    if (primer && ++primerFrames > PRIMER_FRAMES) {
+    // (counted only once it is IN the scene — `primePrefilter` adds it; counted before, it was thrown away undrawn: 28 Nov)
+    if (primer && primer.parent && ++primerFrames > PRIMER_FRAMES) {
       scene.remove(primer);
       primer.geometry.dispose();
       (primer.material as THREE.Material).dispose();
@@ -3047,6 +3145,7 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
     setMaterial,
     setEnvironment,
     ready: Promise.all([...loads, textReady]).then(() => undefined),
+    primePrefilter,
     get text() {
       return text;
     },
@@ -3115,8 +3214,9 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
         rainWarmed = true;
         rain.warm(renderer);
       }
-      // THE WARM-UP (`warmScene`): once the logo exists, in the background, while the story runs
-      if (logo && !warmed && !warming) {
+      // THE WARM-UP (`warmScene`): once the logo exists, in the background, while the story runs — and once the reflection
+      // maps' prefilter pipelines are built (`prefiltered`, 28 November 2026: the logo, cloth and liquid sample those maps)
+      if (logo && !warmed && !warming && prefiltered) {
         warming = true;
         at("Warm");
         warmScene(renderer)

@@ -63,10 +63,11 @@ const r1 = (n: number) => Math.round(n * 10) / 10;
  * actions). The headline and subtext as HTML, the HOME PAGE's own markup (`app/page.tsx`'s hero: the guide below), in the
  * lit 3D face's colour (`FLOW_INK`, sampled from the scene's render at full light), OVER the canvas. An INLINE SCRIPT starts
  * them as the HTML is parsed — before any of the bench's script has loaded — so they are in the FIRST PAINT: (1) the
- * headline fades in over `headFadeS`; (3) the subtext's letters each fade in (0.12 s) as the old reveal's eased front passes
+ * headline fades in over `headFadeS`; (3) the subtext's letters each fade in (`letterGrowS`; was 0.12 s) as the old reveal's eased front passes
  * them (`FLOW_TIMES.sub`, `subLineS`: one source with the scene). The scene's clock is handed the headline's animation time
- * at its first frame (`startOpeningAt`), so the 3D's growth and extrusion are timed against what the visitor has seen; the
- * HTML headline dissolves as the 3D headline starts growing back from under it, each HTML line once its extrusion is done
+ * at its first frame (`startOpeningAt`), so the 3D's growth and its subtext letters are timed against what the visitor has seen;
+ * the HTML headline dissolves as the 3D headline starts growing back from under it, each HTML line once its 3D letters are
+ * all in (each revealed ALREADY EXTRUDED, fading in with its 2D letter: 28 November 2026; `FLOW_OPENING` in the scene)
  * (`openingInfo.subDone`). Elements rendered by React, hidden, styled only by the script (`suppressHydrationWarning`: take 1
  * of the still showed hydration REMOVES nodes a script adds, `live-work/scripts/hero-opening-handover-probe-26-november.mjs`).
  * ⚠ The 2D registers with the 3D face only where the 3D text's layout was measured (Carl's window, 1896 x 946, at HOME —
@@ -124,7 +125,11 @@ const FLOW_FADE_OUT_MS = 250;
 const FLOW_KEYFRAMES = "@keyframes heroFlowIn{from{opacity:0}to{opacity:1}}";
 const FLOW_SUB = ["We show you what your website could be, ", "then we build you a site for sore eyes."] as const;
 // the inverse of the scene's eased sine (`beat`): u = acos(1 − 2y) / π — a letter at share f of its line's ink is reached at u
-const FLOW_SCRIPT = `(function(){var o=new URLSearchParams(location.search).get("open")||"";if(o==="a")return;var L=document.getElementById("hero-flow-2d");if(!L)return;L.style.display="block";var z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;var S=document.getElementById("hero-flow-stage");S.style.width=(1896/z)+"px";S.style.height=(946/z)+"px";S.style.setProperty("--flow-s",String(L.getBoundingClientRect().height/946));document.getElementById("hero-flow-zoomed").style.zoom=String(${FLOW_REF_ZOOM}/z);var h=document.getElementById("hero-flow-head");h.style.animation="heroFlowIn ${FLOW_OPENING.headFadeS}s cubic-bezier(0.37,0,0.63,1) 0s both";var st=[${FLOW_TIMES.sub[0]},${FLOW_TIMES.sub[1]}];[1,2].forEach(function(n,k){var sp=document.getElementById("hero-flow-sub"+n).querySelectorAll("span");var a=sp[0].getBoundingClientRect().left,b=sp[sp.length-1].getBoundingClientRect().right;for(var i=0;i<sp.length;i++){var f=Math.min(1,Math.max(0,(sp[i].getBoundingClientRect().left-a)/(b-a)));var u=Math.acos(1-2*f)/Math.PI;sp[i].style.animation="heroFlowIn 0.12s linear "+(st[k]+${FLOW_OPENING.subLineS}*u).toFixed(3)+"s both";}});})();`;
+// ⛔ EACH LETTER FADES OVER `letterGrowS` (0.5 s), the time its 3D letter (already extruded, since the same day) takes to fade in with it (28 November 2026; Carl:
+// *"There appears to be a slight stall after the W on the word "We""*). ⚰️ Was 0.12 s: where the eased front moves slowly
+// (each line's start and end) a letter finished before the next began, and the screen stood still — MEASURED
+// (`live-work/scripts/hero-flow-letter-gaps-28-november.mjs`): W→e 277 ms, t→h 148 ms, two of 54 ms. From 0.4 s none
+const FLOW_SCRIPT = `(function(){var o=new URLSearchParams(location.search).get("open")||"";if(o==="a")return;var L=document.getElementById("hero-flow-2d");if(!L)return;L.style.display="block";var z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;var S=document.getElementById("hero-flow-stage");S.style.width=(1896/z)+"px";S.style.height=(946/z)+"px";S.style.setProperty("--flow-s",String(L.getBoundingClientRect().height/946));document.getElementById("hero-flow-zoomed").style.zoom=String(${FLOW_REF_ZOOM}/z);var h=document.getElementById("hero-flow-head");h.style.animation="heroFlowIn ${FLOW_OPENING.headFadeS}s cubic-bezier(0.37,0,0.63,1) 0s both";var st=[${FLOW_TIMES.sub[0]},${FLOW_TIMES.sub[1]}];[1,2].forEach(function(n,k){var sp=document.getElementById("hero-flow-sub"+n).querySelectorAll("span");var a=sp[0].getBoundingClientRect().left,b=sp[sp.length-1].getBoundingClientRect().right;for(var i=0;i<sp.length;i++){var f=Math.min(1,Math.max(0,(sp[i].getBoundingClientRect().left-a)/(b-a)));var u=Math.acos(1-2*f)/Math.PI;sp[i].style.animation="heroFlowIn ${FLOW_OPENING.letterGrowS}s linear "+(st[k]+${FLOW_OPENING.subLineS}*u).toFixed(3)+"s both";}});})();`;
 
 export default function HeroBench() {
   const box = useRef<HTMLDivElement>(null);
@@ -694,7 +699,7 @@ export default function HeroBench() {
       buildMouldLine();
       renderer!.render(scene, camera);
       stats!.update();
-      // ⛔ THE FLOWING OPENING: the HTML headline goes as the 3D starts growing back from under it; each line once extruded
+      // ⛔ THE FLOWING OPENING: the HTML headline goes as the 3D starts growing back from under it; each line once its 3D letters are all in
       if (flowing) {
         const o = hero.openingInfo;
         if (!flowOut.head && o.growAt >= 0 && o.t >= o.growAt) {
@@ -761,6 +766,26 @@ export default function HeroBench() {
         (window as unknown as { __heroBench?: unknown }).__heroBench = { backend, hero, settings, renderer: r, scene, camera, controls, pose };
       }
       await hero.ready;
+      if (!live) return;
+      // ⛔ THE FIRST FRAME's PROGRAMS BUILT ASYNCHRONOUSLY BEFORE IT IS DRAWN (28 November 2026; Carl: *"Proceed with Option
+      // A"*; D-101). MEASURED (`live-work/scripts/hero-opening-gpu-work-16-november.mjs`, a reload): the first draw's submit
+      // held the GPU ~1 s — three r185 builds a render pipeline SYNCHRONOUSLY at its first draw, and the GPU process stops
+      // making frames for the whole page meanwhile (the 2D headline's fade froze, then jumped). `compileAsync` builds the
+      // same pipelines off the frame (three's own path; the draw then finds them cached). The loop starts once they are
+      // built: the 3D's growth may start later on a slow device (it starts at the scene's first frame, if later)
+      // (the reflection maps' prefilter pipelines FIRST, the same way: `primePrefilter`, `hero-scene.ts`, which puts the
+      // primer in the scene and lets the warm-up start. ⚰️ Tried 28 November 2026 on a production build, the 3D's first
+      // frame ~2.3–2.5 s after the paint this way: ALONGSIDE the first frame's builds — the two slowed each other (first frame
+      // ~2.0 s, the subtext's holds 233–300 ms); AFTER them — the text's builds alone took 1.0–1.5 s (0.6 s after this: the
+      // first builds on a cold page carry a start-up cost, whoever pays it), so no earlier. This order measured best)
+      await hero.primePrefilter(renderer);
+      if (!live) return;
+      // ⚠ ONE `compileAsync` PER TOP-LEVEL OBJECT, side by side: one call over the scene builds its pipelines ONE AT A TIME
+      // (three r185 awaits each before the next) — MEASURED 4.7 s cold on the dev bench, the 3D's first frame at opening
+      // 6.8 s. Each object is gathered against the scene (its lights, its background), so the keys match the draw's
+      performance.mark("hero:FirstCompile");
+      await Promise.all(scene.children.filter((o) => o.visible).map((o) => renderer!.compileAsync(o, camera, scene)));
+      performance.mark("hero:FirstCompileDone");
       if (!live) return;
       renderer.setAnimationLoop(animate);
     };
