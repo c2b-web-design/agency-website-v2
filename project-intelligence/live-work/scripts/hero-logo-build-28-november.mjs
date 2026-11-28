@@ -68,6 +68,20 @@ function hookGpu() {
     window.__gpu.pipes.push(r);
     return p;
   };
+  // every animation frame's time, and every bind group made (the Architect's review 4, §3: is the fade's first draw a LONG
+  // FRAME, and is anything built on it?)
+  window.__gpu.frames = [];
+  window.__gpu.binds = [];
+  const tick = (ts) => {
+    window.__gpu.frames.push(ts);
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  const cbg = D.createBindGroup;
+  D.createBindGroup = function (desc) {
+    window.__gpu.binds.push(performance.now());
+    return cbg.call(this, desc);
+  };
   // the LOGO's FIRST DRAW: the first render pass that sets the fade's pipeline (three labels it) — when the visitor's
   // logo starts to fade in
   const sp = GPURenderPassEncoder.prototype.setPipeline;
@@ -92,6 +106,22 @@ function busy(intervals, a, b) {
   }
   if (ce > cs) total += ce - cs;
   return total;
+}
+
+function frameAt(g, at) {
+  if (at === undefined || !g.frames?.length) return null;
+  const F = g.frames;
+  const i = F.findIndex((f) => f > at);
+  if (i < 1) return null;
+  const len = (k) => (k > 0 && k < F.length ? F[k] - F[k - 1] : 0);
+  const a = F[i - 1];
+  const b = F[i];
+  return {
+    ms: +len(i).toFixed(1),
+    max3: +Math.max(len(i), len(i + 1), len(i + 2), len(i + 3)).toFixed(1),
+    binds: g.binds.filter((x) => x >= a && x <= b).length,
+    syncPipes: g.pipes.filter((p) => !p.async && p.t0 >= a && p.t0 <= b).length,
+  };
 }
 
 async function load(dir) {
@@ -154,6 +184,10 @@ async function load(dir) {
     swapMarginS: pg.marks.OpeningDone !== undefined && opaque.length && opaque[0].t1 >= 0 ? +((pg.marks.OpeningDone - opaque[0].t1) / 1000).toFixed(2) : null,
     touchMarginS: pg.marks.Touchdown !== undefined ? +((pg.marks.Touchdown - (pg.marks.WarmB ?? pg.marks.WarmDone)) / 1000).toFixed(2) : null,
     race: opaque.some((p) => p.t0 < W),
+    // the frame the fade first draws on, and the frame of the swap: its length (ms), the longest of the next 3, and what
+    // was made on it (bind groups; pipelines made synchronously)
+    fadeFrame: frameAt(pg.gpu, pg.gpu.fadeDrawn),
+    swapFrame: frameAt(pg.gpu, pg.marks.OpeningDone),
     // when the logo is DUE (Carl's rule: the subtext's last letter in), from the 3D's first frame by the scene's own formula
     // (`stepFlow`, FLOW_OPENING/FLOW_TIMES: growAt = max(0.75, first frame); line 2 at max(3.81, growAt + 0.56 + 2.5); in
     // after 2.8 + 0.5) — on the opening's clock, ~the first paint (the 2D headline's fade starts there). ⚠ ~1 frame coarse
@@ -184,6 +218,9 @@ for (let i = 0; i < Number(RUNS); i++) {
     const r = runs[k].at(-1);
     const t = (l) => (l.length ? `${l[0].tookS} s (asked ${l[0].askedS})` : "none");
     const ad = r.adapter ? `${r.adapter.vendor}/${r.adapter.architecture}${r.adapter.fallback ? " FALLBACK" : ""}` : "adapter ?";
+    const ff = r.fadeFrame ? `fade frame ${r.fadeFrame.ms} ms (next-3 max ${r.fadeFrame.max3}, binds ${r.fadeFrame.binds}, sync ${r.fadeFrame.syncPipes})` : "fade frame ?";
+    const sf = r.swapFrame ? `swap frame ${r.swapFrame.ms} ms (max3 ${r.swapFrame.max3}, binds ${r.swapFrame.binds}, sync ${r.swapFrame.syncPipes})` : "swap frame ?";
+    console.log(`   ${ff}; ${sf}`);
     console.log(`run ${i + 1} ${k.padEnd(6)} [${ad}]: first frame ${r.afterPaintS.firstFrame} s, LOGO due ${r.dueS} s, drawn ${r.afterPaintS.logoDrawn} s (LATE ${(r.afterPaintS.logoDrawn - r.dueS).toFixed(2)} s), swap margin ${r.swapMarginS} s, touchdown margin ${r.touchMarginS} s, warm-up ${r.warmSpanS} s, main ${r.mainBusyShare} / gpu ${r.gpuProcBusyShare}; fade ${t(r.fade)}, opaque ${t(r.opaque)}${r.opaque.some((p) => p.askedS < 0) ? "  ⚠ the opaque logo built BEFORE the warm-up (in the first frame's builds: the race)" : ""}`);
   }
 }

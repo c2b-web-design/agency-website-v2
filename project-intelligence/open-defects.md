@@ -13,76 +13,50 @@ alongside it could never have fitted inside it. Corrected 19 August 2026.*
 
 ## D-051-A11Y — answer text is not in the accessibility tree
 
-- **What:** The answer card labels are baked into the face's albedo texture, so the visible answer
-  text does not exist as text to a screen reader.
-- **Where:** `components/enquiry/answer-card-mesh.tsx` (`buildLabelTexture`, the face `map`).
-- **Found:** 2026-08-09, landed in `1c9b8d7`. Recorded in **D-051** (`decisions.md`), which
-  describes the material and keeps the note as part of that description.
-- **Waiting on:** Carl — whether the answer text moves out of the baked texture. A design question,
-  not a bug fix. Not scheduled, no owner.
-
----
+- **What:** The answer labels are baked into the card face's texture; screen readers get no text.
+- **Where:** `components/enquiry/answer-card-mesh.tsx` (`buildLabelTexture`).
+- **Found:** 2026-08-09 (`1c9b8d7`); D-051.
+- **Waiting on:** Carl — a design question (move the text out of the texture?). Not scheduled.
 
 ## ENTRANCE-Q4Q1 — only Q5 gets the card entrance
 
-- **What:** Q4–Q1 have no card entrance. `hostCardsVisible` is stage-derived, and `stage` does not
-  change across a question step, so the entrance gate never flips between Q5 and Q1.
+- **What:** Q4–Q1 have no card entrance: the gate is stage-derived and `stage` does not change across a step.
 - **Where:** `components/enquiry/answer-card-canvas.tsx`.
-- **Found:** Predates 2026-08-15. Recorded in
-  `live-work/entrance-work-written-and-unwound-15-august.md` (mechanism already diagnosed there —
-  do not re-derive it).
+- **Found:** before 2026-08-15; `live-work/entrance-work-written-and-unwound-15-august.md` (diagnosed there).
 - **Waiting on:** Unfixed on purpose for this look. Must not be quietly compensated for.
-
----
-
-## ANCHOR-STALE — the entrance ladder is unrelated to the text
-
-- **What:** A stale reveal anchor is accepted because the only guards are "is a number" and "is in
-  the past" — a value 8 seconds old satisfies both. Cards enter correctly staggered but unrelated
-  to the text.
-- **Where:** `components/enquiry/answer-card-canvas.tsx:1925`.
-- **Found:** 2026-08-17. Recorded in `live-work/mode-ab-finding-17-august.md`.
-- **Waiting on:** Carl's instruction — **report, do not fix.**
 
 ## VERIFY-UNPROVEN — no harness verdict is admissible as evidence
 
-- **What:** `verify/proven.json`'s `proven` array is **empty**. Its one entry was demoted on
-  28 August 2026 as misattributed — the credential described `reveal-stall.mjs`, which films,
-  while every arm of its proof came from `reveal-stall-measure.mjs`. ⛔ **No pass from any of the
-  131 harnesses is currently admissible.** Reds still pass through unchanged.
-- **Where:** `verify/proven.json`; the demoted entry is preserved in `_demoted` with its evidence.
-- **Found:** 2026-08-28. Reasoning and the restore route: **D-064** (`decisions.md`).
-- **Waiting on:** Two separate entries earned against current HEAD — `reveal-stall-measure.mjs`
-  first. ⚠ **Not a regression; the true state made visible.** Not scheduled.
-
----
-
-*Seeded 19 August 2026. Entries are admitted by Carl only.*
-
----
+- **What:** `verify/proven.json`'s `proven` array is empty (checked 2026-11-28): no harness pass is admissible; reds
+  still count.
+- **Where:** `verify/proven.json` (the demoted entries in `_demoted`).
+- **Found:** 2026-08-28; D-064 (reasoning, restore route).
+- **Waiting on:** Two entries earned against HEAD, `reveal-stall-measure.mjs` first. Not scheduled.
 
 ## ENVMAP-STALE — env-map constants appear to do nothing
 
-- **What:** `useRoomEnvMap`'s `useMemo` is keyed `[plate, gl]`. `ENV_SHELL_COLOR`,
-  `ENV_PLATE_INTENSITY` and `ENV_SHELL_RADIUS` are read inside it and are **not** dependencies, so
-  a changed value serves the cached target and looks dead.
+- **What:** `useRoomEnvMap`'s `useMemo` (keyed `[plate, gl, blur]`) reads `ENV_SHELL_COLOR`, `ENV_PLATE_INTENSITY`,
+  `ENV_SHELL_RADIUS` without depending on them: a changed value serves the cached map (checked 2026-11-28).
 - **Where:** `components/about/room-environment.tsx`.
-- **Found:** 2026-09-22. ⚠ Carl saw the diagnostic red, reloaded, and it went dark **with the red
-  still on disk**. ⛔ **The `?guides=1` failure again — a control ignoring its own switch.**
-  ⚠⚠ A reload before looking would have recorded RIM-DARK as falsified.
-- **Waiting on:** Carl — **report, do not fix.**
-
----
+- **Found:** 2026-09-22 (a reload hid Carl's diagnostic red); D-091.
+- **Waiting on:** Carl — report, do not fix.
 
 ## RIM-DARK — the clear rim reflects a near-black shell, not the room
 
-- **What:** The rim reads dark where skirting and floorboards sit behind it. ⛔ Not failed
-  refraction — at grazing angles Fresnel drives the half-tube to **reflection**, of
-  `ENV_SHELL_COLOR` `#141a20`.
+- **What:** The rim reads dark over skirting and floorboards: at grazing angles it reflects `ENV_SHELL_COLOR` `#141a20`
+  (proven: a red shell turned it red). Real because the neon spends time off.
 - **Where:** `about-card-glass.ts`, `room-environment.tsx`.
-- **Found:** 2026-09-22, Carl's eye; **proven by setting the shell red — the rim went red.**
-  ⚠ The backplate hypothesis is **falsified**: it spans the full frame.
-- **Why it is real:** ⚠ **The neon spends real time OFF**, already recorded as *"a real state of
-  this design"*. **An unlit rim must still read as glass.**
-- **Waiting on:** Carl. Two candidates in **D-091** — extend the plate panel's arc, or drive one
-  property the way the Send opal is driven. Reasoning there, not here.
+- **Found:** 2026-09-22, Carl's eye; D-091 (two candidates).
+- **Waiting on:** Carl; a deliberate look first (the take light may resolve it).
+
+## LOGO-FADE-FRAME — a long frame as the logo's fade begins
+
+- **What:** On a cold first visit, one 49.8 ms frame (~3 lost) within 3 frames of the logo's first draw.
+- **Where:** `/proto/hero`, the opening (`e561aed`); headed, production.
+- **Found:** 2026-11-28; `live-work/architect-probe2-headed-28-november.md` ("base").
+- **Waiting on:** Carl to schedule; "reorder only" or the split gate may remove it.
+
+---
+
+*Seeded 19 August 2026. Entries are admitted by Carl only. ANCHOR-STALE removed 28 November 2026 as resolved in code: the
+reveal anchor now also requires a stamp matching the live question (`answer-card-canvas.tsx`, the `usable` predicate).*

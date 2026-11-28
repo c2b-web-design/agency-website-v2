@@ -1,114 +1,113 @@
-# Session Handoff — 26 November 2026 (Thursday). PHASE 3 IS THE CIRCLE (R-118, R-119); THE PASSES DELETED; FILM 3's PHASE 3 SWAPPED; THE OPENING ON THE COLD LOAD: A → B+C → THE FLOWING OPENING (IN PROGRESS, UNCOMMITTED)
+# Session Handoff — 28 November 2026 (Saturday). THE OPENING's FREEZES FIXED; THE RACE FIXED; THE LOGO's FIRST-VISIT LAG MEASURED — A PROBE RUNNING
 
-⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces every earlier handoff. Delete it at the end of
-the session that reads it, once its replacement is written.
+⛔ **READ THIS FIRST, THEN `project-intelligence/` AS NORMAL.** It replaces every earlier handoff (the 26 November one is
+gone). Delete it at the end of the session that reads it, once its replacement is written. Written mid-session, while the
+second probe's rounds run (Carl: *"proceed. context is 47%"*).
 
-**The record:** D-101 in `decisions.md`, from *"⛔ PHASE 3 REDESIGNED: QUICKER AND SIMPLER, ONE CIRCLE THROUGH THE CLOTH"* to
-the end; reviews **R-118** and **R-119**; `live-work/hero-cold-load-26-november.md` (the cold load, measured: A, B, C).
-Written at Carl's word mid-task (*"compaction is 35% write a handoff first"*), not at a session's end.
+**The record:** D-101 in `decisions.md`, from *"THE FLOWING OPENING: CARL's VERDICT, AND THE LOGO AFTER THE TEXT"* (28 Nov)
+to the end. The Architect's thread is in `live-work/architect-*-28-november.md`, in this order: note → review →
+measurement (with addendum) → review → probe → review → answers → review.
 
-## ⛔ NEXT SESSION: THE FIRST-FRAME FREEZE (Carl: *"the jump is noticable. put the fix options in the handoff and we will deal with it in the next session."*)
+## ✔ The probe code is REMOVED
 
-**The fault, MEASURED:** as the scene draws its FIRST frame (~1.3–1.5 s after the first paint on the dev bench), the screen
-produces NO frames for ~200 ms — the 2D headline's fade (and the subtext's letter fades) freeze, then catch up in one frame:
-a visible jump (`Videos\C2B Films\03 The hero\2026-11-26_flow-opening_take2-weight-matched`: the headline's brightness 35.8
-held six frames, then 44.4). NOT the camera: `scripts/screencast-freeze-test-26-november.mjs` shows the screencast keeps
-filming a CSS fade through a blocked script thread, so a stall with no frames at all is deeper than the script — most likely
-the GPU building the first frame's programs (three r185 builds a render pipeline at its first draw; the 16 November stall
-work and the 10 November async-compile plan are the precedents: `live-work/plan-liquid-async-compile-10-november.md`).
+Both files are byte-identical to `e561aed` (SHA-1 checked, 28 November). The tool's new measures are kept (uncommitted:
+`live-work/scripts/hero-logo-build-28-november.mjs`). `.next` may still hold the probe's production build, so rebuild
+before serving production.
 
-**The options (Carl's choice; measure first, read-only, on a production build — `scripts/hero-cold-load-26-november.mjs`):**
-- **(a) Build the first frame's programs ASYNCHRONOUSLY before it is drawn** — e.g. `renderer.compileAsync(scene, camera)`
-  awaited before `setAnimationLoop` in `hero-bench.tsx`'s `start()`, or the bench's existing background warm-up extended to
-  the text's and floor's programs. The cleaner fix: no freeze at all. ⚠ Prove on the bench that three r185 WebGPU really builds
-  them off the frame (the 10 November plan found the liquid's draw built synchronously despite a warm-up); a structural
-  question if it adds a mechanism — the Architect.
-- **(b) Hold the scene until the 2D headline's fade is done** (1.5 s) before its first draw, so the freeze lands on still
-  text and is invisible. Simpler; the growth then starts at ~1.5 s rather than 0.75 s on fast loads. ⚠ The subtext's letter
-  fades start at 1.31 s and could still catch the freeze: start them after the scene's first frame, or accept.
-- **(c)** Not raised to Carl: both — (a) where it works, (b) as the guard. The Builder's note only.
+## ⛔ NEXT (the Architect's probe-3 review, `live-work/architect-review-probe3-28-november.md`)
 
-**Also open on the flowing opening (Carl's):** his verdict on the take; OPTION D (the logo waits for the WHOLE story's warm-up:
-fades in at ~8.75 s on dev, not ~3.0 s); the SITE's route (the 2D registers at HOME only: a structural note for the Architect).
+The split gate is the route: on time in all 10 headed cold rounds. Reorder only failed (late in 2 of 5). Before or in
+the plan:
 
-**Done since the mid-session handoff (committed with this one):** *"the text moves slightly left"* — each 2D line nudged onto
-its face by edge correlation (`FLOW_LINE_NUDGE`); *"when the light comes into play it should grow in intensityy, theres a
-sudden change"* — FILMED: the headline lost ~11% brightness at the hand-over because the 3D's glyphs are ~10% THINNER than the
-browser's Geist Bold; the 2D now at weight 625 with +0.0102 em tracking (`FLOW_HEAD_WEIGHT`, `scripts/hero-flow-weight-26-
-november.mjs`): ink within ~1%, every line ±1 px at three windows, the brightness HOLDS through the hand-over (refilmed).
+1. **A ROTATED-order run, reorder against splitov** (Carl's word first: a temporary probe build).
+   - Probe 3 ran in a FIXED order, reorder first. splitov's warm-up was 1.6 s shorter, though the modes differed ONLY in
+     the gate.
+   - A driver shader cache reused by the second mode is not ruled out.
+   - **Make the tool record `hero:WarmShadowDone`** (for LOGO-FADE-FRAME's cause).
+2. **Write the split-gate plan** (structural, to plan review). It must cover:
+   - **The swap guard:** hold the fade material, and say what the story looks like while it is held.
+   - **A touchdown guard in code.**
+   - **The floor web's OWN guarantee:** its own targeted `compileAsync` in the gate.
+   - **LOGO-FADE-FRAME:** the cause, and whether the plan relies on timing or guards against it (the evidence so far is
+     consistent with `warmShadow` starting on the fade's frame).
+   - **The fade's call inside `warmScene`, after `prefiltered`.**
+3. **Carl rules on Option D** (what the opening waits for).
+4. **Carl judges by eye:** Incognito, headed, with no recording.
 
-## DONE AND PUSHED TODAY
+**Re-creating the probes:** the edit scripts were `scratchpad/probe2_edit.py` and `probe3_edit.py` (session-only).
+Rebuild from the reports if they are lost:
+- splitov = a NOT-awaited `compileAsync(logo, camera, scene)` with the fade material and depth shown, at the top of
+  `warmScene`, with `openingReady` set from it.
+- Marks `hero:OpeningDone` (in `stepFlow`) and `hero:Touchdown` (in `update`).
+- The tool: `QUERY`, `HEADED=1`; the aggregator was `scratchpad/probe-aggregate.mjs`.
 
-- **`e22c4a7` — PHASE 3 REDESIGNED (R-118, R-119).** Carl: phase 3 measured 40.7 s, *"far too long"*. Now ONE CIRCLE: the
-  cloth hung and faded in over the logo; the logo UPRIGHT round a 1.5 m circle, backwards first, 5.7 s; slowed to 0.06×
-  through the cloth (the outline held ~2.0 s; take 1 0.40 s); the cloth DRAPES (the collision on all the way — takes 1–2
-  let the metal through: Carl *"you took my description too literally"*); the whole logo gold behind the cloth; the web
-  floor shrinking to touchdown; the marble + plinth from touchdown; the cloth fading out 0.5 s after touchdown (*"keep the
-  cloth visible for 1s longer"*). Take 4 APPROVED (*"now we get more of the collision physics. Approved."*).
-- **`f9b31ed` — THE FOUR PASSES' CODE DELETED** (937 lines out); the scene's own log matched take 4 on 413/413 frames.
-  **FILM 3's PHASE 3 SWAPPED** in the roadmap (`hero-event-order-25-november.md`, 3a–3f) and the beat list (`Videos\C2B
-  Films\03 The hero\beat-list.md`: P3-12 – P3-15 new, timed EXACTLY from the session log against the captures; the passes
-  kept as ⚰️; the cut ~25 min).
-- Captures: `03 The hero\01 Discussion\2026-11-26_discussion_screen.mkv` (35:45) and `_part2.mkv` (18:15), each with a
-  `.remux.mkv`; take films `03 The hero\2026-11-26_phase3-circle_take1` … `take4-cloth-1s-longer` (Home + side).
+**The probes are all REMOVED:** both files are byte-identical to `e561aed`. `open-defects.md` was edited and locked.
 
-## THE OPENING ON THE COLD LOAD — COMMITTED AS A TAKE (not approved; the first-frame freeze above)
+## WHERE THINGS STAND
 
-Carl: *"Im trying to avoid a black viewport at the start."* Measured (production, cold): the headline readable ~2.7 s.
-- **A** (kept): the castle cube map and uv grid (threejs.org, bench-only) no longer fetched at load — no visible gain on
-  Carl's PC; the dependency gone. `loadCastle`, `loadUvGrid` in `hero-scene.ts`.
-- **B + C** (built, measured best: readable 1.02 s cold; Carl *"implement the B+C option. Its the fadtest yet."*) —
-  **SUPERSEDED the same session** by Carl's idea, THE FLOWING OPENING. `OPENING.litS` is now [0, 1.5] (A's [0.3, 3.0] kept as
-  `OPENING_LIGHTS_A`, `?open=a`). C's still (`public/hero-bench/opening-poster.webp`) DELETED at the session's end (Carl:
-  *"delere it"*; never committed; `scripts/hero-opening-poster-26-november.mjs` can render it again).
-- **THE FLOWING OPENING** (`FLOW_OPENING` in `hero-scene.ts`, the bench's 2D in `hero-bench.tsx`; D-101 has every quote).
-  Four actions flowing like `/start`'s Q5 cards (first halfway through, each next 28% in): (1) the HTML headline (#bed3ea,
-  the lit 3D face's colour, sampled) fades in 1.5 s from the first paint; (2) the 3D headline, flat on it, grows BACKWARDS
-  over 2 s; (3) the HTML subtext reveals letter by letter and STAYS, its extrusion following each line letter by letter;
-  (4) the logo once the headline is fully 3D. The 2D on a STAGE laid out at the reference (`FLOW_REF`), centred on the
-  canvas, scaled by its height, at the reference root zoom 1.343; kerning off; letter-spacing −0.007 em. Registered within
-  1–2 px at four windows, then each line nudged (above).
-- ⚠ **OPEN FOR CARL — OPTION D:** the logo waits for the WHOLE story's warm-up (`openingReady` = `warmed`): measured live it
-  fades in at **8.75 s** (dev) instead of ~3.0 s. Changing what the opening waits for is his call.
-- ⚠ **OPEN — THE SITE:** the 2D registers at HOME only; on the site the 3D should be laid out from the HTML — a STRUCTURAL
-  note for the Architect, not written.
-- Gates at the time of writing: `tsc` clean; lint 1 error 0 warnings (the baseline).
+- **Committed and pushed:**
+  - `ae134a4`: the async builds before the first frame; the prefilter dry run; the subtext letters fading over 0.5 s (the
+    "stall after the W" was the reveal's own schedule); the subtext revealed already extruded (Carl chose to keep its
+    second sweep: *"C Leave it as it is. Its the effect we want."*); the logo after the subtext (Carl's rule).
+  - `e561aed`: **the race fixed.** The logo is added hidden, so the bench's first-frame build no longer takes it. It had
+    hit 2 of 4 headed loads; 0 of 6 after the fix. Also the Architect thread and the tool.
+- **Carl's eye test, his own Chrome, Incognito, PRODUCTION (:3100):** *"Om 3100 there is still a significaknt delay to
+  the logos apperance"*. Base does not stand; the route is being measured.
+- **The facts (production, AMD RDNA 2):**
+  - The logo's build is the GPU compiling TWO ~76 KB shaders, the opaque logo and its fade clone, at ~4.7 s each cold,
+    overlapping.
+  - A real return visit is cached, and the logo is on time.
+  - A first visit is ~0.4–2 s late.
+  - **Never time from a filmed run:** the screencast alone took the cold logo from 8.8 s to 14.1 s.
+  - Headed, the 3D's first frame is ~3.7–4.3 s, against ~1.9 s headless. Unexplained.
+- **Probe 1 (headless, five interleaved rounds), cold:**
+  - **split, one after the other:** on time, but the rest was pushed past the swap (−2.2 s) and touchdown.
+  - **side by side:** the warm-up 0.8 s sooner, but ~0.1 s later at the logo, even on return visits. Unexplained.
+- **Probe 2 (headed: base / splitov / side), DONE (see NEXT above). From the smoke run:**
+  - The results go to `scratchpad/rounds2`. Aggregate with
+    `node scratchpad/probe-aggregate.mjs scratchpad/rounds2 base,splitov,side`. The scratchpad is session-only; if it is
+    lost, re-run.
+  - Smoke run, cold: splitov's fade compiled SLOWER alongside the rest (6.7 s against ~4.7 s); the logo was 0.66 s late.
+    The fade's first-draw frame and the swap frame were both normal (16.6 ms), with nothing built on either.
+- **Next, by the Architect's order:** report probe 2 to Carl and the Architect, then choose side by side or the
+  overlapping split. If neither puts a first visit on time, the Architect's reserve is **A′, a light fade material** (red
+  metal only), which attacks the compile itself. It is structural: a plan for review first.
 
-## STILL CARRIED
+## OPEN, CARL's
 
-- **The storyboard's phase 3 and 4 times are STALE** (`hero-storyboard-25-november.md`, printed 25 Nov from the passes):
-  re-print from the scene's clock. The session's opening subject — precise numbers (positions) in the storyboard for the
-  camera shots — not started.
-- Carl's earlier opens (25 Nov handoff): the cloth/logo interpenetration close-up (now with the drape); live pauses on a
-  clean run; the logo's look by angle (the showcase lights); our marble take 4; the loop/freeze/restart.
-- The marble's circling spotlight runs on a clock from PAGE LOAD (`marble.update`), not the story's: its angle differs run
-  to run — a fact for the camera direction.
+- **His `chrome://gpu` line:** he answered "Yes to both" but has not given the GPU yet.
+- **Where the lesson "never time from a filmed run" is recorded.** The Architect suggests the tools' headers and the
+  measurement protocol. It is in memory already.
+- **The Architect's existing fault (flag only):** `warmScene(...).finally(() => { warmed = true; })` opens the gate even
+  when the warm-up fails.
+- **Carried from 26 November:**
+  - the storyboard's phase 3 and 4 times are stale (re-print them from the scene's clock);
+  - the site's 2D/3D layout (a structural note for the Architect, not yet written);
+  - film 3's edit;
+  - target 1 December.
 
 ## CORRECTIONS AND LESSONS (this session)
 
-- **"stop" means stop the work, not the servers**: Carl said "syop"/"stop" mid-commit; the Builder killed the dev server and
-  the recording; Carl: *"no keep the server up and screen recording"*.
-- **A measurement is only as good as its conditions**: removing the scrollbar gutter AFTER load left the canvas at one width
-  and the HTML at another — a 7.25 px error baked into a "reference".
-- Hydration REMOVES nodes an inline script adds to `<body>`: render them with React, hidden, `suppressHydrationWarning`,
-  and let the script only style them. A finished CSS animation's `currentTime` stops at its end: use the document timeline
-  minus `startTime`. three's typeface JSON has no kerning: kerned HTML drifts from it.
-- **The heredoc STILL collapses backslashes** (twice more today: a 0x03 and a U+0082 in Windows paths, in `hero-bench.tsx`
-  and D-101): write ANY script that carries a backslash with the Write tool, and scan for C1 controls (U+0080–U+009F) too.
-- **Match the 2D's INK, not only its place and colour:** the browser draws a weight heavier than the font's own outline.
-- The plan gate was set aside twice on Carl's word (*"Just implement it"*; the flowing opening built on *"yes"*).
+- **Carl records nothing manually: all recordings are the Builder's.** No capture may run while Carl judges a load or
+  while a load is being timed (saved to memory).
+- **Measure on the instrument's real conditions:**
+  - the films' screencast inflated every timing;
+  - a non-persistent browser context keeps no shader cache;
+  - the GPU-work script lists frames only once the scene's clock runs;
+  - interleave modes in rounds, because this PC drifts within the hour.
+- **A hold in a film is a freeze only if the reveal itself has no still gaps.** Check with
+  `hero-flow-letter-gaps-28-november.mjs`.
+- **The heredoc STILL collapses backslashes:** write edit scripts with the Write tool. `git stash` / `checkout` rewrite
+  files as CRLF here: put them back to LF.
+- **Incognito is the nearest thing to a first-time visitor** in Carl's Chrome. Ctrl+Shift+R in a normal window keeps the
+  compiled shaders.
 
 ## STATE
 
-- Dev server STOPPED (Carl: *"commit and push and stop the server"*). Production server :3100 stopped. Screen recording
-  STOPPED (Carl: *"stop the screen capture."*).
-- Committed and pushed with this handoff: `hero-scene.ts`, `hero-bench.tsx` (A, the lights' B, the flowing opening),
-  `decisions.md`, today's scripts, `live-work/hero-cold-load-26-november.md`. The poster deleted (never committed); the
-  tree clean. `chunk-scope.json`: `opening-poster.webp` added on
-  Carl's *"yes, authorised"* (`_openingPoster26Nov`), then REMOVED with the file's deletion.
-- Carried: target 1 December; name the files and ask before the first code edit, every session; a question is answered,
-  not built; record each verdict as it lands.
-
----
-
-*Written 26 November 2026; updated at the session's end (Carl: "put the fix options in the handoff").*
+- The dev server on :3000 is up (Carl: *"keep 3000 up"*).
+- The probe build is served on :3100 while probe 2 runs; stop it after.
+- No recording of the Builder's is running.
+- Uncommitted:
+  - D-101's entries since `e561aed`;
+  - the tool's changes;
+  - this handoff (force-add it).
