@@ -1770,6 +1770,13 @@ export function createHeroScene(aspect: number, options: HeroSceneOptions = {}):
       // its pose is written whole each frame by the arrival (`update`)
       logo.matrixAutoUpdate = false;
       logo.matrix.copy(l.matrix);
+      // ⛔ ADDED HIDDEN (28 November 2026; Carl: *"Yes"*, the Architect's reviews of the logo's build): added visible, it
+      // could be in the scene before the bench's first frame and be GATHERED by its first build (`hero-bench.tsx`,
+      // `start()`, every VISIBLE top-level object) — the logo's opaque material compiled there, the 3D's first frame at
+      // ~7 s instead of ~2 s: MEASURED 2 of 4 headed loads, 1 of 26 headless. `update` sets its visibility every frame from
+      // the first (`settled` is set just below: `logo.visible = emitted < 1`, then hidden until its fade), and the warm-ups
+      // show it for their own gathers and put back what they found — so nothing after the first `update` changes
+      logo.visible = false;
       scene.add(logo);
       // the landing: the dance's centre (the field's middle, x and z; its height is the floor's)
       arrival = arrivalPlan(g, l, t.sketch, new THREE.Vector3(effect.position.x, FLOOR_Y, effect.position.z));

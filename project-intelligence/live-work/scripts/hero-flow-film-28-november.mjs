@@ -36,7 +36,7 @@ cdp.on("Page.screencastFrame", async (f) => {
 });
 if (MODE === "reload") {
   await p.goto(`${process.env.BASE ?? "http://localhost:3000"}/proto/hero`, { waitUntil: "load" });
-  await p.waitForTimeout(14000);
+  await p.waitForTimeout(Number(process.env.PRELOAD_MS ?? 14000)); // env PRELOAD_MS: the unfilmed first load's length (its warm-up must finish)
 }
 await cdp.send("Page.startScreencast", { format: "jpeg", quality: 80, everyNthFrame: 1 });
 if (MODE === "reload") await p.reload({ waitUntil: "commit" });
